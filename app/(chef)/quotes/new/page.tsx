@@ -13,7 +13,7 @@ export default async function NewQuotePage({
 }: {
   searchParams: { client_id?: string; inquiry_id?: string }
 }) {
-  await requireChef()
+  const user = await requireChef()
 
   const clients = await getClients()
 
@@ -58,6 +58,7 @@ export default async function NewQuotePage({
       </div>
 
       <QuoteForm
+        tenantId={user.tenantId!}
         clients={clients}
         pricingHistory={pricingHistory}
         pricingSuggestion={pricingSuggestion}

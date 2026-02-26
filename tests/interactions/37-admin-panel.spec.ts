@@ -52,7 +52,7 @@ test.describe('Admin — Dashboard', () => {
 
   test('/admin — no JS errors on load', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/admin')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -92,7 +92,7 @@ test.describe('Admin — Sub-pages Load', () => {
 test.describe('Admin — Sub-pages No JS Errors', () => {
   test('/admin/users — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/admin/users')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -100,7 +100,7 @@ test.describe('Admin — Sub-pages No JS Errors', () => {
 
   test('/admin/financials — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/admin/financials')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -108,7 +108,7 @@ test.describe('Admin — Sub-pages No JS Errors', () => {
 
   test('/admin/audit — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/admin/audit')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -130,6 +130,15 @@ test.describe('Admin — Content', () => {
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(20)
+  })
+
+  test('/admin/system — shows QOL metrics summary card', async ({ page }) => {
+    await page.goto('/admin/system')
+    await page.waitForLoadState('networkidle')
+    await expect(page.getByText(/QOL Metrics \(last 30 days\)/i)).toBeVisible()
+    await expect(page.getByText(/Drafts restored/i)).toBeVisible()
+    await expect(page.getByText(/Save failures/i)).toBeVisible()
+    await expect(page.getByText(/Conflicts detected/i)).toBeVisible()
   })
 
   test('/admin/financials — shows financial overview', async ({ page }) => {
@@ -204,7 +213,7 @@ test.describe('Admin — Analytics', () => {
 
   test('/admin/analytics — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/admin/analytics')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)

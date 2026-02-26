@@ -1,15 +1,30 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
+import { SaveStateBadge } from '@/components/ui/save-state-badge'
+import { DraftRestorePrompt } from '@/components/ui/draft-restore-prompt'
+import { UnsavedChangesDialog } from '@/components/ui/unsaved-changes-dialog'
 import { createMenu } from '@/lib/menus/actions'
+import { useDurableDraft } from '@/lib/drafts/use-durable-draft'
+import { useUnsavedChangesGuard } from '@/lib/navigation/use-unsaved-changes-guard'
+import { useIdempotentMutation } from '@/lib/offline/use-idempotent-mutation'
+import { ValidationError } from '@/lib/errors/app-error'
+import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 
-export function CreateMenuForm() {
+type MenuDraftData = {
+  name: string
+  description: string
+  cuisine_type: string
+  service_style: string
+}
+
+export function CreateMenuForm({ tenantId }: { tenantId: string }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -19,32 +34,108 @@ export function CreateMenuForm() {
   const [cuisineType, setCuisineType] = useState('')
   const [serviceStyle, setServiceStyle] = useState('')
 
+  const currentFormData = useMemo<MenuDraftData>(
+    () => ({
+      name,
+      description,
+      cuisine_type: cuisineType,
+      service_style: serviceStyle,
+    }),
+    [name, description, cuisineType, serviceStyle]
+  )
+  const initialFormData = useMemo<MenuDraftData>(
+    () => ({
+      name: '',
+      description: '',
+      cuisine_type: '',
+      service_style: '',
+    }),
+    []
+  )
+  const [committedFormData, setCommittedFormData] = useState<MenuDraftData>(initialFormData)
+
+  const createMutation = useIdempotentMutation<any, any>('menus/create', {
+    mutation: createMenu as any,
+  })
+
+  const durableDraft = useDurableDraft<MenuDraftData>('menu-create-form', null, {
+    schemaVersion: 1,
+    tenantId,
+    defaultData: initialFormData,
+    debounceMs: 700,
+  })
+
+  const isDirty = useMemo(
+    () => JSON.stringify(currentFormData) !== JSON.stringify(committedFormData),
+    [committedFormData, currentFormData]
+  )
+
+  const unsavedGuard = useUnsavedChangesGuard({
+    isDirty,
+    onSaveDraft: () => durableDraft.persistDraft(currentFormData, { immediate: true }),
+    canSaveDraft: true,
+    saveState: createMutation.saveState,
+  })
+
+  useEffect(() => {
+    if (!isDirty) return
+    void durableDraft.persistDraft(currentFormData)
+    if (createMutation.saveState.status === 'SAVED') {
+      createMutation.markUnsaved()
+    }
+  }, [createMutation, currentFormData, durableDraft, isDirty])
+
+  const applyFormData = (data: MenuDraftData) => {
+    setName(data.name)
+    setDescription(data.description)
+    setCuisineType(data.cuisine_type)
+    setServiceStyle(data.service_style)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
     try {
+      await durableDraft.persistDraft(currentFormData, { immediate: true })
+
       if (!name.trim()) {
-        throw new Error('Menu name is required')
+        throw new ValidationError('Menu name is required')
       }
 
-      const result = await createMenu({
+      const mutationResult = await createMutation.mutate({
         name,
         description: description || undefined,
         cuisine_type: cuisineType || undefined,
         service_style: serviceStyle ? (serviceStyle as any) : undefined,
       })
+      if (mutationResult.queued) {
+        setLoading(false)
+        return
+      }
+      const result = mutationResult.result as any
 
-      router.push(`/menus/${result.menu.id}`)
-    } catch (err: any) {
-      setError(err.message || 'Failed to create menu')
+      if (result?.menu?.id) {
+        setCommittedFormData(currentFormData)
+        await durableDraft.clearDraft()
+        router.push(`/menus/${result.menu.id}`)
+      } else {
+        throw new Error('Failed to create menu')
+      }
+    } catch (err: unknown) {
+      const uiError = mapErrorToUI(err)
+      setError(uiError.message)
       setLoading(false)
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="flex justify-end">
+        <SaveStateBadge state={createMutation.saveState} onRetry={createMutation.retryLast} />
+      </div>
+
       {error && <Alert variant="error">{error}</Alert>}
 
       <Card>
@@ -70,6 +161,7 @@ export function CreateMenuForm() {
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              onBlur={() => void durableDraft.persistDraft(currentFormData, { immediate: true })}
               placeholder="Describe this menu template..."
               rows={3}
             />
@@ -106,13 +198,38 @@ export function CreateMenuForm() {
       </Card>
 
       <div className="flex justify-end gap-3">
-        <Button type="button" variant="ghost" onClick={() => router.back()} disabled={loading}>
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => unsavedGuard.requestNavigation(() => router.back())}
+          disabled={loading}
+        >
           Cancel
         </Button>
         <Button type="submit" disabled={loading}>
           {loading ? 'Creating...' : 'Create Menu'}
         </Button>
       </div>
+
+      <DraftRestorePrompt
+        open={durableDraft.showRestorePrompt}
+        lastSavedAt={durableDraft.pendingDraft?.lastSavedAt ?? durableDraft.lastSavedAt}
+        onRestore={() => {
+          const restored = durableDraft.restoreDraft()
+          if (restored) {
+            applyFormData(restored)
+          }
+        }}
+        onDiscard={() => void durableDraft.discardDraft()}
+      />
+
+      <UnsavedChangesDialog
+        open={unsavedGuard.open}
+        canSaveDraft={unsavedGuard.canSaveDraft}
+        onStay={unsavedGuard.onStay}
+        onLeave={unsavedGuard.onLeave}
+        onSaveDraftAndLeave={() => void unsavedGuard.onSaveDraftAndLeave()}
+      />
     </form>
   )
 }

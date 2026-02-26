@@ -16,6 +16,7 @@ import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 import { formatDistanceToNow, format } from 'date-fns'
 import { NoQuotesIllustration } from '@/components/ui/branded-illustrations'
+import { QuotesFilterTabs } from '@/components/quotes/quotes-filter-tabs'
 
 type QuoteFilter = 'all' | 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'
 
@@ -112,15 +113,6 @@ export default async function QuotesPage({
   // Fetch insights in parallel with page render
   const insights = await getQuoteAcceptanceInsights().catch(() => null)
 
-  const tabs: { value: QuoteFilter; label: string }[] = [
-    { value: 'all', label: 'All' },
-    { value: 'draft', label: 'Draft' },
-    { value: 'sent', label: 'Sent' },
-    { value: 'accepted', label: 'Accepted' },
-    { value: 'rejected', label: 'Rejected' },
-    { value: 'expired', label: 'Expired' },
-  ]
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -139,15 +131,7 @@ export default async function QuotesPage({
 
       {/* Status Tabs */}
       <Card className="p-4">
-        <div className="flex gap-2 flex-wrap">
-          {tabs.map((tab) => (
-            <Link key={tab.value} href={`/quotes?status=${tab.value}`}>
-              <Button size="sm" variant={filter === tab.value ? 'primary' : 'secondary'}>
-                {tab.label}
-              </Button>
-            </Link>
-          ))}
-        </div>
+        <QuotesFilterTabs initialStatus={filter} />
       </Card>
 
       {/* Quote List */}

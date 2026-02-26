@@ -1,14 +1,16 @@
-'use client'
+﻿'use client'
 // Notification Settings Form
 // Per-category channel toggles (email, push, SMS) + SMS phone setup.
-// Mounted on /settings/notifications. Uses optimistic UI — saves on toggle.
+// Mounted on /settings/notifications. Uses optimistic UI â€” saves on toggle.
 
 import { useState, useTransition } from 'react'
 import { usePushSubscription } from '@/components/notifications/use-push-subscription'
 import {
   upsertCategoryPreference,
+  updateNotificationExperienceSettings,
   updateSmsSettings,
   type CategoryPreference,
+  type NotificationExperienceSettings,
   type SmsSettings,
 } from '@/lib/notifications/settings-actions'
 import { TIER_CHANNEL_DEFAULTS, DEFAULT_TIER_MAP } from '@/lib/notifications/tier-config'
@@ -47,7 +49,7 @@ function getTierDefault(category: NotificationCategory): {
   return TIER_CHANNEL_DEFAULTS[tier]
 }
 
-// ─── Category Channel Row ────────────────────────────────────────────────────
+// â”€â”€â”€ Category Channel Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type ChannelToggleProps = {
   label: string
@@ -84,14 +86,19 @@ function ChannelToggle({ label, checked, disabled, onChange }: ChannelToggleProp
   )
 }
 
-// ─── Main Form ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Props = {
   initialPreferences: CategoryPreference[]
   initialSmsSettings: SmsSettings
+  initialExperienceSettings: NotificationExperienceSettings
 }
 
-export function NotificationSettingsForm({ initialPreferences, initialSmsSettings }: Props) {
+export function NotificationSettingsForm({
+  initialPreferences,
+  initialSmsSettings,
+  initialExperienceSettings,
+}: Props) {
   const [isPending, startTransition] = useTransition()
   const { state: pushState, isLoading: pushLoading, subscribe, unsubscribe } = usePushSubscription()
 
@@ -123,6 +130,19 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
   const [smsOptIn, setSmsOptIn] = useState(initialSmsSettings.sms_opt_in)
   const [smsSaved, setSmsSaved] = useState(false)
   const [smsError, setSmsError] = useState<string | null>(null)
+  const [experienceSaved, setExperienceSaved] = useState(false)
+  const [experienceError, setExperienceError] = useState<string | null>(null)
+  const [quietHoursEnabled, setQuietHoursEnabled] = useState(
+    initialExperienceSettings.quiet_hours_enabled
+  )
+  const [quietStart, setQuietStart] = useState(
+    initialExperienceSettings.quiet_hours_start ?? '22:00'
+  )
+  const [quietEnd, setQuietEnd] = useState(initialExperienceSettings.quiet_hours_end ?? '07:00')
+  const [digestEnabled, setDigestEnabled] = useState(initialExperienceSettings.digest_enabled)
+  const [digestIntervalMinutes, setDigestIntervalMinutes] = useState(
+    String(initialExperienceSettings.digest_interval_minutes || 15)
+  )
 
   const handleChannelToggle = (
     category: NotificationCategory,
@@ -159,9 +179,33 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
     })
   }
 
+  const handleExperienceSave = () => {
+    setExperienceSaved(false)
+    setExperienceError(null)
+
+    startTransition(async () => {
+      const parsedInterval = Number.parseInt(digestIntervalMinutes, 10)
+      const result = await updateNotificationExperienceSettings({
+        quiet_hours_enabled: quietHoursEnabled,
+        quiet_hours_start: quietStart || null,
+        quiet_hours_end: quietEnd || null,
+        digest_enabled: digestEnabled,
+        digest_interval_minutes: Number.isFinite(parsedInterval) ? parsedInterval : 15,
+      })
+
+      if (result.error) {
+        setExperienceError(result.error)
+        return
+      }
+
+      setExperienceSaved(true)
+      setTimeout(() => setExperienceSaved(false), 3000)
+    })
+  }
+
   return (
     <div className="space-y-8">
-      {/* ─── Browser Push ───────────────────────────────────────────── */}
+      {/* â”€â”€â”€ Browser Push â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="rounded-xl border border-stone-700 bg-stone-900 p-5">
         <h2 className="text-base font-semibold text-stone-100">Browser Push Notifications</h2>
         <p className="mt-1 text-sm text-stone-500">
@@ -178,7 +222,7 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
             )}
             {pushState === 'denied' && (
               <p className="text-sm text-red-600">
-                Blocked by browser — open browser settings to re-allow.
+                Blocked by browser â€” open browser settings to re-allow.
               </p>
             )}
             {pushState === 'unsupported' && (
@@ -198,13 +242,93 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
                   : 'bg-stone-900 text-white hover:bg-stone-800',
               ].join(' ')}
             >
-              {pushLoading ? '…' : pushState === 'subscribed' ? 'Disable push' : 'Enable push'}
+              {pushLoading ? 'â€¦' : pushState === 'subscribed' ? 'Disable push' : 'Enable push'}
             </button>
           )}
         </div>
       </section>
 
-      {/* ─── SMS Setup ──────────────────────────────────────────────── */}
+      {/* â”€â”€â”€ In-App Attention Controls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <section className="rounded-xl border border-stone-700 bg-stone-900 p-5">
+        <h2 className="text-base font-semibold text-stone-100">In-App Attention Controls</h2>
+        <p className="mt-1 text-sm text-stone-500">
+          Reduce alert noise with quiet windows and digest batching. Critical notifications always
+          interrupt immediately.
+        </p>
+
+        <div className="mt-4 space-y-4">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={quietHoursEnabled}
+              onChange={(e) => setQuietHoursEnabled(e.target.checked)}
+              className="mt-0.5 rounded border-stone-600 accent-stone-900"
+            />
+            <span className="text-sm text-stone-300">Enable quiet hours</span>
+          </label>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="text-sm text-stone-300">
+              Quiet window start
+              <input
+                type="time"
+                value={quietStart}
+                disabled={!quietHoursEnabled}
+                onChange={(e) => setQuietStart(e.target.value)}
+                className="mt-1 block w-full rounded-md border border-stone-600 px-3 py-2 text-sm disabled:opacity-50"
+              />
+            </label>
+            <label className="text-sm text-stone-300">
+              Quiet window end
+              <input
+                type="time"
+                value={quietEnd}
+                disabled={!quietHoursEnabled}
+                onChange={(e) => setQuietEnd(e.target.value)}
+                className="mt-1 block w-full rounded-md border border-stone-600 px-3 py-2 text-sm disabled:opacity-50"
+              />
+            </label>
+          </div>
+
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={digestEnabled}
+              onChange={(e) => setDigestEnabled(e.target.checked)}
+              className="mt-0.5 rounded border-stone-600 accent-stone-900"
+            />
+            <span className="text-sm text-stone-300">
+              Batch non-critical notifications into a digest
+            </span>
+          </label>
+
+          <label className="text-sm text-stone-300 block max-w-xs">
+            Digest interval (minutes)
+            <input
+              type="number"
+              min={5}
+              max={120}
+              value={digestIntervalMinutes}
+              disabled={!digestEnabled}
+              onChange={(e) => setDigestIntervalMinutes(e.target.value)}
+              className="mt-1 block w-full rounded-md border border-stone-600 px-3 py-2 text-sm disabled:opacity-50"
+            />
+          </label>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleExperienceSave}
+              disabled={isPending}
+              className="rounded-md bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:opacity-50 transition-colors"
+            >
+              {isPending ? 'Saving…' : 'Save attention controls'}
+            </button>
+            {experienceSaved && <span className="text-sm text-emerald-600">Saved</span>}
+            {experienceError && <span className="text-sm text-red-600">{experienceError}</span>}
+          </div>
+        </div>
+      </section>
       <section className="rounded-xl border border-stone-700 bg-stone-900 p-5">
         <h2 className="text-base font-semibold text-stone-100">SMS Alerts</h2>
         <p className="mt-1 text-sm text-stone-500">
@@ -246,7 +370,7 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
               disabled={isPending}
               className="rounded-md bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:opacity-50 transition-colors"
             >
-              {isPending ? 'Saving…' : 'Save SMS settings'}
+              {isPending ? 'Savingâ€¦' : 'Save SMS settings'}
             </button>
             {smsSaved && <span className="text-sm text-emerald-600">Saved</span>}
             {smsError && <span className="text-sm text-red-600">{smsError}</span>}
@@ -254,7 +378,7 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
         </div>
       </section>
 
-      {/* ─── Per-Category Toggles ────────────────────────────────────── */}
+      {/* â”€â”€â”€ Per-Category Toggles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="rounded-xl border border-stone-700 bg-stone-900">
         <div className="border-b border-stone-700 p-5">
           <h2 className="text-base font-semibold text-stone-100">Channel Overrides by Category</h2>

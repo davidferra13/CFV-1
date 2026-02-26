@@ -7,6 +7,10 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { executeWithIdempotency } from '@/lib/mutations/idempotency'
+import { createConflictError } from '@/lib/mutations/conflict'
+import { AuthError, UnknownAppError, ValidationError } from '@/lib/errors/app-error'
+import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
 import {
   EVENT_TIME_ACTIVITY_TYPES,
   EVENT_TIME_ACTIVITY_CONFIG,
@@ -19,7 +23,7 @@ import {
 // Validation schemas aligned with new events table
 const CreateEventSchema = z.object({
   client_id: z.string().uuid(),
-  event_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Event date must be YYYY-MM-DD format'),
+  event_date: z.string().min(1, 'Event date required'),
   serve_time: z.string().min(1, 'Serve time required'),
   guest_count: z.number().int().positive(),
   location_address: z.string().min(1, 'Address required'),
@@ -27,7 +31,9 @@ const CreateEventSchema = z.object({
   location_state: z.string().optional(),
   location_zip: z.string().min(1, 'ZIP required'),
   occasion: z.string().optional(),
-  service_style: z.enum(['plated', 'family_style', 'buffet', 'cocktail', 'tasting_menu', 'other']).optional(),
+  service_style: z
+    .enum(['plated', 'family_style', 'buffet', 'cocktail', 'tasting_menu', 'other'])
+    .optional(),
   pricing_model: z.enum(['per_person', 'flat_rate', 'custom']).optional(),
   quoted_price_cents: z.number().int().nonnegative().optional(),
   deposit_amount_cents: z.number().int().nonnegative().optional(),
@@ -46,6 +52,7 @@ const CreateEventSchema = z.object({
   referral_partner_id: z.string().uuid().nullable().optional(),
   partner_location_id: z.string().uuid().nullable().optional(),
   event_timezone: z.string().optional(),
+  idempotency_key: z.string().optional(),
 })
 
 const UpdateEventSchema = z.object({
@@ -57,7 +64,9 @@ const UpdateEventSchema = z.object({
   location_state: z.string().optional(),
   location_zip: z.string().min(1).optional(),
   occasion: z.string().optional(),
-  service_style: z.enum(['plated', 'family_style', 'buffet', 'cocktail', 'tasting_menu', 'other']).optional(),
+  service_style: z
+    .enum(['plated', 'family_style', 'buffet', 'cocktail', 'tasting_menu', 'other'])
+    .optional(),
   pricing_model: z.enum(['per_person', 'flat_rate', 'custom']).optional(),
   quoted_price_cents: z.number().int().nonnegative().optional(),
   deposit_amount_cents: z.number().int().nonnegative().optional(),
@@ -72,20 +81,31 @@ const UpdateEventSchema = z.object({
   departure_time: z.string().optional(),
   pricing_notes: z.string().optional(),
   cannabis_preference: z.boolean().optional(),
-  payment_method_primary: z.enum(['cash', 'venmo', 'paypal', 'zelle', 'card', 'check', 'other']).optional(),
+  payment_method_primary: z
+    .enum(['cash', 'venmo', 'paypal', 'zelle', 'card', 'check', 'other'])
+    .optional(),
   location_lat: z.number().optional(),
   location_lng: z.number().optional(),
   referral_partner_id: z.string().uuid().nullable().optional(),
   partner_location_id: z.string().uuid().nullable().optional(),
   event_timezone: z.string().optional(),
+  expected_updated_at: z.string().optional(),
+  idempotency_key: z.string().optional(),
 })
 
 export type CreateEventInput = z.infer<typeof CreateEventSchema>
 export type UpdateEventInput = z.infer<typeof UpdateEventSchema>
 const EventTimeActivitySchema = z.enum(EVENT_TIME_ACTIVITY_TYPES)
 const LogCharityHoursSchema = z.object({
-  minutes: z.number().int().positive().max(24 * 60 * 31),
-  logged_for: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  minutes: z
+    .number()
+    .int()
+    .positive()
+    .max(24 * 60 * 31),
+  logged_for: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
   note: z.string().trim().max(500).optional(),
 })
 
@@ -111,87 +131,102 @@ export async function createEvent(input: CreateEventInput) {
     .single()
 
   if (!client || client.tenant_id !== user.tenantId) {
-    throw new Error('Client not found or does not belong to your tenant')
+    throw new AuthError('Client not found or does not belong to your tenant')
   }
 
-  // Create event (status defaults to 'draft' in DB)
-  const insertPayload: Record<string, unknown> = {
-    tenant_id: user.tenantId!,
-    client_id: validated.client_id,
-    event_date: validated.event_date,
-    serve_time: validated.serve_time,
-    guest_count: validated.guest_count,
-    location_address: validated.location_address,
-    location_city: validated.location_city,
-    location_state: validated.location_state,
-    location_zip: validated.location_zip,
-    occasion: validated.occasion,
-    service_style: validated.service_style,
-    pricing_model: validated.pricing_model,
-    quoted_price_cents: validated.quoted_price_cents,
-    deposit_amount_cents: validated.deposit_amount_cents,
-    dietary_restrictions: validated.dietary_restrictions,
-    allergies: validated.allergies,
-    special_requests: validated.special_requests,
-    site_notes: validated.site_notes,
-    access_instructions: validated.access_instructions,
-    kitchen_notes: validated.kitchen_notes,
-    location_notes: validated.location_notes,
-    arrival_time: validated.arrival_time,
-    departure_time: validated.departure_time,
-    cannabis_preference: validated.cannabis_preference,
-    location_lat: validated.location_lat,
-    location_lng: validated.location_lng,
-    referral_partner_id: validated.referral_partner_id ?? null,
-    partner_location_id: validated.partner_location_id ?? null,
-    event_timezone: validated.event_timezone ?? null,
-    created_by: user.id,
-    updated_by: user.id,
-  }
+  const result = await executeWithIdempotency({
+    supabase,
+    tenantId: user.tenantId!,
+    actorId: user.id,
+    actionName: 'events.create',
+    idempotencyKey: validated.idempotency_key,
+    execute: async () => {
+      // Create event (status defaults to 'draft' in DB)
+      const insertPayload: Record<string, unknown> = {
+        tenant_id: user.tenantId!,
+        client_id: validated.client_id,
+        event_date: validated.event_date,
+        serve_time: validated.serve_time,
+        guest_count: validated.guest_count,
+        location_address: validated.location_address,
+        location_city: validated.location_city,
+        location_state: validated.location_state,
+        location_zip: validated.location_zip,
+        occasion: validated.occasion,
+        service_style: validated.service_style,
+        pricing_model: validated.pricing_model,
+        quoted_price_cents: validated.quoted_price_cents,
+        deposit_amount_cents: validated.deposit_amount_cents,
+        dietary_restrictions: validated.dietary_restrictions,
+        allergies: validated.allergies,
+        special_requests: validated.special_requests,
+        site_notes: validated.site_notes,
+        access_instructions: validated.access_instructions,
+        kitchen_notes: validated.kitchen_notes,
+        location_notes: validated.location_notes,
+        arrival_time: validated.arrival_time,
+        departure_time: validated.departure_time,
+        cannabis_preference: validated.cannabis_preference,
+        location_lat: validated.location_lat,
+        location_lng: validated.location_lng,
+        referral_partner_id: validated.referral_partner_id ?? null,
+        partner_location_id: validated.partner_location_id ?? null,
+        event_timezone: validated.event_timezone ?? null,
+        created_by: user.id,
+        updated_by: user.id,
+      }
 
-  const { data: event, error } = await supabase
-    .from('events')
-    .insert(insertPayload as any)
-    .select()
-    .single()
+      const { data: event, error } = await supabase
+        .from('events')
+        .insert(insertPayload as any)
+        .select()
+        .single()
 
-  if (error) {
-    console.error('[createEvent] Error:', error)
-    throw new Error('Failed to create event')
-  }
+      if (error) {
+        console.error('[createEvent] Error:', error)
+        throw new UnknownAppError('Failed to create event')
+      }
 
-  // Log initial transition to 'draft'
-  await supabase.from('event_state_transitions').insert({
-    tenant_id: user.tenantId!,
-    event_id: event.id,
-    from_status: null,
-    to_status: 'draft',
-    transitioned_by: user.id,
-    metadata: { action: 'event_created' }
+      // Log initial transition to 'draft'
+      await supabase.from('event_state_transitions').insert({
+        tenant_id: user.tenantId!,
+        event_id: event.id,
+        from_status: null,
+        to_status: 'draft',
+        transitioned_by: user.id,
+        metadata: { action: 'event_created' },
+      })
+
+      revalidatePath('/events')
+      return { success: true, event }
+    },
   })
-
-  revalidatePath('/events')
 
   // Log chef activity (non-blocking)
   try {
     const { logChefActivity } = await import('@/lib/activity/log-chef')
-    const clientName = (event as any).client?.full_name || 'client'
+    const clientName = (result.event as any).client?.full_name || 'client'
     await logChefActivity({
       tenantId: user.tenantId!,
       actorId: user.id,
       action: 'event_created',
       domain: 'event',
       entityType: 'event',
-      entityId: event.id,
+      entityId: result.event.id,
       summary: `Created event: ${validated.occasion || 'Untitled'} for ${clientName}`,
-      context: { client_name: clientName, event_date: validated.event_date, guest_count: validated.guest_count, occasion: validated.occasion },
+      context: {
+        client_name: clientName,
+        event_date: validated.event_date,
+        guest_count: validated.guest_count,
+        occasion: validated.occasion,
+      },
       clientId: validated.client_id,
     })
   } catch (err) {
     console.error('[createEvent] Activity log failed (non-blocking):', err)
   }
 
-  return { success: true, event }
+  return result
 }
 
 /**
@@ -201,18 +236,31 @@ export async function getEvents() {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: events, error } = await supabase
-    .from('events')
-    .select(`
+  const runQuery = (withSoftDeleteFilter: boolean) => {
+    let query = supabase
+      .from('events')
+      .select(
+        `
       *,
       client:clients(id, full_name, email)
-    `)
-    .eq('tenant_id', user.tenantId!)
-    .order('event_date', { ascending: true })
+    `
+      )
+      .eq('tenant_id', user.tenantId!)
+    if (withSoftDeleteFilter) {
+      query = query.is('deleted_at' as any, null)
+    }
+    return query.order('event_date', { ascending: true })
+  }
+
+  let response = await runQuery(true)
+  if (isMissingSoftDeleteColumn(response.error)) {
+    response = await runQuery(false)
+  }
+  const { data: events, error } = response
 
   if (error) {
     console.error('[getEvents] Error:', error)
-    throw new Error('Failed to fetch events')
+    throw new UnknownAppError('Failed to fetch events')
   }
 
   return events
@@ -229,16 +277,29 @@ export async function getEventById(eventId: string) {
   await requireChef()
   const supabase = createServerClient()
 
-  const { data: event, error } = await supabase
-    .from('events')
-    .select(`
+  const runQuery = (withSoftDeleteFilter: boolean) => {
+    let query = supabase
+      .from('events')
+      .select(
+        `
       *,
       client:clients(id, full_name, email, phone),
-      referral_partner:referral_partners(id, name),
+      referral_partner:referral_partners!events_referral_partner_id_fkey(id, name),
       partner_location:partner_locations(id, name, city, state)
-    `)
-    .eq('id', eventId)
-    .single()
+    `
+      )
+      .eq('id', eventId)
+    if (withSoftDeleteFilter) {
+      query = query.is('deleted_at' as any, null)
+    }
+    return query.single()
+  }
+
+  let response = await runQuery(true)
+  if (isMissingSoftDeleteColumn(response.error)) {
+    response = await runQuery(false)
+  }
+  const { data: event, error } = response
 
   if (error) {
     console.error('[getEventById] Error:', error)
@@ -257,65 +318,133 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
 
   // Validate input
   const validated = UpdateEventSchema.parse(input)
+  const { expected_updated_at, idempotency_key, ...updateFields } = validated
 
   const supabase = createServerClient()
 
   // Fetch current event to verify ownership and status
-  const { data: currentEvent } = await supabase
+  const { data: currentEvent } = await (supabase
     .from('events')
-    .select('status')
+    .select('*')
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
-  if (!currentEvent) {
-    throw new Error('Event not found')
+  if (!currentEvent || (currentEvent as any).deleted_at) {
+    throw new ValidationError('Event not found')
   }
 
   // Only allow updates if event is in draft or proposed state
   if (!['draft', 'proposed'].includes(currentEvent.status)) {
-    throw new Error('Cannot update event after it has been accepted')
+    throw new ValidationError('Cannot update event after it has been accepted')
   }
 
-  // Update event (RLS enforces tenant_id match)
-  const { data: event, error } = await supabase
-    .from('events')
-    .update({
-      ...validated,
-      updated_by: user.id
-    })
-    .eq('id', eventId)
-    .eq('tenant_id', user.tenantId!)
-    .select()
-    .single()
-
-  if (error) {
-    console.error('[updateEvent] Error:', error)
-    throw new Error('Failed to update event')
+  if (expected_updated_at && currentEvent.updated_at !== expected_updated_at) {
+    throw createConflictError('This record changed elsewhere.', currentEvent.updated_at)
   }
 
-  revalidatePath('/events')
-  revalidatePath(`/events/${eventId}`)
+  const result = await executeWithIdempotency({
+    supabase,
+    tenantId: user.tenantId!,
+    actorId: user.id,
+    actionName: 'events.update',
+    idempotencyKey: idempotency_key,
+    execute: async () => {
+      // Update event (RLS enforces tenant_id match)
+      const runUpdate = async (withSoftDeleteFilter: boolean) => {
+        let query = supabase
+          .from('events')
+          .update({
+            ...updateFields,
+            updated_by: user.id,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', eventId)
+          .eq('tenant_id', user.tenantId!)
+        if (withSoftDeleteFilter) {
+          query = query.is('deleted_at' as any, null)
+        }
+        if (expected_updated_at) {
+          query = query.eq('updated_at', expected_updated_at)
+        }
+        return query.select().single()
+      }
 
-  // Log chef activity (non-blocking)
-  try {
-    const { logChefActivity } = await import('@/lib/activity/log-chef')
-    await logChefActivity({
-      tenantId: user.tenantId!,
-      actorId: user.id,
-      action: 'event_updated',
-      domain: 'event',
-      entityType: 'event',
-      entityId: eventId,
-      summary: `Updated event: ${event.occasion || 'Untitled'} — ${Object.keys(validated).join(', ')}`,
-      context: { occasion: event.occasion, changed_fields: Object.keys(validated) },
-      clientId: event.client_id,
-    })
-  } catch (err) {
-    console.error('[updateEvent] Activity log failed (non-blocking):', err)
-  }
+      let response = await runUpdate(true)
+      if (isMissingSoftDeleteColumn(response.error)) {
+        response = await runUpdate(false)
+      }
+      const { data: event, error } = response
 
-  return { success: true, event }
+      if (error || !event) {
+        if (expected_updated_at) {
+          const getLatest = async (withSoftDeleteFilter: boolean) => {
+            let query = supabase
+              .from('events')
+              .select('updated_at')
+              .eq('id', eventId)
+              .eq('tenant_id', user.tenantId!)
+            if (withSoftDeleteFilter) {
+              query = query.is('deleted_at' as any, null)
+            }
+            return query.maybeSingle()
+          }
+
+          let latestResponse = await getLatest(true)
+          if (isMissingSoftDeleteColumn(latestResponse.error)) {
+            latestResponse = await getLatest(false)
+          }
+          const latest = latestResponse.data
+
+          if (latest?.updated_at && latest.updated_at !== expected_updated_at) {
+            throw createConflictError('This record changed elsewhere.', latest.updated_at)
+          }
+        }
+
+        console.error('[updateEvent] Error:', error)
+        throw new UnknownAppError('Failed to update event')
+      }
+
+      revalidatePath('/events')
+      revalidatePath(`/events/${eventId}`)
+
+      // Log chef activity (non-blocking)
+      try {
+        const { logChefActivity } = await import('@/lib/activity/log-chef')
+        const changedFields = Object.keys(updateFields)
+        const fieldDiffs = Object.fromEntries(
+          changedFields.map((field) => [
+            field,
+            {
+              before: (currentEvent as Record<string, unknown>)[field] ?? null,
+              after: (event as Record<string, unknown>)[field] ?? null,
+            },
+          ])
+        )
+        await logChefActivity({
+          tenantId: user.tenantId!,
+          actorId: user.id,
+          action: 'event_updated',
+          domain: 'event',
+          entityType: 'event',
+          entityId: eventId,
+          summary: `Updated event: ${event.occasion || 'Untitled'} - ${changedFields.join(', ')}`,
+          context: {
+            occasion: event.occasion,
+            changed_fields: changedFields,
+            field_diffs: fieldDiffs,
+          },
+          clientId: event.client_id,
+        })
+      } catch (err) {
+        console.error('[updateEvent] Activity log failed (non-blocking):', err)
+      }
+
+      return { success: true, event }
+    },
+  })
+
+  return result
 }
 
 /**
@@ -327,34 +456,66 @@ export async function deleteEvent(eventId: string) {
   const supabase = createServerClient()
 
   // Verify event exists and is draft
-  const { data: event } = await supabase
+  const { data: event } = await (supabase
     .from('events')
-    .select('status')
+    .select('status, deleted_at')
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
-  if (!event) {
-    throw new Error('Event not found')
+  if (!event || event.deleted_at) {
+    throw new ValidationError('Event not found')
   }
 
   if (event.status !== 'draft') {
-    throw new Error('Can only delete events in draft status')
+    throw new ValidationError('Can only delete events in draft status')
   }
 
-  // Delete event (cascades to transitions via ON DELETE CASCADE)
+  // Soft delete event
   const { error } = await supabase
     .from('events')
-    .delete()
+    .update({
+      deleted_at: new Date().toISOString(),
+      deleted_by: user.id,
+      updated_by: user.id,
+    } as any)
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
+
+  if (error) {
+    console.error('[deleteEvent] Error:', error)
+    throw new UnknownAppError('Failed to delete event')
+  }
+
+  revalidatePath('/events')
+  return { success: true }
+}
+
+/**
+ * Restore a soft-deleted event (chef-only)
+ */
+export async function restoreEvent(eventId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { error } = await supabase
+    .from('events')
+    .update({
+      deleted_at: null,
+      deleted_by: null,
+      updated_by: user.id,
+    } as any)
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
 
   if (error) {
-    console.error('[deleteEvent] Error:', error)
-    throw new Error('Failed to delete event')
+    console.error('[restoreEvent] Error:', error)
+    throw new UnknownAppError('Failed to restore event')
   }
 
   revalidatePath('/events')
+  revalidatePath(`/events/${eventId}`)
   return { success: true }
 }
 
@@ -384,7 +545,7 @@ export async function getEventClosureStatus(eventId: string): Promise<EventClosu
     .single()
 
   if (error || !event) {
-    throw new Error('Event not found')
+    throw new ValidationError('Event not found')
   }
 
   return {
@@ -392,7 +553,8 @@ export async function getEventClosureStatus(eventId: string): Promise<EventClosu
     resetComplete: event.reset_complete,
     followUpSent: event.follow_up_sent,
     financiallyClosed: event.financially_closed,
-    allComplete: event.aar_filed && event.reset_complete && event.follow_up_sent && event.financially_closed,
+    allComplete:
+      event.aar_filed && event.reset_complete && event.follow_up_sent && event.financially_closed,
   }
 }
 
@@ -411,7 +573,7 @@ export async function markResetComplete(eventId: string) {
     .eq('tenant_id', user.tenantId!)
     .single()
 
-  if (!event) throw new Error('Event not found')
+  if (!event) throw new ValidationError('Event not found')
 
   const { error } = await supabase
     .from('events')
@@ -425,7 +587,7 @@ export async function markResetComplete(eventId: string) {
 
   if (error) {
     console.error('[markResetComplete] Error:', error)
-    throw new Error('Failed to mark reset complete')
+    throw new UnknownAppError('Failed to mark reset complete')
   }
 
   revalidatePath(`/events/${eventId}`)
@@ -447,7 +609,7 @@ export async function markFollowUpSent(eventId: string) {
     .eq('tenant_id', user.tenantId!)
     .single()
 
-  if (!event) throw new Error('Event not found')
+  if (!event) throw new ValidationError('Event not found')
 
   const { error } = await supabase
     .from('events')
@@ -461,7 +623,7 @@ export async function markFollowUpSent(eventId: string) {
 
   if (error) {
     console.error('[markFollowUpSent] Error:', error)
-    throw new Error('Failed to mark follow-up sent')
+    throw new UnknownAppError('Failed to mark follow-up sent')
   }
 
   revalidatePath(`/events/${eventId}`)
@@ -478,14 +640,19 @@ export async function getEventsNeedingClosure() {
 
   const { data: events, error } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, occasion, event_date, guest_count,
       aar_filed, reset_complete, follow_up_sent, financially_closed,
       client:clients(id, full_name)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .eq('status', 'completed')
-    .or('aar_filed.eq.false,reset_complete.eq.false,follow_up_sent.eq.false,financially_closed.eq.false')
+    .is('deleted_at' as any, null)
+    .or(
+      'aar_filed.eq.false,reset_complete.eq.false,follow_up_sent.eq.false,financially_closed.eq.false'
+    )
     .order('event_date', { ascending: false })
 
   if (error) {
@@ -524,35 +691,34 @@ function getActiveEventActivity(event: {
  * Start a chef work phase timer on an event.
  * One phase can be active at a time to keep tracking simple.
  */
-export async function startEventActivity(
-  eventId: string,
-  activityInput: EventTimeActivityType
-) {
+export async function startEventActivity(eventId: string, activityInput: EventTimeActivityType) {
   const user = await requireChef()
   const activity = EventTimeActivitySchema.parse(activityInput)
   const supabase = createServerClient()
 
   const { data: event, error: fetchError } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, tenant_id, client_id, occasion,
       shopping_started_at, shopping_completed_at,
       prep_started_at, prep_completed_at,
       reset_started_at, reset_completed_at,
       travel_started_at, travel_completed_at,
       service_started_at, service_completed_at
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
 
   if (fetchError || !event) {
-    throw new Error('Event not found')
+    throw new ValidationError('Event not found')
   }
 
   const activeActivity = getActiveEventActivity(event)
   if (activeActivity && activeActivity !== activity) {
-    throw new Error(
+    throw new ValidationError(
       `${getEventActivityLabel(activeActivity)} is already running. Stop it before starting ${getEventActivityLabel(activity)}.`
     )
   }
@@ -578,7 +744,7 @@ export async function startEventActivity(
 
   if (updateError) {
     console.error('[startEventActivity] Error:', updateError)
-    throw new Error('Failed to start activity timer')
+    throw new UnknownAppError('Failed to start activity timer')
   }
 
   revalidatePath(`/events/${eventId}`)
@@ -611,10 +777,7 @@ export async function startEventActivity(
 /**
  * Stop a chef work phase timer and add elapsed minutes to the event total.
  */
-export async function stopEventActivity(
-  eventId: string,
-  activityInput: EventTimeActivityType
-) {
+export async function stopEventActivity(eventId: string, activityInput: EventTimeActivityType) {
   const user = await requireChef()
   const activity = EventTimeActivitySchema.parse(activityInput)
   const supabase = createServerClient()
@@ -622,24 +785,28 @@ export async function stopEventActivity(
   const config = EVENT_TIME_ACTIVITY_CONFIG[activity]
   const { data: event, error: fetchError } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, tenant_id, client_id, occasion,
       ${config.startedAtColumn},
       ${config.completedAtColumn},
       ${config.minutesColumn}
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
 
   if (fetchError || !event) {
-    throw new Error('Event not found')
+    throw new ValidationError('Event not found')
   }
 
   const eventRecord = event as Record<string, string | number | null>
   const startedAt = eventRecord[config.startedAtColumn] as string | null
   if (!startedAt) {
-    throw new Error(`No active ${getEventActivityLabel(activity).toLowerCase()} timer to stop`)
+    throw new ValidationError(
+      `No active ${getEventActivityLabel(activity).toLowerCase()} timer to stop`
+    )
   }
 
   const endedAt = new Date().toISOString()
@@ -662,7 +829,7 @@ export async function stopEventActivity(
 
   if (updateError) {
     console.error('[stopEventActivity] Error:', updateError)
-    throw new Error('Failed to stop activity timer')
+    throw new UnknownAppError('Failed to stop activity timer')
   }
 
   revalidatePath(`/events/${eventId}`)
@@ -726,7 +893,7 @@ export async function updateEventTimeAndCard(
 
   if (error) {
     console.error('[updateEventTimeAndCard] Error:', error)
-    throw new Error('Failed to update event')
+    throw new UnknownAppError('Failed to update event')
   }
 
   revalidatePath(`/events/${eventId}`)

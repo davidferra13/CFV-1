@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/clients/actions'
 import { Button } from '@/components/ui/button'
@@ -9,6 +9,13 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 import { Alert } from '@/components/ui/alert'
 import { TagArrayInput } from '@/components/ui/tag-array-input'
+import { SaveStateBadge } from '@/components/ui/save-state-badge'
+import { DraftRestorePrompt } from '@/components/ui/draft-restore-prompt'
+import { UnsavedChangesDialog } from '@/components/ui/unsaved-changes-dialog'
+import { useDurableDraft } from '@/lib/drafts/use-durable-draft'
+import { useUnsavedChangesGuard } from '@/lib/navigation/use-unsaved-changes-guard'
+import { useIdempotentMutation } from '@/lib/offline/use-idempotent-mutation'
+import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 
 // ─── Collapsible Section ──────────────────────────────────────────────────────
 
@@ -279,7 +286,23 @@ const EQUIPMENT_SUGGESTIONS = [
 
 const DAY_OPTIONS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
-export function ClientCreateForm() {
+type ClientDraftData = {
+  mode: 'quick' | 'full'
+  full_name: string
+  email: string
+  phone: string
+  referral_source: string
+  status: string
+  preferred_name: string
+  address: string
+  partner_name: string
+  guest_count: string
+  allergies: string[]
+  dietary_restrictions: string[]
+  vibe_notes: string
+}
+
+export function ClientCreateForm({ tenantId }: { tenantId: string }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -369,12 +392,112 @@ export function ClientCreateForm() {
   const [redFlags, setRedFlags] = useState('')
   const [acquisitionCost, setAcquisitionCost] = useState('')
 
+  const currentFormData = useMemo<ClientDraftData>(
+    () => ({
+      mode,
+      full_name: fullName,
+      email,
+      phone,
+      referral_source: referralSource,
+      status,
+      preferred_name: preferredName,
+      address,
+      partner_name: partnerName,
+      guest_count: guestCount,
+      allergies,
+      dietary_restrictions: dietaryRestrictions,
+      vibe_notes: vibeNotes,
+    }),
+    [
+      mode,
+      fullName,
+      email,
+      phone,
+      referralSource,
+      status,
+      preferredName,
+      address,
+      partnerName,
+      guestCount,
+      allergies,
+      dietaryRestrictions,
+      vibeNotes,
+    ]
+  )
+  const initialFormData = useMemo<ClientDraftData>(
+    () => ({
+      mode: 'quick',
+      full_name: '',
+      email: '',
+      phone: '',
+      referral_source: '',
+      status: 'active',
+      preferred_name: '',
+      address: '',
+      partner_name: '',
+      guest_count: '',
+      allergies: [],
+      dietary_restrictions: [],
+      vibe_notes: '',
+    }),
+    []
+  )
+  const [committedFormData, setCommittedFormData] = useState<ClientDraftData>(initialFormData)
+
+  const createMutation = useIdempotentMutation<any, any>('clients/create', {
+    mutation: createClient as any,
+  })
+  const durableDraft = useDurableDraft<ClientDraftData>('client-create-form', null, {
+    schemaVersion: 1,
+    tenantId,
+    defaultData: initialFormData,
+    debounceMs: 700,
+  })
+
+  const isDirty = useMemo(
+    () => JSON.stringify(currentFormData) !== JSON.stringify(committedFormData),
+    [committedFormData, currentFormData]
+  )
+
+  const unsavedGuard = useUnsavedChangesGuard({
+    isDirty,
+    onSaveDraft: () => durableDraft.persistDraft(currentFormData, { immediate: true }),
+    canSaveDraft: true,
+    saveState: createMutation.saveState,
+  })
+
+  useEffect(() => {
+    if (!isDirty) return
+    void durableDraft.persistDraft(currentFormData)
+    if (createMutation.saveState.status === 'SAVED') {
+      createMutation.markUnsaved()
+    }
+  }, [createMutation, currentFormData, durableDraft, isDirty])
+
+  const applyDraft = (data: ClientDraftData) => {
+    setMode(data.mode)
+    setFullName(data.full_name)
+    setEmail(data.email)
+    setPhone(data.phone)
+    setReferralSource(data.referral_source)
+    setStatus(data.status)
+    setPreferredName(data.preferred_name)
+    setAddress(data.address)
+    setPartnerName(data.partner_name)
+    setGuestCount(data.guest_count)
+    setAllergies(data.allergies)
+    setDietaryRestrictions(data.dietary_restrictions)
+    setVibeNotes(data.vibe_notes)
+  }
+
   // ─── Submit ───────────────────────────────────────────────────────────
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setLoading(true)
     setError(null)
+
+    await durableDraft.persistDraft(currentFormData, { immediate: true })
 
     if (!fullName.trim()) {
       setError('Full name is required')
@@ -479,11 +602,20 @@ export function ClientCreateForm() {
           payload.acquisition_cost_cents = Math.round(parseFloat(acquisitionCost) * 100)
       }
 
-      const result = await createClient(payload as any)
+      const mutationResult = await createMutation.mutate(payload as any)
+      if (mutationResult.queued) {
+        setLoading(false)
+        return
+      }
+
+      const result = mutationResult.result as any
       // Navigate to the new client's detail page
+      setCommittedFormData(currentFormData)
+      await durableDraft.clearDraft()
       router.push(`/clients/${result.client.id}`)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create client')
+      const uiError = mapErrorToUI(err)
+      setError(uiError.message)
     } finally {
       setLoading(false)
     }
@@ -491,6 +623,10 @@ export function ClientCreateForm() {
 
   return (
     <div className="max-w-4xl">
+      <div className="mb-4 flex justify-end">
+        <SaveStateBadge state={createMutation.saveState} onRetry={createMutation.retryLast} />
+      </div>
+
       {/* Mode Toggle */}
       <div className="flex items-center gap-2 mb-6">
         <button
@@ -556,6 +692,7 @@ export function ClientCreateForm() {
             placeholder="Full address"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
+            onBlur={() => void durableDraft.persistDraft(currentFormData, { immediate: true })}
           />
           <Select
             label="How did they find you?"
@@ -690,6 +827,7 @@ export function ClientCreateForm() {
                 placeholder="Any family dynamics, guest patterns, or household notes worth knowing"
                 value={familyNotes}
                 onChange={(e) => setFamilyNotes(e.target.value)}
+                onBlur={() => void durableDraft.persistDraft(currentFormData, { immediate: true })}
               />
             </Section>
 
@@ -1026,6 +1164,7 @@ export function ClientCreateForm() {
                 placeholder="Their personality, energy, how they interact with you"
                 value={vibeNotes}
                 onChange={(e) => setVibeNotes(e.target.value)}
+                onBlur={() => void durableDraft.persistDraft(currentFormData, { immediate: true })}
               />
               <Textarea
                 label="What They Care About"
@@ -1108,7 +1247,11 @@ export function ClientCreateForm() {
           <Button type="submit" loading={loading}>
             {mode === 'quick' ? 'Add Client' : 'Create Full Profile'}
           </Button>
-          <Button variant="ghost" type="button" onClick={() => router.push('/clients')}>
+          <Button
+            variant="ghost"
+            type="button"
+            onClick={() => unsavedGuard.requestNavigation(() => router.push('/clients'))}
+          >
             Cancel
           </Button>
         </div>
@@ -1119,6 +1262,26 @@ export function ClientCreateForm() {
           {error}
         </Alert>
       )}
+
+      <DraftRestorePrompt
+        open={durableDraft.showRestorePrompt}
+        lastSavedAt={durableDraft.pendingDraft?.lastSavedAt ?? durableDraft.lastSavedAt}
+        onRestore={() => {
+          const restored = durableDraft.restoreDraft()
+          if (restored) {
+            applyDraft(restored)
+          }
+        }}
+        onDiscard={() => void durableDraft.discardDraft()}
+      />
+
+      <UnsavedChangesDialog
+        open={unsavedGuard.open}
+        canSaveDraft={unsavedGuard.canSaveDraft}
+        onStay={unsavedGuard.onStay}
+        onLeave={unsavedGuard.onLeave}
+        onSaveDraftAndLeave={() => void unsavedGuard.onSaveDraftAndLeave()}
+      />
     </div>
   )
 }

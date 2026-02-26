@@ -14,7 +14,7 @@ export type SeedResult = {
   chefEmail: string
   chefPassword: string
   chefSlug: string
-  clientId: string      // primary test client (has auth user)
+  clientId: string // primary test client (has auth user)
   clientAuthId: string
   clientEmail: string
   clientPassword: string
@@ -54,14 +54,14 @@ function assertRemoteTestAllowed(url: string) {
   if (process.env.SUPABASE_E2E_ALLOW_REMOTE !== 'true') {
     throw new Error(
       '[e2e-seed] Remote E2E seed refused.\n' +
-      'Add SUPABASE_E2E_ALLOW_REMOTE=true to .env.local to proceed.\n' +
-      'This guard prevents accidental seeding against the production database.'
+        'Add SUPABASE_E2E_ALLOW_REMOTE=true to .env.local to proceed.\n' +
+        'This guard prevents accidental seeding against the production database.'
     )
   }
   if (!url.includes('supabase.co') && !url.includes('supabase.in')) {
     throw new Error(
       `[e2e-seed] Expected remote Supabase URL (*.supabase.co), got: ${url}.\n` +
-      'For local Docker testing use scripts/seed-local-demo.ts instead.'
+        'For local Docker testing use scripts/seed-local-demo.ts instead.'
     )
   }
 }
@@ -90,13 +90,21 @@ function createAdminClient(url: string, key: string) {
   })
 }
 
+function isMissingColumn(error: any, column: string): boolean {
+  const message = String(error?.message || '').toLowerCase()
+  return message.includes(`could not find the '${column.toLowerCase()}' column`)
+}
+
 // ─── Auth User ────────────────────────────────────────────────────────────────
 
 async function ensureAuthUser(
   admin,
   input: { email: string; password: string; metadata: Record<string, unknown> }
 ): Promise<{ id: string; email: string }> {
-  const { data: listed, error: listError } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
+  const { data: listed, error: listError } = await admin.auth.admin.listUsers({
+    page: 1,
+    perPage: 1000,
+  })
   if (listError) throw new Error(`[e2e-seed] Failed to list auth users: ${listError.message}`)
 
   const existing = listed.users.find((u) => u.email?.toLowerCase() === input.email.toLowerCase())
@@ -117,7 +125,8 @@ async function ensureAuthUser(
     email_confirm: true,
     user_metadata: input.metadata,
   })
-  if (error || !created.user) throw new Error(`[e2e-seed] Failed to create ${input.email}: ${error?.message}`)
+  if (error || !created.user)
+    throw new Error(`[e2e-seed] Failed to create ${input.email}: ${error?.message}`)
   return { id: created.user.id, email: created.user.email! }
 }
 
@@ -135,9 +144,14 @@ async function upsertChef(admin, authUserId: string, suffix: string): Promise<st
     bio: 'This chef profile is created by Playwright E2E tests and is safe to ignore.',
     show_website_on_public_profile: false,
     preferred_inquiry_destination: 'both',
+    onboarding_completed_at: new Date().toISOString(),
   }
 
-  const { data: existing } = await admin.from('chefs').select('id').eq('auth_user_id', authUserId).maybeSingle()
+  const { data: existing } = await admin
+    .from('chefs')
+    .select('id')
+    .eq('auth_user_id', authUserId)
+    .maybeSingle()
 
   if (existing?.id) {
     await admin.from('chefs').update(fields).eq('id', existing.id)
@@ -166,9 +180,14 @@ async function upsertChefB(admin, authUserId: string, suffix: string): Promise<s
     bio: 'Chef B profile created for isolation testing. Safe to ignore.',
     show_website_on_public_profile: false,
     preferred_inquiry_destination: 'both',
+    onboarding_completed_at: new Date().toISOString(),
   }
 
-  const { data: existing } = await admin.from('chefs').select('id').eq('auth_user_id', authUserId).maybeSingle()
+  const { data: existing } = await admin
+    .from('chefs')
+    .select('id')
+    .eq('auth_user_id', authUserId)
+    .maybeSingle()
 
   if (existing?.id) {
     await admin.from('chefs').update(fields).eq('id', existing.id)
@@ -188,24 +207,41 @@ async function upsertChefB(admin, authUserId: string, suffix: string): Promise<s
 async function ensureChefRole(admin, authUserId: string, chefId: string) {
   const { error } = await admin
     .from('user_roles')
-    .upsert({ auth_user_id: authUserId, role: 'chef', entity_id: chefId }, { onConflict: 'auth_user_id' })
+    .upsert(
+      { auth_user_id: authUserId, role: 'chef', entity_id: chefId },
+      { onConflict: 'auth_user_id' }
+    )
   if (error) throw new Error(`[e2e-seed] Failed to upsert chef role: ${error.message}`)
 }
 
 async function ensureChefPreferences(admin, chefId: string) {
-  const { error } = await admin
-    .from('chef_preferences')
-    .upsert(
-      { chef_id: chefId, tenant_id: chefId, home_city: 'Boston', home_state: 'MA', network_discoverable: false },
-      { onConflict: 'chef_id' }
-    )
+  const { error } = await admin.from('chef_preferences').upsert(
+    {
+      chef_id: chefId,
+      tenant_id: chefId,
+      home_city: 'Boston',
+      home_state: 'MA',
+      network_discoverable: false,
+      archetype: 'private-chef',
+    },
+    { onConflict: 'chef_id' }
+  )
   if (error) throw new Error(`[e2e-seed] Failed to upsert chef preferences: ${error.message}`)
 }
 
 // ─── Clients ──────────────────────────────────────────────────────────────────
 
-async function upsertPrimaryClient(admin, authUserId: string, chefId: string, suffix: string): Promise<string> {
-  const { data: existing } = await admin.from('clients').select('id').eq('auth_user_id', authUserId).maybeSingle()
+async function upsertPrimaryClient(
+  admin,
+  authUserId: string,
+  chefId: string,
+  suffix: string
+): Promise<string> {
+  const { data: existing } = await admin
+    .from('clients')
+    .select('id')
+    .eq('auth_user_id', authUserId)
+    .maybeSingle()
 
   const fields = {
     tenant_id: chefId,
@@ -227,18 +263,28 @@ async function upsertPrimaryClient(admin, authUserId: string, chefId: string, su
     .select('id')
     .single()
 
-  if (error || !inserted) throw new Error(`[e2e-seed] Failed to insert primary client: ${error?.message}`)
+  if (error || !inserted)
+    throw new Error(`[e2e-seed] Failed to insert primary client: ${error?.message}`)
   return inserted.id as string
 }
 
 async function ensureClientRole(admin, authUserId: string, clientId: string) {
   const { error } = await admin
     .from('user_roles')
-    .upsert({ auth_user_id: authUserId, role: 'client', entity_id: clientId }, { onConflict: 'auth_user_id' })
+    .upsert(
+      { auth_user_id: authUserId, role: 'client', entity_id: clientId },
+      { onConflict: 'auth_user_id' }
+    )
   if (error) throw new Error(`[e2e-seed] Failed to upsert client role: ${error.message}`)
 }
 
-async function upsertExtraClient(admin, chefId: string, fullName: string, email: string, status: string): Promise<string> {
+async function upsertExtraClient(
+  admin,
+  chefId: string,
+  fullName: string,
+  email: string,
+  status: string
+): Promise<string> {
   const { data: existing } = await admin
     .from('clients')
     .select('id')
@@ -250,11 +296,19 @@ async function upsertExtraClient(admin, chefId: string, fullName: string, email:
 
   const { data: inserted, error } = await admin
     .from('clients')
-    .insert({ tenant_id: chefId, full_name: fullName, email, phone: '617-555-9003', status, referral_source: 'referral' })
+    .insert({
+      tenant_id: chefId,
+      full_name: fullName,
+      email,
+      phone: '617-555-9003',
+      status,
+      referral_source: 'referral',
+    })
     .select('id')
     .single()
 
-  if (error || !inserted) throw new Error(`[e2e-seed] Failed to insert client ${fullName}: ${error?.message}`)
+  if (error || !inserted)
+    throw new Error(`[e2e-seed] Failed to insert client ${fullName}: ${error?.message}`)
   return inserted.id as string
 }
 
@@ -324,7 +378,46 @@ async function ensureEvent(
     .eq('occasion', occasion)
     .maybeSingle()
 
-  if (existing?.id) return existing.id as string
+  if (existing?.id) {
+    const eventPayload: Record<string, unknown> = {
+      client_id: clientId,
+      inquiry_id: inquiryId ?? null,
+      event_date: daysFromNow(daysOut),
+      serve_time: '18:30:00',
+      guest_count: 6,
+      occasion,
+      location_address: '100 E2E Test Street',
+      location_city: 'Boston',
+      location_state: 'MA',
+      location_zip: '02101',
+      status,
+      service_style: 'plated',
+      dietary_restrictions: [],
+      allergies: [],
+      special_requests: 'TEST - Automated E2E test event. Safe to ignore.',
+      deleted_at: null,
+      deleted_by: null,
+    }
+
+    let { error: updateError } = await admin
+      .from('events')
+      .update(eventPayload)
+      .eq('id', existing.id)
+    if (isMissingColumn(updateError, 'deleted_at') || isMissingColumn(updateError, 'deleted_by')) {
+      delete eventPayload.deleted_at
+      delete eventPayload.deleted_by
+      ;({ error: updateError } = await admin
+        .from('events')
+        .update(eventPayload)
+        .eq('id', existing.id))
+    }
+
+    if (updateError) {
+      throw new Error(`[e2e-seed] Failed to refresh event '${occasion}': ${updateError.message}`)
+    }
+
+    return existing.id as string
+  }
 
   const { data: inserted, error } = await admin
     .from('events')
@@ -349,7 +442,8 @@ async function ensureEvent(
     .select('id')
     .single()
 
-  if (error || !inserted) throw new Error(`[e2e-seed] Failed to insert event '${occasion}': ${error?.message}`)
+  if (error || !inserted)
+    throw new Error(`[e2e-seed] Failed to insert event '${occasion}': ${error?.message}`)
   return inserted.id as string
 }
 
@@ -376,7 +470,40 @@ async function ensureQuote(
     .eq('status', status)
     .maybeSingle()
 
-  if (existing?.id) return existing.id as string
+  if (existing?.id) {
+    const quotePayload: Record<string, unknown> = {
+      quote_name: `TEST Quote (${status})`,
+      pricing_model: 'flat_rate',
+      total_quoted_cents: totalCents,
+      deposit_required: true,
+      deposit_amount_cents: Math.floor(totalCents * 0.25),
+      status,
+      valid_until: daysFromNow(validUntilDays),
+      inquiry_id: inquiryId,
+      event_id: eventId,
+      deleted_at: null,
+      deleted_by: null,
+    }
+
+    let { error: updateError } = await admin
+      .from('quotes')
+      .update(quotePayload)
+      .eq('id', existing.id)
+    if (isMissingColumn(updateError, 'deleted_at') || isMissingColumn(updateError, 'deleted_by')) {
+      delete quotePayload.deleted_at
+      delete quotePayload.deleted_by
+      ;({ error: updateError } = await admin
+        .from('quotes')
+        .update(quotePayload)
+        .eq('id', existing.id))
+    }
+
+    if (updateError) {
+      throw new Error(`[e2e-seed] Failed to refresh quote (${status}): ${updateError.message}`)
+    }
+
+    return existing.id as string
+  }
 
   const { data: inserted, error } = await admin
     .from('quotes')
@@ -396,7 +523,8 @@ async function ensureQuote(
     .select('id')
     .single()
 
-  if (error || !inserted) throw new Error(`[e2e-seed] Failed to insert quote (${status}): ${error?.message}`)
+  if (error || !inserted)
+    throw new Error(`[e2e-seed] Failed to insert quote (${status}): ${error?.message}`)
   return inserted.id as string
 }
 
@@ -440,7 +568,9 @@ async function ensureLedgerEntry(
 
   if (error) {
     // Ledger errors are non-fatal for seed — table may have trigger protection
-    console.warn(`[e2e-seed] Warning: Could not insert ledger entry (${entryType}): ${error.message}`)
+    console.warn(
+      `[e2e-seed] Warning: Could not insert ledger entry (${entryType}): ${error.message}`
+    )
   }
 }
 
@@ -476,7 +606,8 @@ async function ensureExpense(
     is_reimbursable: false,
   })
 
-  if (error) throw new Error(`[e2e-seed] Failed to insert expense (${description}): ${error.message}`)
+  if (error)
+    throw new Error(`[e2e-seed] Failed to insert expense (${description}): ${error.message}`)
 }
 
 // ─── Menu + Dishes ────────────────────────────────────────────────────────────
@@ -547,7 +678,8 @@ async function ensureRecipe(admin, chefId: string, chefAuthId: string): Promise<
       name: 'TEST - Lemon Butter Pasta',
       category: 'pasta',
       description: 'Simple E2E test recipe. Safe to ignore.',
-      method: 'Cook pasta until al dente. Finish with lemon zest, butter, and pasta water. Season and serve immediately.',
+      method:
+        'Cook pasta until al dente. Finish with lemon zest, butter, and pasta water. Season and serve immediately.',
       yield_description: '6 portions',
       yield_quantity: 6,
       yield_unit: 'portion',
@@ -599,43 +731,159 @@ export async function seedE2EData(): Promise<SeedResult> {
 
   // 3. Additional clients (no auth users — chef-created)
   // Valid client_status enum: active, dormant, repeat_ready, vip
-  const secondaryClientId = await upsertExtraClient(admin, chefId, 'TEST - Bob E2E', `e2e.bob.${suffix}@chefflow.test`, 'vip')
-  const dormantClientId = await upsertExtraClient(admin, chefId, 'TEST - Carol E2E', `e2e.carol.${suffix}@chefflow.test`, 'dormant')
-  const standardClientId = await upsertExtraClient(admin, chefId, 'TEST - Dave E2E', `e2e.dave.${suffix}@chefflow.test`, 'active')
+  const secondaryClientId = await upsertExtraClient(
+    admin,
+    chefId,
+    'TEST - Bob E2E',
+    `e2e.bob.${suffix}@chefflow.test`,
+    'vip'
+  )
+  const dormantClientId = await upsertExtraClient(
+    admin,
+    chefId,
+    'TEST - Carol E2E',
+    `e2e.carol.${suffix}@chefflow.test`,
+    'dormant'
+  )
+  const standardClientId = await upsertExtraClient(
+    admin,
+    chefId,
+    'TEST - Dave E2E',
+    `e2e.dave.${suffix}@chefflow.test`,
+    'active'
+  )
 
   // 4. Inquiries
   const awaitingChefId = await ensureInquiry(
-    admin, chefId, primaryClientId,
+    admin,
+    chefId,
+    primaryClientId,
     'TEST E2E inquiry awaiting chef response — anniversary dinner request for 6 guests.',
-    'awaiting_chef', 'chef'
+    'awaiting_chef',
+    'chef'
   )
   const awaitingClientId = await ensureInquiry(
-    admin, chefId, secondaryClientId,
+    admin,
+    chefId,
+    secondaryClientId,
     'TEST E2E inquiry awaiting client response — proposal has been sent.',
-    'awaiting_client', 'client'
+    'awaiting_client',
+    'client'
   )
 
   // 5. Events across FSM states (inserted directly bypassing Stripe for paid/confirmed)
-  const draftEventId = await ensureEvent(admin, chefId, primaryClientId, 'TEST Draft Birthday Dinner', 'draft', 45, awaitingChefId)
-  const proposedEventId = await ensureEvent(admin, chefId, secondaryClientId, 'TEST Proposed Anniversary', 'proposed', 30)
-  const paidEventId = await ensureEvent(admin, chefId, dormantClientId, 'TEST Paid Tasting', 'paid', 20)
-  const confirmedEventId = await ensureEvent(admin, chefId, standardClientId, 'TEST Confirmed Wedding Dinner', 'confirmed', 15)
-  const completedEventId = await ensureEvent(admin, chefId, primaryClientId, 'TEST Completed New Years Dinner', 'completed', -30)
+  const draftEventId = await ensureEvent(
+    admin,
+    chefId,
+    primaryClientId,
+    'TEST Draft Birthday Dinner',
+    'draft',
+    45,
+    awaitingChefId
+  )
+  const proposedEventId = await ensureEvent(
+    admin,
+    chefId,
+    secondaryClientId,
+    'TEST Proposed Anniversary',
+    'proposed',
+    30
+  )
+  const paidEventId = await ensureEvent(
+    admin,
+    chefId,
+    dormantClientId,
+    'TEST Paid Tasting',
+    'paid',
+    20
+  )
+  const confirmedEventId = await ensureEvent(
+    admin,
+    chefId,
+    standardClientId,
+    'TEST Confirmed Wedding Dinner',
+    'confirmed',
+    15
+  )
+  const completedEventId = await ensureEvent(
+    admin,
+    chefId,
+    primaryClientId,
+    'TEST Completed New Years Dinner',
+    'completed',
+    -30
+  )
 
   // Link inquiry to draft event
-  await admin.from('inquiries').update({ converted_to_event_id: draftEventId }).eq('id', awaitingChefId)
+  await admin
+    .from('inquiries')
+    .update({ converted_to_event_id: draftEventId })
+    .eq('id', awaitingChefId)
 
   // 6. Quotes
-  const draftQuoteId = await ensureQuote(admin, chefId, primaryClientId, awaitingChefId, null, 'draft', 74000, 14)
-  const sentQuoteId = await ensureQuote(admin, chefId, secondaryClientId, awaitingClientId, null, 'sent', 93000, 7)
-  const acceptedQuoteId = await ensureQuote(admin, chefId, dormantClientId, null, paidEventId, 'accepted', 50000, 60)
+  const draftQuoteId = await ensureQuote(
+    admin,
+    chefId,
+    primaryClientId,
+    awaitingChefId,
+    null,
+    'draft',
+    74000,
+    14
+  )
+  const sentQuoteId = await ensureQuote(
+    admin,
+    chefId,
+    secondaryClientId,
+    awaitingClientId,
+    null,
+    'sent',
+    93000,
+    7
+  )
+  const acceptedQuoteId = await ensureQuote(
+    admin,
+    chefId,
+    dormantClientId,
+    null,
+    paidEventId,
+    'accepted',
+    50000,
+    60
+  )
 
   // 7. Ledger entries
-  await ensureLedgerEntry(admin, chefId, dormantClientId, paidEventId, 'deposit', 12500, 'TEST - Deposit received', chefAuth.id)
-  await ensureLedgerEntry(admin, chefId, primaryClientId, completedEventId, 'final_payment', 120000, 'TEST - Final payment received', chefAuth.id, 30)
+  await ensureLedgerEntry(
+    admin,
+    chefId,
+    dormantClientId,
+    paidEventId,
+    'deposit',
+    12500,
+    'TEST - Deposit received',
+    chefAuth.id
+  )
+  await ensureLedgerEntry(
+    admin,
+    chefId,
+    primaryClientId,
+    completedEventId,
+    'final_payment',
+    120000,
+    'TEST - Final payment received',
+    chefAuth.id,
+    30
+  )
 
   // 8. Expenses on completed event
-  await ensureExpense(admin, chefId, completedEventId, 'groceries', 18750, 'TEST - Whole Foods groceries')
+  await ensureExpense(
+    admin,
+    chefId,
+    completedEventId,
+    'groceries',
+    18750,
+    'TEST - Whole Foods groceries'
+  )
   await ensureExpense(admin, chefId, completedEventId, 'equipment', 5000, 'TEST - Linen rental')
 
   // 9. Menu + dishes
@@ -654,14 +902,19 @@ export async function seedE2EData(): Promise<SeedResult> {
   await ensureChefRole(admin, chefBAuth.id, chefBId)
   await ensureChefPreferences(admin, chefBId)
   const chefBClientId = await upsertExtraClient(
-    admin, chefBId,
+    admin,
+    chefBId,
     'TEST - Chef B Client E2E',
     `e2e.chef-b-client.${suffix}@chefflow.test`,
     'active'
   )
   const chefBEventId = await ensureEvent(
-    admin, chefBId, chefBClientId,
-    'TEST Chef B Private Dinner', 'confirmed', 15
+    admin,
+    chefBId,
+    chefBClientId,
+    'TEST Chef B Private Dinner',
+    'confirmed',
+    15
   )
 
   const result: SeedResult = {
@@ -674,9 +927,20 @@ export async function seedE2EData(): Promise<SeedResult> {
     clientAuthId: clientAuth.id,
     clientEmail: `e2e.client.${suffix}@chefflow.test`,
     clientPassword: 'E2eClientTest!2026',
-    clientIds: { primary: primaryClientId, secondary: secondaryClientId, dormant: dormantClientId, standard: standardClientId },
+    clientIds: {
+      primary: primaryClientId,
+      secondary: secondaryClientId,
+      dormant: dormantClientId,
+      standard: standardClientId,
+    },
     inquiryIds: { awaitingChef: awaitingChefId, awaitingClient: awaitingClientId },
-    eventIds: { draft: draftEventId, proposed: proposedEventId, paid: paidEventId, confirmed: confirmedEventId, completed: completedEventId },
+    eventIds: {
+      draft: draftEventId,
+      proposed: proposedEventId,
+      paid: paidEventId,
+      confirmed: confirmedEventId,
+      completed: completedEventId,
+    },
     quoteIds: { draft: draftQuoteId, sent: sentQuoteId, accepted: acceptedQuoteId },
     menuId,
     recipeId,
@@ -687,6 +951,8 @@ export async function seedE2EData(): Promise<SeedResult> {
     chefBClientId,
   }
 
-  console.log(`[e2e-seed] Complete — chef: ${result.chefEmail}, chefB: ${result.chefBEmail}, client: ${result.clientEmail}`)
+  console.log(
+    `[e2e-seed] Complete — chef: ${result.chefEmail}, chefB: ${result.chefBEmail}, client: ${result.clientEmail}`
+  )
   return result
 }

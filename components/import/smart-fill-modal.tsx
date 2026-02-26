@@ -1,11 +1,13 @@
 // Smart Fill Modal
-// A small modal with a textarea for pasting text — parses and returns structured data
+// A small dialog with a textarea for pasting text, then parsing into structured data.
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert } from '@/components/ui/alert'
+import { AccessibleDialog } from '@/components/ui/accessible-dialog'
+import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 
 type SmartFillModalProps<T> = {
   open: boolean
@@ -28,6 +30,12 @@ export function SmartFillModal<T>({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [warnings, setWarnings] = useState<string[]>([])
+  const textRef = useRef<HTMLTextAreaElement | null>(null)
+
+  useEffect(() => {
+    if (!open) return
+    setTimeout(() => textRef.current?.focus(), 0)
+  }, [open])
 
   if (!open) return null
 
@@ -44,13 +52,15 @@ export function SmartFillModal<T>({
       setText('')
       onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to parse text')
+      const uiError = mapErrorToUI(err)
+      setError(uiError.message)
     } finally {
       setLoading(false)
     }
   }
 
   const handleClose = () => {
+    if (loading) return
     setText('')
     setError(null)
     setWarnings([])
@@ -58,35 +68,41 @@ export function SmartFillModal<T>({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/50" onClick={handleClose} />
-
-      {/* Modal */}
-      <div className="relative bg-stone-900 rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-stone-100">{title}</h3>
-          <button
-            onClick={handleClose}
-            className="text-stone-400 hover:text-stone-400 text-xl leading-none"
-          >
-            &times;
-          </button>
-        </div>
-
+    <AccessibleDialog
+      open={open}
+      onClose={handleClose}
+      title={title}
+      description="Paste source text and let Smart Fill extract fields."
+      initialFocusRef={textRef as React.RefObject<HTMLElement | null>}
+      closeOnBackdrop={!loading}
+      escapeCloses={!loading}
+      widthClassName="max-w-2xl"
+      footer={
+        <>
+          <Button variant="secondary" onClick={handleClose} disabled={loading}>
+            Cancel
+          </Button>
+          <Button onClick={handleParse} disabled={!text.trim() || loading} loading={loading}>
+            {loading ? 'Parsing...' : 'Parse & Fill'}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
         {error && <Alert variant="error">{error}</Alert>}
 
         {warnings.length > 0 && (
           <Alert variant="warning">
             <ul className="list-disc list-inside">
-              {warnings.map((w, i) => (
-                <li key={i}>{w}</li>
+              {warnings.map((warning, index) => (
+                <li key={`${warning}-${index}`}>{warning}</li>
               ))}
             </ul>
           </Alert>
         )}
 
         <Textarea
+          ref={textRef}
           placeholder={placeholder}
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -94,16 +110,7 @@ export function SmartFillModal<T>({
           disabled={loading}
           className="font-mono text-sm"
         />
-
-        <div className="flex gap-3 justify-end">
-          <Button variant="secondary" onClick={handleClose} disabled={loading}>
-            Cancel
-          </Button>
-          <Button onClick={handleParse} disabled={!text.trim() || loading} loading={loading}>
-            {loading ? 'Parsing...' : 'Parse & Fill'}
-          </Button>
-        </div>
       </div>
-    </div>
+    </AccessibleDialog>
   )
 }

@@ -8,7 +8,7 @@ import { getDepositDefaults } from '@/lib/automations/settings-actions'
 import { EventForm } from '@/components/events/event-form'
 
 export default async function NewEventPage() {
-  await requireChef()
+  const user = await requireChef()
 
   const [clients, { partners, partnerLocations }, depositDefaults] = await Promise.all([
     getClients(),
@@ -42,6 +42,7 @@ export default async function NewEventPage() {
       </div>
 
       <EventForm
+        tenantId={user.tenantId!}
         clients={clients}
         mode="create"
         partners={partners}

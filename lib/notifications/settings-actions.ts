@@ -9,7 +9,7 @@ import type { NotificationCategory } from './types'
 
 export type CategoryPreference = {
   category: NotificationCategory
-  email_enabled: boolean | null   // null = inherit tier default
+  email_enabled: boolean | null // null = inherit tier default
   push_enabled: boolean | null
   sms_enabled: boolean | null
 }
@@ -17,6 +17,14 @@ export type CategoryPreference = {
 export type SmsSettings = {
   sms_opt_in: boolean
   sms_notify_phone: string | null
+}
+
+export type NotificationExperienceSettings = {
+  quiet_hours_enabled: boolean
+  quiet_hours_start: string | null
+  quiet_hours_end: string | null
+  digest_enabled: boolean
+  digest_interval_minutes: number
 }
 
 /**
@@ -46,24 +54,26 @@ export async function getNotificationPreferences(): Promise<CategoryPreference[]
  */
 export async function upsertCategoryPreference(
   category: NotificationCategory,
-  channels: { email_enabled?: boolean | null; push_enabled?: boolean | null; sms_enabled?: boolean | null },
+  channels: {
+    email_enabled?: boolean | null
+    push_enabled?: boolean | null
+    sms_enabled?: boolean | null
+  }
 ): Promise<{ error: string | null }> {
   const user = await requireChef()
   if (!user.tenantId) return { error: 'No tenant context' }
   const supabase = createServerClient()
 
-  const { error } = await supabase
-    .from('notification_preferences')
-    .upsert(
-      {
-        tenant_id: user.tenantId,
-        auth_user_id: user.id,
-        category,
-        ...channels,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'auth_user_id,category' },
-    )
+  const { error } = await supabase.from('notification_preferences').upsert(
+    {
+      tenant_id: user.tenantId,
+      auth_user_id: user.id,
+      category,
+      ...channels,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'auth_user_id,category' }
+  )
 
   if (error) {
     console.error('[upsertCategoryPreference] Upsert failed:', error)
@@ -96,9 +106,7 @@ export async function getSmsSettings(): Promise<SmsSettings> {
  * Setting sms_opt_in = true sets sms_opt_in_at to now if not already set.
  * Setting sms_opt_in = false clears the opt-in timestamp.
  */
-export async function updateSmsSettings(
-  settings: SmsSettings,
-): Promise<{ error: string | null }> {
+export async function updateSmsSettings(settings: SmsSettings): Promise<{ error: string | null }> {
   const user = await requireChef()
   if (!user.tenantId) return { error: 'No tenant context' }
   const supabase = createServerClient()
@@ -132,5 +140,67 @@ export async function updateSmsSettings(
     console.error('[updateSmsSettings] Update failed:', error)
     return { error: error.message }
   }
+  return { error: null }
+}
+
+export async function getNotificationExperienceSettings(): Promise<NotificationExperienceSettings> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data } = await supabase
+    .from('chef_preferences')
+    .select(
+      'notification_quiet_hours_enabled, notification_quiet_hours_start, notification_quiet_hours_end, notification_digest_enabled, notification_digest_interval_minutes'
+    )
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  return {
+    quiet_hours_enabled: Boolean((data as any)?.notification_quiet_hours_enabled),
+    quiet_hours_start:
+      typeof (data as any)?.notification_quiet_hours_start === 'string'
+        ? ((data as any).notification_quiet_hours_start as string).slice(0, 5)
+        : null,
+    quiet_hours_end:
+      typeof (data as any)?.notification_quiet_hours_end === 'string'
+        ? ((data as any).notification_quiet_hours_end as string).slice(0, 5)
+        : null,
+    digest_enabled: Boolean((data as any)?.notification_digest_enabled),
+    digest_interval_minutes:
+      typeof (data as any)?.notification_digest_interval_minutes === 'number'
+        ? Math.min(120, Math.max(5, (data as any).notification_digest_interval_minutes))
+        : 15,
+  }
+}
+
+export async function updateNotificationExperienceSettings(
+  settings: NotificationExperienceSettings
+): Promise<{ error: string | null }> {
+  const user = await requireChef()
+  if (!user.tenantId) return { error: 'No tenant context' }
+  const supabase = createServerClient()
+
+  const quietHoursEnabled = Boolean(settings.quiet_hours_enabled)
+  const digestInterval = Math.min(120, Math.max(5, Number(settings.digest_interval_minutes || 15)))
+
+  const { error } = await supabase
+    .from('chef_preferences')
+    .update({
+      notification_quiet_hours_enabled: quietHoursEnabled,
+      notification_quiet_hours_start:
+        quietHoursEnabled && settings.quiet_hours_start ? settings.quiet_hours_start : null,
+      notification_quiet_hours_end:
+        quietHoursEnabled && settings.quiet_hours_end ? settings.quiet_hours_end : null,
+      notification_digest_enabled: Boolean(settings.digest_enabled),
+      notification_digest_interval_minutes: digestInterval,
+      updated_at: new Date().toISOString(),
+    } as any)
+    .eq('tenant_id', user.tenantId)
+
+  if (error) {
+    console.error('[updateNotificationExperienceSettings] Update failed:', error)
+    return { error: error.message }
+  }
+
   return { error: null }
 }

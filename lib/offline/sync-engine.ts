@@ -3,6 +3,7 @@
 // Failed actions are retried up to 3 times, then marked as permanently failed.
 
 import { getPendingActions, updateActionStatus, removeAction, type QueuedAction } from './idb-queue'
+import { trackQolMetric } from '@/lib/qol/metrics-client'
 
 const MAX_RETRIES = 3
 
@@ -82,6 +83,12 @@ export async function replayPendingActions(): Promise<SyncProgress> {
     if (!fn) {
       // Action not registered — can't replay, mark as failed
       await updateActionStatus(action.id, 'failed', `Action "${action.actionName}" not registered`)
+      trackQolMetric({
+        metricKey: 'offline_replay_failed',
+        entityType: action.actionName,
+        entityId: action.id,
+        metadata: { reason: 'action_not_registered' },
+      })
       progress.failed += 1
       notifyListeners(progress)
       continue
@@ -89,6 +96,12 @@ export async function replayPendingActions(): Promise<SyncProgress> {
 
     if (action.retries >= MAX_RETRIES) {
       await updateActionStatus(action.id, 'failed', 'Max retries exceeded')
+      trackQolMetric({
+        metricKey: 'offline_replay_failed',
+        entityType: action.actionName,
+        entityId: action.id,
+        metadata: { reason: 'max_retries_exceeded', retries: action.retries },
+      })
       progress.failed += 1
       notifyListeners(progress)
       continue
@@ -102,10 +115,22 @@ export async function replayPendingActions(): Promise<SyncProgress> {
 
       // Success — remove from queue
       await removeAction(action.id)
+      trackQolMetric({
+        metricKey: 'offline_replay_succeeded',
+        entityType: action.actionName,
+        entityId: action.id,
+        metadata: { retries: action.retries },
+      })
       progress.completed += 1
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error'
       await updateActionStatus(action.id, 'failed', message)
+      trackQolMetric({
+        metricKey: 'offline_replay_failed',
+        entityType: action.actionName,
+        entityId: action.id,
+        metadata: { reason: message, retries: action.retries },
+      })
       progress.failed += 1
     }
 

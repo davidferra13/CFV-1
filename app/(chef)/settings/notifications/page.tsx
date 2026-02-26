@@ -3,7 +3,11 @@
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
-import { getNotificationPreferences, getSmsSettings } from '@/lib/notifications/settings-actions'
+import {
+  getNotificationPreferences,
+  getNotificationExperienceSettings,
+  getSmsSettings,
+} from '@/lib/notifications/settings-actions'
 import { NotificationSettingsForm } from '@/components/settings/notification-settings-form'
 
 export const metadata: Metadata = { title: 'Notification Settings - ChefFlow' }
@@ -11,9 +15,10 @@ export const metadata: Metadata = { title: 'Notification Settings - ChefFlow' }
 export default async function NotificationSettingsPage() {
   await requireChef()
 
-  const [preferences, smsSettings] = await Promise.all([
+  const [preferences, smsSettings, experienceSettings] = await Promise.all([
     getNotificationPreferences(),
     getSmsSettings(),
+    getNotificationExperienceSettings(),
   ])
 
   return (
@@ -25,7 +30,11 @@ export default async function NotificationSettingsPage() {
         </p>
       </div>
 
-      <NotificationSettingsForm initialPreferences={preferences} initialSmsSettings={smsSettings} />
+      <NotificationSettingsForm
+        initialPreferences={preferences}
+        initialSmsSettings={smsSettings}
+        initialExperienceSettings={experienceSettings}
+      />
     </div>
   )
 }

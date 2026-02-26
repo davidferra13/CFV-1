@@ -25,6 +25,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { NoEventsIllustration } from '@/components/ui/branded-illustrations'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
+import { EventsViewFilterBar } from '@/components/events/events-view-filter-bar'
 
 type EventStatus =
   | 'all'
@@ -151,37 +152,15 @@ export default async function EventsPage({
           <p className="text-stone-400 mt-1">Manage your events and proposals</p>
         </div>
         <div className="flex items-center gap-2">
-          {/* View toggle */}
-          <div
-            data-info="view-toggle"
-            className="flex border border-stone-700 rounded-lg overflow-hidden"
-          >
-            <Link
-              href={`/events?status=${status}&view=list`}
-              className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                view === 'list'
-                  ? 'bg-stone-900 text-white'
-                  : 'bg-stone-900 text-stone-400 hover:bg-stone-800'
-              }`}
-            >
-              List
-            </Link>
-            <Link
-              href="/events?view=kanban"
-              className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                view === 'kanban'
-                  ? 'bg-stone-900 text-white'
-                  : 'bg-stone-900 text-stone-400 hover:bg-stone-800'
-              }`}
-            >
-              Board
-            </Link>
-          </div>
           <Link data-info="new-event" href="/events/new">
             <Button>+ New Event</Button>
           </Link>
         </div>
       </div>
+
+      <Card className="p-4">
+        <EventsViewFilterBar initialStatus={status} initialView={view} />
+      </Card>
 
       {view === 'kanban' ? (
         /* Kanban Board */
@@ -194,35 +173,6 @@ export default async function EventsPage({
         </Suspense>
       ) : (
         <>
-          {/* Status Filter — list view only */}
-          <Card className="p-4">
-            <div className="flex gap-2 flex-wrap">
-              {(
-                [
-                  'all',
-                  'draft',
-                  'proposed',
-                  'accepted',
-                  'paid',
-                  'confirmed',
-                  'in_progress',
-                  'completed',
-                  'cancelled',
-                ] as const
-              ).map((s) => (
-                <Link key={s} href={`/events?status=${s}&view=list`}>
-                  <Button size="sm" variant={status === s ? 'primary' : 'secondary'}>
-                    {s === 'all'
-                      ? 'All'
-                      : s === 'in_progress'
-                        ? 'In Progress'
-                        : s.charAt(0).toUpperCase() + s.slice(1)}
-                  </Button>
-                </Link>
-              ))}
-            </div>
-          </Card>
-
           {/* Events Table */}
           <Suspense
             fallback={

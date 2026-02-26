@@ -2,12 +2,17 @@
 // Shows action buttons for moving quotes through the pipeline
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
-import { transitionQuote, deleteQuote } from '@/lib/quotes/actions'
+import { ConfirmPolicyDialog } from '@/components/ui/confirm-policy-dialog'
+import { transitionQuote, deleteQuote, restoreQuote } from '@/lib/quotes/actions'
+import { showUndoToast } from '@/components/ui/undo-toast'
+import { useUndoStack } from '@/lib/undo/use-undo-stack'
+import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
+import { confirmPolicy, type ConfirmPolicyInput } from '@/lib/confirm/confirm-policy'
 
 type QuoteStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'
 
@@ -22,6 +27,33 @@ export function QuoteTransitions({ quote }: { quote: Quote }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [confirmInput, setConfirmInput] = useState<ConfirmPolicyInput | null>(null)
+  const pendingConfirmActionRef = useRef<null | (() => Promise<void>)>(null)
+  const undoStack = useUndoStack<string | null>(null)
+
+  const requestPolicyConfirmation = (
+    policyInput: ConfirmPolicyInput,
+    action: () => Promise<void>
+  ) => {
+    const decision = confirmPolicy(policyInput)
+    if (decision.mode === 'none') {
+      void action()
+      return
+    }
+    pendingConfirmActionRef.current = action
+    setConfirmInput(policyInput)
+    setConfirmOpen(true)
+  }
+
+  const handleConfirm = async () => {
+    const fn = pendingConfirmActionRef.current
+    setConfirmOpen(false)
+    setConfirmInput(null)
+    pendingConfirmActionRef.current = null
+    if (!fn) return
+    await fn()
+  }
 
   const handleTransition = async (newStatus: QuoteStatus) => {
     setLoading(true)
@@ -33,27 +65,35 @@ export function QuoteTransitions({ quote }: { quote: Quote }) {
         router.refresh()
       }
     } catch (err) {
-      console.error('Quote transition error:', err)
-      setError(err instanceof Error ? err.message : 'Transition failed')
+      const uiError = mapErrorToUI(err)
+      setError(uiError.message)
     } finally {
       setLoading(false)
     }
   }
 
   const handleDelete = async () => {
-    if (!confirm('Delete this quote? This cannot be undone.')) return
-
     setLoading(true)
     setError(null)
 
     try {
       const result = await deleteQuote(quote.id)
       if (result.success) {
+        undoStack.push(quote.id, quote.id)
+        showUndoToast(
+          'Quote deleted. You can undo this for the next 20 seconds.',
+          () => {
+            const deletedQuoteId = undoStack.undo()
+            if (!deletedQuoteId) return
+            void restoreQuote(deletedQuoteId).then(() => router.refresh())
+          },
+          20000
+        )
         router.push('/quotes')
       }
     } catch (err) {
-      console.error('Delete error:', err)
-      setError(err instanceof Error ? err.message : 'Delete failed')
+      const uiError = mapErrorToUI(err)
+      setError(uiError.message)
       setLoading(false)
     }
   }
@@ -93,7 +133,22 @@ export function QuoteTransitions({ quote }: { quote: Quote }) {
         <div className="flex flex-wrap gap-2">
           {quote.status === 'draft' && (
             <>
-              <Button onClick={() => handleTransition('sent')} loading={loading} disabled={loading}>
+              <Button
+                onClick={() =>
+                  requestPolicyConfirmation(
+                    {
+                      risk: 'medium',
+                      reversible: true,
+                      entityName: quote.id,
+                      impactPreview: 'Client will receive this quote in the portal.',
+                      actionLabel: 'Send Quote',
+                    },
+                    () => handleTransition('sent')
+                  )
+                }
+                loading={loading}
+                disabled={loading}
+              >
                 Send to Client
               </Button>
               <Button
@@ -103,7 +158,23 @@ export function QuoteTransitions({ quote }: { quote: Quote }) {
               >
                 Edit Quote
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleDelete} disabled={loading}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  requestPolicyConfirmation(
+                    {
+                      risk: 'low',
+                      reversible: true,
+                      entityName: quote.id,
+                      impactPreview: 'Quote will be soft-deleted and can be undone from toast.',
+                      actionLabel: 'Delete Quote',
+                    },
+                    handleDelete
+                  )
+                }
+                disabled={loading}
+              >
                 Delete
               </Button>
             </>
@@ -112,7 +183,18 @@ export function QuoteTransitions({ quote }: { quote: Quote }) {
           {quote.status === 'sent' && (
             <>
               <Button
-                onClick={() => handleTransition('accepted')}
+                onClick={() =>
+                  requestPolicyConfirmation(
+                    {
+                      risk: 'medium',
+                      reversible: false,
+                      entityName: quote.id,
+                      impactPreview: 'This quote will move to accepted.',
+                      actionLabel: 'Mark Accepted',
+                    },
+                    () => handleTransition('accepted')
+                  )
+                }
                 loading={loading}
                 disabled={loading}
               >
@@ -120,14 +202,36 @@ export function QuoteTransitions({ quote }: { quote: Quote }) {
               </Button>
               <Button
                 variant="danger"
-                onClick={() => handleTransition('rejected')}
+                onClick={() =>
+                  requestPolicyConfirmation(
+                    {
+                      risk: 'high',
+                      reversible: false,
+                      entityName: quote.id,
+                      impactPreview: 'This quote will be marked rejected.',
+                      actionLabel: 'Mark Rejected',
+                    },
+                    () => handleTransition('rejected')
+                  )
+                }
                 disabled={loading}
               >
                 Mark Rejected
               </Button>
               <Button
                 variant="secondary"
-                onClick={() => handleTransition('expired')}
+                onClick={() =>
+                  requestPolicyConfirmation(
+                    {
+                      risk: 'medium',
+                      reversible: true,
+                      entityName: quote.id,
+                      impactPreview: 'This quote will be marked expired.',
+                      actionLabel: 'Mark Expired',
+                    },
+                    () => handleTransition('expired')
+                  )
+                }
                 disabled={loading}
               >
                 Mark Expired
@@ -158,6 +262,17 @@ export function QuoteTransitions({ quote }: { quote: Quote }) {
           )}
         </div>
       </div>
+      <ConfirmPolicyDialog
+        open={confirmOpen}
+        policy={confirmInput}
+        loading={loading}
+        onCancel={() => {
+          setConfirmOpen(false)
+          setConfirmInput(null)
+          pendingConfirmActionRef.current = null
+        }}
+        onConfirm={handleConfirm}
+      />
     </Card>
   )
 }

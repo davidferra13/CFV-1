@@ -9,6 +9,7 @@ import { revalidatePath } from 'next/cache'
 import type { Json } from '@/types/database'
 import type { NotificationCategory, NotificationAction, Notification } from './types'
 import { routeNotification } from './channel-router'
+import { DEFAULT_TIER_MAP } from './tier-config'
 
 // ─── Create ─────────────────────────────────────────────────────────────
 
@@ -43,6 +44,14 @@ export async function createNotification({
   metadata?: Record<string, unknown>
 }) {
   const supabase = createServerClient({ admin: true })
+  const resolvedActionUrl = deriveNotificationActionUrl({
+    action,
+    actionUrl,
+    eventId,
+    inquiryId,
+    clientId,
+    metadata,
+  })
 
   const { data: notification, error } = await supabase
     .from('notifications')
@@ -53,7 +62,7 @@ export async function createNotification({
       action,
       title,
       body: body ?? null,
-      action_url: actionUrl ?? null,
+      action_url: resolvedActionUrl,
       event_id: eventId ?? null,
       inquiry_id: inquiryId ?? null,
       client_id: clientId ?? null,
@@ -76,10 +85,35 @@ export async function createNotification({
     action,
     title,
     body,
-    actionUrl,
+    actionUrl: resolvedActionUrl,
   }).catch((err) => {
     console.error('[createNotification] routeNotification fire failed:', err)
   })
+}
+
+function deriveNotificationActionUrl(input: {
+  action: NotificationAction
+  actionUrl?: string
+  eventId?: string
+  inquiryId?: string
+  clientId?: string
+  metadata?: Record<string, unknown>
+}): string {
+  if (input.actionUrl && input.actionUrl.trim().length > 0) return input.actionUrl
+
+  const metadataQuoteId =
+    typeof input.metadata?.quote_id === 'string'
+      ? input.metadata.quote_id
+      : typeof input.metadata?.quoteId === 'string'
+        ? input.metadata.quoteId
+        : null
+
+  if (metadataQuoteId) return `/quotes/${metadataQuoteId}`
+  if (input.eventId) return `/events/${input.eventId}`
+  if (input.inquiryId) return `/inquiries/${input.inquiryId}`
+  if (input.clientId) return `/clients/${input.clientId}`
+  if (DEFAULT_TIER_MAP[input.action] === 'critical') return '/inbox'
+  return '/dashboard'
 }
 
 // ─── Read ───────────────────────────────────────────────────────────────
@@ -114,8 +148,9 @@ export async function getUnreadCount(): Promise<number> {
   const user = await requireAuth()
   const supabase = createServerClient()
 
-  const { data, error } = await supabase
-    .rpc('get_unread_notification_count', { p_user_id: user.id })
+  const { data, error } = await supabase.rpc('get_unread_notification_count', {
+    p_user_id: user.id,
+  })
 
   if (error) {
     console.error('[getUnreadCount] RPC failed:', error)
@@ -192,6 +227,14 @@ export type NotificationPreference = {
   toast_enabled: boolean
 }
 
+export type NotificationRuntimeSettings = {
+  quietHoursEnabled: boolean
+  quietHoursStart: string | null
+  quietHoursEnd: string | null
+  digestEnabled: boolean
+  digestIntervalMinutes: number
+}
+
 /**
  * Get notification preferences for the current user.
  * Missing rows = toast enabled by default.
@@ -213,27 +256,64 @@ export async function getNotificationPreferences(): Promise<NotificationPreferen
   return data ?? []
 }
 
+export async function getNotificationRuntimeSettings(): Promise<NotificationRuntimeSettings> {
+  const user = await requireAuth()
+  if (!user.tenantId) {
+    return {
+      quietHoursEnabled: false,
+      quietHoursStart: null,
+      quietHoursEnd: null,
+      digestEnabled: false,
+      digestIntervalMinutes: 15,
+    }
+  }
+
+  const supabase = createServerClient()
+  const { data } = await supabase
+    .from('chef_preferences')
+    .select(
+      'notification_quiet_hours_enabled, notification_quiet_hours_start, notification_quiet_hours_end, notification_digest_enabled, notification_digest_interval_minutes'
+    )
+    .eq('tenant_id', user.tenantId)
+    .single()
+
+  return {
+    quietHoursEnabled: Boolean((data as any)?.notification_quiet_hours_enabled),
+    quietHoursStart:
+      typeof (data as any)?.notification_quiet_hours_start === 'string'
+        ? ((data as any).notification_quiet_hours_start as string).slice(0, 5)
+        : null,
+    quietHoursEnd:
+      typeof (data as any)?.notification_quiet_hours_end === 'string'
+        ? ((data as any).notification_quiet_hours_end as string).slice(0, 5)
+        : null,
+    digestEnabled: Boolean((data as any)?.notification_digest_enabled),
+    digestIntervalMinutes:
+      typeof (data as any)?.notification_digest_interval_minutes === 'number'
+        ? Math.min(120, Math.max(5, (data as any).notification_digest_interval_minutes))
+        : 15,
+  }
+}
+
 /**
  * Update a notification preference (upsert).
  */
 export async function updateNotificationPreference(
   category: NotificationCategory,
-  toastEnabled: boolean,
+  toastEnabled: boolean
 ) {
   const user = await requireAuth()
   const supabase = createServerClient()
 
-  const { error } = await supabase
-    .from('notification_preferences')
-    .upsert(
-      {
-        tenant_id: user.tenantId!,
-        auth_user_id: user.id,
-        category,
-        toast_enabled: toastEnabled,
-      },
-      { onConflict: 'auth_user_id,category' },
-    )
+  const { error } = await supabase.from('notification_preferences').upsert(
+    {
+      tenant_id: user.tenantId!,
+      auth_user_id: user.id,
+      category,
+      toast_enabled: toastEnabled,
+    },
+    { onConflict: 'auth_user_id,category' }
+  )
 
   if (error) {
     console.error('[updateNotificationPreference] Upsert failed:', error)
@@ -247,7 +327,7 @@ export async function updateNotificationPreference(
  * Used when sending out-of-app emails in the multi-channel router.
  */
 export async function getChefProfile(
-  tenantId: string,
+  tenantId: string
 ): Promise<{ email: string; name: string } | null> {
   const supabase = createServerClient({ admin: true })
 

@@ -56,4 +56,18 @@ test.describe('Quotes', () => {
     const field = page.getByLabel(/client|quote name|total quoted/i).first()
     await expect(field).toBeVisible({ timeout: 10_000 })
   })
+
+  test('quote version history edit revision route loads edit page', async ({ page, seedIds }) => {
+    await page.goto(`/quotes/${seedIds.quoteIds.draft}`)
+    await page.waitForLoadState('networkidle')
+
+    const createRevisionButton = page.getByRole('button', { name: /create revision/i })
+    await expect(createRevisionButton).toBeVisible({ timeout: 10_000 })
+    await createRevisionButton.click()
+
+    await expect(page).toHaveURL(/\/quotes\/[^/]+\/edit/)
+    await expect(page.getByRole('heading', { name: /edit quote/i })).toBeVisible({
+      timeout: 10_000,
+    })
+  })
 })

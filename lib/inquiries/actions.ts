@@ -9,6 +9,10 @@ import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { Database, Json } from '@/types/database'
+import { executeWithIdempotency } from '@/lib/mutations/idempotency'
+import { createConflictError } from '@/lib/mutations/conflict'
+import { UnknownAppError, ValidationError } from '@/lib/errors/app-error'
+import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
 
 type InquiryStatus = Database['public']['Enums']['inquiry_status']
 type InquiryChannel = Database['public']['Enums']['inquiry_channel']
@@ -58,6 +62,7 @@ const CreateInquirySchema = z.object({
   source_message: z.string().optional().or(z.literal('')),
   notes: z.string().optional().or(z.literal('')),
   referral_source: z.string().optional().or(z.literal('')),
+  idempotency_key: z.string().optional(),
 })
 
 const UpdateInquirySchema = z.object({
@@ -78,6 +83,8 @@ const UpdateInquirySchema = z.object({
   next_action_required: z.string().nullable().optional(),
   next_action_by: z.string().nullable().optional(),
   follow_up_due_at: z.string().nullable().optional(),
+  expected_updated_at: z.string().optional(),
+  idempotency_key: z.string().optional(),
 })
 
 export type CreateInquiryInput = z.infer<typeof CreateInquirySchema>
@@ -123,36 +130,48 @@ export async function createInquiry(input: CreateInquiryInput) {
   if (validated.notes) unknownFields.notes = validated.notes
   if (validated.referral_source) unknownFields.referral_source = validated.referral_source
 
-  const { data: inquiry, error } = await supabase
-    .from('inquiries')
-    .insert({
-      tenant_id: user.tenantId!,
-      channel: validated.channel as any, // 'yhangry' added via migration, not yet in generated types
-      client_id: clientId,
-      referral_partner_id: validated.referral_partner_id || null,
-      partner_location_id: validated.partner_location_id || null,
-      first_contact_at: new Date().toISOString(),
-      confirmed_date: validated.confirmed_date || null,
-      confirmed_guest_count: validated.confirmed_guest_count ?? null,
-      confirmed_location: validated.confirmed_location || null,
-      confirmed_occasion: validated.confirmed_occasion || null,
-      confirmed_budget_cents: validated.confirmed_budget_cents ?? null,
-      confirmed_dietary_restrictions: validated.confirmed_dietary_restrictions ?? null,
-      confirmed_service_expectations: validated.confirmed_service_expectations || null,
-      confirmed_cannabis_preference: validated.confirmed_cannabis_preference || null,
-      source_message: validated.source_message || null,
-      unknown_fields:
-        Object.keys(unknownFields).length > 0 ? (unknownFields as unknown as Json) : null,
-    })
-    .select()
-    .single()
+  const result = await executeWithIdempotency({
+    supabase,
+    tenantId: user.tenantId!,
+    actorId: user.id,
+    actionName: 'inquiries.create',
+    idempotencyKey: validated.idempotency_key,
+    execute: async () => {
+      const { data: inquiry, error } = await supabase
+        .from('inquiries')
+        .insert({
+          tenant_id: user.tenantId!,
+          channel: validated.channel as any, // 'yhangry' added via migration, not yet in generated types
+          client_id: clientId,
+          referral_partner_id: validated.referral_partner_id || null,
+          partner_location_id: validated.partner_location_id || null,
+          first_contact_at: new Date().toISOString(),
+          confirmed_date: validated.confirmed_date || null,
+          confirmed_guest_count: validated.confirmed_guest_count ?? null,
+          confirmed_location: validated.confirmed_location || null,
+          confirmed_occasion: validated.confirmed_occasion || null,
+          confirmed_budget_cents: validated.confirmed_budget_cents ?? null,
+          confirmed_dietary_restrictions: validated.confirmed_dietary_restrictions ?? null,
+          confirmed_service_expectations: validated.confirmed_service_expectations || null,
+          confirmed_cannabis_preference: validated.confirmed_cannabis_preference || null,
+          source_message: validated.source_message || null,
+          unknown_fields:
+            Object.keys(unknownFields).length > 0 ? (unknownFields as unknown as Json) : null,
+        })
+        .select()
+        .single()
 
-  if (error) {
-    console.error('[createInquiry] Error:', error)
-    throw new Error('Failed to create inquiry')
-  }
+      if (error || !inquiry) {
+        console.error('[createInquiry] Error:', error)
+        throw new UnknownAppError('Failed to create inquiry')
+      }
 
-  revalidatePath('/inquiries')
+      revalidatePath('/inquiries')
+      return { success: true, inquiry }
+    },
+  })
+
+  const inquiry = result.inquiry
 
   // Log chef activity (non-blocking)
   try {
@@ -228,41 +247,53 @@ export async function getInquiries(filters?: {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  let query = supabase
-    .from('inquiries')
-    .select(
-      `
+  const buildQuery = (withSoftDeleteFilter: boolean) => {
+    let query = supabase
+      .from('inquiries')
+      .select(
+        `
       *,
       client:clients(id, full_name, email, phone)
     `
-    )
-    .eq('tenant_id', user.tenantId!)
+      )
+      .eq('tenant_id', user.tenantId!)
 
-  if (filters?.status) {
-    if (Array.isArray(filters.status)) {
-      query = query.in('status', filters.status)
-    } else {
-      query = query.eq('status', filters.status)
+    if (withSoftDeleteFilter) {
+      query = query.is('deleted_at' as any, null)
     }
+
+    if (filters?.status) {
+      if (Array.isArray(filters.status)) {
+        query = query.in('status', filters.status)
+      } else {
+        query = query.eq('status', filters.status)
+      }
+    }
+
+    if (filters?.channel) {
+      query = query.eq('channel', filters.channel)
+    }
+
+    if (filters?.dateFrom) {
+      query = query.gte('created_at', filters.dateFrom)
+    }
+
+    if (filters?.dateTo) {
+      query = query.lte('created_at', filters.dateTo)
+    }
+
+    return query
   }
 
-  if (filters?.channel) {
-    query = query.eq('channel', filters.channel)
+  let response = await buildQuery(true).order('created_at', { ascending: false })
+  if (isMissingSoftDeleteColumn(response.error)) {
+    response = await buildQuery(false).order('created_at', { ascending: false })
   }
-
-  if (filters?.dateFrom) {
-    query = query.gte('created_at', filters.dateFrom)
-  }
-
-  if (filters?.dateTo) {
-    query = query.lte('created_at', filters.dateTo)
-  }
-
-  const { data: inquiries, error } = await query.order('created_at', { ascending: false })
+  const { data: inquiries, error } = response
 
   if (error) {
     console.error('[getInquiries] Error:', error)
-    throw new Error('Failed to fetch inquiries')
+    throw new UnknownAppError('Failed to fetch inquiries')
   }
 
   return inquiries
@@ -279,17 +310,28 @@ export async function getInquiryById(id: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: inquiry, error } = await supabase
-    .from('inquiries')
-    .select(
-      `
+  const runQuery = (withSoftDeleteFilter: boolean) => {
+    let query = supabase
+      .from('inquiries')
+      .select(
+        `
       *,
       client:clients(id, full_name, email, phone)
     `
-    )
-    .eq('id', id)
-    .eq('tenant_id', user.tenantId!)
-    .single()
+      )
+      .eq('id', id)
+      .eq('tenant_id', user.tenantId!)
+    if (withSoftDeleteFilter) {
+      query = query.is('deleted_at' as any, null)
+    }
+    return query.single()
+  }
+
+  let response = await runQuery(true)
+  if (isMissingSoftDeleteColumn(response.error)) {
+    response = await runQuery(false)
+  }
+  const { data: inquiry, error } = response
 
   if (error) {
     console.error('[getInquiryById] Error:', error)
@@ -316,21 +358,26 @@ export async function getInquiryById(id: string) {
 export async function updateInquiry(id: string, input: UpdateInquiryInput) {
   const user = await requireChef()
   const validated = UpdateInquirySchema.parse(input)
+  const { expected_updated_at, idempotency_key, ...validatedFields } = validated
   const supabase = createServerClient()
 
   // Separate unknown_fields data from DB columns
-  const { client_name, client_email, client_phone, notes, ...dbFields } = validated
+  const { client_name, client_email, client_phone, notes, ...dbFields } = validatedFields
 
   // Fetch current inquiry to merge unknown_fields
-  const { data: current } = await supabase
+  const { data: current } = await (supabase
     .from('inquiries')
-    .select('unknown_fields')
+    .select('*')
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
-  if (!current) {
-    throw new Error('Inquiry not found')
+  if (!current || (current as any).deleted_at) {
+    throw new ValidationError('Inquiry not found')
+  }
+
+  if (expected_updated_at && current.updated_at !== expected_updated_at) {
+    throw createConflictError('This record changed elsewhere.', current.updated_at)
   }
 
   // Merge unknown_fields
@@ -347,26 +394,119 @@ export async function updateInquiry(id: string, input: UpdateInquiryInput) {
     if (v !== undefined) cleanedUnknown[k] = v
   }
 
-  const { data: inquiry, error } = await supabase
-    .from('inquiries')
-    .update({
-      ...dbFields,
-      unknown_fields:
-        Object.keys(cleanedUnknown).length > 0 ? (cleanedUnknown as unknown as Json) : null,
-    })
-    .eq('id', id)
-    .eq('tenant_id', user.tenantId!)
-    .select()
-    .single()
+  const result = await executeWithIdempotency({
+    supabase,
+    tenantId: user.tenantId!,
+    actorId: user.id,
+    actionName: 'inquiries.update',
+    idempotencyKey: idempotency_key,
+    execute: async () => {
+      const runUpdate = async (withSoftDeleteFilter: boolean) => {
+        let query = supabase
+          .from('inquiries')
+          .update({
+            ...dbFields,
+            unknown_fields:
+              Object.keys(cleanedUnknown).length > 0 ? (cleanedUnknown as unknown as Json) : null,
+            updated_by: user.id,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', id)
+          .eq('tenant_id', user.tenantId!)
+        if (withSoftDeleteFilter) {
+          query = query.is('deleted_at' as any, null)
+        }
+        if (expected_updated_at) {
+          query = query.eq('updated_at', expected_updated_at)
+        }
+        return query.select().single()
+      }
 
-  if (error) {
-    console.error('[updateInquiry] Error:', error)
-    throw new Error('Failed to update inquiry')
+      let response = await runUpdate(true)
+      if (isMissingSoftDeleteColumn(response.error)) {
+        response = await runUpdate(false)
+      }
+      const { data: inquiry, error } = response
+
+      if (error || !inquiry) {
+        if (expected_updated_at) {
+          const getLatest = async (withSoftDeleteFilter: boolean) => {
+            let query = supabase
+              .from('inquiries')
+              .select('updated_at')
+              .eq('id', id)
+              .eq('tenant_id', user.tenantId!)
+            if (withSoftDeleteFilter) {
+              query = query.is('deleted_at' as any, null)
+            }
+            return query.maybeSingle()
+          }
+
+          let latestResponse = await getLatest(true)
+          if (isMissingSoftDeleteColumn(latestResponse.error)) {
+            latestResponse = await getLatest(false)
+          }
+          const latest = latestResponse.data
+
+          if (latest?.updated_at && latest.updated_at !== expected_updated_at) {
+            throw createConflictError('This record changed elsewhere.', latest.updated_at)
+          }
+        }
+
+        console.error('[updateInquiry] Error:', error)
+        throw new UnknownAppError('Failed to update inquiry')
+      }
+
+      revalidatePath('/inquiries')
+      revalidatePath(`/inquiries/${id}`)
+      return { success: true, inquiry }
+    },
+  })
+
+  const inquiry = result.inquiry
+
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    const changedFields = [
+      ...Object.keys(dbFields),
+      ...Object.keys(cleanedUnknown).map((key) => `unknown_fields.${key}`),
+    ]
+    const fieldDiffs = Object.fromEntries([
+      ...Object.keys(dbFields).map((field) => [
+        field,
+        {
+          before: (current as Record<string, unknown>)[field] ?? null,
+          after: (inquiry as Record<string, unknown>)[field] ?? null,
+        },
+      ]),
+      ...Object.keys(cleanedUnknown).map((key) => [
+        `unknown_fields.${key}`,
+        {
+          before: (existingUnknown as Record<string, unknown>)[key] ?? null,
+          after: (cleanedUnknown as Record<string, unknown>)[key] ?? null,
+        },
+      ]),
+    ])
+
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'inquiry_updated',
+      domain: 'inquiry',
+      entityType: 'inquiry',
+      entityId: id,
+      summary: `Updated inquiry - ${changedFields.join(', ')}`,
+      context: {
+        changed_fields: changedFields,
+        field_diffs: fieldDiffs,
+      },
+      clientId: inquiry.client_id ?? undefined,
+    })
+  } catch (err) {
+    console.error('[updateInquiry] Activity log failed (non-blocking):', err)
   }
 
-  revalidatePath('/inquiries')
-  revalidatePath(`/inquiries/${id}`)
-  return { success: true, inquiry }
+  return result
 }
 
 // ============================================
@@ -383,38 +523,48 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
   const supabase = createServerClient()
 
   // Get current status
-  const { data: inquiry } = await supabase
+  const { data: inquiry } = await (supabase
     .from('inquiries')
-    .select('status')
+    .select('status, deleted_at')
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
-  if (!inquiry) {
-    throw new Error('Inquiry not found')
+  if (!inquiry || (inquiry as any).deleted_at) {
+    throw new ValidationError('Inquiry not found')
   }
 
   const currentStatus = inquiry.status as InquiryStatus
   const allowed = VALID_TRANSITIONS[currentStatus]
 
   if (!allowed || !allowed.includes(newStatus)) {
-    throw new Error(
+    throw new ValidationError(
       `Cannot transition from "${currentStatus}" to "${newStatus}". ` +
         `Allowed: ${allowed?.join(', ') || 'none (terminal state)'}`
     )
   }
 
-  const { data: updated, error } = await supabase
-    .from('inquiries')
-    .update({ status: newStatus })
-    .eq('id', id)
-    .eq('tenant_id', user.tenantId!)
-    .select()
-    .single()
+  const runUpdate = async (withSoftDeleteFilter: boolean) => {
+    let query = supabase
+      .from('inquiries')
+      .update({ status: newStatus })
+      .eq('id', id)
+      .eq('tenant_id', user.tenantId!)
+    if (withSoftDeleteFilter) {
+      query = query.is('deleted_at' as any, null)
+    }
+    return query.select().single()
+  }
+
+  let updateResponse = await runUpdate(true)
+  if (isMissingSoftDeleteColumn(updateResponse.error)) {
+    updateResponse = await runUpdate(false)
+  }
+  const { data: updated, error } = updateResponse
 
   if (error) {
     console.error('[transitionInquiry] Error:', error)
-    throw new Error('Failed to transition inquiry')
+    throw new UnknownAppError('Failed to transition inquiry')
   }
 
   revalidatePath('/inquiries')
@@ -474,22 +624,23 @@ export async function convertInquiryToEvent(inquiryId: string) {
     .select('*')
     .eq('id', inquiryId)
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
     .single()
 
   if (!inquiry) {
-    throw new Error('Inquiry not found')
+    throw new ValidationError('Inquiry not found')
   }
 
   if (inquiry.status !== 'confirmed') {
-    throw new Error('Only confirmed inquiries can be converted to events')
+    throw new ValidationError('Only confirmed inquiries can be converted to events')
   }
 
   if (!inquiry.client_id) {
-    throw new Error('Inquiry must be linked to a client before converting to an event')
+    throw new ValidationError('Inquiry must be linked to a client before converting to an event')
   }
 
   if (!inquiry.confirmed_date) {
-    throw new Error('Confirmed date is required before converting to an event')
+    throw new ValidationError('Confirmed date is required before converting to an event')
   }
 
   // Check for accepted quote on this inquiry — use its pricing if available
@@ -510,7 +661,7 @@ export async function convertInquiryToEvent(inquiryId: string) {
 
   // Validate pricing exists before creating event
   if (!quotedPriceCents || quotedPriceCents <= 0) {
-    throw new Error(
+    throw new ValidationError(
       'Cannot convert inquiry to event without a confirmed price. Please attach a quote first.'
     )
   }
@@ -551,7 +702,7 @@ export async function convertInquiryToEvent(inquiryId: string) {
 
   if (eventError) {
     console.error('[convertInquiryToEvent] Event creation error:', eventError)
-    throw new Error(`Failed to create event: ${eventError.message}`)
+    throw new UnknownAppError(`Failed to create event: ${eventError.message}`)
   }
 
   // Log initial event transition to 'draft'
@@ -570,6 +721,7 @@ export async function convertInquiryToEvent(inquiryId: string) {
     .update({ converted_to_event_id: event.id })
     .eq('id', inquiryId)
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
 
   // Link accepted quote to the new event
   if (acceptedQuote) {
@@ -597,14 +749,23 @@ export async function getInquiryStats() {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: inquiries, error } = await supabase
-    .from('inquiries')
-    .select('status')
-    .eq('tenant_id', user.tenantId!)
+  const runQuery = (withSoftDeleteFilter: boolean) => {
+    let query = supabase.from('inquiries').select('status').eq('tenant_id', user.tenantId!)
+    if (withSoftDeleteFilter) {
+      query = query.is('deleted_at' as any, null)
+    }
+    return query
+  }
+
+  let response = await runQuery(true)
+  if (isMissingSoftDeleteColumn(response.error)) {
+    response = await runQuery(false)
+  }
+  const { data: inquiries, error } = response
 
   if (error) {
     console.error('[getInquiryStats] Error:', error)
-    throw new Error('Failed to fetch inquiry stats')
+    throw new UnknownAppError('Failed to fetch inquiry stats')
   }
 
   const stats: Record<InquiryStatus, number> = {
@@ -639,33 +800,60 @@ export async function deleteInquiry(id: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: inquiry } = await supabase
+  const { data: inquiry } = await (supabase
     .from('inquiries')
-    .select('status')
+    .select('status, deleted_at')
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
-  if (!inquiry) {
-    throw new Error('Inquiry not found')
+  if (!inquiry || inquiry.deleted_at) {
+    throw new ValidationError('Inquiry not found')
   }
 
   if (!['new', 'declined'].includes(inquiry.status)) {
-    throw new Error('Can only delete inquiries in "new" or "declined" status')
+    throw new ValidationError('Can only delete inquiries in "new" or "declined" status')
   }
 
   const { error } = await supabase
     .from('inquiries')
-    .delete()
+    .update({
+      deleted_at: new Date().toISOString(),
+      deleted_by: user.id,
+    } as any)
+    .eq('id', id)
+    .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
+
+  if (error) {
+    console.error('[deleteInquiry] Error:', error)
+    throw new UnknownAppError('Failed to delete inquiry')
+  }
+
+  revalidatePath('/inquiries')
+  return { success: true }
+}
+
+export async function restoreInquiry(id: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { error } = await supabase
+    .from('inquiries')
+    .update({
+      deleted_at: null,
+      deleted_by: null,
+    } as any)
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)
 
   if (error) {
-    console.error('[deleteInquiry] Error:', error)
-    throw new Error('Failed to delete inquiry')
+    console.error('[restoreInquiry] Error:', error)
+    throw new UnknownAppError('Failed to restore inquiry')
   }
 
   revalidatePath('/inquiries')
+  revalidatePath(`/inquiries/${id}`)
   return { success: true }
 }
 
@@ -684,19 +872,19 @@ export async function declineInquiry(id: string, reason?: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: inquiry } = await supabase
+  const { data: inquiry } = await (supabase
     .from('inquiries')
-    .select('status')
+    .select('status, deleted_at')
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
-  if (!inquiry) throw new Error('Inquiry not found')
+  if (!inquiry || inquiry.deleted_at) throw new ValidationError('Inquiry not found')
 
   const currentStatus = inquiry.status as InquiryStatus
   const allowed = VALID_TRANSITIONS[currentStatus]
   if (!allowed || !allowed.includes('declined')) {
-    throw new Error(`Cannot decline from status "${currentStatus}"`)
+    throw new ValidationError(`Cannot decline from status "${currentStatus}"`)
   }
 
   const { error } = await supabase
@@ -707,10 +895,11 @@ export async function declineInquiry(id: string, reason?: string) {
     })
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
 
   if (error) {
     console.error('[declineInquiry] Error:', error)
-    throw new Error('Failed to decline inquiry')
+    throw new UnknownAppError('Failed to decline inquiry')
   }
 
   revalidatePath('/inquiries')

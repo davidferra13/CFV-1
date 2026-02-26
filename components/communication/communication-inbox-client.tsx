@@ -1,12 +1,14 @@
 'use client'
 
-import { useEffect, useMemo, useState, useTransition } from 'react'
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle, Star } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Alert } from '@/components/ui/alert'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ConfirmPolicyDialog } from '@/components/ui/confirm-policy-dialog'
 import {
   addInternalNoteFromCommunication,
   attachCommunicationEventToEvent,
@@ -27,6 +29,8 @@ import type {
   CommunicationTab,
   SuggestedLink,
 } from '@/lib/communication/types'
+import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
+import { confirmPolicy, type ConfirmPolicyInput } from '@/lib/confirm/confirm-policy'
 
 type TriageItem = {
   thread_id: string
@@ -150,6 +154,10 @@ export function CommunicationInboxClient({
   const [noteOpen, setNoteOpen] = useState(false)
   const [noteTargetEventId, setNoteTargetEventId] = useState<string | null>(null)
   const [noteText, setNoteText] = useState('')
+  const [actionError, setActionError] = useState<string | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [confirmInput, setConfirmInput] = useState<ConfirmPolicyInput | null>(null)
+  const pendingConfirmActionRef = useRef<null | (() => Promise<void>)>(null)
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
 
@@ -185,16 +193,43 @@ export function CommunicationInboxClient({
 
   const selectedCount = selectedEventIds.size
 
-  const runAction = (fn: () => Promise<unknown>) => {
+  const executeAction = (fn: () => Promise<unknown>) => {
     startTransition(async () => {
       try {
+        setActionError(null)
         await fn()
         router.refresh()
       } catch (error) {
-        console.error(error)
-        alert(error instanceof Error ? error.message : 'Action failed')
+        const uiError = mapErrorToUI(error)
+        setActionError(uiError.message)
       }
     })
+  }
+
+  const runAction = (fn: () => Promise<unknown>, policyInput?: ConfirmPolicyInput) => {
+    if (!policyInput) {
+      executeAction(fn)
+      return
+    }
+    const decision = confirmPolicy(policyInput)
+    if (decision.mode === 'none') {
+      executeAction(fn)
+      return
+    }
+    pendingConfirmActionRef.current = async () => {
+      await fn()
+    }
+    setConfirmInput(policyInput)
+    setConfirmOpen(true)
+  }
+
+  const handleConfirm = async () => {
+    const fn = pendingConfirmActionRef.current
+    setConfirmOpen(false)
+    setConfirmInput(null)
+    pendingConfirmActionRef.current = null
+    if (!fn) return
+    executeAction(fn)
   }
 
   const tabColorClasses: Record<CommunicationTab, string> = {
@@ -207,14 +242,14 @@ export function CommunicationInboxClient({
   const responseFilterActiveClass: Record<ResponseTurnFilter, string> = {
     all: 'bg-stone-800 text-white border-stone-900',
     chef_to_respond: 'bg-indigo-600 text-white border-indigo-700',
-    waiting_on_client: 'bg-amber-9500 text-amber-950 border-amber-600',
+    waiting_on_client: 'bg-amber-900 text-amber-100 border-amber-700',
     no_action: 'bg-emerald-600 text-white border-emerald-700',
   }
 
   const followUpFilterActiveClass: Record<FollowUpFilter, string> = {
     all: 'bg-stone-800 text-white border-stone-900',
     overdue: 'bg-red-600 text-white border-red-700',
-    due_soon: 'bg-amber-9500 text-amber-950 border-amber-600',
+    due_soon: 'bg-amber-900 text-amber-100 border-amber-700',
     none: 'bg-stone-700 text-white border-stone-800',
   }
 
@@ -253,6 +288,12 @@ export function CommunicationInboxClient({
       </div>
 
       <div className="text-sm text-stone-400">{stats.total} total conversation threads</div>
+
+      {actionError ? (
+        <Alert variant="error" title="Action failed">
+          {actionError}
+        </Alert>
+      ) : null}
 
       <div className="flex flex-wrap gap-2">
         {allSources.map((source) => {
@@ -608,10 +649,19 @@ export function CommunicationInboxClient({
                   variant="secondary"
                   disabled={isPending}
                   onClick={() =>
-                    runAction(async () => {
-                      await bulkMarkDone(Array.from(selectedEventIds))
-                      setSelectedEventIds(new Set())
-                    })
+                    runAction(
+                      async () => {
+                        await bulkMarkDone(Array.from(selectedEventIds))
+                        setSelectedEventIds(new Set())
+                      },
+                      {
+                        risk: 'medium',
+                        reversible: true,
+                        entityName: `${selectedCount} threads`,
+                        impactPreview: 'Selected items will be marked done.',
+                        actionLabel: 'Bulk Mark Done',
+                      }
+                    )
                   }
                 >
                   Bulk Mark Done
@@ -621,10 +671,19 @@ export function CommunicationInboxClient({
                   variant="secondary"
                   disabled={isPending}
                   onClick={() =>
-                    runAction(async () => {
-                      await bulkSnooze24h(bulkThreadIds)
-                      setSelectedEventIds(new Set())
-                    })
+                    runAction(
+                      async () => {
+                        await bulkSnooze24h(bulkThreadIds)
+                        setSelectedEventIds(new Set())
+                      },
+                      {
+                        risk: 'medium',
+                        reversible: true,
+                        entityName: `${selectedCount} threads`,
+                        impactPreview: 'Selected threads will be snoozed for 24 hours.',
+                        actionLabel: 'Bulk Snooze',
+                      }
+                    )
                   }
                 >
                   Bulk Snooze (24h)
@@ -634,10 +693,19 @@ export function CommunicationInboxClient({
                   variant="secondary"
                   disabled={isPending}
                   onClick={() =>
-                    runAction(async () => {
-                      await bulkUnassign(Array.from(selectedEventIds))
-                      setSelectedEventIds(new Set())
-                    })
+                    runAction(
+                      async () => {
+                        await bulkUnassign(Array.from(selectedEventIds))
+                        setSelectedEventIds(new Set())
+                      },
+                      {
+                        risk: 'medium',
+                        reversible: true,
+                        entityName: `${selectedCount} threads`,
+                        impactPreview: 'Selected threads will be unassigned from linked entities.',
+                        actionLabel: 'Bulk Unassign',
+                      }
+                    )
                   }
                 >
                   Bulk Unassign
@@ -765,6 +833,18 @@ export function CommunicationInboxClient({
           </div>
         </div>
       )}
+
+      <ConfirmPolicyDialog
+        open={confirmOpen}
+        policy={confirmInput}
+        loading={isPending}
+        onCancel={() => {
+          setConfirmOpen(false)
+          setConfirmInput(null)
+          pendingConfirmActionRef.current = null
+        }}
+        onConfirm={handleConfirm}
+      />
     </div>
   )
 }

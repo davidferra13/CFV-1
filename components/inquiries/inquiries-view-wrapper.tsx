@@ -2,12 +2,10 @@
 // The existing list (server component) is passed as children; kanban data is a prop.
 'use client'
 
-import { useState, useEffect } from 'react'
 import { List, LayoutGrid } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { KanbanBoard, type KanbanBoardInquiry } from './kanban-board'
-
-const STORAGE_KEY = 'inquiries-view-mode'
+import { usePersistentViewState } from '@/lib/view-state/use-persistent-view-state'
 
 interface InquiriesViewWrapperProps {
   /** The existing list view (server component) passed as a slot */
@@ -16,33 +14,15 @@ interface InquiriesViewWrapperProps {
   inquiries: KanbanBoardInquiry[]
 }
 
-export function InquiriesViewWrapper({
-  children,
-  inquiries,
-}: InquiriesViewWrapperProps) {
-  const [view, setView] = useState<'list' | 'kanban'>('list')
-  const [mounted, setMounted] = useState(false)
-
-  // Read persisted preference after mount to avoid hydration mismatch
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored === 'kanban' || stored === 'list') {
-        setView(stored)
-      }
-    } catch {
-      // localStorage unavailable (e.g. private mode with strict settings)
-    }
-    setMounted(true)
-  }, [])
+export function InquiriesViewWrapper({ children, inquiries }: InquiriesViewWrapperProps) {
+  const { state, setState } = usePersistentViewState('inquiries.list', {
+    strategy: 'url',
+    defaults: { view: 'list' as 'list' | 'kanban' },
+  })
+  const view = state.view
 
   function handleSetView(next: 'list' | 'kanban') {
-    setView(next)
-    try {
-      localStorage.setItem(STORAGE_KEY, next)
-    } catch {
-      // ignore write errors
-    }
+    setState({ view: next })
   }
 
   return (
@@ -69,15 +49,8 @@ export function InquiriesViewWrapper({
         </Button>
       </div>
 
-      {/* Views — only render once mounted to respect stored preference */}
-      {!mounted ? (
-        // Pre-mount: render the list (SSR default)
-        <div>{children}</div>
-      ) : view === 'list' ? (
-        <div>{children}</div>
-      ) : (
-        <KanbanBoard inquiries={inquiries} />
-      )}
+      {/* Views */}
+      {view === 'list' ? <div>{children}</div> : <KanbanBoard inquiries={inquiries} />}
     </div>
   )
 }

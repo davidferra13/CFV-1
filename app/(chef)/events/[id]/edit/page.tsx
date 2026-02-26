@@ -10,7 +10,7 @@ import { EventForm } from '@/components/events/event-form'
 import { Alert } from '@/components/ui/alert'
 
 export default async function EditEventPage({ params }: { params: { id: string } }) {
-  await requireChef()
+  const user = await requireChef()
 
   const event = await getEventById(params.id)
 
@@ -31,6 +31,7 @@ export default async function EditEventPage({ params }: { params: { id: string }
   // Map to the shape EventForm expects
   const formEvent = {
     id: event.id,
+    updated_at: event.updated_at,
     client_id: event.client_id,
     occasion: event.occasion,
     event_date: event.event_date,
@@ -62,6 +63,7 @@ export default async function EditEventPage({ params }: { params: { id: string }
       )}
 
       <EventForm
+        tenantId={user.tenantId!}
         clients={clients}
         mode="edit"
         event={formEvent}

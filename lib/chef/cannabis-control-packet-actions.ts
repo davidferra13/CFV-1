@@ -720,7 +720,7 @@ export async function upsertEventCannabisCourseConfig(
 
   const { data: event, error: eventError } = await (supabase
     .from('events' as any)
-    .select('id, tenant_id, cannabis_preference, course_count')
+    .select('id, tenant_id, cannabis_preference, course_count, menu_id')
     .eq('id', validated.eventId)
     .eq('tenant_id', user.tenantId!)
     .single() as any)
@@ -731,6 +731,24 @@ export async function upsertEventCannabisCourseConfig(
 
   if (!event.cannabis_preference) {
     throw new Error('Cannabis overlay is only available for cannabis-enabled events')
+  }
+
+  let hasAttachedMenu = typeof event.menu_id === 'string' && String(event.menu_id).trim().length > 0
+
+  if (!hasAttachedMenu) {
+    const { data: fallbackMenu } = await (supabase
+      .from('menus' as any)
+      .select('id')
+      .eq('event_id', validated.eventId)
+      .eq('tenant_id', user.tenantId!)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle() as any)
+    hasAttachedMenu = !!fallbackMenu
+  }
+
+  if (!hasAttachedMenu) {
+    throw new Error('Attach a menu to this event before editing infusion planning')
   }
 
   const courseCount = normalizeCourseCount(event.course_count)
@@ -789,6 +807,10 @@ export async function generateCannabisControlPacketSnapshot(
   const user = await requireChef()
   const supabase = createServerClient()
   const context = await loadCannabisEventContext(validated.eventId, user.tenantId!)
+
+  if (!context.menu) {
+    throw new Error('Attach a menu to this event before generating a control packet snapshot')
+  }
 
   const { data: latestVersionRow } = await (supabase
     .from('cannabis_control_packet_snapshots' as any)

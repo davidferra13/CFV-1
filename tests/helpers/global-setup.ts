@@ -43,6 +43,13 @@ async function loginAndSaveState(
     // the role and redirects to the appropriate portal (/dashboard or /my-events).
     await page.goto(`${BASE_URL}/`)
     await page.waitForURL(expectedUrlPattern, { timeout: 30_000 })
+    await context.addCookies([
+      {
+        name: 'cookieConsent',
+        value: 'declined',
+        url: BASE_URL,
+      },
+    ])
     await context.storageState({ path: outputPath })
     console.log(`[globalSetup] ${label} auth state saved → ${outputPath}`)
   } catch (err) {
@@ -111,7 +118,9 @@ export default async function globalSetup() {
       'Admin'
     )
   } else {
-    console.log('[globalSetup] ADMIN_E2E_EMAIL/ADMIN_E2E_PASSWORD not set — skipping admin auth state. Admin coverage tests will be skipped.')
+    console.log(
+      '[globalSetup] ADMIN_E2E_EMAIL/ADMIN_E2E_PASSWORD not set — skipping admin auth state. Admin coverage tests will be skipped.'
+    )
     // Write an empty storage state so coverage-admin project does not crash on missing file
     const { writeFileSync } = await import('fs')
     writeFileSync('.auth/admin.json', JSON.stringify({ cookies: [], origins: [] }), 'utf-8')

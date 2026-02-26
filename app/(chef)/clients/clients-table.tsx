@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Table,
@@ -17,6 +17,7 @@ import Link from 'next/link'
 import { Tables } from '@/types/database'
 import { ClientHealthBadge } from '@/components/clients/health-score-badge'
 import type { ClientHealthScore } from '@/lib/clients/health-score'
+import { usePersistentViewState } from '@/lib/view-state/use-persistent-view-state'
 
 type ClientWithStats = Tables<'clients'> & {
   totalEvents: number
@@ -30,9 +31,15 @@ interface ClientsTableProps {
 
 export function ClientsTable({ clients, healthMap }: ClientsTableProps) {
   const router = useRouter()
-  const [search, setSearch] = useState('')
-  const [sortBy, setSortBy] = useState<'name' | 'created' | 'spent'>('created')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const { state, setState } = usePersistentViewState('clients.list', {
+    strategy: 'url',
+    defaults: {
+      search: '',
+      sortBy: 'created' as 'name' | 'created' | 'spent',
+      sortOrder: 'desc' as 'asc' | 'desc',
+    },
+  })
+  const { search, sortBy, sortOrder } = state
 
   // Filter and sort clients
   const filteredAndSortedClients = useMemo(() => {
@@ -74,10 +81,9 @@ export function ClientsTable({ clients, healthMap }: ClientsTableProps) {
 
   function toggleSort(field: 'name' | 'created' | 'spent') {
     if (sortBy === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+      setState({ sortOrder: sortOrder === 'asc' ? 'desc' : 'asc' })
     } else {
-      setSortBy(field)
-      setSortOrder('desc')
+      setState({ sortBy: field, sortOrder: 'desc' })
     }
   }
 
@@ -95,7 +101,7 @@ export function ClientsTable({ clients, healthMap }: ClientsTableProps) {
         type="search"
         placeholder="Search by name or email..."
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => setState({ search: e.target.value })}
       />
 
       {/* Table */}

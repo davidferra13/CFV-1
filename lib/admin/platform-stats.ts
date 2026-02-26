@@ -69,6 +69,17 @@ export type SystemHealthStats = {
   orphanedClientCount: number
 }
 
+export type QolMetricsSummary = {
+  since: string
+  draftRestoreCount: number
+  saveFailureCount: number
+  conflictCount: number
+  offlineReplaySuccessCount: number
+  offlineReplayFailureCount: number
+  offlineReplaySuccessRate: number
+  duplicateCreatePreventedCount: number
+}
+
 function startOfCurrentMonth(): string {
   const d = new Date()
   d.setDate(1)
@@ -81,17 +92,36 @@ export async function getPlatformOverviewStats(): Promise<PlatformOverviewStats>
   const monthStart = startOfCurrentMonth()
 
   const [
-    chefsAll, clientsAll, eventsAll, ledgerAll,
-    chefsMonth, clientsMonth, eventsMonth, ledgerMonth,
+    chefsAll,
+    clientsAll,
+    eventsAll,
+    ledgerAll,
+    chefsMonth,
+    clientsMonth,
+    eventsMonth,
+    ledgerMonth,
   ] = await Promise.all([
     supabase.from('chefs').select('id', { count: 'exact', head: true }),
     supabase.from('clients').select('id', { count: 'exact', head: true }),
     supabase.from('events').select('id', { count: 'exact', head: true }),
     supabase.from('ledger_entries').select('amount_cents').eq('entry_type', 'payment'),
-    supabase.from('chefs').select('id', { count: 'exact', head: true }).gte('created_at', monthStart),
-    supabase.from('clients').select('id', { count: 'exact', head: true }).gte('created_at', monthStart),
-    supabase.from('events').select('id', { count: 'exact', head: true }).gte('created_at', monthStart),
-    supabase.from('ledger_entries').select('amount_cents').eq('entry_type', 'payment').gte('created_at', monthStart),
+    supabase
+      .from('chefs')
+      .select('id', { count: 'exact', head: true })
+      .gte('created_at', monthStart),
+    supabase
+      .from('clients')
+      .select('id', { count: 'exact', head: true })
+      .gte('created_at', monthStart),
+    supabase
+      .from('events')
+      .select('id', { count: 'exact', head: true })
+      .gte('created_at', monthStart),
+    supabase
+      .from('ledger_entries')
+      .select('amount_cents')
+      .eq('entry_type', 'payment')
+      .gte('created_at', monthStart),
   ])
 
   const totalGMV = (ledgerAll.data ?? []).reduce((s, e) => s + (e.amount_cents ?? 0), 0)
@@ -128,7 +158,11 @@ export async function getPlatformChefList(): Promise<PlatformChefRow[]> {
   const [eventsRes, clientsRes, ledgerRes] = await Promise.all([
     supabase.from('events').select('tenant_id').in('tenant_id', chefIds),
     supabase.from('clients').select('tenant_id').in('tenant_id', chefIds),
-    supabase.from('ledger_entries').select('tenant_id, amount_cents').eq('entry_type', 'payment').in('tenant_id', chefIds),
+    supabase
+      .from('ledger_entries')
+      .select('tenant_id, amount_cents')
+      .eq('entry_type', 'payment')
+      .in('tenant_id', chefIds),
   ])
 
   const eventCountMap: Record<string, number> = {}
@@ -194,9 +228,7 @@ export async function getPlatformClientList(): Promise<PlatformClientRow[]> {
     .select('id, client_id')
     .in('client_id', clientIds)
 
-  const eventToClient = Object.fromEntries(
-    (allClientEvents ?? []).map((e) => [e.id, e.client_id])
-  )
+  const eventToClient = Object.fromEntries((allClientEvents ?? []).map((e) => [e.id, e.client_id]))
 
   const { data: ledger } = await supabase
     .from('ledger_entries')
@@ -226,7 +258,9 @@ export async function getAllPlatformEvents(): Promise<PlatformEventRow[]> {
 
   const { data: events } = await supabase
     .from('events')
-    .select('id, occasion, status, event_date, guest_count, quoted_price_cents, created_at, tenant_id')
+    .select(
+      'id, occasion, status, event_date, guest_count, quoted_price_cents, created_at, tenant_id'
+    )
     .order('created_at', { ascending: false })
     .limit(500)
 
@@ -312,9 +346,20 @@ export async function getPlatformFinancialOverview() {
 
   const [allPayments, monthPayments, allExpenses, monthExpenses] = await Promise.all([
     supabase.from('ledger_entries').select('amount_cents').eq('entry_type', 'payment'),
-    supabase.from('ledger_entries').select('amount_cents').eq('entry_type', 'payment').gte('created_at', monthStart),
-    supabase.from('ledger_entries').select('amount_cents').eq('entry_type', 'expense' as never),
-    supabase.from('ledger_entries').select('amount_cents').eq('entry_type', 'expense' as never).gte('created_at', monthStart),
+    supabase
+      .from('ledger_entries')
+      .select('amount_cents')
+      .eq('entry_type', 'payment')
+      .gte('created_at', monthStart),
+    supabase
+      .from('ledger_entries')
+      .select('amount_cents')
+      .eq('entry_type', 'expense' as never),
+    supabase
+      .from('ledger_entries')
+      .select('amount_cents')
+      .eq('entry_type', 'expense' as never)
+      .gte('created_at', monthStart),
   ])
 
   const sum = (rows: { amount_cents: number | null }[] | null) =>
@@ -346,24 +391,29 @@ export async function getSystemHealthStats(): Promise<SystemHealthStats> {
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-  const [chefCount, clientCount, eventCount, ledgerCount, msgCount, inquiryCount, zombieEvents, orphanedClients] =
-    await Promise.all([
-      supabase.from('chefs').select('id', { count: 'exact', head: true }),
-      supabase.from('clients').select('id', { count: 'exact', head: true }),
-      supabase.from('events').select('id', { count: 'exact', head: true }),
-      supabase.from('ledger_entries').select('id', { count: 'exact', head: true }),
-      supabase.from('chat_messages').select('id', { count: 'exact', head: true }),
-      supabase.from('inquiries').select('id', { count: 'exact', head: true }),
-      supabase
-        .from('events')
-        .select('id', { count: 'exact', head: true })
-        .not('status', 'in', '("completed","cancelled")')
-        .lt('updated_at', thirtyDaysAgo.toISOString()),
-      supabase
-        .from('clients')
-        .select('id', { count: 'exact', head: true })
-        .is('tenant_id', null),
-    ])
+  const [
+    chefCount,
+    clientCount,
+    eventCount,
+    ledgerCount,
+    msgCount,
+    inquiryCount,
+    zombieEvents,
+    orphanedClients,
+  ] = await Promise.all([
+    supabase.from('chefs').select('id', { count: 'exact', head: true }),
+    supabase.from('clients').select('id', { count: 'exact', head: true }),
+    supabase.from('events').select('id', { count: 'exact', head: true }),
+    supabase.from('ledger_entries').select('id', { count: 'exact', head: true }),
+    supabase.from('chat_messages').select('id', { count: 'exact', head: true }),
+    supabase.from('inquiries').select('id', { count: 'exact', head: true }),
+    supabase
+      .from('events')
+      .select('id', { count: 'exact', head: true })
+      .not('status', 'in', '("completed","cancelled")')
+      .lt('updated_at', thirtyDaysAgo.toISOString()),
+    supabase.from('clients').select('id', { count: 'exact', head: true }).is('tenant_id', null),
+  ])
 
   const { data: oldestMsg } = await supabase
     .from('chat_messages')
@@ -387,6 +437,39 @@ export async function getSystemHealthStats(): Promise<SystemHealthStats> {
   }
 }
 
+export async function getQolMetricsSummary(days = 30): Promise<QolMetricsSummary> {
+  const supabase = createAdminClient()
+  const sinceDate = new Date()
+  sinceDate.setDate(sinceDate.getDate() - Math.max(1, days))
+  const since = sinceDate.toISOString()
+
+  const { data } = await (supabase
+    .from('qol_metric_events' as any)
+    .select('metric_key')
+    .gte('created_at', since) as any)
+
+  const counts: Record<string, number> = {}
+  for (const row of (data ?? []) as Array<{ metric_key?: string }>) {
+    if (!row.metric_key) continue
+    counts[row.metric_key] = (counts[row.metric_key] ?? 0) + 1
+  }
+
+  const offlineSuccess = counts.offline_replay_succeeded ?? 0
+  const offlineFailure = counts.offline_replay_failed ?? 0
+  const offlineTotal = offlineSuccess + offlineFailure
+
+  return {
+    since,
+    draftRestoreCount: counts.draft_restored ?? 0,
+    saveFailureCount: counts.save_failed ?? 0,
+    conflictCount: counts.conflict_detected ?? 0,
+    offlineReplaySuccessCount: offlineSuccess,
+    offlineReplayFailureCount: offlineFailure,
+    offlineReplaySuccessRate: offlineTotal > 0 ? offlineSuccess / offlineTotal : 0,
+    duplicateCreatePreventedCount: counts.duplicate_create_prevented ?? 0,
+  }
+}
+
 export async function getPlatformAuditLog(limit = 100): Promise<Record<string, unknown>[]> {
   const supabase = createAdminClient()
 
@@ -407,9 +490,7 @@ export async function getChefFeatureFlags(chefId: string): Promise<Record<string
     .select('flag_name, enabled')
     .eq('chef_id', chefId)
 
-  return Object.fromEntries(
-    (data ?? []).map((f) => [f.flag_name, f.enabled])
-  )
+  return Object.fromEntries((data ?? []).map((f) => [f.flag_name, f.enabled]))
 }
 
 export async function getAllChefFlags(): Promise<{

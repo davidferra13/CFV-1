@@ -12,6 +12,7 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { QuoteStatusBadge } from '@/components/quotes/quote-status-badge'
 import { History, Plus } from 'lucide-react'
 import type { QuoteVersionSummary } from '@/lib/quotes/actions'
+import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 
 interface Props {
   currentQuoteId: string
@@ -29,9 +30,10 @@ export function QuoteVersionHistory({ currentQuoteId, versions, isSuperseded }: 
     startTransition(async () => {
       try {
         const result = await reviseQuote(currentQuoteId)
-        router.push(`/events/quotes/${result.newQuoteId}/edit`)
+        router.push(`/quotes/${result.newQuoteId}/edit`)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to create revision')
+        const uiError = mapErrorToUI(err)
+        setError(uiError.message)
       }
     })
   }
@@ -48,7 +50,7 @@ export function QuoteVersionHistory({ currentQuoteId, versions, isSuperseded }: 
             className="inline-flex items-center gap-1 text-xs text-brand-600 hover:text-brand-400 disabled:opacity-50"
           >
             <Plus className="h-3 w-3" />
-            {isPending ? 'Creating revision…' : 'Create revision'}
+            {isPending ? 'Creating revision...' : 'Create revision'}
           </button>
         )}
         {error && <span className="text-xs text-red-600">{error}</span>}
@@ -100,7 +102,7 @@ export function QuoteVersionHistory({ currentQuoteId, versions, isSuperseded }: 
           className="inline-flex items-center gap-1 text-xs text-brand-600 hover:text-brand-400 disabled:opacity-50 mt-1"
         >
           <Plus className="h-3 w-3" />
-          {isPending ? 'Creating revision…' : 'Create new revision'}
+          {isPending ? 'Creating revision...' : 'Create new revision'}
         </button>
       )}
       {error && <p className="text-xs text-red-600">{error}</p>}

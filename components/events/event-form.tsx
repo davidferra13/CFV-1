@@ -2,7 +2,7 @@
 // Two-step layout: Step 1 = core booking details, Step 2 = pricing & notes
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -10,11 +10,21 @@ import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
+import { ConflictResolutionDialog } from '@/components/ui/conflict-resolution-dialog'
+import { SaveStateBadge } from '@/components/ui/save-state-badge'
+import { DraftRestorePrompt } from '@/components/ui/draft-restore-prompt'
+import { UnsavedChangesDialog } from '@/components/ui/unsaved-changes-dialog'
 import { AddressAutocomplete, type AddressData } from '@/components/ui/address-autocomplete'
 import { PartnerSelect } from '@/components/partners/partner-select'
-import { createEvent, updateEvent, type CreateEventInput } from '@/lib/events/actions'
+import { createEvent, getEventById, updateEvent, type CreateEventInput } from '@/lib/events/actions'
 import { checkDateConflicts } from '@/lib/availability/actions'
 import { parseCurrencyToCents } from '@/lib/utils/currency'
+import { useDurableDraft } from '@/lib/drafts/use-durable-draft'
+import { useUnsavedChangesGuard } from '@/lib/navigation/use-unsaved-changes-guard'
+import { useIdempotentMutation } from '@/lib/offline/use-idempotent-mutation'
+import { parseConflictError, type ConflictErrorPayload } from '@/lib/mutations/conflict'
+import { ValidationError } from '@/lib/errors/app-error'
+import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 
 type Client = {
   id: string
@@ -53,6 +63,7 @@ const TIMEZONE_OPTIONS = [
 type Event = {
   id: string
   client_id: string
+  updated_at?: string
   occasion: string | null
   event_date: string
   serve_time: string | null
@@ -76,7 +87,26 @@ type DepositDefaults = {
   amountCents: number
 }
 
+type EventFormData = {
+  client_id: string
+  occasion: string
+  event_date: string
+  serve_time: string
+  guest_count: string
+  location_address: string
+  location_city: string
+  location_state: string
+  location_zip: string
+  special_requests: string
+  quoted_price: string
+  deposit_amount: string
+  referral_partner_id: string | null
+  partner_location_id: string | null
+  event_timezone: string
+}
+
 type EventFormProps = {
+  tenantId: string
   clients: Client[]
   mode: 'create' | 'edit'
   event?: Event
@@ -86,6 +116,7 @@ type EventFormProps = {
 }
 
 export function EventForm({
+  tenantId,
   clients,
   mode,
   event,
@@ -96,6 +127,8 @@ export function EventForm({
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [conflictError, setConflictError] = useState<ConflictErrorPayload | null>(null)
+  const [latestConflictData, setLatestConflictData] = useState<EventFormData | null>(null)
 
   // Two-step state — edit mode starts on step 1 (both steps accessible via Back)
   const [step, setStep] = useState<1 | 2>(1)
@@ -155,6 +188,264 @@ export function EventForm({
   const [depositSource, setDepositSource] = useState<'default' | 'manual' | 'none'>(
     event?.deposit_amount_cents ? 'manual' : shouldAutoFill && initialDeposit ? 'default' : 'none'
   )
+
+  const currentFormData = useMemo<EventFormData>(
+    () => ({
+      client_id: clientId,
+      occasion,
+      event_date: eventDate,
+      serve_time: serveTime,
+      guest_count: guestCount,
+      location_address: locationAddress,
+      location_city: locationCity,
+      location_state: locationState,
+      location_zip: locationZip,
+      special_requests: specialRequests,
+      quoted_price: totalAmount,
+      deposit_amount: depositAmount,
+      referral_partner_id: referralPartnerId,
+      partner_location_id: partnerLocationId,
+      event_timezone: eventTimezone,
+    }),
+    [
+      clientId,
+      occasion,
+      eventDate,
+      serveTime,
+      guestCount,
+      locationAddress,
+      locationCity,
+      locationState,
+      locationZip,
+      specialRequests,
+      totalAmount,
+      depositAmount,
+      referralPartnerId,
+      partnerLocationId,
+      eventTimezone,
+    ]
+  )
+
+  const initialFormData = useMemo<EventFormData>(
+    () => ({
+      client_id: event?.client_id || '',
+      occasion: event?.occasion || '',
+      event_date: event?.event_date ? event.event_date.substring(0, 16) : '',
+      serve_time: event?.serve_time || '',
+      guest_count: event?.guest_count?.toString() || '',
+      location_address: event?.location_address || '',
+      location_city: event?.location_city || '',
+      location_state: event?.location_state || '',
+      location_zip: event?.location_zip || '',
+      special_requests: event?.special_requests || '',
+      quoted_price: event?.quoted_price_cents ? (event.quoted_price_cents / 100).toString() : '',
+      deposit_amount: event?.deposit_amount_cents
+        ? (event.deposit_amount_cents / 100).toString()
+        : initialDeposit,
+      referral_partner_id: event?.referral_partner_id ?? null,
+      partner_location_id: event?.partner_location_id ?? null,
+      event_timezone:
+        event?.event_timezone ||
+        Intl.DateTimeFormat().resolvedOptions().timeZone ||
+        'America/New_York',
+    }),
+    [event, initialDeposit]
+  )
+  const [committedFormData, setCommittedFormData] = useState<EventFormData>(initialFormData)
+
+  const createMutation = useIdempotentMutation<
+    CreateEventInput & { idempotency_key?: string },
+    any
+  >('events/create', { mutation: createEvent as any })
+  const updateMutation = useIdempotentMutation<
+    (CreateEventInput & { expected_updated_at?: string; idempotency_key?: string }) | any,
+    any
+  >('events/update', {
+    mutation: (input: any) => updateEvent(event!.id, input),
+  })
+  const mutation = mode === 'create' ? createMutation : updateMutation
+
+  const durableDraft = useDurableDraft<EventFormData>(
+    'event-form',
+    mode === 'edit' ? event?.id : null,
+    {
+      schemaVersion: 1,
+      tenantId,
+      defaultData: initialFormData,
+      debounceMs: 700,
+    }
+  )
+
+  const isDirty = useMemo(
+    () => JSON.stringify(currentFormData) !== JSON.stringify(committedFormData),
+    [committedFormData, currentFormData]
+  )
+
+  const unsavedGuard = useUnsavedChangesGuard({
+    isDirty,
+    onSaveDraft: () => durableDraft.persistDraft(currentFormData, { immediate: true }),
+    canSaveDraft: true,
+    saveState: mutation.saveState,
+  })
+
+  useEffect(() => {
+    if (!isDirty) return
+    void durableDraft.persistDraft(currentFormData)
+    if (mutation.saveState.status === 'SAVED') {
+      mutation.markUnsaved()
+    }
+  }, [currentFormData, durableDraft, isDirty, mutation])
+
+  useEffect(() => {
+    if (!durableDraft.showRestorePrompt || !durableDraft.pendingDraft) return
+    // Keep dirty state until user explicitly restores/discards the recovered draft.
+  }, [durableDraft.pendingDraft, durableDraft.showRestorePrompt])
+
+  const applyFormData = (data: EventFormData) => {
+    setClientId(data.client_id)
+    setOccasion(data.occasion)
+    setEventDate(data.event_date)
+    setServeTime(data.serve_time)
+    setGuestCount(data.guest_count)
+    setLocationAddress(data.location_address)
+    setLocationCity(data.location_city)
+    setLocationState(data.location_state)
+    setLocationZip(data.location_zip)
+    setSpecialRequests(data.special_requests)
+    setTotalAmount(data.quoted_price)
+    setDepositAmount(data.deposit_amount)
+    setReferralPartnerId(data.referral_partner_id)
+    setPartnerLocationId(data.partner_location_id)
+    setEventTimezone(data.event_timezone)
+  }
+
+  const buildEditPayload = (expectedUpdatedAt?: string) => {
+    const guestCountNum = parseInt(guestCount)
+    const hasQuotedPrice = totalAmount.trim().length > 0
+    const parsedQuotedPrice = hasQuotedPrice ? parseCurrencyToCents(totalAmount) : undefined
+    const totalAmountCents =
+      parsedQuotedPrice !== undefined && Number.isFinite(parsedQuotedPrice)
+        ? parsedQuotedPrice
+        : undefined
+    if (hasQuotedPrice && totalAmountCents === undefined) {
+      throw new ValidationError('Quoted price must be a valid number')
+    }
+
+    const hasDepositAmount = depositAmount.trim().length > 0
+    const parsedDepositAmount = hasDepositAmount ? parseCurrencyToCents(depositAmount) : undefined
+    const depositAmountCents =
+      parsedDepositAmount !== undefined && Number.isFinite(parsedDepositAmount)
+        ? parsedDepositAmount
+        : undefined
+    if (hasDepositAmount && depositAmountCents === undefined) {
+      throw new ValidationError('Deposit amount must be a valid number')
+    }
+
+    if (
+      depositAmountCents !== undefined &&
+      totalAmountCents !== undefined &&
+      depositAmountCents > totalAmountCents
+    ) {
+      throw new ValidationError('Deposit cannot exceed total amount')
+    }
+
+    const eventDateObj = new Date(eventDate)
+    if (eventDateObj < new Date()) {
+      throw new ValidationError('Event date must be in the future')
+    }
+
+    return {
+      event_date: eventDateObj.toISOString(),
+      serve_time: serveTime,
+      guest_count: guestCountNum,
+      location_address: locationAddress,
+      location_city: locationCity,
+      location_state: locationState || undefined,
+      location_zip: locationZip,
+      occasion: occasion || undefined,
+      special_requests: specialRequests || undefined,
+      quoted_price_cents: totalAmountCents,
+      deposit_amount_cents: depositAmountCents,
+      location_lat: locationLat ?? undefined,
+      location_lng: locationLng ?? undefined,
+      referral_partner_id: referralPartnerId,
+      partner_location_id: partnerLocationId,
+      event_timezone: eventTimezone || undefined,
+      expected_updated_at: expectedUpdatedAt,
+    }
+  }
+
+  const loadLatestConflictData = async () => {
+    if (mode !== 'edit' || !event) return
+    const latest = await getEventById(event.id)
+    if (!latest) return
+    setLatestConflictData({
+      client_id: latest.client_id || '',
+      occasion: latest.occasion || '',
+      event_date: latest.event_date ? latest.event_date.substring(0, 16) : '',
+      serve_time: latest.serve_time || '',
+      guest_count: latest.guest_count?.toString() || '',
+      location_address: latest.location_address || '',
+      location_city: latest.location_city || '',
+      location_state: latest.location_state || '',
+      location_zip: latest.location_zip || '',
+      special_requests: latest.special_requests || '',
+      quoted_price: latest.quoted_price_cents ? (latest.quoted_price_cents / 100).toString() : '',
+      deposit_amount: latest.deposit_amount_cents
+        ? (latest.deposit_amount_cents / 100).toString()
+        : '',
+      referral_partner_id: latest.referral_partner_id ?? null,
+      partner_location_id: latest.partner_location_id ?? null,
+      event_timezone: latest.event_timezone || 'America/New_York',
+    })
+  }
+
+  const handleKeepLatest = () => {
+    if (!latestConflictData) {
+      setConflictError(null)
+      return
+    }
+    applyFormData(latestConflictData)
+    setCommittedFormData(latestConflictData)
+    setConflictError(null)
+    setLatestConflictData(null)
+    setError(null)
+  }
+
+  const handleKeepMine = async () => {
+    if (mode !== 'edit' || !event || !conflictError) return
+    setLoading(true)
+    setError(null)
+    try {
+      const mutationResult = await updateMutation.mutate(
+        buildEditPayload(conflictError.currentUpdatedAt ?? event.updated_at)
+      )
+      if (mutationResult.queued) {
+        setLoading(false)
+        return
+      }
+      const result = mutationResult.result as any
+      if (result.success) {
+        setCommittedFormData(currentFormData)
+        await durableDraft.clearDraft()
+        setConflictError(null)
+        setLatestConflictData(null)
+        router.push(`/events/${event.id}`)
+      } else {
+        throw new Error('Failed to update event')
+      }
+    } catch (err) {
+      const parsedConflict = parseConflictError(err)
+      if (parsedConflict) {
+        setConflictError(parsedConflict)
+        await loadLatestConflictData().catch(() => null)
+      } else {
+        const uiError = mapErrorToUI(err)
+        setError(uiError.message)
+      }
+      setLoading(false)
+    }
+  }
 
   const handlePlaceSelect = (data: AddressData) => {
     setLocationAddress(data.address)
@@ -230,23 +521,47 @@ export function EventForm({
     e.preventDefault()
     setLoading(true)
     setError(null)
+    setConflictError(null)
 
     try {
-      const guestCountNum = parseInt(guestCount)
-      const totalAmountCents = parseCurrencyToCents(totalAmount)
-      const depositAmountCents = parseCurrencyToCents(depositAmount)
+      await durableDraft.persistDraft(currentFormData, { immediate: true })
 
-      if (depositAmountCents > totalAmountCents) {
-        throw new Error('Deposit cannot exceed total amount')
+      const guestCountNum = parseInt(guestCount)
+      const hasQuotedPrice = totalAmount.trim().length > 0
+      const parsedQuotedPrice = hasQuotedPrice ? parseCurrencyToCents(totalAmount) : undefined
+      const totalAmountCents =
+        parsedQuotedPrice !== undefined && Number.isFinite(parsedQuotedPrice)
+          ? parsedQuotedPrice
+          : undefined
+      if (hasQuotedPrice && totalAmountCents === undefined) {
+        throw new ValidationError('Quoted price must be a valid number')
+      }
+
+      const hasDepositAmount = depositAmount.trim().length > 0
+      const parsedDepositAmount = hasDepositAmount ? parseCurrencyToCents(depositAmount) : undefined
+      const depositAmountCents =
+        parsedDepositAmount !== undefined && Number.isFinite(parsedDepositAmount)
+          ? parsedDepositAmount
+          : undefined
+      if (hasDepositAmount && depositAmountCents === undefined) {
+        throw new ValidationError('Deposit amount must be a valid number')
+      }
+
+      if (
+        depositAmountCents !== undefined &&
+        totalAmountCents !== undefined &&
+        depositAmountCents > totalAmountCents
+      ) {
+        throw new ValidationError('Deposit cannot exceed total amount')
       }
 
       const eventDateObj = new Date(eventDate)
       if (eventDateObj < new Date()) {
-        throw new Error('Event date must be in the future')
+        throw new ValidationError('Event date must be in the future')
       }
 
       if (mode === 'create') {
-        const input: CreateEventInput = {
+        const input: CreateEventInput & { idempotency_key?: string } = {
           client_id: clientId,
           event_date: eventDateObj.toISOString(),
           serve_time: serveTime,
@@ -266,48 +581,56 @@ export function EventForm({
           event_timezone: eventTimezone || undefined,
         }
 
-        const result = await createEvent(input)
+        const mutationResult = await createMutation.mutate(input)
+        if (mutationResult.queued) {
+          setLoading(false)
+          return
+        }
+        const result = mutationResult.result as any
 
         if (result.success && result.event) {
+          setCommittedFormData(currentFormData)
+          await durableDraft.clearDraft()
           router.push(`/events/${result.event.id}`)
         } else {
           throw new Error('Failed to create event')
         }
       } else if (mode === 'edit' && event) {
-        const result = await updateEvent(event.id, {
-          event_date: eventDateObj.toISOString(),
-          serve_time: serveTime,
-          guest_count: guestCountNum,
-          location_address: locationAddress,
-          location_city: locationCity,
-          location_state: locationState || undefined,
-          location_zip: locationZip,
-          occasion: occasion || undefined,
-          special_requests: specialRequests || undefined,
-          quoted_price_cents: totalAmountCents,
-          deposit_amount_cents: depositAmountCents,
-          location_lat: locationLat ?? undefined,
-          location_lng: locationLng ?? undefined,
-          referral_partner_id: referralPartnerId,
-          partner_location_id: partnerLocationId,
-          event_timezone: eventTimezone || undefined,
-        })
+        const mutationResult = await updateMutation.mutate(buildEditPayload(event.updated_at))
+        if (mutationResult.queued) {
+          setLoading(false)
+          return
+        }
+
+        const result = mutationResult.result as any
 
         if (result.success) {
+          setCommittedFormData(currentFormData)
+          await durableDraft.clearDraft()
           router.push(`/events/${event.id}`)
         } else {
           throw new Error('Failed to update event')
         }
       }
     } catch (err) {
-      console.error('Form error:', err)
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      const parsedConflict = parseConflictError(err)
+      if (parsedConflict) {
+        setConflictError(parsedConflict)
+        await loadLatestConflictData().catch(() => null)
+      } else {
+        const uiError = mapErrorToUI(err)
+        setError(uiError.message)
+      }
       setLoading(false)
     }
   }
 
   return (
     <div className="space-y-4">
+      <div className="flex justify-end">
+        <SaveStateBadge state={mutation.saveState} onRetry={mutation.retryLast} />
+      </div>
+
       {/* Step indicator */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1.5">
@@ -485,7 +808,11 @@ export function EventForm({
               >
                 {conflictChecking ? 'Checking...' : 'Continue →'}
               </Button>
-              <Button type="button" variant="secondary" onClick={() => router.back()}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => unsavedGuard.requestNavigation(() => router.back())}
+              >
                 Cancel
               </Button>
             </div>
@@ -583,6 +910,7 @@ export function EventForm({
               placeholder="Any additional details or special requests..."
               value={specialRequests}
               onChange={(e) => setSpecialRequests(e.target.value)}
+              onBlur={() => void durableDraft.persistDraft(currentFormData, { immediate: true })}
               rows={4}
             />
 
@@ -621,6 +949,40 @@ export function EventForm({
           </form>
         )}
       </Card>
+
+      <DraftRestorePrompt
+        open={durableDraft.showRestorePrompt}
+        lastSavedAt={durableDraft.pendingDraft?.lastSavedAt ?? durableDraft.lastSavedAt}
+        onRestore={() => {
+          const restored = durableDraft.restoreDraft()
+          if (restored) {
+            applyFormData(restored)
+          }
+        }}
+        onDiscard={() => void durableDraft.discardDraft()}
+      />
+
+      <UnsavedChangesDialog
+        open={unsavedGuard.open}
+        canSaveDraft={unsavedGuard.canSaveDraft}
+        onStay={unsavedGuard.onStay}
+        onLeave={unsavedGuard.onLeave}
+        onSaveDraftAndLeave={() => void unsavedGuard.onSaveDraftAndLeave()}
+      />
+
+      <ConflictResolutionDialog
+        open={Boolean(conflictError)}
+        message={conflictError?.message}
+        attempted={currentFormData}
+        latest={latestConflictData}
+        loading={loading}
+        onKeepMine={() => void handleKeepMine()}
+        onKeepLatest={handleKeepLatest}
+        onCancel={() => {
+          setConflictError(null)
+          setLatestConflictData(null)
+        }}
+      />
     </div>
   )
 }

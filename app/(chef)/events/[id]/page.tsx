@@ -109,6 +109,8 @@ import { PostEventOutreachPanel } from '@/components/events/post-event-outreach-
 import { PhotoConsentSummary } from '@/components/events/photo-consent-summary'
 import { RSVPTrackerPanel } from '@/components/events/rsvp-tracker-panel'
 import { getEventMessagesForChef } from '@/lib/guest-messages/actions'
+import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
+import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
 
 async function getEventFinancialSummary(eventId: string) {
   const supabase = createServerClient()
@@ -189,6 +191,7 @@ export default async function EventDetailPage({
     unusedItems,
     substitutionItems,
     eventReadiness,
+    timelineEntries,
   ] = await Promise.all([
     getEventFinancialSummary(params.id),
     getEventTransitions(params.id),
@@ -219,6 +222,7 @@ export default async function EventDetailPage({
     isCompletedOrBeyond ? getUnusedIngredients(params.id) : Promise.resolve([]),
     getSubstitutions(params.id),
     getEventReadiness(params.id).catch(() => null),
+    getEntityActivityTimeline('event', params.id),
   ])
 
   const eventLoyaltyPoints = (eventLoyaltyTxs as { points: number }[]).reduce(
@@ -1552,6 +1556,8 @@ export default async function EventDetailPage({
             </div>
           </Card>
         )}
+
+        <EntityActivityTimeline entityType="event" entityId={event.id} entries={timelineEntries} />
       </EventDetailSection>
     </div>
   )

@@ -434,11 +434,15 @@ export function ChefSidebar({
   hasCannabisTier,
   enabledModules,
   isAdmin,
+  userId,
+  tenantId,
 }: {
   primaryNavHrefs?: string[]
   hasCannabisTier?: boolean
   enabledModules?: string[]
   isAdmin?: boolean
+  userId: string
+  tenantId: string
 }) {
   const pathname = usePathname() ?? ''
   const { collapsed, setCollapsed } = useSidebar()
@@ -523,7 +527,7 @@ export function ChefSidebar({
             {isAdmin && <OllamaStatusBadge />}
             <OfflineNavIndicator />
             <ActivityDot />
-            <GlobalSearch />
+            <GlobalSearch userId={userId} tenantId={tenantId} />
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
@@ -565,7 +569,7 @@ export function ChefSidebar({
             {isAdmin && <OllamaStatusBadge />}
             {/* Notification bell */}
             <NotificationBell collapsed />
-            <GlobalSearch />
+            <GlobalSearch userId={userId} tenantId={tenantId} />
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
@@ -993,11 +997,15 @@ export function ChefMobileNav({
   hasCannabisTier,
   enabledModules,
   isAdmin,
+  userId,
+  tenantId,
 }: {
   primaryNavHrefs?: string[]
   hasCannabisTier?: boolean
   enabledModules?: string[]
   isAdmin?: boolean
+  userId: string
+  tenantId: string
 }) {
   const pathname = usePathname() ?? ''
   const [menuOpen, setMenuOpen] = useState(false)
@@ -1078,7 +1086,7 @@ export function ChefMobileNav({
             {isAdmin && <OllamaStatusBadge />}
             <OfflineNavIndicator />
             <ActivityDot />
-            <GlobalSearch />
+            <GlobalSearch userId={userId} tenantId={tenantId} />
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}

@@ -49,6 +49,8 @@ import { TacTranscriptPrompt } from '@/components/inquiries/tac-transcript-promp
 import { TacMenuNudge } from '@/components/inquiries/tac-menu-nudge'
 import { LikelihoodToggle } from '@/components/inquiries/likelihood-toggle'
 import { TacWorkflowGuide } from '@/components/inquiries/tac-workflow-guide'
+import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
+import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
@@ -96,6 +98,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
     recipeLinks,
     availableRecipes,
     bookingScore,
+    timelineEntries,
   ] = await Promise.all([
     getInquiryById(params.id),
     getQuotesForInquiry(params.id),
@@ -107,6 +110,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
     getLinkedRecipes(params.id),
     getRecipesForLinker(),
     getBookingScoreForInquiry(params.id).catch(() => null),
+    getEntityActivityTimeline('inquiry', params.id),
   ])
 
   if (!inquiry) {
@@ -571,6 +575,12 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
           </p>
         </Card>
       )}
+
+      <EntityActivityTimeline
+        entityType="inquiry"
+        entityId={inquiry.id}
+        entries={timelineEntries}
+      />
 
       {/* Metadata */}
       <Card className="p-6">

@@ -200,8 +200,8 @@ BEGIN
     RAISE EXCEPTION 'Cannabis course config tenant mismatch for event';
   END IF;
 
-  IF ev_enabled = false THEN
-    RAISE EXCEPTION 'Cannabis course config requires a cannabis-enabled event';
+  IF ev_enabled = false AND NEW.is_active THEN
+    RAISE EXCEPTION 'Active cannabis course config requires a cannabis-enabled event';
   END IF;
 
   RETURN NEW;

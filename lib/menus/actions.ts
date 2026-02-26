@@ -10,6 +10,10 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { Database } from '@/types/database'
 import type { ComponentCategory } from './constants'
+import { executeWithIdempotency } from '@/lib/mutations/idempotency'
+import { createConflictError } from '@/lib/mutations/conflict'
+import { UnknownAppError } from '@/lib/errors/app-error'
+import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
 
 type MenuStatus = Database['public']['Enums']['menu_status']
 // 'draft' | 'shared' | 'locked' | 'archived'
@@ -31,6 +35,7 @@ const CreateMenuSchema = z.object({
   notes: z.string().optional(),
   is_template: z.boolean().optional(),
   event_id: z.string().uuid().optional(),
+  idempotency_key: z.string().optional(),
 })
 
 const UpdateMenuSchema = z.object({
@@ -43,6 +48,8 @@ const UpdateMenuSchema = z.object({
   target_guest_count: z.number().int().positive().optional(),
   notes: z.string().optional(),
   is_template: z.boolean().optional(),
+  expected_updated_at: z.string().optional(),
+  idempotency_key: z.string().optional(),
 })
 
 export type CreateMenuInput = z.infer<typeof CreateMenuSchema>
@@ -153,7 +160,7 @@ async function getMenuCourseCountForEventSync(
     .eq('tenant_id', tenantId) as any)
 
   if (dishError) {
-    throw new Error('Failed to calculate menu course count')
+    throw new UnknownAppError('Failed to calculate menu course count')
   }
 
   const courseNumbers = new Set<number>(
@@ -176,7 +183,6 @@ async function getMenuCourseCountForEventSync(
 export async function createMenu(input: CreateMenuInput) {
   const user = await requireChef()
   const validated = CreateMenuSchema.parse(input)
-
   const supabase = createServerClient()
 
   // If event_id provided, verify event belongs to tenant
@@ -186,58 +192,72 @@ export async function createMenu(input: CreateMenuInput) {
       .select('tenant_id')
       .eq('id', validated.event_id)
       .eq('tenant_id', user.tenantId!)
+      .is('deleted_at' as any, null)
       .single()
 
     if (!event) {
-      throw new Error('Event not found or does not belong to your tenant')
+      throw new UnknownAppError('Event not found or does not belong to your tenant')
     }
   }
 
-  const { data: menu, error } = await supabase
-    .from('menus')
-    .insert({
-      tenant_id: user.tenantId!,
-      name: validated.name,
-      description: validated.description,
-      service_style: validated.service_style as ServiceStyle | undefined,
-      cuisine_type: validated.cuisine_type,
-      target_guest_count: validated.target_guest_count,
-      notes: validated.notes,
-      is_template: validated.is_template,
-      event_id: validated.event_id,
-      created_by: user.id,
-      updated_by: user.id,
-    })
-    .select()
-    .single()
+  const result = await executeWithIdempotency({
+    supabase,
+    tenantId: user.tenantId!,
+    actorId: user.id,
+    actionName: 'menus.create',
+    idempotencyKey: validated.idempotency_key,
+    execute: async () => {
+      const { data: menu, error } = await supabase
+        .from('menus')
+        .insert({
+          tenant_id: user.tenantId!,
+          name: validated.name,
+          description: validated.description,
+          service_style: validated.service_style as ServiceStyle | undefined,
+          cuisine_type: validated.cuisine_type,
+          target_guest_count: validated.target_guest_count,
+          notes: validated.notes,
+          is_template: validated.is_template,
+          event_id: validated.event_id,
+          created_by: user.id,
+          updated_by: user.id,
+        })
+        .select()
+        .single()
 
-  if (error) {
-    console.error('[createMenu] Error:', error)
-    throw new Error('Failed to create menu')
-  }
+      if (error || !menu) {
+        console.error('[createMenu] Error:', error)
+        throw new UnknownAppError('Failed to create menu')
+      }
 
-  // Log initial transition to 'draft'
-  await supabase.from('menu_state_transitions').insert({
-    tenant_id: user.tenantId!,
-    menu_id: menu.id,
-    from_status: null,
-    to_status: 'draft',
-    transitioned_by: user.id,
+      // Log initial transition to 'draft'
+      await supabase.from('menu_state_transitions').insert({
+        tenant_id: user.tenantId!,
+        menu_id: menu.id,
+        from_status: null,
+        to_status: 'draft',
+        transitioned_by: user.id,
+      })
+
+      if (validated.event_id) {
+        await (supabase
+          .from('events' as any)
+          .update({
+            menu_id: menu.id,
+            course_count: 1,
+            updated_by: user.id,
+          })
+          .eq('id', validated.event_id)
+          .eq('tenant_id', user.tenantId!)
+          .is('deleted_at' as any, null) as any)
+      }
+
+      revalidatePath('/menus')
+      return { success: true, menu }
+    },
   })
 
-  if (validated.event_id) {
-    await (supabase
-      .from('events' as any)
-      .update({
-        menu_id: menu.id,
-        course_count: 1,
-        updated_by: user.id,
-      })
-      .eq('id', validated.event_id)
-      .eq('tenant_id', user.tenantId!) as any)
-  }
-
-  revalidatePath('/menus')
+  const menu = result.menu
 
   // Log chef activity (non-blocking)
   try {
@@ -260,7 +280,7 @@ export async function createMenu(input: CreateMenuInput) {
     console.error('[createMenu] Activity log failed (non-blocking):', err)
   }
 
-  return { success: true, menu }
+  return result
 }
 
 /**
@@ -270,17 +290,28 @@ export async function getMenus({ statusFilter }: { statusFilter?: MenuStatus } =
   const user = await requireChef()
   const supabase = createServerClient()
 
-  let query = supabase.from('menus').select('*').eq('tenant_id', user.tenantId!)
+  const buildQuery = (withSoftDeleteFilter: boolean) => {
+    let query = supabase.from('menus').select('*').eq('tenant_id', user.tenantId!)
+    if (withSoftDeleteFilter) {
+      query = query.is('deleted_at' as any, null)
+    }
 
-  if (statusFilter) {
-    query = query.eq('status', statusFilter)
+    if (statusFilter) {
+      query = query.eq('status', statusFilter)
+    }
+
+    return query
   }
 
-  const { data: menus, error } = await query.order('created_at', { ascending: false })
+  let response = await buildQuery(true).order('created_at', { ascending: false })
+  if (isMissingSoftDeleteColumn(response.error)) {
+    response = await buildQuery(false).order('created_at', { ascending: false })
+  }
+  const { data: menus, error } = response
 
   if (error) {
     console.error('[getMenus] Error:', error)
-    throw new Error('Failed to fetch menus')
+    throw new UnknownAppError('Failed to fetch menus')
   }
 
   return menus
@@ -293,12 +324,19 @@ export async function getMenuById(menuId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: menu, error } = await supabase
-    .from('menus')
-    .select('*')
-    .eq('id', menuId)
-    .eq('tenant_id', user.tenantId!)
-    .single()
+  const runQuery = (withSoftDeleteFilter: boolean) => {
+    let query = supabase.from('menus').select('*').eq('id', menuId).eq('tenant_id', user.tenantId!)
+    if (withSoftDeleteFilter) {
+      query = query.is('deleted_at' as any, null)
+    }
+    return query.single()
+  }
+
+  let response = await runQuery(true)
+  if (isMissingSoftDeleteColumn(response.error)) {
+    response = await runQuery(false)
+  }
+  const { data: menu, error } = response
 
   if (error) {
     console.error('[getMenuById] Error:', error)
@@ -356,76 +394,131 @@ export async function getMenuById(menuId: string) {
 export async function updateMenu(menuId: string, input: UpdateMenuInput) {
   const user = await requireChef()
   const validated = UpdateMenuSchema.parse(input)
+  const { expected_updated_at, idempotency_key, ...updateFields } = validated
 
   const supabase = createServerClient()
 
   // Verify menu exists and is editable
-  const { data: currentMenu } = await supabase
+  const { data: currentMenu } = await (supabase
     .from('menus')
-    .select('status')
+    .select('*')
     .eq('id', menuId)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
-  if (!currentMenu) {
-    throw new Error('Menu not found')
+  if (!currentMenu || currentMenu.deleted_at) {
+    throw new UnknownAppError('Menu not found')
   }
 
   if (currentMenu.status === 'locked') {
-    throw new Error('Cannot edit a locked menu')
+    throw new UnknownAppError('Cannot edit a locked menu')
   }
 
-  const { data: menu, error } = await supabase
-    .from('menus')
-    .update({
-      ...validated,
-      service_style: validated.service_style as ServiceStyle | undefined,
-      updated_by: user.id,
-    })
-    .eq('id', menuId)
-    .eq('tenant_id', user.tenantId!)
-    .select()
-    .single()
-
-  if (error) {
-    console.error('[updateMenu] Error:', error)
-    throw new Error('Failed to update menu')
+  if (expected_updated_at && currentMenu.updated_at !== expected_updated_at) {
+    throw createConflictError('This record changed elsewhere.', currentMenu.updated_at)
   }
 
-  revalidatePath('/menus')
-  revalidatePath(`/menus/${menuId}`)
+  const result = await executeWithIdempotency({
+    supabase,
+    tenantId: user.tenantId!,
+    actorId: user.id,
+    actionName: 'menus.update',
+    idempotencyKey: idempotency_key,
+    execute: async () => {
+      const runUpdate = async (withSoftDeleteFilter: boolean) => {
+        let query = supabase
+          .from('menus')
+          .update({
+            ...updateFields,
+            service_style: updateFields.service_style as ServiceStyle | undefined,
+            updated_by: user.id,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', menuId)
+          .eq('tenant_id', user.tenantId!)
+        if (withSoftDeleteFilter) {
+          query = query.is('deleted_at' as any, null)
+        }
+        if (expected_updated_at) {
+          query = query.eq('updated_at', expected_updated_at)
+        }
+        return query.select().single()
+      }
 
-  // Auto-generate FOH menu when the menu is confirmed (locked).
-  if (toStatus === 'locked') {
-    try {
-      const { autoGenerateFrontOfHouseMenuForMenu } =
-        await import('@/lib/front-of-house/menuGeneratorService')
-      await autoGenerateFrontOfHouseMenuForMenu(menuId, {
-        eventType: 'regular_menu',
-      })
-    } catch (err) {
-      console.error('[transitionMenu] FOH auto-generation failed (non-blocking):', err)
-    }
-  }
+      let response = await runUpdate(true)
+      if (isMissingSoftDeleteColumn(response.error)) {
+        response = await runUpdate(false)
+      }
+      const { data: menu, error } = response
 
-  // Log chef activity (non-blocking)
-  try {
-    const { logChefActivity } = await import('@/lib/activity/log-chef')
-    await logChefActivity({
-      tenantId: user.tenantId!,
-      actorId: user.id,
-      action: 'menu_updated',
-      domain: 'menu',
-      entityType: 'menu',
-      entityId: menuId,
-      summary: `Updated menu: ${menu.name} — ${Object.keys(validated).join(', ')}`,
-      context: { name: menu.name, changed_fields: Object.keys(validated) },
-    })
-  } catch (err) {
-    console.error('[updateMenu] Activity log failed (non-blocking):', err)
-  }
+      if (error || !menu) {
+        if (expected_updated_at) {
+          const getLatest = async (withSoftDeleteFilter: boolean) => {
+            let query = supabase
+              .from('menus')
+              .select('updated_at')
+              .eq('id', menuId)
+              .eq('tenant_id', user.tenantId!)
+            if (withSoftDeleteFilter) {
+              query = query.is('deleted_at' as any, null)
+            }
+            return query.maybeSingle()
+          }
 
-  return { success: true, menu }
+          let latestResponse = await getLatest(true)
+          if (isMissingSoftDeleteColumn(latestResponse.error)) {
+            latestResponse = await getLatest(false)
+          }
+          const latest = latestResponse.data
+
+          if (latest?.updated_at && latest.updated_at !== expected_updated_at) {
+            throw createConflictError('This record changed elsewhere.', latest.updated_at)
+          }
+        }
+
+        console.error('[updateMenu] Error:', error)
+        throw new UnknownAppError('Failed to update menu')
+      }
+
+      revalidatePath('/menus')
+      revalidatePath(`/menus/${menuId}`)
+
+      // Log chef activity (non-blocking)
+      try {
+        const { logChefActivity } = await import('@/lib/activity/log-chef')
+        const changedFields = Object.keys(updateFields)
+        const fieldDiffs = Object.fromEntries(
+          changedFields.map((field) => [
+            field,
+            {
+              before: (currentMenu as Record<string, unknown>)[field] ?? null,
+              after: (menu as Record<string, unknown>)[field] ?? null,
+            },
+          ])
+        )
+        await logChefActivity({
+          tenantId: user.tenantId!,
+          actorId: user.id,
+          action: 'menu_updated',
+          domain: 'menu',
+          entityType: 'menu',
+          entityId: menuId,
+          summary: `Updated menu: ${menu.name} - ${changedFields.join(', ')}`,
+          context: {
+            name: menu.name,
+            changed_fields: changedFields,
+            field_diffs: fieldDiffs,
+          },
+        })
+      } catch (err) {
+        console.error('[updateMenu] Activity log failed (non-blocking):', err)
+      }
+
+      return { success: true, menu }
+    },
+  })
+
+  return result
 }
 
 /**
@@ -437,38 +530,67 @@ export async function deleteMenu(menuId: string) {
   const supabase = createServerClient()
 
   // Check menu status and event attachment
-  const { data: menu } = await supabase
+  const { data: menu } = await (supabase
     .from('menus')
-    .select('status, event_id')
+    .select('status, event_id, deleted_at')
     .eq('id', menuId)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
-  if (!menu) {
-    throw new Error('Menu not found')
+  if (!menu || menu.deleted_at) {
+    throw new UnknownAppError('Menu not found')
   }
 
   if (menu.status !== 'draft') {
-    throw new Error('Can only delete menus in draft status. Archive instead.')
+    throw new UnknownAppError('Can only delete menus in draft status. Archive instead.')
   }
 
   if (menu.event_id) {
-    throw new Error('Cannot delete menu attached to an event. Detach first.')
+    throw new UnknownAppError('Cannot delete menu attached to an event. Detach first.')
   }
 
-  // Delete menu (cascades to dishes → components via ON DELETE CASCADE)
+  // Soft delete menu
   const { error } = await supabase
     .from('menus')
-    .delete()
+    .update({
+      deleted_at: new Date().toISOString(),
+      deleted_by: user.id,
+      updated_by: user.id,
+    } as any)
+    .eq('id', menuId)
+    .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
+
+  if (error) {
+    console.error('[deleteMenu] Error:', error)
+    throw new UnknownAppError('Failed to delete menu')
+  }
+
+  revalidatePath('/menus')
+  return { success: true }
+}
+
+export async function restoreMenu(menuId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { error } = await supabase
+    .from('menus')
+    .update({
+      deleted_at: null,
+      deleted_by: null,
+      updated_by: user.id,
+    } as any)
     .eq('id', menuId)
     .eq('tenant_id', user.tenantId!)
 
   if (error) {
-    console.error('[deleteMenu] Error:', error)
-    throw new Error('Failed to delete menu')
+    console.error('[restoreMenu] Error:', error)
+    throw new UnknownAppError('Failed to restore menu')
   }
 
   revalidatePath('/menus')
+  revalidatePath(`/menus/${menuId}`)
   return { success: true }
 }
 
@@ -489,10 +611,23 @@ export async function attachMenuToEvent(eventId: string, menuId: string) {
     .select('tenant_id')
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
     .single()
 
   if (!event) {
-    throw new Error('Event not found')
+    throw new UnknownAppError('Event not found')
+  }
+
+  const { data: menu } = await supabase
+    .from('menus')
+    .select('id')
+    .eq('id', menuId)
+    .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
+    .maybeSingle()
+
+  if (!menu) {
+    throw new UnknownAppError('Menu not found')
   }
 
   const menuCourseCount = await getMenuCourseCountForEventSync(supabase, menuId, user.tenantId!)
@@ -503,10 +638,11 @@ export async function attachMenuToEvent(eventId: string, menuId: string) {
     .update({ event_id: eventId, updated_by: user.id })
     .eq('id', menuId)
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
 
   if (error) {
     console.error('[attachMenuToEvent] Error:', error)
-    throw new Error('Failed to attach menu to event')
+    throw new UnknownAppError('Failed to attach menu to event')
   }
 
   const { error: eventUpdateError } = await (supabase
@@ -520,7 +656,7 @@ export async function attachMenuToEvent(eventId: string, menuId: string) {
     .eq('tenant_id', user.tenantId!) as any)
 
   if (eventUpdateError) {
-    throw new Error('Menu attached, but event menu link failed')
+    throw new UnknownAppError('Menu attached, but event menu link failed')
   }
 
   revalidatePath(`/events/${eventId}`)
@@ -541,6 +677,7 @@ export async function detachMenuFromEvent(menuId: string) {
     .select('event_id')
     .eq('id', menuId)
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
     .single()
 
   const { error } = await supabase
@@ -548,10 +685,11 @@ export async function detachMenuFromEvent(menuId: string) {
     .update({ event_id: null, updated_by: user.id })
     .eq('id', menuId)
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
 
   if (error) {
     console.error('[detachMenuFromEvent] Error:', error)
-    throw new Error('Failed to detach menu from event')
+    throw new UnknownAppError('Failed to detach menu from event')
   }
 
   if (menu?.event_id) {
@@ -585,11 +723,12 @@ export async function getEventMenus(eventId: string) {
     .select('*')
     .eq('event_id', eventId)
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
     .order('created_at', { ascending: true })
 
   if (error) {
     console.error('[getEventMenus] Error:', error)
-    throw new Error('Failed to fetch event menus')
+    throw new UnknownAppError('Failed to fetch event menus')
   }
 
   return menus || []
@@ -612,6 +751,7 @@ export async function getMenuEvent(menuId: string) {
     )
     .eq('id', menuId)
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
     .single()
 
   if (error) {
@@ -641,22 +781,23 @@ export async function transitionMenu(menuId: string, toStatus: MenuStatus, reaso
   const supabase = createServerClient()
 
   // Fetch current menu
-  const { data: menu } = await supabase
+  const { data: menu } = await (supabase
     .from('menus')
-    .select('status')
+    .select('status, deleted_at')
     .eq('id', menuId)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .is('deleted_at' as any, null)
+    .single() as any)
 
-  if (!menu) {
-    throw new Error('Menu not found')
+  if (!menu || menu.deleted_at) {
+    throw new UnknownAppError('Menu not found')
   }
 
   const currentStatus = menu.status as MenuStatus
   const allowedTransitions = VALID_MENU_TRANSITIONS[currentStatus] || []
 
   if (!allowedTransitions.includes(toStatus)) {
-    throw new Error(`Cannot transition menu from '${currentStatus}' to '${toStatus}'`)
+    throw new UnknownAppError(`Cannot transition menu from '${currentStatus}' to '${toStatus}'`)
   }
 
   // Build update payload with status-specific timestamps
@@ -678,10 +819,11 @@ export async function transitionMenu(menuId: string, toStatus: MenuStatus, reaso
     .update(updatePayload)
     .eq('id', menuId)
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
 
   if (updateError) {
     console.error('[transitionMenu] Error:', updateError)
-    throw new Error('Failed to transition menu')
+    throw new UnknownAppError('Failed to transition menu')
   }
 
   // Log transition
@@ -736,14 +878,15 @@ export async function addDishToMenu(input: CreateDishInput) {
     .select('status')
     .eq('id', validated.menu_id)
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
     .single()
 
   if (!menu) {
-    throw new Error('Menu not found')
+    throw new UnknownAppError('Menu not found')
   }
 
   if (menu.status === 'locked') {
-    throw new Error('Cannot add dishes to a locked menu')
+    throw new UnknownAppError('Cannot add dishes to a locked menu')
   }
 
   const { data: dish, error } = await supabase
@@ -771,7 +914,7 @@ export async function addDishToMenu(input: CreateDishInput) {
 
   if (error) {
     console.error('[addDishToMenu] Error:', error)
-    throw new Error('Failed to add dish')
+    throw new UnknownAppError('Failed to add dish')
   }
 
   revalidatePath(`/menus/${validated.menu_id}`)
@@ -800,7 +943,7 @@ export async function updateDish(dishId: string, input: UpdateDishInput) {
 
   if (error) {
     console.error('[updateDish] Error:', error)
-    throw new Error('Failed to update dish')
+    throw new UnknownAppError('Failed to update dish')
   }
 
   revalidatePath(`/menus/${dish.menu_id}`)
@@ -824,7 +967,7 @@ export async function deleteDish(dishId: string) {
     .single()
 
   if (!dish) {
-    throw new Error('Dish not found')
+    throw new UnknownAppError('Dish not found')
   }
 
   const { error } = await supabase
@@ -835,7 +978,7 @@ export async function deleteDish(dishId: string) {
 
   if (error) {
     console.error('[deleteDish] Error:', error)
-    throw new Error('Failed to delete dish')
+    throw new UnknownAppError('Failed to delete dish')
   }
 
   revalidatePath(`/menus/${dish.menu_id}`)
@@ -909,7 +1052,7 @@ export async function addComponentToDish(input: CreateComponentInput) {
 
   if (error) {
     console.error('[addComponentToDish] Error:', error)
-    throw new Error('Failed to add component')
+    throw new UnknownAppError('Failed to add component')
   }
 
   return { success: true, component }
@@ -938,7 +1081,7 @@ export async function updateComponent(componentId: string, input: UpdateComponen
 
   if (error) {
     console.error('[updateComponent] Error:', error)
-    throw new Error('Failed to update component')
+    throw new UnknownAppError('Failed to update component')
   }
 
   return { success: true, component }
@@ -959,7 +1102,7 @@ export async function deleteComponent(componentId: string) {
 
   if (error) {
     console.error('[deleteComponent] Error:', error)
-    throw new Error('Failed to delete component')
+    throw new UnknownAppError('Failed to delete component')
   }
 
   return { success: true }
@@ -1013,7 +1156,7 @@ export async function getAllComponents(filters?: {
 
   if (error) {
     console.error('[getAllComponents] Error:', error)
-    throw new Error('Failed to fetch components')
+    throw new UnknownAppError('Failed to fetch components')
   }
 
   let result: ComponentListItem[] = (components || []).map((c) => {
@@ -1075,7 +1218,7 @@ export async function getMenuCostSummaries(): Promise<MenuCostSummary[]> {
 
   if (error) {
     console.error('[getMenuCostSummaries] Error:', error)
-    throw new Error('Failed to fetch menu cost summaries')
+    throw new UnknownAppError('Failed to fetch menu cost summaries')
   }
 
   return (data || []) as MenuCostSummary[]
@@ -1096,7 +1239,7 @@ export async function duplicateMenu(menuId: string) {
   // Get full menu with dishes and components
   const original = await getMenuById(menuId)
   if (!original) {
-    throw new Error('Menu not found')
+    throw new UnknownAppError('Menu not found')
   }
 
   const supabase = createServerClient()
@@ -1121,7 +1264,7 @@ export async function duplicateMenu(menuId: string) {
 
   if (menuError || !newMenu) {
     console.error('[duplicateMenu] Error:', menuError)
-    throw new Error('Failed to duplicate menu')
+    throw new UnknownAppError('Failed to duplicate menu')
   }
 
   // Copy dishes and their components
@@ -1180,7 +1323,7 @@ export async function duplicateMenu(menuId: string) {
       } as any)
       if (error) {
         console.error('[duplicateMenu] Component insert failed:', error)
-        throw new Error('Failed to duplicate menu component')
+        throw new UnknownAppError('Failed to duplicate menu component')
       }
     }
   }
@@ -1221,6 +1364,7 @@ export async function cloneMenu(menuId: string) {
       .update({ is_template: false, event_id: null })
       .eq('id', result.menu.id)
       .eq('tenant_id', user.tenantId!)
+      .is('deleted_at' as any, null)
   } catch {
     // Non-blocking: if the update fails the clone itself still exists as draft
   }
@@ -1242,10 +1386,11 @@ export async function saveMenuAsTemplate(menuId: string) {
     .update({ is_template: true, updated_by: user.id })
     .eq('id', menuId)
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
 
   if (error) {
     console.error('[saveMenuAsTemplate] Error:', error)
-    throw new Error('Failed to save menu as template')
+    throw new UnknownAppError('Failed to save menu as template')
   }
 
   revalidatePath('/menus')
@@ -1266,6 +1411,7 @@ export async function listMenuTemplates() {
       .select('id, name, description, service_style, cuisine_type, target_guest_count, created_at')
       .eq('tenant_id', user.tenantId!)
       .eq('is_template', true)
+      .is('deleted_at' as any, null)
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -1318,13 +1464,13 @@ export async function getMenuPrepTimeline(menuId: string): Promise<PrepTimelineS
   const dishIds = dishes.map((d) => d.id)
   const dishMap = new Map(dishes.map((d) => [d.id, d.course_name]))
 
-  const { data: components } = await supabase
+  const { data: components } = await (supabase
     .from('components')
     .select('id, name, category, dish_id, prep_day_offset, prep_time_of_day, prep_station')
     .in('dish_id', dishIds)
     .eq('tenant_id', user.tenantId!)
     .order('prep_day_offset', { ascending: true })
-    .order('sort_order', { ascending: true })
+    .order('sort_order', { ascending: true }) as any)
 
   if (!components || components.length === 0) return []
 

@@ -13,7 +13,7 @@ export default async function CreateMenuPage() {
         <p className="text-stone-400 mt-1">Create a new menu template</p>
       </div>
 
-      <CreateMenuForm />
+      <CreateMenuForm tenantId={user.tenantId!} />
     </div>
   )
 }

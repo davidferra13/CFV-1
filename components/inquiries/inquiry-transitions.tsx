@@ -2,14 +2,24 @@
 // Shows action buttons for moving inquiries through the pipeline
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
-import { transitionInquiry, convertInquiryToEvent, deleteInquiry } from '@/lib/inquiries/actions'
+import { ConfirmPolicyDialog } from '@/components/ui/confirm-policy-dialog'
+import {
+  transitionInquiry,
+  convertInquiryToEvent,
+  deleteInquiry,
+  restoreInquiry,
+} from '@/lib/inquiries/actions'
 import { releaseToMarketplace } from '@/lib/contact/claim'
 import { DeclineWithReasonModal } from '@/components/inquiries/decline-with-reason-modal'
+import { showUndoToast } from '@/components/ui/undo-toast'
+import { useUndoStack } from '@/lib/undo/use-undo-stack'
+import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
+import { confirmPolicy, type ConfirmPolicyInput } from '@/lib/confirm/confirm-policy'
 
 type InquiryStatus =
   | 'new'
@@ -39,6 +49,33 @@ export function InquiryTransitions({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showDeclineModal, setShowDeclineModal] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [confirmInput, setConfirmInput] = useState<ConfirmPolicyInput | null>(null)
+  const pendingConfirmActionRef = useRef<null | (() => Promise<void>)>(null)
+  const undoStack = useUndoStack<string | null>(null)
+
+  const requestPolicyConfirmation = (
+    policyInput: ConfirmPolicyInput,
+    action: () => Promise<void>
+  ) => {
+    const decision = confirmPolicy(policyInput)
+    if (decision.mode === 'none') {
+      void action()
+      return
+    }
+    pendingConfirmActionRef.current = action
+    setConfirmInput(policyInput)
+    setConfirmOpen(true)
+  }
+
+  const handleConfirm = async () => {
+    const fn = pendingConfirmActionRef.current
+    setConfirmOpen(false)
+    setConfirmInput(null)
+    pendingConfirmActionRef.current = null
+    if (!fn) return
+    await fn()
+  }
 
   const handleTransition = async (newStatus: InquiryStatus) => {
     setLoading(true)
@@ -50,8 +87,8 @@ export function InquiryTransitions({
         router.refresh()
       }
     } catch (err) {
-      console.error('Transition error:', err)
-      setError(err instanceof Error ? err.message : 'Transition failed')
+      const uiError = mapErrorToUI(err)
+      setError(uiError.message)
     } finally {
       setLoading(false)
     }
@@ -67,18 +104,13 @@ export function InquiryTransitions({
         router.push(`/events/${result.event.id}`)
       }
     } catch (err) {
-      console.error('Convert error:', err)
-      setError(err instanceof Error ? err.message : 'Conversion failed')
+      const uiError = mapErrorToUI(err)
+      setError(uiError.message)
       setLoading(false)
     }
   }
 
   const handleRelease = async () => {
-    if (
-      !confirm('Release this lead back to the marketplace? Other chefs will be able to claim it.')
-    )
-      return
-
     setLoading(true)
     setError(null)
 
@@ -88,26 +120,34 @@ export function InquiryTransitions({
         router.push('/inquiries')
       }
     } catch (err) {
-      console.error('Release error:', err)
-      setError(err instanceof Error ? err.message : 'Release failed')
+      const uiError = mapErrorToUI(err)
+      setError(uiError.message)
       setLoading(false)
     }
   }
 
   const handleDelete = async () => {
-    if (!confirm('Delete this inquiry? This cannot be undone.')) return
-
     setLoading(true)
     setError(null)
 
     try {
       const result = await deleteInquiry(inquiry.id)
       if (result.success) {
+        undoStack.push(inquiry.id, inquiry.id)
+        showUndoToast(
+          'Inquiry deleted. You can undo this for the next 20 seconds.',
+          () => {
+            const deletedInquiryId = undoStack.undo()
+            if (!deletedInquiryId) return
+            void restoreInquiry(deletedInquiryId).then(() => router.refresh())
+          },
+          20000
+        )
         router.push('/inquiries')
       }
     } catch (err) {
-      console.error('Delete error:', err)
-      setError(err instanceof Error ? err.message : 'Delete failed')
+      const uiError = mapErrorToUI(err)
+      setError(uiError.message)
       setLoading(false)
     }
   }
@@ -137,7 +177,19 @@ export function InquiryTransitions({
         <Button
           variant="danger"
           size="sm"
-          onClick={handleDelete}
+          onClick={() =>
+            requestPolicyConfirmation(
+              {
+                risk: 'low',
+                reversible: true,
+                entityName: inquiry.id,
+                impactPreview:
+                  'Inquiry will be soft-deleted and can be undone from toast for a short window.',
+                actionLabel: 'Delete Inquiry',
+              },
+              handleDelete
+            )
+          }
           loading={loading}
           disabled={loading}
         >
@@ -171,7 +223,23 @@ export function InquiryTransitions({
                   Mark Awaiting Client
                 </Button>
                 {canRelease && (
-                  <Button variant="secondary" onClick={handleRelease} disabled={loading}>
+                  <Button
+                    variant="secondary"
+                    onClick={() =>
+                      requestPolicyConfirmation(
+                        {
+                          risk: 'medium',
+                          reversible: false,
+                          entityName: inquiry.id,
+                          impactPreview:
+                            'Lead will be released to marketplace for other chefs to claim.',
+                          actionLabel: 'Release Lead',
+                        },
+                        handleRelease
+                      )
+                    }
+                    disabled={loading}
+                  >
                     Release to Marketplace
                   </Button>
                 )}
@@ -182,7 +250,24 @@ export function InquiryTransitions({
                 >
                   Decline
                 </Button>
-                <Button variant="ghost" size="sm" onClick={handleDelete} disabled={loading}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    requestPolicyConfirmation(
+                      {
+                        risk: 'low',
+                        reversible: true,
+                        entityName: inquiry.id,
+                        impactPreview:
+                          'Inquiry will be soft-deleted and can be undone from toast for a short window.',
+                        actionLabel: 'Delete Inquiry',
+                      },
+                      handleDelete
+                    )
+                  }
+                  disabled={loading}
+                >
                   Delete
                 </Button>
               </>
@@ -314,6 +399,18 @@ export function InquiryTransitions({
           onCancel={() => setShowDeclineModal(false)}
         />
       )}
+
+      <ConfirmPolicyDialog
+        open={confirmOpen}
+        policy={confirmInput}
+        loading={loading}
+        onCancel={() => {
+          setConfirmOpen(false)
+          setConfirmInput(null)
+          pendingConfirmActionRef.current = null
+        }}
+        onConfirm={handleConfirm}
+      />
     </>
   )
 }

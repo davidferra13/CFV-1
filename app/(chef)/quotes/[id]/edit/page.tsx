@@ -7,7 +7,7 @@ import { getClients } from '@/lib/clients/actions'
 import { QuoteForm } from '@/components/quotes/quote-form'
 
 export default async function EditQuotePage({ params }: { params: { id: string } }) {
-  await requireChef()
+  const user = await requireChef()
 
   const quote = await getQuoteById(params.id)
 
@@ -29,7 +29,12 @@ export default async function EditQuotePage({ params }: { params: { id: string }
         <p className="text-stone-400 mt-1">Update pricing before sending to the client.</p>
       </div>
 
-      <QuoteForm clients={clients} pricingHistory={pricingHistory} existingQuote={quote} />
+      <QuoteForm
+        tenantId={user.tenantId!}
+        clients={clients}
+        pricingHistory={pricingHistory}
+        existingQuote={quote}
+      />
     </div>
   )
 }

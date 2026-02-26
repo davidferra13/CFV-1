@@ -7,6 +7,8 @@ import { getQuoteById, getQuoteVersionHistory } from '@/lib/quotes/actions'
 import { QuoteStatusBadge, PricingModelBadge } from '@/components/quotes/quote-status-badge'
 import { QuoteVersionHistory } from '@/components/quotes/quote-version-history'
 import { QuoteTransitions } from '@/components/quotes/quote-transitions'
+import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
+import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -16,9 +18,10 @@ import { format, formatDistanceToNow } from 'date-fns'
 export default async function QuoteDetailPage({ params }: { params: { id: string } }) {
   await requireChef()
 
-  const [quote, versionHistory] = await Promise.all([
+  const [quote, versionHistory, timelineEntries] = await Promise.all([
     getQuoteById(params.id),
     getQuoteVersionHistory(params.id),
+    getEntityActivityTimeline('quote', params.id),
   ])
 
   if (!quote) {
@@ -197,6 +200,8 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
 
       {/* Actions (Transitions) */}
       <QuoteTransitions quote={quote} />
+
+      <EntityActivityTimeline entityType="quote" entityId={quote.id} entries={timelineEntries} />
 
       {/* Notes */}
       {quote.pricing_notes && (

@@ -8,7 +8,7 @@ import { getPartners, getPartnerLocations } from '@/lib/partners/actions'
 import { InquiryForm } from '@/components/inquiries/inquiry-form'
 
 export default async function NewInquiryPage() {
-  await requireChef()
+  const user = await requireChef()
 
   const [clients, partners] = await Promise.all([getClients(), getPartners({ status: 'active' })])
 
@@ -40,6 +40,7 @@ export default async function NewInquiryPage() {
       </div>
 
       <InquiryForm
+        tenantId={user.tenantId!}
         clients={clients}
         partners={partners.map((p) => ({ id: p.id, name: p.name, partner_type: p.partner_type }))}
         partnerLocations={partnerLocations}

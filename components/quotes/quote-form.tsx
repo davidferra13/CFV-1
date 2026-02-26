@@ -2,7 +2,7 @@
 // Supports pre-filling from inquiry data and showing client pricing history
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -10,12 +10,11 @@ import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
-import {
-  createQuote,
-  updateQuote,
-  type CreateQuoteInput,
-  type UpdateQuoteInput,
-} from '@/lib/quotes/actions'
+import { ConflictResolutionDialog } from '@/components/ui/conflict-resolution-dialog'
+import { SaveStateBadge } from '@/components/ui/save-state-badge'
+import { DraftRestorePrompt } from '@/components/ui/draft-restore-prompt'
+import { UnsavedChangesDialog } from '@/components/ui/unsaved-changes-dialog'
+import { createQuote, getQuoteById, updateQuote, type CreateQuoteInput } from '@/lib/quotes/actions'
 import { parseCurrencyToCents, formatCurrency } from '@/lib/utils/currency'
 import {
   computePricing,
@@ -25,6 +24,12 @@ import {
 } from '@/lib/pricing/compute'
 import { PricingSuggestionPanel } from '@/components/analytics/pricing-suggestion-panel'
 import type { PricingSuggestion } from '@/lib/analytics/pricing-suggestions'
+import { useDurableDraft } from '@/lib/drafts/use-durable-draft'
+import { useUnsavedChangesGuard } from '@/lib/navigation/use-unsaved-changes-guard'
+import { useIdempotentMutation } from '@/lib/offline/use-idempotent-mutation'
+import { parseConflictError, type ConflictErrorPayload } from '@/lib/mutations/conflict'
+import { ValidationError } from '@/lib/errors/app-error'
+import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 
 type Client = {
   id: string
@@ -45,6 +50,7 @@ type PricingHistoryEntry = {
 
 type ExistingQuote = {
   id: string
+  updated_at?: string
   quote_name: string | null
   pricing_model: string | null
   total_quoted_cents: number
@@ -58,7 +64,23 @@ type ExistingQuote = {
   internal_notes: string | null
 }
 
+type QuoteFormData = {
+  client_id: string
+  quote_name: string
+  pricing_model: string
+  total_amount: string
+  price_per_person: string
+  guest_count: string
+  deposit_required: boolean
+  deposit_amount: string
+  deposit_percentage: string
+  valid_until: string
+  pricing_notes: string
+  internal_notes: string
+}
+
 type QuoteFormProps = {
+  tenantId: string
   clients: Client[]
   pricingHistory?: PricingHistoryEntry[]
   pricingSuggestion?: PricingSuggestion | null
@@ -72,6 +94,7 @@ type QuoteFormProps = {
 }
 
 export function QuoteForm({
+  tenantId,
   clients,
   pricingHistory,
   pricingSuggestion,
@@ -86,6 +109,8 @@ export function QuoteForm({
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [conflictError, setConflictError] = useState<ConflictErrorPayload | null>(null)
+  const [latestConflictData, setLatestConflictData] = useState<QuoteFormData | null>(null)
   const isEditing = !!existingQuote
 
   // Form state
@@ -128,6 +153,118 @@ export function QuoteForm({
   const [calcLoading, setCalcLoading] = useState(false)
   const [calcResult, setCalcResult] = useState<PricingBreakdown | null>(null)
   const [calcError, setCalcError] = useState<string | null>(null)
+
+  const currentFormData = useMemo<QuoteFormData>(
+    () => ({
+      client_id: clientId,
+      quote_name: quoteName,
+      pricing_model: pricingModel,
+      total_amount: totalAmount,
+      price_per_person: pricePerPerson,
+      guest_count: guestCount,
+      deposit_required: depositRequired,
+      deposit_amount: depositAmount,
+      deposit_percentage: depositPercentage,
+      valid_until: validUntil,
+      pricing_notes: pricingNotes,
+      internal_notes: internalNotes,
+    }),
+    [
+      clientId,
+      quoteName,
+      pricingModel,
+      totalAmount,
+      pricePerPerson,
+      guestCount,
+      depositRequired,
+      depositAmount,
+      depositPercentage,
+      validUntil,
+      pricingNotes,
+      internalNotes,
+    ]
+  )
+
+  const initialFormData = useMemo<QuoteFormData>(
+    () => ({
+      client_id: prefilledClientId || '',
+      quote_name: existingQuote?.quote_name || prefilledOccasion || '',
+      pricing_model: existingQuote?.pricing_model || 'flat_rate',
+      total_amount: existingQuote
+        ? (existingQuote.total_quoted_cents / 100).toFixed(2)
+        : prefilledBudgetCents
+          ? (prefilledBudgetCents / 100).toFixed(2)
+          : '',
+      price_per_person: existingQuote?.price_per_person_cents
+        ? (existingQuote.price_per_person_cents / 100).toFixed(2)
+        : '',
+      guest_count:
+        existingQuote?.guest_count_estimated?.toString() || prefilledGuestCount?.toString() || '',
+      deposit_required: existingQuote?.deposit_required ?? false,
+      deposit_amount: existingQuote?.deposit_amount_cents
+        ? (existingQuote.deposit_amount_cents / 100).toFixed(2)
+        : '',
+      deposit_percentage: existingQuote?.deposit_percentage?.toString() || '',
+      valid_until: existingQuote?.valid_until?.split('T')[0] || '',
+      pricing_notes: existingQuote?.pricing_notes || '',
+      internal_notes: existingQuote?.internal_notes || '',
+    }),
+    [existingQuote, prefilledBudgetCents, prefilledClientId, prefilledGuestCount, prefilledOccasion]
+  )
+  const [committedFormData, setCommittedFormData] = useState<QuoteFormData>(initialFormData)
+
+  const createMutation = useIdempotentMutation<
+    CreateQuoteInput & { idempotency_key?: string },
+    any
+  >('quotes/create', {
+    mutation: createQuote as any,
+  })
+  const updateMutation = useIdempotentMutation<any, any>('quotes/update', {
+    mutation: (input) => updateQuote(existingQuote!.id, input),
+  })
+  const mutation = isEditing ? updateMutation : createMutation
+
+  const durableDraft = useDurableDraft<QuoteFormData>('quote-form', existingQuote?.id ?? null, {
+    schemaVersion: 1,
+    tenantId,
+    defaultData: initialFormData,
+    debounceMs: 700,
+  })
+
+  const isDirty = useMemo(
+    () => JSON.stringify(currentFormData) !== JSON.stringify(committedFormData),
+    [committedFormData, currentFormData]
+  )
+
+  const unsavedGuard = useUnsavedChangesGuard({
+    isDirty,
+    onSaveDraft: () => durableDraft.persistDraft(currentFormData, { immediate: true }),
+    canSaveDraft: true,
+    saveState: mutation.saveState,
+  })
+
+  useEffect(() => {
+    if (!isDirty) return
+    void durableDraft.persistDraft(currentFormData)
+    if (mutation.saveState.status === 'SAVED') {
+      mutation.markUnsaved()
+    }
+  }, [currentFormData, durableDraft, isDirty, mutation])
+
+  const applyFormData = (data: QuoteFormData) => {
+    setClientId(data.client_id)
+    setQuoteName(data.quote_name)
+    setPricingModel(data.pricing_model)
+    setTotalAmount(data.total_amount)
+    setPricePerPerson(data.price_per_person)
+    setGuestCount(data.guest_count)
+    setDepositRequired(data.deposit_required)
+    setDepositAmount(data.deposit_amount)
+    setDepositPercentage(data.deposit_percentage)
+    setValidUntil(data.valid_until)
+    setPricingNotes(data.pricing_notes)
+    setInternalNotes(data.internal_notes)
+  }
 
   const handleCalculate = async () => {
     setCalcLoading(true)
@@ -188,35 +325,131 @@ export function QuoteForm({
     }
   }
 
+  const buildUpdatePayload = (expectedUpdatedAt?: string) => {
+    const totalCents = parseCurrencyToCents(totalAmount)
+    if (!totalCents || totalCents <= 0) {
+      throw new ValidationError('Total amount must be positive')
+    }
+
+    return {
+      quote_name: quoteName || undefined,
+      pricing_model: pricingModel as 'per_person' | 'flat_rate' | 'custom',
+      total_quoted_cents: totalCents,
+      price_per_person_cents: pricePerPerson ? parseCurrencyToCents(pricePerPerson) : null,
+      guest_count_estimated: guestCount ? parseInt(guestCount) : null,
+      deposit_required: depositRequired,
+      deposit_amount_cents: depositAmount ? parseCurrencyToCents(depositAmount) : null,
+      deposit_percentage: depositPercentage ? parseFloat(depositPercentage) : null,
+      valid_until: validUntil || null,
+      pricing_notes: pricingNotes || null,
+      internal_notes: internalNotes || null,
+      expected_updated_at: expectedUpdatedAt,
+    }
+  }
+
+  const loadLatestConflictData = async () => {
+    if (!isEditing || !existingQuote) return
+    const latest = await getQuoteById(existingQuote.id)
+    if (!latest) return
+
+    setLatestConflictData({
+      client_id: latest.client_id,
+      quote_name: latest.quote_name || '',
+      pricing_model: latest.pricing_model || 'flat_rate',
+      total_amount: (latest.total_quoted_cents / 100).toFixed(2),
+      price_per_person: latest.price_per_person_cents
+        ? (latest.price_per_person_cents / 100).toFixed(2)
+        : '',
+      guest_count: latest.guest_count_estimated?.toString() || '',
+      deposit_required: latest.deposit_required ?? false,
+      deposit_amount: latest.deposit_amount_cents
+        ? (latest.deposit_amount_cents / 100).toFixed(2)
+        : '',
+      deposit_percentage: latest.deposit_percentage?.toString() || '',
+      valid_until: latest.valid_until?.split('T')[0] || '',
+      pricing_notes: latest.pricing_notes || '',
+      internal_notes: latest.internal_notes || '',
+    })
+  }
+
+  const handleKeepLatest = () => {
+    if (!latestConflictData) {
+      setConflictError(null)
+      return
+    }
+    applyFormData(latestConflictData)
+    setCommittedFormData(latestConflictData)
+    setConflictError(null)
+    setLatestConflictData(null)
+    setError(null)
+  }
+
+  const handleKeepMine = async () => {
+    if (!isEditing || !existingQuote || !conflictError) return
+    setLoading(true)
+    setError(null)
+    try {
+      const mutationResult = await updateMutation.mutate(
+        buildUpdatePayload(conflictError.currentUpdatedAt ?? existingQuote.updated_at)
+      )
+      if (mutationResult.queued) {
+        setLoading(false)
+        return
+      }
+
+      const result = mutationResult.result as any
+      if (result.success) {
+        setCommittedFormData(currentFormData)
+        await durableDraft.clearDraft()
+        setConflictError(null)
+        setLatestConflictData(null)
+        router.push(`/quotes/${existingQuote.id}`)
+      } else {
+        throw new Error('Failed to update quote')
+      }
+    } catch (err) {
+      const parsedConflict = parseConflictError(err)
+      if (parsedConflict) {
+        setConflictError(parsedConflict)
+        await loadLatestConflictData().catch(() => null)
+      } else {
+        const uiError = mapErrorToUI(err)
+        setError(uiError.message)
+      }
+      setLoading(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
+    setConflictError(null)
 
     try {
+      await durableDraft.persistDraft(currentFormData, { immediate: true })
+
       const totalCents = parseCurrencyToCents(totalAmount)
-      if (!totalCents || totalCents <= 0) throw new Error('Total amount must be positive')
+      if (!totalCents || totalCents <= 0) {
+        throw new ValidationError('Total amount must be positive')
+      }
 
       if (isEditing) {
-        const input: UpdateQuoteInput = {
-          quote_name: quoteName || undefined,
-          pricing_model: pricingModel as 'per_person' | 'flat_rate' | 'custom',
-          total_quoted_cents: totalCents,
-          price_per_person_cents: pricePerPerson ? parseCurrencyToCents(pricePerPerson) : null,
-          guest_count_estimated: guestCount ? parseInt(guestCount) : null,
-          deposit_required: depositRequired,
-          deposit_amount_cents: depositAmount ? parseCurrencyToCents(depositAmount) : null,
-          deposit_percentage: depositPercentage ? parseFloat(depositPercentage) : null,
-          valid_until: validUntil || null,
-          pricing_notes: pricingNotes || null,
-          internal_notes: internalNotes || null,
+        const mutationResult = await updateMutation.mutate(
+          buildUpdatePayload(existingQuote.updated_at)
+        )
+        if (mutationResult.queued) {
+          setLoading(false)
+          return
         }
-        const result = await updateQuote(existingQuote.id, input)
+        const result = mutationResult.result as any
         if (result.success) {
+          setCommittedFormData(currentFormData)
+          await durableDraft.clearDraft()
           router.push(`/quotes/${existingQuote.id}`)
         }
       } else {
-        if (!clientId) throw new Error('Client is required')
+        if (!clientId) throw new ValidationError('Client is required')
 
         const input: CreateQuoteInput = {
           client_id: clientId,
@@ -233,14 +466,27 @@ export function QuoteForm({
           pricing_notes: pricingNotes || undefined,
           internal_notes: internalNotes || undefined,
         }
-        const result = await createQuote(input)
+        const mutationResult = await createMutation.mutate(input as any)
+        if (mutationResult.queued) {
+          setLoading(false)
+          return
+        }
+        const result = mutationResult.result as any
         if (result.success && result.quote) {
+          setCommittedFormData(currentFormData)
+          await durableDraft.clearDraft()
           router.push(`/quotes/${result.quote.id}`)
         }
       }
     } catch (err) {
-      console.error('Quote form error:', err)
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      const parsedConflict = parseConflictError(err)
+      if (parsedConflict) {
+        setConflictError(parsedConflict)
+        await loadLatestConflictData().catch(() => null)
+      } else {
+        const uiError = mapErrorToUI(err)
+        setError(uiError.message)
+      }
       setLoading(false)
     }
   }
@@ -258,6 +504,10 @@ export function QuoteForm({
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <SaveStateBadge state={mutation.saveState} onRetry={mutation.retryLast} />
+      </div>
+
       {/* Pricing History Intelligence */}
       {pricingHistory && pricingHistory.length > 0 && (
         <Card className="p-6 bg-brand-950 border-brand-700">
@@ -704,6 +954,7 @@ export function QuoteForm({
               placeholder="What's included, terms, etc."
               value={pricingNotes}
               onChange={(e) => setPricingNotes(e.target.value)}
+              onBlur={() => void durableDraft.persistDraft(currentFormData, { immediate: true })}
               rows={3}
             />
 
@@ -712,6 +963,7 @@ export function QuoteForm({
               placeholder="Cost breakdown, margins, competitor pricing..."
               value={internalNotes}
               onChange={(e) => setInternalNotes(e.target.value)}
+              onBlur={() => void durableDraft.persistDraft(currentFormData, { immediate: true })}
               rows={3}
             />
           </div>
@@ -724,7 +976,7 @@ export function QuoteForm({
             <Button
               type="button"
               variant="secondary"
-              onClick={() => router.back()}
+              onClick={() => unsavedGuard.requestNavigation(() => router.back())}
               disabled={loading}
             >
               Cancel
@@ -732,6 +984,40 @@ export function QuoteForm({
           </div>
         </form>
       </Card>
+
+      <DraftRestorePrompt
+        open={durableDraft.showRestorePrompt}
+        lastSavedAt={durableDraft.pendingDraft?.lastSavedAt ?? durableDraft.lastSavedAt}
+        onRestore={() => {
+          const restored = durableDraft.restoreDraft()
+          if (restored) {
+            applyFormData(restored)
+          }
+        }}
+        onDiscard={() => void durableDraft.discardDraft()}
+      />
+
+      <UnsavedChangesDialog
+        open={unsavedGuard.open}
+        canSaveDraft={unsavedGuard.canSaveDraft}
+        onStay={unsavedGuard.onStay}
+        onLeave={unsavedGuard.onLeave}
+        onSaveDraftAndLeave={() => void unsavedGuard.onSaveDraftAndLeave()}
+      />
+
+      <ConflictResolutionDialog
+        open={Boolean(conflictError)}
+        message={conflictError?.message}
+        attempted={currentFormData}
+        latest={latestConflictData}
+        loading={loading}
+        onKeepMine={() => void handleKeepMine()}
+        onKeepLatest={handleKeepLatest}
+        onCancel={() => {
+          setConflictError(null)
+          setLatestConflictData(null)
+        }}
+      />
     </div>
   )
 }

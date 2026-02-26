@@ -30,6 +30,7 @@ import type { BookingScore } from '@/lib/analytics/booking-score'
 import type { InquiryUrgency } from '@/lib/analytics/response-time-actions'
 import type { CompletenessScore } from '@/lib/leads/completeness'
 import { InquiriesViewWrapper } from '@/components/inquiries/inquiries-view-wrapper'
+import { InquiriesFilterTabs } from '@/components/inquiries/inquiries-filter-tabs'
 import { AlertTriangle, Clock, TrendingUp, BarChart3 } from 'lucide-react'
 
 type InquiryFilter =
@@ -397,16 +398,6 @@ export default async function InquiriesPage({
   const filter = (searchParams.status || 'all') as InquiryFilter
   const channelFilter = searchParams.channel || null
 
-  const tabs: { value: InquiryFilter; label: string }[] = [
-    { value: 'all', label: 'All' },
-    { value: 'new', label: 'New' },
-    { value: 'awaiting_client', label: 'Awaiting Client' },
-    { value: 'awaiting_chef', label: 'Awaiting Chef' },
-    { value: 'quoted', label: 'Quoted' },
-    { value: 'confirmed', label: 'Confirmed' },
-    { value: 'closed', label: 'Declined / Expired' },
-  ]
-
   // Fetch all inquiries for the kanban board (always shows all, unfiltered)
   const allInquiries = await getInquiries()
 
@@ -449,46 +440,7 @@ export default async function InquiriesPage({
         {/* Status Tabs + List — unchanged, passed as children slot */}
         <div className="space-y-4">
           <Card className="p-4">
-            <div className="flex gap-2 flex-wrap items-center">
-              {tabs.map((tab) => {
-                const href = channelFilter
-                  ? `/inquiries?status=${tab.value}&channel=${channelFilter}`
-                  : `/inquiries?status=${tab.value}`
-                return (
-                  <Link key={tab.value} href={href}>
-                    <Button size="sm" variant={filter === tab.value ? 'primary' : 'secondary'}>
-                      {tab.label}
-                    </Button>
-                  </Link>
-                )
-              })}
-              <span className="w-px h-6 bg-stone-300 mx-1" />
-              <Link
-                href={
-                  channelFilter === 'take_a_chef'
-                    ? `/inquiries?status=${filter}`
-                    : `/inquiries?status=${filter}&channel=take_a_chef`
-                }
-              >
-                <Button
-                  size="sm"
-                  variant={channelFilter === 'take_a_chef' ? 'primary' : 'secondary'}
-                >
-                  TakeAChef
-                </Button>
-              </Link>
-              <Link
-                href={
-                  channelFilter === 'yhangry'
-                    ? `/inquiries?status=${filter}`
-                    : `/inquiries?status=${filter}&channel=yhangry`
-                }
-              >
-                <Button size="sm" variant={channelFilter === 'yhangry' ? 'primary' : 'secondary'}>
-                  Yhangry
-                </Button>
-              </Link>
-            </div>
+            <InquiriesFilterTabs initialStatus={filter} initialChannel={channelFilter} />
           </Card>
 
           {/* Inquiry List */}

@@ -1,14 +1,27 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { universalSearch, type SearchResult } from '@/lib/search/universal-search'
 import { useDebounce } from '@/lib/hooks/use-debounce'
+import {
+  readSearchHistory,
+  togglePinnedSearch,
+  writeRecentSearch,
+  type SearchHistoryEntry,
+} from '@/lib/search/search-recents'
+import { applyStoredViewContext } from '@/lib/view-state/context-url'
 
-export function GlobalSearch() {
+type DisplayItem = SearchResult & {
+  fromHistory?: boolean
+  pinned?: boolean
+}
+
+export function GlobalSearch({ userId, tenantId }: { userId: string; tenantId: string }) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [grouped, setGrouped] = useState<Record<string, SearchResult[]>>({})
+  const [history, setHistory] = useState<SearchHistoryEntry[]>([])
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
@@ -17,11 +30,20 @@ export function GlobalSearch() {
   const pathname = usePathname()
   const listboxId = 'global-search-results'
   const debouncedQuery = useDebounce(query, 300)
+  const isSearching = debouncedQuery.length >= 2
 
   const openAndFocus = useCallback(() => {
     setOpen(true)
     setTimeout(() => inputRef.current?.focus(), 0)
   }, [])
+
+  const refreshHistory = useCallback(() => {
+    setHistory(readSearchHistory(tenantId, userId))
+  }, [tenantId, userId])
+
+  useEffect(() => {
+    refreshHistory()
+  }, [refreshHistory])
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -44,12 +66,17 @@ export function GlobalSearch() {
   }, [pathname])
 
   useEffect(() => {
-    if (!debouncedQuery || debouncedQuery.length < 2) {
+    if (open) refreshHistory()
+  }, [open, refreshHistory])
+
+  useEffect(() => {
+    if (!isSearching) {
       setResults([])
       setGrouped({})
       setLoading(false)
       return
     }
+
     setLoading(true)
     universalSearch(debouncedQuery)
       .then((data) => {
@@ -61,35 +88,74 @@ export function GlobalSearch() {
         setGrouped({})
       })
       .finally(() => setLoading(false))
-  }, [debouncedQuery])
+  }, [debouncedQuery, isSearching])
+
+  const historyItems = useMemo<DisplayItem[]>(
+    () =>
+      history.map((entry) => ({
+        id: entry.id,
+        type: entry.type,
+        title: entry.title,
+        snippet: entry.snippet,
+        url: entry.url,
+        metadata: entry.metadata,
+        fromHistory: true,
+        pinned: entry.pinned ?? false,
+      })),
+    [history]
+  )
+
+  const pinnedItems = useMemo(() => historyItems.filter((entry) => entry.pinned), [historyItems])
+  const recentItems = useMemo(() => historyItems.filter((entry) => !entry.pinned), [historyItems])
+  const flatSearchItems = useMemo(() => Object.values(grouped).flat(), [grouped])
+
+  const displayItems = useMemo<DisplayItem[]>(
+    () =>
+      isSearching
+        ? flatSearchItems.map((item) => ({
+            ...item,
+            pinned: Boolean(history.find((entry) => entry.id === item.id)?.pinned),
+          }))
+        : historyItems,
+    [flatSearchItems, history, historyItems, isSearching]
+  )
 
   const selectResult = useCallback(
     (item: SearchResult) => {
+      const contextualUrl = applyStoredViewContext(item.url)
+      writeRecentSearch(tenantId, userId, item, contextualUrl)
+      refreshHistory()
       setOpen(false)
       setQuery('')
       setHighlightedIndex(-1)
-      router.push(item.url)
+      router.push(contextualUrl)
     },
-    [router]
+    [refreshHistory, router, tenantId, userId]
+  )
+
+  const handleTogglePinned = useCallback(
+    (itemId: string) => {
+      setHistory(togglePinnedSearch(tenantId, userId, itemId))
+    },
+    [tenantId, userId]
   )
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      const flat = Object.values(grouped).flat()
       if (e.key === 'ArrowDown') {
         e.preventDefault()
-        setHighlightedIndex((i) => Math.min(i + 1, flat.length - 1))
+        setHighlightedIndex((i) => Math.min(i + 1, displayItems.length - 1))
       } else if (e.key === 'ArrowUp') {
         e.preventDefault()
         setHighlightedIndex((i) => Math.max(i - 1, 0))
       } else if (e.key === 'Enter' && highlightedIndex >= 0) {
-        const item = flat[highlightedIndex]
+        const item = displayItems[highlightedIndex]
         if (item) selectResult(item)
       } else if (e.key === 'Escape') {
         setOpen(false)
       }
     },
-    [highlightedIndex, grouped, selectResult]
+    [displayItems, highlightedIndex, selectResult]
   )
 
   function highlightText(text: string, q: string) {
@@ -145,7 +211,7 @@ export function GlobalSearch() {
         )}
       </div>
 
-      {open && query.length >= 2 && (
+      {open && (
         <div
           id={listboxId}
           className="absolute top-[calc(100%+2.75rem)] right-0 w-[320px] max-w-[90vw] bg-stone-900 shadow-xl border border-stone-700 rounded-xl z-50 p-2"
@@ -165,52 +231,156 @@ export function GlobalSearch() {
             </div>
           )}
 
-          {!loading && results.length === 0 && (
+          {!loading && isSearching && results.length === 0 && (
             <div className="p-5 text-center text-stone-400 text-sm">
               No results found for &quot;{query}&quot;
             </div>
           )}
 
-          {!loading &&
-            Object.entries(grouped).map(([section, items]) => {
-              const flatAll = Object.values(grouped).flat()
-              return (
-                <div key={section} className="mb-1">
+          {!loading && !isSearching && pinnedItems.length === 0 && recentItems.length === 0 && (
+            <div className="p-5 text-center text-stone-400 text-sm">No recent items yet.</div>
+          )}
+
+          {!loading && !isSearching && (pinnedItems.length > 0 || recentItems.length > 0) && (
+            <>
+              {pinnedItems.length > 0 ? (
+                <div className="mb-1">
                   <div className="px-3 py-1.5 text-xs font-bold text-stone-500 uppercase tracking-wide">
-                    {section}
+                    Pinned
                   </div>
-                  {items.map((item) => {
-                    const flatIndex = flatAll.findIndex((f) => f.id === item.id)
+                  {pinnedItems.map((item) => {
+                    const flatIndex = displayItems.findIndex((entry) => entry.id === item.id)
                     return (
-                      <button
+                      <div
                         key={item.id}
-                        role="option"
-                        aria-selected={highlightedIndex === flatIndex}
-                        onMouseEnter={() => setHighlightedIndex(flatIndex)}
-                        onClick={() => selectResult(item)}
-                        className={`w-full flex items-center px-3 py-2 rounded-lg text-left transition-colors ${
+                        className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                           highlightedIndex === flatIndex ? 'bg-amber-950' : 'hover:bg-stone-800'
                         }`}
+                        onMouseEnter={() => setHighlightedIndex(flatIndex)}
                       >
-                        <div className="flex-1 min-w-0">
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={highlightedIndex === flatIndex}
+                          onClick={() => selectResult(item)}
+                          className="flex-1 min-w-0 text-left"
+                        >
                           <div className="text-sm font-semibold text-stone-200 truncate">
-                            {highlightText(item.title, query)}
+                            {item.title}
                           </div>
-                          {item.snippet && (
-                            <div className="text-xs text-stone-500 truncate">
-                              {highlightText(item.snippet, query)}
-                            </div>
-                          )}
-                        </div>
-                        {item.metadata?.badge && (
-                          <span className="ml-2 text-xs text-stone-400">{item.metadata.badge}</span>
-                        )}
-                      </button>
+                          {item.snippet ? (
+                            <div className="text-xs text-stone-500 truncate">{item.snippet}</div>
+                          ) : null}
+                        </button>
+                        <button
+                          type="button"
+                          className="text-xs text-amber-400 hover:text-amber-300"
+                          onClick={() => handleTogglePinned(item.id)}
+                          aria-label={`Unpin ${item.title}`}
+                        >
+                          Unpin
+                        </button>
+                      </div>
                     )
                   })}
                 </div>
-              )
-            })}
+              ) : null}
+
+              {recentItems.length > 0 ? (
+                <div className="mb-1">
+                  <div className="px-3 py-1.5 text-xs font-bold text-stone-500 uppercase tracking-wide">
+                    Recent
+                  </div>
+                  {recentItems.map((item) => {
+                    const flatIndex = displayItems.findIndex((entry) => entry.id === item.id)
+                    return (
+                      <div
+                        key={item.id}
+                        className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                          highlightedIndex === flatIndex ? 'bg-amber-950' : 'hover:bg-stone-800'
+                        }`}
+                        onMouseEnter={() => setHighlightedIndex(flatIndex)}
+                      >
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={highlightedIndex === flatIndex}
+                          onClick={() => selectResult(item)}
+                          className="flex-1 min-w-0 text-left"
+                        >
+                          <div className="text-sm font-semibold text-stone-200 truncate">
+                            {item.title}
+                          </div>
+                          {item.snippet ? (
+                            <div className="text-xs text-stone-500 truncate">{item.snippet}</div>
+                          ) : null}
+                        </button>
+                        <button
+                          type="button"
+                          className="text-xs text-stone-400 hover:text-stone-300"
+                          onClick={() => handleTogglePinned(item.id)}
+                          aria-label={`Pin ${item.title}`}
+                        >
+                          Pin
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : null}
+            </>
+          )}
+
+          {!loading &&
+            isSearching &&
+            Object.entries(grouped).map(([section, items]) => (
+              <div key={section} className="mb-1">
+                <div className="px-3 py-1.5 text-xs font-bold text-stone-500 uppercase tracking-wide">
+                  {section}
+                </div>
+                {items.map((item) => {
+                  const flatIndex = flatSearchItems.findIndex((entry) => entry.id === item.id)
+                  const isPinned = Boolean(displayItems[flatIndex]?.pinned)
+                  return (
+                    <div
+                      key={item.id}
+                      className={`w-full flex items-center px-3 py-2 rounded-lg transition-colors ${
+                        highlightedIndex === flatIndex ? 'bg-amber-950' : 'hover:bg-stone-800'
+                      }`}
+                      onMouseEnter={() => setHighlightedIndex(flatIndex)}
+                    >
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={highlightedIndex === flatIndex}
+                        onClick={() => selectResult(item)}
+                        className="flex-1 min-w-0 text-left"
+                      >
+                        <div className="text-sm font-semibold text-stone-200 truncate">
+                          {highlightText(item.title, query)}
+                        </div>
+                        {item.snippet && (
+                          <div className="text-xs text-stone-500 truncate">
+                            {highlightText(item.snippet, query)}
+                          </div>
+                        )}
+                      </button>
+                      {item.metadata?.badge && (
+                        <span className="ml-2 text-xs text-stone-400">{item.metadata.badge}</span>
+                      )}
+                      <button
+                        type="button"
+                        className={`ml-2 text-xs ${isPinned ? 'text-amber-400' : 'text-stone-500 hover:text-stone-300'}`}
+                        onClick={() => handleTogglePinned(item.id)}
+                        aria-label={`${isPinned ? 'Unpin' : 'Pin'} ${item.title}`}
+                      >
+                        {isPinned ? 'Unpin' : 'Pin'}
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            ))}
         </div>
       )}
 

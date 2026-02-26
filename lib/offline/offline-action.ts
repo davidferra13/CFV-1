@@ -56,7 +56,7 @@ export function createOfflineAction<T>(options: OfflineActionOptions<T>) {
           if (optimisticResult !== undefined) {
             return { ...optimisticResult, _offlineQueued: true } as T & { _offlineQueued?: boolean }
           }
-          throw err
+          return { _offlineQueued: true } as T & { _offlineQueued?: boolean }
         }
 
         // Non-network error — rethrow normally
@@ -72,8 +72,9 @@ export function createOfflineAction<T>(options: OfflineActionOptions<T>) {
       return { ...optimisticResult, _offlineQueued: true } as T & { _offlineQueued?: boolean }
     }
 
-    // No optimistic result provided — throw a descriptive error
-    throw new OfflineQueuedError(name)
+    // No optimistic result provided — still return queued metadata so callers
+    // can display OFFLINE_QUEUED instead of a false save failure.
+    return { _offlineQueued: true } as T & { _offlineQueued?: boolean }
   }
 }
 

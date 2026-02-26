@@ -10,6 +10,10 @@ import { revalidatePath } from 'next/cache'
 import { appendLedgerEntryForChef } from '@/lib/ledger/append'
 import { z } from 'zod'
 import crypto from 'crypto'
+import { executeWithIdempotency } from '@/lib/mutations/idempotency'
+import { createConflictError } from '@/lib/mutations/conflict'
+import { UnknownAppError, ValidationError } from '@/lib/errors/app-error'
+import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
 
 const InviteClientSchema = z.object({
   email: z.string().email('Valid email required'),
@@ -99,6 +103,7 @@ const CreateClientSchema = z.object({
   acquisition_cost_cents: z.number().int().optional(),
   // Status
   status: z.enum(['active', 'dormant', 'repeat_ready', 'vip']).optional(),
+  idempotency_key: z.string().optional(),
 })
 
 const UpdateClientSchema = z.object({
@@ -182,6 +187,8 @@ const UpdateClientSchema = z.object({
   acquisition_cost_cents: z.number().int().nullable().optional(),
   // Status
   status: z.enum(['active', 'dormant', 'repeat_ready', 'vip']).optional(),
+  expected_updated_at: z.string().optional(),
+  idempotency_key: z.string().optional(),
 })
 
 export type InviteClientInput = z.infer<typeof InviteClientSchema>
@@ -200,15 +207,26 @@ export async function inviteClient(input: InviteClientInput) {
   const supabase = createServerClient()
 
   // Check if client already exists with this email in this tenant
-  const { data: existingClient } = await supabase
-    .from('clients')
-    .select('id')
-    .eq('tenant_id', user.tenantId!)
-    .eq('email', validated.email)
-    .single()
+  const findExistingClient = async (withSoftDeleteFilter: boolean) => {
+    let query = supabase
+      .from('clients')
+      .select('id')
+      .eq('tenant_id', user.tenantId!)
+      .eq('email', validated.email)
+    if (withSoftDeleteFilter) {
+      query = query.is('deleted_at' as any, null)
+    }
+    return query.single()
+  }
+
+  let existingClientResponse = await findExistingClient(true)
+  if (isMissingSoftDeleteColumn(existingClientResponse.error)) {
+    existingClientResponse = await findExistingClient(false)
+  }
+  const existingClient = existingClientResponse.data
 
   if (existingClient) {
-    throw new Error('Client with this email already exists in your tenant')
+    throw new ValidationError('Client with this email already exists in your tenant')
   }
 
   // Check if pending invitation exists
@@ -221,7 +239,7 @@ export async function inviteClient(input: InviteClientInput) {
     .single()
 
   if (existingInvitation) {
-    throw new Error('Pending invitation already exists for this email')
+    throw new ValidationError('Pending invitation already exists for this email')
   }
 
   // Generate secure token
@@ -246,7 +264,7 @@ export async function inviteClient(input: InviteClientInput) {
 
   if (error) {
     console.error('[inviteClient] Error:', error)
-    throw new Error('Failed to create invitation')
+    throw new UnknownAppError('Failed to create invitation')
   }
 
   revalidatePath('/clients')
@@ -307,15 +325,26 @@ export async function createClient(input: CreateClientInput) {
 
   // If email provided, ensure no existing client with same email in tenant
   if (validated.email) {
-    const { data: existing } = await supabase
-      .from('clients')
-      .select('id')
-      .eq('tenant_id', user.tenantId!)
-      .eq('email', validated.email)
-      .single()
+    const findExisting = async (withSoftDeleteFilter: boolean) => {
+      let query = supabase
+        .from('clients')
+        .select('id')
+        .eq('tenant_id', user.tenantId!)
+        .eq('email', validated.email)
+      if (withSoftDeleteFilter) {
+        query = query.is('deleted_at' as any, null)
+      }
+      return query.single()
+    }
+
+    let existingResponse = await findExisting(true)
+    if (isMissingSoftDeleteColumn(existingResponse.error)) {
+      existingResponse = await findExisting(false)
+    }
+    const existing = existingResponse.data
 
     if (existing) {
-      throw new Error('Client with this email already exists in your tenant')
+      throw new ValidationError('Client with this email already exists in your tenant')
     }
   }
 
@@ -401,16 +430,31 @@ export async function createClient(input: CreateClientInput) {
     }
   }
 
-  const { data: client, error } = await supabase
-    .from('clients')
-    .insert(insertData as any)
-    .select('*')
-    .single()
+  const result = await executeWithIdempotency({
+    supabase,
+    tenantId: user.tenantId!,
+    actorId: user.id,
+    actionName: 'clients.create',
+    idempotencyKey: validated.idempotency_key,
+    execute: async () => {
+      const { data: client, error } = await supabase
+        .from('clients')
+        .insert(insertData as any)
+        .select('*')
+        .single()
 
-  if (error) {
-    console.error('[createClient] Error:', error)
-    throw new Error(`Failed to create client: ${error.message}`)
-  }
+      if (error || !client) {
+        console.error('[createClient] Error:', error)
+        throw new UnknownAppError(`Failed to create client: ${error?.message ?? 'unknown error'}`)
+      }
+
+      // Revalidate clients list
+      revalidatePath('/clients')
+      return { success: true, client }
+    },
+  })
+
+  const client = result.client
 
   // Append a zero-dollar ledger entry to record client creation (audit)
   try {
@@ -424,9 +468,6 @@ export async function createClient(input: CreateClientInput) {
   } catch (err) {
     console.error('[createClient] Ledger append failed (non-blocking):', err)
   }
-
-  // Revalidate clients list
-  revalidatePath('/clients')
 
   // Log chef activity (non-blocking)
   try {
@@ -445,7 +486,7 @@ export async function createClient(input: CreateClientInput) {
     console.error('[createClient] Activity log failed (non-blocking):', err)
   }
 
-  return { success: true, client }
+  return result
 }
 
 /**
@@ -455,15 +496,23 @@ export async function getClients() {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: clients, error } = await supabase
-    .from('clients')
-    .select('*')
-    .eq('tenant_id', user.tenantId!)
-    .order('created_at', { ascending: false })
+  const runQuery = (withSoftDeleteFilter: boolean) => {
+    let query = supabase.from('clients').select('*').eq('tenant_id', user.tenantId!)
+    if (withSoftDeleteFilter) {
+      query = query.is('deleted_at' as any, null)
+    }
+    return query.order('created_at', { ascending: false })
+  }
+
+  let response = await runQuery(true)
+  if (isMissingSoftDeleteColumn(response.error)) {
+    response = await runQuery(false)
+  }
+  const { data: clients, error } = response
 
   if (error) {
     console.error('[getClients] Error:', error)
-    throw new Error('Failed to fetch clients')
+    throw new UnknownAppError('Failed to fetch clients')
   }
 
   return clients
@@ -476,12 +525,23 @@ export async function getClientById(clientId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: client, error } = await supabase
-    .from('clients')
-    .select('*')
-    .eq('id', clientId)
-    .eq('tenant_id', user.tenantId!)
-    .single()
+  const runQuery = (withSoftDeleteFilter: boolean) => {
+    let query = supabase
+      .from('clients')
+      .select('*')
+      .eq('id', clientId)
+      .eq('tenant_id', user.tenantId!)
+    if (withSoftDeleteFilter) {
+      query = query.is('deleted_at' as any, null)
+    }
+    return query.single()
+  }
+
+  let response = await runQuery(true)
+  if (isMissingSoftDeleteColumn(response.error)) {
+    response = await runQuery(false)
+  }
+  const { data: client, error } = response
 
   if (error) {
     console.error('[getClientById] Error:', error)
@@ -510,12 +570,23 @@ export async function createClientFromLead(
   const supabase = createServerClient({ admin: true })
 
   // Idempotent: check if client already exists with this email
-  const { data: existing } = await supabase
-    .from('clients')
-    .select('id')
-    .eq('tenant_id', tenantId)
-    .eq('email', lead.email)
-    .single()
+  const findExisting = async (withSoftDeleteFilter: boolean) => {
+    let query = supabase
+      .from('clients')
+      .select('id')
+      .eq('tenant_id', tenantId)
+      .eq('email', lead.email)
+    if (withSoftDeleteFilter) {
+      query = query.is('deleted_at' as any, null)
+    }
+    return query.single()
+  }
+
+  let existingResponse = await findExisting(true)
+  if (isMissingSoftDeleteColumn(existingResponse.error)) {
+    existingResponse = await findExisting(false)
+  }
+  const existing = existingResponse.data
 
   if (existing) {
     return { id: existing.id, created: false }
@@ -547,7 +618,7 @@ export async function createClientFromLead(
 
   if (error) {
     console.error('[createClientFromLead] Error:', error)
-    throw new Error(`Failed to create client: ${error.message}`)
+    throw new UnknownAppError(`Failed to create client: ${error.message}`)
   }
 
   return { id: client.id, created: true }
@@ -559,28 +630,107 @@ export async function createClientFromLead(
 export async function updateClient(clientId: string, input: UpdateClientInput) {
   const user = await requireChef()
   const validated = UpdateClientSchema.parse(input)
+  const { expected_updated_at, idempotency_key, ...updateFields } = validated
 
   const supabase = createServerClient()
 
-  const { data: client, error } = await supabase
+  const { data: currentClient } = await (supabase
     .from('clients')
-    .update(validated)
+    .select('*')
     .eq('id', clientId)
     .eq('tenant_id', user.tenantId!)
-    .select()
-    .single()
+    .single() as any)
 
-  if (error) {
-    console.error('[updateClient] Error:', error)
-    throw new Error('Failed to update client')
+  if (!currentClient || currentClient.deleted_at) {
+    throw new ValidationError('Client not found')
   }
 
-  revalidatePath('/clients')
-  revalidatePath(`/clients/${clientId}`)
+  if (expected_updated_at && currentClient.updated_at !== expected_updated_at) {
+    throw createConflictError('This record changed elsewhere.', currentClient.updated_at)
+  }
+
+  const result = await executeWithIdempotency({
+    supabase,
+    tenantId: user.tenantId!,
+    actorId: user.id,
+    actionName: 'clients.update',
+    idempotencyKey: idempotency_key,
+    execute: async () => {
+      const runUpdate = async (withSoftDeleteFilter: boolean) => {
+        let query = supabase
+          .from('clients')
+          .update({
+            ...(updateFields as any),
+            updated_by: user.id,
+            updated_at: new Date().toISOString(),
+          } as any)
+          .eq('id', clientId)
+          .eq('tenant_id', user.tenantId!)
+        if (withSoftDeleteFilter) {
+          query = query.is('deleted_at' as any, null)
+        }
+        if (expected_updated_at) {
+          query = query.eq('updated_at', expected_updated_at)
+        }
+        return query.select().single()
+      }
+
+      let response = await runUpdate(true)
+      if (isMissingSoftDeleteColumn(response.error)) {
+        response = await runUpdate(false)
+      }
+      const { data: client, error } = response
+
+      if (error || !client) {
+        if (expected_updated_at) {
+          const getLatest = async (withSoftDeleteFilter: boolean) => {
+            let query = supabase
+              .from('clients')
+              .select('updated_at')
+              .eq('id', clientId)
+              .eq('tenant_id', user.tenantId!)
+            if (withSoftDeleteFilter) {
+              query = query.is('deleted_at' as any, null)
+            }
+            return query.maybeSingle()
+          }
+
+          let latestResponse = await getLatest(true)
+          if (isMissingSoftDeleteColumn(latestResponse.error)) {
+            latestResponse = await getLatest(false)
+          }
+          const latest = latestResponse.data
+
+          if (latest?.updated_at && latest.updated_at !== expected_updated_at) {
+            throw createConflictError('This record changed elsewhere.', latest.updated_at)
+          }
+        }
+
+        console.error('[updateClient] Error:', error)
+        throw new UnknownAppError('Failed to update client')
+      }
+
+      revalidatePath('/clients')
+      revalidatePath(`/clients/${clientId}`)
+      return { success: true, client }
+    },
+  })
+
+  const client = result.client
 
   // Log chef activity (non-blocking)
   try {
     const { logChefActivity } = await import('@/lib/activity/log-chef')
+    const changedFields = Object.keys(updateFields)
+    const fieldDiffs = Object.fromEntries(
+      changedFields.map((field) => [
+        field,
+        {
+          before: (currentClient as Record<string, unknown>)[field] ?? null,
+          after: (client as Record<string, unknown>)[field] ?? null,
+        },
+      ])
+    )
     await logChefActivity({
       tenantId: user.tenantId!,
       actorId: user.id,
@@ -588,17 +738,84 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
       domain: 'client',
       entityType: 'client',
       entityId: clientId,
-      summary: `Updated client: ${client.full_name} — ${Object.keys(validated).join(', ')}`,
-      context: { client_name: client.full_name, changed_fields: Object.keys(validated) },
+      summary: `Updated client: ${client.full_name} - ${changedFields.join(', ')}`,
+      context: {
+        client_name: client.full_name,
+        changed_fields: changedFields,
+        field_diffs: fieldDiffs,
+      },
       clientId,
     })
   } catch (err) {
     console.error('[updateClient] Activity log failed (non-blocking):', err)
   }
 
-  return { success: true, client }
+  return result
 }
 
+/**
+ * Soft delete client (chef-only)
+ */
+export async function deleteClient(clientId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data: client } = await (supabase
+    .from('clients')
+    .select('id, deleted_at')
+    .eq('id', clientId)
+    .eq('tenant_id', user.tenantId!)
+    .single() as any)
+
+  if (!client || client.deleted_at) {
+    throw new ValidationError('Client not found')
+  }
+
+  const { error } = await supabase
+    .from('clients')
+    .update({
+      deleted_at: new Date().toISOString(),
+      deleted_by: user.id,
+    } as any)
+    .eq('id', clientId)
+    .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
+
+  if (error) {
+    console.error('[deleteClient] Error:', error)
+    throw new UnknownAppError('Failed to delete client')
+  }
+
+  revalidatePath('/clients')
+  revalidatePath(`/clients/${clientId}`)
+  return { success: true }
+}
+
+/**
+ * Restore soft deleted client (chef-only)
+ */
+export async function restoreClient(clientId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { error } = await supabase
+    .from('clients')
+    .update({
+      deleted_at: null,
+      deleted_by: null,
+    } as any)
+    .eq('id', clientId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (error) {
+    console.error('[restoreClient] Error:', error)
+    throw new UnknownAppError('Failed to restore client')
+  }
+
+  revalidatePath('/clients')
+  revalidatePath(`/clients/${clientId}`)
+  return { success: true }
+}
 /**
  * Get pending invitations for tenant
  */
@@ -616,7 +833,7 @@ export async function getPendingInvitations() {
 
   if (error) {
     console.error('[getPendingInvitations] Error:', error)
-    throw new Error('Failed to fetch invitations')
+    throw new UnknownAppError('Failed to fetch invitations')
   }
 
   return invitations
@@ -638,7 +855,7 @@ export async function cancelInvitation(invitationId: string) {
 
   if (error) {
     console.error('[cancelInvitation] Error:', error)
-    throw new Error('Failed to cancel invitation')
+    throw new UnknownAppError('Failed to cancel invitation')
   }
 
   revalidatePath('/clients')
@@ -658,11 +875,12 @@ export async function getClientsWithStats() {
     .from('clients')
     .select('*')
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
     .order('created_at', { ascending: false })
 
   if (clientsError) {
     console.error('[getClientsWithStats] Error:', clientsError)
-    throw new Error('Failed to fetch clients')
+    throw new UnknownAppError('Failed to fetch clients')
   }
 
   // Use the client_financial_summary view for stats
@@ -715,10 +933,11 @@ export async function getClientEvents(clientId: string) {
     .select('id')
     .eq('id', clientId)
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
     .single()
 
   if (!client) {
-    throw new Error('Client not found')
+    throw new ValidationError('Client not found')
   }
 
   // Get events for this client
@@ -727,11 +946,12 @@ export async function getClientEvents(clientId: string) {
     .select('*')
     .eq('client_id', clientId)
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
     .order('event_date', { ascending: false })
 
   if (error) {
     console.error('[getClientEvents] Error:', error)
-    throw new Error('Failed to fetch client events')
+    throw new UnknownAppError('Failed to fetch client events')
   }
 
   return events
@@ -751,6 +971,7 @@ export async function getClientWithStats(clientId: string) {
     .select('*')
     .eq('id', clientId)
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
     .single()
 
   if (clientError || !client) {
@@ -788,7 +1009,7 @@ export async function updateClientHousehold(formData: FormData) {
   const clientId = String(formData.get('clientId') ?? '')
   const tag = formData.get('household_tag') ? String(formData.get('household_tag')) : null
 
-  if (!clientId) throw new Error('Missing clientId')
+  if (!clientId) throw new ValidationError('Missing clientId')
 
   const supabase = createServerClient()
 
@@ -797,12 +1018,13 @@ export async function updateClientHousehold(formData: FormData) {
     .update({ household: tag ? { tag } : null } as any)
     .eq('id', clientId)
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
     .select()
     .single()
 
   if (error) {
     console.error('[updateClientHousehold] Error:', error)
-    throw new Error('Failed to update client household')
+    throw new UnknownAppError('Failed to update client household')
   }
 
   revalidatePath('/clients')
@@ -842,7 +1064,7 @@ export async function updateClientStatus(clientId: string, status: string) {
 
   const validStatuses = ['active', 'dormant', 'repeat_ready', 'vip']
   if (!validStatuses.includes(status)) {
-    throw new Error(`Invalid status: ${status}`)
+    throw new ValidationError(`Invalid status: ${status}`)
   }
 
   const supabase = createServerClient()
@@ -852,10 +1074,11 @@ export async function updateClientStatus(clientId: string, status: string) {
     .update({ status } as any)
     .eq('id', clientId)
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
 
   if (error) {
     console.error('[updateClientStatus] Error:', error)
-    throw new Error('Failed to update client status')
+    throw new UnknownAppError('Failed to update client status')
   }
 
   revalidatePath(`/clients/${clientId}`)
@@ -877,9 +1100,10 @@ export async function getClientFinancialDetail(clientId: string) {
     .select('id')
     .eq('id', clientId)
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
     .single()
 
-  if (!clientCheck) throw new Error('Client not found')
+  if (!clientCheck) throw new ValidationError('Client not found')
 
   // Parallel: events for this client + ledger entries for this client
   const [eventsResult, ledgerResult] = await Promise.all([
@@ -890,6 +1114,7 @@ export async function getClientFinancialDetail(clientId: string) {
       )
       .eq('client_id', clientId)
       .eq('tenant_id', user.tenantId!)
+      .is('deleted_at' as any, null)
       .order('event_date', { ascending: false }),
     supabase
       .from('ledger_entries')
@@ -1003,10 +1228,11 @@ export async function setClientAutomatedEmails(clientId: string, enabled: boolea
     .update({ automated_emails_enabled: enabled } as any)
     .eq('id', clientId)
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
 
   if (error) {
     console.error('[setClientAutomatedEmails] Error:', error)
-    throw new Error('Failed to update client email preference')
+    throw new UnknownAppError('Failed to update client email preference')
   }
 
   revalidatePath(`/clients/${clientId}`)
@@ -1039,6 +1265,7 @@ export async function addClientFromInquiry(input: {
       .select('id')
       .eq('tenant_id', user.tenantId!)
       .eq('email', input.email.trim().toLowerCase())
+      .is('deleted_at' as any, null)
       .maybeSingle()
 
     if (existing) {
@@ -1117,6 +1344,7 @@ export async function createClientDirect(input: {
       .select('id')
       .eq('tenant_id', user.tenantId!)
       .eq('email', input.email.trim().toLowerCase())
+      .is('deleted_at' as any, null)
       .maybeSingle()
 
     if (existing) {
@@ -1181,6 +1409,7 @@ export async function searchClientsByName(
     .from('clients')
     .select('id, full_name, email, status')
     .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
     .ilike('full_name', `%${query}%`)
     .order('full_name', { ascending: true })
     .limit(5)

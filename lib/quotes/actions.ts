@@ -10,6 +10,10 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { Database, Json } from '@/types/database'
 import type { PricingInput } from '@/lib/pricing/compute'
+import { executeWithIdempotency } from '@/lib/mutations/idempotency'
+import { createConflictError } from '@/lib/mutations/conflict'
+import { AuthError, UnknownAppError, ValidationError } from '@/lib/errors/app-error'
+import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
 
 type QuoteStatus = Database['public']['Enums']['quote_status']
 type PricingModel = Database['public']['Enums']['pricing_model']
@@ -42,6 +46,7 @@ const CreateQuoteSchema = z.object({
   valid_until: z.string().nullable().optional(),
   pricing_notes: z.string().optional().or(z.literal('')),
   internal_notes: z.string().optional().or(z.literal('')),
+  idempotency_key: z.string().optional(),
 })
 
 const UpdateQuoteSchema = z.object({
@@ -56,6 +61,8 @@ const UpdateQuoteSchema = z.object({
   valid_until: z.string().nullable().optional(),
   pricing_notes: z.string().nullable().optional(),
   internal_notes: z.string().nullable().optional(),
+  expected_updated_at: z.string().optional(),
+  idempotency_key: z.string().optional(),
 })
 
 export type CreateQuoteInput = z.infer<typeof CreateQuoteSchema>
@@ -78,7 +85,7 @@ export async function createQuote(input: CreateQuoteInput) {
     .single()
 
   if (!client || client.tenant_id !== user.tenantId) {
-    throw new Error('Client not found or does not belong to your tenant')
+    throw new AuthError('Client not found or does not belong to your tenant')
   }
 
   // Verify inquiry belongs to tenant if provided
@@ -90,45 +97,59 @@ export async function createQuote(input: CreateQuoteInput) {
       .single()
 
     if (!inquiry || inquiry.tenant_id !== user.tenantId) {
-      throw new Error('Inquiry not found or does not belong to your tenant')
+      throw new AuthError('Inquiry not found or does not belong to your tenant')
     }
   }
 
-  const { data: quote, error } = await supabase
-    .from('quotes')
-    .insert({
-      tenant_id: user.tenantId!,
-      client_id: validated.client_id,
-      inquiry_id: validated.inquiry_id || null,
-      event_id: validated.event_id || null,
-      quote_name: validated.quote_name || null,
-      pricing_model: validated.pricing_model,
-      total_quoted_cents: validated.total_quoted_cents,
-      price_per_person_cents: validated.price_per_person_cents ?? null,
-      guest_count_estimated: validated.guest_count_estimated ?? null,
-      deposit_required: validated.deposit_required ?? false,
-      deposit_amount_cents: validated.deposit_amount_cents ?? null,
-      deposit_percentage: validated.deposit_percentage ?? null,
-      valid_until: validated.valid_until || null,
-      pricing_notes: validated.pricing_notes || null,
-      internal_notes: validated.internal_notes || null,
-      created_by: user.id,
-      updated_by: user.id,
-    })
-    .select()
-    .single()
+  const result = await executeWithIdempotency({
+    supabase,
+    tenantId: user.tenantId!,
+    actorId: user.id,
+    actionName: 'quotes.create',
+    idempotencyKey: validated.idempotency_key,
+    execute: async () => {
+      const { data: quote, error } = await supabase
+        .from('quotes')
+        .insert({
+          tenant_id: user.tenantId!,
+          client_id: validated.client_id,
+          inquiry_id: validated.inquiry_id || null,
+          event_id: validated.event_id || null,
+          quote_name: validated.quote_name || null,
+          pricing_model: validated.pricing_model,
+          total_quoted_cents: validated.total_quoted_cents,
+          price_per_person_cents: validated.price_per_person_cents ?? null,
+          guest_count_estimated: validated.guest_count_estimated ?? null,
+          deposit_required: validated.deposit_required ?? false,
+          deposit_amount_cents: validated.deposit_amount_cents ?? null,
+          deposit_percentage: validated.deposit_percentage ?? null,
+          valid_until: validated.valid_until || null,
+          pricing_notes: validated.pricing_notes || null,
+          internal_notes: validated.internal_notes || null,
+          created_by: user.id,
+          updated_by: user.id,
+        })
+        .select()
+        .single()
 
-  if (error) {
-    console.error('[createQuote] Error:', error)
-    throw new Error('Failed to create quote')
-  }
+      if (error || !quote) {
+        console.error('[createQuote] Error:', error)
+        throw new UnknownAppError('Failed to create quote')
+      }
 
-  revalidatePath('/quotes')
+      revalidatePath('/quotes')
+      return { success: true, quote }
+    },
+  })
+
+  const quote = result.quote
 
   // Log chef activity (non-blocking)
   try {
     const { logChefActivity } = await import('@/lib/activity/log-chef')
-    const amount = validated.total_quoted_cents ? `$${(validated.total_quoted_cents / 100).toFixed(2)}` : ''
+    const amount = validated.total_quoted_cents
+      ? `$${(validated.total_quoted_cents / 100).toFixed(2)}`
+      : ''
     await logChefActivity({
       tenantId: user.tenantId!,
       actorId: user.id,
@@ -137,14 +158,18 @@ export async function createQuote(input: CreateQuoteInput) {
       entityType: 'quote',
       entityId: quote.id,
       summary: `Created quote${validated.quote_name ? `: ${validated.quote_name}` : ''} — ${amount}`,
-      context: { quote_name: validated.quote_name, total_cents: validated.total_quoted_cents, amount_display: amount },
+      context: {
+        quote_name: validated.quote_name,
+        total_cents: validated.total_quoted_cents,
+        amount_display: amount,
+      },
       clientId: validated.client_id,
     })
   } catch (err) {
     console.error('[createQuote] Activity log failed (non-blocking):', err)
   }
 
-  return { success: true, quote }
+  return result
 }
 
 // ============================================
@@ -160,41 +185,56 @@ export async function getQuotes(filters?: {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  let query = supabase
-    .from('quotes')
-    .select(`
+  const buildQuery = (withSoftDeleteFilter: boolean) => {
+    let query = supabase
+      .from('quotes')
+      .select(
+        `
       *,
       client:clients(id, full_name, email),
       inquiry:inquiries(id, confirmed_occasion, status),
-      event:events(id, occasion, event_date, status)
-    `)
-    .eq('tenant_id', user.tenantId!)
+      event:events!quotes_event_id_fkey(id, occasion, event_date, status)
+    `
+      )
+      .eq('tenant_id', user.tenantId!)
 
-  if (filters?.status) {
-    if (Array.isArray(filters.status)) {
-      query = query.in('status', filters.status)
-    } else {
-      query = query.eq('status', filters.status)
+    if (withSoftDeleteFilter) {
+      query = query.is('deleted_at' as any, null)
     }
+
+    if (filters?.status) {
+      if (Array.isArray(filters.status)) {
+        query = query.in('status', filters.status)
+      } else {
+        query = query.eq('status', filters.status)
+      }
+    }
+
+    if (filters?.client_id) {
+      query = query.eq('client_id', filters.client_id)
+    }
+
+    if (filters?.inquiry_id) {
+      query = query.eq('inquiry_id', filters.inquiry_id)
+    }
+
+    if (filters?.event_id) {
+      query = query.eq('event_id', filters.event_id)
+    }
+
+    return query
   }
 
-  if (filters?.client_id) {
-    query = query.eq('client_id', filters.client_id)
+  let response = await buildQuery(true).order('created_at', { ascending: false })
+  if (isMissingSoftDeleteColumn(response.error)) {
+    response = await buildQuery(false).order('created_at', { ascending: false })
   }
 
-  if (filters?.inquiry_id) {
-    query = query.eq('inquiry_id', filters.inquiry_id)
-  }
-
-  if (filters?.event_id) {
-    query = query.eq('event_id', filters.event_id)
-  }
-
-  const { data: quotes, error } = await query.order('created_at', { ascending: false })
+  const { data: quotes, error } = response
 
   if (error) {
     console.error('[getQuotes] Error:', error)
-    throw new Error('Failed to fetch quotes')
+    throw new UnknownAppError('Failed to fetch quotes')
   }
 
   return quotes
@@ -208,17 +248,33 @@ export async function getQuoteById(id: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: quote, error } = await supabase
-    .from('quotes')
-    .select(`
+  const runQuery = (withSoftDeleteFilter: boolean) => {
+    let query = supabase
+      .from('quotes')
+      .select(
+        `
       *,
       client:clients(id, full_name, email, phone),
       inquiry:inquiries(id, confirmed_occasion, status, channel),
-      event:events(id, occasion, event_date, status)
-    `)
-    .eq('id', id)
-    .eq('tenant_id', user.tenantId!)
-    .single()
+      event:events!quotes_event_id_fkey(id, occasion, event_date, status)
+    `
+      )
+      .eq('id', id)
+      .eq('tenant_id', user.tenantId!)
+
+    if (withSoftDeleteFilter) {
+      query = query.is('deleted_at' as any, null)
+    }
+
+    return query.single()
+  }
+
+  let response = await runQuery(true)
+  if (isMissingSoftDeleteColumn(response.error)) {
+    response = await runQuery(false)
+  }
+
+  const { data: quote, error } = response
 
   if (error) {
     console.error('[getQuoteById] Error:', error)
@@ -242,43 +298,133 @@ export async function getQuoteById(id: string) {
 export async function updateQuote(id: string, input: UpdateQuoteInput) {
   const user = await requireChef()
   const validated = UpdateQuoteSchema.parse(input)
+  const { expected_updated_at, idempotency_key, ...updateFields } = validated
   const supabase = createServerClient()
 
   // Verify quote exists and is in draft
-  const { data: current } = await supabase
+  const { data: current } = await (supabase
     .from('quotes')
-    .select('status')
+    .select('*')
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
-  if (!current) {
-    throw new Error('Quote not found')
+  if (!current || current.deleted_at) {
+    throw new ValidationError('Quote not found')
   }
 
   if (current.status !== 'draft') {
-    throw new Error('Can only edit quotes in draft status')
+    throw new ValidationError('Can only edit quotes in draft status')
   }
 
-  const { data: quote, error } = await supabase
-    .from('quotes')
-    .update({
-      ...validated,
-      updated_by: user.id,
+  if (expected_updated_at && current.updated_at !== expected_updated_at) {
+    throw createConflictError('This record changed elsewhere.', current.updated_at)
+  }
+
+  const result = await executeWithIdempotency({
+    supabase,
+    tenantId: user.tenantId!,
+    actorId: user.id,
+    actionName: 'quotes.update',
+    idempotencyKey: idempotency_key,
+    execute: async () => {
+      const runUpdate = async (withSoftDeleteFilter: boolean) => {
+        let query = supabase
+          .from('quotes')
+          .update({
+            ...updateFields,
+            updated_by: user.id,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', id)
+          .eq('tenant_id', user.tenantId!)
+
+        if (withSoftDeleteFilter) {
+          query = query.is('deleted_at' as any, null)
+        }
+        if (expected_updated_at) {
+          query = query.eq('updated_at', expected_updated_at)
+        }
+
+        return query.select().single()
+      }
+
+      let response = await runUpdate(true)
+      if (isMissingSoftDeleteColumn(response.error)) {
+        response = await runUpdate(false)
+      }
+
+      const { data: quote, error } = response
+
+      if (error || !quote) {
+        if (expected_updated_at) {
+          const getLatest = async (withSoftDeleteFilter: boolean) => {
+            let query = supabase
+              .from('quotes')
+              .select('updated_at')
+              .eq('id', id)
+              .eq('tenant_id', user.tenantId!)
+            if (withSoftDeleteFilter) {
+              query = query.is('deleted_at' as any, null)
+            }
+            return query.maybeSingle()
+          }
+
+          let latestResponse = await getLatest(true)
+          if (isMissingSoftDeleteColumn(latestResponse.error)) {
+            latestResponse = await getLatest(false)
+          }
+          const latest = latestResponse.data
+
+          if (latest?.updated_at && latest.updated_at !== expected_updated_at) {
+            throw createConflictError('This record changed elsewhere.', latest.updated_at)
+          }
+        }
+
+        console.error('[updateQuote] Error:', error)
+        throw new UnknownAppError('Failed to update quote')
+      }
+
+      revalidatePath('/quotes')
+      revalidatePath(`/quotes/${id}`)
+      return { success: true, quote }
+    },
+  })
+
+  const quote = result.quote
+
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    const changedFields = Object.keys(updateFields)
+    const fieldDiffs = Object.fromEntries(
+      changedFields.map((field) => [
+        field,
+        {
+          before: (current as Record<string, unknown>)[field] ?? null,
+          after: (quote as Record<string, unknown>)[field] ?? null,
+        },
+      ])
+    )
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'quote_updated',
+      domain: 'quote',
+      entityType: 'quote',
+      entityId: id,
+      summary: `Updated quote: ${quote.quote_name || 'Untitled'} - ${changedFields.join(', ')}`,
+      context: {
+        quote_name: quote.quote_name,
+        changed_fields: changedFields,
+        field_diffs: fieldDiffs,
+      },
+      clientId: quote.client_id,
     })
-    .eq('id', id)
-    .eq('tenant_id', user.tenantId!)
-    .select()
-    .single()
-
-  if (error) {
-    console.error('[updateQuote] Error:', error)
-    throw new Error('Failed to update quote')
+  } catch (err) {
+    console.error('[updateQuote] Activity log failed (non-blocking):', err)
   }
 
-  revalidatePath('/quotes')
-  revalidatePath(`/quotes/${id}`)
-  return { success: true, quote }
+  return result
 }
 
 // ============================================
@@ -289,24 +435,38 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: quote } = await supabase
-    .from('quotes')
-    .select('status, total_quoted_cents, price_per_person_cents, guest_count_estimated, pricing_model, deposit_amount_cents, deposit_percentage, deposit_required, valid_until')
-    .eq('id', id)
-    .eq('tenant_id', user.tenantId!)
-    .single()
+  const getCurrentQuote = async (withSoftDeleteFilter: boolean) => {
+    let query = supabase
+      .from('quotes')
+      .select(
+        'status, total_quoted_cents, price_per_person_cents, guest_count_estimated, pricing_model, deposit_amount_cents, deposit_percentage, deposit_required, valid_until'
+      )
+      .eq('id', id)
+      .eq('tenant_id', user.tenantId!)
+
+    if (withSoftDeleteFilter) {
+      query = query.is('deleted_at' as any, null)
+    }
+    return query.single()
+  }
+
+  let quoteResponse = await getCurrentQuote(true)
+  if (isMissingSoftDeleteColumn(quoteResponse.error)) {
+    quoteResponse = await getCurrentQuote(false)
+  }
+  const quote = quoteResponse.data
 
   if (!quote) {
-    throw new Error('Quote not found')
+    throw new ValidationError('Quote not found')
   }
 
   const currentStatus = quote.status as QuoteStatus
   const allowed = VALID_TRANSITIONS[currentStatus]
 
   if (!allowed || !allowed.includes(newStatus)) {
-    throw new Error(
+    throw new ValidationError(
       `Cannot transition from "${currentStatus}" to "${newStatus}". ` +
-      `Allowed: ${allowed?.join(', ') || 'none (terminal state)'}`
+        `Allowed: ${allowed?.join(', ') || 'none (terminal state)'}`
     )
   }
 
@@ -340,17 +500,27 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     updatePayload.expired_at = new Date().toISOString()
   }
 
-  const { data: updated, error } = await supabase
-    .from('quotes')
-    .update(updatePayload)
-    .eq('id', id)
-    .eq('tenant_id', user.tenantId!)
-    .select()
-    .single()
+  const runUpdate = async (withSoftDeleteFilter: boolean) => {
+    let query = supabase
+      .from('quotes')
+      .update(updatePayload)
+      .eq('id', id)
+      .eq('tenant_id', user.tenantId!)
+    if (withSoftDeleteFilter) {
+      query = query.is('deleted_at' as any, null)
+    }
+    return query.select().single()
+  }
+
+  let updateResponse = await runUpdate(true)
+  if (isMissingSoftDeleteColumn(updateResponse.error)) {
+    updateResponse = await runUpdate(false)
+  }
+  const { data: updated, error } = updateResponse
 
   if (error) {
     console.error('[transitionQuote] Error:', error)
-    throw new Error('Failed to transition quote')
+    throw new UnknownAppError('Failed to transition quote')
   }
 
   // Send quote-sent email to client (non-blocking)
@@ -438,7 +608,11 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
       entityType: 'quote',
       entityId: id,
       summary: `Quote moved from ${currentStatus} → ${newStatus}`,
-      context: { from_status: currentStatus, to_status: newStatus, total_cents: updated.total_quoted_cents },
+      context: {
+        from_status: currentStatus,
+        to_status: newStatus,
+        total_cents: updated.total_quoted_cents,
+      },
       clientId: updated.client_id,
     })
   } catch (err) {
@@ -456,9 +630,11 @@ export async function getClientPricingHistory(clientId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: quotes, error } = await supabase
-    .from('quotes')
-    .select(`
+  const runQuery = (withSoftDeleteFilter: boolean) => {
+    let query = supabase
+      .from('quotes')
+      .select(
+        `
       id,
       total_quoted_cents,
       price_per_person_cents,
@@ -466,12 +642,26 @@ export async function getClientPricingHistory(clientId: string) {
       pricing_model,
       accepted_at,
       quote_name,
-      event:events(id, occasion, event_date)
-    `)
-    .eq('tenant_id', user.tenantId!)
-    .eq('client_id', clientId)
-    .eq('status', 'accepted')
-    .order('accepted_at', { ascending: false })
+      event:events!quotes_event_id_fkey(id, occasion, event_date)
+    `
+      )
+      .eq('tenant_id', user.tenantId!)
+      .eq('client_id', clientId)
+      .eq('status', 'accepted')
+
+    if (withSoftDeleteFilter) {
+      query = query.is('deleted_at' as any, null)
+    }
+
+    return query.order('accepted_at', { ascending: false })
+  }
+
+  let response = await runQuery(true)
+  if (isMissingSoftDeleteColumn(response.error)) {
+    response = await runQuery(false)
+  }
+
+  const { data: quotes, error } = response
 
   if (error) {
     console.error('[getClientPricingHistory] Error:', error)
@@ -489,12 +679,24 @@ export async function getQuotesForInquiry(inquiryId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: quotes, error } = await supabase
-    .from('quotes')
-    .select('*')
-    .eq('tenant_id', user.tenantId!)
-    .eq('inquiry_id', inquiryId)
-    .order('created_at', { ascending: false })
+  const runQuery = (withSoftDeleteFilter: boolean) => {
+    let query = supabase
+      .from('quotes')
+      .select('*')
+      .eq('tenant_id', user.tenantId!)
+      .eq('inquiry_id', inquiryId)
+    if (withSoftDeleteFilter) {
+      query = query.is('deleted_at' as any, null)
+    }
+    return query.order('created_at', { ascending: false })
+  }
+
+  let response = await runQuery(true)
+  if (isMissingSoftDeleteColumn(response.error)) {
+    response = await runQuery(false)
+  }
+
+  const { data: quotes, error } = response
 
   if (error) {
     console.error('[getQuotesForInquiry] Error:', error)
@@ -512,33 +714,62 @@ export async function deleteQuote(id: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: quote } = await supabase
+  const { data: quote } = await (supabase
     .from('quotes')
-    .select('status')
+    .select('status, deleted_at')
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
-  if (!quote) {
-    throw new Error('Quote not found')
+  if (!quote || quote.deleted_at) {
+    throw new ValidationError('Quote not found')
   }
 
   if (quote.status !== 'draft') {
-    throw new Error('Can only delete quotes in draft status')
+    throw new ValidationError('Can only delete quotes in draft status')
   }
 
   const { error } = await supabase
     .from('quotes')
-    .delete()
+    .update({
+      deleted_at: new Date().toISOString(),
+      deleted_by: user.id,
+      updated_by: user.id,
+    } as any)
+    .eq('id', id)
+    .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
+
+  if (error) {
+    console.error('[deleteQuote] Error:', error)
+    throw new UnknownAppError('Failed to delete quote')
+  }
+
+  revalidatePath('/quotes')
+  return { success: true }
+}
+
+export async function restoreQuote(id: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { error } = await supabase
+    .from('quotes')
+    .update({
+      deleted_at: null,
+      deleted_by: null,
+      updated_by: user.id,
+    } as any)
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)
 
   if (error) {
-    console.error('[deleteQuote] Error:', error)
-    throw new Error('Failed to delete quote')
+    console.error('[restoreQuote] Error:', error)
+    throw new UnknownAppError('Failed to restore quote')
   }
 
   revalidatePath('/quotes')
+  revalidatePath(`/quotes/${id}`)
   return { success: true }
 }
 
@@ -566,17 +797,19 @@ export async function createQuoteFromPricingInput(
 
   // Hard guard: never persist a quote that the engine cannot fully compute
   if (result._requiresCustomPricing) {
-    const reasons = result._validationErrors.length > 0
-      ? result._validationErrors.join('; ')
-      : result._breakdown.notes.filter(n =>
-          n.toLowerCase().includes('custom') ||
-          n.toLowerCase().includes('requires') ||
-          n.toLowerCase().includes('buyout')
-        ).join('; ') || 'Pricing could not be fully determined'
+    const reasons =
+      result._validationErrors.length > 0
+        ? result._validationErrors.join('; ')
+        : result._breakdown.notes
+            .filter(
+              (n) =>
+                n.toLowerCase().includes('custom') ||
+                n.toLowerCase().includes('requires') ||
+                n.toLowerCase().includes('buyout')
+            )
+            .join('; ') || 'Pricing could not be fully determined'
 
-    throw new Error(
-      `Cannot save quote: requires custom pricing. ${reasons}`
-    )
+    throw new ValidationError(`Cannot save quote: requires custom pricing. ${reasons}`)
   }
 
   // Strip internal underscore fields before handing off to createQuote
@@ -628,8 +861,10 @@ export async function reviseQuote(quoteId: string): Promise<{ success: true; new
     .eq('tenant_id', user.tenantId!)
     .single()
 
-  if (!original) throw new Error('Quote not found')
-  if ((original as any).is_superseded) throw new Error('This quote has already been superseded by a newer version')
+  if (!original) throw new ValidationError('Quote not found')
+  if ((original as any).is_superseded) {
+    throw new ValidationError('This quote has already been superseded by a newer version')
+  }
 
   const currentVersion: number = (original as any).version ?? 1
 
@@ -654,14 +889,14 @@ export async function reviseQuote(quoteId: string): Promise<{ success: true; new
       status: 'draft' as QuoteStatus,
       created_by: user.id,
       // Versioning fields
-      ...(({ version: currentVersion + 1, previous_version_id: quoteId }) as any),
+      ...({ version: currentVersion + 1, previous_version_id: quoteId } as any),
     } as any)
     .select('id')
     .single()
 
   if (error || !newQuote) {
     console.error('[reviseQuote] Create failed:', error)
-    throw new Error('Failed to create revised quote')
+    throw new UnknownAppError('Failed to create revised quote')
   }
 
   // Mark original as superseded
@@ -732,14 +967,16 @@ export async function getQuoteVersionHistory(quoteId: string): Promise<QuoteVers
   return Array.from(inChain)
     .map((id, i) => {
       const q = versionMap.get(id)
-      return q ? {
-        id: q.id,
-        version: i + 1,
-        total_quoted_cents: q.total_quoted_cents,
-        status: q.status,
-        created_at: q.created_at,
-        is_superseded: q.id !== quoteId && inChain.has(q.id),
-      } : null
+      return q
+        ? {
+            id: q.id,
+            version: i + 1,
+            total_quoted_cents: q.total_quoted_cents,
+            status: q.status,
+            created_at: q.created_at,
+            is_superseded: q.id !== quoteId && inChain.has(q.id),
+          }
+        : null
     })
     .filter(Boolean) as QuoteVersionSummary[]
 }

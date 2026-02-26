@@ -8,13 +8,24 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
+import { showUndoToast } from '@/components/ui/undo-toast'
+import { ConfirmPolicyDialog } from '@/components/ui/confirm-policy-dialog'
 import { formatCurrency } from '@/lib/utils/currency'
-import { updateMenu, deleteMenu, duplicateMenu, transitionMenu } from '@/lib/menus/actions'
+import {
+  updateMenu,
+  deleteMenu,
+  duplicateMenu,
+  restoreMenu,
+  transitionMenu,
+} from '@/lib/menus/actions'
 import {
   searchRecipes,
   linkRecipeToComponent,
   unlinkRecipeFromComponent,
 } from '@/lib/recipes/actions'
+import { useUndoStack } from '@/lib/undo/use-undo-stack'
+import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
+import type { ConfirmPolicyInput } from '@/lib/confirm/confirm-policy'
 import { format } from 'date-fns'
 import Link from 'next/link'
 import { PrepTimelineView } from '@/components/menus/prep-timeline-view'
@@ -104,6 +115,9 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [deletePolicy, setDeletePolicy] = useState<ConfirmPolicyInput | null>(null)
+  const undoStack = useUndoStack<string | null>(null)
 
   // Recipe link modal state
   const [linkingComponentId, setLinkingComponentId] = useState<string | null>(null)
@@ -121,6 +135,13 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
     setIsEditing(true)
     setName(menu.name)
     setDescription(menu.description || '')
+  }
+
+  const setMutationError = (err: unknown) => {
+    const uiError = mapErrorToUI(err)
+    const traceSuffix = uiError.traceId ? ` (Ref: ${uiError.traceId})` : ''
+    const nextStep = uiError.nextStep ? ` ${uiError.nextStep}` : ''
+    setError(`${uiError.title}: ${uiError.message}${nextStep}${traceSuffix}`)
   }
 
   const handleCancel = () => {
@@ -144,8 +165,8 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
 
       router.refresh()
       setIsEditing(false)
-    } catch (err: any) {
-      setError(err.message || 'Failed to update menu')
+    } catch (err) {
+      setMutationError(err)
     } finally {
       setLoading(false)
     }
@@ -156,24 +177,44 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
     try {
       const result = await duplicateMenu(menu.id)
       router.push(`/menus/${result.menu.id}`)
-    } catch (err: any) {
-      setError(err.message || 'Failed to duplicate menu')
+    } catch (err) {
+      setMutationError(err)
       setLoading(false)
     }
   }
 
-  const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this menu? This action cannot be undone.')) {
-      return
-    }
+  const handleDelete = () => {
+    setDeletePolicy({
+      risk: 'high',
+      reversible: true,
+      entityName: menu.name,
+      impactPreview: 'This menu will be hidden and can be restored within the undo window.',
+      actionLabel: 'Delete menu',
+    })
+    setDeleteConfirmOpen(true)
+  }
 
+  const confirmDelete = async () => {
+    setDeleteConfirmOpen(false)
     setLoading(true)
     try {
       await deleteMenu(menu.id)
+      undoStack.push(menu.id, menu.id)
+      showUndoToast(
+        'Menu deleted. You can undo this for the next 20 seconds.',
+        () => {
+          const deletedMenuId = undoStack.undo()
+          if (!deletedMenuId) return
+          void restoreMenu(deletedMenuId).then(() => router.refresh())
+        },
+        20000
+      )
       router.push('/menus')
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete menu')
+    } catch (err) {
+      setMutationError(err)
       setLoading(false)
+    } finally {
+      setDeletePolicy(null)
     }
   }
 
@@ -184,8 +225,8 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
       const nextStatus = menu.status === 'archived' ? 'draft' : 'archived'
       await transitionMenu(menu.id, nextStatus, 'Updated from back-of-house menu screen')
       router.refresh()
-    } catch (err: any) {
-      setError(err.message || 'Failed to update menu status')
+    } catch (err) {
+      setMutationError(err)
       setLoading(false)
     }
   }
@@ -287,8 +328,8 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
       setRecipeSearch('')
       setRecipeResults([])
       router.refresh()
-    } catch (err: any) {
-      setError(err.message || 'Failed to link recipe')
+    } catch (err) {
+      setMutationError(err)
     } finally {
       setLoading(false)
     }
@@ -299,8 +340,8 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
     try {
       await unlinkRecipeFromComponent(componentId)
       router.refresh()
-    } catch (err: any) {
-      setError(err.message || 'Failed to unlink recipe')
+    } catch (err) {
+      setMutationError(err)
     } finally {
       setLoading(false)
     }
@@ -745,6 +786,16 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
           </div>
         </>
       )}
+      <ConfirmPolicyDialog
+        open={deleteConfirmOpen}
+        policy={deletePolicy}
+        loading={loading}
+        onCancel={() => {
+          setDeleteConfirmOpen(false)
+          setDeletePolicy(null)
+        }}
+        onConfirm={() => void confirmDelete()}
+      />
     </div>
   )
 }

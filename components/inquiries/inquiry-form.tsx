@@ -3,7 +3,7 @@
 // Everything else optional — the chef is logging between tasks
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -11,12 +11,20 @@ import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
+import { SaveStateBadge } from '@/components/ui/save-state-badge'
+import { DraftRestorePrompt } from '@/components/ui/draft-restore-prompt'
+import { UnsavedChangesDialog } from '@/components/ui/unsaved-changes-dialog'
 import { createInquiry, type CreateInquiryInput } from '@/lib/inquiries/actions'
 import { parseCurrencyToCents, formatCentsToDisplay } from '@/lib/utils/currency'
 import { AddressAutocomplete, type AddressData } from '@/components/ui/address-autocomplete'
 import { SmartFillModal } from '@/components/import/smart-fill-modal'
 import { parseInquiryFromText, type ParsedInquiry } from '@/lib/ai/parse-inquiry'
 import { isAIConfigured } from '@/lib/ai/parse'
+import { useDurableDraft } from '@/lib/drafts/use-durable-draft'
+import { useUnsavedChangesGuard } from '@/lib/navigation/use-unsaved-changes-guard'
+import { useIdempotentMutation } from '@/lib/offline/use-idempotent-mutation'
+import { ValidationError } from '@/lib/errors/app-error'
+import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 
 type Client = {
   id: string
@@ -38,11 +46,34 @@ type PartnerLocation = {
   state: string | null
 }
 
+type InquiryFormData = {
+  channel: string
+  client_name: string
+  selected_client_id: string
+  client_email: string
+  client_phone: string
+  confirmed_date: string
+  guest_count: string
+  location: string
+  occasion: string
+  budget_amount: string
+  dietary_restrictions: string
+  service_expectations: string
+  cannabis_preference: string
+  selected_partner_id: string
+  selected_location_id: string
+  source_message: string
+  notes: string
+  referral_source: string
+}
+
 export function InquiryForm({
+  tenantId,
   clients,
   partners = [],
   partnerLocations = {},
 }: {
+  tenantId: string
   clients: Client[]
   partners?: Partner[]
   partnerLocations?: Record<string, PartnerLocation[]>
@@ -123,6 +154,129 @@ export function InquiryForm({
   const [notes, setNotes] = useState('')
   const [referralSource, setReferralSource] = useState('')
 
+  const currentFormData = useMemo<InquiryFormData>(
+    () => ({
+      channel,
+      client_name: clientName,
+      selected_client_id: selectedClientId,
+      client_email: clientEmail,
+      client_phone: clientPhone,
+      confirmed_date: confirmedDate,
+      guest_count: guestCount,
+      location,
+      occasion,
+      budget_amount: budgetAmount,
+      dietary_restrictions: dietaryRestrictions,
+      service_expectations: serviceExpectations,
+      cannabis_preference: cannabisPreference,
+      selected_partner_id: selectedPartnerId,
+      selected_location_id: selectedLocationId,
+      source_message: sourceMessage,
+      notes,
+      referral_source: referralSource,
+    }),
+    [
+      channel,
+      clientName,
+      selectedClientId,
+      clientEmail,
+      clientPhone,
+      confirmedDate,
+      guestCount,
+      location,
+      occasion,
+      budgetAmount,
+      dietaryRestrictions,
+      serviceExpectations,
+      cannabisPreference,
+      selectedPartnerId,
+      selectedLocationId,
+      sourceMessage,
+      notes,
+      referralSource,
+    ]
+  )
+
+  const initialFormData = useMemo<InquiryFormData>(
+    () => ({
+      channel: '',
+      client_name: '',
+      selected_client_id: '',
+      client_email: '',
+      client_phone: '',
+      confirmed_date: '',
+      guest_count: '',
+      location: '',
+      occasion: '',
+      budget_amount: '',
+      dietary_restrictions: '',
+      service_expectations: '',
+      cannabis_preference: '',
+      selected_partner_id: '',
+      selected_location_id: '',
+      source_message: '',
+      notes: '',
+      referral_source: '',
+    }),
+    []
+  )
+  const [committedFormData, setCommittedFormData] = useState<InquiryFormData>(initialFormData)
+
+  const createMutation = useIdempotentMutation<
+    CreateInquiryInput & { idempotency_key?: string },
+    any
+  >('inquiries/create', {
+    mutation: createInquiry as any,
+  })
+
+  const durableDraft = useDurableDraft<InquiryFormData>('inquiry-form', null, {
+    schemaVersion: 1,
+    tenantId,
+    defaultData: initialFormData,
+    debounceMs: 700,
+  })
+
+  const isDirty = useMemo(
+    () => JSON.stringify(currentFormData) !== JSON.stringify(committedFormData),
+    [committedFormData, currentFormData]
+  )
+
+  const unsavedGuard = useUnsavedChangesGuard({
+    isDirty,
+    onSaveDraft: () => durableDraft.persistDraft(currentFormData, { immediate: true }),
+    canSaveDraft: true,
+    saveState: createMutation.saveState,
+  })
+
+  useEffect(() => {
+    if (!isDirty) return
+    void durableDraft.persistDraft(currentFormData)
+    if (createMutation.saveState.status === 'SAVED') {
+      createMutation.markUnsaved()
+    }
+  }, [createMutation, currentFormData, durableDraft, isDirty])
+
+  const applyFormData = (data: InquiryFormData) => {
+    setChannel(data.channel)
+    setClientName(data.client_name)
+    setSelectedClientId(data.selected_client_id)
+    setClientEmail(data.client_email)
+    setClientPhone(data.client_phone)
+    setConfirmedDate(data.confirmed_date)
+    setGuestCount(data.guest_count)
+    setLocation(data.location)
+    setOccasion(data.occasion)
+    setBudgetAmount(data.budget_amount)
+    setDietaryRestrictions(data.dietary_restrictions)
+    setServiceExpectations(data.service_expectations)
+    setCannabisPreference(data.cannabis_preference)
+    setSelectedPartnerId(data.selected_partner_id)
+    setSelectedLocationId(data.selected_location_id)
+    setSourceMessage(data.source_message)
+    setNotes(data.notes)
+    setReferralSource(data.referral_source)
+  }
+
   const handleClientSelect = (clientId: string) => {
     setSelectedClientId(clientId)
     if (clientId) {
@@ -141,12 +295,14 @@ export function InquiryForm({
     setError(null)
 
     try {
-      if (!channel) throw new Error('Channel is required')
-      if (!clientName.trim()) throw new Error('Client name is required')
+      await durableDraft.persistDraft(currentFormData, { immediate: true })
+
+      if (!channel) throw new ValidationError('Channel is required')
+      if (!clientName.trim()) throw new ValidationError('Client name is required')
 
       const guestCountNum = guestCount ? parseInt(guestCount) : null
       if (guestCount && (isNaN(guestCountNum!) || guestCountNum! <= 0)) {
-        throw new Error('Guest count must be a positive number')
+        throw new ValidationError('Guest count must be a positive number')
       }
 
       const budgetCents = budgetAmount ? parseCurrencyToCents(budgetAmount) : null
@@ -177,16 +333,23 @@ export function InquiryForm({
         referral_source: referralSource || undefined,
       }
 
-      const result = await createInquiry(input)
+      const mutationResult = await createMutation.mutate(input as any)
+      if (mutationResult.queued) {
+        setLoading(false)
+        return
+      }
+      const result = mutationResult.result as any
 
       if (result.success && result.inquiry) {
+        setCommittedFormData(currentFormData)
+        await durableDraft.clearDraft()
         router.push(`/inquiries/${result.inquiry.id}`)
       } else {
         throw new Error('Failed to create inquiry')
       }
     } catch (err) {
-      console.error('Inquiry form error:', err)
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      const uiError = mapErrorToUI(err)
+      setError(uiError.message)
       setLoading(false)
     }
   }
@@ -211,6 +374,9 @@ export function InquiryForm({
 
   return (
     <Card className="p-6">
+      <div className="mb-4 flex justify-end">
+        <SaveStateBadge state={createMutation.saveState} onRetry={createMutation.retryLast} />
+      </div>
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
           <Alert variant="error" title="Error">
@@ -437,6 +603,7 @@ export function InquiryForm({
             placeholder="Paste the original message verbatim (text, email, DM...)"
             value={sourceMessage}
             onChange={(e) => setSourceMessage(e.target.value)}
+            onBlur={() => void durableDraft.persistDraft(currentFormData, { immediate: true })}
             rows={4}
           />
 
@@ -445,6 +612,7 @@ export function InquiryForm({
             placeholder="Your notes about this lead..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
+            onBlur={() => void durableDraft.persistDraft(currentFormData, { immediate: true })}
             rows={3}
           />
         </div>
@@ -457,13 +625,33 @@ export function InquiryForm({
           <Button
             type="button"
             variant="secondary"
-            onClick={() => router.back()}
+            onClick={() => unsavedGuard.requestNavigation(() => router.back())}
             disabled={loading}
           >
             Cancel
           </Button>
         </div>
       </form>
+
+      <DraftRestorePrompt
+        open={durableDraft.showRestorePrompt}
+        lastSavedAt={durableDraft.pendingDraft?.lastSavedAt ?? durableDraft.lastSavedAt}
+        onRestore={() => {
+          const restored = durableDraft.restoreDraft()
+          if (restored) {
+            applyFormData(restored)
+          }
+        }}
+        onDiscard={() => void durableDraft.discardDraft()}
+      />
+
+      <UnsavedChangesDialog
+        open={unsavedGuard.open}
+        canSaveDraft={unsavedGuard.canSaveDraft}
+        onStay={unsavedGuard.onStay}
+        onLeave={unsavedGuard.onLeave}
+        onSaveDraftAndLeave={() => void unsavedGuard.onSaveDraftAndLeave()}
+      />
     </Card>
   )
 }
