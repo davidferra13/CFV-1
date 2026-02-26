@@ -1129,6 +1129,270 @@ async function askRemy(param) {
   }
 }
 
+// ── Soak Tests ──────────────────────────────────────────────────
+
+function runSoakTest(quick = true) {
+  const jobId = quick ? 'soak-quick' : 'soak-full'
+  if (runningJobs.has(jobId)) return { ok: false, error: 'Soak test already in progress' }
+
+  const label = quick ? 'Quick Soak (10 iterations)' : 'Full Soak (100 iterations)'
+  log('test', `Starting ${label}...`, 'info')
+
+  const env = { ...process.env }
+  if (quick) {
+    env.SOAK_ITERATIONS = '10'
+    env.SOAK_CHECKPOINT_INTERVAL = '5'
+  }
+
+  // Soak tests need a build first, then run playwright with soak config
+  const child = spawn('npx', ['next', 'build', '--no-lint'], {
+    cwd: PROJECT_ROOT,
+    shell: true,
+    stdio: ['ignore', 'pipe', 'pipe'],
+    env,
+  })
+
+  const job = { id: jobId, child, startTime: Date.now(), status: 'running', phase: 'building' }
+  runningJobs.set(jobId, job)
+
+  child.stdout.on('data', d => {
+    d.toString().trim().split('\n').forEach(line => {
+      if (line.trim()) log('test', `[build] ${line.trim()}`)
+    })
+  })
+  child.stderr.on('data', d => {
+    d.toString().trim().split('\n').forEach(line => {
+      if (line.trim()) log('test', `[build] ${line.trim()}`, 'warn')
+    })
+  })
+  child.on('close', buildCode => {
+    if (buildCode !== 0) {
+      job.status = 'failed'
+      log('test', `Soak test aborted — build failed (code ${buildCode})`, 'error')
+      runningJobs.delete(jobId)
+      return
+    }
+    log('test', 'Build complete, starting soak tests...', 'info')
+    job.phase = 'testing'
+
+    const testChild = spawn('npx', ['playwright', 'test', '--config=playwright.soak.config.ts'], {
+      cwd: PROJECT_ROOT,
+      shell: true,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env,
+    })
+    job.child = testChild
+
+    testChild.stdout.on('data', d => {
+      d.toString().trim().split('\n').forEach(line => {
+        if (line.trim()) log('test', line.trim())
+      })
+    })
+    testChild.stderr.on('data', d => {
+      d.toString().trim().split('\n').forEach(line => {
+        if (line.trim()) log('test', line.trim(), 'warn')
+      })
+    })
+    testChild.on('close', testCode => {
+      job.status = testCode === 0 ? 'success' : 'failed'
+      const duration = ((Date.now() - job.startTime) / 1000).toFixed(1)
+      log('test', testCode === 0
+        ? `${label} passed! (${duration}s) — no memory leaks detected`
+        : `${label} failed (${duration}s) — check results for details`,
+        testCode === 0 ? 'success' : 'error')
+      runningJobs.delete(jobId)
+    })
+  })
+
+  return { ok: true, message: `${label} started — building first, then running tests. Watch the log.` }
+}
+
+// ── E2E Tests ───────────────────────────────────────────────────
+
+function runE2ETests(project) {
+  const jobId = `e2e-${project || 'all'}`
+  if (runningJobs.has(jobId)) return { ok: false, error: 'E2E tests already in progress' }
+
+  const args = ['playwright', 'test']
+  let label = 'All E2E Tests'
+  if (project) {
+    args.push('--project=' + project)
+    label = `E2E Tests (${project})`
+  }
+
+  log('test', `Starting ${label}...`, 'info')
+  const child = spawn('npx', args, {
+    cwd: PROJECT_ROOT,
+    shell: true,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
+
+  const job = { id: jobId, child, startTime: Date.now(), status: 'running' }
+  runningJobs.set(jobId, job)
+
+  child.stdout.on('data', d => {
+    d.toString().trim().split('\n').forEach(line => {
+      if (line.trim()) log('test', line.trim())
+    })
+  })
+  child.stderr.on('data', d => {
+    d.toString().trim().split('\n').forEach(line => {
+      if (line.trim()) log('test', line.trim(), 'warn')
+    })
+  })
+  child.on('close', code => {
+    job.status = code === 0 ? 'success' : 'failed'
+    const duration = ((Date.now() - job.startTime) / 1000).toFixed(1)
+    log('test', `${label} ${code === 0 ? 'passed' : 'failed'} (${duration}s)`, code === 0 ? 'success' : 'error')
+    runningJobs.delete(jobId)
+  })
+
+  return { ok: true, message: `${label} started — watch the log` }
+}
+
+// ── Demo Data Reset ─────────────────────────────────────────────
+
+function resetDemoData() {
+  const jobId = 'demo-reset'
+  if (runningJobs.has(jobId)) return { ok: false, error: 'Demo reset already in progress' }
+
+  log('demo', 'Resetting demo data (clear + reload)...', 'info')
+  const child = spawn('npm', ['run', 'demo:reset'], {
+    cwd: PROJECT_ROOT,
+    shell: true,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
+
+  const job = { id: jobId, child, startTime: Date.now(), status: 'running' }
+  runningJobs.set(jobId, job)
+
+  child.stdout.on('data', d => {
+    d.toString().trim().split('\n').forEach(line => {
+      if (line.trim()) log('demo', line.trim())
+    })
+  })
+  child.stderr.on('data', d => {
+    d.toString().trim().split('\n').forEach(line => {
+      if (line.trim()) log('demo', line.trim(), 'warn')
+    })
+  })
+  child.on('close', code => {
+    job.status = code === 0 ? 'success' : 'failed'
+    const duration = ((Date.now() - job.startTime) / 1000).toFixed(1)
+    log('demo', code === 0
+      ? `Demo data reset complete (${duration}s)`
+      : `Demo data reset failed (${duration}s)`,
+      code === 0 ? 'success' : 'error')
+    runningJobs.delete(jobId)
+  })
+
+  return { ok: true, message: 'Demo data reset started — clearing old data and loading fresh' }
+}
+
+// ── Agent Account Setup ─────────────────────────────────────────
+
+function setupAgentAccount() {
+  const jobId = 'agent-setup'
+  if (runningJobs.has(jobId)) return { ok: false, error: 'Agent setup already in progress' }
+
+  log('agent', 'Setting up agent test account...', 'info')
+  const child = spawn('npm', ['run', 'agent:setup'], {
+    cwd: PROJECT_ROOT,
+    shell: true,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
+
+  const job = { id: jobId, child, startTime: Date.now(), status: 'running' }
+  runningJobs.set(jobId, job)
+
+  child.stdout.on('data', d => {
+    d.toString().trim().split('\n').forEach(line => {
+      if (line.trim()) log('agent', line.trim())
+    })
+  })
+  child.stderr.on('data', d => {
+    d.toString().trim().split('\n').forEach(line => {
+      if (line.trim()) log('agent', line.trim(), 'warn')
+    })
+  })
+  child.on('close', code => {
+    job.status = code === 0 ? 'success' : 'failed'
+    log('agent', code === 0
+      ? 'Agent account ready — credentials saved to .auth/agent.json'
+      : 'Agent setup failed — check the log',
+      code === 0 ? 'success' : 'error')
+    runningJobs.delete(jobId)
+  })
+
+  return { ok: true, message: 'Setting up agent test account...' }
+}
+
+// ── Health Check Only (typecheck + build, no commit) ────────────
+
+async function healthCheckOnly() {
+  if (runningJobs.has('health-check')) return { ok: false, error: 'Health check already in progress' }
+
+  log('health', '🏥 Health Check — typecheck + build (no commit)...', 'info')
+  const job = { id: 'health-check', startTime: Date.now(), status: 'running' }
+  runningJobs.set('health-check', job)
+
+  // Step 1: Type check
+  log('health', 'Step 1/2: Running type check...', 'info')
+  try {
+    await execAsync('npx tsc --noEmit --skipLibCheck', { cwd: PROJECT_ROOT, timeout: 120000 })
+    log('health', 'Type check passed!', 'success')
+  } catch (err) {
+    log('health', `Type check failed: ${err.stderr || err.message}`, 'error')
+    job.status = 'failed'
+    runningJobs.delete('health-check')
+    return { ok: false, error: `Type check failed: ${err.stderr || err.message}` }
+  }
+
+  // Step 2: Full build
+  log('health', 'Step 2/2: Running full build...', 'info')
+  try {
+    await execAsync('npx next build --no-lint', { cwd: PROJECT_ROOT, timeout: 300000 })
+    log('health', 'Build passed!', 'success')
+  } catch (err) {
+    log('health', `Build failed: ${err.stderr || err.message}`, 'error')
+    job.status = 'failed'
+    runningJobs.delete('health-check')
+    return { ok: false, error: `Build failed: ${err.stderr || err.message}` }
+  }
+
+  job.status = 'success'
+  const duration = ((Date.now() - job.startTime) / 1000).toFixed(1)
+  log('health', `🏥 Health check passed! (${duration}s) — Ready to merge.`, 'success')
+  runningJobs.delete('health-check')
+  return { ok: true, message: `Health check passed (${duration}s). Type check ✓ Build ✓ — Ready to merge.` }
+}
+
+// ── List Migrations ─────────────────────────────────────────────
+
+async function listMigrations() {
+  try {
+    const { readdir } = await import('node:fs/promises')
+    const migrationsDir = join(PROJECT_ROOT, 'supabase', 'migrations')
+    let files = await readdir(migrationsDir)
+    files = files.filter(f => f.endsWith('.sql')).sort()
+    const latest = files.length > 0 ? files[files.length - 1] : 'none'
+    const latestTimestamp = latest !== 'none' ? latest.match(/^(\d+)/)?.[1] || 'unknown' : 'none'
+    return {
+      ok: true,
+      migrations: files.map(f => {
+        const ts = f.match(/^(\d+)/)?.[1] || ''
+        const name = f.replace(/^\d+_/, '').replace('.sql', '')
+        return { file: f, timestamp: ts, name }
+      }),
+      total: files.length,
+      latestTimestamp,
+      message: `${files.length} migrations. Latest timestamp: ${latestTimestamp}`,
+    }
+  } catch (err) {
+    return { ok: false, error: err.message, migrations: [], total: 0 }
+  }
+}
+
 // ── Chat Tool Registry ───────────────────────────────────────────
 
 const TOOLS = {
@@ -1179,6 +1443,19 @@ const TOOLS = {
   'db/backup':        { fn: dbBackup,                             desc: 'Backup the Supabase database to a local SQL file' },
   'history/all':      { fn: getGitHistory,                        desc: 'Get the full project commit history' },
   'feedback/all':     { fn: getFeedback,                          desc: 'Get all user feedback from the database' },
+
+  // Testing & QA
+  'test/soak-quick':  { fn: () => runSoakTest(true),              desc: 'Run quick soak test (10 iterations) — checks for memory leaks' },
+  'test/soak-full':   { fn: () => runSoakTest(false),             desc: 'Run full soak test (100 iterations) — thorough memory leak check' },
+  'test/e2e':         { fn: (param) => runE2ETests(param),        desc: 'Run E2E tests (use test/e2e:smoke for smoke tests, or test/e2e for all)' },
+
+  // Demo & Setup
+  'demo/reset':       { fn: resetDemoData,                        desc: 'Reset demo data — clears old demo data and reloads fresh' },
+  'agent/setup':      { fn: setupAgentAccount,                    desc: 'Set up the agent test account for UI testing' },
+
+  // Health & Verification
+  'health/check':     { fn: healthCheckOnly,                      desc: 'Full health check (typecheck + build) without committing — shows if code is ready to merge' },
+  'db/migrations':    { fn: listMigrations,                       desc: 'List all database migrations and show the latest timestamp' },
 
   // Remy Bridge
   'remy/ask':         { fn: (param) => askRemy(param),            desc: 'Ask Remy (business AI) a question — requires dev server running. Use remy/ask:your question here' },
@@ -1464,6 +1741,34 @@ async function handleRequest(req, res) {
   }
   if (path === '/api/prompts/queue' && method === 'GET') {
     return json(res, await getPromptQueue())
+  }
+
+  // Testing & QA routes
+  if (path === '/api/test/soak-quick' && method === 'POST') {
+    return json(res, runSoakTest(true))
+  }
+  if (path === '/api/test/soak-full' && method === 'POST') {
+    return json(res, runSoakTest(false))
+  }
+  if (path === '/api/test/e2e' && method === 'POST') {
+    const body = await parseBody(req)
+    return json(res, runE2ETests(body.project))
+  }
+
+  // Demo & Setup routes
+  if (path === '/api/demo/reset' && method === 'POST') {
+    return json(res, resetDemoData())
+  }
+  if (path === '/api/agent/setup' && method === 'POST') {
+    return json(res, setupAgentAccount())
+  }
+
+  // Health check & migrations routes
+  if (path === '/api/health/check' && method === 'POST') {
+    return json(res, await healthCheckOnly())
+  }
+  if (path === '/api/db/migrations' && method === 'GET') {
+    return json(res, await listMigrations())
   }
 
   // ── Infrastructure info (Pi health, ports, quick links) ──────────

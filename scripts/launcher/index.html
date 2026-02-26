@@ -1581,6 +1581,56 @@ body {
           </button>
         </div>
 
+        <!-- ── Testing & QA ── -->
+        <div class="home-section-title">&#x1F9EA; Testing &amp; QA</div>
+        <div class="mega-grid">
+          <button class="mega-btn" id="mega-soak-quick" onclick="megaAction('test/soak-quick')" title="Run 10 memory leak iterations — catches leaks fast (~2-3 min including build)">
+            <span class="mega-icon">&#x1F4A7;</span>
+            <span class="mega-label">Quick Soak Test</span>
+            <span class="mega-desc">Check for memory leaks (10 iterations)</span>
+          </button>
+          <button class="mega-btn" id="mega-soak-full" onclick="megaAction('test/soak-full')" title="Run 100 memory leak iterations — full pre-merge confidence (~15 min)">
+            <span class="mega-icon">&#x1F30A;</span>
+            <span class="mega-label">Full Soak Test</span>
+            <span class="mega-desc">Thorough memory leak check (100 iterations)</span>
+          </button>
+          <button class="mega-btn" id="mega-e2e-smoke" onclick="megaActionWithBody('test/e2e', {project:'smoke'})" title="Quick smoke test — checks key pages load correctly">
+            <span class="mega-icon">&#x1F6A8;</span>
+            <span class="mega-label">Smoke Test</span>
+            <span class="mega-desc">Run quick E2E smoke tests</span>
+          </button>
+          <button class="mega-btn" id="mega-health-check" onclick="megaAction('health/check')" title="Run typecheck + build without committing — see if code is ready to merge">
+            <span class="mega-icon">&#x1F3E5;</span>
+            <span class="mega-label">Health Check</span>
+            <span class="mega-desc">Typecheck + build (no commit) — merge ready?</span>
+          </button>
+        </div>
+
+        <!-- ── Demo & Setup ── -->
+        <div class="home-section-title">&#x1F4CB; Demo &amp; Setup</div>
+        <div class="mega-grid">
+          <button class="mega-btn" id="mega-demo-reset" onclick="megaAction('demo/reset')" title="Clears all demo data and reloads fresh — good for testing from a clean state">
+            <span class="mega-icon">&#x1F504;</span>
+            <span class="mega-label">Reset Demo Data</span>
+            <span class="mega-desc">Clear old demo data and load fresh</span>
+          </button>
+          <button class="mega-btn" id="mega-agent-setup" onclick="megaAction('agent/setup')" title="Creates the agent test account for automated UI testing">
+            <span class="mega-icon">&#x1F916;</span>
+            <span class="mega-label">Setup Agent Account</span>
+            <span class="mega-desc">Create test account for UI testing</span>
+          </button>
+          <button class="mega-btn" id="mega-migrations" onclick="loadMigrations()" title="Shows all database migration files and the latest timestamp">
+            <span class="mega-icon">&#x1F4C4;</span>
+            <span class="mega-label">List Migrations</span>
+            <span class="mega-desc">View all DB migrations &amp; latest timestamp</span>
+          </button>
+          <button class="mega-btn" id="mega-test-report" onclick="openUrl('http://localhost:9323')" title="Opens the Playwright HTML test report in your browser">
+            <span class="mega-icon">&#x1F4CA;</span>
+            <span class="mega-label">View Test Report</span>
+            <span class="mega-desc">Open last Playwright test report</span>
+          </button>
+        </div>
+
         <!-- ── Quick Links ── -->
         <div class="home-section-title">&#x1F517; Open In Browser</div>
         <div class="quick-links">
@@ -2789,6 +2839,12 @@ async function sendChat() {
   let message = input.value.trim()
   if (!message || chatStreaming) return
 
+  // Cancel any orphaned previous request
+  if (chatAbortController) {
+    try { chatAbortController.abort() } catch {}
+    chatAbortController = null
+  }
+
   // Prepend file content if attached
   if (pendingFileContent) {
     message = `[Attached file: ${pendingFileName}]\n\`\`\`\n${pendingFileContent}\n\`\`\`\n\n${message}`
@@ -2975,9 +3031,11 @@ async function sendChat() {
     playChatSound()
 
   } catch (err) {
+    // Clear any pending render timer and cursor
+    if (sendChat._renderTimer) { clearTimeout(sendChat._renderTimer); sendChat._renderTimer = null }
     if (err.name === 'AbortError') {
       // User cancelled — clean up the streaming message
-      const finalText = fullResponse.replace(/<action>[\w/\-]+(?::[^<]+)?<\/action>/g, '').trim()
+      const finalText = fullResponse.replace(/<action>[\w/\-]+(?::[^<]+)?<\/action>/g, '').replace(/<memory_save[^>]*>[^<]*<\/memory_save>/g, '').replace(/<memory_delete>[^<]*<\/memory_delete>/g, '').trim()
       botMsg.innerHTML = finalText ? renderMarkdown(finalText) + '<em style="color:var(--text-muted);font-size:12px;"> (cancelled)</em>' : '<em style="color:var(--text-muted);">Response cancelled</em>'
       botMsg.classList.remove('streaming')
     } else {
@@ -3038,15 +3096,31 @@ function handleFileAttach(input) {
     input.value = ''
     return
   }
+  if (file.size === 0) {
+    alert('File is empty.')
+    input.value = ''
+    return
+  }
   const reader = new FileReader()
   reader.onload = (e) => {
     let content = e.target.result
+    // Check if file read produced garbled binary content
+    if (typeof content !== 'string') { alert('Unable to read file as text.'); return }
+    const nullCount = (content.match(/\0/g) || []).length
+    if (nullCount > 5) {
+      alert('This looks like a binary file. Please attach text files only (.txt, .md, .json, .log, etc.)')
+      return
+    }
     if (content.length > 3000) content = content.slice(0, 3000) + '\n... (truncated at 3000 chars)'
     pendingFileContent = content
     pendingFileName = file.name
     const preview = document.getElementById('chat-file-preview')
     preview.innerHTML = `<div class="chat-file-badge">&#x1F4CE; ${escapeHtml(file.name)} <button type="button" onclick="clearFileAttachment()" title="Remove">&times;</button></div>`
     preview.style.display = 'block'
+  }
+  reader.onerror = () => {
+    alert('Failed to read file. Make sure it is a text file.')
+    input.value = ''
   }
   reader.readAsText(file)
   input.value = '' // Reset so same file can be re-attached
@@ -3963,6 +4037,11 @@ async function megaAction(endpoint) {
     'npm/install': 'mega-npm-install',
     'db/gen-types': 'mega-gen-types',
     'db/backup': 'mega-db-backup',
+    'test/soak-quick': 'mega-soak-quick',
+    'test/soak-full': 'mega-soak-full',
+    'health/check': 'mega-health-check',
+    'demo/reset': 'mega-demo-reset',
+    'agent/setup': 'mega-agent-setup',
   }
   const btnId = btnMap[endpoint]
   if (btnId) setMegaState(btnId, 'running')
@@ -3981,6 +4060,56 @@ async function megaAction(endpoint) {
   } catch (err) {
     addLog('error', endpoint.split('/')[0], `${endpoint} failed: ${err.message}`)
     if (btnId) setMegaState(btnId, 'idle')
+  }
+}
+
+async function megaActionWithBody(endpoint, body) {
+  const btnMap = {
+    'test/e2e': 'mega-e2e-smoke',
+  }
+  const btnId = btnMap[endpoint]
+  if (btnId) setMegaState(btnId, 'running')
+
+  try {
+    const res = await fetch(`${API}/api/${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    const data = await res.json()
+    if (data.ok) {
+      addLog('success', 'test', data.message || `${endpoint} started`)
+      if (btnId) setMegaState(btnId, 'success')
+    } else {
+      addLog('error', 'test', data.error || `${endpoint} failed`)
+      if (btnId) setMegaState(btnId, 'idle')
+    }
+    setTimeout(refreshStatus, 2000)
+  } catch (err) {
+    addLog('error', 'test', `${endpoint} failed: ${err.message}`)
+    if (btnId) setMegaState(btnId, 'idle')
+  }
+}
+
+async function loadMigrations() {
+  setMegaState('mega-migrations', 'running')
+  try {
+    const res = await fetch(`${API}/api/db/migrations`)
+    const data = await res.json()
+    if (data.ok) {
+      const last5 = data.migrations.slice(-5)
+      const summary = `${data.total} migrations | Latest: ${data.latestTimestamp}\n\nLast 5:\n` +
+        last5.map(m => `  ${m.file}`).join('\n')
+      addLog('success', 'db', data.message)
+      alert(`Database Migrations\n\n${summary}`)
+      setMegaState('mega-migrations', 'success')
+    } else {
+      addLog('error', 'db', data.error || 'Failed to list migrations')
+      setMegaState('mega-migrations', 'idle')
+    }
+  } catch (err) {
+    addLog('error', 'db', `Failed: ${err.message}`)
+    setMegaState('mega-migrations', 'idle')
   }
 }
 
