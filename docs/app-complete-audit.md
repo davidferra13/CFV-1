@@ -1082,6 +1082,29 @@ Data privacy management. Comprehensive data export, privacy controls display, an
 | `/settings/culinary-profile` | Tell Remy about cooking philosophy and signature dishes                               |
 | Floating widget              | `remy-concierge-widget.tsx` — draggable/resizable on all pages, all edges + 4 corners |
 
+### Remy Drawer — 5-View Architecture
+
+The Remy drawer (`components/ai/remy-drawer.tsx`) has 5 views accessible via icon tabs in the header:
+
+| View      | Icon          | Component                    | What It Does                                                                                                         |
+| --------- | ------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Chat      | MessageSquare | (inline in drawer)           | AI chat with streaming, cancel, sound, TTS, voice input, file attachment, memory, auto-project suggestion            |
+| List      | List          | `remy-conversation-list.tsx` | Project-grouped conversations: Pinned, Projects (collapsible), Uncategorized, Archived. Right-click context menus    |
+| Search    | Search        | `remy-search-view.tsx`       | Full-text search across all conversations (titles + message content). Debounced, keyword highlighting, click to open |
+| Actions   | Activity      | `remy-action-log.tsx`        | Audit trail of all task executions grouped by date (Today/Yesterday/date), status icons, duration, click to source   |
+| Templates | BookTemplate  | `remy-templates-view.tsx`    | Saved starter prompts with emoji icon, optional project assignment. Run (creates conversation + sends), Edit, Delete |
+
+**Message actions (hover):** Listen (TTS), Copy, Bookmark (amber, persisted to IndexedDB), Delete (persisted to IndexedDB)
+
+**Organization features (all stored in browser IndexedDB):**
+
+- Projects (folders) with emoji icons — CRUD, conversations grouped under projects
+- Pin / Archive conversations
+- Message bookmarks with count badges on conversation items
+- Auto-project suggestion banner (keyword-based, deterministic, no AI cost)
+- Smart auto-title (strips filler words, capitalizes, truncates at word boundary)
+- Export: Markdown and JSON per conversation or per project
+
 ### Universal Intake (via Remy chat)
 
 | Feature            | Description                                                                                                   |
@@ -1163,7 +1186,7 @@ Data privacy management. Comprehensive data export, privacy controls display, an
 | **Sidebar Navigation**   | 5 groups (Pipeline, Events, Clients, Finance, More) + customizable top shortcuts + bottom shortcuts (Settings). Curated per-archetype presets.                                 |
 | **Archetype Selector**   | Full-screen onboarding gate for new chefs — pick from 6 archetypes (Private Chef, Caterer, Meal Prep, Restaurant, Food Truck, Bakery) to set nav defaults. Nothing locked out. |
 | **Mobile Tab Bar**       | Home, Inbox, Events, Clients (customizable per archetype)                                                                                                                      |
-| **Remy Floating Widget** | Draggable/resizable concierge on all pages                                                                                                                                     |
+| **Remy Floating Widget** | Draggable/resizable concierge on all pages. 5-view drawer (Chat, List, Search, Actions, Templates). Projects, bookmarks, pin/archive. All data in browser IndexedDB.           |
 | **Breadcrumbs**          | Every sub-page has "← Parent" navigation                                                                                                                                       |
 | **Auth Gate**            | Every page calls `requireChef()` — unauthenticated users redirected to sign-in                                                                                                 |
 | **Tenant Scoping**       | Every query scoped to session `tenant_id`                                                                                                                                      |

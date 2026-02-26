@@ -27,13 +27,44 @@ Side-by-side feature audit of Remy and Gustav after Phases 1 and 2. Identified a
 | Streaming cursor left in DOM on error/cancel                         | `index.html` (Gustav) | Timer cleanup and memory tag stripping in error/cancel paths                                                 |
 | File attachment not cleared on cancel                                | `index.html` (Gustav) | Added `clearFileAttachment()` call in `cancelChat()`                                                         |
 
-## Files Modified
+## Deep Audit — Round 2 (15 additional bugs)
 
-| File                            | Changes                                                                                                                                    |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `lib/ai/remy-types.ts`          | Added `bookmarked?: boolean` to `RemyMessage` interface                                                                                    |
-| `components/ai/remy-drawer.tsx` | Added `Bookmark` icon, `toggleBookmark` import, bookmark toggle handler, bookmark button on messages, `bookmarked` mapping in message load |
-| `scripts/launcher/index.html`   | Fixed sendChat race, cancel clears file attachment                                                                                         |
+A comprehensive code quality audit uncovered 15 additional bugs across both systems.
+
+### Remy Fixes (7)
+
+| Severity | Issue                                                                  | Fix                                                     |
+| -------- | ---------------------------------------------------------------------- | ------------------------------------------------------- |
+| HIGH     | `AudioContext` never closed — sound stops working after ~6 messages    | `osc.onended = () => ctx.close()`                       |
+| HIGH     | Message delete only removed from memory — reappeared on reload         | Now calls `deleteMessage()` from IndexedDB              |
+| HIGH     | `onNewConversation` ignored `projectId` — "New in project" didn't work | Accepts and applies `projectId` parameter               |
+| HIGH     | Template run used `setTimeout(150)` — race created 2 conversations     | `await handleNewConversation()` instead                 |
+| HIGH     | Fetch timeout timer leaked on network error + reader never cancelled   | `clearTimeout` in `finally`, `reader.cancel()` on abort |
+| HIGH     | Unbounded message history sent to server — could cause 413/OOM         | Capped at `messages.slice(-30)`                         |
+| MEDIUM   | Search debounce timer not cleared on unmount — stale state setter      | Added cleanup return in `useEffect`                     |
+
+### Gustav Fixes (8)
+
+| Severity | Issue                                                                     | Fix                                                |
+| -------- | ------------------------------------------------------------------------- | -------------------------------------------------- |
+| CRITICAL | `sendChat._renderTimer` shared across calls — cross-contaminated messages | Scoped to local `let renderTimer`                  |
+| HIGH     | `AudioContext` never closed — leaked OS audio handles after ~6 responses  | `osc.onended = () => ctx.close()`                  |
+| HIGH     | Voice recognition `stopVoice()` double-stop could recurse                 | Null ref before calling `.stop()`                  |
+| HIGH     | File attachment not cleared on cancel                                     | `clearFileAttachment()` in `cancelChat()`          |
+| MEDIUM   | Two `timeAgo` functions — second silently overrode first                  | Unified into one handling both Date and string     |
+| MEDIUM   | Dead IndexedDB index query immediately overwritten                        | Removed dead code                                  |
+| MEDIUM   | `updateProject` / `updateConversation` called `db.close()` twice          | Used flag pattern — close only in `oncomplete`     |
+| MEDIUM   | sendChat race condition — rapid messages orphaned AbortController         | Cancel previous controller before creating new one |
+
+## Files Modified (All Rounds)
+
+| File                                 | Changes                                                                                                                                                                                   |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lib/ai/remy-types.ts`               | Added `bookmarked?: boolean` to `RemyMessage` interface                                                                                                                                   |
+| `components/ai/remy-drawer.tsx`      | Bookmark UI, `deleteMessage` import, `projectId` on `handleNewConversation`, `await` template run, `clearTimeout`/`reader.cancel()` in finally, history cap at 30, `AudioContext.close()` |
+| `components/ai/remy-search-view.tsx` | Debounce timer cleanup on unmount                                                                                                                                                         |
+| `scripts/launcher/index.html`        | Local `renderTimer` scope, `AudioContext.close()`, voice double-stop fix, unified `timeAgo`, cancel clears file attachment                                                                |
+| `scripts/launcher/gustav-storage.js` | Removed dead index query, fixed double `db.close()` in update functions                                                                                                                   |
 
 ## Feature Parity Status
 
@@ -42,7 +73,11 @@ Both Remy and Gustav now share organizational features (projects, search, templa
 - **Remy only:** Culinary personality, TTS/lip-sync, 54+ business tasks, approval workflow, guardrails
 - **Gustav only:** DevOps tools, git/SSH/builds, full-authority mode, 29 action tools
 
-## What's Next
+## Remaining (Deferred — Low Impact)
 
-- All 3 phases complete — feature merge is done
-- Monitor for edge cases in production use
+- `loadConversationList` missing from useEffect deps (stale closure edge case)
+- `trimConversationMessages` doesn't update `messageCount` (cosmetic drift)
+- `ConversationItem` declared inside render (performance on large lists)
+- Server.mjs git command injection (low risk — dev-only tool, trusted input)
+- SSE reconnect could create duplicate connections (rare race)
+- Export functions open 3 sequential DB connections (non-atomic snapshot)
