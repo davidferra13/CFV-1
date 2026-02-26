@@ -1,4 +1,4 @@
-# Mission Control AI Chat Bot
+# Gustav — Mission Control AI Chat Bot
 
 **Added:** 2026-02-26
 **Files:** `scripts/launcher/server.mjs`, `scripts/launcher/index.html`
@@ -125,5 +125,5 @@ The system prompt is built dynamically with:
 
 - Live status of all 5 services + git info
 - Complete list of available actions with descriptions
-- Personality: "MC" — direct, efficient mission control operator
+- Personality: "Gustav" — direct, efficient mission control operator
 - Full authority: no confirmation dialogs, immediate execution

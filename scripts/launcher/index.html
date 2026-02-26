@@ -1225,7 +1225,7 @@ body {
 </div>
 
 <!-- ═══ Chat Drawer ═══ -->
-<button type="button" class="chat-fab" id="chat-fab" onclick="toggleChat()" title="MC Assistant (Ctrl+/)">
+<button type="button" class="chat-fab" id="chat-fab" onclick="toggleChat()" title="Gustav (Ctrl+/)">
   <span class="chat-fab-icon" id="chat-fab-icon">&#x1F916;</span>
   <span class="chat-fab-dot" id="chat-fab-dot"></span>
 </button>
@@ -1235,7 +1235,7 @@ body {
     <div class="chat-header-left">
       <span class="chat-header-icon">&#x1F916;</span>
       <div>
-        <div class="chat-header-title">MC Assistant</div>
+        <div class="chat-header-title">Gustav</div>
         <div class="chat-header-subtitle" id="chat-status">Connecting...</div>
       </div>
     </div>
@@ -1247,7 +1247,7 @@ body {
   <div class="chat-messages" id="chat-messages">
     <div class="chat-welcome">
       <div class="chat-welcome-icon">&#x1F916;</div>
-      <div class="chat-welcome-title">Mission Control AI</div>
+      <div class="chat-welcome-title">Gustav</div>
       <div class="chat-welcome-text">I can start/stop servers, deploy, push branches, check status, and more. Just tell me what you need.</div>
       <div class="chat-quick-actions">
         <button type="button" class="chat-quick-btn" onclick="sendQuick('What is the current status of all services?')">Status check</button>
@@ -1259,7 +1259,7 @@ body {
   </div>
   <div class="chat-input-wrapper">
     <input type="text" class="chat-input" id="chat-input"
-           placeholder="Ask MC anything..."
+           placeholder="Ask Gustav anything..."
            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}" />
     <button type="button" class="chat-send-btn" id="chat-send-btn" onclick="sendChat()">&#x27A4;</button>
   </div>
@@ -1666,7 +1666,7 @@ function clearChat() {
   const messagesEl = document.getElementById('chat-messages')
   messagesEl.innerHTML = `<div class="chat-welcome">
     <div class="chat-welcome-icon">&#x1F916;</div>
-    <div class="chat-welcome-title">Mission Control AI</div>
+    <div class="chat-welcome-title">Gustav</div>
     <div class="chat-welcome-text">I can start/stop servers, deploy, push branches, check status, and more. Just tell me what you need.</div>
     <div class="chat-quick-actions">
       <button type="button" class="chat-quick-btn" onclick="sendQuick('What is the current status of all services?')">Status check</button>
@@ -1734,8 +1734,12 @@ async function sendChat() {
     })
 
     if (!response.ok) {
-      const err = await response.json().catch(() => ({ error: 'Unknown error' }))
-      botMsg.textContent = `Error: ${err.error}`
+      const errText = await response.text().catch(() => '')
+      let errMsg
+      try { errMsg = JSON.parse(errText).error } catch { errMsg = errText || `Server returned ${response.status}` }
+      if (response.status === 404) errMsg = 'Chat endpoint not found — restart the dashboard (npm run dashboard)'
+      else if (response.status === 503) errMsg = 'No Ollama instance available. Start Ollama on PC or Pi first.'
+      botMsg.textContent = `Error: ${errMsg}`
       botMsg.classList.remove('streaming')
       chatStreaming = false
       document.getElementById('chat-send-btn').disabled = false

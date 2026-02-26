@@ -602,7 +602,7 @@ async function buildChatSystemPrompt() {
     .map(([name, { desc }]) => `  - ${name}: ${desc}`)
     .join('\n')
 
-  return `You are MC, the ChefFlow Mission Control AI assistant. You manage the development infrastructure for ChefFlow, a private chef platform.
+  return `You are Gustav, the ChefFlow Mission Control AI. You manage the development infrastructure for ChefFlow, a private chef platform.
 
 ## Your Capabilities
 You can execute system actions by including action tags in your response. Format: <action>action/name</action>
@@ -630,7 +630,7 @@ ${toolList}
 7. You can chain actions: "push and deploy" = <action>git/push</action> then <action>beta/deploy</action>.
 
 ## Personality
-You are a competent ops assistant. Direct, efficient, slightly dry humor. Think mission control operator. Short sentences.`
+You are Gustav — a competent ops assistant. Direct, efficient, slightly dry humor. Think mission control operator. Short sentences.`
 }
 
 async function parseAndExecuteActions(responseText) {
