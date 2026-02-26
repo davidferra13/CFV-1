@@ -1192,11 +1192,15 @@ async function getAvailableOllamaEndpoint() {
   return null
 }
 
-async function buildChatSystemPrompt() {
+async function buildChatSystemPrompt(memories = []) {
   const status = await getAllStatus()
   const toolList = Object.entries(TOOLS)
     .map(([name, { desc }]) => `  - ${name}: ${desc}`)
     .join('\n')
+
+  const memoriesSection = memories.length > 0
+    ? `\n## Developer Memories (things they told you to remember)\n${memories.map(m => `- [${m.category}] ${m.content}`).join('\n')}\nUse these naturally when relevant. Don't list them unless asked.\n`
+    : ''
 
   return `You are Gustav, the ChefFlow Mission Control AI — the developer's right hand. You manage infrastructure, query business data, monitor systems, and bridge to Remy (the in-app business AI). ChefFlow is a private chef operations platform.
 
@@ -1246,6 +1250,17 @@ App health (DB, Redis, circuit breakers), Pi vitals (disk/memory/CPU/PM2), Verce
 ### Remy Bridge
 For complex business AI (client follow-ups, draft emails, recipe analysis) — proxy to Remy, the 40-year veteran sous chef AI. Requires dev server.
 
+## Memory Commands
+When the developer says "remember that...", "remember:", "note that...", respond normally AND include a memory tag:
+<memory_save category="dev_preference">the thing to remember</memory_save>
+
+Categories: dev_preference, project_pattern, deploy_note, debug_insight, workflow_preference
+
+When they say "forget...", "stop remembering...", "delete memory...", include:
+<memory_delete>keyword from the memory to delete</memory_delete>
+
+When they say "show memories", "what do you remember", list the memories from the section above.
+${memoriesSection}
 ## Personality
 Gustav — senior ops engineer, mission control vibe. Direct, efficient, dry humor. Data first. Action, then explanation. NASA flight controller meets chef's right hand.`
 }
@@ -1268,13 +1283,17 @@ async function parseAndExecuteActions(responseText) {
       continue
     }
     log('chat', `Executing: ${actionName}${param ? ': ' + param : ''}`, 'info')
+    const actionStart = Date.now()
     try {
       const result = await tool.fn(param)
-      results.push({ action: actionName, ok: true, result })
-      log('chat', `Action ${actionName} completed`, 'success')
+      const duration = Date.now() - actionStart
+      const preview = typeof result === 'string' ? result.slice(0, 200) : JSON.stringify(result || '').slice(0, 200)
+      results.push({ action: actionName, ok: true, result, duration, preview, param })
+      log('chat', `Action ${actionName} completed (${duration}ms)`, 'success')
     } catch (err) {
-      results.push({ action: actionName, ok: false, error: err.message })
-      log('chat', `Action ${actionName} failed: ${err.message}`, 'error')
+      const duration = Date.now() - actionStart
+      results.push({ action: actionName, ok: false, error: err.message, duration, param })
+      log('chat', `Action ${actionName} failed (${duration}ms): ${err.message}`, 'error')
     }
   }
   return { actions, results }
@@ -1524,7 +1543,7 @@ async function handleRequest(req, res) {
   // ── Chat endpoint (streaming) ──────────────────────────────────
   if (path === '/api/chat' && method === 'POST') {
     const body = await parseBody(req)
-    const { message, history = [] } = body
+    const { message, history = [], memories = [] } = body
 
     if (!message || typeof message !== 'string') {
       return json(res, { error: 'Message is required' }, 400)
@@ -1537,7 +1556,7 @@ async function handleRequest(req, res) {
 
     log('chat', `Chat request via ${endpoint.source} (${endpoint.model})`, 'info')
 
-    const systemPrompt = await buildChatSystemPrompt()
+    const systemPrompt = await buildChatSystemPrompt(memories)
     const trimmedHistory = history.slice(-CHAT_CONFIG.maxHistoryMessages)
     const messages = [
       { role: 'system', content: systemPrompt },
@@ -1605,7 +1624,19 @@ async function handleRequest(req, res) {
         res.write(JSON.stringify({ type: 'action_results', results }) + '\n')
       }
 
-      res.write(JSON.stringify({ type: 'done', fullResponse, actions }) + '\n')
+      // Parse memory commands from response
+      const memoryCommands = []
+      const saveRegex = /<memory_save\s+category="([^"]+)">([^<]+)<\/memory_save>/g
+      let memMatch
+      while ((memMatch = saveRegex.exec(fullResponse)) !== null) {
+        memoryCommands.push({ type: 'save', category: memMatch[1], content: memMatch[2].trim() })
+      }
+      const deleteRegex = /<memory_delete>([^<]+)<\/memory_delete>/g
+      while ((memMatch = deleteRegex.exec(fullResponse)) !== null) {
+        memoryCommands.push({ type: 'delete', keyword: memMatch[1].trim() })
+      }
+
+      res.write(JSON.stringify({ type: 'done', fullResponse, actions, memoryCommands }) + '\n')
       res.end()
 
     } catch (err) {

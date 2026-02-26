@@ -10,12 +10,13 @@
 
 // ─── Constants ───────────────────────────────────────────────────────
 const GUSTAV_DB = 'gustav-conversations'
-const GUSTAV_DB_VERSION = 1
+const GUSTAV_DB_VERSION = 2
 const STORES = {
   projects: 'projects',
   conversations: 'conversations',
   messages: 'messages',
   templates: 'templates',
+  memories: 'memories',
 }
 
 const MAX_CONVERSATIONS = 500
@@ -62,6 +63,14 @@ function openDB() {
         const store = db.createObjectStore(STORES.templates, { keyPath: 'id' })
         store.createIndex('by-sort', 'sortOrder', { unique: false })
       }
+
+      // Memories store (v2)
+      if (!db.objectStoreNames.contains(STORES.memories)) {
+        const store = db.createObjectStore(STORES.memories, { keyPath: 'id' })
+        store.createIndex('by-category', 'category', { unique: false })
+        store.createIndex('by-importance', 'importance', { unique: false })
+        store.createIndex('by-accessed', 'lastAccessedAt', { unique: false })
+      }
     }
 
     request.onsuccess = () => resolve(request.result)
@@ -91,8 +100,14 @@ async function createProject(name, icon = '📁') {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORES.projects, 'readwrite')
     tx.objectStore(STORES.projects).add(project)
-    tx.oncomplete = () => { db.close(); resolve(project) }
-    tx.onerror = () => { db.close(); reject(tx.error) }
+    tx.oncomplete = () => {
+      db.close()
+      resolve(project)
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
   })
 }
 
@@ -101,8 +116,14 @@ async function getProjects() {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORES.projects, 'readonly')
     const request = tx.objectStore(STORES.projects).index('by-sort').getAll()
-    request.onsuccess = () => { db.close(); resolve(request.result || []) }
-    request.onerror = () => { db.close(); reject(request.error) }
+    request.onsuccess = () => {
+      db.close()
+      resolve(request.result || [])
+    }
+    request.onerror = () => {
+      db.close()
+      reject(request.error)
+    }
   })
 }
 
@@ -111,8 +132,14 @@ async function getProject(id) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORES.projects, 'readonly')
     const request = tx.objectStore(STORES.projects).get(id)
-    request.onsuccess = () => { db.close(); resolve(request.result || null) }
-    request.onerror = () => { db.close(); reject(request.error) }
+    request.onsuccess = () => {
+      db.close()
+      resolve(request.result || null)
+    }
+    request.onerror = () => {
+      db.close()
+      reject(request.error)
+    }
   })
 }
 
@@ -125,12 +152,22 @@ async function updateProject(id, updates) {
 
     getReq.onsuccess = () => {
       const project = getReq.result
-      if (!project) { db.close(); resolve(null); return }
+      if (!project) {
+        db.close()
+        resolve(null)
+        return
+      }
       const updated = { ...project, ...updates, updatedAt: new Date().toISOString() }
       store.put(updated)
     }
-    tx.oncomplete = () => { db.close(); resolve(true) }
-    tx.onerror = () => { db.close(); reject(tx.error) }
+    tx.oncomplete = () => {
+      db.close()
+      resolve(true)
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
   })
 }
 
@@ -170,8 +207,14 @@ async function deleteProject(id, moveConversationsTo = null) {
       }
     }
 
-    tx.oncomplete = () => { db.close(); resolve(true) }
-    tx.onerror = () => { db.close(); reject(tx.error) }
+    tx.oncomplete = () => {
+      db.close()
+      resolve(true)
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
   })
 }
 
@@ -215,8 +258,14 @@ async function createConversation(projectId = null, title = 'New conversation') 
       }
     }
 
-    tx.oncomplete = () => { db.close(); resolve(conversation) }
-    tx.onerror = () => { db.close(); reject(tx.error) }
+    tx.oncomplete = () => {
+      db.close()
+      resolve(conversation)
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
   })
 }
 
@@ -229,7 +278,9 @@ async function getConversations(projectId = undefined, includeArchived = false) 
 
     if (projectId !== undefined) {
       // Filter by project (including null for uncategorized)
-      request = store.index('by-project').getAll(IDBKeyRange.only(projectId === null ? '' : projectId))
+      request = store
+        .index('by-project')
+        .getAll(IDBKeyRange.only(projectId === null ? '' : projectId))
       // IndexedDB can't index null, so we need to handle this differently
       // Instead, get all and filter
       request = store.getAll()
@@ -243,7 +294,7 @@ async function getConversations(projectId = undefined, includeArchived = false) 
 
       // Filter by project if specified
       if (projectId !== undefined) {
-        results = results.filter(c => {
+        results = results.filter((c) => {
           if (projectId === null) return !c.projectId
           return c.projectId === projectId
         })
@@ -251,7 +302,7 @@ async function getConversations(projectId = undefined, includeArchived = false) 
 
       // Filter archived
       if (!includeArchived) {
-        results = results.filter(c => !c.archived)
+        results = results.filter((c) => !c.archived)
       }
 
       // Sort: pinned first, then by updatedAt descending
@@ -263,7 +314,10 @@ async function getConversations(projectId = undefined, includeArchived = false) 
 
       resolve(results)
     }
-    request.onerror = () => { db.close(); reject(request.error) }
+    request.onerror = () => {
+      db.close()
+      reject(request.error)
+    }
   })
 }
 
@@ -279,11 +333,14 @@ async function getArchivedConversations() {
     request.onsuccess = () => {
       db.close()
       const results = (request.result || [])
-        .filter(c => c.archived)
+        .filter((c) => c.archived)
         .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
       resolve(results)
     }
-    request.onerror = () => { db.close(); reject(request.error) }
+    request.onerror = () => {
+      db.close()
+      reject(request.error)
+    }
   })
 }
 
@@ -292,8 +349,14 @@ async function getConversation(id) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORES.conversations, 'readonly')
     const request = tx.objectStore(STORES.conversations).get(id)
-    request.onsuccess = () => { db.close(); resolve(request.result || null) }
-    request.onerror = () => { db.close(); reject(request.error) }
+    request.onsuccess = () => {
+      db.close()
+      resolve(request.result || null)
+    }
+    request.onerror = () => {
+      db.close()
+      reject(request.error)
+    }
   })
 }
 
@@ -306,12 +369,22 @@ async function updateConversation(id, updates) {
 
     getReq.onsuccess = () => {
       const conv = getReq.result
-      if (!conv) { db.close(); resolve(null); return }
+      if (!conv) {
+        db.close()
+        resolve(null)
+        return
+      }
       const updated = { ...conv, ...updates, updatedAt: new Date().toISOString() }
       store.put(updated)
     }
-    tx.oncomplete = () => { db.close(); resolve(true) }
-    tx.onerror = () => { db.close(); reject(tx.error) }
+    tx.oncomplete = () => {
+      db.close()
+      resolve(true)
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
   })
 }
 
@@ -356,8 +429,14 @@ async function deleteConversation(id) {
       }
     }
 
-    tx.oncomplete = () => { db.close(); resolve(true) }
-    tx.onerror = () => { db.close(); reject(tx.error) }
+    tx.oncomplete = () => {
+      db.close()
+      resolve(true)
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
   })
 }
 
@@ -404,8 +483,14 @@ async function moveConversation(conversationId, targetProjectId) {
       }
     }
 
-    tx.oncomplete = () => { db.close(); resolve(true) }
-    tx.onerror = () => { db.close(); reject(tx.error) }
+    tx.oncomplete = () => {
+      db.close()
+      resolve(true)
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
   })
 }
 
@@ -463,8 +548,14 @@ async function addMessage(conversationId, role, content, extras = {}) {
       }
     }
 
-    tx.oncomplete = () => { db.close(); resolve(message) }
-    tx.onerror = () => { db.close(); reject(tx.error) }
+    tx.oncomplete = () => {
+      db.close()
+      resolve(message)
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
   })
 }
 
@@ -482,7 +573,10 @@ async function getMessages(conversationId) {
       )
       resolve(messages)
     }
-    request.onerror = () => { db.close(); reject(request.error) }
+    request.onerror = () => {
+      db.close()
+      reject(request.error)
+    }
   })
 }
 
@@ -515,8 +609,14 @@ async function deleteMessage(messageId) {
       }
     }
 
-    tx.oncomplete = () => { db.close(); resolve(true) }
-    tx.onerror = () => { db.close(); reject(tx.error) }
+    tx.oncomplete = () => {
+      db.close()
+      resolve(true)
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
   })
 }
 
@@ -546,8 +646,14 @@ async function toggleBookmark(messageId) {
       }
     }
 
-    tx.oncomplete = () => { db.close(); resolve(true) }
-    tx.onerror = () => { db.close(); reject(tx.error) }
+    tx.oncomplete = () => {
+      db.close()
+      resolve(true)
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
   })
 }
 
@@ -560,11 +666,14 @@ async function getBookmarkedMessages() {
     request.onsuccess = () => {
       db.close()
       const bookmarked = (request.result || [])
-        .filter(m => m.bookmarked)
+        .filter((m) => m.bookmarked)
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       resolve(bookmarked)
     }
-    request.onerror = () => { db.close(); reject(request.error) }
+    request.onerror = () => {
+      db.close()
+      reject(request.error)
+    }
   })
 }
 
@@ -586,8 +695,14 @@ async function createTemplate(name, prompt, projectId = null, icon = '⚡') {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORES.templates, 'readwrite')
     tx.objectStore(STORES.templates).add(template)
-    tx.oncomplete = () => { db.close(); resolve(template) }
-    tx.onerror = () => { db.close(); reject(tx.error) }
+    tx.oncomplete = () => {
+      db.close()
+      resolve(template)
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
   })
 }
 
@@ -596,8 +711,14 @@ async function getTemplates() {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORES.templates, 'readonly')
     const request = tx.objectStore(STORES.templates).index('by-sort').getAll()
-    request.onsuccess = () => { db.close(); resolve(request.result || []) }
-    request.onerror = () => { db.close(); reject(request.error) }
+    request.onsuccess = () => {
+      db.close()
+      resolve(request.result || [])
+    }
+    request.onerror = () => {
+      db.close()
+      reject(request.error)
+    }
   })
 }
 
@@ -611,8 +732,14 @@ async function updateTemplate(id, updates) {
       const tmpl = getReq.result
       if (tmpl) store.put({ ...tmpl, ...updates })
     }
-    tx.oncomplete = () => { db.close(); resolve(true) }
-    tx.onerror = () => { db.close(); reject(tx.error) }
+    tx.oncomplete = () => {
+      db.close()
+      resolve(true)
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
   })
 }
 
@@ -621,8 +748,14 @@ async function deleteTemplate(id) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORES.templates, 'readwrite')
     tx.objectStore(STORES.templates).delete(id)
-    tx.oncomplete = () => { db.close(); resolve(true) }
-    tx.onerror = () => { db.close(); reject(tx.error) }
+    tx.oncomplete = () => {
+      db.close()
+      resolve(true)
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
   })
 }
 
@@ -637,22 +770,23 @@ async function getActionLog(options = {}) {
 
     request.onsuccess = () => {
       db.close()
-      let results = (request.result || [])
-        .filter(m => m.actions && m.actions.length > 0)
+      let results = (request.result || []).filter((m) => m.actions && m.actions.length > 0)
 
       // Filter by action type
       if (actionType) {
-        results = results.filter(m =>
-          m.actions.some(a => a === actionType || (typeof a === 'object' && a.action === actionType))
+        results = results.filter((m) =>
+          m.actions.some(
+            (a) => a === actionType || (typeof a === 'object' && a.action === actionType)
+          )
         )
       }
 
       // Filter by date range
       if (dateFrom) {
-        results = results.filter(m => new Date(m.createdAt) >= new Date(dateFrom))
+        results = results.filter((m) => new Date(m.createdAt) >= new Date(dateFrom))
       }
       if (dateTo) {
-        results = results.filter(m => new Date(m.createdAt) <= new Date(dateTo))
+        results = results.filter((m) => new Date(m.createdAt) <= new Date(dateTo))
       }
 
       // Sort by most recent first
@@ -663,7 +797,10 @@ async function getActionLog(options = {}) {
 
       resolve(results)
     }
-    request.onerror = () => { db.close(); reject(request.error) }
+    request.onerror = () => {
+      db.close()
+      reject(request.error)
+    }
   })
 }
 
@@ -682,13 +819,17 @@ async function searchConversations(query) {
     let convs = []
     let msgs = []
 
-    convRequest.onsuccess = () => { convs = convRequest.result || [] }
-    msgRequest.onsuccess = () => { msgs = msgRequest.result || [] }
+    convRequest.onsuccess = () => {
+      convs = convRequest.result || []
+    }
+    msgRequest.onsuccess = () => {
+      msgs = msgRequest.result || []
+    }
 
     tx.oncomplete = () => {
       db.close()
       const results = []
-      const convMap = new Map(convs.map(c => [c.id, c]))
+      const convMap = new Map(convs.map((c) => [c.id, c]))
 
       // Search conversation titles
       for (const conv of convs) {
@@ -702,7 +843,7 @@ async function searchConversations(query) {
       }
 
       // Search message content
-      const matchedConvIds = new Set(results.map(r => r.conversation.id))
+      const matchedConvIds = new Set(results.map((r) => r.conversation.id))
       for (const msg of msgs) {
         if (matchedConvIds.has(msg.conversationId)) continue
         if (msg.content.toLowerCase().includes(q)) {
@@ -712,7 +853,8 @@ async function searchConversations(query) {
             const idx = msg.content.toLowerCase().indexOf(q)
             const start = Math.max(0, idx - 40)
             const end = Math.min(msg.content.length, idx + q.length + 40)
-            const snippet = (start > 0 ? '...' : '') +
+            const snippet =
+              (start > 0 ? '...' : '') +
               msg.content.slice(start, end) +
               (end < msg.content.length ? '...' : '')
 
@@ -727,14 +869,19 @@ async function searchConversations(query) {
       }
 
       // Sort by most recently updated
-      results.sort((a, b) =>
-        new Date(b.conversation.updatedAt).getTime() - new Date(a.conversation.updatedAt).getTime()
+      results.sort(
+        (a, b) =>
+          new Date(b.conversation.updatedAt).getTime() -
+          new Date(a.conversation.updatedAt).getTime()
       )
 
       resolve(results)
     }
 
-    tx.onerror = () => { db.close(); reject(tx.error) }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
   })
 }
 
@@ -759,7 +906,7 @@ async function exportConversationJSON(conversationId) {
       projectName,
       createdAt: conv.createdAt,
       messageCount: messages.length,
-      messages: messages.map(m => ({
+      messages: messages.map((m) => ({
         role: m.role,
         content: m.content,
         actions: m.actions,
@@ -830,7 +977,7 @@ async function exportProjectJSON(projectId) {
     const messages = await getMessages(conv.id)
     conversationsWithMessages.push({
       ...conv,
-      messages: messages.map(m => ({
+      messages: messages.map((m) => ({
         role: m.role,
         content: m.content,
         actions: m.actions,
@@ -902,18 +1049,34 @@ function autoTitle(firstMessage) {
 
 // Keyword-based project suggestion (deterministic, no AI)
 const AUTO_PROJECT_RULES = [
-  { keywords: ['deploy', 'beta', 'rollback', 'pm2', 'production', 'vercel'], project: 'Deployments', icon: '🚀' },
-  { keywords: ['ollama', 'model', 'gpu', 'inference', 'qwen', 'llm'], project: 'AI / Ollama', icon: '🤖' },
-  { keywords: ['build', 'typecheck', 'tsc', 'compile', 'next build', 'webpack'], project: 'Builds', icon: '🔨' },
+  {
+    keywords: ['deploy', 'beta', 'rollback', 'pm2', 'production', 'vercel'],
+    project: 'Deployments',
+    icon: '🚀',
+  },
+  {
+    keywords: ['ollama', 'model', 'gpu', 'inference', 'qwen', 'llm'],
+    project: 'AI / Ollama',
+    icon: '🤖',
+  },
+  {
+    keywords: ['build', 'typecheck', 'tsc', 'compile', 'next build', 'webpack'],
+    project: 'Builds',
+    icon: '🔨',
+  },
   { keywords: ['git', 'push', 'branch', 'commit', 'merge', 'pull'], project: 'Git', icon: '🌿' },
-  { keywords: ['status', 'health', 'check', 'ping', 'uptime'], project: 'Status Checks', icon: '📊' },
+  {
+    keywords: ['status', 'health', 'check', 'ping', 'uptime'],
+    project: 'Status Checks',
+    icon: '📊',
+  },
 ]
 
 function autoSuggestProject(message) {
   if (!message) return null
   const lower = message.toLowerCase()
   for (const rule of AUTO_PROJECT_RULES) {
-    if (rule.keywords.some(kw => lower.includes(kw))) {
+    if (rule.keywords.some((kw) => lower.includes(kw))) {
       return { name: rule.project, icon: rule.icon }
     }
   }
@@ -925,7 +1088,7 @@ async function pruneOldConversations(maxConversations = MAX_CONVERSATIONS) {
   if (allConvs.length <= maxConversations) return 0
 
   // Only prune archived conversations first
-  const archived = allConvs.filter(c => c.archived)
+  const archived = allConvs.filter((c) => c.archived)
   const toDelete = archived.slice(0, allConvs.length - maxConversations)
 
   for (const conv of toDelete) {
@@ -954,7 +1117,10 @@ async function trimMessages(conversationId, maxMessages = MAX_MESSAGES_PER_CONVE
       console.log(`[gustav-storage] Trimmed ${toDelete.length} messages from ${conversationId}`)
       resolve(toDelete.length)
     }
-    tx.onerror = () => { db.close(); reject(tx.error) }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
   })
 }
 
@@ -967,12 +1133,24 @@ async function getStats() {
     const msgReq = tx.objectStore(STORES.messages).count()
 
     const stats = {}
-    projReq.onsuccess = () => { stats.projectCount = projReq.result }
-    convReq.onsuccess = () => { stats.conversationCount = convReq.result }
-    msgReq.onsuccess = () => { stats.messageCount = msgReq.result }
+    projReq.onsuccess = () => {
+      stats.projectCount = projReq.result
+    }
+    convReq.onsuccess = () => {
+      stats.conversationCount = convReq.result
+    }
+    msgReq.onsuccess = () => {
+      stats.messageCount = msgReq.result
+    }
 
-    tx.oncomplete = () => { db.close(); resolve(stats) }
-    tx.onerror = () => { db.close(); reject(tx.error) }
+    tx.oncomplete = () => {
+      db.close()
+      resolve(stats)
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
   })
 }
 
@@ -980,16 +1158,197 @@ async function clearAllData() {
   const db = await openDB()
   return new Promise((resolve, reject) => {
     const tx = db.transaction(
-      [STORES.projects, STORES.conversations, STORES.messages, STORES.templates],
+      [STORES.projects, STORES.conversations, STORES.messages, STORES.templates, STORES.memories],
       'readwrite'
     )
     tx.objectStore(STORES.projects).clear()
     tx.objectStore(STORES.conversations).clear()
     tx.objectStore(STORES.messages).clear()
     tx.objectStore(STORES.templates).clear()
-    tx.oncomplete = () => { db.close(); resolve(true) }
-    tx.onerror = () => { db.close(); reject(tx.error) }
+    tx.objectStore(STORES.memories).clear()
+    tx.oncomplete = () => {
+      db.close()
+      resolve(true)
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
   })
+}
+
+// ─── Memory CRUD ──────────────────────────────────────────────────────
+
+const MEMORY_CATEGORIES = [
+  'dev_preference', // "I deploy on Fridays", "I use VS Code"
+  'project_pattern', // "The Pi build takes 10 min", "Beta shares dev DB"
+  'deploy_note', // "Always stop Ollama before building"
+  'debug_insight', // "Port 3100 conflicts are from PM2"
+  'workflow_preference', // "I prefer short commit messages"
+]
+
+async function saveMemory(category, content, importance = 5) {
+  const db = await openDB()
+  const now = new Date().toISOString()
+  const memory = {
+    id: generateId(),
+    category,
+    content,
+    importance: Math.max(1, Math.min(10, importance)),
+    accessCount: 0,
+    createdAt: now,
+    lastAccessedAt: now,
+    active: true,
+  }
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORES.memories, 'readwrite')
+    tx.objectStore(STORES.memories).add(memory)
+    tx.oncomplete = () => {
+      db.close()
+      resolve(memory)
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
+  })
+}
+
+async function getMemories(activeOnly = true) {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORES.memories, 'readonly')
+    const request = tx.objectStore(STORES.memories).getAll()
+    request.onsuccess = () => {
+      db.close()
+      let memories = request.result || []
+      if (activeOnly) memories = memories.filter((m) => m.active)
+      memories.sort((a, b) => b.importance - a.importance)
+      resolve(memories)
+    }
+    request.onerror = () => {
+      db.close()
+      reject(request.error)
+    }
+  })
+}
+
+async function getMemoriesByCategory(category) {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORES.memories, 'readonly')
+    const index = tx.objectStore(STORES.memories).index('by-category')
+    const request = index.getAll(category)
+    request.onsuccess = () => {
+      db.close()
+      const memories = (request.result || []).filter((m) => m.active)
+      memories.sort((a, b) => b.importance - a.importance)
+      resolve(memories)
+    }
+    request.onerror = () => {
+      db.close()
+      reject(request.error)
+    }
+  })
+}
+
+async function deleteMemory(id) {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORES.memories, 'readwrite')
+    tx.objectStore(STORES.memories).delete(id)
+    tx.oncomplete = () => {
+      db.close()
+      resolve(true)
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
+  })
+}
+
+async function touchMemory(id) {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORES.memories, 'readwrite')
+    const store = tx.objectStore(STORES.memories)
+    const getReq = store.get(id)
+    getReq.onsuccess = () => {
+      const memory = getReq.result
+      if (!memory) {
+        db.close()
+        resolve(false)
+        return
+      }
+      memory.accessCount++
+      memory.lastAccessedAt = new Date().toISOString()
+      store.put(memory)
+    }
+    tx.oncomplete = () => {
+      db.close()
+      resolve(true)
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
+  })
+}
+
+async function searchRelevantMemories(query, limit = 5) {
+  const memories = await getMemories(true)
+  if (!query) return memories.slice(0, limit)
+  const lower = query.toLowerCase()
+  const words = lower.split(/\s+/).filter((w) => w.length > 2)
+
+  const scored = memories.map((m) => {
+    const content = m.content.toLowerCase()
+    let score = m.importance
+    for (const word of words) {
+      if (content.includes(word)) score += 3
+    }
+    // Boost recently accessed memories
+    const daysSinceAccess = (Date.now() - new Date(m.lastAccessedAt).getTime()) / 86400000
+    if (daysSinceAccess < 1) score += 2
+    else if (daysSinceAccess < 7) score += 1
+    return { memory: m, score }
+  })
+
+  scored.sort((a, b) => b.score - a.score)
+  // Touch the top matches so they stay relevant
+  for (const { memory } of scored.slice(0, limit)) {
+    touchMemory(memory.id).catch(() => {})
+  }
+  return scored.slice(0, limit).map((s) => s.memory)
+}
+
+async function decayMemories(daysThreshold = 30) {
+  const memories = await getMemories(true)
+  const now = Date.now()
+  let decayed = 0
+  for (const m of memories) {
+    const daysSinceAccess = (now - new Date(m.lastAccessedAt).getTime()) / 86400000
+    if (daysSinceAccess > daysThreshold && m.importance < 7) {
+      const db = await openDB()
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(STORES.memories, 'readwrite')
+        const store = tx.objectStore(STORES.memories)
+        m.active = false
+        store.put(m)
+        tx.oncomplete = () => {
+          db.close()
+          resolve()
+        }
+        tx.onerror = () => {
+          db.close()
+          reject(tx.error)
+        }
+      })
+      decayed++
+    }
+  }
+  return decayed
 }
 
 // ─── Public API ─────────────────────────────────────────────────────
@@ -998,7 +1357,9 @@ async function clearAllData() {
 
 async function smokeTest() {
   const log = (msg) => console.log(`[gustav-test] ${msg}`)
-  const assert = (cond, msg) => { if (!cond) throw new Error(`FAIL: ${msg}`) }
+  const assert = (cond, msg) => {
+    if (!cond) throw new Error(`FAIL: ${msg}`)
+  }
   let passed = 0
 
   try {
@@ -1010,7 +1371,10 @@ async function smokeTest() {
     passed++
 
     const projects = await getProjects()
-    assert(projects.some(p => p.id === proj.id), 'Project in list')
+    assert(
+      projects.some((p) => p.id === proj.id),
+      'Project in list'
+    )
     passed++
 
     await updateProject(proj.id, { name: 'Renamed Project' })
@@ -1024,7 +1388,10 @@ async function smokeTest() {
     passed++
 
     const convs = await getConversations(proj.id)
-    assert(convs.some(c => c.id === conv.id), 'Conversation in project')
+    assert(
+      convs.some((c) => c.id === conv.id),
+      'Conversation in project'
+    )
     passed++
 
     // Message CRUD
@@ -1046,7 +1413,10 @@ async function smokeTest() {
     // Bookmarks
     await toggleBookmark(msg1.id)
     const bookmarked = await getBookmarkedMessages()
-    assert(bookmarked.some(m => m.id === msg1.id), 'Message bookmarked')
+    assert(
+      bookmarked.some((m) => m.id === msg1.id),
+      'Message bookmarked'
+    )
     passed++
 
     await toggleBookmark(msg1.id) // unbookmark
@@ -1061,7 +1431,10 @@ async function smokeTest() {
     await unpinConversation(conv.id)
     await archiveConversation(conv.id)
     const archived = await getArchivedConversations()
-    assert(archived.some(c => c.id === conv.id), 'Conversation archived')
+    assert(
+      archived.some((c) => c.id === conv.id),
+      'Conversation archived'
+    )
     passed++
 
     await unarchiveConversation(conv.id)
@@ -1080,7 +1453,10 @@ async function smokeTest() {
     passed++
 
     const templates = await getTemplates()
-    assert(templates.some(t => t.id === tmpl.id), 'Template in list')
+    assert(
+      templates.some((t) => t.id === tmpl.id),
+      'Template in list'
+    )
     passed++
 
     await deleteTemplate(tmpl.id)
@@ -1106,7 +1482,10 @@ async function smokeTest() {
     passed++
 
     // Auto-title
-    assert(autoTitle('Can you show me the current status?') === 'Show me the current status', 'Auto-title works')
+    assert(
+      autoTitle('Can you show me the current status?') === 'Show me the current status',
+      'Auto-title works'
+    )
     passed++
 
     // Auto-suggest project
@@ -1180,6 +1559,16 @@ window.GustavStorage = {
   exportConversationMarkdown,
   exportProjectJSON,
   importConversation,
+
+  // Memories
+  saveMemory,
+  getMemories,
+  getMemoriesByCategory,
+  deleteMemory,
+  touchMemory,
+  searchRelevantMemories,
+  decayMemories,
+  MEMORY_CATEGORIES,
 
   // Utilities
   autoTitle,

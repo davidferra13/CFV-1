@@ -1,7 +1,7 @@
-# Remy Conversation Upgrade — TODO
+# Remy Conversation Upgrade — COMPLETE
 
-**Status:** Planned (not started)
-**Priority:** Next after Gustav conversation management is stable
+**Status:** Complete (2026-02-26)
+**Implemented in:** `docs/remy-organization-upgrade.md`
 **Reference:** Gustav implementation in `scripts/launcher/gustav-storage.js`
 
 ## What Remy Has Now
@@ -15,37 +15,45 @@
 ## What Remy Should Get (matching Gustav)
 
 ### 1. Projects (Folders)
+
 - Group conversations by topic (recipe work, event planning, finance questions, etc.)
 - Same 2-level hierarchy: Project > Conversation
 - Add `projectId` field to `LocalConversation` in `remy-local-storage.ts`
 - New `projects` object store in IndexedDB (requires DB version bump)
 
 ### 2. Pin / Archive
+
 - Pin important conversations to the top
 - Archive old conversations instead of deleting
 - Add `pinned` and `archived` fields to `LocalConversation`
 
 ### 3. Message Bookmarks
+
 - Bookmark specific messages (e.g., a recipe Remy generated that was perfect)
 - Add `bookmarked` field to `LocalMessage`
 
 ### 4. Markdown Export
+
 - Export conversations as readable `.md` files (not just JSON for support)
 
 ### 5. Search
+
 - Full-text search across all conversations and messages
 - Highlighted snippets in results
 
 ### 6. Templates
+
 - Saved starter prompts (e.g., "Help me plan a dinner for 20 guests")
 - New `templates` object store
 
 ### 7. Voice Input
+
 - Remy already has TTS (text-to-speech) for reading responses
 - Add STT (speech-to-text) for voice input using Web Speech API
 - Same implementation as Gustav's `toggleVoice()`
 
 ### 8. Action Log equivalent
+
 - Remy executes tasks (navigation, recipe lookup, etc.)
 - Log all task executions across conversations for audit
 
@@ -59,10 +67,10 @@
 
 ## Files to Modify
 
-| File | Changes |
-|------|---------|
-| `lib/ai/remy-local-storage.ts` | Add projects store, templates store, bookmark/pin/archive fields, search, export |
-| `components/ai/remy-drawer.tsx` | Add project grouping UI, search view, pin/archive controls, bookmark toggles |
+| File                            | Changes                                                                          |
+| ------------------------------- | -------------------------------------------------------------------------------- |
+| `lib/ai/remy-local-storage.ts`  | Add projects store, templates store, bookmark/pin/archive fields, search, export |
+| `components/ai/remy-drawer.tsx` | Add project grouping UI, search view, pin/archive controls, bookmark toggles     |
 
 ## Key Difference from Gustav
 

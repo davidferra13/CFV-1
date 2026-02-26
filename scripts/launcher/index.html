@@ -1075,6 +1075,91 @@ body {
   cursor: not-allowed;
   transform: none !important;
 }
+.chat-cancel-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--error), #c53030);
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+.chat-cancel-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px var(--error-glow);
+}
+/* Streaming cursor */
+@keyframes blink-cursor { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+.streaming-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: var(--brand);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: blink-cursor 0.8s step-end infinite;
+}
+/* File attachment */
+.chat-file-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+.chat-file-btn:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.chat-file-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: var(--brand-dim);
+  border: 1px solid var(--brand);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--brand-bright);
+  margin-bottom: 4px;
+}
+.chat-file-badge button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+  line-height: 1;
+}
+.chat-file-badge button:hover { color: var(--error); }
+/* Sound toggle */
+.chat-sound-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all var(--transition);
+}
+.chat-sound-btn:hover { color: var(--text-primary); background: var(--bg-hover); }
+.chat-sound-btn.muted { opacity: 0.4; }
 
 /* ── Chat Views (list, search, actions, templates) ──────────── */
 .chat-view { display: none; flex-direction: column; height: 100%; }
@@ -1989,6 +2074,7 @@ body {
         </div>
       </div>
       <div class="chat-header-actions">
+        <button type="button" class="chat-sound-btn" id="chat-sound-btn" onclick="toggleChatSound()" title="Toggle sound">&#x1F50A;</button>
         <button type="button" class="chat-header-btn" onclick="newConversation()" title="New conversation (Ctrl+N)">&#x2795;</button>
         <button type="button" class="chat-header-btn" onclick="toggleChat()" title="Close">&times;</button>
       </div>
@@ -2009,12 +2095,16 @@ body {
         </div>
       </div>
     </div>
+    <div id="chat-file-preview" style="display:none;padding:4px 16px 0 16px;"></div>
     <div class="chat-input-wrapper">
+      <input type="file" id="chat-file-input" style="display:none" accept=".txt,.md,.json,.log,.yml,.yaml,.toml,.env,.sql,.csv,.xml,.js,.ts,.tsx,.jsx,.html,.css" onchange="handleFileAttach(this)" />
+      <button type="button" class="chat-file-btn" id="chat-file-btn" onclick="document.getElementById('chat-file-input').click()" title="Attach file">&#x1F4CE;</button>
       <input type="text" class="chat-input" id="chat-input"
              placeholder="Ask Gustav anything..."
              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}" />
       <button type="button" class="chat-voice-btn" id="chat-voice-btn" onclick="toggleVoice()" title="Voice input">&#x1F399;</button>
       <button type="button" class="chat-send-btn" id="chat-send-btn" onclick="sendChat()">&#x27A4;</button>
+      <button type="button" class="chat-cancel-btn" id="chat-cancel-btn" style="display:none" onclick="cancelChat()" title="Cancel response">&#x25A0;</button>
     </div>
   </div>
 
@@ -2473,6 +2563,10 @@ let chatInitialized = false
 let projectSuggestionShown = false
 let voiceRecognition = null
 let voiceListening = false
+let chatAbortController = null
+let chatSoundEnabled = localStorage.getItem('gustav-sound') !== 'muted'
+let pendingFileContent = null
+let pendingFileName = null
 
 // ── View Switching ───────────────────────────────────────────────
 
@@ -2514,6 +2608,10 @@ async function toggleChat() {
           await loadConversation(convs[0].id)
         }
       } catch (e) { console.error('[gustav] Init load failed:', e) }
+      // Decay stale memories (non-blocking)
+      GustavStorage.decayMemories(30).then(n => {
+        if (n > 0) console.log(`[gustav] Decayed ${n} stale memories`)
+      }).catch(() => {})
     }
   } else {
     drawer.classList.remove('open')
@@ -2680,19 +2778,29 @@ function appendActionResult(result) {
   const resultText = result.ok
     ? (result.result?.message || JSON.stringify(result.result, null, 1))
     : result.error
-  card.innerHTML = `<div class="chat-action-name">${result.ok ? '&#x2714;' : '&#x2718;'} ${escapeHtml(result.action)}</div><div class="chat-action-result">${escapeHtml(resultText)}</div>`
+  const durationStr = result.duration != null ? ` <span style="color:var(--text-muted);font-size:11px;">(${result.duration}ms)</span>` : ''
+  card.innerHTML = `<div class="chat-action-name">${result.ok ? '&#x2714;' : '&#x2718;'} ${escapeHtml(result.action)}${durationStr}</div><div class="chat-action-result">${escapeHtml(resultText)}</div>`
   messagesEl.appendChild(card)
   messagesEl.scrollTop = messagesEl.scrollHeight
 }
 
 async function sendChat() {
   const input = document.getElementById('chat-input')
-  const message = input.value.trim()
+  let message = input.value.trim()
   if (!message || chatStreaming) return
+
+  // Prepend file content if attached
+  if (pendingFileContent) {
+    message = `[Attached file: ${pendingFileName}]\n\`\`\`\n${pendingFileContent}\n\`\`\`\n\n${message}`
+    clearFileAttachment()
+  }
 
   input.value = ''
   chatStreaming = true
-  document.getElementById('chat-send-btn').disabled = true
+  const sendBtn = document.getElementById('chat-send-btn')
+  const cancelBtn = document.getElementById('chat-cancel-btn')
+  sendBtn.style.display = 'none'
+  cancelBtn.style.display = 'flex'
 
   // Auto-create conversation if none exists
   if (!currentConversationId && window.GustavStorage) {
@@ -2731,13 +2839,21 @@ async function sendChat() {
   let collectedActionResults = []
 
   try {
+    chatAbortController = new AbortController()
+    // Fetch relevant memories to include in context
+    let relevantMemories = []
+    if (window.GustavStorage) {
+      try { relevantMemories = await GustavStorage.searchRelevantMemories(message, 5) } catch {}
+    }
     const response = await fetch(`${API}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         message,
         history: chatHistory.slice(-20),
+        memories: relevantMemories.map(m => ({ category: m.category, content: m.content })),
       }),
+      signal: chatAbortController.signal,
     })
 
     if (!response.ok) {
@@ -2749,7 +2865,9 @@ async function sendChat() {
       botMsg.textContent = `Error: ${errMsg}`
       botMsg.classList.remove('streaming')
       chatStreaming = false
-      document.getElementById('chat-send-btn').disabled = false
+      chatAbortController = null
+      sendBtn.style.display = 'flex'
+      cancelBtn.style.display = 'none'
       return
     }
 
@@ -2772,10 +2890,10 @@ async function sendChat() {
 
           if (chunk.type === 'token') {
             fullResponse += chunk.content
-            const cleaned = fullResponse.replace(/<action>[\w/\-]+(?::[^<]+)?<\/action>/g, '').trim()
+            const cleaned = fullResponse.replace(/<action>[\w/\-]+(?::[^<]+)?<\/action>/g, '').replace(/<memory_save[^>]*>[^<]*<\/memory_save>/g, '').replace(/<memory_delete>[^<]*<\/memory_delete>/g, '').trim()
             if (!sendChat._renderTimer) {
               sendChat._renderTimer = setTimeout(() => {
-                botMsg.innerHTML = renderMarkdown(cleaned)
+                botMsg.innerHTML = renderMarkdown(cleaned) + '<span class="streaming-cursor"></span>'
                 document.getElementById('chat-messages').scrollTop =
                   document.getElementById('chat-messages').scrollHeight
                 sendChat._renderTimer = null
@@ -2798,11 +2916,29 @@ async function sendChat() {
           }
 
           if (chunk.type === 'done') {
-            chatHistory.push({ role: 'assistant', content: chunk.fullResponse })
+            // Strip memory tags from visible response
+            const cleanResponse = (chunk.fullResponse || '').replace(/<memory_save[^>]*>[^<]*<\/memory_save>/g, '').replace(/<memory_delete>[^<]*<\/memory_delete>/g, '')
+            chatHistory.push({ role: 'assistant', content: cleanResponse })
+
+            // Handle memory commands
+            if (chunk.memoryCommands && chunk.memoryCommands.length > 0 && window.GustavStorage) {
+              for (const cmd of chunk.memoryCommands) {
+                if (cmd.type === 'save') {
+                  GustavStorage.saveMemory(cmd.category, cmd.content).catch(e =>
+                    console.error('[gustav] Memory save failed:', e)
+                  )
+                } else if (cmd.type === 'delete') {
+                  GustavStorage.getMemories(true).then(memories => {
+                    const match = memories.find(m => m.content.toLowerCase().includes(cmd.keyword.toLowerCase()))
+                    if (match) GustavStorage.deleteMemory(match.id).catch(() => {})
+                  }).catch(() => {})
+                }
+              }
+            }
 
             // Save assistant message with actions to IndexedDB
             if (currentConversationId && window.GustavStorage) {
-              GustavStorage.addMessage(currentConversationId, 'assistant', chunk.fullResponse, {
+              GustavStorage.addMessage(currentConversationId, 'assistant', cleanResponse, {
                 actions: collectedActions.length > 0 ? collectedActions : null,
                 actionResults: collectedActionResults.length > 0 ? collectedActionResults : null,
               }).then(() => {
@@ -2816,7 +2952,7 @@ async function sendChat() {
 
     // Final markdown render
     if (sendChat._renderTimer) { clearTimeout(sendChat._renderTimer); sendChat._renderTimer = null }
-    const finalCleaned = fullResponse.replace(/<action>[\w/\-]+(?::[^<]+)?<\/action>/g, '').trim()
+    const finalCleaned = fullResponse.replace(/<action>[\w/\-]+(?::[^<]+)?<\/action>/g, '').replace(/<memory_save[^>]*>[^<]*<\/memory_save>/g, '').replace(/<memory_delete>[^<]*<\/memory_delete>/g, '').trim()
     if (finalCleaned) botMsg.innerHTML = renderMarkdown(finalCleaned)
     botMsg.classList.remove('streaming')
 
@@ -2835,15 +2971,103 @@ async function sendChat() {
       }
     }
 
+    // Play notification sound on completion
+    playChatSound()
+
   } catch (err) {
-    botMsg.textContent = `Connection error: ${err.message}`
-    botMsg.classList.remove('streaming')
-    botMsg.style.color = 'var(--error)'
+    if (err.name === 'AbortError') {
+      // User cancelled — clean up the streaming message
+      const finalText = fullResponse.replace(/<action>[\w/\-]+(?::[^<]+)?<\/action>/g, '').trim()
+      botMsg.innerHTML = finalText ? renderMarkdown(finalText) + '<em style="color:var(--text-muted);font-size:12px;"> (cancelled)</em>' : '<em style="color:var(--text-muted);">Response cancelled</em>'
+      botMsg.classList.remove('streaming')
+    } else {
+      botMsg.textContent = `Connection error: ${err.message}`
+      botMsg.classList.remove('streaming')
+      botMsg.style.color = 'var(--error)'
+    }
   }
 
   chatStreaming = false
-  document.getElementById('chat-send-btn').disabled = false
+  chatAbortController = null
+  sendBtn.style.display = 'flex'
+  cancelBtn.style.display = 'none'
 }
+
+// ── Cancel, Sound, File Attachment ────────────────────────────────
+
+function cancelChat() {
+  if (chatAbortController) {
+    chatAbortController.abort()
+    chatAbortController = null
+  }
+}
+
+function playChatSound() {
+  if (!chatSoundEnabled) return
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(800, ctx.currentTime)
+    gain.gain.setValueAtTime(0.15, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1)
+    osc.start(ctx.currentTime)
+    osc.stop(ctx.currentTime + 0.1)
+  } catch { /* Web Audio API unavailable */ }
+}
+
+function toggleChatSound() {
+  chatSoundEnabled = !chatSoundEnabled
+  localStorage.setItem('gustav-sound', chatSoundEnabled ? 'on' : 'muted')
+  const btn = document.getElementById('chat-sound-btn')
+  if (btn) {
+    btn.innerHTML = chatSoundEnabled ? '&#x1F50A;' : '&#x1F507;'
+    btn.classList.toggle('muted', !chatSoundEnabled)
+    btn.title = chatSoundEnabled ? 'Mute sound' : 'Unmute sound'
+  }
+}
+
+function handleFileAttach(input) {
+  const file = input.files[0]
+  if (!file) return
+  if (file.size > 100000) {
+    alert('File too large (max 100 KB). Try a smaller file or paste the relevant section.')
+    input.value = ''
+    return
+  }
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    let content = e.target.result
+    if (content.length > 3000) content = content.slice(0, 3000) + '\n... (truncated at 3000 chars)'
+    pendingFileContent = content
+    pendingFileName = file.name
+    const preview = document.getElementById('chat-file-preview')
+    preview.innerHTML = `<div class="chat-file-badge">&#x1F4CE; ${escapeHtml(file.name)} <button type="button" onclick="clearFileAttachment()" title="Remove">&times;</button></div>`
+    preview.style.display = 'block'
+  }
+  reader.readAsText(file)
+  input.value = '' // Reset so same file can be re-attached
+}
+
+function clearFileAttachment() {
+  pendingFileContent = null
+  pendingFileName = null
+  const preview = document.getElementById('chat-file-preview')
+  if (preview) { preview.innerHTML = ''; preview.style.display = 'none' }
+}
+
+// Initialize sound button state on load
+;(function initSoundBtn() {
+  const btn = document.getElementById('chat-sound-btn')
+  if (btn && !chatSoundEnabled) {
+    btn.innerHTML = '&#x1F507;'
+    btn.classList.add('muted')
+    btn.title = 'Unmute sound'
+  }
+})()
 
 // ── Bookmarks ────────────────────────────────────────────────────
 
@@ -3400,6 +3624,8 @@ async function renderActionLog() {
           time: new Date(msg.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
           action: typeof action === 'string' ? action : action.action || action,
           ok: result?.ok ?? true,
+          duration: result?.duration ?? null,
+          preview: result?.preview ?? null,
           conversationId: msg.conversationId,
         })
       }
@@ -3409,9 +3635,10 @@ async function renderActionLog() {
     for (const [date, items] of Object.entries(grouped)) {
       html += `<div class="chat-action-log-date">${date}</div>`
       for (const item of items) {
-        html += `<div class="chat-action-log-item" onclick="loadConversation('${item.conversationId}')">
+        const durationLabel = item.duration != null ? `<span style="color:var(--text-muted);font-size:10px;margin-left:4px;">${item.duration}ms</span>` : ''
+        html += `<div class="chat-action-log-item" onclick="loadConversation('${item.conversationId}')" title="${item.preview ? escapeHtml(item.preview) : ''}">
           <span class="chat-action-log-time">${item.time}</span>
-          <span class="chat-action-log-name">${escapeHtml(String(item.action))}</span>
+          <span class="chat-action-log-name">${escapeHtml(String(item.action))}${durationLabel}</span>
           <span class="chat-action-log-status">${item.ok ? '&#x2705;' : '&#x274C;'}</span>
         </div>`
       }
