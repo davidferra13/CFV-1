@@ -39,7 +39,7 @@ git push origin "$BRANCH" 2>/dev/null || echo "  (push skipped — may already b
 
 # Step 2: Stop Ollama FIRST to free memory for everything that follows
 echo "[2/8] Stopping Ollama to free memory for build..."
-ssh "$REMOTE" "sudo systemctl stop ollama 2>/dev/null || true; pkill -f ollama_llama_server 2>/dev/null || true; echo '  Ollama stopped'; free -m | grep Mem"
+ssh "$REMOTE" "sudo systemctl stop ollama 2>/dev/null || true; sleep 1; echo '  Ollama stopped'; free -m | grep Mem"
 
 # Step 3: Sync code to Pi
 echo "[3/8] Syncing code to Pi..."
