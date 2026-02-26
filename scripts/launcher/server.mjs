@@ -90,6 +90,149 @@ function log(source, message, type = 'info') {
 let devServerProcess = null
 const runningJobs = new Map()
 
+// ── Live Feed (Observe panel) ─────────────────────────────────────
+const liveFeedClients = new Set()
+const liveFeedBuffers = {
+  dev: [],
+  ollama: [],
+  beta: [],
+  tunnel: [],
+  system: [],
+}
+const MAX_FEED_BUFFER = 200 // per source
+let liveFeedProcesses = {} // track spawned tailing processes
+let liveFeedActive = false
+const ANSI_REGEX = /\x1b\[[0-9;]*m/g
+
+function feedEvent(source, message, level = 'info') {
+  const entry = { source, message, level, ts: Date.now() }
+  const buf = liveFeedBuffers[source]
+  if (buf) {
+    buf.push(entry)
+    if (buf.length > MAX_FEED_BUFFER) buf.splice(0, 50)
+  }
+  for (const client of liveFeedClients) {
+    try {
+      client.write(`event: log\ndata: ${JSON.stringify(entry)}\n\n`)
+    } catch { liveFeedClients.delete(client) }
+  }
+}
+
+function parseLogLevel(text) {
+  const lower = text.toLowerCase()
+  if (lower.includes('error') || lower.includes('err ') || lower.includes('fatal') || lower.includes('econnrefused') || lower.includes('enoent')) return 'error'
+  if (lower.includes('warn') || lower.includes('warning') || lower.includes('deprecated')) return 'warn'
+  if (lower.includes('debug') || lower.includes('trace')) return 'debug'
+  return 'info'
+}
+
+function startLiveFeedTaps() {
+  if (liveFeedActive) return
+  liveFeedActive = true
+
+  // Tap dev server stdout — add secondary listener if process exists
+  if (devServerProcess) {
+    const devTap = (d) => {
+      const text = d.toString().trim().replace(ANSI_REGEX, '')
+      if (text) feedEvent('dev', text, parseLogLevel(text))
+    }
+    devServerProcess.stdout.on('data', devTap)
+    devServerProcess.stderr.on('data', (d) => {
+      const text = d.toString().trim().replace(ANSI_REGEX, '')
+      if (text && !text.includes('ExperimentalWarning')) feedEvent('dev', text, 'warn')
+    })
+    liveFeedProcesses.devTap = devTap
+  }
+
+  // Tail Ollama logs on Windows
+  const ollamaLogPath = join(process.env.LOCALAPPDATA || '', 'Ollama', 'logs', 'server.log')
+  try {
+    // Use PowerShell Get-Content -Wait for Windows tail -f equivalent
+    const ollamaTail = spawn('powershell', ['-Command', `Get-Content -Path '${ollamaLogPath}' -Tail 20 -Wait`], {
+      shell: false,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    ollamaTail.stdout.on('data', (d) => {
+      const lines = d.toString().trim().split('\n')
+      for (const line of lines) {
+        const clean = line.trim().replace(ANSI_REGEX, '')
+        if (clean) feedEvent('ollama', clean, parseLogLevel(clean))
+      }
+    })
+    ollamaTail.stderr.on('data', () => {}) // silently ignore
+    ollamaTail.on('close', () => { delete liveFeedProcesses.ollamaTail })
+    liveFeedProcesses.ollamaTail = ollamaTail
+  } catch {
+    feedEvent('ollama', 'Could not tail Ollama logs — file may not exist', 'warn')
+  }
+
+  // Tail PM2 logs from Pi via SSH (streaming)
+  try {
+    const betaTail = spawn('ssh', ['-o', 'ConnectTimeout=5', '-o', 'ServerAliveInterval=30', 'pi',
+      'pm2 logs chefflow-beta --lines 20 --raw --nostream; pm2 logs chefflow-beta --raw'], {
+      shell: false,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    betaTail.stdout.on('data', (d) => {
+      const lines = d.toString().trim().split('\n')
+      for (const line of lines) {
+        const clean = line.trim().replace(ANSI_REGEX, '')
+        if (clean) feedEvent('beta', clean, parseLogLevel(clean))
+      }
+    })
+    betaTail.stderr.on('data', (d) => {
+      const text = d.toString().trim()
+      if (text && !text.includes('Warning:')) feedEvent('beta', text, 'warn')
+    })
+    betaTail.on('close', () => { delete liveFeedProcesses.betaTail })
+    liveFeedProcesses.betaTail = betaTail
+  } catch {
+    feedEvent('beta', 'Could not connect to Pi for beta logs', 'warn')
+  }
+
+  // Tail cloudflared journal from Pi via SSH
+  try {
+    const tunnelTail = spawn('ssh', ['-o', 'ConnectTimeout=5', '-o', 'ServerAliveInterval=30', 'pi',
+      'journalctl -u cloudflared -n 20 -f --no-pager'], {
+      shell: false,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    tunnelTail.stdout.on('data', (d) => {
+      const lines = d.toString().trim().split('\n')
+      for (const line of lines) {
+        const clean = line.trim().replace(ANSI_REGEX, '')
+        if (clean) feedEvent('tunnel', clean, parseLogLevel(clean))
+      }
+    })
+    tunnelTail.stderr.on('data', () => {})
+    tunnelTail.on('close', () => { delete liveFeedProcesses.tunnelTail })
+    liveFeedProcesses.tunnelTail = tunnelTail
+  } catch {
+    feedEvent('tunnel', 'Could not connect to Pi for tunnel logs', 'warn')
+  }
+
+  // System metrics — push CPU/memory every 10 seconds
+  liveFeedProcesses.systemInterval = setInterval(() => {
+    const mem = process.memoryUsage()
+    feedEvent('system', `Mission Control heap: ${(mem.heapUsed / 1024 / 1024).toFixed(1)} MB`, 'info')
+  }, 10000)
+
+  feedEvent('system', 'Live feed started — tapping all sources', 'info')
+}
+
+function stopLiveFeedTaps() {
+  liveFeedActive = false
+  // Kill all spawned tailing processes
+  for (const [key, proc] of Object.entries(liveFeedProcesses)) {
+    if (proc && typeof proc.kill === 'function') {
+      try { proc.kill() } catch {}
+    } else if (key === 'systemInterval') {
+      clearInterval(proc)
+    }
+  }
+  liveFeedProcesses = {}
+}
+
 // ── Utility functions ─────────────────────────────────────────────
 
 async function httpCheck(url, timeout = 4000) {
@@ -304,8 +447,21 @@ async function startDevServer() {
   })
   devServerProcess.on('close', code => {
     log('dev', `Dev server exited (code ${code})`, code === 0 ? 'info' : 'error')
+    feedEvent('dev', `Dev server exited (code ${code})`, code === 0 ? 'info' : 'error')
     devServerProcess = null
   })
+
+  // If live feed is active, tap this new process
+  if (liveFeedActive) {
+    devServerProcess.stdout.on('data', (d) => {
+      const text = d.toString().trim().replace(ANSI_REGEX, '')
+      if (text) feedEvent('dev', text, parseLogLevel(text))
+    })
+    devServerProcess.stderr.on('data', (d) => {
+      const text = d.toString().trim().replace(ANSI_REGEX, '')
+      if (text && !text.includes('ExperimentalWarning')) feedEvent('dev', text, 'warn')
+    })
+  }
 
   return { ok: true, message: 'Dev server starting...' }
 }
@@ -1651,6 +1807,41 @@ async function handleRequest(req, res) {
     }
     sseClients.add(res)
     req.on('close', () => sseClients.delete(res))
+    return
+  }
+
+  // Live Feed SSE stream (Observe panel)
+  if (path === '/api/livefeed' && method === 'GET') {
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'X-Accel-Buffering': 'no',
+      'Access-Control-Allow-Origin': '*',
+    })
+
+    // Start tailing processes if not already running
+    startLiveFeedTaps()
+
+    // Replay recent buffer entries as backfill
+    for (const source of Object.keys(liveFeedBuffers)) {
+      for (const entry of liveFeedBuffers[source].slice(-30)) {
+        res.write(`event: log\ndata: ${JSON.stringify(entry)}\n\n`)
+      }
+    }
+
+    // Send a heartbeat every 15s to keep the connection alive
+    const heartbeat = setInterval(() => {
+      try { res.write(`event: ping\ndata: {}\n\n`) } catch { clearInterval(heartbeat) }
+    }, 15000)
+
+    liveFeedClients.add(res)
+    req.on('close', () => {
+      liveFeedClients.delete(res)
+      clearInterval(heartbeat)
+      // Stop tailing if no more clients
+      if (liveFeedClients.size === 0) stopLiveFeedTaps()
+    })
     return
   }
 

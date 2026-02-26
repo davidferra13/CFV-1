@@ -143,6 +143,10 @@ body {
   50% { box-shadow: 0 0 12px var(--success-glow), 0 0 20px rgba(34,197,94,0.2); }
 }
 .dot.online { animation: glow-pulse 3s ease-in-out infinite; }
+@keyframes observe-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--success-glow); }
+  50% { opacity: 0.6; box-shadow: 0 0 8px var(--success-glow); }
+}
 
 /* ── Main Layout ──────────────────────────────────────────────── */
 .layout {
@@ -1512,6 +1516,11 @@ body {
         <span class="nav-icon">&#x1F3AF;</span>
         <span class="nav-label">Blueprint</span>
       </a>
+      <a class="nav-item" data-section="observe" title="Observe — Live Feeds">
+        <span class="nav-dot online" id="nd-observe"></span>
+        <span class="nav-icon">&#x1F4E1;</span>
+        <span class="nav-label">Observe</span>
+      </a>
       <a class="nav-item" data-section="sysref" title="System Reference">
         <span class="nav-dot online" id="nd-sysref"></span>
         <span class="nav-icon">&#x1F4D6;</span>
@@ -2333,6 +2342,67 @@ body {
         </div>
       </div>
 
+      <!-- ─── Observe Panel (Live Feeds) ─── -->
+      <div class="panel" id="panel-observe" style="display:none;padding:0;">
+        <div style="display:flex;flex-direction:column;height:100%;">
+
+          <!-- Header Bar -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px 12px;border-bottom:1px solid var(--border);flex-shrink:0;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <h2 class="panel-title" style="margin:0;">Observe</h2>
+              <span id="observe-status" style="display:flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;background:var(--error-dim);color:var(--error);border:1px solid rgba(239,68,68,0.25);">
+                <span id="observe-dot" style="width:7px;height:7px;border-radius:50%;background:var(--error);"></span>
+                <span id="observe-status-text">Disconnected</span>
+              </span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <button class="btn btn-ghost" onclick="observeClear()" style="font-size:12px;padding:6px 12px;">Clear</button>
+              <button class="btn btn-ghost" id="observe-pause-btn" onclick="observeTogglePause()" style="font-size:12px;padding:6px 12px;">Pause</button>
+            </div>
+          </div>
+
+          <!-- Source Filter Bar -->
+          <div style="display:flex;align-items:center;gap:8px;padding:10px 24px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;">
+            <span style="font-size:11px;color:var(--text-muted);margin-right:4px;">Sources:</span>
+            <button class="btn btn-ghost observe-source-btn" data-source="dev" onclick="observeToggleSource('dev')" style="font-size:11px;padding:4px 10px;border-radius:4px;background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.3);">
+              <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#38bdf8;margin-right:4px;"></span>DEV
+            </button>
+            <button class="btn btn-ghost observe-source-btn" data-source="ollama" onclick="observeToggleSource('ollama')" style="font-size:11px;padding:4px 10px;border-radius:4px;background:rgba(168,85,247,0.15);color:#a855f7;border:1px solid rgba(168,85,247,0.3);">
+              <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#a855f7;margin-right:4px;"></span>OLLAMA
+            </button>
+            <button class="btn btn-ghost observe-source-btn" data-source="beta" onclick="observeToggleSource('beta')" style="font-size:11px;padding:4px 10px;border-radius:4px;background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);">
+              <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#22c55e;margin-right:4px;"></span>BETA
+            </button>
+            <button class="btn btn-ghost observe-source-btn" data-source="tunnel" onclick="observeToggleSource('tunnel')" style="font-size:11px;padding:4px 10px;border-radius:4px;background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);">
+              <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#fbbf24;margin-right:4px;"></span>TUNNEL
+            </button>
+            <button class="btn btn-ghost observe-source-btn" data-source="system" onclick="observeToggleSource('system')" style="font-size:11px;padding:4px 10px;border-radius:4px;background:rgba(148,163,184,0.15);color:#94a3b8;border:1px solid rgba(148,163,184,0.3);">
+              <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:4px;"></span>SYSTEM
+            </button>
+            <div style="flex:1;"></div>
+            <span style="font-size:11px;color:var(--text-muted);margin-right:4px;">Level:</span>
+            <select id="observe-level-filter" onchange="observeApplyFilters()" style="background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;">
+              <option value="all">All</option>
+              <option value="info">Info+</option>
+              <option value="warn">Warn+</option>
+              <option value="error">Error Only</option>
+            </select>
+            <input id="observe-search" type="text" placeholder="Filter..." oninput="observeApplyFilters()" style="background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border);border-radius:4px;padding:4px 10px;font-size:11px;width:140px;">
+          </div>
+
+          <!-- Log Body -->
+          <div id="observe-log" style="flex:1;overflow-y:auto;font-family:'Fira Code','Cascadia Code','JetBrains Mono',monospace;font-size:12px;line-height:22px;padding:4px 0;">
+            <div id="observe-log-inner"></div>
+          </div>
+
+          <!-- Resume Badge (shown when paused / scrolled up) -->
+          <div id="observe-resume" onclick="observeResume()" style="display:none;position:absolute;bottom:220px;left:50%;transform:translateX(-50%);background:var(--brand);color:white;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;z-index:10;box-shadow:0 2px 12px rgba(232,143,71,0.4);">
+            <span id="observe-new-count">0</span> new lines — click to resume
+          </div>
+
+        </div>
+      </div>
+
       <!-- ─── System Reference Panel ─── -->
       <div class="panel" id="panel-sysref">
         <div class="panel-header">
@@ -3123,7 +3193,7 @@ body {
 
         <!-- Footer -->
         <div style="text-align:center;padding:12px;">
-          <div style="font-size:11px;color:var(--text-muted);">Press <code style="background:var(--bg-secondary);padding:2px 6px;border-radius:4px;font-size:11px;">=</code> to jump to this panel &bull; Last updated Feb 2026</div>
+          <div style="font-size:11px;color:var(--text-muted);">Press <code style="background:var(--bg-secondary);padding:2px 6px;border-radius:4px;font-size:11px;">\</code> to jump to this panel &bull; Last updated Feb 2026</div>
         </div>
       </div>
 
@@ -5457,6 +5527,7 @@ document.addEventListener('keydown', (e) => {
       activeEl === document.getElementById('commit-msg') ||
       activeEl === document.getElementById('chat-search-input') ||
       activeEl === document.getElementById('chat-dialog-input') ||
+      activeEl === document.getElementById('observe-search') ||
       activeEl?.classList.contains('chat-inline-edit')) return
   if (e.key === '1') switchSection('home')
   if (e.key === '2') switchSection('dev')
@@ -5469,7 +5540,8 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '9') switchSection('feedback')
   if (e.key === '0') switchSection('infra')
   if (e.key === '-') switchSection('blueprint')
-  if (e.key === '=') switchSection('sysref')
+  if (e.key === '=') switchSection('observe')
+  if (e.key === '\\') switchSection('sysref')
 })
 
 function switchSection(section) {
@@ -5480,6 +5552,238 @@ function switchSection(section) {
   if (section === 'log') loadHistory()
   if (section === 'feedback') loadFeedback()
   if (section === 'infra') loadInfra()
+  if (section === 'observe') observeConnect()
+}
+
+// ── Observe Panel (Live Feed) ─────────────────────────────────────
+
+const OBSERVE_SOURCE_COLORS = {
+  dev:    { badge: '#38bdf8', bg: 'rgba(56,189,248,0.12)' },
+  ollama: { badge: '#a855f7', bg: 'rgba(168,85,247,0.12)' },
+  beta:   { badge: '#22c55e', bg: 'rgba(34,197,94,0.12)' },
+  tunnel: { badge: '#fbbf24', bg: 'rgba(251,191,36,0.12)' },
+  system: { badge: '#94a3b8', bg: 'rgba(148,163,184,0.12)' },
+}
+const OBSERVE_LEVEL_COLORS = {
+  debug: '#6b7280',
+  info:  '#38bdf8',
+  warn:  '#fbbf24',
+  error: '#f87171',
+}
+const OBSERVE_LEVEL_ORDER = { debug: 0, info: 1, warn: 2, error: 3 }
+
+let observeSSE = null
+let observePaused = false
+let observeUserScrolledUp = false
+let observeNewCount = 0
+let observeEntries = []           // all entries (unfiltered)
+let observeHiddenSources = new Set()
+const OBSERVE_MAX_ENTRIES = 5000
+const OBSERVE_TRIM = 500
+
+function observeConnect() {
+  if (observeSSE && observeSSE.readyState !== 2) return // already connected
+
+  observeSSE = new EventSource(`${API}/api/livefeed`)
+
+  observeSSE.addEventListener('log', (e) => {
+    try {
+      const entry = JSON.parse(e.data)
+      observeAppendEntry(entry)
+    } catch {}
+  })
+
+  observeSSE.addEventListener('ping', () => {}) // keepalive, ignore
+
+  observeSSE.addEventListener('open', () => {
+    const dot = document.getElementById('observe-dot')
+    const badge = document.getElementById('observe-status')
+    const text = document.getElementById('observe-status-text')
+    if (dot) dot.style.background = 'var(--success)'
+    if (badge) {
+      badge.style.background = 'var(--success-dim)'
+      badge.style.color = 'var(--success)'
+      badge.style.borderColor = 'rgba(34,197,94,0.25)'
+    }
+    if (text) text.textContent = 'Live'
+    // pulse animation on dot
+    if (dot) dot.style.animation = 'observe-pulse 2s ease-in-out infinite'
+  })
+
+  observeSSE.addEventListener('error', () => {
+    const dot = document.getElementById('observe-dot')
+    const badge = document.getElementById('observe-status')
+    const text = document.getElementById('observe-status-text')
+    if (dot) { dot.style.background = 'var(--error)'; dot.style.animation = 'none' }
+    if (badge) {
+      badge.style.background = 'var(--error-dim)'
+      badge.style.color = 'var(--error)'
+      badge.style.borderColor = 'rgba(239,68,68,0.25)'
+    }
+    if (text) text.textContent = 'Reconnecting...'
+  })
+}
+
+function observeDisconnect() {
+  if (observeSSE) {
+    observeSSE.close()
+    observeSSE = null
+  }
+}
+
+function observeAppendEntry(entry) {
+  observeEntries.push(entry)
+  if (observeEntries.length > OBSERVE_MAX_ENTRIES) {
+    observeEntries.splice(0, OBSERVE_TRIM)
+    // Rebuild DOM from scratch after trim
+    observeRebuildDOM()
+    return
+  }
+
+  if (observePaused || observeUserScrolledUp) {
+    if (observeIsVisible(entry)) {
+      observeNewCount++
+      const badge = document.getElementById('observe-resume')
+      const countEl = document.getElementById('observe-new-count')
+      if (badge) badge.style.display = 'block'
+      if (countEl) countEl.textContent = observeNewCount
+    }
+    // Still add to DOM but don't scroll
+    if (observeIsVisible(entry)) observeRenderRow(entry)
+    return
+  }
+
+  if (observeIsVisible(entry)) {
+    observeRenderRow(entry)
+    observeAutoScroll()
+  }
+}
+
+function observeIsVisible(entry) {
+  if (observeHiddenSources.has(entry.source)) return false
+  const levelFilter = document.getElementById('observe-level-filter')
+  if (levelFilter) {
+    const minLevel = levelFilter.value
+    if (minLevel !== 'all') {
+      const entryOrder = OBSERVE_LEVEL_ORDER[entry.level] ?? 1
+      const minOrder = OBSERVE_LEVEL_ORDER[minLevel] ?? 0
+      if (entryOrder < minOrder) return false
+    }
+  }
+  const search = document.getElementById('observe-search')
+  if (search && search.value) {
+    if (!entry.message.toLowerCase().includes(search.value.toLowerCase())) return false
+  }
+  return true
+}
+
+function observeRenderRow(entry) {
+  const inner = document.getElementById('observe-log-inner')
+  if (!inner) return
+
+  const row = document.createElement('div')
+  row.className = 'observe-row'
+  row.dataset.source = entry.source
+  row.dataset.level = entry.level
+
+  const colors = OBSERVE_SOURCE_COLORS[entry.source] || OBSERVE_SOURCE_COLORS.system
+  const levelColor = OBSERVE_LEVEL_COLORS[entry.level] || OBSERVE_LEVEL_COLORS.info
+
+  const time = new Date(entry.ts)
+  const timeStr = time.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })
+
+  // Level indicator bar (2px left edge, Grafana-style)
+  row.style.cssText = `display:flex;align-items:flex-start;padding:1px 16px 1px 0;border-left:3px solid ${levelColor};min-height:22px;`
+  row.innerHTML = `<span style="color:var(--text-muted);padding:0 8px;flex-shrink:0;font-size:11px;min-width:60px;">${timeStr}</span><span style="display:inline-block;padding:0 6px;border-radius:3px;font-size:10px;font-weight:700;min-width:52px;text-align:center;flex-shrink:0;margin-right:8px;background:${colors.bg};color:${colors.badge};letter-spacing:0.5px;">${entry.source.toUpperCase()}</span><span style="color:${entry.level === 'error' ? '#f87171' : entry.level === 'warn' ? '#fbbf24' : 'var(--text-primary)'};word-break:break-all;white-space:pre-wrap;">${escapeHtml(entry.message)}</span>`
+
+  inner.appendChild(row)
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div')
+  div.textContent = text
+  return div.innerHTML
+}
+
+function observeAutoScroll() {
+  const log = document.getElementById('observe-log')
+  if (log) log.scrollTop = log.scrollHeight
+}
+
+// Smart scroll detection
+document.addEventListener('DOMContentLoaded', () => {
+  const log = document.getElementById('observe-log')
+  if (log) {
+    log.addEventListener('scroll', () => {
+      if (observePaused) return
+      const atBottom = log.scrollHeight - log.scrollTop <= log.clientHeight + 50
+      observeUserScrolledUp = !atBottom
+      if (atBottom) {
+        observeNewCount = 0
+        const badge = document.getElementById('observe-resume')
+        if (badge) badge.style.display = 'none'
+      }
+    })
+  }
+})
+
+function observeTogglePause() {
+  observePaused = !observePaused
+  const btn = document.getElementById('observe-pause-btn')
+  if (btn) {
+    btn.textContent = observePaused ? 'Resume' : 'Pause'
+    btn.style.background = observePaused ? 'var(--brand-dim)' : ''
+    btn.style.color = observePaused ? 'var(--brand)' : ''
+  }
+  if (!observePaused) observeResume()
+}
+
+function observeResume() {
+  observePaused = false
+  observeUserScrolledUp = false
+  observeNewCount = 0
+  const badge = document.getElementById('observe-resume')
+  if (badge) badge.style.display = 'none'
+  const btn = document.getElementById('observe-pause-btn')
+  if (btn) { btn.textContent = 'Pause'; btn.style.background = ''; btn.style.color = '' }
+  observeAutoScroll()
+}
+
+function observeClear() {
+  observeEntries = []
+  const inner = document.getElementById('observe-log-inner')
+  if (inner) inner.innerHTML = ''
+  observeNewCount = 0
+  const badge = document.getElementById('observe-resume')
+  if (badge) badge.style.display = 'none'
+}
+
+function observeToggleSource(source) {
+  if (observeHiddenSources.has(source)) {
+    observeHiddenSources.delete(source)
+  } else {
+    observeHiddenSources.add(source)
+  }
+  // Update button appearance
+  const btn = document.querySelector(`.observe-source-btn[data-source="${source}"]`)
+  if (btn) {
+    btn.style.opacity = observeHiddenSources.has(source) ? '0.3' : '1'
+  }
+  observeApplyFilters()
+}
+
+function observeApplyFilters() {
+  observeRebuildDOM()
+}
+
+function observeRebuildDOM() {
+  const inner = document.getElementById('observe-log-inner')
+  if (!inner) return
+  inner.innerHTML = ''
+  for (const entry of observeEntries) {
+    if (observeIsVisible(entry)) observeRenderRow(entry)
+  }
+  if (!observePaused && !observeUserScrolledUp) observeAutoScroll()
 }
 
 // ── Init ──────────────────────────────────────────────────────────
@@ -5490,7 +5794,7 @@ connectSSE()
 loadPromptQueue() // Load prompt queue on startup since Home is default
 
 addLog('info', 'system', 'Mission Control connected')
-addLog('info', 'system', 'Keyboard shortcuts: 1-9 switch panels, Ctrl+/ opens chat, Esc closes dialogs')
+addLog('info', 'system', 'Keyboard shortcuts: 1-9 switch panels, Ctrl+/ opens chat, = opens Observe')
 </script>
 </body>
 </html>
