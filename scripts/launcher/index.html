@@ -1507,6 +1507,11 @@ body {
         <span class="nav-icon">&#x2699;&#xFE0F;</span>
         <span class="nav-label">Infra</span>
       </a>
+      <a class="nav-item" data-section="blueprint" title="Launch Blueprint">
+        <span class="nav-dot online" id="nd-blueprint"></span>
+        <span class="nav-icon">&#x1F3AF;</span>
+        <span class="nav-label">Blueprint</span>
+      </a>
     </nav>
 
     <!-- Content -->
@@ -2069,6 +2074,257 @@ body {
             <button class="btn btn-ghost" onclick="runAction('/api/ollama/pi/stop','Stopping Ollama on Pi...')">Stop Ollama on Pi</button>
             <button class="btn btn-ghost" onclick="runAction('/api/beta/restart','Restarting Beta...')">Restart Beta App</button>
           </div>
+        </div>
+      </div>
+
+      <!-- ─── Blueprint Panel (Launch Roadmap) ─── -->
+      <div class="panel" id="panel-blueprint">
+        <div class="panel-header">
+          <h2 class="panel-title">Launch Blueprint</h2>
+          <span class="status-badge" style="background:var(--brand-dim);color:var(--brand);">
+            <span class="dot" style="background:var(--brand);"></span>
+            <span>6 Phases</span>
+          </span>
+        </div>
+
+        <!-- Current Phase Highlight -->
+        <div style="background:linear-gradient(135deg,rgba(232,143,71,0.15),rgba(232,143,71,0.05));border:1px solid rgba(232,143,71,0.3);border-radius:10px;padding:20px;margin-bottom:24px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <span style="font-size:20px;">&#x1F373;</span>
+            <span style="font-size:16px;font-weight:700;color:var(--brand-bright);">PHASE 1 — Eat Your Own Cooking</span>
+          </div>
+          <div style="color:var(--text-secondary);font-size:13px;line-height:1.6;">Use ChefFlow for your own chef business. Every client, event, quote, and payment goes through the app. Fix what's broken. This is your polish phase.</div>
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:11px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:3px 8px;color:var(--text-muted);">4-6 weeks</span>
+            <span style="font-size:11px;background:var(--warning-dim);border:1px solid rgba(234,179,8,0.3);border-radius:4px;padding:3px 8px;color:var(--warning);">Current Phase</span>
+          </div>
+        </div>
+
+        <!-- Mission Statement -->
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:24px;">
+          <div style="font-family:'DM Serif Display',serif;font-size:15px;color:var(--text-primary);line-height:1.6;text-align:center;">
+            "ChefFlow is the operating system for private chefs — from first inquiry to final payment, with AI that respects your clients' privacy and a platform that gives back to end hunger."
+          </div>
+        </div>
+
+        <!-- Phase Timeline -->
+        <div style="margin-bottom:24px;">
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">Phase Timeline</h3>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div style="display:grid;grid-template-columns:32px 1fr auto;gap:12px;align-items:center;background:var(--brand-dim);border:1px solid rgba(232,143,71,0.3);border-radius:8px 8px 2px 2px;padding:12px 16px;">
+              <span style="font-size:18px;text-align:center;">&#x1F373;</span>
+              <div>
+                <div style="font-weight:600;font-size:13px;color:var(--brand-bright);">Phase 1 — Eat Your Own Cooking</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Run your business on ChefFlow. Fix every friction point.</div>
+              </div>
+              <span style="font-size:11px;color:var(--warning);background:var(--warning-dim);padding:2px 8px;border-radius:4px;">Month 1-2</span>
+            </div>
+            <div style="display:grid;grid-template-columns:32px 1fr auto;gap:12px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:2px;padding:12px 16px;">
+              <span style="font-size:18px;text-align:center;">&#x1F527;</span>
+              <div>
+                <div style="font-weight:600;font-size:13px;">Phase 2 — Plug the Gaps</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Stripe prod, Cloud AI, Charity feature, Welcome email, Help center, Analytics</div>
+              </div>
+              <span style="font-size:11px;color:var(--text-muted);background:var(--bg-secondary);padding:2px 8px;border-radius:4px;">Month 2-4</span>
+            </div>
+            <div style="display:grid;grid-template-columns:32px 1fr auto;gap:12px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:2px;padding:12px 16px;">
+              <span style="font-size:18px;text-align:center;">&#x1F468;&#x200D;&#x1F373;</span>
+              <div>
+                <div style="font-weight:600;font-size:13px;">Phase 3 — Private Beta (10 Chefs)</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Find 10 private chefs. High-touch onboarding. Weekly check-ins. Fix fast.</div>
+              </div>
+              <span style="font-size:11px;color:var(--text-muted);background:var(--bg-secondary);padding:2px 8px;border-radius:4px;">Month 4-6</span>
+            </div>
+            <div style="display:grid;grid-template-columns:32px 1fr auto;gap:12px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:2px;padding:12px 16px;">
+              <span style="font-size:18px;text-align:center;">&#x1F680;</span>
+              <div>
+                <div style="font-weight:600;font-size:13px;">Phase 4 — Public Launch</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Product Hunt, social media, chef communities, press outreach, launch video</div>
+              </div>
+              <span style="font-size:11px;color:var(--text-muted);background:var(--bg-secondary);padding:2px 8px;border-radius:4px;">Month 6-7</span>
+            </div>
+            <div style="display:grid;grid-template-columns:32px 1fr auto;gap:12px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:2px;padding:12px 16px;">
+              <span style="font-size:18px;text-align:center;">&#x1F4C8;</span>
+              <div>
+                <div style="font-weight:600;font-size:13px;">Phase 5 — Growth (100 Subscribers)</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Word of mouth, content/SEO, communities, referrals, partnerships</div>
+              </div>
+              <span style="font-size:11px;color:var(--text-muted);background:var(--bg-secondary);padding:2px 8px;border-radius:4px;">Month 7-18</span>
+            </div>
+            <div style="display:grid;grid-template-columns:32px 1fr auto;gap:12px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:2px 2px 8px 8px;padding:12px 16px;">
+              <span style="font-size:18px;text-align:center;">&#x1F30D;</span>
+              <div>
+                <div style="font-weight:600;font-size:13px;">Phase 6 — Scale & Expand</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Hire support, enterprise tier, marketplace, mobile app, international</div>
+              </div>
+              <span style="font-size:11px;color:var(--text-muted);background:var(--bg-secondary);padding:2px 8px;border-radius:4px;">Year 2+</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Launch Readiness -->
+        <div style="margin-bottom:24px;">
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Launch Readiness</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+              <span style="color:var(--success);font-size:16px;">&#x2705;</span>
+              <div><div style="font-size:12px;font-weight:600;">Self-Serve Signup</div><div style="font-size:10px;color:var(--text-muted);">Working end-to-end</div></div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+              <span style="color:var(--success);font-size:16px;">&#x2705;</span>
+              <div><div style="font-size:12px;font-weight:600;">Landing Page</div><div style="font-size:10px;color:var(--text-muted);">Hero, features, CTA</div></div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+              <span style="color:var(--success);font-size:16px;">&#x2705;</span>
+              <div><div style="font-size:12px;font-weight:600;">Onboarding Wizard</div><div style="font-size:10px;color:var(--text-muted);">5-step guided setup</div></div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+              <span style="color:var(--success);font-size:16px;">&#x2705;</span>
+              <div><div style="font-size:12px;font-weight:600;">Stripe Architecture</div><div style="font-size:10px;color:var(--text-muted);">Code done, needs env vars</div></div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+              <span style="color:var(--success);font-size:16px;">&#x2705;</span>
+              <div><div style="font-size:12px;font-weight:600;">Email System</div><div style="font-size:10px;color:var(--text-muted);">40+ templates via Resend</div></div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+              <span style="color:var(--success);font-size:16px;">&#x2705;</span>
+              <div><div style="font-size:12px;font-weight:600;">Legal Pages</div><div style="font-size:10px;color:var(--text-muted);">Terms + Privacy Policy</div></div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+              <span style="color:var(--success);font-size:16px;">&#x2705;</span>
+              <div><div style="font-size:12px;font-weight:600;">Embeddable Widget</div><div style="font-size:10px;color:var(--text-muted);">Inquiry widget for chef sites</div></div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+              <span style="color:var(--warning);font-size:16px;">&#x26A0;&#xFE0F;</span>
+              <div><div style="font-size:12px;font-weight:600;">Stripe Env Vars</div><div style="font-size:10px;color:var(--warning);">4 keys to configure</div></div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+              <span style="color:var(--warning);font-size:16px;">&#x26A0;&#xFE0F;</span>
+              <div><div style="font-size:12px;font-weight:600;">Sentry DSN</div><div style="font-size:10px;color:var(--warning);">Set in production env</div></div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+              <span style="color:var(--error);font-size:16px;">&#x274C;</span>
+              <div><div style="font-size:12px;font-weight:600;">Cloud AI for Remy</div><div style="font-size:10px;color:var(--error);">Needed for multi-tenant</div></div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+              <span style="color:var(--error);font-size:16px;">&#x274C;</span>
+              <div><div style="font-size:12px;font-weight:600;">ChefFlow Gives Back</div><div style="font-size:10px;color:var(--error);">Charity feature — core brand</div></div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;">
+              <span style="color:var(--warning);font-size:16px;">&#x26A0;&#xFE0F;</span>
+              <div><div style="font-size:12px;font-weight:600;">Help Center</div><div style="font-size:10px;color:var(--warning);">Reduces support load</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Revenue Milestones -->
+        <div style="margin-bottom:24px;">
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Revenue Milestones ($29/mo per chef)</h3>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead>
+                <tr style="border-bottom:1px solid var(--border);">
+                  <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;">Milestone</th>
+                  <th style="text-align:right;padding:10px 14px;color:var(--text-secondary);font-weight:500;">Chefs</th>
+                  <th style="text-align:right;padding:10px 14px;color:var(--text-secondary);font-weight:500;">MRR</th>
+                  <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;">Meaning</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom:1px solid var(--border);">
+                  <td style="padding:8px 14px;font-weight:600;">Break-even</td>
+                  <td style="padding:8px 14px;text-align:right;font-family:monospace;color:var(--brand);">4</td>
+                  <td style="padding:8px 14px;text-align:right;font-family:monospace;color:var(--success);">$116</td>
+                  <td style="padding:8px 14px;font-size:12px;color:var(--text-muted);">Covers all infra costs</td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--border);">
+                  <td style="padding:8px 14px;font-weight:600;">Ramen Profitable</td>
+                  <td style="padding:8px 14px;text-align:right;font-family:monospace;color:var(--brand);">20</td>
+                  <td style="padding:8px 14px;text-align:right;font-family:monospace;color:var(--success);">$580</td>
+                  <td style="padding:8px 14px;font-size:12px;color:var(--text-muted);">Covers infra + some expenses</td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--border);">
+                  <td style="padding:8px 14px;font-weight:600;">Real Business</td>
+                  <td style="padding:8px 14px;text-align:right;font-family:monospace;color:var(--brand);">100</td>
+                  <td style="padding:8px 14px;text-align:right;font-family:monospace;color:var(--success);">$2,900</td>
+                  <td style="padding:8px 14px;font-size:12px;color:var(--text-muted);">$34,800/yr ARR — you have a company</td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--border);">
+                  <td style="padding:8px 14px;font-weight:600;">Growth Stage</td>
+                  <td style="padding:8px 14px;text-align:right;font-family:monospace;color:var(--brand);">250</td>
+                  <td style="padding:8px 14px;text-align:right;font-family:monospace;color:var(--success);">$7,250</td>
+                  <td style="padding:8px 14px;font-size:12px;color:var(--text-muted);">$87,000/yr ARR — hire help</td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 14px;font-weight:600;">Scale</td>
+                  <td style="padding:8px 14px;text-align:right;font-family:monospace;color:var(--brand);">1,000</td>
+                  <td style="padding:8px 14px;text-align:right;font-family:monospace;color:var(--success);">$29,000</td>
+                  <td style="padding:8px 14px;font-size:12px;color:var(--text-muted);">$348,000/yr ARR — this is serious</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ChefFlow Gives Back -->
+        <div style="margin-bottom:24px;">
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">ChefFlow Gives Back</h3>
+          <div style="background:linear-gradient(135deg,rgba(34,197,94,0.1),rgba(34,197,94,0.03));border:1px solid rgba(34,197,94,0.25);border-radius:8px;padding:16px;">
+            <div style="font-size:14px;font-weight:600;color:var(--success);margin-bottom:8px;">1% of Platform Revenue to End Hunger</div>
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;margin-bottom:12px;">Chefs choose their charity. ChefFlow splits donations proportionally each quarter. Every subscription helps feed someone.</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              <span style="font-size:11px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:3px 8px;color:var(--text-secondary);">World Food Programme</span>
+              <span style="font-size:11px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:3px 8px;color:var(--text-secondary);">Feeding America</span>
+              <span style="font-size:11px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:3px 8px;color:var(--text-secondary);">charity: water</span>
+              <span style="font-size:11px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:3px 8px;color:var(--text-secondary);">No Kid Hungry</span>
+              <span style="font-size:11px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:3px 8px;color:var(--text-secondary);">World Central Kitchen</span>
+              <span style="font-size:11px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:3px 8px;color:var(--text-secondary);">Action Against Hunger</span>
+              <span style="font-size:11px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:3px 8px;color:var(--text-secondary);">Local Food Pantry</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Competitive Moat -->
+        <div style="margin-bottom:24px;">
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Competitive Moat</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;">
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+              <div style="font-size:16px;margin-bottom:6px;">&#x1F468;&#x200D;&#x1F373;</div>
+              <div style="font-size:12px;font-weight:600;">Built by a Chef</div>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">You understand the pain</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+              <div style="font-size:16px;margin-bottom:6px;">&#x1F512;</div>
+              <div style="font-size:12px;font-weight:600;">Privacy-First AI</div>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Client data stays private</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+              <div style="font-size:16px;margin-bottom:6px;">&#x1F49A;</div>
+              <div style="font-size:12px;font-weight:600;">Gives Back</div>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">1% to end hunger</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+              <div style="font-size:16px;margin-bottom:6px;">&#x1F504;</div>
+              <div style="font-size:12px;font-weight:600;">Full Lifecycle</div>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Inquiry to completion</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+              <div style="font-size:16px;margin-bottom:6px;">&#x1F4E6;</div>
+              <div style="font-size:12px;font-weight:600;">Embeddable Widget</div>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Drop into any website</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+              <div style="font-size:16px;margin-bottom:6px;">&#x1F4DA;</div>
+              <div style="font-size:12px;font-weight:600;">Ledger Financials</div>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Immutable, real accounting</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Full Blueprint Link -->
+        <div style="text-align:center;padding:12px;">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Full document: <code style="background:var(--bg-secondary);padding:2px 6px;border-radius:4px;font-size:11px;">docs/master-launch-blueprint.md</code></div>
+          <div style="font-size:11px;color:var(--text-muted);">Built from studying Shopify, Stripe, Slack, Calendly, Basecamp, HubSpot, Mailchimp, Square, Notion, Canva, Toast, and Zenchef</div>
         </div>
       </div>
 
@@ -4413,6 +4669,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '8') switchSection('log')
   if (e.key === '9') switchSection('feedback')
   if (e.key === '0') switchSection('infra')
+  if (e.key === '-') switchSection('blueprint')
 })
 
 function switchSection(section) {
