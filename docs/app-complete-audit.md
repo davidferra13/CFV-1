@@ -965,6 +965,42 @@ Auto-generated FDA-compliant HACCP plan based on chef's business archetype. Free
 
 Archetype-specific content for: private-chef, caterer, meal-prep, restaurant, food-truck, bakery.
 
+### 20.1 Delete Account (`/settings/delete-account`)
+
+Soft-delete with 30-day grace period, pre-deletion checks, data export prompt, confirmation. Free tier.
+
+| Element                    | Description                                                                                      |
+| -------------------------- | ------------------------------------------------------------------------------------------------ |
+| Warning alert              | Explains 30-day grace period, reactivation option, and 7-year financial retention                |
+| Pre-Deletion Checklist     | Shows pass/fail for: active events, outstanding payments, active retainers, active subscription  |
+| Export Your Data card      | "Download My Data (JSON)" button — comprehensive export of all tenant data                       |
+| Reason selector            | Optional dropdown: found alternative, too expensive, not using, privacy, closing business, other |
+| Confirmation input         | Type "DELETE" to enable submit button                                                            |
+| Password input             | Identity verification                                                                            |
+| "Request Account Deletion" | Danger button — sets 30-day grace period, bans auth, signs out                                   |
+| Grace period info          | Text explaining 30-day window and 7-year financial retention                                     |
+
+### 20.2 Reactivate Account (`/reactivate-account`) — Public
+
+Public page for cancelling a pending account deletion during the 30-day grace period.
+
+| Element           | Description                                                       |
+| ----------------- | ----------------------------------------------------------------- |
+| No-token state    | Message directing user to check their deletion confirmation email |
+| Reactivation card | "Reactivate My Account" button with explanation text              |
+| Success state     | Confirmation with "Sign In" button                                |
+| Error state       | Alert for invalid/expired tokens                                  |
+
+### 20.3 GDPR & Privacy (`/settings/compliance/gdpr`)
+
+Data privacy management. Comprehensive data export, privacy controls display, and link to delete account.
+
+| Element               | Description                                                         |
+| --------------------- | ------------------------------------------------------------------- |
+| Export Your Data card | "Download My Data (JSON)" — comprehensive export of all tenant data |
+| Privacy Controls card | Shows data encryption (AES-256 + TLS 1.3) and RLS status            |
+| Danger Zone card      | "Delete My Account" button linking to `/settings/delete-account`    |
+
 ---
 
 ## 16. MARKETING & SOCIAL

@@ -1,14 +1,14 @@
 'use client'
-import { useState, useTransition } from 'react'
+import { useTransition } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Download, Shield, AlertTriangle } from 'lucide-react'
 import { exportMyData } from '@/lib/compliance/data-export'
 import { toast } from 'sonner'
+import Link from 'next/link'
 
 export function GdprTools() {
   const [isPending, startTransition] = useTransition()
-  const [confirm, setConfirm] = useState(false)
 
   function handleExport() {
     startTransition(async () => {
@@ -40,7 +40,7 @@ export function GdprTools() {
         <CardContent>
           <p className="text-sm text-stone-400 mb-4">
             Download a complete copy of your ChefFlow data including events, clients, financials,
-            and settings.
+            menus, recipes, staff, documents, and more.
           </p>
           <Button onClick={handleExport} loading={isPending} variant="secondary">
             Download My Data (JSON)
@@ -86,33 +86,11 @@ export function GdprTools() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-stone-400 mb-4">
-            Request account deletion. This will permanently delete your chef account and all
-            associated data after a 30-day grace period.
+            Delete your account with a 30-day grace period. You can reactivate during that time.
           </p>
-          {!confirm ? (
-            <Button variant="danger" onClick={() => setConfirm(true)}>
-              Request Account Deletion
-            </Button>
-          ) : (
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-red-700">
-                Are you absolutely sure? This cannot be undone.
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="danger"
-                  onClick={() =>
-                    toast.info('Deletion request sent. Support will contact you within 24 hours.')
-                  }
-                >
-                  Yes, request deletion
-                </Button>
-                <Button variant="secondary" onClick={() => setConfirm(false)}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          )}
+          <Link href="/settings/delete-account">
+            <Button variant="danger">Delete My Account</Button>
+          </Link>
         </CardContent>
       </Card>
     </div>

@@ -444,31 +444,13 @@ export async function changePassword(currentPassword: string, newPassword: strin
 }
 
 /**
- * Delete account - Requires password verification
- * Cascades via DB constraints, then signs out and redirects
+ * Delete account - Soft-delete with 30-day grace period.
+ * Delegates to requestAccountDeletion() in account-deletion-actions.ts.
+ * Kept here for backwards compatibility with existing form imports.
  */
-export async function deleteAccount(password: string) {
-  const supabase = createServerClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user?.email) throw new Error('Not authenticated')
-
-  // Verify password
-  const { error: verifyError } = await supabase.auth.signInWithPassword({
-    email: user.email,
-    password: password,
-  })
-  if (verifyError) throw new Error('Password is incorrect')
-
-  // Delete user (cascades via DB constraints)
-  const adminClient = createServerClient({ admin: true })
-  const { error } = await adminClient.auth.admin.deleteUser(user.id)
-  if (error) throw new Error('Failed to delete account')
-
-  // Sign out and redirect
-  await supabase.auth.signOut()
-  redirect('/')
+export async function deleteAccount(password: string, reason?: string) {
+  const { requestAccountDeletion } = await import('@/lib/compliance/account-deletion-actions')
+  return requestAccountDeletion(password, reason)
 }
 
 /**

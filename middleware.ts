@@ -68,6 +68,7 @@ const skipAuthPaths = [
   '/embed',
   '/demo',
   '/staff-login',
+  '/reactivate-account',
 ]
 // Admin paths — require authentication but not a specific role (email check is in layout)
 const adminPaths = ['/admin']

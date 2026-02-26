@@ -26,11 +26,13 @@ import { FeedbackNudgeModal } from '@/components/feedback/feedback-nudge-modal'
 import { PageInfoButton } from '@/components/ui/page-info'
 import { ThemeProvider } from '@/components/ui/theme-provider'
 import { EnvironmentBadge } from '@/components/ui/environment-badge'
+import { DeletionPendingBanner } from '@/components/settings/deletion-pending-banner'
 import { getTierForChef } from '@/lib/billing/tier'
 import { isAdmin } from '@/lib/auth/admin'
 import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
 import { differenceInDays } from 'date-fns'
 import { getChefArchetype } from '@/lib/archetypes/actions'
+import { getAccountDeletionStatus } from '@/lib/compliance/account-deletion-actions'
 import { ArchetypeSelector } from '@/components/onboarding/archetype-selector'
 
 export default async function ChefLayout({ children }: { children: React.ReactNode }) {
@@ -54,25 +56,40 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
   }
   // Parallelized â€” all four calls are independent of each other and of layoutData.
   // Running them concurrently saves ~3 sequential DB round-trips on every page load.
-  const [layoutData, announcement, tierStatus, hasCannabisTier, userIsAdmin, chefArchetype] =
-    await Promise.all([
-      // Cached for 60s â€” slug and nav prefs change rarely, keyed per chef
-      getChefLayoutData(user.entityId),
-      // Platform announcement (non-fatal â€” fail open)
-      getAnnouncement().catch(() => null),
-      // Tier check â€” non-fatal, defaults to pro (fail open so billing never breaks the portal)
-      getTierForChef(user.entityId).catch(() => ({
-        tier: 'pro' as const,
-        isGrandfathered: true,
-        subscriptionStatus: 'grandfathered',
-      })),
-      // Cannabis tier check â€” non-fatal, fails closed
-      hasCannabisAccess(user.id).catch(() => false),
-      // Admin check â€” admins bypass all tier restrictions
-      isAdmin().catch(() => false),
-      // Archetype â€” null means chef hasn't picked one yet (show selector)
-      getChefArchetype().catch(() => null),
-    ])
+  const [
+    layoutData,
+    announcement,
+    tierStatus,
+    hasCannabisTier,
+    userIsAdmin,
+    chefArchetype,
+    deletionStatus,
+  ] = await Promise.all([
+    // Cached for 60s â€” slug and nav prefs change rarely, keyed per chef
+    getChefLayoutData(user.entityId),
+    // Platform announcement (non-fatal â€” fail open)
+    getAnnouncement().catch(() => null),
+    // Tier check â€” non-fatal, defaults to pro (fail open so billing never breaks the portal)
+    getTierForChef(user.entityId).catch(() => ({
+      tier: 'pro' as const,
+      isGrandfathered: true,
+      subscriptionStatus: 'grandfathered',
+    })),
+    // Cannabis tier check â€” non-fatal, fails closed
+    hasCannabisAccess(user.id).catch(() => false),
+    // Admin check â€” admins bypass all tier restrictions
+    isAdmin().catch(() => false),
+    // Archetype â€” null means chef hasn't picked one yet (show selector)
+    getChefArchetype().catch(() => null),
+    // Deletion status â€” non-fatal, fail closed (no banner)
+    getAccountDeletionStatus().catch(() => ({
+      isPending: false,
+      scheduledFor: null,
+      daysRemaining: null,
+      requestedAt: null,
+      reason: null,
+    })),
+  ])
   // Archetype gate â€” new chefs pick their persona before seeing the portal.
   // Admins skip this (they have full access and don't need a preset).
   // Also skip on settings pages so they can manually configure if needed.
@@ -120,6 +137,15 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                 {(userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true') && <EnvironmentBadge />}
                 {/* Trial / subscription banner â€” shown when trial is expiring (â‰¤3 days) or expired */}
                 <TrialBanner chefId={user.entityId} />
+                {/* Account deletion pending banner â€” shown during 30-day grace period */}
+                {deletionStatus.isPending &&
+                  deletionStatus.scheduledFor &&
+                  deletionStatus.daysRemaining != null && (
+                    <DeletionPendingBanner
+                      scheduledFor={deletionStatus.scheduledFor}
+                      daysRemaining={deletionStatus.daysRemaining}
+                    />
+                  )}
                 {/* Desktop sidebar */}
                 <ChefSidebar
                   primaryNavHrefs={primaryNavHrefs}
