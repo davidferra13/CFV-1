@@ -11,12 +11,12 @@ import { Textarea } from '@/components/ui/textarea'
 import {
   createTemplate,
   updateTemplate,
-  TEMPLATE_CATEGORIES,
   type CreateTemplateInput,
   type UpdateTemplateInput,
   type TemplateItem,
   type TaskTemplate,
 } from '@/lib/tasks/template-actions'
+import { TEMPLATE_CATEGORIES } from '@/lib/tasks/template-constants'
 
 type Props = {
   template?: TaskTemplate

@@ -12,9 +12,9 @@ import { TaskTemplateForm } from './task-template-form'
 import {
   deleteTemplate,
   generateTasksFromTemplate,
-  TEMPLATE_CATEGORIES,
   type TaskTemplate,
 } from '@/lib/tasks/template-actions'
+import { TEMPLATE_CATEGORIES } from '@/lib/tasks/template-constants'
 
 type StaffOption = { id: string; name: string; role: string }
 

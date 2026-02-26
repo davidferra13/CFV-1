@@ -58,20 +58,8 @@ export type TaskTemplate = {
   updated_at: string
 }
 
-// ============================================
-// CATEGORY LABELS
-// ============================================
-
-export const TEMPLATE_CATEGORIES: Record<string, string> = {
-  prep: 'Prep',
-  service: 'Service',
-  cleanup: 'Cleanup',
-  setup: 'Setup',
-  admin: 'Admin',
-  inventory: 'Inventory',
-  maintenance: 'Maintenance',
-  other: 'Other',
-}
+// Category labels live in template-constants.ts (non-'use server' file)
+// Re-export not needed here — importers should use template-constants.ts directly
 
 // ============================================
 // CREATE TEMPLATE

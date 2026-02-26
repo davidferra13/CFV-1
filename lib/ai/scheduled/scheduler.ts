@@ -12,159 +12,15 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { enqueueTask } from '@/lib/ai/queue/actions'
-import { AI_PRIORITY } from '@/lib/ai/queue/types'
-
-export interface ScheduledJob {
-  taskType: string
-  name: string
-  intervalMs: number
-  priority: number
-  /** Only seed for tenants that exist — uses admin client */
-  seedOnStartup: boolean
-  /** If true, lightweight enough to run on PC now. If false, defer until Pi. */
-  enabledWithoutPi: boolean
-}
-
-// ============================================
-// JOB DEFINITIONS
-// ============================================
-
-export const SCHEDULED_JOBS: ScheduledJob[] = [
-  {
-    taskType: 'scheduled.daily_briefing',
-    name: 'Daily Briefing Pre-Gen',
-    intervalMs: 24 * 60 * 60 * 1000, // 1 day
-    priority: AI_PRIORITY.SCHEDULED,
-    seedOnStartup: true,
-    enabledWithoutPi: true,
-  },
-  {
-    taskType: 'scheduled.lead_scoring',
-    name: 'Auto Lead Scoring',
-    intervalMs: 2 * 60 * 60 * 1000, // 2 hours
-    priority: AI_PRIORITY.SCHEDULED,
-    seedOnStartup: true,
-    enabledWithoutPi: true,
-  },
-  {
-    taskType: 'scheduled.weekly_insights',
-    name: 'Weekly Business Insights',
-    intervalMs: 7 * 24 * 60 * 60 * 1000, // 1 week
-    priority: AI_PRIORITY.BATCH,
-    seedOnStartup: true,
-    enabledWithoutPi: false, // Heavy — defer to Pi
-  },
-  {
-    taskType: 'scheduled.revenue_goal',
-    name: 'Revenue Goal Progress',
-    intervalMs: 7 * 24 * 60 * 60 * 1000, // 1 week
-    priority: AI_PRIORITY.BATCH,
-    seedOnStartup: true,
-    enabledWithoutPi: false,
-  },
-  {
-    taskType: 'scheduled.churn_prediction',
-    name: 'Client Churn Prediction',
-    intervalMs: 7 * 24 * 60 * 60 * 1000, // 1 week
-    priority: AI_PRIORITY.BATCH,
-    seedOnStartup: true,
-    enabledWithoutPi: false,
-  },
-  {
-    taskType: 'scheduled.food_cost_alert',
-    name: 'Food Cost % Alert',
-    intervalMs: 7 * 24 * 60 * 60 * 1000, // 1 week
-    priority: AI_PRIORITY.SCHEDULED,
-    seedOnStartup: true,
-    enabledWithoutPi: true, // Pure SQL — no LLM needed
-  },
-  {
-    taskType: 'scheduled.pipeline_bottleneck',
-    name: 'Pipeline Bottleneck Report',
-    intervalMs: 7 * 24 * 60 * 60 * 1000, // 1 week
-    priority: AI_PRIORITY.BATCH,
-    seedOnStartup: true,
-    enabledWithoutPi: false,
-  },
-  {
-    taskType: 'scheduled.cert_expiry',
-    name: 'Certification Expiry Check',
-    intervalMs: 24 * 60 * 60 * 1000, // 1 day
-    priority: AI_PRIORITY.SCHEDULED,
-    seedOnStartup: true,
-    enabledWithoutPi: true, // Pure SQL
-  },
-  {
-    taskType: 'scheduled.food_recall',
-    name: 'FDA Recall Monitoring',
-    intervalMs: 24 * 60 * 60 * 1000, // 1 day
-    priority: AI_PRIORITY.SCHEDULED,
-    seedOnStartup: true,
-    enabledWithoutPi: true, // Partial — FDA API + light LLM
-  },
-  {
-    taskType: 'scheduled.quote_analysis',
-    name: 'Quote Win/Loss Analysis',
-    intervalMs: 7 * 24 * 60 * 60 * 1000, // 1 week
-    priority: AI_PRIORITY.BATCH,
-    seedOnStartup: true,
-    enabledWithoutPi: false,
-  },
-  {
-    taskType: 'scheduled.anomaly_detection',
-    name: 'Platform Anomaly Detection',
-    intervalMs: 24 * 60 * 60 * 1000, // 1 day
-    priority: AI_PRIORITY.BATCH,
-    seedOnStartup: true,
-    enabledWithoutPi: false,
-  },
-  {
-    taskType: 'scheduled.menu_engineering',
-    name: 'Menu Engineering Report',
-    intervalMs: 30 * 24 * 60 * 60 * 1000, // 1 month
-    priority: AI_PRIORITY.BATCH,
-    seedOnStartup: true,
-    enabledWithoutPi: false,
-  },
-  {
-    taskType: 'scheduled.stale_inquiry_scanner',
-    name: 'Stale Inquiry Scanner',
-    intervalMs: 6 * 60 * 60 * 1000, // 6 hours
-    priority: AI_PRIORITY.SCHEDULED,
-    seedOnStartup: true,
-    enabledWithoutPi: true, // Pure SQL — no LLM needed for the scan itself
-  },
-  {
-    taskType: 'scheduled.payment_overdue_scanner',
-    name: 'Payment Overdue Scanner',
-    intervalMs: 24 * 60 * 60 * 1000, // 1 day
-    priority: AI_PRIORITY.SCHEDULED,
-    seedOnStartup: true,
-    enabledWithoutPi: true, // Pure SQL scan
-  },
-  {
-    taskType: 'scheduled.social_post_draft',
-    name: 'Social Post Draft',
-    intervalMs: 7 * 24 * 60 * 60 * 1000, // 1 week
-    priority: AI_PRIORITY.BATCH,
-    seedOnStartup: true,
-    enabledWithoutPi: false, // Needs LLM — defer to Pi
-  },
-  {
-    taskType: 'scheduled.client_sentiment',
-    name: 'Client Sentiment Monitor',
-    intervalMs: 7 * 24 * 60 * 60 * 1000, // 1 week
-    priority: AI_PRIORITY.BATCH,
-    seedOnStartup: true,
-    enabledWithoutPi: false, // Needs LLM — defer to Pi
-  },
-]
+import { SCHEDULED_JOBS } from './job-definitions'
+export type { ScheduledJob } from './job-definitions'
 
 // ============================================
 // SCHEDULER
 // ============================================
 
-let seeded = false
+// Module-level guard — prevents re-seeding within the same server lifecycle
+let _seeded = false
 
 /**
  * Seed scheduled tasks for all active tenants.
@@ -172,7 +28,7 @@ let seeded = false
  * Only seeds jobs that are enabled without the Pi (unless Pi is configured).
  */
 export async function seedScheduledTasks(): Promise<{ seeded: number; skipped: number }> {
-  if (seeded) return { seeded: 0, skipped: 0 }
+  if (_seeded) return { seeded: 0, skipped: 0 }
 
   const supabase = createAdminClient()
   const hasPi = !!process.env.OLLAMA_PI_URL
@@ -181,7 +37,7 @@ export async function seedScheduledTasks(): Promise<{ seeded: number; skipped: n
   const { data: tenants } = await supabase.from('chefs').select('id').limit(100)
 
   if (!tenants || tenants.length === 0) {
-    seeded = true
+    _seeded = true
     return { seeded: 0, skipped: 0 }
   }
 
@@ -213,7 +69,7 @@ export async function seedScheduledTasks(): Promise<{ seeded: number; skipped: n
     }
   }
 
-  seeded = true
+  _seeded = true
   console.log(`[scheduler] Seeded ${seededCount} scheduled tasks, skipped ${skippedCount}`)
   return { seeded: seededCount, skipped: skippedCount }
 }

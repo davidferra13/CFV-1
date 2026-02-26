@@ -43,6 +43,10 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  typescript: {
+    // Type-check separately via `tsc --noEmit`; skip during build for speed.
+    ignoreBuildErrors: true,
+  },
   // Pin the build ID so the PWA wrapper's separate webpack pass uses the same
   // directory as the main Next.js build. Without this, the two passes generate
   // different IDs and the _ssgManifest.js write fails with ENOENT.
