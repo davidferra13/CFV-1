@@ -546,6 +546,66 @@ body {
   justify-content: flex-end;
 }
 
+/* ── Ping All Button ──────────────────────────────────────────── */
+.ping-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border: 1px solid var(--border-bright);
+  border-radius: 6px;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  -webkit-app-region: no-drag;
+  margin-right: 8px;
+}
+.ping-all-btn:hover {
+  background: var(--bg-hover);
+  color: var(--brand);
+  border-color: var(--brand);
+}
+.ping-all-btn:active { transform: scale(0.95); }
+.ping-all-btn.pinging {
+  color: var(--warning);
+  border-color: var(--warning);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.btn-ping {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid var(--border-bright);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.btn-ping:hover {
+  background: var(--info-dim);
+  color: var(--info);
+  border-color: var(--info);
+}
+.btn-ping:active { transform: scale(0.97); }
+.btn-ping.pinging { color: var(--warning); border-color: var(--warning); }
+.ping-result {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+.ping-result.ok { color: var(--success); }
+.ping-result.fail { color: var(--error); }
+
 /* ── Responsive tweaks ────────────────────────────────────────── */
 @media (max-width: 700px) {
   .sidebar { width: 56px; }
@@ -567,6 +627,7 @@ body {
       </div>
     </div>
     <div class="header-dots">
+      <button type="button" class="ping-all-btn" id="ping-all-btn" onclick="pingAll()" title="Force-ping all services right now">&#x1F4E1; Ping All</button>
       <span class="header-dot"><span class="dot checking" id="hd-dev"></span> Dev</span>
       <span class="header-dot"><span class="dot checking" id="hd-beta"></span> Beta</span>
       <span class="header-dot"><span class="dot checking" id="hd-prod"></span> Prod</span>
@@ -641,9 +702,10 @@ body {
           </div>
         </div>
         <div class="actions">
-          <button class="btn btn-success" onclick="action('dev/start')">&#x25B6; Start</button>
-          <button class="btn btn-danger" onclick="action('dev/stop')">&#x23F9; Stop</button>
-          <button class="btn btn-ghost" onclick="openUrl('http://localhost:3100')">&#x1F310; Open Browser</button>
+          <button type="button" class="btn btn-success" onclick="action('dev/start')">&#x25B6; Start</button>
+          <button type="button" class="btn btn-danger" onclick="action('dev/stop')">&#x23F9; Stop</button>
+          <button type="button" class="btn btn-ghost" onclick="openUrl('http://localhost:3100')">&#x1F310; Open Browser</button>
+          <button type="button" class="btn-ping" onclick="ping('dev')" id="ping-dev">&#x1F4E1; Ping <span class="ping-result" id="ping-dev-result"></span></button>
         </div>
       </div>
 
@@ -675,10 +737,11 @@ body {
           </div>
         </div>
         <div class="actions">
-          <button class="btn btn-warning" onclick="action('beta/restart')">&#x1F504; Restart</button>
-          <button class="btn btn-primary" onclick="confirmAction('deploy')">&#x1F680; Deploy</button>
-          <button class="btn btn-danger" onclick="confirmAction('rollback')">&#x23EA; Rollback</button>
-          <button class="btn btn-ghost" onclick="openUrl('https://beta.cheflowhq.com')">&#x1F310; Open Beta</button>
+          <button type="button" class="btn btn-warning" onclick="action('beta/restart')">&#x1F504; Restart</button>
+          <button type="button" class="btn btn-primary" onclick="confirmAction('deploy')">&#x1F680; Deploy</button>
+          <button type="button" class="btn btn-danger" onclick="confirmAction('rollback')">&#x23EA; Rollback</button>
+          <button type="button" class="btn btn-ghost" onclick="openUrl('https://beta.cheflowhq.com')">&#x1F310; Open Beta</button>
+          <button type="button" class="btn-ping" onclick="ping('beta')" id="ping-beta">&#x1F4E1; Ping <span class="ping-result" id="ping-beta-result"></span></button>
         </div>
       </div>
 
@@ -710,8 +773,9 @@ body {
           </div>
         </div>
         <div class="actions">
-          <button class="btn btn-ghost" onclick="openUrl('https://app.cheflowhq.com')">&#x1F310; Open Production</button>
-          <button class="btn btn-ghost" onclick="openUrl('https://vercel.com/dashboard')">&#x2699;&#xFE0F; Vercel Dashboard</button>
+          <button type="button" class="btn btn-ghost" onclick="openUrl('https://app.cheflowhq.com')">&#x1F310; Open Production</button>
+          <button type="button" class="btn btn-ghost" onclick="openUrl('https://vercel.com/dashboard')">&#x2699;&#xFE0F; Vercel Dashboard</button>
+          <button type="button" class="btn-ping" onclick="ping('prod')" id="ping-prod">&#x1F4E1; Ping <span class="ping-result" id="ping-prod-result"></span></button>
         </div>
         <div class="divider"></div>
         <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Recent Deployments</h3>
@@ -744,8 +808,9 @@ body {
           </div>
         </div>
         <div class="actions">
-          <button class="btn btn-success" onclick="action('ollama/pc/start')">&#x25B6; Start PC</button>
-          <button class="btn btn-danger" onclick="action('ollama/pc/stop')">&#x23F9; Stop PC</button>
+          <button type="button" class="btn btn-success" onclick="action('ollama/pc/start')">&#x25B6; Start PC</button>
+          <button type="button" class="btn btn-danger" onclick="action('ollama/pc/stop')">&#x23F9; Stop PC</button>
+          <button type="button" class="btn-ping" onclick="ping('ollamaPc')" id="ping-ollamaPc">&#x1F4E1; Ping <span class="ping-result" id="ping-ollamaPc-result"></span></button>
         </div>
         <div class="model-list" id="ollama-pc-models"></div>
 
@@ -767,8 +832,9 @@ body {
           </div>
         </div>
         <div class="actions">
-          <button class="btn btn-success" onclick="action('ollama/pi/start')">&#x25B6; Start Pi</button>
-          <button class="btn btn-danger" onclick="action('ollama/pi/stop')">&#x23F9; Stop Pi</button>
+          <button type="button" class="btn btn-success" onclick="action('ollama/pi/start')">&#x25B6; Start Pi</button>
+          <button type="button" class="btn btn-danger" onclick="action('ollama/pi/stop')">&#x23F9; Stop Pi</button>
+          <button type="button" class="btn-ping" onclick="ping('ollamaPi')" id="ping-ollamaPi">&#x1F4E1; Ping <span class="ping-result" id="ping-ollamaPi-result"></span></button>
         </div>
         <div class="model-list" id="ollama-pi-models"></div>
       </div>
@@ -1059,6 +1125,72 @@ function renderDeployments(deployments) {
       <span class="commit-msg">${branch} — ${msg} (${ago})</span>
     </div>`
   }).join('')
+}
+
+// ── Ping ──────────────────────────────────────────────────────────
+
+async function ping(service) {
+  const btn = document.getElementById(`ping-${service}`)
+  const result = document.getElementById(`ping-${service}-result`)
+  if (btn) btn.classList.add('pinging')
+  if (result) { result.textContent = '...'; result.className = 'ping-result'; }
+
+  addLog('info', 'ping', `Pinging ${service}...`)
+
+  try {
+    const start = Date.now()
+    const res = await fetch(`${API}/api/status`)
+    const data = await res.json()
+    const latency = Date.now() - start
+
+    const serviceData = data[service]
+    const online = serviceData?.online ?? false
+
+    if (result) {
+      result.textContent = online ? `${serviceData.latency || latency}ms` : 'FAIL'
+      result.className = `ping-result ${online ? 'ok' : 'fail'}`
+    }
+    addLog(online ? 'success' : 'error', 'ping', `${service}: ${online ? `OK (${serviceData.latency || latency}ms)` : 'UNREACHABLE'}`)
+    updateUI(data)
+  } catch (err) {
+    if (result) { result.textContent = 'ERR'; result.className = 'ping-result fail'; }
+    addLog('error', 'ping', `${service} ping failed: ${err.message}`)
+  }
+  if (btn) btn.classList.remove('pinging')
+}
+
+async function pingAll() {
+  const btn = document.getElementById('ping-all-btn')
+  if (btn) btn.classList.add('pinging')
+  addLog('info', 'ping', 'Pinging all services...')
+
+  try {
+    const start = Date.now()
+    const res = await fetch(`${API}/api/status`)
+    const data = await res.json()
+    const total = Date.now() - start
+
+    updateUI(data)
+
+    const services = ['dev', 'beta', 'prod', 'ollamaPc', 'ollamaPi']
+    const results = services.map(s => {
+      const d = data[s]
+      const online = d?.online ?? false
+      const resultEl = document.getElementById(`ping-${s}-result`)
+      if (resultEl) {
+        resultEl.textContent = online ? `${d.latency || '?'}ms` : 'FAIL'
+        resultEl.className = `ping-result ${online ? 'ok' : 'fail'}`
+      }
+      return `${s}: ${online ? 'OK' : 'DOWN'}`
+    })
+
+    const upCount = services.filter(s => data[s]?.online).length
+    addLog(upCount === services.length ? 'success' : 'warn', 'ping',
+      `All pinged (${total}ms) — ${upCount}/${services.length} online: ${results.join(', ')}`)
+  } catch (err) {
+    addLog('error', 'ping', `Ping all failed: ${err.message}`)
+  }
+  if (btn) btn.classList.remove('pinging')
 }
 
 // ── Actions ───────────────────────────────────────────────────────
