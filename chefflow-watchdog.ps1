@@ -225,6 +225,59 @@ function Monitor-PiOllama {
 Write-Log "=== ChefFlow Watchdog Started (PC + Pi Monitoring) ==="
 Ensure-OllamaRunning
 
+# ============================================
+# Mission Control Dashboard — Auto-Start
+# ============================================
+# Ensures the dashboard server (port 3200) and system tray are running
+
+$dashboardPort = 3200
+
+function Ensure-MissionControlRunning {
+    # Check if dashboard server is already running
+    $dashboardRunning = $false
+    try {
+        $tcp = New-Object System.Net.Sockets.TcpClient
+        $tcp.Connect("127.0.0.1", $dashboardPort)
+        $tcp.Close()
+        $dashboardRunning = $true
+    } catch { }
+
+    if (-not $dashboardRunning) {
+        Write-Log "[dashboard] Starting Mission Control server on port $dashboardPort..."
+        $psi = New-Object System.Diagnostics.ProcessStartInfo
+        $psi.FileName = "node"
+        $psi.Arguments = "scripts/launcher/server.mjs"
+        $psi.WorkingDirectory = $projectDir
+        $psi.WindowStyle = [System.Diagnostics.ProcessWindowStyle]::Hidden
+        $psi.CreateNoWindow = $true
+        $psi.UseShellExecute = $false
+        try {
+            [System.Diagnostics.Process]::Start($psi) | Out-Null
+            Write-Log "[dashboard] Mission Control server started."
+        } catch {
+            Write-Log "[dashboard] Failed to start Mission Control: $($_.Exception.Message)"
+        }
+    }
+
+    # Check if tray icon is running (look for the PowerShell process)
+    $trayRunning = Get-Process powershell -ErrorAction SilentlyContinue |
+        Where-Object { $_.MainWindowTitle -eq "" } |
+        Where-Object {
+            try {
+                $cmdLine = (Get-CimInstance Win32_Process -Filter "ProcessId=$($_.Id)" -ErrorAction SilentlyContinue).CommandLine
+                $cmdLine -match "tray\.ps1"
+            } catch { $false }
+        }
+
+    if (-not $trayRunning) {
+        Write-Log "[dashboard] Starting Mission Control system tray..."
+        Start-Process powershell -ArgumentList "-WindowStyle Hidden -ExecutionPolicy Bypass -File `"$projectDir\scripts\launcher\tray.ps1`"" -WindowStyle Hidden
+        Write-Log "[dashboard] System tray started."
+    }
+}
+
+Ensure-MissionControlRunning
+
 # Port check — prevents restart loop when server is already running
 
 $port = 3100
