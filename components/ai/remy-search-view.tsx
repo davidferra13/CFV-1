@@ -19,6 +19,9 @@ export function RemySearchView({ onSelectConversation }: RemySearchViewProps) {
 
   useEffect(() => {
     inputRef.current?.focus()
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
   }, [])
 
   const doSearch = useCallback(async (searchQuery: string) => {

@@ -150,19 +150,17 @@ async function updateProject(id, updates) {
     const store = tx.objectStore(STORES.projects)
     const getReq = store.get(id)
 
+    let found = false
     getReq.onsuccess = () => {
       const project = getReq.result
-      if (!project) {
-        db.close()
-        resolve(null)
-        return
-      }
+      if (!project) return
+      found = true
       const updated = { ...project, ...updates, updatedAt: new Date().toISOString() }
       store.put(updated)
     }
     tx.oncomplete = () => {
       db.close()
-      resolve(true)
+      resolve(found ? true : null)
     }
     tx.onerror = () => {
       db.close()
@@ -276,17 +274,8 @@ async function getConversations(projectId = undefined, includeArchived = false) 
     const store = tx.objectStore(STORES.conversations)
     let request
 
-    if (projectId !== undefined) {
-      // Filter by project (including null for uncategorized)
-      request = store
-        .index('by-project')
-        .getAll(IDBKeyRange.only(projectId === null ? '' : projectId))
-      // IndexedDB can't index null, so we need to handle this differently
-      // Instead, get all and filter
-      request = store.getAll()
-    } else {
-      request = store.getAll()
-    }
+    // Always getAll — IndexedDB can't index null, so we filter client-side for project
+    request = store.getAll()
 
     request.onsuccess = () => {
       db.close()
@@ -367,19 +356,17 @@ async function updateConversation(id, updates) {
     const store = tx.objectStore(STORES.conversations)
     const getReq = store.get(id)
 
+    let found = false
     getReq.onsuccess = () => {
       const conv = getReq.result
-      if (!conv) {
-        db.close()
-        resolve(null)
-        return
-      }
+      if (!conv) return
+      found = true
       const updated = { ...conv, ...updates, updatedAt: new Date().toISOString() }
       store.put(updated)
     }
     tx.oncomplete = () => {
       db.close()
-      resolve(true)
+      resolve(found ? true : null)
     }
     tx.onerror = () => {
       db.close()

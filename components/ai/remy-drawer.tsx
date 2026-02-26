@@ -73,6 +73,7 @@ import {
   getProjects,
   moveConversation,
   toggleBookmark,
+  deleteMessage,
 } from '@/lib/ai/remy-local-storage'
 import type { LocalConversation } from '@/lib/ai/remy-local-storage'
 import {
@@ -559,9 +560,13 @@ export function RemyDrawer() {
     }
   }, [])
 
-  const handleNewConversation = useCallback(async () => {
+  const handleNewConversation = useCallback(async (projectId?: string | null) => {
     try {
       const conv = await createLocalConversation()
+      // If a project is specified, move the conversation into it
+      if (projectId) {
+        moveConversation(conv.id, projectId).catch(() => {})
+      }
       setCurrentConversationId(conv.id)
       setMessages([])
       setDrawerView('chat')
@@ -623,9 +628,9 @@ export function RemyDrawer() {
 
   const handleDeleteMessage = useCallback(async (msgId: string) => {
     setMessages((prev) => prev.filter((m) => m.id !== msgId))
-    // Messages live in IndexedDB — removing from local state is sufficient
-    // (individual message deletion from IndexedDB store is a future enhancement)
     toast.success('Message removed')
+    // Also delete from IndexedDB so it doesn't reappear on reload
+    deleteMessage(msgId).catch((err) => console.error('[non-blocking] Delete msg failed', err))
   }, [])
 
   const handleDeleteMemory = useCallback(async (memoryId: string) => {
@@ -935,6 +940,7 @@ export function RemyDrawer() {
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3)
       osc.start(ctx.currentTime)
       osc.stop(ctx.currentTime + 0.3)
+      osc.onended = () => ctx.close()
     } catch {
       // AudioContext not available
     }
@@ -1035,23 +1041,22 @@ export function RemyDrawer() {
         // Hard client-side timeout: 2 min — generous for a big model, but
         // won't let a stuck request run forever. Cancel button is always available.
         const timeoutId = setTimeout(() => controller.abort(), 120_000)
+        let reader: ReadableStreamDefaultReader<Uint8Array> | undefined
 
         const response = await fetch('/api/remy/stream', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             message,
-            history: messages,
+            history: messages.slice(-30),
             currentPage: pathname,
           }),
           signal: controller.signal,
         })
 
-        clearTimeout(timeoutId)
-
         if (!response.ok) throw new Error(`HTTP ${response.status}`)
 
-        const reader = response.body?.getReader()
+        reader = response.body?.getReader()
         if (!reader) throw new Error('No response body')
 
         const decoder = new TextDecoder()
@@ -1191,6 +1196,8 @@ export function RemyDrawer() {
           if (!isOllamaOffline) toast.error(errMsg)
         }
       } finally {
+        clearTimeout(timeoutId)
+        reader?.cancel().catch(() => {})
         abortControllerRef.current = null
         setLoading(false)
       }
@@ -1314,6 +1321,9 @@ export function RemyDrawer() {
       {/* Drawer panel — no overlay, page remains interactive */}
       {open && !collapsed && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Remy AI assistant"
           className="fixed top-0 right-0 bottom-0 z-50 bg-stone-900 dark:bg-stone-900 shadow-2xl flex flex-col h-full border-l border-stone-700 dark:border-stone-700"
           style={{ width: `min(${drawerWidth}px, 100vw)` }}
         >
@@ -1641,13 +1651,9 @@ export function RemyDrawer() {
           ) : drawerView === 'templates' ? (
             <div className="flex-1 overflow-hidden">
               <RemyTemplatesView
-                onRunTemplate={(prompt, projectId) => {
-                  handleNewConversation()
-                  setDrawerView('chat')
-                  // Use React state + direct send after conversation is ready
-                  setTimeout(() => {
-                    handleSend(prompt)
-                  }, 150)
+                onRunTemplate={async (prompt, projectId) => {
+                  await handleNewConversation(projectId)
+                  handleSend(prompt)
                 }}
               />
             </div>

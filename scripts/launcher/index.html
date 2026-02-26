@@ -2408,13 +2408,7 @@ function renderCommits(commits) {
 
 // ── Helpers ───────────────────────────────────────────────────────
 
-function timeAgo(date) {
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
-  if (seconds < 60) return 'just now'
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`
-  return `${Math.floor(seconds / 86400)}d ago`
-}
+// timeAgo is defined in the chat section below — handles both Date objects and ISO strings
 
 function renderDeployments(deployments) {
   const el = document.getElementById('prod-deployments')
@@ -2856,6 +2850,9 @@ async function sendChat() {
     clearFileAttachment()
   }
 
+  // Local render timer — scoped to this call, not shared across calls
+  let renderTimer = null
+
   input.value = ''
   chatStreaming = true
   const sendBtn = document.getElementById('chat-send-btn')
@@ -2952,12 +2949,12 @@ async function sendChat() {
           if (chunk.type === 'token') {
             fullResponse += chunk.content
             const cleaned = fullResponse.replace(/<action>[\w/\-]+(?::[^<]+)?<\/action>/g, '').replace(/<memory_save[^>]*>[^<]*<\/memory_save>/g, '').replace(/<memory_delete>[^<]*<\/memory_delete>/g, '').trim()
-            if (!sendChat._renderTimer) {
-              sendChat._renderTimer = setTimeout(() => {
+            if (!renderTimer) {
+              renderTimer = setTimeout(() => {
                 botMsg.innerHTML = renderMarkdown(cleaned) + '<span class="streaming-cursor"></span>'
                 document.getElementById('chat-messages').scrollTop =
                   document.getElementById('chat-messages').scrollHeight
-                sendChat._renderTimer = null
+                renderTimer = null
               }, 100)
             }
           }
@@ -3012,7 +3009,7 @@ async function sendChat() {
     }
 
     // Final markdown render
-    if (sendChat._renderTimer) { clearTimeout(sendChat._renderTimer); sendChat._renderTimer = null }
+    if (renderTimer) { clearTimeout(renderTimer); renderTimer = null }
     const finalCleaned = fullResponse.replace(/<action>[\w/\-]+(?::[^<]+)?<\/action>/g, '').replace(/<memory_save[^>]*>[^<]*<\/memory_save>/g, '').replace(/<memory_delete>[^<]*<\/memory_delete>/g, '').trim()
     if (finalCleaned) botMsg.innerHTML = renderMarkdown(finalCleaned)
     botMsg.classList.remove('streaming')
@@ -3037,7 +3034,7 @@ async function sendChat() {
 
   } catch (err) {
     // Clear any pending render timer and cursor
-    if (sendChat._renderTimer) { clearTimeout(sendChat._renderTimer); sendChat._renderTimer = null }
+    if (renderTimer) { clearTimeout(renderTimer); renderTimer = null }
     if (err.name === 'AbortError') {
       // User cancelled — clean up the streaming message
       const finalText = fullResponse.replace(/<action>[\w/\-]+(?::[^<]+)?<\/action>/g, '').replace(/<memory_save[^>]*>[^<]*<\/memory_save>/g, '').replace(/<memory_delete>[^<]*<\/memory_delete>/g, '').trim()
@@ -3080,6 +3077,7 @@ function playChatSound() {
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1)
     osc.start(ctx.currentTime)
     osc.stop(ctx.currentTime + 0.1)
+    osc.onended = () => ctx.close()
   } catch { /* Web Audio API unavailable */ }
 }
 
@@ -3292,9 +3290,9 @@ function renderConvItem(conv, isArchived = false) {
   </div>`
 }
 
-function timeAgo(dateStr) {
+function timeAgo(dateInput) {
   const now = Date.now()
-  const then = new Date(dateStr).getTime()
+  const then = dateInput instanceof Date ? dateInput.getTime() : new Date(dateInput).getTime()
   const diff = now - then
   const mins = Math.floor(diff / 60000)
   if (mins < 1) return 'now'
@@ -3855,9 +3853,10 @@ function toggleVoice() {
 }
 
 function stopVoice() {
-  if (voiceRecognition) {
-    try { voiceRecognition.stop() } catch {}
-    voiceRecognition = null
+  const rec = voiceRecognition
+  voiceRecognition = null
+  if (rec) {
+    try { rec.stop() } catch {}
   }
   voiceListening = false
   document.getElementById('chat-voice-btn')?.classList.remove('listening')
