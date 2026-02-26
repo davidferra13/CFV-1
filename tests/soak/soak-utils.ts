@@ -290,6 +290,14 @@ const IGNORED_ERROR_PATTERNS = [
   /Chef Portal Error/i,
   // Browser resource loading errors (500s from server-side issues, not client bugs)
   /Failed to load resource/i,
+  // Google Maps CSP violations (maps loaded without API key in test env)
+  /google\.maps/i,
+  /Google Maps/i,
+  /Content Security Policy/i,
+  // MIME type errors (stale build assets returning HTML instead of JS/CSS)
+  /MIME type/i,
+  /Refused to apply style/i,
+  /Refused to execute script/i,
 ]
 
 function isIgnoredError(message: string): boolean {

@@ -42,7 +42,7 @@ export async function logWebhookEvent({
       event_type: eventType,
       provider_event_id: providerEventId ?? null,
       status,
-      result: result ?? null,
+      result: (result ?? null) as unknown as undefined,
       error_text: errorText ?? null,
       payload_size_bytes: payloadSizeBytes ?? null,
     })

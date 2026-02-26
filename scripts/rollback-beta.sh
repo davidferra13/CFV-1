@@ -8,6 +8,7 @@
 set -e
 
 REMOTE="pi"
+SSH_OPTS="-o ConnectTimeout=10 -o ServerAliveInterval=30 -o ServerAliveCountMax=20"
 
 echo ""
 echo "=========================================="
@@ -15,23 +16,23 @@ echo "  ChefFlow Beta Rollback"
 echo "=========================================="
 echo ""
 
-ssh "$REMOTE" << 'ROLLBACK'
+ssh $SSH_OPTS "$REMOTE" << 'ROLLBACK'
   export NVM_DIR="$HOME/.nvm"
   [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
   cd ~/apps/chefflow-beta
 
-  if [ -d .next.backup ]; then
+  if [ -d .next.backup ] && [ -f .next.backup/BUILD_ID ]; then
     rm -rf .next
     mv .next.backup .next
+    echo "Rolled back to build $(cat .next/BUILD_ID)"
     pm2 restart chefflow-beta
-    echo "Rolled back to previous build"
     echo "Verifying..."
-    sleep 3
-    STATUS=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3100)
-    echo "Health check: $STATUS"
+    sleep 5
+    STATUS=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 http://localhost:3100)
+    echo "Health check: HTTP $STATUS"
   else
-    echo "ERROR: No backup found at .next.backup"
-    echo "Cannot rollback."
+    echo "ERROR: No valid backup found (missing .next.backup or BUILD_ID)"
+    echo "Cannot rollback — a fresh deploy is needed."
     exit 1
   fi
 ROLLBACK

@@ -54,9 +54,9 @@ ssh $SSH_OPTS "$REMOTE" "cd $APP_DIR && git fetch origin && git reset --hard ori
 echo "[4/8] Syncing beta environment config..."
 scp $SSH_OPTS "$(dirname "$0")/../.env.local.beta" "$REMOTE:$APP_DIR/.env.local"
 
-# Step 5: Backup current build
+# Step 5: Backup current build (mv is instant — cp was causing corrupt partial backups on SSH timeout)
 echo "[5/8] Backing up current build..."
-ssh $SSH_OPTS "$REMOTE" "cd $APP_DIR && if [ -d .next ]; then rm -rf .next.backup && cp -r .next .next.backup && echo '  Backup saved'; else echo '  No existing build to back up'; fi"
+ssh $SSH_OPTS "$REMOTE" "cd $APP_DIR && if [ -d .next ] && [ -f .next/BUILD_ID ]; then rm -rf .next.backup && mv .next .next.backup && echo '  Backup saved (BUILD_ID: '$(cat .next.backup/BUILD_ID)')'; else echo '  No valid build to back up (missing .next or BUILD_ID)'; rm -rf .next 2>/dev/null; fi"
 
 # Step 6: Install deps + build (6GB heap — app requires this as of Feb 2026)
 echo "[6/8] Building on Pi (this takes ~8-10 minutes)..."

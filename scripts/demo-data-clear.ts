@@ -1,3 +1,4 @@
+// @ts-nocheck — standalone script, Supabase client type mismatch with generated types
 // Demo Data Clear
 // Removes all business data from the demo chef's tenant.
 // Preserves the demo chef and demo client accounts themselves.
