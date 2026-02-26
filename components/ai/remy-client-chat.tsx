@@ -7,6 +7,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { X, Send, Loader2, ChevronDown } from 'lucide-react'
 import { RemyMascotButton } from '@/components/ai/remy-mascot-button'
+import { RemyTalkingAvatar } from '@/components/ai/remy-talking-avatar'
+import { useRemyLipSync } from '@/lib/ai/use-remy-lip-sync'
 
 interface Message {
   id: string
@@ -30,6 +32,7 @@ export function RemyClientChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const lipSync = useRemyLipSync()
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -83,6 +86,7 @@ export function RemyClientChat() {
     setMessages((prev) => [...prev, userMsg, remyMsg])
     setInput('')
     setIsStreaming(true)
+    lipSync.reset()
 
     // Build history for context
     const history = messages.slice(-8).map((m) => ({
@@ -126,6 +130,7 @@ export function RemyClientChat() {
           try {
             const event = JSON.parse(line.slice(6))
             if (event.type === 'token') {
+              lipSync.feedText(event.data as string)
               setMessages((prev) => {
                 const updated = [...prev]
                 const last = updated[updated.length - 1]
@@ -155,14 +160,16 @@ export function RemyClientChat() {
         }
       }
     } catch (err: any) {
+      lipSync.reset()
       if (err?.name !== 'AbortError') {
         setError("Couldn't reach Remy — try again in a moment.")
       }
     } finally {
+      lipSync.stopSpeaking()
       setIsStreaming(false)
       abortRef.current = null
     }
-  }, [input, isStreaming, messages])
+  }, [input, isStreaming, messages, lipSync])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -180,9 +187,11 @@ export function RemyClientChat() {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-stone-700 bg-brand-950 px-4 py-3">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-sm font-bold text-white">
-            R
-          </div>
+          <RemyTalkingAvatar
+            viseme={lipSync.currentViseme}
+            isSpeaking={lipSync.isSpeaking}
+            size="sm"
+          />
           <div>
             <div className="text-sm font-semibold text-stone-100">Remy</div>
             <div className="text-xs text-stone-400">Your event concierge</div>

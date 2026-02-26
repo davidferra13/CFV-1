@@ -6,6 +6,8 @@ import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { RemyMascotButton } from '@/components/ai/remy-mascot-button'
+import { RemyTalkingAvatar } from '@/components/ai/remy-talking-avatar'
+import { useRemyLipSync } from '@/lib/ai/use-remy-lip-sync'
 import {
   Bot,
   X,
@@ -304,6 +306,9 @@ export function RemyDrawer() {
   const abortControllerRef = useRef<AbortController | null>(null)
   const pathname = usePathname()
   const router = useRouter()
+
+  // Lip-sync engine — drives Remy's mouth animation during streaming
+  const lipSync = useRemyLipSync()
 
   // Restore saved drawer width from sessionStorage
   useEffect(() => {
@@ -903,8 +908,9 @@ export function RemyDrawer() {
     setLoading(false)
     setStreamingContent('')
     setStreamingIntent(undefined)
+    lipSync.reset()
     toast.success('Request cancelled')
-  }, [])
+  }, [lipSync])
 
   // ─── Streaming Send ─────────────────────────────────────────────────────────
 
@@ -949,6 +955,7 @@ export function RemyDrawer() {
       setLoading(true)
       setStreamingContent('')
       setStreamingIntent(undefined)
+      lipSync.reset()
 
       saveLocalMessage(convId, 'user', message).catch((err) =>
         console.error('[non-blocking] Save user msg failed', err)
@@ -1005,6 +1012,7 @@ export function RemyDrawer() {
                 case 'token':
                   fullContent += event.data as string
                   setStreamingContent(fullContent)
+                  lipSync.feedText(event.data as string)
                   break
                 case 'tasks':
                   tasks = event.data as RemyTaskResult[]
@@ -1045,6 +1053,7 @@ export function RemyDrawer() {
         setMessages((prev) => [...prev, remyMsg])
         setStreamingContent('')
         setStreamingIntent(undefined)
+        lipSync.stopSpeaking()
 
         playNotificationSound()
 
@@ -1065,6 +1074,7 @@ export function RemyDrawer() {
 
         autoSave(message, remyMsg)
       } catch (err: unknown) {
+        lipSync.reset()
         // If the user cancelled or the timeout fired, don't show a scary error
         if (err instanceof DOMException && err.name === 'AbortError') {
           const cancelMsg: RemyMessage = {
@@ -1107,6 +1117,7 @@ export function RemyDrawer() {
       currentConversationId,
       isFirstExchange,
       playNotificationSound,
+      lipSync,
     ]
   )
 
@@ -1246,6 +1257,11 @@ export function RemyDrawer() {
                   <ChevronsRight className="h-5 w-5" />
                 </button>
               )}
+              <RemyTalkingAvatar
+                viseme={lipSync.currentViseme}
+                isSpeaking={lipSync.isSpeaking}
+                size="sm"
+              />
               <span className="font-semibold text-white">
                 {showConversationList ? 'Conversations' : 'Remy'}
               </span>
@@ -1751,8 +1767,13 @@ export function RemyDrawer() {
 
                 {/* Streaming indicator */}
                 {loading && streamingContent && (
-                  <div className="flex justify-start">
-                    <div className="max-w-[85%] space-y-1">
+                  <div className="flex justify-start gap-2 items-end">
+                    <RemyTalkingAvatar
+                      viseme={lipSync.currentViseme}
+                      isSpeaking={lipSync.isSpeaking}
+                      size="sm"
+                    />
+                    <div className="max-w-[80%] space-y-1">
                       <div className="bg-stone-800 dark:bg-stone-800 rounded-xl px-4 py-2.5 text-sm text-stone-100 dark:text-stone-100">
                         <div className="prose prose-sm prose-stone dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
                           <ReactMarkdown
