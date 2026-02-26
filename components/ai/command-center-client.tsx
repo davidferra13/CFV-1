@@ -201,7 +201,14 @@ export function CommandCenterClient() {
             <span>
               {currentRun.results.length} task{currentRun.results.length !== 1 ? 's' : ''} processed
             </span>
-            <span>Run at {new Date(currentRun.startedAt).toLocaleTimeString()}</span>
+            <span>
+              Run at{' '}
+              {new Date(currentRun.startedAt).toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true,
+              })}
+            </span>
           </div>
         </div>
       )}

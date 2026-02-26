@@ -36,14 +36,16 @@ function parseTime(time: string): number {
 }
 
 /**
- * Format minutes since midnight to "HH:MM".
+ * Format minutes since midnight to "h:MM AM/PM".
  */
 function formatTime(minutes: number): string {
   // Handle negative or overflow
   const wrapped = ((minutes % 1440) + 1440) % 1440
   const h = Math.floor(wrapped / 60)
   const m = wrapped % 60
-  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  const h12 = h % 12 || 12
+  return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`
 }
 
 /**
@@ -150,10 +152,7 @@ export function generateTimeline(
   const bufferMinutes = p.default_buffer_minutes
   const packingMinutes = p.default_packing_minutes
   const shoppingMinutes = p.default_shopping_minutes
-  const prepMinutes = estimatePrepMinutes(
-    event.menuComponentCount ?? 0,
-    p.default_prep_hours
-  )
+  const prepMinutes = estimatePrepMinutes(event.menuComponentCount ?? 0, p.default_prep_hours)
 
   // Parse serve time and arrival time
   const serveTimeStr = event.serve_time || '18:00'
@@ -270,9 +269,10 @@ export function generateTimeline(
     id: 'wake',
     time: formatTime(wakeMinutesTarget),
     label: 'Wake up',
-    description: (p.shop_day_before || shoppingHandledElsewhere)
-      ? 'Get ready and start prep.'
-      : 'Get ready, then leave for shopping.',
+    description:
+      p.shop_day_before || shoppingHandledElsewhere
+        ? 'Get ready and start prep.'
+        : 'Get ready, then leave for shopping.',
     type: 'wake',
     isDeadline: false,
     isFlexible: true,

@@ -67,9 +67,10 @@ export function EightySixBanner({ items }: Props) {
             {item.eighty_sixed_at && (
               <span className="text-xs text-red-500/60">
                 since{' '}
-                {new Date(item.eighty_sixed_at).toLocaleTimeString([], {
-                  hour: '2-digit',
+                {new Date(item.eighty_sixed_at).toLocaleTimeString('en-US', {
+                  hour: 'numeric',
                   minute: '2-digit',
+                  hour12: true,
                 })}
               </span>
             )}

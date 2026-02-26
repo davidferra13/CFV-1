@@ -47,13 +47,15 @@ function parseTime(time: string): number {
 }
 
 /**
- * Format minutes since midnight to "HH:MM".
+ * Format minutes since midnight to "h:MM AM/PM".
  */
 function formatTime(minutes: number): string {
   const wrapped = ((minutes % 1440) + 1440) % 1440
   const h = Math.floor(wrapped / 60)
   const m = wrapped % 60
-  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  const h12 = h % 12 || 12
+  return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`
 }
 
 /**
@@ -83,9 +85,7 @@ function daysFromNow(isoDate: string): number {
  * Returns true if any non-completed block of blockType exists for eventId.
  */
 function isCovered(eventId: string, blockType: PrepBlockType, blocks: PrepBlock[]): boolean {
-  return blocks.some(
-    (b) => b.event_id === eventId && b.block_type === blockType && !b.is_completed
-  )
+  return blocks.some((b) => b.event_id === eventId && b.block_type === blockType && !b.is_completed)
 }
 
 /**
@@ -171,9 +171,7 @@ export function suggestPrepBlocks(
   const specialtyStores = [
     ...(p.default_specialty_stores ?? []),
     ...(p.default_stores ?? []).filter(
-      (s) =>
-        s.name !== p.default_grocery_store &&
-        s.name !== p.default_liquor_store
+      (s) => s.name !== p.default_grocery_store && s.name !== p.default_liquor_store
     ),
   ]
   // Deduplicate by name
@@ -307,9 +305,7 @@ export function detectGaps(
     if (event.event_date < todayStr) continue
 
     const requiredTypes = getRequiredBlockTypes(event)
-    const missingTypes = requiredTypes.filter(
-      (type) => !isCovered(event.id, type, existingBlocks)
-    )
+    const missingTypes = requiredTypes.filter((type) => !isCovered(event.id, type, existingBlocks))
 
     if (missingTypes.length === 0) continue
 

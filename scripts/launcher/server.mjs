@@ -14,6 +14,7 @@
 import { createServer } from 'node:http'
 import { exec, spawn } from 'node:child_process'
 import { readFile, appendFile, stat } from 'node:fs/promises'
+import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
@@ -22,6 +23,20 @@ const execAsync = promisify(exec)
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = join(__dirname, '..', '..')
 const PORT = 3200
+
+// Load .env.local for Supabase credentials
+try {
+  const envContent = readFileSync(join(PROJECT_ROOT, '.env.local'), 'utf-8')
+  for (const line of envContent.split('\n')) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+    const eqIndex = trimmed.indexOf('=')
+    if (eqIndex === -1) continue
+    const key = trimmed.slice(0, eqIndex).trim()
+    const value = trimmed.slice(eqIndex + 1).trim().replace(/^["']|["']$/g, '')
+    if (!process.env[key]) process.env[key] = value
+  }
+} catch { /* .env.local not found */ }
 
 // ── Configuration ─────────────────────────────────────────────────
 
@@ -37,6 +52,8 @@ const CONFIG = {
   ollamaPiModel: process.env.OLLAMA_PI_MODEL || 'qwen3:8b',
   piSsh: 'ssh pi',
   logFile: join(PROJECT_ROOT, 'mission-control.log'),
+  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
 }
 
 // ── Chat Configuration ───────────────────────────────────────────
@@ -431,6 +448,44 @@ async function gitPush() {
   }
 }
 
+async function gitCommit(message) {
+  if (!message || !message.trim()) {
+    return { ok: false, error: 'Commit message is required' }
+  }
+  log('git', `Committing: ${message}`, 'info')
+  try {
+    await execAsync('git add -A', { cwd: PROJECT_ROOT })
+    const escaped = message.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/`/g, '\\`')
+    const { stdout } = await execAsync(`git commit -m "${escaped}"`, { cwd: PROJECT_ROOT })
+    log('git', stdout.trim() || 'Changes committed', 'success')
+    return { ok: true, message: stdout.trim() || 'Changes committed' }
+  } catch (err) {
+    if (err.stdout?.includes('nothing to commit')) {
+      log('git', 'Nothing to commit — working tree clean', 'info')
+      return { ok: true, message: 'Nothing to commit — working tree clean' }
+    }
+    log('git', `Commit failed: ${err.stderr || err.message}`, 'error')
+    return { ok: false, error: err.stderr || err.message }
+  }
+}
+
+async function dbBackup() {
+  const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+  const filename = `backup-${timestamp}.sql`
+  log('db', `Creating database backup: ${filename}...`, 'info')
+  try {
+    await execAsync(`npx supabase db dump --linked > ${filename}`, {
+      cwd: PROJECT_ROOT,
+      timeout: 60000,
+    })
+    log('db', `Backup saved: ${filename}`, 'success')
+    return { ok: true, message: `Backup saved as ${filename}` }
+  } catch (err) {
+    log('db', `Backup failed: ${err.stderr || err.message}`, 'error')
+    return { ok: false, error: err.stderr || err.message }
+  }
+}
+
 async function runBuild(type) {
   const jobId = `build-${type}`
   if (runningJobs.has(jobId)) return { ok: false, error: 'Build already in progress' }
@@ -467,6 +522,49 @@ async function runBuild(type) {
   return { ok: true, message: `${type} started` }
 }
 
+// ── History & Feedback ──────────────────────────────────────────
+
+async function getGitHistory() {
+  try {
+    const { stdout } = await execAsync(
+      'git log --pretty=format:"%h|%ad|%s" --date=short',
+      { cwd: PROJECT_ROOT, maxBuffer: 5 * 1024 * 1024 }
+    )
+    const lines = stdout.trim().split('\n').filter(l => l.trim())
+    const commits = lines.map(line => {
+      const [hash, date, ...msgParts] = line.split('|')
+      return { hash, date, message: msgParts.join('|') }
+    })
+    return { ok: true, commits, total: commits.length }
+  } catch (err) {
+    return { ok: false, error: err.message, commits: [], total: 0 }
+  }
+}
+
+async function getFeedback() {
+  if (!CONFIG.supabaseUrl || !CONFIG.supabaseServiceKey) {
+    return { ok: false, error: 'Supabase credentials not configured', entries: [] }
+  }
+  try {
+    const url = `${CONFIG.supabaseUrl}/rest/v1/user_feedback?select=id,created_at,sentiment,message,anonymous,user_role,page_context&order=created_at.desc&limit=200`
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 10000)
+    const res = await fetch(url, {
+      headers: {
+        'apikey': CONFIG.supabaseServiceKey,
+        'Authorization': `Bearer ${CONFIG.supabaseServiceKey}`,
+      },
+      signal: controller.signal,
+    })
+    clearTimeout(timer)
+    if (!res.ok) return { ok: false, error: `Supabase returned ${res.status}`, entries: [] }
+    const data = await res.json()
+    return { ok: true, entries: data, total: data.length }
+  } catch (err) {
+    return { ok: false, error: err.message, entries: [] }
+  }
+}
+
 // ── Chat Tool Registry ───────────────────────────────────────────
 
 const TOOLS = {
@@ -484,6 +582,10 @@ const TOOLS = {
   'build/full':       { fn: () => runBuild('full'),               desc: 'Run full Next.js production build' },
   'status/all':       { fn: getAllStatus,                         desc: 'Get current status of all services' },
   'status/git':       { fn: checkGitStatus,                       desc: 'Get git branch, dirty files, and recent commits' },
+  'git/commit':       { fn: (param) => gitCommit(param),          desc: 'Stage all changes and commit (use git/commit:your message here)' },
+  'db/backup':        { fn: dbBackup,                              desc: 'Backup the Supabase database to a local SQL file' },
+  'history/all':      { fn: getGitHistory,                         desc: 'Get the full project commit history' },
+  'feedback/all':     { fn: getFeedback,                           desc: 'Get all user feedback from the database' },
 }
 
 async function getAvailableOllamaEndpoint() {
@@ -504,6 +606,7 @@ async function buildChatSystemPrompt() {
 
 ## Your Capabilities
 You can execute system actions by including action tags in your response. Format: <action>action/name</action>
+For actions with parameters, use: <action>action/name:parameter value</action>
 
 Available actions:
 ${toolList}
@@ -531,25 +634,25 @@ You are a competent ops assistant. Direct, efficient, slightly dry humor. Think 
 }
 
 async function parseAndExecuteActions(responseText) {
-  const actionRegex = /<action>([\w/]+)<\/action>/g
+  const actionRegex = /<action>([\w/]+)(?::([^<]+))?<\/action>/g
   const actions = []
   let match
   while ((match = actionRegex.exec(responseText)) !== null) {
-    actions.push(match[1])
+    actions.push({ name: match[1], param: match[2] || null })
   }
   if (actions.length === 0) return { actions: [], results: [] }
 
   const results = []
-  for (const actionName of actions) {
+  for (const { name: actionName, param } of actions) {
     const tool = TOOLS[actionName]
     if (!tool) {
       results.push({ action: actionName, ok: false, error: `Unknown action: ${actionName}` })
       log('chat', `Unknown action requested: ${actionName}`, 'warn')
       continue
     }
-    log('chat', `Executing: ${actionName}`, 'info')
+    log('chat', `Executing: ${actionName}${param ? ': ' + param : ''}`, 'info')
     try {
-      const result = await tool.fn()
+      const result = await tool.fn(param)
       results.push({ action: actionName, ok: true, result })
       log('chat', `Action ${actionName} completed`, 'success')
     } catch (err) {
@@ -667,6 +770,23 @@ async function handleRequest(req, res) {
   }
   if (path === '/api/git/info' && method === 'GET') {
     return json(res, await checkGitStatus())
+  }
+
+  if (path === '/api/git/commit' && method === 'POST') {
+    const body = await parseBody(req)
+    return json(res, await gitCommit(body.message))
+  }
+
+  if (path === '/api/db/backup' && method === 'POST') {
+    return json(res, await dbBackup())
+  }
+
+  if (path === '/api/git/history' && method === 'GET') {
+    return json(res, await getGitHistory())
+  }
+
+  if (path === '/api/feedback' && method === 'GET') {
+    return json(res, await getFeedback())
   }
 
   if (path === '/api/build/typecheck' && method === 'POST') {

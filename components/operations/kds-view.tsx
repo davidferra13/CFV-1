@@ -74,7 +74,7 @@ export function KDSView({ courses: initialCourses, eventId }: KDSViewProps) {
   function formatTime(isoString?: string | null): string {
     if (!isoString) return '--:--'
     const date = new Date(isoString)
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
   }
 
   return (

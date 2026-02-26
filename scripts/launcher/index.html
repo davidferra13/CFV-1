@@ -914,6 +914,16 @@ body {
         <span class="nav-icon">&#x1F528;</span>
         <span class="nav-label">Build</span>
       </a>
+      <a class="nav-item" data-section="log" title="Project History">
+        <span class="nav-dot online" id="nd-log"></span>
+        <span class="nav-icon">&#x1F4DC;</span>
+        <span class="nav-label">Log</span>
+      </a>
+      <a class="nav-item" data-section="feedback" title="User Feedback">
+        <span class="nav-dot online" id="nd-feedback"></span>
+        <span class="nav-icon">&#x1F4AC;</span>
+        <span class="nav-label">Inbox</span>
+      </a>
     </nav>
 
     <!-- Content -->
@@ -1110,6 +1120,12 @@ body {
           <button class="btn btn-primary" onclick="action('git/push')">&#x1F680; Push Branch</button>
         </div>
         <div class="divider"></div>
+        <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Commit Changes</h3>
+        <div style="display:flex;gap:10px;align-items:center;margin-bottom:24px;">
+          <input type="text" id="commit-msg" placeholder="What did you change?" style="flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text-primary);font-family:inherit;font-size:13px;outline:none;transition:border-color 200ms ease;" onfocus="this.style.borderColor='var(--brand)'" onblur="this.style.borderColor='var(--border)'" onkeydown="if(event.key==='Enter'){commitChanges()}" />
+          <button class="btn btn-success" onclick="commitChanges()">&#x2714; Commit All</button>
+        </div>
+        <div class="divider"></div>
         <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Recent Commits</h3>
         <div class="commit-list" id="git-commits"></div>
       </div>
@@ -1137,6 +1153,37 @@ body {
           <button class="btn btn-primary" onclick="action('build/typecheck')" id="btn-tsc">&#x2714; Type Check</button>
           <button class="btn btn-warning" onclick="action('build/full')" id="btn-build">&#x1F528; Full Build</button>
         </div>
+        <div class="divider"></div>
+        <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:12px;">&#x1F5C4;&#xFE0F; Database</h3>
+        <div class="actions">
+          <button class="btn btn-ghost" onclick="dbBackup()">&#x1F4BE; Backup Database</button>
+        </div>
+        <div id="backup-status" style="margin-top:8px;font-size:12px;color:var(--text-muted);"></div>
+      </div>
+
+      <!-- ─── Project History Panel ─── -->
+      <div class="panel" id="panel-log">
+        <div class="panel-header">
+          <h2 class="panel-title">Project History</h2>
+          <span class="status-badge online" id="badge-log">
+            <span class="dot online"></span>
+            <span id="log-total">Loading...</span>
+          </span>
+        </div>
+        <div id="history-list" style="overflow-y:auto;max-height:calc(100vh - 340px);"></div>
+      </div>
+
+      <!-- ─── Feedback Panel ─── -->
+      <div class="panel" id="panel-feedback">
+        <div class="panel-header">
+          <h2 class="panel-title">User Feedback</h2>
+          <span class="status-badge online" id="badge-feedback">
+            <span class="dot online"></span>
+            <span id="feedback-total">Loading...</span>
+          </span>
+        </div>
+        <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;" id="feedback-summary"></div>
+        <div id="feedback-list" style="overflow-y:auto;max-height:calc(100vh - 400px);"></div>
       </div>
 
       <!-- ═══ Console ═══ -->
@@ -1642,7 +1689,7 @@ function appendChatMessage(role, content, extraClass) {
 
   const div = document.createElement('div')
   div.className = `chat-msg ${role}${extraClass ? ' ' + extraClass : ''}`
-  const displayContent = content.replace(/<action>[\w/]+<\/action>/g, '').trim()
+  const displayContent = content.replace(/<action>[\w/]+(?::[^<]+)?<\/action>/g, '').trim()
   div.textContent = displayContent || content
   messagesEl.appendChild(div)
   messagesEl.scrollTop = messagesEl.scrollHeight
@@ -1714,7 +1761,7 @@ async function sendChat() {
 
           if (chunk.type === 'token') {
             fullResponse += chunk.content
-            botMsg.textContent = fullResponse.replace(/<action>[\w/]+<\/action>/g, '').trim()
+            botMsg.textContent = fullResponse.replace(/<action>[\w/]+(?::[^<]+)?<\/action>/g, '').trim()
             document.getElementById('chat-messages').scrollTop =
               document.getElementById('chat-messages').scrollHeight
           }
@@ -1768,6 +1815,193 @@ function updateChatFabStatus() {
   }
 }
 
+// ── Git Commit ────────────────────────────────────────────────────
+
+async function commitChanges() {
+  const input = document.getElementById('commit-msg')
+  const message = input.value.trim()
+  if (!message) {
+    input.focus()
+    input.style.borderColor = 'var(--error)'
+    setTimeout(() => { input.style.borderColor = 'var(--border)' }, 2000)
+    return
+  }
+
+  addLog('info', 'git', `Committing: ${message}`)
+  try {
+    const res = await fetch(`${API}/api/git/commit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message }),
+    })
+    const data = await res.json()
+    if (data.ok) {
+      input.value = ''
+      addLog('success', 'git', data.message || 'Committed')
+    } else {
+      addLog('error', 'git', data.error || 'Commit failed')
+    }
+    setTimeout(refreshStatus, 1500)
+  } catch (err) {
+    addLog('error', 'git', `Commit failed: ${err.message}`)
+  }
+}
+
+// ── Database Backup ───────────────────────────────────────────────
+
+async function dbBackup() {
+  const statusEl = document.getElementById('backup-status')
+  if (statusEl) { statusEl.textContent = 'Backing up...'; statusEl.style.color = 'var(--warning)' }
+  addLog('info', 'db', 'Starting database backup...')
+
+  try {
+    const res = await fetch(`${API}/api/db/backup`, { method: 'POST' })
+    const data = await res.json()
+    if (data.ok) {
+      addLog('success', 'db', data.message || 'Backup complete')
+      if (statusEl) { statusEl.textContent = data.message || 'Backup complete'; statusEl.style.color = 'var(--success)' }
+    } else {
+      addLog('error', 'db', data.error || 'Backup failed')
+      if (statusEl) { statusEl.textContent = data.error || 'Backup failed'; statusEl.style.color = 'var(--error)' }
+    }
+  } catch (err) {
+    addLog('error', 'db', `Backup failed: ${err.message}`)
+    if (statusEl) { statusEl.textContent = `Failed: ${err.message}`; statusEl.style.color = 'var(--error)' }
+  }
+}
+
+// ── Project History ───────────────────────────────────────────────
+
+let historyLoaded = false
+
+async function loadHistory() {
+  if (historyLoaded) return
+  try {
+    const res = await fetch(`${API}/api/git/history`)
+    const data = await res.json()
+    if (data.ok) {
+      setText('log-total', `${data.total} commits`)
+      renderHistory(data.commits)
+      historyLoaded = true
+    }
+  } catch (err) {
+    console.error('Failed to load history:', err)
+  }
+}
+
+function renderHistory(commits) {
+  const el = document.getElementById('history-list')
+  if (!el) return
+
+  const grouped = {}
+  for (const c of commits) {
+    if (!grouped[c.date]) grouped[c.date] = []
+    grouped[c.date].push(c)
+  }
+
+  let html = ''
+  for (const [date, items] of Object.entries(grouped)) {
+    const d = new Date(date + 'T12:00:00')
+    const label = d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+    html += `<div style="margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:700;color:var(--brand);margin-bottom:8px;padding:6px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;">
+        <span>${escapeHtml(label)}</span>
+        <span style="color:var(--text-muted);font-weight:500;font-size:11px;">${items.length} commit${items.length > 1 ? 's' : ''}</span>
+      </div>`
+    for (const c of items) {
+      html += `<div class="commit-item"><span class="commit-hash">${escapeHtml(c.hash)}</span><span class="commit-msg">${escapeHtml(c.message)}</span></div>`
+    }
+    html += '</div>'
+  }
+  el.innerHTML = html
+}
+
+// ── Feedback ──────────────────────────────────────────────────────
+
+let feedbackLoaded = false
+
+async function loadFeedback() {
+  if (feedbackLoaded) return
+  try {
+    const res = await fetch(`${API}/api/feedback`)
+    const data = await res.json()
+    if (data.ok) {
+      setText('feedback-total', `${data.total} entries`)
+      renderFeedbackSummary(data.entries)
+      renderFeedback(data.entries)
+      feedbackLoaded = true
+    } else {
+      setText('feedback-total', data.error || 'Error')
+    }
+  } catch (err) {
+    setText('feedback-total', 'Connection error')
+  }
+}
+
+const SENTIMENT_CONFIG = {
+  love: { icon: '\u2764\uFE0F', label: 'Love', color: 'var(--success)' },
+  suggestion: { icon: '\uD83D\uDCA1', label: 'Suggestion', color: 'var(--info)' },
+  frustrated: { icon: '\uD83D\uDE24', label: 'Frustrated', color: 'var(--warning)' },
+  bug: { icon: '\uD83D\uDC1B', label: 'Bug', color: 'var(--error)' },
+  other: { icon: '\uD83D\uDCAC', label: 'Other', color: 'var(--text-muted)' },
+}
+
+function renderFeedbackSummary(entries) {
+  const el = document.getElementById('feedback-summary')
+  if (!el) return
+  const counts = {}
+  for (const e of entries) {
+    counts[e.sentiment] = (counts[e.sentiment] || 0) + 1
+  }
+  let html = ''
+  for (const [key, cfg] of Object.entries(SENTIMENT_CONFIG)) {
+    if (!counts[key]) continue
+    html += `<div class="info-card" style="padding:10px 14px;min-width:100px;">
+      <div class="info-label">${cfg.icon} ${cfg.label}</div>
+      <div class="info-value" style="color:${cfg.color}">${counts[key]}</div>
+    </div>`
+  }
+  el.innerHTML = html
+}
+
+function renderFeedback(entries) {
+  const el = document.getElementById('feedback-list')
+  if (!el) return
+
+  const grouped = {}
+  for (const e of entries) {
+    const date = new Date(e.created_at).toISOString().slice(0, 10)
+    if (!grouped[date]) grouped[date] = []
+    grouped[date].push(e)
+  }
+
+  let html = ''
+  for (const [date, items] of Object.entries(grouped)) {
+    const d = new Date(date + 'T12:00:00')
+    const label = d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+    html += `<div style="margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:700;color:var(--brand);margin-bottom:8px;padding:6px 0;border-bottom:1px solid var(--border);">${escapeHtml(label)}</div>`
+    for (const e of items) {
+      const cfg = SENTIMENT_CONFIG[e.sentiment] || SENTIMENT_CONFIG.other
+      const time = new Date(e.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+      const who = e.anonymous ? 'Anonymous' : (e.user_role || 'User')
+      html += `<div style="padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;border-left:3px solid ${cfg.color};">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-size:12px;font-weight:600;color:var(--text-secondary);">${cfg.icon} ${cfg.label}</span>
+          <span style="font-size:11px;color:var(--text-muted);">${time} \u2022 ${escapeHtml(who)}${e.page_context ? ' \u2022 ' + escapeHtml(e.page_context) : ''}</span>
+        </div>
+        <div style="font-size:13px;color:var(--text-primary);line-height:1.5;">${escapeHtml(e.message)}</div>
+      </div>`
+    }
+    html += '</div>'
+  }
+
+  if (!entries.length) {
+    html = '<div style="text-align:center;padding:40px;color:var(--text-muted);">No feedback yet</div>'
+  }
+  el.innerHTML = html
+}
+
 // ── Keyboard Shortcuts ────────────────────────────────────────────
 
 document.addEventListener('keydown', (e) => {
@@ -1780,19 +2014,25 @@ document.addEventListener('keydown', (e) => {
     toggleChat()
     return
   }
-  // Don't trigger tab shortcuts when typing in chat input
+  // Don't trigger tab shortcuts when typing in inputs
   if (document.activeElement === document.getElementById('chat-input')) return
+  if (document.activeElement === document.getElementById('commit-msg')) return
   if (e.key === '1') switchSection('dev')
   if (e.key === '2') switchSection('beta')
   if (e.key === '3') switchSection('prod')
   if (e.key === '4') switchSection('ollama')
   if (e.key === '5') switchSection('git')
   if (e.key === '6') switchSection('build')
+  if (e.key === '7') switchSection('log')
+  if (e.key === '8') switchSection('feedback')
 })
 
 function switchSection(section) {
   const item = document.querySelector(`.nav-item[data-section="${section}"]`)
   if (item) item.click()
+  // Lazy-load data for heavy panels
+  if (section === 'log') loadHistory()
+  if (section === 'feedback') loadFeedback()
 }
 
 // ── Init ──────────────────────────────────────────────────────────
@@ -1802,7 +2042,7 @@ setInterval(refreshStatus, 5000)
 connectSSE()
 
 addLog('info', 'system', 'Mission Control connected')
-addLog('info', 'system', 'Keyboard shortcuts: 1-6 switch panels, Ctrl+/ opens chat, Esc closes dialogs')
+addLog('info', 'system', 'Keyboard shortcuts: 1-8 switch panels, Ctrl+/ opens chat, Esc closes dialogs')
 </script>
 </body>
 </html>

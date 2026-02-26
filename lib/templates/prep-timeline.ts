@@ -63,7 +63,7 @@ function parseTimeToHours(timeStr: string): number {
 }
 
 /**
- * Formats decimal hours back to "HH:MM" format.
+ * Formats decimal hours back to "h:MM AM/PM" format.
  */
 function formatTime(hours: number): string {
   // Handle negative (day before) and >24 (next day)
@@ -72,7 +72,9 @@ function formatTime(hours: number): string {
 
   const h = Math.floor(hours)
   const m = Math.round((hours - h) * 60)
-  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  const h12 = h % 12 || 12
+  return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`
 }
 
 function formatDuration(hours: number): string {

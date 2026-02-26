@@ -712,7 +712,7 @@ export function FinancialsClient({
                         {format(new Date(entry.created_at), 'MMM dd, yyyy')}
                         <br />
                         <span className="text-xs text-stone-500">
-                          {format(new Date(entry.created_at), 'HH:mm:ss')}
+                          {format(new Date(entry.created_at), 'h:mm:ss a')}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm text-stone-100">

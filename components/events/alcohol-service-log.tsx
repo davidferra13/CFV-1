@@ -90,9 +90,10 @@ export function AlcoholServiceLog({ eventId, log }: Props) {
             <Badge variant="warning">
               <BellOff className="mr-1 h-3 w-3" />
               Last Call Set —{' '}
-              {new Date(log.last_call_at).toLocaleTimeString([], {
-                hour: '2-digit',
+              {new Date(log.last_call_at).toLocaleTimeString('en-US', {
+                hour: 'numeric',
                 minute: '2-digit',
+                hour12: true,
               })}
             </Badge>
           ) : (
@@ -128,9 +129,10 @@ export function AlcoholServiceLog({ eventId, log }: Props) {
               {entries.map((entry) => (
                 <tr key={entry.id} className="border-t">
                   <td className="px-3 py-2 whitespace-nowrap">
-                    {new Date(entry.time).toLocaleTimeString([], {
-                      hour: '2-digit',
+                    {new Date(entry.time).toLocaleTimeString('en-US', {
+                      hour: 'numeric',
                       minute: '2-digit',
+                      hour12: true,
                     })}
                   </td>
                   <td className="px-3 py-2 capitalize">{entry.drink_type}</td>
