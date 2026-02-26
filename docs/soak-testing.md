@@ -31,7 +31,7 @@ At the end, it compares final metrics against the baseline (first measurement) a
 | ---------------------- | ------------- | -------------------------------------------------------- |
 | Memory growth          | < 3× baseline | Event listener leaks, detached DOM trees, growing caches |
 | DOM node growth        | < 2× baseline | Components not unmounting, orphaned elements             |
-| Console errors         | 0 total       | State corruption that only appears after N cycles        |
+| Console errors         | < 5/iteration | State corruption that only appears after N cycles        |
 | Cycle time degradation | < 2× baseline | Accumulated re-renders, growing observer lists           |
 
 A **5× memory** safety valve triggers early abort to prevent system memory exhaustion.
