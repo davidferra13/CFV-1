@@ -38,20 +38,20 @@ A **5× memory** safety valve triggers early abort to prevent system memory exha
 
 ## Running the Tests
 
+Soak tests run against a **production build** (`next build` + `next start` on port 3200), not the dev server. This eliminates false timeouts from on-demand compilation overhead. The `npm run test:soak` scripts handle the build automatically.
+
 ```bash
 # Full soak (100 iterations per workflow, ~10 min per test)
 npm run test:soak
 
 # Quick validation (10 iterations, ~1 min total)
-# Set env vars before running:
-# SOAK_ITERATIONS=10 SOAK_CHECKPOINT_INTERVAL=5
 npm run test:soak:quick
 
-# Single workflow only
-npx playwright test --project=soak tests/soak/01-dashboard-events.spec.ts
+# Single workflow only (build first, then run)
+npx next build --no-lint && npx playwright test --config=playwright.soak.config.ts tests/soak/01-dashboard-events.spec.ts
 
 # Overnight stress test (500 iterations)
-SOAK_ITERATIONS=500 SOAK_CHECKPOINT_INTERVAL=25 npx playwright test --project=soak
+npx next build --no-lint && SOAK_ITERATIONS=500 SOAK_CHECKPOINT_INTERVAL=25 npx playwright test --config=playwright.soak.config.ts
 ```
 
 ## Test Workflows
@@ -112,11 +112,14 @@ Checkpoint trend:
 
 ## Technical Notes
 
+- **Production build required** — soak tests use `next start` (not `next dev`) because the dev server's on-demand compilation and HMR overhead causes false timeouts after sustained navigation. A production build eliminates this variable, isolating real memory/DOM behavior
+- **Dedicated config** — `playwright.soak.config.ts` runs `next start` on port 3200, separate from the dev server on port 3100. This means soak tests and dev work can coexist
 - **CDP (Chrome DevTools Protocol)** is used instead of the `performance.measureUserAgentSpecificMemory()` JS API because the API requires `Cross-Origin-Opener-Policy` headers that would break Supabase auth
 - **Chromium only** — CDP is not available in Firefox or WebKit. Soak tests only need one engine since they measure resource behavior, not cross-browser rendering
 - **Read-only navigation** — soak tests don't create, update, or delete data. They use `page.goto()` for deterministic routing instead of clicking links
 - **Single browser context** — the same `page` object is reused for all iterations, accumulating state exactly like a real user session
 - **GC is forced before each checkpoint** — `HeapProfiler.collectGarbage` ensures measurements reflect retained memory, not uncollected garbage
+- **`waitUntil: 'commit'`** — the fastest navigation checkpoint, fires when the server responds. More reliable than `domcontentloaded` under memory pressure. A settling delay after navigation lets React hydrate
 
 ## When to Run
 
@@ -129,6 +132,7 @@ Checkpoint trend:
 
 | File                                      | Purpose                                                       |
 | ----------------------------------------- | ------------------------------------------------------------- |
+| `playwright.soak.config.ts`               | Dedicated Playwright config (port 3200, next start)           |
 | `tests/soak/soak-utils.ts`                | Core utility: metrics collector, report generator, thresholds |
 | `tests/soak/01-dashboard-events.spec.ts`  | Events workflow soak test                                     |
 | `tests/soak/02-dashboard-clients.spec.ts` | Clients workflow soak test                                    |

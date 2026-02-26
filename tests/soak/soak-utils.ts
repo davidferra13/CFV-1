@@ -259,29 +259,32 @@ function fmtBytes(bytes: number): string {
 export const EARLY_ABORT_FACTOR = 5.0
 
 /** Settling delay after page load (ms) — lets React hydration + data fetching complete */
-const SETTLE_MS = 1000
+const SETTLE_MS = 500
+
+/** Max retries per navigation — handles transient ERR_ABORTED and timeout blips */
+const MAX_NAV_RETRIES = 3
 
 /**
  * Navigate to a page and wait for it to settle.
- * Uses 'domcontentloaded' instead of 'load' or 'networkidle' because:
- * - 'networkidle' never fires (Supabase Realtime keeps connections alive)
- * - 'load' can timeout on dev server under sustained load (waits for all resources)
- * - 'domcontentloaded' fires when HTML is parsed — fast and reliable
+ * Uses 'commit' waitUntil — the fastest checkpoint, fires when the server
+ * responds and the browser begins receiving HTML. This is more reliable than
+ * 'domcontentloaded' under sustained load because it doesn't wait for HTML
+ * parsing to complete (which can stall when the browser is under memory pressure).
  *
- * Retries once on ERR_ABORTED — this happens transiently when the previous
- * navigation's resources are still loading when the next goto() fires.
+ * Retries up to MAX_NAV_RETRIES times on transient errors (ERR_ABORTED, timeouts).
  */
 export async function soakNavigate(page: Page, path: string): Promise<void> {
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (let attempt = 0; attempt < MAX_NAV_RETRIES; attempt++) {
     try {
-      await page.goto(path, { waitUntil: 'domcontentloaded', timeout: 60_000 })
+      await page.goto(path, { waitUntil: 'commit', timeout: 30_000 })
       await page.waitForTimeout(SETTLE_MS)
       return
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
-      if (attempt === 0 && msg.includes('ERR_ABORTED')) {
-        // Previous navigation was still in-flight — wait and retry
-        await page.waitForTimeout(2000)
+      const isTransient = msg.includes('ERR_ABORTED') || msg.includes('Timeout')
+      if (attempt < MAX_NAV_RETRIES - 1 && isTransient) {
+        // Wait longer on each retry — backoff
+        await page.waitForTimeout(1000 * (attempt + 1))
         continue
       }
       throw err

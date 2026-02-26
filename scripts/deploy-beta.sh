@@ -3,8 +3,10 @@
 # ChefFlow Beta Deploy Script
 # ============================================
 # Deploys the current branch to the Raspberry Pi beta server.
-# Memory-safe: stops Ollama, uses 2GB heap (not 4GB), restarts
-# via ecosystem.config.cjs with proper memory caps.
+# Memory-safe: stops Ollama during build (if running), uses 2GB heap,
+# restarts app via ecosystem.config.cjs with proper memory caps.
+# NOTE: Ollama is intentionally NOT restarted after deploy — it caused
+# OOM crashes. The beta server does not need a local LLM.
 #
 # Usage: bash scripts/deploy-beta.sh
 # ============================================
@@ -113,11 +115,9 @@ ssh "$REMOTE" << 'RESTART'
   fi
   pm2 save
 
-  # Wait for app to be ready, then start Ollama
-  sleep 5
-  echo "  Starting Ollama..."
-  sudo systemctl start ollama 2>/dev/null || true
-  echo "  Ollama started"
+  # Ollama intentionally NOT started — it uses ~5.5 GB RAM and caused
+  # repeated OOM crashes that made the Pi unreachable. The beta server
+  # does not need a local LLM. Ollama runs on the PC for dev work.
 
   # Final memory status
   echo ""

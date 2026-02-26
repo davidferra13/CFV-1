@@ -222,18 +222,9 @@ export default defineConfig({
       },
     },
     // ── Soak Tests ──────────────────────────────────────────────────────────────
-    // Software aging detection: repeated workflows measuring memory, DOM, timing.
+    // Software aging detection — uses separate config: playwright.soak.config.ts
     // Run: npm run test:soak (full) or npm run test:soak:quick (10 iterations)
-    {
-      name: 'soak',
-      testMatch: ['**/soak/**/*.spec.ts'],
-      use: {
-        storageState: '.auth/chef.json',
-        navigationTimeout: 30_000,
-        actionTimeout: 15_000,
-      },
-      timeout: 600_000, // 10 min per test (100 iterations × ~3-5s each)
-    },
+    // Soak tests use a production build (next start) instead of dev server.
   ],
   webServer: {
     command: 'npm run dev',

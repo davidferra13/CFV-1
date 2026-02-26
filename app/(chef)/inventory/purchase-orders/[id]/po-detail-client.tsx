@@ -71,8 +71,7 @@ export function PODetailClient({ po }: Props) {
     if (!itemName.trim() || !itemQty || !itemUnit.trim()) return
     startTransition(async () => {
       try {
-        await addPOItem({
-          purchaseOrderId: po.id,
+        await addPOItem(po.id, {
           ingredientName: itemName.trim(),
           orderedQty: parseFloat(itemQty),
           unit: itemUnit.trim(),

@@ -1,55 +1,45 @@
 # ChefFlow AI Simulation Report
 
-_Auto-generated — last run: 2026-02-25T17:11:54.496Z_
-_Run ID: 401cc64d-0c96-4a3a-ab5b-60e8e610b8da_
+_Auto-generated — last run: 2026-02-26T20:04:19.260Z_
+_Run ID: f06ed190-77c4-4c42-9dde-c19739da1ff1_
 
 ---
 
 ## Summary
 
-The system's pass rate remains low at 50%, with inquiry_parse, correspondence, and quote_draft modules failing consistently. All previously failing modules show no improvement since the last run. The core issues involve hallucination, missing required fields, and incorrect data generation.
+The system's pass rate remains at 50%, with inquiry_parse, correspondence, and quote_draft still failing. The improvements from previous runs are not reflected in this latest test. The client_parse, allergen_risk, and menu_suggestions modules continue to perform well.
 
 ## Failures & Root Causes
 
-**inquiry_parse**
-The module hallucinates client names and guest counts when none are present in input. It fails to recognize that "Hi there" is not a client name and "a few of us" is not a guest count. The module also incorrectly parses "12" as a guest count when no such number exists in the input.
+### inquiry_parse
 
-**correspondence**
-The module generates generic responses without client-specific details. It fails to include a subject line and does not incorporate client name, occasion, or guest count from the input. The response feels generic and lacks personalization.
+The module fails to extract client name and guest count from inquiries. It is not reliably parsing structured information from natural language input. The module likely lacks sufficient examples or explicit rules for identifying these fields in varied sentence structures.
 
-**quote_draft**
-The module generates unrealistic pricing. It produces a per-person rate of $162.50 and a total of $1,625, both exceeding expected ranges. The pricing formula is incorrect and does not match the previously defined $85/$125/$175 per person rates with 30% grocery, $150 travel, and 50% deposit.
+### correspondence
+
+The module produces generic responses that do not clearly indicate purpose or urgency. It fails to incorporate client-specific details into the subject line and body. The system appears to be generating boilerplate content instead of tailoring responses to the inquiry context.
+
+### quote_draft
+
+The module generates quotes with incorrect pricing. It is not properly applying the previously defined pricing formula ($85/$125/$175 per person, 30% grocery, $150 travel, 50% deposit). The system is producing values outside the expected range, suggesting a breakdown in formula application or validation.
 
 ## Prompt Fix Recommendations
 
-**inquiry_parse**
-Add explicit null rules to reject hallucinated patterns:
+### inquiry_parse
 
-- "Hi there" → null client name
-- "a few of us" → null guest count
-- "we're a group of" → null guest count
-- "I'm" → null client name
-- "we're" → null client name
+Add explicit examples showing how to extract client names and guest counts from various inquiry formats. Include rules that require the system to return "undefined" if these fields cannot be clearly identified. Add a validation step that checks for presence of both fields before considering the parse successful.
 
-**correspondence**
-Require specific fields in both system and user prompts:
+### correspondence
 
-- System prompt: "Include client name in subject line"
-- User prompt: "Body must reference client name, occasion, and guest count from input"
-- Add rule: "If no client name in input, do not hallucinate one"
+Specify that the subject line must reference the client name and indicate urgency or purpose (e.g., "Sarah Johnson - Quote Request Response"). Require that the body include at least one specific detail from the original inquiry. Add a rule that the response must reference the client's name at least twice.
 
-**quote_draft**
-Replace pricing logic with explicit formula:
+### quote_draft
 
-- "Per-person rate = $85/$125/$175 based on menu tier"
-- "Grocery cost = 30% of per-person rate"
-- "Travel cost = $150"
-- "Deposit = 50% of total"
-- "Total = (per-person rate × guest count) + grocery + travel + deposit"
+Replace the pricing formula with a clear, step-by-step calculation process in the system prompt. Add explicit validation rules that check per-person rates against the $85/$125/$175 thresholds. Include examples showing how to correctly calculate total price using the 30% grocery, $150 travel, and 50% deposit rules.
 
 ## What's Working Well
 
-client_parse, allergen_risk, and menu_suggestions modules are passing consistently. These modules have shown improvement since the first run, with allergen_risk specifically implementing a mandatory scan protocol that prevents empty safety flags when restrictions exist.
+The client_parse, allergen_risk, and menu_suggestions modules continue to pass consistently. These modules have shown improvement over previous runs, maintaining stable performance. The system's ability to parse client information and assess allergen risks remains solid. The menu suggestions module continues to produce relevant results.
 
 ---
 
