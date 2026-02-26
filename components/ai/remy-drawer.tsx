@@ -42,10 +42,17 @@ import {
   Settings2,
   Info,
   Headphones,
+  Activity,
+  BookTemplate,
+  List,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { RemyTaskCard } from '@/components/ai/remy-task-card'
 import { RemyCapabilitiesPanel } from '@/components/ai/remy-capabilities-panel'
+import { RemyConversationList } from '@/components/ai/remy-conversation-list'
+import { RemySearchView } from '@/components/ai/remy-search-view'
+import { RemyActionLog } from '@/components/ai/remy-action-log'
+import { RemyTemplatesView } from '@/components/ai/remy-templates-view'
 import { approveTask } from '@/lib/ai/command-orchestrator'
 import { saveRemyMessage, saveRemyTaskResult } from '@/lib/ai/remy-artifact-actions'
 import {
@@ -58,6 +65,7 @@ import {
   exportConversation as exportLocalConversation,
   pruneOldConversations,
   trimConversationMessages,
+  logAction,
 } from '@/lib/ai/remy-local-storage'
 import type { LocalConversation } from '@/lib/ai/remy-local-storage'
 import {
@@ -369,7 +377,9 @@ export function RemyDrawer() {
   // Conversation threading state
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
   const [conversations, setConversations] = useState<RemyConversation[]>([])
-  const [showConversationList, setShowConversationList] = useState(false)
+  const [drawerView, setDrawerView] = useState<
+    'chat' | 'list' | 'search' | 'actions' | 'templates'
+  >('chat')
   const [showCapabilities, setShowCapabilities] = useState(false)
   const [conversationsLoaded, setConversationsLoaded] = useState(false)
   const [isFirstExchange, setIsFirstExchange] = useState(true)
@@ -527,7 +537,7 @@ export function RemyDrawer() {
       }))
       setMessages(remyMsgs)
       setCurrentConversationId(convId)
-      setShowConversationList(false)
+      setDrawerView('chat')
       setIsFirstExchange(remyMsgs.length === 0)
     } catch (err) {
       console.error('[remy] Failed to load conversation:', err)
@@ -540,7 +550,7 @@ export function RemyDrawer() {
       const conv = await createLocalConversation()
       setCurrentConversationId(conv.id)
       setMessages([])
-      setShowConversationList(false)
+      setDrawerView('chat')
       setIsFirstExchange(true)
       setConversations((prev) => [
         {
@@ -1075,6 +1085,21 @@ export function RemyDrawer() {
           .then(() => trimConversationMessages(convId).catch(() => {}))
           .catch((err) => console.error('[non-blocking] Save remy msg failed', err))
 
+        // Log task executions to the action log (non-blocking)
+        if (tasks && tasks.length > 0) {
+          for (const task of tasks) {
+            logAction({
+              conversationId: convId,
+              messageId: null,
+              action: task.taskType,
+              params: task.data ? JSON.stringify(task.data).slice(0, 500) : null,
+              status: task.status === 'done' || task.status === 'pending' ? 'success' : 'error',
+              result: task.error ?? (task.data ? JSON.stringify(task.data).slice(0, 200) : null),
+              duration: 0, // timing not available from stream — logged as 0
+            }).catch(() => {}) // non-blocking
+          }
+        }
+
         if (isFirstExchange) {
           setIsFirstExchange(false)
           // Derive title from first message (no server call needed)
@@ -1253,9 +1278,9 @@ export function RemyDrawer() {
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-stone-700 dark:border-stone-700 bg-brand-600">
             <div className="flex items-center gap-2">
-              {showConversationList ? (
+              {drawerView !== 'chat' ? (
                 <button
-                  onClick={() => setShowConversationList(false)}
+                  onClick={() => setDrawerView('chat')}
                   className="text-white/80 hover:text-white transition-colors p-0.5"
                   aria-label="Back to chat"
                 >
@@ -1277,9 +1302,17 @@ export function RemyDrawer() {
                 size="sm"
               />
               <span className="font-semibold text-white">
-                {showConversationList ? 'Conversations' : 'Remy'}
+                {drawerView === 'chat'
+                  ? 'Remy'
+                  : drawerView === 'list'
+                    ? 'Conversations'
+                    : drawerView === 'search'
+                      ? 'Search'
+                      : drawerView === 'actions'
+                        ? 'Actions'
+                        : 'Templates'}
               </span>
-              {!showConversationList &&
+              {drawerView === 'chat' &&
                 currentConvTitle &&
                 currentConvTitle !== 'New conversation' && (
                   <span className="text-xs text-white/60 font-normal truncate max-w-[140px]">
@@ -1288,7 +1321,7 @@ export function RemyDrawer() {
                 )}
             </div>
             <div className="flex items-center gap-1">
-              {!showConversationList && (
+              {drawerView === 'chat' && (
                 <>
                   <button
                     onClick={() => setSoundEnabled((prev) => !prev)}
@@ -1333,30 +1366,41 @@ export function RemyDrawer() {
                   >
                     <Plus className="h-4.5 w-4.5" />
                   </button>
-                  <button
-                    onClick={() => setShowConversationList(true)}
-                    className="text-white/80 hover:text-white transition-colors p-1"
-                    title="All conversations"
-                  >
-                    <MessageSquare className="h-4.5 w-4.5" />
-                  </button>
                 </>
               )}
-              <button
-                onClick={() => setShowCapabilities(!showCapabilities)}
-                className={`transition-colors p-1 ${showCapabilities ? 'text-white' : 'text-white/80 hover:text-white'}`}
-                title="What can Remy do?"
-              >
-                <Info className="h-4.5 w-4.5" />
-              </button>
-              <Link
-                href="/remy"
-                onClick={() => setOpen(false)}
-                className="text-white/80 hover:text-white transition-colors p-1"
-                title="Remy History"
-              >
-                <History className="h-4.5 w-4.5" />
-              </Link>
+              {/* View tabs — icon buttons for 5 views */}
+              <div className="flex items-center gap-0.5 border-l border-white/20 ml-1 pl-1">
+                {[
+                  { view: 'chat' as const, icon: MessageSquare, title: 'Chat' },
+                  { view: 'list' as const, icon: List, title: 'Conversations' },
+                  { view: 'search' as const, icon: Search, title: 'Search' },
+                  { view: 'actions' as const, icon: Activity, title: 'Action Log' },
+                  { view: 'templates' as const, icon: BookTemplate, title: 'Templates' },
+                ].map(({ view, icon: Icon, title }) => (
+                  <button
+                    key={view}
+                    onClick={() => {
+                      setDrawerView(view)
+                      setShowCapabilities(false)
+                    }}
+                    className={`p-1 rounded transition-colors ${
+                      drawerView === view && !showCapabilities
+                        ? 'text-white bg-white/20'
+                        : 'text-white/60 hover:text-white hover:bg-white/10'
+                    }`}
+                    title={title}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                  </button>
+                ))}
+                <button
+                  onClick={() => setShowCapabilities(!showCapabilities)}
+                  className={`p-1 rounded transition-colors ${showCapabilities ? 'text-white bg-white/20' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
+                  title="What can Remy do?"
+                >
+                  <Info className="h-3.5 w-3.5" />
+                </button>
+              </div>
               <button
                 onClick={() => setOpen(false)}
                 className="text-white/80 hover:text-white transition-colors p-1"
@@ -1514,58 +1558,54 @@ export function RemyDrawer() {
             <div className="flex-1 overflow-hidden">
               <RemyCapabilitiesPanel onClose={() => setShowCapabilities(false)} />
             </div>
-          ) : showConversationList ? (
-            <div className="flex-1 overflow-y-auto">
-              <div className="p-3">
-                <button
-                  onClick={handleNewConversation}
-                  className="w-full flex items-center gap-2 text-sm bg-brand-950 dark:bg-brand-900/30 text-brand-400 dark:text-brand-300 rounded-lg px-3 py-2.5 hover:bg-brand-900 dark:hover:bg-brand-900/50 transition-colors mb-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  New conversation
-                </button>
-              </div>
-              <div className="px-3 pb-3 space-y-1">
-                {conversations.map((conv) => (
-                  <div
-                    key={conv.id}
-                    className={`group flex items-center gap-2 rounded-lg px-3 py-2.5 cursor-pointer transition-colors ${
-                      conv.id === currentConversationId
-                        ? 'bg-stone-800 dark:bg-stone-800'
-                        : 'hover:bg-stone-800 dark:hover:bg-stone-800/50'
-                    }`}
-                  >
-                    <button
-                      onClick={() => handleSelectConversation(conv.id)}
-                      className="flex-1 text-left min-w-0"
-                    >
-                      <p className="text-sm font-medium text-stone-100 dark:text-stone-100 truncate">
-                        {conv.title}
-                      </p>
-                      {conv.lastMessage && (
-                        <p className="text-xs text-stone-500 dark:text-stone-400 truncate mt-0.5">
-                          {conv.lastMessage}
-                        </p>
-                      )}
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleDeleteConversation(conv.id)
-                      }}
-                      className="opacity-0 group-hover:opacity-100 text-stone-400 hover:text-red-500 transition-all p-1"
-                      title="Delete conversation"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                ))}
-                {conversations.length === 0 && (
-                  <p className="text-sm text-stone-400 text-center py-8">
-                    No conversations yet. Start one!
-                  </p>
-                )}
-              </div>
+          ) : drawerView === 'list' ? (
+            <div className="flex-1 overflow-hidden">
+              <RemyConversationList
+                currentConversationId={currentConversationId}
+                onSelectConversation={(id) => {
+                  handleSelectConversation(id)
+                  setDrawerView('chat')
+                }}
+                onNewConversation={(projectId) => {
+                  handleNewConversation()
+                  setDrawerView('chat')
+                }}
+              />
+            </div>
+          ) : drawerView === 'search' ? (
+            <div className="flex-1 overflow-hidden">
+              <RemySearchView
+                onSelectConversation={(id) => {
+                  handleSelectConversation(id)
+                  setDrawerView('chat')
+                }}
+              />
+            </div>
+          ) : drawerView === 'actions' ? (
+            <div className="flex-1 overflow-hidden">
+              <RemyActionLog
+                onSelectConversation={(id) => {
+                  handleSelectConversation(id)
+                  setDrawerView('chat')
+                }}
+              />
+            </div>
+          ) : drawerView === 'templates' ? (
+            <div className="flex-1 overflow-hidden">
+              <RemyTemplatesView
+                onRunTemplate={(prompt, projectId) => {
+                  handleNewConversation()
+                  setDrawerView('chat')
+                  // Auto-send the template prompt after a brief delay for state to settle
+                  setTimeout(() => {
+                    const input = document.querySelector<HTMLTextAreaElement>('[data-remy-input]')
+                    if (input) {
+                      input.value = prompt
+                      input.dispatchEvent(new Event('input', { bubbles: true }))
+                    }
+                  }, 100)
+                }}
+              />
             </div>
           ) : (
             <>

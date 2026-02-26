@@ -17,7 +17,7 @@ export default defineConfig({
   testMatch: ['**/soak/**/*.spec.ts'],
   workers: 1,
   fullyParallel: false,
-  globalSetup: './tests/helpers/global-setup.ts',
+  globalSetup: './tests/soak/soak-global-setup.ts',
   use: {
     baseURL: SOAK_URL,
     headless: true,

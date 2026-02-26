@@ -1,6 +1,45 @@
 // Remy — AI Chatbot Companion Types
 // No 'use server' — safe to import from any context (client, server, tests)
 
+// ─── Organization Types (Projects, Templates, Action Log) ──────────────────
+
+export interface LocalProject {
+  id: string
+  name: string
+  icon: string // emoji
+  createdAt: string
+  updatedAt: string
+  sortOrder: number
+}
+
+export interface LocalTemplate {
+  id: string
+  name: string
+  prompt: string
+  projectId: string | null
+  icon: string // emoji
+  sortOrder: number
+  createdAt: string
+}
+
+export interface ActionLogEntry {
+  id: string
+  conversationId: string
+  messageId: string | null
+  action: string // e.g., 'client.search', 'email.followup'
+  params: string | null // stringified parameters
+  status: 'success' | 'error'
+  result: string | null // truncated result summary
+  duration: number // ms
+  createdAt: string
+}
+
+export interface SearchResult {
+  conversation: import('@/lib/ai/remy-local-storage').LocalConversation
+  matchSource: 'title' | 'message'
+  matchingSnippet: string
+}
+
 // ─── Message Types ──────────────────────────────────────────────────────────
 
 export interface RemyMessage {

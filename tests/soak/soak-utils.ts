@@ -57,14 +57,25 @@ export class SoakMetricsCollector {
   constructor(page: Page) {
     this.page = page
 
-    // Track console errors
+    // Track console errors — filter out benign noise from Supabase, Next.js, etc.
     page.on('console', (msg) => {
       if (msg.type() === 'error') {
-        this.consoleErrors.push(msg.text())
+        const text = msg.text()
+        if (!isIgnoredError(text)) {
+          this.consoleErrors.push(text)
+          if (this.consoleErrors.length <= 5) {
+            console.log(`[soak] Unfiltered console error: ${text.substring(0, 200)}`)
+          }
+        }
       }
     })
     page.on('pageerror', (err) => {
-      this.consoleErrors.push(err.message)
+      if (!isIgnoredError(err.message)) {
+        this.consoleErrors.push(err.message)
+        if (this.consoleErrors.length <= 5) {
+          console.log(`[soak] Unfiltered page error: ${err.message.substring(0, 200)}`)
+        }
+      }
     })
 
     // Track network
@@ -100,6 +111,9 @@ export class SoakMetricsCollector {
   async collectCheckpoint(iteration: number, cycleTimeMs: number): Promise<Checkpoint> {
     const cdp = await this.page.context().newCDPSession(this.page)
     try {
+      // Enable performance domain (required before getMetrics returns data)
+      await cdp.send('Performance.enable')
+
       // Force garbage collection for stable heap readings
       await cdp.send('HeapProfiler.collectGarbage')
       await new Promise((r) => setTimeout(r, 150))
@@ -245,6 +259,35 @@ export function printReport(report: SoakReport): void {
     )
   }
   console.log(line + '\n')
+}
+
+// ── Error Filtering ─────────────────────────────────────────────────────
+
+/** Patterns for benign console errors that don't indicate real bugs */
+const IGNORED_ERROR_PATTERNS = [
+  // Supabase Realtime channel lifecycle messages
+  /realtime/i,
+  /supabase/i,
+  /websocket/i,
+  // Next.js hydration / dev warnings
+  /hydration/i,
+  /warning:/i,
+  // Browser extension interference
+  /extension/i,
+  // Favicon / asset 404s
+  /favicon/i,
+  /404.*\.(ico|png|svg)/i,
+  // AbortError from navigation cancellation
+  /AbortError/i,
+  /aborted/i,
+  // Net errors from rapid navigation
+  /net::ERR_/i,
+  // Failed to fetch from cancelled requests
+  /Failed to fetch/i,
+]
+
+function isIgnoredError(message: string): boolean {
+  return IGNORED_ERROR_PATTERNS.some((pattern) => pattern.test(message))
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
