@@ -12,13 +12,13 @@ const STATUS_ORDER = [
   'confirmed',
   'in_progress',
   'completed',
-  'cancelled'
+  'cancelled',
 ] as const
 
 function statusAtLeast(current: string, threshold: string): boolean {
   if (current === 'cancelled') return false
-  const currentIdx = STATUS_ORDER.indexOf(current as typeof STATUS_ORDER[number])
-  const thresholdIdx = STATUS_ORDER.indexOf(threshold as typeof STATUS_ORDER[number])
+  const currentIdx = STATUS_ORDER.indexOf(current as (typeof STATUS_ORDER)[number])
+  const thresholdIdx = STATUS_ORDER.indexOf(threshold as (typeof STATUS_ORDER)[number])
   if (currentIdx === -1 || thresholdIdx === -1) return false
   return currentIdx >= thresholdIdx
 }
@@ -40,7 +40,7 @@ export function deriveConfirmedFacts(ctx: EventContext): ConfirmedFacts {
   const daysUntilEvent = hoursUntilEvent / 24
 
   const hasMenuAttached = menus.length > 0
-  const hasMenuWithDishes = menus.some(m => m.dishCount > 0)
+  const hasMenuWithDishes = menus.some((m) => m.dishCount > 0)
 
   // Derive deposit/payment status from payment_status enum
   const paymentStatus = financial?.paymentStatus ?? null
@@ -90,6 +90,6 @@ export function deriveConfirmedFacts(ctx: EventContext): ConfirmedFacts {
     // Lifecycle terminals
     isCancelled,
     isCompleted,
-    isTerminal: isCancelled || isCompleted
+    isTerminal: isCancelled || isCompleted,
   }
 }

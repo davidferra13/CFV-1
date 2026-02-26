@@ -42,7 +42,7 @@ test.describe('Social — Hub', () => {
 
   test('/social — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/social')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -67,7 +67,7 @@ test.describe('Social — Sub-pages', () => {
 
   test('/social/planner — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/social/planner')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -114,7 +114,7 @@ test.describe('Network — Hub', () => {
 
   test('/network — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/network')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -122,10 +122,7 @@ test.describe('Network — Hub', () => {
 })
 
 test.describe('Network — Sub-pages', () => {
-  const networkRoutes = [
-    '/network/notifications',
-    '/network/saved',
-  ]
+  const networkRoutes = ['/network/notifications', '/network/saved']
 
   for (const route of networkRoutes) {
     test(`${route} — loads without 500`, async ({ page }) => {
@@ -137,7 +134,7 @@ test.describe('Network — Sub-pages', () => {
 
   test('/network/notifications — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/network/notifications')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -169,7 +166,7 @@ test.describe('Community — Templates', () => {
 
   test('/community/templates — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/community/templates')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -181,7 +178,7 @@ test.describe('Community — Templates', () => {
 test.describe('Social/Network — Cross-Section', () => {
   test('Navigating social sub-sections does not produce JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     for (const route of ['/social', '/social/planner', '/network']) {
       await page.goto(route)
@@ -193,8 +190,14 @@ test.describe('Social/Network — Cross-Section', () => {
 
   test('All social/network routes return non-500 status', async ({ page }) => {
     const routes = [
-      '/social', '/social/connections', '/social/planner', '/social/vault', '/social/settings',
-      '/network', '/network/notifications', '/network/saved',
+      '/social',
+      '/social/connections',
+      '/social/planner',
+      '/social/vault',
+      '/social/settings',
+      '/network',
+      '/network/notifications',
+      '/network/saved',
       '/community/templates',
     ]
     for (const route of routes) {

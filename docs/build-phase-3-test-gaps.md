@@ -12,18 +12,18 @@ Phase 3 closes the remaining ~235 test gaps identified in an honest audit of the
 
 ### New Files
 
-| File | Feature Area | Tests |
-|---|---|---|
-| `tests/interactions/21-staff-management.spec.ts` | Staff roster, schedule, availability, clock-in, performance, labor | ~13 |
-| `tests/interactions/22-menus-deep.spec.ts` | Menu list, create form, editor, course management | ~12 |
-| `tests/interactions/23-grocery-quote.spec.ts` | Grocery quote panel, price comparison, Instacart CTA, bulk write-back | ~12 |
-| `tests/interactions/24-inventory-waste-costing.spec.ts` | Inventory hub, counts, waste log, vendor management, carry-forward | ~12 |
-| `tests/interactions/25-loyalty-program.spec.ts` | Loyalty dashboard, rewards creation, loyalty settings, client integration | ~12 |
-| `tests/interactions/26-proposals-goals-partners.spec.ts` | Proposals hub/templates, goal setup/tracking, partners hub | ~18 |
-| `tests/interactions/27-marketing-campaigns.spec.ts` | Marketing hub, campaign builder, sequences, templates | ~13 |
-| `tests/interactions/28-waitlist-surveys-wix.spec.ts` | Waitlist CRUD, surveys hub, Wix webhook security | ~14 |
-| `tests/interactions/29-mutation-verification.spec.ts` | Create entity → navigate away → verify persisted in list | ~30 |
-| `tests/interactions/30-multi-tenant-isolation.spec.ts` | Chef A cannot access Chef B's events/clients/API (SECURITY) | ~20 |
+| File                                                     | Feature Area                                                              | Tests |
+| -------------------------------------------------------- | ------------------------------------------------------------------------- | ----- |
+| `tests/interactions/21-staff-management.spec.ts`         | Staff roster, schedule, availability, clock-in, performance, labor        | ~13   |
+| `tests/interactions/22-menus-deep.spec.ts`               | Menu list, create form, editor, course management                         | ~12   |
+| `tests/interactions/23-grocery-quote.spec.ts`            | Grocery quote panel, price comparison, Instacart CTA, bulk write-back     | ~12   |
+| `tests/interactions/24-inventory-waste-costing.spec.ts`  | Inventory hub, counts, waste log, vendor management, carry-forward        | ~12   |
+| `tests/interactions/25-loyalty-program.spec.ts`          | Loyalty dashboard, rewards creation, loyalty settings, client integration | ~12   |
+| `tests/interactions/26-proposals-goals-partners.spec.ts` | Proposals hub/templates, goal setup/tracking, partners hub                | ~18   |
+| `tests/interactions/27-marketing-campaigns.spec.ts`      | Marketing hub, campaign builder, sequences, templates                     | ~13   |
+| `tests/interactions/28-waitlist-surveys-wix.spec.ts`     | Waitlist CRUD, surveys hub, Wix webhook security                          | ~14   |
+| `tests/interactions/29-mutation-verification.spec.ts`    | Create entity → navigate away → verify persisted in list                  | ~30   |
+| `tests/interactions/30-multi-tenant-isolation.spec.ts`   | Chef A cannot access Chef B's events/clients/API (SECURITY)               | ~20   |
 
 **Total new tests: ~156**
 **Suite total after Phase 3: ~1,008 tests**
@@ -31,16 +31,19 @@ Phase 3 closes the remaining ~235 test gaps identified in an honest audit of the
 ### Modified Files
 
 **`tests/helpers/e2e-seed.ts`**
+
 - Extended `SeedResult` type with Chef B fields: `chefBId`, `chefBEmail`, `chefBPassword`, `chefBEventId`, `chefBClientId`
 - Added `upsertChefB()` function — creates a second independent chef tenant using slug `e2e-chef-b-{suffix}`
 - Added Chef B seeding block in `seedE2EData()`: creates auth user, chef record, chef preferences, one client, one confirmed event
 - Chef B data uses naming convention `TEST - Chef B ...` so cleanup scripts can identify it
 
 **`tests/helpers/global-setup.ts`**
+
 - Added `loginAndSaveState()` call for Chef B → saves session to `.auth/chef-b.json`
 - Chef B login runs after the existing chef/client/admin login sequence
 
 **`playwright.config.ts`**
+
 - Added spec files 21-29 to `interactions-chef` project's `testMatch` array
 - Added new `isolation-tests` project:
   ```typescript
@@ -52,6 +55,7 @@ Phase 3 closes the remaining ~235 test gaps identified in an honest audit of the
   ```
 
 **`package.json`**
+
 - Added `"test:isolation": "npx playwright test --project=isolation-tests"` script
 
 ---
@@ -63,6 +67,7 @@ Phase 3 closes the remaining ~235 test gaps identified in an honest audit of the
 **This is the most important security test in the suite.** Before Phase 3, there was no automated verification that Chef A's session could not read Chef B's private data. A RLS misconfiguration, a missing tenant scope in a query, or an accidentally public API route would pass all existing tests undetected.
 
 The isolation tests verify:
+
 - Chef A gets 404/403 when navigating directly to Chef B's event IDs
 - Chef A gets 404/403 for Chef B's sub-pages (DOP, financial, close-out, AAR)
 - Chef A's events list does not include Chef B's event names
@@ -80,6 +85,7 @@ The mutation tests verify the full round-trip: create → navigate away → navi
 ### Untested Feature Areas (21-28)
 
 21 feature areas had zero interaction tests. These are real routes in the app that chefs can navigate to. The new files provide:
+
 - Load/render assertions (the page does not 500)
 - Content assertions (shows expected content or graceful empty state)
 - No JS errors (no unhandled exceptions on page load)
@@ -92,7 +98,7 @@ The mutation tests verify the full round-trip: create → navigate away → navi
 
 ### Informational vs Assertive Tests
 
-Many feature tests are *informational* — they check that something is visible without failing if it's not. This is appropriate for optional UI elements (e.g., Instacart CTA that only appears when an API key is configured). The pattern:
+Many feature tests are _informational_ — they check that something is visible without failing if it's not. This is appropriate for optional UI elements (e.g., Instacart CTA that only appears when an API key is configured). The pattern:
 
 ```typescript
 const isVisible = await element.isVisible().catch(() => false)
@@ -115,8 +121,11 @@ test('Chef A cannot view Chef B event', async ({ page, seedIds }) => {
     status === 404 ||
     status === 403 ||
     !url.includes(seedIds.chefBEventId) ||
-    await page.getByText(/not found|not authorized|access denied/i)
-      .first().isVisible().catch(() => false)
+    (await page
+      .getByText(/not found|not authorized|access denied/i)
+      .first()
+      .isVisible()
+      .catch(() => false))
 
   expect(isBlocked, `Chef A must not see Chef B's event`).toBeTruthy()
 })
@@ -134,7 +143,11 @@ test('Create X → persists in list', async ({ page }) => {
   // 3. Return to list
   await page.goto('/x-list')
   await page.waitForLoadState('networkidle')
-  const visible = await page.getByText(uniqueName).first().isVisible().catch(() => false)
+  const visible = await page
+    .getByText(uniqueName)
+    .first()
+    .isVisible()
+    .catch(() => false)
   expect(visible, `Created ${uniqueName} should appear in list`).toBeTruthy()
 })
 ```
@@ -195,11 +208,11 @@ The isolation tests include financial pages — `/finance` should not contain Ch
 
 ## Test Count Summary
 
-| Phase | Files | Tests |
-|---|---|---|
-| Phase 1 (core) | 5 files | ~120 |
-| Phase 2 (gap closure) | 15 files | ~732 |
-| Phase 3 (remaining gaps) | 10 files | ~156 |
-| **Total** | **30 interaction files** | **~1,008** |
+| Phase                    | Files                    | Tests      |
+| ------------------------ | ------------------------ | ---------- |
+| Phase 1 (core)           | 5 files                  | ~120       |
+| Phase 2 (gap closure)    | 15 files                 | ~732       |
+| Phase 3 (remaining gaps) | 10 files                 | ~156       |
+| **Total**                | **30 interaction files** | **~1,008** |
 
 With coverage layer (6 files, ~140 tests) and e2e layer (15 files, ~45 tests), the full suite is approximately **1,193 tests** across **51 spec files**.

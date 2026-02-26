@@ -6,7 +6,9 @@ const require = createRequire(import.meta.url)
 const navConfig = require('../components/navigation/nav-config.tsx')
 const navGroups = (navConfig.navGroups ?? navConfig.default?.navGroups ?? []) as any[]
 const standaloneTop = (navConfig.standaloneTop ?? navConfig.default?.standaloneTop ?? []) as any[]
-const standaloneBottom = (navConfig.standaloneBottom ?? navConfig.default?.standaloneBottom ?? []) as any[]
+const standaloneBottom = (navConfig.standaloneBottom ??
+  navConfig.default?.standaloneBottom ??
+  []) as any[]
 
 type Visibility = 'primary' | 'secondary' | 'advanced'
 
@@ -19,7 +21,8 @@ type NavEntry = {
 
 const projectRoot = process.cwd()
 const chefAppRoot = path.join(projectRoot, 'app', '(chef)')
-const placeholderPattern = /currently being built|coming soon|placeholder|under construction|work in progress/i
+const placeholderPattern =
+  /currently being built|coming soon|placeholder|under construction|work in progress/i
 const prototypePattern = /const\s+mock[A-Za-z0-9_]*\s*=|will be here\.|TODO:\s*replace mock/i
 const MAX_TOP_LEVEL_VISIBLE = 16
 
@@ -123,7 +126,9 @@ function main() {
 
   const topLevelCount = standaloneTop.length + navGroups.length + standaloneBottom.length
   if (topLevelCount > MAX_TOP_LEVEL_VISIBLE) {
-    failures.push(`Top-level visible count is ${topLevelCount}; expected <= ${MAX_TOP_LEVEL_VISIBLE}`)
+    failures.push(
+      `Top-level visible count is ${topLevelCount}; expected <= ${MAX_TOP_LEVEL_VISIBLE}`
+    )
   }
 
   const byHref = new Map<string, NavEntry[]>()
@@ -171,7 +176,9 @@ function main() {
     .filter((route) => isPlaceholderOrPrototype(route, staticRouteToFile))
 
   if (primaryPlaceholderRoutes.length > 0) {
-    failures.push(`Primary nav contains placeholder/prototype routes (${primaryPlaceholderRoutes.length})`)
+    failures.push(
+      `Primary nav contains placeholder/prototype routes (${primaryPlaceholderRoutes.length})`
+    )
   }
 
   const secondaryPlaceholderRoutes = navEntries
@@ -181,7 +188,9 @@ function main() {
     .filter((route) => isPlaceholderOrPrototype(route, staticRouteToFile))
 
   if (secondaryPlaceholderRoutes.length > 0) {
-    failures.push(`Secondary nav contains placeholder/prototype routes; move them to advanced (${secondaryPlaceholderRoutes.length})`)
+    failures.push(
+      `Secondary nav contains placeholder/prototype routes; move them to advanced (${secondaryPlaceholderRoutes.length})`
+    )
   }
 
   const navRoutes = new Set(navEntries.map((entry) => entry.normalizedHref))
@@ -199,7 +208,9 @@ function main() {
     .sort()
 
   if (missingDiscoverableRoutes.length > 0) {
-    failures.push(`Implemented non-placeholder static routes missing from nav (${missingDiscoverableRoutes.length})`)
+    failures.push(
+      `Implemented non-placeholder static routes missing from nav (${missingDiscoverableRoutes.length})`
+    )
   }
 
   if (failures.length > 0) {

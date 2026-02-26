@@ -77,9 +77,9 @@ Sprint Mode for backfill (batch capture session)
 
 In `lib/recipes/actions.ts`:
 
-| Function | Purpose |
-|---|---|
-| `getRecipeDebt()` | Counts unrecorded components grouped by event age. Used by dashboard widget. |
-| `getAllUnrecordedComponents()` | Returns full queue for Sprint Mode with event context. |
+| Function                       | Purpose                                                                      |
+| ------------------------------ | ---------------------------------------------------------------------------- |
+| `getRecipeDebt()`              | Counts unrecorded components grouped by event age. Used by dashboard widget. |
+| `getAllUnrecordedComponents()` | Returns full queue for Sprint Mode with event context.                       |
 
 Both are tenant-scoped via `requireChef()`.

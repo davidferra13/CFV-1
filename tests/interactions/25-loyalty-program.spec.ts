@@ -37,7 +37,7 @@ test.describe('Loyalty — Dashboard', () => {
 
   test('/loyalty — no JS errors on load', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/loyalty')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -46,9 +46,7 @@ test.describe('Loyalty — Dashboard', () => {
   test('/loyalty — has navigation to rewards or settings', async ({ page }) => {
     await page.goto('/loyalty')
     await page.waitForLoadState('networkidle')
-    const subNav = page
-      .locator('a[href*="/loyalty/"], a[href*="/settings/loyalty"]')
-      .first()
+    const subNav = page.locator('a[href*="/loyalty/"], a[href*="/settings/loyalty"]').first()
     const isVisible = await subNav.isVisible().catch(() => false)
     // Informational — may use tabs or different nav
     const _ = isVisible
@@ -74,7 +72,7 @@ test.describe('Loyalty — Rewards List', () => {
 
   test('/clients/loyalty/rewards — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/clients/loyalty/rewards')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -112,7 +110,7 @@ test.describe('Loyalty — Create Reward', () => {
 
   test('/loyalty/rewards/new — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/loyalty/rewards/new')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -120,7 +118,7 @@ test.describe('Loyalty — Create Reward', () => {
 
   test('Loyalty hub links to create reward page', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/loyalty')
     await page.waitForLoadState('networkidle')
@@ -159,7 +157,7 @@ test.describe('Loyalty — Settings', () => {
 
   test('/loyalty/settings — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/loyalty/settings')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -180,9 +178,7 @@ test.describe('Loyalty — Client Integration', () => {
     await page.goto(`/clients/${seedIds.clientId}`)
     await page.waitForLoadState('networkidle')
 
-    const loyaltySection = page
-      .getByText(/loyalty|reward|point|member|tier/i)
-      .first()
+    const loyaltySection = page.getByText(/loyalty|reward|point|member|tier/i).first()
 
     const isVisible = await loyaltySection.isVisible().catch(() => false)
     // Informational — loyalty section may or may not be on client detail

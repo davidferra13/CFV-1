@@ -6,17 +6,17 @@ Added a one-time feedback prompt that appears to chefs 7 days after their accoun
 
 ## Files Added
 
-| File | Purpose |
-|---|---|
-| `lib/feedback/user-feedback-actions.ts` | Server action: inserts a row into `user_feedback` |
-| `components/feedback/feedback-nudge-modal.tsx` | Client modal component |
+| File                                           | Purpose                                           |
+| ---------------------------------------------- | ------------------------------------------------- |
+| `lib/feedback/user-feedback-actions.ts`        | Server action: inserts a row into `user_feedback` |
+| `components/feedback/feedback-nudge-modal.tsx` | Client modal component                            |
 
 ## Files Modified
 
-| File | Change |
-|---|---|
+| File                       | Change                                                                                       |
+| -------------------------- | -------------------------------------------------------------------------------------------- |
 | `lib/chef/layout-cache.ts` | Added `business_name` and `created_at` to the `chefs` select query and `ChefLayoutData` type |
-| `app/(chef)/layout.tsx` | Imports modal, computes `daysSinceCreation`, conditionally renders `FeedbackNudgeModal` |
+| `app/(chef)/layout.tsx`    | Imports modal, computes `daysSinceCreation`, conditionally renders `FeedbackNudgeModal`      |
 
 ## How It Works
 

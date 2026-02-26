@@ -113,7 +113,9 @@ async function resolveClientId(tenantId: string, senderIdentity: string) {
       .not('phone', 'is', null)
 
     const matched = (clients || []).find((client: any) => {
-      const clientPhone = String(client.phone || '').replace(/\D/g, '').slice(-10)
+      const clientPhone = String(client.phone || '')
+        .replace(/\D/g, '')
+        .slice(-10)
       return clientPhone.length === 10 && clientPhone === phone
     })
 
@@ -239,7 +241,9 @@ async function applySilenceTimers(input: {
     .eq('thread_id', input.threadId)
     .eq('status', 'active')
 
-  const dueAt = new Date(new Date(input.timestamp).getTime() + DEFAULT_SILENCE_HOURS * 60 * 60 * 1000).toISOString()
+  const dueAt = new Date(
+    new Date(input.timestamp).getTime() + DEFAULT_SILENCE_HOURS * 60 * 60 * 1000
+  ).toISOString()
   const { data: timer } = await supabase
     .from('follow_up_timers' as any)
     .insert({
@@ -259,7 +263,11 @@ async function applySilenceTimers(input: {
     action: 'follow_up_timer_created',
     source: input.actionSource,
     previousState: {},
-    newState: timer || { due_at: dueAt, reason: `no_reply_after_${DEFAULT_SILENCE_HOURS}h`, status: 'active' },
+    newState: timer || {
+      due_at: dueAt,
+      reason: `no_reply_after_${DEFAULT_SILENCE_HOURS}h`,
+      status: 'active',
+    },
   })
 }
 
@@ -324,7 +332,11 @@ async function suggestLinks(input: {
     .order('event_date', { ascending: true })
     .limit(2)
 
-  const suggestions: Array<{ suggested_entity_type: 'inquiry' | 'event'; suggested_entity_id: string; confidence_score: number }> = []
+  const suggestions: Array<{
+    suggested_entity_type: 'inquiry' | 'event'
+    suggested_entity_id: string
+    confidence_score: number
+  }> = []
 
   for (const inquiry of inquiries || []) {
     suggestions.push({

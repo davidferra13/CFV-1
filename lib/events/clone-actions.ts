@@ -160,11 +160,13 @@ export async function cloneEvent(
       // Clone dishes from the source menu
       const { data: sourceDishes } = await supabase
         .from('dishes')
-        .select('name, description, course_name, course_number, allergen_flags, dietary_tags, sort_order')
+        .select(
+          'name, description, course_name, course_number, allergen_flags, dietary_tags, sort_order'
+        )
         .eq('menu_id', sourceMenu.id)
 
       if (sourceDishes && sourceDishes.length > 0) {
-        const dishInserts = sourceDishes.map(dish => ({
+        const dishInserts = sourceDishes.map((dish) => ({
           menu_id: newMenu.id,
           tenant_id: user.entityId,
           name: dish.name,
@@ -176,9 +178,7 @@ export async function cloneEvent(
           sort_order: dish.sort_order,
         }))
 
-        const { error: dishError } = await supabase
-          .from('dishes')
-          .insert(dishInserts as any)
+        const { error: dishError } = await supabase.from('dishes').insert(dishInserts as any)
 
         if (dishError) {
           console.error('[cloneEvent] Dish clone error:', dishError)

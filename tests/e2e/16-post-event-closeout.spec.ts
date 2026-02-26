@@ -38,8 +38,12 @@ test.describe('Post-Event Close-Out Wizard', () => {
     await page.goto(`/events/${seedIds.eventIds.completed}/close-out`)
     await page.waitForLoadState('networkidle')
     // Should have both tip options visible
-    await expect(page.getByRole('button', { name: /yes.*enter amount/i })).toBeVisible({ timeout: 10_000 })
-    await expect(page.getByRole('button', { name: /no tip tonight/i })).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByRole('button', { name: /yes.*enter amount/i })).toBeVisible({
+      timeout: 10_000,
+    })
+    await expect(page.getByRole('button', { name: /no tip tonight/i })).toBeVisible({
+      timeout: 10_000,
+    })
   })
 
   // ── Wizard navigation (no DB mutations) ────────────────────────────────────
@@ -67,18 +71,25 @@ test.describe('Post-Event Close-Out Wizard', () => {
     await expect(receiptsContent).toBeVisible({ timeout: 5_000 })
   })
 
-  test('close-out page is inaccessible for a non-completed event (404)', async ({ page, seedIds }) => {
+  test('close-out page is inaccessible for a non-completed event (404)', async ({
+    page,
+    seedIds,
+  }) => {
     // A confirmed event is not completed — should return 404 from the page
     await page.goto(`/events/${seedIds.eventIds.confirmed}/close-out`)
     await page.waitForLoadState('networkidle')
     // Should show a 404 (Next.js notFound()) or redirect
-    const is404 = (await page.title()).toLowerCase().includes('404') ||
+    const is404 =
+      (await page.title()).toLowerCase().includes('404') ||
       (await page.locator('text=404').count()) > 0 ||
       (await page.locator('text=not found').count()) > 0
     expect(is404).toBe(true)
   })
 
-  test('chef event detail page for a completed event shows "Close Out" or financial section', async ({ page, seedIds }) => {
+  test('chef event detail page for a completed event shows "Close Out" or financial section', async ({
+    page,
+    seedIds,
+  }) => {
     await page.goto(`/events/${seedIds.eventIds.completed}`)
     await page.waitForLoadState('networkidle')
     // Event detail should show completed state
@@ -98,7 +109,9 @@ test.describe('Post-Event Banner — Client Portal', () => {
   test('client events list Past Events section renders', async ({ page }) => {
     await page.goto('/my-events')
     await page.waitForLoadState('networkidle')
-    await expect(page.getByRole('heading', { name: /past events/i })).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByRole('heading', { name: /past events/i })).toBeVisible({
+      timeout: 10_000,
+    })
   })
 
   test('completed event detail page loads for client', async ({ page, seedIds }) => {

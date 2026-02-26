@@ -42,7 +42,10 @@ test.describe('API — Document PDF Generation', () => {
     }
   })
 
-  test('/api/documents/quote-client/[quoteId] — quote PDF (client view)', async ({ page, seedIds }) => {
+  test('/api/documents/quote-client/[quoteId] — quote PDF (client view)', async ({
+    page,
+    seedIds,
+  }) => {
     const resp = await page.request.get(`/api/documents/quote-client/${seedIds.quoteIds.sent}`)
     expect(resp.status()).toBeLessThan(500)
   })
@@ -52,8 +55,13 @@ test.describe('API — Document PDF Generation', () => {
     expect(resp.status()).toBeLessThan(500)
   })
 
-  test('/api/documents/financial-summary/[eventId] — financial summary PDF', async ({ page, seedIds }) => {
-    const resp = await page.request.get(`/api/documents/financial-summary/${seedIds.eventIds.completed}`)
+  test('/api/documents/financial-summary/[eventId] — financial summary PDF', async ({
+    page,
+    seedIds,
+  }) => {
+    const resp = await page.request.get(
+      `/api/documents/financial-summary/${seedIds.eventIds.completed}`
+    )
     expect(resp.status()).toBeLessThan(500)
   })
 
@@ -67,7 +75,10 @@ test.describe('API — Document PDF Generation', () => {
 // ─── Unauthenticated Rejection — Documents ────────────────────────────────────
 
 test.describe('API — Document Routes Reject Unauthenticated', () => {
-  test('/api/documents/invoice/[id] — rejects unauthenticated requests', async ({ page, seedIds }) => {
+  test('/api/documents/invoice/[id] — rejects unauthenticated requests', async ({
+    page,
+    seedIds,
+  }) => {
     // Make request without auth cookies by using a fresh context
     const resp = await page.request.get(`/api/documents/invoice/${seedIds.eventIds.completed}`, {
       headers: { Cookie: '' },

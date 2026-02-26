@@ -51,11 +51,7 @@ export async function getChefChecklist(eventId?: string) {
   const items: ChecklistItem[] = []
 
   // 1. Permanent items — default + any chef custom items
-  const { data: chef } = await supabase
-    .from('chefs')
-    .select('id')
-    .eq('id', user.tenantId!)
-    .single()
+  const { data: chef } = await supabase.from('chefs').select('id').eq('id', user.tenantId!).single()
 
   if (!chef) throw new Error('Chef not found')
 
@@ -108,7 +104,7 @@ export async function getChefChecklist(eventId?: string) {
 
   // 3. Learned items — forgotten 2+ times across AARs
   const forgottenFreq = await getForgottenItemsFrequency()
-  const permanentNormalized = new Set(items.map(i => i.item.toLowerCase()))
+  const permanentNormalized = new Set(items.map((i) => i.item.toLowerCase()))
 
   for (const { item, count } of forgottenFreq) {
     if (count >= 2 && !permanentNormalized.has(item.toLowerCase())) {
@@ -136,5 +132,5 @@ export async function getPermanentChecklist() {
  */
 export async function getLearnedChecklistItems() {
   const forgottenFreq = await getForgottenItemsFrequency()
-  return forgottenFreq.filter(f => f.count >= 2)
+  return forgottenFreq.filter((f) => f.count >= 2)
 }

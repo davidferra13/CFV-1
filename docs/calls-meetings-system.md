@@ -16,6 +16,7 @@ As a private chef, calls happen constantly: qualifying new leads, following up o
 Migration: `supabase/migrations/20260303000001_calls_meetings_system.sql`
 
 The table stores:
+
 - **Who**: `client_id` (nullable, FK to clients) + `contact_name`, `contact_phone`, `contact_company` for non-client calls
 - **What kind**: `call_type` enum (discovery, follow_up, proposal_walkthrough, pre_event_logistics, vendor_supplier, partner, general)
 - **When**: `scheduled_at`, `duration_minutes`, `timezone`
@@ -34,19 +35,19 @@ RLS policy restricts all access to the owning chef's tenant.
 
 **File: `lib/calls/actions.ts`**
 
-| Function | Description |
-|---|---|
-| `createCall(input)` | Schedule a new call. Auto-seeds agenda from linked inquiry/event. |
-| `updateCall(id, input)` | Edit scheduling details, contact, prep notes. |
-| `getCall(id)` | Fetch single call with joined client/inquiry/event. |
-| `getCalls(filter?)` | List calls with optional status/type/date/client filters. |
-| `getUpcomingCalls(limit)` | Fetch next N upcoming calls (for dashboard widget). |
-| `updateCallStatus(id, status)` | FSM-enforced status transition. |
-| `logCallOutcome(id, outcome)` | Log post-call summary, notes, next action. Marks completed. |
-| `cancelCall(id)` | Shortcut for `updateCallStatus(id, 'cancelled')`. |
-| `addAgendaItem(callId, text)` | Add a manual agenda item. |
-| `toggleAgendaItem(callId, itemId)` | Check/uncheck a prep item. |
-| `removeAgendaItem(callId, itemId)` | Remove an agenda item. |
+| Function                           | Description                                                       |
+| ---------------------------------- | ----------------------------------------------------------------- |
+| `createCall(input)`                | Schedule a new call. Auto-seeds agenda from linked inquiry/event. |
+| `updateCall(id, input)`            | Edit scheduling details, contact, prep notes.                     |
+| `getCall(id)`                      | Fetch single call with joined client/inquiry/event.               |
+| `getCalls(filter?)`                | List calls with optional status/type/date/client filters.         |
+| `getUpcomingCalls(limit)`          | Fetch next N upcoming calls (for dashboard widget).               |
+| `updateCallStatus(id, status)`     | FSM-enforced status transition.                                   |
+| `logCallOutcome(id, outcome)`      | Log post-call summary, notes, next action. Marks completed.       |
+| `cancelCall(id)`                   | Shortcut for `updateCallStatus(id, 'cancelled')`.                 |
+| `addAgendaItem(callId, text)`      | Add a manual agenda item.                                         |
+| `toggleAgendaItem(callId, itemId)` | Check/uncheck a prep item.                                        |
+| `removeAgendaItem(callId, itemId)` | Remove an agenda item.                                            |
 
 All actions use `requireChef()` for auth + tenant scoping, Zod for input validation, and `logChefActivity()` for audit trail.
 
@@ -55,6 +56,7 @@ All actions use `requireChef()` for auth + tenant scoping, Zod for input validat
 ### Agenda Auto-Population
 
 When a call is linked to an **inquiry** at creation time, the system reads:
+
 - `confirmed_occasion`, `guest_count_adults`, `guest_count_kids`
 - `budget_min` / `budget_max`
 - `dietary_restrictions`
@@ -63,6 +65,7 @@ When a call is linked to an **inquiry** at creation time, the system reads:
 …and seeds `agenda_items` with `source: 'inquiry'` entries for each.
 
 When linked to an **event**:
+
 - Event date, guest count, current status
 
 These items are stored as a snapshot at call creation — they are not live-linked to the source record, so they won't change if the inquiry is updated. The chef can add, remove, or reorder items freely.
@@ -87,26 +90,26 @@ scheduled ──► confirmed ──► completed
 
 ### Pages
 
-| Route | Description |
-|---|---|
-| `/calls` | List view: upcoming + past, status filter tabs |
-| `/calls/new` | Schedule a new call (accepts `?client_id`, `?inquiry_id`, `?event_id` query params for pre-population) |
-| `/calls/[id]` | Call detail: meta, status actions, prep panel, outcome form |
-| `/calls/[id]/edit` | Edit scheduling details for active calls |
+| Route              | Description                                                                                            |
+| ------------------ | ------------------------------------------------------------------------------------------------------ |
+| `/calls`           | List view: upcoming + past, status filter tabs                                                         |
+| `/calls/new`       | Schedule a new call (accepts `?client_id`, `?inquiry_id`, `?event_id` query params for pre-population) |
+| `/calls/[id]`      | Call detail: meta, status actions, prep panel, outcome form                                            |
+| `/calls/[id]/edit` | Edit scheduling details for active calls                                                               |
 
 ---
 
 ### Components
 
-| File | Purpose |
-|---|---|
-| `components/calls/call-card.tsx` | Compact list-view card with status, type badge, contact, time |
-| `components/calls/call-form.tsx` | Scheduling form for create + edit |
-| `components/calls/call-prep-panel.tsx` | Interactive agenda checklist + prep notes |
-| `components/calls/call-outcome-form.tsx` | Post-call form: summary, notes, next action, actual duration |
-| `components/calls/call-status-actions.tsx` | Confirm / cancel buttons (client) |
-| `components/calls/call-type-badge.tsx` | Colored label for call type |
-| `components/calls/upcoming-calls-widget.tsx` | Dashboard widget showing next 3–5 calls |
+| File                                         | Purpose                                                       |
+| -------------------------------------------- | ------------------------------------------------------------- |
+| `components/calls/call-card.tsx`             | Compact list-view card with status, type badge, contact, time |
+| `components/calls/call-form.tsx`             | Scheduling form for create + edit                             |
+| `components/calls/call-prep-panel.tsx`       | Interactive agenda checklist + prep notes                     |
+| `components/calls/call-outcome-form.tsx`     | Post-call form: summary, notes, next action, actual duration  |
+| `components/calls/call-status-actions.tsx`   | Confirm / cancel buttons (client)                             |
+| `components/calls/call-type-badge.tsx`       | Colored label for call type                                   |
+| `components/calls/upcoming-calls-widget.tsx` | Dashboard widget showing next 3–5 calls                       |
 
 ---
 
@@ -115,6 +118,7 @@ scheduled ──► confirmed ──► completed
 **Template: `lib/email/templates/call-reminder.tsx`**
 
 Two modes:
+
 1. **Chef reminder** (`isChefReminder: true`): "You have a call in X hours"
 2. **Client notification** (`isChefReminder: false`): "Your chef has scheduled a call"
 
@@ -123,12 +127,14 @@ The `CallReminderEmail` component accepts `hoursUntil` to vary the subject line 
 **Cron: `app/api/scheduled/call-reminders/route.ts`** (GET + POST)
 
 Runs every 30 minutes via Vercel Cron. Two independent passes:
+
 1. **24h window**: Finds calls scheduled between 23h and 25h from now with no `reminder_24h_sent_at`. Sends email, marks sent.
 2. **1h window**: Finds calls scheduled between 45min and 75min from now with no `reminder_1h_sent_at`. Sends email, marks sent.
 
 Each pass is idempotent — the `reminder_*_sent_at` columns prevent resending.
 
 **Vercel Cron schedule** added to `vercel.json`:
+
 ```json
 { "path": "/api/scheduled/call-reminders", "schedule": "*/30 * * * *" }
 ```
@@ -144,6 +150,7 @@ Each pass is idempotent — the `reminder_*_sent_at` columns prevent resending.
 ### Navigation
 
 `Calls & Meetings` added to the **Pipeline** group in `components/navigation/nav-config.tsx` with children:
+
 - All Calls
 - Upcoming
 - Completed
@@ -172,6 +179,7 @@ supabase db push --linked
 This creates the `scheduled_calls` table, enables RLS, adds indexes, and wires the auto-update trigger. No existing data is modified.
 
 After pushing, regenerate types:
+
 ```bash
 supabase gen types typescript --linked > types/database.ts
 ```

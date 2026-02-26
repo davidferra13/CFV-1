@@ -49,7 +49,7 @@ test.describe('Partners — Status Views', () => {
 
   test('/partners/active — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/partners/active')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -57,7 +57,7 @@ test.describe('Partners — Status Views', () => {
 
   test('/partners/events-generated — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/partners/events-generated')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -76,7 +76,7 @@ test.describe('Partners — Status Views', () => {
 test.describe('Partners — Detail (via list click)', () => {
   test('Clicking first partner navigates to partner detail', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/partners')
     await page.waitForLoadState('networkidle')
@@ -96,8 +96,13 @@ test.describe('Partners — Detail (via list click)', () => {
     await page.goto('/partners')
     await page.waitForLoadState('networkidle')
 
-    const firstLink = page.locator('a[href*="/partners/"]')
-      .filter({ hasNot: page.locator('[href="/partners/active"], [href="/partners/inactive"], [href="/partners/new"]') })
+    const firstLink = page
+      .locator('a[href*="/partners/"]')
+      .filter({
+        hasNot: page.locator(
+          '[href="/partners/active"], [href="/partners/inactive"], [href="/partners/new"]'
+        ),
+      })
       .first()
 
     if (await firstLink.isVisible()) {
@@ -136,7 +141,7 @@ test.describe('Partners — Create & Edit', () => {
 
   test('/partners/new — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/partners/new')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -161,15 +166,13 @@ test.describe('Partners — Create & Edit', () => {
 test.describe('Partners — Reports', () => {
   test('Partner report page is accessible from partner detail', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/partners')
     await page.waitForLoadState('networkidle')
 
     // Try to find a link to a partner report page
-    const reportLink = page
-      .locator('a[href*="/partners/"][href*="/report"]')
-      .first()
+    const reportLink = page.locator('a[href*="/partners/"][href*="/report"]').first()
 
     if (await reportLink.isVisible()) {
       await reportLink.click()
@@ -215,7 +218,7 @@ test.describe('Partners — Cross Navigation', () => {
 
   test('Navigating through partner pages produces no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     for (const route of ['/partners', '/partners/active', '/partners/referral-performance']) {
       await page.goto(route)

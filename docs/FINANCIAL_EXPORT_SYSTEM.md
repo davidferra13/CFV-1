@@ -15,6 +15,7 @@ Added comprehensive CSV export capability so chefs can pull all financial data f
 **File:** `event-{name}-{date}.csv`
 
 Contains three sections:
+
 - **Event header** — name, date, client, guests, status, quoted price
 - **Revenue** — all ledger entries (deposits, payments, tips, refunds) with dates and amounts
 - **Expenses** — all expenses with category, vendor, amount, business/personal flag
@@ -35,6 +36,7 @@ Respects active filters — if filtering by category or date range, only those e
 **File:** `chefflow-financials-{year}.csv`
 
 One row per event for the entire year with:
+
 - Event info: date, name, client, guests, status
 - Revenue: quoted price, paid, tips, refunds, net revenue
 - Expenses: total + breakdown by all 17 categories
@@ -64,20 +66,20 @@ Generic client component that accepts any `() => Promise<{ csv, filename }>` act
 
 ## Files Created
 
-| File | Purpose |
-|------|---------|
-| `lib/exports/actions.ts` | 3 export server actions |
-| `components/exports/csv-download-button.tsx` | Reusable download button |
-| `components/exports/event-export-button.tsx` | Event detail page wrapper |
-| `components/exports/expenses-export-button.tsx` | Expenses page wrapper |
+| File                                            | Purpose                   |
+| ----------------------------------------------- | ------------------------- |
+| `lib/exports/actions.ts`                        | 3 export server actions   |
+| `components/exports/csv-download-button.tsx`    | Reusable download button  |
+| `components/exports/event-export-button.tsx`    | Event detail page wrapper |
+| `components/exports/expenses-export-button.tsx` | Expenses page wrapper     |
 
 ## Files Modified
 
-| File | Change |
-|------|--------|
-| `app/(chef)/events/[id]/page.tsx` | Added EventExportButton to Financial Summary card |
-| `app/(chef)/expenses/page.tsx` | Added ExpensesExportButton to header |
-| `app/(chef)/financials/financials-client.tsx` | Added "Export All Events" button and handler |
+| File                                          | Change                                            |
+| --------------------------------------------- | ------------------------------------------------- |
+| `app/(chef)/events/[id]/page.tsx`             | Added EventExportButton to Financial Summary card |
+| `app/(chef)/expenses/page.tsx`                | Added ExpensesExportButton to header              |
+| `app/(chef)/financials/financials-client.tsx` | Added "Export All Events" button and handler      |
 
 ## Design Decisions
 

@@ -32,7 +32,9 @@ test.describe('Settings — Chef Profile', () => {
     await page.goto('/settings/my-profile')
     await page.waitForLoadState('networkidle')
 
-    const taglineField = page.getByLabel(/tagline/i).first()
+    const taglineField = page
+      .getByLabel(/tagline/i)
+      .first()
       .or(page.getByPlaceholder(/tagline/i).first())
 
     if (await taglineField.isVisible()) {

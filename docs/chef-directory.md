@@ -15,6 +15,7 @@ The public profile at `/chef/[slug]` existed but was unreachable without a direc
 `app/(public)/chefs/page.tsx` is a Next.js server component rendered at request time. It calls `getDiscoverableChefs()` and renders a responsive grid of cards.
 
 Each card shows:
+
 - Profile image (with initial-letter fallback if no image)
 - Display name
 - Tagline
@@ -45,7 +46,7 @@ Only chefs with both a slug AND `network_discoverable = true` appear. Chefs cont
 ```typescript
 const NAV_ITEMS = [
   { href: '/', label: 'Home' },
-  { href: '/chefs', label: 'Find a Chef' },  // ← added
+  { href: '/chefs', label: 'Find a Chef' }, // ← added
   { href: '/pricing', label: 'Pricing' },
   { href: '/contact', label: 'Contact' },
 ]
@@ -57,12 +58,12 @@ const NAV_ITEMS = [
 
 ## Key Files
 
-| File | Role |
-|---|---|
-| `app/(public)/chefs/page.tsx` | Server-rendered public directory |
-| `lib/directory/actions.ts` | `getDiscoverableChefs()` — admin-client query |
-| `components/navigation/public-header.tsx` | Added "Find a Chef" nav item |
-| `middleware.ts` | `/chefs` added to `skipAuthPaths` |
+| File                                      | Role                                          |
+| ----------------------------------------- | --------------------------------------------- |
+| `app/(public)/chefs/page.tsx`             | Server-rendered public directory              |
+| `lib/directory/actions.ts`                | `getDiscoverableChefs()` — admin-client query |
+| `components/navigation/public-header.tsx` | Added "Find a Chef" nav item                  |
+| `middleware.ts`                           | `/chefs` added to `skipAuthPaths`             |
 
 ## How a Chef Appears in the Directory
 

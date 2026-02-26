@@ -38,7 +38,7 @@ test.describe('Leads — Pipeline Hub', () => {
 
   test('/leads — no JS errors on load', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/leads')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -86,7 +86,7 @@ test.describe('Leads — Pipeline Stages', () => {
 
   test('Navigating through lead stages does not produce JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     for (const route of ['/leads', '/leads/new', '/leads/qualified']) {
       await page.goto(route)
@@ -123,7 +123,7 @@ test.describe('Calls — Log', () => {
 
   test('/calls — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/calls')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -144,7 +144,7 @@ test.describe('Calls — Log', () => {
 
   test('/calls/new — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/calls/new')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -189,7 +189,7 @@ test.describe('Inbox — Hub', () => {
 
   test('/inbox — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/inbox')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -203,7 +203,7 @@ test.describe('Inbox — Hub', () => {
 
   test('/inbox/triage — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/inbox/triage')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -243,7 +243,7 @@ test.describe('Reviews', () => {
 
   test('/reviews — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/reviews')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -270,7 +270,7 @@ test.describe('Travel', () => {
 
   test('/travel — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/travel')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)

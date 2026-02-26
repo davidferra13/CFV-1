@@ -23,10 +23,7 @@ function escapeCSV(value: string | number | null | undefined): string {
 }
 
 function buildCSV(headers: string[], rows: (string | number | null | undefined)[][]): string {
-  return [
-    headers.join(','),
-    ...rows.map(row => row.map(escapeCSV).join(',')),
-  ].join('\n')
+  return [headers.join(','), ...rows.map((row) => row.map(escapeCSV).join(','))].join('\n')
 }
 
 // ============================================
@@ -41,8 +38,17 @@ export async function exportLedgerEntriesCSV(): Promise<{ csv: string; filename:
   await requireChef()
   const entries = await getLedgerEntries()
 
-  const headers = ['Date', 'Type', 'Event', 'Amount ($)', 'Refund', 'Method', 'Description', 'Reference']
-  const rows = entries.map(entry => [
+  const headers = [
+    'Date',
+    'Type',
+    'Event',
+    'Amount ($)',
+    'Refund',
+    'Method',
+    'Description',
+    'Reference',
+  ]
+  const rows = entries.map((entry) => [
     format(new Date(entry.created_at), 'yyyy-MM-dd'),
     entry.entry_type.replace(/_/g, ' '),
     entry.event?.occasion?.replace(/_/g, ' ') ?? '',
@@ -80,7 +86,7 @@ export async function exportRevenueByMonthCSV(): Promise<{ csv: string; filename
 
   for (const entry of entries) {
     const key = format(new Date(entry.created_at), 'yyyy-MM')
-    const bucket = months.find(m => m.key === key)
+    const bucket = months.find((m) => m.key === key)
     if (!bucket) continue
     if (entry.is_refund) {
       bucket.refunds += entry.amount_cents
@@ -90,12 +96,14 @@ export async function exportRevenueByMonthCSV(): Promise<{ csv: string; filename
   }
 
   const headers = ['Month', 'Gross Revenue ($)', 'Refunds ($)', 'Net Revenue ($)']
-  const rows = [...months].reverse().map(m => [
-    m.label,
-    (m.revenue / 100).toFixed(2),
-    (m.refunds / 100).toFixed(2),
-    ((m.revenue - m.refunds) / 100).toFixed(2),
-  ])
+  const rows = [...months]
+    .reverse()
+    .map((m) => [
+      m.label,
+      (m.revenue / 100).toFixed(2),
+      (m.refunds / 100).toFixed(2),
+      ((m.revenue - m.refunds) / 100).toFixed(2),
+    ])
 
   const csv = buildCSV(headers, rows)
   const filename = `revenue-by-month-${format(now, 'yyyy-MM-dd')}.csv`
@@ -113,12 +121,15 @@ export async function exportRevenueByClientCSV(): Promise<{ csv: string; filenam
   await requireChef()
   const events = await getEvents()
 
-  const clientMap = new Map<string, {
-    name: string
-    eventCount: number
-    totalRevenue: number
-    completedRevenue: number
-  }>()
+  const clientMap = new Map<
+    string,
+    {
+      name: string
+      eventCount: number
+      totalRevenue: number
+      completedRevenue: number
+    }
+  >()
 
   for (const event of events) {
     if (!event.client) continue
@@ -140,16 +151,21 @@ export async function exportRevenueByClientCSV(): Promise<{ csv: string; filenam
     }
   }
 
-  const clients = Array.from(clientMap.values())
-    .sort((a, b) => b.totalRevenue - a.totalRevenue)
+  const clients = Array.from(clientMap.values()).sort((a, b) => b.totalRevenue - a.totalRevenue)
 
-  const headers = ['Client', 'Events', 'Total Revenue ($)', 'Completed Revenue ($)', 'Avg per Event ($)']
-  const rows = clients.map(c => [
+  const headers = [
+    'Client',
+    'Events',
+    'Total Revenue ($)',
+    'Completed Revenue ($)',
+    'Avg per Event ($)',
+  ]
+  const rows = clients.map((c) => [
     c.name,
     c.eventCount,
     (c.totalRevenue / 100).toFixed(2),
     (c.completedRevenue / 100).toFixed(2),
-    (c.eventCount > 0 ? (c.totalRevenue / c.eventCount) / 100 : 0).toFixed(2),
+    (c.eventCount > 0 ? c.totalRevenue / c.eventCount / 100 : 0).toFixed(2),
   ])
 
   const csv = buildCSV(headers, rows)

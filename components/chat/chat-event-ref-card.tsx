@@ -42,9 +42,7 @@ export function ChatEventRefCard({
     >
       <div className="flex items-center gap-2 mb-1.5">
         <UtensilsCrossed className="w-4 h-4 text-brand-600" />
-        <span className="text-sm font-medium text-stone-800 truncate">
-          {occasion || 'Event'}
-        </span>
+        <span className="text-sm font-medium text-stone-800 truncate">{occasion || 'Event'}</span>
       </div>
       <div className="flex items-center gap-3 text-xs text-stone-500">
         {eventDate && (
@@ -62,9 +60,7 @@ export function ChatEventRefCard({
       </div>
       {status && (
         <div className="mt-2">
-          <Badge variant={STATUS_VARIANTS[status] || 'default'}>
-            {status.replace('_', ' ')}
-          </Badge>
+          <Badge variant={STATUS_VARIANTS[status] || 'default'}>{status.replace('_', ' ')}</Badge>
         </div>
       )}
     </Link>

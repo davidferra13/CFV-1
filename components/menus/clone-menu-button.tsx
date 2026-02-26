@@ -32,9 +32,7 @@ export function CloneMenuButton({ menuId }: CloneMenuButtonProps) {
       <Button variant="secondary" onClick={handleClone} disabled={loading}>
         {loading ? 'Cloning...' : 'Clone Menu'}
       </Button>
-      {error && (
-        <p className="text-sm text-red-600 mt-1">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
     </div>
   )
 }

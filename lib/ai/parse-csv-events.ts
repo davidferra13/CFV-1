@@ -25,13 +25,13 @@ type EventCsvColumnMapping = {
 }
 
 export type ParsedEventRow = {
-  event_date: string      // YYYY-MM-DD or raw string if date is unparseable
+  event_date: string // YYYY-MM-DD or raw string if date is unparseable
   client_name: string
   occasion: string
-  guest_count: string     // raw string — empty if not found
+  guest_count: string // raw string — empty if not found
   location_city: string
-  amount_dollars: string  // dollar string e.g. "1500.00" — empty if not found
-  payment_method: string  // empty if not found
+  amount_dollars: string // dollar string e.g. "1500.00" — empty if not found
+  payment_method: string // empty if not found
   notes: string
 }
 
@@ -72,7 +72,7 @@ function parseRawCsv(text: string): string[][] {
       if (ch === '\r' && next === '\n') i++
       current.push(cell)
       cell = ''
-      if (current.some(c => c.trim())) lines.push(current)
+      if (current.some((c) => c.trim())) lines.push(current)
       current = []
     } else {
       cell += ch
@@ -80,7 +80,7 @@ function parseRawCsv(text: string): string[][] {
   }
 
   current.push(cell)
-  if (current.some(c => c.trim())) lines.push(current)
+  if (current.some((c) => c.trim())) lines.push(current)
 
   return lines
 }
@@ -101,13 +101,72 @@ function normalizeHeader(h: string): string {
 function detectEventColumn(header: string): EventCsvColumnType {
   const h = normalizeHeader(header)
 
-  const dateKeys = ['date', 'event_date', 'event_date', 'when', 'gig_date', 'job_date', 'service_date']
-  const clientKeys = ['client', 'client_name', 'customer', 'customer_name', 'host', 'name', 'contact']
-  const occasionKeys = ['occasion', 'event', 'event_type', 'type', 'description', 'service', 'gig', 'job']
-  const guestKeys = ['guests', 'guest_count', 'guest_count', 'headcount', 'pax', 'covers', 'people', 'attendees', 'party_size']
+  const dateKeys = [
+    'date',
+    'event_date',
+    'event_date',
+    'when',
+    'gig_date',
+    'job_date',
+    'service_date',
+  ]
+  const clientKeys = [
+    'client',
+    'client_name',
+    'customer',
+    'customer_name',
+    'host',
+    'name',
+    'contact',
+  ]
+  const occasionKeys = [
+    'occasion',
+    'event',
+    'event_type',
+    'type',
+    'description',
+    'service',
+    'gig',
+    'job',
+  ]
+  const guestKeys = [
+    'guests',
+    'guest_count',
+    'guest_count',
+    'headcount',
+    'pax',
+    'covers',
+    'people',
+    'attendees',
+    'party_size',
+  ]
   const cityKeys = ['city', 'location', 'location_city', 'venue', 'address', 'where', 'place']
-  const amountKeys = ['amount', 'paid', 'payment', 'price', 'fee', 'total', 'amount_paid', 'revenue', 'rate', 'charged', 'cost', 'invoice', 'gross', 'income', 'earnings']
-  const methodKeys = ['method', 'payment_method', 'how_paid', 'paid_via', 'paid_by', 'payment_type', 'pay_method']
+  const amountKeys = [
+    'amount',
+    'paid',
+    'payment',
+    'price',
+    'fee',
+    'total',
+    'amount_paid',
+    'revenue',
+    'rate',
+    'charged',
+    'cost',
+    'invoice',
+    'gross',
+    'income',
+    'earnings',
+  ]
+  const methodKeys = [
+    'method',
+    'payment_method',
+    'how_paid',
+    'paid_via',
+    'paid_by',
+    'payment_type',
+    'pay_method',
+  ]
   const notesKeys = ['notes', 'note', 'comments', 'additional', 'remarks', 'details', 'memo']
 
   if (dateKeys.includes(h)) return 'date'
@@ -189,12 +248,9 @@ function normalizeMethod(raw: string): string {
 // ROW → ParsedEventRow
 // ============================================
 
-function rowToEvent(
-  row: string[],
-  mappings: EventCsvColumnMapping[]
-): ParsedEventRow | null {
+function rowToEvent(row: string[], mappings: EventCsvColumnMapping[]): ParsedEventRow | null {
   const get = (type: EventCsvColumnType): string => {
-    const m = mappings.find(m => m.detected === type)
+    const m = mappings.find((m) => m.detected === type)
     if (!m || m.index >= row.length) return ''
     return row[m.index]?.trim() || ''
   }
@@ -250,7 +306,7 @@ export function parseEventsCsv(csvText: string): CsvEventsParseResult {
     }
   }
 
-  const headers = rawRows[0].map(h => h.trim().replace(/^"|"$/g, ''))
+  const headers = rawRows[0].map((h) => h.trim().replace(/^"|"$/g, ''))
   const dataRows = rawRows.slice(1)
 
   const columnMappings: EventCsvColumnMapping[] = headers.map((header, index) => ({
@@ -260,9 +316,9 @@ export function parseEventsCsv(csvText: string): CsvEventsParseResult {
   }))
 
   // Quality checks
-  const hasDate = columnMappings.some(m => m.detected === 'date')
-  const hasClient = columnMappings.some(m => m.detected === 'client')
-  const hasAmount = columnMappings.some(m => m.detected === 'amount')
+  const hasDate = columnMappings.some((m) => m.detected === 'date')
+  const hasClient = columnMappings.some((m) => m.detected === 'client')
+  const hasAmount = columnMappings.some((m) => m.detected === 'amount')
 
   if (!hasDate) {
     warnings.push(
@@ -284,7 +340,7 @@ export function parseEventsCsv(csvText: string): CsvEventsParseResult {
   let skippedRows = 0
 
   for (const row of dataRows) {
-    if (!row.some(c => c.trim())) continue
+    if (!row.some((c) => c.trim())) continue
     const parsed = rowToEvent(row, columnMappings)
     if (parsed) {
       rows.push(parsed)
@@ -303,7 +359,7 @@ export function parseEventsCsv(csvText: string): CsvEventsParseResult {
   return {
     rows,
     headers,
-    totalRows: dataRows.filter(r => r.some(c => c.trim())).length,
+    totalRows: dataRows.filter((r) => r.some((c) => c.trim())).length,
     skippedRows,
     warnings,
     confidence,

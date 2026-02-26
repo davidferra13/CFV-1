@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-export {}  // Makes this a TypeScript module — prevents 'declare const self' from conflicting with lib.dom.d.ts global
+export {} // Makes this a TypeScript module — prevents 'declare const self' from conflicting with lib.dom.d.ts global
 // ChefFlow Push Notification Service Worker Extension
 // Injected into the Workbox-generated sw.js by next-pwa at build time.
 // Handles: push event (show notification), notificationclick (navigate),
@@ -41,9 +41,7 @@ self.addEventListener('push', (event) => {
     renotify: true,
   }
 
-  event.waitUntil(
-    self.registration.showNotification(payload.title, options)
-  )
+  event.waitUntil(self.registration.showNotification(payload.title, options))
 })
 
 // ─── Notification Click ───────────────────────────────────────────────────────
@@ -53,29 +51,24 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
 
-  const actionUrl: string =
-    (event.notification.data?.action_url as string) ?? '/'
+  const actionUrl: string = (event.notification.data?.action_url as string) ?? '/'
   const fullUrl = new URL(actionUrl, self.location.origin).href
 
   event.waitUntil(
-    self.clients
-      .matchAll({ type: 'window', includeUncontrolled: true })
-      .then((clientList) => {
-        // Navigate an already-open ChefFlow window if one exists
-        for (const client of clientList) {
-          if (
-            client.url.startsWith(self.location.origin) &&
-            'focus' in client &&
-            'navigate' in client
-          ) {
-            return (client as WindowClient).navigate(fullUrl).then((c) =>
-              c?.focus()
-            )
-          }
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Navigate an already-open ChefFlow window if one exists
+      for (const client of clientList) {
+        if (
+          client.url.startsWith(self.location.origin) &&
+          'focus' in client &&
+          'navigate' in client
+        ) {
+          return (client as WindowClient).navigate(fullUrl).then((c) => c?.focus())
         }
-        // No existing window — open a new one
-        return self.clients.openWindow(fullUrl)
-      })
+      }
+      // No existing window — open a new one
+      return self.clients.openWindow(fullUrl)
+    })
   )
 })
 
@@ -122,9 +115,7 @@ self.addEventListener('pushsubscriptionchange', (event) => {
 
 function _cfUrlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
-  const base64 = (base64String + padding)
-    .replace(/-/g, '+')
-    .replace(/_/g, '/')
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
   const rawData = atob(base64)
   const output = new Uint8Array(rawData.length)
   for (let i = 0; i < rawData.length; i++) {

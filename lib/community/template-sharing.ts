@@ -20,11 +20,15 @@ export interface CommunityTemplate {
   created_at: string
 }
 
-export async function getCommunityTemplates(type?: CommunityTemplateType): Promise<CommunityTemplate[]> {
+export async function getCommunityTemplates(
+  type?: CommunityTemplateType
+): Promise<CommunityTemplate[]> {
   const supabase = createServerClient()
   let query = supabase
     .from('community_templates' as any)
-    .select('id, template_type, title, description, tags, cuisine_type, occasion_type, dietary_tags, is_published, download_count, created_at')
+    .select(
+      'id, template_type, title, description, tags, cuisine_type, occasion_type, dietary_tags, is_published, download_count, created_at'
+    )
     .eq('is_published', true)
     .order('download_count', { ascending: false })
     .limit(50)

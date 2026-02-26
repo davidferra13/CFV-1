@@ -1,16 +1,7 @@
 // Base Email Layout — Shared wrapper for all CheFlow emails
 // Clean, professional design with chef branding
 
-import {
-  Body,
-  Container,
-  Head,
-  Hr,
-  Html,
-  Preview,
-  Section,
-  Text,
-} from '@react-email/components'
+import { Body, Container, Head, Hr, Html, Preview, Section, Text } from '@react-email/components'
 import * as React from 'react'
 
 type BaseLayoutProps = {
@@ -28,14 +19,10 @@ export function BaseLayout({ preview, children }: BaseLayoutProps) {
           <Section style={header}>
             <Text style={logo}>CheFlow</Text>
           </Section>
-          <Section style={content}>
-            {children}
-          </Section>
+          <Section style={content}>{children}</Section>
           <Hr style={hr} />
           <Section style={footer}>
-            <Text style={footerText}>
-              Sent via CheFlow — Private chef management made simple.
-            </Text>
+            <Text style={footerText}>Sent via CheFlow — Private chef management made simple.</Text>
           </Section>
         </Container>
       </Body>

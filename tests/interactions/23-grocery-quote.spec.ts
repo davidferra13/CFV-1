@@ -22,7 +22,10 @@ test.describe('Grocery Quote — Page Load', () => {
     expect(bodyText.trim().length).toBeGreaterThan(20)
   })
 
-  test('/events/[id]/grocery-quote — shows grocery or recipe content', async ({ page, seedIds }) => {
+  test('/events/[id]/grocery-quote — shows grocery or recipe content', async ({
+    page,
+    seedIds,
+  }) => {
     await page.goto(`/events/${seedIds.eventIds.confirmed}/grocery-quote`)
     await page.waitForLoadState('networkidle')
     const hasContent = await page
@@ -38,13 +41,16 @@ test.describe('Grocery Quote — Page Load', () => {
 
   test('/events/[id]/grocery-quote — no JS errors on load', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto(`/events/${seedIds.eventIds.confirmed}/grocery-quote`)
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
   })
 
-  test('/events/[id]/grocery-quote — has back/breadcrumb link to event', async ({ page, seedIds }) => {
+  test('/events/[id]/grocery-quote — has back/breadcrumb link to event', async ({
+    page,
+    seedIds,
+  }) => {
     await page.goto(`/events/${seedIds.eventIds.confirmed}/grocery-quote`)
     await page.waitForLoadState('networkidle')
     const backLink = page
@@ -105,7 +111,7 @@ test.describe('Grocery Quote — Price Comparison', () => {
 
   test('Refreshing prices does not crash the page', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/events/${seedIds.eventIds.confirmed}/grocery-quote`)
     await page.waitForLoadState('networkidle')
@@ -142,14 +148,12 @@ test.describe('Grocery Quote — Event Detail Panel', () => {
 
   test('Grocery quote link navigates to grocery quote page', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/events/${seedIds.eventIds.confirmed}`)
     await page.waitForLoadState('networkidle')
 
-    const groceryLink = page
-      .locator(`a[href*="/grocery-quote"]`)
-      .first()
+    const groceryLink = page.locator(`a[href*="/grocery-quote"]`).first()
 
     if (await groceryLink.isVisible()) {
       await groceryLink.click()
@@ -182,7 +186,7 @@ test.describe('Grocery Quote — MealMe Store Prices', () => {
 
   test('No JS errors when MealMe data is absent', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/events/${seedIds.eventIds.confirmed}/grocery-quote`)
     await page.waitForLoadState('networkidle')

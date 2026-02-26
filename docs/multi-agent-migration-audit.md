@@ -12,6 +12,7 @@ Multiple Claude Code agents worked in parallel on separate features, each potent
 ## Audit Findings
 
 ### Migration State (Before Fix)
+
 - **27 migration files** found locally (including 1 placeholder)
 - **23 applied** to remote Supabase
 - **3 pending** (not yet applied):
@@ -22,12 +23,14 @@ Multiple Claude Code agents worked in parallel on separate features, each potent
 - **0 syntax errors** across all 27 files
 
 ### Bug Discovered: Client Conversation RLS (HIGH severity)
+
 - **File:** `20260221000005_client_conversation_create.sql`
 - **Bug:** `conversations_client_insert` and `conv_participants_client_insert` RLS policies used `get_current_tenant_id()`, which only returns a value for chef users. For clients, it returns NULL, making `tenant_id = NULL` always false.
 - **Impact:** Clients could never create conversations despite the migration's stated purpose.
 - **Root cause:** `get_current_tenant_id()` is defined as `SELECT entity_id FROM user_roles WHERE role = 'chef'` - it's chef-only by design.
 
 ### Minor Issues (Not Fixed - Low Priority)
+
 1. **Duplicate trigger functions:** `update_updated_at_column()` (L1), `update_updated_at_timestamp()` (L3), `update_layer4_updated_at()` (L4) - all identical behavior
 2. **Redundant index:** `idx_inquiries_converted` (L2) and `idx_inquiries_converted_to_event` (L3) on same column
 3. **`notifications_insert` policy:** Only works for chefs via `get_current_tenant_id()` - likely fine if all inserts go through service role
@@ -35,15 +38,19 @@ Multiple Claude Code agents worked in parallel on separate features, each potent
 ## Actions Taken
 
 ### 1. Applied 3 Pending Migrations
+
 All three were additive and safe:
+
 - Contact submissions table with RLS (anon insert, chef select)
 - Security hardening: removed overly permissive `USING(true)` anon policies on guest/share tables
 - Claim pipeline columns on contact_submissions
 
 ### 2. Created Fix Migration (`20260221000010`)
+
 **File:** `20260221000010_fix_client_conversation_rls.sql`
 
 Replaced broken policies:
+
 ```sql
 -- BEFORE (broken): get_current_tenant_id() returns NULL for clients
 tenant_id = get_current_tenant_id()
@@ -53,22 +60,25 @@ tenant_id = (SELECT tenant_id FROM clients WHERE id = get_current_client_id())
 ```
 
 ### 3. Applied Fix Migration
+
 Successfully pushed to remote Supabase.
 
 ### 4. Regenerated Types
+
 `types/database.ts` regenerated from remote schema. Now includes `contact_submissions` table with all claim columns. Fixed CLI log line ("Initialising login role...") that leaked into the types file.
 
 ### 5. Build Verification
+
 `next build` passes cleanly with zero TypeScript errors.
 
 ## Final State
 
-| Metric | Value |
-|--------|-------|
-| Total migrations | 27 (+ 1 fix = 28) |
-| Local = Remote | All 28 matched |
-| TypeScript build | Pass |
-| Duplicate timestamps | 0 |
+| Metric               | Value             |
+| -------------------- | ----------------- |
+| Total migrations     | 27 (+ 1 fix = 28) |
+| Local = Remote       | All 28 matched    |
+| TypeScript build     | Pass              |
+| Duplicate timestamps | 0                 |
 
 ## Lessons Learned
 

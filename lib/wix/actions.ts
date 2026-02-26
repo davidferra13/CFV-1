@@ -56,16 +56,14 @@ export async function setupWixConnection(): Promise<{ webhookUrl: string; webhoo
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
 
   // Upsert: create or update the connection
-  const { error } = await supabase
-    .from('wix_connections')
-    .upsert(
-      {
-        chef_id: user.entityId,
-        tenant_id: user.tenantId!,
-        webhook_secret: webhookSecret,
-      },
-      { onConflict: 'chef_id' }
-    )
+  const { error } = await supabase.from('wix_connections').upsert(
+    {
+      chef_id: user.entityId,
+      tenant_id: user.tenantId!,
+      webhook_secret: webhookSecret,
+    },
+    { onConflict: 'chef_id' }
+  )
 
   if (error) {
     console.error('[setupWixConnection] Error:', error)
@@ -85,10 +83,7 @@ export async function disconnectWix(): Promise<void> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await supabase
-    .from('wix_connections')
-    .delete()
-    .eq('chef_id', user.entityId)
+  const { error } = await supabase.from('wix_connections').delete().eq('chef_id', user.entityId)
 
   if (error) {
     console.error('[disconnectWix] Error:', error)
@@ -100,7 +95,10 @@ export async function disconnectWix(): Promise<void> {
 
 // ─── Regenerate Webhook Secret ───────────────────────────────────────────
 
-export async function regenerateWixSecret(): Promise<{ webhookUrl: string; webhookSecret: string }> {
+export async function regenerateWixSecret(): Promise<{
+  webhookUrl: string
+  webhookSecret: string
+}> {
   const user = await requireChef()
   const supabase = createServerClient()
 

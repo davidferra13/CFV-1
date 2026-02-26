@@ -27,7 +27,7 @@ export type PipelineRevenueForecast = {
 export type FunnelStageMetric = {
   stage: string
   count: number
-  conversionRate: number | null  // null for the first stage
+  conversionRate: number | null // null for the first stage
 }
 
 export type FunnelMetrics = {
@@ -40,16 +40,22 @@ export type FunnelMetrics = {
 // --- Zod Schemas ---
 
 const GetFunnelMetricsSchema = z.object({
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  startDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
+  endDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
 })
 
 // --- Pipeline Stage Weights ---
 
 const PIPELINE_WEIGHTS: Record<string, number> = {
   proposed: 0.25,
-  accepted: 0.50,
-  paid: 0.90,
+  accepted: 0.5,
+  paid: 0.9,
   confirmed: 0.95,
 }
 
@@ -84,7 +90,7 @@ export async function getPipelineRevenueForecast(): Promise<PipelineRevenueForec
 
   // Build stages in pipeline order
   const stageOrder = ['proposed', 'accepted', 'paid', 'confirmed']
-  const stages: PipelineStage[] = stageOrder.map(status => {
+  const stages: PipelineStage[] = stageOrder.map((status) => {
     const data = stageMap.get(status) || { count: 0, totalCents: 0 }
     const weight = PIPELINE_WEIGHTS[status] || 0
     return {
@@ -146,21 +152,19 @@ export async function getFunnelMetrics(
 
   // Count events that reached at least each stage
   // FSM order: draft -> proposed -> accepted -> paid -> confirmed -> in_progress -> completed
-  const quoteSent = allEvents.filter(e =>
+  const quoteSent = allEvents.filter((e) =>
     ['proposed', 'accepted', 'paid', 'confirmed', 'in_progress', 'completed'].includes(e.status)
   ).length
 
-  const accepted = allEvents.filter(e =>
+  const accepted = allEvents.filter((e) =>
     ['accepted', 'paid', 'confirmed', 'in_progress', 'completed'].includes(e.status)
   ).length
 
-  const paid = allEvents.filter(e =>
+  const paid = allEvents.filter((e) =>
     ['paid', 'confirmed', 'in_progress', 'completed'].includes(e.status)
   ).length
 
-  const completed = allEvents.filter(e =>
-    e.status === 'completed'
-  ).length
+  const completed = allEvents.filter((e) => e.status === 'completed').length
 
   const totalInquiries = inquiryCount ?? 0
 
@@ -174,37 +178,29 @@ export async function getFunnelMetrics(
     {
       stage: 'Quotes Sent',
       count: quoteSent,
-      conversionRate: totalInquiries > 0
-        ? parseFloat(((quoteSent / totalInquiries) * 100).toFixed(1))
-        : 0,
+      conversionRate:
+        totalInquiries > 0 ? parseFloat(((quoteSent / totalInquiries) * 100).toFixed(1)) : 0,
     },
     {
       stage: 'Accepted',
       count: accepted,
-      conversionRate: quoteSent > 0
-        ? parseFloat(((accepted / quoteSent) * 100).toFixed(1))
-        : 0,
+      conversionRate: quoteSent > 0 ? parseFloat(((accepted / quoteSent) * 100).toFixed(1)) : 0,
     },
     {
       stage: 'Paid',
       count: paid,
-      conversionRate: accepted > 0
-        ? parseFloat(((paid / accepted) * 100).toFixed(1))
-        : 0,
+      conversionRate: accepted > 0 ? parseFloat(((paid / accepted) * 100).toFixed(1)) : 0,
     },
     {
       stage: 'Completed',
       count: completed,
-      conversionRate: paid > 0
-        ? parseFloat(((completed / paid) * 100).toFixed(1))
-        : 0,
+      conversionRate: paid > 0 ? parseFloat(((completed / paid) * 100).toFixed(1)) : 0,
     },
   ]
 
   // Overall conversion: completed / inquiries
-  const overallConversionRate = totalInquiries > 0
-    ? parseFloat(((completed / totalInquiries) * 100).toFixed(1))
-    : 0
+  const overallConversionRate =
+    totalInquiries > 0 ? parseFloat(((completed / totalInquiries) * 100).toFixed(1)) : 0
 
   return {
     stages,

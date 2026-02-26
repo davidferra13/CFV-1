@@ -66,10 +66,6 @@ RESPOND WITH ONLY valid JSON (no markdown, no explanation):
  * Parse a single recipe from natural language text
  */
 export async function parseRecipeFromText(rawText: string): Promise<ParseResult<ParsedRecipe>> {
-  const result = await parseWithAI(
-    RECIPE_SYSTEM_PROMPT,
-    rawText,
-    ParsedRecipeSchema
-  )
+  const result = await parseWithAI(RECIPE_SYSTEM_PROMPT, rawText, ParsedRecipeSchema)
   return result
 }

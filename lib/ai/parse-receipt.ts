@@ -16,7 +16,14 @@ const LineItemSchema = z.object({
   unitPriceCents: z.number().int(),
   totalPriceCents: z.number().int(),
   category: z.enum([
-    'protein', 'produce', 'dairy', 'pantry', 'alcohol', 'supplies', 'personal', 'unknown'
+    'protein',
+    'produce',
+    'dairy',
+    'pantry',
+    'alcohol',
+    'supplies',
+    'personal',
+    'unknown',
   ]),
 })
 
@@ -112,7 +119,9 @@ export async function parseReceiptImage(
 ): Promise<ReceiptExtraction> {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
-    throw new Error('GEMINI_API_KEY is not configured. Receipt extraction requires a Gemini API key.')
+    throw new Error(
+      'GEMINI_API_KEY is not configured. Receipt extraction requires a Gemini API key.'
+    )
   }
 
   const ai = new GoogleGenAI({ apiKey })

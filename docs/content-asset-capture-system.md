@@ -81,24 +81,28 @@ SOLO SETUP
 
 ## Files Changed
 
-| File | Change |
-|---|---|
+| File                                          | Change                                                                                                                                                                                                 |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `lib/documents/generate-content-shot-list.ts` | **New.** Generator following the fetch → render → generate pattern used by all other document generators. Minimal DB fetch (event name, date, client name for header). Static content everywhere else. |
-| `app/api/documents/[eventId]/route.ts` | Added `case 'shots'` to the switch. Route: `GET /api/documents/[eventId]?type=shots` |
-| `components/documents/document-section.tsx` | Added a new "Content Asset Capture Sheet" card below the Travel Route card. Always shows as "Always ready" since no menu data is required. Supports inline PDF viewer modal and new-tab ↗ link. |
+| `app/api/documents/[eventId]/route.ts`        | Added `case 'shots'` to the switch. Route: `GET /api/documents/[eventId]?type=shots`                                                                                                                   |
+| `components/documents/document-section.tsx`   | Added a new "Content Asset Capture Sheet" card below the Travel Route card. Always shows as "Always ready" since no menu data is required. Supports inline PDF viewer modal and new-tab ↗ link.        |
 
 ---
 
 ## Design Decisions
 
 ### Static content, dynamic header
+
 The shot list is identical every event. Only the header changes (event name, date, client). This is intentional — the value of the sheet is its repeatability. A chef who follows the same shot list at every dinner builds a consistent, recognizable content library over time.
 
 ### Not included in the "all" combined PDF
+
 The eight operational sheets (`all` type) cover cooking execution. The shot list is a marketing tool. Mixing it into the operational packet would blur that boundary. It gets its own card in the UI and its own `?type=shots` route.
 
 ### "Never-Miss Five" amber box
+
 The five highest-ROI captures are called out visually at the top of the sheet so a chef who gets behind during service knows which shots to prioritize above all others. These five were selected based on research into what performs best on TikTok and Instagram Reels for food/cooking content:
+
 - **Knife work** (overhead) — most reliable view-driver for cooking content
 - **Pan sizzle** (side, with sound) — audio alone drives engagement; no editing needed
 - **Hero plate overhead** — primary portfolio asset, books the next client
@@ -106,26 +110,29 @@ The five highest-ROI captures are called out visually at the top of the sheet so
 - **Ingredient flat lay** — behind-the-scenes format, strong shareability, zero service interference
 
 ### Solo-first design
+
 Every shot and tip assumes a one-person operation. The document:
+
 - Recommends only 3 phone mount positions (more = distraction)
 - Recommends specific affordable gear (~$50 total)
 - Emphasizes pre-mounting before service rather than during
 - Advises filming first and reviewing after guests leave
 
 ### Brand consistency section
+
 Consistent visuals across events compound over time — a recognizable feed looks like a portfolio rather than a random collection. The four checkboxes lock in the decisions that have the highest visual impact: plate angle, surface props, edit preset, opening shot type.
 
 ---
 
 ## Platform Specs (Researched February 2026)
 
-| Platform | Format | Aspect Ratio | Video Length |
-|---|---|---|---|
-| TikTok | Vertical video | 9:16 (1080×1920) | 15 sec – 10 min |
-| Instagram Reels | Vertical video | 9:16 (1080×1920) | Up to 20 min |
-| Instagram Stories | Vertical photo/video | 9:16 | Max 60 sec per card |
-| Instagram Feed | Photo or video | 4:5 preferred (1080×1350) | Up to 60 sec |
-| Facebook | Photo or video | 1:1 or 4:5 | Up to 240 min |
+| Platform          | Format               | Aspect Ratio              | Video Length        |
+| ----------------- | -------------------- | ------------------------- | ------------------- |
+| TikTok            | Vertical video       | 9:16 (1080×1920)          | 15 sec – 10 min     |
+| Instagram Reels   | Vertical video       | 9:16 (1080×1920)          | Up to 20 min        |
+| Instagram Stories | Vertical photo/video | 9:16                      | Max 60 sec per card |
+| Instagram Feed    | Photo or video       | 4:5 preferred (1080×1350) | Up to 60 sec        |
+| Facebook          | Photo or video       | 1:1 or 4:5                | Up to 240 min       |
 
 **Universal rule:** Shoot everything in 9:16 vertical at max quality. Crop vertical → square or 4:5 freely. Cannot go the other direction.
 

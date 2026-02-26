@@ -4,10 +4,10 @@
 
 Every dish the chef makes can now have a photo. Photos live in two places:
 
-| Where | What it captures | Storage field |
-|---|---|---|
-| **Recipe** | Canonical photo — "this is how I make this dish" | `recipes.photo_url` |
-| **Dish on menu** | Plating photo — "this is how it looked at the Smith dinner" | `dishes.photo_url` |
+| Where            | What it captures                                            | Storage field       |
+| ---------------- | ----------------------------------------------------------- | ------------------- |
+| **Recipe**       | Canonical photo — "this is how I make this dish"            | `recipes.photo_url` |
+| **Dish on menu** | Plating photo — "this is how it looked at the Smith dinner" | `dishes.photo_url`  |
 
 Both levels are independent. A recipe can have a canonical reference photo while each specific event shows a different plate. Or the chef can just tag the recipe and leave the dish-level blank.
 
@@ -29,31 +29,31 @@ Each dish row now has a **64×64 photo thumbnail** on the right side. A camera i
 
 ### New
 
-| File | Purpose |
-|---|---|
-| `supabase/migrations/20260305000009_dish_photos.sql` | Adds `dishes.photo_url` column + creates `dish-photos` public storage bucket with RLS |
-| `lib/dishes/photo-actions.ts` | Server actions: `uploadRecipePhoto`, `removeRecipePhoto`, `uploadDishPhoto`, `removeDishPhoto` |
-| `components/dishes/dish-photo-upload.tsx` | Client component: full-width hero (recipes) and compact 64×64 thumbnail (menu editor) |
+| File                                                 | Purpose                                                                                        |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `supabase/migrations/20260305000009_dish_photos.sql` | Adds `dishes.photo_url` column + creates `dish-photos` public storage bucket with RLS          |
+| `lib/dishes/photo-actions.ts`                        | Server actions: `uploadRecipePhoto`, `removeRecipePhoto`, `uploadDishPhoto`, `removeDishPhoto` |
+| `components/dishes/dish-photo-upload.tsx`            | Client component: full-width hero (recipes) and compact 64×64 thumbnail (menu editor)          |
 
 ### Modified
 
-| File | Change |
-|---|---|
-| `app/(chef)/recipes/[id]/recipe-detail-client.tsx` | Imports `DishPhotoUpload`, renders it below the recipe header |
-| `lib/menus/editor-actions.ts` | Added `photo_url` to `EditorDish` type; updated `getEditorContext` to fetch and map `photo_url` |
-| `components/menus/menu-doc-editor.tsx` | `CourseBlock` gets `photoUrl` state + renders `<DishPhotoUpload compact />` beside each dish |
+| File                                               | Change                                                                                          |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `app/(chef)/recipes/[id]/recipe-detail-client.tsx` | Imports `DishPhotoUpload`, renders it below the recipe header                                   |
+| `lib/menus/editor-actions.ts`                      | Added `photo_url` to `EditorDish` type; updated `getEditorContext` to fetch and map `photo_url` |
+| `components/menus/menu-doc-editor.tsx`             | `CourseBlock` gets `photoUrl` state + renders `<DishPhotoUpload compact />` beside each dish    |
 
 ---
 
 ## Storage Bucket: `dish-photos`
 
-| Property | Value |
-|---|---|
-| Visibility | **Public** — permanent URLs, no signed URLs needed |
-| Max file size | 10 MB |
-| Allowed types | JPEG, PNG, HEIC, HEIF, WebP |
-| Path — recipe | `{tenantId}/recipes/{recipeId}.{ext}` |
-| Path — dish | `{tenantId}/dishes/{dishId}.{ext}` |
+| Property      | Value                                              |
+| ------------- | -------------------------------------------------- |
+| Visibility    | **Public** — permanent URLs, no signed URLs needed |
+| Max file size | 10 MB                                              |
+| Allowed types | JPEG, PNG, HEIC, HEIF, WebP                        |
+| Path — recipe | `{tenantId}/recipes/{recipeId}.{ext}`              |
+| Path — dish   | `{tenantId}/dishes/{dishId}.{ext}`                 |
 
 **Why public?** Recipe and dish photos are portfolio/showcase content. The chef may share them with clients, use them for social posts, or display them on their public profile. Signed URLs would expire and break those links. A public bucket with tenant-namespaced paths is the right trade-off.
 
@@ -96,5 +96,6 @@ supabase gen types typescript --linked > types/database.ts
 ```
 
 After regeneration, remove the `(supabase as any)` casts in:
+
 - `lib/dishes/photo-actions.ts` (4 cast sites)
 - `lib/menus/editor-actions.ts` (1 cast site, 1 explicit `any[]` cast)

@@ -22,16 +22,16 @@ The user used Codex to:
 
 ## Audit Results
 
-| Check | Result |
-|-------|--------|
-| **Next.js build** (`next build`) | Compiles successfully |
-| **TypeScript** (`tsc --noEmit`) | Zero errors |
-| **Nav config wiring** | All imports/exports match between `nav-config.tsx`, `chef-nav.tsx`, and `universal-search.ts` |
-| **Button.tsx change** | Safe — `href` still declared explicitly; no codebase code uses anchor-specific props on Button |
-| **FOH menu imports** | All import chains resolve — PDF generator, email template, notifications, API route, document readiness |
-| **Search table references** | All 11 queried tables exist in `types/database.ts` with correct columns |
-| **No database migrations** | Confirmed — no schema changes, no data risk |
-| **No package changes** | `package.json` only had line-ending diff (CRLF/LF) |
+| Check                            | Result                                                                                                  |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Next.js build** (`next build`) | Compiles successfully                                                                                   |
+| **TypeScript** (`tsc --noEmit`)  | Zero errors                                                                                             |
+| **Nav config wiring**            | All imports/exports match between `nav-config.tsx`, `chef-nav.tsx`, and `universal-search.ts`           |
+| **Button.tsx change**            | Safe — `href` still declared explicitly; no codebase code uses anchor-specific props on Button          |
+| **FOH menu imports**             | All import chains resolve — PDF generator, email template, notifications, API route, document readiness |
+| **Search table references**      | All 11 queried tables exist in `types/database.ts` with correct columns                                 |
+| **No database migrations**       | Confirmed — no schema changes, no data risk                                                             |
+| **No package changes**           | `package.json` only had line-ending diff (CRLF/LF)                                                      |
 
 ---
 
@@ -46,19 +46,24 @@ The user used Codex to:
 ## Notes for Future Work
 
 ### Placeholder pages have no auth or data fetching
+
 All ~130 stub pages just render a title and "This section is currently being built." They do **not** call `requireChef()`, do not query Supabase, and have no tenant scoping. When building them out, each will need:
+
 - `requireChef()` auth check
 - Tenant-scoped Supabase queries
 - Proper error handling
 - Connection to real data (not mock/hardcoded)
 
 ### Culinary components are raw stubs
+
 The 9 files in `components/culinary/` use inline styles and `React.FC` patterns instead of the project's Tailwind + server action conventions. They should be rewritten when the culinary domain is built out.
 
 ### FOH menu auto-sends on confirmation
+
 `lib/events/transitions.ts` now automatically generates and emails the FOH menu PDF when an event transitions to `confirmed`. This is wrapped in try/catch (non-blocking), but it does send without explicit chef opt-in. Consider whether this should require a manual trigger instead, per the AI policy's "explicit chef confirmation" principle.
 
 ### Server action imports React components
+
 `lib/search/universal-search.ts` (a `'use server'` module) imports from `nav-config.tsx`, which includes Lucide icon component references. This works because the server action only reads `.href`/`.label`/`.children` properties, never renders icons. But it means icon component code is unnecessarily included in the server bundle.
 
 ---

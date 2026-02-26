@@ -28,7 +28,10 @@ test.describe('Error Handling — Entity 404s', () => {
       .isVisible()
       .catch(() => false)
     const redirected = !page.url().includes(fakeUuid)
-    expect(status === 404 || hasNotFound || redirected, 'Fake event ID should show 404 or redirect').toBeTruthy()
+    expect(
+      status === 404 || hasNotFound || redirected,
+      'Fake event ID should show 404 or redirect'
+    ).toBeTruthy()
   })
 
   test('/clients/[fakeId] — shows 404 or redirect (not 500)', async ({ page }) => {
@@ -184,7 +187,7 @@ test.describe('Error Handling — API Endpoints', () => {
 test.describe('Error Handling — JS Error Resilience', () => {
   test('Navigating rapidly between pages does not throw JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     const pages = ['/dashboard', '/events', '/clients', '/quotes', '/finance']
     for (const path of pages) {
@@ -197,7 +200,7 @@ test.describe('Error Handling — JS Error Resilience', () => {
 
   test('Browser back button from 404 does not crash the app', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
@@ -212,9 +215,11 @@ test.describe('Error Handling — JS Error Resilience', () => {
     expect(page.url()).toMatch(/dashboard/)
   })
 
-  test('Network error resilience — page does not white-screen after slow load', async ({ page }) => {
+  test('Network error resilience — page does not white-screen after slow load', async ({
+    page,
+  }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
@@ -250,7 +255,7 @@ test.describe('Error Handling — Form Error States', () => {
 
   test('Expense form with text in amount field handles gracefully', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/expenses/new')
     await page.waitForLoadState('networkidle')

@@ -4,19 +4,13 @@
 
 import type { Condition, AutomationContext } from './types'
 
-export function evaluateConditions(
-  conditions: Condition[],
-  context: AutomationContext
-): boolean {
+export function evaluateConditions(conditions: Condition[], context: AutomationContext): boolean {
   if (!conditions || conditions.length === 0) return true
 
   return conditions.every((condition) => evaluateSingle(condition, context.fields))
 }
 
-function evaluateSingle(
-  condition: Condition,
-  fields: Record<string, unknown>
-): boolean {
+function evaluateSingle(condition: Condition, fields: Record<string, unknown>): boolean {
   const fieldValue = fields[condition.field]
 
   // If the field doesn't exist in context, the condition fails

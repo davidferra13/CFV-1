@@ -7,6 +7,7 @@ Phase 12 adds the Recipe Bible: the full system for managing, browsing, creating
 ## Files Created
 
 ### Server Actions
+
 - **`lib/recipes/actions.ts`** — 15+ server actions for recipe and ingredient management:
   - `createRecipe`, `getRecipes`, `getRecipeById`, `updateRecipe`, `deleteRecipe`
   - `addIngredientToRecipe`, `updateRecipeIngredient`, `removeIngredientFromRecipe`
@@ -17,6 +18,7 @@ Phase 12 adds the Recipe Bible: the full system for managing, browsing, creating
   - All follow established patterns: `requireChef()`, tenant scoping, Zod validation, `revalidatePath`
 
 ### Recipe Pages
+
 - **`app/(chef)/recipes/page.tsx`** — Recipe Library (server component)
 - **`app/(chef)/recipes/recipes-client.tsx`** — Library client: search, category filter, sort (A-Z/Newest/Most Used), recipe grid with category badges, ingredient counts, usage counts, cost estimates
 - **`app/(chef)/recipes/new/page.tsx`** — Create Recipe (server component)
@@ -38,6 +40,7 @@ Phase 12 adds the Recipe Bible: the full system for managing, browsing, creating
 - **`app/(chef)/recipes/ingredients/ingredients-client.tsx`** — Searchable, filterable ingredient table with inline editing
 
 ### Components
+
 - **`components/recipes/recipe-capture-prompt.tsx`** — Post-event recipe capture prompt:
   - Shows unrecorded components after completed events
   - "Quick Capture" inline text area with AI parsing
@@ -48,6 +51,7 @@ Phase 12 adds the Recipe Bible: the full system for managing, browsing, creating
 ## Files Modified
 
 ### Event Detail Page
+
 - **`app/(chef)/events/[id]/page.tsx`** — Added recipe capture section:
   - Imports `getUnrecordedComponentsForEvent` and `isAIConfigured`
   - Imports `RecipeCapturePrompt` component
@@ -55,6 +59,7 @@ Phase 12 adds the Recipe Bible: the full system for managing, browsing, creating
   - Renders recipe capture prompt for completed/in_progress events with menus
 
 ### Menu Detail
+
 - **`app/(chef)/menus/[id]/page.tsx`** — Fetches recipe names for linked components, passes `recipeMap` to client
 - **`app/(chef)/menus/[id]/menu-detail-client.tsx`** — Added per-component recipe status:
   - Shows "Recipe" link (green) for components with linked recipes
@@ -63,12 +68,14 @@ Phase 12 adds the Recipe Bible: the full system for managing, browsing, creating
   - "Unlink" option for removing recipe links
 
 ### Pre-existing Fixes
+
 - **`lib/chef/actions.ts`** — Fixed type errors for `chef_preferences` table (not in generated types, pending migration). Used `any` assertion helper until types are regenerated.
 - **`lib/scheduling/actions.ts`** — Fixed type errors for `travel_time_minutes` column (not in events table types). Refactored to use `mapEventToScheduling` helper with `any` assertion.
 
 ## How It Connects
 
 ### Data Flow: Component → Recipe Linking
+
 ```
 menus → dishes → components (recipe_id FK) → recipes → recipe_ingredients → ingredients
 ```
@@ -76,7 +83,9 @@ menus → dishes → components (recipe_id FK) → recipes → recipe_ingredient
 Components are the bridge between menus and recipes. When a component has `recipe_id` set, that recipe (and its cost data) travels with the component across any future menu.
 
 ### Recipe Growth Mechanism
+
 The Recipe Bible builds primarily through **post-event capture**:
+
 1. Chef completes a dinner
 2. Event detail page shows unrecorded components
 3. Chef types a quick description or clicks through to full form
@@ -85,15 +94,18 @@ The Recipe Bible builds primarily through **post-event capture**:
 6. After 20 dinners = 60-100 recipes, without ever "sitting down to write a cookbook"
 
 ### Cost Data Integration
+
 - `recipe_cost_summary` view computes total cost and cost-per-portion from ingredient prices
 - `ingredient_usage_summary` view tracks how many recipes use each ingredient
 - Cost estimates improve over time as receipt extraction (Phase 11) fills in ingredient prices
 - UI shows "Complete" or "Estimated" badge based on `has_all_prices` flag
 
 ### Find-or-Create Pattern
+
 Ingredients use case-insensitive find-or-create: when adding "heavy cream" to a recipe, the system searches existing ingredients first. This prevents duplicates and ensures cost data accumulates on a single record.
 
 ### Smart Import Reuse
+
 The recipe creation page reuses `parseRecipeFromText()` from Phase 8's Smart Import. The post-event Quick Capture also uses it for inline parsing.
 
 ## Architecture Decisions
@@ -104,11 +116,13 @@ The recipe creation page reuses `parseRecipeFromText()` from Phase 8's Smart Imp
 4. **Pre-fill from context** — Recipe creation supports URL params (`component`, `componentName`, `componentCategory`) so creating a recipe from a component prompt pre-fills the form and auto-links on save.
 
 ## Build Status
+
 - TypeScript: 0 errors in recipe code
 - Next.js build: Clean compilation, all recipe pages render
 - Pre-existing type errors in `lib/chef/actions.ts` and `lib/scheduling/actions.ts` resolved with type assertion helpers
 
 ## Checklist
+
 - [x] `lib/recipes/actions.ts` exists with 15+ functions
 - [x] Recipe CRUD works (create, read, update, delete)
 - [x] Ingredient management works (find-or-create, add to recipe, remove)

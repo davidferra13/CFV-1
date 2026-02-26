@@ -42,12 +42,12 @@ The "Get in Touch" button on `/chef/[slug]` now links to `/chef/[slug]/inquire` 
 
 ## Files
 
-| File | Action | Purpose |
-|------|--------|---------|
-| `lib/inquiries/public-actions.ts` | New | Server action: slug lookup, client creation, inquiry creation, event creation |
-| `app/(public)/chef/[slug]/inquire/page.tsx` | New | Public inquiry form page with chef branding |
-| `components/public/public-inquiry-form.tsx` | Replaced stub | Full form component with validation and success states |
-| `app/(public)/chef/[slug]/page.tsx` | Modified | CTA link updated from `/contact` to `/chef/[slug]/inquire` |
+| File                                        | Action        | Purpose                                                                       |
+| ------------------------------------------- | ------------- | ----------------------------------------------------------------------------- |
+| `lib/inquiries/public-actions.ts`           | New           | Server action: slug lookup, client creation, inquiry creation, event creation |
+| `app/(public)/chef/[slug]/inquire/page.tsx` | New           | Public inquiry form page with chef branding                                   |
+| `components/public/public-inquiry-form.tsx` | Replaced stub | Full form component with validation and success states                        |
+| `app/(public)/chef/[slug]/page.tsx`         | Modified      | CTA link updated from `/contact` to `/chef/[slug]/inquire`                    |
 
 ## Reused Code
 
@@ -83,6 +83,7 @@ Chef opens dashboard → sees new client, new inquiry, new draft event — all l
 ```
 
 From here, the chef can:
+
 - Review and enrich the client record
 - Advance the inquiry through the pipeline (new → awaiting_client → ...)
 - Update the draft event with confirmed details (serve time, full address, pricing)

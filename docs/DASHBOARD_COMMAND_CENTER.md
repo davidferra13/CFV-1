@@ -7,6 +7,7 @@ The chef dashboard was expanded from 9 data streams to 16, turning it from a "pr
 ## Why
 
 The original dashboard answered: "What can I safely prepare right now?" That's a great core question, but a chef opening the app first thing in the morning also needs to know:
+
 - What's my week look like?
 - Does anyone owe me money?
 - Are any quotes about to expire?
@@ -17,15 +18,15 @@ All of this data already existed in the system but was buried in subpages. The d
 
 ## New Data Streams Added
 
-| # | Data Stream | Source | What It Shows |
-|---|---|---|---|
-| 1 | Week at a Glance | `getWeekSchedule(0)` | 7-day strip with event/prep/free days, burnout warnings |
-| 2 | Outstanding Payments | `getOutstandingPayments()` (**new**) | Events with unpaid balances, total outstanding |
-| 3 | Pending Quotes | `getDashboardQuoteStats()` (**new**) | Draft/sent counts, quotes expiring within 3 days |
-| 4 | Event Counts | `getDashboardEventCounts()` (**new**) | This month + YTD totals, completed counts |
-| 5 | Month-over-Month Revenue | `getMonthOverMonthRevenue()` (**new**) | Current month revenue vs previous, profit, % change |
-| 6 | Monthly Expenses | `getCurrentMonthExpenseSummary()` (**new**) | Business + total expenses for current month |
-| 7 | Loyalty Opportunities | `getClientsApproachingRewards()` | Clients close to earning rewards |
+| #   | Data Stream              | Source                                      | What It Shows                                           |
+| --- | ------------------------ | ------------------------------------------- | ------------------------------------------------------- |
+| 1   | Week at a Glance         | `getWeekSchedule(0)`                        | 7-day strip with event/prep/free days, burnout warnings |
+| 2   | Outstanding Payments     | `getOutstandingPayments()` (**new**)        | Events with unpaid balances, total outstanding          |
+| 3   | Pending Quotes           | `getDashboardQuoteStats()` (**new**)        | Draft/sent counts, quotes expiring within 3 days        |
+| 4   | Event Counts             | `getDashboardEventCounts()` (**new**)       | This month + YTD totals, completed counts               |
+| 5   | Month-over-Month Revenue | `getMonthOverMonthRevenue()` (**new**)      | Current month revenue vs previous, profit, % change     |
+| 6   | Monthly Expenses         | `getCurrentMonthExpenseSummary()` (**new**) | Business + total expenses for current month             |
+| 7   | Loyalty Opportunities    | `getClientsApproachingRewards()`            | Clients close to earning rewards                        |
 
 ## Files Created
 
@@ -58,15 +59,19 @@ All of this data already existed in the system but was buried in subpages. The d
 ## Architecture Notes
 
 ### Graceful Degradation
+
 Every data fetch is wrapped in the `safe()` helper. If any single stream fails (DB timeout, missing table, auth issue), the rest of the dashboard still renders. Failed sections degrade to their empty defaults — no blank page.
 
 ### Query Count
+
 16 parallel data fetches, each independently authenticated. Internally these expand to ~24 Supabase queries total. All run concurrently via `Promise.all` against Supabase's connection pooler. Acceptable for a server-rendered dashboard page.
 
 ### No Client Components Added
+
 The entire dashboard remains a server component. The `WeekStrip` is also a server component. No client-side JavaScript was added — the dashboard is fully server-rendered.
 
 ### What Was Intentionally NOT Added
+
 - **Unread messages** — The messaging system is a communication LOG, not an inbox. "Unread" isn't meaningful for a log.
 - **Document readiness per event** — Already covered by the prep prompts system, which generates category=documents prompts for missing documents.
 - **Dashboard customization / widget reordering** — Over-engineering for V1.
@@ -75,6 +80,7 @@ The entire dashboard remains a server component. The `WeekStrip` is also a serve
 ## How It Connects
 
 The dashboard is the entry point for the chef portal. Every section links deeper:
+
 - Week strip → `/schedule`
 - Inquiry alert → `/inquiries?status=new`
 - Outstanding payments → `/financials`
@@ -86,6 +92,7 @@ The dashboard is the entry point for the chef portal. Every section links deeper
 - Business cards → respective detail pages
 
 The dashboard now answers 9 questions at a glance:
+
 1. What's happening today?
 2. What does my week look like?
 3. What needs my immediate attention?
@@ -103,10 +110,12 @@ The dashboard now answers 9 questions at a glance:
 After the initial overhaul, a thorough audit found 7 display-level gaps where data was either fetched but not rendered, or rendered without enough detail to be actionable. All 7 were fixed. Data stream count increased from 16 to 17.
 
 ### Gap 1: Tips Were Invisible
+
 - **Problem**: `getTenantFinancialSummary()` returns `totalTipsCents`, but the revenue card only showed revenue + MoM change.
 - **Fix**: Added a tips line to the Revenue card: `+ $X.XX in tips`. Only renders when tips > 0.
 
 ### Gap 2: Guest Counts Missing Everywhere
+
 - **Problem**: Week strip showed event count but not how many people the chef is cooking for. Events card showed event count but not guest volume.
 - **Fix (3 files)**:
   - `lib/scheduling/types.ts` — Added `guestCount: number` to `WeekDay.events[]` interface.
@@ -115,40 +124,46 @@ After the initial overhaul, a thorough audit found 7 display-level gaps where da
   - Dashboard Events card — Shows total guests this month + YTD.
 
 ### Gap 3: Outstanding Payments Not Itemized
+
 - **Problem**: The rose alert said "3 events with outstanding balances — $1,500 total" but didn't name which events.
 - **Fix**: Alert now lists up to 3 specific events with client name, occasion, and amount. Shows "+N more" if additional events exist.
 
 ### Gap 4: Expiring Quotes Were Anonymous
+
 - **Problem**: Quote alert said "2 quotes expiring soon" without naming clients or amounts.
 - **Fix**:
   - `lib/dashboard/actions.ts` — Enhanced `getDashboardQuoteStats()` to return `expiringDetails: { clientName, validUntil, amountCents }[]`.
   - Dashboard — Alert now shows client names and amounts for expiring quotes.
 
 ### Gap 5: Empty Today State Had No Forward Look
+
 - **Problem**: When no event exists today, the dashboard showed "No dinners today" — no indication of when the next event is.
 - **Fix**:
   - `lib/dashboard/actions.ts` — Added `getNextUpcomingEvent()` server action (queries events after today, non-cancelled/completed, limit 1).
   - Dashboard — Empty state now shows "Next up: [Client] — [Occasion] on [Date]" with a link to the event.
 
 ### Gap 6: Inquiry Alert Missed `awaiting_chef` Status
+
 - **Problem**: Inquiry alert only counted `status = 'new'`, missing inquiries in `awaiting_chef` state that also need the chef's response.
 - **Fix**: Changed from `newInquiryCount` to `needsResponseCount = inquiryStats.new + inquiryStats.awaiting_chef`.
 
 ### Gap 7: Events Card Too Vague
+
 - **Problem**: Events card showed "X events this month" with no breakdown of what's upcoming vs. already completed.
 - **Fix**: Card now shows upcoming this month, completed this month, and total YTD — all in a single card.
 
 ### Files Modified in Phase 2
 
-| File | Change |
-|---|---|
-| `lib/scheduling/types.ts` | Added `guestCount` to `WeekDay.events[]` |
-| `lib/scheduling/actions.ts` | Passed `guestCount` in week schedule event mapping |
-| `lib/dashboard/actions.ts` | Enhanced quote stats (client names), event counts (guest totals, upcoming), added `getNextUpcomingEvent()` |
-| `components/dashboard/week-strip.tsx` | Guest count per event + total weekly guests in header |
-| `app/(chef)/dashboard/page.tsx` | All 7 gap fixes applied |
+| File                                  | Change                                                                                                     |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `lib/scheduling/types.ts`             | Added `guestCount` to `WeekDay.events[]`                                                                   |
+| `lib/scheduling/actions.ts`           | Passed `guestCount` in week schedule event mapping                                                         |
+| `lib/dashboard/actions.ts`            | Enhanced quote stats (client names), event counts (guest totals, upcoming), added `getNextUpcomingEvent()` |
+| `components/dashboard/week-strip.tsx` | Guest count per event + total weekly guests in header                                                      |
+| `app/(chef)/dashboard/page.tsx`       | All 7 gap fixes applied                                                                                    |
 
 ### Architecture Impact
+
 - Data stream count: 16 → 17 (added `getNextUpcomingEvent`)
 - Query count: ~24 → ~26 Supabase queries (still all parallel via `Promise.all`)
 - No client components added — still fully server-rendered

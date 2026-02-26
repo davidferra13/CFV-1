@@ -16,20 +16,38 @@ function formatCents(cents: number): string {
 function labelForEntryType(entryType: string, isRefund: boolean): string {
   if (isRefund) return 'Refund'
   switch (entryType) {
-    case 'deposit': return 'Deposit'
-    case 'balance': return 'Balance Payment'
-    case 'tip': return 'Gratuity'
-    case 'adjustment': return 'Adjustment'
-    default: return 'Payment'
+    case 'deposit':
+      return 'Deposit'
+    case 'balance':
+      return 'Balance Payment'
+    case 'tip':
+      return 'Gratuity'
+    case 'adjustment':
+      return 'Adjustment'
+    default:
+      return 'Payment'
   }
 }
 
 // ─── Render ───────────────────────────────────────────────────────────────────
 
 export function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
-  const { chef, client, event, paymentEntries, quotedPriceCents, depositAmountCents,
-          totalPaidCents, totalRefundedCents, tipAmountCents, balanceDueCents,
-          isPaidInFull, invoiceNumber, invoiceIssuedAt, pricePerPersonCents } = data
+  const {
+    chef,
+    client,
+    event,
+    paymentEntries,
+    quotedPriceCents,
+    depositAmountCents,
+    totalPaidCents,
+    totalRefundedCents,
+    tipAmountCents,
+    balanceDueCents,
+    isPaidInFull,
+    invoiceNumber,
+    invoiceIssuedAt,
+    pricePerPersonCents,
+  } = data
 
   // ── HEADER ────────────────────────────────────────────────────────────────
   pdf.title(chef.businessName, 13)
@@ -65,7 +83,7 @@ export function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
   doc.text(client.displayName, MARGIN_X + halfWidth + 4, pdf.y + 4)
   if (client.email) doc.text(client.email, MARGIN_X + halfWidth + 4, pdf.y + 8)
 
-  pdf.y += (chef.phone ? 16 : 14)
+  pdf.y += chef.phone ? 16 : 14
   pdf.space(3)
 
   // ── EVENT DETAILS ─────────────────────────────────────────────────────────
@@ -117,7 +135,9 @@ export function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
       const label = labelForEntryType(entry.entryType, entry.isRefund)
       const methodLabel = entry.paymentMethod ? ` (${entry.paymentMethod})` : ''
       const left = `${entry.date} — ${label}${methodLabel}`
-      const right = entry.isRefund ? `(${formatCents(Math.abs(entry.amountCents))})` : formatCents(entry.amountCents)
+      const right = entry.isRefund
+        ? `(${formatCents(Math.abs(entry.amountCents))})`
+        : formatCents(entry.amountCents)
 
       // Left text + right-aligned amount
       doc.setFontSize(9)
@@ -159,7 +179,9 @@ export function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
   pdf.hr()
 
   // Balance due — larger, bold
-  const balanceLabel = isPaidInFull ? 'PAID IN FULL' : `BALANCE DUE: ${formatCents(balanceDueCents)}`
+  const balanceLabel = isPaidInFull
+    ? 'PAID IN FULL'
+    : `BALANCE DUE: ${formatCents(balanceDueCents)}`
   pdf.text(balanceLabel, 10, 'bold')
 
   // Footer

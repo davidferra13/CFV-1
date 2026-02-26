@@ -95,8 +95,8 @@ This pass addressed low-risk inconsistencies identified during a full visual aud
 - [components/ui/card.tsx](../components/ui/card.tsx)
 - [components/ui/cookie-consent.tsx](../components/ui/cookie-consent.tsx)
 - [components/navigation/chef-nav.tsx](../components/navigation/chef-nav.tsx)
-- [app/(public)/page.tsx](../app/(public)/page.tsx)
-- [app/(chef)/dashboard/page.tsx](../app/(chef)/dashboard/page.tsx)
+- [app/(public)/page.tsx](<../app/(public)/page.tsx>)
+- [app/(chef)/dashboard/page.tsx](<../app/(chef)/dashboard/page.tsx>)
 - [app/layout.tsx](../app/layout.tsx)
 - [public/manifest.json](../public/manifest.json)
 

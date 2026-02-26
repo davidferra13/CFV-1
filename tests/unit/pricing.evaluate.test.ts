@@ -17,11 +17,7 @@
 
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import {
-  evaluateChefPricing,
-  isQuotable,
-  generateQuoteSummary,
-} from '@/lib/pricing/evaluate'
+import { evaluateChefPricing, isQuotable, generateQuoteSummary } from '@/lib/pricing/evaluate'
 
 // ─── 1. Eligibility Gate ──────────────────────────────────────────────────────
 
@@ -158,10 +154,10 @@ test('private dinner: group rate — 4 guests, 4 courses → $185 × 4 = $740', 
     guestCount: 4,
     courseCount: 4,
   })
-  assert.equal(result.breakdown.serviceFeeCents, 74000)   // $740
-  assert.equal(result.breakdown.perPersonCents, 18500)    // $185
+  assert.equal(result.breakdown.serviceFeeCents, 74000) // $740
+  assert.equal(result.breakdown.perPersonCents, 18500) // $185
   assert.equal(result.breakdown.totalServiceCents, 74000)
-  assert.equal(result.breakdown.depositCents, 37000)      // 50% of $740
+  assert.equal(result.breakdown.depositCents, 37000) // 50% of $740
   assert.equal(result.finalTotalCents, 74000)
   assert.equal(result.finalDepositCents, 37000)
   assert.equal(result.finalBalanceCents, 37000)
@@ -176,8 +172,8 @@ test('private dinner: group rate — 6 guests, 3 courses → $155 × 6 = $930', 
     guestCount: 6,
     courseCount: 3,
   })
-  assert.equal(result.breakdown.serviceFeeCents, 93000)   // $930
-  assert.equal(result.breakdown.perPersonCents, 15500)    // $155
+  assert.equal(result.breakdown.serviceFeeCents, 93000) // $930
+  assert.equal(result.breakdown.perPersonCents, 15500) // $155
 })
 
 test('private dinner: group rate — 4 guests, 5 courses → $215 × 4 = $860', async () => {
@@ -186,7 +182,7 @@ test('private dinner: group rate — 4 guests, 5 courses → $215 × 4 = $860', 
     guestCount: 4,
     courseCount: 5,
   })
-  assert.equal(result.breakdown.serviceFeeCents, 86000)   // $860
+  assert.equal(result.breakdown.serviceFeeCents, 86000) // $860
 })
 
 // ─── 3. Private Dinner — Couples Rate ────────────────────────────────────────
@@ -197,8 +193,8 @@ test('private dinner: couples rate — 2 guests, 4 courses → $250 × 2 = $500'
     guestCount: 2,
     courseCount: 4,
   })
-  assert.equal(result.breakdown.serviceFeeCents, 50000)   // $500
-  assert.equal(result.breakdown.perPersonCents, 25000)    // $250
+  assert.equal(result.breakdown.serviceFeeCents, 50000) // $500
+  assert.equal(result.breakdown.perPersonCents, 25000) // $250
   assert.equal(result.breakdown.isCouple, true)
 })
 
@@ -208,7 +204,7 @@ test('private dinner: couples rate — 2 guests, 3 courses → $200 × 2 = $400'
     guestCount: 2,
     courseCount: 3,
   })
-  assert.equal(result.breakdown.serviceFeeCents, 40000)   // $400
+  assert.equal(result.breakdown.serviceFeeCents, 40000) // $400
   assert.equal(result.breakdown.isCouple, true)
 })
 
@@ -219,7 +215,7 @@ test('private dinner: 1 guest treated as couple → couples rate', async () => {
     courseCount: 3,
   })
   assert.equal(result.breakdown.isCouple, true)
-  assert.equal(result.breakdown.serviceFeeCents, 20000)   // $200 × 1 = $200
+  assert.equal(result.breakdown.serviceFeeCents, 20000) // $200 × 1 = $200
 })
 
 test('private dinner: missing courseCount → requiresCustomPricing = true, clientFacingText = null', async () => {
@@ -241,7 +237,7 @@ test('private dinner: large group (10 guests) uses group rate + isLargeGroup fla
   })
   assert.equal(result.breakdown.isLargeGroup, true)
   assert.equal(result.breakdown.isCouple, false)
-  assert.equal(result.breakdown.serviceFeeCents, 155000)  // $155 × 10 = $1,550
+  assert.equal(result.breakdown.serviceFeeCents, 155000) // $155 × 10 = $1,550
   assert.equal(result.requiresCustomPricing, false)
 })
 
@@ -272,7 +268,10 @@ test('weekendPremiumEnabled: chef-tool mode auto-defaults to true for Friday eve
   // serviceFeeCents = $185 × 4 = $740 → weekend premium = 10% = $74
   assert.equal(result.breakdown.isWeekend, true)
   assert.equal(result.breakdown.weekendPremiumCents, 7400) // $74
-  assert.ok(result.breakdown.weekendPremiumCents > 0, 'weekend premium should auto-apply in chef-tool mode')
+  assert.ok(
+    result.breakdown.weekendPremiumCents > 0,
+    'weekend premium should auto-apply in chef-tool mode'
+  )
 })
 
 test('weekendPremiumEnabled: AI path (eligibility passed) does NOT auto-apply weekend premium', async () => {
@@ -281,7 +280,8 @@ test('weekendPremiumEnabled: AI path (eligibility passed) does NOT auto-apply we
     guestCount: 4,
     courseCount: 4,
     eventDate: '2026-03-20', // Friday
-    eligibility: {            // ← AI path
+    eligibility: {
+      // ← AI path
       clientAskedForPricing: true,
       guestCountKnown: true,
       dateKnown: true,
@@ -299,7 +299,7 @@ test('weekendPremiumEnabled: explicit false overrides chef-tool default', async 
     guestCount: 4,
     courseCount: 4,
     eventDate: '2026-03-20', // Friday
-    weekendPremiumEnabled: false,  // explicit override
+    weekendPremiumEnabled: false, // explicit override
   })
   assert.equal(result.breakdown.weekendPremiumCents, 0)
 })
@@ -310,7 +310,7 @@ test('weekendPremiumEnabled: explicit true in AI path applies premium', async ()
     guestCount: 4,
     courseCount: 4,
     eventDate: '2026-03-20', // Friday
-    weekendPremiumEnabled: true,   // explicit opt-in
+    weekendPremiumEnabled: true, // explicit opt-in
     eligibility: {
       clientAskedForPricing: true,
       guestCountKnown: true,
@@ -340,7 +340,10 @@ test("holiday: Valentine's Day 2026-02-14 — Tier 1, 45% premium applied", asyn
   assert.equal(result.breakdown.holidayTier, 1)
   assert.ok(result.breakdown.holidayPremiumCents > 0)
   assert.equal(result.breakdown.isWeekend, true)
-  assert.ok(result.breakdown.weekendPremiumCents > 0, 'weekend premium auto-applied on Saturday in chef-tool mode')
+  assert.ok(
+    result.breakdown.weekendPremiumCents > 0,
+    'weekend premium auto-applied on Saturday in chef-tool mode'
+  )
 })
 
 test('holiday: non-holiday Tuesday → no holiday premium', async () => {
@@ -389,7 +392,7 @@ test('weekly_standard: hasRange = true, low and high computed', async () => {
   assert.equal(result.rangeLow!.dayRateCents, 40000)
   assert.equal(result.rangeLow!.serviceFeeCents, 200000)
   assert.equal(result.rangeLow!.totalServiceCents, 200000)
-  assert.equal(result.rangeLow!.depositCents, 100000)  // 50% of $2,000
+  assert.equal(result.rangeLow!.depositCents, 100000) // 50% of $2,000
   // High: $500/day × 5 = $2,500
   assert.equal(result.rangeHigh!.dayRateCents, 50000)
   assert.equal(result.rangeHigh!.serviceFeeCents, 250000)
@@ -423,8 +426,14 @@ test('weekly_standard: clientFacingText contains both low and high totals', asyn
   })
   assert.notEqual(result.clientFacingText, null)
   // formatCentsAsDollars uses Intl.NumberFormat — thousands separator included
-  assert.ok(result.clientFacingText!.includes('$2,000'), `Expected $2,000 in: ${result.clientFacingText}`)
-  assert.ok(result.clientFacingText!.includes('$2,500'), `Expected $2,500 in: ${result.clientFacingText}`)
+  assert.ok(
+    result.clientFacingText!.includes('$2,000'),
+    `Expected $2,000 in: ${result.clientFacingText}`
+  )
+  assert.ok(
+    result.clientFacingText!.includes('$2,500'),
+    `Expected $2,500 in: ${result.clientFacingText}`
+  )
 })
 
 test('private_dinner: hasRange = false (not a weekly type)', async () => {
@@ -454,7 +463,10 @@ test('weekly_standard range: premiums scale proportionally with day rate', async
   assert.ok(highWeekend > 0, 'weekend premium should auto-apply in chef-tool mode')
   // Low side weekend = scaled version of high side weekend
   const expectedLowWeekend = Math.round(highWeekend * 0.8)
-  assert.equal(result.rangeLow!.subtotalCents, result.rangeLow!.serviceFeeCents + expectedLowWeekend)
+  assert.equal(
+    result.rangeLow!.subtotalCents,
+    result.rangeLow!.serviceFeeCents + expectedLowWeekend
+  )
 })
 
 test('weekly_standard range: travel is same on both sides (does not scale)', async () => {
@@ -486,8 +498,8 @@ test('adjustment: loyalty_discount reduces finalTotalCents and recalculates depo
     },
   })
   assert.equal(result.breakdown.totalServiceCents, 62000) // $620 unchanged
-  assert.equal(result.finalTotalCents, 57000)             // $570
-  assert.equal(result.finalDepositCents, 28500)           // 50% of $570
+  assert.equal(result.finalTotalCents, 57000) // $570
+  assert.equal(result.finalDepositCents, 28500) // 50% of $570
   assert.equal(result.finalBalanceCents, 28500)
   assert.equal(result.adjustmentApplied, true)
   assert.ok(result.adjustmentDescription?.includes('Loyalty discount'))
@@ -523,7 +535,7 @@ test('adjustment: custom_total overrides entire computed price', async () => {
     },
   })
   assert.equal(result.finalTotalCents, 100000)
-  assert.equal(result.finalDepositCents, 50000)  // 50% of $1,000
+  assert.equal(result.finalDepositCents, 50000) // 50% of $1,000
   assert.equal(result.finalBalanceCents, 50000)
   assert.equal(result.adjustmentApplied, true)
   assert.ok(result.adjustmentDescription?.includes('Custom total override'))
@@ -732,9 +744,7 @@ test('pendingConfirmations: confirmed two-night package has no price confirmatio
     multiNightPackage: 'two_night_4_course', // price = $900, confirmed
   })
   // Should NOT surface a price-pending confirmation for this package
-  const packageConfirm = result.pendingConfirmations.filter((c) =>
-    c.includes('two_night_4_course')
-  )
+  const packageConfirm = result.pendingConfirmations.filter((c) => c.includes('two_night_4_course'))
   assert.equal(packageConfirm.length, 0)
 })
 

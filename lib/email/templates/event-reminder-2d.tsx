@@ -38,8 +38,7 @@ export function EventReminder2dEmail({
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>
         A quick reminder that <strong>{chefName}</strong> will be arriving in{' '}
-        <strong>2 days</strong> for your <strong>{occasion}</strong>.
-        Here are the final details:
+        <strong>2 days</strong> for your <strong>{occasion}</strong>. Here are the final details:
       </Text>
 
       <table style={detailsTable}>
@@ -85,10 +84,7 @@ export function EventReminder2dEmail({
         You can also add this event to your calendar directly from your portal.
       </Text>
 
-      <Button
-        href={`${appUrl}/my-events/${eventId}`}
-        style={ctaButton}
-      >
+      <Button href={`${appUrl}/my-events/${eventId}`} style={ctaButton}>
         View Event & Add to Calendar →
       </Button>
 

@@ -162,9 +162,10 @@ export async function generateSplitInvoices(eventId: string): Promise<SplitInvoi
 
   const invoices: SplitInvoice[] = splits.map((split) => {
     // If an explicit amount is set, use it; otherwise calculate from percentage
-    const calculatedAmountCents = split.amountCents > 0
-      ? split.amountCents
-      : Math.round((totalAmountCents * split.percentage) / 100)
+    const calculatedAmountCents =
+      split.amountCents > 0
+        ? split.amountCents
+        : Math.round((totalAmountCents * split.percentage) / 100)
 
     return {
       clientId: split.clientId,

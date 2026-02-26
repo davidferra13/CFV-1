@@ -6,20 +6,20 @@ A suite of analytics pages under `/analytics/` that surfaces revenue trends, cli
 
 ## Files Created / Modified
 
-| File | Role |
-|---|---|
-| `app/(chef)/analytics/reports/page.tsx` | Custom Report Builder page |
-| `components/analytics/report-builder.tsx` | Interactive config UI + chart output for custom reports |
-| `lib/analytics/custom-report.ts` | `runCustomReport(config)` — builds dynamic Supabase query from config object |
-| `app/(chef)/analytics/benchmarks/page.tsx` | Benchmark dashboard comparing chef metrics to platform averages |
-| `app/(chef)/analytics/client-ltv/page.tsx` | Client lifetime value breakdown page |
-| `app/(chef)/analytics/demand/page.tsx` | Demand heatmap page (day-of-week × month grid) |
-| `app/(chef)/analytics/pipeline/page.tsx` | Pipeline forecast page |
-| `components/analytics/yoy-cards.tsx` | Year-over-year comparison cards with trend arrows |
-| `components/analytics/stage-conversion-funnel.tsx` | Funnel chart: inquiry → quote → accepted → paid |
-| `lib/analytics/year-over-year.ts` | Server action computing YoY deltas for key metrics |
-| `lib/analytics/stage-conversion.ts` | Server action computing conversion rates across FSM stages |
-| `lib/analytics/revenue-forecast.ts` | Server action projecting forward revenue from pipeline data |
+| File                                               | Role                                                                         |
+| -------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `app/(chef)/analytics/reports/page.tsx`            | Custom Report Builder page                                                   |
+| `components/analytics/report-builder.tsx`          | Interactive config UI + chart output for custom reports                      |
+| `lib/analytics/custom-report.ts`                   | `runCustomReport(config)` — builds dynamic Supabase query from config object |
+| `app/(chef)/analytics/benchmarks/page.tsx`         | Benchmark dashboard comparing chef metrics to platform averages              |
+| `app/(chef)/analytics/client-ltv/page.tsx`         | Client lifetime value breakdown page                                         |
+| `app/(chef)/analytics/demand/page.tsx`             | Demand heatmap page (day-of-week × month grid)                               |
+| `app/(chef)/analytics/pipeline/page.tsx`           | Pipeline forecast page                                                       |
+| `components/analytics/yoy-cards.tsx`               | Year-over-year comparison cards with trend arrows                            |
+| `components/analytics/stage-conversion-funnel.tsx` | Funnel chart: inquiry → quote → accepted → paid                              |
+| `lib/analytics/year-over-year.ts`                  | Server action computing YoY deltas for key metrics                           |
+| `lib/analytics/stage-conversion.ts`                | Server action computing conversion rates across FSM stages                   |
+| `lib/analytics/revenue-forecast.ts`                | Server action projecting forward revenue from pipeline data                  |
 
 ## How It Works
 

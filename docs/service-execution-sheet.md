@@ -22,11 +22,13 @@ The back-of-house section was renamed from "BACK OF HOUSE — COMPONENT BREAKDOW
 ### 3. Clean-As-You-Go Reminder
 
 Added bold text before the summary line:
+
 > `Clean as you go. Kitchen to baseline before dessert.`
 
 ### 4. Font Scaling
 
 Density calculation now includes arrival tasks in addition to components:
+
 ```typescript
 const densityFactor = totalComponentCount + arrivalTasks.length
 ```
@@ -42,6 +44,7 @@ All data used (component names, execution_notes, is_make_ahead, make_ahead_windo
 ## Verification
 
 Navigate to any event with a menu → Documents section → View Execution Sheet PDF. Should now show:
+
 1. Header + FOH courses
 2. Allergy warnings
 3. "ON ARRIVAL — START IMMEDIATELY" section (if any components qualify)

@@ -36,11 +36,11 @@ Public Contact Form  -->  contact_submissions table (no tenant_id)
 
 Added three columns to `contact_submissions` (migration `20260221000009`):
 
-| Column | Type | Purpose |
-| --- | --- | --- |
-| `claimed_by_chef_id` | UUID (FK chefs) | Which chef claimed this. NULL = unclaimed. |
-| `claimed_at` | TIMESTAMPTZ | When it was claimed. |
-| `inquiry_id` | UUID (FK inquiries) | Back-reference to created inquiry. NULL if dismissed. |
+| Column               | Type                | Purpose                                               |
+| -------------------- | ------------------- | ----------------------------------------------------- |
+| `claimed_by_chef_id` | UUID (FK chefs)     | Which chef claimed this. NULL = unclaimed.            |
+| `claimed_at`         | TIMESTAMPTZ         | When it was claimed.                                  |
+| `inquiry_id`         | UUID (FK inquiries) | Back-reference to created inquiry. NULL if dismissed. |
 
 Plus a partial index on `claimed_by_chef_id IS NULL` for fast unclaimed lookups, and an RLS UPDATE policy ensuring chefs can only set `claimed_by_chef_id` to their own ID.
 
@@ -52,16 +52,16 @@ Plus a partial index on `claimed_by_chef_id IS NULL` for fast unclaimed lookups,
 
 ## Files
 
-| File | Role |
-| --- | --- |
-| `supabase/migrations/20260221000009_contact_claim_columns.sql` | Schema changes |
-| `lib/contact/claim.ts` | Server actions (get, claim, dismiss) |
-| `lib/queue/providers/contact.ts` | Queue provider for unclaimed leads |
-| `lib/queue/build.ts` | Modified to wire in contact provider |
-| `app/(chef)/leads/page.tsx` | Leads list page |
-| `components/leads/leads-list.tsx` | Lead cards with claim/dismiss UI |
-| `components/navigation/chef-nav.tsx` | Added Leads to Pipeline nav group |
-| `middleware.ts` | Added /leads to chef-protected paths |
+| File                                                           | Role                                 |
+| -------------------------------------------------------------- | ------------------------------------ |
+| `supabase/migrations/20260221000009_contact_claim_columns.sql` | Schema changes                       |
+| `lib/contact/claim.ts`                                         | Server actions (get, claim, dismiss) |
+| `lib/queue/providers/contact.ts`                               | Queue provider for unclaimed leads   |
+| `lib/queue/build.ts`                                           | Modified to wire in contact provider |
+| `app/(chef)/leads/page.tsx`                                    | Leads list page                      |
+| `components/leads/leads-list.tsx`                              | Lead cards with claim/dismiss UI     |
+| `components/navigation/chef-nav.tsx`                           | Added Leads to Pipeline nav group    |
+| `middleware.ts`                                                | Added /leads to chef-protected paths |
 
 ## Future Considerations
 

@@ -42,11 +42,13 @@ export async function fetchContractData(
 
   let query = db
     .from('event_contracts')
-    .select(`
+    .select(
+      `
       id, body_snapshot, status, signed_at, created_at, signer_ip_address, chef_id, client_id,
       events (event_date, occasion, guest_count),
       clients (full_name, email)
-    `)
+    `
+    )
     .eq('id', contractId)
 
   if (owner.chefId) {
@@ -196,11 +198,11 @@ function renderMarkdownBody(pdf: PDFLayout, markdown: string) {
 
 function stripInlineMarkdown(text: string): string {
   return text
-    .replace(/\*\*(.+?)\*\*/g, '$1')    // **bold** → bold
-    .replace(/__(.+?)__/g, '$1')         // __bold__ → bold
-    .replace(/\*(.+?)\*/g, '$1')         // *italic* → italic
-    .replace(/_(.+?)_/g, '$1')           // _italic_ → italic
-    .replace(/`(.+?)`/g, '$1')           // `code` → code
+    .replace(/\*\*(.+?)\*\*/g, '$1') // **bold** → bold
+    .replace(/__(.+?)__/g, '$1') // __bold__ → bold
+    .replace(/\*(.+?)\*/g, '$1') // *italic* → italic
+    .replace(/_(.+?)_/g, '$1') // _italic_ → italic
+    .replace(/`(.+?)`/g, '$1') // `code` → code
 }
 
 // ─── Render ───────────────────────────────────────────────────────────────────
@@ -257,7 +259,7 @@ export function renderContract(pdf: PDFLayout, data: ContractDocumentData) {
   doc.text(client.fullName, MARGIN_X + halfWidth + 4, pdf.y + 4)
   if (client.email) doc.text(client.email, MARGIN_X + halfWidth + 4, pdf.y + 8)
 
-  pdf.y += (chef.phone ? 16 : 14)
+  pdf.y += chef.phone ? 16 : 14
   pdf.space(3)
 
   // ── CONTRACT BODY ─────────────────────────────────────────────────────────
@@ -273,7 +275,7 @@ export function renderContract(pdf: PDFLayout, data: ContractDocumentData) {
   if (status === 'signed' && signedAt) {
     pdf.keyValue('Status', 'SIGNED', 9)
     pdf.keyValue('Signed by', client.fullName, 9)
-    pdf.keyValue('Date', format(new Date(signedAt), 'MMMM d, yyyy \'at\' h:mm a'), 9)
+    pdf.keyValue('Date', format(new Date(signedAt), "MMMM d, yyyy 'at' h:mm a"), 9)
     if (signerIpPartial) {
       pdf.keyValue('IP (partial)', signerIpPartial, 9)
     }

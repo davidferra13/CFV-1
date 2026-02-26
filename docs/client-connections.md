@@ -8,6 +8,7 @@
 ## Why This Change
 
 The Households feature was over-engineered for what chefs actually need. It had:
+
 - Its own dedicated tab/pages (`/households`, `/households/[id]`)
 - A two-table schema (`households` + `household_members`)
 - A rigid enum of relationship types limited to family contexts (partner, child, family_member, regular_guest)
@@ -22,17 +23,18 @@ In practice, chefs need to know **who their clients are connected to and why** �
 
 A single `client_connections` table links two clients with a flexible relationship type:
 
-| Column | Type | Purpose |
-|--------|------|---------|
-| `id` | UUID | Primary key |
-| `tenant_id` | UUID FK → chefs | Multi-tenant scoping |
-| `client_a_id` | UUID FK → clients | First client |
-| `client_b_id` | UUID FK → clients | Second client |
-| `relationship_type` | TEXT | Freeform: spouse, friend, family, acquaintance, colleague, etc. |
-| `notes` | TEXT | Optional context about the connection |
-| `created_at` | TIMESTAMPTZ | When the connection was created |
+| Column              | Type              | Purpose                                                         |
+| ------------------- | ----------------- | --------------------------------------------------------------- |
+| `id`                | UUID              | Primary key                                                     |
+| `tenant_id`         | UUID FK → chefs   | Multi-tenant scoping                                            |
+| `client_a_id`       | UUID FK → clients | First client                                                    |
+| `client_b_id`       | UUID FK → clients | Second client                                                   |
+| `relationship_type` | TEXT              | Freeform: spouse, friend, family, acquaintance, colleague, etc. |
+| `notes`             | TEXT              | Optional context about the connection                           |
+| `created_at`        | TIMESTAMPTZ       | When the connection was created                                 |
 
 **Key design decisions:**
+
 - **Bidirectional:** If Sarah is connected to Mike, it shows on both their detail pages
 - **Flexible types:** Freeform TEXT (not enum) with UI suggestions for common types
 - **No separate pages:** Lives entirely as a compact card on the client detail page
@@ -42,6 +44,7 @@ A single `client_connections` table links two clients with a flexible relationsh
 ### UI: Connections card on client detail page
 
 Replaces the old "Household tag" text input with a full Connections card:
+
 - Lists all connected clients with relationship badges
 - "Add Connection" inline form with client dropdown, relationship type picker, optional notes
 - Edit and Remove actions on each connection (hover to reveal)
@@ -50,6 +53,7 @@ Replaces the old "Household tag" text input with a full Connections card:
 ### Removed: Household UI
 
 **Deleted files:**
+
 - `app/(chef)/households/page.tsx` — Households list page
 - `app/(chef)/households/[id]/page.tsx` — Household detail page
 - `app/(chef)/households/[id]/household-detail-members.tsx` — Member management UI
@@ -59,6 +63,7 @@ Replaces the old "Household tag" text input with a full Connections card:
 - `lib/households/actions.ts` — All household server actions
 
 **Modified files:**
+
 - `components/events/event-form.tsx` — Removed household dropdown
 - `lib/events/actions.ts` — Removed `household_id` from create/update schemas
 - `app/(chef)/events/new/page.tsx` — Removed household fetching
@@ -76,6 +81,7 @@ The `households` and `household_members` tables remain in the database. No data 
 **File:** `supabase/migrations/20260221000013_client_connections.sql`
 
 Creates the `client_connections` table with:
+
 - Unique constraint: `(tenant_id, client_a_id, client_b_id)` — one connection per ordered pair
 - Check constraint: no self-connections
 - Indexes for bidirectional lookups
@@ -91,12 +97,12 @@ Creates the `client_connections` table with:
 
 **File:** `lib/connections/actions.ts`
 
-| Action | Purpose |
-|--------|---------|
-| `getClientConnections(clientId)` | Get all connections for a client (from either side) |
-| `createConnection({ client_a_id, client_b_id, relationship_type, notes? })` | Create a connection |
-| `updateConnection(connectionId, { relationship_type?, notes? })` | Update type/notes |
-| `removeConnection(connectionId)` | Delete a connection |
+| Action                                                                      | Purpose                                             |
+| --------------------------------------------------------------------------- | --------------------------------------------------- |
+| `getClientConnections(clientId)`                                            | Get all connections for a client (from either side) |
+| `createConnection({ client_a_id, client_b_id, relationship_type, notes? })` | Create a connection                                 |
+| `updateConnection(connectionId, { relationship_type?, notes? })`            | Update type/notes                                   |
+| `removeConnection(connectionId)`                                            | Delete a connection                                 |
 
 All actions use `requireChef()` and tenant scoping.
 
@@ -105,4 +111,5 @@ All actions use `requireChef()` and tenant scoping.
 ## Suggested Relationship Types
 
 The UI suggests these common types but accepts any freeform text:
+
 - Spouse, Partner, Friend, Family, Acquaintance, Colleague, Regular Guest, Referral

@@ -27,7 +27,9 @@ test.describe('FSM — Transition Button Visibility', () => {
     await page.goto(`/events/${seedIds.eventIds.draft}`)
     await page.waitForLoadState('networkidle')
     // Cancel should be available from any non-terminal state
-    const cancelEl = page.getByRole('button', { name: /cancel event/i }).first()
+    const cancelEl = page
+      .getByRole('button', { name: /cancel event/i })
+      .first()
       .or(page.getByText(/cancel event/i).first())
     await expect(cancelEl).toBeVisible({ timeout: 10_000 })
   })
@@ -56,7 +58,9 @@ test.describe('FSM — Transition Button Visibility', () => {
   test('confirmed event shows "Start Service" button', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.confirmed}`)
     await page.waitForLoadState('networkidle')
-    const startBtn = page.getByRole('button', { name: /start service|begin service|in.?progress/i }).first()
+    const startBtn = page
+      .getByRole('button', { name: /start service|begin service|in.?progress/i })
+      .first()
     await expect(startBtn).toBeVisible({ timeout: 10_000 })
   })
 

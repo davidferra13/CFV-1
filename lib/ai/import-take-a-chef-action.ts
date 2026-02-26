@@ -37,7 +37,9 @@ export type TakeAChefImportResult = {
 
 // ─── Server Action ────────────────────────────────────────────────────────
 
-export async function importTakeAChefBooking(input: TakeAChefImportInput): Promise<TakeAChefImportResult> {
+export async function importTakeAChefBooking(
+  input: TakeAChefImportInput
+): Promise<TakeAChefImportResult> {
   const user = await requireChef()
   const validated = TakeAChefImportSchema.parse(input)
   const supabase = createServerClient()
@@ -119,7 +121,9 @@ export async function importTakeAChefBooking(input: TakeAChefImportInput): Promi
         tenant_id: tenantId,
         client_id: clientId,
         inquiry_id: inquiry.id,
-        event_date: parsed.confirmed_date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        event_date:
+          parsed.confirmed_date ||
+          new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         guest_count: parsed.confirmed_guest_count ?? 4,
         location_address: parsed.confirmed_location || 'TBD',
         location_city: 'TBD',
@@ -133,7 +137,10 @@ export async function importTakeAChefBooking(input: TakeAChefImportInput): Promi
 
     if (eventError || !event) {
       // Inquiry was saved — don't fail, just log
-      console.error('[importTakeAChefBooking] Event creation failed (non-fatal):', eventError?.message)
+      console.error(
+        '[importTakeAChefBooking] Event creation failed (non-fatal):',
+        eventError?.message
+      )
       revalidatePath('/inquiries')
       return {
         success: true,
@@ -180,9 +187,11 @@ export async function importTakeAChefBooking(input: TakeAChefImportInput): Promi
           amount_cents: commissionCents,
           category: 'professional_services' as const,
           payment_method: 'other' as const,
-          expense_date: parsed.confirmed_date?.split('T')[0] || new Date().toISOString().split('T')[0],
+          expense_date:
+            parsed.confirmed_date?.split('T')[0] || new Date().toISOString().split('T')[0],
           vendor_name: 'Take a Chef',
-          notes: 'Automatically logged from Take a Chef booking import. Represents the platform commission paid.',
+          notes:
+            'Automatically logged from Take a Chef booking import. Represents the platform commission paid.',
           is_business: true,
         })
         .select('id')
@@ -243,11 +252,7 @@ export async function getChefDirectBookingLink(): Promise<string | null> {
     const user = await requireChef()
     const supabase = createServerClient()
 
-    const { data } = await supabase
-      .from('chefs')
-      .select('slug')
-      .eq('id', user.tenantId!)
-      .single()
+    const { data } = await supabase.from('chefs').select('slug').eq('id', user.tenantId!).single()
 
     if (!data?.slug) return null
 

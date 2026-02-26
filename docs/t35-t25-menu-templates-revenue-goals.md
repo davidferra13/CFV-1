@@ -11,13 +11,14 @@
 
 Three new exported functions added to the **end** of `lib/menus/actions.ts`:
 
-| Function | Purpose |
-|---|---|
-| `cloneMenu(menuId)` | Deep-copies a menu (via the existing `duplicateMenu` helper), then ensures `is_template = false` and `event_id = null` on the clone. Returns the new menu row. |
-| `saveMenuAsTemplate(menuId)` | Sets `is_template = true` on an existing menu. Revalidates `/menus` and `/settings/templates`. |
-| `listMenuTemplates()` | Queries `menus` where `is_template = true` for the chef's tenant. Wrapped in try/catch — returns `[]` on any error so pages don't crash. |
+| Function                     | Purpose                                                                                                                                                        |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cloneMenu(menuId)`          | Deep-copies a menu (via the existing `duplicateMenu` helper), then ensures `is_template = false` and `event_id = null` on the clone. Returns the new menu row. |
+| `saveMenuAsTemplate(menuId)` | Sets `is_template = true` on an existing menu. Revalidates `/menus` and `/settings/templates`.                                                                 |
+| `listMenuTemplates()`        | Queries `menus` where `is_template = true` for the chef's tenant. Wrapped in try/catch — returns `[]` on any error so pages don't crash.                       |
 
 **Key design decisions:**
+
 - `cloneMenu` delegates to `duplicateMenu` (which already copies menu → dishes → components with full tenant scoping and audit trail). This avoids duplicating ~60 lines of tested code.
 - The `is_template` column already exists on the `menus` table (it's in the Zod schemas and insert payloads in the existing code).
 - No migration needed — the column was already present.
@@ -46,6 +47,7 @@ A Server Component (no `'use client'`) that:
 3. Calls `solveRevenueClosure(annualTargetCents, annualBookedCents, remainingDays)` — pure function that returns 4 strategy cards.
 
 **Sections rendered:**
+
 - Breadcrumb back to `/finance`
 - "Manage Goals" link to `/goals` (the dedicated goals hub)
 - **Goal Setter** — embeds the client component for updating the target in place
@@ -114,10 +116,10 @@ All features use existing columns (`is_template` on `menus`, `target_annual_reve
 
 ## Files Modified / Created
 
-| File | Status |
-|---|---|
-| `lib/menus/actions.ts` | Modified — 3 new exported functions appended |
-| `components/menus/clone-menu-button.tsx` | Created |
-| `app/(chef)/finance/goals/page.tsx` | Created |
-| `components/finance/goal-setter.tsx` | Created |
-| `app/(chef)/finance/page.tsx` | Modified — Revenue Goals added to SECTIONS |
+| File                                     | Status                                       |
+| ---------------------------------------- | -------------------------------------------- |
+| `lib/menus/actions.ts`                   | Modified — 3 new exported functions appended |
+| `components/menus/clone-menu-button.tsx` | Created                                      |
+| `app/(chef)/finance/goals/page.tsx`      | Created                                      |
+| `components/finance/goal-setter.tsx`     | Created                                      |
+| `app/(chef)/finance/page.tsx`            | Modified — Revenue Goals added to SECTIONS   |

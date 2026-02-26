@@ -128,42 +128,42 @@ Added 4 new cron entries after the existing 15:
 
 ## Final Cron Schedule (All 19)
 
-| Schedule | Path | Purpose |
-| --- | --- | --- |
-| `*/5 * * * *` | `/api/gmail/sync` | Gmail inbox sync |
-| `*/5 * * * *` | `/api/scheduled/integrations/pull` | Process pending integration events |
-| `*/5 * * * *` | `/api/scheduled/wix-process` | Retry failed Wix submissions |
-| `*/5 * * * *` | `/api/scheduled/social-publish` | Fire queued social posts |
-| `*/15 * * * *` | `/api/scheduled/automations` | Evaluate time-based automation rules |
-| `*/15 * * * *` | `/api/scheduled/copilot` | Ops copilot per tenant |
-| `*/15 * * * *` | `/api/scheduled/email-history-scan` | Historical Gmail scan batch |
-| `*/30 * * * *` | `/api/scheduled/call-reminders` | 24h and 1h call reminder emails |
-| `0 * * * *` | `/api/scheduled/integrations/retry` | Retry failed integration events |
-| `0 * * * *` | `/api/scheduled/campaigns` | Fire scheduled marketing campaigns |
-| `0 1 * * *` | `/api/scheduled/loyalty-expiry` | NEW — Expire overdue vouchers + waitlist entries |
-| `0 2 * * *` | `/api/scheduled/activity-cleanup` | WAS MISSING — Clean aged activity_events |
-| `0 3 * * *` | `/api/scheduled/lifecycle` | Expire inquiries/quotes, event/payment reminders |
-| `0 4 * * *` | `/api/scheduled/push-cleanup` | NEW — Clean dead push subscriptions + SMS log |
-| `0 6 * * *` | `/api/scheduled/sequences` | Process marketing sequences + birthday enrollments |
-| `0 8 * * *` | `/api/scheduled/waitlist-sweep` | NEW — Notify waitlist clients when dates open |
-| `0 */6 * * *` | `/api/scheduled/revenue-goals` | Goal snapshots + nudge notifications |
-| `0 */6 * * *` | `/api/scheduled/follow-ups` | Overdue inquiry follow-up reminders |
-| `0 */6 * * *` | `/api/scheduled/reviews-sync` | Sync external review sources |
+| Schedule       | Path                                | Purpose                                            |
+| -------------- | ----------------------------------- | -------------------------------------------------- |
+| `*/5 * * * *`  | `/api/gmail/sync`                   | Gmail inbox sync                                   |
+| `*/5 * * * *`  | `/api/scheduled/integrations/pull`  | Process pending integration events                 |
+| `*/5 * * * *`  | `/api/scheduled/wix-process`        | Retry failed Wix submissions                       |
+| `*/5 * * * *`  | `/api/scheduled/social-publish`     | Fire queued social posts                           |
+| `*/15 * * * *` | `/api/scheduled/automations`        | Evaluate time-based automation rules               |
+| `*/15 * * * *` | `/api/scheduled/copilot`            | Ops copilot per tenant                             |
+| `*/15 * * * *` | `/api/scheduled/email-history-scan` | Historical Gmail scan batch                        |
+| `*/30 * * * *` | `/api/scheduled/call-reminders`     | 24h and 1h call reminder emails                    |
+| `0 * * * *`    | `/api/scheduled/integrations/retry` | Retry failed integration events                    |
+| `0 * * * *`    | `/api/scheduled/campaigns`          | Fire scheduled marketing campaigns                 |
+| `0 1 * * *`    | `/api/scheduled/loyalty-expiry`     | NEW — Expire overdue vouchers + waitlist entries   |
+| `0 2 * * *`    | `/api/scheduled/activity-cleanup`   | WAS MISSING — Clean aged activity_events           |
+| `0 3 * * *`    | `/api/scheduled/lifecycle`          | Expire inquiries/quotes, event/payment reminders   |
+| `0 4 * * *`    | `/api/scheduled/push-cleanup`       | NEW — Clean dead push subscriptions + SMS log      |
+| `0 6 * * *`    | `/api/scheduled/sequences`          | Process marketing sequences + birthday enrollments |
+| `0 8 * * *`    | `/api/scheduled/waitlist-sweep`     | NEW — Notify waitlist clients when dates open      |
+| `0 */6 * * *`  | `/api/scheduled/revenue-goals`      | Goal snapshots + nudge notifications               |
+| `0 */6 * * *`  | `/api/scheduled/follow-ups`         | Overdue inquiry follow-up reminders                |
+| `0 */6 * * *`  | `/api/scheduled/reviews-sync`       | Sync external review sources                       |
 
 ---
 
 ## What Was NOT Added (and why)
 
-| Idea | Reason Deferred |
-| --- | --- |
-| Notification delivery retry | `notification_delivery_log` is immutable by design; email channel not routed through it; push retries handled inline; no practical retry layer exists without a job queue |
-| Recurring services auto-booking | Requires careful schema review + financial logic before automating event creation |
-| Calendar sync (external) | Complex OAuth flow; partial implementation carries risk |
-| Staff shift conflict detection | Low urgency; no active staff booking conflicts today |
-| Equipment health tracking | Nice-to-have; no chef-reported pain around it |
-| Professional dev cert reminders | Low urgency; quarterly/annual check sufficient |
-| Tax checkpoints | Low urgency; already visible in tax workflow UI |
-| Social feed ranking | Feed is functional without it; pure enhancement |
+| Idea                            | Reason Deferred                                                                                                                                                           |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Notification delivery retry     | `notification_delivery_log` is immutable by design; email channel not routed through it; push retries handled inline; no practical retry layer exists without a job queue |
+| Recurring services auto-booking | Requires careful schema review + financial logic before automating event creation                                                                                         |
+| Calendar sync (external)        | Complex OAuth flow; partial implementation carries risk                                                                                                                   |
+| Staff shift conflict detection  | Low urgency; no active staff booking conflicts today                                                                                                                      |
+| Equipment health tracking       | Nice-to-have; no chef-reported pain around it                                                                                                                             |
+| Professional dev cert reminders | Low urgency; quarterly/annual check sufficient                                                                                                                            |
+| Tax checkpoints                 | Low urgency; already visible in tax workflow UI                                                                                                                           |
+| Social feed ranking             | Feed is functional without it; pure enhancement                                                                                                                           |
 
 ---
 

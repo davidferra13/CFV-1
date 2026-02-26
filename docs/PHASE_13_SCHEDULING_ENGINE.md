@@ -7,6 +7,7 @@ Phase 13 adds the **Scheduling Engine** — a system that computes day-of timeli
 ## Files Created
 
 ### Database
+
 - **`supabase/migrations/20260216000001_layer_5_scheduling.sql`** — Layer 5 migration
   - `chef_preferences` table (1:1 with chefs): home address, default stores, timing defaults, DOP preferences
   - `travel_time_minutes INTEGER DEFAULT 30` added to events
@@ -14,6 +15,7 @@ Phase 13 adds the **Scheduling Engine** — a system that computes day-of timeli
   - Auto-update trigger for `updated_at`
 
 ### Types
+
 - **`lib/scheduling/types.ts`** — All scheduling type definitions
   - `ChefPreferences`, `SpecialtyStore`, `DEFAULT_PREFERENCES`
   - `TimelineItem`, `EventTimeline`, `RouteStop`
@@ -21,6 +23,7 @@ Phase 13 adds the **Scheduling Engine** — a system that computes day-of timeli
   - `PrepPrompt`, `SchedulingEvent`, `WeekDay`, `WeekSchedule`
 
 ### Pure Engines (no DB calls)
+
 - **`lib/scheduling/timeline.ts`** — Backwards-from-arrival timeline generation
   - Calculates: arrival → departure → car packed → finish prep → start prep → shopping → wake
   - `estimatePrepMinutes()` — 15 min per menu component, min 90, max 240
@@ -38,6 +41,7 @@ Phase 13 adds the **Scheduling Engine** — a system that computes day-of timeli
   - Each prompt has urgency level, action URL, and contextual message
 
 ### Server Actions
+
 - **`lib/scheduling/actions.ts`** — Data fetching layer feeding pure engines
   - `getEventTimeline(eventId)`, `getEventDOPSchedule(eventId)`, `getEventDOPProgress(eventId)`
   - `getAllPrepPrompts()`, `getTodaysSchedule()`, `getWeekSchedule(weekOffset)`
@@ -50,6 +54,7 @@ Phase 13 adds the **Scheduling Engine** — a system that computes day-of timeli
   - Uses `fromChefPreferences()` type assertion helper for ungenerated table type
 
 ### UI Components
+
 - **`components/scheduling/timeline-view.tsx`** — Day-of timeline display with route plan
 - **`components/scheduling/dop-view.tsx`** — DOP status view + compact progress bar
 - **`components/scheduling/prep-prompts-view.tsx`** — Grouped prep prompts by urgency
@@ -57,6 +62,7 @@ Phase 13 adds the **Scheduling Engine** — a system that computes day-of timeli
 - **`components/settings/preferences-form.tsx`** — Full preferences form (home, stores, timing, DOPs)
 
 ### Pages
+
 - **`app/(chef)/settings/page.tsx`** — Settings page
 - **`app/(chef)/events/[id]/schedule/page.tsx`** — Event schedule (timeline + DOP)
 - **`app/(chef)/schedule/page.tsx`** — Weekly schedule overview
@@ -70,10 +76,13 @@ Phase 13 adds the **Scheduling Engine** — a system that computes day-of timeli
 ## Architecture Decisions
 
 ### Pure Engine Pattern
+
 The three computation engines (`timeline.ts`, `dop.ts`, `prep-prompts.ts`) are **pure functions** — they take data in, return results, and never touch the database. Server actions in `actions.ts` handle all DB queries and feed the engines. This makes the engines testable in isolation and keeps the data layer separate from business logic.
 
 ### Type Assertion Strategy
+
 Since we can't regenerate `types/database.ts` without local Supabase (no Docker), all references to the new `chef_preferences` table and the new `travel_time_minutes` column use type assertions:
+
 - `fromChefPreferences(supabase)` returns `any` for the new table
 - `mapEventToScheduling()` uses explicit field mapping instead of spreads
 - `updateEventTravelTime()` casts supabase to `any` for the update
@@ -81,12 +90,15 @@ Since we can't regenerate `types/database.ts` without local Supabase (no Docker)
 These assertions should be removed once `types/database.ts` is regenerated after applying the Layer 5 migration.
 
 ### Backwards-From-Arrival Timeline
+
 The timeline works backwards from `arrival_time`, not forwards from wake time. This ensures the chef's on-site time is the anchor, and everything else fits around it. If the calculated wake time is unreasonably early, a warning is generated rather than adjusting the timeline.
 
 ### Standard vs Compressed DOPs
+
 Events booked 48+ hours out get the full DOP flow (day-before shopping, morning-of prep). Events booked <48 hours get a compressed variant that merges phases. The system detects this automatically from the event date relative to current time.
 
 ### Weekly Burnout Warnings
+
 The weekly schedule view detects back-to-back event days without prep days between them, and flags weeks with 4+ events as heavy schedules. These are surfaced as amber warning cards.
 
 ## How It Connects

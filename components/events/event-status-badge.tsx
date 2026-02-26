@@ -13,7 +13,10 @@ export type EventStatus =
   | 'completed'
   | 'cancelled'
 
-const STATUS_CONFIG: Record<EventStatus, { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' }> = {
+const STATUS_CONFIG: Record<
+  EventStatus,
+  { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' }
+> = {
   draft: { label: 'Draft', variant: 'default' },
   proposed: { label: 'Proposed', variant: 'info' },
   accepted: { label: 'Accepted', variant: 'warning' },
@@ -21,7 +24,7 @@ const STATUS_CONFIG: Record<EventStatus, { label: string; variant: 'default' | '
   confirmed: { label: 'Confirmed', variant: 'success' },
   in_progress: { label: 'In Progress', variant: 'info' },
   completed: { label: 'Completed', variant: 'success' },
-  cancelled: { label: 'Cancelled', variant: 'error' }
+  cancelled: { label: 'Cancelled', variant: 'error' },
 }
 
 export function EventStatusBadge({ status }: { status: EventStatus }) {

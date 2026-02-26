@@ -16,8 +16,8 @@ The clients page had no clear call-to-action in the header. The invitation form 
 
 ## Files Changed
 
-| File | Change |
-|---|---|
+| File                          | Change                                                                                                                                                          |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `app/(chef)/clients/page.tsx` | Added `Button` import, header layout with "+ Add Client" anchor, `id="invite"` on invitation card. Removed unused imports (`formatCurrency`, `format`, `Link`). |
 
 ## Connection to System

@@ -3,14 +3,13 @@
 
 export interface MicroWindow {
   ingredient: string
-  start_date: string   // MM-DD
-  end_date: string     // MM-DD
+  start_date: string // MM-DD
+  end_date: string // MM-DD
   notes: string
   // Legacy fields — kept optional for backward compatibility with existing data
   name?: string
   urgency?: 'high' | 'normal'
 }
-
 
 export interface ProvenWin {
   dish_name: string
@@ -33,7 +32,10 @@ export interface SeasonalPalette {
   updated_at: string
 }
 
-export const DEFAULT_SEASONS: Omit<SeasonalPalette, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>[] = [
+export const DEFAULT_SEASONS: Omit<
+  SeasonalPalette,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at'
+>[] = [
   {
     season_name: 'Winter',
     sort_order: 0,

@@ -10,13 +10,13 @@ The existing task systems (Preparable Work Engine, Priority Queue) are fully aut
 
 ## Files created / modified
 
-| File | What |
-| --- | --- |
-| `supabase/migrations/20260228000004_chef_todos.sql` | New `chef_todos` table with RLS |
-| `lib/todos/actions.ts` | Server actions: `getTodos`, `createTodo`, `toggleTodo`, `deleteTodo` |
-| `components/dashboard/chef-todo-widget.tsx` | Interactive client component (add, check, delete) |
-| `lib/scheduling/types.ts` | Added `'todo_list'` to `DASHBOARD_WIDGET_IDS` and `DASHBOARD_WIDGET_LABELS` |
-| `app/(chef)/dashboard/page.tsx` | Imports widget + fetches todos + renders section |
+| File                                                | What                                                                        |
+| --------------------------------------------------- | --------------------------------------------------------------------------- |
+| `supabase/migrations/20260228000004_chef_todos.sql` | New `chef_todos` table with RLS                                             |
+| `lib/todos/actions.ts`                              | Server actions: `getTodos`, `createTodo`, `toggleTodo`, `deleteTodo`        |
+| `components/dashboard/chef-todo-widget.tsx`         | Interactive client component (add, check, delete)                           |
+| `lib/scheduling/types.ts`                           | Added `'todo_list'` to `DASHBOARD_WIDGET_IDS` and `DASHBOARD_WIDGET_LABELS` |
+| `app/(chef)/dashboard/page.tsx`                     | Imports widget + fetches todos + renders section                            |
 
 ## Database schema
 

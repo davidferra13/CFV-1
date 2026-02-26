@@ -4,7 +4,11 @@ import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { randomBytes } from 'crypto'
 
-export async function createWebhookEndpoint(input: { url: string; description?: string; events: string[] }) {
+export async function createWebhookEndpoint(input: {
+  url: string
+  description?: string
+  events: string[]
+}) {
   const user = await requireChef()
   const supabase = createServerClient()
   const secret = randomBytes(32).toString('hex')
@@ -22,6 +26,10 @@ export async function createWebhookEndpoint(input: { url: string; description?: 
 export async function deleteWebhookEndpoint(id: string) {
   const user = await requireChef()
   const supabase = createServerClient()
-  await supabase.from('webhook_endpoints' as any).delete().eq('id', id).eq('tenant_id', user.entityId)
+  await supabase
+    .from('webhook_endpoints' as any)
+    .delete()
+    .eq('id', id)
+    .eq('tenant_id', user.entityId)
   revalidatePath('/settings/webhooks')
 }

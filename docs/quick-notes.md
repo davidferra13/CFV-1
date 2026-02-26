@@ -38,17 +38,20 @@ The existing CRM message log (`messages` table with `internal_note` channel) is 
 ### Components
 
 **Created:** `components/clients/quick-notes.tsx`
+
 - Full notes panel with header, inline add form, note list
 - Category badges (color-coded: red=dietary, blue=preference, green=logistics, purple=relationship, gray=general)
 - Pin/unpin, edit, delete actions on hover
 - Optimistic re-sorting when pin state changes
 
 **Created:** `components/clients/quick-note-form.tsx`
+
 - Compact form: textarea + category dropdown
 - Used for both adding and editing notes
 - Reused in both client detail page and chat sidebar
 
 **Created:** `components/chat/chat-sidebar.tsx`
+
 - Collapsible right panel in chef's chat view
 - Shows client name (linked to profile), pinned notes, add note button
 - Collapses to a thin icon strip to maximize chat space
@@ -56,10 +59,12 @@ The existing CRM message log (`messages` table with `internal_note` channel) is 
 ### Integration
 
 **Modified:** `app/(chef)/clients/[id]/page.tsx`
+
 - Added QuickNotes section between PersonalInfoEditor and Milestones
 - Notes fetched in parallel with other client data
 
 **Modified:** `app/(chef)/chat/[id]/page.tsx`
+
 - Added ChatSidebar alongside ChatView
 - Resolves client entity ID from conversation participant
 - Fetches pinned notes for sidebar display

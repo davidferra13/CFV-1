@@ -32,11 +32,7 @@ let testClientId: string
 describe('Ledger Idempotency', () => {
   before(async () => {
     // Find an existing chef+client to attach test ledger entries to
-    const { data: chef } = await supabase
-      .from('chefs')
-      .select('id')
-      .limit(1)
-      .single()
+    const { data: chef } = await supabase.from('chefs').select('id').limit(1).single()
 
     if (!chef) throw new Error('No chef found for integration test — run npm run seed:e2e first')
     testChefId = chef.id
@@ -54,10 +50,7 @@ describe('Ledger Idempotency', () => {
 
   after(async () => {
     // Clean up test ledger entry
-    await supabase
-      .from('ledger_entries')
-      .delete()
-      .eq('transaction_reference', TEST_REF)
+    await supabase.from('ledger_entries').delete().eq('transaction_reference', TEST_REF)
   })
 
   it('first insert with a transaction_reference succeeds', async () => {
@@ -87,7 +80,11 @@ describe('Ledger Idempotency', () => {
 
     assert.notEqual(error, null, 'Expected a unique violation error but got none')
     // PostgreSQL error code 23505 = unique_violation
-    assert.equal(error?.code, '23505', `Expected error code 23505 (unique_violation), got: ${error?.code}`)
+    assert.equal(
+      error?.code,
+      '23505',
+      `Expected error code 23505 (unique_violation), got: ${error?.code}`
+    )
   })
 
   it('insert with a DIFFERENT transaction_reference succeeds', async () => {
@@ -104,9 +101,6 @@ describe('Ledger Idempotency', () => {
     assert.equal(error, null, `Expected no error, got: ${error?.message}`)
 
     // Clean up the second entry
-    await supabase
-      .from('ledger_entries')
-      .delete()
-      .eq('transaction_reference', `${TEST_REF}-2`)
+    await supabase.from('ledger_entries').delete().eq('transaction_reference', `${TEST_REF}-2`)
   })
 })

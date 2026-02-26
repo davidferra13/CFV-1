@@ -21,24 +21,25 @@ ChefFlow V1 is now live at **https://cheflowhq.com**. This document covers every
 
 All 12 variables configured via Vercel CLI:
 
-| Variable | Status |
-|----------|--------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Set |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Set |
-| `SUPABASE_SERVICE_ROLE_KEY` | Set |
-| `NEXT_PUBLIC_SITE_URL` | `https://cheflowhq.com` |
-| `NEXT_PUBLIC_APP_URL` | `https://cheflowhq.com` |
+| Variable                             | Status                     |
+| ------------------------------------ | -------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`           | Set                        |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`      | Set                        |
+| `SUPABASE_SERVICE_ROLE_KEY`          | Set                        |
+| `NEXT_PUBLIC_SITE_URL`               | `https://cheflowhq.com`    |
+| `NEXT_PUBLIC_APP_URL`                | `https://cheflowhq.com`    |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Empty (not configured yet) |
-| `STRIPE_SECRET_KEY` | Empty |
-| `STRIPE_WEBHOOK_SECRET` | Empty |
-| `GEMINI_API_KEY` | Set |
-| `GOOGLE_CLIENT_ID` | Empty (not configured yet) |
-| `GOOGLE_CLIENT_SECRET` | Empty |
-| `CRON_SECRET` | Empty |
+| `STRIPE_SECRET_KEY`                  | Empty                      |
+| `STRIPE_WEBHOOK_SECRET`              | Empty                      |
+| `GEMINI_API_KEY`                     | Set                        |
+| `GOOGLE_CLIENT_ID`                   | Empty (not configured yet) |
+| `GOOGLE_CLIENT_SECRET`               | Empty                      |
+| `CRON_SECRET`                        | Empty                      |
 
 ## PWA Support
 
 Added Progressive Web App support so users can "install" ChefFlow:
+
 - `public/manifest.json` — app manifest
 - `public/icon-*.svg` — app icons (192px + 512px, regular + maskable)
 - `app/layout.tsx` — manifest link, Apple PWA tags, theme-color meta

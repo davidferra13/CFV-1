@@ -35,12 +35,14 @@ Had both an import of `ProposalTemplate` from `@/lib/proposals/template-actions`
 ### 5. Analytics Components Not Found (4 files)
 
 **Files created:**
+
 - `components/analytics/benchmark-dashboard.tsx` — recharts ComposedChart showing KPI vs. industry benchmarks; props: `{ current: KPISnapshot, history: HistoryPoint[] }`
 - `components/analytics/client-ltv-chart.tsx` — recharts Bar chart of top 15 clients by lifetime value; props: `{ clients: ClientLTV[] }`
 - `components/analytics/demand-heatmap.tsx` — seasonal demand heatmap grid; props: `{ data: SeasonalHeatmap }`
 - `components/analytics/pipeline-forecast.tsx` — horizontal bar chart of pipeline stages; props: `{ pipeline: PipelineStage[] }`
 
 **Page-level wiring:**
+
 - `app/(chef)/analytics/benchmarks/page.tsx` — splits `getBenchmarkHistory()` result into `current` (last item) and `history` (all with `date` mapped from `snapshotDate`)
 - `app/(chef)/analytics/demand/page.tsx` — passes `SeasonalHeatmap` directly to `DemandHeatmap` (no mapping needed)
 - `app/(chef)/analytics/pipeline/page.tsx` — maps `PipelineRevenueForecast.stages` to `{ status, count, totalCents, weightedCents }[]`
@@ -73,13 +75,13 @@ Stale `.next` directory caused recurring ENOENT errors even after fixing source 
 
 ## Files Created
 
-| File | Purpose |
-|---|---|
-| `components/analytics/benchmark-dashboard.tsx` | KPI benchmark comparison chart |
-| `components/analytics/client-ltv-chart.tsx` | Client lifetime value bar chart |
-| `components/analytics/demand-heatmap.tsx` | Seasonal demand grid chart |
-| `components/analytics/pipeline-forecast.tsx` | Pipeline stage revenue chart |
-| `lib/recipes/bulk-price-actions.ts` | Extracted server action for bulk ingredient price updates |
+| File                                           | Purpose                                                   |
+| ---------------------------------------------- | --------------------------------------------------------- |
+| `components/analytics/benchmark-dashboard.tsx` | KPI benchmark comparison chart                            |
+| `components/analytics/client-ltv-chart.tsx`    | Client lifetime value bar chart                           |
+| `components/analytics/demand-heatmap.tsx`      | Seasonal demand grid chart                                |
+| `components/analytics/pipeline-forecast.tsx`   | Pipeline stage revenue chart                              |
+| `lib/recipes/bulk-price-actions.ts`            | Extracted server action for bulk ingredient price updates |
 
 ---
 

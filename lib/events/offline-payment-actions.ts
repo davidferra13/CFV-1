@@ -13,7 +13,7 @@ export type RecordOfflinePaymentInput = {
   eventId: string
   amountCents: number
   paymentMethod: PaymentMethod
-  paidAt: string          // ISO date string (e.g. "2026-02-28")
+  paidAt: string // ISO date string (e.g. "2026-02-28")
   notes?: string
 }
 
@@ -41,7 +41,9 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
   // ── 1. Fetch event and verify ownership ─────────────────────────────────
   const { data: event, error: eventError } = await supabase
     .from('events')
-    .select('id, tenant_id, client_id, status, quoted_price_cents, deposit_amount_cents, occasion, event_date')
+    .select(
+      'id, tenant_id, client_id, status, quoted_price_cents, deposit_amount_cents, occasion, event_date'
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -68,9 +70,8 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
   // Use 'deposit' type if this is the first payment and the deposit threshold hasn't been met yet
   const isFirstPayment = totalPaidSoFar === 0
   const depositNotYetMet = totalPaidSoFar < depositCents
-  const entryType: LedgerEntryType = (isFirstPayment || depositNotYetMet) && depositCents > 0
-    ? 'deposit'
-    : 'payment'
+  const entryType: LedgerEntryType =
+    (isFirstPayment || depositNotYetMet) && depositCents > 0 ? 'deposit' : 'payment'
 
   // ── 3. Append to ledger ──────────────────────────────────────────────────
   // Use admin client since we're bypassing the webhook path (which uses admin internally).
@@ -88,7 +89,9 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
       description: `Offline ${entryType} recorded by chef — ${paymentMethod}`,
       event_id: eventId,
       transaction_reference: null, // No Stripe ID for offline payments
-      internal_notes: notes || `Recorded by ${user.email} on ${new Date().toISOString()}. Payment date: ${paidAt}`,
+      internal_notes:
+        notes ||
+        `Recorded by ${user.email} on ${new Date().toISOString()}. Payment date: ${paidAt}`,
       received_at: new Date(paidAt).toISOString(),
       is_refund: false,
       created_by: user.id,
@@ -131,7 +134,10 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
         })
       } catch (transitionErr) {
         // Log but don't throw — ledger entry is the source of truth
-        console.error('[recordOfflinePayment] Event transition failed (non-blocking):', transitionErr)
+        console.error(
+          '[recordOfflinePayment] Event transition failed (non-blocking):',
+          transitionErr
+        )
       }
     }
   }
@@ -180,7 +186,12 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
       entityType: 'ledger_entry',
       entityId: ledgerEntry?.id,
       summary: `Recorded offline ${entryType}: $${(amountCents / 100).toFixed(2)} via ${paymentMethod}`,
-      context: { amount_cents: amountCents, payment_method: paymentMethod, entry_type: entryType, event_id: eventId },
+      context: {
+        amount_cents: amountCents,
+        payment_method: paymentMethod,
+        entry_type: entryType,
+        event_id: eventId,
+      },
       clientId: event.client_id,
     })
   } catch (activityErr) {

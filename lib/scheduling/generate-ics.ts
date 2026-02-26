@@ -15,14 +15,14 @@ export function generateICS(
   event: {
     id: string
     title: string
-    eventDate: string   // 'YYYY-MM-DD'
-    startTime?: string  // 'HH:MM' (24-hour)
-    endTime?: string    // 'HH:MM' (24-hour)
+    eventDate: string // 'YYYY-MM-DD'
+    startTime?: string // 'HH:MM' (24-hour)
+    endTime?: string // 'HH:MM' (24-hour)
     location?: string
     description?: string
     guestCount?: number
   },
-  sequence = 0,
+  sequence = 0
 ): string {
   const start = event.startTime
     ? `${event.eventDate.replace(/-/g, '')}T${event.startTime.replace(/:/g, '')}00`
@@ -62,9 +62,5 @@ export function generateICS(
 }
 
 export function escapeICS(text: string): string {
-  return text
-    .replace(/\\/g, '\\\\')
-    .replace(/;/g, '\\;')
-    .replace(/,/g, '\\,')
-    .replace(/\n/g, '\\n')
+  return text.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n')
 }

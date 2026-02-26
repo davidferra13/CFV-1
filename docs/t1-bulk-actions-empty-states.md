@@ -13,13 +13,13 @@ A reusable, centered empty-content component used on any list page when there ar
 
 **Props:**
 
-| Prop | Type | Purpose |
-|---|---|---|
-| `icon` | `React.ReactNode` | Optional lucide-react icon (rendered at 48 px via CSS) |
-| `title` | `string` | Bold headline (stone-900) |
-| `description` | `string` | Subdued explanation (stone-500, max-w-sm) |
-| `action` | `{ label, href?, onClick? }` | Primary CTA rendered as a `primary` Button |
-| `secondaryAction` | `{ label, href? }` | Secondary CTA rendered as a `secondary` Button |
+| Prop              | Type                         | Purpose                                                |
+| ----------------- | ---------------------------- | ------------------------------------------------------ |
+| `icon`            | `React.ReactNode`            | Optional lucide-react icon (rendered at 48 px via CSS) |
+| `title`           | `string`                     | Bold headline (stone-900)                              |
+| `description`     | `string`                     | Subdued explanation (stone-500, max-w-sm)              |
+| `action`          | `{ label, href?, onClick? }` | Primary CTA rendered as a `primary` Button             |
+| `secondaryAction` | `{ label, href? }`           | Secondary CTA rendered as a `secondary` Button         |
 
 The component does not import `Link` from Next.js — it delegates to the existing `Button` component which already handles `href` by rendering an `<a>` tag. This keeps the component dependency-light.
 
@@ -69,8 +69,7 @@ No logic was changed.
 ```tsx
 'use client'
 import { BulkSelectTable } from '@/components/ui/bulk-select-table'
-
-<BulkSelectTable
+;<BulkSelectTable
   items={inquiries}
   renderHeader={() => (
     <>
@@ -81,7 +80,9 @@ import { BulkSelectTable } from '@/components/ui/bulk-select-table'
   renderRow={(inquiry, selected) => (
     <>
       <td className="px-4 py-3">{inquiry.client?.full_name}</td>
-      <td className="px-4 py-3"><InquiryStatusBadge status={inquiry.status} /></td>
+      <td className="px-4 py-3">
+        <InquiryStatusBadge status={inquiry.status} />
+      </td>
     </>
   )}
   bulkActions={[
@@ -89,7 +90,9 @@ import { BulkSelectTable } from '@/components/ui/bulk-select-table'
       label: 'Mark as Closed',
       variant: 'danger',
       confirmMessage: 'Close all selected inquiries?',
-      onClick: async (ids) => { await bulkCloseInquiries(ids) },
+      onClick: async (ids) => {
+        await bulkCloseInquiries(ids)
+      },
     },
   ]}
   emptyState={<EmptyState title="No inquiries" description="…" />}

@@ -16,7 +16,9 @@ export function generateApiKey(): string {
   if (typeof crypto !== 'undefined') {
     crypto.getRandomValues(bytes)
   }
-  const hex = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('')
+  const hex = Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
   return `cf_live_${hex}`
 }
 
@@ -37,7 +39,11 @@ export async function validateApiKey(authHeader: string | null): Promise<ApiKeyC
   if (data.expires_at && new Date(data.expires_at) < new Date()) return null
 
   // Update last_used_at (non-blocking)
-  supabase.from('chef_api_keys' as any).update({ last_used_at: new Date().toISOString() }).eq('id', data.id).then(() => {})
+  supabase
+    .from('chef_api_keys' as any)
+    .update({ last_used_at: new Date().toISOString() })
+    .eq('id', data.id)
+    .then(() => {})
 
   return { tenantId: data.tenant_id, scopes: data.scopes || [], keyId: data.id }
 }

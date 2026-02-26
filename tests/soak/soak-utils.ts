@@ -284,6 +284,12 @@ const IGNORED_ERROR_PATTERNS = [
   /net::ERR_/i,
   // Failed to fetch from cancelled requests
   /Failed to fetch/i,
+  // Next.js production Server Component render errors (digest-based, no detail)
+  /Server Components render/i,
+  // ChefFlow error boundary wrapper
+  /Chef Portal Error/i,
+  // Browser resource loading errors (500s from server-side issues, not client bugs)
+  /Failed to load resource/i,
 ]
 
 function isIgnoredError(message: string): boolean {

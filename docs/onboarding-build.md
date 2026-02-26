@@ -15,12 +15,13 @@ Computes per-phase completion by querying 5 existing tables in parallel. No new 
 
 **`lib/clients/import-actions.ts`**
 Two exports:
+
 - `importClientDirect()` — inserts a client row directly with `auth_user_id = null`. Bypasses the invitation/email flow. Suitable for migrating existing clients who don't need portal access yet. Email is optional. Checks for duplicate email within tenant if provided.
 - `getImportedClients()` — lightweight list for the loyalty seeding page.
 
 ### Modified Pages
 
-**`app/(chef)/onboarding/page.tsx`** *(rewritten)*
+**`app/(chef)/onboarding/page.tsx`** _(rewritten)_
 Was: redirect to `/dashboard` when wizard done.
 Now: when wizard done, shows `<OnboardingHub>` instead. When wizard not done, unchanged — still shows the existing 5-step `<OnboardingWizard>`.
 
@@ -48,6 +49,7 @@ Split-panel layout: form on left (3/5), imported list on right (2/5). Fields: na
 
 **`components/onboarding/loyalty-setup.tsx`**
 Three-tab wizard in a single page:
+
 1. **Config** — earn rate, tier thresholds, welcome points. Calls `updateLoyaltyConfig()`.
 2. **Rewards** — add reward catalog entries. Calls `createReward()`. Shows existing rewards (default catalog is auto-seeded by `getLoyaltyConfig()` on first load).
 3. **Balances** — per-client balance seeding. Calls `awardBonusPoints()` with type=`bonus` and description "Opening balance — migrated from previous records". Append-only — no destructive operation. Warns chef prominently.
@@ -63,19 +65,24 @@ Same split-panel pattern. Calls existing `createStaffMember()` from `lib/staff/a
 ## Key Design Decisions
 
 ### Client Import vs. Invitation
+
 The existing `inviteClient()` sends an email and creates a token expecting the client to sign up. That's wrong for migration — most existing clients don't need portal access. `importClientDirect()` creates the row with `auth_user_id = null`. The chef can send a proper invitation later from the Clients section.
 
 ### Loyalty Seeding Safety
+
 The points ledger is append-only (immutable by DB trigger). There is no "edit balance" — only append transactions. The seed UI:
+
 - Warns the chef visibly before entry
 - Uses `type = 'bonus'` which is the correct transaction type for manual awards
 - Tier is recomputed automatically by `awardBonusPoints()` after each save
 - If a chef enters the wrong number, they correct it with another `adjustment` transaction from the client detail page
 
 ### No New Migrations
+
 All tables exist. The build is entirely UI + two new server action files.
 
 ### Progress Detection Logic
+
 - **Profile**: checks `business_name` AND `display_name` both non-null on the `chefs` row
 - **Clients**: count > 0 on `clients` table (tenant-scoped)
 - **Loyalty**: `loyalty_config` row exists for tenant (auto-created on first `getLoyaltyConfig()` call)
@@ -83,6 +90,7 @@ All tables exist. The build is entirely UI + two new server action files.
 - **Staff**: count > 0 on `staff_members` table using `chef_id` (not `tenant_id` — staff table uses `chef_id`)
 
 ### Staff Table Column
+
 Discovered: `staff_members` uses `chef_id` (not `tenant_id`) for tenant isolation. This differs from every other table. The progress-actions.ts query correctly uses `.eq('chef_id', user.tenantId!)` to match this.
 
 ---

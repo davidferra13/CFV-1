@@ -27,12 +27,10 @@ export function EventProposedEmail({
   return (
     <BaseLayout preview={`${chefName} sent you an event proposal`}>
       <Text style={heading}>Event proposal</Text>
+      <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>
-        Hi {clientName},
-      </Text>
-      <Text style={paragraph}>
-        <strong>{chefName}</strong> has prepared an event proposal for you. Review the details
-        and let your chef know if everything looks good.
+        <strong>{chefName}</strong> has prepared an event proposal for you. Review the details and
+        let your chef know if everything looks good.
       </Text>
       <table style={detailsTable}>
         <tbody>

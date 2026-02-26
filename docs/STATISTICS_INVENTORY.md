@@ -1,4 +1,5 @@
 # ChefFlow Statistics & Measurement Inventory
+
 **Version 1.0 — February 15, 2026**
 
 This document defines every raw data point, derived calculation, aggregation, and time-series metric ChefFlow must track. This inventory drives database schema design, not the other way around.
@@ -8,6 +9,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 ## 1. CLIENT ENTITY
 
 ### Raw Data Points
+
 - `client_id` (UUID)
 - `chef_id` (tenant)
 - `first_name`
@@ -45,6 +47,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `loyalty_points_balance` (integer)
 
 ### Derived Calculations (Per Client)
+
 - `lifetime_revenue` = SUM(all event payments for this client)
 - `lifetime_tips` = SUM(all tips for this client)
 - `lifetime_combined_value` = lifetime_revenue + lifetime_tips
@@ -54,9 +57,9 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `average_spend_per_event` = lifetime_revenue / total_events_completed
 - `average_guests_per_event` = AVG(guest_count across all events)
 - `total_guests_served_lifetime` = SUM(guest_count across all completed events)
-- `average_tip_percentage` = (lifetime_tips / lifetime_revenue) * 100
-- `booking_completion_rate` = (total_events_completed / total_events_booked) * 100
-- `cancellation_rate` = (total_events_cancelled / total_events_booked) * 100
+- `average_tip_percentage` = (lifetime_tips / lifetime_revenue) \* 100
+- `booking_completion_rate` = (total_events_completed / total_events_booked) \* 100
+- `cancellation_rate` = (total_events_cancelled / total_events_booked) \* 100
 - `days_since_last_event` = NOW() - MAX(event_date for completed events)
 - `days_since_first_event` = NOW() - MIN(event_date for all events)
 - `client_relationship_length_days` = MAX(event_date) - MIN(event_date)
@@ -70,6 +73,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `referrals_generated` = COUNT(other clients where referral_source_name = this client)
 
 ### Aggregations (Across All Clients)
+
 - `total_clients` = COUNT(all clients)
 - `active_clients` = COUNT(clients with status = active)
 - `repeat_clients` = COUNT(clients where total_events_completed > 1)
@@ -84,13 +88,14 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `top_10_clients_by_revenue` = ORDER BY lifetime_revenue DESC LIMIT 10
 - `clients_with_outstanding_balances` = COUNT(clients where outstanding_balance > 0)
 - `total_outstanding_across_all_clients` = SUM(outstanding_balance)
-- `repeat_client_percentage` = (repeat_clients / total_clients) * 100
+- `repeat_client_percentage` = (repeat_clients / total_clients) \* 100
 - `average_client_relationship_length` = AVG(client_relationship_length_days)
 - `clients_with_dietary_restrictions` = COUNT(clients where dietary_restrictions IS NOT EMPTY)
 - `clients_with_allergies` = COUNT(clients where allergies IS NOT EMPTY)
 - `nut_allergy_clients` = COUNT(clients where allergies CONTAINS 'nut')
 
 ### Time-Series Insights
+
 - `new_clients_by_month` (line chart: month → count)
 - `client_acquisition_trend` (12-month rolling count)
 - `dormant_clients_by_quarter` (bar chart)
@@ -104,6 +109,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 ## 2. EVENT ENTITY
 
 ### Raw Data Points
+
 - `event_id` (UUID)
 - `chef_id` (tenant)
 - `client_id` (FK)
@@ -174,6 +180,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `updated_at` (timestamp)
 
 ### After Action Review (Sub-Entity of Event)
+
 - `calm_rating` (1-5 scale)
 - `preparation_rating` (1-5 scale)
 - `could_have_been_done_earlier` (array: grocery list, prep list, shopping, packing)
@@ -187,23 +194,24 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `stress_level` (1-5 scale)
 
 ### Derived Calculations (Per Event)
+
 - `revenue_per_guest` = total_revenue / guest_count (in cents)
 - `quoted_price_per_guest` = quoted_price / guest_count (in cents)
 - `food_cost_per_guest` = adjusted_food_cost / guest_count (in cents)
-- `food_cost_percentage` = (adjusted_food_cost / total_revenue) * 100
+- `food_cost_percentage` = (adjusted_food_cost / total_revenue) \* 100
 - `gross_profit` = total_revenue - adjusted_food_cost (in cents)
-- `gross_margin_percentage` = (gross_profit / total_revenue) * 100
+- `gross_margin_percentage` = (gross_profit / total_revenue) \* 100
 - `net_profit` = gross_profit - gas_cost - additional_expenses (in cents)
 - `effective_hourly_rate` = net_profit / (total_time_invested_minutes / 60) (in cents)
-- `tip_percentage` = (total_tips / total_paid) * 100
-- `payment_completion_percentage` = (total_paid / quoted_price) * 100
+- `tip_percentage` = (total_tips / total_paid) \* 100
+- `payment_completion_percentage` = (total_paid / quoted_price) \* 100
 - `days_from_inquiry_to_booking` = (status changed to 'accepted') - inquiry_created_at
 - `days_from_booking_to_event` = event_date - (status changed to 'accepted')
 - `lead_time_days` = event_date - created_at
-- `prep_efficiency` = (components_completed_early / total_component_count) * 100
+- `prep_efficiency` = (components_completed_early / total_component_count) \* 100
 - `on_time_arrival` = BOOLEAN (arrival_time_actual <= arrival_time_planned)
 - `minutes_late` = MAX(0, arrival_time_actual - arrival_time_planned)
-- `budget_adherence` = (grocery_actual_spend / grocery_budget_target) * 100
+- `budget_adherence` = (grocery_actual_spend / grocery_budget_target) \* 100
 - `budget_variance` = grocery_actual_spend - grocery_budget_target (in cents)
 - `time_from_wake_to_arrival` (minutes — if wake time tracked)
 - `days_from_menu_locked_to_event` = event_date - menu_locked_at
@@ -214,6 +222,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `hit_terminal_state` = BOOLEAN (terminal_state_reached_at IS NOT NULL)
 
 ### Aggregations (Across All Events)
+
 - `total_events` = COUNT(all events)
 - `completed_events` = COUNT(events where status = completed)
 - `upcoming_events` = COUNT(events where status IN (accepted, paid, confirmed) AND event_date > NOW())
@@ -239,27 +248,28 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `average_total_time_invested` = AVG(total_time_invested_minutes for completed events)
 - `average_calm_rating` = AVG(calm_rating from AAR)
 - `average_preparation_rating` = AVG(preparation_rating from AAR)
-- `calm_event_percentage` = (COUNT(events where calm_rating >= 4) / completed_events) * 100
-- `well_prepared_percentage` = (COUNT(events where preparation_rating >= 4) / completed_events) * 100
-- `on_time_arrival_percentage` = (COUNT(events where on_time_arrival = TRUE) / completed_events) * 100
+- `calm_event_percentage` = (COUNT(events where calm_rating >= 4) / completed_events) \* 100
+- `well_prepared_percentage` = (COUNT(events where preparation_rating >= 4) / completed_events) \* 100
+- `on_time_arrival_percentage` = (COUNT(events where on_time_arrival = TRUE) / completed_events) \* 100
 - `events_with_forgotten_items` = COUNT(events where forgot_items = TRUE)
 - `events_reaching_terminal_state` = COUNT(events where hit_terminal_state = TRUE)
-- `terminal_state_percentage` = (events_reaching_terminal_state / completed_events) * 100
-- `cancellation_rate` = (cancelled_events / total_events) * 100
-- `conversion_rate_inquiry_to_event` = (total_events / total_inquiries) * 100
+- `terminal_state_percentage` = (events_reaching_terminal_state / completed_events) \* 100
+- `cancellation_rate` = (cancelled_events / total_events) \* 100
+- `conversion_rate_inquiry_to_event` = (total_events / total_inquiries) \* 100
 - `average_lead_time_days` = AVG(lead_time_days)
 - `events_by_occasion` = GROUP BY occasion, COUNT
 - `events_by_service_style` = GROUP BY service_style, COUNT
 - `events_by_city` = GROUP BY location_city, COUNT
 - `events_by_payment_method` = GROUP BY payment_method, COUNT
 - `revenue_this_month` = SUM(total_revenue for events in current month)
-- `revenue_vs_10k_target` = (revenue_this_month / 1000000) * 100 (in cents)
+- `revenue_vs_10k_target` = (revenue_this_month / 1000000) \* 100 (in cents)
 - `revenue_shortfall` = 1000000 - revenue_this_month (in cents)
 - `projected_revenue_this_month` = SUM(quoted_price for upcoming events in current month)
 - `booked_revenue_this_month` = revenue_this_month + projected_revenue_this_month
 - `outstanding_balances_total` = SUM(outstanding_balance for all events)
 
 ### Time-Series Insights
+
 - `events_by_month` (line chart: month → count)
 - `revenue_by_month` (line chart: month → total_revenue)
 - `guests_served_by_month` (line chart: month → total_guests)
@@ -280,6 +290,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 ## 3. MENU ENTITY
 
 ### Raw Data Points
+
 - `menu_id` (UUID)
 - `chef_id` (tenant)
 - `client_id` (FK, nullable if template)
@@ -305,12 +316,14 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `times_used` (if template, COUNT of events using this template)
 
 ### Course Sub-Entity (Part of Menu)
+
 - `course_number` (1, 2, 3, etc.)
 - `course_name` (e.g., "Cheese Board", "Steak Diane with Sides")
 - `component_count` (count of components in this course)
 - `components` (array of component objects)
 
 ### Component Sub-Entity (Part of Course)
+
 - `component_id` (UUID)
 - `component_name` (e.g., "Diane Sauce", "Roasted Smashed Potatoes")
 - `component_category` (protein, sauce, starch, vegetable, dessert, etc.)
@@ -324,6 +337,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `dietary_flags` (array)
 
 ### Derived Calculations (Per Menu)
+
 - `total_recipes_used` = COUNT(distinct recipe_id in all components)
 - `recipes_missing` = COUNT(components where recipe_id IS NULL)
 - `high_risk_component_count` = COUNT(components where is_high_risk = TRUE)
@@ -332,12 +346,13 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `day_of_component_count` = COUNT(components where prep_timing = 'day-of')
 - `on_site_component_count` = COUNT(components where prep_timing = 'on-site')
 - `texture_sensitive_count` = COUNT(components where texture_sensitive = TRUE)
-- `projected_food_cost` = SUM(recipe.cost_per_portion * guest_count for all components)
+- `projected_food_cost` = SUM(recipe.cost_per_portion \* guest_count for all components)
 - `revision_velocity` = revision_count / (locked_at - created_at) in days
 - `time_to_lock_days` = locked_at - created_at
 - `time_from_shared_to_locked_days` = locked_at - shared_at
 
 ### Aggregations (Across All Menus)
+
 - `total_menus_created` = COUNT(all menus)
 - `locked_menus` = COUNT(menus where status = locked)
 - `draft_menus` = COUNT(menus where status = draft)
@@ -352,6 +367,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `total_components_without_recipes` = SUM(recipes_missing)
 
 ### Time-Series Insights
+
 - `menus_locked_by_month` (line chart: month → count)
 - `average_component_count_trend` (line chart: month → avg components)
 - `template_usage_trend` (line chart: month → % of menus using templates)
@@ -362,6 +378,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 ## 4. RECIPE ENTITY (Recipe Bible)
 
 ### Raw Data Points
+
 - `recipe_id` (UUID)
 - `chef_id` (tenant)
 - `component_name` (e.g., "Diane Sauce")
@@ -391,22 +408,25 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `would_make_again` (boolean)
 
 ### Ingredient Sub-Entity (Part of Recipe)
+
 - `ingredient_name`
 - `quantity`
 - `unit` (oz, cups, grams, tbsp, etc.)
 - `cost_per_unit` (in cents — from ingredient price database)
-- `total_cost_for_recipe` (in cents) = quantity * cost_per_unit
+- `total_cost_for_recipe` (in cents) = quantity \* cost_per_unit
 - `is_pantry_staple` (boolean — already owned)
 - `allergen_flags` (array)
 
 ### Derived Calculations (Per Recipe)
+
 - `cost_per_guest` (in cents) = cost_per_portion
-- `markup_at_standard_pricing` = (standard_event_revenue_per_guest - cost_per_guest) / cost_per_guest * 100
+- `markup_at_standard_pricing` = (standard_event_revenue_per_guest - cost_per_guest) / cost_per_guest \* 100
 - `days_since_last_used` = NOW() - last_used_at
 - `usage_frequency` = times_used / chef_tenure_days
 - `is_signature_dish` = BOOLEAN (times_used > 10 AND client_feedback_rating >= 4.5)
 
 ### Aggregations (Across All Recipes)
+
 - `total_recipes` = COUNT(all recipes)
 - `recipes_by_category` = GROUP BY category, COUNT
 - `average_cost_per_recipe` = AVG(cost_per_batch)
@@ -424,6 +444,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `average_ingredient_count_per_recipe` = AVG(COUNT(ingredients))
 
 ### Time-Series Insights
+
 - `recipes_added_by_month` (line chart: month → count)
 - `recipe_library_growth` (cumulative line chart: month → total recipes)
 - `recipe_usage_by_month` (line chart: month → total times_used across all recipes)
@@ -435,6 +456,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 ## 5. INQUIRY ENTITY
 
 ### Raw Data Points
+
 - `inquiry_id` (UUID)
 - `chef_id` (tenant)
 - `client_id` (FK, may be client stub)
@@ -468,6 +490,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `updated_at` (timestamp)
 
 ### Derived Calculations (Per Inquiry)
+
 - `time_to_first_response_hours` = (first_response_at - received_at) in hours
 - `time_to_quote_hours` = (quoted_at - received_at) in hours
 - `time_to_conversion_days` = (converted_at - received_at) in days
@@ -479,6 +502,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `days_in_pipeline` = (closed_at OR NOW()) - received_at
 
 ### Aggregations (Across All Inquiries)
+
 - `total_inquiries` = COUNT(all inquiries)
 - `new_inquiries` = COUNT(inquiries where status = new)
 - `awaiting_client` = COUNT(inquiries where status = awaiting_client)
@@ -489,11 +513,11 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `expired_inquiries` = COUNT(inquiries where was_expired = TRUE)
 - `inquiries_this_month` = COUNT(inquiries where received_at in current month)
 - `inquiries_this_year` = COUNT(inquiries where received_at in current year)
-- `conversion_rate` = (converted_inquiries / total_inquiries) * 100
-- `decline_rate` = (declined_inquiries / total_inquiries) * 100
-- `expiry_rate` = (expired_inquiries / total_inquiries) * 100
+- `conversion_rate` = (converted_inquiries / total_inquiries) \* 100
+- `decline_rate` = (declined_inquiries / total_inquiries) \* 100
+- `expiry_rate` = (expired_inquiries / total_inquiries) \* 100
 - `inquiries_by_channel` = GROUP BY source_channel, COUNT
-- `conversion_rate_by_channel` = GROUP BY source_channel, (converted / total) * 100
+- `conversion_rate_by_channel` = GROUP BY source_channel, (converted / total) \* 100
 - `average_time_to_first_response` = AVG(time_to_first_response_hours)
 - `average_time_to_quote` = AVG(time_to_quote_hours)
 - `average_time_to_conversion` = AVG(time_to_conversion_days)
@@ -504,6 +528,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `declined_reasons_breakdown` = GROUP BY declined_reason, COUNT
 
 ### Time-Series Insights
+
 - `inquiries_by_month` (line chart: month → count)
 - `conversion_rate_by_month` (line chart: month → conversion %)
 - `average_response_time_by_month` (line chart: month → avg time_to_first_response_hours)
@@ -516,6 +541,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 ## 6. PAYMENT / FINANCIAL ENTITY (Ledger)
 
 ### Raw Data Points (Ledger Entry)
+
 - `ledger_entry_id` (UUID)
 - `chef_id` (tenant)
 - `event_id` (FK)
@@ -533,6 +559,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `created_by` (user_id)
 
 ### Expense Sub-Entity (Part of Event Financial Record)
+
 - `expense_id` (UUID)
 - `event_id` (FK)
 - `expense_type` (groceries, liquor, gas, specialty_item, other)
@@ -546,6 +573,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `cash_back_earned` (in cents)
 
 ### Derived Calculations (Per Event Financial View)
+
 - `total_deposits` = SUM(amount WHERE entry_type = deposit)
 - `total_installments` = SUM(amount WHERE entry_type = installment)
 - `total_final_payments` = SUM(amount WHERE entry_type = final_payment)
@@ -563,12 +591,13 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `total_cash_back_earned` = SUM(cash_back_earned for all payments and expenses)
 - `net_revenue_after_expenses` = total_revenue - total_expenses
 - `gross_profit` = total_revenue - total_business_grocery_spend
-- `gross_margin_percentage` = (gross_profit / total_revenue) * 100
+- `gross_margin_percentage` = (gross_profit / total_revenue) \* 100
 - `net_profit` = net_revenue_after_expenses
-- `net_margin_percentage` = (net_profit / total_revenue) * 100
+- `net_margin_percentage` = (net_profit / total_revenue) \* 100
 - `effective_revenue_after_cash_back` = total_revenue + total_cash_back_earned
 
 ### Aggregations (Across All Events — Financial)
+
 - `lifetime_revenue` = SUM(total_revenue for all completed events)
 - `lifetime_tips` = SUM(total_tips for all completed events)
 - `lifetime_expenses` = SUM(total_expenses for all completed events)
@@ -584,15 +613,16 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `net_profit_this_month` = revenue_this_month - expenses_this_month
 - `net_profit_this_year` = revenue_this_year - expenses_this_year
 - `outstanding_balances_total` = SUM(outstanding_balance for all events)
-- `revenue_vs_10k_monthly_target` = (revenue_this_month / 1000000) * 100
+- `revenue_vs_10k_monthly_target` = (revenue_this_month / 1000000) \* 100
 - `monthly_revenue_shortfall` = 1000000 - revenue_this_month (if negative, surplus)
-- `average_tip_percentage` = (lifetime_tips / lifetime_revenue) * 100
-- `cash_payment_percentage` = (COUNT(payments WHERE payment_method = cash) / COUNT(all payments)) * 100
-- `venmo_payment_percentage` = (COUNT(payments WHERE payment_method = Venmo) / COUNT(all payments)) * 100
+- `average_tip_percentage` = (lifetime_tips / lifetime_revenue) \* 100
+- `cash_payment_percentage` = (COUNT(payments WHERE payment_method = cash) / COUNT(all payments)) \* 100
+- `venmo_payment_percentage` = (COUNT(payments WHERE payment_method = Venmo) / COUNT(all payments)) \* 100
 - `total_receipts_uploaded` = COUNT(ledger_entries WHERE receipt_photo_url IS NOT NULL)
 - `events_missing_receipts` = COUNT(events WHERE expense receipts missing)
 
 ### Time-Series Insights
+
 - `revenue_by_month` (line chart: month → total_revenue)
 - `expenses_by_month` (line chart: month → total_expenses)
 - `net_profit_by_month` (line chart: month → net_profit)
@@ -608,6 +638,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 ## 7. MESSAGE / COMMUNICATION ENTITY
 
 ### Raw Data Points
+
 - `message_id` (UUID)
 - `chef_id` (tenant)
 - `event_id` (FK, nullable if inquiry-only)
@@ -628,11 +659,13 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `created_at` (timestamp)
 
 ### Derived Calculations (Per Message)
+
 - `time_to_approval_minutes` = (approved_at - drafted_at) in minutes (if system-generated)
 - `time_to_read_minutes` = (read_at - sent_at) in minutes (if trackable)
 - `was_approved_before_sending` = BOOLEAN (approved_at IS NOT NULL AND is_system_generated = TRUE)
 
 ### Aggregations (Across All Messages)
+
 - `total_messages` = COUNT(all messages)
 - `messages_by_chef` = COUNT(messages WHERE sender_role = chef)
 - `messages_by_client` = COUNT(messages WHERE sender_role = client)
@@ -645,6 +678,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `templates_used_count` = GROUP BY template_used, COUNT
 
 ### Time-Series Insights
+
 - `messages_by_month` (line chart: month → count)
 - `messages_by_channel_over_time` (stacked area: month → count by channel)
 - `system_vs_manual_messages_trend` (stacked bar: month → system vs manual)
@@ -654,6 +688,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 ## 8. SHOPPING / GROCERY LIST ENTITY
 
 ### Raw Data Points
+
 - `grocery_list_id` (UUID)
 - `event_id` (FK)
 - `chef_id` (tenant)
@@ -666,6 +701,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `items` (array of grocery_item objects)
 
 ### Grocery Item Sub-Entity
+
 - `item_name`
 - `category` (protein, produce, dairy, pantry, etc.)
 - `quantity`
@@ -681,17 +717,19 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `substituted_with` (text)
 
 ### Derived Calculations (Per Grocery List)
+
 - `total_planned_cost` = SUM(planned_cost for all items)
 - `total_actual_cost` = SUM(actual_cost for all items)
 - `cost_variance` = total_actual_cost - total_planned_cost
 - `substitution_count` = COUNT(items WHERE was_substituted = TRUE)
-- `substitution_rate` = (substitution_count / total_line_items) * 100
+- `substitution_rate` = (substitution_count / total_line_items) \* 100
 - `staple_item_count` = COUNT(items WHERE is_staple_already_owned = TRUE)
 - `flexible_item_count` = COUNT(items WHERE is_flexible = TRUE)
 - `insurance_item_count` = COUNT(items WHERE is_insurance_item = TRUE)
 - `time_from_finalized_to_shopped_hours` = (shopped_at - finalized_at) in hours
 
 ### Aggregations (Across All Grocery Lists)
+
 - `average_line_items_per_list` = AVG(total_line_items)
 - `average_planned_cost` = AVG(total_planned_cost)
 - `average_actual_cost` = AVG(total_actual_cost)
@@ -704,6 +742,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 ## 9. EQUIPMENT / PACKING ENTITY
 
 ### Raw Data Points
+
 - `packing_list_id` (UUID)
 - `event_id` (FK)
 - `status` (draft, ready, packed, verified)
@@ -712,6 +751,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `items` (array of equipment_item objects)
 
 ### Equipment Item Sub-Entity
+
 - `item_name` (e.g., "ice cream machine", "gloves", "parchment paper")
 - `category` (must_bring, assume_exists, confirm_required, non_negotiable)
 - `bin` (cold, dry, tools, fragile)
@@ -721,14 +761,16 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `is_non_negotiable` (boolean — always needed, frequently forgotten)
 
 ### Derived Calculations (Per Packing List)
+
 - `total_items` = COUNT(items)
 - `must_bring_count` = COUNT(items WHERE category = must_bring)
 - `non_negotiable_count` = COUNT(items WHERE is_non_negotiable = TRUE)
 - `fragile_count` = COUNT(items WHERE is_fragile = TRUE)
 - `items_forgotten_count` = COUNT(items WHERE was_forgotten = TRUE)
-- `forget_rate` = (items_forgotten_count / total_items) * 100
+- `forget_rate` = (items_forgotten_count / total_items) \* 100
 
 ### Aggregations (Across All Packing Lists)
+
 - `most_forgotten_items` = GROUP BY item_name WHERE was_forgotten = TRUE, COUNT
 - `average_items_per_event` = AVG(total_items)
 - `average_forget_rate` = AVG(forget_rate)
@@ -738,6 +780,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 ## 10. TIMELINE / SCHEDULE ENTITY
 
 ### Raw Data Points
+
 - `timeline_id` (UUID)
 - `event_id` (FK)
 - `arrival_time` (timestamp — anchor point)
@@ -755,6 +798,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `created_at` (timestamp)
 
 ### Derived Calculations (Per Timeline)
+
 - `time_from_wake_to_arrival_hours` = (arrival_time - wake_up_time) in hours
 - `actual_wake_time` (from AAR or time tracking)
 - `wake_time_variance_minutes` = (actual_wake_time - wake_up_time) in minutes
@@ -766,6 +810,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 ## 11. LOYALTY / REWARDS ENTITY
 
 ### Raw Data Points (Per Client)
+
 - `loyalty_points_balance` (integer — 1 point per guest served)
 - `loyalty_tier` (bronze, silver, gold, platinum — auto-calculated from lifetime guests)
 - `points_earned_lifetime` = total_guests_served_lifetime
@@ -773,6 +818,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `rewards_claimed` (array of reward objects)
 
 ### Reward Sub-Entity
+
 - `reward_id` (UUID)
 - `client_id` (FK)
 - `reward_type` ($20 off, 50% off dinner for two, free dinner, bonus course, etc.)
@@ -783,27 +829,31 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `status` (active, redeemed, expired)
 
 ### Derived Calculations
+
 - `active_rewards` = COUNT(rewards WHERE status = active)
 - `expired_rewards` = COUNT(rewards WHERE status = expired)
-- `redemption_rate` = (COUNT(rewards redeemed) / COUNT(rewards issued)) * 100
+- `redemption_rate` = (COUNT(rewards redeemed) / COUNT(rewards issued)) \* 100
 
 ---
 
 ## 12. CROSS-ENTITY METRICS (Business Intelligence)
 
 ### Pipeline Health
+
 - `inquiries_in_last_7_days` = COUNT(inquiries WHERE received_at >= NOW() - 7 days)
 - `inquiries_in_last_30_days` = COUNT(inquiries WHERE received_at >= NOW() - 30 days)
-- `conversion_rate_last_30_days` = (converted_inquiries_last_30_days / inquiries_last_30_days) * 100
+- `conversion_rate_last_30_days` = (converted_inquiries_last_30_days / inquiries_last_30_days) \* 100
 - `average_inquiry_to_booking_days` = AVG(time_to_conversion_days)
 - `pipeline_value` = SUM(quoted_price for all quoted inquiries not yet converted or declined)
 
 ### Booking Velocity
+
 - `events_booked_this_week` = COUNT(events WHERE status changed to 'accepted' in last 7 days)
 - `events_booked_this_month` = COUNT(events WHERE status changed to 'accepted' in current month)
 - `booking_velocity_30_day` = COUNT(events WHERE status changed to 'accepted' in last 30 days)
 
 ### Revenue Forecasting
+
 - `booked_revenue_next_30_days` = SUM(quoted_price for events in next 30 days)
 - `booked_revenue_next_60_days` = SUM(quoted_price for events in next 60 days)
 - `booked_revenue_next_90_days` = SUM(quoted_price for events in next 90 days)
@@ -811,20 +861,23 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `revenue_gap_to_10k_target` = 1000000 - (revenue_this_month + projected_monthly_revenue)
 
 ### Operational Efficiency
+
 - `average_calm_rating_last_10_events` = AVG(calm_rating for last 10 completed events)
 - `average_preparation_rating_last_10_events` = AVG(preparation_rating for last 10 completed events)
-- `events_reaching_terminal_state_percentage` = (events with terminal_state / completed_events) * 100
+- `events_reaching_terminal_state_percentage` = (events with terminal_state / completed_events) \* 100
 - `average_time_to_terminal_state_days` = AVG((terminal_state_reached_at - event_completed_at) in days)
-- `forgotten_items_frequency` = (events_with_forgotten_items / completed_events) * 100
+- `forgotten_items_frequency` = (events_with_forgotten_items / completed_events) \* 100
 - `most_commonly_forgotten_items` = GROUP BY item_name FROM packing lists WHERE was_forgotten = TRUE
 
 ### Client Retention
-- `repeat_client_rate` = (COUNT(clients with > 1 event) / total_clients) * 100
+
+- `repeat_client_rate` = (COUNT(clients with > 1 event) / total_clients) \* 100
 - `average_events_per_repeat_client` = AVG(event_count for clients with > 1 event)
-- `client_churn_rate` = (clients_dormant_over_1_year / total_clients) * 100
-- `client_reactivation_rate` = (clients who booked after being dormant / clients_dormant_over_1_year) * 100
+- `client_churn_rate` = (clients_dormant_over_1_year / total_clients) \* 100
+- `client_reactivation_rate` = (clients who booked after being dormant / clients_dormant_over_1_year) \* 100
 
 ### Financial Health
+
 - `gross_margin_last_10_events` = AVG(gross_margin_percentage for last 10 events)
 - `net_margin_last_10_events` = AVG(net_margin_percentage for last 10 events)
 - `effective_hourly_rate_last_10_events` = AVG(effective_hourly_rate for last 10 events)
@@ -834,15 +887,17 @@ This document defines every raw data point, derived calculation, aggregation, an
 - `cash_flow_next_30_days` = booked_revenue_next_30_days - projected_expenses_next_30_days
 
 ### Recipe Bible Maturity
-- `recipe_coverage_rate` = (components_with_recipes / total_components_used_in_events) * 100
+
+- `recipe_coverage_rate` = (components_with_recipes / total_components_used_in_events) \* 100
 - `recipes_added_last_30_days` = COUNT(recipes WHERE created_at in last 30 days)
 - `recipe_reuse_rate` = AVG(times_used for all recipes)
 - `signature_dish_count` = COUNT(recipes WHERE is_signature_dish = TRUE)
 
 ### Stress & Sustainability Indicators
+
 - `calm_trend_improving` = BOOLEAN (calm_rating_avg_last_5_events > calm_rating_avg_previous_5_events)
 - `preparation_trend_improving` = BOOLEAN (preparation_rating_avg_last_5_events > preparation_rating_avg_previous_5_events)
-- `burnout_risk_score` = CALCULATED (events_per_week * avg_time_invested_per_event / calm_rating)
+- `burnout_risk_score` = CALCULATED (events_per_week \* avg_time_invested_per_event / calm_rating)
 - `weeks_with_heavy_load` = COUNT(weeks WHERE events >= 3)
 - `weeks_with_light_load` = COUNT(weeks WHERE events <= 1)
 
@@ -851,6 +906,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 ## 13. TIME-SERIES DASHBOARDS
 
 ### Chef Dashboard (Real-Time)
+
 - "What can I safely prepare right now?" (preparable actions list)
 - Upcoming events this week (count + list)
 - Events requiring action (awaiting response, missing menu, unpaid, etc.)
@@ -860,6 +916,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 - Calm rating trend (last 10 events, sparkline)
 
 ### Monthly Business Review
+
 - Revenue this month vs last month (% change)
 - Events this month vs last month (% change)
 - Gross margin this month vs last month
@@ -873,6 +930,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 - Recipe library growth
 
 ### Quarterly Business Review
+
 - Total revenue (quarter)
 - Total events (quarter)
 - New clients acquired
@@ -904,6 +962,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 - **Cross-Entity Business Intelligence:** 36 metrics
 
 **GRAND TOTAL INVENTORY:**
+
 - **Raw data points:** ~300+
 - **Derived calculations:** ~150+
 - **Aggregations:** ~170+
@@ -914,6 +973,7 @@ This document defines every raw data point, derived calculation, aggregation, an
 ## NEXT STEPS
 
 This inventory is now the canonical requirements document for:
+
 1. Database schema design (tables, columns, types, indexes)
 2. Calculated field logic (triggers, views, functions)
 3. Dashboard UI design (what to display, how to calculate)
@@ -921,6 +981,7 @@ This inventory is now the canonical requirements document for:
 5. API endpoint design (what data to expose)
 
 Every field in this document should map to either:
+
 - A database column (raw data)
 - A database view or function (derived calculation)
 - An application-layer aggregation query

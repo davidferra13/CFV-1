@@ -8,7 +8,7 @@ import type { ChatMessage } from './types'
 function getSupabaseClient() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 }
 
@@ -22,7 +22,7 @@ function getSupabaseClient() {
  */
 export function subscribeToChatMessages(
   conversationId: string,
-  onMessage: (message: ChatMessage) => void,
+  onMessage: (message: ChatMessage) => void
 ): () => void {
   const supabase = getSupabaseClient()
 
@@ -38,7 +38,7 @@ export function subscribeToChatMessages(
       },
       (payload) => {
         onMessage(payload.new as ChatMessage)
-      },
+      }
     )
     .subscribe()
 
@@ -53,7 +53,7 @@ export function subscribeToChatMessages(
  */
 export function subscribeToInboxUpdates(
   tenantId: string,
-  onUpdate: (conversation: Record<string, unknown>) => void,
+  onUpdate: (conversation: Record<string, unknown>) => void
 ): () => void {
   const supabase = getSupabaseClient()
 
@@ -69,7 +69,7 @@ export function subscribeToInboxUpdates(
       },
       (payload) => {
         onUpdate(payload.new)
-      },
+      }
     )
     .subscribe()
 
@@ -96,7 +96,7 @@ export function createTypingIndicator(
   conversationId: string,
   currentUserId: string,
   currentUserName: string,
-  onTypingChange: (state: TypingState) => void,
+  onTypingChange: (state: TypingState) => void
 ) {
   const supabase = getSupabaseClient()
 
@@ -140,7 +140,7 @@ export function createTypingIndicator(
 export function subscribeToPresence(
   conversationId: string,
   userId: string,
-  onPresenceChange: (onlineUserIds: string[]) => void,
+  onPresenceChange: (onlineUserIds: string[]) => void
 ): () => void {
   const supabase = getSupabaseClient()
 

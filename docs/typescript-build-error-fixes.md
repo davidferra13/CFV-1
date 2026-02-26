@@ -24,6 +24,7 @@ Ten targeted TypeScript fixes applied across nine files. No logic changes — al
 **Error:** `TS2345` — object passed to `createRecurringService` missing required fields vs. `RecurringServiceInput`.
 
 **Fix:**
+
 - Added `status: 'active' as const` to the `createRecurringService(...)` call (the Zod schema has `.default('active')` but TypeScript's inferred input type can still require it explicitly).
 - Changed `typical_guest_count: 0` (which fails Zod's `min(1)` constraint) to `typical_guest_count: undefined` when the field is empty, matching the `.optional()` schema definition.
 
@@ -42,6 +43,7 @@ Ten targeted TypeScript fixes applied across nine files. No logic changes — al
 **Error:** Implicit `any` on `.reduce()` callback parameters at two call sites.
 
 **Fix:** Added explicit types `(sum: number, l: any)` to both `.reduce()` callbacks:
+
 - Line ~101: `logs.reduce((sum: number, l: any) => sum + l.minutes, 0)`
 - Line ~135: `(data ?? []).reduce((sum: number, l: any) => sum + l.minutes, 0)`
 
@@ -52,6 +54,7 @@ Ten targeted TypeScript fixes applied across nine files. No logic changes — al
 **Error:** Implicit `any` on `.filter()` and `.find()` callback parameters (~lines 899, 903, 961, 962). `rewards` comes from a `(supabase as any)` query and TypeScript cannot infer the element type.
 
 **Fix:** Added explicit `(r: any)` type annotation to four callbacks:
+
 - `.filter((r: any) => ...)` in `getClientsApproachingRewards`
 - `.map((r: any) => ...)` in `getClientsApproachingRewards`
 - `.filter((r: any) => ...)` in `getMyLoyaltyStatus`
@@ -72,6 +75,7 @@ Ten targeted TypeScript fixes applied across nine files. No logic changes — al
 **Error:** Many `Type 'undefined' is not assignable to type 'string | null'` errors. The `rowToClient` function returned fields using `|| undefined` patterns, but `ParsedClient` (from `parse-client.ts`) declares nullable fields as `string | null` not `string | undefined`.
 
 **Fix:** Replaced all `|| undefined` / `undefined` values with `?? null` / `null` throughout the returned object in `rowToClient`:
+
 - `email: emailVal ?? null`
 - `phone: phoneVal ?? null`
 - `partner_name: null`

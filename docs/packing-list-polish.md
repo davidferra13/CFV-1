@@ -33,13 +33,13 @@ Added a "Transport Zone" column to the components table. It only shows a badge f
 
 Badge colors match the label/color convention already established in `MenuEditor.tsx`:
 
-| Zone | Badge color |
-|---|---|
-| Cold (cooler) | Blue |
-| Frozen (pack last) | Sky |
-| Room Temp | Stone |
-| Fragile | Amber |
-| Liquid (upright) | Cyan |
+| Zone               | Badge color |
+| ------------------ | ----------- |
+| Cold (cooler)      | Blue        |
+| Frozen (pack last) | Sky         |
+| Room Temp          | Stone       |
+| Fragile            | Amber       |
+| Liquid (upright)   | Cyan        |
 
 **Why:** A chef building or auditing their menus couldn't see at a glance which components were assigned to which packing zone. Now they can catch misassignments (e.g. a protein that's still defaulting to room_temp) before printing the packing list.
 
@@ -61,6 +61,7 @@ Badge colors match the label/color convention already established in `MenuEditor
 The `.returns<RawComp[]>()` workaround on lines 145–159 remains. It was planned for removal, but investigation revealed that the `transport_category` migration (`20260301000001_packing_list_transport_categories.sql`) **has not been applied to the remote Supabase database yet** — only the local instance. As a result, `types/database.ts` (which reflects the remote schema) does not include the `transport_category` column.
 
 **To remove the workaround:**
+
 1. Push the migration to remote: `npx supabase db push --linked` (requires explicit approval per project rules — this modifies the live database)
 2. Regenerate types: `npx supabase gen types typescript --linked > types/database.ts`
 3. Remove the `RawComp` type and `.returns<RawComp[]>()` call from `generate-packing-list.ts`
@@ -72,13 +73,13 @@ The `.returns<RawComp[]>()` workaround on lines 145–159 remains. It was planne
 
 The packing list system is now fully production-ready for local use:
 
-| Component | Status |
-|---|---|
-| PDF generator | ✅ Complete |
-| Interactive checklist | ✅ Complete |
-| Transport zone selector in menu editor | ✅ Complete |
-| Server actions (markCarPacked, reset, status) | ✅ Complete |
-| Document section with Pack Now button | ✅ Complete |
-| Components overview Transport Zone column | ✅ Complete (this PR) |
-| Remote migration applied | ⏳ Pending push to remote |
+| Component                                       | Status                           |
+| ----------------------------------------------- | -------------------------------- |
+| PDF generator                                   | ✅ Complete                      |
+| Interactive checklist                           | ✅ Complete                      |
+| Transport zone selector in menu editor          | ✅ Complete                      |
+| Server actions (markCarPacked, reset, status)   | ✅ Complete                      |
+| Document section with Pack Now button           | ✅ Complete                      |
+| Components overview Transport Zone column       | ✅ Complete (this PR)            |
+| Remote migration applied                        | ⏳ Pending push to remote        |
 | `types/database.ts` includes transport_category | ⏳ Pending type regen after push |

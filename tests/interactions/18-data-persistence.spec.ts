@@ -161,21 +161,14 @@ test.describe('Persistence — Event Data', () => {
 
 test.describe('Persistence — Auth Session', () => {
   test('Auth session persists across multiple page navigations', async ({ page }) => {
-    const protectedPages = [
-      '/dashboard',
-      '/events',
-      '/clients',
-      '/quotes',
-      '/finance',
-    ]
+    const protectedPages = ['/dashboard', '/events', '/clients', '/quotes', '/finance']
 
     for (const path of protectedPages) {
       await page.goto(path)
       await page.waitForLoadState('networkidle')
-      expect(
-        page.url(),
-        `Should not redirect to signin when visiting ${path}`
-      ).not.toMatch(/auth\/signin/)
+      expect(page.url(), `Should not redirect to signin when visiting ${path}`).not.toMatch(
+        /auth\/signin/
+      )
     }
   })
 

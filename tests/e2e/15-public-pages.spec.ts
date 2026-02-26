@@ -40,7 +40,9 @@ test.describe('Public Pages', () => {
     await page.goto(`/chef/${seedIds.chefSlug}`)
     await expect(page).not.toHaveURL(/auth\/signin/)
     // Profile should display chef name or business name
-    await expect(page.getByText(/TEST - E2E Kitchen|E2E Test Chef/i)).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText(/TEST - E2E Kitchen|E2E Test Chef/i)).toBeVisible({
+      timeout: 10_000,
+    })
   })
 
   test('chef public profile inquiry form loads', async ({ page, seedIds }) => {

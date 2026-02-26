@@ -12,12 +12,12 @@ Four new server action files were created to support inventory management and fo
 
 ### Files Created
 
-| File | Table(s) | Purpose |
-|------|----------|---------|
-| `lib/inventory/count-actions.ts` | `inventory_counts` | Inventory level tracking, par alerts, reorder suggestions |
-| `lib/inventory/waste-actions.ts` | `waste_logs` | Food waste logging, dashboard, trend analysis |
-| `lib/inventory/vendor-invoice-actions.ts` | `vendor_invoices`, `vendor_invoice_items` | Invoice upload, item matching, price change flagging |
-| `lib/inventory/price-cascade-actions.ts` | `vendor_price_points`, `recipe_ingredients`, `recipes` | Price impact preview and cascading updates to recipe costs |
+| File                                      | Table(s)                                               | Purpose                                                    |
+| ----------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------- |
+| `lib/inventory/count-actions.ts`          | `inventory_counts`                                     | Inventory level tracking, par alerts, reorder suggestions  |
+| `lib/inventory/waste-actions.ts`          | `waste_logs`                                           | Food waste logging, dashboard, trend analysis              |
+| `lib/inventory/vendor-invoice-actions.ts` | `vendor_invoices`, `vendor_invoice_items`              | Invoice upload, item matching, price change flagging       |
+| `lib/inventory/price-cascade-actions.ts`  | `vendor_price_points`, `recipe_ingredients`, `recipes` | Price impact preview and cascading updates to recipe costs |
 
 ---
 
@@ -41,33 +41,37 @@ Every file follows the exact same conventions as existing server actions (e.g., 
 ## Exported Actions Summary
 
 ### count-actions.ts
-| Action | Type | Description |
-|--------|------|-------------|
+
+| Action                        | Type     | Description                                        |
+| ----------------------------- | -------- | -------------------------------------------------- |
 | `updateInventoryCount(input)` | Mutation | Upsert inventory item by chef_id + ingredient_name |
-| `getInventoryCounts()` | Query | All inventory items ordered by name |
-| `getParAlerts()` | Query | Items where current_qty < par_level |
-| `getReorderSuggestions()` | Query | Below-par items grouped by vendor |
+| `getInventoryCounts()`        | Query    | All inventory items ordered by name                |
+| `getParAlerts()`              | Query    | Items where current_qty < par_level                |
+| `getReorderSuggestions()`     | Query    | Below-par items grouped by vendor                  |
 
 ### waste-actions.ts
-| Action | Type | Description |
-|--------|------|-------------|
-| `logWaste(input)` | Mutation | Insert waste entry with reason enum |
-| `getWasteDashboard(startDate?, endDate?)` | Query | Totals by reason with cost sums |
-| `getWasteTrend(months)` | Query | Monthly waste cost trend with gap-filling |
-| `getWasteByEvent(eventId)` | Query | Waste entries for a specific event |
+
+| Action                                    | Type     | Description                               |
+| ----------------------------------------- | -------- | ----------------------------------------- |
+| `logWaste(input)`                         | Mutation | Insert waste entry with reason enum       |
+| `getWasteDashboard(startDate?, endDate?)` | Query    | Totals by reason with cost sums           |
+| `getWasteTrend(months)`                   | Query    | Monthly waste cost trend with gap-filling |
+| `getWasteByEvent(eventId)`                | Query    | Waste entries for a specific event        |
 
 ### vendor-invoice-actions.ts
-| Action | Type | Description |
-|--------|------|-------------|
-| `uploadVendorInvoice(input)` | Mutation | Insert invoice header + line items |
+
+| Action                                  | Type     | Description                                                            |
+| --------------------------------------- | -------- | ---------------------------------------------------------------------- |
+| `uploadVendorInvoice(input)`            | Mutation | Insert invoice header + line items                                     |
 | `matchInvoiceItems(invoiceId, matches)` | Mutation | Link items to ingredients; auto-sets status to 'matched' when all done |
-| `getVendorInvoices(filters?)` | Query | List invoices with embedded items, filterable by vendor/status/date |
-| `flagPriceChange(invoiceItemId)` | Mutation | Mark an item's price as changed |
+| `getVendorInvoices(filters?)`           | Query    | List invoices with embedded items, filterable by vendor/status/date    |
+| `flagPriceChange(invoiceItemId)`        | Mutation | Mark an item's price as changed                                        |
 
 ### price-cascade-actions.ts
-| Action | Type | Description |
-|--------|------|-------------|
-| `previewPriceCascade(ingredientId, newPriceCents)` | Query | Read-only preview of recipe cost impacts |
+
+| Action                                                | Type     | Description                                               |
+| ----------------------------------------------------- | -------- | --------------------------------------------------------- |
+| `previewPriceCascade(ingredientId, newPriceCents)`    | Query    | Read-only preview of recipe cost impacts                  |
 | `cascadeIngredientPrice(ingredientId, newPriceCents)` | Mutation | Insert new price point + update all affected recipe costs |
 
 ---

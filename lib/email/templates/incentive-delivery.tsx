@@ -31,9 +31,7 @@ export function IncentiveDeliveryEmail({
     <BaseLayout preview={`${senderName} sent you a ${formatTypeLabel(incentiveType)}`}>
       <Text style={heading}>You received a {formatTypeLabel(incentiveType)}</Text>
 
-      <Text style={paragraph}>
-        Hi {recipientName?.trim() || 'there'},
-      </Text>
+      <Text style={paragraph}>Hi {recipientName?.trim() || 'there'},</Text>
 
       <Text style={paragraph}>
         <strong>{senderName}</strong> sent you <strong>{title}</strong>.
@@ -53,9 +51,7 @@ export function IncentiveDeliveryEmail({
         </div>
       ) : null}
 
-      <Text style={muted}>
-        Keep this email for your records and share the code when redeeming.
-      </Text>
+      <Text style={muted}>Keep this email for your records and share the code when redeeming.</Text>
     </BaseLayout>
   )
 }

@@ -7,11 +7,11 @@
 // ============================================================
 
 export type TravelLegType =
-  | 'specialty_sourcing'    // weeks before, specific ingredient sourcing
-  | 'grocery_shopping'      // main grocery run (day before or day of)
+  | 'specialty_sourcing' // weeks before, specific ingredient sourcing
+  | 'grocery_shopping' // main grocery run (day before or day of)
   | 'consolidated_shopping' // single run covering multiple events
-  | 'service_travel'        // travel to service venue
-  | 'return_home'           // travel from venue back home
+  | 'service_travel' // travel to service venue
+  | 'return_home' // travel from venue back home
   | 'other'
 
 export type TravelLegStatus = 'planned' | 'in_progress' | 'completed' | 'cancelled'
@@ -28,7 +28,7 @@ export interface TravelStop {
   order: number
   name: string
   address: string
-  purpose: string           // e.g. "Pick up A5 Wagyu", "Drop off extra equipment"
+  purpose: string // e.g. "Pick up A5 Wagyu", "Drop off extra equipment"
   estimated_minutes: number // time on-site
   notes?: string
   lat?: number
@@ -48,9 +48,9 @@ export interface TravelLeg {
 
   leg_type: TravelLegType
 
-  leg_date: string          // ISO date: YYYY-MM-DD
-  departure_time: string | null   // HH:MM
-  estimated_return_time: string | null  // HH:MM
+  leg_date: string // ISO date: YYYY-MM-DD
+  departure_time: string | null // HH:MM
+  estimated_return_time: string | null // HH:MM
 
   origin_type: TravelLocationType | null
   origin_address: string | null
@@ -82,7 +82,7 @@ export interface TravelLegIngredient {
   id: string
   leg_id: string
   ingredient_id: string
-  ingredient_name?: string    // joined from ingredients table
+  ingredient_name?: string // joined from ingredients table
   event_id: string | null
   quantity: number | null
   unit: string | null

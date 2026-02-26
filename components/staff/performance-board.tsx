@@ -65,7 +65,7 @@ export function PerformanceBoard({ scores }: PerformanceBoardProps) {
 
   function handleSort(key: SortKey) {
     if (sortKey === key) {
-      setSortDir(prev => (prev === 'asc' ? 'desc' : 'asc'))
+      setSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'))
     } else {
       setSortKey(key)
       // Default desc for numeric, asc for name
@@ -77,9 +77,7 @@ export function PerformanceBoard({ scores }: PerformanceBoardProps) {
     const aVal = a[sortKey]
     const bVal = b[sortKey]
     if (typeof aVal === 'string' && typeof bVal === 'string') {
-      return sortDir === 'asc'
-        ? aVal.localeCompare(bVal)
-        : bVal.localeCompare(aVal)
+      return sortDir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal)
     }
     const aNum = aVal as number
     const bNum = bVal as number
@@ -88,7 +86,7 @@ export function PerformanceBoard({ scores }: PerformanceBoardProps) {
 
   // Find top performer (highest on-time rate with >= 3 events)
   const topPerformer = scores
-    .filter(s => s.totalEvents >= 3)
+    .filter((s) => s.totalEvents >= 3)
     .sort((a, b) => b.onTimeRate - a.onTimeRate)[0]
 
   function SortHeader({ label, column }: { label: string; column: SortKey }) {
@@ -113,7 +111,9 @@ export function PerformanceBoard({ scores }: PerformanceBoardProps) {
           <div className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-stone-500" />
             <CardTitle>Staff Performance</CardTitle>
-            <Badge variant="info">{scores.length} member{scores.length !== 1 ? 's' : ''}</Badge>
+            <Badge variant="info">
+              {scores.length} member{scores.length !== 1 ? 's' : ''}
+            </Badge>
           </div>
           {topPerformer && (
             <div className="flex items-center gap-1.5 text-sm text-amber-600">
@@ -153,7 +153,9 @@ export function PerformanceBoard({ scores }: PerformanceBoardProps) {
                   >
                     <td className="px-3 py-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-stone-900">{score.staffName}</span>
+                        <span className="text-sm font-medium text-stone-900">
+                          {score.staffName}
+                        </span>
                         {topPerformer?.staffMemberId === score.staffMemberId && (
                           <Trophy className="h-3.5 w-3.5 text-amber-500" />
                         )}
@@ -170,13 +172,15 @@ export function PerformanceBoard({ scores }: PerformanceBoardProps) {
                       </div>
                     </td>
                     <td className="px-3 py-3">
-                      <span className={`text-sm ${
-                        score.cancellationCount === 0
-                          ? 'text-stone-500'
-                          : score.cancellationCount >= 3
-                            ? 'text-red-600 font-medium'
-                            : 'text-amber-600'
-                      }`}>
+                      <span
+                        className={`text-sm ${
+                          score.cancellationCount === 0
+                            ? 'text-stone-500'
+                            : score.cancellationCount >= 3
+                              ? 'text-red-600 font-medium'
+                              : 'text-amber-600'
+                        }`}
+                      >
                         {score.cancellationCount}
                       </span>
                     </td>
@@ -191,7 +195,9 @@ export function PerformanceBoard({ scores }: PerformanceBoardProps) {
                       </span>
                     </td>
                     <td className="px-3 py-3">
-                      <span className="text-sm text-stone-700 font-medium">{score.totalEvents}</span>
+                      <span className="text-sm text-stone-700 font-medium">
+                        {score.totalEvents}
+                      </span>
                     </td>
                   </tr>
                 ))}

@@ -15,6 +15,7 @@ AI never mutates canonical state.
 ### 1. Drafting Assistance (Chef-Controlled)
 
 AI may:
+
 - Draft proposals from structured event data
 - Suggest menu descriptions from selected dishes
 - Help rewrite client messages
@@ -23,6 +24,7 @@ AI may:
 - Summarize long message threads
 
 **Rules:**
+
 - Output is editable
 - Nothing auto-sends
 - Nothing auto-saves as canonical without chef confirmation
@@ -31,6 +33,7 @@ AI may:
 ### 2. Structured Suggestions (Non-Canonical)
 
 AI may:
+
 - Suggest pricing ranges (never finalize)
 - Suggest wine pairing categories (vague, not prescriptive)
 - Suggest prep timelines
@@ -38,6 +41,7 @@ AI may:
 - Suggest loyalty tier upgrades
 
 **Rules:**
+
 - Suggestions exist in a temporary layer
 - Chef must explicitly accept
 - Acceptance creates normal system records (not "AI records")
@@ -45,6 +49,7 @@ AI may:
 ### 3. Insight Surfaces (Read-Only Analysis)
 
 AI may:
+
 - Summarize revenue trends
 - Highlight repeat client behavior
 - Identify slow response patterns
@@ -52,6 +57,7 @@ AI may:
 - Detect margin inconsistencies
 
 **Rules:**
+
 - Insights are advisory
 - AI never changes data
 - AI never closes events
@@ -60,12 +66,14 @@ AI may:
 ### 4. Natural Language → Structured Input (With Confirmation)
 
 AI may:
+
 - Parse a pasted inquiry into structured fields
 - Convert notes into timeline tasks
 - Extract dietary restrictions from messages
 - Convert rough menu text into structured components
 
 **Rules:**
+
 - Parsed output must be reviewable
 - Chef confirms before commit
 - No auto-state transitions
@@ -77,6 +85,7 @@ AI may:
 ### 1. Lifecycle Transitions
 
 AI **cannot**:
+
 - Move Inquiry → Proposal
 - Confirm Event
 - Close Event
@@ -89,6 +98,7 @@ Only explicit human actions can change state.
 ### 2. Financial Ledger
 
 AI **cannot**:
+
 - Create ledger entries
 - Modify ledger entries
 - Delete ledger entries
@@ -102,6 +112,7 @@ AI may suggest. It cannot write.
 ### 3. Identity & Access
 
 AI **cannot**:
+
 - Merge client accounts
 - Modify tenant isolation
 - Alter roles
@@ -113,6 +124,7 @@ Identity changes must be deterministic and logged.
 ### 4. Silent Automation
 
 AI **cannot**:
+
 - Auto-send messages
 - Auto-confirm menus
 - Auto-generate invoices
@@ -127,6 +139,7 @@ Nothing happens without an explicit commit action.
 ## UX Rules for AI
 
 AI must:
+
 - Be visually distinct from canonical data
 - Clearly labeled as "Suggestion"
 - Never appear as system truth
@@ -152,6 +165,7 @@ If AI is compensating for unclear modeling — the modeling is wrong.
 ## The Hard Boundary
 
 If you unplug AI tomorrow, ChefFlow must:
+
 - Still function completely
 - Still preserve financial truth
 - Still enforce lifecycle rules

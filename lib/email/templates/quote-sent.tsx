@@ -31,9 +31,7 @@ export function QuoteSentEmail({
   return (
     <BaseLayout preview={`New quote from ${chefName}: ${totalFormatted}`}>
       <Text style={heading}>You have a new quote</Text>
-      <Text style={paragraph}>
-        Hi {clientName},
-      </Text>
+      <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>
         <strong>{chefName}</strong> has sent you a quote for {eventLabel}.
       </Text>

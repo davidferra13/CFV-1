@@ -28,12 +28,12 @@ export interface VendorComparisonResult {
     rank: number
     vendorName: string
     pricePer100g: number | null
-    valueScore: number  // 0-100 (price + quality adjusted)
+    valueScore: number // 0-100 (price + quality adjusted)
     pros: string[]
     cons: string[]
   }[]
-  recommendation: string       // one actionable sentence
-  priceDifferenceNote: string  // e.g. "Top vendor costs 23% more but quality premium may justify it"
+  recommendation: string // one actionable sentence
+  priceDifferenceNote: string // e.g. "Top vendor costs 23% more but quality premium may justify it"
   generatedAt: string
 }
 
@@ -59,12 +59,16 @@ Consider: price per unit, quality tier, reliability (last purchase date), and ov
 Be specific about the price differential and when a premium product is worth it.
 
 Vendors:
-${vendors.map((v, i) => `${i + 1}. ${v.vendorName}
+${vendors
+  .map(
+    (v, i) => `${i + 1}. ${v.vendorName}
    Item: ${v.itemDescription}
    Price: $${(v.priceCents / 100).toFixed(2)} per ${v.unit}
    Quality tier: ${v.quality}
    Last purchased: ${v.lastPurchased ?? 'Unknown'}
-   Notes: ${v.notes ?? 'None'}`).join('\n\n')}
+   Notes: ${v.notes ?? 'None'}`
+  )
+  .join('\n\n')}
 
 Return JSON: {
   "bestValueVendor": "vendor name",

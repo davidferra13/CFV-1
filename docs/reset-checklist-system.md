@@ -1,7 +1,9 @@
 # Post-Service Reset Checklist — Implementation Notes
 
 ## Document: DOC-RESET-CHECKLIST
+
 ## Spec: Provided February 19, 2026
+
 ## Branch: feature/packing-list-system
 
 ---
@@ -16,12 +18,12 @@ The immediate motivation: two consecutive dinners (February 14–15, 2026) never
 
 ## Files Changed
 
-| File | Change |
-|------|--------|
-| `lib/documents/generate-reset-checklist.ts` | **New.** Generator with data fetcher, renderer, and entry point. |
-| `app/api/documents/[eventId]/route.ts` | Added `reset` case to switch. Added reset as Page 7 in `all` bundle. Updated error message and comment. |
-| `lib/documents/actions.ts` | Added `resetChecklist` to `DocumentReadiness` type and both return sites. |
-| `components/documents/document-section.tsx` | Added reset checklist row to docs list. Updated sheet count from 6 → 7. |
+| File                                        | Change                                                                                                  |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `lib/documents/generate-reset-checklist.ts` | **New.** Generator with data fetcher, renderer, and entry point.                                        |
+| `app/api/documents/[eventId]/route.ts`      | Added `reset` case to switch. Added reset as Page 7 in `all` bundle. Updated error message and comment. |
+| `lib/documents/actions.ts`                  | Added `resetChecklist` to `DocumentReadiness` type and both return sites.                               |
+| `components/documents/document-section.tsx` | Added reset checklist row to docs list. Updated sheet count from 6 → 7.                                 |
 
 ---
 
@@ -45,12 +47,13 @@ The existing `getEventClosureStatus()` action in `lib/events/actions.ts` already
 ## Document Structure
 
 ### Sections (in order)
+
 1. **Dark header bar** — "POST-SERVICE RESET" left, event date + client name right (white on #1a1a1a)
 2. **Urgency notice** — red text, sets the deadline expectation immediately
 3. **A — Bring Everything Inside** — car clearance first
 4. **B — Cooler + Cold Storage** — the most common failure point
 5. **C — Equipment + Tools** — bags, tools, specialty items
-6. **D — Dishes + Laundry** — cycle must be *started*, not just loaded
+6. **D — Dishes + Laundry** — cycle must be _started_, not just loaded
 7. **E — Financial + Records** — payment, receipts, tip
 8. **F — Next Day (by noon)** — labeled with extended deadline; italic parenthetical in header
 9. **Compounding Warning Box** — orange-bordered, always renders
@@ -58,12 +61,12 @@ The existing `getEventClosureStatus()` action in `lib/events/actions.ts` already
 
 ### Dynamic Elements
 
-| Element | Logic |
-|---------|-------|
-| Specialty equipment rows (A + C) | Derived from `service_style` + `special_requests` keywords: sous vide, ice cream, grill, cocktail, stand mixer |
-| Payment item in Section E | If `events.payment_status = 'paid'`, item renders with a pre-checked green checkmark and the amount. Otherwise shows action text. |
-| Specialty equipment parenthetical (C) | If triggers fired, lists the actual items. If none, shows a generic hint. |
-| Compounding warning | Always renders — not conditional on next-event detection (Phase 3 enhancement) |
+| Element                               | Logic                                                                                                                             |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Specialty equipment rows (A + C)      | Derived from `service_style` + `special_requests` keywords: sous vide, ice cream, grill, cocktail, stand mixer                    |
+| Payment item in Section E             | If `events.payment_status = 'paid'`, item renders with a pre-checked green checkmark and the amount. Otherwise shows action text. |
+| Specialty equipment parenthetical (C) | If triggers fired, lists the actual items. If none, shows a generic hint.                                                         |
+| Compounding warning                   | Always renders — not conditional on next-event detection (Phase 3 enhancement)                                                    |
 
 ---
 
@@ -100,6 +103,7 @@ The reset checklist is always marked `ready: true` in `DocumentReadiness` — it
 ## How It Connects to Terminal State
 
 The checklist is a physical representation of the four closure flags. The digital confirmation happens separately via:
+
 - **"Reset Complete" toggle** in `EventClosureActions` component → sets `reset_complete = true`
 - **"Follow-Up Sent" toggle** → sets `follow_up_sent = true`
 - **AAR form** → sets `aar_filed = true` on submit

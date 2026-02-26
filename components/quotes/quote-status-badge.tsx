@@ -6,7 +6,10 @@ import { Badge } from '@/components/ui/badge'
 export type QuoteStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'
 export type PricingModel = 'per_person' | 'flat_rate' | 'custom'
 
-const STATUS_CONFIG: Record<QuoteStatus, { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' }> = {
+const STATUS_CONFIG: Record<
+  QuoteStatus,
+  { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' }
+> = {
   draft: { label: 'Draft', variant: 'default' },
   sent: { label: 'Sent', variant: 'info' },
   accepted: { label: 'Accepted', variant: 'success' },
@@ -19,7 +22,10 @@ export function QuoteStatusBadge({ status }: { status: QuoteStatus }) {
   return <Badge variant={config.variant}>{config.label}</Badge>
 }
 
-const PRICING_MODEL_CONFIG: Record<PricingModel, { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' }> = {
+const PRICING_MODEL_CONFIG: Record<
+  PricingModel,
+  { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' }
+> = {
   per_person: { label: 'Per Person', variant: 'info' },
   flat_rate: { label: 'Flat Rate', variant: 'default' },
   custom: { label: 'Custom', variant: 'warning' },

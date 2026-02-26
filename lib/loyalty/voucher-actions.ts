@@ -48,44 +48,46 @@ type UntypedSupabaseClient = ReturnType<typeof createServerClient> & {
   from: (relation: string) => any
 }
 
-const CreateVoucherOrGiftCardSchema = z.object({
-  type: z.enum(['voucher', 'gift_card']),
-  title: z.string().min(1, 'Title is required').max(120, 'Title is too long'),
-  note: z.string().max(1000, 'Note is too long').optional(),
-  code: z
-    .string()
-    .min(4, 'Code must be at least 4 characters')
-    .max(32, 'Code must be 32 characters or fewer')
-    .regex(/^[A-Za-z0-9-]+$/, 'Code may only contain letters, numbers, and hyphens')
-    .optional(),
-  amount_cents: z.number().int().positive('Amount must be positive').optional(),
-  discount_percent: z.number().int().min(1).max(100).optional(),
-  expires_at: z.string().optional(),
-  max_redemptions: z.number().int().min(1).max(1000).optional(),
-  target_client_id: z.string().uuid().nullable().optional(),
-}).superRefine((value, ctx) => {
-  const hasAmount = value.amount_cents != null
-  const hasDiscount = value.discount_percent != null
+const CreateVoucherOrGiftCardSchema = z
+  .object({
+    type: z.enum(['voucher', 'gift_card']),
+    title: z.string().min(1, 'Title is required').max(120, 'Title is too long'),
+    note: z.string().max(1000, 'Note is too long').optional(),
+    code: z
+      .string()
+      .min(4, 'Code must be at least 4 characters')
+      .max(32, 'Code must be 32 characters or fewer')
+      .regex(/^[A-Za-z0-9-]+$/, 'Code may only contain letters, numbers, and hyphens')
+      .optional(),
+    amount_cents: z.number().int().positive('Amount must be positive').optional(),
+    discount_percent: z.number().int().min(1).max(100).optional(),
+    expires_at: z.string().optional(),
+    max_redemptions: z.number().int().min(1).max(1000).optional(),
+    target_client_id: z.string().uuid().nullable().optional(),
+  })
+  .superRefine((value, ctx) => {
+    const hasAmount = value.amount_cents != null
+    const hasDiscount = value.discount_percent != null
 
-  if (value.type === 'gift_card') {
-    if (!hasAmount || hasDiscount) {
+    if (value.type === 'gift_card') {
+      if (!hasAmount || hasDiscount) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Gift cards require amount_cents and cannot use discount_percent',
+          path: ['amount_cents'],
+        })
+      }
+      return
+    }
+
+    if (hasAmount === hasDiscount) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Gift cards require amount_cents and cannot use discount_percent',
+        message: 'Vouchers must define either amount_cents or discount_percent (not both)',
         path: ['amount_cents'],
       })
     }
-    return
-  }
-
-  if (hasAmount === hasDiscount) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Vouchers must define either amount_cents or discount_percent (not both)',
-      path: ['amount_cents'],
-    })
-  }
-})
+  })
 
 const SendVoucherOrGiftCardSchema = z.object({
   incentive_id: z.string().uuid(),
@@ -366,11 +368,13 @@ export async function getIncentiveRedemptions(incentiveId?: string) {
 
   let query = supabase
     .from('incentive_redemptions')
-    .select(`
+    .select(
+      `
       *,
       event:events(occasion, event_date),
       client:clients(full_name)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .order('redeemed_at', { ascending: false })
     .limit(100)

@@ -17,6 +17,7 @@ A single dinner inquiry can generate dozens of notes across its entire lifecycle
 ### Database
 
 **`inquiry_notes` table** (`supabase/migrations/20260228000003_inquiry_notes_system.sql`):
+
 - Infinite notes per inquiry
 - 7 categories (see below)
 - Pin important notes to the top
@@ -24,6 +25,7 @@ A single dinner inquiry can generate dozens of notes across its entire lifecycle
 - Tenant-scoped with full RLS
 
 **`inquiry_recipe_links` junction table**:
+
 - Link existing ChefFlow recipes to an inquiry
 - Add a per-link note (e.g. "scale to 8 portions" or "use the winter mushroom variation")
 - Many recipes can be linked to one inquiry; each recipe can only appear once per inquiry (unique constraint)
@@ -44,6 +46,7 @@ A single dinner inquiry can generate dozens of notes across its entire lifecycle
 ### Server Actions
 
 `lib/inquiries/note-actions.ts`:
+
 - `addInquiryNote()` — creates note, logs activity
 - `updateInquiryNote()` — update text, category, or attachment
 - `deleteInquiryNote()` — hard delete
@@ -57,6 +60,7 @@ A single dinner inquiry can generate dozens of notes across its entire lifecycle
 ### UI Components
 
 **`components/inquiries/inquiry-notes.tsx`**:
+
 - Category filter tab strip (only shows categories that have notes)
 - Pin / edit / delete on hover
 - Inline image thumbnail with lightbox on click
@@ -64,11 +68,13 @@ A single dinner inquiry can generate dozens of notes across its entire lifecycle
 - Sorted: pinned first, then newest
 
 **`components/inquiries/inquiry-note-form.tsx`**:
+
 - Textarea + category select
 - Optional image upload (uploads to `inquiry-note-attachments` bucket client-side via Supabase JS, stores the public URL)
 - Shows image preview before saving
 
 **`components/inquiries/inquiry-recipe-linker.tsx`**:
+
 - Searchable picker of the chef's recipe library
 - Two-step: select recipe → optionally add a note → link
 - Linked recipes shown as cards with photo, category, and note
@@ -77,6 +83,7 @@ A single dinner inquiry can generate dozens of notes across its entire lifecycle
 ### Inquiry Detail Page
 
 `app/(chef)/inquiries/[id]/page.tsx`:
+
 - Now fetches `inquiryNotes`, `recipeLinks`, and `allRecipes` in parallel with other data
 - `InquiryNotes` and `InquiryRecipeLinker` rendered below the Communication and Actions sections
 - Old `unknown_fields.notes` display card removed (data remains safely in the database)
@@ -91,14 +98,14 @@ The old `unknown_fields.notes` value is **not deleted**. It stays in the JSONB c
 
 ## Patterns Used
 
-| Pattern | Source |
-|---|---|
-| Note CRUD server actions | `lib/notes/actions.ts` (client notes) |
-| Notes component architecture | `components/clients/quick-notes.tsx` |
-| Storage bucket setup | `20260223000011_chef_profile_images_bucket.sql` |
-| `update_updated_at_column()` trigger | All prior migrations |
-| Activity logging | `lib/activity/log-chef.ts` |
-| Tenant scoping on all queries | Project-wide convention |
+| Pattern                              | Source                                          |
+| ------------------------------------ | ----------------------------------------------- |
+| Note CRUD server actions             | `lib/notes/actions.ts` (client notes)           |
+| Notes component architecture         | `components/clients/quick-notes.tsx`            |
+| Storage bucket setup                 | `20260223000011_chef_profile_images_bucket.sql` |
+| `update_updated_at_column()` trigger | All prior migrations                            |
+| Activity logging                     | `lib/activity/log-chef.ts`                      |
+| Tenant scoping on all queries        | Project-wide convention                         |
 
 ---
 

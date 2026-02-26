@@ -18,12 +18,14 @@ correct `PricingBreakdown` **or** an explicit `requiresCustomPricing: true` with
 ## Bugs Fixed
 
 ### Bug 1 — Solo client (`guestCount = 1`) priced at group rate
+
 **Before:** `isCouple = guestCount === 2` — a 1-person booking fell through to `GROUP_RATES`,
 producing the wrong per-person rate.
 **After:** `isCouple = guestCount <= 2 && guestCount >= 1` — solo clients use `COUPLES_RATES` and
-receive a note: *"Solo guest — priced at couples rate (1 person)"*.
+receive a note: _"Solo guest — priced at couples rate (1 person)"_.
 
 ### Bug 2 — `courseCount` outside 3–5 silently returned `$0`
+
 **Before:** When `courseCount` had no entry in the rate table, `perPersonCents = 0` and
 `serviceFeeCents = 0` — but `pricingModel` was set to `'custom'`. The caller had no reliable way
 to distinguish "this is a custom booking with no price yet" from "something went wrong."
@@ -31,27 +33,32 @@ to distinguish "this is a custom booking with no price yet" from "something went
 `validationErrors` contains a pre-check warning from `validatePricingInput()`.
 
 ### Bug 3 — Weekly service types always computed a single day's rate
+
 **Before:** No `numberOfDays` parameter existed. `weekly_standard` for 7 days produced the same
 total as `weekly_standard` for 1 day.
 **After:** `numberOfDays?: number` added to `PricingInput` (defaults to 1). All weekly types
 multiply by `numberOfDays`. Grocery estimate also scales for multi-day bookings.
 
 ### Bug 4 — `weekly_commitment` had no minimum days guard
+
 **Before:** A 2-day booking could silently receive the commitment rate (which requires 5+
 consecutive days in the same home).
 **After:** `validatePricingInput()` emits an error when `numberOfDays < WEEKLY_COMMITMENT_MIN_DAYS`.
 The runtime also adds a note to the breakdown.
 
 ### Bug 5 — `multi_night` silently defaulted to `two_night_4_course`
+
 **Before:** If no `multiNightPackage` key was provided, the engine used `'two_night_4_course'`
 as a default — quoting a specific package the client never asked for.
 **After:** Missing key → `requiresCustomPricing = true` + explicit error. Unknown key → same.
 Placeholder-value key (0 cents, not yet confirmed) → same.
 
 ### Bug 6 — Large groups and buyouts had no distinct handling
+
 **Before:** A 20-guest booking would silently run `GROUP_RATES[courseCount] × 20`, producing a
 number the chef would never actually charge for a buyout event.
 **After:**
+
 - 8–14 guests: `isLargeGroup = true`, standard group rates still computed but flagged with a
   confirmation note.
 - 15+ guests: `requiresCustomPricing = true` immediately, bypassing all rate tables.
@@ -61,11 +68,14 @@ number the chef would never actually charge for a buyout event.
 ## New Capabilities
 
 ### New Year's Day (Jan 1) — Tier 1 Holiday
+
 Added to `TIER_1_HOLIDAYS` in `compute.ts`. Also added to the Tier 1 list in
 `docs/agent-brain/04-PRICING.md`.
 
 ### Holiday Proximity Detection
-Events that fall 1–2 days *before* a Tier 1 or Tier 2 holiday now receive a **half-premium**.
+
+Events that fall 1–2 days _before_ a Tier 1 or Tier 2 holiday now receive a **half-premium**.
+
 - Proximity premium = `tier.default / 2` applied to `serviceFeeCents + weekendPremiumCents`
 - Proximity and exact-match are **mutually exclusive** — the proximity check only runs when
   `detectHoliday()` returns null for the event date
@@ -74,6 +84,7 @@ Events that fall 1–2 days *before* a Tier 1 or Tier 2 holiday now receive a **
 - Constant: `HOLIDAY_PROXIMITY_DAYS = 2` in `constants.ts`
 
 ### Weekend Premium (opt-in)
+
 - Configurable via `WEEKEND_PREMIUM_PERCENT = 0.10` (10%) in `constants.ts`
 - Activated per-call via `weekendPremiumEnabled?: boolean` in `PricingInput` (default `false`)
 - Applied to `serviceFeeCents` before holiday premiums stack on top
@@ -81,13 +92,16 @@ Events that fall 1–2 days *before* a Tier 1 or Tier 2 holiday now receive a **
   is not applied)
 
 ### Multi-Night 3-Night and 4-Night Package Slots
+
 New keys added to `MULTI_NIGHT_PACKAGES`: `three_night_*` and `four_night_*` for 3-course,
 4-course, 5-course, and mixed variants.
 **⚠️ All values are currently set to 0 (placeholder).** These will trigger `requiresCustomPricing`
 until the chef confirms the actual prices and sets them in `constants.ts`.
 
 ### Add-On Line Items
+
 `PricingInput` now accepts `addOns?: AddOnInput[]`. Each add-on can be:
+
 - A **catalog key** (from `ADD_ON_CATALOG` in constants.ts): `wine_pairing`, `charcuterie_board`,
   `extra_appetizer_course`, `birthday_dessert`
 - A **custom add-on** with fully specified label, type, and price
@@ -97,6 +111,7 @@ Add-ons are included in `totalServiceCents` and therefore in `depositCents`.
 Travel and add-ons are **not** subject to holiday or weekend premiums.
 
 **⚠️ All catalog prices are placeholders — confirm before shipping:**
+
 ```
 wine_pairing:           $35/person
 charcuterie_board:      $150 flat
@@ -105,6 +120,7 @@ birthday_dessert:       $75 flat
 ```
 
 ### Minimum Booking Floor
+
 `MINIMUM_BOOKING_CENTS = 30000` ($300) in `constants.ts`.
 If `subtotalCents` (service + premiums) falls below this threshold, it is raised to the minimum.
 `minimumApplied: true` is set in the breakdown and a note explains the adjustment.
@@ -113,11 +129,14 @@ The floor does **not** apply when `requiresCustomPricing = true`.
 **⚠️ Confirm the $300 minimum value with the chef.**
 
 ### `validatePricingInput()` — New Export
+
 Available for pre-validation in UI forms before calling `computePricing()`. Returns
 `{ valid: boolean; errors: string[] }`. Never throws.
 
 ### Enriched `PricingBreakdown` Output
+
 New fields (all backward-compatible additions):
+
 ```typescript
 isNearHoliday: boolean
 nearHolidayName: string | null
@@ -174,13 +193,16 @@ The pipeline order in `computePricing()` is intentional and must be preserved:
 ## Additional Fixes (Post-Review)
 
 ### `courseCount` made optional in `PricingInput`
+
 `courseCount?: number` — required for `private_dinner`, silently irrelevant for all other service
 types. Callers booking weekly, pizza, multi-night, or custom service no longer need to pass a
 meaningless course count.
 
 ### `generateQuoteFromPricing` default quote name fixed
+
 Previously: `"0-course dinner for 3"` for any non-dinner booking.
 Now uses a service-type-aware `buildDefaultQuoteName()` helper:
+
 - `private_dinner` → `"4-course dinner for 2"`
 - `pizza_experience` → `"Pizza experience for 6"`
 - `weekly_standard` → `"Weekly cooking — 5 day(s)"`
@@ -251,12 +273,12 @@ No interface changes — derived from the already-present `numberOfDays` field i
 
 These are structural slots with `0` or placeholder values:
 
-| Item | Location | Action Required |
-|------|----------|----------------|
-| 3-night package prices (×4 variants) | `MULTI_NIGHT_PACKAGES` in constants.ts | Set actual dollar amounts |
-| 4-night package prices (×4 variants) | `MULTI_NIGHT_PACKAGES` in constants.ts | Set actual dollar amounts |
-| Wine pairing: $35/person | `ADD_ON_CATALOG` in constants.ts | Confirm or update |
-| Charcuterie board: $150 flat | `ADD_ON_CATALOG` in constants.ts | Confirm or update |
-| Extra appetizer course: $25/person | `ADD_ON_CATALOG` in constants.ts | Confirm or update |
-| Birthday dessert: $75 flat | `ADD_ON_CATALOG` in constants.ts | Confirm or update |
-| Minimum booking: $300 | `MINIMUM_BOOKING_CENTS` in constants.ts | Confirm or update |
+| Item                                 | Location                                | Action Required           |
+| ------------------------------------ | --------------------------------------- | ------------------------- |
+| 3-night package prices (×4 variants) | `MULTI_NIGHT_PACKAGES` in constants.ts  | Set actual dollar amounts |
+| 4-night package prices (×4 variants) | `MULTI_NIGHT_PACKAGES` in constants.ts  | Set actual dollar amounts |
+| Wine pairing: $35/person             | `ADD_ON_CATALOG` in constants.ts        | Confirm or update         |
+| Charcuterie board: $150 flat         | `ADD_ON_CATALOG` in constants.ts        | Confirm or update         |
+| Extra appetizer course: $25/person   | `ADD_ON_CATALOG` in constants.ts        | Confirm or update         |
+| Birthday dessert: $75 flat           | `ADD_ON_CATALOG` in constants.ts        | Confirm or update         |
+| Minimum booking: $300                | `MINIMUM_BOOKING_CENTS` in constants.ts | Confirm or update         |

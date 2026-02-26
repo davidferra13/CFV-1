@@ -23,10 +23,13 @@ Extracted `getInvitationByToken()` and `markInvitationUsed()` from `lib/clients/
 ### 2. Updated import in `lib/auth/actions.ts`
 
 Changed:
+
 ```typescript
 import { getInvitationByToken, markInvitationUsed } from '@/lib/clients/actions'
 ```
+
 To:
+
 ```typescript
 import { getInvitationByToken, markInvitationUsed } from '@/lib/auth/invitations'
 ```
@@ -37,12 +40,12 @@ Same import path change for `getInvitationByToken`.
 
 ## What Did NOT Change (and why)
 
-| File | Status | Reason |
-|------|--------|--------|
-| `lib/auth/actions.ts` | Schema-correct | All `chefs`, `user_roles`, `clients` column references match new schema exactly |
-| `lib/auth/get-user.ts` | Schema-correct | All `user_roles`, `clients` column references match |
-| `middleware.ts` | Schema-correct | `user_roles.role` and `user_roles.auth_user_id` unchanged |
-| Layer 1 migration | Schema-correct | RLS helper functions reference correct `user_roles` columns |
+| File                   | Status         | Reason                                                                          |
+| ---------------------- | -------------- | ------------------------------------------------------------------------------- |
+| `lib/auth/actions.ts`  | Schema-correct | All `chefs`, `user_roles`, `clients` column references match new schema exactly |
+| `lib/auth/get-user.ts` | Schema-correct | All `user_roles`, `clients` column references match                             |
+| `middleware.ts`        | Schema-correct | `user_roles.role` and `user_roles.auth_user_id` unchanged                       |
+| Layer 1 migration      | Schema-correct | RLS helper functions reference correct `user_roles` columns                     |
 
 The new schema was designed to preserve the existing auth column conventions (`auth_user_id`, `entity_id`, `tenant_id`, `role`), so no column renames were needed.
 
@@ -50,18 +53,18 @@ The new schema was designed to preserve the existing auth column conventions (`a
 
 ### Tables Referenced by Auth Code
 
-| Table | Columns Used | All Match Schema |
-|-------|-------------|:---:|
-| `chefs` | `id`, `auth_user_id`, `business_name`, `email`, `phone` | Yes |
-| `clients` | `id`, `auth_user_id`, `tenant_id`, `full_name`, `email`, `phone` | Yes |
-| `user_roles` | `id`, `auth_user_id`, `role`, `entity_id` | Yes |
-| `client_invitations` | `id`, `tenant_id`, `email`, `full_name`, `token`, `expires_at`, `used_at`, `created_by` | Yes |
+| Table                | Columns Used                                                                            | All Match Schema |
+| -------------------- | --------------------------------------------------------------------------------------- | :--------------: |
+| `chefs`              | `id`, `auth_user_id`, `business_name`, `email`, `phone`                                 |       Yes        |
+| `clients`            | `id`, `auth_user_id`, `tenant_id`, `full_name`, `email`, `phone`                        |       Yes        |
+| `user_roles`         | `id`, `auth_user_id`, `role`, `entity_id`                                               |       Yes        |
+| `client_invitations` | `id`, `tenant_id`, `email`, `full_name`, `token`, `expires_at`, `used_at`, `created_by` |       Yes        |
 
 ### RLS Helper Functions Verified
 
-| Function | References | Status |
-|----------|-----------|:------:|
-| `get_current_user_role()` | `user_roles.role`, `user_roles.auth_user_id` | Correct |
+| Function                  | References                                                           | Status  |
+| ------------------------- | -------------------------------------------------------------------- | :-----: |
+| `get_current_user_role()` | `user_roles.role`, `user_roles.auth_user_id`                         | Correct |
 | `get_current_tenant_id()` | `user_roles.entity_id`, `user_roles.auth_user_id`, `user_roles.role` | Correct |
 | `get_current_client_id()` | `user_roles.entity_id`, `user_roles.auth_user_id`, `user_roles.role` | Correct |
 
@@ -80,6 +83,7 @@ The new schema was designed to preserve the existing auth column conventions (`a
 ## Signup Flow Verification
 
 ### Chef Signup (verified correct)
+
 1. Zod validates input
 2. Service role creates auth user (`email_confirm: true`)
 3. Inserts into `chefs`: `auth_user_id`, `business_name`, `email`, `phone`
@@ -87,6 +91,7 @@ The new schema was designed to preserve the existing auth column conventions (`a
 5. Rollback on failure: deletes chef record + auth user
 
 ### Client Signup (verified correct)
+
 1. Zod validates input (requires `invitation_token`)
 2. Looks up `client_invitations` by token (must be unused and not expired)
 3. Verifies email matches invitation
@@ -103,6 +108,7 @@ The new schema was designed to preserve the existing auth column conventions (`a
 ## What's Next (Phase 3)
 
 The 115 type errors are concentrated in:
+
 - Server actions that reference old event/ledger/menu column names
 - UI components that reference old column names
 - Workflow actions that reference old column names

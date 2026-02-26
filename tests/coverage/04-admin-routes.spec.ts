@@ -27,7 +27,10 @@ async function assertAdminPageLoads(
   page: Parameters<Parameters<typeof test>[1]>[0]['page'],
   url: string
 ) {
-  test.skip(!adminAuthConfigured(), 'Admin credentials not configured — set ADMIN_E2E_EMAIL and ADMIN_E2E_PASSWORD in .env.local')
+  test.skip(
+    !adminAuthConfigured(),
+    'Admin credentials not configured — set ADMIN_E2E_EMAIL and ADMIN_E2E_PASSWORD in .env.local'
+  )
 
   const errors: string[] = []
   page.on('pageerror', (err) => errors.push(err.message))

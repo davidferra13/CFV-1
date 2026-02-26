@@ -14,12 +14,14 @@
 **What was built:**
 
 #### `lib/gmail/client.ts` — New send functions
+
 - `sendEmail(accessToken, options)` — Composes an RFC 2822 email, encodes to URL-safe base64, sends via Gmail API `messages.send` endpoint
 - `getMessageHeaders(accessToken, messageId)` — Fetches `Message-Id` and `Subject` headers from a Gmail message for reply threading
 - Supports `In-Reply-To` and `References` headers for proper Gmail thread linking
 - Supports `threadId` to keep replies in the same Gmail thread
 
 #### `lib/gmail/actions.ts` — New server actions
+
 - `createDraftMessage(input)` — Creates a message record in `draft` status, ready for chef review
 - `approveAndSendMessage(messageId)` — The chef's "send" action. Fetches the draft, gets a Gmail access token, finds threading info from the last inbound message, sends via Gmail API, updates message status to `sent`, and updates the inquiry's next-action tracking
 - `updateDraftMessage(messageId, updates)` — Chef edits the AI draft before sending
@@ -27,6 +29,7 @@
 - `deleteDraftMessage(messageId)` — Remove unwanted drafts
 
 #### `components/inquiries/inquiry-response-composer.tsx` — New UI component
+
 - "Generate Draft" button calls `draftResponseForInquiry()` (the ACE engine)
 - Shows lifecycle state, email stage, confidence level, pricing permission, missing data
 - Displays review flags (escalation, pricing violations, forbidden phrases)
@@ -36,10 +39,12 @@
 - Guards: no Gmail = info message, no client email = preview only
 
 #### `components/settings/connected-accounts.tsx` — Updated OAuth scope
+
 - Now requests both `gmail.readonly` and `gmail.send` scopes
 - Existing users will need to reconnect to grant send permission
 
 #### `app/(chef)/inquiries/[id]/page.tsx` — Updated inquiry detail page
+
 - Added `InquiryResponseComposer` between the Quotes and Communication sections
 - Fetches Gmail connection status to enable/disable the composer
 - Only shown for active inquiries (not declined/expired)
@@ -51,17 +56,20 @@
 **What was done:**
 
 #### Migrations applied (3 pending + 1 with conflicts resolved)
+
 - `20260221000003_notifications.sql` — `notifications` table, `notification_preferences` table, `get_unread_notification_count()` RPC, RLS policies, Realtime broadcast
 - `20260221000004_client_notes.sql` — `client_notes` table (renamed from conflicting version)
 - `20260221000005_client_conversation_create.sql` — Client conversation creation RLS policies (made idempotent with DROP IF EXISTS)
 - `20260221000006_households.sql` — Household linking system (renamed from conflicting version)
 
 #### Migration version conflicts resolved
+
 - Files `20260220000003_client_notes.sql` and `20260220000004_client_conversation_create.sql` had version numbers identical to already-applied `chat_file_sharing` and `chat_insights` migrations
 - Renamed to `20260221000004` and `20260221000005` respectively
 - `households` renamed from `20260220000005` to `20260221000006`
 
 #### `lib/gmail/sync.ts` — Notification triggers added
+
 - **New inquiry notification:** When Gmail sync creates a new inquiry, the chef gets a notification with the lead name and subject
 - **Client reply notification:** When an existing thread gets a new message, the chef gets a notification with the client name
 - Both are non-blocking (wrapped in try/catch) — sync continues even if notification fails
@@ -73,12 +81,14 @@
 **What was built:**
 
 #### `lib/scheduling/actions.ts` — Extended calendar data
+
 - `CalendarEvent.extendedProps.dayType` now supports `'event' | 'prep' | 'inquiry'`
 - `getCalendarEvents()` now also queries `inquiries` with `confirmed_date` that are not declined/expired/confirmed
 - Inquiry calendar entries use `id: inquiry-{id}`, `allDay: true`, `dayType: 'inquiry'`
 - Skips inquiries that already converted to events (no duplication)
 
 #### `components/scheduling/calendar-view.tsx` — Visual differentiation
+
 - New `inquiry` color in `STATUS_COLORS`: light gray background (#f3f4f6), gray border, gray text
 - `eventDidMount`: inquiry holds get dashed border + 0.8 opacity
 - `eventClassNames`: adds `cf-event--inquiry` class
@@ -86,6 +96,7 @@
 - Drag-and-drop prevented on inquiry holds
 
 #### `components/scheduling/event-detail-popover.tsx` — Inquiry-aware popover
+
 - Detects `dayType === 'inquiry'` for distinct header styling (gray instead of brand)
 - Shows "Tentative Hold" badge with dashed border
 - Footer shows "View Inquiry" button (links to `/inquiries/{id}` instead of `/events/{id}`)

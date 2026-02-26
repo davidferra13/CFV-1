@@ -21,13 +21,13 @@ After the initial social platform build, a code review identified 8 bugs — 4 c
 
 **Fix:** Replaced the single query with a multi-bucket parallel approach:
 
-| Relationship bucket | Allowed visibilities |
-|---|---|
-| Own posts | `public`, `followers`, `connections`, `private` |
-| Follow-only (following but not connected) | `public`, `followers` |
-| Connection-only (connected but not following) | `public`, `connections` |
-| Both (following AND connected) | `public`, `followers`, `connections` |
-| Global mode | `public` only |
+| Relationship bucket                           | Allowed visibilities                            |
+| --------------------------------------------- | ----------------------------------------------- |
+| Own posts                                     | `public`, `followers`, `connections`, `private` |
+| Follow-only (following but not connected)     | `public`, `followers`                           |
+| Connection-only (connected but not following) | `public`, `connections`                         |
+| Both (following AND connected)                | `public`, `followers`, `connections`            |
+| Global mode                                   | `public` only                                   |
 
 Results are merged, deduplicated by `id`, re-sorted by `created_at DESC`, and sliced to `limit`. A shared `hydratePostList()` helper was added to avoid duplication.
 
@@ -42,6 +42,7 @@ Results are merged, deduplicated by `id`, re-sorted by `created_at DESC`, and sl
 **Problem (metadata):** The channel query selected only `id`, so channel name/icon/color were empty strings/null in every post card within a channel.
 
 **Fix:**
+
 - Channel query now selects `id, slug, name, icon, color`
 - Same multi-bucket parallel query approach as `getSocialFeed`, scoped to `channel_id`
 - Added a **5th bucket** — `strangers` (no relationship): public-only. Unlike the main feed which only shows known chefs, channel feeds should surface `public` posts from any channel member so discussions are discoverable
@@ -60,6 +61,7 @@ Results are merged, deduplicated by `id`, re-sorted by `created_at DESC`, and sl
 **Problem 3:** Response was accessed as `me?.data?.display_name` when the raw Supabase response `{ data, error }` was being stored in `me` — should be destructured first.
 
 **Fix:**
+
 ```typescript
 // Before
 await requireChef()

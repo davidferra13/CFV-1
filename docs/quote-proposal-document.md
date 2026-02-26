@@ -25,6 +25,7 @@ A printable PDF quote sent to clients, generated from the `quotes` table + linke
 - **`generateQuote(quoteId)`** — orchestrator, returns Buffer.
 
 ### `app/api/documents/quote/[quoteId]/route.ts`
+
 `GET /api/documents/quote/[quoteId]` — returns PDF with inline disposition.
 
 ## Integration

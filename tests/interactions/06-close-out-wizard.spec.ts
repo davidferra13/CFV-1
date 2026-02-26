@@ -14,7 +14,10 @@ import { test, expect } from '../helpers/fixtures'
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
 
-async function gotoCloseOut(page: Parameters<Parameters<typeof test>[1]>[0]['page'], eventId: string) {
+async function gotoCloseOut(
+  page: Parameters<Parameters<typeof test>[1]>[0]['page'],
+  eventId: string
+) {
   await page.goto(`/events/${eventId}/close-out`)
   await page.waitForLoadState('networkidle')
 }
@@ -35,8 +38,12 @@ test.describe('Close-Out Wizard — Access Control', () => {
     // Draft events should not show the close-out wizard
     const status = resp?.status() ?? 0
     const url = page.url()
-    const isRejected = status === 404 || status === 403 || url.includes('/events/') && !url.includes('/close-out')
-    const hasErrorText = await page.getByText(/not found|not available|must be completed/i).isVisible().catch(() => false)
+    const isRejected =
+      status === 404 || status === 403 || (url.includes('/events/') && !url.includes('/close-out'))
+    const hasErrorText = await page
+      .getByText(/not found|not available|must be completed/i)
+      .isVisible()
+      .catch(() => false)
     expect(isRejected || hasErrorText, 'Draft event should not access close-out').toBeTruthy()
   })
 })
@@ -78,7 +85,9 @@ test.describe('Close-Out Wizard — Step 0: Tips', () => {
   test('Step 0: progress bar shows step 1 of 5', async ({ page, seedIds }) => {
     await gotoCloseOut(page, seedIds.eventIds.completed)
     // Look for a progress indicator
-    const progressEl = page.locator('[role="progressbar"], .progress, [aria-valuemax]').first()
+    const progressEl = page
+      .locator('[role="progressbar"], .progress, [aria-valuemax]')
+      .first()
       .or(page.getByText(/step 1|1.*of.*5|1\/5/i).first())
     // Either a visual progress bar or a text indicator
     const hasProgress = await progressEl.isVisible().catch(() => false)
@@ -106,7 +115,10 @@ test.describe('Close-Out Wizard — Step 0: Tips', () => {
 // ─── Step 1: Receipts ─────────────────────────────────────────────────────────
 
 test.describe('Close-Out Wizard — Step 1: Receipts', () => {
-  async function advanceToStep1(page: Parameters<Parameters<typeof test>[1]>[0]['page'], seedIds: any) {
+  async function advanceToStep1(
+    page: Parameters<Parameters<typeof test>[1]>[0]['page'],
+    seedIds: any
+  ) {
     await gotoCloseOut(page, seedIds.eventIds.completed)
     const noBtn = page.getByRole('button', { name: /no tip tonight|no tip|skip/i }).first()
     if (await noBtn.isVisible()) {
@@ -185,11 +197,16 @@ test.describe('Close-Out Wizard — Step 4: Financial Close', () => {
     await expect(financialEl).toBeVisible({ timeout: 10_000 })
   })
 
-  test('Close-out has "Mark Financially Closed" or similar final action', async ({ page, seedIds }) => {
+  test('Close-out has "Mark Financially Closed" or similar final action', async ({
+    page,
+    seedIds,
+  }) => {
     await gotoCloseOut(page, seedIds.eventIds.completed)
     await page.waitForLoadState('networkidle')
     // Look for the final closure button anywhere in the wizard
-    const closeBtn = page.getByRole('button', { name: /financially closed|mark closed|close event|finish/i }).first()
+    const closeBtn = page
+      .getByRole('button', { name: /financially closed|mark closed|close event|finish/i })
+      .first()
     // May only appear on final step — presence is informational
     const isVisible = await closeBtn.isVisible().catch(() => false)
     // Not a hard fail — button may require navigating through all steps first
@@ -204,14 +221,16 @@ test.describe('Close-Out Wizard — Step 4: Financial Close', () => {
 test.describe('Close-Out Wizard — Navigation', () => {
   test('Back link is available on first step', async ({ page, seedIds }) => {
     await gotoCloseOut(page, seedIds.eventIds.completed)
-    const backLink = page.getByRole('link', { name: /back|return to event/i }).first()
+    const backLink = page
+      .getByRole('link', { name: /back|return to event/i })
+      .first()
       .or(page.getByRole('button', { name: /back|cancel|exit/i }).first())
     await expect(backLink).toBeVisible({ timeout: 10_000 })
   })
 
   test('Wizard does not crash on multiple step navigations', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await gotoCloseOut(page, seedIds.eventIds.completed)
 

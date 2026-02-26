@@ -17,34 +17,34 @@ export const GROUP_RATES: Record<number, number> = {
 // Multi-night packages (total price, not per-person)
 export const MULTI_NIGHT_PACKAGES: Record<string, number> = {
   // Two-night packages
-  'two_night_3_course': 70000,   // $700
-  'two_night_4_course': 90000,   // $900
-  'two_night_5_course': 110000,  // $1,100
-  'two_night_mixed':    90000,   // $900
+  two_night_3_course: 70000, // $700
+  two_night_4_course: 90000, // $900
+  two_night_5_course: 110000, // $1,100
+  two_night_mixed: 90000, // $900
 
   // Three-night packages — ⚠️ CONFIRM VALUE with chef before shipping
-  'three_night_3_course': 0,     // ⚠️ CONFIRM VALUE
-  'three_night_4_course': 0,     // ⚠️ CONFIRM VALUE
-  'three_night_5_course': 0,     // ⚠️ CONFIRM VALUE
-  'three_night_mixed':    0,     // ⚠️ CONFIRM VALUE
+  three_night_3_course: 0, // ⚠️ CONFIRM VALUE
+  three_night_4_course: 0, // ⚠️ CONFIRM VALUE
+  three_night_5_course: 0, // ⚠️ CONFIRM VALUE
+  three_night_mixed: 0, // ⚠️ CONFIRM VALUE
 
   // Four-night packages — ⚠️ CONFIRM VALUE with chef before shipping
-  'four_night_3_course': 0,      // ⚠️ CONFIRM VALUE
-  'four_night_4_course': 0,      // ⚠️ CONFIRM VALUE
-  'four_night_5_course': 0,      // ⚠️ CONFIRM VALUE
-  'four_night_mixed':    0,      // ⚠️ CONFIRM VALUE
+  four_night_3_course: 0, // ⚠️ CONFIRM VALUE
+  four_night_4_course: 0, // ⚠️ CONFIRM VALUE
+  four_night_5_course: 0, // ⚠️ CONFIRM VALUE
+  four_night_mixed: 0, // ⚠️ CONFIRM VALUE
 }
 
 export const WEEKLY_RATES = {
-  standard_day: { min: 40000, max: 50000 },    // $400-$500/day
-  commitment_day: { min: 30000, max: 35000 },   // $300-$350/day (5 consecutive days, same home)
-  cook_and_leave: 15000,                         // $150/session (2 meals)
+  standard_day: { min: 40000, max: 50000 }, // $400-$500/day
+  commitment_day: { min: 30000, max: 35000 }, // $300-$350/day (5 consecutive days, same home)
+  cook_and_leave: 15000, // $150/session (2 meals)
 }
 
 export const PIZZA_RATE = 15000 // $150/person
 
 // Deposit requirements
-export const DEPOSIT_PERCENTAGE = 0.50 // 50% non-refundable
+export const DEPOSIT_PERCENTAGE = 0.5 // 50% non-refundable
 
 // Balance due window
 export const BALANCE_DUE_HOURS_BEFORE = 24 // hours before service
@@ -55,8 +55,8 @@ export const IRS_MILEAGE_RATE_CENTS = 70 // $0.70/mile
 // ─── Thresholds ───────────────────────────────────────────────────────────────
 
 // Guest count classification
-export const LARGE_GROUP_MIN_GUESTS = 8   // 8–14 = large group (uses GROUP_RATES + isLargeGroup flag)
-export const LARGE_GROUP_MAX_GUESTS = 14  // 15+ = custom/buyout required
+export const LARGE_GROUP_MIN_GUESTS = 8 // 8–14 = large group (uses GROUP_RATES + isLargeGroup flag)
+export const LARGE_GROUP_MAX_GUESTS = 14 // 15+ = custom/buyout required
 
 // Weekly service: minimum consecutive days for commitment rate
 export const WEEKLY_COMMITMENT_MIN_DAYS = 5
@@ -74,9 +74,9 @@ export interface HolidayPremium {
 }
 
 export const HOLIDAY_PREMIUMS: Record<HolidayTier, HolidayPremium> = {
-  1: { tier: 1, min: 0.40, max: 0.50, default: 0.45 },
-  2: { tier: 2, min: 0.25, max: 0.35, default: 0.30 },
-  3: { tier: 3, min: 0.15, max: 0.25, default: 0.20 },
+  1: { tier: 1, min: 0.4, max: 0.5, default: 0.45 },
+  2: { tier: 2, min: 0.25, max: 0.35, default: 0.3 },
+  3: { tier: 3, min: 0.15, max: 0.25, default: 0.2 },
 }
 
 // Days before a Tier 1 or 2 holiday that qualify for half-premium (proximity premium)
@@ -85,7 +85,7 @@ export const HOLIDAY_PROXIMITY_DAYS = 2
 // ─── Weekend Premium ──────────────────────────────────────────────────────────
 
 // Optional Fri/Sat uplift — applied only when weekendPremiumEnabled = true in PricingInput
-export const WEEKEND_PREMIUM_PERCENT = 0.10 // 10%
+export const WEEKEND_PREMIUM_PERCENT = 0.1 // 10%
 
 // ─── Minimum Booking ──────────────────────────────────────────────────────────
 
@@ -167,7 +167,10 @@ export function centsToDisplay(cents: number): string {
  */
 export function generateRateCardString(): string {
   const couplesLines = Object.entries(COUPLES_RATES)
-    .map(([courses, cents]) => `${courses} courses: ${centsToDisplay(cents)}/person (${centsToDisplay(cents * 2)} total)`)
+    .map(
+      ([courses, cents]) =>
+        `${courses} courses: ${centsToDisplay(cents)}/person (${centsToDisplay(cents * 2)} total)`
+    )
     .join('\n')
 
   const groupLines = Object.entries(GROUP_RATES)

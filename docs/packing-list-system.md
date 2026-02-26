@@ -10,6 +10,7 @@
 The Packing List system is the bridge between the Prep Sheet (what was cooked at home) and the Non-Negotiables Checklist (personal/operational items). It answers: "What prepped food goes in what container, and can I verify I got everything by course?"
 
 Two surfaces were built:
+
 1. **PDF Generator** — a printable packing list (`?type=packing`)
 2. **Interactive UI** — an in-app check-off page at `/events/[id]/pack`
 
@@ -19,14 +20,14 @@ Two surfaces were built:
 
 The system now generates **6 printed sheets** per event:
 
-| # | Document | Purpose |
-|---|---|---|
-| 1 | Grocery List | Ingredients by store section — shopping |
-| 2 | Front-of-House Menu | Client-facing table menu |
-| 3 | Prep Sheet | At-home tasks + on-site execution |
-| 4 | Execution Sheet | Clean execution guide + dietary warnings |
-| 5 | Non-Negotiables Checklist | Personal + operational items — door check |
-| 6 | **Packing List** | Food by transport zone + equipment + counts |
+| #   | Document                  | Purpose                                     |
+| --- | ------------------------- | ------------------------------------------- |
+| 1   | Grocery List              | Ingredients by store section — shopping     |
+| 2   | Front-of-House Menu       | Client-facing table menu                    |
+| 3   | Prep Sheet                | At-home tasks + on-site execution           |
+| 4   | Execution Sheet           | Clean execution guide + dietary warnings    |
+| 5   | Non-Negotiables Checklist | Personal + operational items — door check   |
+| 6   | **Packing List**          | Food by transport zone + equipment + counts |
 
 ---
 
@@ -44,6 +45,7 @@ ALTER TABLE components
 ```
 
 **Transport zones:**
+
 - `cold` — cooler, perishable (proteins, dairy, sauces)
 - `frozen` — cooler, pack last, on top of ice packs
 - `room_temp` — dry goods bag, no refrigeration
@@ -60,20 +62,20 @@ This column is only meaningful for components where `is_make_ahead = true`. The 
 
 ### New Files
 
-| File | Purpose |
-|---|---|
-| `supabase/migrations/20260301000001_packing_list_transport_categories.sql` | DB migration |
-| `lib/packing/actions.ts` | Server actions: `markCarPacked`, `resetPackingStatus`, `getPackingStatus` |
-| `lib/documents/generate-packing-list.ts` | PDF generator (same pattern as other document generators) |
-| `app/(chef)/events/[id]/pack/page.tsx` | Interactive packing page (server component) |
-| `components/events/packing-list-client.tsx` | Interactive check-off UI (client component) |
+| File                                                                       | Purpose                                                                   |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `supabase/migrations/20260301000001_packing_list_transport_categories.sql` | DB migration                                                              |
+| `lib/packing/actions.ts`                                                   | Server actions: `markCarPacked`, `resetPackingStatus`, `getPackingStatus` |
+| `lib/documents/generate-packing-list.ts`                                   | PDF generator (same pattern as other document generators)                 |
+| `app/(chef)/events/[id]/pack/page.tsx`                                     | Interactive packing page (server component)                               |
+| `components/events/packing-list-client.tsx`                                | Interactive check-off UI (client component)                               |
 
 ### Modified Files
 
-| File | Change |
-|---|---|
-| `app/api/documents/[eventId]/route.ts` | Added `packing` case + Page 6 in `all` mode |
-| `lib/documents/actions.ts` | Added `packingList` to `DocumentReadiness` type and return |
+| File                                        | Change                                                      |
+| ------------------------------------------- | ----------------------------------------------------------- |
+| `app/api/documents/[eventId]/route.ts`      | Added `packing` case + Page 6 in `all` mode                 |
+| `lib/documents/actions.ts`                  | Added `packingList` to `DocumentReadiness` type and return  |
 | `components/documents/document-section.tsx` | Added Packing List row with "Pack Now" + "View PDF" buttons |
 
 ---
@@ -89,11 +91,13 @@ generatePackingList(eventId)  → Buffer
 ```
 
 **Data fetched:**
+
 - Event: dates, times, location, access instructions, service style
 - Client: name, `equipment_must_bring[]`, `kitchen_notes`, `house_rules`, `visit_count`
 - Components: only `is_make_ahead = true`, sorted into 4 transport zones
 
 **PDF sections:**
+
 1. Header (event, client, depart time, location, access)
 2. First-time location warning (if `visit_count === 0`)
 3. COOLER — COLD ITEMS (cold + liquid zones)
@@ -114,12 +118,14 @@ Empty sections are omitted. If no `transport_category` has been assigned yet, al
 **Page:** `/events/[id]/pack`
 
 **Architecture:**
+
 - Server component (`pack/page.tsx`) fetches `PackingListData` and `PackingStatus` in parallel
 - Client component (`packing-list-client.tsx`) handles all check-off interaction
 
 **Why localStorage (not server state) for checkbox tracking:**
 
 Packing happens at home, often in the last 15–30 minutes before departure. This means:
+
 - Time pressure is real — network latency is unacceptable per checkbox
 - The chef is the only user — no collaboration needed
 - If the session is lost, the data is easily re-entered (visual check)
@@ -128,6 +134,7 @@ Packing happens at home, often in the last 15–30 minutes before departure. Thi
 State is stored in localStorage under key `packing-{eventId}`. The client component hydrates from localStorage on mount.
 
 **Check-off flow:**
+
 1. Chef opens `/events/[id]/pack` on their phone
 2. Items appear in sections (cooler cold, cooler frozen, dry, fragile, equipment)
 3. Tap any item to check it off — immediately persisted to localStorage
@@ -159,13 +166,13 @@ This mirrors the trigger map in `lib/checklist/actions.ts` for the Non-Negotiabl
 
 These two documents are **distinct** and designed to be checked separately:
 
-| Packing List | Non-Negotiables Checklist |
-|---|---|
-| Food prepped at home (from prep list) | Gloves, gum, uniform, shoes |
-| Equipment kit | Salt, oil, pepper, butter |
-| Component verification counts | Learned items from AARs |
-| Site-specific equipment | Access instructions |
-| Checked during packing | Checked at the door (last step) |
+| Packing List                          | Non-Negotiables Checklist       |
+| ------------------------------------- | ------------------------------- |
+| Food prepped at home (from prep list) | Gloves, gum, uniform, shoes     |
+| Equipment kit                         | Salt, oil, pepper, butter       |
+| Component verification counts         | Learned items from AARs         |
+| Site-specific equipment               | Access instructions             |
+| Checked during packing                | Checked at the door (last step) |
 
 The Prep Sheet (Printed Sheet #1) has a "BEFORE LEAVING" section that prompts both checks in sequence: "Pack all components" and "Non-negotiables check."
 

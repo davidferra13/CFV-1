@@ -145,10 +145,10 @@ Use `npm run supabase:types` (without `:local`) only when you want to sync types
 
 ## Switching Between Local and Production
 
-| What you want         | Command                    |
-| --------------------- | -------------------------- |
-| Use local Docker DB   | `npm run env:use-local`    |
-| Use production DB     | `npm run env:use-prod`     |
+| What you want       | Command                 |
+| ------------------- | ----------------------- |
+| Use local Docker DB | `npm run env:use-local` |
+| Use production DB   | `npm run env:use-prod`  |
 
 These commands swap the `.env.local` file. Your production credentials are always safely backed up in `.env.local.prod.backup` (which is listed in `.gitignore` — it will never be accidentally committed).
 

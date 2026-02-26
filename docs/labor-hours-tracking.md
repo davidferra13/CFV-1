@@ -5,6 +5,7 @@
 The Hours Log widget on the chef dashboard was upgraded to support structured labor categories and encourage consistent tracking. The change is purely additive — no database migration was required.
 
 **Files modified:**
+
 - `lib/dashboard/actions.ts`
 - `components/dashboard/hours-log-widget.tsx`
 - `app/(chef)/dashboard/page.tsx`
@@ -21,21 +22,21 @@ Chefs perform substantial work that is never captured by event timers: planning 
 
 13 categories cover both physical and mental labor. The category is stored in the `context.category` field (JSONB) of the `chef_activity_log` row.
 
-| Key | Label |
-|---|---|
-| `planning` | Planning & Menu Design |
-| `admin` | Admin & Bookkeeping |
-| `client_comms` | Client Communication |
-| `marketing` | Marketing & Social Media |
-| `recipe_dev` | Recipe Development |
-| `shopping_sourcing` | Shopping & Sourcing |
-| `prep_work` | Prep Work |
-| `cooking_service` | Cooking & Service |
-| `cleanup` | Cleanup & Reset |
-| `travel` | Travel |
-| `learning` | Learning & Training |
-| `charity` | Charity / Volunteer |
-| `other` | Other |
+| Key                 | Label                    |
+| ------------------- | ------------------------ |
+| `planning`          | Planning & Menu Design   |
+| `admin`             | Admin & Bookkeeping      |
+| `client_comms`      | Client Communication     |
+| `marketing`         | Marketing & Social Media |
+| `recipe_dev`        | Recipe Development       |
+| `shopping_sourcing` | Shopping & Sourcing      |
+| `prep_work`         | Prep Work                |
+| `cooking_service`   | Cooking & Service        |
+| `cleanup`           | Cleanup & Reset          |
+| `travel`            | Travel                   |
+| `learning`          | Learning & Training      |
+| `charity`           | Charity / Volunteer      |
+| `other`             | Other                    |
 
 ---
 
@@ -55,6 +56,7 @@ Categories are written into the `context` JSONB column of `chef_activity_log`:
 No schema migration was needed. The `context` column already accepts arbitrary JSON.
 
 The `logDashboardHours` server action also determines the `action` value from the category:
+
 - `category === 'charity'` → `action = 'charity_hours_logged'` (preserves backward compat with legacy charity rows)
 - all other categories → `action = 'hours_logged'`
 
@@ -97,13 +99,13 @@ The streak is displayed in the widget as a 7-cell block indicator (▰ = filled,
 
 A contextual message appears above the form based on today's logged minutes:
 
-| Condition | Message |
-|---|---|
-| 0 min today, no week history | "Start building your labor log — every hour you track helps you understand your true value." |
-| 0 min today, has week history | "Add today's hours — even 30 minutes of planning or admin counts." |
-| 1–59 min today | "Good start! Mental work counts too — log any planning, emails, or admin time." |
-| 60–239 min today | "You've been tracking well today. Keep capturing all the invisible work." |
-| 240+ min today | "Great tracking today! Consistent logs reveal what your time is truly worth." |
+| Condition                     | Message                                                                                      |
+| ----------------------------- | -------------------------------------------------------------------------------------------- |
+| 0 min today, no week history  | "Start building your labor log — every hour you track helps you understand your true value." |
+| 0 min today, has week history | "Add today's hours — even 30 minutes of planning or admin counts."                           |
+| 1–59 min today                | "Good start! Mental work counts too — log any planning, emails, or admin time."              |
+| 60–239 min today              | "You've been tracking well today. Keep capturing all the invisible work."                    |
+| 240+ min today                | "Great tracking today! Consistent logs reveal what your time is truly worth."                |
 
 "Has week history" uses `weekMinutes > 0` which includes both event-timer minutes and manual entries.
 
@@ -137,7 +139,7 @@ type DashboardHoursEntry = {
   id: string
   minutes: number
   loggedFor: string
-  category: ManualLaborCategory | null  // null for legacy entries
+  category: ManualLaborCategory | null // null for legacy entries
   note: string | null
   createdAt: string
 }
@@ -155,7 +157,7 @@ type DashboardHoursCategoryEntry = {
 
 ### Streak fix — from-yesterday logic
 
-`computeTrackingStreak` now returns `{ streak, todayLogged }`. If today has no entry, it walks backwards from *yesterday* instead of today, so the streak count reflects work done — not whether the chef has already logged this morning. The widget shows "X day streak — log today to keep it going!" when `!todayLogged` and the streak is active, and "Log today's hours to start a streak." when streak = 0.
+`computeTrackingStreak` now returns `{ streak, todayLogged }`. If today has no entry, it walks backwards from _yesterday_ instead of today, so the streak count reflects work done — not whether the chef has already logged this morning. The widget shows "X day streak — log today to keep it going!" when `!todayLogged` and the streak is active, and "Log today's hours to start a streak." when streak = 0.
 
 Milestone labels surface at 7 / 14 / 30 day thresholds.
 

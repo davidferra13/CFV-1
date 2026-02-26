@@ -21,14 +21,14 @@ The system uses an Entity-Attribute-Value (EAV) approach:
 
 Each value row stores only the column that matches its field type:
 
-| Field type     | Column written          |
-|----------------|-------------------------|
-| text           | `value_text`            |
-| number         | `value_number`          |
-| date           | `value_date`            |
-| toggle         | `value_boolean`         |
-| select         | `value_text`            |
-| multi_select   | `value_json` (string[]) |
+| Field type   | Column written          |
+| ------------ | ----------------------- |
+| text         | `value_text`            |
+| number       | `value_number`          |
+| date         | `value_date`            |
+| toggle       | `value_boolean`         |
+| select       | `value_text`            |
+| multi_select | `value_json` (string[]) |
 
 A `UNIQUE (entity_id, field_definition_id)` constraint allows upserts.
 
@@ -42,8 +42,8 @@ import {
 } from '@/lib/custom-fields/actions'
 
 // In a server component or action:
-const defs = await getCustomFieldDefinitions('event')   // entity_type = 'event' | 'client' | 'recipe'
-const valueMap = await getCustomFieldValues(eventId)    // keyed by field_definition_id
+const defs = await getCustomFieldDefinitions('event') // entity_type = 'event' | 'client' | 'recipe'
+const valueMap = await getCustomFieldValues(eventId) // keyed by field_definition_id
 
 // valueMap[def.id].value_text   — for text / select
 // valueMap[def.id].value_number — for number
@@ -86,7 +86,11 @@ Chefs can rename the 6 built-in occasion types (Wedding, Birthday, etc.) and the
 ### Using labels in the UI
 
 ```typescript
-import { getEventLabels, DEFAULT_OCCASION_TYPES, DEFAULT_STATUS_LABELS } from '@/lib/event-labels/actions'
+import {
+  getEventLabels,
+  DEFAULT_OCCASION_TYPES,
+  DEFAULT_STATUS_LABELS,
+} from '@/lib/event-labels/actions'
 import { buildLabelMap } from '@/lib/event-labels/utils'
 
 const rows = await getEventLabels()
@@ -116,6 +120,7 @@ supabase db push --linked
 ```
 
 The migrations are additive:
+
 - 20260311000001 creates `custom_field_definitions` and `custom_field_values` with RLS.
 - 20260311000002 creates `chef_event_type_labels` with RLS.
 
@@ -145,14 +150,14 @@ This matches the pattern used throughout the rest of the schema.
 
 ## File summary
 
-| File | Purpose |
-|------|---------|
-| `supabase/migrations/20260311000001_custom_fields.sql` | EAV schema for custom field definitions and values |
-| `supabase/migrations/20260311000002_chef_event_labels.sql` | Schema for per-chef occasion type and status label overrides |
-| `lib/custom-fields/actions.ts` | Server actions: get/create/delete definitions, get/save values |
-| `lib/event-labels/actions.ts` | Server actions: get/upsert/reset label overrides; default label constants |
-| `lib/event-labels/utils.ts` | Pure helper: `buildLabelMap` (usable in both server and client contexts) |
-| `app/(chef)/settings/custom-fields/page.tsx` | Settings page — custom fields |
-| `app/(chef)/settings/event-types/page.tsx` | Settings page — event types and status labels |
-| `components/settings/custom-field-builder.tsx` | Client component — field creation form + list |
-| `components/settings/event-label-editor.tsx` | Client component — debounced inline label editor |
+| File                                                       | Purpose                                                                   |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `supabase/migrations/20260311000001_custom_fields.sql`     | EAV schema for custom field definitions and values                        |
+| `supabase/migrations/20260311000002_chef_event_labels.sql` | Schema for per-chef occasion type and status label overrides              |
+| `lib/custom-fields/actions.ts`                             | Server actions: get/create/delete definitions, get/save values            |
+| `lib/event-labels/actions.ts`                              | Server actions: get/upsert/reset label overrides; default label constants |
+| `lib/event-labels/utils.ts`                                | Pure helper: `buildLabelMap` (usable in both server and client contexts)  |
+| `app/(chef)/settings/custom-fields/page.tsx`               | Settings page — custom fields                                             |
+| `app/(chef)/settings/event-types/page.tsx`                 | Settings page — event types and status labels                             |
+| `components/settings/custom-field-builder.tsx`             | Client component — field creation form + list                             |
+| `components/settings/event-label-editor.tsx`               | Client component — debounced inline label editor                          |

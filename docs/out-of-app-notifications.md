@@ -45,11 +45,11 @@ happens via dedicated dispatcher functions called alongside `createNotification(
 Every notification action has a default tier defined in
 [lib/notifications/tier-config.ts](../lib/notifications/tier-config.ts).
 
-| Tier | Default Channels | Examples |
-|---|---|---|
-| **Critical** | Email + Push + SMS | New inquiry, payment received, dispute |
-| **Alert** | Email + Push | Quote accepted/rejected, event cancelled, new message |
-| **Info** | Email only | Follow-up due, client signup, review submitted |
+| Tier         | Default Channels   | Examples                                              |
+| ------------ | ------------------ | ----------------------------------------------------- |
+| **Critical** | Email + Push + SMS | New inquiry, payment received, dispute                |
+| **Alert**    | Email + Push       | Quote accepted/rejected, event cancelled, new message |
+| **Info**     | Email only         | Follow-up due, client signup, review submitted        |
 
 Intent signals (`client_viewed_quote`, `client_on_payment_page`, etc.) are **Alert**
 tier but **never email** — they're real-time nudges where an email 5 minutes later
@@ -73,6 +73,7 @@ Channel delivery for a given notification is determined by this cascade
 ## Database Tables
 
 ### `push_subscriptions`
+
 Stores Web Push API subscription objects per user per device.
 One user can have multiple active subscriptions (phone + laptop, etc.).
 
@@ -82,6 +83,7 @@ Subscriptions are deactivated when `failed_count >= 5` or when the push service
 returns `410 Gone` (user unsubscribed in browser settings).
 
 ### `sms_send_log`
+
 Rate-limit log. One row per (tenant, action) per send.
 The SMS sender checks this before every send to prevent flooding.
 Rows older than 48 hours are cleaned up by the activity-cleanup cron.
@@ -93,14 +95,17 @@ Rate windows by tier (env-configurable, see `lib/sms/rate-limit.ts`):
 - `info`: 120 min default
 
 ### `notification_delivery_log`
+
 Immutable audit log. One row per channel attempt per notification.
 Channels that are disabled or rate-limited are recorded as `'skipped'`.
 
 ### Extended: `notification_preferences`
+
 Added `tier`, `email_enabled`, `push_enabled`, `sms_enabled` columns.
 `NULL` on a channel column means "inherit from tier default."
 
 ### Extended: `chef_preferences`
+
 Added `sms_notify_phone`, `sms_opt_in`, `sms_opt_in_at`.
 SMS is never sent without `sms_opt_in = true`.
 
@@ -108,13 +113,13 @@ SMS is never sent without `sms_opt_in = true`.
 
 ## Build Status — All Phases Complete
 
-| Phase | Status | Files |
-|---|---|---|
-| **1 — Foundation** | ✅ Done | DB migrations, tier config, resolver, router, delivery log |
-| **2 — Email gaps** | ✅ Done | 5 new email templates + dispatchers at 5 call sites |
+| Phase                | Status  | Files                                                                  |
+| -------------------- | ------- | ---------------------------------------------------------------------- |
+| **1 — Foundation**   | ✅ Done | DB migrations, tier config, resolver, router, delivery log             |
+| **2 — Email gaps**   | ✅ Done | 5 new email templates + dispatchers at 5 call sites                    |
 | **3 — Browser Push** | ✅ Done | VAPID, encryption, service worker, subscription API, permission prompt |
-| **4 — Settings UI** | ✅ Done | `/settings/notifications` page with per-category channel toggles |
-| **5 — SMS** | ✅ Done | Twilio REST, rate limiting, opt-in consent, cron cleanup |
+| **4 — Settings UI**  | ✅ Done | `/settings/notifications` page with per-category channel toggles       |
+| **5 — SMS**          | ✅ Done | Twilio REST, rate limiting, opt-in consent, cron cleanup               |
 
 ---
 
@@ -122,50 +127,50 @@ SMS is never sent without `sms_opt_in = true`.
 
 ### Core Library
 
-| File | Purpose |
-| --- | --- |
-| `lib/notifications/tier-config.ts` | Static tier → channel defaults |
+| File                                       | Purpose                                  |
+| ------------------------------------------ | ---------------------------------------- |
+| `lib/notifications/tier-config.ts`         | Static tier → channel defaults           |
 | `lib/notifications/resolve-preferences.ts` | Runtime channel resolution with DB prefs |
-| `lib/notifications/channel-router.ts` | Orchestrator: push + SMS delivery |
-| `lib/notifications/settings-actions.ts` | Server actions for settings page |
+| `lib/notifications/channel-router.ts`      | Orchestrator: push + SMS delivery        |
+| `lib/notifications/settings-actions.ts`    | Server actions for settings page         |
 
 ### Email (Phase 2)
 
-| File | Purpose |
-| --- | --- |
-| `lib/email/templates/new-message-chef.tsx` | New message from client |
-| `lib/email/templates/quote-accepted-chef.tsx` | Quote accepted |
-| `lib/email/templates/follow-up-due-chef.tsx` | Follow-up overdue |
-| `lib/email/templates/new-inquiry-chef.tsx` | New inquiry (portal/Wix/Gmail) |
-| `lib/email/templates/gift-card-purchased-chef.tsx` | Gift card sale |
+| File                                               | Purpose                        |
+| -------------------------------------------------- | ------------------------------ |
+| `lib/email/templates/new-message-chef.tsx`         | New message from client        |
+| `lib/email/templates/quote-accepted-chef.tsx`      | Quote accepted                 |
+| `lib/email/templates/follow-up-due-chef.tsx`       | Follow-up overdue              |
+| `lib/email/templates/new-inquiry-chef.tsx`         | New inquiry (portal/Wix/Gmail) |
+| `lib/email/templates/gift-card-purchased-chef.tsx` | Gift card sale                 |
 
 ### Browser Push (Phase 3)
 
-| File | Purpose |
-| --- | --- |
-| `lib/push/vapid.ts` | VAPID JWT signing (ECDSA P-256) |
-| `lib/push/send.ts` | RFC 8291 AES-128-GCM encrypted push send |
-| `lib/push/subscriptions.ts` | Save/remove/list push subscriptions |
-| `app/api/push/subscribe/route.ts` | POST — save subscription |
-| `app/api/push/unsubscribe/route.ts` | POST — deactivate subscription |
-| `app/api/push/resubscribe/route.ts` | POST — rotate subscription endpoint |
-| `app/api/push/vapid-public-key/route.ts` | GET — public key for browser |
-| `worker/index.ts` | Custom service worker extension (merged into sw.js by next-pwa) |
-| `components/notifications/use-push-subscription.ts` | Client hook |
-| `components/notifications/push-permission-prompt.tsx` | Dismissible banner |
+| File                                                  | Purpose                                                         |
+| ----------------------------------------------------- | --------------------------------------------------------------- |
+| `lib/push/vapid.ts`                                   | VAPID JWT signing (ECDSA P-256)                                 |
+| `lib/push/send.ts`                                    | RFC 8291 AES-128-GCM encrypted push send                        |
+| `lib/push/subscriptions.ts`                           | Save/remove/list push subscriptions                             |
+| `app/api/push/subscribe/route.ts`                     | POST — save subscription                                        |
+| `app/api/push/unsubscribe/route.ts`                   | POST — deactivate subscription                                  |
+| `app/api/push/resubscribe/route.ts`                   | POST — rotate subscription endpoint                             |
+| `app/api/push/vapid-public-key/route.ts`              | GET — public key for browser                                    |
+| `worker/index.ts`                                     | Custom service worker extension (merged into sw.js by next-pwa) |
+| `components/notifications/use-push-subscription.ts`   | Client hook                                                     |
+| `components/notifications/push-permission-prompt.tsx` | Dismissible banner                                              |
 
 ### Settings UI (Phase 4)
 
-| File | Purpose |
-| --- | --- |
-| `app/(chef)/settings/notifications/page.tsx` | Settings page |
+| File                                                 | Purpose                          |
+| ---------------------------------------------------- | -------------------------------- |
+| `app/(chef)/settings/notifications/page.tsx`         | Settings page                    |
 | `components/settings/notification-settings-form.tsx` | Per-category toggles + SMS setup |
 
 ### SMS (Phase 5)
 
-| File | Purpose |
-| --- | --- |
-| `lib/sms/send.ts` | Twilio REST API wrapper |
+| File                    | Purpose                                   |
+| ----------------------- | ----------------------------------------- |
+| `lib/sms/send.ts`       | Twilio REST API wrapper                   |
 | `lib/sms/rate-limit.ts` | Rate limit check + record in sms_send_log |
 
 ---
@@ -230,6 +235,7 @@ Rotating VAPID keys invalidates **all existing push subscriptions** — every us
 browser will need to re-subscribe on their next visit. This is a major disruption.
 
 Only rotate if the private key is compromised. If you must rotate:
+
 1. Generate new key pair
 2. Update env vars on Vercel
 3. Set `is_active = false` on all `push_subscriptions` rows (one-time migration)

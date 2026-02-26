@@ -54,7 +54,8 @@ export async function publishInstagram(
   post: SocialPost,
   credential: PlatformCredential
 ): Promise<PublishResult> {
-  const igUserId = (credential.additionalData.instagram_user_id as string) || credential.externalAccountId
+  const igUserId =
+    (credential.additionalData.instagram_user_id as string) || credential.externalAccountId
   const token = credential.accessToken
   const caption = buildCaption(post, 'instagram')
 
@@ -78,10 +79,9 @@ export async function publishInstagram(
       let ready = false
       for (let i = 0; i < 12; i++) {
         await new Promise((r) => setTimeout(r, 5000))
-        const status = (await graphGet(
-          `/${containerId}?fields=status_code`,
-          token
-        )) as { status_code: string }
+        const status = (await graphGet(`/${containerId}?fields=status_code`, token)) as {
+          status_code: string
+        }
         if (status.status_code === 'FINISHED') {
           ready = true
           break
@@ -128,7 +128,8 @@ export async function publishFacebook(
   post: SocialPost,
   credential: PlatformCredential
 ): Promise<PublishResult> {
-  const pageId = (credential.additionalData.facebook_page_id as string) || credential.externalAccountId
+  const pageId =
+    (credential.additionalData.facebook_page_id as string) || credential.externalAccountId
   const pageToken = credential.accessToken
   const caption = buildCaption(post, 'facebook')
 

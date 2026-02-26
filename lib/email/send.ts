@@ -23,7 +23,13 @@ type SendEmailParams = {
  * Non-blocking: logs errors but never throws.
  * Returns true if sent successfully, false otherwise.
  */
-export async function sendEmail({ to, subject, react, replyTo, attachments }: SendEmailParams): Promise<boolean> {
+export async function sendEmail({
+  to,
+  subject,
+  react,
+  replyTo,
+  attachments,
+}: SendEmailParams): Promise<boolean> {
   // Skip if Resend is not configured (dev environments without key)
   if (!process.env.RESEND_API_KEY) {
     console.log('[sendEmail] RESEND_API_KEY not configured, skipping email to:', to)

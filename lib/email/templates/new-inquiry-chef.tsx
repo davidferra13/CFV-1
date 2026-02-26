@@ -10,7 +10,7 @@ type Props = {
   chefName: string
   clientName: string
   occasion: string | null
-  eventDate: string | null    // Already formatted or null
+  eventDate: string | null // Already formatted or null
   guestCount: number | null
   source: 'portal' | 'wix' | 'gmail' | 'manual'
   inquiryUrl: string
@@ -18,8 +18,8 @@ type Props = {
 
 const SOURCE_LABELS: Record<Props['source'], string> = {
   portal: 'your public profile',
-  wix:    'your Wix website',
-  gmail:  'your Gmail inbox',
+  wix: 'your Wix website',
+  gmail: 'your Gmail inbox',
   manual: 'manual entry',
 }
 
@@ -89,16 +89,31 @@ export function NewInquiryChefEmail({
         </Link>
       </div>
 
-      <Text style={muted}>
-        Reply within 24 hours to maximize booking conversion.
-      </Text>
+      <Text style={muted}>Reply within 24 hours to maximize booking conversion.</Text>
     </BaseLayout>
   )
 }
 
-const heading = { fontSize: '24px', fontWeight: '600' as const, color: '#18181b', margin: '0 0 16px' }
+const heading = {
+  fontSize: '24px',
+  fontWeight: '600' as const,
+  color: '#18181b',
+  margin: '0 0 16px',
+}
 const paragraph = { fontSize: '15px', lineHeight: '1.6', color: '#374151', margin: '0 0 16px' }
 const detailsTable = { width: '100%', marginBottom: '24px', borderCollapse: 'collapse' as const }
-const detailLabel = { fontSize: '13px', color: '#6b7280', padding: '8px 0', borderBottom: '1px solid #f3f4f6', width: '140px' }
-const detailValue = { fontSize: '15px', fontWeight: '600' as const, color: '#18181b', padding: '8px 0', borderBottom: '1px solid #f3f4f6' }
+const detailLabel = {
+  fontSize: '13px',
+  color: '#6b7280',
+  padding: '8px 0',
+  borderBottom: '1px solid #f3f4f6',
+  width: '140px',
+}
+const detailValue = {
+  fontSize: '15px',
+  fontWeight: '600' as const,
+  color: '#18181b',
+  padding: '8px 0',
+  borderBottom: '1px solid #f3f4f6',
+}
 const muted = { fontSize: '13px', color: '#9ca3af', margin: '0' }

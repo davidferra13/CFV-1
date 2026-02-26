@@ -10,9 +10,7 @@ import { z } from 'zod'
 
 export const UuidSchema = z.string().uuid('Must be a valid UUID')
 
-export const DateStringSchema = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Must be YYYY-MM-DD format')
+export const DateStringSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Must be YYYY-MM-DD format')
 
 export const CentsSchema = z
   .number()
@@ -72,7 +70,10 @@ export const ServiceTypeSchema = z.enum([
 export const EventBaseSchema = z.object({
   occasion: z.string().min(1).max(200),
   event_date: DateStringSchema,
-  serve_time: z.string().regex(/^\d{2}:\d{2}$/, 'Must be HH:MM format').optional(),
+  serve_time: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/, 'Must be HH:MM format')
+    .optional(),
   guest_count: GuestCountSchema,
   location: z.string().max(500).optional(),
   notes: z.string().max(5000).optional(),

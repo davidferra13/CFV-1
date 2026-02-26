@@ -10,38 +10,38 @@ Implemented 21 sidebar filter sub-pages across the Chef portal. All pages previo
 
 ### Events (5 pages)
 
-| Route | Filter Logic | Data Source |
-|-------|-------------|-------------|
-| `/events/upcoming` | status in `['proposed','accepted','paid','confirmed','in_progress']` | `getEvents()` |
-| `/events/awaiting-deposit` | status = `'accepted'` | `getEvents()` |
-| `/events/confirmed` | status in `['paid','confirmed']` | `getEvents()` |
-| `/events/completed` | status = `'completed'` | `getEvents()` |
-| `/events/cancelled` | status = `'cancelled'` | `getEvents()` |
+| Route                      | Filter Logic                                                         | Data Source   |
+| -------------------------- | -------------------------------------------------------------------- | ------------- |
+| `/events/upcoming`         | status in `['proposed','accepted','paid','confirmed','in_progress']` | `getEvents()` |
+| `/events/awaiting-deposit` | status = `'accepted'`                                                | `getEvents()` |
+| `/events/confirmed`        | status in `['paid','confirmed']`                                     | `getEvents()` |
+| `/events/completed`        | status = `'completed'`                                               | `getEvents()` |
+| `/events/cancelled`        | status = `'cancelled'`                                               | `getEvents()` |
 
 Sorting: upcoming/awaiting-deposit/confirmed sort ascending by event_date (nearest first). Completed/cancelled sort descending (most recent first).
 
 ### Quotes (6 pages)
 
-| Route | Filter Logic | Data Source |
-|-------|-------------|-------------|
-| `/quotes/draft` | status = `'draft'` | `getQuotes({ status })` |
-| `/quotes/sent` | status = `'sent'` | `getQuotes({ status })` |
-| `/quotes/viewed` | status = `'sent'` + `viewed_at IS NOT NULL` | `getQuotes({ status })` |
-| `/quotes/accepted` | status = `'accepted'` | `getQuotes({ status })` |
-| `/quotes/expired` | status = `'expired'` | `getQuotes({ status })` |
-| `/quotes/rejected` | status = `'rejected'` | `getQuotes({ status })` |
+| Route              | Filter Logic                                | Data Source             |
+| ------------------ | ------------------------------------------- | ----------------------- |
+| `/quotes/draft`    | status = `'draft'`                          | `getQuotes({ status })` |
+| `/quotes/sent`     | status = `'sent'`                           | `getQuotes({ status })` |
+| `/quotes/viewed`   | status = `'sent'` + `viewed_at IS NOT NULL` | `getQuotes({ status })` |
+| `/quotes/accepted` | status = `'accepted'`                       | `getQuotes({ status })` |
+| `/quotes/expired`  | status = `'expired'`                        | `getQuotes({ status })` |
+| `/quotes/rejected` | status = `'rejected'`                       | `getQuotes({ status })` |
 
 **Note on `/quotes/viewed`:** There is no `viewed` status in the quotes FSM. This page fetches sent quotes and filters by `viewed_at IS NOT NULL`. If the `viewed_at` field is not present or no quotes have been viewed, the empty state explains that view tracking will populate this list once active.
 
 ### Inquiries (5 pages)
 
-| Route | DB Status Filter | Data Source |
-|-------|-----------------|-------------|
-| `/inquiries/awaiting-response` | `awaiting_chef` | `getInquiries()` |
-| `/inquiries/menu-drafting` | `quoted` | `getInquiries()` |
-| `/inquiries/sent-to-client` | `awaiting_client` | `getInquiries()` |
+| Route                              | DB Status Filter  | Data Source      |
+| ---------------------------------- | ----------------- | ---------------- |
+| `/inquiries/awaiting-response`     | `awaiting_chef`   | `getInquiries()` |
+| `/inquiries/menu-drafting`         | `quoted`          | `getInquiries()` |
+| `/inquiries/sent-to-client`        | `awaiting_client` | `getInquiries()` |
 | `/inquiries/awaiting-client-reply` | `awaiting_client` | `getInquiries()` |
-| `/inquiries/declined` | `declined` | `getInquiries()` |
+| `/inquiries/declined`              | `declined`        | `getInquiries()` |
 
 **Note:** `sent-to-client` and `awaiting-client-reply` both map to the `awaiting_client` DB status — they describe the same state from different angles (what you did vs. what you're waiting for). Both show identical data with different contextual descriptions.
 
@@ -49,19 +49,19 @@ Sorting: upcoming/awaiting-deposit/confirmed sort ascending by event_date (neare
 
 ### Clients (3 pages)
 
-| Route | DB Status Filter | Data Source |
-|-------|-----------------|-------------|
-| `/clients/active` | `status = 'active'` | `getClientsWithStats()` |
+| Route               | DB Status Filter     | Data Source             |
+| ------------------- | -------------------- | ----------------------- |
+| `/clients/active`   | `status = 'active'`  | `getClientsWithStats()` |
 | `/clients/inactive` | `status = 'dormant'` | `getClientsWithStats()` |
-| `/clients/vip` | `status = 'vip'` | `getClientsWithStats()` |
+| `/clients/vip`      | `status = 'vip'`     | `getClientsWithStats()` |
 
 All three reuse the existing `ClientsTable` component (with search and sort). Filtering happens after fetch in the page server component.
 
 ### Partners (2 pages)
 
-| Route | Filter | Data Source |
-|-------|--------|-------------|
-| `/partners/active` | `getPartners({ status: 'active' })` | Server-side |
+| Route                | Filter                                | Data Source |
+| -------------------- | ------------------------------------- | ----------- |
+| `/partners/active`   | `getPartners({ status: 'active' })`   | Server-side |
 | `/partners/inactive` | `getPartners({ status: 'inactive' })` | Server-side |
 
 Partners use the existing `getPartners()` action which already supports server-side status filtering.
@@ -90,6 +90,7 @@ No parent pages were modified. No shared components were extracted. Each page is
 ## Empty States
 
 Every page has a contextual empty state with:
+
 - A message explaining what belongs in this view
 - A "View All [Section]" secondary button
 - For pages where creation makes sense (e.g. draft quotes), a primary "New" button
@@ -99,6 +100,7 @@ Every page has a contextual empty state with:
 ## How to Extend
 
 To add a new filter sub-page in the future:
+
 1. Create the route file under the appropriate section
 2. Import the same action as the parent page
 3. Apply your filter logic after the fetch

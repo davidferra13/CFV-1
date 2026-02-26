@@ -22,11 +22,11 @@ The lifecycle states below describe the **full engagement arc** — from the mom
 
 An inbound message has been received. No validation has occurred.
 
-| Known | Unknown |
-|-------|---------|
+| Known                              | Unknown                     |
+| ---------------------------------- | --------------------------- |
 | Source (email, platform, referral) | Whether it's a real inquiry |
-| Raw message text | All logistics |
-| Timestamp | Client identity |
+| Raw message text                   | All logistics               |
+| Timestamp                          | Client identity             |
 
 **Allowed:** Read message, classify, ask clarifying questions, discard.
 **Forbidden:** Pricing, availability confirmation, date holds, menu discussion.
@@ -41,12 +41,12 @@ An inbound message has been received. No validation has occurred.
 
 The message is a legitimate request for private chef services.
 
-| Known | Still Needed |
-|-------|-------------|
-| Event date or range | Exact date |
-| Approximate guest count | Full address |
-| City or location | Start time |
-| Type of service | Dietary details |
+| Known                   | Still Needed    |
+| ----------------------- | --------------- |
+| Event date or range     | Exact date      |
+| Approximate guest count | Full address    |
+| City or location        | Start time      |
+| Type of service         | Dietary details |
 
 **Allowed:** Confirm availability in principle, explain process at high level, collect missing discovery data, begin menu thinking (chef-driven direction).
 **Forbidden:** Pricing, menu specifics, date holds.
@@ -61,14 +61,14 @@ The message is a legitimate request for private chef services.
 
 All non-financial requirements needed for accurate pricing are captured.
 
-| Known | Locked |
-|-------|--------|
-| Final event date | Discovery data (unless client changes scope) |
-| Guest count range | |
-| Exact location | |
-| Kitchen access constraints | |
-| Timeline expectations | |
-| Dietary restrictions / allergies | |
+| Known                            | Locked                                       |
+| -------------------------------- | -------------------------------------------- |
+| Final event date                 | Discovery data (unless client changes scope) |
+| Guest count range                |                                              |
+| Exact location                   |                                              |
+| Kitchen access constraints       |                                              |
+| Timeline expectations            |                                              |
+| Dietary restrictions / allergies |                                              |
 
 **Allowed:** Prepare pricing internally, frame service scope, begin menu development.
 **Forbidden:** Sending proposals, requesting deposits.
@@ -83,11 +83,11 @@ All non-financial requirements needed for accurate pricing are captured.
 
 Client has been presented with pricing information.
 
-| Known | Locked |
-|-------|--------|
-| All discovery inputs | Pricing structure |
-| Applicable pricing rules | Service category |
-| Quote delivered | |
+| Known                    | Locked            |
+| ------------------------ | ----------------- |
+| All discovery inputs     | Pricing structure |
+| Applicable pricing rules | Service category  |
+| Quote delivered          |                   |
 
 **Allowed:** Present pricing, explain deposit/grocery model/payment structure, clarify questions.
 **Forbidden:** Date holds, menu locking, assuming commitment.
@@ -102,12 +102,12 @@ Client has been presented with pricing information.
 
 Client has agreed to scope, pricing, and terms.
 
-| Known | Locked |
-|-------|--------|
-| Full scope | Terms |
-| Pricing | Scope |
-| Payment schedule | |
-| Cancellation policy | |
+| Known               | Locked |
+| ------------------- | ------ |
+| Full scope          | Terms  |
+| Pricing             | Scope  |
+| Payment schedule    |        |
+| Cancellation policy |        |
 
 **Allowed:** Request deposit, soft-hold date.
 **Forbidden:** Menu planning beyond direction, grocery planning.
@@ -122,11 +122,11 @@ Client has agreed to scope, pricing, and terms.
 
 The engagement is officially booked. Deposit received.
 
-| Known | Locked |
-|-------|--------|
-| Client details | Date |
-| Date, location, guest count | Client |
-| Deposit received | Base scope |
+| Known                       | Locked     |
+| --------------------------- | ---------- |
+| Client details              | Date       |
+| Date, location, guest count | Client     |
+| Deposit received            | Base scope |
 
 **Allowed:** Menu discussion, allergy finalization, logistics planning.
 **Forbidden:** Scope expansion without change request.
@@ -141,11 +141,11 @@ The engagement is officially booked. Deposit received.
 
 Food decisions are finalized.
 
-| Known | Locked |
-|-------|--------|
-| Final menu | Menu |
-| Final allergies | Guest count |
-| Final guest count (or change rules) | |
+| Known                               | Locked      |
+| ----------------------------------- | ----------- |
+| Final menu                          | Menu        |
+| Final allergies                     | Guest count |
+| Final guest count (or change rules) |             |
 
 **Allowed:** Grocery planning, prep planning, timeline building, document generation.
 **Forbidden:** Menu changes outside change rules.
@@ -160,12 +160,12 @@ Food decisions are finalized.
 
 All operational variables are resolved. The three printed sheets are generated.
 
-| Known | Locked |
-|-------|--------|
-| Shopping completed | All major variables |
-| Prep plan finalized | |
-| Arrival time confirmed | |
-| Kitchen access plan confirmed | |
+| Known                         | Locked              |
+| ----------------------------- | ------------------- |
+| Shopping completed            | All major variables |
+| Prep plan finalized           |                     |
+| Arrival time confirmed        |                     |
+| Kitchen access plan confirmed |                     |
 
 **Allowed:** Execute service.
 
@@ -198,16 +198,16 @@ Service has been executed. Post-event cascade begins.
 
 **Codebase mapping:** Event status = `completed`, all `event_closure_tasks` marked done
 
-| Required for closure |
-|---------------------|
+| Required for closure                |
+| ----------------------------------- |
 | Final payment received and recorded |
-| Receipts uploaded and approved |
-| Tip recorded separately |
-| Follow-up message sent |
-| After Action Review filed |
-| Client record updated |
-| Kitchen cleaned, equipment packed |
-| No open loops remain |
+| Receipts uploaded and approved      |
+| Tip recorded separately             |
+| Follow-up message sent              |
+| After Action Review filed           |
+| Client record updated               |
+| Kitchen cleaned, equipment packed   |
+| No open loops remain                |
 
 **Exit → Archive:** Terminal state. Historical record locked.
 

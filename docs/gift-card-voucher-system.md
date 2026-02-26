@@ -9,10 +9,10 @@
 
 ChefFlow supports two types of client incentives, both tenant-scoped to individual chefs:
 
-| Type | Created by | Value type | Balance tracked |
-|---|---|---|---|
-| **Gift Card** | Chef (manual) or client (Stripe purchase) | Fixed dollar amount | Yes — partial use supported |
-| **Voucher** | Chef only | Fixed $ off or % off | No — single-use discount |
+| Type          | Created by                                | Value type           | Balance tracked             |
+| ------------- | ----------------------------------------- | -------------------- | --------------------------- |
+| **Gift Card** | Chef (manual) or client (Stripe purchase) | Fixed dollar amount  | Yes — partial use supported |
+| **Voucher**   | Chef only                                 | Fixed $ off or % off | No — single-use discount    |
 
 Both are redeemed at the event payment step using a human-readable code (e.g. `GFT-ABCD1234`).
 
@@ -21,21 +21,27 @@ Both are redeemed at the event payment step using a human-readable code (e.g. `G
 ## Database Schema
 
 ### `client_incentives` (extended from migration 20260224000015)
+
 Core record for every gift card and voucher.
 
 New columns added in `20260227000001_gift_card_redemption_and_purchase.sql`:
+
 - `remaining_balance_cents` — gift card balance, auto-initialized to `amount_cents` on insert; decremented per redemption; NULL for vouchers
 - `purchase_status` — `'issued'` (chef-created) | `'pending_payment'` (Stripe in-flight) | `'paid'` (client purchased)
 - `purchased_by_user_id` / `purchased_by_email` — buyer identity for client-purchased gift cards
 
 ### `gift_card_purchase_intents`
+
 Pre-payment state while Stripe Checkout is in flight. Created before the Stripe session, linked to the `client_incentives` row once payment succeeds. Fields: `tenant_id`, `stripe_checkout_session_id`, `amount_cents`, `recipient_email`, `recipient_name`, `personal_message`, `buyer_email`, `status`, `created_incentive_id`.
 
 ### `incentive_redemptions`
+
 Immutable audit log — one row per redemption event. Links `incentive_id`, `event_id`, `client_id`, `ledger_entry_id`. Tracks `applied_amount_cents`, `balance_before_cents`, `balance_after_cents`.
 
 ### `redeem_incentive()` Postgres RPC
+
 Atomic SECURITY DEFINER function. In a single transaction:
+
 1. Inserts a `'credit'` ledger entry (reduces `outstanding_balance_cents`)
 2. Decrements `remaining_balance_cents` + increments `redemptions_used` on the incentive
 3. Inserts a `incentive_redemptions` audit row
@@ -45,12 +51,14 @@ Atomic SECURITY DEFINER function. In a single transaction:
 ## Flows
 
 ### 1. Chef issues a gift card or voucher manually
+
 1. Chef opens `/clients/gift-cards` in the chef dashboard
 2. Clicks "Issue Gift Card" or "Issue Voucher" → fills in `IssueIncentiveForm`
 3. `createVoucherOrGiftCard()` server action inserts the `client_incentives` row (`purchase_status: 'issued'`)
 4. Chef optionally clicks "Send" → `sendVoucherOrGiftCardToAnyone()` inserts `incentive_deliveries` + fires `sendIncentiveDeliveryEmail()`
 
 ### 2. Client (or guest) purchases a gift card via Stripe
+
 1. Buyer visits `/chef/[slug]/gift-cards` — no auth required
 2. Selects amount, enters recipient + buyer emails, optional message
 3. `GiftCardPurchaseForm` calls `initiateGiftCardPurchase()`:
@@ -67,6 +75,7 @@ Atomic SECURITY DEFINER function. In a single transaction:
 5. Buyer is redirected to `/chef/[slug]/gift-cards/success?session_id=...` showing confirmation
 
 ### 3. Client redeems a code at event payment
+
 1. Client goes to `/my-events/[id]/pay` (status must be `accepted`)
 2. `PaymentPageClient` renders `RedemptionCodeInput` above the Stripe payment form
 3. Client enters code, clicks "Check" → `validateIncentiveCode()` (read-only preview):
@@ -82,7 +91,9 @@ Atomic SECURITY DEFINER function. In a single transaction:
 5. If Stripe payment still needed, client completes it normally
 
 ### 4. Partial gift card use
+
 Gift cards support partial redemption. Example: $100 gift card applied to a $60 event:
+
 - `applied_amount_cents = 6000`
 - `remaining_balance_cents = 4000` ($40 remains on the card)
 - Same code can be applied to a future event, consuming up to the remaining $40
@@ -91,29 +102,29 @@ Gift cards support partial redemption. Example: $100 gift card applied to a $60 
 
 ## Key Files
 
-| File | Purpose |
-|---|---|
-| `supabase/migrations/20260227000001_gift_card_redemption_and_purchase.sql` | DB schema additions |
-| `lib/loyalty/redemption-actions.ts` | `validateIncentiveCode()`, `redeemIncentiveCode()` |
-| `lib/loyalty/gift-card-purchase-actions.ts` | `initiateGiftCardPurchase()`, `getGiftCardPurchaseBySession()` |
-| `lib/loyalty/voucher-actions.ts` | `createVoucherOrGiftCard()`, `sendVoucherOrGiftCardToAnyone()`, `deactivateIncentive()`, `getIncentiveRedemptions()`, `getIncentiveStats()` |
-| `app/api/webhooks/stripe/route.ts` | `checkout.session.completed` handler |
-| `app/(chef)/clients/gift-cards/page.tsx` | Chef management hub |
-| `app/(chef)/clients/gift-cards/gift-cards-client-shell.tsx` | Interactive modals |
-| `app/(public)/chef/[slug]/gift-cards/page.tsx` | Public gift card store (server) |
-| `app/(public)/chef/[slug]/gift-cards/gift-card-form.tsx` | Public gift card store (client form) |
-| `app/(public)/chef/[slug]/gift-cards/success/page.tsx` | Post-purchase confirmation |
-| `app/(client)/my-events/[id]/pay/page.tsx` | Payment page (server) |
-| `app/(client)/my-events/[id]/pay/payment-page-client.tsx` | Payment orchestrator (client) |
-| `app/(client)/my-events/[id]/pay/payment-section.tsx` | Stripe PaymentIntent + form |
-| `app/(client)/my-rewards/page.tsx` | Client's owned gift cards + vouchers |
-| `components/incentives/redemption-code-input.tsx` | Code entry UI on payment page |
-| `components/incentives/client-incentive-list.tsx` | Card-style incentive display |
-| `components/incentives/issue-incentive-form.tsx` | Chef: create new code |
-| `components/incentives/send-incentive-form.tsx` | Chef: send code by email |
-| `components/incentives/incentive-redemption-history.tsx` | Chef: redemption audit log |
-| `lib/email/templates/gift-card-purchase-confirmation.tsx` | Buyer confirmation email |
-| `lib/email/templates/incentive-delivery.tsx` | Recipient delivery email |
+| File                                                                       | Purpose                                                                                                                                     |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `supabase/migrations/20260227000001_gift_card_redemption_and_purchase.sql` | DB schema additions                                                                                                                         |
+| `lib/loyalty/redemption-actions.ts`                                        | `validateIncentiveCode()`, `redeemIncentiveCode()`                                                                                          |
+| `lib/loyalty/gift-card-purchase-actions.ts`                                | `initiateGiftCardPurchase()`, `getGiftCardPurchaseBySession()`                                                                              |
+| `lib/loyalty/voucher-actions.ts`                                           | `createVoucherOrGiftCard()`, `sendVoucherOrGiftCardToAnyone()`, `deactivateIncentive()`, `getIncentiveRedemptions()`, `getIncentiveStats()` |
+| `app/api/webhooks/stripe/route.ts`                                         | `checkout.session.completed` handler                                                                                                        |
+| `app/(chef)/clients/gift-cards/page.tsx`                                   | Chef management hub                                                                                                                         |
+| `app/(chef)/clients/gift-cards/gift-cards-client-shell.tsx`                | Interactive modals                                                                                                                          |
+| `app/(public)/chef/[slug]/gift-cards/page.tsx`                             | Public gift card store (server)                                                                                                             |
+| `app/(public)/chef/[slug]/gift-cards/gift-card-form.tsx`                   | Public gift card store (client form)                                                                                                        |
+| `app/(public)/chef/[slug]/gift-cards/success/page.tsx`                     | Post-purchase confirmation                                                                                                                  |
+| `app/(client)/my-events/[id]/pay/page.tsx`                                 | Payment page (server)                                                                                                                       |
+| `app/(client)/my-events/[id]/pay/payment-page-client.tsx`                  | Payment orchestrator (client)                                                                                                               |
+| `app/(client)/my-events/[id]/pay/payment-section.tsx`                      | Stripe PaymentIntent + form                                                                                                                 |
+| `app/(client)/my-rewards/page.tsx`                                         | Client's owned gift cards + vouchers                                                                                                        |
+| `components/incentives/redemption-code-input.tsx`                          | Code entry UI on payment page                                                                                                               |
+| `components/incentives/client-incentive-list.tsx`                          | Card-style incentive display                                                                                                                |
+| `components/incentives/issue-incentive-form.tsx`                           | Chef: create new code                                                                                                                       |
+| `components/incentives/send-incentive-form.tsx`                            | Chef: send code by email                                                                                                                    |
+| `components/incentives/incentive-redemption-history.tsx`                   | Chef: redemption audit log                                                                                                                  |
+| `lib/email/templates/gift-card-purchase-confirmation.tsx`                  | Buyer confirmation email                                                                                                                    |
+| `lib/email/templates/incentive-delivery.tsx`                               | Recipient delivery email                                                                                                                    |
 
 ---
 

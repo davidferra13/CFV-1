@@ -29,11 +29,13 @@ But none of these stop a direct SQL UPDATE, a service-role call, or a future ser
 **Rule:** If the event status is NOT `draft` or `proposed`, any attempt to change `quoted_price_cents`, `deposit_amount_cents`, or `pricing_model` raises an exception.
 
 **Why after `accepted`:** The moment a client accepts the proposal, they have agreed to specific pricing. Changing the price after that point would:
+
 - Break financial reconciliation against the ledger
 - Create a discrepancy between what the client agreed to and what was charged
 - Undermine trust in the audit trail
 
 **What is still allowed:**
+
 - Changing any other field on an accepted event (title, location, notes, status transitions, etc.)
 - Changing pricing during `draft` or `proposed` phases (normal workflow)
 
@@ -50,6 +52,7 @@ But none of these stop a direct SQL UPDATE, a service-role call, or a future ser
 **Why this matters:** An allergy field getting silently erased or changed after a client has confirmed an event is a food safety and legal liability. If a guest has a nut allergy that gets removed from the record, the chef has no warning. This trigger makes the schema comment a hard guarantee.
 
 **What is still allowed:**
+
 - Setting allergies during `draft` or `proposed` phases (normal workflow)
 - Adding allergies during `draft` or `proposed` if the client reports them before accepting
 
@@ -96,10 +99,10 @@ WHERE id = '<test-event-id>' AND status = 'accepted';
 
 This completes a set of three immutability guarantees in the database:
 
-| Data | Trigger | Added In |
-|------|---------|---------|
-| Ledger entries | `prevent_ledger_update` + `prevent_ledger_delete` | Layer 3 migration |
-| Event state transitions | `prevent_event_transition_update` + `_delete` | Layer 3 migration |
-| Quote state transitions | `prevent_quote_transition_update` + `_delete` | Layer 3 migration |
-| **Event pricing** | **`prevent_event_price_mutation_trigger`** | **This migration** |
-| **Event allergies** | **`prevent_event_allergy_mutation_trigger`** | **This migration** |
+| Data                    | Trigger                                           | Added In           |
+| ----------------------- | ------------------------------------------------- | ------------------ |
+| Ledger entries          | `prevent_ledger_update` + `prevent_ledger_delete` | Layer 3 migration  |
+| Event state transitions | `prevent_event_transition_update` + `_delete`     | Layer 3 migration  |
+| Quote state transitions | `prevent_quote_transition_update` + `_delete`     | Layer 3 migration  |
+| **Event pricing**       | **`prevent_event_price_mutation_trigger`**        | **This migration** |
+| **Event allergies**     | **`prevent_event_allergy_mutation_trigger`**      | **This migration** |

@@ -19,12 +19,14 @@ Part 1 created the infrastructure utilities (circuit breaker, retry/DLQ, realtim
 **File:** [lib/events/transitions.ts](lib/events/transitions.ts)
 
 **Before:** Two sequential Supabase calls inside `transitionEvent()`:
+
 1. `supabase.from('events').update({ status, updated_by, ... })`
 2. `supabase.from('event_state_transitions').insert({ ... })`
 
 A failure between step 1 and step 2 would leave the event in the new status with no audit record — inconsistent state, impossible to detect without manual inspection.
 
 **After:** Single atomic RPC call:
+
 ```typescript
 const { error: transitionError } = await (supabase as any).rpc('transition_event_atomic', {
   p_event_id: parsed.eventId,
@@ -49,10 +51,12 @@ The `transition_event_atomic()` Postgres function (defined in `supabase/migratio
 ### 2. Circuit Breakers — Stripe and Resend (#49)
 
 **Files modified:**
+
 - [lib/stripe/actions.ts](lib/stripe/actions.ts) — `createPaymentIntent()`
 - [lib/email/send.ts](lib/email/send.ts) — `sendEmail()`
 
 **Pattern applied:**
+
 ```typescript
 import { breakers } from '@/lib/resilience/circuit-breaker'
 
@@ -80,6 +84,7 @@ The Resend circuit breaker uses 5 failures / 60-second reset (email is less crit
 **Before:** Single bare `fetch()` call. A transient network error or 503 from the webhook consumer caused permanent failure with no retry.
 
 **After:**
+
 ```typescript
 import { withRetry, pushToDLQ, isTransientError } from '@/lib/resilience/retry'
 
@@ -105,26 +110,32 @@ After all retry attempts are exhausted (or on a non-transient failure), `pushToD
 ### 4. Realtime Status Sync — Event Detail Page (#46)
 
 **Files modified/created:**
+
 - [components/events/event-status-realtime-sync.tsx](components/events/event-status-realtime-sync.tsx) (CREATED)
-- [app/(chef)/events/[id]/page.tsx](app/(chef)/events/[id]/page.tsx) (MODIFIED)
+- [app/(chef)/events/[id]/page.tsx](<app/(chef)/events/[id]/page.tsx>) (MODIFIED)
 
 **Architecture constraint:** The event detail page is a server component (`async function EventDetailPage`). Server components cannot hold WebSocket subscriptions (they run once per request, then their execution context is gone).
 
 **Solution:** A zero-render client component:
+
 ```tsx
 // components/events/event-status-realtime-sync.tsx
 'use client'
 export function EventStatusRealtimeSync({ eventId }: { eventId: string }) {
   const router = useRouter()
-  const handleStatusChange = useCallback((newStatus: string) => {
-    router.refresh()  // Triggers a server-side re-render with fresh data
-  }, [eventId, router])
+  const handleStatusChange = useCallback(
+    (newStatus: string) => {
+      router.refresh() // Triggers a server-side re-render with fresh data
+    },
+    [eventId, router]
+  )
   useEventStatusSubscription(eventId, handleStatusChange)
-  return null  // Renders nothing — side-effect only
+  return null // Renders nothing — side-effect only
 }
 ```
 
 This component is added as the first child of the server page:
+
 ```tsx
 // app/(chef)/events/[id]/page.tsx
 return (
@@ -162,28 +173,28 @@ TypeScript confirmed clean after this fix (all remaining errors are pre-existing
 
 ## Files Changed Summary
 
-| File | Change |
-|------|--------|
-| `lib/events/transitions.ts` | Replaced 2 sequential writes with `rpc('transition_event_atomic')`, added Zod input validation |
-| `lib/stripe/actions.ts` | Wrapped `stripe.paymentIntents.create()` with `breakers.stripe.execute()` |
-| `lib/email/send.ts` | Wrapped `resend.emails.send()` with `breakers.resend.execute()` |
-| `lib/webhooks/deliver.ts` | Replaced bare `fetch()` with `withRetry()`, added `pushToDLQ()` on exhaustion |
-| `lib/validation/schemas.ts` | Fixed `result.error.errors` → `result.error.issues` (Zod v4) |
-| `components/events/event-status-realtime-sync.tsx` | New `'use client'` side-effect component for realtime status sync |
-| `app/(chef)/events/[id]/page.tsx` | Added `<EventStatusRealtimeSync eventId={params.id} />` |
+| File                                               | Change                                                                                         |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `lib/events/transitions.ts`                        | Replaced 2 sequential writes with `rpc('transition_event_atomic')`, added Zod input validation |
+| `lib/stripe/actions.ts`                            | Wrapped `stripe.paymentIntents.create()` with `breakers.stripe.execute()`                      |
+| `lib/email/send.ts`                                | Wrapped `resend.emails.send()` with `breakers.resend.execute()`                                |
+| `lib/webhooks/deliver.ts`                          | Replaced bare `fetch()` with `withRetry()`, added `pushToDLQ()` on exhaustion                  |
+| `lib/validation/schemas.ts`                        | Fixed `result.error.errors` → `result.error.issues` (Zod v4)                                   |
+| `components/events/event-status-realtime-sync.tsx` | New `'use client'` side-effect component for realtime status sync                              |
+| `app/(chef)/events/[id]/page.tsx`                  | Added `<EventStatusRealtimeSync eventId={params.id} />`                                        |
 
 ---
 
 ## Audit Items Closed
 
-| # | Concept | Status Change |
-|---|---------|---------------|
-| #14 | Transaction (atomic writes) | ⚠️ Partial → ✅ Implemented (for FSM transitions) |
-| #19 | Validation | ⚠️ Partial → ✅ Improved (schema wired at action entry) |
-| #46 | Realtime Subscriptions | ❌ Missing → ✅ Implemented (event detail page) |
-| #47 | Background Job Retry | ⚠️ Partial → ✅ Implemented (webhook delivery) |
-| #48 | Dead Letter Queue | ❌ Missing → ✅ Implemented (webhook delivery) |
-| #49 | Circuit Breaker | ❌ Missing → ✅ Implemented (Stripe, Resend) |
+| #   | Concept                     | Status Change                                           |
+| --- | --------------------------- | ------------------------------------------------------- |
+| #14 | Transaction (atomic writes) | ⚠️ Partial → ✅ Implemented (for FSM transitions)       |
+| #19 | Validation                  | ⚠️ Partial → ✅ Improved (schema wired at action entry) |
+| #46 | Realtime Subscriptions      | ❌ Missing → ✅ Implemented (event detail page)         |
+| #47 | Background Job Retry        | ⚠️ Partial → ✅ Implemented (webhook delivery)          |
+| #48 | Dead Letter Queue           | ❌ Missing → ✅ Implemented (webhook delivery)          |
+| #49 | Circuit Breaker             | ❌ Missing → ✅ Implemented (Stripe, Resend)            |
 
 ---
 
@@ -192,4 +203,3 @@ TypeScript confirmed clean after this fix (all remaining errors are pre-existing
 1. **Circuit breaker state is in-memory** — resets on cold start. Sufficient for single-instance protection; not sufficient for coordinating across concurrent Vercel instances. Future: back with Upstash Redis.
 2. **`types/database.ts` has no signature for `transition_event_atomic`** — requires `(supabase as any).rpc()` cast. Resolved by running `npx supabase gen types typescript --linked` after migration is applied.
 3. **No circuit breakers on `lib/stripe/checkout.ts` or `lib/stripe/refund.ts`** — these Stripe call sites exist but were not modified in this session. They should be wrapped in the same pattern when those files are next touched.
-

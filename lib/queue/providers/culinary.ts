@@ -17,15 +17,17 @@ export async function getCulinaryQueueItems(
   // 1. Draft menus attached to upcoming events
   const { data: draftMenus } = await supabase
     .from('menus')
-    .select(`
+    .select(
+      `
       id, name, status, event_id,
       event:events(id, occasion, event_date, status, client:clients(full_name))
-    `)
+    `
+    )
     .eq('tenant_id', tenantId)
     .eq('status', 'draft')
     .not('event_id', 'is', null)
 
-  for (const menu of (draftMenus || [])) {
+  for (const menu of draftMenus || []) {
     const event = menu.event as any
     if (!event || event.status === 'cancelled' || event.status === 'completed') continue
 

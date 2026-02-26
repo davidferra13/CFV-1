@@ -9,7 +9,7 @@ type QuoteExpiringProps = {
   clientName: string
   chefName: string
   occasion: string | null
-  validUntil: string    // pre-formatted date string
+  validUntil: string // pre-formatted date string
   totalFormatted: string // pre-formatted price string e.g. "$1,500.00"
   quoteId: string
   appUrl: string
@@ -49,14 +49,11 @@ export function QuoteExpiringEmail({
       </table>
 
       <Text style={paragraph}>
-        If you&apos;d like to move forward, review and accept the quote before it expires.
-        Once expired, you&apos;ll need to request a new one.
+        If you&apos;d like to move forward, review and accept the quote before it expires. Once
+        expired, you&apos;ll need to request a new one.
       </Text>
 
-      <Button
-        href={`${appUrl}/my-quotes/${quoteId}`}
-        style={ctaButton}
-      >
+      <Button href={`${appUrl}/my-quotes/${quoteId}`} style={ctaButton}>
         Review Quote →
       </Button>
 

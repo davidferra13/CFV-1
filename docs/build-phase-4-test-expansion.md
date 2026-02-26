@@ -12,37 +12,39 @@ Phase 4 closes the remaining route coverage gaps identified in a strict post-Pha
 
 ### Dead-Path Fixes (existing spec files)
 
-| File | Dead Path | Correct Path |
-|---|---|---|
-| `25-loyalty-program.spec.ts` | `/loyalty/rewards` (list) | `/clients/loyalty/rewards` |
-| `25-loyalty-program.spec.ts` | `/loyalty/rewards` (create) | `/loyalty/rewards/new` |
-| `25-loyalty-program.spec.ts` | `/settings/loyalty` | (removed — no page; added `/clients/loyalty`) |
-| `26-proposals-goals-partners.spec.ts` | `/proposals/new` | `/proposals/templates` + `/proposals/addons` |
-| `27-marketing-campaigns.spec.ts` | `/marketing/campaigns` | `/marketing` (hub; no campaigns sub-route) |
-| `28-waitlist-surveys-wix.spec.ts` | `/waitlist/new` | Add-entry form lives on `/waitlist` (modal/inline) |
+| File                                  | Dead Path                   | Correct Path                                       |
+| ------------------------------------- | --------------------------- | -------------------------------------------------- |
+| `25-loyalty-program.spec.ts`          | `/loyalty/rewards` (list)   | `/clients/loyalty/rewards`                         |
+| `25-loyalty-program.spec.ts`          | `/loyalty/rewards` (create) | `/loyalty/rewards/new`                             |
+| `25-loyalty-program.spec.ts`          | `/settings/loyalty`         | (removed — no page; added `/clients/loyalty`)      |
+| `26-proposals-goals-partners.spec.ts` | `/proposals/new`            | `/proposals/templates` + `/proposals/addons`       |
+| `27-marketing-campaigns.spec.ts`      | `/marketing/campaigns`      | `/marketing` (hub; no campaigns sub-route)         |
+| `28-waitlist-surveys-wix.spec.ts`     | `/waitlist/new`             | Add-entry form lives on `/waitlist` (modal/inline) |
 
 ### New Spec Files (8 files)
 
-| File | Routes Covered | Tests |
-|---|---|---|
-| `31-analytics-deep.spec.ts` | `/analytics/**` (6 routes) | ~22 |
-| `32-finance-deep.spec.ts` | `/finance/**` (50+ routes) | ~60 |
-| `33-culinary-deep.spec.ts` | `/culinary/**` (30+ routes) | ~40 |
-| `34-client-subsections.spec.ts` | `/clients/**` sub-sections (30+ routes) | ~45 |
-| `35-leads-calls-inbox.spec.ts` | `/leads/**`, `/calls/**`, `/inbox/**`, `/reviews`, `/travel` | ~30 |
-| `36-social-network-community.spec.ts` | `/social/**`, `/network/**`, `/community/**` | ~25 |
-| `37-admin-panel.spec.ts` | `/admin/**` (15 admin routes) | ~25 |
-| `38-partners-deep.spec.ts` | `/partners/**` sub-routes | ~20 |
+| File                                  | Routes Covered                                               | Tests |
+| ------------------------------------- | ------------------------------------------------------------ | ----- |
+| `31-analytics-deep.spec.ts`           | `/analytics/**` (6 routes)                                   | ~22   |
+| `32-finance-deep.spec.ts`             | `/finance/**` (50+ routes)                                   | ~60   |
+| `33-culinary-deep.spec.ts`            | `/culinary/**` (30+ routes)                                  | ~40   |
+| `34-client-subsections.spec.ts`       | `/clients/**` sub-sections (30+ routes)                      | ~45   |
+| `35-leads-calls-inbox.spec.ts`        | `/leads/**`, `/calls/**`, `/inbox/**`, `/reviews`, `/travel` | ~30   |
+| `36-social-network-community.spec.ts` | `/social/**`, `/network/**`, `/community/**`                 | ~25   |
+| `37-admin-panel.spec.ts`              | `/admin/**` (15 admin routes)                                | ~25   |
+| `38-partners-deep.spec.ts`            | `/partners/**` sub-routes                                    | ~20   |
 
 **Total new tests: ~267**
 
 ### Updated Config Files
 
 **`playwright.config.ts`**
+
 - Added Phase 4 spec files 31-38 to `interactions-chef` testMatch (except 37)
 - Added new `interactions-admin` project using `.auth/admin.json`
 
 **`package.json`**
+
 - Added `"test:interactions:admin": "npx playwright test --project=interactions-admin"`
 
 ---
@@ -51,55 +53,55 @@ Phase 4 closes the remaining route coverage gaps identified in a strict post-Pha
 
 After Phase 4, the following route categories now have behavioral interaction tests:
 
-| Category | Routes | Coverage |
-|---|---|---|
-| Analytics | 6 routes | ✅ Full behavioral tests |
-| Finance — overview | 4 routes | ✅ Full behavioral tests |
-| Finance — invoices | 7 routes (all statuses) | ✅ Full behavioral tests |
-| Finance — payments | 5 routes | ✅ Full behavioral tests |
-| Finance — payouts | 4 routes | ✅ Full behavioral tests |
-| Finance — ledger | 3 routes | ✅ Full behavioral tests |
-| Finance — expenses | 8 routes (all categories) | ✅ Full behavioral tests |
-| Finance — reporting | 9 routes | ✅ Full behavioral tests |
-| Finance — utilities | 8 routes (bank-feed, forecast, etc.) | ✅ Load tests |
-| Finance — tax | 3 routes | ✅ Full behavioral tests |
-| Culinary — hub + components | 7 routes | ✅ Full behavioral tests |
-| Culinary — costing | 4 routes | ✅ Full behavioral tests |
-| Culinary — ingredients | 3 routes | ✅ Full behavioral tests |
-| Culinary — menus | 7 routes | ✅ Full behavioral tests |
-| Culinary — prep | 3 routes | ✅ Full behavioral tests |
-| Culinary — recipes | 6 routes | ✅ Full behavioral tests |
-| Clients — status views | 7 routes | ✅ Full behavioral tests |
-| Clients — communication | 4 routes | ✅ Full behavioral tests |
-| Clients — history | 4 routes | ✅ Full behavioral tests |
-| Clients — insights | 4 routes | ✅ Full behavioral tests |
-| Clients — loyalty | 4 routes | ✅ Full behavioral tests |
-| Clients — preferences | 5 routes | ✅ Full behavioral tests |
-| Clients — recurring | 1 route | ✅ Full behavioral tests |
-| Leads pipeline | 6 routes | ✅ Full behavioral tests |
-| Calls | 3 routes | ✅ Full behavioral tests |
-| Inbox | 3 routes | ✅ Full behavioral tests |
-| Reviews | 1 route | ✅ Full behavioral tests |
-| Travel | 1 route | ✅ Full behavioral tests |
-| Social | 5 routes | ✅ Full behavioral tests |
-| Network | 3 routes | ✅ Full behavioral tests |
-| Community | 1 route | ✅ Full behavioral tests |
-| Admin | 15 routes | ✅ Full behavioral tests + security |
-| Partners — deep | 6 routes | ✅ Full behavioral tests |
+| Category                    | Routes                               | Coverage                            |
+| --------------------------- | ------------------------------------ | ----------------------------------- |
+| Analytics                   | 6 routes                             | ✅ Full behavioral tests            |
+| Finance — overview          | 4 routes                             | ✅ Full behavioral tests            |
+| Finance — invoices          | 7 routes (all statuses)              | ✅ Full behavioral tests            |
+| Finance — payments          | 5 routes                             | ✅ Full behavioral tests            |
+| Finance — payouts           | 4 routes                             | ✅ Full behavioral tests            |
+| Finance — ledger            | 3 routes                             | ✅ Full behavioral tests            |
+| Finance — expenses          | 8 routes (all categories)            | ✅ Full behavioral tests            |
+| Finance — reporting         | 9 routes                             | ✅ Full behavioral tests            |
+| Finance — utilities         | 8 routes (bank-feed, forecast, etc.) | ✅ Load tests                       |
+| Finance — tax               | 3 routes                             | ✅ Full behavioral tests            |
+| Culinary — hub + components | 7 routes                             | ✅ Full behavioral tests            |
+| Culinary — costing          | 4 routes                             | ✅ Full behavioral tests            |
+| Culinary — ingredients      | 3 routes                             | ✅ Full behavioral tests            |
+| Culinary — menus            | 7 routes                             | ✅ Full behavioral tests            |
+| Culinary — prep             | 3 routes                             | ✅ Full behavioral tests            |
+| Culinary — recipes          | 6 routes                             | ✅ Full behavioral tests            |
+| Clients — status views      | 7 routes                             | ✅ Full behavioral tests            |
+| Clients — communication     | 4 routes                             | ✅ Full behavioral tests            |
+| Clients — history           | 4 routes                             | ✅ Full behavioral tests            |
+| Clients — insights          | 4 routes                             | ✅ Full behavioral tests            |
+| Clients — loyalty           | 4 routes                             | ✅ Full behavioral tests            |
+| Clients — preferences       | 5 routes                             | ✅ Full behavioral tests            |
+| Clients — recurring         | 1 route                              | ✅ Full behavioral tests            |
+| Leads pipeline              | 6 routes                             | ✅ Full behavioral tests            |
+| Calls                       | 3 routes                             | ✅ Full behavioral tests            |
+| Inbox                       | 3 routes                             | ✅ Full behavioral tests            |
+| Reviews                     | 1 route                              | ✅ Full behavioral tests            |
+| Travel                      | 1 route                              | ✅ Full behavioral tests            |
+| Social                      | 5 routes                             | ✅ Full behavioral tests            |
+| Network                     | 3 routes                             | ✅ Full behavioral tests            |
+| Community                   | 1 route                              | ✅ Full behavioral tests            |
+| Admin                       | 15 routes                            | ✅ Full behavioral tests + security |
+| Partners — deep             | 6 routes                             | ✅ Full behavioral tests            |
 
 ---
 
 ## Test Count After Phase 4
 
-| Layer | Files | Tests (approx) |
-|---|---|---|
-| Smoke | 1 | 6 |
-| E2E | 17 | 127 |
-| Coverage | 6 | 377 |
-| Interactions Phase 1-2 | 20 | ~600 |
-| Interactions Phase 3 | 10 | ~156 |
-| Interactions Phase 4 | 8 | ~267 |
-| **Total** | **62 files** | **~1,533** |
+| Layer                  | Files        | Tests (approx) |
+| ---------------------- | ------------ | -------------- |
+| Smoke                  | 1            | 6              |
+| E2E                    | 17           | 127            |
+| Coverage               | 6            | 377            |
+| Interactions Phase 1-2 | 20           | ~600           |
+| Interactions Phase 3   | 10           | ~156           |
+| Interactions Phase 4   | 8            | ~267           |
+| **Total**              | **62 files** | **~1,533**     |
 
 ---
 
@@ -187,11 +189,11 @@ npm run test:report
 
 The following are intentionally out of scope for automated interaction testing:
 
-| Category | Reason |
-|---|---|
-| File upload flows | Requires real files; better tested in integration tests |
-| Stripe payment flows | Requires Stripe test mode; covered by Stripe's own test suite |
-| PDF content verification | Covered by export/report tests in file 16 |
-| Real-time presence/chat | Requires multiple concurrent sessions |
-| Email delivery | Requires email service integration |
-| Public chef profile (`/chef/[slug]/**`) | Covered by coverage layer; no auth required |
+| Category                                | Reason                                                        |
+| --------------------------------------- | ------------------------------------------------------------- |
+| File upload flows                       | Requires real files; better tested in integration tests       |
+| Stripe payment flows                    | Requires Stripe test mode; covered by Stripe's own test suite |
+| PDF content verification                | Covered by export/report tests in file 16                     |
+| Real-time presence/chat                 | Requires multiple concurrent sessions                         |
+| Email delivery                          | Requires email service integration                            |
+| Public chef profile (`/chef/[slug]/**`) | Covered by coverage layer; no auth required                   |

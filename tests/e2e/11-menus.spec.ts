@@ -34,7 +34,9 @@ test.describe('Menus', () => {
     await page.goto(`/menus/${seedIds.menuId}`)
     await page.waitForLoadState('networkidle')
     // Should show at least one of the seeded courses
-    await expect(page.getByText(/Amuse-Bouche|Main Course|Dessert/)).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText(/Amuse-Bouche|Main Course|Dessert/)).toBeVisible({
+      timeout: 10_000,
+    })
   })
 
   test('no unhandled error on menu detail', async ({ page, seedIds }) => {

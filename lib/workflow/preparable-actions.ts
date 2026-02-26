@@ -4,12 +4,7 @@
 // Input:  EventContext[]  (pre-fetched event data)
 // Output: DashboardWorkSurface (categorized, sorted work items)
 
-import type {
-  EventContext,
-  EventWorkSurface,
-  DashboardWorkSurface,
-  WorkItem
-} from './types'
+import type { EventContext, EventWorkSurface, DashboardWorkSurface, WorkItem } from './types'
 import { deriveConfirmedFacts } from './confirmed-facts'
 import { STAGE_EVALUATORS } from './stage-definitions'
 
@@ -31,7 +26,7 @@ export function getEventWorkSurface(ctx: EventContext): EventWorkSurface {
         clientName: ctx.event.client?.full_name ?? 'Unknown Client',
         status: ctx.event.status,
         facts,
-        items: []
+        items: [],
       }
     }
   }
@@ -50,7 +45,7 @@ export function getEventWorkSurface(ctx: EventContext): EventWorkSurface {
     clientName: ctx.event.client?.full_name ?? 'Unknown Client',
     status: ctx.event.status,
     facts,
-    items
+    items,
   }
 }
 
@@ -68,13 +63,13 @@ export function getEventWorkSurface(ctx: EventContext): EventWorkSurface {
 export function getPreparableActions(contexts: EventContext[]): DashboardWorkSurface {
   const byEvent: EventWorkSurface[] = contexts.map(getEventWorkSurface)
 
-  const allItems = byEvent.flatMap(e => e.items)
+  const allItems = byEvent.flatMap((e) => e.items)
 
   // Categorize
-  const blocked = allItems.filter(i => i.category === 'blocked')
-  const preparable = allItems.filter(i => i.category === 'preparable')
-  const optionalEarly = allItems.filter(i => i.category === 'optional_early')
-  const fragile = allItems.filter(i => i.urgency === 'fragile')
+  const blocked = allItems.filter((i) => i.category === 'blocked')
+  const preparable = allItems.filter((i) => i.category === 'preparable')
+  const optionalEarly = allItems.filter((i) => i.category === 'optional_early')
+  const fragile = allItems.filter((i) => i.urgency === 'fragile')
 
   // Sort each category: fragile first, then by event date (soonest first), then by stage number
   const sortItems = (items: WorkItem[]): WorkItem[] =>
@@ -99,10 +94,10 @@ export function getPreparableActions(contexts: EventContext[]): DashboardWorkSur
     fragile: sortItems(fragile),
     byEvent,
     summary: {
-      totalActiveEvents: byEvent.filter(e => !e.facts.isTerminal).length,
+      totalActiveEvents: byEvent.filter((e) => !e.facts.isTerminal).length,
       totalPreparableActions: preparable.length,
       totalBlockedActions: blocked.length,
-      totalFragileActions: fragile.length
-    }
+      totalFragileActions: fragile.length,
+    },
   }
 }

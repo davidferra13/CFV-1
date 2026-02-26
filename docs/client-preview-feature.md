@@ -14,14 +14,14 @@ Adds a `/settings/client-preview` page that lets chefs see exactly what their cl
 
 ## Files Changed
 
-| File | Status |
-|------|--------|
-| `lib/preview/client-portal-preview-actions.ts` | New |
-| `app/(chef)/settings/client-preview/page.tsx` | New |
-| `app/(chef)/settings/client-preview/client-preview-tabs.tsx` | New |
-| `app/(chef)/settings/client-preview/public-profile-preview.tsx` | New |
-| `app/(chef)/settings/client-preview/client-portal-preview.tsx` | New |
-| `app/(chef)/settings/page.tsx` | Modified — added "Client Preview" card in Profile & Branding section |
+| File                                                            | Status                                                               |
+| --------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `lib/preview/client-portal-preview-actions.ts`                  | New                                                                  |
+| `app/(chef)/settings/client-preview/page.tsx`                   | New                                                                  |
+| `app/(chef)/settings/client-preview/client-preview-tabs.tsx`    | New                                                                  |
+| `app/(chef)/settings/client-preview/public-profile-preview.tsx` | New                                                                  |
+| `app/(chef)/settings/client-preview/client-portal-preview.tsx`  | New                                                                  |
+| `app/(chef)/settings/page.tsx`                                  | Modified — added "Client Preview" card in Profile & Branding section |
 
 ## Security Model
 

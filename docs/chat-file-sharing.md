@@ -13,6 +13,7 @@ The chat system previously only supported image sharing (JPEG, PNG, WebP, HEIC).
 ## Why
 
 Clients and chefs need to share more than just photos. Common use cases:
+
 - Clients sending event contracts, guest lists (Excel/CSV), or venue layouts (PDF)
 - Chefs sharing menus (PDF/Word), cost breakdowns (Excel), or prep lists
 - Both parties sharing any reference documents relevant to events
@@ -45,6 +46,7 @@ Clients and chefs need to share more than just photos. Common use cases:
 ### Components
 
 **Created:** `components/chat/chat-file-upload.tsx`
+
 - Generalized upload component replacing the image-only uploader
 - Drag-and-drop support
 - Image preview for photos, file icon + metadata for documents
@@ -52,15 +54,18 @@ Clients and chefs need to share more than just photos. Common use cases:
 - Size-appropriate labels and validation
 
 **Modified:** `components/chat/chat-message-bubble.tsx`
+
 - Added `FileContent` renderer: displays file icon, filename, size, and download button
 - Download uses signed URLs (1-hour expiry, same as images)
 - Added helper functions: `getDocIcon()`, `formatBytes()`
 
 **Modified:** `components/chat/chat-input-bar.tsx`
+
 - Renamed `onSendImage` to `onAttach` (backward-compatible)
 - Updated button title to "Attach file"
 
 **Modified:** `components/chat/chat-view.tsx`
+
 - Replaced `ChatImageUpload` with `ChatFileUpload`
 - Updated state/handlers: `showFileUpload`, `handleSendFile`
 - Uses new `sendFileMessage` action
@@ -68,6 +73,7 @@ Clients and chefs need to share more than just photos. Common use cases:
 ## How It Connects
 
 This is the foundation for the full messaging enhancement epic:
+
 - **Phase 1 (this):** File sharing
 - **Phase 2:** Client messaging UX (Message Chef button, quick replies, read receipts)
 - **Phase 3:** Chef quick notes
@@ -78,11 +84,11 @@ All files go through the same `chat-attachments` Supabase Storage bucket with te
 
 ## Supported File Types
 
-| Type | Extensions | Max Size |
-|------|-----------|----------|
-| Images | JPEG, PNG, WebP, HEIC | 10MB |
-| PDF | .pdf | 25MB |
-| Word | .doc, .docx | 25MB |
-| Excel | .xls, .xlsx | 25MB |
-| CSV | .csv | 25MB |
-| Text | .txt | 25MB |
+| Type   | Extensions            | Max Size |
+| ------ | --------------------- | -------- |
+| Images | JPEG, PNG, WebP, HEIC | 10MB     |
+| PDF    | .pdf                  | 25MB     |
+| Word   | .doc, .docx           | 25MB     |
+| Excel  | .xls, .xlsx           | 25MB     |
+| CSV    | .csv                  | 25MB     |
+| Text   | .txt                  | 25MB     |

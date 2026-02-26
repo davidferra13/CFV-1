@@ -32,16 +32,16 @@ The `event_surveys` table has a `UNIQUE(event_id)` constraint. If `createSurveyF
 
 ### Survey Questions
 
-| Field | Type | Required |
-|---|---|---|
-| `overall_rating` | 1–5 stars | Yes |
-| `food_quality_rating` | 1–5 stars | No |
-| `communication_rating` | 1–5 stars | No |
-| `value_rating` | 1–5 stars | No |
-| `would_book_again` | yes / no / maybe | No |
-| `highlight_text` | textarea | No |
-| `suggestions_text` | textarea | No |
-| `testimonial_consent` | checkbox | No |
+| Field                  | Type             | Required |
+| ---------------------- | ---------------- | -------- |
+| `overall_rating`       | 1–5 stars        | Yes      |
+| `food_quality_rating`  | 1–5 stars        | No       |
+| `communication_rating` | 1–5 stars        | No       |
+| `value_rating`         | 1–5 stars        | No       |
+| `would_book_again`     | yes / no / maybe | No       |
+| `highlight_text`       | textarea         | No       |
+| `suggestions_text`     | textarea         | No       |
+| `testimonial_consent`  | checkbox         | No       |
 
 ### Token Security
 
@@ -72,17 +72,17 @@ A survey failure never blocks or rolls back the event transition itself.
 
 ## Key Files
 
-| File | Role |
-|---|---|
-| `app/survey/[token]/page.tsx` | Server component — loads survey by token, shows form or thank-you |
-| `app/survey/[token]/survey-form.tsx` | `'use client'` survey form with star ratings |
-| `app/(chef)/surveys/page.tsx` | Chef dashboard: all responses with computed averages |
-| `lib/surveys/actions.ts` | `createSurveyForEvent`, `getSurveyByToken`, `submitSurvey`, `getChefSurveys`, `sendClientSurvey` |
-| `lib/surveys/survey-utils.ts` | Pure types (`ChefSurveyRow`, `SurveyStats`) + `computeSurveyStats()` |
-| `lib/email/templates/post-event-survey.tsx` | React Email template |
-| `lib/email/notifications.ts` | `sendPostEventSurveyEmail()` added |
-| `lib/events/transitions.ts` | Non-blocking survey hook on `completed` transition |
-| `supabase/migrations/20260303000022_event_surveys.sql` | Creates `event_surveys` table, indexes, RLS |
+| File                                                   | Role                                                                                             |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| `app/survey/[token]/page.tsx`                          | Server component — loads survey by token, shows form or thank-you                                |
+| `app/survey/[token]/survey-form.tsx`                   | `'use client'` survey form with star ratings                                                     |
+| `app/(chef)/surveys/page.tsx`                          | Chef dashboard: all responses with computed averages                                             |
+| `lib/surveys/actions.ts`                               | `createSurveyForEvent`, `getSurveyByToken`, `submitSurvey`, `getChefSurveys`, `sendClientSurvey` |
+| `lib/surveys/survey-utils.ts`                          | Pure types (`ChefSurveyRow`, `SurveyStats`) + `computeSurveyStats()`                             |
+| `lib/email/templates/post-event-survey.tsx`            | React Email template                                                                             |
+| `lib/email/notifications.ts`                           | `sendPostEventSurveyEmail()` added                                                               |
+| `lib/events/transitions.ts`                            | Non-blocking survey hook on `completed` transition                                               |
+| `supabase/migrations/20260303000022_event_surveys.sql` | Creates `event_surveys` table, indexes, RLS                                                      |
 
 ## Database
 

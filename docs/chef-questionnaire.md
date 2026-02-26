@@ -19,7 +19,7 @@ This survey has 10 sections and takes approximately 25–35 minutes to complete 
    - [ ] Meal prep / weekly cook
    - [ ] Corporate events
    - [ ] Weddings or large milestones
-   - [ ] Other: ******\_\_\_******
+   - [ ] Other: **\*\***\_\_\_**\*\***
 
 4. What's your typical event size in number of guests?
 
@@ -133,7 +133,7 @@ This survey has 10 sections and takes approximately 25–35 minutes to complete 
     - [ ] Day of the event (before service)
     - [ ] Day of the event (after service)
     - [ ] After the event (invoice sent later)
-    - [ ] Other: ******\_\_\_******
+    - [ ] Other: **\*\***\_\_\_**\*\***
 
 43. Do you use formal invoices, or is it more informal (Venmo, Zelle, cash, etc.)?
 

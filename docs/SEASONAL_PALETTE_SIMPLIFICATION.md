@@ -18,30 +18,30 @@ The seasonal palette feature was over-engineered with pretentious naming and unn
 
 ## Files Changed
 
-| File | Change |
-|---|---|
-| `lib/seasonal/types.ts` | Made `name` and `urgency` optional on `MicroWindow` for backward compatibility |
-| `lib/seasonal/actions.ts` | Added `deactivateAllSeasons()`, removed auto-detect from `getActivePalette()`, relaxed validation for simplified fields |
-| `components/settings/seasonal-palette-form.tsx` | Removed season name/date/active inputs, renamed all sections, simplified ingredient entry |
-| `components/settings/seasonal-palette-list.tsx` | Removed custom season creation, added opt-in/opt-out status bar with "Turn Off" button, cleaned up labels |
-| `components/seasonal/seasonal-banner.tsx` | Removed "The Vibe:" label, removed urgency-based red styling, uses `ingredient` for dedup |
-| `components/seasonal/seasonal-sidebar.tsx` | Renamed "Peak Ingredients" → "What's In Season", "Best Dishes" → "Go-To Dishes", cleaned up empty states |
-| `app/(chef)/settings/repertoire/page.tsx` | Updated page description to plain English |
-| `app/(chef)/settings/repertoire/[id]/page.tsx` | Updated page description to plain English |
+| File                                            | Change                                                                                                                  |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `lib/seasonal/types.ts`                         | Made `name` and `urgency` optional on `MicroWindow` for backward compatibility                                          |
+| `lib/seasonal/actions.ts`                       | Added `deactivateAllSeasons()`, removed auto-detect from `getActivePalette()`, relaxed validation for simplified fields |
+| `components/settings/seasonal-palette-form.tsx` | Removed season name/date/active inputs, renamed all sections, simplified ingredient entry                               |
+| `components/settings/seasonal-palette-list.tsx` | Removed custom season creation, added opt-in/opt-out status bar with "Turn Off" button, cleaned up labels               |
+| `components/seasonal/seasonal-banner.tsx`       | Removed "The Vibe:" label, removed urgency-based red styling, uses `ingredient` for dedup                               |
+| `components/seasonal/seasonal-sidebar.tsx`      | Renamed "Peak Ingredients" → "What's In Season", "Best Dishes" → "Go-To Dishes", cleaned up empty states                |
+| `app/(chef)/settings/repertoire/page.tsx`       | Updated page description to plain English                                                                               |
+| `app/(chef)/settings/repertoire/[id]/page.tsx`  | Updated page description to plain English                                                                               |
 
 ## Before → After Labels
 
-| Before | After |
-|---|---|
-| Sensory Anchor | Season Notes |
-| The Vibe | *(removed — just shows the notes)* |
-| Micro-Windows | Seasonal Ingredients |
-| Peak Ingredients | What's In Season |
-| Proven Wins | Go-To Dishes |
-| Best Dishes | Go-To Dishes |
-| "Break-glass-in-case-of-emergency dishes" | "Reliable dishes that work great in [season]" |
+| Before                                        | After                                                                               |
+| --------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Sensory Anchor                                | Season Notes                                                                        |
+| The Vibe                                      | _(removed — just shows the notes)_                                                  |
+| Micro-Windows                                 | Seasonal Ingredients                                                                |
+| Peak Ingredients                              | What's In Season                                                                    |
+| Proven Wins                                   | Go-To Dishes                                                                        |
+| Best Dishes                                   | Go-To Dishes                                                                        |
+| "Break-glass-in-case-of-emergency dishes"     | "Reliable dishes that work great in [season]"                                       |
 | "Define your creative thesis for each season" | "Keep track of what's available each season so you can plan menus without guessing" |
-| "Define the culinary and operational reality" | "Add your notes, seasonal ingredients, and go-to dishes" |
+| "Define the culinary and operational reality" | "Add your notes, seasonal ingredients, and go-to dishes"                            |
 
 ## Opt-In / Opt-Out
 

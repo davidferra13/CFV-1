@@ -1,11 +1,6 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { OPS_AUTONOMY_LEVEL } from '@/lib/features'
-import type {
-  CopilotPlan,
-  CopilotRecommendation,
-  CopilotRunResult,
-  CopilotSeverity,
-} from './types'
+import type { CopilotPlan, CopilotRecommendation, CopilotRunResult, CopilotSeverity } from './types'
 
 function clampConfidence(value: number): number {
   if (value < 0) return 0
@@ -100,9 +95,7 @@ async function fetchOpsSignals(tenantId: string) {
   // Payment risk: outstanding + event inside 7 days.
   const paymentRisk = [] as Array<{ eventId: string; outstanding: number }>
   if ((paymentRiskEvents || []).length > 0) {
-    const eventIds = paymentRiskEvents
-      .map((x: any) => x.event_id)
-      .filter(Boolean)
+    const eventIds = paymentRiskEvents.map((x: any) => x.event_id).filter(Boolean)
 
     if (eventIds.length > 0) {
       const { data: nearEvents } = await supabase
@@ -135,7 +128,10 @@ async function fetchOpsSignals(tenantId: string) {
   }
 }
 
-function buildPlan(tenantId: string, signals: Awaited<ReturnType<typeof fetchOpsSignals>>): CopilotPlan {
+function buildPlan(
+  tenantId: string,
+  signals: Awaited<ReturnType<typeof fetchOpsSignals>>
+): CopilotPlan {
   const alerts: CopilotRecommendation[] = []
   const recommendedActions: CopilotRecommendation[] = []
   const safeAutoActions: CopilotRecommendation[] = []

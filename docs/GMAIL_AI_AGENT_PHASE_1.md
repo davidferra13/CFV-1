@@ -46,27 +46,27 @@ Each message is processed independently with try/catch. One failed email does no
 
 ## Files Created
 
-| File | Purpose |
-|------|---------|
+| File                                                 | Purpose                                                      |
+| ---------------------------------------------------- | ------------------------------------------------------------ |
 | `supabase/migrations/20260218000001_gmail_agent.sql` | google_connections + gmail_sync_log tables, messages columns |
-| `lib/gmail/types.ts` | TypeScript interfaces |
-| `lib/gmail/google-auth.ts` | OAuth connect, token refresh, disconnect |
-| `lib/gmail/client.ts` | Gmail API wrapper (list, get, parse MIME) |
-| `lib/gmail/classify.ts` | Gemini email classification |
-| `lib/gmail/sync.ts` | Core sync engine |
-| `lib/gmail/actions.ts` | Server actions for UI |
-| `app/api/auth/google/connect/callback/route.ts` | OAuth callback handler |
-| `app/api/gmail/sync/route.ts` | Cron-compatible sync endpoint |
-| `components/settings/connected-accounts.tsx` | Gmail connection UI |
+| `lib/gmail/types.ts`                                 | TypeScript interfaces                                        |
+| `lib/gmail/google-auth.ts`                           | OAuth connect, token refresh, disconnect                     |
+| `lib/gmail/client.ts`                                | Gmail API wrapper (list, get, parse MIME)                    |
+| `lib/gmail/classify.ts`                              | Gemini email classification                                  |
+| `lib/gmail/sync.ts`                                  | Core sync engine                                             |
+| `lib/gmail/actions.ts`                               | Server actions for UI                                        |
+| `app/api/auth/google/connect/callback/route.ts`      | OAuth callback handler                                       |
+| `app/api/gmail/sync/route.ts`                        | Cron-compatible sync endpoint                                |
+| `components/settings/connected-accounts.tsx`         | Gmail connection UI                                          |
 
 ## Files Modified
 
-| File | Change |
-|------|--------|
-| `app/(chef)/settings/page.tsx` | Added Connected Accounts section |
-| `middleware.ts` | Allow `/api/auth` and `/api/gmail` paths |
-| `.env.local.example` | Added `CRON_SECRET` variable |
-| `package.json` | Added `googleapis` dependency |
+| File                           | Change                                   |
+| ------------------------------ | ---------------------------------------- |
+| `app/(chef)/settings/page.tsx` | Added Connected Accounts section         |
+| `middleware.ts`                | Allow `/api/auth` and `/api/gmail` paths |
+| `.env.local.example`           | Added `CRON_SECRET` variable             |
+| `package.json`                 | Added `googleapis` dependency            |
 
 ## Existing Code Reused
 
@@ -78,12 +78,15 @@ Each message is processed independently with try/catch. One failed email does no
 ## Database Changes
 
 ### New: `google_connections`
+
 One row per chef. Stores OAuth tokens, service flags (gmail/calendar), sync state (history_id, last_sync_at, error count).
 
 ### New: `gmail_sync_log`
+
 Audit trail for every email processed. Records classification, confidence, action taken, and links to created inquiry/message records.
 
 ### Altered: `messages`
+
 Added `gmail_message_id` and `gmail_thread_id` columns with a unique dedup index.
 
 ## Setup Prerequisites

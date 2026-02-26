@@ -8,11 +8,11 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 
 export interface CashFlowDay {
-  date: string           // YYYY-MM-DD
-  incomeCents: number    // Payments actually received
-  outgoingCents: number  // Expenses logged on that date
-  eventCount: number     // Number of events on that date
-  installmentsDueCents: number  // Payment plan installments due (unpaid)
+  date: string // YYYY-MM-DD
+  incomeCents: number // Payments actually received
+  outgoingCents: number // Expenses logged on that date
+  eventCount: number // Number of events on that date
+  installmentsDueCents: number // Payment plan installments due (unpaid)
 }
 
 export interface CashFlowCalendarData {
@@ -80,7 +80,13 @@ export async function getCashFlowCalendar(
 
   function getOrCreate(date: string): CashFlowDay {
     if (!dayMap.has(date)) {
-      dayMap.set(date, { date, incomeCents: 0, outgoingCents: 0, eventCount: 0, installmentsDueCents: 0 })
+      dayMap.set(date, {
+        date,
+        incomeCents: 0,
+        outgoingCents: 0,
+        eventCount: 0,
+        installmentsDueCents: 0,
+      })
     }
     return dayMap.get(date)!
   }

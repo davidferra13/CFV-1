@@ -10,7 +10,7 @@ type Props = {
   clientName: string
   clientEmail: string
   occasion: string
-  eventDate: string      // Already formatted
+  eventDate: string // Already formatted
   guestCount: number
   depositFormatted: string
   totalFormatted: string
@@ -89,16 +89,33 @@ export function InstantBookingChefEmail({
       </div>
 
       <Text style={muted}>
-        The event is in paid status. Review the details and confirm when ready.
-        The remaining balance of {totalFormatted} minus {depositFormatted} will be collected before the event.
+        The event is in paid status. Review the details and confirm when ready. The remaining
+        balance of {totalFormatted} minus {depositFormatted} will be collected before the event.
       </Text>
     </BaseLayout>
   )
 }
 
-const heading = { fontSize: '24px', fontWeight: '600' as const, color: '#18181b', margin: '0 0 16px' }
+const heading = {
+  fontSize: '24px',
+  fontWeight: '600' as const,
+  color: '#18181b',
+  margin: '0 0 16px',
+}
 const paragraph = { fontSize: '15px', lineHeight: '1.6', color: '#374151', margin: '0 0 16px' }
 const detailsTable = { width: '100%', marginBottom: '24px', borderCollapse: 'collapse' as const }
-const detailLabel = { fontSize: '13px', color: '#6b7280', padding: '8px 0', borderBottom: '1px solid #f3f4f6', width: '140px' }
-const detailValue = { fontSize: '15px', fontWeight: '600' as const, color: '#18181b', padding: '8px 0', borderBottom: '1px solid #f3f4f6' }
+const detailLabel = {
+  fontSize: '13px',
+  color: '#6b7280',
+  padding: '8px 0',
+  borderBottom: '1px solid #f3f4f6',
+  width: '140px',
+}
+const detailValue = {
+  fontSize: '15px',
+  fontWeight: '600' as const,
+  color: '#18181b',
+  padding: '8px 0',
+  borderBottom: '1px solid #f3f4f6',
+}
 const muted = { fontSize: '13px', color: '#9ca3af', margin: '0' }

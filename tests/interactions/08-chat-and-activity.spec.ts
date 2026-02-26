@@ -13,7 +13,7 @@ import { test, expect } from '../helpers/fixtures'
 test.describe('Chat — Inbox', () => {
   test('Chat inbox loads without error', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/chat')
     await page.waitForLoadState('networkidle')
@@ -32,7 +32,9 @@ test.describe('Chat — Inbox', () => {
   test('Chat inbox has "New Conversation" button or similar', async ({ page }) => {
     await page.goto('/chat')
     await page.waitForLoadState('networkidle')
-    const newConvBtn = page.getByRole('button', { name: /new conversation|new message|compose|start/i }).first()
+    const newConvBtn = page
+      .getByRole('button', { name: /new conversation|new message|compose|start/i })
+      .first()
       .or(page.getByRole('link', { name: /new conversation|compose/i }).first())
     const isVisible = await newConvBtn.isVisible().catch(() => false)
     // Not a hard requirement — inbox may be empty
@@ -57,7 +59,9 @@ test.describe('Chat — Individual Conversation', () => {
     await page.goto(`/chat/${seedIds.clientIds.primary}`)
     await page.waitForLoadState('networkidle')
     // Should have a text input for composing messages
-    const messageInput = page.locator('textarea, input[type="text"][placeholder*="message" i], [contenteditable]').first()
+    const messageInput = page
+      .locator('textarea, input[type="text"][placeholder*="message" i], [contenteditable]')
+      .first()
     await expect(messageInput).toBeVisible({ timeout: 10_000 })
   })
 
@@ -70,7 +74,7 @@ test.describe('Chat — Individual Conversation', () => {
 
   test('Chat can type a message without crashing', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/chat/${seedIds.clientIds.primary}`)
     await page.waitForLoadState('networkidle')
@@ -84,9 +88,12 @@ test.describe('Chat — Individual Conversation', () => {
     expect(errors).toHaveLength(0)
   })
 
-  test('Chat does not crash on send (may be limited to seeded chat history)', async ({ page, seedIds }) => {
+  test('Chat does not crash on send (may be limited to seeded chat history)', async ({
+    page,
+    seedIds,
+  }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/chat/${seedIds.clientIds.primary}`)
     await page.waitForLoadState('networkidle')
@@ -128,7 +135,9 @@ test.describe('Activity Feed', () => {
     await page.goto('/activity')
     await page.waitForLoadState('networkidle')
     // Look for 7 days, 30 days, all-time, or similar filter
-    const filterEl = page.getByRole('button', { name: /7 day|30 day|all time|today|week|month/i }).first()
+    const filterEl = page
+      .getByRole('button', { name: /7 day|30 day|all time|today|week|month/i })
+      .first()
       .or(page.getByRole('tab').first())
     const isVisible = await filterEl.isVisible().catch(() => false)
     if (isVisible) {
@@ -143,7 +152,7 @@ test.describe('Activity Feed', () => {
 
   test('Activity page does not crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/activity')
     await page.waitForLoadState('networkidle')
@@ -170,7 +179,7 @@ test.describe('Queue / Priority Inbox', () => {
 
   test('Queue does not crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/queue')
     await page.waitForLoadState('networkidle')

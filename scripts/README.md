@@ -20,6 +20,7 @@ Verifies all tables, enums, functions, triggers, and views exist.
 ### 2. RLS (Multi-Tenant Isolation) Verification
 
 Proves that:
+
 - Chef A cannot access Chef B's data
 - Client A1 cannot access Client A2's events
 - Service role can bypass RLS for webhooks
@@ -30,6 +31,7 @@ Proves that:
 ```
 
 **Expected Output**:
+
 - TEST 1 PASS ✓: Chef A cannot see Chef B events
 - TEST 2 PASS ✓: Client A1 cannot see Client A2 events
 - TEST 3 PASS ✓: Service role sees all events
@@ -39,6 +41,7 @@ Proves that:
 ### 3. Immutability Verification
 
 Proves that:
+
 - UPDATE on `ledger_entries` is blocked
 - DELETE on `ledger_entries` is blocked
 - UPDATE on `event_transitions` is blocked
@@ -51,6 +54,7 @@ Proves that:
 ```
 
 **Expected Output**:
+
 - TEST 1 PASS ✓: UPDATE on ledger_entries blocked
 - TEST 2 PASS ✓: DELETE on ledger_entries blocked
 - TEST 3 PASS ✓: UPDATE on event_transitions blocked
@@ -97,5 +101,6 @@ Ensure you're running the scripts as service role in Supabase SQL Editor.
 ### Migration scripts show errors
 
 Verify migrations were applied in order:
+
 1. `20260213000001_initial_schema.sql`
 2. `20260213000002_rls_policies.sql`

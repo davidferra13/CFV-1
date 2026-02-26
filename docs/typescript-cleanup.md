@@ -36,10 +36,12 @@ An unescaped apostrophe in a single-quoted string caused a parse error at build 
 The project's `Button` component only accepts: `"primary" | "secondary" | "danger" | "ghost"`. Several files used `"outline"` (shadcn/ui convention) and one used `"destructive"` (also shadcn/ui).
 
 **Mapping applied:**
+
 - `"outline"` → `"secondary"`
 - `"destructive"` → `"danger"`
 
 **Files fixed:**
+
 - `app/(chef)/events/[id]/page.tsx`
 - `app/(client)/my-events/[id]/contract/contract-signing-client.tsx`
 - `app/(client)/my-events/[id]/approve-menu/menu-approval-client.tsx`

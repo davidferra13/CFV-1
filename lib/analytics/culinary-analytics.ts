@@ -8,16 +8,21 @@ import { createServerClient } from '@/lib/supabase/server'
 export interface RecipeUsageStats {
   totalRecipes: number
   recipesUsedInEvents: number
-  recipeReuseRate: number          // % used in 2+ events
+  recipeReuseRate: number // % used in 2+ events
   avgTimesCooked: number
   neverCookedCount: number
-  topRecipes: Array<{ id: string; name: string; timesCookedCount: number; lastCookedAt: string | null }>
+  topRecipes: Array<{
+    id: string
+    name: string
+    timesCookedCount: number
+    lastCookedAt: string | null
+  }>
 }
 
 export interface DishPerformanceStats {
   newDishesThisMonth: number
   newDishesThisYear: number
-  menuModificationRate: number    // % of sent menus that had revision_notes
+  menuModificationRate: number // % of sent menus that had revision_notes
   avgDishesSentPerMenu: number
 }
 
@@ -60,18 +65,19 @@ export async function getRecipeUsageStats(): Promise<RecipeUsageStats> {
 
   const all = recipes ?? []
   const total = all.length
-  const neverCooked = all.filter(r => (r.times_cooked ?? 0) === 0).length
-  const usedInEvents = all.filter(r => (r.times_cooked ?? 0) > 0).length
-  const usedMultiple = all.filter(r => (r.times_cooked ?? 0) >= 2).length
+  const neverCooked = all.filter((r) => (r.times_cooked ?? 0) === 0).length
+  const usedInEvents = all.filter((r) => (r.times_cooked ?? 0) > 0).length
+  const usedMultiple = all.filter((r) => (r.times_cooked ?? 0) >= 2).length
 
-  const avgCookedCount = usedInEvents > 0
-    ? Math.round(all.reduce((s, r) => s + (r.times_cooked ?? 0), 0) / usedInEvents * 10) / 10
-    : 0
+  const avgCookedCount =
+    usedInEvents > 0
+      ? Math.round((all.reduce((s, r) => s + (r.times_cooked ?? 0), 0) / usedInEvents) * 10) / 10
+      : 0
 
   const topRecipes = all
-    .filter(r => (r.times_cooked ?? 0) > 0)
+    .filter((r) => (r.times_cooked ?? 0) > 0)
     .slice(0, 10)
-    .map(r => ({
+    .map((r) => ({
       id: r.id,
       name: r.name,
       timesCookedCount: r.times_cooked ?? 0,
@@ -116,8 +122,8 @@ export async function getDishPerformanceStats(): Promise<DishPerformanceStats> {
     .eq('chef_id', chef.id)
     .not('sent_at', 'is', null)
 
-  const totalSent = (approvals ?? []).filter(a => a.sent_at).length
-  const withRevisions = (approvals ?? []).filter(a => a.revision_notes).length
+  const totalSent = (approvals ?? []).filter((a) => a.sent_at).length
+  const withRevisions = (approvals ?? []).filter((a) => a.revision_notes).length
 
   // Avg dishes per sent menu
   const { data: menus } = await supabase
@@ -127,21 +133,21 @@ export async function getDishPerformanceStats(): Promise<DishPerformanceStats> {
     .not('status', 'eq', 'draft')
     .not('event_id', 'is', null)
 
-  const menuIds = (menus ?? []).map(m => m.id)
+  const menuIds = (menus ?? []).map((m) => m.id)
   let avgDishes = 0
 
   if (menuIds.length > 0) {
-    const { data: dishes } = await supabase
-      .from('dishes')
-      .select('menu_id')
-      .in('menu_id', menuIds)
+    const { data: dishes } = await supabase.from('dishes').select('menu_id').in('menu_id', menuIds)
 
     const dishCountPerMenu = new Map<string, number>()
     for (const d of dishes ?? []) {
       dishCountPerMenu.set(d.menu_id, (dishCountPerMenu.get(d.menu_id) ?? 0) + 1)
     }
     const counts = Array.from(dishCountPerMenu.values())
-    avgDishes = counts.length > 0 ? Math.round(counts.reduce((a, b) => a + b, 0) / counts.length * 10) / 10 : 0
+    avgDishes =
+      counts.length > 0
+        ? Math.round((counts.reduce((a, b) => a + b, 0) / counts.length) * 10) / 10
+        : 0
   }
 
   return {
@@ -164,21 +170,19 @@ export async function getIngredientCostStats(): Promise<IngredientCostStats> {
     .order('last_price_cents', { ascending: false, nullsFirst: false })
 
   const all = ingredients ?? []
-  const withPricing = all.filter(i => i.last_price_cents != null)
+  const withPricing = all.filter((i) => i.last_price_cents != null)
 
-  const mostExpensive = withPricing
-    .slice(0, 5)
-    .map(i => ({
-      name: i.name,
-      lastPriceCents: i.last_price_cents!,
-      unit: i.price_unit ?? '',
-    }))
+  const mostExpensive = withPricing.slice(0, 5).map((i) => ({
+    name: i.name,
+    lastPriceCents: i.last_price_cents!,
+    unit: i.price_unit ?? '',
+  }))
 
   const recentlyUpdated = [...withPricing]
-    .filter(i => i.last_price_date)
+    .filter((i) => i.last_price_date)
     .sort((a, b) => (b.last_price_date ?? '').localeCompare(a.last_price_date ?? ''))
     .slice(0, 5)
-    .map(i => ({
+    .map((i) => ({
       name: i.name,
       lastPriceCents: i.last_price_cents!,
       lastPriceDate: i.last_price_date!,
@@ -205,18 +209,22 @@ export async function getMenuApprovalStats(): Promise<MenuApprovalStats> {
 
   const all = data ?? []
   const total = all.length
-  const approved = all.filter(a => a.status === 'approved').length
-  const revisionReq = all.filter(a => a.status === 'revision_requested').length
-  const pending = all.filter(a => a.status === 'sent').length
+  const approved = all.filter((a) => a.status === 'approved').length
+  const revisionReq = all.filter((a) => a.status === 'revision_requested').length
+  const pending = all.filter((a) => a.status === 'sent').length
 
   const responseTimes = all
-    .filter(a => a.sent_at && a.responded_at)
-    .map(a => (new Date(a.responded_at!).getTime() - new Date(a.sent_at!).getTime()) / (1000 * 60 * 60))
-    .filter(h => h >= 0)
+    .filter((a) => a.sent_at && a.responded_at)
+    .map(
+      (a) =>
+        (new Date(a.responded_at!).getTime() - new Date(a.sent_at!).getTime()) / (1000 * 60 * 60)
+    )
+    .filter((h) => h >= 0)
 
-  const avgResponseHours = responseTimes.length > 0
-    ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length * 10) / 10
-    : 0
+  const avgResponseHours =
+    responseTimes.length > 0
+      ? Math.round((responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length) * 10) / 10
+      : 0
 
   return {
     totalSent: total,

@@ -1,8 +1,8 @@
-import React from 'react';
+import React from 'react'
 
 export type AllergenTagsProps = {
-  allergens: string[];
-};
+  allergens: string[]
+}
 
 const AllergenTags: React.FC<AllergenTagsProps> = ({ allergens }) => {
   return (
@@ -16,7 +16,7 @@ const AllergenTags: React.FC<AllergenTagsProps> = ({ allergens }) => {
         )}
       </ul>
     </div>
-  );
-};
+  )
+}
 
-export default AllergenTags;
+export default AllergenTags

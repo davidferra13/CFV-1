@@ -24,26 +24,26 @@ export interface ConfirmedFacts {
   hasGuestCount: boolean
 
   // Stage 2 — Qualification
-  hasServeTimeWindow: boolean   // serve_time is set
-  hasMenuDirection: boolean     // at least one menu attached
+  hasServeTimeWindow: boolean // serve_time is set
+  hasMenuDirection: boolean // at least one menu attached
 
   // Stage 3 — Menu Development
-  hasMenuAttached: boolean      // menus linked via menus.event_id
-  hasMenuWithDishes: boolean    // attached menu has dishes (relational)
-  menuGravityStable: boolean    // status >= proposed (menu shape unlikely to change)
+  hasMenuAttached: boolean // menus linked via menus.event_id
+  hasMenuWithDishes: boolean // attached menu has dishes (relational)
+  menuGravityStable: boolean // status >= proposed (menu shape unlikely to change)
 
   // Stage 4 — Quote
-  hasPricing: boolean           // quoted_price_cents > 0
-  hasDepositDefined: boolean    // deposit_amount_cents > 0
+  hasPricing: boolean // quoted_price_cents > 0
+  hasDepositDefined: boolean // deposit_amount_cents > 0
 
   // Stage 5 — Financial Commitment
-  depositReceived: boolean      // payment_status != 'unpaid'
-  fullyPaid: boolean            // payment_status == 'paid'
-  isLegallyActionable: boolean  // deposit received OR status >= paid
+  depositReceived: boolean // payment_status != 'unpaid'
+  fullyPaid: boolean // payment_status == 'paid'
+  isLegallyActionable: boolean // deposit received OR status >= paid
 
   // Stage 6–9 — Operational readiness
-  guestCountStable: boolean     // status >= accepted (client agreed)
-  eventConfirmed: boolean       // status >= confirmed
+  guestCountStable: boolean // status >= accepted (client agreed)
+  eventConfirmed: boolean // status >= confirmed
 
   // Timeline & Travel
   dateWithin7Days: boolean
@@ -55,7 +55,7 @@ export interface ConfirmedFacts {
   // Lifecycle terminals
   isCancelled: boolean
   isCompleted: boolean
-  isTerminal: boolean           // cancelled OR completed
+  isTerminal: boolean // cancelled OR completed
 }
 
 // ============================================
@@ -89,38 +89,38 @@ export type WorkStage =
  * Classification of a work item based on confirmed facts.
  */
 export type WorkCategory =
-  | 'blocked'           // Depends on unconfirmed facts
-  | 'preparable'        // Can be safely done now
-  | 'optional_early'    // Reduces future stress, not required yet
+  | 'blocked' // Depends on unconfirmed facts
+  | 'preparable' // Can be safely done now
+  | 'optional_early' // Reduces future stress, not required yet
 
 /**
  * Urgency level — drives dashboard ordering and visual treatment.
  */
 export type WorkUrgency =
-  | 'fragile'           // Will cause stacking if delayed
-  | 'normal'            // Standard preparable work
-  | 'low'               // Optional / nice to have now
+  | 'fragile' // Will cause stacking if delayed
+  | 'normal' // Standard preparable work
+  | 'low' // Optional / nice to have now
 
 /**
  * A single actionable work item surfaced by the engine.
  */
 export interface WorkItem {
-  id: string                    // Deterministic: `${eventId}:${stage}:${key}`
+  id: string // Deterministic: `${eventId}:${stage}:${key}`
   eventId: string
   eventOccasion: string
-  eventDate: string             // ISO 8601
+  eventDate: string // ISO 8601
   clientName: string
 
   stage: WorkStage
-  stageNumber: number           // 1–17
-  stageLabel: string            // Human-readable stage name
+  stageNumber: number // 1–17
+  stageLabel: string // Human-readable stage name
 
   category: WorkCategory
   urgency: WorkUrgency
 
-  title: string                 // What needs to happen
-  description: string           // Why it matters right now
-  blockedBy?: string            // If blocked, what fact is missing
+  title: string // What needs to happen
+  description: string // Why it matters right now
+  blockedBy?: string // If blocked, what fact is missing
 }
 
 // ============================================
@@ -182,7 +182,7 @@ export interface DashboardWorkSurface {
   blocked: WorkItem[]
   preparable: WorkItem[]
   optionalEarly: WorkItem[]
-  fragile: WorkItem[]           // Subset of preparable that is urgency=fragile
+  fragile: WorkItem[] // Subset of preparable that is urgency=fragile
   byEvent: EventWorkSurface[]
   summary: {
     totalActiveEvents: number

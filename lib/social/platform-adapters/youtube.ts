@@ -40,8 +40,8 @@ function buildAuthUrl(state: string): string {
     response_type: 'code',
     scope: YT_SCOPES,
     state,
-    access_type: 'offline',   // request refresh token
-    prompt: 'consent',        // ensure refresh token is issued even on re-auth
+    access_type: 'offline', // request refresh token
+    prompt: 'consent', // ensure refresh token is issued even on re-auth
   })
   return `${GOOGLE_AUTH_URL}?${params}`
 }

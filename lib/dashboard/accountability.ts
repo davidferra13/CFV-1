@@ -15,7 +15,7 @@ export type OverdueFollowUpEvent = {
   occasion: string | null
   clientName: string
   clientId: string
-  completedAt: string    // ISO date string
+  completedAt: string // ISO date string
   hoursOverdue: number
 }
 
@@ -24,7 +24,7 @@ export type WeeklyAccountabilityStats = {
   followUpsSentThisWeek: number
   receiptsUploadedThisWeek: number
   overdueFollowUps: number
-  closedOnTimeCount: number  // events financially closed within 48h
+  closedOnTimeCount: number // events financially closed within 48h
 }
 
 /**
@@ -53,7 +53,7 @@ export async function getOverdueFollowUps(limit = 5): Promise<OverdueFollowUpEve
   if (!events || events.length === 0) return []
 
   const now = new Date()
-  return events.map(e => {
+  return events.map((e) => {
     const client = Array.isArray(e.client) ? e.client[0] : e.client
     const completedAt = e.updated_at ?? e.event_date
     const hrs = Math.floor((now.getTime() - new Date(completedAt).getTime()) / (1000 * 60 * 60))
@@ -90,15 +90,18 @@ export async function getWeeklyAccountabilityStats(): Promise<WeeklyAccountabili
     .gte('updated_at', weekStartStr)
 
   const eventsCompletedThisWeek = completedEvents?.length ?? 0
-  const followUpsSentThisWeek = completedEvents?.filter(e => e.follow_up_sent).length ?? 0
-  const closedOnTimeCount = completedEvents?.filter(e => {
-    if (!e.financial_closed || !e.financial_closed_at || !e.updated_at) return false
-    const closeHrs = (new Date(e.financial_closed_at).getTime() - new Date(e.updated_at).getTime()) / (1000 * 60 * 60)
-    return Math.abs(closeHrs) <= 48
-  }).length ?? 0
+  const followUpsSentThisWeek = completedEvents?.filter((e) => e.follow_up_sent).length ?? 0
+  const closedOnTimeCount =
+    completedEvents?.filter((e) => {
+      if (!e.financial_closed || !e.financial_closed_at || !e.updated_at) return false
+      const closeHrs =
+        (new Date(e.financial_closed_at).getTime() - new Date(e.updated_at).getTime()) /
+        (1000 * 60 * 60)
+      return Math.abs(closeHrs) <= 48
+    }).length ?? 0
 
   // Receipts uploaded this week (expenses with receipt_uploaded = true)
-  const eventIds = completedEvents?.map(e => e.id) ?? []
+  const eventIds = completedEvents?.map((e) => e.id) ?? []
   let receiptsUploadedThisWeek = 0
   if (eventIds.length > 0) {
     const { count } = await supabase

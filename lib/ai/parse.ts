@@ -30,7 +30,7 @@ function extractJsonPayload(rawText: string): string {
 }
 
 function formatZodIssues(error: z.ZodError): string {
-  return error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ')
+  return error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')
 }
 
 /**
@@ -53,7 +53,9 @@ export async function parseWithAI<T>(
 ): Promise<T> {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
-    throw new Error('GEMINI_API_KEY is not configured. Set it in your .env.local file to enable smart import.')
+    throw new Error(
+      'GEMINI_API_KEY is not configured. Set it in your .env.local file to enable smart import.'
+    )
   }
 
   const ai = new GoogleGenAI({ apiKey })

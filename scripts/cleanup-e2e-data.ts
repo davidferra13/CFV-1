@@ -25,7 +25,7 @@ async function main() {
   if (process.env.SUPABASE_E2E_ALLOW_REMOTE !== 'true') {
     throw new Error(
       'Set SUPABASE_E2E_ALLOW_REMOTE=true in .env.local to run cleanup.\n' +
-      'This guard prevents accidental deletion on non-test environments.'
+        'This guard prevents accidental deletion on non-test environments.'
     )
   }
 

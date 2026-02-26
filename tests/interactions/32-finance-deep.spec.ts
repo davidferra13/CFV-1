@@ -42,7 +42,7 @@ test.describe('Finance — Overview', () => {
 
   test('/finance/overview — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/finance/overview')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -97,7 +97,7 @@ test.describe('Finance — Invoices', () => {
 
   test('/finance/invoices — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/finance/invoices')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -125,7 +125,7 @@ test.describe('Finance — Payments', () => {
 
   test('/finance/payments — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/finance/payments')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -152,7 +152,7 @@ test.describe('Finance — Payouts', () => {
 
   test('/finance/payouts — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/finance/payouts')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -177,7 +177,7 @@ test.describe('Finance — Ledger', () => {
 
   test('/finance/ledger — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/finance/ledger')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -227,7 +227,7 @@ test.describe('Finance — Expenses', () => {
 
   test('/finance/expenses — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/finance/expenses')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -259,7 +259,7 @@ test.describe('Finance — Reporting', () => {
 
   test('/finance/reporting — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/finance/reporting')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -297,7 +297,7 @@ test.describe('Finance — Utilities', () => {
 
   test('/finance/forecast — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/finance/forecast')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -327,7 +327,7 @@ test.describe('Finance — Tax', () => {
 
   test('/finance/tax — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/finance/tax')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)

@@ -21,6 +21,7 @@ ChefFlow's FSM transitions currently use **direct, sequential calls** to side ef
 10. `awardEventPoints()` — loyalty points (on complete)
 
 **Problems with this approach:**
+
 - Adding a new side effect requires modifying `transitionEvent()` directly
 - 10+ sequential async operations slow the response path
 - If one fails (even wrapped in try-catch), it blocks everything after it
@@ -47,13 +48,13 @@ All domain events follow this shape:
 
 ```typescript
 interface DomainEvent<T = Record<string, unknown>> {
-  id: string             // UUID — unique per event instance
-  type: DomainEventType  // e.g. 'event.status_changed'
-  aggregateType: string  // e.g. 'event', 'inquiry', 'client'
-  aggregateId: string    // UUID of the entity this event is about
-  tenantId: string       // Chef tenant ID
-  occurredAt: string     // ISO timestamp
-  payload: T             // Event-specific data
+  id: string // UUID — unique per event instance
+  type: DomainEventType // e.g. 'event.status_changed'
+  aggregateType: string // e.g. 'event', 'inquiry', 'client'
+  aggregateId: string // UUID of the entity this event is about
+  tenantId: string // Chef tenant ID
+  occurredAt: string // ISO timestamp
+  payload: T // Event-specific data
   source: 'user' | 'system' | 'webhook'
   actorId: string | null // User ID who caused this (null for system)
 }
@@ -61,18 +62,18 @@ interface DomainEvent<T = Record<string, unknown>> {
 
 ### Domain Event Types
 
-| Type | Trigger | Payload |
-|------|---------|---------|
-| `event.status_changed` | FSM transition | `{ from, to, eventId, occasion, clientId }` |
-| `event.created` | New event created | `{ eventId, occasion, clientId }` |
-| `event.completed` | `in_progress → completed` | `{ eventId, totalRevenueCents }` |
-| `event.cancelled` | Any → cancelled | `{ eventId, reason, initiatedBy }` |
-| `inquiry.received` | New inquiry submitted | `{ inquiryId, clientId, source }` |
-| `quote.sent` | Quote sent to client | `{ quoteId, eventId, totalCents }` |
-| `quote.accepted` | Client accepts quote | `{ quoteId, eventId, clientId }` |
-| `payment.received` | Stripe payment confirmed | `{ eventId, amountCents, transactionRef }` |
-| `client.created` | New client added | `{ clientId, tenantId }` |
-| `menu.approved` | Client approves menu | `{ menuId, eventId }` |
+| Type                   | Trigger                   | Payload                                     |
+| ---------------------- | ------------------------- | ------------------------------------------- |
+| `event.status_changed` | FSM transition            | `{ from, to, eventId, occasion, clientId }` |
+| `event.created`        | New event created         | `{ eventId, occasion, clientId }`           |
+| `event.completed`      | `in_progress → completed` | `{ eventId, totalRevenueCents }`            |
+| `event.cancelled`      | Any → cancelled           | `{ eventId, reason, initiatedBy }`          |
+| `inquiry.received`     | New inquiry submitted     | `{ inquiryId, clientId, source }`           |
+| `quote.sent`           | Quote sent to client      | `{ quoteId, eventId, totalCents }`          |
+| `quote.accepted`       | Client accepts quote      | `{ quoteId, eventId, clientId }`            |
+| `payment.received`     | Stripe payment confirmed  | `{ eventId, amountCents, transactionRef }`  |
+| `client.created`       | New client added          | `{ clientId, tenantId }`                    |
+| `menu.approved`        | Client approves menu      | `{ menuId, eventId }`                       |
 
 ---
 
@@ -95,11 +96,12 @@ export function subscribe<T>(type: string, handler: EventHandler<T>) {
 
 export async function emit<T>(event: DomainEvent<T>): Promise<void> {
   const list = handlers.get(event.type) ?? []
-  await Promise.allSettled(list.map(h => h(event as DomainEvent<unknown>)))
+  await Promise.allSettled(list.map((h) => h(event as DomainEvent<unknown>)))
 }
 ```
 
 Side effects register themselves at module init:
+
 ```typescript
 // lib/notifications/subscribe.ts
 import { subscribe } from '@/lib/events/event-bus'
@@ -184,4 +186,4 @@ Subscribers are registered once at module init and handle their own failure/retr
 
 ---
 
-*Last updated: 2026-02-20*
+_Last updated: 2026-02-20_

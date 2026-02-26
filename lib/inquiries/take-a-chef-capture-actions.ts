@@ -51,7 +51,9 @@ export type TakeAChefCaptureResult = {
 
 // ─── Server Action ────────────────────────────────────────────────────────
 
-export async function captureTakeAChefBooking(input: TakeAChefCaptureInput): Promise<TakeAChefCaptureResult> {
+export async function captureTakeAChefBooking(
+  input: TakeAChefCaptureInput
+): Promise<TakeAChefCaptureResult> {
   const user = await requireChef()
   const validated = TakeAChefCaptureSchema.parse(input)
   const supabase = createServerClient()
@@ -73,9 +75,7 @@ export async function captureTakeAChefBooking(input: TakeAChefCaptureInput): Pro
       validated.dietary_restrictions?.trim()
         ? `Dietary restrictions: ${validated.dietary_restrictions.trim()}`
         : null,
-      validated.additional_notes?.trim()
-        ? `Notes: ${validated.additional_notes.trim()}`
-        : null,
+      validated.additional_notes?.trim() ? `Notes: ${validated.additional_notes.trim()}` : null,
     ].filter(Boolean)
     const sourceMessage = sourceParts.join('\n')
 
@@ -173,7 +173,10 @@ export async function captureTakeAChefBooking(input: TakeAChefCaptureInput): Pro
       .single()
 
     if (eventError || !event) {
-      console.error('[captureTakeAChefBooking] Event creation failed (non-fatal):', eventError?.message)
+      console.error(
+        '[captureTakeAChefBooking] Event creation failed (non-fatal):',
+        eventError?.message
+      )
       revalidatePath('/inquiries')
       return {
         success: true,
@@ -220,7 +223,8 @@ export async function captureTakeAChefBooking(input: TakeAChefCaptureInput): Pro
           payment_method: 'other' as const,
           expense_date: validated.event_date,
           vendor_name: 'Take a Chef',
-          notes: 'Logged from Take a Chef booking capture. Represents platform commission taken from chef payout.',
+          notes:
+            'Logged from Take a Chef booking capture. Represents platform commission taken from chef payout.',
           is_business: true,
         })
         .select('id')
@@ -326,16 +330,10 @@ export async function getTakeAChefConversionData(
     if (!isTakeAChef) return empty
 
     // Fetch chef slug for the direct booking link
-    const { data: chef } = await supabase
-      .from('chefs')
-      .select('slug')
-      .eq('id', tenantId)
-      .single()
+    const { data: chef } = await supabase.from('chefs').select('slug').eq('id', tenantId).single()
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
-    const directBookingUrl = chef?.slug
-      ? `${appUrl}/chef/${chef.slug}/inquire`
-      : null
+    const directBookingUrl = chef?.slug ? `${appUrl}/chef/${chef.slug}/inquire` : null
 
     return {
       isTakeAChef: true,

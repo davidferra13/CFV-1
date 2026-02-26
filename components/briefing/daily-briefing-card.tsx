@@ -54,15 +54,11 @@ export function DailyBriefingCard({ briefing: initialBriefing }: Props) {
         <CardContent className="py-8">
           <div className="text-center">
             <Sun className="h-8 w-8 text-stone-300 mx-auto mb-3" />
-            <p className="text-sm font-medium text-stone-700 mb-1">
-              No briefing for today yet
-            </p>
+            <p className="text-sm font-medium text-stone-700 mb-1">No briefing for today yet</p>
             <p className="text-xs text-stone-500 mb-4">
               Generate your morning summary to see events, tasks, and revenue at a glance.
             </p>
-            {error && (
-              <p className="text-xs text-red-600 mb-3">{error}</p>
-            )}
+            {error && <p className="text-xs text-red-600 mb-3">{error}</p>}
             <Button
               variant="primary"
               size="sm"
@@ -110,9 +106,7 @@ export function DailyBriefingCard({ briefing: initialBriefing }: Props) {
       </CardHeader>
 
       <CardContent className="space-y-5">
-        {error && (
-          <p className="text-xs text-red-600">{error}</p>
-        )}
+        {error && <p className="text-xs text-red-600">{error}</p>}
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -131,7 +125,9 @@ export function DailyBriefingCard({ briefing: initialBriefing }: Props) {
               <CheckSquare className="h-3.5 w-3.5 text-stone-400" />
               <span className="text-xs text-stone-500">Tasks Due</span>
             </div>
-            <p className={`text-2xl font-bold ${tasksDue.length > 0 ? 'text-amber-600' : 'text-stone-900'}`}>
+            <p
+              className={`text-2xl font-bold ${tasksDue.length > 0 ? 'text-amber-600' : 'text-stone-900'}`}
+            >
               {tasksDue.length}
             </p>
           </div>
@@ -153,7 +149,9 @@ export function DailyBriefingCard({ briefing: initialBriefing }: Props) {
               <Clock className="h-3.5 w-3.5 text-stone-400" />
               <span className="text-xs text-stone-500">Deadlines</span>
             </div>
-            <p className={`text-2xl font-bold ${upcomingDeadlines.length > 3 ? 'text-red-600' : 'text-stone-900'}`}>
+            <p
+              className={`text-2xl font-bold ${upcomingDeadlines.length > 3 ? 'text-red-600' : 'text-stone-900'}`}
+            >
               {upcomingDeadlines.length}
             </p>
           </div>
@@ -209,12 +207,18 @@ export function DailyBriefingCard({ briefing: initialBriefing }: Props) {
                     <p className="text-sm text-stone-700 truncate">
                       {deadline.deadlineType}
                       <span className="text-stone-400"> — </span>
-                      <span className="text-stone-500">
-                        {deadline.occasion ?? 'Event'}
-                      </span>
+                      <span className="text-stone-500">{deadline.occasion ?? 'Event'}</span>
                     </p>
                   </div>
-                  <Badge variant={deadline.daysUntil <= 1 ? 'error' : deadline.daysUntil <= 3 ? 'warning' : 'default'}>
+                  <Badge
+                    variant={
+                      deadline.daysUntil <= 1
+                        ? 'error'
+                        : deadline.daysUntil <= 3
+                          ? 'warning'
+                          : 'default'
+                    }
+                  >
                     {deadline.daysUntil === 1 ? 'Tomorrow' : `${deadline.daysUntil}d`}
                   </Badge>
                 </Link>
@@ -231,7 +235,9 @@ export function DailyBriefingCard({ briefing: initialBriefing }: Props) {
         {/* All-clear message */}
         {eventsToday.length === 0 && tasksDue.length === 0 && upcomingDeadlines.length === 0 && (
           <div className="text-center py-2">
-            <p className="text-sm text-stone-500">Nothing urgent today. Plan ahead or take a breather.</p>
+            <p className="text-sm text-stone-500">
+              Nothing urgent today. Plan ahead or take a breather.
+            </p>
           </div>
         )}
       </CardContent>

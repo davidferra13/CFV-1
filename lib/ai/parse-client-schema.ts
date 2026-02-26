@@ -19,27 +19,45 @@ export const ParsedClientSchema = z.object({
     spice_tolerance: z.enum(['none', 'mild', 'medium', 'hot', 'very_hot']).nullable().default(null),
     favorite_cuisines: z.array(z.string()).default([]),
     favorite_dishes: z.array(z.string()).default([]),
-    preferred_contact_method: z.enum(['phone', 'email', 'text', 'instagram']).nullable().default(null),
-    referral_source: z.enum(['take_a_chef', 'instagram', 'referral', 'website', 'phone', 'email', 'other']).nullable().default(null),
+    preferred_contact_method: z
+      .enum(['phone', 'email', 'text', 'instagram'])
+      .nullable()
+      .default(null),
+    referral_source: z
+      .enum(['take_a_chef', 'instagram', 'referral', 'website', 'phone', 'email', 'other'])
+      .nullable()
+      .default(null),
     referral_source_detail: z.string().nullable().default(null),
-    regular_guests: z.array(z.object({
-      name: z.string(),
-      relationship: z.string().default(''),
-      notes: z.string().default('')
-    })).default([]),
-    household_members: z.array(z.object({
-      name: z.string(),
-      relationship: z.string().default(''),
-      notes: z.string().default('')
-    })).default([]),
-    addresses: z.array(z.object({
-      label: z.string().default(''),
-      address: z.string(),
-      city: z.string().default(''),
-      state: z.string().default(''),
-      zip: z.string().default(''),
-      notes: z.string().default('')
-    })).default([]),
+    regular_guests: z
+      .array(
+        z.object({
+          name: z.string(),
+          relationship: z.string().default(''),
+          notes: z.string().default(''),
+        })
+      )
+      .default([]),
+    household_members: z
+      .array(
+        z.object({
+          name: z.string(),
+          relationship: z.string().default(''),
+          notes: z.string().default(''),
+        })
+      )
+      .default([]),
+    addresses: z
+      .array(
+        z.object({
+          label: z.string().default(''),
+          address: z.string(),
+          city: z.string().default(''),
+          state: z.string().default(''),
+          zip: z.string().default(''),
+          notes: z.string().default(''),
+        })
+      )
+      .default([]),
     parking_instructions: z.string().nullable().default(null),
     access_instructions: z.string().nullable().default(null),
     kitchen_size: z.string().nullable().default(null),
@@ -60,7 +78,7 @@ export const ParsedClientSchema = z.object({
     field_confidence: z.record(z.string(), FieldConfidenceSchema).default({}),
   }),
   confidence: z.enum(['high', 'medium', 'low']),
-  warnings: z.array(z.string()).default([])
+  warnings: z.array(z.string()).default([]),
 })
 
 export type ParsedClient = z.infer<typeof ParsedClientSchema>['parsed']

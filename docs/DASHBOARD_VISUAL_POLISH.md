@@ -8,15 +8,15 @@ This was a visual-only polish pass on the chef dashboard. No data fetching, serv
 
 ### Color System Migration
 
-| Before | After | Reason |
-|--------|-------|--------|
-| `gray-*` (all shades) | `stone-*` | Stone is the project's neutral palette -- warmer and calmer than default gray |
-| `blue-600`, `blue-700` | `brand-600`, `brand-700` | Unifies accent color under the brand token so it can be themed from one place |
-| `text-blue-600` links | `text-brand-600` links | Same brand unification |
-| `border-blue-200` | `border-brand-200` | Today's schedule card now uses brand accent border |
-| `amber-*` (inquiry alert, compressed timeline) | **kept as-is** | Amber is already warm and semantically correct for warnings/alerts |
-| `red-100`/`red-700` (closure badges) | **kept as-is** | Red signals urgency for items needing action |
-| `green-600` (improving trend) | **kept as-is** | Green is semantically correct for positive trends |
+| Before                                         | After                    | Reason                                                                        |
+| ---------------------------------------------- | ------------------------ | ----------------------------------------------------------------------------- |
+| `gray-*` (all shades)                          | `stone-*`                | Stone is the project's neutral palette -- warmer and calmer than default gray |
+| `blue-600`, `blue-700`                         | `brand-600`, `brand-700` | Unifies accent color under the brand token so it can be themed from one place |
+| `text-blue-600` links                          | `text-brand-600` links   | Same brand unification                                                        |
+| `border-blue-200`                              | `border-brand-200`       | Today's schedule card now uses brand accent border                            |
+| `amber-*` (inquiry alert, compressed timeline) | **kept as-is**           | Amber is already warm and semantically correct for warnings/alerts            |
+| `red-100`/`red-700` (closure badges)           | **kept as-is**           | Red signals urgency for items needing action                                  |
+| `green-600` (improving trend)                  | **kept as-is**           | Green is semantically correct for positive trends                             |
 
 ### Border Radius Updates
 
@@ -28,18 +28,19 @@ This was a visual-only polish pass on the chef dashboard. No data fetching, serv
 ### Lucide Icons Added
 
 New import:
+
 ```ts
 import { Plus, ArrowRight, TrendingUp, TrendingDown, Minus, AlertCircle } from 'lucide-react'
 ```
 
-| Icon | Where Used |
-|------|-----------|
-| `Plus` | "New Event" button (replaces the `+` text character) |
-| `ArrowRight` | "Full Schedule", "View Pipeline", and all bottom card links (Inquiries Pipeline, Clients Manage, Revenue Details) |
-| `TrendingUp` | AAR trend indicator when direction is `improving` |
-| `TrendingDown` | AAR trend indicator when direction is `declining` |
-| `Minus` | AAR trend indicator when direction is `neutral` |
-| `AlertCircle` | Inquiry alert banner, leading the alert text |
+| Icon           | Where Used                                                                                                        |
+| -------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `Plus`         | "New Event" button (replaces the `+` text character)                                                              |
+| `ArrowRight`   | "Full Schedule", "View Pipeline", and all bottom card links (Inquiries Pipeline, Clients Manage, Revenue Details) |
+| `TrendingUp`   | AAR trend indicator when direction is `improving`                                                                 |
+| `TrendingDown` | AAR trend indicator when direction is `declining`                                                                 |
+| `Minus`        | AAR trend indicator when direction is `neutral`                                                                   |
+| `AlertCircle`  | Inquiry alert banner, leading the alert text                                                                      |
 
 ### Empty State Added
 

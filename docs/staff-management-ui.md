@@ -51,13 +51,13 @@ Three summary cards (current month labor, labor ratio with target badge, all-tim
 
 ## Server Actions Used
 
-| Component | Actions |
-|-----------|---------|
+| Component         | Actions                                                 |
+| ----------------- | ------------------------------------------------------- |
 | availability-grid | `setAvailability` from `lib/staff/availability-actions` |
-| clock-panel | `clockIn`, `clockOut` from `lib/staff/clock-actions` |
-| performance-board | Read-only (scores passed as props) |
-| labor-dashboard | Read-only (data passed as props) |
-| drag-schedule | `assignStaffToEvent` from `lib/staff/actions` |
+| clock-panel       | `clockIn`, `clockOut` from `lib/staff/clock-actions`    |
+| performance-board | Read-only (scores passed as props)                      |
+| labor-dashboard   | Read-only (data passed as props)                        |
+| drag-schedule     | `assignStaffToEvent` from `lib/staff/actions`           |
 
 ## TypeScript Status
 

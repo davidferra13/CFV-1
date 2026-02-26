@@ -16,10 +16,7 @@ import type {
   SocialQueueSettings,
   SocialQueueSummary,
 } from './types'
-import {
-  SOCIAL_PILLAR_TARGETS,
-  SOCIAL_PLATFORM_WINDOWS,
-} from './types'
+import { SOCIAL_PILLAR_TARGETS, SOCIAL_PLATFORM_WINDOWS } from './types'
 
 const DEFAULT_TIMEZONE = 'America/New_York'
 const SOCIAL_MEDIA_BUCKET = 'social-media-vault'
@@ -38,16 +35,21 @@ const ALLOWED_SOCIAL_ASSET_TYPES = [
 const DEFAULT_QUEUE_DAYS = [1, 2, 3, 4, 5]
 const DEFAULT_QUEUE_TIMES = ['11:00', '13:00', '11:00', '13:00', '11:00']
 
-const QueueSettingsSchema = z.object({
-  target_year: z.number().int().min(2020).max(2100),
-  posts_per_week: z.number().int().min(1).max(7).default(5),
-  timezone: z.string().min(2).max(64).default(DEFAULT_TIMEZONE),
-  queue_days: z.array(z.number().int().min(1).max(7)).min(1).max(7),
-  queue_times: z.array(z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/)).min(1).max(7),
-  holdout_slots_per_month: z.number().int().min(0).max(10).default(2),
-}).refine((value) => value.queue_days.length === value.queue_times.length, {
-  message: 'Queue days and queue times must have equal length.',
-})
+const QueueSettingsSchema = z
+  .object({
+    target_year: z.number().int().min(2020).max(2100),
+    posts_per_week: z.number().int().min(1).max(7).default(5),
+    timezone: z.string().min(2).max(64).default(DEFAULT_TIMEZONE),
+    queue_days: z.array(z.number().int().min(1).max(7)).min(1).max(7),
+    queue_times: z
+      .array(z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/))
+      .min(1)
+      .max(7),
+    holdout_slots_per_month: z.number().int().min(0).max(10).default(2),
+  })
+  .refine((value) => value.queue_days.length === value.queue_times.length, {
+    message: 'Queue days and queue times must have equal length.',
+  })
 
 const GenerateAnnualPlanSchema = QueueSettingsSchema.extend({
   force_regenerate: z.boolean().default(false),
@@ -57,7 +59,9 @@ const GenerateAnnualPlanSchema = QueueSettingsSchema.extend({
 
 const UpdatePostSchema = z.object({
   status: z.enum(['idea', 'draft', 'approved', 'queued', 'published', 'archived']).optional(),
-  pillar: z.enum(['recipe', 'behind_scenes', 'education', 'social_proof', 'offers', 'seasonal']).optional(),
+  pillar: z
+    .enum(['recipe', 'behind_scenes', 'education', 'social_proof', 'offers', 'seasonal'])
+    .optional(),
   media_type: z.enum(['image', 'video', 'carousel', 'text']).optional(),
   title: z.string().max(140).optional(),
   caption_master: z.string().optional(),
@@ -84,13 +88,33 @@ const UpdatePostSchema = z.object({
   hot_swap_ready: z.boolean().optional(),
   notes: z.string().optional(),
   editable_until: z.string().nullable().optional(),
-  platforms: z.array(z.enum(['instagram', 'facebook', 'tiktok', 'linkedin', 'x', 'pinterest', 'youtube_shorts'])).optional(),
-  queued_to_platforms: z.array(z.enum(['instagram', 'facebook', 'tiktok', 'linkedin', 'x', 'pinterest', 'youtube_shorts'])).optional(),
-  published_to_platforms: z.array(z.enum(['instagram', 'facebook', 'tiktok', 'linkedin', 'x', 'pinterest', 'youtube_shorts'])).optional(),
+  platforms: z
+    .array(
+      z.enum(['instagram', 'facebook', 'tiktok', 'linkedin', 'x', 'pinterest', 'youtube_shorts'])
+    )
+    .optional(),
+  queued_to_platforms: z
+    .array(
+      z.enum(['instagram', 'facebook', 'tiktok', 'linkedin', 'x', 'pinterest', 'youtube_shorts'])
+    )
+    .optional(),
+  published_to_platforms: z
+    .array(
+      z.enum(['instagram', 'facebook', 'tiktok', 'linkedin', 'x', 'pinterest', 'youtube_shorts'])
+    )
+    .optional(),
 })
 
 const PlatformExportSchema = z.object({
-  platform: z.enum(['instagram', 'facebook', 'tiktok', 'linkedin', 'x', 'pinterest', 'youtube_shorts']),
+  platform: z.enum([
+    'instagram',
+    'facebook',
+    'tiktok',
+    'linkedin',
+    'x',
+    'pinterest',
+    'youtube_shorts',
+  ]),
 })
 
 const HotSwapSchema = z.object({
@@ -120,8 +144,22 @@ type QueueSettingsInput = z.infer<typeof QueueSettingsSchema>
 type AnnualGenerationInput = z.infer<typeof GenerateAnnualPlanSchema>
 type UpdatePostInput = z.infer<typeof UpdatePostSchema>
 
-const STATUS_KEYS: SocialPostStatus[] = ['idea', 'draft', 'approved', 'queued', 'published', 'archived']
-const PILLAR_KEYS: SocialPillar[] = ['recipe', 'behind_scenes', 'education', 'social_proof', 'offers', 'seasonal']
+const STATUS_KEYS: SocialPostStatus[] = [
+  'idea',
+  'draft',
+  'approved',
+  'queued',
+  'published',
+  'archived',
+]
+const PILLAR_KEYS: SocialPillar[] = [
+  'recipe',
+  'behind_scenes',
+  'education',
+  'social_proof',
+  'offers',
+  'seasonal',
+]
 
 const platformCaptionField: Record<SocialPlatform, keyof SocialPost> = {
   instagram: 'caption_instagram',
@@ -224,7 +262,7 @@ const PILLAR_IDEA_TEMPLATES: Record<SocialPillar, string[]> = {
     'Spring produce showcase',
     'Summer grilling menu',
     'Fall harvest tasting',
-    'Mother\'s Day menu angle',
+    "Mother's Day menu angle",
     'Fourth of July prep idea',
     'Back-to-school meal prep',
     'Thanksgiving prep strategy',
@@ -255,7 +293,11 @@ function formatPostCode(year: number, weekNumber: number, slotNumber: number): s
   return `${year}-W${String(weekNumber).padStart(2, '0')}-P${slotNumber}`
 }
 
-function toSummary(posts: SocialPost[], postsPerWeek: number, targetYear: number): SocialQueueSummary {
+function toSummary(
+  posts: SocialPost[],
+  postsPerWeek: number,
+  targetYear: number
+): SocialQueueSummary {
   const byStatus: Record<SocialPostStatus, number> = {
     idea: 0,
     draft: 0,
@@ -392,7 +434,7 @@ function buildGeneratedContent(
   pillar: SocialPillar,
   index: number,
   scheduleAtIso: string,
-  reserved: boolean,
+  reserved: boolean
 ): GeneratedContent {
   if (reserved) {
     return {
@@ -461,7 +503,7 @@ function buildScheduleSlots(input: QueueSettingsInput): PlannedSlot[] {
         cursor.getUTCFullYear(),
         cursor.getUTCMonth(),
         cursor.getUTCDate(),
-        clock,
+        clock
       )
       const editableUntil = new Date(plannedDate.getTime() - 48 * 60 * 60 * 1000)
 
@@ -482,7 +524,9 @@ function buildScheduleSlots(input: QueueSettingsInput): PlannedSlot[] {
   }
 
   if (slots.length < desired) {
-    throw new Error(`Could not build ${desired} slots. Increase queue days or reduce posts per week.`)
+    throw new Error(
+      `Could not build ${desired} slots. Increase queue days or reduce posts per week.`
+    )
   }
 
   return slots
@@ -523,14 +567,16 @@ function toCsv(rows: Array<Record<string, string>>): string {
   if (rows.length === 0) return ''
   const headers = Object.keys(rows[0])
   const headerRow = headers.join(',')
-  const bodyRows = rows.map((row) => headers.map((header) => escapeCsvValue(row[header] ?? '')).join(','))
+  const bodyRows = rows.map((row) =>
+    headers.map((header) => escapeCsvValue(row[header] ?? '')).join(',')
+  )
   return [headerRow, ...bodyRows].join('\n')
 }
 
 function normalizeSettingsRow(
   row: Partial<SocialQueueSettings> | null | undefined,
   tenantId: string,
-  userId: string,
+  userId: string
 ): SocialQueueSettings {
   const year = new Date().getUTCFullYear()
   return {
@@ -678,7 +724,11 @@ function computePreflight(post: SocialPost, linkedAssetCount: number) {
   }
 }
 
-async function getLinkedAssetCount(supabase: any, tenantId: string, postId: string): Promise<number> {
+async function getLinkedAssetCount(
+  supabase: any,
+  tenantId: string,
+  postId: string
+): Promise<number> {
   const { count, error } = await supabase
     .from('social_post_assets' as any)
     .select('id', { count: 'exact', head: true })
@@ -693,7 +743,12 @@ async function getLinkedAssetCount(supabase: any, tenantId: string, postId: stri
   return count ?? 0
 }
 
-async function refreshPostPreflight(supabase: any, tenantId: string, postId: string, updatedBy: string): Promise<void> {
+async function refreshPostPreflight(
+  supabase: any,
+  tenantId: string,
+  postId: string,
+  updatedBy: string
+): Promise<void> {
   const { data, error } = await supabase
     .from('social_posts' as any)
     .select('*')
@@ -735,7 +790,9 @@ export async function getSocialQueueSettings(): Promise<SocialQueueSettings> {
   return normalizeSettingsRow(data as Partial<SocialQueueSettings> | null, user.tenantId!, user.id)
 }
 
-export async function upsertSocialQueueSettings(input: QueueSettingsInput): Promise<SocialQueueSettings> {
+export async function upsertSocialQueueSettings(
+  input: QueueSettingsInput
+): Promise<SocialQueueSettings> {
   const user = await requireChef()
   const validated = QueueSettingsSchema.parse(input)
   const supabase = createServerClient()
@@ -964,9 +1021,7 @@ export async function generateAnnualSocialPlan(input: AnnualGenerationInput): Pr
       campaign: generated.campaign,
       seasonal_flag: generated.seasonalFlag,
       hot_swap_ready: reserved,
-      notes: reserved
-        ? 'Reserved slot for timely promotions or local moments.'
-        : '',
+      notes: reserved ? 'Reserved slot for timely promotions or local moments.' : '',
       platforms: ['instagram', 'facebook', 'tiktok', 'linkedin', 'pinterest', 'youtube_shorts'],
       queued_to_platforms: [],
       published_to_platforms: [],
@@ -992,7 +1047,10 @@ export async function generateAnnualSocialPlan(input: AnnualGenerationInput): Pr
   }
 }
 
-export async function updateSocialPost(postId: string, input: UpdatePostInput): Promise<SocialPost> {
+export async function updateSocialPost(
+  postId: string,
+  input: UpdatePostInput
+): Promise<SocialPost> {
   const user = await requireChef()
   const validated = UpdatePostSchema.parse(input)
   const supabase = createServerClient()
@@ -1012,7 +1070,10 @@ export async function updateSocialPost(postId: string, input: UpdatePostInput): 
   const linkedAssetCount = await getLinkedAssetCount(supabase, user.tenantId!, postId)
   const preflight = computePreflight(merged, linkedAssetCount)
 
-  if ((validated.status === 'queued' || validated.status === 'published') && !preflight.preflight_ready) {
+  if (
+    (validated.status === 'queued' || validated.status === 'published') &&
+    !preflight.preflight_ready
+  ) {
     throw new Error(`Preflight incomplete: ${preflight.preflight_missing_items.join(', ')}`)
   }
 
@@ -1046,7 +1107,9 @@ export async function bulkUpdateSocialPostStatus(postIds: string[], status: Soci
 
   if (postIds.length === 0) return
 
-  const validatedStatus = z.enum(['idea', 'draft', 'approved', 'queued', 'published', 'archived']).parse(status)
+  const validatedStatus = z
+    .enum(['idea', 'draft', 'approved', 'queued', 'published', 'archived'])
+    .parse(status)
 
   if (validatedStatus === 'queued' || validatedStatus === 'published') {
     const { data: preflightRows, error: preflightError } = await supabase
@@ -1123,7 +1186,8 @@ export async function applyHotSwapToScheduledPost(input: z.infer<typeof HotSwapS
       media_url: sourceRow.media_url,
       campaign: sourceRow.campaign,
       seasonal_flag: sourceRow.seasonal_flag,
-      notes: `${sourceRow.notes ?? ''}\nApplied from hot-swap slot on ${new Date().toISOString().slice(0, 10)}.`.trim(),
+      notes:
+        `${sourceRow.notes ?? ''}\nApplied from hot-swap slot on ${new Date().toISOString().slice(0, 10)}.`.trim(),
     })
     .eq('id', validated.scheduled_post_id)
     .eq('tenant_id', user.tenantId!)
@@ -1139,7 +1203,8 @@ export async function applyHotSwapToScheduledPost(input: z.infer<typeof HotSwapS
       status: 'archived',
       hot_swap_ready: false,
       updated_by: user.id,
-      notes: `${sourceRow.notes ?? ''}\nUsed as hot-swap source on ${new Date().toISOString().slice(0, 10)}.`.trim(),
+      notes:
+        `${sourceRow.notes ?? ''}\nUsed as hot-swap source on ${new Date().toISOString().slice(0, 10)}.`.trim(),
     })
     .eq('id', validated.hot_swap_post_id)
     .eq('tenant_id', user.tenantId!)
@@ -1179,7 +1244,8 @@ export async function uploadSocialAsset(formData: FormData): Promise<SocialMedia
   const assetName = ((formData.get('assetName') as string | null) ?? '').trim()
   const usageContext = ((formData.get('usageContext') as string | null) ?? '').trim()
   const assetTags = parseTagInput((formData.get('assetTags') as string | null) ?? '')
-  const isClientApproved = ((formData.get('isClientApproved') as string | null) ?? 'false') === 'true'
+  const isClientApproved =
+    ((formData.get('isClientApproved') as string | null) ?? 'false') === 'true'
 
   const { data, error } = await supabase
     .from('social_media_assets')
@@ -1211,7 +1277,10 @@ export async function uploadSocialAsset(formData: FormData): Promise<SocialMedia
   return mapAssetRow(data)
 }
 
-export async function updateSocialAsset(assetId: string, input: z.infer<typeof UpdateAssetSchema>): Promise<SocialMediaAsset> {
+export async function updateSocialAsset(
+  assetId: string,
+  input: z.infer<typeof UpdateAssetSchema>
+): Promise<SocialMediaAsset> {
   const user = await requireChef()
   const validated = UpdateAssetSchema.parse(input)
   const supabase = createServerClient()
@@ -1262,7 +1331,9 @@ export async function deleteSocialAsset(assetId: string) {
 
   await supabase.storage.from(SOCIAL_MEDIA_BUCKET).remove([assetData.storage_path])
 
-  const affectedPosts = Array.from(new Set((links ?? []).map((row: any) => row.post_id).filter(Boolean))) as string[]
+  const affectedPosts = Array.from(
+    new Set((links ?? []).map((row: any) => row.post_id).filter(Boolean))
+  ) as string[]
   for (const postId of affectedPosts) {
     await refreshPostPreflight(supabase, user.tenantId!, postId, user.id)
   }
@@ -1270,7 +1341,9 @@ export async function deleteSocialAsset(assetId: string) {
   revalidatePath('/social')
 }
 
-export async function attachSocialAssetToPost(input: z.infer<typeof AttachAssetSchema>): Promise<SocialPostAssetLink> {
+export async function attachSocialAssetToPost(
+  input: z.infer<typeof AttachAssetSchema>
+): Promise<SocialPostAssetLink> {
   const user = await requireChef()
   const validated = AttachAssetSchema.parse(input)
   const supabase = createServerClient()
@@ -1291,7 +1364,11 @@ export async function attachSocialAssetToPost(input: z.infer<typeof AttachAssetS
     .eq('tenant_id', user.tenantId!)
     .eq('post_id', validated.post_id)
 
-  const nextOrder = (existingLinks ?? []).reduce((max: number, row: any) => Math.max(max, Number(row.display_order ?? 0)), 0) + 1
+  const nextOrder =
+    (existingLinks ?? []).reduce(
+      (max: number, row: any) => Math.max(max, Number(row.display_order ?? 0)),
+      0
+    ) + 1
 
   const { data, error } = await db
     .from('social_post_assets')
@@ -1304,7 +1381,7 @@ export async function attachSocialAssetToPost(input: z.infer<typeof AttachAssetS
         display_order: nextOrder,
         created_by: user.id,
       },
-      { onConflict: 'tenant_id,post_id,asset_id' },
+      { onConflict: 'tenant_id,post_id,asset_id' }
     )
     .select('*')
     .single()
@@ -1394,7 +1471,9 @@ export async function detachSocialAssetFromPost(input: z.infer<typeof DetachAsse
   revalidatePath('/social')
 }
 
-export async function exportSocialPlatformWindowCsv(rawInput: z.infer<typeof PlatformExportSchema>): Promise<{
+export async function exportSocialPlatformWindowCsv(
+  rawInput: z.infer<typeof PlatformExportSchema>
+): Promise<{
   csv: string
   filename: string
   count: number
@@ -1404,7 +1483,9 @@ export async function exportSocialPlatformWindowCsv(rawInput: z.infer<typeof Pla
   const validated = PlatformExportSchema.parse(rawInput)
   const supabase = createServerClient()
 
-  const windowConfig = SOCIAL_PLATFORM_WINDOWS.find((entry) => entry.platform === validated.platform)
+  const windowConfig = SOCIAL_PLATFORM_WINDOWS.find(
+    (entry) => entry.platform === validated.platform
+  )
   if (!windowConfig) {
     throw new Error('Unknown platform.')
   }
@@ -1438,7 +1519,8 @@ export async function exportSocialPlatformWindowCsv(rawInput: z.infer<typeof Pla
   const csvRows = posts.map((post) => {
     const scheduleDate = new Date(post.schedule_at)
     const captionField = platformCaptionField[validated.platform]
-    const platformCaption = (post[captionField] as string | undefined)?.trim() || post.caption_master
+    const platformCaption =
+      (post[captionField] as string | undefined)?.trim() || post.caption_master
 
     return {
       post_code: post.post_code,
@@ -1468,7 +1550,9 @@ export async function exportSocialPlatformWindowCsv(rawInput: z.infer<typeof Pla
   }
 }
 
-export async function getSocialWindowCounts(targetYear?: number): Promise<Record<SocialPlatform, number>> {
+export async function getSocialWindowCounts(
+  targetYear?: number
+): Promise<Record<SocialPlatform, number>> {
   const settings = await getSocialQueueSettings()
   const year = targetYear ?? settings.target_year
   const posts = await getSocialPosts({ targetYear: year })

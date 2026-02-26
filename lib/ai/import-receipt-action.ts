@@ -17,9 +17,10 @@ export async function importReceiptAsExpense(
 
   // Build description from line items
   const items = extraction.lineItems
-  const desc = items.length <= 3
-    ? items.map(i => i.description).join(', ')
-    : `${items.length} items from ${extraction.storeName || 'store'}`
+  const desc =
+    items.length <= 3
+      ? items.map((i) => i.description).join(', ')
+      : `${items.length} items from ${extraction.storeName || 'store'}`
 
   return createExpense({
     event_id: eventId || null,

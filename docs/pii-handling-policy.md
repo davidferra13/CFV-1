@@ -12,20 +12,20 @@ Personally Identifiable Information (PII) is any data that can be used to identi
 
 In ChefFlow, PII includes:
 
-| Data | Classification | Where stored |
-|------|---------------|--------------|
-| Client full name | PII | `clients.full_name` |
-| Client email address | PII | `clients.email`, `auth.users.email` |
-| Client phone number | PII | `clients.phone` |
-| Client physical address | PII | `clients.address`, `events.location` |
-| Chef full name | PII | `chefs.full_name` |
-| Chef email address | PII | `chefs.email`, `auth.users.email` |
-| Chef phone number | PII | `chefs.phone` |
-| Event location / venue address | PII (contextual) | `events.location` |
-| Chat message content | PII (contextual) | `messages.content` |
-| Receipt photos | PII (contextual) | Supabase Storage `receipts/` bucket |
-| Payment amounts associated with individuals | Sensitive PII | `ledger_entries` |
-| IP addresses (logs) | PII (EU) | Vercel logs only (not stored in DB) |
+| Data                                        | Classification   | Where stored                         |
+| ------------------------------------------- | ---------------- | ------------------------------------ |
+| Client full name                            | PII              | `clients.full_name`                  |
+| Client email address                        | PII              | `clients.email`, `auth.users.email`  |
+| Client phone number                         | PII              | `clients.phone`                      |
+| Client physical address                     | PII              | `clients.address`, `events.location` |
+| Chef full name                              | PII              | `chefs.full_name`                    |
+| Chef email address                          | PII              | `chefs.email`, `auth.users.email`    |
+| Chef phone number                           | PII              | `chefs.phone`                        |
+| Event location / venue address              | PII (contextual) | `events.location`                    |
+| Chat message content                        | PII (contextual) | `messages.content`                   |
+| Receipt photos                              | PII (contextual) | Supabase Storage `receipts/` bucket  |
+| Payment amounts associated with individuals | Sensitive PII    | `ledger_entries`                     |
+| IP addresses (logs)                         | PII (EU)         | Vercel logs only (not stored in DB)  |
 
 **Not PII:** Aggregated statistics, anonymized analytics, trend data without individual identifiers.
 
@@ -33,25 +33,25 @@ In ChefFlow, PII includes:
 
 ## Data Classification Levels
 
-| Level | Description | Examples | Access |
-|-------|-------------|----------|--------|
-| **Public** | Freely shareable | Chef profile name, portfolio photos | Anyone |
-| **Internal** | Business operational data | Event counts, revenue totals | Chef + system |
-| **Confidential** | PII + financial details | Client names, emails, phone, amounts | Chef + authorized system only |
-| **Restricted** | Secrets + credentials | API keys, Stripe keys, service role key | Platform admin only |
+| Level            | Description               | Examples                                | Access                        |
+| ---------------- | ------------------------- | --------------------------------------- | ----------------------------- |
+| **Public**       | Freely shareable          | Chef profile name, portfolio photos     | Anyone                        |
+| **Internal**     | Business operational data | Event counts, revenue totals            | Chef + system                 |
+| **Confidential** | PII + financial details   | Client names, emails, phone, amounts    | Chef + authorized system only |
+| **Restricted**   | Secrets + credentials     | API keys, Stripe keys, service role key | Platform admin only           |
 
 ---
 
 ## Who Has Access to PII
 
-| Actor | What they can see | Technical enforcement |
-|-------|------------------|----------------------|
-| Chef | Their own clients' PII | RLS: `tenant_id = get_current_tenant_id()` |
-| Client | Their own PII only | RLS: `client_id = get_current_client_id()` |
-| Chef A | Chef B's clients | ❌ Blocked by RLS + middleware |
-| Admin | Can query any tenant's data | Service role key, gated by `ADMIN_EMAILS` env var |
-| AI system (Gemini) | Draft generation only — never receives stored PII unless chef submits it manually | AI policy: AI operates on chef-provided input, not DB queries |
-| External APIs (Stripe, Resend, etc.) | Only what is explicitly passed | Minimal disclosure principle |
+| Actor                                | What they can see                                                                 | Technical enforcement                                         |
+| ------------------------------------ | --------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Chef                                 | Their own clients' PII                                                            | RLS: `tenant_id = get_current_tenant_id()`                    |
+| Client                               | Their own PII only                                                                | RLS: `client_id = get_current_client_id()`                    |
+| Chef A                               | Chef B's clients                                                                  | ❌ Blocked by RLS + middleware                                |
+| Admin                                | Can query any tenant's data                                                       | Service role key, gated by `ADMIN_EMAILS` env var             |
+| AI system (Gemini)                   | Draft generation only — never receives stored PII unless chef submits it manually | AI policy: AI operates on chef-provided input, not DB queries |
+| External APIs (Stripe, Resend, etc.) | Only what is explicitly passed                                                    | Minimal disclosure principle                                  |
 
 ---
 
@@ -96,17 +96,18 @@ if (event.request?.data) {
 
 ### 4. Minimize PII sent to third-party services
 
-| Service | What we send | What we don't send |
-|---------|-------------|-------------------|
-| Stripe | Chef's account info (for Connect), no client PII | Client names, emails |
-| Resend | To/from email, rendered HTML | Raw DB records |
-| Google Gemini | Chef-provided text for drafting | Client DB records |
-| MealMe/Kroger | Ingredient names only | Chef/client identity |
-| Sentry | Stack traces, request metadata | PII in payloads (scrubbed) |
+| Service       | What we send                                     | What we don't send         |
+| ------------- | ------------------------------------------------ | -------------------------- |
+| Stripe        | Chef's account info (for Connect), no client PII | Client names, emails       |
+| Resend        | To/from email, rendered HTML                     | Raw DB records             |
+| Google Gemini | Chef-provided text for drafting                  | Client DB records          |
+| MealMe/Kroger | Ingredient names only                            | Chef/client identity       |
+| Sentry        | Stack traces, request metadata                   | PII in payloads (scrubbed) |
 
 ### 5. Never hardcode or commit PII
 
 No real email addresses, phone numbers, or names in:
+
 - Source code
 - Test fixtures committed to git
 - Migration files
@@ -115,6 +116,7 @@ No real email addresses, phone numbers, or names in:
 ### 6. Use anonymized data for development
 
 When testing locally, use clearly synthetic data:
+
 ```sql
 -- Acceptable test data:
 INSERT INTO clients (full_name, email) VALUES ('Test Client', 'test@example.com');
@@ -141,6 +143,7 @@ For clients requesting access to their own data held by a chef: the client shoul
 See `docs/data-retention-policy.md` → Account Deletion section.
 
 **Client PII erasure (requested by client):**
+
 1. Chef navigates to the client record
 2. Chef clicks "Delete client" (triggers cascade delete or anonymization)
 3. System anonymizes: `full_name → [Deleted]`, `email → deleted@[uuid].invalid`, `phone → null`
@@ -148,6 +151,7 @@ See `docs/data-retention-policy.md` → Account Deletion section.
 5. Financial records (ledger entries) are NOT deleted — exempt under legal hold
 
 **What cannot be erased:**
+
 - Ledger entries (7-year legal retention)
 - Event state transitions (immutable by DB trigger)
 - Admin audit logs (platform compliance)
@@ -176,15 +180,15 @@ ChefFlow acts as a **data processor** for chef data (the chef is the data contro
 
 Sub-processors:
 
-| Processor | Purpose | Privacy Policy |
-|-----------|---------|----------------|
-| Supabase | Database + Auth + Storage | supabase.com/privacy |
-| Vercel | Application hosting | vercel.com/legal/privacy-policy |
-| Stripe | Payment processing | stripe.com/privacy |
-| Resend | Transactional email | resend.com/privacy |
-| Google | Gemini AI, Maps, OAuth | policies.google.com/privacy |
-| Upstash | Rate limiting (Redis) | upstash.com/privacy |
-| Sentry | Error tracking | sentry.io/privacy |
+| Processor | Purpose                   | Privacy Policy                  |
+| --------- | ------------------------- | ------------------------------- |
+| Supabase  | Database + Auth + Storage | supabase.com/privacy            |
+| Vercel    | Application hosting       | vercel.com/legal/privacy-policy |
+| Stripe    | Payment processing        | stripe.com/privacy              |
+| Resend    | Transactional email       | resend.com/privacy              |
+| Google    | Gemini AI, Maps, OAuth    | policies.google.com/privacy     |
+| Upstash   | Rate limiting (Redis)     | upstash.com/privacy             |
+| Sentry    | Error tracking            | sentry.io/privacy               |
 
 All sub-processors are bound by their own privacy policies. ChefFlow passes only the minimum necessary data to each.
 
@@ -192,17 +196,17 @@ All sub-processors are bound by their own privacy policies. ChefFlow passes only
 
 ## Security Controls Protecting PII
 
-| Control | Implementation |
-|---------|---------------|
-| Encryption in transit | TLS 1.2+ (Vercel + Supabase), HSTS header |
-| Encryption at rest | AES-256 (Supabase/AWS KMS, platform-managed) |
-| Access control | RLS policies on all 60+ tables |
-| Authentication | Supabase Auth with session management |
-| Session security | HttpOnly cookies, SameSite=lax, secure flag in production |
-| API security | Bearer API keys, rate limiting, tenant scoping |
-| Input validation | Zod schemas on AI inputs; DB constraints as last-line defense |
-| Audit trail | `admin_audit_log` for sensitive admin actions |
-| Secret management | Vercel env vars (not in source code) |
+| Control               | Implementation                                                |
+| --------------------- | ------------------------------------------------------------- |
+| Encryption in transit | TLS 1.2+ (Vercel + Supabase), HSTS header                     |
+| Encryption at rest    | AES-256 (Supabase/AWS KMS, platform-managed)                  |
+| Access control        | RLS policies on all 60+ tables                                |
+| Authentication        | Supabase Auth with session management                         |
+| Session security      | HttpOnly cookies, SameSite=lax, secure flag in production     |
+| API security          | Bearer API keys, rate limiting, tenant scoping                |
+| Input validation      | Zod schemas on AI inputs; DB constraints as last-line defense |
+| Audit trail           | `admin_audit_log` for sensitive admin actions                 |
+| Secret management     | Vercel env vars (not in source code)                          |
 
 ---
 
@@ -223,4 +227,4 @@ All code contributors (including AI agents) must:
 - After any data breach incident
 - When adding new data types, integrations, or geographic markets
 
-*Next review due: 2027-02-20*
+_Next review due: 2027-02-20_

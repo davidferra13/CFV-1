@@ -20,27 +20,28 @@ This implementation upgrades that into a full multi-goal system that:
 
 All additive — no existing tables or columns were changed.
 
-| Table | Purpose |
-|---|---|
-| `chef_goals` | One row per goal definition. A chef can have multiple active goals. |
-| `goal_snapshots` | Append-only history. One row per (goal, date). `UNIQUE(goal_id, snapshot_date)` ensures idempotent cron runs. |
-| `goal_client_suggestions` | Tracks which dormant/repeat-ready clients were surfaced for outreach and whether the chef acted on them. |
+| Table                     | Purpose                                                                                                       |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `chef_goals`              | One row per goal definition. A chef can have multiple active goals.                                           |
+| `goal_snapshots`          | Append-only history. One row per (goal, date). `UNIQUE(goal_id, snapshot_date)` ensures idempotent cron runs. |
+| `goal_client_suggestions` | Tracks which dormant/repeat-ready clients were surfaced for outreach and whether the chef acted on them.      |
 
 **`chef_goals.target_value` semantics by goal type:**
+
 - `revenue_*` → cents (1000000 = $10,000)
 - `booking_count | new_clients | recipe_library` → whole count
 - `profit_margin | expense_ratio` → basis points (6500 = 65.00%)
 
 ### Library Layer (`lib/goals/`)
 
-| File | Role |
-|---|---|
-| `types.ts` | All TypeScript types. No imports from Supabase or server modules. |
-| `engine.ts` | Pure computation functions: `computeGoalProgress`, `buildPricingScenarios`, `formatGoalValue`. Imports and re-exports `computeDinnersNeeded` and `applyPipelineWeight` from `lib/revenue-goals/engine.ts`. |
-| `signal-fetchers.ts` | DB reads for non-revenue goal current values: booking count, new clients, recipe count, profit margin, expense ratio. |
-| `client-suggestions.ts` | Queries `client_financial_summary` for dormant/repeat-ready clients, ranks by lifetime value, returns human-readable `ClientSuggestion[]`. |
-| `notification-builder.ts` | Pure functions building rich notification text naming specific clients. |
-| `actions.ts` | `'use server'` surface: CRUD for goals, `getGoalsDashboard()`, `getGoalHistory()`, `writeGoalSnapshot()`, `updateSuggestionStatus()`. |
+| File                      | Role                                                                                                                                                                                                       |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `types.ts`                | All TypeScript types. No imports from Supabase or server modules.                                                                                                                                          |
+| `engine.ts`               | Pure computation functions: `computeGoalProgress`, `buildPricingScenarios`, `formatGoalValue`. Imports and re-exports `computeDinnersNeeded` and `applyPipelineWeight` from `lib/revenue-goals/engine.ts`. |
+| `signal-fetchers.ts`      | DB reads for non-revenue goal current values: booking count, new clients, recipe count, profit margin, expense ratio.                                                                                      |
+| `client-suggestions.ts`   | Queries `client_financial_summary` for dormant/repeat-ready clients, ranks by lifetime value, returns human-readable `ClientSuggestion[]`.                                                                 |
+| `notification-builder.ts` | Pure functions building rich notification text naming specific clients.                                                                                                                                    |
+| `actions.ts`              | `'use server'` surface: CRUD for goals, `getGoalsDashboard()`, `getGoalHistory()`, `writeGoalSnapshot()`, `updateSuggestionStatus()`.                                                                      |
 
 ### What Was NOT Changed
 
@@ -53,19 +54,23 @@ All additive — no existing tables or columns were changed.
 ## Goal Flow
 
 ### Creating a Goal
+
 1. Chef navigates to `/goals/setup`
 2. 4-step wizard: goal type → target + period → reminders → review
 3. `createGoal()` server action inserts a row into `chef_goals`
 4. Redirect to `/goals`
 
 ### Dashboard Computation (`getGoalsDashboard()`)
+
 For each active `chef_goals` row:
+
 - Revenue goals → delegates to `getRevenueGoalSnapshotForTenantAdmin()` for realized/projected/pipeline
 - Non-revenue goals → calls the appropriate signal fetcher
 - `computeGoalProgress()` computes gap and percent for all
 - Revenue goals additionally get: `buildPricingScenarios()` (5 price-delta scenarios) and `buildClientSuggestions()` (up to 5 dormant clients with outreach status)
 
 ### Client Suggestions Flow
+
 1. `buildClientSuggestions()` queries `client_financial_summary` filtered to `is_dormant = true`
 2. Joins `clients` table for full name and status (repeat_ready sorts first)
 3. Merges existing `goal_client_suggestions` rows to show current status (pending/contacted/booked/dismissed)
@@ -73,7 +78,9 @@ For each active `chef_goals` row:
 5. Chef clicks dismiss → status becomes `dismissed`, card hidden from view
 
 ### Snapshot History (Cron)
+
 The cron at `app/api/scheduled/revenue-goals/route.ts` (runs on Vercel schedule):
+
 1. Collects all tenant IDs with either `revenue_goal_program_enabled = true` OR active `chef_goals` rows
 2. For each active goal, inserts a `goal_snapshots` row — idempotent via `ON CONFLICT DO NOTHING`
 3. Legacy revenue-goal notification flow preserved
@@ -82,27 +89,27 @@ The cron at `app/api/scheduled/revenue-goals/route.ts` (runs on Vercel schedule)
 
 ## Pages
 
-| Path | Purpose |
-|---|---|
-| `/goals` | Multi-goal dashboard. Empty state with wizard CTA if no active goals. |
-| `/goals/setup` | 4-step wizard for creating any goal type. |
-| `/goals/[id]/history` | 12-month snapshot table + sparkline for a single goal. |
+| Path                  | Purpose                                                               |
+| --------------------- | --------------------------------------------------------------------- |
+| `/goals`              | Multi-goal dashboard. Empty state with wizard CTA if no active goals. |
+| `/goals/setup`        | 4-step wizard for creating any goal type.                             |
+| `/goals/[id]/history` | 12-month snapshot table + sparkline for a single goal.                |
 
 ---
 
 ## Components (`components/goals/`)
 
-| Component | Purpose |
-|---|---|
-| `GoalCard` | Full card for one goal: progress bar, events needed, pricing table, client suggestions, history link. Collapsible. Has archive button. |
-| `GoalProgressBar` | Reusable progress bar, green when ≥100%. |
-| `GoalTypeBadge` | Colored pill by goal type. |
-| `PricingScenariosTable` | 5-row table: "If you charge $X more, you need Y events." |
-| `ClientSuggestionCard` | One client with Contact / Dismiss buttons. Status-aware. |
-| `ClientSuggestionsList` | Wrapper listing pending + already-contacted suggestions. |
-| `GoalHistorySparkline` | CSS-only bar chart of 12 monthly progress snapshots. |
-| `GoalsEmptyState` | Full-card CTA to `/goals/setup`. |
-| `GoalWizardSteps` | 4-step client-side wizard. All state in local `useState`. |
+| Component               | Purpose                                                                                                                                |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `GoalCard`              | Full card for one goal: progress bar, events needed, pricing table, client suggestions, history link. Collapsible. Has archive button. |
+| `GoalProgressBar`       | Reusable progress bar, green when ≥100%.                                                                                               |
+| `GoalTypeBadge`         | Colored pill by goal type.                                                                                                             |
+| `PricingScenariosTable` | 5-row table: "If you charge $X more, you need Y events."                                                                               |
+| `ClientSuggestionCard`  | One client with Contact / Dismiss buttons. Status-aware.                                                                               |
+| `ClientSuggestionsList` | Wrapper listing pending + already-contacted suggestions.                                                                               |
+| `GoalHistorySparkline`  | CSS-only bar chart of 12 monthly progress snapshots.                                                                                   |
+| `GoalsEmptyState`       | Full-card CTA to `/goals/setup`.                                                                                                       |
+| `GoalWizardSteps`       | 4-step client-side wizard. All state in local `useState`.                                                                              |
 
 ---
 

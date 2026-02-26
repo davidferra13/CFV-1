@@ -1,10 +1,13 @@
 # Contracts & Legal System
 
 ## What Changed
+
 Added a full contract template and e-signature workflow to ChefFlow, replacing the informal "cancellation policy field" with a proper legal layer.
 
 ## Why
+
 Private chef businesses run on contractual relationships. Before this change, ChefFlow had no mechanism for:
+
 - Chefs to define legal terms of service
 - Clients to formally acknowledge and accept those terms
 - An auditable record of what was agreed and when
@@ -12,6 +15,7 @@ Private chef businesses run on contractual relationships. Before this change, Ch
 ## What Was Built
 
 ### Database
+
 **Migration:** `supabase/migrations/20260303000003_contracts_system.sql`
 
 Two new tables:
@@ -19,6 +23,7 @@ Two new tables:
 **`contract_templates`** — Chef-owned reusable templates with Markdown body. Supports `{{merge_fields}}` for dynamic values. One can be marked as default.
 
 **`event_contracts`** — One per event. Stores:
+
 - Rendered body snapshot (merge fields already substituted — immutable after signing)
 - Status lifecycle: `draft → sent → viewed → signed | voided`
 - Signature capture: base64 PNG data URL
@@ -27,23 +32,25 @@ Two new tables:
 A database trigger (`trg_event_contracts_immutable`) prevents any mutation of the body, signature, or timestamps after signing.
 
 ### Server Actions
+
 **File:** `lib/contracts/actions.ts`
 
-| Action | Who | What |
-|--------|-----|------|
-| `createContractTemplate` | Chef | Create a new template |
-| `updateContractTemplate` | Chef | Edit template (increments version) |
-| `listContractTemplates` | Chef | List all templates |
-| `deleteContractTemplate` | Chef | Remove a template |
-| `generateEventContract` | Chef | Render template with event merge fields, create draft contract |
-| `sendContractToClient` | Chef | Set status=sent, email client with signing link |
-| `recordClientView` | Client | Set status=viewed on page load |
-| `signContract` | Client | Capture signature, set status=signed |
-| `voidContract` | Chef | Void unsigned contracts |
-| `getEventContract` | Chef | Get active contract for event |
-| `getClientEventContract` | Client | Get contract for client's event |
+| Action                   | Who    | What                                                           |
+| ------------------------ | ------ | -------------------------------------------------------------- |
+| `createContractTemplate` | Chef   | Create a new template                                          |
+| `updateContractTemplate` | Chef   | Edit template (increments version)                             |
+| `listContractTemplates`  | Chef   | List all templates                                             |
+| `deleteContractTemplate` | Chef   | Remove a template                                              |
+| `generateEventContract`  | Chef   | Render template with event merge fields, create draft contract |
+| `sendContractToClient`   | Chef   | Set status=sent, email client with signing link                |
+| `recordClientView`       | Client | Set status=viewed on page load                                 |
+| `signContract`           | Client | Capture signature, set status=signed                           |
+| `voidContract`           | Chef   | Void unsigned contracts                                        |
+| `getEventContract`       | Chef   | Get active contract for event                                  |
+| `getClientEventContract` | Client | Get contract for client's event                                |
 
 ### Available Merge Fields
+
 ```
 {{client_name}}         → client.full_name
 {{event_date}}          → events.event_date (formatted)
@@ -56,6 +63,7 @@ A database trigger (`trg_event_contracts_immutable`) prevents any mutation of th
 ```
 
 ### UI
+
 - **`app/(chef)/settings/contracts/page.tsx`** — Template management. Chef creates/edits/deletes templates with a Markdown editor and merge field chips.
 - **`components/contracts/contract-template-editor.tsx`** — Markdown editor with merge field helper buttons.
 - **`components/contracts/send-contract-button.tsx`** — Placed on event detail page. Handles generate → send → void flow with status display.
@@ -65,6 +73,7 @@ A database trigger (`trg_event_contracts_immutable`) prevents any mutation of th
 - **`app/(client)/my-events/[id]/contract/contract-signing-client.tsx`** — Interactive client component for signing.
 
 ### Email
+
 **`lib/email/templates/contract-sent.tsx`** — Sent to client when contract is ready to sign. Includes a CTA button linking to the signing page.
 
 ## How It Connects to the System

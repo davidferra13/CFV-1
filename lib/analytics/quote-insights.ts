@@ -41,7 +41,9 @@ export async function getQuoteAcceptanceInsights(): Promise<QuoteAcceptanceInsig
 
   const { data: quotes, error } = await supabase
     .from('quotes')
-    .select('id, status, total_quoted_cents, pricing_model, sent_at, accepted_at, rejected_at, valid_until, client:clients(full_name)')
+    .select(
+      'id, status, total_quoted_cents, pricing_model, sent_at, accepted_at, rejected_at, valid_until, client:clients(full_name)'
+    )
     .eq('tenant_id', user.tenantId!)
     .in('status', ['sent', 'accepted', 'rejected', 'expired'])
     .gte('sent_at', since90)
@@ -55,22 +57,25 @@ export async function getQuoteAcceptanceInsights(): Promise<QuoteAcceptanceInsig
 
   // Always compute expiring quotes regardless of data volume
   const expiring: ExpiringQuote[] = all
-    .filter(q => q.status === 'sent' && q.valid_until && q.valid_until >= today && q.valid_until <= in7Days)
-    .map(q => ({
+    .filter(
+      (q) =>
+        q.status === 'sent' && q.valid_until && q.valid_until >= today && q.valid_until <= in7Days
+    )
+    .map((q) => ({
       id: q.id,
       clientName: (q.client as any)?.full_name ?? 'Unknown',
       validUntil: q.valid_until!,
       totalCents: q.total_quoted_cents ?? 0,
     }))
 
-  const decided = all.filter(q => ['accepted', 'rejected', 'expired'].includes(q.status))
+  const decided = all.filter((q) => ['accepted', 'rejected', 'expired'].includes(q.status))
 
   if (decided.length < 3) {
     return { ...emptyInsights(expiring), totalSent: all.length }
   }
 
-  const accepted = decided.filter(q => q.status === 'accepted')
-  const rejected = decided.filter(q => q.status !== 'accepted')
+  const accepted = decided.filter((q) => q.status === 'accepted')
+  const rejected = decided.filter((q) => q.status !== 'accepted')
 
   const acceptanceRate = Math.round((accepted.length / decided.length) * 100)
 
@@ -84,9 +89,8 @@ export async function getQuoteAcceptanceInsights(): Promise<QuoteAcceptanceInsig
     decisionDaysTotal += (new Date(end).getTime() - new Date(q.sent_at).getTime()) / 86_400_000
     decisionCount++
   }
-  const avgTimeToDaysDecision = decisionCount > 0
-    ? Math.round((decisionDaysTotal / decisionCount) * 10) / 10
-    : 0
+  const avgTimeToDaysDecision =
+    decisionCount > 0 ? Math.round((decisionDaysTotal / decisionCount) * 10) / 10 : 0
 
   const avg = (items: typeof decided) =>
     items.length > 0

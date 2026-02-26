@@ -6,16 +6,17 @@ This project was built entirely by AI agents running in parallel (up to 16 concu
 
 ## What Was Deleted
 
-| File | Why It Existed | Why It's Gone |
-|---|---|---|
-| `build-output.txt` | Agent tried to capture build output to a file | Build logs don't belong in the repo |
-| `.tmp-dev-live.log` | Dev server log artifact | Temp logs don't belong in the repo |
-| `.tmp-dev-live.err.log` | Dev server error log artifact | Temp logs don't belong in the repo |
-| `build_log_current.txt` | Another build log capture attempt | Build logs don't belong in the repo |
+| File                    | Why It Existed                                | Why It's Gone                       |
+| ----------------------- | --------------------------------------------- | ----------------------------------- |
+| `build-output.txt`      | Agent tried to capture build output to a file | Build logs don't belong in the repo |
+| `.tmp-dev-live.log`     | Dev server log artifact                       | Temp logs don't belong in the repo  |
+| `.tmp-dev-live.err.log` | Dev server error log artifact                 | Temp logs don't belong in the repo  |
+| `build_log_current.txt` | Another build log capture attempt             | Build logs don't belong in the repo |
 
 ## Files That No Longer Appear (Already Gone Before Cleanup)
 
 The git status snapshot at session start showed many files that had already been removed by the time this cleanup ran — confirming other agents had partially cleaned up. These were covered by the `.gitignore` update to prevent recurrence:
+
 - `nul` (Windows `/dev/null` accident)
 - `UsersdavidDocumentsCFv1supabase-types-temp.ts` (full Windows path as filename)
 - `supabase-types-temp.ts` (temp Supabase type export)

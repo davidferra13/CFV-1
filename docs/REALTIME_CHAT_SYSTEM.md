@@ -8,20 +8,22 @@ Phase 1 introduces **real-time instant messaging** between chefs and their clien
 
 **Migration:** `supabase/migrations/20260219000001_layer_6_realtime_chat.sql`
 
-| Table | Purpose |
-|---|---|
-| `conversations` | Groups messages between participants. Optionally linked to an inquiry or event. Denormalized `last_message_at/preview` for inbox performance. |
+| Table                       | Purpose                                                                                                                                         |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `conversations`             | Groups messages between participants. Optionally linked to an inquiry or event. Denormalized `last_message_at/preview` for inbox performance.   |
 | `conversation_participants` | Join table linking users to conversations. Supports N participants (designed for Phase 2 groups). Tracks `last_read_at` for unread computation. |
-| `chat_messages` | The messages themselves. Supports 5 types: text, image, link, event_ref, system. Soft-delete via `deleted_at`. |
+| `chat_messages`             | The messages themselves. Supports 5 types: text, image, link, event_ref, system. Soft-delete via `deleted_at`.                                  |
 
 **Enums:** `chat_message_type`, `conversation_context_type`
 
 **Functions:**
+
 - `is_conversation_participant(conv_id)` — RLS helper
 - `get_unread_counts(user_id)` — Per-conversation unread counts
 - `get_total_unread_count(user_id)` — Scalar for nav badge
 
 **Triggers:**
+
 - `update_conversation_last_message()` — Denormalizes latest message onto conversations table after each INSERT
 
 **RLS:** Participant-based access. Users can only see/send messages in conversations they belong to. Chefs create conversations within their tenant. No hard deletes allowed.
@@ -60,12 +62,12 @@ app/(client)/my-chat/
 
 ### Modified Files
 
-| File | Change |
-|---|---|
-| `middleware.ts` | Added `/chat` to `chefPaths`, `/my-chat` to `clientPaths` |
-| `components/navigation/chef-nav.tsx` | Added Messages icon to sidebar standalone items + mobile bottom tab bar |
-| `components/navigation/client-nav.tsx` | Added Messages nav item |
-| `lib/events/transitions.ts` | Added system message side-effect in `transitionEvent()` |
+| File                                   | Change                                                                  |
+| -------------------------------------- | ----------------------------------------------------------------------- |
+| `middleware.ts`                        | Added `/chat` to `chefPaths`, `/my-chat` to `clientPaths`               |
+| `components/navigation/chef-nav.tsx`   | Added Messages icon to sidebar standalone items + mobile bottom tab bar |
+| `components/navigation/client-nav.tsx` | Added Messages nav item                                                 |
+| `lib/events/transitions.ts`            | Added system message side-effect in `transitionEvent()`                 |
 
 ## Why
 

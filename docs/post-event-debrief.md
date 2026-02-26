@@ -4,7 +4,7 @@
 
 After a chef marks a dinner as `completed`, ChefFlow surfaces a guided debrief flow at `/events/[id]/debrief`. The goal is to capture knowledge while it's still fresh — things the chef observed during the dinner that aren't yet in the system.
 
-This is the **fill-in-the-blanks** concept: instead of showing a giant form, the system computes exactly what's missing for *this client* and *these recipes*, and only prompts for those specific gaps.
+This is the **fill-in-the-blanks** concept: instead of showing a giant form, the system computes exactly what's missing for _this client_ and _these recipes_, and only prompts for those specific gaps.
 
 ## Why This Exists
 
@@ -23,11 +23,11 @@ The debrief flow is an invitation to capture all of this in one natural moment r
 
 Migration `20260302000001_post_event_debrief_fields.sql` adds three nullable columns to the `events` table:
 
-| Column | Type | Purpose |
-|--------|------|---------|
-| `debrief_completed_at` | `TIMESTAMPTZ` | Timestamp when chef clicked "Complete Debrief". `NULL` = not done. |
-| `chef_outcome_notes` | `TEXT` | Free-text reflection — what stood out, what to remember next time. |
-| `chef_outcome_rating` | `SMALLINT (1–5)` | Star rating of how the dinner went overall. |
+| Column                 | Type             | Purpose                                                            |
+| ---------------------- | ---------------- | ------------------------------------------------------------------ |
+| `debrief_completed_at` | `TIMESTAMPTZ`    | Timestamp when chef clicked "Complete Debrief". `NULL` = not done. |
+| `chef_outcome_notes`   | `TEXT`           | Free-text reflection — what stood out, what to remember next time. |
+| `chef_outcome_rating`  | `SMALLINT (1–5)` | Star rating of how the dinner went overall.                        |
 
 All columns are additive and nullable. No existing data is affected.
 
@@ -40,6 +40,7 @@ The debrief page (`app/(chef)/events/[id]/debrief/page.tsx`) and its data loader
 The server action `getEventDebriefBlanks(eventId)` runs several queries in parallel and computes what's missing as pure TypeScript — no extra DB columns, no stored flags:
 
 **Client blanks detected:**
+
 - `personal_milestones` — array is empty
 - `dietary_restrictions` AND `allergies` — both empty (shown as one combined section)
 - `preferred_name` — null
@@ -47,14 +48,16 @@ The server action `getEventDebriefBlanks(eventId)` runs several queries in paral
 - `fun_qa_answers` — for each of the 12 Q&A questions, shows only unanswered ones (up to 4 displayed)
 
 **Recipe blanks detected** (via events → menus → dishes → components → recipes):
+
 - `photo_url` — null
 - `method_detailed` — null
 - `notes` — null
 - `prep_time_minutes` AND `cook_time_minutes` — both null
 
-A recipe is only shown in the debrief if it has *at least one* blank field. Recipes that are fully filled in are excluded.
+A recipe is only shown in the debrief if it has _at least one_ blank field. Recipes that are fully filled in are excluded.
 
 **Section visibility:**
+
 - Dish Gallery — always shown
 - Recipe Notes — only if 1+ recipes have blanks
 - Client Insights — only if `client.hasAnyBlanks === true`
@@ -87,28 +90,28 @@ Two activity actions are used (non-blocking):
 
 Each section saves independently:
 
-| Section | Trigger | Action |
-|---------|---------|--------|
-| Photos | On each upload (existing gallery) | `uploadEventPhoto` |
-| Recipe notes | Per-recipe "Save" button | `saveRecipeDebrief` |
-| Client insights | "Save Client Insights" button | `saveClientInsights` |
-| Reflection rating | On star click | `saveDebriefReflection` |
-| Reflection notes | On textarea blur | `saveDebriefReflection` |
-| Complete | "Complete Debrief" button | `completeDebrief` → redirect to event |
+| Section           | Trigger                           | Action                                |
+| ----------------- | --------------------------------- | ------------------------------------- |
+| Photos            | On each upload (existing gallery) | `uploadEventPhoto`                    |
+| Recipe notes      | Per-recipe "Save" button          | `saveRecipeDebrief`                   |
+| Client insights   | "Save Client Insights" button     | `saveClientInsights`                  |
+| Reflection rating | On star click                     | `saveDebriefReflection`               |
+| Reflection notes  | On textarea blur                  | `saveDebriefReflection`               |
+| Complete          | "Complete Debrief" button         | `completeDebrief` → redirect to event |
 
 Fun Q&A answers are **merged** — existing answers set by the client or in prior debriefs are never overwritten. Only new keys or explicit updates are applied.
 
 ## Files Changed
 
-| File | Change Type | Purpose |
-|------|------------|---------|
-| `supabase/migrations/20260302000001_post_event_debrief_fields.sql` | New | Additive migration: 3 columns on events |
-| `lib/activity/chef-types.ts` | Modified | Added `debrief_completed` to `ChefActivityAction` |
-| `lib/events/debrief-actions.ts` | New | All server actions for the debrief flow |
-| `app/(chef)/events/[id]/debrief/page.tsx` | New | Server component page (guard + data loading) |
-| `components/events/event-debrief-client.tsx` | New | Client component: section UI, star rating, tag input, per-section saves |
-| `app/(chef)/events/[id]/page.tsx` | Modified | Added debrief CTA cards (amber if pending, green if complete) |
-| `docs/post-event-debrief.md` | New | This document |
+| File                                                               | Change Type | Purpose                                                                 |
+| ------------------------------------------------------------------ | ----------- | ----------------------------------------------------------------------- |
+| `supabase/migrations/20260302000001_post_event_debrief_fields.sql` | New         | Additive migration: 3 columns on events                                 |
+| `lib/activity/chef-types.ts`                                       | Modified    | Added `debrief_completed` to `ChefActivityAction`                       |
+| `lib/events/debrief-actions.ts`                                    | New         | All server actions for the debrief flow                                 |
+| `app/(chef)/events/[id]/debrief/page.tsx`                          | New         | Server component page (guard + data loading)                            |
+| `components/events/event-debrief-client.tsx`                       | New         | Client component: section UI, star rating, tag input, per-section saves |
+| `app/(chef)/events/[id]/page.tsx`                                  | Modified    | Added debrief CTA cards (amber if pending, green if complete)           |
+| `docs/post-event-debrief.md`                                       | New         | This document                                                           |
 
 ## How to Test
 

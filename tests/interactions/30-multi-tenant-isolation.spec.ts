@@ -26,8 +26,11 @@ test.describe('Multi-Tenant Isolation — Events', () => {
       status === 404 ||
       status === 403 ||
       !url.includes(seedIds.chefBEventId) ||
-      await page.getByText(/not found|not authorized|access denied|doesn't exist/i)
-        .first().isVisible().catch(() => false)
+      (await page
+        .getByText(/not found|not authorized|access denied|doesn't exist/i)
+        .first()
+        .isVisible()
+        .catch(() => false))
 
     expect(isBlocked, `Chef A must not see Chef B's event (${seedIds.chefBEventId})`).toBeTruthy()
   })
@@ -74,7 +77,11 @@ test.describe('Multi-Tenant Isolation — Events', () => {
     await page.goto('/events')
     await page.waitForLoadState('networkidle')
     // Chef B's event is named "TEST Chef B Private Dinner"
-    const chefBEventText = await page.getByText('Chef B Private Dinner').first().isVisible().catch(() => false)
+    const chefBEventText = await page
+      .getByText('Chef B Private Dinner')
+      .first()
+      .isVisible()
+      .catch(() => false)
     expect(chefBEventText, "Chef B's event should not appear in Chef A's events list").toBeFalsy()
   })
 })
@@ -95,8 +102,15 @@ test.describe('Multi-Tenant Isolation — Clients', () => {
     await page.goto('/clients')
     await page.waitForLoadState('networkidle')
     // Chef B's client is named "TEST - Chef B Client E2E"
-    const chefBClientText = await page.getByText('Chef B Client E2E').first().isVisible().catch(() => false)
-    expect(chefBClientText, "Chef B's client should not appear in Chef A's clients list").toBeFalsy()
+    const chefBClientText = await page
+      .getByText('Chef B Client E2E')
+      .first()
+      .isVisible()
+      .catch(() => false)
+    expect(
+      chefBClientText,
+      "Chef B's client should not appear in Chef A's clients list"
+    ).toBeFalsy()
   })
 })
 
@@ -104,18 +118,14 @@ test.describe('Multi-Tenant Isolation — Clients', () => {
 
 test.describe('Multi-Tenant Isolation — API Endpoints', () => {
   test('Chef A cannot fetch Chef B event document via API', async ({ page, seedIds }) => {
-    const resp = await page.request.get(
-      `/api/events/${seedIds.chefBEventId}/documents/invoice`
-    )
+    const resp = await page.request.get(`/api/events/${seedIds.chefBEventId}/documents/invoice`)
     // Should return 404 or 403 — NOT a 200 with Chef B's data
     expect(resp.status()).not.toBe(200)
     expect(resp.status()).toBeLessThan(500)
   })
 
   test('Chef A cannot fetch Chef B event receipt via API', async ({ page, seedIds }) => {
-    const resp = await page.request.get(
-      `/api/documents/financial-summary/${seedIds.chefBEventId}`
-    )
+    const resp = await page.request.get(`/api/documents/financial-summary/${seedIds.chefBEventId}`)
     expect(resp.status()).not.toBe(200)
     expect(resp.status()).toBeLessThan(500)
   })
@@ -131,10 +141,8 @@ test.describe('Multi-Tenant Isolation — API Endpoints', () => {
     const body = await resp.json().catch(() => null)
     if (!body) return
 
-    const events = Array.isArray(body) ? body : body.events ?? body.data ?? []
-    const chefBEventFound = events.some(
-      (e: { id?: string }) => e.id === seedIds.chefBEventId
-    )
+    const events = Array.isArray(body) ? body : (body.events ?? body.data ?? [])
+    const chefBEventFound = events.some((e: { id?: string }) => e.id === seedIds.chefBEventId)
     expect(chefBEventFound, "Chef A's events API should not return Chef B's event").toBeFalsy()
   })
 
@@ -148,10 +156,8 @@ test.describe('Multi-Tenant Isolation — API Endpoints', () => {
     const body = await resp.json().catch(() => null)
     if (!body) return
 
-    const clients = Array.isArray(body) ? body : body.clients ?? body.data ?? []
-    const chefBClientFound = clients.some(
-      (c: { id?: string }) => c.id === seedIds.chefBClientId
-    )
+    const clients = Array.isArray(body) ? body : (body.clients ?? body.data ?? [])
+    const chefBClientFound = clients.some((c: { id?: string }) => c.id === seedIds.chefBClientId)
     expect(chefBClientFound, "Chef A's clients API should not return Chef B's client").toBeFalsy()
   })
 })
@@ -180,14 +186,20 @@ test.describe('Multi-Tenant Isolation — Dashboard', () => {
 
     const bodyText = await page.locator('body').innerText()
     const chefBDataVisible = bodyText.includes(seedIds.chefBId)
-    expect(chefBDataVisible, "Chef A's finance page should not reference Chef B's tenant ID").toBeFalsy()
+    expect(
+      chefBDataVisible,
+      "Chef A's finance page should not reference Chef B's tenant ID"
+    ).toBeFalsy()
   })
 })
 
 // ─── No Errors During Isolation Attempts ──────────────────────────────────────
 
 test.describe('Multi-Tenant Isolation — No Server Errors', () => {
-  test('All Chef B URL access attempts return structured errors, not 500s', async ({ page, seedIds }) => {
+  test('All Chef B URL access attempts return structured errors, not 500s', async ({
+    page,
+    seedIds,
+  }) => {
     const chefBUrls = [
       `/events/${seedIds.chefBEventId}`,
       `/events/${seedIds.chefBEventId}/dop`,
@@ -198,10 +210,7 @@ test.describe('Multi-Tenant Isolation — No Server Errors', () => {
     for (const url of chefBUrls) {
       const resp = await page.goto(url)
       const status = resp?.status() ?? 0
-      expect(
-        status,
-        `${url} should not return a 500 server error`
-      ).not.toBe(500)
+      expect(status, `${url} should not return a 500 server error`).not.toBe(500)
     }
   })
 

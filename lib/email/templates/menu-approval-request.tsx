@@ -69,16 +69,32 @@ export function MenuApprovalRequestEmail({
       </div>
 
       <Text style={muted}>
-        You can approve the menu as-is or send a note with any requests. Your chef will be
-        notified immediately.
+        You can approve the menu as-is or send a note with any requests. Your chef will be notified
+        immediately.
       </Text>
     </BaseLayout>
   )
 }
 
-const heading  = { fontSize: '24px', fontWeight: '600' as const, color: '#18181b', margin: '0 0 16px' }
+const heading = {
+  fontSize: '24px',
+  fontWeight: '600' as const,
+  color: '#18181b',
+  margin: '0 0 16px',
+}
 const paragraph = { fontSize: '15px', lineHeight: '1.6', color: '#374151', margin: '0 0 16px' }
-const menuBox  = { backgroundColor: '#fafaf9', border: '1px solid #e7e5e4', borderRadius: '8px', padding: '16px', marginBottom: '20px' }
-const menuName = { fontSize: '14px', fontWeight: '600' as const, color: '#292524', margin: '0 0 4px' }
+const menuBox = {
+  backgroundColor: '#fafaf9',
+  border: '1px solid #e7e5e4',
+  borderRadius: '8px',
+  padding: '16px',
+  marginBottom: '20px',
+}
+const menuName = {
+  fontSize: '14px',
+  fontWeight: '600' as const,
+  color: '#292524',
+  margin: '0 0 4px',
+}
 const dishItem = { fontSize: '13px', color: '#57534e', margin: '2px 0' }
-const muted    = { fontSize: '13px', color: '#9ca3af', margin: '0' }
+const muted = { fontSize: '13px', color: '#9ca3af', margin: '0' }

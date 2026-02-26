@@ -53,8 +53,12 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
     // If the same person submitted a form on Wix, the form notification email
     // might also arrive in Gmail. Check for matching email within a 10-min window.
     if (extracted.email) {
-      const tenMinAgo = new Date(new Date(submission.created_at).getTime() - 10 * 60 * 1000).toISOString()
-      const tenMinAhead = new Date(new Date(submission.created_at).getTime() + 10 * 60 * 1000).toISOString()
+      const tenMinAgo = new Date(
+        new Date(submission.created_at).getTime() - 10 * 60 * 1000
+      ).toISOString()
+      const tenMinAhead = new Date(
+        new Date(submission.created_at).getTime() + 10 * 60 * 1000
+      ).toISOString()
 
       const { data: gmailMatch } = await supabase
         .from('gmail_sync_log')
@@ -96,7 +100,8 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
           tenantId: submission.tenant_id,
           source: 'website_form',
           externalId: submission.id,
-          externalThreadKey: submission.wix_form_id || extracted.email || extracted.phone || submission.id,
+          externalThreadKey:
+            submission.wix_form_id || extracted.email || extracted.phone || submission.id,
           timestamp: new Date(submission.created_at).toISOString(),
           senderIdentity: extracted.email
             ? `${extracted.name || extracted.email} <${extracted.email}>`
@@ -162,9 +167,8 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
         confirmed_service_expectations: parseResult.parsed.confirmed_service_expectations || null,
         confirmed_cannabis_preference: parseResult.parsed.confirmed_cannabis_preference || null,
         source_message: sourceText,
-        unknown_fields: Object.keys(unknownFields).length > 0
-          ? (unknownFields as unknown as Json)
-          : null,
+        unknown_fields:
+          Object.keys(unknownFields).length > 0 ? (unknownFields as unknown as Json) : null,
         next_action_required: 'Review Wix form submission',
         next_action_by: 'chef',
       })
@@ -174,19 +178,17 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
     if (inquiryError) throw new Error(`Inquiry creation failed: ${inquiryError.message}`)
 
     // 9. Log the raw message in the messages table (CRM record)
-    await supabase
-      .from('messages')
-      .insert({
-        tenant_id: submission.tenant_id,
-        inquiry_id: inquiry.id,
-        client_id: clientId,
-        channel: 'email' as const,
-        direction: 'inbound' as const,
-        status: 'logged' as const,
-        subject: 'Wix Form Submission',
-        body: sourceText,
-        sent_at: new Date(submission.created_at).toISOString(),
-      })
+    await supabase.from('messages').insert({
+      tenant_id: submission.tenant_id,
+      inquiry_id: inquiry.id,
+      client_id: clientId,
+      channel: 'email' as const,
+      direction: 'inbound' as const,
+      status: 'logged' as const,
+      subject: 'Wix Form Submission',
+      body: sourceText,
+      sent_at: new Date(submission.created_at).toISOString(),
+    })
 
     // 10. Update submission as completed
     await supabase
@@ -320,16 +322,16 @@ function extractContactInfo(payload: Record<string, unknown>): {
     if (typeof value !== 'string' || !value.trim()) continue
     const lowerKey = key.toLowerCase().replace(/[^a-z0-9]/g, '_')
 
-    if (!name && namePatterns.some(p => lowerKey.includes(p))) {
+    if (!name && namePatterns.some((p) => lowerKey.includes(p))) {
       name = value.trim()
     }
-    if (!email && (emailPatterns.some(p => lowerKey.includes(p)) || value.includes('@'))) {
+    if (!email && (emailPatterns.some((p) => lowerKey.includes(p)) || value.includes('@'))) {
       // Validate it looks like an email
       if (value.includes('@') && value.includes('.')) {
         email = value.trim().toLowerCase()
       }
     }
-    if (!phone && phonePatterns.some(p => lowerKey.includes(p))) {
+    if (!phone && phonePatterns.some((p) => lowerKey.includes(p))) {
       phone = value.trim()
     }
   }
@@ -360,7 +362,7 @@ function buildSourceText(
     if (skipKeys.has(lowerKey)) continue
 
     // Use the original key as a label
-    const label = key.replace(/[_-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+    const label = key.replace(/[_-]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
     lines.push(`${label}: ${value.trim()}`)
   }
 
@@ -369,10 +371,7 @@ function buildSourceText(
 
 // ─── Flatten Nested Payload ──────────────────────────────────────────────
 
-function flattenPayload(
-  obj: Record<string, unknown>,
-  prefix = ''
-): Record<string, string> {
+function flattenPayload(obj: Record<string, unknown>, prefix = ''): Record<string, string> {
   const result: Record<string, string> = {}
 
   for (const [key, value] of Object.entries(obj)) {
@@ -385,7 +384,7 @@ function flattenPayload(
     } else if (value && typeof value === 'object' && !Array.isArray(value)) {
       Object.assign(result, flattenPayload(value as Record<string, unknown>, fullKey))
     } else if (Array.isArray(value)) {
-      result[fullKey] = value.map(v => typeof v === 'string' ? v : JSON.stringify(v)).join(', ')
+      result[fullKey] = value.map((v) => (typeof v === 'string' ? v : JSON.stringify(v))).join(', ')
     }
   }
 

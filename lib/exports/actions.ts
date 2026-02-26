@@ -14,9 +14,7 @@ import { format } from 'date-fns'
 
 function formatDollars(cents: number): string {
   const dollars = cents / 100
-  return dollars < 0
-    ? `-$${Math.abs(dollars).toFixed(2)}`
-    : `$${dollars.toFixed(2)}`
+  return dollars < 0 ? `-$${Math.abs(dollars).toFixed(2)}` : `$${dollars.toFixed(2)}`
 }
 
 function csvEscape(value: string | null | undefined): string {
@@ -30,11 +28,13 @@ function csvEscape(value: string | null | undefined): string {
 }
 
 function csvRow(cells: (string | number | null | undefined)[]): string {
-  return cells.map(cell => {
-    if (cell === null || cell === undefined) return ''
-    if (typeof cell === 'number') return cell.toString()
-    return csvEscape(cell)
-  }).join(',')
+  return cells
+    .map((cell) => {
+      if (cell === null || cell === undefined) return ''
+      if (typeof cell === 'number') return cell.toString()
+      return csvEscape(cell)
+    })
+    .join(',')
 }
 
 // --- Export 1: Per-Event Financial Statement ---
@@ -84,12 +84,10 @@ export async function exportEventCSV(eventId: string) {
   }
 
   const profitCents = totalRevenueCents - totalBusinessExpensesCents
-  const marginPercent = totalRevenueCents > 0
-    ? ((profitCents / totalRevenueCents) * 100).toFixed(1)
-    : '0.0'
-  const foodCostPercent = totalRevenueCents > 0
-    ? ((foodCostCents / totalRevenueCents) * 100).toFixed(1)
-    : '0.0'
+  const marginPercent =
+    totalRevenueCents > 0 ? ((profitCents / totalRevenueCents) * 100).toFixed(1) : '0.0'
+  const foodCostPercent =
+    totalRevenueCents > 0 ? ((foodCostCents / totalRevenueCents) * 100).toFixed(1) : '0.0'
 
   // Build CSV
   const lines: string[] = []
@@ -108,32 +106,56 @@ export async function exportEventCSV(eventId: string) {
   lines.push('=== REVENUE ===')
   lines.push(csvRow(['Date', 'Type', 'Amount', 'Payment Method', 'Description']))
   for (const entry of ledgerEntries) {
-    lines.push(csvRow([
-      format(new Date(entry.created_at), 'yyyy-MM-dd'),
-      entry.entry_type,
-      formatDollars(entry.amount_cents),
-      entry.payment_method,
-      entry.description,
-    ]))
+    lines.push(
+      csvRow([
+        format(new Date(entry.created_at), 'yyyy-MM-dd'),
+        entry.entry_type,
+        formatDollars(entry.amount_cents),
+        entry.payment_method,
+        entry.description,
+      ])
+    )
   }
   lines.push(csvRow(['', '', formatDollars(totalRevenueCents), '', 'TOTAL REVENUE']))
   lines.push('')
 
   // Expenses section
   lines.push('=== EXPENSES ===')
-  lines.push(csvRow(['Date', 'Category', 'Vendor', 'Amount', 'Payment Method', 'Business/Personal', 'Description']))
+  lines.push(
+    csvRow([
+      'Date',
+      'Category',
+      'Vendor',
+      'Amount',
+      'Payment Method',
+      'Business/Personal',
+      'Description',
+    ])
+  )
   for (const exp of expenses) {
-    lines.push(csvRow([
-      exp.expense_date,
-      getCategoryLabel(exp.category),
-      exp.vendor_name,
-      formatDollars(exp.amount_cents),
-      exp.payment_method,
-      exp.is_business ? 'Business' : 'Personal',
-      exp.description,
-    ]))
+    lines.push(
+      csvRow([
+        exp.expense_date,
+        getCategoryLabel(exp.category),
+        exp.vendor_name,
+        formatDollars(exp.amount_cents),
+        exp.payment_method,
+        exp.is_business ? 'Business' : 'Personal',
+        exp.description,
+      ])
+    )
   }
-  lines.push(csvRow(['', '', '', formatDollars(totalBusinessExpensesCents), '', '', 'TOTAL BUSINESS EXPENSES']))
+  lines.push(
+    csvRow([
+      '',
+      '',
+      '',
+      formatDollars(totalBusinessExpensesCents),
+      '',
+      '',
+      'TOTAL BUSINESS EXPENSES',
+    ])
+  )
   lines.push('')
 
   // Summary section
@@ -163,34 +185,50 @@ export async function exportExpensesCSV(filters: ExpenseFilters = {}) {
 
   const lines: string[] = []
 
-  lines.push(csvRow([
-    'Date', 'Event', 'Event Date', 'Client', 'Category', 'Vendor',
-    'Amount', 'Description', 'Payment Method', 'Card Used',
-    'Business/Personal', 'Reimbursable', 'Notes',
-  ]))
+  lines.push(
+    csvRow([
+      'Date',
+      'Event',
+      'Event Date',
+      'Client',
+      'Category',
+      'Vendor',
+      'Amount',
+      'Description',
+      'Payment Method',
+      'Card Used',
+      'Business/Personal',
+      'Reimbursable',
+      'Notes',
+    ])
+  )
 
   for (const exp of expenses) {
     const event = (exp as any).event
-    lines.push(csvRow([
-      exp.expense_date,
-      event?.occasion || '(general)',
-      event?.event_date || '',
-      event?.client?.full_name || '',
-      getCategoryLabel(exp.category),
-      exp.vendor_name,
-      formatDollars(exp.amount_cents),
-      exp.description,
-      exp.payment_method,
-      exp.payment_card_used,
-      exp.is_business ? 'Business' : 'Personal',
-      exp.is_reimbursable ? 'Yes' : 'No',
-      exp.notes,
-    ]))
+    lines.push(
+      csvRow([
+        exp.expense_date,
+        event?.occasion || '(general)',
+        event?.event_date || '',
+        event?.client?.full_name || '',
+        getCategoryLabel(exp.category),
+        exp.vendor_name,
+        formatDollars(exp.amount_cents),
+        exp.description,
+        exp.payment_method,
+        exp.payment_card_used,
+        exp.is_business ? 'Business' : 'Personal',
+        exp.is_reimbursable ? 'Yes' : 'No',
+        exp.notes,
+      ])
+    )
   }
 
   // Total row
   const totalCents = expenses.reduce((sum, e) => sum + e.amount_cents, 0)
-  const businessCents = expenses.filter(e => e.is_business).reduce((sum, e) => sum + e.amount_cents, 0)
+  const businessCents = expenses
+    .filter((e) => e.is_business)
+    .reduce((sum, e) => sum + e.amount_cents, 0)
   lines.push('')
   lines.push(csvRow(['', '', '', '', '', 'TOTAL', formatDollars(totalCents)]))
   lines.push(csvRow(['', '', '', '', '', 'TOTAL BUSINESS', formatDollars(businessCents)]))
@@ -233,13 +271,13 @@ export async function exportAllEventsCSV(year: number) {
     .gte('expense_date', startDate)
     .lt('expense_date', endDate)
 
-  const summaryMap = new Map((summaries || []).map(s => [s.event_id, s]))
+  const summaryMap = new Map((summaries || []).map((s) => [s.event_id, s]))
 
   // Build per-event expense breakdown by category
   const expensesByEvent = new Map<string | null, Map<string, number>>()
   const expenseTotalsByEvent = new Map<string | null, number>()
 
-  for (const exp of (allExpenses || [])) {
+  for (const exp of allExpenses || []) {
     if (!exp.is_business) continue
     const key = exp.event_id || null
     if (!expensesByEvent.has(key)) {
@@ -252,18 +290,27 @@ export async function exportAllEventsCSV(year: number) {
   }
 
   // Category columns (all 17 minus "other" which goes last)
-  const categoryColumns = EXPENSE_CATEGORY_VALUES.filter(c => c !== 'other')
+  const categoryColumns = EXPENSE_CATEGORY_VALUES.filter((c) => c !== 'other')
 
   const lines: string[] = []
 
   // Header
   const headers = [
-    'Event Date', 'Event Name', 'Client', 'Guests', 'Status',
-    'Quoted Price', 'Total Paid', 'Tips', 'Refunds', 'Net Revenue',
+    'Event Date',
+    'Event Name',
+    'Client',
+    'Guests',
+    'Status',
+    'Quoted Price',
+    'Total Paid',
+    'Tips',
+    'Refunds',
+    'Net Revenue',
     'Total Expenses',
-    ...categoryColumns.map(c => getCategoryLabel(c)),
+    ...categoryColumns.map((c) => getCategoryLabel(c)),
     'Other',
-    'Profit', 'Margin %',
+    'Profit',
+    'Margin %',
   ]
   lines.push(csvRow(headers))
 
@@ -278,7 +325,7 @@ export async function exportAllEventsCSV(year: number) {
   const grandCategoryTotals = new Map<string, number>()
 
   // Event rows
-  for (const event of (events || [])) {
+  for (const event of events || []) {
     const summary = summaryMap.get(event.id)
     const catMap = expensesByEvent.get(event.id) || new Map()
     const totalExp = expenseTotalsByEvent.get(event.id) || 0
@@ -299,7 +346,7 @@ export async function exportAllEventsCSV(year: number) {
     grandExpenses += totalExp
     grandProfit += profitCents
 
-    const catCells = categoryColumns.map(c => {
+    const catCells = categoryColumns.map((c) => {
       const val = catMap.get(c) || 0
       grandCategoryTotals.set(c, (grandCategoryTotals.get(c) || 0) + val)
       return val > 0 ? formatDollars(val) : ''
@@ -307,30 +354,32 @@ export async function exportAllEventsCSV(year: number) {
     const otherVal = catMap.get('other') || 0
     grandCategoryTotals.set('other', (grandCategoryTotals.get('other') || 0) + otherVal)
 
-    lines.push(csvRow([
-      event.event_date,
-      event.occasion || 'Untitled',
-      event.client?.full_name || 'Unknown',
-      event.guest_count,
-      event.status,
-      formatDollars(quotedCents),
-      formatDollars(paidCents),
-      tipCents > 0 ? formatDollars(tipCents) : '',
-      refundCents > 0 ? formatDollars(-refundCents) : '',
-      formatDollars(netCents),
-      totalExp > 0 ? formatDollars(totalExp) : '',
-      ...catCells,
-      otherVal > 0 ? formatDollars(otherVal) : '',
-      formatDollars(profitCents),
-      `${marginPct}%`,
-    ]))
+    lines.push(
+      csvRow([
+        event.event_date,
+        event.occasion || 'Untitled',
+        event.client?.full_name || 'Unknown',
+        event.guest_count,
+        event.status,
+        formatDollars(quotedCents),
+        formatDollars(paidCents),
+        tipCents > 0 ? formatDollars(tipCents) : '',
+        refundCents > 0 ? formatDollars(-refundCents) : '',
+        formatDollars(netCents),
+        totalExp > 0 ? formatDollars(totalExp) : '',
+        ...catCells,
+        otherVal > 0 ? formatDollars(otherVal) : '',
+        formatDollars(profitCents),
+        `${marginPct}%`,
+      ])
+    )
   }
 
   // Unlinked expenses row (general business overhead not tied to events)
   const unlinkedCatMap = expensesByEvent.get(null)
   const unlinkedTotal = expenseTotalsByEvent.get(null) || 0
   if (unlinkedTotal > 0) {
-    const unlinkedCatCells = categoryColumns.map(c => {
+    const unlinkedCatCells = categoryColumns.map((c) => {
       const val = unlinkedCatMap?.get(c) || 0
       grandCategoryTotals.set(c, (grandCategoryTotals.get(c) || 0) + val)
       return val > 0 ? formatDollars(val) : ''
@@ -340,39 +389,55 @@ export async function exportAllEventsCSV(year: number) {
     grandExpenses += unlinkedTotal
     grandProfit -= unlinkedTotal
 
-    lines.push(csvRow([
-      '', 'General Business Expenses', '', '', '',
-      '', '', '', '', '',
-      formatDollars(unlinkedTotal),
-      ...unlinkedCatCells,
-      unlinkedOther > 0 ? formatDollars(unlinkedOther) : '',
-      formatDollars(-unlinkedTotal),
-      '',
-    ]))
+    lines.push(
+      csvRow([
+        '',
+        'General Business Expenses',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        formatDollars(unlinkedTotal),
+        ...unlinkedCatCells,
+        unlinkedOther > 0 ? formatDollars(unlinkedOther) : '',
+        formatDollars(-unlinkedTotal),
+        '',
+      ])
+    )
   }
 
   // Totals row
   lines.push('')
-  const totalCatCells = categoryColumns.map(c => {
+  const totalCatCells = categoryColumns.map((c) => {
     const val = grandCategoryTotals.get(c) || 0
     return val > 0 ? formatDollars(val) : ''
   })
   const totalOther = grandCategoryTotals.get('other') || 0
   const grandMargin = grandNet > 0 ? ((grandProfit / grandNet) * 100).toFixed(1) : '0.0'
 
-  lines.push(csvRow([
-    '', 'TOTALS', '', '', '',
-    formatDollars(grandQuoted),
-    formatDollars(grandPaid),
-    grandTips > 0 ? formatDollars(grandTips) : '',
-    grandRefunds > 0 ? formatDollars(-grandRefunds) : '',
-    formatDollars(grandNet),
-    formatDollars(grandExpenses),
-    ...totalCatCells,
-    totalOther > 0 ? formatDollars(totalOther) : '',
-    formatDollars(grandProfit),
-    `${grandMargin}%`,
-  ]))
+  lines.push(
+    csvRow([
+      '',
+      'TOTALS',
+      '',
+      '',
+      '',
+      formatDollars(grandQuoted),
+      formatDollars(grandPaid),
+      grandTips > 0 ? formatDollars(grandTips) : '',
+      grandRefunds > 0 ? formatDollars(-grandRefunds) : '',
+      formatDollars(grandNet),
+      formatDollars(grandExpenses),
+      ...totalCatCells,
+      totalOther > 0 ? formatDollars(totalOther) : '',
+      formatDollars(grandProfit),
+      `${grandMargin}%`,
+    ])
+  )
 
   return {
     csv: lines.join('\n'),

@@ -2,6 +2,7 @@
 
 **Date:** 2026-02-17
 **Files Changed:**
+
 - `lib/loyalty/actions.ts`
 - `app/api/webhooks/stripe/route.ts`
 - `lib/search/universal-search.ts`
@@ -18,6 +19,7 @@ The `tierChanged` field in the return value was computed incorrectly. The old co
 Additionally, the old code used `client.loyalty_points` (current redeemable balance) instead of lifetime earned points. Since tiers are based on lifetime earned (not current balance), using the balance would produce wrong results for any client who had redeemed points.
 
 **Fix:**
+
 1. Added a query to compute old lifetime earned points BEFORE any new loyalty transactions are inserted (lines 318-327).
 2. The old tier is now computed from `oldLifetimeEarned` using the same `computeTier` function.
 3. Changed the `tierChanged` return value from the complex inline expression to `newTier !== oldTier`.
@@ -33,12 +35,14 @@ Tier upgrades trigger UI celebrations and potentially different service tiers. A
 
 **Problem:**
 When a Stripe payment succeeds, two things happen: (1) a ledger entry is appended, and (2) the event transitions to 'paid' status. If step 2 fails, the error was logged to console but no persistent record was created. This meant:
+
 - The ledger correctly recorded the payment (money truth preserved).
 - But the event might stay in 'accepted' status even though it's been paid.
 - The only evidence of the failure was in ephemeral server logs.
 
 **Fix:**
 After the catch block for the transition failure, added code to insert an audit entry into `event_state_transitions` with:
+
 - `from_status: null` (we don't know the exact current status from inside the catch)
 - `to_status: 'paid'` (the intended transition)
 - `transitioned_by: null` (system-initiated)
@@ -49,6 +53,7 @@ The audit insert itself uses `.then()/.catch()` to ensure it never throws, since
 
 **Why it matters:**
 This creates a queryable audit trail. The chef (or a support process) can find events that need manual status correction by querying:
+
 ```sql
 SELECT * FROM event_state_transitions
 WHERE reason = 'Auto-transition failed after payment'
@@ -63,6 +68,7 @@ AND metadata->>'requires_manual_review' = 'true';
 
 **Problem:**
 The universal search file had `@ts-nocheck` suppressing all TypeScript errors because the column names and scoping fields didn't match the actual database schema. Specific issues:
+
 1. Used `name` instead of `full_name` for clients.
 2. Used `title` instead of `occasion` for events.
 3. Used `client_name` for inquiries, which doesn't exist in the schema.
@@ -72,6 +78,7 @@ The universal search file had `@ts-nocheck` suppressing all TypeScript errors be
 
 **Fix:**
 Complete rewrite of all queries to match actual schema:
+
 - **Clients:** `full_name`, `email`, `phone` with `tenant_id` scoping.
 - **Events:** `occasion`, `event_date`, `status` with `tenant_id` scoping.
 - **Inquiries:** `source_message`, `confirmed_occasion`, `confirmed_date`, `status` with `tenant_id` scoping. Search matches against `source_message` and `confirmed_occasion`.
@@ -81,6 +88,7 @@ Complete rewrite of all queries to match actual schema:
 - Removed unnecessary `await` on `createServerClient()`.
 
 **Schema references used:**
+
 - `supabase/migrations/20260215000001_layer_1_foundation.sql` (clients)
 - `supabase/migrations/20260215000002_layer_2_inquiry_messaging.sql` (inquiries)
 - `supabase/migrations/20260215000003_layer_3_events_quotes_financials.sql` (events)

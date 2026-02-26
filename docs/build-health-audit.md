@@ -24,18 +24,18 @@ Additionally, several TypeScript type errors and a stale `.next` cache were reso
 
 Each affected file had constants/schemas extracted into a sibling file without `'use server'`. All consumer imports were updated to the new paths.
 
-| Action File (was `'use server'`) | Extracted To | What Was Moved |
-|---|---|---|
-| `lib/clients/client-profile-actions.ts` | `lib/clients/fun-qa-constants.ts` | `FUN_QA_QUESTIONS`, `FunQAKey`, `FunQAAnswers` |
-| `lib/admin-time/actions.ts` | `lib/admin-time/constants.ts` | `ADMIN_TIME_CATEGORIES`, `AdminTimeCategory` |
-| `lib/ai/parse-client.ts` | `lib/ai/parse-client-schema.ts` | `ParsedClientSchema`, `ParsedClient` |
-| `lib/ai/parse-recipe.ts` | `lib/ai/parse-recipe-schema.ts` | `ParsedRecipeSchema`, `ParsedRecipe`, `ParsedIngredient` |
-| `lib/compliance/actions.ts` | `lib/compliance/constants.ts` | `SAFE_TEMP_RANGES` |
-| `lib/contingency/actions.ts` | `lib/contingency/constants.ts` | `SCENARIO_LABELS` |
-| `lib/events/fire-order.ts` | `lib/events/fire-order-constants.ts` | `COURSE_COLORS`, `COURSE_ORDER`, `STATION_LABELS`, `CourseType`, `StationType` |
-| `lib/professional/actions.ts` | `lib/professional/constants.ts` | `ACHIEVE_TYPE_LABELS`, `GOAL_CATEGORY_LABELS` |
-| `lib/waste/actions.ts` | `lib/waste/constants.ts` | `WASTE_REASONS`, `UNITS`, `WasteReason`, `IngredientUnit` |
-| `lib/calendar/actions.ts` | `lib/calendar/types.ts` | `UnifiedCalendarItemType`, `CalendarCategory`, `UnifiedCalendarItem`, `CalendarFilters`, `DEFAULT_CALENDAR_FILTERS`, `WeekDensity` |
+| Action File (was `'use server'`)        | Extracted To                         | What Was Moved                                                                                                                     |
+| --------------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `lib/clients/client-profile-actions.ts` | `lib/clients/fun-qa-constants.ts`    | `FUN_QA_QUESTIONS`, `FunQAKey`, `FunQAAnswers`                                                                                     |
+| `lib/admin-time/actions.ts`             | `lib/admin-time/constants.ts`        | `ADMIN_TIME_CATEGORIES`, `AdminTimeCategory`                                                                                       |
+| `lib/ai/parse-client.ts`                | `lib/ai/parse-client-schema.ts`      | `ParsedClientSchema`, `ParsedClient`                                                                                               |
+| `lib/ai/parse-recipe.ts`                | `lib/ai/parse-recipe-schema.ts`      | `ParsedRecipeSchema`, `ParsedRecipe`, `ParsedIngredient`                                                                           |
+| `lib/compliance/actions.ts`             | `lib/compliance/constants.ts`        | `SAFE_TEMP_RANGES`                                                                                                                 |
+| `lib/contingency/actions.ts`            | `lib/contingency/constants.ts`       | `SCENARIO_LABELS`                                                                                                                  |
+| `lib/events/fire-order.ts`              | `lib/events/fire-order-constants.ts` | `COURSE_COLORS`, `COURSE_ORDER`, `STATION_LABELS`, `CourseType`, `StationType`                                                     |
+| `lib/professional/actions.ts`           | `lib/professional/constants.ts`      | `ACHIEVE_TYPE_LABELS`, `GOAL_CATEGORY_LABELS`                                                                                      |
+| `lib/waste/actions.ts`                  | `lib/waste/constants.ts`             | `WASTE_REASONS`, `UNITS`, `WasteReason`, `IngredientUnit`                                                                          |
+| `lib/calendar/actions.ts`               | `lib/calendar/types.ts`              | `UnifiedCalendarItemType`, `CalendarCategory`, `UnifiedCalendarItem`, `CalendarFilters`, `DEFAULT_CALENDAR_FILTERS`, `WeekDensity` |
 
 **Rule:** The new constants files have no `'use server'` directive and export only types and plain values. The action files retain `'use server'` and import the constants as values where needed internally.
 
@@ -48,11 +48,13 @@ Each affected file had constants/schemas extracted into a sibling file without `
 **Problem:** `cron_executions` table exists in a migration but is not yet reflected in the generated `types/database.ts`. The TypeScript compiler rejected `.from('cron_executions')` because the string literal wasn't in the known table union.
 
 **Pattern that DOES NOT work:**
+
 ```typescript
-supabase.from('cron_executions' as any)  // ❌ casting the string arg doesn't help
+supabase.from('cron_executions' as any) // ❌ casting the string arg doesn't help
 ```
 
 **Pattern that works:**
+
 ```typescript
 const db = supabase as any
 const { data: recentRunsRaw } = await db.from('cron_executions').select(...)
@@ -70,12 +72,13 @@ This is the same pattern already used in `lib/webhooks/audit-log.ts` for the `we
 **Problem:** TypeScript 5.x enforces that a type cast from type A to type B requires sufficient overlap. When Supabase returns a `SelectQueryError` (because a joined column is not in the schema definition), casting directly to `any[]` fails:
 
 ```typescript
-(event.menus as any[])  // ❌ SelectQueryError does not overlap with any[]
+event.menus as any[] // ❌ SelectQueryError does not overlap with any[]
 ```
 
 **Fix:**
+
 ```typescript
-((event.menus as unknown) as any[])  // ✅ routes through unknown first
+event.menus as unknown as any[] // ✅ routes through unknown first
 ```
 
 The intermediate `unknown` cast is the TypeScript-safe escape hatch for cases where the source type is a structural mismatch.

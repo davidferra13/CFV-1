@@ -59,11 +59,12 @@ async function handleCreateNotification(
     action: 'system_alert',
     title,
     body: body || undefined,
-    actionUrl: context.entityType === 'inquiry' && context.entityId
-      ? `/inquiries/${context.entityId}`
-      : context.entityType === 'event' && context.entityId
-        ? `/events/${context.entityId}`
-        : undefined,
+    actionUrl:
+      context.entityType === 'inquiry' && context.entityId
+        ? `/inquiries/${context.entityId}`
+        : context.entityType === 'event' && context.entityId
+          ? `/events/${context.entityId}`
+          : undefined,
     inquiryId: context.entityType === 'inquiry' ? context.entityId : undefined,
     eventId: context.entityType === 'event' ? context.entityId : undefined,
     metadata: { automation_rule_id: rule.id, automation_name: rule.name },
@@ -94,7 +95,10 @@ async function handleCreateFollowUpTask(
       .from('inquiries')
       .update({
         follow_up_due_at: dueAt,
-        next_action_required: interpolate(config.description || 'Follow up (auto-scheduled)', context.fields),
+        next_action_required: interpolate(
+          config.description || 'Follow up (auto-scheduled)',
+          context.fields
+        ),
         next_action_by: 'chef',
       })
       .eq('id', context.entityId)
@@ -138,18 +142,16 @@ async function handleSendTemplateMessage(
   }
 
   // Create a draft message (NOT sent — chef must approve)
-  const { error: msgError } = await supabase
-    .from('messages')
-    .insert({
-      tenant_id: context.tenantId,
-      inquiry_id: context.entityType === 'inquiry' ? context.entityId : null,
-      event_id: context.entityType === 'event' ? context.entityId : null,
-      channel: (config.channel || 'email') as 'email',
-      direction: 'outbound' as const,
-      status: 'draft' as const,
-      body: interpolate(template.template_text, context.fields),
-      subject: `Re: ${interpolate(template.name, context.fields)}`,
-    })
+  const { error: msgError } = await supabase.from('messages').insert({
+    tenant_id: context.tenantId,
+    inquiry_id: context.entityType === 'inquiry' ? context.entityId : null,
+    event_id: context.entityType === 'event' ? context.entityId : null,
+    channel: (config.channel || 'email') as 'email',
+    direction: 'outbound' as const,
+    status: 'draft' as const,
+    body: interpolate(template.template_text, context.fields),
+    subject: `Re: ${interpolate(template.name, context.fields)}`,
+  })
 
   if (msgError) {
     return { success: false, error: `Message creation failed: ${msgError.message}` }
@@ -165,9 +167,10 @@ async function handleSendTemplateMessage(
       action: 'system_alert',
       title: 'Draft message created by automation',
       body: `"${rule.name}" generated a draft using template "${template.name}". Review and send.`,
-      actionUrl: context.entityType === 'inquiry' && context.entityId
-        ? `/inquiries/${context.entityId}`
-        : undefined,
+      actionUrl:
+        context.entityType === 'inquiry' && context.entityId
+          ? `/inquiries/${context.entityId}`
+          : undefined,
       inquiryId: context.entityType === 'inquiry' ? context.entityId : undefined,
     })
   }
@@ -191,17 +194,15 @@ async function handleCreateInternalNote(
 
   const supabase = createServerClient({ admin: true })
 
-  const { error } = await supabase
-    .from('messages')
-    .insert({
-      tenant_id: context.tenantId,
-      inquiry_id: context.entityType === 'inquiry' ? context.entityId : null,
-      event_id: context.entityType === 'event' ? context.entityId : null,
-      channel: 'internal_note' as const,
-      direction: 'outbound' as const,
-      status: 'logged' as const,
-      body: interpolate(config.note, context.fields),
-    })
+  const { error } = await supabase.from('messages').insert({
+    tenant_id: context.tenantId,
+    inquiry_id: context.entityType === 'inquiry' ? context.entityId : null,
+    event_id: context.entityType === 'event' ? context.entityId : null,
+    channel: 'internal_note' as const,
+    direction: 'outbound' as const,
+    status: 'logged' as const,
+    body: interpolate(config.note, context.fields),
+  })
 
   if (error) {
     return { success: false, error: `Note creation failed: ${error.message}` }

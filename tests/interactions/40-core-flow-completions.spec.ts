@@ -21,7 +21,7 @@ import { test, expect } from '../helpers/fixtures'
 test.describe('Flow — Lead to Inquiry', () => {
   test('Convert lead to inquiry button is reachable', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/leads')
     await page.waitForLoadState('networkidle')
@@ -49,7 +49,7 @@ test.describe('Flow — Lead to Inquiry', () => {
 test.describe('Flow — Proposal Send', () => {
   test('Proposal send button is present on proposal detail', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/proposals')
     await page.waitForLoadState('networkidle')
@@ -73,14 +73,12 @@ test.describe('Flow — Proposal Send', () => {
 
   test('Proposal templates page — Use Template button works', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/proposals/templates')
     await page.waitForLoadState('networkidle')
 
-    const useBtn = page
-      .getByRole('button', { name: /use template|use this|select/i })
-      .first()
+    const useBtn = page.getByRole('button', { name: /use template|use this|select/i }).first()
 
     if (await useBtn.isVisible()) {
       await useBtn.click()
@@ -97,7 +95,7 @@ test.describe('Flow — Proposal Send', () => {
 test.describe('Flow — Invoice Lifecycle', () => {
   test('Draft invoice can be opened and has Send button', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/finance/invoices/draft')
     await page.waitForLoadState('networkidle')
@@ -107,9 +105,7 @@ test.describe('Flow — Invoice Lifecycle', () => {
       await firstInvoice.click()
       await page.waitForLoadState('networkidle')
 
-      const sendBtn = page
-        .getByRole('button', { name: /send invoice|mark sent|send/i })
-        .first()
+      const sendBtn = page.getByRole('button', { name: /send invoice|mark sent|send/i }).first()
 
       const isVisible = await sendBtn.isVisible().catch(() => false)
       // Informational
@@ -132,15 +128,13 @@ test.describe('Flow — Invoice Lifecycle', () => {
 test.describe('Flow — Close-Out Wizard', () => {
   test('Close-out wizard can advance past first step', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/events/${seedIds.eventIds.confirmed}/close-out`)
     await page.waitForLoadState('networkidle')
 
     // Try to advance to step 2
-    const nextBtn = page
-      .getByRole('button', { name: /next|continue|proceed/i })
-      .first()
+    const nextBtn = page.getByRole('button', { name: /next|continue|proceed/i }).first()
 
     if (await nextBtn.isVisible()) {
       await nextBtn.click()
@@ -153,7 +147,7 @@ test.describe('Flow — Close-Out Wizard', () => {
 
   test('Close-out checklist items are interactive', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/events/${seedIds.eventIds.confirmed}/close-out`)
     await page.waitForLoadState('networkidle')
@@ -170,7 +164,7 @@ test.describe('Flow — Close-Out Wizard', () => {
 
   test('Close-out marks all 16 checklist items without crashing', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/events/${seedIds.eventIds.confirmed}/close-out`)
     await page.waitForLoadState('networkidle')
@@ -196,14 +190,12 @@ test.describe('Flow — Close-Out Wizard', () => {
 test.describe('Flow — Staff Schedule', () => {
   test('Add shift button opens shift form without crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/staff/schedule')
     await page.waitForLoadState('networkidle')
 
-    const addShiftBtn = page
-      .getByRole('button', { name: /add shift|new shift|schedule/i })
-      .first()
+    const addShiftBtn = page.getByRole('button', { name: /add shift|new shift|schedule/i }).first()
 
     if (await addShiftBtn.isVisible()) {
       await addShiftBtn.click()
@@ -215,7 +207,7 @@ test.describe('Flow — Staff Schedule', () => {
 
   test('Staff performance page loads data or empty state', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/staff/performance')
     await page.waitForLoadState('networkidle')
@@ -229,9 +221,12 @@ test.describe('Flow — Staff Schedule', () => {
 // ─── DOP — Day-Of Protocol Steps ──────────────────────────────────────────────
 
 test.describe('Flow — Day-Of Protocol', () => {
-  test('DOP page renders all three protocol sheets or a loading state', async ({ page, seedIds }) => {
+  test('DOP page renders all three protocol sheets or a loading state', async ({
+    page,
+    seedIds,
+  }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/events/${seedIds.eventIds.confirmed}/dop`)
     await page.waitForLoadState('networkidle')
@@ -243,7 +238,7 @@ test.describe('Flow — Day-Of Protocol', () => {
 
   test('DOP checklist items can be checked', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/events/${seedIds.eventIds.confirmed}/dop`)
     await page.waitForLoadState('networkidle')
@@ -261,9 +256,7 @@ test.describe('Flow — Day-Of Protocol', () => {
     await page.goto(`/events/${seedIds.eventIds.confirmed}/dop`)
     await page.waitForLoadState('networkidle')
 
-    const nonNeg = page
-      .getByText(/non.?negotiable|mandatory|must|required/i)
-      .first()
+    const nonNeg = page.getByText(/non.?negotiable|mandatory|must|required/i).first()
 
     const isVisible = await nonNeg.isVisible().catch(() => false)
     // Informational — may be a separate tab
@@ -276,7 +269,7 @@ test.describe('Flow — Day-Of Protocol', () => {
 test.describe('Flow — AAR Completion', () => {
   test('AAR can be filled and saved without crash', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/events/${seedIds.eventIds.confirmed}/aar`)
     await page.waitForLoadState('networkidle')
@@ -302,9 +295,7 @@ test.describe('Flow — AAR Completion', () => {
     await page.goto(`/events/${seedIds.eventIds.confirmed}/aar`)
     await page.waitForLoadState('networkidle')
 
-    const positiveSection = page
-      .getByText(/went well|positive|success|win/i)
-      .first()
+    const positiveSection = page.getByText(/went well|positive|success|win/i).first()
 
     const isVisible = await positiveSection.isVisible().catch(() => false)
     // Informational
@@ -317,7 +308,7 @@ test.describe('Flow — AAR Completion', () => {
 test.describe('Flow — Quote Send from Chef Side', () => {
   test('Quote detail has Send to Client button', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/quotes')
     await page.waitForLoadState('networkidle')
@@ -345,7 +336,7 @@ test.describe('Flow — Quote Send from Chef Side', () => {
 test.describe('Flow — Grocery Quote Full Flow', () => {
   test('Grocery quote → fetch prices → back to event without crash', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/events/${seedIds.eventIds.confirmed}/grocery-quote`)
     await page.waitForLoadState('networkidle')
@@ -374,7 +365,7 @@ test.describe('Flow — Grocery Quote Full Flow', () => {
 test.describe('Flow — Inbox Triage', () => {
   test('Inbox triage — open first thread without crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/inbox/triage')
     await page.waitForLoadState('networkidle')
@@ -391,14 +382,12 @@ test.describe('Flow — Inbox Triage', () => {
 
   test('Inbox — archive/dismiss button is interactive', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/inbox')
     await page.waitForLoadState('networkidle')
 
-    const archiveBtn = page
-      .getByRole('button', { name: /archive|dismiss|done|mark read/i })
-      .first()
+    const archiveBtn = page.getByRole('button', { name: /archive|dismiss|done|mark read/i }).first()
 
     if (await archiveBtn.isVisible()) {
       await archiveBtn.click()
@@ -423,7 +412,7 @@ test.describe('Flow — Ledger Integrity', () => {
 
   test('Ledger transaction log is navigable', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/finance/ledger/transaction-log')
     await page.waitForLoadState('networkidle')
@@ -435,7 +424,7 @@ test.describe('Flow — Ledger Integrity', () => {
 
   test('Ledger adjustment page loads', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/finance/ledger/adjustments')
     await page.waitForLoadState('networkidle')

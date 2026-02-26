@@ -59,10 +59,12 @@ export async function createStripeRefund(
       charge: charge.id,
       amount: amountCents,
       reason: (reason as Stripe.RefundCreateParams.Reason) || 'requested_by_customer',
-      ...(hasTransfer ? {
-        reverse_transfer: true,
-        refund_application_fee: true,
-      } : {}),
+      ...(hasTransfer
+        ? {
+            reverse_transfer: true,
+            refund_application_fee: true,
+          }
+        : {}),
     })
   )
 
@@ -77,9 +79,7 @@ export async function createStripeRefund(
  * Look up the latest paid PaymentIntent ID for an event from the ledger.
  * Returns null if the event was paid via offline method (no Stripe ID).
  */
-export async function getStripePaymentIntentIdForEvent(
-  eventId: string
-): Promise<string | null> {
+export async function getStripePaymentIntentIdForEvent(eventId: string): Promise<string | null> {
   // Import here to avoid circular deps
   const { createServerClient } = await import('@/lib/supabase/server')
   const supabase = createServerClient({ admin: true })

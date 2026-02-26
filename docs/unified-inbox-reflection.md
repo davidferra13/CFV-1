@@ -7,6 +7,7 @@ Added a unified `/inbox` page that aggregates chat conversations, CRM messages, 
 ## Why
 
 Chefs were context-switching between multiple pages to stay on top of communication:
+
 - `/chat` for real-time conversations
 - `/inquiries/{id}` for CRM message threads
 - Settings for Wix submissions
@@ -19,12 +20,14 @@ The Unified Inbox gives one place to see "what's new" across all channels, with 
 ### Database VIEW (Not Materialized)
 
 The `unified_inbox` is a SQL VIEW that UNIONs four tables:
+
 1. **conversations** — Real-time chat (using last_message_preview for efficiency)
 2. **messages** — CRM communication log (sent + logged only)
 3. **wix_submissions** — Wix form submissions
 4. **notifications** — System notifications (excluding archived)
 
 A VIEW (vs materialized) was chosen because:
+
 - All underlying tables are well-indexed on `(tenant_id, created_at DESC)`
 - Chat and notifications already use Supabase Realtime
 - No trigger maintenance needed — always current
@@ -40,20 +43,20 @@ All items share: `id, tenant_id, source, preview, activity_at, actor_id, inquiry
 
 ## Files Created
 
-| File | Purpose |
-|---|---|
-| `supabase/migrations/20260221000016_unified_inbox.sql` | VIEW definition |
-| `lib/inbox/types.ts` | TypeScript types |
-| `lib/inbox/actions.ts` | `getUnifiedInbox()`, `getInboxStats()` |
-| `app/(chef)/inbox/page.tsx` | Inbox page |
-| `components/inbox/inbox-feed.tsx` | Feed with source filters |
-| `components/inbox/inbox-item-card.tsx` | Per-source card renderer |
-| `components/inbox/inbox-filters.tsx` | Source toggle pills |
+| File                                                   | Purpose                                |
+| ------------------------------------------------------ | -------------------------------------- |
+| `supabase/migrations/20260221000016_unified_inbox.sql` | VIEW definition                        |
+| `lib/inbox/types.ts`                                   | TypeScript types                       |
+| `lib/inbox/actions.ts`                                 | `getUnifiedInbox()`, `getInboxStats()` |
+| `app/(chef)/inbox/page.tsx`                            | Inbox page                             |
+| `components/inbox/inbox-feed.tsx`                      | Feed with source filters               |
+| `components/inbox/inbox-item-card.tsx`                 | Per-source card renderer               |
+| `components/inbox/inbox-filters.tsx`                   | Source toggle pills                    |
 
 ## Files Modified
 
-| File | Change |
-|---|---|
+| File                                 | Change                              |
+| ------------------------------------ | ----------------------------------- |
 | `components/navigation/chef-nav.tsx` | `/chat` → `/inbox` in standaloneTop |
 
 ## How It Connects

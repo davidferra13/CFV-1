@@ -2,23 +2,23 @@
 // Defines roles, statuses, and permissions for cross-chef event collaboration.
 
 export type CollaboratorRole =
-  | 'primary'    // Runs the event — full permissions (what new primary gets on handoff)
-  | 'co_host'    // Equal partner — most permissions, configurable
-  | 'sous_chef'  // Supports primary — limited to kitchen-side actions
-  | 'observer'   // Read-only — typically the original chef after handoff
+  | 'primary' // Runs the event — full permissions (what new primary gets on handoff)
+  | 'co_host' // Equal partner — most permissions, configurable
+  | 'sous_chef' // Supports primary — limited to kitchen-side actions
+  | 'observer' // Read-only — typically the original chef after handoff
 
 export type CollaboratorStatus =
-  | 'pending'    // Invitation sent, awaiting response
-  | 'accepted'   // Actively collaborating
-  | 'declined'   // Chef declined the invitation
-  | 'removed'    // Removed by event owner after accepting
+  | 'pending' // Invitation sent, awaiting response
+  | 'accepted' // Actively collaborating
+  | 'declined' // Chef declined the invitation
+  | 'removed' // Removed by event owner after accepting
 
 export interface CollaboratorPermissions {
-  can_modify_menu: boolean           // Edit menu items, quantities, and descriptions
-  can_assign_staff: boolean          // Assign staff from the chef's own roster to this event
-  can_view_financials: boolean       // See ledger entries, expenses, and pricing
-  can_communicate_with_client: boolean  // Send messages to the client directly
-  can_close_event: boolean           // Mark event completed or initiate cancellation
+  can_modify_menu: boolean // Edit menu items, quantities, and descriptions
+  can_assign_staff: boolean // Assign staff from the chef's own roster to this event
+  can_view_financials: boolean // See ledger entries, expenses, and pricing
+  can_communicate_with_client: boolean // Send messages to the client directly
+  can_close_event: boolean // Mark event completed or initiate cancellation
 }
 
 // Default permission sets per role
@@ -47,7 +47,7 @@ export const ROLE_DEFAULTS: Record<CollaboratorRole, CollaboratorPermissions> = 
   observer: {
     can_modify_menu: false,
     can_assign_staff: false,
-    can_view_financials: true,  // Observers can see financials (e.g. original chef after handoff)
+    can_view_financials: true, // Observers can see financials (e.g. original chef after handoff)
     can_communicate_with_client: false,
     can_close_event: false,
   },

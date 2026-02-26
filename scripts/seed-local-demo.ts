@@ -142,39 +142,43 @@ async function upsertChef(admin: ReturnType<typeof createClient>, authUserId: st
   return inserted.id as string
 }
 
-async function ensureChefRole(admin: ReturnType<typeof createClient>, authUserId: string, chefId: string) {
-  const { error } = await admin
-    .from('user_roles')
-    .upsert(
-      {
-        auth_user_id: authUserId,
-        role: 'chef',
-        entity_id: chefId,
-      },
-      { onConflict: 'auth_user_id' }
-    )
+async function ensureChefRole(
+  admin: ReturnType<typeof createClient>,
+  authUserId: string,
+  chefId: string
+) {
+  const { error } = await admin.from('user_roles').upsert(
+    {
+      auth_user_id: authUserId,
+      role: 'chef',
+      entity_id: chefId,
+    },
+    { onConflict: 'auth_user_id' }
+  )
 
   if (error) throw new Error(`Failed to upsert chef role: ${error.message}`)
 }
 
 async function ensureChefPreferences(admin: ReturnType<typeof createClient>, chefId: string) {
-  const { error } = await (admin as any)
-    .from('chef_preferences')
-    .upsert(
-      {
-        chef_id: chefId,
-        tenant_id: chefId,
-        home_city: 'Boston',
-        home_state: 'MA',
-        network_discoverable: true,
-      },
-      { onConflict: 'chef_id' }
-    )
+  const { error } = await (admin as any).from('chef_preferences').upsert(
+    {
+      chef_id: chefId,
+      tenant_id: chefId,
+      home_city: 'Boston',
+      home_state: 'MA',
+      network_discoverable: true,
+    },
+    { onConflict: 'chef_id' }
+  )
 
   if (error) throw new Error(`Failed to upsert chef preferences: ${error.message}`)
 }
 
-async function upsertClient(admin: ReturnType<typeof createClient>, authUserId: string, chefId: string) {
+async function upsertClient(
+  admin: ReturnType<typeof createClient>,
+  authUserId: string,
+  chefId: string
+) {
   const { data: existingClient } = await admin
     .from('clients')
     .select('id')
@@ -217,22 +221,28 @@ async function upsertClient(admin: ReturnType<typeof createClient>, authUserId: 
   return inserted.id as string
 }
 
-async function ensureClientRole(admin: ReturnType<typeof createClient>, authUserId: string, clientId: string) {
-  const { error } = await admin
-    .from('user_roles')
-    .upsert(
-      {
-        auth_user_id: authUserId,
-        role: 'client',
-        entity_id: clientId,
-      },
-      { onConflict: 'auth_user_id' }
-    )
+async function ensureClientRole(
+  admin: ReturnType<typeof createClient>,
+  authUserId: string,
+  clientId: string
+) {
+  const { error } = await admin.from('user_roles').upsert(
+    {
+      auth_user_id: authUserId,
+      role: 'client',
+      entity_id: clientId,
+    },
+    { onConflict: 'auth_user_id' }
+  )
 
   if (error) throw new Error(`Failed to upsert client role: ${error.message}`)
 }
 
-async function ensureInquiry(admin: ReturnType<typeof createClient>, chefId: string, clientId: string) {
+async function ensureInquiry(
+  admin: ReturnType<typeof createClient>,
+  chefId: string,
+  clientId: string
+) {
   const { data: existing } = await admin
     .from('inquiries')
     .select('id')
@@ -312,7 +322,11 @@ async function ensureEvent(
   return inserted.id as string
 }
 
-async function linkInquiryToEvent(admin: ReturnType<typeof createClient>, inquiryId: string, eventId: string) {
+async function linkInquiryToEvent(
+  admin: ReturnType<typeof createClient>,
+  inquiryId: string,
+  eventId: string
+) {
   const { error } = await admin
     .from('inquiries')
     .update({ converted_to_event_id: eventId })
@@ -321,7 +335,10 @@ async function linkInquiryToEvent(admin: ReturnType<typeof createClient>, inquir
   if (error) throw new Error(`Failed to link inquiry to event: ${error.message}`)
 }
 
-async function ensureIntegrationConnections(admin: ReturnType<typeof createClient>, chefId: string) {
+async function ensureIntegrationConnections(
+  admin: ReturnType<typeof createClient>,
+  chefId: string
+) {
   const providers: Array<{ provider: string; label: string; authType: 'oauth2' | 'none' }> = [
     { provider: 'square', label: 'Demo Square Location', authType: 'oauth2' },
     { provider: 'calendly', label: 'Demo Calendly Workspace', authType: 'oauth2' },
@@ -338,20 +355,19 @@ async function ensureIntegrationConnections(admin: ReturnType<typeof createClien
 
     if (existing?.id) continue
 
-    const { error } = await (admin as any)
-      .from('integration_connections')
-      .insert({
-        chef_id: chefId,
-        tenant_id: chefId,
-        provider: item.provider,
-        auth_type: item.authType,
-        status: 'connected',
-        external_account_name: item.label,
-        webhook_secret: randomBytes(32).toString('hex'),
-        config: { demo: true },
-      })
+    const { error } = await (admin as any).from('integration_connections').insert({
+      chef_id: chefId,
+      tenant_id: chefId,
+      provider: item.provider,
+      auth_type: item.authType,
+      status: 'connected',
+      external_account_name: item.label,
+      webhook_secret: randomBytes(32).toString('hex'),
+      config: { demo: true },
+    })
 
-    if (error) throw new Error(`Failed to seed integration connection ${item.provider}: ${error.message}`)
+    if (error)
+      throw new Error(`Failed to seed integration connection ${item.provider}: ${error.message}`)
   }
 }
 
@@ -389,22 +405,21 @@ async function ensureIntegrationEvents(admin: ReturnType<typeof createClient>, c
     if (existing?.id) continue
 
     const now = new Date().toISOString()
-    const { error } = await (admin as any)
-      .from('integration_events')
-      .insert({
-        tenant_id: chefId,
-        provider: item.provider,
-        source_event_id: item.source_event_id,
-        source_event_type: item.source_event_type,
-        canonical_event_type: item.canonical_event_type,
-        occurred_at: now,
-        raw_payload: { demo: true, provider: item.provider, event: item.source_event_type },
-        normalized_payload: { demo: true },
-        status: 'completed',
-        processed_at: now,
-      })
+    const { error } = await (admin as any).from('integration_events').insert({
+      tenant_id: chefId,
+      provider: item.provider,
+      source_event_id: item.source_event_id,
+      source_event_type: item.source_event_type,
+      canonical_event_type: item.canonical_event_type,
+      occurred_at: now,
+      raw_payload: { demo: true, provider: item.provider, event: item.source_event_type },
+      normalized_payload: { demo: true },
+      status: 'completed',
+      processed_at: now,
+    })
 
-    if (error) throw new Error(`Failed to seed integration event ${item.provider}: ${error.message}`)
+    if (error)
+      throw new Error(`Failed to seed integration event ${item.provider}: ${error.message}`)
   }
 }
 

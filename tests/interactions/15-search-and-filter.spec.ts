@@ -27,7 +27,7 @@ test.describe('Search — Clients', () => {
 
   test('/clients — typing in search filters the list', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/clients')
     await page.waitForLoadState('networkidle')
 
@@ -46,7 +46,7 @@ test.describe('Search — Clients', () => {
 
   test('/clients — clearing search restores full list', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/clients')
     await page.waitForLoadState('networkidle')
 
@@ -64,9 +64,11 @@ test.describe('Search — Clients', () => {
     }
   })
 
-  test('/clients — searching for nonexistent name shows empty state or no crash', async ({ page }) => {
+  test('/clients — searching for nonexistent name shows empty state or no crash', async ({
+    page,
+  }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/clients')
     await page.waitForLoadState('networkidle')
 
@@ -112,7 +114,7 @@ test.describe('Search — Events', () => {
 
   test('/events — clicking status filter does not crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/events')
     await page.waitForLoadState('networkidle')
 
@@ -132,7 +134,7 @@ test.describe('Search — Events', () => {
 
   test('/events — search input works without crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/events')
     await page.waitForLoadState('networkidle')
 
@@ -163,7 +165,7 @@ test.describe('Search — Recipes', () => {
 
   test('/recipes — typing in search does not crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/recipes')
     await page.waitForLoadState('networkidle')
 
@@ -182,15 +184,12 @@ test.describe('Search — Recipes', () => {
 
   test('/recipes — category filter works without crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/recipes')
     await page.waitForLoadState('networkidle')
 
     // Look for category tabs or dropdown
-    const categoryFilter = page
-      .getByRole('tab')
-      .first()
-      .or(page.locator('select').first())
+    const categoryFilter = page.getByRole('tab').first().or(page.locator('select').first())
 
     if (await categoryFilter.isVisible()) {
       await categoryFilter.click()
@@ -214,7 +213,7 @@ test.describe('Search — Quotes', () => {
 
   test('/quotes — status tabs or filters work without crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/quotes')
     await page.waitForLoadState('networkidle')
 
@@ -245,7 +244,7 @@ test.describe('Search — Expenses', () => {
 
   test('/expenses — category filter works without crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/expenses')
     await page.waitForLoadState('networkidle')
 
@@ -268,7 +267,7 @@ test.describe('Search — Expenses', () => {
 test.describe('Search — Global/Universal', () => {
   test('Dashboard search or quick-find is accessible', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
 
@@ -289,7 +288,7 @@ test.describe('Search — Global/Universal', () => {
 
   test('Pressing Escape on any page does not crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
     await page.keyboard.press('Escape')

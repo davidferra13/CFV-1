@@ -38,7 +38,7 @@ test.describe('Inventory — Hub', () => {
 
   test('/inventory — no JS errors on load', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/inventory')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -76,7 +76,7 @@ test.describe('Inventory — Counts', () => {
 
   test('/inventory/counts — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/inventory/counts')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -114,7 +114,7 @@ test.describe('Inventory — Waste Log', () => {
 
   test('/inventory/waste — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/inventory/waste')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -122,14 +122,12 @@ test.describe('Inventory — Waste Log', () => {
 
   test('Adding waste entry form does not crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/inventory/waste')
     await page.waitForLoadState('networkidle')
 
-    const addBtn = page
-      .getByRole('button', { name: /add waste|log waste|new entry/i })
-      .first()
+    const addBtn = page.getByRole('button', { name: /add waste|log waste|new entry/i }).first()
 
     if (await addBtn.isVisible()) {
       await addBtn.click()
@@ -178,7 +176,7 @@ test.describe('Inventory — Vendors', () => {
 
   test('/culinary/vendors — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/culinary/vendors')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -195,17 +193,18 @@ test.describe('Inventory — Carry-Forward', () => {
     expect(status).not.toBe(500)
   })
 
-  test('Inventory shows event-linked carry-forward or empty state without crashing', async ({ page, seedIds }) => {
+  test('Inventory shows event-linked carry-forward or empty state without crashing', async ({
+    page,
+    seedIds,
+  }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     // Navigate to the confirmed event which has inventory context
     await page.goto(`/events/${seedIds.eventIds.confirmed}`)
     await page.waitForLoadState('networkidle')
 
-    const inventorySection = page
-      .getByText(/inventory|carry.?forward|leftover|remaining/i)
-      .first()
+    const inventorySection = page.getByText(/inventory|carry.?forward|leftover|remaining/i).first()
 
     const isVisible = await inventorySection.isVisible().catch(() => false)
     // Informational

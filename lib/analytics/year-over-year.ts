@@ -12,7 +12,7 @@ export interface YoYMetric {
   label: string
   currentYear: number
   previousYear: number
-  changePercent: number | null   // null if previous was 0
+  changePercent: number | null // null if previous was 0
   changeDirection: 'up' | 'down' | 'flat'
 }
 
@@ -24,7 +24,10 @@ export interface YoYData {
   previousYearLabel: string
 }
 
-function calcChange(current: number, previous: number): Pick<YoYMetric, 'changePercent' | 'changeDirection'> {
+function calcChange(
+  current: number,
+  previous: number
+): Pick<YoYMetric, 'changePercent' | 'changeDirection'> {
   if (previous === 0 && current === 0) return { changePercent: null, changeDirection: 'flat' }
   if (previous === 0) return { changePercent: null, changeDirection: 'up' }
   const pct = Math.round(((current - previous) / previous) * 100)
@@ -85,8 +88,10 @@ export async function getYoYData(): Promise<YoYData> {
     }
   }
 
-  const avgCurrentYear = eventsCurrentYear > 0 ? Math.round(quotedCurrentYear / eventsCurrentYear) : 0
-  const avgPreviousYear = eventsPreviousYear > 0 ? Math.round(quotedPreviousYear / eventsPreviousYear) : 0
+  const avgCurrentYear =
+    eventsCurrentYear > 0 ? Math.round(quotedCurrentYear / eventsCurrentYear) : 0
+  const avgPreviousYear =
+    eventsPreviousYear > 0 ? Math.round(quotedPreviousYear / eventsPreviousYear) : 0
 
   return {
     revenueMetric: {

@@ -33,7 +33,7 @@ export async function getClientReferralTree(clientId: string): Promise<ReferralN
     .eq('tenant_id', user.entityId)
     .eq('referral_source', client.full_name)
 
-  const referredClients = referredClientsRaw as any[] || []
+  const referredClients = (referredClientsRaw as any[]) || []
 
   // Get this client's own revenue
   const { data: ownEvents } = await supabase
@@ -43,19 +43,27 @@ export async function getClientReferralTree(clientId: string): Promise<ReferralN
     .eq('tenant_id', user.entityId)
     .eq('status', 'completed')
 
-  const totalRevenueCents = (ownEvents || []).reduce((sum, e) => sum + (e.quoted_price_cents || 0), 0)
+  const totalRevenueCents = (ownEvents || []).reduce(
+    (sum, e) => sum + (e.quoted_price_cents || 0),
+    0
+  )
 
   // For each referred client, fetch their completed event revenue separately
-  const referredWithRevenue = await Promise.all((referredClients).map(async (rc: any) => {
-    const { data: rcEvents } = await supabase
-      .from('events')
-      .select('quoted_price_cents')
-      .eq('client_id', rc.id)
-      .eq('tenant_id', user.entityId)
-      .eq('status', 'completed')
-    const rev = (rcEvents || []).reduce((sum: number, e: any) => sum + (e.quoted_price_cents || 0), 0)
-    return { id: rc.id, name: rc.full_name, totalRevenueCents: rev }
-  }))
+  const referredWithRevenue = await Promise.all(
+    referredClients.map(async (rc: any) => {
+      const { data: rcEvents } = await supabase
+        .from('events')
+        .select('quoted_price_cents')
+        .eq('client_id', rc.id)
+        .eq('tenant_id', user.entityId)
+        .eq('status', 'completed')
+      const rev = (rcEvents || []).reduce(
+        (sum: number, e: any) => sum + (e.quoted_price_cents || 0),
+        0
+      )
+      return { id: rc.id, name: rc.full_name, totalRevenueCents: rev }
+    })
+  )
 
   const referralRevenueCents = referredWithRevenue.reduce((sum, r) => sum + r.totalRevenueCents, 0)
 

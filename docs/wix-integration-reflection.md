@@ -7,6 +7,7 @@ Added a direct pipeline from Wix form submissions into ChefFlow's inquiry system
 ## Why
 
 The chef's Wix site is the public marketing front door. Dinner inquiries come in as Wix form submissions, which previously only flowed to Gmail. While the existing Gmail sync captures some of these (via Gemini AI classification), it's:
+
 - **Delayed** — Gmail sync is polling-based (manual or cron), not real-time
 - **Unreliable** — AI classification occasionally misses Wix form emails
 - **Unlabeled** — Captured inquiries show as channel `email`, not `wix`
@@ -28,6 +29,7 @@ This separation is necessary because Wix drops webhook deliveries if the respons
 ### Dedup Strategy
 
 Since Wix form submissions also arrive as notification emails in Gmail, both pipelines can capture the same lead. The dedup logic:
+
 - **Wix processor** checks `gmail_sync_log` for matching email within a 10-minute window
 - **Gmail sync** should check `wix_submissions` (future enhancement) for matching email
 - First to process wins; second marks as `duplicate` with a cross-reference
@@ -38,21 +40,21 @@ Each chef gets a unique webhook secret (32-byte random hex). The secret is passe
 
 ## Files Created
 
-| File | Purpose |
-|---|---|
+| File                                                     | Purpose                                                   |
+| -------------------------------------------------------- | --------------------------------------------------------- |
 | `supabase/migrations/20260221000015_wix_integration.sql` | Schema: `wix_connections`, `wix_submissions` tables + RLS |
-| `lib/wix/types.ts` | TypeScript type definitions |
-| `lib/wix/process.ts` | Core processing pipeline (extract, dedup, parse, create) |
-| `lib/wix/actions.ts` | Server actions (setup, disconnect, list, retry) |
-| `app/api/webhooks/wix/route.ts` | Webhook endpoint (accepts Wix POST) |
-| `app/api/scheduled/wix-process/route.ts` | Cron endpoint (processes pending) |
-| `components/wix/wix-connection.tsx` | Settings UI (connection management) |
+| `lib/wix/types.ts`                                       | TypeScript type definitions                               |
+| `lib/wix/process.ts`                                     | Core processing pipeline (extract, dedup, parse, create)  |
+| `lib/wix/actions.ts`                                     | Server actions (setup, disconnect, list, retry)           |
+| `app/api/webhooks/wix/route.ts`                          | Webhook endpoint (accepts Wix POST)                       |
+| `app/api/scheduled/wix-process/route.ts`                 | Cron endpoint (processes pending)                         |
+| `components/wix/wix-connection.tsx`                      | Settings UI (connection management)                       |
 
 ## Files Modified
 
-| File | Change |
-|---|---|
-| `lib/notifications/types.ts` | Added `wix_submission` notification action |
+| File                           | Change                                         |
+| ------------------------------ | ---------------------------------------------- |
+| `lib/notifications/types.ts`   | Added `wix_submission` notification action     |
 | `app/(chef)/settings/page.tsx` | Integrated Wix connection card alongside Gmail |
 
 ## How It Connects

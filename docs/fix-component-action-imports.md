@@ -92,18 +92,18 @@ Components were written against assumed server action signatures that diverged f
 
 ## Files Modified
 
-| File | Type |
-|---|---|
-| `components/documents/comment-thread.tsx` | Component |
-| `components/documents/version-history.tsx` | Component |
-| `components/marketing/ab-test-config.tsx` | Component |
+| File                                                  | Type      |
+| ----------------------------------------------------- | --------- |
+| `components/documents/comment-thread.tsx`             | Component |
+| `components/documents/version-history.tsx`            | Component |
+| `components/marketing/ab-test-config.tsx`             | Component |
 | `components/marketing/behavioral-segment-builder.tsx` | Component |
-| `components/marketing/email-builder.tsx` | Component |
-| `components/operations/course-fire-button.tsx` | Component |
-| `components/operations/eighty-six-modal.tsx` | Component |
-| `components/operations/kds-view.tsx` | Component |
-| `components/portfolio/highlight-editor.tsx` | Component |
-| `components/portfolio/grid-editor.tsx` | Component |
+| `components/marketing/email-builder.tsx`              | Component |
+| `components/operations/course-fire-button.tsx`        | Component |
+| `components/operations/eighty-six-modal.tsx`          | Component |
+| `components/operations/kds-view.tsx`                  | Component |
+| `components/portfolio/highlight-editor.tsx`           | Component |
+| `components/portfolio/grid-editor.tsx`                | Component |
 
 ## No Action Files Were Modified
 

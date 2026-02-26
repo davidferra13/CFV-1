@@ -17,6 +17,7 @@ The scaling panel appears on any recipe that has at least one ingredient. It liv
 All ingredient quantities are multiplied by the scale factor and displayed in a shaded panel. Quantities are formatted as culinary fractions (¼, ½, ¾, ⅓, ⅔, ⅛, etc.) rather than decimals wherever possible.
 
 **Copy to Clipboard:** Produces a plain-text shopping/prep note:
+
 ```
 Diane Sauce — scaled to 22 servings
 

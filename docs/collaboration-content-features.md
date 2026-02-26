@@ -10,6 +10,7 @@ This document describes the collaboration and content features added in this ses
 
 **`supabase/migrations/20260310000001_document_versions.sql`**
 Creates the `document_versions` table, which stores full JSONB snapshots of menus, quotes, and recipes at each save point. Key columns:
+
 - `entity_type`: constrained to `menu | quote | recipe`
 - `entity_id`: UUID reference to the source record (no FK to preserve flexibility across entity tables)
 - `version_number`: monotonically incrementing integer per entity
@@ -19,6 +20,7 @@ Creates the `document_versions` table, which stores full JSONB snapshots of menu
 
 **`supabase/migrations/20260310000002_community_templates.sql`**
 Creates the `community_templates` table for cross-chef template sharing. Key columns:
+
 - `template_type`: constrained to `menu | recipe | message | quote`
 - `content`: JSONB holding the template body (structure varies by type)
 - `tags`, `dietary_tags`: text arrays for filtering
@@ -30,11 +32,13 @@ Creates the `community_templates` table for cross-chef template sharing. Key col
 
 **`lib/versioning/snapshot.ts`**
 Two exported server actions:
+
 - `saveSnapshot(entityType, entityId, snapshot, changeSummary?)` — looks up the current max `version_number` for the entity, increments by 1, and inserts a new row. Uses `as any` cast for the new table name until `types/database.ts` is regenerated.
 - `getVersionHistory(entityType, entityId)` — returns the 20 most recent versions for an entity, scoped to the chef's `tenant_id`, newest first.
 
 **`lib/community/template-sharing.ts`**
 Four exported server actions:
+
 - `getCommunityTemplates(type?)` — fetches all published templates, optionally filtered by type, ordered by `download_count` descending. Does not require auth (public read via RLS).
 - `getMyTemplates()` — fetches all templates owned by the current chef, including unpublished drafts.
 - `publishTemplate(input)` — inserts a new published template attributed to the current chef's `tenant_id`.
@@ -44,6 +48,7 @@ Four exported server actions:
 
 **`components/shared/version-history-panel.tsx`** (Client Component)
 A collapsible panel that lazy-loads version history on first expand. Shows:
+
 - Version badge (green "success" for current, stone "default" for older)
 - Formatted timestamp
 - Optional change summary
@@ -56,6 +61,7 @@ A single-button import control used in the community templates grid. Switches fr
 
 **`components/ui/rich-note-editor.tsx`** (Client Component)
 A plain-textarea editor with a markdown-shortcut toolbar. Toolbar actions:
+
 - Bold: wraps selection in `**...**`
 - Italic: wraps selection in `*...*`
 - List: inserts `\n- ` at cursor
@@ -65,6 +71,7 @@ Uses `useRef` to track and restore cursor position after toolbar insertions. Sho
 
 **`components/communication/email-composer.tsx`** (Client Component)
 A self-contained email composition card with:
+
 - "To" display field (read-only)
 - Subject input
 - Multi-line body textarea (min 160px)
@@ -73,6 +80,7 @@ A self-contained email composition card with:
 
 **`app/(chef)/community/templates/page.tsx`** (Server Component)
 Route: `/community/templates`
+
 - Protected by `requireChef()`
 - Fetches published templates server-side
 - Renders a responsive 2-column card grid with type/cuisine badges, description, download count, and the `CommunityTemplateImport` client component per card
@@ -81,12 +89,15 @@ Route: `/community/templates`
 ## Architecture Notes
 
 ### `as any` Casts
+
 Both new tables (`document_versions`, `community_templates`) are cast with `as any` in Supabase queries because `types/database.ts` is auto-generated and has not yet been regenerated against the new migrations. Once migrations are applied and `npx supabase gen types typescript --linked` is run, the casts can be removed.
 
 ### No Existing Files Modified
+
 All changes are purely additive. No existing files were touched.
 
 ### Migration Safety
+
 - Migration timestamps `20260310000001` and `20260310000002` are strictly higher than the previous highest `20260307000006`.
 - Both migrations are additive (CREATE TABLE IF NOT EXISTS, CREATE INDEX IF NOT EXISTS, no DROP or ALTER on existing tables).
 

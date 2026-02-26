@@ -6,14 +6,14 @@ A token-based, public client portal at `/client/[token]` that lets a chef's clie
 
 ## Files Created / Modified
 
-| File | Role |
-|---|---|
-| `app/client/[token]/page.tsx` | Public server page — resolves token, renders portal dashboard |
-| `app/client/error.tsx` | Error boundary shown for unexpected failures |
-| `app/client/not-found.tsx` | 404 page shown when token is invalid or expired |
-| `lib/client-portal/actions.ts` | `getClientPortalData(token)` — validates token, returns portal payload |
-| `components/clients/portal-link-manager.tsx` | UI on client detail page for generating and copying the magic link |
-| `supabase/migrations/20260312000010_client_portal_token.sql` | Adds `client_portal_tokens` table |
+| File                                                         | Role                                                                   |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| `app/client/[token]/page.tsx`                                | Public server page — resolves token, renders portal dashboard          |
+| `app/client/error.tsx`                                       | Error boundary shown for unexpected failures                           |
+| `app/client/not-found.tsx`                                   | 404 page shown when token is invalid or expired                        |
+| `lib/client-portal/actions.ts`                               | `getClientPortalData(token)` — validates token, returns portal payload |
+| `components/clients/portal-link-manager.tsx`                 | UI on client detail page for generating and copying the magic link     |
+| `supabase/migrations/20260312000010_client_portal_token.sql` | Adds `client_portal_tokens` table                                      |
 
 ## How It Works
 

@@ -33,6 +33,7 @@ npm run dev
 ## Prevention
 
 This typically happens when:
+
 - Files are moved/renamed while the dev server is running
 - `node_modules` are updated without restarting the dev server
 - Git operations (checkout, rebase) change significant files mid-session

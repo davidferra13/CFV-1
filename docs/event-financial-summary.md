@@ -9,6 +9,7 @@ A standalone financial close page (`/events/[id]/financial`) that presents a com
 **Migration: `supabase/migrations/20260303000003_financial_closure.sql`**
 
 Added to the `events` table:
+
 - `financial_closed BOOLEAN NOT NULL DEFAULT false` — whether the chef has marked this event financially closed
 - `financial_closed_at TIMESTAMPTZ` — timestamp of closure
 - `mileage_miles DECIMAL(8,2)` — round-trip miles driven (home → stores → client → home)
@@ -33,13 +34,16 @@ Added to the `events` table:
 - **`updateMileage(eventId, mileageMiles)`** — Updates `mileage_miles` on the event. The mileage field is editable inline on the financial summary page.
 
 ### `components/events/financial-summary-view.tsx`
+
 Client component with 7 section cards. Notable UX decisions:
+
 - **No red/green grading on margins** — neutral data presentation per spec. The chef sees numbers, not anxiety.
 - **Editable mileage** — input field on the page, auto-saves via `updateMileage()`.
 - **Draft mode** — if `pendingItems.length > 0`, the status badge shows "DRAFT — {pending items}" and the "Mark Financially Closed" button is hidden.
 - **IRS rate** — hardcoded at 70 cents/mile ($0.70, the 2025 IRS standard mileage rate for business).
 
 ### `app/(chef)/events/[id]/financial/page.tsx`
+
 Server component that calls `getEventFinancialSummaryFull()` and renders `<FinancialSummaryView>`.
 
 ## Integration

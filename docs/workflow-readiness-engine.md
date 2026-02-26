@@ -25,7 +25,9 @@ The engine has three components:
 ### New Database Schema
 
 #### `client_allergy_records` (migration `20260304000001`)
+
 Structured allergen records per client. Every record carries:
+
 - `allergen` — the substance (unique per client, case-insensitive)
 - `severity` — `preference | intolerance | allergy | anaphylaxis`
 - `source` — `chef_entered | ai_detected | intake_form | client_stated`
@@ -37,6 +39,7 @@ Structured allergen records per client. Every record carries:
 The unique index `(client_id, LOWER(allergen))` prevents duplicate records for the same allergen. AI detections do not overwrite chef-entered records (INSERT with `ignoreDuplicates: true`).
 
 #### `event_readiness_gates` (migration `20260304000002`)
+
 One row per gate per event. Tracks which preconditions have been met before each FSM transition.
 
 Gate catalog:
@@ -78,6 +81,7 @@ Core module. Exports:
 
 **`evaluateReadinessForTransition(eventId, fromStatus, toStatus)`**
 Evaluates all gates for a given FSM transition. Returns:
+
 - `ready` — boolean (all gates passed or overridden)
 - `hardBlocked` — boolean (any gate is a hard block — anaphylaxis present)
 - `gates` — full gate results
@@ -91,6 +95,7 @@ Convenience wrapper. Looks up the event's current status, determines the next lo
 Cross-event consistency checker. Scans menu components for text matching confirmed allergens. Returns `hasConflicts` and a `conflicts[]` array with `allergen`, `severity`, and `menuItem`.
 
 **Gate actions:**
+
 - `markGatePassed(eventId, gate, metadata?)` — chef marks a gate done
 - `overrideGate(eventId, gate, reason)` — chef bypasses with mandatory reason (hard blocks cannot be overridden)
 - `confirmAllergyRecord(id, options?)` — chef confirms AI-detected allergen
@@ -122,24 +127,28 @@ Infrastructure errors in the readiness check are caught and logged but never blo
 ### UI Components
 
 #### `ReadinessGatePanel` (`components/events/readiness-gate-panel.tsx`)
+
 Shown on the event detail page for any event with applicable gates. Displays each gate as a card with:
+
 - Status icon (green check, amber warning, red shield for hard block)
 - Label and description
 - "Mark Done" button (triggers `markGatePassed`)
 - "Skip" button → expand inline override form (triggers `overrideGate`)
 - Hard-blocked gates: no skip available, explains why
 
-Appears on: [app/(chef)/events/[id]/page.tsx](app/(chef)/events/[id]/page.tsx) — rendered above `EventTransitions`.
+Appears on: [app/(chef)/events/[id]/page.tsx](<app/(chef)/events/[id]/page.tsx>) — rendered above `EventTransitions`.
 
 #### `AllergyRecordsPanel` (`components/clients/allergy-records-panel.tsx`)
+
 Shown on the client detail page. Displays all allergen records for the client with:
+
 - Severity-colored rows (anaphylaxis = red, allergy = orange, intolerance = amber, preference = blue)
 - Unconfirmed records prominently first, with Confirm/Dismiss actions
 - Confirm action lets chef adjust severity before confirming
 - Add button opens inline form for manual allergen entry
 - Anaphylaxis risk badge on panel header when any anaphylaxis record exists
 
-Appears on: [app/(chef)/clients/[id]/page.tsx](app/(chef)/clients/[id]/page.tsx) — rendered above `QuickNotes`.
+Appears on: [app/(chef)/clients/[id]/page.tsx](<app/(chef)/clients/[id]/page.tsx>) — rendered above `QuickNotes`.
 
 ---
 
@@ -207,17 +216,17 @@ This system complies fully with `docs/AI_POLICY.md`:
 
 ## Files Created / Modified
 
-| File | Type | Description |
-|---|---|---|
-| `supabase/migrations/20260304000001_structured_allergy_records.sql` | New | Structured allergen records table |
-| `supabase/migrations/20260304000002_event_readiness_gates.sql` | New | Event readiness gate tracking table |
-| `lib/events/readiness.ts` | New | Readiness engine — all gate logic and allergy record actions |
-| `lib/insights/actions.ts` | Modified | Added auto-escalation for high-confidence allergy insights |
-| `lib/events/transitions.ts` | Modified | Pre-transition readiness check; warnings in audit trail; return warnings |
-| `components/events/readiness-gate-panel.tsx` | New | Gate panel UI for event detail page |
-| `components/clients/allergy-records-panel.tsx` | New | Allergen record panel UI for client detail page |
-| `app/(chef)/events/[id]/page.tsx` | Modified | Fetches `eventReadiness`, renders `ReadinessGatePanel` |
-| `app/(chef)/clients/[id]/page.tsx` | Modified | Fetches `allergyRecords`, renders `AllergyRecordsPanel` |
+| File                                                                | Type     | Description                                                              |
+| ------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------ |
+| `supabase/migrations/20260304000001_structured_allergy_records.sql` | New      | Structured allergen records table                                        |
+| `supabase/migrations/20260304000002_event_readiness_gates.sql`      | New      | Event readiness gate tracking table                                      |
+| `lib/events/readiness.ts`                                           | New      | Readiness engine — all gate logic and allergy record actions             |
+| `lib/insights/actions.ts`                                           | Modified | Added auto-escalation for high-confidence allergy insights               |
+| `lib/events/transitions.ts`                                         | Modified | Pre-transition readiness check; warnings in audit trail; return warnings |
+| `components/events/readiness-gate-panel.tsx`                        | New      | Gate panel UI for event detail page                                      |
+| `components/clients/allergy-records-panel.tsx`                      | New      | Allergen record panel UI for client detail page                          |
+| `app/(chef)/events/[id]/page.tsx`                                   | Modified | Fetches `eventReadiness`, renders `ReadinessGatePanel`                   |
+| `app/(chef)/clients/[id]/page.tsx`                                  | Modified | Fetches `allergyRecords`, renders `AllergyRecordsPanel`                  |
 
 ---
 
@@ -232,6 +241,7 @@ supabase db push --linked
 
 No seed data is required. Existing `clients.allergies` string arrays are preserved.
 New `client_allergy_records` starts empty and fills over time via:
+
 - AI detection from chat messages (automatic)
 - Chef manual entry via `AllergyRecordsPanel`
 

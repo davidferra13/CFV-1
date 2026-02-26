@@ -14,12 +14,14 @@ ChefFlow has two paths for creating a dinner inquiry. Rather than forcing them i
 ## The Two Paths
 
 ### Path A — Public Form
+
 1. Client submits `/chef/[slug]/inquire`
 2. `submitPublicInquiry()` runs without auth (admin client)
 3. Creates: client record → inquiry (`status: new`) → draft event (linked via `inquiry_id` and `converted_to_event_id`)
 4. Chef sees inquiry in `/inquiries` and the linked draft event immediately
 
 ### Path B — Manual (Chef-Logged)
+
 1. Chef opens `/inquiries/new` and enters details
 2. `createInquiry()` creates only an inquiry (`status: new`)
 3. No event is created yet
@@ -32,12 +34,14 @@ Both paths converge at the same draft event → the identical 8-state event FSM 
 ## Gaps Fixed
 
 ### 1. No acknowledgment email for public inquiry submissions
+
 **File changed:** `lib/inquiries/public-actions.ts`
 **Supporting changes:** `lib/email/templates/inquiry-received.tsx` (new), `lib/email/notifications.ts` (new dispatcher)
 
 **Problem:** When a client submitted the public inquiry form, they received no email. The only feedback was the "thank you" page. This meant clients had no confirmation in their inbox, no record of what occasion and date they requested, and no reassurance that the chef received their message.
 
 **Fix:** After the inquiry row is successfully inserted, `submitPublicInquiry()` now fires `sendInquiryReceivedEmail()` in a non-blocking `try/catch` block. The email:
+
 - Acknowledges receipt with the chef's business name
 - Shows the requested occasion and date
 - Sets the expectation: "Your chef will send a formal proposal within 1–2 business days"
@@ -48,6 +52,7 @@ The email is fire-and-forget — a send failure is logged but never propagates t
 ---
 
 ### 2. Draft events were visible to clients
+
 **File changed:** `lib/events/client-actions.ts` — `getClientEvents()` query
 
 **Problem:** The Supabase query in `getClientEvents()` fetched all events belonging to the client without filtering by status. A client could see a draft event — one the chef hasn't even proposed yet — showing a "Draft" badge with no action buttons. This is confusing and incorrect: clients should only ever see an event once the chef has formally proposed it.
@@ -57,6 +62,7 @@ The email is fire-and-forget — a send failure is logged but never propagates t
 ---
 
 ### 3. Event reminder cron skipped paid events
+
 **File changed:** `app/api/scheduled/lifecycle/route.ts` — section 3 (24-hour reminder)
 
 **Problem:** The daily 3 AM lifecycle cron sends a reminder email to clients whose event is happening the next day. The status filter was `.in('status', ['confirmed', 'in_progress'])`. If a client has paid their deposit but the chef hasn't clicked "Confirm Event" before 3 AM the night before, the client would receive **no reminder at all** — even though their dinner is happening the next day.
@@ -68,6 +74,7 @@ The email is fire-and-forget — a send failure is logged but never propagates t
 ---
 
 ### 4. Public inquiry path set `location_city` to the full address string
+
 **File changed:** `lib/inquiries/public-actions.ts` — draft event INSERT
 
 **Problem:** The public inquiry form collects a single `address` field (full address string). The draft event INSERT was using `location_city: validated.address.trim()`, placing the full address in the city column. Path B (`convertInquiryToEvent`) correctly uses `location_city: 'TBD'` as a placeholder when city is unknown. The mismatch caused display issues in email templates and document generation that expect a short city name.
@@ -79,6 +86,7 @@ The email is fire-and-forget — a send failure is logged but never propagates t
 ## Known Non-Fix: Hardcoded Chef Email
 
 `lib/inquiries/public-actions.ts` contains:
+
 ```typescript
 const DEFAULT_BOOKING_CHEF_EMAIL = 'davidferra13@gmail.com'
 ```
@@ -100,10 +108,10 @@ The `chef_slug` from the form data is not used to look up the chef — the hardc
 
 ## Files Changed
 
-| File | Type | Description |
-|---|---|---|
-| `lib/email/templates/inquiry-received.tsx` | New | Email template for inquiry acknowledgment |
-| `lib/email/notifications.ts` | Modified | Added `sendInquiryReceivedEmail()` dispatcher |
-| `lib/inquiries/public-actions.ts` | Modified | Calls acknowledgment email after inquiry insert; fetches `business_name` from chef row; sets `location_city: 'TBD'` |
-| `lib/events/client-actions.ts` | Modified | Filters draft events from `getClientEvents()` |
-| `app/api/scheduled/lifecycle/route.ts` | Modified | Adds `'paid'` to event reminder status filter |
+| File                                       | Type     | Description                                                                                                         |
+| ------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------- |
+| `lib/email/templates/inquiry-received.tsx` | New      | Email template for inquiry acknowledgment                                                                           |
+| `lib/email/notifications.ts`               | Modified | Added `sendInquiryReceivedEmail()` dispatcher                                                                       |
+| `lib/inquiries/public-actions.ts`          | Modified | Calls acknowledgment email after inquiry insert; fetches `business_name` from chef row; sets `location_city: 'TBD'` |
+| `lib/events/client-actions.ts`             | Modified | Filters draft events from `getClientEvents()`                                                                       |
+| `app/api/scheduled/lifecycle/route.ts`     | Modified | Adds `'paid'` to event reminder status filter                                                                       |

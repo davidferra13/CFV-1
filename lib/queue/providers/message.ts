@@ -14,11 +14,13 @@ export async function getMessageQueueItems(
 
   const { data: messages } = await supabase
     .from('messages')
-    .select(`
+    .select(
+      `
       id, status, direction, channel, created_at,
       inquiry_id, event_id, client_id,
       client:clients(full_name)
-    `)
+    `
+    )
     .eq('tenant_id', tenantId)
     .in('status', ['draft', 'approved'])
     .eq('direction', 'outbound')

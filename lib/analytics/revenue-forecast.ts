@@ -45,7 +45,10 @@ export async function getRevenueForecast(): Promise<RevenueForecast> {
     monthMap.set(key, (monthMap.get(key) || 0) + (event.quoted_price_cents || 0))
   }
 
-  const historical: MonthlyRevenue[] = Array.from(monthMap.entries()).map(([month, actual]) => ({ month, actual }))
+  const historical: MonthlyRevenue[] = Array.from(monthMap.entries()).map(([month, actual]) => ({
+    month,
+    actual,
+  }))
 
   // Calculate average of last 6 months
   const last6 = historical.slice(-6)

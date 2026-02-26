@@ -73,22 +73,21 @@ export function EventPrepareEmail({
       </table>
 
       <Text style={subheading}>A few things to take care of this week:</Text>
-      <Text style={checklistItem}>✓ Confirm your final guest count (let the chef know of any changes)</Text>
+      <Text style={checklistItem}>
+        ✓ Confirm your final guest count (let the chef know of any changes)
+      </Text>
       <Text style={checklistItem}>✓ Remind guests of any dietary restrictions or allergies</Text>
       <Text style={checklistItem}>✓ Ensure parking or entry access is ready for the chef</Text>
       <Text style={checklistItem}>✓ Clear counter and prep space in the kitchen</Text>
       <Text style={checklistItem}>✓ Have any questions? Message the chef now via the portal</Text>
 
-      <Button
-        href={`${appUrl}/my-events/${eventId}`}
-        style={ctaButton}
-      >
+      <Button href={`${appUrl}/my-events/${eventId}`} style={ctaButton}>
         View Event Details →
       </Button>
 
       <Text style={muted}>
-        If anything changes before the event, please let {chefName} know through ChefFlow as
-        soon as possible.
+        If anything changes before the event, please let {chefName} know through ChefFlow as soon as
+        possible.
       </Text>
     </BaseLayout>
   )

@@ -30,7 +30,7 @@ test.describe('Mobile — iPhone 13 (390×844)', () => {
 
   test('Dashboard renders on mobile', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
     expect(page.url()).not.toMatch(/auth\/signin/)
@@ -41,7 +41,7 @@ test.describe('Mobile — iPhone 13 (390×844)', () => {
 
   test('Events list renders on mobile', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/events')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -51,7 +51,7 @@ test.describe('Mobile — iPhone 13 (390×844)', () => {
 
   test('Clients list renders on mobile', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/clients')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -61,7 +61,7 @@ test.describe('Mobile — iPhone 13 (390×844)', () => {
 
   test('Inquiries list renders on mobile', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/inquiries')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -71,7 +71,7 @@ test.describe('Mobile — iPhone 13 (390×844)', () => {
 
   test('Quotes list renders on mobile', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/quotes')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -81,7 +81,7 @@ test.describe('Mobile — iPhone 13 (390×844)', () => {
 
   test('Finance overview renders on mobile', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/finance')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -91,7 +91,7 @@ test.describe('Mobile — iPhone 13 (390×844)', () => {
 
   test('Calendar renders on mobile', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/calendar')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -101,7 +101,7 @@ test.describe('Mobile — iPhone 13 (390×844)', () => {
 
   test('Event detail renders on mobile', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto(`/events/${seedIds.eventIds.confirmed}`)
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -111,7 +111,7 @@ test.describe('Mobile — iPhone 13 (390×844)', () => {
 
   test('DOP page renders on mobile', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto(`/events/${seedIds.eventIds.confirmed}/dop`)
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -121,7 +121,7 @@ test.describe('Mobile — iPhone 13 (390×844)', () => {
 
   test('Settings page renders on mobile', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/settings/my-profile')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -151,7 +151,7 @@ test.describe('Mobile — iPhone SE (375×667)', () => {
 
   test('Dashboard renders on small mobile', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -161,7 +161,7 @@ test.describe('Mobile — iPhone SE (375×667)', () => {
 
   test('Event list renders on small mobile', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/events')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -171,7 +171,7 @@ test.describe('Mobile — iPhone SE (375×667)', () => {
 
   test('Client list renders on small mobile', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/clients')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -181,7 +181,7 @@ test.describe('Mobile — iPhone SE (375×667)', () => {
 
   test('New event form renders on small mobile', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/events/new')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -191,7 +191,7 @@ test.describe('Mobile — iPhone SE (375×667)', () => {
 
   test('Close-out wizard renders on small mobile', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto(`/events/${seedIds.eventIds.completed}/close-out`)
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -207,7 +207,7 @@ test.describe('Mobile — iPad Air (820×1180)', () => {
 
   test('Dashboard renders on tablet', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -217,7 +217,7 @@ test.describe('Mobile — iPad Air (820×1180)', () => {
 
   test('Events list renders on tablet', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/events')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -227,7 +227,7 @@ test.describe('Mobile — iPad Air (820×1180)', () => {
 
   test('Recipes library renders on tablet', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/recipes')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -237,7 +237,7 @@ test.describe('Mobile — iPad Air (820×1180)', () => {
 
   test('Finance reporting renders on tablet', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/finance/reporting')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -247,7 +247,7 @@ test.describe('Mobile — iPad Air (820×1180)', () => {
 
   test('Calendar renders on tablet', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/calendar')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -257,7 +257,7 @@ test.describe('Mobile — iPad Air (820×1180)', () => {
 
   test('Event detail renders on tablet', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto(`/events/${seedIds.eventIds.confirmed}`)
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -273,7 +273,7 @@ test.describe('Mobile — Public Pages', () => {
 
   test('Landing page (/) renders on mobile', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -283,7 +283,7 @@ test.describe('Mobile — Public Pages', () => {
 
   test('Sign in page renders on mobile', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/auth/signin')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()

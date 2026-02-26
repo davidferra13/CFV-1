@@ -13,7 +13,10 @@ interface InboxFeedProps {
 
 export function InboxFeed({ items, stats }: InboxFeedProps) {
   const [activeSources, setActiveSources] = useState<InboxSource[]>([
-    'chat', 'message', 'wix', 'notification',
+    'chat',
+    'message',
+    'wix',
+    'notification',
   ])
 
   const handleToggle = (source: InboxSource) => {
@@ -27,9 +30,7 @@ export function InboxFeed({ items, stats }: InboxFeedProps) {
     })
   }
 
-  const filteredItems = items.filter((item) =>
-    activeSources.includes(item.source as InboxSource)
-  )
+  const filteredItems = items.filter((item) => activeSources.includes(item.source as InboxSource))
 
   return (
     <div className="space-y-4">
@@ -44,11 +45,7 @@ export function InboxFeed({ items, stats }: InboxFeedProps) {
       </div>
 
       {/* Source filters */}
-      <InboxFilters
-        activeSources={activeSources}
-        onToggle={handleToggle}
-        stats={stats.bySource}
-      />
+      <InboxFilters activeSources={activeSources} onToggle={handleToggle} stats={stats.bySource} />
 
       {/* Feed */}
       <div className="space-y-2">

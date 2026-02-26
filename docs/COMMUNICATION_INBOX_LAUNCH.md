@@ -11,11 +11,11 @@ The Communication Inbox is now fully operational. This launches the triage pipel
 
 ### Files Added or Modified
 
-| File | Change |
-|---|---|
-| `lib/communication/actions.ts` | Added `getThreadWithEvents()` server action + `ThreadDetail` type |
-| `app/(chef)/inbox/triage/[threadId]/page.tsx` | New — thread detail server page |
-| `components/communication/thread-detail-client.tsx` | New — thread detail UI with message timeline and reply bar |
+| File                                                      | Change                                                                           |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `lib/communication/actions.ts`                            | Added `getThreadWithEvents()` server action + `ThreadDetail` type                |
+| `app/(chef)/inbox/triage/[threadId]/page.tsx`             | New — thread detail server page                                                  |
+| `components/communication/thread-detail-client.tsx`       | New — thread detail UI with message timeline and reply bar                       |
 | `components/communication/communication-inbox-client.tsx` | Thread names now link to detail page; fixed accessibility on `<select>` elements |
 
 ### Feature Flag

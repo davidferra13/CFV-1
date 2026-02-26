@@ -27,7 +27,7 @@ test.describe('Queue', () => {
 
   test('/queue — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/queue')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -54,7 +54,7 @@ test.describe('Import', () => {
 
   test('/import — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/import')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -87,7 +87,7 @@ test.describe('Help', () => {
 
   test('/help — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/help')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -95,7 +95,7 @@ test.describe('Help', () => {
 
   test('/help — clicking first article does not crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/help')
     await page.waitForLoadState('networkidle')
     const firstArticle = page.locator('a[href*="/help/"]').first()
@@ -128,7 +128,7 @@ test.describe('Insights', () => {
 
   test('/insights — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/insights')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -168,7 +168,7 @@ test.describe('Schedule', () => {
 
   test('/schedule — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/schedule')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -195,7 +195,7 @@ test.describe('Activity', () => {
 
   test('/activity — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/activity')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -230,7 +230,7 @@ test.describe('Financials', () => {
 
   test('/financials — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/financials')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -264,7 +264,7 @@ test.describe('Operations', () => {
 
   test('/operations — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/operations')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -278,7 +278,7 @@ test.describe('Operations', () => {
 
   test('/operations/kitchen-rentals — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/operations/kitchen-rentals')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -292,7 +292,7 @@ test.describe('Operations', () => {
 
   test('/operations/equipment — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/operations/equipment')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -328,7 +328,7 @@ test.describe('Expenses (standalone)', () => {
 
   test('/expenses — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/expenses')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -353,7 +353,7 @@ test.describe('Expenses (standalone)', () => {
 
   test('/expenses/new — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/expenses/new')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -381,7 +381,7 @@ test.describe('Mutation — Expense (standalone route)', () => {
       .first()
       .or(page.locator('input[type="text"]').first())
 
-    if (!await descField.isVisible()) return
+    if (!(await descField.isVisible())) return
 
     await descField.fill(uniqueDesc)
 
@@ -406,8 +406,15 @@ test.describe('Mutation — Expense (standalone route)', () => {
     await page.goto('/expenses')
     await page.waitForLoadState('networkidle')
 
-    const expenseVisible = await page.getByText(uniqueDesc).first().isVisible().catch(() => false)
-    expect(expenseVisible, `Created expense "${uniqueDesc}" should appear in /expenses list`).toBeTruthy()
+    const expenseVisible = await page
+      .getByText(uniqueDesc)
+      .first()
+      .isVisible()
+      .catch(() => false)
+    expect(
+      expenseVisible,
+      `Created expense "${uniqueDesc}" should appear in /expenses list`
+    ).toBeTruthy()
   })
 })
 
@@ -429,7 +436,7 @@ test.describe('Events — Schedule Sub-page', () => {
 
   test('/events/[id]/schedule — no JS errors', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto(`/events/${seedIds.eventIds.confirmed}/schedule`)
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)

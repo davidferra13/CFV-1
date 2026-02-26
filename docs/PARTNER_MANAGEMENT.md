@@ -10,35 +10,35 @@ The partner management system provides full CRUD for referral partners, their lo
 
 ### Partner CRUD
 
-| Function | Auth | Description |
-|----------|------|-------------|
-| `createPartner(input)` | Chef | Zod-validated, creates partner with all fields |
-| `updatePartner(id, input)` | Chef | Partial update, tenant-scoped |
-| `getPartners(filters?)` | Chef | List with inline stats (inquiry count, event count, revenue). Optional `type` and `status` filters |
-| `getPartnerById(id)` | Chef | Full partner with locations, images, and per-location stats (inquiry count, event count, revenue) |
-| `deletePartner(id)` | Chef | Soft-delete (→ inactive) if linked inquiries/events exist; hard-delete otherwise |
+| Function                   | Auth | Description                                                                                        |
+| -------------------------- | ---- | -------------------------------------------------------------------------------------------------- |
+| `createPartner(input)`     | Chef | Zod-validated, creates partner with all fields                                                     |
+| `updatePartner(id, input)` | Chef | Partial update, tenant-scoped                                                                      |
+| `getPartners(filters?)`    | Chef | List with inline stats (inquiry count, event count, revenue). Optional `type` and `status` filters |
+| `getPartnerById(id)`       | Chef | Full partner with locations, images, and per-location stats (inquiry count, event count, revenue)  |
+| `deletePartner(id)`        | Chef | Soft-delete (→ inactive) if linked inquiries/events exist; hard-delete otherwise                   |
 
 ### Location Management
 
-| Function | Auth | Description |
-|----------|------|-------------|
-| `createPartnerLocation(input)` | Chef | Add location to partner |
-| `updatePartnerLocation(id, input)` | Chef | Update location fields |
-| `getPartnerLocations(partnerId)` | Chef | List locations for a partner |
-| `deletePartnerLocation(id)` | Chef | Soft-delete (→ inactive) if linked; hard-delete otherwise |
+| Function                           | Auth | Description                                               |
+| ---------------------------------- | ---- | --------------------------------------------------------- |
+| `createPartnerLocation(input)`     | Chef | Add location to partner                                   |
+| `updatePartnerLocation(id, input)` | Chef | Update location fields                                    |
+| `getPartnerLocations(partnerId)`   | Chef | List locations for a partner                              |
+| `deletePartnerLocation(id)`        | Chef | Soft-delete (→ inactive) if linked; hard-delete otherwise |
 
 ### Image Management
 
-| Function | Auth | Description |
-|----------|------|-------------|
-| `addPartnerImage(input)` | Chef | Link image URL to partner/location with optional season tag |
-| `removePartnerImage(id)` | Chef | Delete image record |
-| `reorderPartnerImages(partnerId, imageIds[])` | Chef | Batch update display_order |
+| Function                                      | Auth | Description                                                 |
+| --------------------------------------------- | ---- | ----------------------------------------------------------- |
+| `addPartnerImage(input)`                      | Chef | Link image URL to partner/location with optional season tag |
+| `removePartnerImage(id)`                      | Chef | Delete image record                                         |
+| `reorderPartnerImages(partnerId, imageIds[])` | Chef | Batch update display_order                                  |
 
 ### Public Showcase
 
-| Function | Auth | Description |
-|----------|------|-------------|
+| Function                        | Auth          | Description                                                                                                            |
+| ------------------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | `getShowcasePartners(chefSlug)` | None (public) | Returns showcase-visible partners with locations and images for a chef's public page. Uses admin client to bypass RLS. |
 
 ---
@@ -75,12 +75,12 @@ The partner management system provides full CRUD for referral partners, their lo
 
 ## Components
 
-| Component | File | Purpose |
-|-----------|------|---------|
-| `PartnerForm` | `components/partners/partner-form.tsx` | Reusable create/edit form |
-| `LocationForm` | `components/partners/location-form.tsx` | Location create/edit form |
-| `PartnerDetailClient` | `components/partners/partner-detail-client.tsx` | Interactive detail page (locations, images, actions) |
-| `PartnerSelect` | `components/partners/partner-select.tsx` | Cascading partner → location dropdown for inquiry forms |
+| Component             | File                                            | Purpose                                                 |
+| --------------------- | ----------------------------------------------- | ------------------------------------------------------- |
+| `PartnerForm`         | `components/partners/partner-form.tsx`          | Reusable create/edit form                               |
+| `LocationForm`        | `components/partners/location-form.tsx`         | Location create/edit form                               |
+| `PartnerDetailClient` | `components/partners/partner-detail-client.tsx` | Interactive detail page (locations, images, actions)    |
+| `PartnerSelect`       | `components/partners/partner-select.tsx`        | Cascading partner → location dropdown for inquiry forms |
 
 ---
 

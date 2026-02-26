@@ -47,12 +47,7 @@ export const OAUTH_CONFIGS: Record<SocialOAuthPlatform, OAuthConfig> = {
     platform: 'facebook',
     authUrl: 'https://www.facebook.com/v21.0/dialog/oauth',
     tokenUrl: 'https://graph.facebook.com/v21.0/oauth/access_token',
-    scopes: [
-      'pages_manage_posts',
-      'pages_read_engagement',
-      'pages_show_list',
-      'publish_video',
-    ],
+    scopes: ['pages_manage_posts', 'pages_read_engagement', 'pages_show_list', 'publish_video'],
     clientIdEnv: 'META_APP_ID',
     clientSecretEnv: 'META_APP_SECRET',
     usePKCE: false,

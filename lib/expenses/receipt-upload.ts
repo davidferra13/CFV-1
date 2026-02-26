@@ -20,11 +20,7 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/heic', 'image/heif', 'i
  *   3. Add RLS policy: allow authenticated users to INSERT/SELECT where
  *      the path starts with their tenant_id
  */
-export async function uploadReceipt(
-  eventId: string,
-  expenseId: string,
-  formData: FormData
-) {
+export async function uploadReceipt(eventId: string, expenseId: string, formData: FormData) {
   const user = await requireChef()
   const supabase = createServerClient()
 
@@ -128,9 +124,7 @@ export async function deleteReceipt(expenseId: string) {
     .single()
 
   if (expense?.receipt_photo_url) {
-    await supabase.storage
-      .from(RECEIPTS_BUCKET)
-      .remove([expense.receipt_photo_url])
+    await supabase.storage.from(RECEIPTS_BUCKET).remove([expense.receipt_photo_url])
   }
 
   // Clear the reference on the expense

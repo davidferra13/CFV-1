@@ -69,8 +69,7 @@ export async function runCustomReport(config: ReportConfig): Promise<ReportDataP
 
     return Array.from(grouped.entries()).map(([label, data]) => ({
       label,
-      value:
-        config.metric === 'average' ? Math.round(data.value / data.count) : data.value,
+      value: config.metric === 'average' ? Math.round(data.value / data.count) : data.value,
       count: data.count,
     }))
   }
@@ -87,7 +86,7 @@ export async function runCustomReport(config: ReportConfig): Promise<ReportDataP
       const key =
         config.groupBy === 'month'
           ? format(new Date(expense.expense_date), 'MMM yyyy')
-          : ((expense.category as string) || 'Other')
+          : (expense.category as string) || 'Other'
       const existing = grouped.get(key) || { value: 0, count: 0 }
       existing.count++
       existing.value += expense.amount_cents || 0

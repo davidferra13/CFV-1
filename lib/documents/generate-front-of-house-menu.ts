@@ -24,16 +24,20 @@ export type FrontOfHouseMenuData = {
   }>
 }
 
-export async function fetchFrontOfHouseMenuData(eventId: string): Promise<FrontOfHouseMenuData | null> {
+export async function fetchFrontOfHouseMenuData(
+  eventId: string
+): Promise<FrontOfHouseMenuData | null> {
   const user = await requireChef()
   const supabase = createServerClient()
 
   const { data: event } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       occasion, event_date, guest_count, service_style,
       client:clients(full_name)
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -82,16 +86,20 @@ export async function fetchFrontOfHouseMenuData(eventId: string): Promise<FrontO
   }
 }
 
-export async function fetchFrontOfHouseMenuDataForClient(eventId: string): Promise<FrontOfHouseMenuData | null> {
+export async function fetchFrontOfHouseMenuDataForClient(
+  eventId: string
+): Promise<FrontOfHouseMenuData | null> {
   const user = await requireClient()
   const supabase = createServerClient()
 
   const { data: event } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       occasion, event_date, guest_count, service_style,
       client:clients(full_name)
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('client_id', user.entityId!)
     .single()

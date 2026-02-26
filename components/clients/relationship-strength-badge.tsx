@@ -25,9 +25,7 @@ export function RelationshipStrengthBadge({ tier, score, showScore = false }: Pr
       title={`${TIER_LABELS[tier]} client${score !== undefined ? ` (score: ${score}/100)` : ''}`}
     >
       <span>{TIER_STRENGTH_LABELS[tier]}</span>
-      {showScore && score !== undefined && (
-        <span className="opacity-60">· {score}</span>
-      )}
+      {showScore && score !== undefined && <span className="opacity-60">· {score}</span>}
     </span>
   )
 }

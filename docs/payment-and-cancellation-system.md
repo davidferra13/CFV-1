@@ -18,12 +18,12 @@ The platform had solid Stripe infrastructure but three operational gaps:
 
 ## Cancellation Policy (Take a Chef Terms)
 
-| Scenario | Refund |
-|---|---|
-| ≥15 days before event | Full balance refund |
-| Within 24 hrs of payment AND event >3 days away | Full balance refund |
-| <15 days before event (outside 24-hr window) | No refund |
-| Deposit | **Non-refundable** by default |
+| Scenario                                        | Refund                        |
+| ----------------------------------------------- | ----------------------------- |
+| ≥15 days before event                           | Full balance refund           |
+| Within 24 hrs of payment AND event >3 days away | Full balance refund           |
+| <15 days before event (outside 24-hr window)    | No refund                     |
+| Deposit                                         | **Non-refundable** by default |
 
 Chef can configure `cancellation_cutoff_days` (default 15) and `deposit_refundable` (default false) via the new columns on the `chefs` table.
 
@@ -35,30 +35,30 @@ The policy engine lives in [`lib/cancellation/policy.ts`](../lib/cancellation/po
 
 ### Core Logic
 
-| File | Purpose |
-|---|---|
-| [`lib/cancellation/policy.ts`](../lib/cancellation/policy.ts) | Pure policy engine — `computeCancellationRefund()`, `getCancellationPolicySummary()`, `getCancellationPolicyLines()` |
-| [`lib/cancellation/refund-actions.ts`](../lib/cancellation/refund-actions.ts) | Chef server actions: `getCancellationRefundRecommendation()`, `initiateRefund()` |
-| [`lib/events/offline-payment-actions.ts`](../lib/events/offline-payment-actions.ts) | Chef server action: `recordOfflinePayment()` |
-| [`lib/stripe/refund.ts`](../lib/stripe/refund.ts) | `createStripeRefund()`, `getStripePaymentIntentIdForEvent()` |
+| File                                                                                | Purpose                                                                                                              |
+| ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| [`lib/cancellation/policy.ts`](../lib/cancellation/policy.ts)                       | Pure policy engine — `computeCancellationRefund()`, `getCancellationPolicySummary()`, `getCancellationPolicyLines()` |
+| [`lib/cancellation/refund-actions.ts`](../lib/cancellation/refund-actions.ts)       | Chef server actions: `getCancellationRefundRecommendation()`, `initiateRefund()`                                     |
+| [`lib/events/offline-payment-actions.ts`](../lib/events/offline-payment-actions.ts) | Chef server action: `recordOfflinePayment()`                                                                         |
+| [`lib/stripe/refund.ts`](../lib/stripe/refund.ts)                                   | `createStripeRefund()`, `getStripePaymentIntentIdForEvent()`                                                         |
 
 ### UI Components
 
-| File | Purpose |
-|---|---|
-| [`components/events/record-payment-modal.tsx`](../components/events/record-payment-modal.tsx) | Modal for recording offline payments |
-| [`components/events/initiate-refund-modal.tsx`](../components/events/initiate-refund-modal.tsx) | Modal for initiating refunds (Stripe or offline) |
-| [`components/events/cancellation-policy-display.tsx`](../components/events/cancellation-policy-display.tsx) | Policy display — `compact` (banner) and `full` (table) variants |
-| [`components/events/payment-actions-panel.tsx`](../components/events/payment-actions-panel.tsx) | `RecordPaymentPanel` and `ProcessRefundPanel` — panel-level wrappers used by chef event page |
+| File                                                                                                        | Purpose                                                                                      |
+| ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| [`components/events/record-payment-modal.tsx`](../components/events/record-payment-modal.tsx)               | Modal for recording offline payments                                                         |
+| [`components/events/initiate-refund-modal.tsx`](../components/events/initiate-refund-modal.tsx)             | Modal for initiating refunds (Stripe or offline)                                             |
+| [`components/events/cancellation-policy-display.tsx`](../components/events/cancellation-policy-display.tsx) | Policy display — `compact` (banner) and `full` (table) variants                              |
+| [`components/events/payment-actions-panel.tsx`](../components/events/payment-actions-panel.tsx)             | `RecordPaymentPanel` and `ProcessRefundPanel` — panel-level wrappers used by chef event page |
 
 ### Email Templates
 
-| File | When Sent |
-|---|---|
-| [`lib/email/templates/offline-payment-receipt.tsx`](../lib/email/templates/offline-payment-receipt.tsx) | Client receives when chef records offline payment |
-| [`lib/email/templates/refund-initiated.tsx`](../lib/email/templates/refund-initiated.tsx) | Client receives when refund is initiated |
-| [`lib/email/templates/payment-reminder.tsx`](../lib/email/templates/payment-reminder.tsx) | Client receives at 7d, 3d, 1d before event (unpaid) |
-| [`lib/email/templates/payment-received-chef.tsx`](../lib/email/templates/payment-received-chef.tsx) | Chef receives when Stripe payment succeeds |
+| File                                                                                                    | When Sent                                           |
+| ------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| [`lib/email/templates/offline-payment-receipt.tsx`](../lib/email/templates/offline-payment-receipt.tsx) | Client receives when chef records offline payment   |
+| [`lib/email/templates/refund-initiated.tsx`](../lib/email/templates/refund-initiated.tsx)               | Client receives when refund is initiated            |
+| [`lib/email/templates/payment-reminder.tsx`](../lib/email/templates/payment-reminder.tsx)               | Client receives at 7d, 3d, 1d before event (unpaid) |
+| [`lib/email/templates/payment-received-chef.tsx`](../lib/email/templates/payment-received-chef.tsx)     | Chef receives when Stripe payment succeeds          |
 
 ### Database Migration
 
@@ -81,14 +81,14 @@ payment_reminder_1d_sent_at TIMESTAMPTZ
 
 ## Modified Files
 
-| File | Change |
-|---|---|
-| [`lib/email/notifications.ts`](../lib/email/notifications.ts) | Added 4 new dispatcher functions |
-| [`app/api/webhooks/stripe/route.ts`](../app/api/webhooks/stripe/route.ts) | Added chef email on `payment_intent.succeeded` |
-| [`app/api/scheduled/lifecycle/route.ts`](../app/api/scheduled/lifecycle/route.ts) | Added payment reminder logic (section 4) |
-| [`app/(chef)/events/[id]/page.tsx`](../app/(chef)/events/[id]/page.tsx) | Added Record Payment + Process Refund panels |
-| [`app/(client)/my-events/[id]/pay/page.tsx`](../app/(client)/my-events/[id]/pay/page.tsx) | Added cancellation policy banner |
-| [`app/(client)/my-events/[id]/page.tsx`](../app/(client)/my-events/[id]/page.tsx) | Added cancellation policy banner above action buttons |
+| File                                                                                        | Change                                                |
+| ------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| [`lib/email/notifications.ts`](../lib/email/notifications.ts)                               | Added 4 new dispatcher functions                      |
+| [`app/api/webhooks/stripe/route.ts`](../app/api/webhooks/stripe/route.ts)                   | Added chef email on `payment_intent.succeeded`        |
+| [`app/api/scheduled/lifecycle/route.ts`](../app/api/scheduled/lifecycle/route.ts)           | Added payment reminder logic (section 4)              |
+| [`app/(chef)/events/[id]/page.tsx`](<../app/(chef)/events/[id]/page.tsx>)                   | Added Record Payment + Process Refund panels          |
+| [`app/(client)/my-events/[id]/pay/page.tsx`](<../app/(client)/my-events/[id]/pay/page.tsx>) | Added cancellation policy banner                      |
+| [`app/(client)/my-events/[id]/page.tsx`](<../app/(client)/my-events/[id]/page.tsx>)         | Added cancellation policy banner above action buttons |
 
 ---
 
@@ -111,6 +111,7 @@ payment_reminder_1d_sent_at TIMESTAMPTZ
 ## Refund Initiation Flow
 
 ### For Stripe Payments
+
 1. Chef opens a cancelled event that has prior payments
 2. "Process Refund" blue card appears
 3. `getCancellationRefundRecommendation()` computes recommended refund from policy
@@ -121,6 +122,7 @@ payment_reminder_1d_sent_at TIMESTAMPTZ
 8. Client receives refund email; chef sees activity log
 
 ### For Offline Payments
+
 Same flow, but instead of calling Stripe, `initiateRefund()` directly writes a negative ledger entry (`type: 'refund', is_refund: true, amount_cents: -X`).
 
 **Important:** Stripe refunds do NOT also write a ledger entry in `initiateRefund()`. Only the webhook does that. This prevents double-entry.

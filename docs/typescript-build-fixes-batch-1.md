@@ -13,6 +13,7 @@ Fixed TypeScript build errors across 15 files. All changes are minimal and targe
 The Button component only accepts `'primary' | 'secondary' | 'danger' | 'ghost'`. `"outline"` is not a valid variant and causes a TS type error.
 
 **Files fixed:**
+
 - `app/(chef)/clients/[id]/recurring/recurring-service-form.tsx` — 2 occurrences (Set Up Service, Log Dish Served buttons)
 - `app/(chef)/culinary/vendors/vendor-directory-client.tsx` — 1 occurrence (Add Vendor toggle)
 - `app/(chef)/marketing/campaign-builder-client.tsx` — 1 occurrence (Create Another button)
@@ -25,6 +26,7 @@ The Button component only accepts `'primary' | 'secondary' | 'danger' | 'ghost'`
 When action functions return `any[]` (Supabase queries without generated types for new tables), TypeScript cannot infer element types in `.map()`, `.filter()`, and `.reduce()` callbacks. Fix: annotate the parameter with `: any`.
 
 **Files fixed:**
+
 - `app/(chef)/clients/[id]/recurring/page.tsx` — `s`, `d`, `i`, `name`, `entry` in map/filter callbacks over `services`, `suggestions.loved`, `suggestions.disliked`, `history`
 - `app/(chef)/culinary/vendors/page.tsx` — `v` in two `.filter()` callbacks over `vendors`
 - `app/(chef)/insights/time-analysis/page.tsx` — `log` in `.map()` over `thisWeek.logs`
@@ -38,6 +40,7 @@ When action functions return `any[]` (Supabase queries without generated types f
 `total_time_minutes` does not exist on the `RecipeListItem` type returned by `getRecipes()`. The correct field is `cook_time_minutes`.
 
 **File fixed:**
+
 - `app/(chef)/culinary/recipes/page.tsx` — line 90, Total Time column in the recipe table
 
 ### 4. Missing Required Field (`typical_guest_count`)
@@ -45,6 +48,7 @@ When action functions return `any[]` (Supabase queries without generated types f
 `createRecurringService` expects `typical_guest_count: number` (required), but the form was passing `number | undefined` (when the field is blank). Fixed by using `?? 0` (via ternary `: 0`) so the value is always a number.
 
 **File fixed:**
+
 - `app/(chef)/clients/[id]/recurring/recurring-service-form.tsx` — line 50
 
 ---

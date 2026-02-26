@@ -23,7 +23,7 @@ export type ClientLTV = {
 }
 
 export type RetentionCohortRow = {
-  cohortQuarter: string  // e.g. '2025-Q1'
+  cohortQuarter: string // e.g. '2025-Q1'
   totalClients: number
   returnedFor2nd: number
   returnedFor3rd: number
@@ -74,14 +74,12 @@ export async function computeCLV(clientId: string): Promise<ClientLTV> {
     .order('event_date', { ascending: true })
 
   const completedEvents = events || []
-  const totalRevenueCents = completedEvents.reduce(
-    (sum, e) => sum + (e.quoted_price_cents || 0), 0
-  )
+  const totalRevenueCents = completedEvents.reduce((sum, e) => sum + (e.quoted_price_cents || 0), 0)
 
   // Get associated expenses (business expenses linked to this client's events)
   let totalExpensesCents = 0
   if (completedEvents.length > 0) {
-    const eventIds = completedEvents.map(e => e.id)
+    const eventIds = completedEvents.map((e) => e.id)
     const { data: expenses } = await supabase
       .from('expenses')
       .select('amount_cents')
@@ -92,12 +90,9 @@ export async function computeCLV(clientId: string): Promise<ClientLTV> {
     totalExpensesCents = (expenses || []).reduce((sum, e) => sum + e.amount_cents, 0)
   }
 
-  const firstEventDate = completedEvents.length > 0
-    ? completedEvents[0].event_date
-    : null
-  const lastEventDate = completedEvents.length > 0
-    ? completedEvents[completedEvents.length - 1].event_date
-    : null
+  const firstEventDate = completedEvents.length > 0 ? completedEvents[0].event_date : null
+  const lastEventDate =
+    completedEvents.length > 0 ? completedEvents[completedEvents.length - 1].event_date : null
 
   return {
     clientId: client.id,
@@ -146,22 +141,25 @@ export async function getTopClientsByLTV(limit?: number): Promise<ClientLTV[]> {
 
   // Build expense-by-event map
   const expenseByEvent = new Map<string, number>()
-  for (const exp of (expenses || [])) {
+  for (const exp of expenses || []) {
     if (exp.event_id) {
       expenseByEvent.set(exp.event_id, (expenseByEvent.get(exp.event_id) || 0) + exp.amount_cents)
     }
   }
 
   // Build per-client aggregations
-  const clientMap = new Map<string, {
-    revenueCents: number
-    expenseCents: number
-    eventCount: number
-    firstDate: string | null
-    lastDate: string | null
-  }>()
+  const clientMap = new Map<
+    string,
+    {
+      revenueCents: number
+      expenseCents: number
+      eventCount: number
+      firstDate: string | null
+      lastDate: string | null
+    }
+  >()
 
-  for (const event of (events || [])) {
+  for (const event of events || []) {
     if (!event.client_id) continue
     const existing = clientMap.get(event.client_id) || {
       revenueCents: 0,
@@ -186,7 +184,7 @@ export async function getTopClientsByLTV(limit?: number): Promise<ClientLTV[]> {
   }
 
   // Build results for all clients, sort by LTV
-  const results: ClientLTV[] = clients.map(client => {
+  const results: ClientLTV[] = clients.map((client) => {
     const data = clientMap.get(client.id)
     const revenueCents = data?.revenueCents ?? 0
     const expenseCents = data?.expenseCents ?? 0
@@ -237,13 +235,16 @@ export async function getRetentionCohort(): Promise<RetentionCohortRow[]> {
   }
 
   // For each client, determine cohort quarter (from first event date)
-  const cohortData = new Map<string, {
-    totalClients: number
-    returnedFor2nd: number
-    returnedFor3rd: number
-    returnedFor4th: number
-    returnedFor5thPlus: number
-  }>()
+  const cohortData = new Map<
+    string,
+    {
+      totalClients: number
+      returnedFor2nd: number
+      returnedFor3rd: number
+      returnedFor4th: number
+      returnedFor5thPlus: number
+    }
+  >()
 
   for (const [_clientId, dates] of clientEvents) {
     if (dates.length === 0) continue

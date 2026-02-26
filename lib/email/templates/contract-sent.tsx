@@ -48,6 +48,11 @@ export function ContractSentEmail({ clientName, occasion, eventDate, signingUrl 
   )
 }
 
-const heading = { fontSize: '24px', fontWeight: '600' as const, color: '#18181b', margin: '0 0 16px' }
+const heading = {
+  fontSize: '24px',
+  fontWeight: '600' as const,
+  color: '#18181b',
+  margin: '0 0 16px',
+}
 const paragraph = { fontSize: '15px', lineHeight: '1.6', color: '#374151', margin: '0 0 16px' }
 const muted = { fontSize: '13px', color: '#9ca3af', margin: '0' }

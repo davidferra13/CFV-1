@@ -30,7 +30,13 @@ export async function seedDemoData(): Promise<DemoDataResult> {
     .eq('is_demo', true)
 
   if ((existingCount ?? 0) > 0) {
-    return { created: false, clientsCreated: 0, eventsCreated: 0, inquiriesCreated: 0, error: 'Demo data already exists' }
+    return {
+      created: false,
+      clientsCreated: 0,
+      eventsCreated: 0,
+      inquiriesCreated: 0,
+      error: 'Demo data already exists',
+    }
   }
 
   // Sample clients
@@ -67,7 +73,7 @@ export async function seedDemoData(): Promise<DemoDataResult> {
   const { data: createdClients, error: clientError } = await supabase
     .from('clients')
     .insert(
-      DEMO_CLIENTS.map(c => ({
+      DEMO_CLIENTS.map((c) => ({
         tenant_id: tenantId,
         chef_id: chefId,
         full_name: c.full_name,
@@ -83,10 +89,16 @@ export async function seedDemoData(): Promise<DemoDataResult> {
     .select('id')
 
   if (clientError || !createdClients) {
-    return { created: false, clientsCreated: 0, eventsCreated: 0, inquiriesCreated: 0, error: clientError?.message }
+    return {
+      created: false,
+      clientsCreated: 0,
+      eventsCreated: 0,
+      inquiriesCreated: 0,
+      error: clientError?.message,
+    }
   }
 
-  const [chenId, riveiraId, harringtonId] = createdClients.map(c => c.id)
+  const [chenId, riveiraId, harringtonId] = createdClients.map((c) => c.id)
 
   // Sample events — one completed, one confirmed upcoming
   const today = new Date()
@@ -106,7 +118,8 @@ export async function seedDemoData(): Promise<DemoDataResult> {
       service_style: 'plated',
       location_address: '123 Oak Street',
       location_city: 'San Francisco',
-      notes: '[Sample] Three-course Japanese fusion. Miso-glazed black cod, seasonal greens, yuzu panna cotta.',
+      notes:
+        '[Sample] Three-course Japanese fusion. Miso-glazed black cod, seasonal greens, yuzu panna cotta.',
     },
     {
       client_id: harringtonId,
@@ -126,7 +139,7 @@ export async function seedDemoData(): Promise<DemoDataResult> {
   const { data: createdEvents, error: eventError } = await supabase
     .from('events')
     .insert(
-      DEMO_EVENTS.map(e => ({
+      DEMO_EVENTS.map((e) => ({
         tenant_id: tenantId,
         chef_id: chefId,
         ...e,
@@ -137,7 +150,12 @@ export async function seedDemoData(): Promise<DemoDataResult> {
 
   if (eventError) {
     // Clients were created — partial success
-    return { created: true, clientsCreated: createdClients.length, eventsCreated: 0, inquiriesCreated: 0 }
+    return {
+      created: true,
+      clientsCreated: createdClients.length,
+      eventsCreated: 0,
+      inquiriesCreated: 0,
+    }
   }
 
   // Sample inquiry — a hot lead
@@ -148,18 +166,19 @@ export async function seedDemoData(): Promise<DemoDataResult> {
     status: 'quoted',
     channel: 'email',
     confirmed_occasion: 'Anniversary Dinner',
-    confirmed_date: new Date(today.getTime() + 35 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    confirmed_date: new Date(today.getTime() + 35 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split('T')[0],
     confirmed_guest_count: 6,
     confirmed_budget_cents: 90000, // $900
-    source_message: '[Sample] Hi! We\'d love to book you for our 10th anniversary. Six guests, Italian or French cuisine preferred. Do you have availability?',
+    source_message:
+      "[Sample] Hi! We'd love to book you for our 10th anniversary. Six guests, Italian or French cuisine preferred. Do you have availability?",
     next_action_required: 'Follow up — quote has been open 3 days with no response',
     is_demo: true,
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error: inquiryError } = await supabase
-    .from('inquiries')
-    .insert(DEMO_INQUIRY as any)
+  const { error: inquiryError } = await supabase.from('inquiries').insert(DEMO_INQUIRY as any)
 
   revalidatePath('/clients')
   revalidatePath('/events')

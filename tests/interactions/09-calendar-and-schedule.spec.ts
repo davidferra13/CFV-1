@@ -21,8 +21,16 @@ test.describe('Calendar — Month View', () => {
     await page.goto('/calendar')
     await page.waitForLoadState('networkidle')
     // Should render some form of calendar — grid, table, or month label
-    const calendarEl = page.locator('table, [role="grid"], .calendar, .fc, [class*="calendar"]').first()
-      .or(page.getByText(/january|february|march|april|may|june|july|august|september|october|november|december/i).first())
+    const calendarEl = page
+      .locator('table, [role="grid"], .calendar, .fc, [class*="calendar"]')
+      .first()
+      .or(
+        page
+          .getByText(
+            /january|february|march|april|may|june|july|august|september|october|november|december/i
+          )
+          .first()
+      )
     await expect(calendarEl).toBeVisible({ timeout: 10_000 })
   })
 
@@ -38,7 +46,7 @@ test.describe('Calendar — Month View', () => {
 
   test('Calendar does not crash on load', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/calendar')
     await page.waitForLoadState('networkidle')
@@ -77,27 +85,36 @@ test.describe('Calendar — View Switching', () => {
   test('Calendar has view-switching buttons (Day/Week/Month/Year)', async ({ page }) => {
     await page.goto('/calendar')
     await page.waitForLoadState('networkidle')
-    const dayBtn = page.getByRole('button', { name: /^day$/i }).first()
+    const dayBtn = page
+      .getByRole('button', { name: /^day$/i })
+      .first()
       .or(page.getByRole('link', { name: /^day$/i }).first())
-    const weekBtn = page.getByRole('button', { name: /^week$/i }).first()
+    const weekBtn = page
+      .getByRole('button', { name: /^week$/i })
+      .first()
       .or(page.getByRole('link', { name: /^week$/i }).first())
-    const monthBtn = page.getByRole('button', { name: /^month$/i }).first()
+    const monthBtn = page
+      .getByRole('button', { name: /^month$/i })
+      .first()
       .or(page.getByRole('link', { name: /^month$/i }).first())
     // At least one view button should be visible
-    const anyVisible = await dayBtn.isVisible().catch(() => false)
-      || await weekBtn.isVisible().catch(() => false)
-      || await monthBtn.isVisible().catch(() => false)
+    const anyVisible =
+      (await dayBtn.isVisible().catch(() => false)) ||
+      (await weekBtn.isVisible().catch(() => false)) ||
+      (await monthBtn.isVisible().catch(() => false))
     expect(anyVisible, 'Calendar should have view-switching controls').toBeTruthy()
   })
 
   test('Switching to week view does not crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/calendar')
     await page.waitForLoadState('networkidle')
 
-    const weekBtn = page.getByRole('button', { name: /week/i }).first()
+    const weekBtn = page
+      .getByRole('button', { name: /week/i })
+      .first()
       .or(page.getByRole('link', { name: /week/i }).first())
     if (await weekBtn.isVisible()) {
       await weekBtn.click()
@@ -146,7 +163,9 @@ test.describe('Schedule — Availability Settings', () => {
     await page.goto('/schedule')
     await page.waitForLoadState('networkidle')
     // Availability settings typically have toggles or date pickers
-    const inputs = await page.locator('input[type="checkbox"], button[role="switch"], input[type="date"]').count()
+    const inputs = await page
+      .locator('input[type="checkbox"], button[role="switch"], input[type="date"]')
+      .count()
     // Not a hard requirement — some schedules are calendar-only
     if (inputs > 0) {
       expect(inputs).toBeGreaterThan(0)

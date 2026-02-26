@@ -45,7 +45,9 @@ test.describe('Tenant Isolation — Cross-Tenant Access Prevention', () => {
       // If the page loaded chef2's event, it would show its title or details
       // We can't check the specific title, but we can check for an error indicator
       expect(
-        is404OrRedirect || (pageText?.includes('not found') ?? false) || (pageText?.includes('unauthorized') ?? false),
+        is404OrRedirect ||
+          (pageText?.includes('not found') ?? false) ||
+          (pageText?.includes('unauthorized') ?? false),
         `Expected isolation: should not be able to access /events/${chef2EventId} as Chef A`
       ).toBeTruthy()
     })
@@ -62,7 +64,7 @@ test.describe('Tenant Isolation — Cross-Tenant Access Prevention', () => {
 
       // Should redirect away or show error — not the client detail page
       expect(
-        url.includes('/clients') && !url.includes(chef2ClientId) || url.includes('/dashboard'),
+        (url.includes('/clients') && !url.includes(chef2ClientId)) || url.includes('/dashboard'),
         `Expected isolation: should not be able to access /clients/${chef2ClientId} as Chef A`
       ).toBeTruthy()
     })

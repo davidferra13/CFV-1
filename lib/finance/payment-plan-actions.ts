@@ -25,22 +25,26 @@ export async function getPaymentPlan(eventId: string): Promise<PaymentPlanInstal
 
   const { data } = await supabase
     .from('payment_plan_installments' as any)
-    .select('id, event_id, installment_num, label, amount_cents, due_date, paid_at, payment_method, notes')
+    .select(
+      'id, event_id, installment_num, label, amount_cents, due_date, paid_at, payment_method, notes'
+    )
     .eq('event_id', eventId)
     .eq('tenant_id', user.tenantId!)
     .order('installment_num')
 
-  return ((data ?? []) as any[]).map((r: any): PaymentPlanInstallment => ({
-    id: r.id,
-    eventId: r.event_id,
-    installmentNum: r.installment_num,
-    label: r.label,
-    amountCents: r.amount_cents,
-    dueDate: r.due_date,
-    paidAt: r.paid_at,
-    paymentMethod: r.payment_method,
-    notes: r.notes,
-  }))
+  return ((data ?? []) as any[]).map(
+    (r: any): PaymentPlanInstallment => ({
+      id: r.id,
+      eventId: r.event_id,
+      installmentNum: r.installment_num,
+      label: r.label,
+      amountCents: r.amount_cents,
+      dueDate: r.due_date,
+      paidAt: r.paid_at,
+      paymentMethod: r.payment_method,
+      notes: r.notes,
+    })
+  )
 }
 
 export async function addInstallment(formData: FormData): Promise<void> {

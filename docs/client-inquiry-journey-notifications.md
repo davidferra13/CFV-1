@@ -77,6 +77,7 @@ Two exports:
 Looks up `user_roles` WHERE `entity_id = clientId AND role = 'client'` to find the Supabase auth UID. Returns `null` if the client has no portal account (inquiry-only clients who haven't activated their portal yet).
 
 **`createClientNotification(params): Promise<void>`**
+
 1. Calls `getClientAuthUserId()` to resolve the auth UID
 2. If no auth UID, returns silently (client has no portal — notification would be unreadable)
 3. Calls the existing `createNotification()` with the resolved UID and `metadata.recipient_role: 'client'`
@@ -86,16 +87,16 @@ Looks up `user_roles` WHERE `entity_id = clientId AND role = 'client'` to find t
 
 Eight new `NotificationAction` union members for client-facing events:
 
-| Action | Category | Trigger |
-|---|---|---|
-| `quote_sent_to_client` | `quote` | Chef marks quote as sent |
-| `event_proposed_to_client` | `event` | Chef transitions event → proposed |
-| `event_confirmed_to_client` | `event` | Chef transitions event → confirmed |
-| `event_reminder_7d` | `event` | Lifecycle cron, 7 days before |
-| `event_reminder_2d` | `event` | Lifecycle cron, 2 days before |
-| `event_reminder_1d` | `event` | Lifecycle cron, 1 day before |
-| `quote_expiring_soon` | `quote` | Lifecycle cron, 48h before expiry |
-| `photos_ready` | `event` | Chef uploads first photo |
+| Action                      | Category | Trigger                            |
+| --------------------------- | -------- | ---------------------------------- |
+| `quote_sent_to_client`      | `quote`  | Chef marks quote as sent           |
+| `event_proposed_to_client`  | `event`  | Chef transitions event → proposed  |
+| `event_confirmed_to_client` | `event`  | Chef transitions event → confirmed |
+| `event_reminder_7d`         | `event`  | Lifecycle cron, 7 days before      |
+| `event_reminder_2d`         | `event`  | Lifecycle cron, 2 days before      |
+| `event_reminder_1d`         | `event`  | Lifecycle cron, 1 day before       |
+| `quote_expiring_soon`       | `quote`  | Lifecycle cron, 48h before expiry  |
+| `photos_ready`              | `event`  | Chef uploads first photo           |
 
 Each has a corresponding `NOTIFICATION_CONFIG` entry (category, Lucide icon, `toastByDefault`).
 
@@ -110,6 +111,7 @@ Wrapped the layout content with `<NotificationProvider userId={user.id}>` and `<
 ### Modified: `components/navigation/client-nav.tsx`
 
 Added `<NotificationBell />` to:
+
 - Desktop sidebar bottom section (before sign-out, in a `div.mb-1`)
 - Mobile header (between "Book Now" link and hamburger button)
 
@@ -127,16 +129,16 @@ Pure function `buildJourneySteps(params)` — takes event/quote/photo data and r
 
 **8 steps:**
 
-| # | Label | Completed when |
-|---|---|---|
-| 1 | Inquiry Received | Always (inquiry exists) |
-| 2 | Quote Sent | Event status is `accepted+` or quote transition shows it was sent |
-| 3 | Quote Accepted | Event status is `accepted+` |
-| 4 | Payment Received | Event status is `paid+` |
-| 5 | Event Confirmed | Event status is `confirmed+` |
-| 6 | Chef on the Way | Event status is `in_progress+` |
-| 7 | Dinner Complete | Event status is `completed` |
-| 8 | Photos Ready | `hasPhotos === true` |
+| #   | Label            | Completed when                                                    |
+| --- | ---------------- | ----------------------------------------------------------------- |
+| 1   | Inquiry Received | Always (inquiry exists)                                           |
+| 2   | Quote Sent       | Event status is `accepted+` or quote transition shows it was sent |
+| 3   | Quote Accepted   | Event status is `accepted+`                                       |
+| 4   | Payment Received | Event status is `paid+`                                           |
+| 5   | Event Confirmed  | Event status is `confirmed+`                                      |
+| 6   | Chef on the Way  | Event status is `in_progress+`                                    |
+| 7   | Dinner Complete  | Event status is `completed`                                       |
+| 8   | Photos Ready     | `hasPhotos === true`                                              |
 
 **`isCurrent`:** The last step that has a `completedAt` and is not marked as `isFuture`.
 
@@ -153,6 +155,7 @@ Pure function `buildJourneySteps(params)` — takes event/quote/photo data and r
 ### Modified: `lib/events/client-actions.ts`
 
 `getClientEventById()` now also fetches:
+
 - `event_state_transitions` (to_status, transitioned_at) ordered ascending — used by `buildJourneySteps`
 - Photo count from `event_photos` WHERE `deleted_at IS NULL` — used to set `hasPhotos`
 
@@ -166,12 +169,12 @@ Added a "Your Journey" card above the Event Details card. Hidden when event is c
 
 ### New templates
 
-| File | Subject | Trigger |
-|---|---|---|
-| `lib/email/templates/event-prepare.tsx` | `{Chef} is coming in 7 days — here's what to know` | 7d lifecycle cron |
-| `lib/email/templates/event-reminder-2d.tsx` | `Reminder: {Occasion} is in 2 days` | 2d lifecycle cron |
-| `lib/email/templates/quote-expiring.tsx` | `Your quote for {Occasion} expires in 48 hours` | Quote expiry lifecycle cron |
-| `lib/email/templates/photos-ready.tsx` | `Your {Occasion} photos are ready` | Chef uploads first photo |
+| File                                        | Subject                                            | Trigger                     |
+| ------------------------------------------- | -------------------------------------------------- | --------------------------- |
+| `lib/email/templates/event-prepare.tsx`     | `{Chef} is coming in 7 days — here's what to know` | 7d lifecycle cron           |
+| `lib/email/templates/event-reminder-2d.tsx` | `Reminder: {Occasion} is in 2 days`                | 2d lifecycle cron           |
+| `lib/email/templates/quote-expiring.tsx`    | `Your quote for {Occasion} expires in 48 hours`    | Quote expiry lifecycle cron |
+| `lib/email/templates/photos-ready.tsx`      | `Your {Occasion} photos are ready`                 | Chef uploads first photo    |
 
 All use `BaseLayout` and match the existing email visual language.
 
@@ -189,18 +192,21 @@ All follow the same pattern as existing dispatchers (subject, `sendEmail()`, Res
 ### Modified: `app/api/scheduled/lifecycle/route.ts`
 
 **Section 5 — 7d / 2d / 1d pre-event reminders:**
+
 - Queries events in `[paid, confirmed, in_progress]` where `event_date` is within the next 7 days
 - For each event, checks the three dedup columns in descending order (7d first, then 2d, then 1d)
 - Sends the appropriate email, marks the column, then `break`s (only one email per cron run per event)
 - Respects the same double opt-out as existing payment reminders: chef `client_event_reminders_enabled` AND client `automated_emails_enabled`
 
 **Section 6 — Quote expiry warnings:**
+
 - Queries `quotes` WHERE `status = 'sent'` AND `valid_until BETWEEN now() AND now() + interval '48 hours'` AND `expiry_warning_sent_at IS NULL`
 - For each quote: fetches client/chef/occasion, checks double opt-out, sends email, marks column, creates in-app notification
 
 ### Dual opt-out pattern
 
 Both new sections respect the same two-flag pattern used throughout the lifecycle cron:
+
 1. **Chef flag:** `chef.client_event_reminders_enabled` (or similar per-feature flag) — the chef can disable automated client emails globally
 2. **Client flag:** `client.automated_emails_enabled` — the client can opt out of all automated emails
 
@@ -210,12 +216,12 @@ Both new sections respect the same two-flag pattern used throughout the lifecycl
 
 Added `createClientNotification()` calls (non-blocking try/catch) at exactly five trigger points:
 
-| File | When | Action fired |
-|---|---|---|
-| `lib/quotes/actions.ts` | Quote status → `sent` (inside email try/catch, after `sendQuoteSentEmail`) | `quote_sent_to_client` |
-| `lib/events/transitions.ts` | Event → `proposed` | `event_proposed_to_client` |
-| `lib/events/transitions.ts` | Event → `confirmed` | `event_confirmed_to_client` |
-| `lib/events/photo-actions.ts` | Chef uploads a photo | `photos_ready` (every upload) + `sendPhotosReadyEmail` (first upload only) |
+| File                          | When                                                                       | Action fired                                                               |
+| ----------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `lib/quotes/actions.ts`       | Quote status → `sent` (inside email try/catch, after `sendQuoteSentEmail`) | `quote_sent_to_client`                                                     |
+| `lib/events/transitions.ts`   | Event → `proposed`                                                         | `event_proposed_to_client`                                                 |
+| `lib/events/transitions.ts`   | Event → `confirmed`                                                        | `event_confirmed_to_client`                                                |
+| `lib/events/photo-actions.ts` | Chef uploads a photo                                                       | `photos_ready` (every upload) + `sendPhotosReadyEmail` (first upload only) |
 
 ### First-upload gating for photos-ready email
 
@@ -243,6 +249,7 @@ For Apple Calendar and Outlook, an `.ics` file download is the standard mechanis
 2. **Apple / Outlook (.ics)** — `<a href={icsUrl} download>` pointing to the API endpoint below
 
 Google Calendar URL format:
+
 ```
 https://calendar.google.com/calendar/render?action=TEMPLATE
   &text={occasion}
@@ -292,6 +299,7 @@ Clean extraction of `generateICS()` and `escapeICS()` from `lib/scheduling/calen
 ## Files Changed
 
 ### New files
+
 - `supabase/migrations/20260303000015_client_journey_notifications.sql`
 - `lib/notifications/client-actions.ts`
 - `lib/scheduling/generate-ics.ts`
@@ -306,6 +314,7 @@ Clean extraction of `generateICS()` and `escapeICS()` from `lib/scheduling/calen
 - `docs/client-inquiry-journey-notifications.md` (this file)
 
 ### Modified files
+
 - `lib/notifications/types.ts` — 8 new action types + NOTIFICATION_CONFIG entries
 - `app/(client)/layout.tsx` — NotificationProvider + ToastProvider
 - `components/navigation/client-nav.tsx` — NotificationBell in desktop + mobile

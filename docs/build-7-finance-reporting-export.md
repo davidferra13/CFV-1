@@ -11,6 +11,7 @@
 ### Problem Being Solved
 
 Discovery: Most of ChefFlow's finance sub-pages were already well-implemented. The actual gaps were:
+
 1. The **reporting hub** was a link grid with zero live data — no KPIs, no at-a-glance insight
 2. **No CSV export** capability on any reporting page — chef can't send data to accountant
 3. The existing `exportLedgerCSV()` in `lib/ledger/actions.ts` returned a raw string, not the `{ csv, filename }` shape required by `CSVDownloadButton`
@@ -22,14 +23,15 @@ Grade before: **C (reporting hub stub)** → Grade after: **B+**
 ## New Files
 
 ### `lib/finance/export-actions.ts`
+
 Server actions that export financial data as properly-shaped CSV downloads. Each returns `{ csv: string; filename: string }` matching the `CSVDownloadButton` interface.
 
-| Export Action | Data Source | Output |
-|---|---|---|
-| `exportLedgerEntriesCSV()` | `getLedgerEntries()` | All transactions: date, type, event, amount, method, ref |
-| `exportRevenueByMonthCSV()` | `getLedgerEntries({ startDate })` | 12 monthly buckets: gross, refunds, net |
-| `exportRevenueByClientCSV()` | `getEvents()` | Per-client: event count, total, completed, avg |
-| `exportExpensesCSV()` | `getExpenses()` | All expenses: date, category, vendor, amount, receipt |
+| Export Action                | Data Source                       | Output                                                   |
+| ---------------------------- | --------------------------------- | -------------------------------------------------------- |
+| `exportLedgerEntriesCSV()`   | `getLedgerEntries()`              | All transactions: date, type, event, amount, method, ref |
+| `exportRevenueByMonthCSV()`  | `getLedgerEntries({ startDate })` | 12 monthly buckets: gross, refunds, net                  |
+| `exportRevenueByClientCSV()` | `getEvents()`                     | Per-client: event count, total, completed, avg           |
+| `exportExpensesCSV()`        | `getExpenses()`                   | All expenses: date, category, vendor, amount, receipt    |
 
 All amounts exported in dollars (not cents) for accountant readability. CSV values properly escaped for commas/quotes.
 
@@ -38,6 +40,7 @@ All amounts exported in dollars (not cents) for accountant readability. CSV valu
 ## Modified Files
 
 ### `app/(chef)/finance/reporting/page.tsx`
+
 - Added live YTD KPI tiles above the report navigation grid:
   - YTD net revenue (from `getTenantFinancialSummary`)
   - Events this year (from `getDashboardEventCounts`)
@@ -46,15 +49,18 @@ All amounts exported in dollars (not cents) for accountant readability. CSV valu
 - All three fetches wrapped in `Promise.all()` with `.catch(() => null)` for graceful degradation
 
 ### `app/(chef)/finance/ledger/transaction-log/page.tsx`
+
 - Added `CSVDownloadButton` in the page header (right-aligned)
 - Calls `exportLedgerEntriesCSV` server action on click
 - Downloads as `ledger-transactions-YYYY-MM-DD.csv`
 
 ### `app/(chef)/finance/reporting/revenue-by-month/page.tsx`
+
 - Added `CSVDownloadButton` in the page header
 - Calls `exportRevenueByMonthCSV` — downloads as `revenue-by-month-YYYY-MM-DD.csv`
 
 ### `app/(chef)/finance/reporting/revenue-by-client/page.tsx`
+
 - Added `CSVDownloadButton` in the page header
 - Calls `exportRevenueByClientCSV` — downloads as `revenue-by-client-YYYY-MM-DD.csv`
 
@@ -72,22 +78,22 @@ All amounts exported in dollars (not cents) for accountant readability. CSV valu
 
 ## Finance Pages Status (Full Inventory)
 
-| Page | Status | Notes |
-|---|---|---|
-| `/finance` | ✅ Complete | Hub with 4 KPI tiles + nav grid |
-| `/finance/overview` | ✅ Complete | Revenue summary, outstanding, cash flow |
-| `/finance/invoices` | ✅ Complete | All statuses, filtering, links |
-| `/finance/ledger` | ✅ Complete | Summary tiles + recent entries |
-| `/finance/ledger/transaction-log` | ✅ + CSV | Full log table + export |
-| `/finance/payments` | ✅ Complete | Deposits, installments, refunds |
-| `/finance/payouts` | ✅ Complete | Stripe + manual payout hub |
-| `/finance/reporting` | ✅ + KPIs | Now shows live YTD data |
-| `/finance/reporting/revenue-by-month` | ✅ + CSV | 12-month trend + export |
-| `/finance/reporting/revenue-by-client` | ✅ + CSV | LTV ranking + export |
-| `/finance/reporting/profit-loss` | ✅ Complete | Full P&L statement |
-| `/finance/tax` | ✅ Complete | Mileage log, quarterly estimates |
-| `/finance/goals` | ✅ Complete | Annual target, pacing, strategies |
-| `/finance/year-end` | ✅ Complete | Full annual summary |
+| Page                                   | Status      | Notes                                   |
+| -------------------------------------- | ----------- | --------------------------------------- |
+| `/finance`                             | ✅ Complete | Hub with 4 KPI tiles + nav grid         |
+| `/finance/overview`                    | ✅ Complete | Revenue summary, outstanding, cash flow |
+| `/finance/invoices`                    | ✅ Complete | All statuses, filtering, links          |
+| `/finance/ledger`                      | ✅ Complete | Summary tiles + recent entries          |
+| `/finance/ledger/transaction-log`      | ✅ + CSV    | Full log table + export                 |
+| `/finance/payments`                    | ✅ Complete | Deposits, installments, refunds         |
+| `/finance/payouts`                     | ✅ Complete | Stripe + manual payout hub              |
+| `/finance/reporting`                   | ✅ + KPIs   | Now shows live YTD data                 |
+| `/finance/reporting/revenue-by-month`  | ✅ + CSV    | 12-month trend + export                 |
+| `/finance/reporting/revenue-by-client` | ✅ + CSV    | LTV ranking + export                    |
+| `/finance/reporting/profit-loss`       | ✅ Complete | Full P&L statement                      |
+| `/finance/tax`                         | ✅ Complete | Mileage log, quarterly estimates        |
+| `/finance/goals`                       | ✅ Complete | Annual target, pacing, strategies       |
+| `/finance/year-end`                    | ✅ Complete | Full annual summary                     |
 
 ---
 

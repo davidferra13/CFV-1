@@ -13,6 +13,7 @@ Three gaps in the inquiry-to-booking pipeline were closed. The operational docum
 **Problem:** The contracts system was fully built — template management, merge fields, client signing with signature capture and IP logging — but there was no PDF generation. A signed legal agreement with no PDF is professionally incomplete.
 
 **What was built:**
+
 - `lib/documents/generate-contract.ts` — new generator that renders the contract's `body_snapshot` (stored as markdown) into a formal multi-page PDF
   - Header: chef business name + "SERVICE AGREEMENT"
   - Parties block: two-column chef/client info
@@ -30,6 +31,7 @@ Three gaps in the inquiry-to-booking pipeline were closed. The operational docum
 **Problem:** The chef could download the quote as a PDF via `GET /api/documents/quote/[quoteId]`, but that route uses `requireChef()`. Clients could only view their quote in HTML at `/my-quotes/[id]`. For high-value private chef bookings, clients often want to forward or print the proposal.
 
 **What was built:**
+
 - `app/api/documents/quote-client/[quoteId]/route.ts` — client-auth route
   - `requireClient()` → verifies ownership via `client_id = user.entityId` in the DB query
   - Reuses `renderQuote()` from the existing `generate-quote.ts` generator — same output, different auth
@@ -42,6 +44,7 @@ Three gaps in the inquiry-to-booking pipeline were closed. The operational docum
 **Problem:** `invoice-view.tsx` is a beautiful HTML invoice, but neither the chef portal nor the client portal had a PDF download. Clients requesting expense reimbursement from an employer need a proper downloadable invoice.
 
 **What was built:**
+
 - `lib/documents/generate-invoice.ts` — new generator using the `InvoiceData` DTO from the existing `buildInvoiceData()` function — no new DB queries
   - Header: chef business name + "INVOICE" + invoice number and issued date
   - Parties block: two-column FROM (chef) / TO (client)
@@ -61,23 +64,23 @@ Three gaps in the inquiry-to-booking pipeline were closed. The operational docum
 
 ## New Files
 
-| File | Purpose |
-|---|---|
-| `lib/documents/generate-contract.ts` | Contract PDF generator with markdown body renderer |
-| `app/api/documents/contract/[contractId]/route.ts` | Contract PDF — dual auth (chef + client) |
-| `app/api/documents/quote-client/[quoteId]/route.ts` | Quote PDF — client auth only |
-| `lib/documents/generate-invoice.ts` | Invoice PDF generator using existing InvoiceData DTO |
-| `app/api/documents/invoice/[eventId]/route.ts` | Invoice PDF — dual auth (chef + client) |
+| File                                                | Purpose                                              |
+| --------------------------------------------------- | ---------------------------------------------------- |
+| `lib/documents/generate-contract.ts`                | Contract PDF generator with markdown body renderer   |
+| `app/api/documents/contract/[contractId]/route.ts`  | Contract PDF — dual auth (chef + client)             |
+| `app/api/documents/quote-client/[quoteId]/route.ts` | Quote PDF — client auth only                         |
+| `lib/documents/generate-invoice.ts`                 | Invoice PDF generator using existing InvoiceData DTO |
+| `app/api/documents/invoice/[eventId]/route.ts`      | Invoice PDF — dual auth (chef + client)              |
 
 ## Modified Files
 
-| File | Change |
-|---|---|
-| `components/contracts/send-contract-button.tsx` | Added "Download PDF" link in the signed state |
+| File                                                               | Change                                                       |
+| ------------------------------------------------------------------ | ------------------------------------------------------------ |
+| `components/contracts/send-contract-button.tsx`                    | Added "Download PDF" link in the signed state                |
 | `app/(client)/my-events/[id]/contract/contract-signing-client.tsx` | Added "Download PDF" link on the post-signing success screen |
-| `app/(client)/my-quotes/[id]/page.tsx` | Added "Download PDF" button in the header |
-| `app/(chef)/events/[id]/invoice/page.tsx` | Added "Download PDF" link alongside Print button |
-| `app/(client)/my-events/[id]/invoice/page.tsx` | Added "Download PDF" link in nav |
+| `app/(client)/my-quotes/[id]/page.tsx`                             | Added "Download PDF" button in the header                    |
+| `app/(chef)/events/[id]/invoice/page.tsx`                          | Added "Download PDF" link alongside Print button             |
+| `app/(client)/my-events/[id]/invoice/page.tsx`                     | Added "Download PDF" link in nav                             |
 
 ---
 

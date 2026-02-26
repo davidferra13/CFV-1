@@ -206,12 +206,8 @@ export async function getYearSummary(year: number): Promise<YearSummary> {
     const weekStart = weekMonday.toISOString().slice(0, 10)
     const weekEnd = weekSunday.toISOString().slice(0, 10)
 
-    const weekEvents = allEvents.filter(
-      (e) => e.event_date >= weekStart && e.event_date <= weekEnd
-    )
-    const weekBlocks = allBlocks.filter(
-      (b) => b.block_date >= weekStart && b.block_date <= weekEnd
-    )
+    const weekEvents = allEvents.filter((e) => e.event_date >= weekStart && e.event_date <= weekEnd)
+    const weekBlocks = allBlocks.filter((b) => b.block_date >= weekStart && b.block_date <= weekEnd)
 
     // Run gap detection for just this week's events against ALL blocks
     // (blocks might be on adjacent days)
@@ -321,10 +317,7 @@ export async function bulkCreatePrepBlocks(
     is_system_generated: input.is_system_generated ?? false,
   }))
 
-  const { data, error } = await supabase
-    .from('event_prep_blocks')
-    .insert(rows)
-    .select()
+  const { data, error } = await supabase.from('event_prep_blocks').insert(rows).select()
 
   if (error) return { success: false, error: error.message }
 
@@ -383,9 +376,7 @@ export async function updatePrepBlock(
 /**
  * Remove a prep block.
  */
-export async function deletePrepBlock(
-  id: string
-): Promise<{ success: boolean; error?: string }> {
+export async function deletePrepBlock(id: string): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const supabase = createServerClient()
 
@@ -407,9 +398,7 @@ export async function deletePrepBlock(
 /**
  * Mark a prep block as done.
  */
-export async function completePrepBlock(
-  id: string
-): Promise<{ success: boolean; error?: string }> {
+export async function completePrepBlock(id: string): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const supabase = createServerClient()
 

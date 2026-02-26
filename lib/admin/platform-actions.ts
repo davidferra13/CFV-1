@@ -30,7 +30,8 @@ export async function getAnnouncement(): Promise<PlatformAnnouncement | null> {
 
   const rows = data as { key: string; value: string }[]
   const text = rows.find((r) => r.key === 'announcement')?.value ?? ''
-  const type = (rows.find((r) => r.key === 'announcement_type')?.value ?? 'info') as AnnouncementType
+  const type = (rows.find((r) => r.key === 'announcement_type')?.value ??
+    'info') as AnnouncementType
 
   if (!text.trim()) return null
 

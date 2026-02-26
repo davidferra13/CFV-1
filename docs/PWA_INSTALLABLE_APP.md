@@ -10,15 +10,15 @@ Users (chefs and clients) need a fast, native-feeling way to access ChefFlow wit
 
 ## Files Created / Modified
 
-| File | Purpose |
-|------|---------|
-| `public/manifest.json` | PWA manifest — tells browsers the app name, theme, icons, and display mode |
-| `public/icon-192.svg` | App icon (192px, regular) |
-| `public/icon-512.svg` | App icon (512px, regular) |
-| `public/icon-maskable-192.svg` | Maskable icon (192px, extra padding for Android adaptive icons) |
-| `public/icon-maskable-512.svg` | Maskable icon (512px) |
-| `scripts/generate-pwa-icons.cjs` | Script to regenerate icons if branding changes |
-| `app/layout.tsx` | Added `manifest`, `appleWebApp`, `apple` icons, `theme-color` meta tag |
+| File                             | Purpose                                                                    |
+| -------------------------------- | -------------------------------------------------------------------------- |
+| `public/manifest.json`           | PWA manifest — tells browsers the app name, theme, icons, and display mode |
+| `public/icon-192.svg`            | App icon (192px, regular)                                                  |
+| `public/icon-512.svg`            | App icon (512px, regular)                                                  |
+| `public/icon-maskable-192.svg`   | Maskable icon (192px, extra padding for Android adaptive icons)            |
+| `public/icon-maskable-512.svg`   | Maskable icon (512px)                                                      |
+| `scripts/generate-pwa-icons.cjs` | Script to regenerate icons if branding changes                             |
+| `app/layout.tsx`                 | Added `manifest`, `appleWebApp`, `apple` icons, `theme-color` meta tag     |
 
 ## How It Works
 
@@ -29,16 +29,19 @@ Users (chefs and clients) need a fast, native-feeling way to access ChefFlow wit
 ## How Users Install It
 
 ### On iPhone/iPad (Safari)
+
 1. Open ChefFlow in Safari
 2. Tap the Share button (box with arrow)
 3. Tap "Add to Home Screen"
 4. Tap "Add"
 
 ### On Android (Chrome)
+
 1. Open ChefFlow in Chrome
 2. Chrome shows an "Install" banner automatically, or tap the three-dot menu → "Install app"
 
 ### On Desktop (Chrome/Edge)
+
 1. Open ChefFlow in Chrome or Edge
 2. Click the install icon in the address bar (or three-dot menu → "Install ChefFlow")
 
@@ -54,10 +57,10 @@ This is purely a presentation-layer addition. No business logic, database, or se
 
 ## Decision: PWA over Native App
 
-| Approach | Pros | Cons |
-|----------|------|------|
-| **PWA (chosen)** | Zero friction install, single codebase, instant updates, no app store fees | No push notifications on older iOS, limited offline |
-| Native (React Native) | Full device APIs, app store presence | Separate codebase, app store review process, 15-30% payment cut |
-| Electron | Desktop app feel | Desktop only, large bundle, overkill for a web-first tool |
+| Approach              | Pros                                                                       | Cons                                                            |
+| --------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| **PWA (chosen)**      | Zero friction install, single codebase, instant updates, no app store fees | No push notifications on older iOS, limited offline             |
+| Native (React Native) | Full device APIs, app store presence                                       | Separate codebase, app store review process, 15-30% payment cut |
+| Electron              | Desktop app feel                                                           | Desktop only, large bundle, overkill for a web-first tool       |
 
 PWA is the right choice for a SaaS tool like ChefFlow where users need quick access but don't need deep device integration.

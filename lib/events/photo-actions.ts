@@ -11,9 +11,9 @@ import { revalidatePath } from 'next/cache'
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const BUCKET = 'event-photos'
-const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024  // 10MB
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024 // 10MB
 const MAX_PHOTOS_PER_EVENT = 50
-const SIGNED_URL_EXPIRY_SECONDS = 3600        // 1 hour
+const SIGNED_URL_EXPIRY_SECONDS = 3600 // 1 hour
 
 const ALLOWED_MIME_TYPES = [
   'image/jpeg',
@@ -26,7 +26,7 @@ const ALLOWED_MIME_TYPES = [
 // Extension derived from MIME type only — never from filename (security)
 const MIME_TO_EXT: Record<string, string> = {
   'image/jpeg': 'jpg',
-  'image/png':  'png',
+  'image/png': 'png',
   'image/heic': 'heic',
   'image/heif': 'heif',
   'image/webp': 'webp',
@@ -124,7 +124,7 @@ export async function uploadEventPhoto(
     return { success: false, error: 'No file provided' }
   }
 
-  if (!ALLOWED_MIME_TYPES.includes(file.type as typeof ALLOWED_MIME_TYPES[number])) {
+  if (!ALLOWED_MIME_TYPES.includes(file.type as (typeof ALLOWED_MIME_TYPES)[number])) {
     return { success: false, error: 'Invalid file type. Accepted formats: JPEG, PNG, HEIC, WebP' }
   }
 
@@ -141,12 +141,10 @@ export async function uploadEventPhoto(
   const storagePath = `${user.tenantId}/${eventId}/${photoId}.${ext}`
 
   // Upload to Supabase Storage
-  const { error: uploadError } = await supabase.storage
-    .from(BUCKET)
-    .upload(storagePath, file, {
-      contentType: file.type,
-      upsert: false,
-    })
+  const { error: uploadError } = await supabase.storage.from(BUCKET).upload(storagePath, file, {
+    contentType: file.type,
+    upsert: false,
+  })
 
   if (uploadError) {
     console.error('[uploadEventPhoto] Storage upload failed:', uploadError)
@@ -223,7 +221,11 @@ export async function uploadEventPhoto(
         const adminSupabase = createServerClient({ admin: true })
 
         const [{ data: client }, { data: chef }] = await Promise.all([
-          adminSupabase.from('clients').select('email, full_name').eq('id', event.client_id).single(),
+          adminSupabase
+            .from('clients')
+            .select('email, full_name')
+            .eq('id', event.client_id)
+            .single(),
           adminSupabase.from('chefs').select('business_name').eq('id', user.tenantId!).single(),
         ])
 
@@ -348,9 +350,7 @@ export async function deleteEventPhoto(
   }
 
   // Remove storage object (non-fatal)
-  const { error: storageError } = await supabase.storage
-    .from(BUCKET)
-    .remove([photo.storage_path])
+  const { error: storageError } = await supabase.storage.from(BUCKET).remove([photo.storage_path])
 
   if (storageError) {
     console.warn('[deleteEventPhoto] Storage remove failed (non-fatal):', storageError)

@@ -19,8 +19,8 @@ export const test = base.extend<E2EFixtures>({
     } catch (err) {
       throw new Error(
         '[fixtures] Could not read .auth/seed-ids.json.\n' +
-        'Run `npm run seed:e2e` or `npx playwright test` (which runs globalSetup) first.\n' +
-        String(err)
+          'Run `npm run seed:e2e` or `npx playwright test` (which runs globalSetup) first.\n' +
+          String(err)
       )
     }
     await use(ids)

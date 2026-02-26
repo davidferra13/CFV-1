@@ -30,7 +30,7 @@ test.describe('Navigation — Dashboard Quick Actions', () => {
 
   test('Dashboard quick action to new client navigates correctly', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
 
@@ -54,7 +54,8 @@ test.describe('Navigation — Dashboard Quick Actions', () => {
 
     // All anchor tags should have valid hrefs
     const links = await page.locator('a[href]').all()
-    for (const link of links.slice(0, 20)) { // Check first 20 links
+    for (const link of links.slice(0, 20)) {
+      // Check first 20 links
       const href = await link.getAttribute('href')
       if (href && !href.startsWith('http') && !href.startsWith('mailto') && !href.startsWith('#')) {
         // Internal link — should be a valid path
@@ -69,7 +70,7 @@ test.describe('Navigation — Dashboard Quick Actions', () => {
 test.describe('Navigation — Chef Sidebar', () => {
   test('Clicking Events nav item navigates to /events', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
 
@@ -89,7 +90,7 @@ test.describe('Navigation — Chef Sidebar', () => {
 
   test('Clicking Clients nav item navigates to /clients', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
 
@@ -105,7 +106,7 @@ test.describe('Navigation — Chef Sidebar', () => {
 
   test('Clicking Finance nav item navigates to /finance', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
 
@@ -121,7 +122,7 @@ test.describe('Navigation — Chef Sidebar', () => {
 
   test('Clicking Calendar nav item navigates to /calendar', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
 
@@ -137,7 +138,7 @@ test.describe('Navigation — Chef Sidebar', () => {
 
   test('Clicking Settings nav item navigates to settings', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
 
@@ -161,7 +162,7 @@ test.describe('Navigation — Chef Sidebar', () => {
 test.describe('Navigation — Breadcrumbs', () => {
   test('Event detail breadcrumb links back to events list', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto(`/events/${seedIds.eventIds.confirmed}`)
     await page.waitForLoadState('networkidle')
 
@@ -183,7 +184,7 @@ test.describe('Navigation — Breadcrumbs', () => {
 
   test('Client detail has back navigation to clients list', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     // Navigate to client list and click first client
     await page.goto('/clients')
@@ -212,7 +213,7 @@ test.describe('Navigation — Breadcrumbs', () => {
 
   test('Settings sub-pages link back to settings', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/settings/notifications')
     await page.waitForLoadState('networkidle')
 
@@ -237,7 +238,7 @@ test.describe('Navigation — Breadcrumbs', () => {
 test.describe('Navigation — In-Page Tabs & Sections', () => {
   test('Event detail sub-pages are accessible from event page', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto(`/events/${seedIds.eventIds.confirmed}`)
     await page.waitForLoadState('networkidle')
 
@@ -257,7 +258,7 @@ test.describe('Navigation — In-Page Tabs & Sections', () => {
 
   test('Finance section tabs navigate without errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/finance')
     await page.waitForLoadState('networkidle')
 
@@ -273,7 +274,7 @@ test.describe('Navigation — In-Page Tabs & Sections', () => {
 
   test('Recipe detail has link back to recipes list', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     // Navigate to recipes list and click first recipe
     await page.goto('/recipes')
@@ -306,7 +307,7 @@ test.describe('Navigation — Settings Sidebar', () => {
   for (const setting of settingsLinks) {
     test(`Settings sidebar navigates to ${setting.label}`, async ({ page }) => {
       const errors: string[] = []
-      page.on('pageerror', err => errors.push(err.message))
+      page.on('pageerror', (err) => errors.push(err.message))
 
       await page.goto('/settings/my-profile')
       await page.waitForLoadState('networkidle')
@@ -331,7 +332,7 @@ test.describe('Navigation — Mobile Nav', () => {
 
   test('Mobile bottom tab navigates to Events', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
 
@@ -347,7 +348,7 @@ test.describe('Navigation — Mobile Nav', () => {
 
   test('Mobile nav does not crash on repeated tapping', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
 
@@ -369,7 +370,7 @@ test.describe('Navigation — Mobile Nav', () => {
 test.describe('Navigation — Cross-Section Links', () => {
   test('Event page links to client detail', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto(`/events/${seedIds.eventIds.confirmed}`)
     await page.waitForLoadState('networkidle')
 
@@ -387,7 +388,7 @@ test.describe('Navigation — Cross-Section Links', () => {
 
   test('Client detail links to client events', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/clients')
     await page.waitForLoadState('networkidle')
@@ -410,7 +411,7 @@ test.describe('Navigation — Cross-Section Links', () => {
 
   test('Quote detail links to associated event if linked', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/quotes')
     await page.waitForLoadState('networkidle')

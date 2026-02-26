@@ -4,18 +4,18 @@
 
 ### New Files
 
-| File | Purpose |
-|---|---|
-| `app/(chef)/events/new/wizard/page.tsx` | Server Component — fetches client list and renders the wizard |
-| `components/events/event-creation-wizard.tsx` | Client Component — the full 5-step wizard UI |
-| `docs/event-creation-wizard.md` | This document |
+| File                                          | Purpose                                                       |
+| --------------------------------------------- | ------------------------------------------------------------- |
+| `app/(chef)/events/new/wizard/page.tsx`       | Server Component — fetches client list and renders the wizard |
+| `components/events/event-creation-wizard.tsx` | Client Component — the full 5-step wizard UI                  |
+| `docs/event-creation-wizard.md`               | This document                                                 |
 
 ### Modified Files
 
-| File | Change |
-|---|---|
+| File                             | Change                                         |
+| -------------------------------- | ---------------------------------------------- |
 | `app/(chef)/events/new/page.tsx` | Added "Try the event wizard →" link at the top |
-| `lib/clients/actions.ts` | Added `createClientDirect` server action |
+| `lib/clients/actions.ts`         | Added `createClientDirect` server action       |
 
 ---
 
@@ -63,6 +63,7 @@ Step 5: Review & Create
 ### Validation
 
 Each step validates before advancing:
+
 - Step 1: client must be selected OR new client name+email must be entered
 - Step 2: occasion and event_date are required
 - Step 3: city is required
@@ -73,6 +74,7 @@ Errors are shown inline beneath each field. The "Continue" button does not advan
 ### New Client Inline Creation
 
 When the chef selects "Add new client instead" on Step 1:
+
 1. A mini-form collects Full Name and Email
 2. On wizard submit (Step 5), `createClientDirect` is called first
 3. The returned `clientId` is then passed to `createEvent`

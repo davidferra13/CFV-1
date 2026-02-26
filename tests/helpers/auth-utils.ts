@@ -14,7 +14,10 @@ type SignUpOpts = {
  * Sign up a new user via the UI.
  * Returns credentials for subsequent login.
  */
-export async function signUpViaUI(page: Page, opts: SignUpOpts = {}): Promise<{ email: string; password: string }> {
+export async function signUpViaUI(
+  page: Page,
+  opts: SignUpOpts = {}
+): Promise<{ email: string; password: string }> {
   const email = opts.email ?? generateUniqueEmail()
   const password = opts.password ?? generateValidPassword()
 

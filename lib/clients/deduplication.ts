@@ -30,20 +30,31 @@ export async function findDuplicateClients(): Promise<DuplicatePair[]> {
 
   for (let i = 0; i < clients.length; i++) {
     for (let j = i + 1; j < clients.length; j++) {
-      const c1 = clients[i], c2 = clients[j]
+      const c1 = clients[i],
+        c2 = clients[j]
       const pairKey = [c1.id, c2.id].sort().join('|')
       if (seen.has(pairKey)) continue
 
       // Same email
       if (c1.email && c2.email && normalize(c1.email) === normalize(c2.email)) {
         seen.add(pairKey)
-        pairs.push({ client1: c1, client2: c2, matchReason: 'Same email address', confidence: 'high' })
+        pairs.push({
+          client1: c1,
+          client2: c2,
+          matchReason: 'Same email address',
+          confidence: 'high',
+        })
         continue
       }
       // Same phone
       if (c1.phone && c2.phone && c1.phone.replace(/\D/g, '') === c2.phone.replace(/\D/g, '')) {
         seen.add(pairKey)
-        pairs.push({ client1: c1, client2: c2, matchReason: 'Same phone number', confidence: 'high' })
+        pairs.push({
+          client1: c1,
+          client2: c2,
+          matchReason: 'Same phone number',
+          confidence: 'high',
+        })
         continue
       }
       // Very similar name

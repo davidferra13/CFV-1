@@ -42,15 +42,19 @@ test.describe('Financials', () => {
   test('new expense form is accessible', async ({ page }) => {
     // Navigate to expenses and look for a new expense button/link
     await page.goto(ROUTES.expenses)
-    const addBtn = page.getByRole('link', { name: /add expense|new expense/i })
+    const addBtn = page
+      .getByRole('link', { name: /add expense|new expense/i })
       .or(page.getByRole('button', { name: /add expense|new expense/i }))
-    if (await addBtn.count() > 0) {
+    if ((await addBtn.count()) > 0) {
       await addBtn.first().click()
       // Should land on an expense form
       const categoryField = page.getByLabel(/category/i).first()
       await expect(categoryField).toBeVisible({ timeout: 10_000 })
     } else {
-      test.info().annotations.push({ type: 'note', description: 'No "Add Expense" button found — may use inline form' })
+      test.info().annotations.push({
+        type: 'note',
+        description: 'No "Add Expense" button found — may use inline form',
+      })
     }
   })
 })

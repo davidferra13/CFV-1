@@ -199,7 +199,9 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   // Search quotes (name, notes - scoped by tenant_id).
   const { data: quotes } = await supabase
     .from('quotes')
-    .select('id, quote_name, status, total_quoted_cents, valid_until, internal_notes, pricing_notes')
+    .select(
+      'id, quote_name, status, total_quoted_cents, valid_until, internal_notes, pricing_notes'
+    )
     .eq('tenant_id', chef.tenantId!)
     .or(`quote_name.ilike.${q},internal_notes.ilike.${q},pricing_notes.ilike.${q}`)
     .limit(8)
@@ -290,11 +292,13 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
 
   if (messages) {
     for (const message of messages) {
-      const url =
-        message.inquiry_id ? `/inquiries/${message.inquiry_id}` :
-        message.event_id ? `/events/${message.event_id}` :
-        message.client_id ? `/clients/${message.client_id}` :
-        '/inbox'
+      const url = message.inquiry_id
+        ? `/inquiries/${message.inquiry_id}`
+        : message.event_id
+          ? `/events/${message.event_id}`
+          : message.client_id
+            ? `/clients/${message.client_id}`
+            : '/inbox'
 
       results.push({
         id: makeId('message', message.id),

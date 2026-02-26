@@ -4,12 +4,12 @@
 
 ChefFlow uses a layered monitoring approach:
 
-| Layer | Tool | What it catches |
-|-------|------|-----------------|
-| Error tracking | Sentry | Uncaught exceptions, server-side errors, slow transactions |
-| Health probes | `/api/health` + external uptime monitor | DB connectivity, env vars, Redis reachability |
-| Cron health | `/api/scheduled/monitor` | Whether scheduled jobs are running successfully |
-| Build health | GitHub Actions | TypeScript errors, ESLint failures, smoke test failures |
+| Layer          | Tool                                    | What it catches                                            |
+| -------------- | --------------------------------------- | ---------------------------------------------------------- |
+| Error tracking | Sentry                                  | Uncaught exceptions, server-side errors, slow transactions |
+| Health probes  | `/api/health` + external uptime monitor | DB connectivity, env vars, Redis reachability              |
+| Cron health    | `/api/scheduled/monitor`                | Whether scheduled jobs are running successfully            |
+| Build health   | GitHub Actions                          | TypeScript errors, ESLint failures, smoke test failures    |
 
 ---
 
@@ -34,31 +34,35 @@ ChefFlow uses a layered monitoring approach:
 Go to **Alerts → Create Alert Rule**:
 
 #### Alert 1: Any Unhandled Error
+
 - **Condition:** A new issue is created
 - **Filter:** Environment = production
 - **Action:** Send email to team + Slack webhook
 - **Threshold:** Immediately (0 occurrences)
 
 #### Alert 2: Error Spike
+
 - **Condition:** Number of events in an issue exceeds 10 in 1 hour
 - **Filter:** Environment = production
 - **Action:** Send email + Slack
 
 #### Alert 3: High Error Rate
+
 - **Condition:** Percentage of sessions with errors > 5%
 - **Action:** Page/email immediately
 
 #### Alert 4: Slow Transaction (Performance)
+
 - **Condition:** P75 latency > 3000ms for any transaction
 - **Action:** Slack notification
 
 ### Sentry Configuration Files
 
-| File | Purpose |
-|------|---------|
-| `sentry.client.config.ts` | Browser-side error capture + Session Replay |
+| File                      | Purpose                                                |
+| ------------------------- | ------------------------------------------------------ |
+| `sentry.client.config.ts` | Browser-side error capture + Session Replay            |
 | `sentry.server.config.ts` | Server-side error capture (API routes, server actions) |
-| `sentry.edge.config.ts` | Edge runtime (middleware) error capture |
+| `sentry.edge.config.ts`   | Edge runtime (middleware) error capture                |
 
 ### PII Protection
 
@@ -88,6 +92,7 @@ The public health endpoint at `/api/health` (no auth required) returns:
 ```
 
 **Status codes:**
+
 - `200` → `status: "ok"` or `status: "degraded"` (non-critical service unavailable)
 - `503` → `status: "error"` (database or required env vars unavailable)
 
@@ -95,11 +100,11 @@ The public health endpoint at `/api/health` (no auth required) returns:
 
 **Free options:**
 
-| Service | Free Tier | Setup |
-|---------|-----------|-------|
-| [UptimeRobot](https://uptimerobot.com) | 50 monitors, 5 min interval | HTTP monitor → `https://cheflowhq.com/api/health` |
-| [Better Uptime](https://betteruptime.com) | 10 monitors | HTTP monitor, keyword match `"status":"ok"` |
-| [Freshping](https://freshping.io) | 50 monitors, 1 min interval | HTTP(S) check |
+| Service                                   | Free Tier                   | Setup                                             |
+| ----------------------------------------- | --------------------------- | ------------------------------------------------- |
+| [UptimeRobot](https://uptimerobot.com)    | 50 monitors, 5 min interval | HTTP monitor → `https://cheflowhq.com/api/health` |
+| [Better Uptime](https://betteruptime.com) | 10 monitors                 | HTTP monitor, keyword match `"status":"ok"`       |
+| [Freshping](https://freshping.io)         | 50 monitors, 1 min interval | HTTP(S) check                                     |
 
 **Setup (UptimeRobot):**
 
@@ -116,6 +121,7 @@ The public health endpoint at `/api/health` (no auth required) returns:
 The internal cron health endpoint at `/api/scheduled/monitor` aggregates the execution status of all 18 scheduled jobs. It is gated by `Authorization: Bearer ${CRON_SECRET}`.
 
 To check cron health:
+
 ```bash
 curl -H "Authorization: Bearer $CRON_SECRET" https://cheflowhq.com/api/scheduled/monitor
 ```
@@ -133,6 +139,7 @@ Vercel provides basic function execution logs under the **Logs** tab in the Verc
 For deeper logging, see `lib/logger.ts` — structured JSON logs will appear in Vercel's function logs and can be piped to a log aggregation service.
 
 **Recommended log aggregators (free tiers available):**
+
 - [Axiom](https://axiom.co) — Vercel integration, 500MB/day free
 - [Logtail](https://logtail.com) — 1GB/day free, Vercel log drain support
 - [Datadog](https://datadoghq.com) — 14 day trial, then paid
@@ -146,6 +153,7 @@ To integrate: add a Vercel Log Drain in the Vercel dashboard pointing to your ag
 Every request flowing through ChefFlow middleware receives an `X-Request-ID` header (16-character hex, generated if not already set by a proxy).
 
 The header is:
+
 - Set **inbound** on the request (available in server components via `headers()`)
 - Propagated **outbound** on all responses
 - Available for use in structured logs via `lib/logger.ts`
@@ -173,4 +181,4 @@ See [`docs/slo-uptime-targets.md`](./slo-uptime-targets.md) for defined uptime t
 
 ---
 
-*Last updated: 2026-02-20*
+_Last updated: 2026-02-20_

@@ -6,10 +6,10 @@ Added a `ContractSection` component to the chef event detail page that surfaces 
 
 ## Files created / modified
 
-| File | Change |
-|---|---|
-| `components/contracts/contract-section.tsx` | New Server Component — renders contract card based on current status |
-| `app/(chef)/events/[id]/page.tsx` | Added import + `<ContractSection>` placement after the Event Details / Client Information grid |
+| File                                        | Change                                                                                         |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `components/contracts/contract-section.tsx` | New Server Component — renders contract card based on current status                           |
+| `app/(chef)/events/[id]/page.tsx`           | Added import + `<ContractSection>` placement after the Event Details / Client Information grid |
 
 ## How it works
 

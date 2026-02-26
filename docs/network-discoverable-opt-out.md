@@ -31,11 +31,11 @@ When a chef created their network profile and searched for other chefs, nobody a
 
 ### Files Modified
 
-| File | Change |
-|------|--------|
-| `supabase/migrations/20260221000021_...sql` | New migration: default → true, existing rows → true |
-| `components/network/discoverability-toggle.tsx` | Updated disabled-state text |
-| `app/(chef)/network/page.tsx` | Updated privacy banner text |
+| File                                            | Change                                              |
+| ----------------------------------------------- | --------------------------------------------------- |
+| `supabase/migrations/20260221000021_...sql`     | New migration: default → true, existing rows → true |
+| `components/network/discoverability-toggle.tsx` | Updated disabled-state text                         |
+| `app/(chef)/network/page.tsx`                   | Updated privacy banner text                         |
 
 ### Deployment Note
 

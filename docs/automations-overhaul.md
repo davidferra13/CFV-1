@@ -22,16 +22,19 @@ The automations system had four problems that this overhaul addresses:
 ### Database (`20260227000002_automation_settings.sql`)
 
 **New table: `chef_automation_settings`**
+
 - One row per chef (unique on `tenant_id`)
 - Toggles for each built-in automation: `follow_up_reminders_enabled`, `no_response_alerts_enabled`, `event_approaching_alerts_enabled`, `inquiry_auto_expiry_enabled`, `quote_auto_expiry_enabled`, `client_event_reminders_enabled`, `time_tracking_reminders_enabled`
 - Configurable parameters: `follow_up_reminder_interval_hours` (default 48), `no_response_threshold_days` (default 3), `event_approaching_hours` (default 48), `inquiry_expiry_days` (default 30)
 - All columns default to enabled (opt-out model — existing behavior preserved by default)
 
 **New column on `clients`: `automated_emails_enabled boolean DEFAULT true`**
+
 - When `false`, the lifecycle cron skips sending automated emails to that client
 - Chef-controlled; clients do not see or manage this setting
 
 **New index on `automation_executions(rule_id, trigger_entity_id, status, executed_at DESC)`**
+
 - Speeds up the per-entity cooldown check added to the engine
 
 ---
@@ -40,12 +43,12 @@ The automations system had four problems that this overhaul addresses:
 
 Added per-entity cooldown windows to the rule evaluation loop. Before executing a rule for a specific entity, the engine queries `automation_executions` for a recent successful execution of the same rule on the same entity:
 
-| Trigger | Cooldown |
-|---------|----------|
-| `event_approaching` | 12 hours |
+| Trigger               | Cooldown |
+| --------------------- | -------- |
+| `event_approaching`   | 12 hours |
 | `no_response_timeout` | 24 hours |
-| `follow_up_overdue` | 24 hours |
-| `quote_expiring` | 24 hours |
+| `follow_up_overdue`   | 24 hours |
+| `quote_expiring`      | 24 hours |
 
 If a matching recent execution exists, the rule is skipped silently (no log entry). This eliminates the 192x duplicate problem for time-based triggers.
 
@@ -176,21 +179,21 @@ Built-ins are separate from custom rules. Disabling a built-in (e.g. Follow-up R
 
 ## Files Changed
 
-| File | Change |
-|------|--------|
-| `supabase/migrations/20260227000002_automation_settings.sql` | New |
-| `lib/automations/types.ts` | Added TRIGGER_CONTEXT_FIELDS, ChefAutomationSettings, DEFAULT_AUTOMATION_SETTINGS |
-| `lib/automations/engine.ts` | Added cooldown deduplication |
-| `lib/automations/settings-actions.ts` | New — get/update automation settings |
-| `lib/automations/actions.ts` | Added getTemplatesForAutomations() |
-| `lib/clients/actions.ts` | Added setClientAutomatedEmails() |
-| `components/automations/built-in-settings.tsx` | New — built-in toggle UI |
-| `components/automations/rule-builder.tsx` | Field dropdowns, template picker, edit mode, quick-start |
-| `components/clients/client-email-toggle.tsx` | New — client email opt-out toggle |
-| `app/(chef)/settings/automations/automations-list.tsx` | Built-in section + edit buttons |
-| `app/(chef)/settings/automations/page.tsx` | Load settings |
-| `app/(chef)/clients/[id]/page.tsx` | Added ClientEmailToggle to client info card |
-| `app/api/scheduled/automations/route.ts` | Respect chef settings |
-| `app/api/scheduled/follow-ups/route.ts` | Respect chef settings + configurable interval |
-| `app/api/scheduled/lifecycle/route.ts` | Respect chef + client settings |
-| `lib/events/time-reminders.ts` | Respect time_tracking_reminders_enabled per tenant |
+| File                                                         | Change                                                                            |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| `supabase/migrations/20260227000002_automation_settings.sql` | New                                                                               |
+| `lib/automations/types.ts`                                   | Added TRIGGER_CONTEXT_FIELDS, ChefAutomationSettings, DEFAULT_AUTOMATION_SETTINGS |
+| `lib/automations/engine.ts`                                  | Added cooldown deduplication                                                      |
+| `lib/automations/settings-actions.ts`                        | New — get/update automation settings                                              |
+| `lib/automations/actions.ts`                                 | Added getTemplatesForAutomations()                                                |
+| `lib/clients/actions.ts`                                     | Added setClientAutomatedEmails()                                                  |
+| `components/automations/built-in-settings.tsx`               | New — built-in toggle UI                                                          |
+| `components/automations/rule-builder.tsx`                    | Field dropdowns, template picker, edit mode, quick-start                          |
+| `components/clients/client-email-toggle.tsx`                 | New — client email opt-out toggle                                                 |
+| `app/(chef)/settings/automations/automations-list.tsx`       | Built-in section + edit buttons                                                   |
+| `app/(chef)/settings/automations/page.tsx`                   | Load settings                                                                     |
+| `app/(chef)/clients/[id]/page.tsx`                           | Added ClientEmailToggle to client info card                                       |
+| `app/api/scheduled/automations/route.ts`                     | Respect chef settings                                                             |
+| `app/api/scheduled/follow-ups/route.ts`                      | Respect chef settings + configurable interval                                     |
+| `app/api/scheduled/lifecycle/route.ts`                       | Respect chef + client settings                                                    |
+| `lib/events/time-reminders.ts`                               | Respect time_tracking_reminders_enabled per tenant                                |

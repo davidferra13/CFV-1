@@ -29,7 +29,7 @@ This document covers all scheduling improvements implemented in this branch, plu
 }
 ```
 
-`createEvent()` in `lib/events/actions.ts` now calls this check and returns `warnings[]` alongside the event result (soft warning — does not block creation). `event-form.tsx` surfaces an inline banner: *"Another event exists on [date] — confirm to continue."*
+`createEvent()` in `lib/events/actions.ts` now calls this check and returns `warnings[]` alongside the event result (soft warning — does not block creation). `event-form.tsx` surfaces an inline banner: _"Another event exists on [date] — confirm to continue."_
 
 **Files changed:** `lib/availability/actions.ts`, `lib/events/actions.ts`, `components/events/event-form.tsx`
 
@@ -40,11 +40,12 @@ This document covers all scheduling improvements implemented in this branch, plu
 **Problem:** When an event was drag-dropped to a new date, system-generated prep blocks on the old date were orphaned — they stayed on the old date with no connection to the rescheduled event.
 
 **Solution:** `rescheduleEvent()` in `lib/scheduling/actions.ts` now:
+
 1. Deletes all `event_prep_blocks` rows where `event_id = eventId AND is_system_generated = true`
 2. Calls `autoSuggestEventBlocks(eventId)` to generate fresh suggestions for the new date
 3. Returns `{ clearedBlocks: N, newSuggestions: [] }` in the result
 
-`calendar-view.tsx` reads `newSuggestions` from the result and shows a toast: *"Event rescheduled — [N] prep blocks cleared. Tap to review suggestions."*
+`calendar-view.tsx` reads `newSuggestions` from the result and shows a toast: _"Event rescheduled — [N] prep blocks cleared. Tap to review suggestions."_
 
 **Files changed:** `lib/scheduling/actions.ts`, `components/scheduling/calendar-view.tsx`
 
@@ -80,7 +81,7 @@ This document covers all scheduling improvements implemented in this branch, plu
 
 ### 2.1 — Natural Language Event Entry
 
-**Problem:** All event creation was form-based. Chefs couldn't quickly create an event from a free-form description like *"Dinner for the Hendersons, 8 guests, Saturday the 28th at 7pm, $2,800."*
+**Problem:** All event creation was form-based. Chefs couldn't quickly create an event from a free-form description like _"Dinner for the Hendersons, 8 guests, Saturday the 28th at 7pm, $2,800."_
 
 **Solution:** New NL parsing pipeline using the existing `parseWithAI<T>()` infrastructure (`lib/ai/parse.ts`, Gemini 2.5 Flash).
 
@@ -100,9 +101,10 @@ AI output is never saved until the chef explicitly confirms — consistent with 
 **Problem:** `autoSuggestEventBlocks()` existed and generated suggestions, but they were passive — the chef had to manually accept them. On event confirmation, nothing happened automatically.
 
 **Solution:**
+
 - `lib/scheduling/prep-block-actions.ts` — Added `autoPlacePrepBlocks(eventId)` that calls `autoSuggestEventBlocks()` and immediately passes results to `bulkCreatePrepBlocks()`. Skips if blocks already exist (idempotent).
 - `lib/events/transitions.ts` — Hooks into the `→ confirmed` transition: after state change succeeds, fires `autoPlacePrepBlocks(eventId)` (non-blocking, best-effort).
-- `app/(chef)/events/[id]/page.tsx` — On confirmed events with zero prep blocks, shows banner: *"No prep blocks scheduled — [Auto-schedule] [Dismiss]."*
+- `app/(chef)/events/[id]/page.tsx` — On confirmed events with zero prep blocks, shows banner: _"No prep blocks scheduled — [Auto-schedule] [Dismiss]."_
 
 **Files changed:** `lib/scheduling/prep-block-actions.ts`, `lib/events/transitions.ts`, `app/(chef)/events/[id]/page.tsx`
 
@@ -115,6 +117,7 @@ AI output is never saved until the chef explicitly confirms — consistent with 
 **Problem:** Chefs had no UI to express business rules like "I don't work Sundays," "max 3 events per week," or "require 2 days between events." These rules existed in code comments/docs only.
 
 **Migration applied (additive — no data loss risk):**
+
 ```sql
 CREATE TABLE chef_scheduling_rules (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -134,10 +137,12 @@ CREATE TABLE chef_scheduling_rules (
 ```
 
 **New files:**
+
 - `lib/availability/rules-actions.ts` — `getSchedulingRules()`, `upsertSchedulingRules()`, `validateDateAgainstRules(tenantId, date)` returning `{ allowed, blockers[], warnings[] }`
 - `components/settings/scheduling-rules-form.tsx` — Day-of-week toggles, number inputs for max/buffer/lead
 
 **Modified files:**
+
 - `app/(chef)/settings/page.tsx` — Added "Availability Rules" section
 - `lib/events/actions.ts` — `createEvent()` now calls `validateDateAgainstRules()` and appends blockers/warnings to response
 - `components/events/event-form.tsx` — Displays rule violations alongside conflict warnings from Phase 1.1
@@ -151,6 +156,7 @@ CREATE TABLE chef_scheduling_rules (
 **Problem:** `lib/scheduling/calendar-sync.ts` had been written but deferred — it referenced a non-existent `chef_settings` table instead of `google_connections`, had `@ts-nocheck`, and was not called from anywhere.
 
 **Migration applied (additive):**
+
 ```sql
 ALTER TABLE events
   ADD COLUMN google_calendar_event_id TEXT,
@@ -158,6 +164,7 @@ ALTER TABLE events
 ```
 
 **Solution:**
+
 - `lib/scheduling/calendar-sync.ts` — Removed `@ts-nocheck`. Replaced all `chef_settings` references with `google_connections`. Fixed field names to match actual schema.
 - `lib/scheduling/calendar-sync-actions.ts` (new) — `'use server'` boundary exposing: `syncEventToGoogle()`, `deleteEventFromGoogle()`, `getCalendarConnection()`, `initiateGoogleCalendarConnect()`, `disconnectGoogleCalendar()`. Written as proper async wrapper functions (required by `'use server'` rules — `export { }` re-export groups are not allowed).
 - `app/api/auth/google/calendar/callback/route.ts` (new) — OAuth callback mirroring the Gmail callback pattern.
@@ -175,8 +182,9 @@ ALTER TABLE events
 **Solution:** `lib/events/transitions.ts` now calls `getEventFinancialSummary(eventId)` (from `lib/ledger/compute.ts`) before allowing the `accepted → paid` or `paid → confirmed` transition. If `deposit_amount_cents > 0` and `total_paid_cents < deposit_amount_cents`, the transition returns an error with a descriptive `reason`.
 
 UI changes:
-- `components/events/event-transitions.tsx` — Shows deposit status in the transition UI: *"Deposit: $500 required / $0 collected — record payment to proceed."*
-- `app/(chef)/events/[id]/page.tsx` — Prominent banner on accepted events when deposit is outstanding: *"Awaiting $500 deposit before confirming."*
+
+- `components/events/event-transitions.tsx` — Shows deposit status in the transition UI: _"Deposit: $500 required / $0 collected — record payment to proceed."_
+- `app/(chef)/events/[id]/page.tsx` — Prominent banner on accepted events when deposit is outstanding: _"Awaiting $500 deposit before confirming."_
 
 **Files changed:** `lib/events/transitions.ts`, `components/events/event-transitions.tsx`, `app/(chef)/events/[id]/page.tsx`
 
@@ -189,6 +197,7 @@ UI changes:
 **Problem:** Clients had no way to discover a chef's availability or submit an inquiry without the chef initiating contact first. There was no shareable link.
 
 **Migration applied (additive):**
+
 ```sql
 ALTER TABLE chefs
   ADD COLUMN booking_slug TEXT UNIQUE,
@@ -200,6 +209,7 @@ ALTER TABLE chefs
 ```
 
 **New files:**
+
 - `app/book/[chefSlug]/page.tsx` — Public page (no auth required). Shows chef name/headline, calendar widget, inquiry form.
 - `app/book/[chefSlug]/availability/route.ts` — API route returning JSON availability for next 90 days: `{ date, status: 'available' | 'blocked' | 'waitlist_only' }[]`. Uses `getAvailabilityForMonth()` + `validateDateAgainstRules()`.
 - `app/book/[chefSlug]/thank-you/page.tsx` — Post-submission confirmation page.
@@ -207,6 +217,7 @@ ALTER TABLE chefs
 - `components/booking/booking-form.tsx` — Simplified inquiry form (name, email, phone, occasion, guest count, notes) that calls `submitPublicInquiry()`.
 
 **Modified files:**
+
 - `lib/inquiries/public-actions.ts` — Resolves chef by `booking_slug` instead of hardcoded email.
 - `app/(chef)/settings/page.tsx` — Added "Booking Page" section with enable/disable toggle, slug editor, headline/bio fields.
 - `app/(chef)/dashboard/page.tsx` — Added "Your booking link" widget with copy-to-clipboard.
@@ -218,6 +229,7 @@ ALTER TABLE chefs
 **Problem:** All times were stored and displayed as if in a single timezone. Events, prep blocks, and timeline calculations had no timezone awareness.
 
 **Migration applied (additive — safe fallback for existing rows):**
+
 ```sql
 ALTER TABLE chefs
   ADD COLUMN timezone TEXT NOT NULL DEFAULT 'America/New_York';
@@ -228,12 +240,14 @@ ALTER TABLE events
 ```
 
 **Engine changes:**
+
 - `lib/scheduling/timeline.ts` — Replaced raw DATE/TIME arithmetic with timezone-aware calculations using `date-fns-tz`. `event_date + serve_time` is now treated as local time in `event_timezone ?? chef.timezone`.
 - `lib/scheduling/dop.ts` — All DOP phase times calculated in chef timezone.
 - `lib/scheduling/actions.ts` — `mapEventToScheduling()` now includes `event_timezone`.
 
 **UI changes:**
-- `components/events/event-form.tsx` — Timezone picker (defaults to chef's stored timezone; can be overridden per event). Label: *"Times shown in: America/New_York."*
+
+- `components/events/event-form.tsx` — Timezone picker (defaults to chef's stored timezone; can be overridden per event). Label: _"Times shown in: America/New_York."_
 - `app/(chef)/events/[id]/page.tsx` — Serve time displays with timezone label.
 - `components/scheduling/timeline-view.tsx` — Times rendered in correct timezone.
 - `components/booking/booking-calendar.tsx` — Times displayed in visitor's browser timezone with a conversion note.
@@ -282,12 +296,12 @@ A curly apostrophe (`'` U+2019) in a string literal on line 227 caused a TypeScr
 
 ## Migration Summary
 
-| Migration file | What it adds | Tables affected |
-|----------------|-------------|-----------------|
-| `chef_scheduling_rules` table | Phase 3.1 | New table |
-| `events.google_calendar_event_id/synced_at` | Phase 4.1 | `events` |
-| `chefs.booking_slug/enabled/headline/bio/min_notice/deposit_pct` | Phase 5.1 | `chefs` |
-| `chefs.timezone`, `events.event_timezone` | Phase 5.2 | `chefs`, `events` |
+| Migration file                                                   | What it adds | Tables affected   |
+| ---------------------------------------------------------------- | ------------ | ----------------- |
+| `chef_scheduling_rules` table                                    | Phase 3.1    | New table         |
+| `events.google_calendar_event_id/synced_at`                      | Phase 4.1    | `events`          |
+| `chefs.booking_slug/enabled/headline/bio/min_notice/deposit_pct` | Phase 5.1    | `chefs`           |
+| `chefs.timezone`, `events.event_timezone`                        | Phase 5.2    | `chefs`, `events` |
 
 All migrations are purely additive (no `DROP`, no `DELETE`, no column type changes). Existing rows get `NULL` or default values for new columns. No data migration needed.
 
@@ -296,6 +310,7 @@ All migrations are purely additive (no `DROP`, no `DELETE`, no column type chang
 ## Files Added / Modified
 
 ### New files (19)
+
 - `lib/calendar/view-actions.ts`
 - `lib/events/parse-event-from-text.ts`
 - `lib/availability/rules-actions.ts`
@@ -317,6 +332,7 @@ All migrations are purely additive (no `DROP`, no `DELETE`, no column type chang
 - `supabase/migrations/*_timezone_columns.sql`
 
 ### Modified files (18)
+
 - `lib/availability/actions.ts` — `checkDateConflicts()`
 - `lib/events/actions.ts` — conflict + rules checks in `createEvent()`
 - `lib/events/transitions.ts` — deposit gate + auto-prep-placement + GCal sync hooks

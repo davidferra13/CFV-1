@@ -15,11 +15,15 @@ const CreateRuleSchema = z.object({
   name: z.string().min(1, 'Name required'),
   description: z.string().optional(),
   trigger_event: z.string().min(1, 'Trigger required'),
-  conditions: z.array(z.object({
-    field: z.string(),
-    op: z.string(),
-    value: z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]),
-  })).default([]),
+  conditions: z
+    .array(
+      z.object({
+        field: z.string(),
+        op: z.string(),
+        value: z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]),
+      })
+    )
+    .default([]),
   action_type: z.string().min(1, 'Action required'),
   action_config: z.record(z.string(), z.unknown()).default({}),
   priority: z.number().default(0),

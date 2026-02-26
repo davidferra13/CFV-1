@@ -111,9 +111,9 @@ function sortByPriority(comps: PrepComponent[]): PrepComponent[] {
 // No linked recipe → PREP AFTER SHOPPING (safe default).
 function classifyDependency(comp: PrepComponent): 'prep_now' | 'prep_after_shopping' {
   if (!comp.recipe) return 'prep_after_shopping'
-  const required = comp.recipe.recipe_ingredients.filter(ri => !ri.is_optional)
+  const required = comp.recipe.recipe_ingredients.filter((ri) => !ri.is_optional)
   if (required.length === 0) return 'prep_now'
-  return required.every(ri => ri.ingredient.is_staple) ? 'prep_now' : 'prep_after_shopping'
+  return required.every((ri) => ri.ingredient.is_staple) ? 'prep_now' : 'prep_after_shopping'
 }
 
 // Extract a brief method note from the recipe: first sentence if ≤120 chars, else null.
@@ -135,11 +135,13 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
   // Fetch event with client (including dietary preferences for guest notes section)
   const { data: event } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       occasion, event_date, serve_time, arrival_time, departure_time,
       guest_count, location_address, location_city, location_state, location_zip,
       client:clients(full_name, allergies, dietary_restrictions, dislikes, regular_guests)
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -170,12 +172,13 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
 
   if (!dishes || dishes.length === 0) return null
 
-  const dishIds = dishes.map(d => d.id)
+  const dishIds = dishes.map((d) => d.id)
 
   // Fetch components with linked recipe + ingredient staple data for dependency split
   const { data: rawComponents } = await supabase
     .from('components')
-    .select(`
+    .select(
+      `
       id, name, category, is_make_ahead, execution_notes, storage_notes, sort_order, dish_id,
       recipe:recipes(
         id, method, prep_time_minutes, cook_time_minutes,
@@ -184,7 +187,8 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
           ingredient:ingredients(name, is_staple)
         )
       )
-    `)
+    `
+    )
     .in('dish_id', dishIds)
     .eq('tenant_id', user.tenantId!)
     .order('sort_order', { ascending: true })
@@ -198,7 +202,7 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
   } | null
 
   // Normalize Supabase's single-row join (recipe is object|null, not array)
-  const components: PrepComponent[] = (rawComponents || []).map(c => ({
+  const components: PrepComponent[] = (rawComponents || []).map((c) => ({
     id: c.id,
     name: c.name,
     category: c.category,
@@ -223,13 +227,12 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
     : null
 
   // Only include preferences if there's something meaningful to show
-  const hasPreferenceData = clientPreferences
-    && (
-      clientPreferences.allergies.length > 0
-      || clientPreferences.dietaryRestrictions.length > 0
-      || clientPreferences.regularGuests.some(g => g.notes)
-      || clientPreferences.regularGuests.length > 0
-    )
+  const hasPreferenceData =
+    clientPreferences &&
+    (clientPreferences.allergies.length > 0 ||
+      clientPreferences.dietaryRestrictions.length > 0 ||
+      clientPreferences.regularGuests.some((g) => g.notes) ||
+      clientPreferences.regularGuests.length > 0)
 
   return {
     event: {
@@ -246,7 +249,7 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
     },
     clientName: clientData?.full_name ?? 'Unknown',
     clientPreferences: hasPreferenceData ? clientPreferences : null,
-    dishes: dishes.map(d => ({
+    dishes: dishes.map((d) => ({
       id: d.id,
       course_name: d.course_name,
       course_number: d.course_number,
@@ -263,11 +266,11 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
   const { event, clientName, dishes, components } = data
 
   // Build a dish lookup for allergen flags
-  const dishById = new Map(dishes.map(d => [d.id, d]))
+  const dishById = new Map(dishes.map((d) => [d.id, d]))
 
   // Separate AT HOME components (is_make_ahead) vs ON SITE
-  const atHomeComponents = components.filter(c => c.is_make_ahead)
-  const onSiteComponents = components.filter(c => !c.is_make_ahead)
+  const atHomeComponents = components.filter((c) => c.is_make_ahead)
+  const onSiteComponents = components.filter((c) => !c.is_make_ahead)
 
   // Estimate density for font scaling
   const totalComponents = components.length
@@ -287,9 +290,7 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
   ])
 
   // Departure time is TIMESTAMPTZ (full ISO string) — extract just the time for display
-  const leaveBy = event.departure_time
-    ? format(new Date(event.departure_time), 'h:mm a')
-    : 'TBD'
+  const leaveBy = event.departure_time ? format(new Date(event.departure_time), 'h:mm a') : 'TBD'
   pdf.headerBar([
     ['LEAVE BY', leaveBy],
     ['Arrive', event.arrival_time || 'TBD'],
@@ -313,12 +314,10 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
     pdf.space(1)
 
     // Allergy + dietary line — highest priority (safety)
-    const allergyLine = prefs.allergies.length > 0
-      ? `ALLERGIES: ${prefs.allergies.join(', ')}`
-      : null
-    const dietLine = prefs.dietaryRestrictions.length > 0
-      ? `DIET: ${prefs.dietaryRestrictions.join(', ')}`
-      : null
+    const allergyLine =
+      prefs.allergies.length > 0 ? `ALLERGIES: ${prefs.allergies.join(', ')}` : null
+    const dietLine =
+      prefs.dietaryRestrictions.length > 0 ? `DIET: ${prefs.dietaryRestrictions.join(', ')}` : null
 
     if (allergyLine || dietLine) {
       const line = [allergyLine, dietLine].filter(Boolean).join('   ')
@@ -327,7 +326,7 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
 
     // Regular guests with dietary notes
     if (prefs.regularGuests.length > 0) {
-      const guestParts = prefs.regularGuests.map(g => {
+      const guestParts = prefs.regularGuests.map((g) => {
         const note = g.notes ? ` (${g.notes})` : ''
         return `${g.name}${note}`
       })
@@ -346,8 +345,10 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
     pdf.space(1)
   } else {
     // Split into PREP NOW and PREP AFTER SHOPPING
-    const prepNow = atHomeComponents.filter(c => classifyDependency(c) === 'prep_now')
-    const prepAfter = atHomeComponents.filter(c => classifyDependency(c) === 'prep_after_shopping')
+    const prepNow = atHomeComponents.filter((c) => classifyDependency(c) === 'prep_now')
+    const prepAfter = atHomeComponents.filter(
+      (c) => classifyDependency(c) === 'prep_after_shopping'
+    )
 
     // Group each set by course, then priority-sort within course
     function groupByCourse(comps: PrepComponent[]) {

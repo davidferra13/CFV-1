@@ -23,21 +23,14 @@ export function EventCancelledEmail({
   return (
     <BaseLayout preview={`${occasion} event has been cancelled`}>
       <Text style={heading}>Event cancelled</Text>
+      <Text style={paragraph}>Hi {recipientName},</Text>
       <Text style={paragraph}>
-        Hi {recipientName},
+        The <strong>{occasion}</strong> event scheduled for {eventDate} has been cancelled by{' '}
+        {cancelledBy}.
       </Text>
-      <Text style={paragraph}>
-        The <strong>{occasion}</strong> event scheduled for {eventDate} has been cancelled
-        by {cancelledBy}.
-      </Text>
-      {reason && (
-        <Text style={paragraph}>
-          Reason: {reason}
-        </Text>
-      )}
+      {reason && <Text style={paragraph}>Reason: {reason}</Text>}
       <Text style={muted}>
-        If you have any questions about refunds or rescheduling, please reach out through
-        CheFlow.
+        If you have any questions about refunds or rescheduling, please reach out through CheFlow.
       </Text>
     </BaseLayout>
   )

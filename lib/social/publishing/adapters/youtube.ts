@@ -31,7 +31,8 @@ export async function publishYouTube(
   if (post.media_type !== 'video') {
     return {
       success: false,
-      error: 'YouTube Shorts only supports video content. Add a vertical video (≤60s) to this post.',
+      error:
+        'YouTube Shorts only supports video content. Add a vertical video (≤60s) to this post.',
       retriable: false,
     }
   }
@@ -46,7 +47,11 @@ export async function publishYouTube(
     // Step 1: Fetch the video binary from Supabase storage
     const videoRes = await fetch(post.media_url)
     if (!videoRes.ok) {
-      return { success: false, error: `Failed to fetch video from storage: ${videoRes.status}`, retriable: true }
+      return {
+        success: false,
+        error: `Failed to fetch video from storage: ${videoRes.status}`,
+        retriable: true,
+      }
     }
     const videoBuffer = Buffer.from(await videoRes.arrayBuffer())
     const mimeType = videoRes.headers.get('content-type') || 'video/mp4'
@@ -80,7 +85,11 @@ export async function publishYouTube(
 
     if (!initRes.ok) {
       const err = await initRes.text()
-      return { success: false, error: `YouTube init failed: ${err}`, retriable: initRes.status >= 500 }
+      return {
+        success: false,
+        error: `YouTube init failed: ${err}`,
+        retriable: initRes.status >= 500,
+      }
     }
 
     const uploadUri = initRes.headers.get('location')
@@ -100,7 +109,11 @@ export async function publishYouTube(
 
     if (!uploadRes.ok && uploadRes.status !== 308) {
       const err = await uploadRes.text()
-      return { success: false, error: `YouTube upload failed: ${err}`, retriable: uploadRes.status >= 500 }
+      return {
+        success: false,
+        error: `YouTube upload failed: ${err}`,
+        retriable: uploadRes.status >= 500,
+      }
     }
 
     const uploadData = await uploadRes.json().catch(() => ({}))

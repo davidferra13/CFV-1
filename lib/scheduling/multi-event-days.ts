@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 
 export interface MultiEventDay {
-  date: string          // ISO date string, e.g. '2026-03-15'
+  date: string // ISO date string, e.g. '2026-03-15'
   events: Array<{
     id: string
     occasion: string | null

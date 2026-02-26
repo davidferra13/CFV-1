@@ -9,8 +9,16 @@ import { requireChef } from '@/lib/auth/get-user'
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export type CourseType =
-  | 'AMUSE' | 'APP' | 'SOUP' | 'SALAD' | 'FISH'
-  | 'INTERMEZZO' | 'MAIN' | 'CHEESE' | 'DESSERT' | 'PETIT_FOUR'
+  | 'AMUSE'
+  | 'APP'
+  | 'SOUP'
+  | 'SALAD'
+  | 'FISH'
+  | 'INTERMEZZO'
+  | 'MAIN'
+  | 'CHEESE'
+  | 'DESSERT'
+  | 'PETIT_FOUR'
 
 const COURSE_COLORS: Record<CourseType, string> = {
   AMUSE: '#8b5cf6',
@@ -26,8 +34,16 @@ const COURSE_COLORS: Record<CourseType, string> = {
 }
 
 const COURSE_ORDER: CourseType[] = [
-  'AMUSE', 'APP', 'SOUP', 'SALAD', 'FISH',
-  'INTERMEZZO', 'MAIN', 'CHEESE', 'DESSERT', 'PETIT_FOUR',
+  'AMUSE',
+  'APP',
+  'SOUP',
+  'SALAD',
+  'FISH',
+  'INTERMEZZO',
+  'MAIN',
+  'CHEESE',
+  'DESSERT',
+  'PETIT_FOUR',
 ]
 
 export interface FireOrderCourse {
@@ -56,9 +72,16 @@ export interface FireOrderResult {
 // ─── Station Types ──────────────────────────────────────────────────────────
 
 export type StationType =
-  | 'SAUCIER' | 'POISSONNIER' | 'ROTISSEUR' | 'GRILLARDIN'
-  | 'FRITURIER' | 'ENTREMETIER' | 'TOURNANT' | 'PATISSIER'
-  | 'GARDE_MANGER' | 'BOUCHER'
+  | 'SAUCIER'
+  | 'POISSONNIER'
+  | 'ROTISSEUR'
+  | 'GRILLARDIN'
+  | 'FRITURIER'
+  | 'ENTREMETIER'
+  | 'TOURNANT'
+  | 'PATISSIER'
+  | 'GARDE_MANGER'
+  | 'BOUCHER'
 
 const STATION_LABELS: Record<StationType, string> = {
   SAUCIER: 'Saucier (Sauces)',
@@ -119,7 +142,7 @@ export async function getFireOrder(eventId: string): Promise<FireOrderResult> {
       id: section.id,
       courseType,
       name: section.name,
-      components: items.map(item => ({
+      components: items.map((item) => ({
         id: item.id,
         name: item.name,
         station: inferStation(item.name, courseType),
@@ -178,16 +201,27 @@ function inferStation(itemName: string, courseType: CourseType): string {
 
 function inferLeadTime(courseType: CourseType): number {
   switch (courseType) {
-    case 'AMUSE': return 5
-    case 'APP': return 10
-    case 'SOUP': return 15
-    case 'SALAD': return 5
-    case 'FISH': return 12
-    case 'INTERMEZZO': return 5
-    case 'MAIN': return 20
-    case 'CHEESE': return 5
-    case 'DESSERT': return 15
-    case 'PETIT_FOUR': return 10
-    default: return 10
+    case 'AMUSE':
+      return 5
+    case 'APP':
+      return 10
+    case 'SOUP':
+      return 15
+    case 'SALAD':
+      return 5
+    case 'FISH':
+      return 12
+    case 'INTERMEZZO':
+      return 5
+    case 'MAIN':
+      return 20
+    case 'CHEESE':
+      return 5
+    case 'DESSERT':
+      return 15
+    case 'PETIT_FOUR':
+      return 10
+    default:
+      return 10
   }
 }

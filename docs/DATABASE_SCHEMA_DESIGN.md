@@ -1,4 +1,5 @@
 # ChefFlow Database Schema Design
+
 **Version 1.0 — February 15, 2026**
 **Based On:** [STATISTICS_INVENTORY.md](./STATISTICS_INVENTORY.md)
 
@@ -72,6 +73,7 @@ COMMENT ON COLUMN chefs.minimum_guest_count IS 'Supports inquiry filtering (STAT
 **Purpose:** Client relationship records with household, preferences, site notes, and relationship intelligence.
 
 **Supports Metrics:**
+
 - Client lifetime value, total events, average spend
 - Repeat client percentage, rebooking frequency
 - Seasonal booking patterns, days since last event
@@ -182,6 +184,7 @@ COMMENT ON COLUMN clients.loyalty_points_balance IS 'Points = total_guests_serve
 **Purpose:** Inquiry pipeline tracking from initial contact through conversion or decline.
 
 **Supports Metrics:**
+
 - Conversion rate, decline rate, expiry rate
 - Time to first response, time to quote
 - Inquiries by channel, conversion by channel
@@ -269,6 +272,7 @@ COMMENT ON COLUMN inquiries.status_history IS 'Audit log of all status changes (
 **Purpose:** Core event records with full lifecycle tracking, financial snapshot, and terminal state verification.
 
 **Supports Metrics:**
+
 - Revenue per guest, food cost %, gross margin %, effective hourly rate
 - Days from inquiry to booking, lead time days
 - On-time arrival %, calm rating trend, terminal state %
@@ -404,6 +408,7 @@ COMMENT ON COLUMN events.course_breakdown IS 'Component counts per course (suppo
 **Purpose:** Menu records with course hierarchy, component tracking, and lock state.
 
 **Supports Metrics:**
+
 - Menus locked by month, average component count
 - Template usage, revision count
 - Time to lock, recipes missing
@@ -494,6 +499,7 @@ COMMENT ON COLUMN menus.times_used IS 'For templates: COUNT of events using this
 **Purpose:** Recipe library that builds over time from real events.
 
 **Supports Metrics:**
+
 - Total recipes, recipes by category
 - Most used recipes, signature dishes
 - Recipe coverage rate, cost per recipe
@@ -583,6 +589,7 @@ COMMENT ON COLUMN recipes.client_feedback_rating IS 'AVG rating from events usin
 **Purpose:** Append-only financial record. All payments, deposits, tips, refunds.
 
 **Supports Metrics:**
+
 - Total revenue, total tips, outstanding balances
 - Revenue by month, payment method distribution
 - Gross margin, net profit, effective hourly rate
@@ -640,6 +647,7 @@ COMMENT ON COLUMN ledger_entries.cash_back_earned_cents IS 'Tracks card optimiza
 **Purpose:** Event expenses (groceries, liquor, gas, specialty items) with receipt tracking and business/personal separation.
 
 **Supports Metrics:**
+
 - Food cost %, budget adherence, cost variance
 - Expense by type, business vs personal spend
 - Most substituted items
@@ -696,6 +704,7 @@ COMMENT ON COLUMN expenses.line_items IS 'JSONB: parsed receipt line items (if r
 **Purpose:** Shopping lists with item-level tracking, substitutions, and cost variance.
 
 **Supports Metrics:**
+
 - Planned vs actual cost, substitution rate
 - Most substituted items
 
@@ -773,6 +782,7 @@ COMMENT ON COLUMN grocery_lists.items IS 'JSONB array of grocery items (supports
 **Purpose:** Equipment and packing checklists with forgotten items tracking.
 
 **Supports Metrics:**
+
 - Most forgotten items (drives non-negotiables checklist)
 
 ```sql
@@ -890,6 +900,7 @@ COMMENT ON COLUMN timelines.wake_up_time IS 'Absolute latest wake time (supports
 **Purpose:** Post-event retrospectives. Required for terminal state.
 
 **Supports Metrics:**
+
 - Calm rating trend, preparation rating trend
 - Items forgotten frequency
 - Stress level tracking, service improvement
@@ -1412,28 +1423,34 @@ COMMENT ON POLICY clients_isolation ON clients IS 'Multi-tenant isolation: chef 
 ## Migration Strategy
 
 ### Layer 1: Foundation (20260215000001)
+
 - `chefs`, `clients`, `inquiries`, `events`
 - Basic RLS policies
 - Immutability triggers
 
 ### Layer 2: Financial (20260215000002)
+
 - `ledger_entries`, `expenses`
 - Financial computation triggers
 - Views: `event_financial_summary`, `monthly_revenue_summary`
 
 ### Layer 3: Menu & Recipe (20260215000003)
+
 - `menus`, `recipes`
 - Menu lock → grocery unlock trigger
 
 ### Layer 4: Operations (20260215000004)
+
 - `grocery_lists`, `packing_lists`, `timelines`, `after_action_reviews`
 - Forgotten items view
 
 ### Layer 5: Communication & Loyalty (20260215000005)
+
 - `messages`, `loyalty_rewards`
 - Client loyalty tier trigger
 
 ### Layer 6: Materialized Views (20260215000006)
+
 - `client_lifetime_metrics` (materialized)
 - Refresh policies
 
@@ -1448,6 +1465,7 @@ npx supabase gen types typescript --local > types/database.ts
 ```
 
 **Expected Output:**
+
 - Table types (Client, Event, Menu, Recipe, etc.)
 - View types (ClientLifetimeMetrics, EventFinancialSummary, etc.)
 - Enum types (EventStatus, InquiryStatus, etc.)
@@ -1458,16 +1476,19 @@ npx supabase gen types typescript --local > types/database.ts
 ## Index Strategy
 
 **Time-Series Queries:**
+
 - `events(chef_id, event_date DESC)` — events by date
 - `ledger_entries(chef_id, transaction_date DESC)` — revenue by date
 - `inquiries(chef_id, received_at DESC)` — inquiry pipeline
 
 **Dashboard Queries:**
+
 - `events(chef_id, status)` — filter by status
 - `clients(chef_id, status)` — active/dormant clients
 - `events(chef_id) WHERE terminal_state_reached_at IS NOT NULL` — terminal state tracking
 
 **Aggregation Optimization:**
+
 - Materialized view: `client_lifetime_metrics` (refresh after event close)
 - Regular views for real-time calculations (event_financial_summary)
 
@@ -1475,20 +1496,20 @@ npx supabase gen types typescript --local > types/database.ts
 
 ## Measurement Coverage Checklist
 
-| Metric Category | Raw Data Tracked | Derived Calculations | Aggregations | Time-Series |
-|---|---|---|---|---|
-| **Client** | ✅ 38 fields | ✅ 21 calcs | ✅ 28 aggs | ✅ 8 trends |
-| **Event** | ✅ 68 fields | ✅ 37 calcs | ✅ 51 aggs | ✅ 13 trends |
-| **Menu** | ✅ 18 fields | ✅ 11 calcs | ✅ 11 aggs | ✅ 4 trends |
-| **Recipe** | ✅ 28 fields | ✅ 5 calcs | ✅ 19 aggs | ✅ 5 trends |
-| **Inquiry** | ✅ 26 fields | ✅ 8 calcs | ✅ 21 aggs | ✅ 6 trends |
-| **Financial** | ✅ 31 fields | ✅ 27 calcs | ✅ 23 aggs | ✅ 8 trends |
-| **Message** | ✅ 15 fields | ✅ 3 calcs | ✅ 8 aggs | ✅ 3 trends |
-| **Grocery** | ✅ 8 fields | ✅ 9 calcs | ✅ 5 aggs | — |
-| **Packing** | ✅ 5 fields | ✅ 5 calcs | ✅ 3 aggs | — |
-| **Timeline** | ✅ 12 fields | ✅ 4 calcs | — | — |
-| **Loyalty** | ✅ 6 fields | ✅ 3 calcs | — | — |
-| **AAR** | ✅ 13 fields | — | ✅ 8 aggs | ✅ 2 trends |
+| Metric Category | Raw Data Tracked | Derived Calculations | Aggregations | Time-Series  |
+| --------------- | ---------------- | -------------------- | ------------ | ------------ |
+| **Client**      | ✅ 38 fields     | ✅ 21 calcs          | ✅ 28 aggs   | ✅ 8 trends  |
+| **Event**       | ✅ 68 fields     | ✅ 37 calcs          | ✅ 51 aggs   | ✅ 13 trends |
+| **Menu**        | ✅ 18 fields     | ✅ 11 calcs          | ✅ 11 aggs   | ✅ 4 trends  |
+| **Recipe**      | ✅ 28 fields     | ✅ 5 calcs           | ✅ 19 aggs   | ✅ 5 trends  |
+| **Inquiry**     | ✅ 26 fields     | ✅ 8 calcs           | ✅ 21 aggs   | ✅ 6 trends  |
+| **Financial**   | ✅ 31 fields     | ✅ 27 calcs          | ✅ 23 aggs   | ✅ 8 trends  |
+| **Message**     | ✅ 15 fields     | ✅ 3 calcs           | ✅ 8 aggs    | ✅ 3 trends  |
+| **Grocery**     | ✅ 8 fields      | ✅ 9 calcs           | ✅ 5 aggs    | —            |
+| **Packing**     | ✅ 5 fields      | ✅ 5 calcs           | ✅ 3 aggs    | —            |
+| **Timeline**    | ✅ 12 fields     | ✅ 4 calcs           | —            | —            |
+| **Loyalty**     | ✅ 6 fields      | ✅ 3 calcs           | —            | —            |
+| **AAR**         | ✅ 13 fields     | —                    | ✅ 8 aggs    | ✅ 2 trends  |
 
 ---
 

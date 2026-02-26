@@ -61,12 +61,14 @@ export async function fetchExecutionSheetData(eventId: string): Promise<Executio
   // Fetch event with extended client data
   const { data: event } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       occasion, event_date, serve_time, arrival_time, guest_count,
       dietary_restrictions, allergies, special_requests, service_style,
       location_address, location_city, location_state,
       client:clients(full_name, dietary_restrictions, allergies)
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -98,10 +100,12 @@ export async function fetchExecutionSheetData(eventId: string): Promise<Executio
   if (!dishes || dishes.length === 0) return null
 
   // Fetch components — include make_ahead_window_hours for arrival task ordering
-  const dishIds = dishes.map(d => d.id)
+  const dishIds = dishes.map((d) => d.id)
   const { data: components } = await supabase
     .from('components')
-    .select('dish_id, name, category, execution_notes, is_make_ahead, make_ahead_window_hours, sort_order')
+    .select(
+      'dish_id, name, category, execution_notes, is_make_ahead, make_ahead_window_hours, sort_order'
+    )
     .in('dish_id', dishIds)
     .eq('tenant_id', user.tenantId!)
     .order('sort_order', { ascending: true })
@@ -114,12 +118,15 @@ export async function fetchExecutionSheetData(eventId: string): Promise<Executio
   }
 
   // Group dishes by course number
-  const courseMap = new Map<number, {
-    courseName: string
-    dishDescription: string | null
-    dishAllergenFlags: string[]
-    components: NonNullable<typeof components>
-  }>()
+  const courseMap = new Map<
+    number,
+    {
+      courseName: string
+      dishDescription: string | null
+      dishAllergenFlags: string[]
+      components: NonNullable<typeof components>
+    }
+  >()
 
   for (const dish of dishes) {
     const existing = courseMap.get(dish.course_number)
@@ -127,7 +134,7 @@ export async function fetchExecutionSheetData(eventId: string): Promise<Executio
     if (existing) {
       existing.components.push(...dishComps)
       // Merge allergen flags across multiple dishes in the same course
-      for (const flag of (dish.allergen_flags ?? [])) {
+      for (const flag of dish.allergen_flags ?? []) {
         if (!existing.dishAllergenFlags.includes(flag)) {
           existing.dishAllergenFlags.push(flag)
         }
@@ -137,7 +144,7 @@ export async function fetchExecutionSheetData(eventId: string): Promise<Executio
         courseName: dish.course_name,
         dishDescription: dish.description,
         dishAllergenFlags: dish.allergen_flags ?? [],
-        components: [...dishComps]
+        components: [...dishComps],
       })
     }
   }
@@ -153,17 +160,21 @@ export async function fetchExecutionSheetData(eventId: string): Promise<Executio
         dishDescription: data.dishDescription,
         dishAllergenFlags: data.dishAllergenFlags,
         componentCount: data.components.length,
-        components: data.components.map(c => ({
+        components: data.components.map((c) => ({
           name: c.name,
           category: c.category,
           execution_notes: c.execution_notes,
           is_make_ahead: c.is_make_ahead,
           make_ahead_window_hours: c.make_ahead_window_hours ?? null,
-        }))
+        })),
       }
     })
 
-  const clientData = event.client as unknown as { full_name: string; dietary_restrictions: string[] | null; allergies: string[] | null } | null
+  const clientData = event.client as unknown as {
+    full_name: string
+    dietary_restrictions: string[] | null
+    allergies: string[] | null
+  } | null
 
   // Derive arrival tasks: components that need to be started immediately on arrival.
   // Two criteria:
@@ -171,7 +182,16 @@ export async function fetchExecutionSheetData(eventId: string): Promise<Executio
   //      (e.g., re-churn gelato, reheat braise, finish sous vide). Ordered by hours descending.
   //   2. Execution notes containing long-cook keywords — items cooked on-site but needing long lead time
   //      (e.g., "sous vide", "oven", "slow", "braise", "roast"). Ordered before quick-cook tasks.
-  const LONG_COOK_KEYWORDS = ['sous vide', 'oven', 'slow', 'braise', 'roast', 'bake', 'reheat', 'warm']
+  const LONG_COOK_KEYWORDS = [
+    'sous vide',
+    'oven',
+    'slow',
+    'braise',
+    'roast',
+    'bake',
+    'reheat',
+    'warm',
+  ]
 
   const arrivalTaskCandidates: Array<{
     name: string
@@ -186,7 +206,7 @@ export async function fetchExecutionSheetData(eventId: string): Promise<Executio
     for (const comp of courseData.components) {
       const hours = comp.make_ahead_window_hours ?? null
       const notes = comp.execution_notes?.toLowerCase() ?? ''
-      const hasLongCookKeyword = LONG_COOK_KEYWORDS.some(kw => notes.includes(kw))
+      const hasLongCookKeyword = LONG_COOK_KEYWORDS.some((kw) => notes.includes(kw))
       const hasMakeAheadWindow = hours !== null && hours > 0
 
       if (hasMakeAheadWindow || hasLongCookKeyword) {
@@ -241,7 +261,7 @@ export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
   const densityFactor = totalComponentCount + arrivalTasks.length
   if (densityFactor > 20) pdf.setFontScale(0.85)
   if (densityFactor > 30) pdf.setFontScale(0.75)
-  if (densityFactor > 40) pdf.setFontScale(0.70)
+  if (densityFactor > 40) pdf.setFontScale(0.7)
 
   // ===== HEADER =====
   // "MENU — [Client Name]"
@@ -249,7 +269,9 @@ export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
 
   // Detail bar: "[N] Guests | Day of Week, Date | Address | Arrive [time] | Serve [time]"
   const dateStr = format(parseISO(event.event_date), 'EEEE, MMMM d, yyyy')
-  const addressParts = [event.location_address, event.location_city, event.location_state].filter(Boolean)
+  const addressParts = [event.location_address, event.location_city, event.location_state].filter(
+    Boolean
+  )
   const addressStr = addressParts.length > 0 ? addressParts.join(', ') : null
 
   const detailParts: string[] = [
@@ -272,7 +294,7 @@ export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
       pdf.text(course.dishDescription, 8, 'italic', 6)
     } else if (course.components.length > 0) {
       // Auto-derive FOH description from component names as a clean, comma-separated list
-      const compList = course.components.map(c => c.name).join(', ')
+      const compList = course.components.map((c) => c.name).join(', ')
       pdf.text(compList, 8, 'italic', 6)
     }
   }
@@ -293,7 +315,9 @@ export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
   }
 
   if (allAllergies.size > 0) {
-    const allergyText = Array.from(allAllergies).map(a => a.toUpperCase()).join(', ')
+    const allergyText = Array.from(allAllergies)
+      .map((a) => a.toUpperCase())
+      .join(', ')
     pdf.warningBox(`ALLERGY WARNING: ${allergyText} \u2014 CHECK ALL COURSES`)
   }
 
@@ -330,13 +354,14 @@ export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
   for (const course of courses) {
     // Compute allergen conflict once per course — dish-level granularity
     const conflictingAllergens = course.dishAllergenFlags
-      .filter(flag => allAllergies.has(flag.toLowerCase()))
-      .map(a => a.toUpperCase())
+      .filter((flag) => allAllergies.has(flag.toLowerCase()))
+      .map((a) => a.toUpperCase())
 
     // Course header: allergen flag goes here (once, at the dish level — not on every component)
-    const courseHeaderText = conflictingAllergens.length > 0
-      ? `COURSE ${course.courseNumber} \u2014 ${course.courseName} (${course.componentCount} components)  \u26a0 CONTAINS ${conflictingAllergens.join(', ')}`
-      : `COURSE ${course.courseNumber} \u2014 ${course.courseName} (${course.componentCount} components)`
+    const courseHeaderText =
+      conflictingAllergens.length > 0
+        ? `COURSE ${course.courseNumber} \u2014 ${course.courseName} (${course.componentCount} components)  \u26a0 CONTAINS ${conflictingAllergens.join(', ')}`
+        : `COURSE ${course.courseNumber} \u2014 ${course.courseName} (${course.componentCount} components)`
     pdf.courseHeader(courseHeaderText)
 
     // List ALL components numbered — no split by make-ahead (that's the Prep Sheet's domain)
@@ -368,15 +393,20 @@ export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
 
   const dietarySummaryParts: string[] = []
   if (allAllergies.size > 0) {
-    dietarySummaryParts.push(`Allergies: ${Array.from(allAllergies).map(a => a.toUpperCase()).join(', ')}`)
+    dietarySummaryParts.push(
+      `Allergies: ${Array.from(allAllergies)
+        .map((a) => a.toUpperCase())
+        .join(', ')}`
+    )
   }
   if (allDietary.size > 0) {
     dietarySummaryParts.push(`Dietary: ${Array.from(allDietary).join(', ')}`)
   }
 
-  const summaryLine = dietarySummaryParts.length > 0
-    ? `${totalComponentCount} TOTAL COMPONENTS  |  ${dietarySummaryParts.join('  |  ')}`
-    : `${totalComponentCount} TOTAL COMPONENTS`
+  const summaryLine =
+    dietarySummaryParts.length > 0
+      ? `${totalComponentCount} TOTAL COMPONENTS  |  ${dietarySummaryParts.join('  |  ')}`
+      : `${totalComponentCount} TOTAL COMPONENTS`
 
   pdf.text(summaryLine, 9, 'bold')
 

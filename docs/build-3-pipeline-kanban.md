@@ -11,6 +11,7 @@
 ### Problem Being Solved
 
 The inquiry pipeline's kanban board existed but lacked key visibility features:
+
 1. **No "stuck" indicator** — no way to tell which leads haven't moved in days
 2. **No budget amounts on cards** — couldn't see deal value at a glance
 3. **No revenue totals per column** — couldn't see total pipeline value by stage
@@ -25,10 +26,12 @@ Grade before: **B → A-**
 ### `components/inquiries/kanban-card.tsx`
 
 Added to `KanbanCardInquiry` interface:
+
 - `budget_cents?: number` — from `confirmed_budget_cents`
 - `updated_at?: string` — from inquiry row's `updated_at`
 
 Visual additions per card:
+
 - **Budget display** (bottom right): shows confirmed budget in dollars with green DollarSign icon
 - **Stuck badge** (top right): days since last update
   - 4–6 days: amber badge + amber card background
@@ -39,10 +42,12 @@ Visual additions per card:
 ### `components/inquiries/kanban-board.tsx`
 
 Added to `KanbanBoardInquiry` interface:
+
 - `budget_cents?: number`
 - `updated_at?: string`
 
 Added to `KanbanColumn`:
+
 - `formatColumnRevenue()` helper — formats cents to `$1.2k` or `$4,500`
 - Revenue total displayed in column header next to the count badge (green, only when non-zero)
 - New fields passed through to `KanbanCard`
@@ -50,6 +55,7 @@ Added to `KanbanColumn`:
 ### `app/(chef)/inquiries/page.tsx`
 
 Updated `kanbanInquiries` mapping to include:
+
 - `budget_cents: inquiry.confirmed_budget_cents ?? undefined`
 - `updated_at: inquiry.updated_at`
 
@@ -58,29 +64,32 @@ Updated `kanbanInquiries` mapping to include:
 ## New Files
 
 ### `lib/pipeline/forecast.ts`
+
 Server action computing pipeline revenue forecast from open inquiries + active events.
 
 **Probability multipliers by stage:**
 
-| Stage | Probability |
-|---|---|
-| New inquiry | 15% |
-| Awaiting response / chef | 20% |
-| Awaiting client | 30% |
-| Quote sent | 45% |
-| Inquiry confirmed | 90% |
-| Draft event | 30% |
-| Proposed event | 60% |
-| Accepted event | 80% |
-| Deposit paid | 95% |
-| Confirmed event | 99% |
-| In progress | 100% |
+| Stage                    | Probability |
+| ------------------------ | ----------- |
+| New inquiry              | 15%         |
+| Awaiting response / chef | 20%         |
+| Awaiting client          | 30%         |
+| Quote sent               | 45%         |
+| Inquiry confirmed        | 90%         |
+| Draft event              | 30%         |
+| Proposed event           | 60%         |
+| Accepted event           | 80%         |
+| Deposit paid             | 95%         |
+| Confirmed event          | 99%         |
+| In progress              | 100%        |
 
 **Returns:** `{ expectedCents, bestCaseCents, stages[], computedAt }`
+
 - `expectedCents` = sum of (stage total × probability) across all stages
 - `bestCaseCents` = sum of all quoted amounts in pipeline (assumes all close)
 
 ### `components/pipeline/revenue-forecast.tsx`
+
 Dashboard widget displaying pipeline revenue forecast.
 
 - **Expected** tile (green): probability-weighted pipeline total
@@ -94,6 +103,7 @@ Dashboard widget displaying pipeline revenue forecast.
 ## Dashboard Integration
 
 `app/(chef)/dashboard/page.tsx` updated:
+
 - Import: `getPipelineRevenueForecast`, `PipelineRevenueForecast` type, `PipelineForecastWidget` component
 - Empty default: `emptyPipelineForecast` with zeros
 - Added to `Promise.all()`: `safe('pipelineForecast', getPipelineRevenueForecast, emptyPipelineForecast)`

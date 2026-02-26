@@ -55,11 +55,13 @@ export async function fetchReceiptData(eventId: string): Promise<ReceiptData> {
 
   const { data: event } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, tenant_id, client_id, occasion, event_date, serve_time, guest_count,
       location_address, location_city, location_state, location_zip,
       quoted_price_cents, deposit_amount_cents
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('client_id', user.entityId)
     .single()
@@ -68,36 +70,42 @@ export async function fetchReceiptData(eventId: string): Promise<ReceiptData> {
     throw new Error('Event not found')
   }
 
-  const [{ data: client }, { data: chef }, { data: ledger }, { data: financial }] = await Promise.all([
-    supabase
-      .from('clients')
-      .select('full_name, email, address')
-      .eq('id', event.client_id)
-      .single(),
-    supabase
-      .from('chefs')
-      .select('business_name, email, phone')
-      .eq('id', event.tenant_id)
-      .single(),
-    supabase
-      .from('ledger_entries')
-      .select('id, description, amount_cents, entry_type, payment_method, created_at, transaction_reference')
-      .eq('event_id', event.id)
-      .order('created_at', { ascending: true }),
-    supabase
-      .from('event_financial_summary')
-      .select('quoted_price_cents, total_paid_cents, outstanding_balance_cents')
-      .eq('event_id', event.id)
-      .maybeSingle(),
-  ])
+  const [{ data: client }, { data: chef }, { data: ledger }, { data: financial }] =
+    await Promise.all([
+      supabase
+        .from('clients')
+        .select('full_name, email, address')
+        .eq('id', event.client_id)
+        .single(),
+      supabase
+        .from('chefs')
+        .select('business_name, email, phone')
+        .eq('id', event.tenant_id)
+        .single(),
+      supabase
+        .from('ledger_entries')
+        .select(
+          'id, description, amount_cents, entry_type, payment_method, created_at, transaction_reference'
+        )
+        .eq('event_id', event.id)
+        .order('created_at', { ascending: true }),
+      supabase
+        .from('event_financial_summary')
+        .select('quoted_price_cents, total_paid_cents, outstanding_balance_cents')
+        .eq('event_id', event.id)
+        .maybeSingle(),
+    ])
 
   if (!client || !chef) {
     throw new Error('Receipt data is incomplete')
   }
 
   const quotedPriceCents = financial?.quoted_price_cents ?? event.quoted_price_cents ?? 0
-  const totalPaidCents = financial?.total_paid_cents ?? (ledger || []).reduce((sum, entry) => sum + entry.amount_cents, 0)
-  const outstandingBalanceCents = financial?.outstanding_balance_cents ?? Math.max(quotedPriceCents - totalPaidCents, 0)
+  const totalPaidCents =
+    financial?.total_paid_cents ??
+    (ledger || []).reduce((sum, entry) => sum + entry.amount_cents, 0)
+  const outstandingBalanceCents =
+    financial?.outstanding_balance_cents ?? Math.max(quotedPriceCents - totalPaidCents, 0)
 
   return {
     event: {
@@ -132,7 +140,9 @@ export function renderReceipt(pdf: PDFLayout, data: ReceiptData) {
     data.event.location_city,
     data.event.location_state,
     data.event.location_zip,
-  ].filter(Boolean).join(', ')
+  ]
+    .filter(Boolean)
+    .join(', ')
 
   pdf.title('EVENT RECEIPT')
   pdf.text(`Issued ${receiptDate}`, 9, 'italic')
@@ -168,7 +178,12 @@ export function renderReceipt(pdf: PDFLayout, data: ReceiptData) {
       const dateLabel = format(new Date(entry.created_at), 'PP')
       const details = `${dateLabel}  |  ${entry.description} (${entry.entry_type})`
       pdf.text(details, 9)
-      pdf.text(`Method: ${entry.payment_method}  |  Amount: ${money(entry.amount_cents)}`, 8, 'italic', 4)
+      pdf.text(
+        `Method: ${entry.payment_method}  |  Amount: ${money(entry.amount_cents)}`,
+        8,
+        'italic',
+        4
+      )
       if (entry.transaction_reference) {
         pdf.text(`Ref: ${entry.transaction_reference}`, 8, 'italic', 4)
       }
@@ -205,35 +220,52 @@ export async function fetchReceiptDataForChef(eventId: string): Promise<ReceiptD
 
   const { data: event } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, tenant_id, client_id, occasion, event_date, serve_time, guest_count,
       location_address, location_city, location_state, location_zip,
       quoted_price_cents, deposit_amount_cents
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
 
   if (!event) throw new Error('Event not found')
 
-  const [{ data: client }, { data: chef }, { data: ledger }, { data: financial }] = await Promise.all([
-    supabase.from('clients').select('full_name, email, address').eq('id', event.client_id).single(),
-    supabase.from('chefs').select('business_name, email, phone').eq('id', event.tenant_id).single(),
-    supabase.from('ledger_entries')
-      .select('id, description, amount_cents, entry_type, payment_method, created_at, transaction_reference')
-      .eq('event_id', event.id)
-      .order('created_at', { ascending: true }),
-    supabase.from('event_financial_summary')
-      .select('quoted_price_cents, total_paid_cents, outstanding_balance_cents')
-      .eq('event_id', event.id)
-      .maybeSingle(),
-  ])
+  const [{ data: client }, { data: chef }, { data: ledger }, { data: financial }] =
+    await Promise.all([
+      supabase
+        .from('clients')
+        .select('full_name, email, address')
+        .eq('id', event.client_id)
+        .single(),
+      supabase
+        .from('chefs')
+        .select('business_name, email, phone')
+        .eq('id', event.tenant_id)
+        .single(),
+      supabase
+        .from('ledger_entries')
+        .select(
+          'id, description, amount_cents, entry_type, payment_method, created_at, transaction_reference'
+        )
+        .eq('event_id', event.id)
+        .order('created_at', { ascending: true }),
+      supabase
+        .from('event_financial_summary')
+        .select('quoted_price_cents, total_paid_cents, outstanding_balance_cents')
+        .eq('event_id', event.id)
+        .maybeSingle(),
+    ])
 
   if (!client || !chef) throw new Error('Receipt data is incomplete')
 
   const quotedPriceCents = financial?.quoted_price_cents ?? event.quoted_price_cents ?? 0
-  const totalPaidCents = financial?.total_paid_cents ?? (ledger || []).reduce((sum, e) => sum + e.amount_cents, 0)
-  const outstandingBalanceCents = financial?.outstanding_balance_cents ?? Math.max(quotedPriceCents - totalPaidCents, 0)
+  const totalPaidCents =
+    financial?.total_paid_cents ?? (ledger || []).reduce((sum, e) => sum + e.amount_cents, 0)
+  const outstandingBalanceCents =
+    financial?.outstanding_balance_cents ?? Math.max(quotedPriceCents - totalPaidCents, 0)
 
   return {
     event: {

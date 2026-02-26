@@ -26,17 +26,22 @@ export async function getEventTips(eventId: string): Promise<TipEntry[]> {
     .eq('tenant_id', user.tenantId!)
     .order('received_at', { ascending: false })
 
-  return ((data ?? []) as any[]).map((r: any): TipEntry => ({
-    id: r.id,
-    eventId: r.event_id,
-    amountCents: r.amount_cents,
-    method: r.method,
-    receivedAt: r.received_at,
-    notes: r.notes,
-  }))
+  return ((data ?? []) as any[]).map(
+    (r: any): TipEntry => ({
+      id: r.id,
+      eventId: r.event_id,
+      amountCents: r.amount_cents,
+      method: r.method,
+      receivedAt: r.received_at,
+      notes: r.notes,
+    })
+  )
 }
 
-export async function getYtdTipSummary(): Promise<{ totalCents: number; byMethod: Record<string, number> }> {
+export async function getYtdTipSummary(): Promise<{
+  totalCents: number
+  byMethod: Record<string, number>
+}> {
   const user = await requireChef()
   const supabase = createServerClient()
 

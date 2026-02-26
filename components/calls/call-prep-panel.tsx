@@ -4,14 +4,20 @@
 
 import { useState, useTransition } from 'react'
 import { Check, Plus, X, Info } from 'lucide-react'
-import { addAgendaItem, toggleAgendaItem, removeAgendaItem, type ScheduledCall, type AgendaItem } from '@/lib/calls/actions'
+import {
+  addAgendaItem,
+  toggleAgendaItem,
+  removeAgendaItem,
+  type ScheduledCall,
+  type AgendaItem,
+} from '@/lib/calls/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 const SOURCE_LABELS: Record<AgendaItem['source'], string> = {
-  manual:  '',
+  manual: '',
   inquiry: 'From inquiry',
-  event:   'From event',
+  event: 'From event',
 }
 
 function AgendaItemRow({
@@ -26,15 +32,21 @@ function AgendaItemRow({
   const [isPending, startTransition] = useTransition()
 
   function handleToggle() {
-    startTransition(async () => { await toggleAgendaItem(callId, item.id) })
+    startTransition(async () => {
+      await toggleAgendaItem(callId, item.id)
+    })
   }
 
   function handleRemove() {
-    startTransition(async () => { await removeAgendaItem(callId, item.id) })
+    startTransition(async () => {
+      await removeAgendaItem(callId, item.id)
+    })
   }
 
   return (
-    <li className={`flex items-start gap-3 group py-2 border-b border-gray-100 last:border-0 ${isPending ? 'opacity-60' : ''}`}>
+    <li
+      className={`flex items-start gap-3 group py-2 border-b border-gray-100 last:border-0 ${isPending ? 'opacity-60' : ''}`}
+    >
       {/* Checkbox */}
       <button
         type="button"
@@ -52,7 +64,9 @@ function AgendaItemRow({
 
       {/* Text + source badge */}
       <div className="flex-1 min-w-0">
-        <p className={`text-sm leading-snug ${item.completed ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+        <p
+          className={`text-sm leading-snug ${item.completed ? 'line-through text-gray-400' : 'text-gray-800'}`}
+        >
           {item.item}
         </p>
         {item.source !== 'manual' && (
@@ -79,7 +93,8 @@ function AgendaItemRow({
 export function CallPrepPanel({ call }: { call: ScheduledCall }) {
   const [newItem, setNewItem] = useState('')
   const [isAdding, startAdding] = useTransition()
-  const isTerminal = call.status === 'completed' || call.status === 'cancelled' || call.status === 'no_show'
+  const isTerminal =
+    call.status === 'completed' || call.status === 'cancelled' || call.status === 'no_show'
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault()
@@ -91,7 +106,7 @@ export function CallPrepPanel({ call }: { call: ScheduledCall }) {
     })
   }
 
-  const completed = call.agenda_items.filter(i => i.completed).length
+  const completed = call.agenda_items.filter((i) => i.completed).length
   const total = call.agenda_items.length
 
   return (
@@ -100,7 +115,9 @@ export function CallPrepPanel({ call }: { call: ScheduledCall }) {
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-gray-900">Agenda / Prep Checklist</h3>
         {total > 0 && (
-          <span className="text-xs text-gray-500">{completed}/{total} done</span>
+          <span className="text-xs text-gray-500">
+            {completed}/{total} done
+          </span>
         )}
       </div>
 
@@ -120,18 +137,14 @@ export function CallPrepPanel({ call }: { call: ScheduledCall }) {
           <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
           <span>
             No agenda items yet.
-            {!isTerminal && ' Add items below, or link this call to an inquiry or event to auto-populate.'}
+            {!isTerminal &&
+              ' Add items below, or link this call to an inquiry or event to auto-populate.'}
           </span>
         </div>
       ) : (
         <ul className="divide-y-0">
-          {call.agenda_items.map(item => (
-            <AgendaItemRow
-              key={item.id}
-              item={item}
-              callId={call.id}
-              disabled={isTerminal}
-            />
+          {call.agenda_items.map((item) => (
+            <AgendaItemRow key={item.id} item={item} callId={call.id} disabled={isTerminal} />
           ))}
         </ul>
       )}
@@ -141,7 +154,7 @@ export function CallPrepPanel({ call }: { call: ScheduledCall }) {
         <form onSubmit={handleAdd} className="flex gap-2">
           <Input
             value={newItem}
-            onChange={e => setNewItem(e.target.value)}
+            onChange={(e) => setNewItem(e.target.value)}
             placeholder="Add agenda item…"
             className="flex-1 text-sm"
             maxLength={300}
@@ -156,7 +169,9 @@ export function CallPrepPanel({ call }: { call: ScheduledCall }) {
       {/* Prep notes */}
       {call.prep_notes && (
         <div className="mt-4 pt-4 border-t border-gray-100">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Prep notes</p>
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+            Prep notes
+          </p>
           <p className="text-sm text-gray-700 whitespace-pre-wrap">{call.prep_notes}</p>
         </div>
       )}

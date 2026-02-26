@@ -33,6 +33,7 @@ The fetch phase (`fetchGroceryListData`) walks this chain:
 ### Stops and Sections
 
 Items are binned into two stops:
+
 - **Stop 1 (Grocery Store):** All non-alcohol ingredients, organized into sections: PROTEINS / PRODUCE / DAIRY & FATS / PANTRY / SPECIALTY
 - **Stop 2 (Liquor Store):** Any ingredient with `category = 'alcohol'`
 
@@ -55,6 +56,7 @@ Projected cost is computed by summing `quantity × last_price_cents` for all TO 
 ### PDF Layout
 
 One page, US Letter, following the same `PDFLayout` helper used by all other documents:
+
 - Title + event header bars (client, guests, date)
 - Budget line (if computable)
 - Stop 1 sections with checkbox rows (uses `pdf.checkbox()` — drawn square boxes)
@@ -66,12 +68,12 @@ Font auto-scales to fit: `> 25 items → 0.85x`, `> 40 items → 0.75x`.
 
 ## Files Changed
 
-| File | Change |
-|---|---|
-| `lib/documents/generate-grocery-list.ts` | **NEW** — full generator (fetch + render + generate) |
-| `app/api/documents/[eventId]/route.ts` | Added `case 'grocery'`; added grocery as page 1 of `case 'all'`; updated "5 documents" |
-| `lib/documents/actions.ts` | Added `groceryList` field to `DocumentReadiness` type and return value |
-| `components/documents/document-section.tsx` | Added Grocery List row (first in list); updated "5 Sheets" |
+| File                                        | Change                                                                                 |
+| ------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `lib/documents/generate-grocery-list.ts`    | **NEW** — full generator (fetch + render + generate)                                   |
+| `app/api/documents/[eventId]/route.ts`      | Added `case 'grocery'`; added grocery as page 1 of `case 'all'`; updated "5 documents" |
+| `lib/documents/actions.ts`                  | Added `groceryList` field to `DocumentReadiness` type and return value                 |
+| `components/documents/document-section.tsx` | Added Grocery List row (first in list); updated "5 Sheets"                             |
 
 ## What This Does NOT Do (MVP Scope)
 

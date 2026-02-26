@@ -42,7 +42,7 @@ test.describe('Menus — List', () => {
 
   test('/menus — clicking a menu navigates to detail', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/menus')
     await page.waitForLoadState('networkidle')
 
@@ -57,7 +57,7 @@ test.describe('Menus — List', () => {
 
   test('/menus — no JS errors on load', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/menus')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -78,7 +78,9 @@ test.describe('Menus — Create Form', () => {
   test('/menus/new — has name field', async ({ page }) => {
     await page.goto('/menus/new')
     await page.waitForLoadState('networkidle')
-    const nameField = page.getByLabel(/name|title/i).first()
+    const nameField = page
+      .getByLabel(/name|title/i)
+      .first()
       .or(page.getByPlaceholder(/menu name|name/i).first())
       .or(page.locator('input[name="name"]').first())
     const isVisible = await nameField.isVisible().catch(() => false)
@@ -94,7 +96,7 @@ test.describe('Menus — Create Form', () => {
 
   test('/menus/new — typing in name field does not crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/menus/new')
     await page.waitForLoadState('networkidle')
 
@@ -121,7 +123,7 @@ test.describe('Menus — Create Form', () => {
 
   test('/menus/new — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/menus/new')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -166,7 +168,7 @@ test.describe('Menus — Detail', () => {
 
   test('/menus/[id] — no JS errors', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto(`/menus/${seedIds.menuId}`)
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -200,7 +202,7 @@ test.describe('Menus — Editor', () => {
 
   test('/menus/[id]/editor — no JS errors', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto(`/menus/${seedIds.menuId}/editor`)
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)

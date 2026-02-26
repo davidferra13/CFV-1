@@ -13,9 +13,7 @@ import { revalidatePath } from 'next/cache'
 /**
  * Suspend a chef account. Prevents portal login by blocking requireChef().
  */
-export async function suspendChef(
-  chefId: string
-): Promise<{ success: boolean; error?: string }> {
+export async function suspendChef(chefId: string): Promise<{ success: boolean; error?: string }> {
   const admin = await requireAdmin()
   const supabase: any = createAdminClient()
 

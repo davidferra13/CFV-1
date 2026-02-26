@@ -36,17 +36,17 @@ fetching. No "Coming Soon", "Under Construction", or empty-div pages exist.
 
 All routes linked from `app/(chef)/events/[id]/page.tsx` have corresponding `page.tsx` files:
 
-| Route | File | Status |
-| --- | --- | --- |
-| `/events/[id]/edit` | `app/(chef)/events/[id]/edit/page.tsx` | ✅ Implemented |
-| `/events/[id]/schedule` | `app/(chef)/events/[id]/schedule/page.tsx` | ✅ Implemented |
-| `/events/[id]/pack` | `app/(chef)/events/[id]/pack/page.tsx` | ✅ Implemented |
-| `/events/[id]/travel` | `app/(chef)/events/[id]/travel/page.tsx` | ✅ Implemented |
-| `/events/[id]/invoice` | `app/(chef)/events/[id]/invoice/page.tsx` | ✅ Implemented |
-| `/events/[id]/receipts` | `app/(chef)/events/[id]/receipts/page.tsx` | ✅ Implemented |
-| `/events/[id]/debrief` | `app/(chef)/events/[id]/debrief/page.tsx` | ✅ Implemented |
-| `/events/[id]/aar` | `app/(chef)/events/[id]/aar/page.tsx` | ✅ Implemented |
-| `/events/[id]/financial` | `app/(chef)/events/[id]/financial/page.tsx` | ✅ Implemented |
+| Route                      | File                                          | Status         |
+| -------------------------- | --------------------------------------------- | -------------- |
+| `/events/[id]/edit`        | `app/(chef)/events/[id]/edit/page.tsx`        | ✅ Implemented |
+| `/events/[id]/schedule`    | `app/(chef)/events/[id]/schedule/page.tsx`    | ✅ Implemented |
+| `/events/[id]/pack`        | `app/(chef)/events/[id]/pack/page.tsx`        | ✅ Implemented |
+| `/events/[id]/travel`      | `app/(chef)/events/[id]/travel/page.tsx`      | ✅ Implemented |
+| `/events/[id]/invoice`     | `app/(chef)/events/[id]/invoice/page.tsx`     | ✅ Implemented |
+| `/events/[id]/receipts`    | `app/(chef)/events/[id]/receipts/page.tsx`    | ✅ Implemented |
+| `/events/[id]/debrief`     | `app/(chef)/events/[id]/debrief/page.tsx`     | ✅ Implemented |
+| `/events/[id]/aar`         | `app/(chef)/events/[id]/aar/page.tsx`         | ✅ Implemented |
+| `/events/[id]/financial`   | `app/(chef)/events/[id]/financial/page.tsx`   | ✅ Implemented |
 | `/events/[id]/interactive` | `app/(chef)/events/[id]/interactive/page.tsx` | ✅ Implemented |
 
 ---
@@ -139,18 +139,18 @@ These are contextual sub-pages and don't need top-level nav entries.
 
 The following high-risk imports were verified:
 
-| Import | Used in | Status |
-| --- | --- | --- |
-| `lib/aar/actions.ts` → `getAARByEventId` | `events/[id]/aar/page.tsx` | ✅ Exists |
-| `lib/checklist/actions.ts` → `getChefChecklist` | `events/[id]/aar/page.tsx` | ✅ Exists |
-| `lib/receipts/actions.ts` | `events/[id]/receipts/page.tsx` | ✅ Exists |
-| `lib/packing/actions.ts` → `getPackingStatus` | `events/[id]/pack/page.tsx` | ✅ Exists |
-| `lib/travel/actions.ts` → `getTravelPlan` | `events/[id]/travel/page.tsx` | ✅ Exists |
-| `lib/events/debrief-actions.ts` | `events/[id]/debrief/page.tsx` | ✅ Exists |
-| `lib/events/financial-summary-actions.ts` | `events/[id]/financial/page.tsx` | ✅ Exists |
-| `lib/events/invoice-actions.ts` | `events/[id]/invoice/page.tsx` | ✅ Exists |
-| `lib/documents/interactive-specs.ts` | `events/[id]/interactive/page.tsx` | ✅ Exists |
-| `lib/documents/generate-checklist.ts` | `events/[id]/interactive/page.tsx` | ✅ Exists |
+| Import                                          | Used in                            | Status    |
+| ----------------------------------------------- | ---------------------------------- | --------- |
+| `lib/aar/actions.ts` → `getAARByEventId`        | `events/[id]/aar/page.tsx`         | ✅ Exists |
+| `lib/checklist/actions.ts` → `getChefChecklist` | `events/[id]/aar/page.tsx`         | ✅ Exists |
+| `lib/receipts/actions.ts`                       | `events/[id]/receipts/page.tsx`    | ✅ Exists |
+| `lib/packing/actions.ts` → `getPackingStatus`   | `events/[id]/pack/page.tsx`        | ✅ Exists |
+| `lib/travel/actions.ts` → `getTravelPlan`       | `events/[id]/travel/page.tsx`      | ✅ Exists |
+| `lib/events/debrief-actions.ts`                 | `events/[id]/debrief/page.tsx`     | ✅ Exists |
+| `lib/events/financial-summary-actions.ts`       | `events/[id]/financial/page.tsx`   | ✅ Exists |
+| `lib/events/invoice-actions.ts`                 | `events/[id]/invoice/page.tsx`     | ✅ Exists |
+| `lib/documents/interactive-specs.ts`            | `events/[id]/interactive/page.tsx` | ✅ Exists |
+| `lib/documents/generate-checklist.ts`           | `events/[id]/interactive/page.tsx` | ✅ Exists |
 
 ---
 
@@ -233,16 +233,16 @@ All cross-portal links use the correct `/my-events/`, `/my-quotes/`, `/my-chat/`
 
 ## Summary
 
-| Category | Finding | Status |
-| --- | --- | --- |
-| Placeholder pages | 0 found | ✅ Clean |
-| 404 event sub-pages | 0 found | ✅ Clean |
-| RSC boundary violations | 3 found | ✅ Fixed |
-| Empty onClick handlers | 0 found | ✅ Clean |
-| `href="#"` dead links | 0 found | ✅ Clean |
-| Orphan nav links | 0 found | ✅ Clean |
+| Category                    | Finding | Status   |
+| --------------------------- | ------- | -------- |
+| Placeholder pages           | 0 found | ✅ Clean |
+| 404 event sub-pages         | 0 found | ✅ Clean |
+| RSC boundary violations     | 3 found | ✅ Fixed |
+| Empty onClick handlers      | 0 found | ✅ Clean |
+| `href="#"` dead links       | 0 found | ✅ Clean |
+| Orphan nav links            | 0 found | ✅ Clean |
 | Missing server action files | 0 found | ✅ Clean |
-| Missing auth guards | 0 found | ✅ Clean |
+| Missing auth guards         | 0 found | ✅ Clean |
 
 **Overall health: 8/8 categories clean after fixes.**
 

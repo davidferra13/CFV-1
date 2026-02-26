@@ -13,20 +13,20 @@ A full platform command center at `/admin` giving god-mode visibility over all c
 
 ## Route Map
 
-| Route | Page | Purpose |
-|---|---|---|
-| `/admin` | Overview | Platform KPIs — total chefs, clients, events, GMV |
-| `/admin/presence` | Live Presence | Real-time who's on the site (Supabase Realtime) |
-| `/admin/users` | Chef List | All chef accounts with event/client/GMV counts |
-| `/admin/users/[chefId]` | Chef Detail | Events, clients, ledger for one chef |
-| `/admin/clients` | Client List | All clients across all tenants |
-| `/admin/analytics` | Analytics | Growth by month, revenue by month |
-| `/admin/financials` | Financials | Platform GMV, expense overview, ledger entries |
-| `/admin/events` | All Events | Every event across every chef |
-| `/admin/audit` | Audit Log | Immutable record of sensitive actions |
-| `/admin/system` | System Health | Table row counts, zombie events, orphaned records |
+| Route                   | Page           | Purpose                                           |
+| ----------------------- | -------------- | ------------------------------------------------- |
+| `/admin`                | Overview       | Platform KPIs — total chefs, clients, events, GMV |
+| `/admin/presence`       | Live Presence  | Real-time who's on the site (Supabase Realtime)   |
+| `/admin/users`          | Chef List      | All chef accounts with event/client/GMV counts    |
+| `/admin/users/[chefId]` | Chef Detail    | Events, clients, ledger for one chef              |
+| `/admin/clients`        | Client List    | All clients across all tenants                    |
+| `/admin/analytics`      | Analytics      | Growth by month, revenue by month                 |
+| `/admin/financials`     | Financials     | Platform GMV, expense overview, ledger entries    |
+| `/admin/events`         | All Events     | Every event across every chef                     |
+| `/admin/audit`          | Audit Log      | Immutable record of sensitive actions             |
+| `/admin/system`         | System Health  | Table row counts, zombie events, orphaned records |
 | `/admin/communications` | Communications | Announcement banner, direct email (UI scaffolded) |
-| `/admin/flags` | Feature Flags | Per-chef feature toggles |
+| `/admin/flags`          | Feature Flags  | Per-chef feature toggles                          |
 
 ---
 
@@ -34,13 +34,17 @@ A full platform command center at `/admin` giving god-mode visibility over all c
 
 ```typescript
 // lib/auth/admin.ts
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? '').split(',').map(e => e.trim()).filter(Boolean)
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? '')
+  .split(',')
+  .map((e) => e.trim())
+  .filter(Boolean)
 
 export async function requireAdmin(): Promise<AdminUser>
 export async function isAdmin(): Promise<boolean>
 ```
 
 **Setup required:**
+
 1. Add `ADMIN_EMAILS=your@email.com` to `.env.local`
 2. Add same to Vercel environment variables (Production + Preview)
 
@@ -62,6 +66,7 @@ No database changes required — purely env-var driven.
 5. `AdminPresencePanel` (client component on `/admin/presence`) subscribes to the same channel and renders the live state
 
 ### Presence Channel
+
 ```
 CHANNEL_NAME = 'site:presence'
 ```
@@ -74,24 +79,24 @@ No database storage — purely in-memory via Supabase Realtime presence. Nothing
 
 ### Server Libraries
 
-| File | Purpose |
-|---|---|
-| `lib/auth/admin.ts` | `requireAdmin()` + `isAdmin()` — env-var email gate |
+| File                          | Purpose                                                  |
+| ----------------------------- | -------------------------------------------------------- |
+| `lib/auth/admin.ts`           | `requireAdmin()` + `isAdmin()` — env-var email gate      |
 | `lib/admin/platform-stats.ts` | All cross-tenant query functions (uses service role key) |
-| `lib/admin/audit.ts` | `logAdminAction()` — append to `admin_audit_log` |
+| `lib/admin/audit.ts`          | `logAdminAction()` — append to `admin_audit_log`         |
 
 ### Components
 
-| File | Purpose |
-|---|---|
-| `components/admin/admin-sidebar.tsx` | Dark slate-900 sidebar, 11 nav items, `'use client'` |
-| `components/admin/presence-beacon.tsx` | Silent tracker, renders null, `'use client'` |
-| `components/admin/admin-presence-panel.tsx` | Live presence viewer, `'use client'` |
+| File                                        | Purpose                                              |
+| ------------------------------------------- | ---------------------------------------------------- |
+| `components/admin/admin-sidebar.tsx`        | Dark slate-900 sidebar, 11 nav items, `'use client'` |
+| `components/admin/presence-beacon.tsx`      | Silent tracker, renders null, `'use client'`         |
+| `components/admin/admin-presence-panel.tsx` | Live presence viewer, `'use client'`                 |
 
 ### Layout
 
-| File | Purpose |
-|---|---|
+| File                     | Purpose                               |
+| ------------------------ | ------------------------------------- |
 | `app/(admin)/layout.tsx` | `requireAdmin()` gate + sidebar shell |
 
 ---
@@ -101,6 +106,7 @@ No database storage — purely in-memory via Supabase Realtime presence. Nothing
 Two new migrations applied to remote Supabase:
 
 ### `20260306000010_admin_audit_log.sql`
+
 ```sql
 CREATE TABLE admin_audit_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -117,6 +123,7 @@ CREATE TABLE admin_audit_log (
 ```
 
 ### `20260306000011_chef_feature_flags.sql`
+
 ```sql
 CREATE TABLE chef_feature_flags (
   chef_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -137,10 +144,10 @@ CREATE TABLE chef_feature_flags (
 `middleware.ts` was updated to let `/admin/*` routes pass through without chef/client enforcement:
 
 ```typescript
-const isAdminRoute = adminPaths.some(
-  (path) => pathname === path || pathname.startsWith(path + '/')
-)
-if (isAdminRoute) { return response }
+const isAdminRoute = adminPaths.some((path) => pathname === path || pathname.startsWith(path + '/'))
+if (isAdminRoute) {
+  return response
+}
 ```
 
 Auth/role enforcement for admin happens in `app/(admin)/layout.tsx` via `requireAdmin()`.

@@ -24,9 +24,8 @@ export function GiftCardPurchaseConfirmationEmail({
       <Text style={heading}>Your gift card is on its way!</Text>
 
       <Text style={paragraph}>
-        Your <strong>{amountFormatted} gift card</strong> for{' '}
-        <strong>{chefName}</strong> has been sent to{' '}
-        <strong>{recipientLabel}</strong>.
+        Your <strong>{amountFormatted} gift card</strong> for <strong>{chefName}</strong> has been
+        sent to <strong>{recipientLabel}</strong>.
       </Text>
 
       <div style={codeCard}>
@@ -36,13 +35,13 @@ export function GiftCardPurchaseConfirmationEmail({
       </div>
 
       <Text style={paragraph}>
-        The recipient will receive their own email with the code and instructions on
-        how to redeem it when booking a private chef experience with {chefName}.
+        The recipient will receive their own email with the code and instructions on how to redeem
+        it when booking a private chef experience with {chefName}.
       </Text>
 
       <Text style={muted}>
-        Please save this email for your records. If you have any questions, contact
-        {' '}{chefName} directly.
+        Please save this email for your records. If you have any questions, contact {chefName}{' '}
+        directly.
       </Text>
     </BaseLayout>
   )

@@ -12,14 +12,14 @@ Six operational and security policy documents were created to close critical gap
 
 ### Files Created
 
-| File | Audit Item | Description |
-|------|-----------|-------------|
-| `docs/key-rotation-policy.md` | #64 | Rotation schedule, procedures, emergency rotation |
-| `docs/backup-and-restore.md` | #52, #67 | Backup strategy, restore runbooks, quarterly drill |
-| `docs/disaster-recovery.md` | #53 | 7 incident runbooks, RTO/RPO, communication templates |
-| `docs/data-retention-policy.md` | #65 | Retention schedule by data type, legal basis, purge crons |
-| `docs/pii-handling-policy.md` | #66 | PII classification, handling rules, subject rights, sub-processors |
-| `docs/rollback-plan.md` | #69 | Vercel deployment rollback, compensating migration procedure |
+| File                            | Audit Item | Description                                                        |
+| ------------------------------- | ---------- | ------------------------------------------------------------------ |
+| `docs/key-rotation-policy.md`   | #64        | Rotation schedule, procedures, emergency rotation                  |
+| `docs/backup-and-restore.md`    | #52, #67   | Backup strategy, restore runbooks, quarterly drill                 |
+| `docs/disaster-recovery.md`     | #53        | 7 incident runbooks, RTO/RPO, communication templates              |
+| `docs/data-retention-policy.md` | #65        | Retention schedule by data type, legal basis, purge crons          |
+| `docs/pii-handling-policy.md`   | #66        | PII classification, handling rules, subject rights, sub-processors |
+| `docs/rollback-plan.md`         | #69        | Vercel deployment rollback, compensating migration procedure       |
 
 ---
 
@@ -39,6 +39,7 @@ The audit found 30 missing and 24 partial items. Security/operational docs were 
 ### Disaster Recovery: 7 Runbooks
 
 Covered the realistic failure scenarios for this stack:
+
 - Database corruption → Supabase backup restore
 - Data breach → immediate key rotation + session invalidation + GDPR notification
 - Key compromise → emergency rotation < 15 min
@@ -54,7 +55,7 @@ Covered the realistic failure scenarios for this stack:
 - Communications: 2 years
 - Activity logs: 1 year
 - Tokens/sessions: 30–90 days
-Two crons already exist (`activity-cleanup`, `push-cleanup`) — documented their scope and identified two additional crons needed.
+  Two crons already exist (`activity-cleanup`, `push-cleanup`) — documented their scope and identified two additional crons needed.
 
 ### PII Policy: Minimum-Necessary Principle
 

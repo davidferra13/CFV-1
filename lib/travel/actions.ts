@@ -53,10 +53,12 @@ export async function getTravelPlan(eventId: string): Promise<TravelPlan> {
   if (legIds.length > 0) {
     const { data: rawIngredients } = await supabase
       .from('travel_leg_ingredients')
-      .select(`
+      .select(
+        `
         *,
         ingredients (name)
-      `)
+      `
+      )
       .in('leg_id', legIds)
 
     ingredients = (rawIngredients ?? []).map((row: any) => ({
@@ -93,10 +95,12 @@ export async function getTravelPlan(eventId: string): Promise<TravelPlan> {
 
     const { data: nearby } = await supabase
       .from('events')
-      .select(`
+      .select(
+        `
         id, occasion, event_date,
         clients (full_name)
-      `)
+      `
+      )
       .eq('tenant_id', user.tenantId!)
       .neq('id', eventId)
       .not('status', 'in', '("cancelled","completed")')
@@ -149,10 +153,7 @@ export async function getAllTravelLegs(options?: {
   const user = await requireChef()
   const supabase = createClient()
 
-  let query = supabase
-    .from('event_travel_legs')
-    .select('*')
-    .eq('tenant_id', user.tenantId!)
+  let query = supabase.from('event_travel_legs').select('*').eq('tenant_id', user.tenantId!)
 
   if (options?.fromDate) {
     query = query.gte('leg_date', options.fromDate)
@@ -246,9 +247,7 @@ export async function updateTravelLeg(input: UpdateTravelLegInput): Promise<Trav
     updates.total_stop_minutes = totalStopMinutes || null
     if (rest.total_drive_minutes !== undefined) {
       updates.total_estimated_minutes =
-        rest.total_drive_minutes !== null
-          ? rest.total_drive_minutes + totalStopMinutes
-          : null
+        rest.total_drive_minutes !== null ? rest.total_drive_minutes + totalStopMinutes : null
     }
   }
 
@@ -472,10 +471,7 @@ export async function deleteLegIngredient(ingredientRowId: string): Promise<void
 
   if (!leg) throw new Error('Unauthorized')
 
-  const { error } = await supabase
-    .from('travel_leg_ingredients')
-    .delete()
-    .eq('id', ingredientRowId)
+  const { error } = await supabase.from('travel_leg_ingredients').delete().eq('id', ingredientRowId)
 
   if (error) throw new Error(`Failed to delete leg ingredient: ${error.message}`)
 }
@@ -495,9 +491,11 @@ export async function searchIngredientsForEvent(
   // events → menus → dishes → components → recipes → recipe_ingredients → ingredients
   const { data } = await supabase
     .from('recipe_ingredients')
-    .select(`
+    .select(
+      `
       ingredients!inner (id, name, category)
-    `)
+    `
+    )
     .ilike('ingredients.name', `%${query}%`)
     .in(
       'recipe_id',
@@ -526,7 +524,9 @@ export async function searchIngredientsForEvent(
           )
           .not('recipe_id', 'is', null)
           .eq('tenant_id', user.tenantId!)
-      ).data?.map((c: any) => c.recipe_id).filter((id: any): id is string => id !== null) ?? []
+      ).data
+        ?.map((c: any) => c.recipe_id)
+        .filter((id: any): id is string => id !== null) ?? []
     )
     .limit(20)
 
@@ -569,7 +569,9 @@ export async function autoCreateServiceLegs(eventId: string): Promise<void> {
   const [{ data: event }, { data: prefs }] = await Promise.all([
     supabase
       .from('events')
-      .select('event_date, location_address, location_city, location_state, arrival_time, travel_time_minutes, clients (full_name)')
+      .select(
+        'event_date, location_address, location_city, location_state, arrival_time, travel_time_minutes, clients (full_name)'
+      )
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
@@ -586,11 +588,7 @@ export async function autoCreateServiceLegs(eventId: string): Promise<void> {
     ? [prefs.home_address, prefs.home_city, prefs.home_state].filter(Boolean).join(', ')
     : null
 
-  const venueAddr = [
-    event.location_address,
-    event.location_city,
-    event.location_state,
-  ]
+  const venueAddr = [event.location_address, event.location_city, event.location_state]
     .filter(Boolean)
     .join(', ')
 

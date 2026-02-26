@@ -78,7 +78,9 @@ test.describe('Client Portal — Event Detail Pages', () => {
   test('/my-events/[confirmed] — confirmed event detail', async ({ page, seedIds }) => {
     // confirmed event is scoped to a different client (Dave), so this may redirect
     // We just verify no 500 crash
-    const response = await page.goto(`/my-events/${seedIds.eventIds.confirmed}`, { waitUntil: 'domcontentloaded' })
+    const response = await page.goto(`/my-events/${seedIds.eventIds.confirmed}`, {
+      waitUntil: 'domcontentloaded',
+    })
     expect(response?.status() ?? 0).toBeLessThan(500)
   })
 
@@ -88,7 +90,9 @@ test.describe('Client Portal — Event Detail Pages', () => {
 
   test('/my-events/[completed]/countdown — countdown page', async ({ page, seedIds }) => {
     // Countdown for a past event may redirect or show a different view
-    const response = await page.goto(`/my-events/${seedIds.eventIds.completed}/countdown`, { waitUntil: 'domcontentloaded' })
+    const response = await page.goto(`/my-events/${seedIds.eventIds.completed}/countdown`, {
+      waitUntil: 'domcontentloaded',
+    })
     expect(response?.status() ?? 0).toBeLessThan(500)
   })
 })
@@ -98,7 +102,9 @@ test.describe('Client Portal — Event Detail Pages', () => {
 test.describe('Client Portal — Quote Detail Pages', () => {
   test('/my-quotes/[sent] — sent quote detail', async ({ page, seedIds }) => {
     // The sent quote is for Bob (secondary), not Alice — may redirect
-    const response = await page.goto(`/my-quotes/${seedIds.quoteIds.sent}`, { waitUntil: 'domcontentloaded' })
+    const response = await page.goto(`/my-quotes/${seedIds.quoteIds.sent}`, {
+      waitUntil: 'domcontentloaded',
+    })
     expect(response?.status() ?? 0).toBeLessThan(500)
   })
 

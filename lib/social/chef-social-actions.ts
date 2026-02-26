@@ -12,7 +12,14 @@ import { z } from 'zod'
 
 const SOCIAL_MEDIA_BUCKET = 'chef-social-media'
 const MAX_MEDIA_SIZE = 50 * 1024 * 1024 // 50MB
-const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'image/gif']
+const ALLOWED_IMAGE_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/heic',
+  'image/heif',
+  'image/gif',
+]
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/webm', 'video/mov']
 const ALLOWED_MEDIA_TYPES = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_VIDEO_TYPES]
 
@@ -162,13 +169,17 @@ async function buildAuthorMap(
   if (!chefIds.length) return new Map()
   const { data: chefs } = await db(supabase)
     .from('chefs')
-    .select(`id, display_name, business_name, profile_image_url,
-             chef_preferences!chef_preferences_chef_id_fkey(home_city, home_state)`)
+    .select(
+      `id, display_name, business_name, profile_image_url,
+             chef_preferences!chef_preferences_chef_id_fkey(home_city, home_state)`
+    )
     .in('id', chefIds)
 
   const map = new Map<string, SocialPostAuthor>()
   for (const chef of (chefs || []) as any[]) {
-    const prefs = Array.isArray(chef.chef_preferences) ? chef.chef_preferences[0] : chef.chef_preferences
+    const prefs = Array.isArray(chef.chef_preferences)
+      ? chef.chef_preferences[0]
+      : chef.chef_preferences
     map.set(chef.id, {
       id: chef.id,
       display_name: chef.display_name ?? null,
@@ -410,7 +421,11 @@ export async function getSocialFeed(input: {
   // Deduplicate by id, then sort descending and take top `limit`
   const seen = new Set<string>()
   const unique = allPosts
-    .filter((p) => { if (seen.has(p.id)) return false; seen.add(p.id); return true })
+    .filter((p) => {
+      if (seen.has(p.id)) return false
+      seen.add(p.id)
+      return true
+    })
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, limit)
 
@@ -444,7 +459,9 @@ async function hydratePostList(
     for (const ch of (channels || []) as any[]) channelMap.set(ch.id, ch)
   }
 
-  return Promise.all(posts.map((p) => hydratePost(p, authorMap, myReactions, mySaves, chefId, channelMap)))
+  return Promise.all(
+    posts.map((p) => hydratePost(p, authorMap, myReactions, mySaves, chefId, channelMap))
+  )
 }
 
 export async function getChannelFeed(input: {
@@ -493,14 +510,15 @@ export async function getChannelFeed(input: {
   const bothIds = followingIds.filter((id) => connSet.has(id))
   const knownIds = [user.entityId, ...followingIds, ...connIds]
 
-  const baseQ = () =>
-    db(supabase).from('chef_social_posts').select('*').eq('channel_id', ch.id)
+  const baseQ = () => db(supabase).from('chef_social_posts').select('*').eq('channel_id', ch.id)
 
   const queries: Promise<{ data: any[] | null }>[] = [
     // Own posts: all visibilities
     (async () => {
-      let q = baseQ().eq('chef_id', user.entityId)
-        .order('created_at', { ascending: false }).limit(limit)
+      let q = baseQ()
+        .eq('chef_id', user.entityId)
+        .order('created_at', { ascending: false })
+        .limit(limit)
       if (before) q = q.lt('created_at', before)
       return q
     })(),
@@ -509,38 +527,51 @@ export async function getChannelFeed(input: {
       let q = baseQ()
         .not('chef_id', 'in', `(${knownIds.join(',')})`)
         .eq('visibility', 'public')
-        .order('created_at', { ascending: false }).limit(limit)
+        .order('created_at', { ascending: false })
+        .limit(limit)
       if (before) q = q.lt('created_at', before)
       return q
     })(),
   ]
 
   if (followOnlyIds.length) {
-    queries.push((async () => {
-      let q = baseQ().in('chef_id', followOnlyIds)
-        .in('visibility', ['public', 'followers'])
-        .order('created_at', { ascending: false }).limit(limit)
-      if (before) q = q.lt('created_at', before)
-      return q
-    })())
+    queries.push(
+      (async () => {
+        let q = baseQ()
+          .in('chef_id', followOnlyIds)
+          .in('visibility', ['public', 'followers'])
+          .order('created_at', { ascending: false })
+          .limit(limit)
+        if (before) q = q.lt('created_at', before)
+        return q
+      })()
+    )
   }
   if (connOnlyIds.length) {
-    queries.push((async () => {
-      let q = baseQ().in('chef_id', connOnlyIds)
-        .in('visibility', ['public', 'connections'])
-        .order('created_at', { ascending: false }).limit(limit)
-      if (before) q = q.lt('created_at', before)
-      return q
-    })())
+    queries.push(
+      (async () => {
+        let q = baseQ()
+          .in('chef_id', connOnlyIds)
+          .in('visibility', ['public', 'connections'])
+          .order('created_at', { ascending: false })
+          .limit(limit)
+        if (before) q = q.lt('created_at', before)
+        return q
+      })()
+    )
   }
   if (bothIds.length) {
-    queries.push((async () => {
-      let q = baseQ().in('chef_id', bothIds)
-        .in('visibility', ['public', 'followers', 'connections'])
-        .order('created_at', { ascending: false }).limit(limit)
-      if (before) q = q.lt('created_at', before)
-      return q
-    })())
+    queries.push(
+      (async () => {
+        let q = baseQ()
+          .in('chef_id', bothIds)
+          .in('visibility', ['public', 'followers', 'connections'])
+          .order('created_at', { ascending: false })
+          .limit(limit)
+        if (before) q = q.lt('created_at', before)
+        return q
+      })()
+    )
   }
 
   const results = await Promise.all(queries)
@@ -548,7 +579,11 @@ export async function getChannelFeed(input: {
 
   const seen = new Set<string>()
   const unique = allPosts
-    .filter((p) => { if (seen.has(p.id)) return false; seen.add(p.id); return true })
+    .filter((p) => {
+      if (seen.has(p.id)) return false
+      seen.add(p.id)
+      return true
+    })
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, limit)
 
@@ -583,7 +618,9 @@ export async function getProfilePosts(input: {
       .from('chef_connections')
       .select('id')
       .eq('status', 'accepted')
-      .or(`and(requester_id.eq.${user.entityId},addressee_id.eq.${input.chefId}),and(requester_id.eq.${input.chefId},addressee_id.eq.${user.entityId})`)
+      .or(
+        `and(requester_id.eq.${user.entityId},addressee_id.eq.${input.chefId}),and(requester_id.eq.${input.chefId},addressee_id.eq.${user.entityId})`
+      )
       .maybeSingle()
     if (conn) visibilities = [...visibilities, 'connections']
   } else {
@@ -637,15 +674,12 @@ export async function getSavedPosts(input: { limit?: number } = {}): Promise<Soc
   if (!saves?.length) return []
 
   const postIds = (saves as any[]).map((s) => s.post_id)
-  const { data: posts } = await db(supabase)
-    .from('chef_social_posts')
-    .select('*')
-    .in('id', postIds)
+  const { data: posts } = await db(supabase).from('chef_social_posts').select('*').in('id', postIds)
 
   // Re-sort to match save order (most recently saved first)
   const saveOrder = new Map((saves as any[]).map((s, i) => [s.post_id, i]))
-  const sorted = (posts ?? []).sort((a: any, b: any) =>
-    (saveOrder.get(a.id) ?? 999) - (saveOrder.get(b.id) ?? 999)
+  const sorted = (posts ?? []).sort(
+    (a: any, b: any) => (saveOrder.get(a.id) ?? 999) - (saveOrder.get(b.id) ?? 999)
   )
 
   return hydratePostList(supabase, sorted, user.entityId)
@@ -658,7 +692,10 @@ export async function getSavedPosts(input: { limit?: number } = {}): Promise<Soc
 const CreatePostSchema = z.object({
   content: z.string().trim().min(1).max(5000),
   media_urls: z.array(z.string().url()).max(10).default([]),
-  media_types: z.array(z.enum(['image', 'video'])).max(10).default([]),
+  media_types: z
+    .array(z.enum(['image', 'video']))
+    .max(10)
+    .default([]),
   post_type: z.enum(['text', 'photo', 'video', 'reel', 'poll', 'share']).default('text'),
   visibility: z.enum(['public', 'followers', 'connections', 'private']).default('public'),
   channel_id: z.string().uuid().nullable().optional(),
@@ -666,7 +703,11 @@ const CreatePostSchema = z.object({
   original_post_id: z.string().uuid().nullable().optional(),
   share_comment: z.string().max(1000).nullable().optional(),
   poll_question: z.string().max(200).nullable().optional(),
-  poll_options: z.array(z.object({ id: z.string(), text: z.string().max(100) })).max(4).nullable().optional(),
+  poll_options: z
+    .array(z.object({ id: z.string(), text: z.string().max(100) }))
+    .max(4)
+    .nullable()
+    .optional(),
   poll_closes_at: z.string().datetime().nullable().optional(),
 })
 
@@ -761,7 +802,9 @@ export async function deleteSocialPost(postId: string) {
   return { success: true }
 }
 
-export async function uploadPostMedia(formData: FormData): Promise<{ url: string; type: 'image' | 'video' }> {
+export async function uploadPostMedia(
+  formData: FormData
+): Promise<{ url: string; type: 'image' | 'video' }> {
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
 
@@ -827,13 +870,15 @@ export async function togglePostReaction(input: { postId: string; reaction: Reac
       .single()
 
     if (postRow && (postRow as any).chef_id !== user.entityId) {
-      await db(supabase).from('chef_social_notifications').insert({
-        recipient_chef_id: (postRow as any).chef_id,
-        actor_chef_id: user.entityId,
-        notification_type: 'post_reaction',
-        entity_type: 'post',
-        entity_id: input.postId,
-      })
+      await db(supabase)
+        .from('chef_social_notifications')
+        .insert({
+          recipient_chef_id: (postRow as any).chef_id,
+          actor_chef_id: user.entityId,
+          notification_type: 'post_reaction',
+          entity_type: 'post',
+          entity_id: input.postId,
+        })
     }
   }
 
@@ -914,10 +959,7 @@ export async function getPostComments(postId: string): Promise<SocialComment[]> 
     .from('chef_comment_reactions')
     .select('comment_id, reaction_type')
     .eq('chef_id', user.entityId)
-    .in('comment_id', [
-      ...commentIds,
-      ...(replies || []).map((r: any) => r.id),
-    ])
+    .in('comment_id', [...commentIds, ...(replies || []).map((r: any) => r.id)])
 
   const myReactionMap = new Map<string, ReactionType>()
   for (const r of (myReactionsData || []) as any[]) {
@@ -940,7 +982,14 @@ export async function getPostComments(postId: string): Promise<SocialComment[]> 
       is_deleted: reply.is_deleted,
       is_edited: reply.is_edited,
       created_at: reply.created_at,
-      author: authorMap.get(reply.chef_id) ?? { id: reply.chef_id, display_name: null, business_name: 'Unknown', profile_image_url: null, city: null, state: null },
+      author: authorMap.get(reply.chef_id) ?? {
+        id: reply.chef_id,
+        display_name: null,
+        business_name: 'Unknown',
+        profile_image_url: null,
+        city: null,
+        state: null,
+      },
       my_reaction: myReactionMap.get(reply.id) ?? null,
     })
     replyMap.set(reply.parent_comment_id, arr)
@@ -957,7 +1006,14 @@ export async function getPostComments(postId: string): Promise<SocialComment[]> 
     is_deleted: c.is_deleted,
     is_edited: c.is_edited,
     created_at: c.created_at,
-    author: authorMap.get(c.chef_id) ?? { id: c.chef_id, display_name: null, business_name: 'Unknown', profile_image_url: null, city: null, state: null },
+    author: authorMap.get(c.chef_id) ?? {
+      id: c.chef_id,
+      display_name: null,
+      business_name: 'Unknown',
+      profile_image_url: null,
+      city: null,
+      state: null,
+    },
     my_reaction: myReactionMap.get(c.id) ?? null,
     replies: replyMap.get(c.id) ?? [],
   }))
@@ -995,13 +1051,15 @@ export async function createComment(input: {
     .single()
 
   if (postRow && (postRow as any).chef_id !== user.entityId) {
-    await db(supabase).from('chef_social_notifications').insert({
-      recipient_chef_id: (postRow as any).chef_id,
-      actor_chef_id: user.entityId,
-      notification_type: input.parentCommentId ? 'comment_reply' : 'post_comment',
-      entity_type: 'comment',
-      entity_id: (comment as any).id,
-    })
+    await db(supabase)
+      .from('chef_social_notifications')
+      .insert({
+        recipient_chef_id: (postRow as any).chef_id,
+        actor_chef_id: user.entityId,
+        notification_type: input.parentCommentId ? 'comment_reply' : 'post_comment',
+        entity_type: 'comment',
+        entity_id: (comment as any).id,
+      })
   }
 
   revalidatePath('/network')
@@ -1206,7 +1264,9 @@ export async function getMyChannels(): Promise<SocialChannel[]> {
   if (!memberships?.length) return []
 
   const channelIds = (memberships as any[]).map((m) => m.channel_id)
-  const memberMap = new Map((memberships as any[]).map((m) => [m.channel_id, m.notifications_enabled]))
+  const memberMap = new Map(
+    (memberships as any[]).map((m) => [m.channel_id, m.notifications_enabled])
+  )
 
   const { data: channels } = await db(supabase)
     .from('chef_social_channels')
@@ -1300,7 +1360,14 @@ export async function getActiveStories(): Promise<StoryGroup[]> {
       reactions_count: story.reactions_count,
       expires_at: story.expires_at,
       created_at: story.created_at,
-      author: authorMap.get(story.chef_id) ?? { id: story.chef_id, display_name: null, business_name: 'Unknown', profile_image_url: null, city: null, state: null },
+      author: authorMap.get(story.chef_id) ?? {
+        id: story.chef_id,
+        display_name: null,
+        business_name: 'Unknown',
+        profile_image_url: null,
+        city: null,
+        state: null,
+      },
       is_viewed: viewedSet.has(story.id),
       my_reaction: (reactionMap.get(story.id) ?? null) as string | null,
     }
@@ -1312,7 +1379,9 @@ export async function getActiveStories(): Promise<StoryGroup[]> {
   // Sort: own stories first, then unseen, then seen; within each group chronological
   const groups: StoryGroup[] = []
   for (const [chefId, chefStories] of groupMap) {
-    const sorted = chefStories.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+    const sorted = chefStories.sort(
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    )
     const has_unseen = sorted.some((s) => !s.is_viewed)
     groups.push({ chef: authorMap.get(chefId)!, stories: sorted, has_unseen })
   }
@@ -1335,13 +1404,15 @@ export async function createStory(input: {
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
 
-  const { error } = await db(supabase).from('chef_stories').insert({
-    chef_id: user.entityId,
-    media_url: input.media_url,
-    media_type: input.media_type,
-    caption: input.caption ?? null,
-    duration_seconds: input.duration_seconds ?? 5,
-  })
+  const { error } = await db(supabase)
+    .from('chef_stories')
+    .insert({
+      chef_id: user.entityId,
+      media_url: input.media_url,
+      media_type: input.media_type,
+      caption: input.caption ?? null,
+      duration_seconds: input.duration_seconds ?? 5,
+    })
 
   if (error) throw new Error('Failed to create story')
   revalidatePath('/network')
@@ -1355,7 +1426,10 @@ export async function markStoryViewed(storyId: string) {
 
   await db(supabase)
     .from('chef_story_views')
-    .upsert({ story_id: storyId, viewer_chef_id: user.entityId }, { onConflict: 'story_id,viewer_chef_id' })
+    .upsert(
+      { story_id: storyId, viewer_chef_id: user.entityId },
+      { onConflict: 'story_id,viewer_chef_id' }
+    )
 
   return { success: true }
 }
@@ -1367,7 +1441,10 @@ export async function reactToStory(input: { storyId: string; emoji: string }) {
 
   await db(supabase)
     .from('chef_story_reactions')
-    .upsert({ story_id: input.storyId, chef_id: user.entityId, emoji: input.emoji.slice(0, 10) }, { onConflict: 'story_id,chef_id' })
+    .upsert(
+      { story_id: input.storyId, chef_id: user.entityId, emoji: input.emoji.slice(0, 10) },
+      { onConflict: 'story_id,chef_id' }
+    )
 
   // Notify story owner
   const { data: story } = await db(supabase)
@@ -1377,13 +1454,15 @@ export async function reactToStory(input: { storyId: string; emoji: string }) {
     .single()
 
   if (story && (story as any).chef_id !== user.entityId) {
-    await db(supabase).from('chef_social_notifications').insert({
-      recipient_chef_id: (story as any).chef_id,
-      actor_chef_id: user.entityId,
-      notification_type: 'story_reaction',
-      entity_type: 'story',
-      entity_id: input.storyId,
-    })
+    await db(supabase)
+      .from('chef_social_notifications')
+      .insert({
+        recipient_chef_id: (story as any).chef_id,
+        actor_chef_id: user.entityId,
+        notification_type: 'story_reaction',
+        entity_type: 'story',
+        entity_id: input.storyId,
+      })
   }
 
   return { success: true }
@@ -1406,7 +1485,10 @@ export async function toggleSavePost(postId: string) {
     .maybeSingle()
 
   if (existing) {
-    await db(supabase).from('chef_post_saves').delete().eq('id', (existing as any).id)
+    await db(supabase)
+      .from('chef_post_saves')
+      .delete()
+      .eq('id', (existing as any).id)
     revalidatePath('/network')
     return { saved: false }
   } else {
@@ -1420,7 +1502,9 @@ export async function toggleSavePost(postId: string) {
 // NOTIFICATIONS
 // ============================================================
 
-export async function getSocialNotifications(input: { limit?: number } = {}): Promise<SocialNotification[]> {
+export async function getSocialNotifications(
+  input: { limit?: number } = {}
+): Promise<SocialNotification[]> {
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
   const limit = Math.min(input.limit ?? 40, 100)
@@ -1434,7 +1518,9 @@ export async function getSocialNotifications(input: { limit?: number } = {}): Pr
 
   if (!notifs?.length) return []
 
-  const actorIds = Array.from(new Set((notifs as any[]).map((n) => n.actor_chef_id).filter(Boolean)))
+  const actorIds = Array.from(
+    new Set((notifs as any[]).map((n) => n.actor_chef_id).filter(Boolean))
+  )
   const authorMap = await buildAuthorMap(supabase, actorIds)
 
   return (notifs as any[]).map((n) => ({
@@ -1445,7 +1531,7 @@ export async function getSocialNotifications(input: { limit?: number } = {}): Pr
     agg_count: n.agg_count ?? 1,
     is_read: n.is_read,
     created_at: n.created_at,
-    actor: n.actor_chef_id ? authorMap.get(n.actor_chef_id) ?? null : null,
+    actor: n.actor_chef_id ? (authorMap.get(n.actor_chef_id) ?? null) : null,
   }))
 }
 
@@ -1484,7 +1570,9 @@ export async function getUnreadSocialNotificationCount(): Promise<number> {
 // DISCOVERY
 // ============================================================
 
-export async function getDiscoverChefs(input: { limit?: number } = {}): Promise<SocialPostAuthor[]> {
+export async function getDiscoverChefs(
+  input: { limit?: number } = {}
+): Promise<SocialPostAuthor[]> {
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
   const limit = Math.min(input.limit ?? 20, 50)
@@ -1495,19 +1583,26 @@ export async function getDiscoverChefs(input: { limit?: number } = {}): Promise<
     .select('following_chef_id')
     .eq('follower_chef_id', user.entityId)
 
-  const excludeIds = [user.entityId, ...((alreadyFollowing || []) as any[]).map((f) => f.following_chef_id)]
+  const excludeIds = [
+    user.entityId,
+    ...((alreadyFollowing || []) as any[]).map((f) => f.following_chef_id),
+  ]
 
   const { data: chefs } = await db(supabase)
     .from('chefs')
-    .select(`id, display_name, business_name, profile_image_url,
-             chef_preferences!chef_preferences_chef_id_fkey(home_city, home_state, network_discoverable)`)
+    .select(
+      `id, display_name, business_name, profile_image_url,
+             chef_preferences!chef_preferences_chef_id_fkey(home_city, home_state, network_discoverable)`
+    )
     .not('id', 'in', `(${excludeIds.join(',')})`)
     .limit(limit * 2) // over-fetch to filter after
 
-  const visible = ((chefs || []) as any[]).filter((c) => {
-    const prefs = Array.isArray(c.chef_preferences) ? c.chef_preferences[0] : c.chef_preferences
-    return prefs?.network_discoverable !== false
-  }).slice(0, limit)
+  const visible = ((chefs || []) as any[])
+    .filter((c) => {
+      const prefs = Array.isArray(c.chef_preferences) ? c.chef_preferences[0] : c.chef_preferences
+      return prefs?.network_discoverable !== false
+    })
+    .slice(0, limit)
 
   return visible.map((c: any) => {
     const prefs = Array.isArray(c.chef_preferences) ? c.chef_preferences[0] : c.chef_preferences
@@ -1522,7 +1617,9 @@ export async function getDiscoverChefs(input: { limit?: number } = {}): Promise<
   })
 }
 
-export async function getTrendingHashtags(input: { limit?: number } = {}): Promise<Array<{ tag: string; post_count: number }>> {
+export async function getTrendingHashtags(
+  input: { limit?: number } = {}
+): Promise<Array<{ tag: string; post_count: number }>> {
   const supabase = createServerClient({ admin: true })
   const limit = Math.min(input.limit ?? 20, 50)
 
@@ -1559,37 +1656,38 @@ export async function getPublicChefSocialProfile(chefId: string): Promise<{
   z.string().uuid().parse(chefId)
   const supabase = createServerClient({ admin: true })
 
-  const [
-    { data: chef },
-    counts,
-    followStatus,
-    { data: conn },
-    { count: postCount },
-  ] = await Promise.all([
-    db(supabase)
-      .from('chefs')
-      .select(`id, display_name, business_name, bio, profile_image_url,
-               chef_preferences!chef_preferences_chef_id_fkey(home_city, home_state)`)
-      .eq('id', chefId)
-      .single(),
-    getFollowCounts(chefId),
-    getFollowStatus(chefId),
-    db(supabase)
-      .from('chef_connections')
-      .select('id')
-      .eq('status', 'accepted')
-      .or(`and(requester_id.eq.${user.entityId},addressee_id.eq.${chefId}),and(requester_id.eq.${chefId},addressee_id.eq.${user.entityId})`)
-      .maybeSingle(),
-    db(supabase)
-      .from('chef_social_posts')
-      .select('*', { count: 'exact', head: true })
-      .eq('chef_id', chefId)
-      .eq('visibility', 'public'),
-  ])
+  const [{ data: chef }, counts, followStatus, { data: conn }, { count: postCount }] =
+    await Promise.all([
+      db(supabase)
+        .from('chefs')
+        .select(
+          `id, display_name, business_name, bio, profile_image_url,
+               chef_preferences!chef_preferences_chef_id_fkey(home_city, home_state)`
+        )
+        .eq('id', chefId)
+        .single(),
+      getFollowCounts(chefId),
+      getFollowStatus(chefId),
+      db(supabase)
+        .from('chef_connections')
+        .select('id')
+        .eq('status', 'accepted')
+        .or(
+          `and(requester_id.eq.${user.entityId},addressee_id.eq.${chefId}),and(requester_id.eq.${chefId},addressee_id.eq.${user.entityId})`
+        )
+        .maybeSingle(),
+      db(supabase)
+        .from('chef_social_posts')
+        .select('*', { count: 'exact', head: true })
+        .eq('chef_id', chefId)
+        .eq('visibility', 'public'),
+    ])
 
   if (!chef) throw new Error('Chef not found')
 
-  const prefs = Array.isArray((chef as any).chef_preferences) ? (chef as any).chef_preferences[0] : (chef as any).chef_preferences
+  const prefs = Array.isArray((chef as any).chef_preferences)
+    ? (chef as any).chef_preferences[0]
+    : (chef as any).chef_preferences
 
   return {
     id: (chef as any).id,

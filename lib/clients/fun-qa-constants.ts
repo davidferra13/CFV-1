@@ -18,7 +18,7 @@ export const FUN_QA_QUESTIONS = [
   {
     key: 'trash_food',
     emoji: '🍟',
-    question: "What's your \"trash food\" that you love way too much?",
+    question: 'What\'s your "trash food" that you love way too much?',
     placeholder: 'No judgment. Everyone has one.',
   },
   {
@@ -42,19 +42,21 @@ export const FUN_QA_QUESTIONS = [
   {
     key: 'midnight_snack',
     emoji: '🌙',
-    question: "What's the most \"you\" snack at 11pm?",
+    question: 'What\'s the most "you" snack at 11pm?',
     placeholder: 'e.g. Crackers and cheese standing over the sink',
   },
   {
     key: 'dinner_vibe',
     emoji: '✨',
-    question: 'Pick one: cozy dinner party, chaotic feast, or quiet two-person meal — what\'s your vibe?',
+    question:
+      "Pick one: cozy dinner party, chaotic feast, or quiet two-person meal — what's your vibe?",
     placeholder: 'Or describe your own...',
   },
   {
     key: 'dream_menu_theme',
     emoji: '🌊',
-    question: "What's your dream menu theme: seafood night, steakhouse, Italian, coastal New England, or \"surprise me\"?",
+    question:
+      'What\'s your dream menu theme: seafood night, steakhouse, Italian, coastal New England, or "surprise me"?',
     placeholder: 'e.g. Full Italian spread, Sunday gravy and all',
   },
   {
@@ -72,7 +74,8 @@ export const FUN_QA_QUESTIONS = [
   {
     key: 'meal_preference',
     emoji: '🍳',
-    question: 'What do you prefer: breakfast, lunch, dinner, brunch, breakfast for dinner, midnight snack, or just constant snacking?',
+    question:
+      'What do you prefer: breakfast, lunch, dinner, brunch, breakfast for dinner, midnight snack, or just constant snacking?',
     placeholder: 'Be honest.',
   },
 ] as const

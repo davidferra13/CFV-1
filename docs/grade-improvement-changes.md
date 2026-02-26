@@ -19,6 +19,7 @@
 ### 2. Verified 7-Day Pre-Event Reminder Email (No Change Needed)
 
 **Investigation:** The plan flagged `sendEventPrepareEmail` as never triggered. On inspection of `app/api/scheduled/lifecycle/route.ts` (Section 5), all three email tiers were fully implemented:
+
 - 7-day: `sendEventPrepareEmail`
 - 2-day: `sendEventReminder2dEmail`
 - 1-day: `sendEventReminderEmail`
@@ -34,6 +35,7 @@ All use idempotent dedup columns to prevent re-sends. **This was a false alarm �
 **Problem:** `.catch(() => null)` was swallowing financial calculation failures invisibly. A chef would see an empty financial summary with no explanation.
 
 **Fix:** Replaced with explicit try/catch that:
+
 - Logs the error to console with full context
 - Surfaces a user-visible message via `pendingItems`: "Financial data unavailable: [reason]"
 - The chef can now see that the data failed to load rather than seeing silence
@@ -69,6 +71,7 @@ All use idempotent dedup columns to prevent re-sends. **This was a false alarm �
 **Problem:** The client events page loaded all past events at once. For long-tenure clients this would grow unbounded.
 
 **Fix:**
+
 - `getClientEvents()` now accepts `{ pastLimit?: number }` (default: 5)
 - The main `/my-events` page shows the 5 most recent past events + a "View all N past events →" link
 - New `/my-events/history` page shows the complete past event history
@@ -83,6 +86,7 @@ All use idempotent dedup columns to prevent re-sends. **This was a false alarm �
 **Problem:** The gate list showed all blocked conditions in a single uniform list with amber icons, giving no indication of which were hard requirements vs. soft recommendations.
 
 **Fix:** Split the gate display into two distinct sections:
+
 - **Hard blocks** (red border, ✕ icon): "Required before proceeding" — transition is disabled until resolved
 - **Soft warnings** (amber border, ! icon): "Recommended before proceeding (you can still continue)" — transition button remains enabled
 
@@ -95,6 +99,7 @@ The transition button is now only disabled when there are hard blocks, never for
 **Problem:** 17 `@next/next/no-img-element` warnings and 2 other lint errors were making the codebase look unprofessional in CI.
 
 **Fixes:**
+
 - Added `// eslint-disable-next-line @next/next/no-img-element` to all 17 image locations where using `<img>` is intentional (dynamic/blob/external URLs where Next.js `<Image>` dimensions are unknown)
 - Fixed unescaped apostrophe in `app/(client)/my-events/[id]/proposal/page.tsx` (used `&apos;`)
 - Fixed `useEffect` dependency warning in `app/auth/signin/page.tsx` by wrapping `useSearchParams()` result in `useMemo` to stabilize the reference
@@ -111,7 +116,8 @@ The transition button is now only disabled when there are hard blocks, never for
 
 **Tests added (10 total):**
 
-*Chef role (7 tests):*
+_Chef role (7 tests):_
+
 - Page loads for a completed event without redirecting to auth
 - 5-step progress bar is visible on load (Step 1 of 5)
 - Tip step heading ("Did [client] leave a tip?") is visible
@@ -120,7 +126,8 @@ The transition button is now only disabled when there are hard blocks, never for
 - Step 2 shows receipts status content
 - Close-out page returns 404 for non-completed events
 
-*Client role (3 tests):*
+_Client role (3 tests):_
+
 - Completed event appears in client events list
 - "Past Events" heading renders
 - Client can access completed event detail page
@@ -134,6 +141,7 @@ All tests are idempotent (no permanent DB mutations against seeded data).
 **Files:** Multiple admin files + `lib/admin/platform-stats.ts`
 
 **Problem:** Admin pages had accumulated TypeScript errors from incorrect column references:
+
 - `ledger_entries.amount` → actual column is `amount_cents`
 - `chefs.website` → actual column is `website_url`
 - `events.name` → actual column is `occasion`
@@ -143,6 +151,7 @@ All tests are idempotent (no permanent DB mutations against seeded data).
 - Implicit `any[]` variable types
 
 **Fixes:**
+
 - Updated all `platform-stats.ts` selects and property accesses to use correct column names
 - Cast `chef_feature_flags` and `admin_audit_log` queries to `(supabase as any)` since these tables were added via migration but `types/database.ts` hasn't been regenerated yet
 - Added `PlatformChefRow` and `PlatformEventRow` type annotations to eliminate implicit `any[]`
@@ -174,22 +183,22 @@ Per the [CSP spec](https://w3c.github.io/webappsec-csp/#strict-dynamic-usage), b
 
 ## Files Modified
 
-| File | Change |
-|------|--------|
-| `lib/events/financial-summary-actions.ts` | Silent error → visible error surfacing |
-| `next.config.js` | CSP strict-dynamic + PWA loud warning |
-| `app/(client)/my-events/page.tsx` | Session-based tenant lookup + pagination display |
-| `lib/events/client-actions.ts` | `getClientEvents()` with pastLimit + grouped shape |
-| `app/(client)/my-events/history/page.tsx` | NEW: Full past events history page |
-| `components/events/event-transitions.tsx` | Hard blocks vs soft warnings separated |
-| `app/(client)/my-events/[id]/proposal/page.tsx` | Escaped apostrophe ESLint fix |
-| `app/auth/signin/page.tsx` | `useMemo` for useSearchParams dep |
-| `tests/e2e/16-post-event-closeout.spec.ts` | NEW: Close-out wizard E2E tests |
-| `lib/admin/platform-stats.ts` | Correct column names + any casts for untyped tables |
-| `app/(admin)/admin/users/[chefId]/page.tsx` | Correct column names |
-| `lib/surveys/actions.ts` | Remove duplicate `sendClientSurvey` |
-| `components/admin/presence-beacon.tsx` | `pathname ?? '/'` null guard |
-| 17 component files | `eslint-disable-next-line @next/next/no-img-element` |
+| File                                            | Change                                               |
+| ----------------------------------------------- | ---------------------------------------------------- |
+| `lib/events/financial-summary-actions.ts`       | Silent error → visible error surfacing               |
+| `next.config.js`                                | CSP strict-dynamic + PWA loud warning                |
+| `app/(client)/my-events/page.tsx`               | Session-based tenant lookup + pagination display     |
+| `lib/events/client-actions.ts`                  | `getClientEvents()` with pastLimit + grouped shape   |
+| `app/(client)/my-events/history/page.tsx`       | NEW: Full past events history page                   |
+| `components/events/event-transitions.tsx`       | Hard blocks vs soft warnings separated               |
+| `app/(client)/my-events/[id]/proposal/page.tsx` | Escaped apostrophe ESLint fix                        |
+| `app/auth/signin/page.tsx`                      | `useMemo` for useSearchParams dep                    |
+| `tests/e2e/16-post-event-closeout.spec.ts`      | NEW: Close-out wizard E2E tests                      |
+| `lib/admin/platform-stats.ts`                   | Correct column names + any casts for untyped tables  |
+| `app/(admin)/admin/users/[chefId]/page.tsx`     | Correct column names                                 |
+| `lib/surveys/actions.ts`                        | Remove duplicate `sendClientSurvey`                  |
+| `components/admin/presence-beacon.tsx`          | `pathname ?? '/'` null guard                         |
+| 17 component files                              | `eslint-disable-next-line @next/next/no-img-element` |
 
 ---
 

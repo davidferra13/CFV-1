@@ -9,46 +9,51 @@ Phase 2 implements real OAuth connections for all seven social platforms. Chefs 
 ## Files created / changed
 
 ### Database
-| File | What it does |
-|---|---|
+
+| File                                                               | What it does                                                                                                                                                                                                               |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `supabase/migrations/20260305000001_social_connected_accounts.sql` | Adds `social_connected_accounts` table. Stores OAuth tokens and account metadata per platform per chef. Tokens are never sent to the browser — service-role-only writes, RLS allows chefs to SELECT non-sensitive columns. |
 
 ### Platform Adapters
+
 All in `lib/social/platform-adapters/`:
 
-| File | Platform | Notes |
-|---|---|---|
-| `types.ts` | All | `PlatformAdapter` interface, `TokenSet`, `AccountInfo`, PKCE helpers (`generateState`, `generateCodeVerifier`, `generateCodeChallenge`) |
-| `meta.ts` | Instagram + Facebook | Shared Meta OAuth app. Short-lived code → long-lived 60-day token. Fetches first FB Page + linked IG Business Account. No refresh tokens — chefs re-auth before expiry. |
-| `tiktok.ts` | TikTok | PKCE required. 24h access tokens, 365-day refresh tokens. |
-| `x.ts` | X (Twitter) | PKCE required. ~2h access tokens, long-lived refresh with `offline.access` scope. |
-| `linkedin.ts` | LinkedIn | No PKCE. 60-day access tokens, 1-year refresh tokens. |
-| `pinterest.ts` | Pinterest | No PKCE. Variable/non-expiring access tokens. |
-| `youtube.ts` | YouTube Shorts | Google OAuth. 1-hour access tokens, long-lived refresh (kept across refreshes — Google doesn't re-issue). |
-| `index.ts` | Router | `getAdapter(platform)`, `SUPPORTED_PLATFORMS`, `isMetaPlatform()` |
+| File           | Platform             | Notes                                                                                                                                                                   |
+| -------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `types.ts`     | All                  | `PlatformAdapter` interface, `TokenSet`, `AccountInfo`, PKCE helpers (`generateState`, `generateCodeVerifier`, `generateCodeChallenge`)                                 |
+| `meta.ts`      | Instagram + Facebook | Shared Meta OAuth app. Short-lived code → long-lived 60-day token. Fetches first FB Page + linked IG Business Account. No refresh tokens — chefs re-auth before expiry. |
+| `tiktok.ts`    | TikTok               | PKCE required. 24h access tokens, 365-day refresh tokens.                                                                                                               |
+| `x.ts`         | X (Twitter)          | PKCE required. ~2h access tokens, long-lived refresh with `offline.access` scope.                                                                                       |
+| `linkedin.ts`  | LinkedIn             | No PKCE. 60-day access tokens, 1-year refresh tokens.                                                                                                                   |
+| `pinterest.ts` | Pinterest            | No PKCE. Variable/non-expiring access tokens.                                                                                                                           |
+| `youtube.ts`   | YouTube Shorts       | Google OAuth. 1-hour access tokens, long-lived refresh (kept across refreshes — Google doesn't re-issue).                                                               |
+| `index.ts`     | Router               | `getAdapter(platform)`, `SUPPORTED_PLATFORMS`, `isMetaPlatform()`                                                                                                       |
 
 ### API Routes
-| Route | Method | Purpose |
-|---|---|---|
-| `/api/integrations/social/connect/[platform]` | GET | Generates state + PKCE verifier, stores in `social_oauth_states`, redirects to platform's OAuth consent page |
-| `/api/integrations/social/callback/[platform]` | GET | Validates state, exchanges code for tokens, fetches account info, upserts `social_connected_accounts`, redirects to `/social/connections?connected=[platform]` |
-| `/api/integrations/social/disconnect/[platform]` | POST | Sets `is_active = false` on the chef's connection row |
+
+| Route                                            | Method | Purpose                                                                                                                                                        |
+| ------------------------------------------------ | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/api/integrations/social/connect/[platform]`    | GET    | Generates state + PKCE verifier, stores in `social_oauth_states`, redirects to platform's OAuth consent page                                                   |
+| `/api/integrations/social/callback/[platform]`   | GET    | Validates state, exchanges code for tokens, fetches account info, upserts `social_connected_accounts`, redirects to `/social/connections?connected=[platform]` |
+| `/api/integrations/social/disconnect/[platform]` | POST   | Sets `is_active = false` on the chef's connection row                                                                                                          |
 
 ### Server Actions (`lib/social/oauth-actions.ts`)
-| Function | Purpose |
-|---|---|
-| `getSocialConnections()` | Returns all 7 platform statuses for the current chef. Never includes tokens. |
-| `getConnectedPlatformSet()` | Lightweight `Set<SocialPlatform>` for O(1) lookups in the post editor. |
-| `getSocialConnectionToken(tenantId, platform)` | Admin-only: fetches tokens for the Phase 3 publishing cron. |
-| `updateConnectionAfterRefresh(...)` | Updates stored tokens after a successful refresh. |
+
+| Function                                       | Purpose                                                                      |
+| ---------------------------------------------- | ---------------------------------------------------------------------------- |
+| `getSocialConnections()`                       | Returns all 7 platform statuses for the current chef. Never includes tokens. |
+| `getConnectedPlatformSet()`                    | Lightweight `Set<SocialPlatform>` for O(1) lookups in the post editor.       |
+| `getSocialConnectionToken(tenantId, platform)` | Admin-only: fetches tokens for the Phase 3 publishing cron.                  |
+| `updateConnectionAfterRefresh(...)`            | Updates stored tokens after a successful refresh.                            |
 
 ### UI Changes
-| File | Change |
-|---|---|
-| `components/social/social-connections-manager.tsx` | Real connect / reconnect / disconnect buttons. Shows account handle, token expiry warnings, error counts. |
-| `app/(chef)/social/connections/page.tsx` | Fetches real connections via `getSocialConnections()`. Handles `?connected=` and `?error=` flash messages. |
-| `components/social/social-post-editor.tsx` | Accepts `connectedPlatforms: Set<SocialPlatform>`. Platform checkboxes show a green WiFi icon when the account is connected, or a grey dot when not. |
-| `app/(chef)/social/posts/[id]/page.tsx` | Fetches `connectedPlatforms` from `getConnectedPlatformSet()` and passes to editor. |
+
+| File                                               | Change                                                                                                                                               |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `components/social/social-connections-manager.tsx` | Real connect / reconnect / disconnect buttons. Shows account handle, token expiry warnings, error counts.                                            |
+| `app/(chef)/social/connections/page.tsx`           | Fetches real connections via `getSocialConnections()`. Handles `?connected=` and `?error=` flash messages.                                           |
+| `components/social/social-post-editor.tsx`         | Accepts `connectedPlatforms: Set<SocialPlatform>`. Platform checkboxes show a green WiFi icon when the account is connected, or a grey dot when not. |
+| `app/(chef)/social/posts/[id]/page.tsx`            | Fetches `connectedPlatforms` from `getConnectedPlatformSet()` and passes to editor.                                                                  |
 
 ---
 
@@ -120,6 +125,7 @@ NEXT_PUBLIC_APP_URL=https://your-domain.com
 ```
 
 Each platform also needs its OAuth redirect URI registered in its developer console:
+
 - Meta: `{APP_URL}/api/integrations/social/callback/meta`
 - TikTok: `{APP_URL}/api/integrations/social/callback/tiktok`
 - X: `{APP_URL}/api/integrations/social/callback/x`
@@ -131,14 +137,14 @@ Each platform also needs its OAuth redirect URI registered in its developer cons
 
 ## Platform developer account requirements
 
-| Platform | What you need |
-|---|---|
-| **Meta** | Facebook developer account → create a "Business" app → enable Instagram Graph API + Pages API → submit for review (required for production) |
-| **TikTok** | TikTok for Developers account → create app → enable Content Posting API → submit for review |
-| **X** | X developer portal → create project + app → apply for Basic tier (~$100/mo) — required for write access |
-| **LinkedIn** | LinkedIn developer portal → create app → request Marketing Developer Platform access (manual review) |
-| **Pinterest** | Pinterest developer portal → create app → request `pins:write` scope (review required for production) |
-| **YouTube** | Google Cloud Console → create OAuth 2.0 credentials → enable YouTube Data API v3 → OAuth verification required for >100 users |
+| Platform      | What you need                                                                                                                               |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Meta**      | Facebook developer account → create a "Business" app → enable Instagram Graph API + Pages API → submit for review (required for production) |
+| **TikTok**    | TikTok for Developers account → create app → enable Content Posting API → submit for review                                                 |
+| **X**         | X developer portal → create project + app → apply for Basic tier (~$100/mo) — required for write access                                     |
+| **LinkedIn**  | LinkedIn developer portal → create app → request Marketing Developer Platform access (manual review)                                        |
+| **Pinterest** | Pinterest developer portal → create app → request `pins:write` scope (review required for production)                                       |
+| **YouTube**   | Google Cloud Console → create OAuth 2.0 credentials → enable YouTube Data API v3 → OAuth verification required for >100 users               |
 
 ---
 

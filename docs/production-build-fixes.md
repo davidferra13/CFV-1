@@ -8,6 +8,7 @@
 ## Overview
 
 A full `npm run build` audit was performed across the entire codebase. Over 60+ files had accumulated TypeScript and ESLint errors from new feature development that introduced:
+
 - Tables/columns not yet reflected in `types/database.ts` (generated types)
 - Invalid Button variants
 - `'use server'` directive violations
@@ -27,16 +28,19 @@ All errors have been resolved. The build reaches "compiled successfully" with on
 **Root cause:** `types/database.ts` is auto-generated from the remote Supabase schema. Many tables added in recent migrations (contracts, availability, staff, equipment, todos, compliance, etc.) are not yet reflected in it.
 
 **Wrong fix:**
+
 ```typescript
-supabase.from('table_name' as any)  // ❌ string cast — result type still errors
+supabase.from('table_name' as any) // ❌ string cast — result type still errors
 ```
 
 **Correct fix:**
+
 ```typescript
-(supabase as any).from('table_name')  // ✅ client cast — result becomes any
+;(supabase as any).from('table_name') // ✅ client cast — result becomes any
 ```
 
 Or for multiple queries in one function:
+
 ```typescript
 const db = supabase as any
 const { data } = await db.from('table_name').select('*')
@@ -61,6 +65,7 @@ const { data } = await db.from('table_name').select('*')
 **Rule:** Every exported function in a `'use server'` file must be `async`. Pure sync utility functions cannot live in `'use server'` files.
 
 **Files fixed:**
+
 - `lib/compliance/actions.ts` — removed `certExpiryStatus` export (pure sync utility); inlined it directly in `app/(chef)/settings/compliance/page.tsx`
 - `lib/contracts/actions.ts` — removed `getContractMergeFields` export (pure sync utility); inlined `MERGE_FIELDS` constant in `components/contracts/contract-template-editor.tsx`
 - `app/(chef)/calendar/availability-calendar-client.tsx` — removed invalid inline `'use server'` directive inside a client component
@@ -104,6 +109,7 @@ const { data } = await db.from('table_name').select('*')
 **Root cause:** Route pages under `app/(chef)/social/` were created but two component files were missing.
 
 **Files created:**
+
 - `components/social/social-queue-settings-form.tsx` — stub for queue settings UI
 - `components/social/social-vault-browser.tsx` — stub for media asset browser
 
@@ -111,27 +117,27 @@ const { data } = await db.from('table_name').select('*')
 
 ### Other Individual Fixes
 
-| File | Fix |
-|---|---|
-| `lib/pricing/compute.ts` | Removed `'use server'` (pure compute functions, no server deps) |
-| `lib/integration-center.tsx` | Fixed invalid UTF-8 separator characters |
-| `lib/documents/generate-event-summary.ts` | Fixed duplicate `stageLabel` variable declaration |
-| `components/events/calendar-add-buttons.tsx` | Replaced `<Button asChild>` with plain `<a>` tags (Button doesn't accept `asChild`) |
-| `lib/push/send.ts` | Fixed `Uint8Array<ArrayBufferLike>` → cast to `Uint8Array<ArrayBuffer>` for TypeScript 5.x |
-| `app/(chef)/clients/communication/page.tsx` | Fixed `client.name` → `client.full_name` |
-| `app/(chef)/clients/loyalty/rewards/page.tsx` | `IncentiveRecord` has no `status` field — added `getStatus()` helper deriving status from `is_active` + `redemptions_used`/`max_redemptions` |
-| `app/(chef)/culinary/recipes/page.tsx` | Fixed `total_time_minutes` → `cook_time_minutes` |
-| `app/(chef)/calendar/page.tsx` | Type annotation fixes |
-| `app/(chef)/events/[id]/travel/page.tsx` | Fixed `AuthUser.chefId` access |
-| `app/(chef)/finance/reporting/tax-summary/page.tsx` | Fixed `summary.grossRevenueCents` → `summary.totalRevenueCents` (property doesn't exist) |
-| `lib/events/debrief-actions.ts` | Fixed `recipe_id` null handling |
-| `lib/events/photo-actions.ts` | Added null guard on `path` |
-| `lib/email/notifications.ts` | Fixed `eventDate` null handling |
-| `lib/notifications/tier-config.ts` | Added 9 missing `NotificationAction` entries to `DEFAULT_TIER_MAP` |
-| `scripts/seed-local-demo.ts` | Added `// @ts-nocheck` (utility script only) |
-| `components/calls/call-form.tsx` | Fixed timezone field and SelectRoot usage |
-| `components/calls/call-prep-panel.tsx` | Fixed `startTransition` with async handler |
-| `app/(client)/my-events/[id]/approve-menu/page.tsx` | Type fixes |
+| File                                                | Fix                                                                                                                                          |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lib/pricing/compute.ts`                            | Removed `'use server'` (pure compute functions, no server deps)                                                                              |
+| `lib/integration-center.tsx`                        | Fixed invalid UTF-8 separator characters                                                                                                     |
+| `lib/documents/generate-event-summary.ts`           | Fixed duplicate `stageLabel` variable declaration                                                                                            |
+| `components/events/calendar-add-buttons.tsx`        | Replaced `<Button asChild>` with plain `<a>` tags (Button doesn't accept `asChild`)                                                          |
+| `lib/push/send.ts`                                  | Fixed `Uint8Array<ArrayBufferLike>` → cast to `Uint8Array<ArrayBuffer>` for TypeScript 5.x                                                   |
+| `app/(chef)/clients/communication/page.tsx`         | Fixed `client.name` → `client.full_name`                                                                                                     |
+| `app/(chef)/clients/loyalty/rewards/page.tsx`       | `IncentiveRecord` has no `status` field — added `getStatus()` helper deriving status from `is_active` + `redemptions_used`/`max_redemptions` |
+| `app/(chef)/culinary/recipes/page.tsx`              | Fixed `total_time_minutes` → `cook_time_minutes`                                                                                             |
+| `app/(chef)/calendar/page.tsx`                      | Type annotation fixes                                                                                                                        |
+| `app/(chef)/events/[id]/travel/page.tsx`            | Fixed `AuthUser.chefId` access                                                                                                               |
+| `app/(chef)/finance/reporting/tax-summary/page.tsx` | Fixed `summary.grossRevenueCents` → `summary.totalRevenueCents` (property doesn't exist)                                                     |
+| `lib/events/debrief-actions.ts`                     | Fixed `recipe_id` null handling                                                                                                              |
+| `lib/events/photo-actions.ts`                       | Added null guard on `path`                                                                                                                   |
+| `lib/email/notifications.ts`                        | Fixed `eventDate` null handling                                                                                                              |
+| `lib/notifications/tier-config.ts`                  | Added 9 missing `NotificationAction` entries to `DEFAULT_TIER_MAP`                                                                           |
+| `scripts/seed-local-demo.ts`                        | Added `// @ts-nocheck` (utility script only)                                                                                                 |
+| `components/calls/call-form.tsx`                    | Fixed timezone field and SelectRoot usage                                                                                                    |
+| `components/calls/call-prep-panel.tsx`              | Fixed `startTransition` with async handler                                                                                                   |
+| `app/(client)/my-events/[id]/approve-menu/page.tsx` | Type fixes                                                                                                                                   |
 
 ---
 

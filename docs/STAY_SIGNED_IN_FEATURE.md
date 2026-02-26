@@ -14,10 +14,10 @@ Added a "Stay signed in" checkbox to the sign-in page, allowing users to choose 
 
 ## How It Works
 
-| User choice | Behavior |
-|---|---|
-| **Stay signed in** (checked, default) | Standard Supabase cookie behavior — persistent `maxAge`, session survives browser restarts |
-| **Don't stay signed in** (unchecked) | `chefflow-session-only=1` marker cookie set as session cookie. Middleware strips `maxAge` from Supabase auth cookies on every refresh. All cookies expire when the browser closes. |
+| User choice                           | Behavior                                                                                                                                                                           |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Stay signed in** (checked, default) | Standard Supabase cookie behavior — persistent `maxAge`, session survives browser restarts                                                                                         |
+| **Don't stay signed in** (unchecked)  | `chefflow-session-only=1` marker cookie set as session cookie. Middleware strips `maxAge` from Supabase auth cookies on every refresh. All cookies expire when the browser closes. |
 
 ### Why a marker cookie?
 

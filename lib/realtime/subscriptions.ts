@@ -205,10 +205,7 @@ export function useChatMessageSubscription(
  *   router.refresh() // Refresh the activity list
  * })
  */
-export function useActivityFeedSubscription(
-  tenantId: string | null,
-  onActivity: () => void
-) {
+export function useActivityFeedSubscription(tenantId: string | null, onActivity: () => void) {
   const callbackRef = useRef(onActivity)
   callbackRef.current = onActivity
 

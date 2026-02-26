@@ -52,8 +52,8 @@ export type GroceryListData = {
   clientName: string
   groceryStoreName: string
   liquorStoreName: string
-  stop1Sections: StoreSection[]  // grocery store, organized by category
-  stop2Items: GroceryItem[]      // liquor store items (alcohol category)
+  stop1Sections: StoreSection[] // grocery store, organized by category
+  stop2Items: GroceryItem[] // liquor store items (alcohol category)
   presourcedItems: PresourcedItem[] // already sourced via specialty runs
   unrecipedComponents: UnrecipedComponent[]
   budget: {
@@ -69,21 +69,21 @@ export type GroceryListData = {
 const SECTION_ORDER = ['PROTEINS', 'PRODUCE', 'DAIRY / FATS', 'PANTRY', 'SPECIALTY']
 
 const CATEGORY_TO_SECTION: Record<string, string> = {
-  protein:    'PROTEINS',
-  produce:    'PRODUCE',
+  protein: 'PROTEINS',
+  produce: 'PRODUCE',
   fresh_herb: 'PRODUCE',
-  dry_herb:   'PRODUCE',
-  dairy:      'DAIRY / FATS',
-  pantry:     'PANTRY',
-  baking:     'PANTRY',
-  canned:     'PANTRY',
-  condiment:  'PANTRY',
-  spice:      'PANTRY',
-  oil:        'PANTRY',
-  frozen:     'SPECIALTY',
-  specialty:  'SPECIALTY',
-  beverage:   'SPECIALTY',
-  other:      'SPECIALTY',
+  dry_herb: 'PRODUCE',
+  dairy: 'DAIRY / FATS',
+  pantry: 'PANTRY',
+  baking: 'PANTRY',
+  canned: 'PANTRY',
+  condiment: 'PANTRY',
+  spice: 'PANTRY',
+  oil: 'PANTRY',
+  frozen: 'SPECIALTY',
+  specialty: 'SPECIALTY',
+  beverage: 'SPECIALTY',
+  other: 'SPECIALTY',
 }
 
 // alcohol and beverage categories go to Stop 2
@@ -98,11 +98,13 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
   // Event + client
   const { data: event } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       occasion, event_date, serve_time, guest_count,
       location_city, quoted_price_cents,
       client:clients(full_name)
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -128,11 +130,13 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
     const supabaseForLegs = createServerClient()
     const { data: sourcedRows } = await (supabaseForLegs as any)
       .from('travel_leg_ingredients')
-      .select(`
+      .select(
+        `
         ingredient_id, quantity, unit, store_name, notes, sourced_at,
         ingredients (name),
         event_travel_legs!inner (leg_type, status)
-      `)
+      `
+      )
       .eq('event_id', eventId)
       .eq('status', 'sourced')
       .eq('event_travel_legs.leg_type', 'specialty_sourcing')
@@ -176,7 +180,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
   if (!dishes || dishes.length === 0) return null
 
   // Components (with recipe_id and scale_factor)
-  const dishIds = dishes.map(d => d.id)
+  const dishIds = dishes.map((d) => d.id)
   const { data: components } = await supabase
     .from('components')
     .select('id, dish_id, name, recipe_id, scale_factor')
@@ -186,14 +190,14 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
   if (!components) return null
 
   // Build dish lookup for course info
-  const dishById = new Map(dishes.map(d => [d.id, d]))
+  const dishById = new Map(dishes.map((d) => [d.id, d]))
 
   // Separate components: with recipe vs without
-  const withRecipe = components.filter(c => c.recipe_id)
-  const withoutRecipe = components.filter(c => !c.recipe_id)
+  const withRecipe = components.filter((c) => c.recipe_id)
+  const withoutRecipe = components.filter((c) => !c.recipe_id)
 
   // Warning placeholders for components without recipes
-  const unrecipedComponents: UnrecipedComponent[] = withoutRecipe.map(c => {
+  const unrecipedComponents: UnrecipedComponent[] = withoutRecipe.map((c) => {
     const dish = dishById.get(c.dish_id)
     return {
       componentName: c.name,
@@ -203,11 +207,14 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
   })
 
   // Build recipe_id → list of {scale_factor, course_number, course_name}
-  const recipeToComponents = new Map<string, Array<{
-    scaleFactor: number
-    courseNumber: number
-    courseName: string
-  }>>()
+  const recipeToComponents = new Map<
+    string,
+    Array<{
+      scaleFactor: number
+      courseNumber: number
+      courseName: string
+    }>
+  >()
   for (const comp of withRecipe) {
     const dish = dishById.get(comp.dish_id)
     if (!dish) continue
@@ -224,7 +231,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
   const recipeIds = [...recipeToComponents.keys()]
   if (recipeIds.length === 0) {
     // No recipes linked — return with empty sections and all components as warnings
-    const allAsWarnings: UnrecipedComponent[] = components.map(c => {
+    const allAsWarnings: UnrecipedComponent[] = components.map((c) => {
       const dish = dishById.get(c.dish_id)
       return {
         componentName: c.name,
@@ -257,10 +264,12 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
   // Note: recipe_ingredients RLS is scoped via recipe_id FK to recipes (tenant-scoped)
   const { data: recipeIngredients } = await supabase
     .from('recipe_ingredients')
-    .select(`
+    .select(
+      `
       recipe_id, ingredient_id, quantity, unit, is_optional,
       ingredient:ingredients(id, name, category, is_staple, last_price_cents)
-    `)
+    `
+    )
     .in('recipe_id', recipeIds)
 
   if (!recipeIngredients) {
@@ -353,14 +362,14 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
   }
 
   // Build stop1Sections in defined order, skipping empty sections
-  const stop1Sections: StoreSection[] = SECTION_ORDER
-    .filter(sectionName => (stop1Map.get(sectionName) || []).length > 0)
-    .map(sectionName => ({
-      sectionName,
-      items: (stop1Map.get(sectionName) || []).sort((a, b) =>
-        a.ingredientName.localeCompare(b.ingredientName)
-      ),
-    }))
+  const stop1Sections: StoreSection[] = SECTION_ORDER.filter(
+    (sectionName) => (stop1Map.get(sectionName) || []).length > 0
+  ).map((sectionName) => ({
+    sectionName,
+    items: (stop1Map.get(sectionName) || []).sort((a, b) =>
+      a.ingredientName.localeCompare(b.ingredientName)
+    ),
+  }))
 
   // Sort stop2 items alphabetically
   stop2Items.sort((a, b) => a.ingredientName.localeCompare(b.ingredientName))
@@ -424,8 +433,17 @@ function formatCents(cents: number): string {
 
 export function renderGroceryList(pdf: PDFLayout, data: GroceryListData) {
   const {
-    event, clientName, groceryStoreName, liquorStoreName,
-    stop1Sections, stop2Items, presourcedItems, unrecipedComponents, budget, totalBuyItems, hasStop2,
+    event,
+    clientName,
+    groceryStoreName,
+    liquorStoreName,
+    stop1Sections,
+    stop2Items,
+    presourcedItems,
+    unrecipedComponents,
+    budget,
+    totalBuyItems,
+    hasStop2,
   } = data
 
   // Estimate density to set font scale
@@ -448,7 +466,8 @@ export function renderGroceryList(pdf: PDFLayout, data: GroceryListData) {
   // Budget line
   const budgetParts: string[] = []
   if (budget.ceilingCents != null) budgetParts.push(`Budget: ${formatCents(budget.ceilingCents)}`)
-  if (budget.projectedCents != null) budgetParts.push(`Projected: ~${formatCents(budget.projectedCents)}`)
+  if (budget.projectedCents != null)
+    budgetParts.push(`Projected: ~${formatCents(budget.projectedCents)}`)
   if (budgetParts.length > 0) {
     pdf.text(budgetParts.join('  |  '), 8, 'normal', 0)
     pdf.space(1)
@@ -501,7 +520,11 @@ export function renderGroceryList(pdf: PDFLayout, data: GroceryListData) {
   if (unrecipedComponents.length > 0) {
     pdf.sectionHeader('\u26A0  VERIFY MANUALLY (no recipe linked)', 9, true)
     for (const comp of unrecipedComponents) {
-      pdf.bullet(`${comp.componentName} \u2014 Course ${comp.courseNumber} (${comp.courseName})`, 8, 4)
+      pdf.bullet(
+        `${comp.componentName} \u2014 Course ${comp.courseNumber} (${comp.courseName})`,
+        8,
+        4
+      )
     }
     pdf.space(1)
   }
@@ -510,7 +533,9 @@ export function renderGroceryList(pdf: PDFLayout, data: GroceryListData) {
   const stops = hasStop2 ? 2 : 1
   const footerParts = [`${totalBuyItems} items`, `${stops} stop${stops > 1 ? 's' : ''}`]
   if (budget.ceilingCents != null) footerParts.push(`Budget: ${formatCents(budget.ceilingCents)}`)
-  footerParts.push('Quantities based on recorded recipes \u00D7 scale factor \u2014 verify for your guest count')
+  footerParts.push(
+    'Quantities based on recorded recipes \u00D7 scale factor \u2014 verify for your guest count'
+  )
   pdf.footer(footerParts.join('  \u00B7  '))
 }
 

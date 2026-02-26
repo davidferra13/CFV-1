@@ -27,11 +27,13 @@ This project is governed by **CHEFFLOW_V1_SCOPE_LOCK.md**. All features, archite
 
 1. Clone the repository
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Copy `.env.local.example` to `.env.local` and fill in your credentials:
+
    ```bash
    cp .env.local.example .env.local
    ```
@@ -39,6 +41,7 @@ This project is governed by **CHEFFLOW_V1_SCOPE_LOCK.md**. All features, archite
 4. Run database migrations (see `supabase/migrations/`)
 
 5. Start the development server:
+
    ```bash
    npm run dev
    ```

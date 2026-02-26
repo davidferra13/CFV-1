@@ -24,47 +24,47 @@ export type CalendarLegendEntry = {
 // ------------------------------------------------------------------
 export const CALENDAR_COLORS: Record<string, string> = {
   // ── Events ────────────────────────────────────────────────────
-  event_confirmed: '#F59E0B',   // amber — in_progress, confirmed, paid
-  event_draft: '#FDE68A',       // light amber — draft, proposed, accepted
-  event_cancelled: '#D1D5DB',   // gray — cancelled
+  event_confirmed: '#F59E0B', // amber — in_progress, confirmed, paid
+  event_draft: '#FDE68A', // light amber — draft, proposed, accepted
+  event_cancelled: '#D1D5DB', // gray — cancelled
 
   // ── Prep blocks (keyed by prep_block_type) ───────────────────
-  grocery_run: '#16A34A',       // green
+  grocery_run: '#16A34A', // green
   specialty_sourcing: '#65A30D', // lime
-  prep_session: '#059669',      // emerald
-  packing: '#166534',           // forest green
-  travel_to_event: '#475569',   // slate
-  equipment_prep: '#6B7280',    // gray
-  mental_prep: '#4338CA',       // indigo
-  admin: '#78716C',             // stone
-  cleanup: '#737373',           // neutral
-  custom: '#737373',            // neutral
+  prep_session: '#059669', // emerald
+  packing: '#166534', // forest green
+  travel_to_event: '#475569', // slate
+  equipment_prep: '#6B7280', // gray
+  mental_prep: '#4338CA', // indigo
+  admin: '#78716C', // stone
+  cleanup: '#737373', // neutral
+  custom: '#737373', // neutral
 
   // ── Scheduled calls ──────────────────────────────────────────
-  call: '#3B82F6',              // blue
+  call: '#3B82F6', // blue
 
   // ── Personal calendar entries ─────────────────────────────────
-  vacation: '#1E3A8A',          // navy
-  time_off: '#7C3AED',          // purple
-  personal: '#A78BFA',          // lavender
+  vacation: '#1E3A8A', // navy
+  time_off: '#7C3AED', // purple
+  personal: '#A78BFA', // lavender
 
   // ── Business calendar entries ─────────────────────────────────
-  market: '#0D9488',            // teal
-  festival: '#059669',          // emerald
-  class: '#0891B2',             // cyan
-  photo_shoot: '#E11D48',       // rose
-  media: '#DB2777',             // pink
-  meeting: '#2563EB',           // blue
-  admin_block: '#78716C',       // stone
-  other: '#6B7280',             // gray
+  market: '#0D9488', // teal
+  festival: '#059669', // emerald
+  class: '#0891B2', // cyan
+  photo_shoot: '#E11D48', // rose
+  media: '#DB2777', // pink
+  meeting: '#2563EB', // blue
+  admin_block: '#78716C', // stone
+  other: '#6B7280', // gray
 
   // ── Soft intentions ───────────────────────────────────────────
-  target_booking: '#4ADE80',    // sage green (dotted border in UI)
-  soft_preference: '#7DD3FC',   // sky blue (dashed border in UI)
+  target_booking: '#4ADE80', // sage green (dotted border in UI)
+  soft_preference: '#7DD3FC', // sky blue (dashed border in UI)
 
   // ── Lead indicators ───────────────────────────────────────────
-  inquiry: '#CA8A04',           // amber/gold (dashed border in UI)
-  waitlist: '#EA580C',          // orange (dashed border in UI)
+  inquiry: '#CA8A04', // amber/gold (dashed border in UI)
+  waitlist: '#EA580C', // orange (dashed border in UI)
 
   // ── Availability blocks ───────────────────────────────────────
   availability_block: '#EF4444', // red
@@ -146,8 +146,8 @@ export const ENTRY_TYPE_BLOCKS_BOOKINGS: Record<string, boolean> = {
   class: true,
   photo_shoot: true,
   media: true,
-  meeting: false,       // meetings don't fully block a booking day
-  admin_block: false,   // admin blocks are reminders, not hard blocks
+  meeting: false, // meetings don't fully block a booking day
+  admin_block: false, // admin blocks are reminders, not hard blocks
   other: false,
   target_booking: false,
   soft_preference: false,
@@ -195,11 +195,31 @@ export const CALENDAR_LEGEND: CalendarLegendEntry[] = [
   { label: 'Business Meeting', color: CALENDAR_COLORS.meeting, category: 'business' },
   { label: 'Admin Block', color: CALENDAR_COLORS.admin_block, category: 'business' },
   // Intentions
-  { label: 'Seeking Booking', color: CALENDAR_COLORS.target_booking, category: 'intentions', borderStyle: 'dotted' },
-  { label: 'Soft Day Pref', color: CALENDAR_COLORS.soft_preference, category: 'intentions', borderStyle: 'dashed' },
+  {
+    label: 'Seeking Booking',
+    color: CALENDAR_COLORS.target_booking,
+    category: 'intentions',
+    borderStyle: 'dotted',
+  },
+  {
+    label: 'Soft Day Pref',
+    color: CALENDAR_COLORS.soft_preference,
+    category: 'intentions',
+    borderStyle: 'dashed',
+  },
   // Leads
-  { label: 'Inquiry (Targeted)', color: CALENDAR_COLORS.inquiry, category: 'leads', borderStyle: 'dashed' },
-  { label: 'Waitlist Entry', color: CALENDAR_COLORS.waitlist, category: 'leads', borderStyle: 'dashed' },
+  {
+    label: 'Inquiry (Targeted)',
+    color: CALENDAR_COLORS.inquiry,
+    category: 'leads',
+    borderStyle: 'dashed',
+  },
+  {
+    label: 'Waitlist Entry',
+    color: CALENDAR_COLORS.waitlist,
+    category: 'leads',
+    borderStyle: 'dashed',
+  },
 ]
 
 // ------------------------------------------------------------------
@@ -270,9 +290,12 @@ export function getCalendarBorderStyle(
  * Group legend entries by category for rendering.
  */
 export function getLegendByCategory(): Record<CalendarCategory, CalendarLegendEntry[]> {
-  return CALENDAR_LEGEND.reduce((acc, entry) => {
-    if (!acc[entry.category]) acc[entry.category] = []
-    acc[entry.category].push(entry)
-    return acc
-  }, {} as Record<CalendarCategory, CalendarLegendEntry[]>)
+  return CALENDAR_LEGEND.reduce(
+    (acc, entry) => {
+      if (!acc[entry.category]) acc[entry.category] = []
+      acc[entry.category].push(entry)
+      return acc
+    },
+    {} as Record<CalendarCategory, CalendarLegendEntry[]>
+  )
 }

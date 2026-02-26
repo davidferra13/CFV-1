@@ -10,12 +10,12 @@ Added as the 8th document in the printed sheets system. It is the **first page**
 
 ## Files Changed
 
-| File | Change |
-|---|---|
-| `lib/documents/generate-event-summary.ts` | **New** — full generator following the 3-function pattern |
-| `lib/documents/actions.ts` | Added `eventSummary` to `DocumentReadiness` type and return values |
-| `app/api/documents/[eventId]/route.ts` | Added `'summary'` case; Event Summary is now page 1 of `'all'` |
-| `components/documents/document-section.tsx` | Event Summary added as first entry; updated count to 8 Sheets |
+| File                                        | Change                                                             |
+| ------------------------------------------- | ------------------------------------------------------------------ |
+| `lib/documents/generate-event-summary.ts`   | **New** — full generator following the 3-function pattern          |
+| `lib/documents/actions.ts`                  | Added `eventSummary` to `DocumentReadiness` type and return values |
+| `app/api/documents/[eventId]/route.ts`      | Added `'summary'` case; Event Summary is now page 1 of `'all'`     |
+| `components/documents/document-section.tsx` | Event Summary added as first entry; updated count to 8 Sheets      |
 
 ---
 
@@ -45,25 +45,26 @@ Column helpers (`colSectionHeader`, `colKeyValue`, `colText`, `colHistoryEntry`)
 
 All data lives in existing tables — **no migration required**.
 
-| Spec Reference | Actual Column | Table |
-|---|---|---|
-| Client name | `clients.full_name` | clients |
-| "Goes by" nickname | `clients.preferred_name` | clients |
-| Relationship notes | `clients.vibe_notes` + `clients.family_notes` + `clients.what_they_care_about` (combined with ` | `) | clients |
-| Location address | `events.location_address/city/state/zip` | events |
-| Access instructions | `events.access_instructions` | events |
-| Kitchen notes | `events.kitchen_notes` | events |
-| House rules | `clients.house_rules` | clients |
-| Payment total | `events.quoted_price_cents` (+ `events.pricing_model` for per_person vs flat_rate) | events |
-| Payment status | `events.payment_status` (computed by trigger from ledger) | events |
-| Lifecycle history | `event_state_transitions` table | event_state_transitions |
-| Per-guest dietary | `event_guests.notes`, `event_guests.allergies`, `event_guests.dietary_restrictions` | event_guests |
-| Financial detail | `ledger_entries` | ledger_entries |
-| Menu | `menus` → `dishes` → `components` | menus, dishes, components |
+| Spec Reference      | Actual Column                                                                                   | Table                     |
+| ------------------- | ----------------------------------------------------------------------------------------------- | ------------------------- | ------- |
+| Client name         | `clients.full_name`                                                                             | clients                   |
+| "Goes by" nickname  | `clients.preferred_name`                                                                        | clients                   |
+| Relationship notes  | `clients.vibe_notes` + `clients.family_notes` + `clients.what_they_care_about` (combined with ` | `)                        | clients |
+| Location address    | `events.location_address/city/state/zip`                                                        | events                    |
+| Access instructions | `events.access_instructions`                                                                    | events                    |
+| Kitchen notes       | `events.kitchen_notes`                                                                          | events                    |
+| House rules         | `clients.house_rules`                                                                           | clients                   |
+| Payment total       | `events.quoted_price_cents` (+ `events.pricing_model` for per_person vs flat_rate)              | events                    |
+| Payment status      | `events.payment_status` (computed by trigger from ledger)                                       | events                    |
+| Lifecycle history   | `event_state_transitions` table                                                                 | event_state_transitions   |
+| Per-guest dietary   | `event_guests.notes`, `event_guests.allergies`, `event_guests.dietary_restrictions`             | event_guests              |
+| Financial detail    | `ledger_entries`                                                                                | ledger_entries            |
+| Menu                | `menus` → `dishes` → `components`                                                               | menus, dishes, components |
 
 ### Readiness
 
 Event Summary is **always ready** — it adapts to whatever data is present:
+
 - No menu → shows "Menu not yet confirmed for this event." in the menu section
 - No timing → timing section omitted (empty fields never render)
 - No financial data → shows "Not yet invoiced"
@@ -85,10 +86,13 @@ Merges allergies from three sources: event-level, client-level, and all event gu
 ## Known V1 Limitations
 
 **No per-component, per-guest dietary flags.** The spec describes entries like:
+
 ```
 5. Crunchy topping (almonds, parsley)  ** NO CAPERS ON MURR'S PLATE **
 ```
+
 This would require either:
+
 - A `dietary_modification_notes` column on the `components` table, or
 - Cross-referencing ingredient allergen flags against guest allergies at the component level
 

@@ -15,7 +15,9 @@ import { z } from 'zod'
 
 const CreatePartnerSchema = z.object({
   name: z.string().min(1, 'Partner name is required'),
-  partner_type: z.enum(['airbnb_host', 'business', 'platform', 'individual', 'venue', 'other']).default('individual'),
+  partner_type: z
+    .enum(['airbnb_host', 'business', 'platform', 'individual', 'venue', 'other'])
+    .default('individual'),
   contact_name: z.string().optional().or(z.literal('')),
   email: z.string().email().optional().or(z.literal('')),
   phone: z.string().optional().or(z.literal('')),
@@ -29,7 +31,9 @@ const CreatePartnerSchema = z.object({
 
 const UpdatePartnerSchema = z.object({
   name: z.string().min(1).optional(),
-  partner_type: z.enum(['airbnb_host', 'business', 'platform', 'individual', 'venue', 'other']).optional(),
+  partner_type: z
+    .enum(['airbnb_host', 'business', 'platform', 'individual', 'venue', 'other'])
+    .optional(),
   status: z.enum(['active', 'inactive']).optional(),
   contact_name: z.string().nullable().optional(),
   email: z.string().email().nullable().optional().or(z.literal('')),
@@ -127,7 +131,10 @@ export async function createPartner(input: CreatePartnerInput) {
  * Public action - no auth/role required.
  * Creates a partner profile for a chef resolved by public slug.
  */
-export async function createPublicPartnerProfile(chefSlug: string, input: PublicCreatePartnerInput) {
+export async function createPublicPartnerProfile(
+  chefSlug: string,
+  input: PublicCreatePartnerInput
+) {
   const validated = CreatePartnerSchema.parse(input)
   const supabase = createServerClient({ admin: true })
 
@@ -208,20 +215,19 @@ export async function updatePartner(id: string, input: UpdatePartnerInput) {
 // 3. GET PARTNERS (LIST)
 // ============================================
 
-export async function getPartners(filters?: {
-  partner_type?: string
-  status?: string
-}) {
+export async function getPartners(filters?: { partner_type?: string; status?: string }) {
   const user = await requireChef()
   const supabase = createServerClient()
 
   let query = supabase
     .from('referral_partners')
-    .select(`
+    .select(
+      `
       *,
       partner_locations(id, name, is_active),
       partner_images(id)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
 
   if (filters?.partner_type) {
@@ -240,10 +246,10 @@ export async function getPartners(filters?: {
   }
 
   // Get inquiry and event counts for each partner
-  const partnerIds = partners.map(p => p.id)
+  const partnerIds = partners.map((p) => p.id)
 
   if (partnerIds.length === 0) {
-    return partners.map(p => ({
+    return partners.map((p) => ({
       ...p,
       inquiry_count: 0,
       event_count: 0,
@@ -282,13 +288,15 @@ export async function getPartners(filters?: {
     if (evt.referral_partner_id) {
       eventCounts[evt.referral_partner_id] = (eventCounts[evt.referral_partner_id] || 0) + 1
       if (evt.status === 'completed') {
-        completedCounts[evt.referral_partner_id] = (completedCounts[evt.referral_partner_id] || 0) + 1
-        revenueSums[evt.referral_partner_id] = (revenueSums[evt.referral_partner_id] || 0) + (evt.quoted_price_cents || 0)
+        completedCounts[evt.referral_partner_id] =
+          (completedCounts[evt.referral_partner_id] || 0) + 1
+        revenueSums[evt.referral_partner_id] =
+          (revenueSums[evt.referral_partner_id] || 0) + (evt.quoted_price_cents || 0)
       }
     }
   }
 
-  return partners.map(p => ({
+  return partners.map((p) => ({
     ...p,
     inquiry_count: inquiryCounts[p.id] || 0,
     event_count: eventCounts[p.id] || 0,
@@ -307,11 +315,13 @@ export async function getPartnerById(id: string) {
 
   const { data: partner, error } = await supabase
     .from('referral_partners')
-    .select(`
+    .select(
+      `
       *,
       partner_locations(*),
       partner_images(*)
-    `)
+    `
+    )
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -343,7 +353,10 @@ export async function getPartnerById(id: string) {
     .eq('referral_partner_id', id)
     .eq('status', 'completed')
 
-  const totalRevenueCents = (completedEvents || []).reduce((sum, e) => sum + (e.quoted_price_cents || 0), 0)
+  const totalRevenueCents = (completedEvents || []).reduce(
+    (sum, e) => sum + (e.quoted_price_cents || 0),
+    0
+  )
   const totalGuests = (completedEvents || []).reduce((sum, e) => sum + (e.guest_count || 0), 0)
   const completedEventCount = completedEvents?.length || 0
 
@@ -366,14 +379,16 @@ export async function getPartnerById(id: string) {
 
     for (const inq of locInquiries || []) {
       if (inq.partner_location_id) {
-        if (!locationStats[inq.partner_location_id]) locationStats[inq.partner_location_id] = { inquiry_count: 0, event_count: 0 }
+        if (!locationStats[inq.partner_location_id])
+          locationStats[inq.partner_location_id] = { inquiry_count: 0, event_count: 0 }
         locationStats[inq.partner_location_id].inquiry_count++
       }
     }
 
     for (const evt of locEvents || []) {
       if (evt.partner_location_id) {
-        if (!locationStats[evt.partner_location_id]) locationStats[evt.partner_location_id] = { inquiry_count: 0, event_count: 0 }
+        if (!locationStats[evt.partner_location_id])
+          locationStats[evt.partner_location_id] = { inquiry_count: 0, event_count: 0 }
         locationStats[evt.partner_location_id].event_count++
       }
     }
@@ -387,9 +402,8 @@ export async function getPartnerById(id: string) {
       completed_event_count: completedEventCount,
       total_revenue_cents: totalRevenueCents,
       total_guests: totalGuests,
-      conversion_rate: (inquiryCount || 0) > 0
-        ? Math.round(((completedEventCount) / (inquiryCount || 1)) * 100)
-        : 0,
+      conversion_rate:
+        (inquiryCount || 0) > 0 ? Math.round((completedEventCount / (inquiryCount || 1)) * 100) : 0,
     },
     location_stats: locationStats,
   }
@@ -739,10 +753,19 @@ export async function getPartnersWithLocations() {
 
   if (error) {
     console.error('[getPartnersWithLocations] Error:', error)
-    return { partners: [], partnerLocations: {} as Record<string, { id: string; name: string; city: string | null; state: string | null }[]> }
+    return {
+      partners: [],
+      partnerLocations: {} as Record<
+        string,
+        { id: string; name: string; city: string | null; state: string | null }[]
+      >,
+    }
   }
 
-  const partnerLocations: Record<string, { id: string; name: string; city: string | null; state: string | null }[]> = {}
+  const partnerLocations: Record<
+    string,
+    { id: string; name: string; city: string | null; state: string | null }[]
+  > = {}
   for (const p of partners || []) {
     partnerLocations[p.id] = ((p.partner_locations || []) as any[])
       .filter((l) => l.is_active !== false)
@@ -750,7 +773,11 @@ export async function getPartnersWithLocations() {
   }
 
   return {
-    partners: (partners || []).map((p) => ({ id: p.id, name: p.name, partner_type: p.partner_type })),
+    partners: (partners || []).map((p) => ({
+      id: p.id,
+      name: p.name,
+      partner_type: p.partner_type,
+    })),
     partnerLocations,
   }
 }
@@ -779,11 +806,13 @@ export async function getPartnerEvents(partnerId: string) {
 
   const { data: events, error } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, occasion, event_date, guest_count, status, quoted_price_cents,
       partner_location_id,
       partner_location:partner_locations(id, name, city, state)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .eq('referral_partner_id', partnerId)
     .order('event_date', { ascending: false })
@@ -829,7 +858,9 @@ export async function getEventsNotAssignedToPartner(partnerId: string) {
 
   const { data: events, error } = await supabase
     .from('events')
-    .select('id, occasion, event_date, guest_count, status, location_city, location_state, referral_partner_id')
+    .select(
+      'id, occasion, event_date, guest_count, status, location_city, location_state, referral_partner_id'
+    )
     .eq('tenant_id', user.tenantId!)
     .neq('status', 'cancelled')
     .or(`referral_partner_id.is.null,referral_partner_id.neq.${partnerId}`)
@@ -969,10 +1000,12 @@ export async function getPartnerContributionReport(token: string) {
   // Find partner by share token
   const { data: partner, error } = await supabase
     .from('referral_partners')
-    .select(`
+    .select(
+      `
       id, name, partner_type, contact_name, description, cover_image_url, tenant_id,
       partner_locations(id, name, city, state, description, max_guest_count, is_active)
-    `)
+    `
+    )
     .eq('share_token' as any, token)
     .eq('status', 'active')
     .single()
@@ -989,7 +1022,9 @@ export async function getPartnerContributionReport(token: string) {
   // Get all events linked to this partner (excluding cancelled)
   const { data: events } = await supabase
     .from('events')
-    .select('id, occasion, event_date, guest_count, status, quoted_price_cents, partner_location_id')
+    .select(
+      'id, occasion, event_date, guest_count, status, quoted_price_cents, partner_location_id'
+    )
     .eq('tenant_id', partner.tenant_id)
     .eq('referral_partner_id', partner.id)
     .neq('status', 'cancelled')
@@ -1010,8 +1045,11 @@ export async function getPartnerContributionReport(token: string) {
   const totalRevenueCents = completedEvents.reduce((s, e) => s + (e.quoted_price_cents || 0), 0)
 
   // Build location lookup
-  const locationMap: Record<string, { id: string; name: string; city: string | null; state: string | null }> = {}
-  for (const loc of ((partner.partner_locations || []) as any[])) {
+  const locationMap: Record<
+    string,
+    { id: string; name: string; city: string | null; state: string | null }
+  > = {}
+  for (const loc of (partner.partner_locations || []) as any[]) {
     locationMap[loc.id] = { id: loc.id, name: loc.name, city: loc.city, state: loc.state }
   }
 
@@ -1033,7 +1071,10 @@ export async function getPartnerContributionReport(token: string) {
       locations: ((partner.partner_locations || []) as any[]).filter((l) => l.is_active !== false),
     },
     chef: chef
-      ? { name: (chef.business_name || chef.display_name || 'Your Chef'), profile_image_url: chef.profile_image_url }
+      ? {
+          name: chef.business_name || chef.display_name || 'Your Chef',
+          profile_image_url: chef.profile_image_url,
+        }
       : null,
     stats: {
       total_events: allEvents.length,
@@ -1073,11 +1114,13 @@ export async function getShowcasePartners(chefSlug: string) {
   // Get showcase-visible partners with locations and images
   const { data: partners, error } = await supabase
     .from('referral_partners')
-    .select(`
+    .select(
+      `
       id, name, partner_type, booking_url, description, cover_image_url, showcase_order,
       partner_locations(id, name, city, state, booking_url, description, max_guest_count, is_active),
       partner_images(id, image_url, caption, season, display_order, location_id)
-    `)
+    `
+    )
     .eq('tenant_id', chef.id)
     .eq('is_showcase_visible', true)
     .eq('status', 'active')
@@ -1089,13 +1132,14 @@ export async function getShowcasePartners(chefSlug: string) {
   }
 
   // Filter to only active locations
-  const partnersWithActiveLocations = (partners || []).map(p => ({
+  const partnersWithActiveLocations = (partners || []).map((p) => ({
     ...p,
     partner_locations: (p.partner_locations || []).filter(
       (l: { is_active: boolean }) => l.is_active
     ),
     partner_images: (p.partner_images || []).sort(
-      (a: { display_order: number | null }, b: { display_order: number | null }) => (a.display_order ?? 0) - (b.display_order ?? 0)
+      (a: { display_order: number | null }, b: { display_order: number | null }) =>
+        (a.display_order ?? 0) - (b.display_order ?? 0)
     ),
   }))
 

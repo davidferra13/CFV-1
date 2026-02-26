@@ -73,12 +73,13 @@ export function LaborDashboard({ laborByMonth, currentMonthDetail }: LaborDashbo
   // Compute current month totals from detail
   const currentTotalLabor = currentMonthDetail.reduce((sum, e) => sum + e.laborCents, 0)
   const currentTotalRevenue = currentMonthDetail.reduce((sum, e) => sum + e.revenueCents, 0)
-  const currentRatio = currentTotalRevenue > 0
-    ? Math.round((currentTotalLabor / currentTotalRevenue) * 10000) / 100
-    : 0
+  const currentRatio =
+    currentTotalRevenue > 0
+      ? Math.round((currentTotalLabor / currentTotalRevenue) * 10000) / 100
+      : 0
 
   // Chart data: transform cents to dollars for readability
-  const chartData = laborByMonth.map(m => ({
+  const chartData = laborByMonth.map((m) => ({
     month: m.month,
     labor: m.laborCents / 100,
     revenue: m.revenueCents / 100,
@@ -86,11 +87,12 @@ export function LaborDashboard({ laborByMonth, currentMonthDetail }: LaborDashbo
   }))
 
   // Averages across all months
-  const avgRatio = laborByMonth.length > 0
-    ? Math.round(
-        (laborByMonth.reduce((sum, m) => sum + m.ratio, 0) / laborByMonth.length) * 100
-      ) / 100
-    : 0
+  const avgRatio =
+    laborByMonth.length > 0
+      ? Math.round(
+          (laborByMonth.reduce((sum, m) => sum + m.ratio, 0) / laborByMonth.length) * 100
+        ) / 100
+      : 0
 
   const formatDollars = (v: number) => (v ? `$${v.toFixed(0)}` : '')
 
@@ -106,7 +108,9 @@ export function LaborDashboard({ laborByMonth, currentMonthDetail }: LaborDashbo
                 Current Month Labor
               </span>
             </div>
-            <p className="text-2xl font-semibold text-stone-900">{formatMoney(currentTotalLabor)}</p>
+            <p className="text-2xl font-semibold text-stone-900">
+              {formatMoney(currentTotalLabor)}
+            </p>
             <p className="text-xs text-stone-500 mt-1">
               across {currentMonthDetail.length} event{currentMonthDetail.length !== 1 ? 's' : ''}
             </p>
@@ -123,11 +127,11 @@ export function LaborDashboard({ laborByMonth, currentMonthDetail }: LaborDashbo
             </div>
             <div className="flex items-center gap-2">
               <p className="text-2xl font-semibold text-stone-900">{currentRatio.toFixed(1)}%</p>
-              <Badge variant={getRatioVariant(currentRatio)}>
-                {getRatioLabel(currentRatio)}
-              </Badge>
+              <Badge variant={getRatioVariant(currentRatio)}>{getRatioLabel(currentRatio)}</Badge>
             </div>
-            <p className="text-xs text-stone-500 mt-1">Target: {TARGET_MIN}\u2013{TARGET_MAX}% of revenue</p>
+            <p className="text-xs text-stone-500 mt-1">
+              Target: {TARGET_MIN}\u2013{TARGET_MAX}% of revenue
+            </p>
           </CardContent>
         </Card>
 
@@ -181,11 +185,16 @@ export function LaborDashboard({ laborByMonth, currentMonthDetail }: LaborDashbo
                 />
                 <Tooltip
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  formatter={((value: number | undefined, name: string) => {
-                    if (value == null) return ['', '']
-                    if (name === 'ratio') return [`${value.toFixed(1)}%`, 'Labor Ratio']
-                    return [`$${value.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, name === 'labor' ? 'Labor Cost' : 'Revenue']
-                  }) as any}
+                  formatter={
+                    ((value: number | undefined, name: string) => {
+                      if (value == null) return ['', '']
+                      if (name === 'ratio') return [`${value.toFixed(1)}%`, 'Labor Ratio']
+                      return [
+                        `$${value.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+                        name === 'labor' ? 'Labor Cost' : 'Revenue',
+                      ]
+                    }) as any
+                  }
                 />
                 <Legend />
                 <Bar
@@ -220,7 +229,9 @@ export function LaborDashboard({ laborByMonth, currentMonthDetail }: LaborDashbo
           {laborByMonth.length > 0 && (
             <div className="mt-3 flex items-center gap-2 text-xs text-stone-500">
               <Target className="h-3.5 w-3.5" />
-              <span>Target labor ratio: {TARGET_MIN}\u2013{TARGET_MAX}% of revenue</span>
+              <span>
+                Target labor ratio: {TARGET_MIN}\u2013{TARGET_MAX}% of revenue
+              </span>
               <span className="inline-block w-3 h-0.5 bg-blue-500" />
               <span>Blue line = actual ratio</span>
             </div>
@@ -262,16 +273,19 @@ export function LaborDashboard({ laborByMonth, currentMonthDetail }: LaborDashbo
                 </thead>
                 <tbody>
                   {currentMonthDetail.map((event, idx) => {
-                    const eventRatio = event.revenueCents > 0
-                      ? Math.round((event.laborCents / event.revenueCents) * 10000) / 100
-                      : 0
+                    const eventRatio =
+                      event.revenueCents > 0
+                        ? Math.round((event.laborCents / event.revenueCents) * 10000) / 100
+                        : 0
                     return (
                       <tr
                         key={idx}
                         className={`border-b border-stone-100 ${idx % 2 === 0 ? '' : 'bg-stone-50/50'}`}
                       >
                         <td className="px-3 py-3">
-                          <span className="text-sm font-medium text-stone-900">{event.eventName}</span>
+                          <span className="text-sm font-medium text-stone-900">
+                            {event.eventName}
+                          </span>
                         </td>
                         <td className="px-3 py-3 text-right">
                           <span className="text-sm text-stone-600">{event.staffCount}</span>

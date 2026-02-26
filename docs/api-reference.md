@@ -21,15 +21,15 @@ Keys are scoped to a single tenant (chef account). A key from Chef A cannot acce
 
 ### Error codes
 
-| Status | Meaning |
-|--------|---------|
-| 200 | Success |
-| 400 | Bad request — invalid parameters |
-| 401 | Missing or invalid API key |
-| 403 | Forbidden — key lacks permission for this resource |
-| 404 | Resource not found |
-| 429 | Rate limit exceeded |
-| 500 | Server error |
+| Status | Meaning                                            |
+| ------ | -------------------------------------------------- |
+| 200    | Success                                            |
+| 400    | Bad request — invalid parameters                   |
+| 401    | Missing or invalid API key                         |
+| 403    | Forbidden — key lacks permission for this resource |
+| 404    | Resource not found                                 |
+| 429    | Rate limit exceeded                                |
+| 500    | Server error                                       |
 
 ---
 
@@ -43,19 +43,21 @@ List all events for the authenticated tenant.
 
 **Query parameters:**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `status` | string | (all) | Filter by status: `draft`, `proposed`, `accepted`, `paid`, `confirmed`, `in_progress`, `completed`, `cancelled` |
-| `page` | integer | 1 | Page number (1-indexed) |
-| `limit` | integer | 25 | Events per page (max 200) |
+| Parameter | Type    | Default | Description                                                                                                     |
+| --------- | ------- | ------- | --------------------------------------------------------------------------------------------------------------- |
+| `status`  | string  | (all)   | Filter by status: `draft`, `proposed`, `accepted`, `paid`, `confirmed`, `in_progress`, `completed`, `cancelled` |
+| `page`    | integer | 1       | Page number (1-indexed)                                                                                         |
+| `limit`   | integer | 25      | Events per page (max 200)                                                                                       |
 
 **Request:**
+
 ```
 GET /api/v1/events?status=confirmed&limit=10
 Authorization: Bearer CF_LIVE_...
 ```
 
 **Response:**
+
 ```json
 {
   "data": [
@@ -88,6 +90,7 @@ Authorization: Bearer CF_LIVE_...
 Retrieve a single event by ID.
 
 **Response:** Same as the event object in the list endpoint, plus related data:
+
 ```json
 {
   "data": {
@@ -118,19 +121,21 @@ List all clients for the authenticated tenant.
 
 **Query parameters:**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `search` | string | (none) | Filter by name or email (case-insensitive partial match) |
-| `page` | integer | 1 | Page number |
-| `limit` | integer | 25 | Clients per page (max 500) |
+| Parameter | Type    | Default | Description                                              |
+| --------- | ------- | ------- | -------------------------------------------------------- |
+| `search`  | string  | (none)  | Filter by name or email (case-insensitive partial match) |
+| `page`    | integer | 1       | Page number                                              |
+| `limit`   | integer | 25      | Clients per page (max 500)                               |
 
 **Request:**
+
 ```
 GET /api/v1/clients?search=johnson&limit=20
 Authorization: Bearer CF_LIVE_...
 ```
 
 **Response:**
+
 ```json
 {
   "data": [
@@ -166,6 +171,7 @@ The following endpoints are used by the ChefFlow web app. They require an active
 Public health check. No authentication required.
 
 **Response:**
+
 ```json
 {
   "status": "ok",
@@ -215,24 +221,25 @@ Generic webhook receiver for external integrations.
 
 All cron endpoints require `Authorization: Bearer {CRON_SECRET}`.
 
-| Endpoint | Schedule | Purpose |
-|----------|----------|---------|
-| `POST /api/gmail/sync` | Every 5 min | Gmail inbox sync |
-| `POST /api/scheduled/automations` | Every 15 min | Automation rule evaluation |
-| `POST /api/scheduled/follow-ups` | Every 30 min | Overdue follow-up reminders |
-| `POST /api/scheduled/lifecycle` | Hourly | Event lifecycle automation |
-| `POST /api/scheduled/revenue-goals` | Daily 6am | Revenue goal progress |
-| `POST /api/scheduled/reviews-sync` | Daily 3am | External review aggregation |
-| `POST /api/scheduled/copilot` | Hourly | Ops Copilot planning |
-| `POST /api/scheduled/activity-cleanup` | Weekly Sun 2am | Old activity log purge |
-| `POST /api/scheduled/push-cleanup` | Daily | Expired push subscription purge |
-| `POST /api/scheduled/monitor` | Every 5 min | Cron health aggregator |
+| Endpoint                               | Schedule       | Purpose                         |
+| -------------------------------------- | -------------- | ------------------------------- |
+| `POST /api/gmail/sync`                 | Every 5 min    | Gmail inbox sync                |
+| `POST /api/scheduled/automations`      | Every 15 min   | Automation rule evaluation      |
+| `POST /api/scheduled/follow-ups`       | Every 30 min   | Overdue follow-up reminders     |
+| `POST /api/scheduled/lifecycle`        | Hourly         | Event lifecycle automation      |
+| `POST /api/scheduled/revenue-goals`    | Daily 6am      | Revenue goal progress           |
+| `POST /api/scheduled/reviews-sync`     | Daily 3am      | External review aggregation     |
+| `POST /api/scheduled/copilot`          | Hourly         | Ops Copilot planning            |
+| `POST /api/scheduled/activity-cleanup` | Weekly Sun 2am | Old activity log purge          |
+| `POST /api/scheduled/push-cleanup`     | Daily          | Expired push subscription purge |
+| `POST /api/scheduled/monitor`          | Every 5 min    | Cron health aggregator          |
 
 ---
 
 ## Versioning Policy
 
 The `/api/v1/` public REST API follows these stability guarantees:
+
 - **Additive changes only:** New fields may be added to responses without notice
 - **Breaking changes:** Only in a new version (`/api/v2/`) with 90-day deprecation notice
 - **Deprecated fields:** Marked in documentation, removed only in the next major version
@@ -244,11 +251,12 @@ The `/api/v1/` public REST API follows these stability guarantees:
 
 Rate limits are enforced per API key using a sliding window (powered by Upstash Redis):
 
-| Limit | Window |
-|-------|--------|
+| Limit        | Window   |
+| ------------ | -------- |
 | 100 requests | 1 minute |
 
 Rate limit headers are included in every response:
+
 ```
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 87
@@ -256,6 +264,7 @@ X-RateLimit-Reset: 1740000060
 ```
 
 When the limit is exceeded, the response is:
+
 ```json
 { "error": "Rate limit exceeded. Retry after 30 seconds." }
 ```
@@ -264,10 +273,10 @@ When the limit is exceeded, the response is:
 
 ## Changelog
 
-| Date | Version | Change |
-|------|---------|--------|
-| 2026-02-20 | v1 | Initial public API: `/api/v1/events`, `/api/v1/clients` |
+| Date       | Version | Change                                                  |
+| ---------- | ------- | ------------------------------------------------------- |
+| 2026-02-20 | v1      | Initial public API: `/api/v1/events`, `/api/v1/clients` |
 
 ---
 
-*Last updated: 2026-02-20*
+_Last updated: 2026-02-20_

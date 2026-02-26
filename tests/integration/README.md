@@ -29,6 +29,7 @@ Integration tests use a seeded Supabase remote instance.
 Run `npm run seed:e2e` first to ensure seed data exists.
 
 Environment requirements:
+
 - `NEXT_PUBLIC_SUPABASE_URL` — remote project URL
 - `SUPABASE_SERVICE_ROLE_KEY` — service role key for bypassing RLS in test setup
 - `SUPABASE_E2E_ALLOW_REMOTE=true` — enables test-mode endpoints

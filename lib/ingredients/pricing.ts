@@ -34,8 +34,8 @@ export async function logIngredientPrice(input: LogPriceInput) {
   const supabase = createServerClient()
 
   // Auto-compute price_per_unit if not provided
-  const pricePerUnit = validated.price_per_unit_cents
-    ?? Math.round(validated.price_cents / validated.quantity)
+  const pricePerUnit =
+    validated.price_per_unit_cents ?? Math.round(validated.price_cents / validated.quantity)
 
   const { data, error } = await supabase
     .from('ingredient_price_history')
@@ -98,7 +98,7 @@ export async function getIngredientAveragePrice(ingredientId: string) {
     return null
   }
 
-  const prices = data.map(d => d.price_per_unit_cents).filter((p): p is number => p !== null)
+  const prices = data.map((d) => d.price_per_unit_cents).filter((p): p is number => p !== null)
   if (prices.length === 0) return null
 
   const avg = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length)
@@ -236,7 +236,7 @@ async function updateIngredientPriceFields(ingredientId: string, tenantId: strin
 
   if (!history || history.length === 0) return
 
-  const prices = history.map(h => h.price_per_unit_cents!).filter(Boolean)
+  const prices = history.map((h) => h.price_per_unit_cents!).filter(Boolean)
   const avg = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length)
 
   await supabase

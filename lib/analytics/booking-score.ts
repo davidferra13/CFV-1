@@ -31,7 +31,9 @@ export async function getBookingScoreForInquiry(inquiryId: string): Promise<Book
 
   const { data: inquiry, error } = await supabase
     .from('inquiries')
-    .select('id, client_id, confirmed_date, confirmed_guest_count, confirmed_budget_cents, client:clients(full_name)')
+    .select(
+      'id, client_id, confirmed_date, confirmed_guest_count, confirmed_budget_cents, client:clients(full_name)'
+    )
     .eq('id', inquiryId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -52,18 +54,18 @@ export async function getBookingScoreForInquiry(inquiryId: string): Promise<Book
   ])
 
   const allAccepted = (avgData.data ?? []).filter(
-    q => q.guest_count_estimated && q.total_quoted_cents,
+    (q) => q.guest_count_estimated && q.total_quoted_cents
   )
   const tenantAvgPerGuest =
     allAccepted.length > 0
-      ? allAccepted.reduce(
-          (s, q) => s + q.total_quoted_cents / q.guest_count_estimated!,
-          0,
-        ) / allAccepted.length
+      ? allAccepted.reduce((s, q) => s + q.total_quoted_cents / q.guest_count_estimated!, 0) /
+        allAccepted.length
       : 0
 
   const inquiryPerGuest =
-    inquiry.confirmed_budget_cents && inquiry.confirmed_guest_count && inquiry.confirmed_guest_count > 0
+    inquiry.confirmed_budget_cents &&
+    inquiry.confirmed_guest_count &&
+    inquiry.confirmed_guest_count > 0
       ? inquiry.confirmed_budget_cents / inquiry.confirmed_guest_count
       : null
 
@@ -125,16 +127,25 @@ export async function getBookingScoreForInquiry(inquiryId: string): Promise<Book
   const raw = profitabilityPoints + clientReliabilityPoints + dateConflictPenalty + newClientBonus
   const total = Math.max(0, Math.min(100, raw))
 
-  const level: BookingScore['level'] =
-    hasDateConflict ? 'conflict' :
-    total >= 65 ? 'high' :
-    total >= 40 ? 'medium' : 'low'
+  const level: BookingScore['level'] = hasDateConflict
+    ? 'conflict'
+    : total >= 65
+      ? 'high'
+      : total >= 40
+        ? 'medium'
+        : 'low'
 
   return {
     inquiryId,
     score: total,
     level,
-    breakdown: { profitabilityPoints, clientReliabilityPoints, dateConflictPenalty, newClientBonus, total },
+    breakdown: {
+      profitabilityPoints,
+      clientReliabilityPoints,
+      dateConflictPenalty,
+      newClientBonus,
+      total,
+    },
     hasDateConflict,
     isNewClient,
     clientName: (inquiry.client as any)?.full_name ?? null,
@@ -156,13 +167,12 @@ export async function getBookingScoresForOpenInquiries(): Promise<BookingScore[]
   if (!inquiries || inquiries.length === 0) return []
 
   const results = await Promise.allSettled(
-    inquiries.map(inq => getBookingScoreForInquiry(inq.id)),
+    inquiries.map((inq) => getBookingScoreForInquiry(inq.id))
   )
 
   return results
     .filter(
-      (r): r is PromiseFulfilledResult<BookingScore> =>
-        r.status === 'fulfilled' && r.value !== null,
+      (r): r is PromiseFulfilledResult<BookingScore> => r.status === 'fulfilled' && r.value !== null
     )
-    .map(r => r.value!)
+    .map((r) => r.value!)
 }

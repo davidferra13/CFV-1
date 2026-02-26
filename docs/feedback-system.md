@@ -9,11 +9,13 @@ Added a lightweight, non-invasive in-app feedback system that lets any ChefFlow 
 ## User-Facing Entry Points
 
 ### Chefs
+
 **Settings → Share Feedback** (`/settings`)
 
 A collapsible `SettingsCategory` accordion at the bottom of the settings page, between "Sample Data" and "Account & Security."
 
 ### Clients
+
 **My Profile → Share Feedback** (`/my-profile`)
 
 A card section at the bottom of the client profile page, after notification preferences.
@@ -24,12 +26,12 @@ Neither location is intrusive — users naturally find it when they're already i
 
 ## What the Form Collects
 
-| Field | Description |
-|---|---|
-| **Sentiment** | One of: 😍 Love it, 😤 Frustrated, 💡 Suggestion, 🐛 Bug, 💬 Other |
-| **Message** | Free-text, 1–2000 characters |
-| **Anonymous** | Checkbox — if checked, user_id and role are NOT stored |
-| **Page context** | Auto-captured `window.location.pathname` at submission time |
+| Field            | Description                                                        |
+| ---------------- | ------------------------------------------------------------------ |
+| **Sentiment**    | One of: 😍 Love it, 😤 Frustrated, 💡 Suggestion, 🐛 Bug, 💬 Other |
+| **Message**      | Free-text, 1–2000 characters                                       |
+| **Anonymous**    | Checkbox — if checked, user_id and role are NOT stored             |
+| **Page context** | Auto-captured `window.location.pathname` at submission time        |
 
 ---
 
@@ -46,15 +48,15 @@ Neither location is intrusive — users naturally find it when they're already i
 
 ## Files Created / Modified
 
-| File | Change |
-|---|---|
-| `supabase/migrations/20260313000002_user_feedback.sql` | New `user_feedback` table with RLS |
-| `lib/feedback/actions.ts` | `submitFeedback` server action (Zod-validated) |
-| `components/feedback/feedback-form.tsx` | Reusable client component — sentiment picker, textarea, anonymous toggle |
-| `app/(chef)/settings/page.tsx` | Added "Share Feedback" SettingsCategory + FeedbackForm import |
-| `app/(client)/my-profile/page.tsx` | Added feedback card + FeedbackForm import |
-| `app/(admin)/admin/feedback/page.tsx` | New admin page — reads and displays all feedback |
-| `components/admin/admin-sidebar.tsx` | Added "Feedback" nav item with MessageSquare icon |
+| File                                                   | Change                                                                   |
+| ------------------------------------------------------ | ------------------------------------------------------------------------ |
+| `supabase/migrations/20260313000002_user_feedback.sql` | New `user_feedback` table with RLS                                       |
+| `lib/feedback/actions.ts`                              | `submitFeedback` server action (Zod-validated)                           |
+| `components/feedback/feedback-form.tsx`                | Reusable client component — sentiment picker, textarea, anonymous toggle |
+| `app/(chef)/settings/page.tsx`                         | Added "Share Feedback" SettingsCategory + FeedbackForm import            |
+| `app/(client)/my-profile/page.tsx`                     | Added feedback card + FeedbackForm import                                |
+| `app/(admin)/admin/feedback/page.tsx`                  | New admin page — reads and displays all feedback                         |
+| `components/admin/admin-sidebar.tsx`                   | Added "Feedback" nav item with MessageSquare icon                        |
 
 ---
 
@@ -72,6 +74,7 @@ Neither location is intrusive — users naturally find it when they're already i
 **Additive only.** Creates `user_feedback` table + RLS policies + two indexes. No existing tables modified. Safe to apply to production without data risk.
 
 Apply with:
+
 ```bash
 supabase db push --linked
 ```

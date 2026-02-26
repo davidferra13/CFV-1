@@ -8,16 +8,16 @@ Replaced the Anthropic Claude SDK with Google Gemini 2.0 Flash for all AI-powere
 
 ### Files Modified
 
-| File | Change |
-|------|--------|
-| `lib/ai/parse.ts` | Core parser — swapped Anthropic SDK for `@google/generative-ai`, model changed to `gemini-2.0-flash` |
-| `lib/ai/parse-receipt.ts` | Receipt vision parser — swapped to Gemini `inlineData` format for image input |
-| `lib/ai/parse-document-vision.ts` | Document vision parser — same swap, supports images and PDFs |
-| `.env.local.example` | `ANTHROPIC_API_KEY` replaced with `GEMINI_API_KEY` |
-| `app/(chef)/import/page.tsx` | Warning banner updated to reference `GEMINI_API_KEY` + link to Google AI Studio |
-| `components/inquiries/inquiry-form.tsx` | Error messages updated to reference `GEMINI_API_KEY` |
-| `app/(chef)/recipes/new/create-recipe-client.tsx` | Warning message updated to reference `GEMINI_API_KEY` |
-| `package.json` | Removed `@anthropic-ai/sdk`, added `@google/generative-ai` |
+| File                                              | Change                                                                                               |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `lib/ai/parse.ts`                                 | Core parser — swapped Anthropic SDK for `@google/generative-ai`, model changed to `gemini-2.0-flash` |
+| `lib/ai/parse-receipt.ts`                         | Receipt vision parser — swapped to Gemini `inlineData` format for image input                        |
+| `lib/ai/parse-document-vision.ts`                 | Document vision parser — same swap, supports images and PDFs                                         |
+| `.env.local.example`                              | `ANTHROPIC_API_KEY` replaced with `GEMINI_API_KEY`                                                   |
+| `app/(chef)/import/page.tsx`                      | Warning banner updated to reference `GEMINI_API_KEY` + link to Google AI Studio                      |
+| `components/inquiries/inquiry-form.tsx`           | Error messages updated to reference `GEMINI_API_KEY`                                                 |
+| `app/(chef)/recipes/new/create-recipe-client.tsx` | Warning message updated to reference `GEMINI_API_KEY`                                                |
+| `package.json`                                    | Removed `@anthropic-ai/sdk`, added `@google/generative-ai`                                           |
 
 ### Files NOT Modified (unchanged)
 
@@ -36,6 +36,7 @@ All text parser files that call `parseWithAI()` from `lib/ai/parse.ts` required 
 ## Why
 
 The Anthropic API requires a paid API key. Google Gemini 2.0 Flash offers:
+
 - **Free tier**: 15 requests/minute, 1,000,000 tokens/day
 - **Vision support**: critical for receipt and document photo parsing
 - **No credit card**: free API key from Google AI Studio
@@ -46,6 +47,7 @@ For a single-chef operation, the free tier is more than sufficient.
 ## How It Connects
 
 The Smart Import system has a clean architecture with a single choke point:
+
 - **Text parsing**: all flows go through `parseWithAI()` in `lib/ai/parse.ts`
 - **Vision parsing**: `parse-receipt.ts` and `parse-document-vision.ts` have their own direct SDK calls
 
@@ -63,12 +65,12 @@ By swapping only these 3 files, all 8 import modes (brain dump, clients, recipes
 
 ## Trade-offs
 
-| Aspect | Before (Claude Sonnet) | After (Gemini 2.0 Flash) |
-|--------|----------------------|--------------------------|
-| Cost | ~$3/1M input tokens | Free (1M tokens/day) |
-| Vision quality | Excellent | Very good |
-| JSON adherence | Excellent | Very good (explicit schemas help) |
-| Speed | ~2-4s per parse | ~1-3s per parse |
-| Rate limits | Pay-as-you-go | 15 RPM free tier |
+| Aspect         | Before (Claude Sonnet) | After (Gemini 2.0 Flash)          |
+| -------------- | ---------------------- | --------------------------------- |
+| Cost           | ~$3/1M input tokens    | Free (1M tokens/day)              |
+| Vision quality | Excellent              | Very good                         |
+| JSON adherence | Excellent              | Very good (explicit schemas help) |
+| Speed          | ~2-4s per parse        | ~1-3s per parse                   |
+| Rate limits    | Pay-as-you-go          | 15 RPM free tier                  |
 
 The existing Zod validation layer catches any schema deviations, so if Gemini returns malformed JSON on rare edge cases, the user gets a clear error and can retry.

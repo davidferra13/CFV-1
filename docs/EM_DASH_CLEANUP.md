@@ -5,7 +5,7 @@
 
 ## What Changed
 
-Replaced all em dashes (Unicode `U+2014`) with regular dashes (` - `) in user-facing strings across two passes: first the `lib/` layer (11 files), then the `components/` layer (9 files). These strings appear in the UI as labels, placeholders, tooltips, helper text, displayed values, alert messages, and template content.
+Replaced all em dashes (Unicode `U+2014`) with regular dashes (`-`) in user-facing strings across two passes: first the `lib/` layer (11 files), then the `components/` layer (9 files). These strings appear in the UI as labels, placeholders, tooltips, helper text, displayed values, alert messages, and template content.
 
 Code comments (`//` lines), AI prompt strings, and regex patterns were intentionally left unchanged.
 
@@ -13,19 +13,19 @@ Code comments (`//` lines), AI prompt strings, and regex patterns were intention
 
 ## Pass 1: Library Layer (lib/)
 
-| File | Count | Context |
-|------|-------|---------|
-| `lib/import/bulk-parser.ts` | 1 | Error message for unsupported file types |
-| `lib/workflow/stage-definitions.ts` | 2 | Dashboard work item descriptions (grocery list, prep list) |
-| `lib/scheduling/actions.ts` | 1 | Weekly schedule warning tip |
-| `lib/expenses/actions.ts` | 1 | Budget guardrail message |
-| `lib/scheduling/dop.ts` | 3 | DOP task descriptions (compressed timeline, early prep, morning shopping) |
-| `lib/scheduling/prep-prompts.ts` | 2 | Prep prompt messages (menu confirmed, grocery shopping) |
-| `lib/scheduling/timeline.ts` | 1 | Timeline warning (prep before wake time) |
-| `lib/messages/actions.ts` | 3 | Default template name + template content strings |
-| `lib/search/universal-search.ts` | 2 | Search result snippets for events and inquiries |
-| `lib/gmail/google-auth.ts` | 1 | Error message for missing refresh token |
-| `lib/ai/correspondence.ts` | 2 | Context strings (new client, calendar conflict) |
+| File                                | Count | Context                                                                   |
+| ----------------------------------- | ----- | ------------------------------------------------------------------------- |
+| `lib/import/bulk-parser.ts`         | 1     | Error message for unsupported file types                                  |
+| `lib/workflow/stage-definitions.ts` | 2     | Dashboard work item descriptions (grocery list, prep list)                |
+| `lib/scheduling/actions.ts`         | 1     | Weekly schedule warning tip                                               |
+| `lib/expenses/actions.ts`           | 1     | Budget guardrail message                                                  |
+| `lib/scheduling/dop.ts`             | 3     | DOP task descriptions (compressed timeline, early prep, morning shopping) |
+| `lib/scheduling/prep-prompts.ts`    | 2     | Prep prompt messages (menu confirmed, grocery shopping)                   |
+| `lib/scheduling/timeline.ts`        | 1     | Timeline warning (prep before wake time)                                  |
+| `lib/messages/actions.ts`           | 3     | Default template name + template content strings                          |
+| `lib/search/universal-search.ts`    | 2     | Search result snippets for events and inquiries                           |
+| `lib/gmail/google-auth.ts`          | 1     | Error message for missing refresh token                                   |
+| `lib/ai/correspondence.ts`          | 2     | Context strings (new client, calendar conflict)                           |
 
 Pass 1 subtotal: 19 replacements across 11 files.
 
@@ -87,17 +87,17 @@ Pass 2 subtotal: 21 replacements across 9 files.
 
 ## Pass 3: App Pages (app/)
 
-| File | Count | Context |
-|------|-------|---------|
-| `app/layout.tsx` | 2 | Meta description + OG description |
-| `app/(chef)/financials/financials-client.tsx` | 3 | Empty cell placeholders in event table |
-| `app/(chef)/expenses/[id]/page.tsx` | 2 | Vendor name + event date display |
-| `app/(chef)/expenses/page.tsx` | 1 | Empty cell placeholder |
-| `app/(chef)/quotes/[id]/page.tsx` | 5 | Client email, deposit, inquiry status, event date, internal note |
-| `app/(chef)/events/[id]/schedule/page.tsx` | 3 | Serve time, guest count, location city |
-| `app/(chef)/dashboard/page.tsx` | 3 | Command center subtitle, trend messages |
-| `app/(chef)/recipes/new/create-recipe-client.tsx` | 2 | Placeholder text for recipe input |
-| `app/auth/signup/page.tsx` | 1 | Helper text for optional field |
+| File                                              | Count | Context                                                          |
+| ------------------------------------------------- | ----- | ---------------------------------------------------------------- |
+| `app/layout.tsx`                                  | 2     | Meta description + OG description                                |
+| `app/(chef)/financials/financials-client.tsx`     | 3     | Empty cell placeholders in event table                           |
+| `app/(chef)/expenses/[id]/page.tsx`               | 2     | Vendor name + event date display                                 |
+| `app/(chef)/expenses/page.tsx`                    | 1     | Empty cell placeholder                                           |
+| `app/(chef)/quotes/[id]/page.tsx`                 | 5     | Client email, deposit, inquiry status, event date, internal note |
+| `app/(chef)/events/[id]/schedule/page.tsx`        | 3     | Serve time, guest count, location city                           |
+| `app/(chef)/dashboard/page.tsx`                   | 3     | Command center subtitle, trend messages                          |
+| `app/(chef)/recipes/new/create-recipe-client.tsx` | 2     | Placeholder text for recipe input                                |
+| `app/auth/signup/page.tsx`                        | 1     | Helper text for optional field                                   |
 
 Pass 3 subtotal: 22 replacements across 9 files.
 

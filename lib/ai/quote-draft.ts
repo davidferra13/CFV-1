@@ -24,7 +24,9 @@ export async function generateQuoteDraft(inquiryId: string): Promise<QuoteDraftR
 
   const { data: inquiry } = await supabase
     .from('inquiries')
-    .select('confirmed_occasion, confirmed_date, confirmed_guest_count, confirmed_budget_cents, confirmed_dietary_restrictions, confirmed_service_expectations, client:clients(full_name)')
+    .select(
+      'confirmed_occasion, confirmed_date, confirmed_guest_count, confirmed_budget_cents, confirmed_dietary_restrictions, confirmed_service_expectations, client:clients(full_name)'
+    )
     .eq('id', inquiryId)
     .eq('tenant_id', user.entityId)
     .single()
@@ -44,8 +46,7 @@ export async function generateQuoteDraft(inquiryId: string): Promise<QuoteDraftR
     recentEvents && recentEvents.length > 0
       ? Math.round(
           recentEvents.reduce(
-            (sum, e) =>
-              sum + (e.quoted_price_cents || 0) / Math.max(e.guest_count || 1, 1),
+            (sum, e) => sum + (e.quoted_price_cents || 0) / Math.max(e.guest_count || 1, 1),
             0
           ) / recentEvents.length
         )

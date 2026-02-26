@@ -19,7 +19,11 @@ export async function deliverWebhook(
   const endpoints = endpointsRaw as unknown as Array<{ id: string; url: string; secret: string }>
   if (!endpoints || endpoints.length === 0) return
 
-  const body = JSON.stringify({ event: eventType, data: payload, timestamp: new Date().toISOString() })
+  const body = JSON.stringify({
+    event: eventType,
+    data: payload,
+    timestamp: new Date().toISOString(),
+  })
 
   for (const endpoint of endpoints) {
     const signature = createHmac('sha256', endpoint.secret).update(body).digest('hex')
@@ -31,16 +35,17 @@ export async function deliverWebhook(
 
     try {
       const response = await withRetry(
-        () => fetch(endpoint.url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-ChefFlow-Signature': `sha256=${signature}`,
-            'X-ChefFlow-Event': eventType,
-          },
-          body,
-          signal: AbortSignal.timeout(10000),
-        }),
+        () =>
+          fetch(endpoint.url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-ChefFlow-Signature': `sha256=${signature}`,
+              'X-ChefFlow-Event': eventType,
+            },
+            body,
+            signal: AbortSignal.timeout(10000),
+          }),
         {
           maxAttempts: MAX_ATTEMPTS,
           baseDelayMs: 1000,

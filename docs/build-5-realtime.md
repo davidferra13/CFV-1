@@ -11,6 +11,7 @@
 ### Problem Being Solved
 
 Discovery: ChefFlow's real-time foundation was already substantially built:
+
 - `lib/notifications/realtime.ts` — Supabase `postgres_changes` subscription for notifications
 - `components/notifications/notification-provider.tsx` — wraps chef layout, maintains live Supabase connection
 - `components/dashboard/chef-todo-widget.tsx` — full optimistic UI (temp IDs, rollback on failure)
@@ -25,6 +26,7 @@ Grade before: **C → B+** (most of it was already done; gap was the status indi
 ## New Files
 
 ### `components/realtime/live-indicator.tsx`
+
 Offline-only connection indicator. Returns `null` when online (no clutter), renders a red pulsing dot + "Offline" label when the browser reports no network.
 
 - Uses `navigator.onLine` + `window` `online`/`offline` events
@@ -38,7 +40,9 @@ Offline-only connection indicator. Returns `null` when online (no clutter), rend
 ## Modified Files
 
 ### `components/navigation/chef-nav.tsx`
+
 Added `<LiveIndicator />` in three locations:
+
 1. **Desktop expanded sidebar header** — before `<GlobalSearch />`, inside the flex row with the collapse button
 2. **Desktop rail/collapsed mode** — after `<GlobalSearch />` in the rail's icon column
 3. **Mobile top bar** — before `<GlobalSearch />`, inside the flex row with the hamburger button
@@ -49,13 +53,13 @@ Since `LiveIndicator` returns `null` when online, these additions have zero visu
 
 ## Pre-existing Realtime Infrastructure (No Changes Needed)
 
-| File | What It Does |
-|---|---|
-| `lib/notifications/realtime.ts` | Supabase `postgres_changes` subscription on `notifications` table for the chef's tenant |
-| `components/notifications/notification-provider.tsx` | Wraps `app/(chef)/layout.tsx`; establishes + maintains Supabase realtime channel |
-| `components/dashboard/chef-todo-widget.tsx` | Full optimistic UI: temp IDs, immediate state update, rollback on server error |
-| `components/scheduling/dop-task-checkbox.tsx` | Optimistic checkbox toggle with `useTransition` + rollback |
-| `components/dashboard/activity-feed.tsx` | Live activity feed (already subscribed via notification provider context) |
+| File                                                 | What It Does                                                                            |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `lib/notifications/realtime.ts`                      | Supabase `postgres_changes` subscription on `notifications` table for the chef's tenant |
+| `components/notifications/notification-provider.tsx` | Wraps `app/(chef)/layout.tsx`; establishes + maintains Supabase realtime channel        |
+| `components/dashboard/chef-todo-widget.tsx`          | Full optimistic UI: temp IDs, immediate state update, rollback on server error          |
+| `components/scheduling/dop-task-checkbox.tsx`        | Optimistic checkbox toggle with `useTransition` + rollback                              |
+| `components/dashboard/activity-feed.tsx`             | Live activity feed (already subscribed via notification provider context)               |
 
 ---
 

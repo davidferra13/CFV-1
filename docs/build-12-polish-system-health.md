@@ -19,9 +19,11 @@
 ## New Files
 
 ### `components/ui/skeleton.tsx`
+
 Reusable skeleton loading components for content-shaped placeholders.
 
 **Exports:**
+
 - `Skeleton` — base component: `animate-pulse` rounded gray rectangle, any size via `className`
 - `SkeletonCard` — card-shaped skeleton with header + N body lines (configurable)
 - `SkeletonRow` — row with avatar circle + two lines of text + right-aligned chip (for lists)
@@ -30,6 +32,7 @@ Reusable skeleton loading components for content-shaped placeholders.
 - `SkeletonDashboardSection` — section header + 3-column KPI tile grid
 
 **Usage:**
+
 ```tsx
 // In Suspense fallback
 <Suspense fallback={<SkeletonTable rows={5} />}>
@@ -43,6 +46,7 @@ Reusable skeleton loading components for content-shaped placeholders.
 ---
 
 ### `lib/utils.ts`
+
 Standard `cn()` utility using `clsx` (already installed as a transitive dependency).
 
 ```typescript
@@ -53,17 +57,19 @@ cn('base-class', condition && 'conditional-class', className)
 ---
 
 ### `app/(chef)/settings/health/page.tsx`
+
 System health status page at `/settings/health`.
 
 **Checks performed:**
 
-| Check | Source | Healthy State | Warning | Error |
-|---|---|---|---|---|
-| Stripe Payments | `getConnectAccountStatus()` | Connected + charges enabled | Connected but charges disabled | Not connected |
-| Gmail Integration | `getGoogleConnection()` | Connected, 0 errors | Sync errors > 0 | Not connected |
-| DOP Tasks | `getDOPTaskDigest()` | 0 overdue, 0 due today | Tasks due today | Overdue tasks |
+| Check             | Source                      | Healthy State               | Warning                        | Error         |
+| ----------------- | --------------------------- | --------------------------- | ------------------------------ | ------------- |
+| Stripe Payments   | `getConnectAccountStatus()` | Connected + charges enabled | Connected but charges disabled | Not connected |
+| Gmail Integration | `getGoogleConnection()`     | Connected, 0 errors         | Sync errors > 0                | Not connected |
+| DOP Tasks         | `getDOPTaskDigest()`        | 0 overdue, 0 due today      | Tasks due today                | Overdue tasks |
 
 **Visual design:**
+
 - Color-coded rows: emerald (ok), amber (warning), red (error), stone (unknown)
 - Pulsing dot animation on warning/error states
 - "Overall status" banner at top (aggregated)
@@ -75,13 +81,16 @@ System health status page at `/settings/health`.
 ## Modified Files
 
 ### `components/navigation/chef-nav.tsx` (from Build 5)
+
 Already updated to include `LiveIndicator` in 3 nav locations.
 
 ### `app/(chef)/clients/page.tsx`
+
 - Replaced generic `<div className="text-sm text-stone-500">Loading clients...</div>` Suspense fallback with `<SkeletonTable rows={5} />`
 - Added `EmptyState` import + replaced zero-clients div with proper `EmptyState` component (from Build 8)
 
 ### `app/(chef)/settings/page.tsx`
+
 - Added "System Health" link in Account & Security section (emerald bordered, links to `/settings/health`)
 - Added "Sample Data" section (from Build 8)
 

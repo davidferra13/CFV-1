@@ -8,16 +8,19 @@
 ## Why Staging is Not Set Up Yet
 
 ChefFlow currently operates with only two environments:
+
 - **Local** (developer's machine, pointing at remote Supabase with local `next dev`)
 - **Production** (Vercel, cheflowhq.com, remote Supabase)
 
 At the current scale (< 50 chefs, single developer), the risk of this two-environment setup is acceptable because:
+
 - All migrations are additive (no breaking schema changes)
 - E2E tests run against local server with production DB (guarded by `SUPABASE_E2E_ALLOW_REMOTE`)
 - TypeScript check + build check catches most breakage before deploy
 - Manual deploy process allows human gate before production
 
 **Staging should be set up when:**
+
 - First paid client onboards (data integrity failures have real consequences)
 - Team grows beyond 1 developer
 - Any migration requires a destructive change (DROP, TRUNCATE, RENAME)
@@ -29,21 +32,21 @@ At the current scale (< 50 chefs, single developer), the risk of this two-enviro
 
 ### Compute
 
-| Layer | Production | Staging |
-|-------|-----------|---------|
-| Hosting | Vercel Production | Vercel Preview (auto-deploy from `main` branch) |
-| Domain | cheflowhq.com | staging.cheflowhq.com |
-| DNS | Cloudflare A → Vercel | Cloudflare CNAME → Vercel preview URL |
+| Layer   | Production            | Staging                                         |
+| ------- | --------------------- | ----------------------------------------------- |
+| Hosting | Vercel Production     | Vercel Preview (auto-deploy from `main` branch) |
+| Domain  | cheflowhq.com         | staging.cheflowhq.com                           |
+| DNS     | Cloudflare A → Vercel | Cloudflare CNAME → Vercel preview URL           |
 
 **Vercel Preview Deployments:** Every commit to `main` (or a `staging` branch) automatically creates a preview URL. Promote to production manually.
 
 ### Database
 
-| Layer | Production | Staging |
-|-------|-----------|---------|
-| Provider | Supabase (project: luefkpakzvxcsqroxyhz) | Supabase (NEW project: chefflow-staging) |
-| Plan | Pro (for PITR) | Free (daily backups sufficient) |
-| Data | Real customer data | Anonymized snapshot OR seed data only |
+| Layer      | Production                                       | Staging                                             |
+| ---------- | ------------------------------------------------ | --------------------------------------------------- |
+| Provider   | Supabase (project: luefkpakzvxcsqroxyhz)         | Supabase (NEW project: chefflow-staging)            |
+| Plan       | Pro (for PITR)                                   | Free (daily backups sufficient)                     |
+| Data       | Real customer data                               | Anonymized snapshot OR seed data only               |
 | Migrations | `supabase db push --linked --project-ref [prod]` | `supabase db push --linked --project-ref [staging]` |
 
 ### Environment Variables
@@ -125,6 +128,7 @@ Before promoting a build from staging to production, verify:
 ## Current Workaround (Until Staging Exists)
 
 Without staging, use feature flags for risk mitigation:
+
 - New features behind `chef_feature_flags` (off by default)
 - Test on one or two "friendly" chef accounts before enabling broadly
 - Always run E2E smoke suite before production deploy
@@ -133,4 +137,4 @@ See `docs/feature-flags.md` for flag management.
 
 ---
 
-*Last updated: 2026-02-20*
+_Last updated: 2026-02-20_

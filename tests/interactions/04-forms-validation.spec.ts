@@ -8,25 +8,29 @@ import { test, expect } from '../helpers/fixtures'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-async function expectValidationError(
-  page: Parameters<Parameters<typeof test>[1]>[0]['page']
-) {
+async function expectValidationError(page: Parameters<Parameters<typeof test>[1]>[0]['page']) {
   // Wait briefly for validation to appear
   await page.waitForTimeout(500)
 
   // Common validation error patterns
-  const errorVisible = await page.locator([
-    '[role="alert"]',
-    '.error',
-    '[class*="error"]',
-    '[class*="invalid"]',
-    '[class*="danger"]',
-    '[aria-invalid="true"]',
-    'p:has-text("required")',
-    'p:has-text("invalid")',
-    'span:has-text("required")',
-    'span:has-text("invalid")',
-  ].join(', ')).first().isVisible().catch(() => false)
+  const errorVisible = await page
+    .locator(
+      [
+        '[role="alert"]',
+        '.error',
+        '[class*="error"]',
+        '[class*="invalid"]',
+        '[class*="danger"]',
+        '[aria-invalid="true"]',
+        'p:has-text("required")',
+        'p:has-text("invalid")',
+        'span:has-text("required")',
+        'span:has-text("invalid")',
+      ].join(', ')
+    )
+    .first()
+    .isVisible()
+    .catch(() => false)
 
   // Alternative: we stayed on the same form page (didn't navigate away on invalid input)
   return errorVisible
@@ -57,7 +61,9 @@ test.describe('Form Validation — Event', () => {
     await page.waitForLoadState('networkidle')
 
     // Try to set an invalid date
-    const dateField = page.getByLabel(/date/i).first()
+    const dateField = page
+      .getByLabel(/date/i)
+      .first()
       .or(page.locator('input[type="date"]').first())
     if (await dateField.isVisible()) {
       await dateField.fill('not-a-date')
@@ -88,14 +94,19 @@ test.describe('Form Validation — Expense', () => {
     const stayedOnForm = url.includes('/expenses/new')
     const hasError = await expectValidationError(page)
 
-    expect(stayedOnForm || hasError, 'Expense form with no amount should show error or stay').toBeTruthy()
+    expect(
+      stayedOnForm || hasError,
+      'Expense form with no amount should show error or stay'
+    ).toBeTruthy()
   })
 
   test('/expenses/new — negative amount is rejected', async ({ page }) => {
     await page.goto('/expenses/new')
     await page.waitForLoadState('networkidle')
 
-    const amountField = page.getByLabel(/amount/i).first()
+    const amountField = page
+      .getByLabel(/amount/i)
+      .first()
       .or(page.locator('input[type="number"]').first())
     if (await amountField.isVisible()) {
       await amountField.fill('-100')
@@ -107,7 +118,7 @@ test.describe('Form Validation — Expense', () => {
 
     // Should not proceed with a negative expense
     const url = page.url()
-    const stayedOrError = url.includes('/expenses/new') || await expectValidationError(page)
+    const stayedOrError = url.includes('/expenses/new') || (await expectValidationError(page))
     expect(stayedOrError, 'Negative expense amount should be rejected').toBeTruthy()
   })
 })
@@ -124,7 +135,7 @@ test.describe('Form Validation — Client', () => {
     await page.waitForTimeout(1000)
 
     const url = page.url()
-    const stayedOrError = url.includes('/clients/new') || await expectValidationError(page)
+    const stayedOrError = url.includes('/clients/new') || (await expectValidationError(page))
     expect(stayedOrError, 'Empty client form should not silently create client').toBeTruthy()
   })
 
@@ -132,14 +143,15 @@ test.describe('Form Validation — Client', () => {
     await page.goto('/clients/new')
     await page.waitForLoadState('networkidle')
 
-    const nameField = page.getByLabel(/full name/i).first()
+    const nameField = page
+      .getByLabel(/full name/i)
+      .first()
       .or(page.getByPlaceholder(/full name|name/i).first())
     if (await nameField.isVisible()) {
       await nameField.fill('Test Client')
     }
 
-    const emailField = page.getByLabel(/email/i).first()
-      .or(page.getByPlaceholder(/email/i).first())
+    const emailField = page.getByLabel(/email/i).first().or(page.getByPlaceholder(/email/i).first())
     if (await emailField.isVisible()) {
       await emailField.fill('not-an-email')
     }
@@ -150,7 +162,7 @@ test.describe('Form Validation — Client', () => {
 
     // Should show an email validation error or stay on page
     const url = page.url()
-    const stayedOrError = url.includes('/clients/new') || await expectValidationError(page)
+    const stayedOrError = url.includes('/clients/new') || (await expectValidationError(page))
     expect(stayedOrError, 'Invalid email should be caught by validation').toBeTruthy()
   })
 })
@@ -167,7 +179,7 @@ test.describe('Form Validation — Recipe', () => {
     await page.waitForTimeout(1000)
 
     const url = page.url()
-    const stayedOrError = url.includes('/recipes/new') || await expectValidationError(page)
+    const stayedOrError = url.includes('/recipes/new') || (await expectValidationError(page))
     expect(stayedOrError, 'Recipe without name should not be saved').toBeTruthy()
   })
 })
@@ -180,12 +192,16 @@ test.describe('Form Validation — Settings', () => {
     await page.waitForLoadState('networkidle')
 
     // Fill in a new password and a different confirm password
-    const newPassField = page.getByLabel(/new password/i).first()
+    const newPassField = page
+      .getByLabel(/new password/i)
+      .first()
       .or(page.locator('input[type="password"]').nth(0))
-    const confirmField = page.getByLabel(/confirm.*password/i).first()
+    const confirmField = page
+      .getByLabel(/confirm.*password/i)
+      .first()
       .or(page.locator('input[type="password"]').nth(1))
 
-    if (await newPassField.isVisible() && await confirmField.isVisible()) {
+    if ((await newPassField.isVisible()) && (await confirmField.isVisible())) {
       await newPassField.fill('NewPassword123!')
       await confirmField.fill('DifferentPassword456!')
 
@@ -218,7 +234,7 @@ test.describe('Form Validation — Quote', () => {
     await page.waitForTimeout(1000)
 
     const url = page.url()
-    const stayedOrError = url.includes('/quotes/new') || await expectValidationError(page)
+    const stayedOrError = url.includes('/quotes/new') || (await expectValidationError(page))
     expect(stayedOrError, 'Quote without client should not be saved').toBeTruthy()
   })
 })

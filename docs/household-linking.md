@@ -11,6 +11,7 @@ Private chefs cook for households, not individuals. A chef needs to know that Mr
 ## New Files
 
 ### Migration
+
 - `supabase/migrations/20260220000005_households.sql`
   - `household_relationship` enum: partner, child, family_member, regular_guest
   - `households` table: tenant-scoped, with name, primary_client_id, notes
@@ -20,6 +21,7 @@ Private chefs cook for households, not individuals. A chef needs to know that Mr
   - Indexes on tenant_id, household_id, client_id
 
 ### Server Actions
+
 - `lib/households/actions.ts`
   - `createHousehold()` -- create with name, optional primary contact, notes
   - `updateHousehold()` -- update name, primary contact, notes
@@ -33,11 +35,13 @@ Private chefs cook for households, not individuals. A chef needs to know that Mr
   - `linkEventToHousehold()` -- associate event with household
 
 ### Components
+
 - `components/households/household-card.tsx` -- overview card with member chips, relationship labels, primary contact crown icon
 - `components/households/household-form.tsx` -- create/edit form with client dropdown for primary contact
 - `components/households/household-manager.tsx` -- inline manager for client detail page (create, join existing, view members, remove members)
 
 ### Pages
+
 - `app/(chef)/households/page.tsx` -- list all households + create form
 - `app/(chef)/households/[id]/page.tsx` -- household detail with member management + edit form
 - `app/(chef)/households/[id]/household-detail-members.tsx` -- client component for adding/removing members
@@ -45,33 +49,40 @@ Private chefs cook for households, not individuals. A chef needs to know that Mr
 ## Modified Files
 
 ### `components/navigation/chef-nav.tsx`
+
 - Added `Home` icon import from lucide-react
 - Added `{ href: '/households', label: 'Households', icon: Home }` to the Clients navigation group
 
 ### `middleware.ts`
+
 - Added `/households` to `chefPaths` array for auth protection
 
 ### `app/(chef)/clients/[id]/page.tsx`
+
 - Added `HouseholdManager` component between PersonalInfoEditor and QuickNotes sections
 - Added imports for `getClientHousehold` and `getHouseholds`
 - Extended Promise.all to fetch household data in parallel
 
 ### `components/events/event-form.tsx`
+
 - Added `HouseholdOption` type and `households` prop (optional)
 - Added `householdId` state
 - Added optional household `<Select>` dropdown after client selector
 - Passes `household_id` to both `createEvent` and `updateEvent` calls
 
 ### `lib/events/actions.ts`
+
 - Added `household_id: z.string().uuid().nullable().optional()` to both `CreateEventSchema` and `UpdateEventSchema`
 - Added `household_id` to insert object in `createEvent()`
 - `updateEvent()` auto-includes via `...validated` spread
 
 ### `app/(chef)/events/new/page.tsx`
+
 - Fetches households in parallel with clients
 - Passes `householdOptions` to EventForm
 
 ### `app/(chef)/events/[id]/edit/page.tsx`
+
 - Fetches households in parallel with clients
 - Maps `household_id` from event data
 - Passes `householdOptions` to EventForm
@@ -107,11 +118,11 @@ events.household_id UUID FK households ON DELETE SET NULL
 
 ## Relationship Types
 
-| Type | Use Case |
-|------|----------|
-| partner | Spouse, significant other, co-host |
-| child | Son, daughter, minor family member |
-| family_member | Parent, sibling, extended family |
+| Type          | Use Case                            |
+| ------------- | ----------------------------------- |
+| partner       | Spouse, significant other, co-host  |
+| child         | Son, daughter, minor family member  |
+| family_member | Parent, sibling, extended family    |
 | regular_guest | Frequent dinner guest, recurring +1 |
 
 ## Key Design Decisions

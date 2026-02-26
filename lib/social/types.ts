@@ -1,10 +1,4 @@
-export type SocialPostStatus =
-  | 'idea'
-  | 'draft'
-  | 'approved'
-  | 'queued'
-  | 'published'
-  | 'archived'
+export type SocialPostStatus = 'idea' | 'draft' | 'approved' | 'queued' | 'published' | 'archived'
 
 export type SocialPillar =
   | 'recipe'

@@ -13,22 +13,23 @@ A full audit and polish pass of all public-facing pages. Three pages were substa
 
 ## Pages Audited
 
-| Page | Route | Outcome |
-|---|---|---|
-| Home | `/` | No changes — already clean and well-written |
-| Pricing | `/pricing` | Deferred — not charging yet |
-| Contact | `/contact` | No changes — solid form, actions file confirmed |
-| **Privacy Policy** | `/privacy` | **Rewritten** |
-| **Terms of Service** | `/terms` | **Rewritten** |
-| **Chef Profile** | `/chef/[slug]` | **CTA section fixed** |
-| Inquiry Form | `/chef/[slug]/inquire` | No changes |
-| Share/RSVP | `/share/[token]` | No changes |
+| Page                 | Route                  | Outcome                                         |
+| -------------------- | ---------------------- | ----------------------------------------------- |
+| Home                 | `/`                    | No changes — already clean and well-written     |
+| Pricing              | `/pricing`             | Deferred — not charging yet                     |
+| Contact              | `/contact`             | No changes — solid form, actions file confirmed |
+| **Privacy Policy**   | `/privacy`             | **Rewritten**                                   |
+| **Terms of Service** | `/terms`               | **Rewritten**                                   |
+| **Chef Profile**     | `/chef/[slug]`         | **CTA section fixed**                           |
+| Inquiry Form         | `/chef/[slug]/inquire` | No changes                                      |
+| Share/RSVP           | `/share/[token]`       | No changes                                      |
 
 ---
 
 ## Privacy Policy (`app/(public)/privacy/page.tsx`)
 
 ### Before
+
 - "Privacy policy content coming soon." banner was the first thing visitors saw
 - `new Date().toLocaleDateString()` produced inconsistent dates depending on locale and SSR vs. client render
 - Section bodies were all placeholder text ("Details about... will be provided here.")
@@ -37,6 +38,7 @@ A full audit and polish pass of all public-facing pages. Three pages were substa
 - Contact email referenced `@chefflow.com` (old domain)
 
 ### After
+
 - Removed the placeholder banner entirely
 - Static date string `"March 1, 2026"` — consistent, predictable
 - Added `metadata.description` for SEO
@@ -61,6 +63,7 @@ A full audit and polish pass of all public-facing pages. Three pages were substa
 ## Terms of Service (`app/(public)/terms/page.tsx`)
 
 ### Before
+
 - "Terms of service content coming soon." banner
 - Same locale/SSR date issue
 - Section bodies all placeholder text
@@ -68,6 +71,7 @@ A full audit and polish pass of all public-facing pages. Three pages were substa
 - Contact email referenced `@chefflow.com`
 
 ### After
+
 - Removed placeholder banner
 - Static date string `"March 1, 2026"`
 - Added `metadata.description`
@@ -97,7 +101,9 @@ A full audit and polish pass of all public-facing pages. Three pages were substa
 ## Chef Profile CTA (`app/(public)/chef/[slug]/page.tsx`)
 
 ### Before
+
 The CTA description was hardcoded as:
+
 > "Choose a venue above and hire [chef] for an unforgettable dining experience. Or tell us about your event and we'll be in touch."
 
 This copy was always shown, even when the chef had no partners — making the "Choose a venue above" reference nonsensical since no venue section appeared on the page.
@@ -105,6 +111,7 @@ This copy was always shown, even when the chef had no partners — making the "C
 The CTA buttons were also laid out as a series of individual `<div>` wrappers with inconsistent margins (`mt-6`, `mt-4`, `mt-3`, `mt-2`), and "Create client account" / "Create partner profile" were full-width blocks competing visually with the primary action buttons.
 
 ### After
+
 - **Dynamic copy:** `partners.length > 0` shows the venue-referencing copy; otherwise shows a simpler "Tell us about your event and [chef] will be in touch."
 - **Unified button column:** primary action buttons use a `flex flex-col items-center gap-3` container with `w-full max-w-xs` for consistent widths
 - **Secondary links row:** "Create client account" and "Become a partner" are rendered as a compact inline row with a middot separator, visually subordinate to the primary CTAs

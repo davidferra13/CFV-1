@@ -12,12 +12,12 @@ Phase 5 completes the improvement plan by building the strategic analytics layer
 
 This phase adds four capabilities:
 
-| Feature | Files Created | Files Modified |
-|---|---|---|
-| 5.1 Client LTV Trajectory | `lib/clients/ltv-trajectory.ts`, `components/clients/ltv-chart.tsx` | `app/(chef)/clients/[id]/page.tsx` |
-| 5.2 Seasonal Pattern Detection | `lib/analytics/seasonality.ts` | `app/(chef)/dashboard/page.tsx` |
-| 5.3 Guest Preference Inheritance | — | `lib/documents/generate-prep-sheet.ts` |
-| 5.4 Menu/Culinary History | `lib/clients/menu-history.ts`, `components/clients/menu-history-panel.tsx` | `app/(chef)/clients/[id]/page.tsx` |
+| Feature                          | Files Created                                                              | Files Modified                         |
+| -------------------------------- | -------------------------------------------------------------------------- | -------------------------------------- |
+| 5.1 Client LTV Trajectory        | `lib/clients/ltv-trajectory.ts`, `components/clients/ltv-chart.tsx`        | `app/(chef)/clients/[id]/page.tsx`     |
+| 5.2 Seasonal Pattern Detection   | `lib/analytics/seasonality.ts`                                             | `app/(chef)/dashboard/page.tsx`        |
+| 5.3 Guest Preference Inheritance | —                                                                          | `lib/documents/generate-prep-sheet.ts` |
+| 5.4 Menu/Culinary History        | `lib/clients/menu-history.ts`, `components/clients/menu-history-panel.tsx` | `app/(chef)/clients/[id]/page.tsx`     |
 
 ---
 
@@ -57,6 +57,7 @@ Groups all of a chef's booking history by calendar month (Jan–Dec) to identify
 ### Why It Matters
 
 Private chefs have highly seasonal businesses (holiday season, summer events, etc.) but rarely have a systematic way to see these patterns. This feature lets the chef:
+
 - Plan client outreach before peak season fills up
 - Use quiet periods to develop new relationships
 - Price strategically during peak demand
@@ -142,6 +143,7 @@ It also surfaces the "avoid menu fatigue" insight from the Action Inventory: pro
 ## Migrations in Phase 5
 
 **None.** All Phase 5 features use existing schema:
+
 - `events` table (with `menu_id`, `client_id`, `status`, `amount_paid_cents`)
 - `event_financial_summary` view (for LTV trajectory)
 - `menus`, `dishes`, `components` tables (for menu history)

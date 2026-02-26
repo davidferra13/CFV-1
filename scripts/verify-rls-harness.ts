@@ -29,7 +29,9 @@ const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 // Validation
 if (!SUPABASE_URL || !ANON_KEY || !SERVICE_KEY) {
   console.error('❌ FAIL: Missing environment variables')
-  console.error('Required: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY')
+  console.error(
+    'Required: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY'
+  )
   process.exit(1)
 }
 
@@ -89,14 +91,14 @@ async function seedTestData() {
       id: TENANT_A_ID,
       auth_user_id: TENANT_A_AUTH,
       business_name: 'RLS_TEST: Tenant A',
-      email: 'rls_test_tenant_a@example.com'
+      email: 'rls_test_tenant_a@example.com',
     },
     {
       id: TENANT_B_ID,
       auth_user_id: TENANT_B_AUTH,
       business_name: 'RLS_TEST: Tenant B',
-      email: 'rls_test_tenant_b@example.com'
-    }
+      email: 'rls_test_tenant_b@example.com',
+    },
   ])
 
   if (chefError) {
@@ -110,7 +112,7 @@ async function seedTestData() {
     auth_user_id: CLIENT_A1_AUTH,
     tenant_id: TENANT_A_ID,
     full_name: 'RLS_TEST: Client A1',
-    email: 'rls_test_client_a1@example.com'
+    email: 'rls_test_client_a1@example.com',
   })
 
   if (clientError) {
@@ -131,7 +133,7 @@ async function seedTestData() {
       total_amount_cents: 100000,
       deposit_amount_cents: 50000,
       status: 'draft',
-      created_by: TENANT_A_AUTH
+      created_by: TENANT_A_AUTH,
     },
     {
       id: EVENT_B1_ID,
@@ -144,8 +146,8 @@ async function seedTestData() {
       total_amount_cents: 120000,
       deposit_amount_cents: 60000,
       status: 'draft',
-      created_by: TENANT_B_AUTH
-    }
+      created_by: TENANT_B_AUTH,
+    },
   ])
 
   // Event B1 will fail FK constraint, so create minimal version
@@ -156,7 +158,7 @@ async function seedTestData() {
       auth_user_id: 'bbbbbbbb-bbbb-bbbb-bbbb-000000000002',
       tenant_id: TENANT_B_ID,
       full_name: 'RLS_TEST: Client B1',
-      email: 'rls_test_client_b1@example.com'
+      email: 'rls_test_client_b1@example.com',
     })
 
     await serviceClient.from('events').insert({
@@ -170,7 +172,7 @@ async function seedTestData() {
       total_amount_cents: 120000,
       deposit_amount_cents: 60000,
       status: 'draft',
-      created_by: TENANT_B_AUTH
+      created_by: TENANT_B_AUTH,
     })
   }
 
@@ -182,15 +184,15 @@ async function seedTestData() {
       name: 'RLS_TEST: Menu A1',
       description: 'Test menu for tenant A',
       price_per_person_cents: 10000,
-      is_active: true
+      is_active: true,
     },
     {
       tenant_id: TENANT_B_ID,
       name: 'RLS_TEST: Menu B1',
       description: 'Test menu for tenant B',
       price_per_person_cents: 12000,
-      is_active: true
-    }
+      is_active: true,
+    },
   ])
 
   // Create ledger entries
@@ -202,15 +204,15 @@ async function seedTestData() {
       client_id: CLIENT_A1_ID,
       entry_type: 'charge_succeeded',
       amount_cents: 50000,
-      description: 'RLS_TEST: Ledger entry A1'
+      description: 'RLS_TEST: Ledger entry A1',
     },
     {
       tenant_id: TENANT_B_ID,
       event_id: EVENT_B1_ID,
       entry_type: 'charge_succeeded',
       amount_cents: 60000,
-      description: 'RLS_TEST: Ledger entry B1'
-    }
+      description: 'RLS_TEST: Ledger entry B1',
+    },
   ])
 
   console.log('✓ Test data seeded\n')
@@ -235,7 +237,9 @@ async function runTests() {
   } else if (anonEvents && anonEvents.length === 0) {
     console.log('  ✅ PASS: Anon client got 0 rows (RLS deny-by-default working)')
   } else {
-    console.log(`  ❌ FAIL: Anon client got ${anonEvents?.length || 0} rows (RLS BROKEN - should be 0)`)
+    console.log(
+      `  ❌ FAIL: Anon client got ${anonEvents?.length || 0} rows (RLS BROKEN - should be 0)`
+    )
     testsFailed++
   }
 
@@ -252,7 +256,9 @@ async function runTests() {
   } else if (anonLedger && anonLedger.length === 0) {
     console.log('  ✅ PASS: Anon client got 0 rows (RLS deny-by-default working)')
   } else {
-    console.log(`  ❌ FAIL: Anon client got ${anonLedger?.length || 0} rows (RLS BROKEN - should be 0)`)
+    console.log(
+      `  ❌ FAIL: Anon client got ${anonLedger?.length || 0} rows (RLS BROKEN - should be 0)`
+    )
     testsFailed++
   }
 
@@ -269,7 +275,9 @@ async function runTests() {
   } else if (anonMenus && anonMenus.length === 0) {
     console.log('  ✅ PASS: Anon client got 0 rows (RLS deny-by-default working)')
   } else {
-    console.log(`  ❌ FAIL: Anon client got ${anonMenus?.length || 0} rows (RLS BROKEN - should be 0)`)
+    console.log(
+      `  ❌ FAIL: Anon client got ${anonMenus?.length || 0} rows (RLS BROKEN - should be 0)`
+    )
     testsFailed++
   }
 
@@ -286,7 +294,9 @@ async function runTests() {
   } else if (anonClients && anonClients.length === 0) {
     console.log('  ✅ PASS: Anon client got 0 rows (RLS deny-by-default working)')
   } else {
-    console.log(`  ❌ FAIL: Anon client got ${anonClients?.length || 0} rows (RLS BROKEN - should be 0)`)
+    console.log(
+      `  ❌ FAIL: Anon client got ${anonClients?.length || 0} rows (RLS BROKEN - should be 0)`
+    )
     testsFailed++
   }
 
@@ -326,15 +336,13 @@ async function runTests() {
 
   // TEST 7: Service role can insert ledger entries (for webhooks)
   console.log('\nTEST 7: Service role can INSERT ledger entries (for webhooks)')
-  const { error: insertError } = await serviceClient
-    .from('ledger_entries')
-    .insert({
-      tenant_id: TENANT_A_ID,
-      event_id: EVENT_A1_ID,
-      entry_type: 'adjustment',
-      amount_cents: 1000,
-      description: 'RLS_TEST: Service role insert test'
-    })
+  const { error: insertError } = await serviceClient.from('ledger_entries').insert({
+    tenant_id: TENANT_A_ID,
+    event_id: EVENT_A1_ID,
+    entry_type: 'adjustment',
+    amount_cents: 1000,
+    description: 'RLS_TEST: Service role insert test',
+  })
 
   if (insertError) {
     console.log('  ❌ FAIL: Service role cannot insert:', insertError.message)
@@ -373,7 +381,7 @@ function printSummary() {
  */
 async function main() {
   console.log('ChefFlow V1 - RLS Verification Harness')
-  console.log('=' .repeat(50) + '\n')
+  console.log('='.repeat(50) + '\n')
 
   await cleanup()
   await seedTestData()

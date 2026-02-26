@@ -50,18 +50,18 @@ Vercel Cron sends `Authorization: Bearer <CRON_SECRET>` on GET requests — the 
 
 ### All 10 Routes Fixed
 
-| Route | Schedule | Handler Function |
-|---|---|---|
-| `app/api/gmail/sync/route.ts` | every 5 min | `handleGmailSync` |
-| `app/api/scheduled/integrations/pull/route.ts` | every 5 min | `handleIntegrationsPull` |
-| `app/api/scheduled/wix-process/route.ts` | every 5 min | `handleWixProcess` |
-| `app/api/scheduled/automations/route.ts` | every 15 min | `handleAutomations` |
-| `app/api/scheduled/copilot/route.ts` | every 15 min | `handleCopilot` |
-| `app/api/scheduled/revenue-goals/route.ts` | every 6 hr | `handleRevenueGoals` |
-| `app/api/scheduled/follow-ups/route.ts` | every 6 hr | `handleFollowUps` |
-| `app/api/scheduled/reviews-sync/route.ts` | every 6 hr | `handleReviewsSync` |
-| `app/api/scheduled/integrations/retry/route.ts` | every 1 hr | `handleIntegrationsRetry` |
-| `app/api/scheduled/lifecycle/route.ts` | daily 3am | `handleLifecycle` |
+| Route                                           | Schedule     | Handler Function          |
+| ----------------------------------------------- | ------------ | ------------------------- |
+| `app/api/gmail/sync/route.ts`                   | every 5 min  | `handleGmailSync`         |
+| `app/api/scheduled/integrations/pull/route.ts`  | every 5 min  | `handleIntegrationsPull`  |
+| `app/api/scheduled/wix-process/route.ts`        | every 5 min  | `handleWixProcess`        |
+| `app/api/scheduled/automations/route.ts`        | every 15 min | `handleAutomations`       |
+| `app/api/scheduled/copilot/route.ts`            | every 15 min | `handleCopilot`           |
+| `app/api/scheduled/revenue-goals/route.ts`      | every 6 hr   | `handleRevenueGoals`      |
+| `app/api/scheduled/follow-ups/route.ts`         | every 6 hr   | `handleFollowUps`         |
+| `app/api/scheduled/reviews-sync/route.ts`       | every 6 hr   | `handleReviewsSync`       |
+| `app/api/scheduled/integrations/retry/route.ts` | every 1 hr   | `handleIntegrationsRetry` |
+| `app/api/scheduled/lifecycle/route.ts`          | daily 3am    | `handleLifecycle`         |
 
 **Not changed** (not in `vercel.json` crons):
 
@@ -71,26 +71,27 @@ Vercel Cron sends `Authorization: Bearer <CRON_SECRET>` on GET requests — the 
 
 ## What's Already Working (No Changes Required)
 
-| Feature | File | Status |
-|---|---|---|
-| OAuth Connect/Disconnect | `components/settings/connected-accounts.tsx` → `lib/gmail/google-auth.ts` | ✅ Working |
-| Token auto-refresh (5-min buffer) | `lib/gmail/google-auth.ts:getGoogleAccessToken()` | ✅ Working |
-| Manual "Sync Now" button | `lib/gmail/actions.ts:triggerGmailSync()` (server action, bypasses API route) | ✅ Working |
-| Email classification AI | `lib/gmail/classify.ts` → Gemini | ✅ Working |
-| Inquiry auto-creation | `lib/gmail/sync.ts:handleInquiry()` | ✅ Working |
-| Thread linking on reply | `lib/gmail/sync.ts:handleExistingThread()` | ✅ Working |
-| AI draft generation | `lib/ai/correspondence.ts:draftResponseForInquiry()` | ✅ Working |
-| Response composer UI | `components/inquiries/inquiry-response-composer.tsx` | ✅ Working |
-| Approve & send via Gmail API | `lib/gmail/actions.ts:approveAndSendMessage()` | ✅ Working |
-| Email threading (RFC 2822) | `lib/gmail/client.ts:sendEmail()` with In-Reply-To/References | ✅ Working |
-| Settings page integration | `app/(chef)/settings/page.tsx` → `ConnectedAccounts` | ✅ Working |
-| Deduplication | `gmail_sync_log` table + unique indexes on `messages` | ✅ Working |
+| Feature                           | File                                                                          | Status     |
+| --------------------------------- | ----------------------------------------------------------------------------- | ---------- |
+| OAuth Connect/Disconnect          | `components/settings/connected-accounts.tsx` → `lib/gmail/google-auth.ts`     | ✅ Working |
+| Token auto-refresh (5-min buffer) | `lib/gmail/google-auth.ts:getGoogleAccessToken()`                             | ✅ Working |
+| Manual "Sync Now" button          | `lib/gmail/actions.ts:triggerGmailSync()` (server action, bypasses API route) | ✅ Working |
+| Email classification AI           | `lib/gmail/classify.ts` → Gemini                                              | ✅ Working |
+| Inquiry auto-creation             | `lib/gmail/sync.ts:handleInquiry()`                                           | ✅ Working |
+| Thread linking on reply           | `lib/gmail/sync.ts:handleExistingThread()`                                    | ✅ Working |
+| AI draft generation               | `lib/ai/correspondence.ts:draftResponseForInquiry()`                          | ✅ Working |
+| Response composer UI              | `components/inquiries/inquiry-response-composer.tsx`                          | ✅ Working |
+| Approve & send via Gmail API      | `lib/gmail/actions.ts:approveAndSendMessage()`                                | ✅ Working |
+| Email threading (RFC 2822)        | `lib/gmail/client.ts:sendEmail()` with In-Reply-To/References                 | ✅ Working |
+| Settings page integration         | `app/(chef)/settings/page.tsx` → `ConnectedAccounts`                          | ✅ Working |
+| Deduplication                     | `gmail_sync_log` table + unique indexes on `messages`                         | ✅ Working |
 
 ---
 
 ## How the Gmail Agent Works (Full Flow)
 
 ### 1. Chef Connects Gmail (one-time setup)
+
 1. Chef goes to **Settings → Connected Accounts & Integrations → Connect Gmail**
 2. `initiateGoogleConnect(['gmail.readonly', 'gmail.send'])` generates a CSRF token (stored in httpOnly cookie) and builds the Google OAuth URL
 3. Chef approves on Google → callback at `/api/auth/google/connect/callback`
@@ -98,6 +99,7 @@ Vercel Cron sends `Authorization: Bearer <CRON_SECRET>` on GET requests — the 
 5. Chef is redirected to `/settings?connected=gmail`
 
 ### 2. Auto-Sync (every 5 minutes via Vercel Cron)
+
 1. Vercel sends `GET /api/gmail/sync` with `Authorization: Bearer <CRON_SECRET>`
 2. Route fetches all chefs with `gmail_connected = true` from `google_connections`
 3. For each chef: `syncGmailInbox(chefId, tenantId)` runs
@@ -108,6 +110,7 @@ Vercel Cron sends `Authorization: Bearer <CRON_SECRET>` on GET requests — the 
 8. `personal/spam/marketing` → logged in `gmail_sync_log`, no action
 
 ### 3. Chef Reviews & Responds (inquiry detail page)
+
 1. Chef opens **Inquiries → [inquiry]**
 2. `InquiryResponseComposer` renders at the bottom of the page
 3. Chef clicks **Generate Draft** → `draftResponseForInquiry()` pulls all context (inquiry facts, client history, conversation depth, calendar availability) and generates a lifecycle-aware draft via Gemini
@@ -118,6 +121,7 @@ Vercel Cron sends `Authorization: Bearer <CRON_SECRET>` on GET requests — the 
 8. Inquiry status auto-advances to `awaiting_client`; 48h follow-up timer is set
 
 ### 4. Client Replies
+
 1. Next auto-sync picks up the reply
 2. Reply is classified as `existing_thread` (sender is a known client)
 3. Reply is linked to the inquiry via `gmail_thread_id`
@@ -130,13 +134,13 @@ Vercel Cron sends `Authorization: Bearer <CRON_SECRET>` on GET requests — the 
 
 Before Gmail will work in production, confirm these are set in the Vercel environment:
 
-| Variable | Required For | Notes |
-|---|---|---|
-| `GOOGLE_CLIENT_ID` | Gmail OAuth | From Google Cloud Console → Credentials |
-| `GOOGLE_CLIENT_SECRET` | Gmail OAuth | Same project |
-| `CRON_SECRET` | All 9 cron jobs | Any strong random string; `openssl rand -hex 32` |
-| `NEXT_PUBLIC_SITE_URL` | OAuth redirect URI | Must match exactly what's registered in Google Cloud Console |
-| `GEMINI_API_KEY` | AI classification + draft generation | From ai.google.dev |
+| Variable               | Required For                         | Notes                                                        |
+| ---------------------- | ------------------------------------ | ------------------------------------------------------------ |
+| `GOOGLE_CLIENT_ID`     | Gmail OAuth                          | From Google Cloud Console → Credentials                      |
+| `GOOGLE_CLIENT_SECRET` | Gmail OAuth                          | Same project                                                 |
+| `CRON_SECRET`          | All 9 cron jobs                      | Any strong random string; `openssl rand -hex 32`             |
+| `NEXT_PUBLIC_SITE_URL` | OAuth redirect URI                   | Must match exactly what's registered in Google Cloud Console |
+| `GEMINI_API_KEY`       | AI classification + draft generation | From ai.google.dev                                           |
 
 ### Google Cloud Console Setup Checklist
 
@@ -155,6 +159,7 @@ Before Gmail will work in production, confirm these are set in the Vercel enviro
 ## How to Verify the Cron Fix
 
 ### Local Test (before deploy)
+
 ```bash
 # Replace with your actual CRON_SECRET value
 curl -X GET http://localhost:3100/api/gmail/sync \
@@ -165,22 +170,27 @@ curl -X GET http://localhost:3100/api/gmail/sync \
 ```
 
 ### After Deploy to Vercel
+
 1. Go to **Vercel Dashboard → your project → Deployments → Functions → Cron Jobs**
 2. Each cron job should show status `200` in execution history
 3. Previously all would have been `405` (silent failure)
 4. Check the function logs for `[Gmail Cron]` log lines
 
 ### Database Check
+
 After 5 minutes post-deploy (or trigger manually from Vercel dashboard):
+
 ```sql
 SELECT gmail_message_id, from_address, classification, action_taken, synced_at
 FROM gmail_sync_log
 ORDER BY synced_at DESC
 LIMIT 10;
 ```
+
 New entries with recent `synced_at` timestamps should appear without manually clicking "Sync Now."
 
 ### End-to-End Test
+
 1. Send a test email to the connected Gmail address with subject like "Hi, I'd love to book a private dinner for 8 guests on March 15th"
 2. Wait up to 5 minutes (next cron cycle)
 3. Check `/inquiries` — a new inquiry should appear automatically

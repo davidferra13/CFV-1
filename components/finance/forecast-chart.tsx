@@ -19,8 +19,8 @@ interface ForecastChartProps {
 
 export function ForecastChart({ historical, forecast }: ForecastChartProps) {
   const chartData = [
-    ...historical.map(m => ({ ...m, type: 'actual' })),
-    ...forecast.map(m => ({
+    ...historical.map((m) => ({ ...m, type: 'actual' })),
+    ...forecast.map((m) => ({
       month: m.month,
       actual: null,
       projected: m.projected,

@@ -56,8 +56,13 @@ export interface InquiryRecipeLink {
 // ============================================
 
 const NOTE_CATEGORIES = [
-  'general', 'inspiration', 'menu_planning',
-  'sourcing', 'logistics', 'staffing', 'post_event',
+  'general',
+  'inspiration',
+  'menu_planning',
+  'sourcing',
+  'logistics',
+  'staffing',
+  'post_event',
 ] as const
 
 const AddNoteSchema = z.object({
@@ -119,9 +124,8 @@ export async function addInquiryNote(input: z.infer<typeof AddNoteSchema>) {
   // Log chef activity (non-blocking)
   try {
     const { logChefActivity } = await import('@/lib/activity/log-chef')
-    const preview = validated.note_text.length > 60
-      ? validated.note_text.slice(0, 60) + '…'
-      : validated.note_text
+    const preview =
+      validated.note_text.length > 60 ? validated.note_text.slice(0, 60) + '…' : validated.note_text
     await logChefActivity({
       tenantId: user.tenantId!,
       actorId: user.id,
@@ -130,7 +134,11 @@ export async function addInquiryNote(input: z.infer<typeof AddNoteSchema>) {
       entityType: 'inquiry_note',
       entityId: data.id,
       summary: `Added ${validated.category} note: "${preview}"`,
-      context: { category: validated.category, pinned: validated.pinned, hasAttachment: !!validated.attachment_url },
+      context: {
+        category: validated.category,
+        pinned: validated.pinned,
+        hasAttachment: !!validated.attachment_url,
+      },
     })
   } catch (err) {
     console.error('[addInquiryNote] Activity log failed (non-blocking):', err)
@@ -142,10 +150,7 @@ export async function addInquiryNote(input: z.infer<typeof AddNoteSchema>) {
 /**
  * Update a note's text, category, or attachment.
  */
-export async function updateInquiryNote(
-  noteId: string,
-  input: z.infer<typeof UpdateNoteSchema>
-) {
+export async function updateInquiryNote(noteId: string, input: z.infer<typeof UpdateNoteSchema>) {
   const user = await requireChef()
   const validated = UpdateNoteSchema.parse(input)
   const supabase = createServerClient()
@@ -361,7 +366,8 @@ export async function getLinkedRecipes(inquiryId: string): Promise<InquiryRecipe
 
   const { data, error } = await supabase
     .from('inquiry_recipe_links')
-    .select(`
+    .select(
+      `
       id,
       tenant_id,
       inquiry_id,
@@ -375,7 +381,8 @@ export async function getLinkedRecipes(inquiryId: string): Promise<InquiryRecipe
         description,
         photo_url
       )
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .eq('inquiry_id', inquiryId)
     .order('created_at', { ascending: false })

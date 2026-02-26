@@ -7,15 +7,15 @@ export type TokenContext = {
   last_name: string
   full_name: string
   chef_name: string
-  last_event_date?: string  // formatted date string, e.g. "March 12, 2026"
+  last_event_date?: string // formatted date string, e.g. "March 12, 2026"
   unsubscribe_url: string
 }
 
 const TOKEN_MAP: Array<{ token: string; key: keyof TokenContext }> = [
-  { token: '{{first_name}}',      key: 'first_name' },
-  { token: '{{last_name}}',       key: 'last_name' },
-  { token: '{{full_name}}',       key: 'full_name' },
-  { token: '{{chef_name}}',       key: 'chef_name' },
+  { token: '{{first_name}}', key: 'first_name' },
+  { token: '{{last_name}}', key: 'last_name' },
+  { token: '{{full_name}}', key: 'full_name' },
+  { token: '{{chef_name}}', key: 'chef_name' },
   { token: '{{last_event_date}}', key: 'last_event_date' },
   { token: '{{unsubscribe_url}}', key: 'unsubscribe_url' },
 ]
@@ -49,9 +49,9 @@ export function splitName(fullName: string): { first: string; last: string } {
  * Available tokens for the UI toolbar — shown above the message body editor.
  */
 export const AVAILABLE_TOKENS: Array<{ token: string; label: string }> = [
-  { token: '{{first_name}}',      label: 'First Name' },
-  { token: '{{last_name}}',       label: 'Last Name' },
-  { token: '{{full_name}}',       label: 'Full Name' },
-  { token: '{{chef_name}}',       label: 'Chef Name' },
+  { token: '{{first_name}}', label: 'First Name' },
+  { token: '{{last_name}}', label: 'Last Name' },
+  { token: '{{full_name}}', label: 'Full Name' },
+  { token: '{{chef_name}}', label: 'Chef Name' },
   { token: '{{last_event_date}}', label: 'Last Event Date' },
 ]

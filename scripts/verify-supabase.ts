@@ -84,7 +84,9 @@ async function verifySupabase() {
   ]
 
   for (const table of countsToShow) {
-    const { count, error } = await supabase.from(table as any).select('*', { head: true, count: 'exact' })
+    const { count, error } = await supabase
+      .from(table as any)
+      .select('*', { head: true, count: 'exact' })
     if (error) {
       console.log(`  ${table}: error (${error.message})`)
     } else {

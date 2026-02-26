@@ -26,6 +26,10 @@ export async function createApiKey(name: string): Promise<{ key: string }> {
 export async function revokeApiKey(id: string) {
   const user = await requireChef()
   const supabase = createServerClient()
-  await supabase.from('chef_api_keys' as any).update({ is_active: false }).eq('id', id).eq('tenant_id', user.entityId)
+  await supabase
+    .from('chef_api_keys' as any)
+    .update({ is_active: false })
+    .eq('id', id)
+    .eq('tenant_id', user.entityId)
   revalidatePath('/settings/api-keys')
 }

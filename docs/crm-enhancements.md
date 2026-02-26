@@ -9,6 +9,7 @@ This document describes the CRM intelligence layer added to ChefFlow V1. These f
 ### New Files
 
 #### `lib/leads/scoring.ts`
+
 Lead scoring engine that assigns a 0–100 score to open inquiries.
 
 - `scoreInquiry(inquiry)` — pure function, scores a single inquiry object based on:
@@ -21,6 +22,7 @@ Lead scoring engine that assigns a 0–100 score to open inquiries.
 - Returns a `LeadScore` with `score`, `label` (`hot`/`warm`/`cold`), and `factors` array explaining the score
 
 #### `lib/clients/churn-score.ts`
+
 Churn risk engine that identifies active clients who haven't had an event recently.
 
 - `getAtRiskClients()` — server action fetching active clients with completed events
@@ -29,6 +31,7 @@ Churn risk engine that identifies active clients who haven't had an event recent
 - Each result includes a `suggestedAction` ("Send a personal check-in message" or "Follow up with seasonal menu ideas")
 
 #### `lib/clients/deduplication.ts`
+
 Duplicate client detector using exact-match heuristics.
 
 - `findDuplicateClients()` — server action that scans all clients for the chef and finds pairs matching on:
@@ -39,6 +42,7 @@ Duplicate client detector using exact-match heuristics.
 - Returns up to 50 pairs
 
 #### `lib/clients/segments.ts`
+
 Server actions for managing chef-defined client segments.
 
 - `getSegments()` — lists all segments for the chef
@@ -47,6 +51,7 @@ Server actions for managing chef-defined client segments.
 - Segments store `filters` as a JSONB array of `{field, op, value}` objects for future UI-driven filtering
 
 #### `lib/clients/referral-tree.ts`
+
 Referral attribution and network value calculator.
 
 - `getClientReferralTree(clientId)` — server action returning a `ReferralNode`:
@@ -59,6 +64,7 @@ Referral attribution and network value calculator.
 ### New Migration
 
 #### `supabase/migrations/20260308000001_client_segments.sql`
+
 Creates the `client_segments` table:
 
 ```sql
@@ -80,13 +86,17 @@ CREATE TABLE IF NOT EXISTS client_segments (
 ### New Pages
 
 #### `app/(chef)/clients/segments/page.tsx`
+
 Server component at `/clients/segments` that:
+
 - Renders `SegmentBuilder` for creating new segments
 - Lists existing segments with their filter count badge
 - Each segment links to `/clients?segment=<id>` for future filtered views
 
 #### `app/(chef)/clients/duplicates/page.tsx`
+
 Server component at `/clients/duplicates` that:
+
 - Calls `findDuplicateClients()` and renders each pair as a card
 - Shows confidence level (high = error badge, medium = warning badge)
 - Links to both client detail pages for manual review and merge
@@ -94,7 +104,9 @@ Server component at `/clients/duplicates` that:
 ### New Component
 
 #### `components/clients/segment-builder.tsx`
+
 Client component with a form for creating segments:
+
 - Name, description, color picker
 - Dynamic filter rows (field / operator / value)
 - Calls `createSegment()` server action via `useTransition`

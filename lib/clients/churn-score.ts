@@ -17,10 +17,12 @@ export async function getAtRiskClients(): Promise<ChurnRisk[]> {
 
   const { data: clients } = await supabase
     .from('clients')
-    .select(`
+    .select(
+      `
       id, full_name, status,
       events(event_date, status)
-    `)
+    `
+    )
     .eq('chef_id', user.entityId)
     .eq('status', 'active')
 
@@ -29,20 +31,24 @@ export async function getAtRiskClients(): Promise<ChurnRisk[]> {
   const risks: ChurnRisk[] = []
 
   for (const client of clients) {
-    const completedEvents = (client.events as any[])?.filter(e => e.status === 'completed') ?? []
+    const completedEvents = (client.events as any[])?.filter((e) => e.status === 'completed') ?? []
     if (completedEvents.length === 0) continue
 
     const lastEventDate = completedEvents
-      .map(e => new Date(e.event_date).getTime())
+      .map((e) => new Date(e.event_date).getTime())
       .sort((a, b) => b - a)[0]
 
     const daysSince = Math.floor((Date.now() - lastEventDate) / 86400000)
     const factors: string[] = []
     let riskLevel: 'high' | 'medium' | 'low' = 'low'
 
-    if (daysSince > 180) { riskLevel = 'high'; factors.push('6+ months since last event') }
-    else if (daysSince > 90) { riskLevel = 'medium'; factors.push('3+ months since last event') }
-    else continue // Not at risk
+    if (daysSince > 180) {
+      riskLevel = 'high'
+      factors.push('6+ months since last event')
+    } else if (daysSince > 90) {
+      riskLevel = 'medium'
+      factors.push('3+ months since last event')
+    } else continue // Not at risk
 
     risks.push({
       clientId: client.id,
@@ -50,9 +56,10 @@ export async function getAtRiskClients(): Promise<ChurnRisk[]> {
       riskLevel,
       daysSinceLastEvent: daysSince,
       factors,
-      suggestedAction: riskLevel === 'high'
-        ? 'Send a personal check-in message'
-        : 'Follow up with seasonal menu ideas',
+      suggestedAction:
+        riskLevel === 'high'
+          ? 'Send a personal check-in message'
+          : 'Follow up with seasonal menu ideas',
     })
   }
 

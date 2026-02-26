@@ -36,17 +36,20 @@ Previously, only chefs could initiate conversations. Clients had to wait for the
 ### New Components
 
 **`components/chat/message-chef-button.tsx`**
+
 - Reusable "Message Chef" button for the client portal
 - Two variants: `button` (inline) and `fab` (floating action button)
 - Supports context linking (event_id, inquiry_id) for contextual conversations
 - Auto-creates conversation and navigates to chat
 
 **`components/chat/chat-quick-replies.tsx`**
+
 - Contextual quick-reply chips shown to clients above the input bar
 - Appears when the last message is from the chef
 - Options: "Sounds great!", "Can we adjust the menu?", "I have a question", "When works best?"
 
 **`components/chat/chat-search.tsx`**
+
 - Search bar in the chat header
 - Full-text search within conversation messages
 - Results with highlighted matches and timestamps
@@ -55,26 +58,32 @@ Previously, only chefs could initiate conversations. Clients had to wait for the
 ### Modified Components
 
 **`components/chat/chat-header.tsx`**
+
 - Added search toggle button (magnifying glass icon)
 
 **`components/chat/chat-view.tsx`**
+
 - Integrated ChatSearch overlay
 - Integrated ChatQuickReplies above input bar
 - Passes `otherParticipantLastReadAt` to message bubbles for read receipts
 
 **`components/chat/chat-message-bubble.tsx`**
+
 - Added read receipt display: "Read" indicator on own messages when the other participant has seen them
 - Uses `otherParticipantLastReadAt` prop to determine read status
 
 ### Client Page Integration
 
 **`app/(client)/my-events/page.tsx`**
+
 - Added floating "Message Chef" FAB button
 
 **`app/(client)/my-events/[id]/page.tsx`**
+
 - Added inline "Message Chef" button in event header (context-linked to event)
 
 **`app/(client)/my-quotes/[id]/page.tsx`**
+
 - Added "Have a question? Message your chef" button at bottom
 
 ## How It Connects

@@ -9,14 +9,17 @@ The word "AI" was appearing in a handful of user-visible UI strings. The decisio
 ## What Changed
 
 ### `components/clients/allergy-records-panel.tsx`
+
 - Source label: `"AI detected — pending confirmation"` → `"Auto-detected — pending confirmation"`
 - Warning message: `"AI-detected allergen"` → `"auto-detected allergen"`
 
 ### `components/import/take-a-chef-import.tsx`
+
 - Alert title: `"AI Not Configured"` → `"Parsing Not Configured"`
 - Alert body: `"AI parsing requires a Gemini API key..."` → `"Smart parsing requires a Gemini API key..."`
 
 ### `app/(chef)/recipes/new/create-recipe-client.tsx`
+
 - Warning message: removed `"Set GEMINI_API_KEY in your environment to enable Smart Import"` — replaced with `"Contact your administrator to enable this feature."`
 
 ## What Did Not Change

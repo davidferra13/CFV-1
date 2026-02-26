@@ -40,21 +40,28 @@ test.describe('DOP Mobile — Structure', () => {
     await page.goto(`/events/${seedIds.eventIds.confirmed}/dop/mobile`)
     await page.waitForLoadState('networkidle')
     // Progress bar or "X of Y complete" text
-    const progressEl = page.locator('[role="progressbar"]').first()
+    const progressEl = page
+      .locator('[role="progressbar"]')
+      .first()
       .or(page.getByText(/of.*complete|complete|progress|%/i).first())
     await expect(progressEl).toBeVisible({ timeout: 10_000 })
   })
 
-  test('DOP mobile has navigation buttons (Previous/Next or Mark Complete)', async ({ page, seedIds }) => {
+  test('DOP mobile has navigation buttons (Previous/Next or Mark Complete)', async ({
+    page,
+    seedIds,
+  }) => {
     await page.goto(`/events/${seedIds.eventIds.confirmed}/dop/mobile`)
     await page.waitForLoadState('networkidle')
-    const navBtn = page.getByRole('button', { name: /next|previous|mark complete|complete/i }).first()
+    const navBtn = page
+      .getByRole('button', { name: /next|previous|mark complete|complete/i })
+      .first()
     await expect(navBtn).toBeVisible({ timeout: 10_000 })
   })
 
   test('DOP mobile does not crash on task toggle', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/events/${seedIds.eventIds.confirmed}/dop/mobile`)
     await page.waitForLoadState('networkidle')
@@ -80,7 +87,10 @@ test.describe('DOP Mobile — Structure', () => {
     }
   })
 
-  test('DOP mobile for draft event still loads (read-only or shows warning)', async ({ page, seedIds }) => {
+  test('DOP mobile for draft event still loads (read-only or shows warning)', async ({
+    page,
+    seedIds,
+  }) => {
     const resp = await page.goto(`/events/${seedIds.eventIds.draft}/dop/mobile`)
     expect(resp?.status() ?? 0).toBeLessThan(500)
   })
@@ -116,13 +126,16 @@ test.describe('KDS — Structure', () => {
   test('KDS has link back to event detail', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.confirmed}/kds`)
     await page.waitForLoadState('networkidle')
-    const backLink = page.getByRole('link').filter({ hasText: /back|event|return/i }).first()
+    const backLink = page
+      .getByRole('link')
+      .filter({ hasText: /back|event|return/i })
+      .first()
     await expect(backLink).toBeVisible({ timeout: 10_000 })
   })
 
   test('KDS does not crash on load', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/events/${seedIds.eventIds.confirmed}/kds`)
     await page.waitForLoadState('networkidle')
@@ -156,7 +169,7 @@ test.describe('KDS — Fire/86 Interactions', () => {
 
   test('KDS clicking Fire button does not crash', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/events/${seedIds.eventIds.confirmed}/kds`)
     await page.waitForLoadState('networkidle')
@@ -191,7 +204,7 @@ test.describe('Pack List — Interactions', () => {
 
   test('Pack list does not crash on checkbox toggle', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/events/${seedIds.eventIds.confirmed}/pack`)
     await page.waitForLoadState('networkidle')

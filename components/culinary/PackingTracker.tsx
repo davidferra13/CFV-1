@@ -1,15 +1,15 @@
-import React from 'react';
+import React from 'react'
 
 export type PackingTrackerProps = {
-  components: { id: string; name: string; isMakeAhead: boolean; storageNotes?: string }[];
-};
+  components: { id: string; name: string; isMakeAhead: boolean; storageNotes?: string }[]
+}
 
 const PackingTracker: React.FC<PackingTrackerProps> = ({ components }) => {
   return (
     <div>
       <h3>Packing & Make-Ahead Tracker</h3>
       <ul>
-        {components.map(component => (
+        {components.map((component) => (
           <li key={component.id}>
             <strong>{component.name}</strong>
             {component.isMakeAhead && <span> (Make-Ahead)</span>}
@@ -18,7 +18,7 @@ const PackingTracker: React.FC<PackingTrackerProps> = ({ components }) => {
         ))}
       </ul>
     </div>
-  );
-};
+  )
+}
 
-export default PackingTracker;
+export default PackingTracker

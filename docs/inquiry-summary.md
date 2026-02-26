@@ -10,7 +10,7 @@ Both parties now see the same structured snapshot of an inquiry: occasion, key f
 
 ## Why it was built
 
-The chef's inquiry detail page is operationally dense — pipeline controls, AI composer, message log, notes, recipe linker, and more. Before this feature, there was no clean at-a-glance view of what the inquiry actually *is*.
+The chef's inquiry detail page is operationally dense — pipeline controls, AI composer, message log, notes, recipe linker, and more. Before this feature, there was no clean at-a-glance view of what the inquiry actually _is_.
 
 Clients had no inquiry-facing portal at all. They could only see quotes, with no way to track where their request stood in the pipeline or revisit what they submitted.
 
@@ -20,22 +20,22 @@ Clients had no inquiry-facing portal at all. They could only see quotes, with no
 
 ### New files
 
-| File | Purpose |
-|------|---------|
-| `components/inquiries/inquiry-summary.tsx` | Shared presentational component used by both views |
-| `lib/inquiries/client-actions.ts` | Server actions for client portal inquiry access |
-| `app/(client)/my-inquiries/page.tsx` | Client inquiry list (`/my-inquiries`) |
-| `app/(client)/my-inquiries/[id]/page.tsx` | Client inquiry detail (`/my-inquiries/[id]`) |
-| `supabase/migrations/20260302000002_client_inquiry_portal_index.sql` | Composite performance index |
-| `docs/inquiry-summary.md` | This document |
+| File                                                                 | Purpose                                            |
+| -------------------------------------------------------------------- | -------------------------------------------------- |
+| `components/inquiries/inquiry-summary.tsx`                           | Shared presentational component used by both views |
+| `lib/inquiries/client-actions.ts`                                    | Server actions for client portal inquiry access    |
+| `app/(client)/my-inquiries/page.tsx`                                 | Client inquiry list (`/my-inquiries`)              |
+| `app/(client)/my-inquiries/[id]/page.tsx`                            | Client inquiry detail (`/my-inquiries/[id]`)       |
+| `supabase/migrations/20260302000002_client_inquiry_portal_index.sql` | Composite performance index                        |
+| `docs/inquiry-summary.md`                                            | This document                                      |
 
 ### Modified files
 
-| File | Change |
-|------|--------|
-| `app/(chef)/inquiries/[id]/page.tsx` | Added `InquirySummary` above the main content grid; removed now-duplicate standalone "Original Message" and "Status History" cards |
-| `components/navigation/client-nav.tsx` | Added "My Inquiries" nav item with `ClipboardList` icon |
-| `app/(client)/my-quotes/[id]/page.tsx` | Added "View Inquiry" cross-link in the Event Details card header |
+| File                                   | Change                                                                                                                             |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `app/(chef)/inquiries/[id]/page.tsx`   | Added `InquirySummary` above the main content grid; removed now-duplicate standalone "Original Message" and "Status History" cards |
+| `components/navigation/client-nav.tsx` | Added "My Inquiries" nav item with `ClipboardList` icon                                                                            |
+| `app/(client)/my-quotes/[id]/page.tsx` | Added "View Inquiry" cross-link in the Event Details card header                                                                   |
 
 ---
 
@@ -43,12 +43,12 @@ Clients had no inquiry-facing portal at all. They could only see quotes, with no
 
 `InquirySummary` accepts a `variant: 'chef' | 'client'` prop that gates what data is rendered:
 
-| Field | Chef | Client |
-|-------|------|--------|
-| `channel` | shown | hidden (pass `null`) |
-| `confirmed_budget_cents` | shown | hidden (pass `null`) |
-| Pipeline steps | 5 steps including `awaiting_chef` | 4 simplified steps |
-| Quote links | → `/quotes/[id]` | → `/my-quotes/[id]` |
+| Field                    | Chef                              | Client               |
+| ------------------------ | --------------------------------- | -------------------- |
+| `channel`                | shown                             | hidden (pass `null`) |
+| `confirmed_budget_cents` | shown                             | hidden (pass `null`) |
+| Pipeline steps           | 5 steps including `awaiting_chef` | 4 simplified steps   |
+| Quote links              | → `/quotes/[id]`                  | → `/my-quotes/[id]`  |
 
 Passing `null` for a field suppresses it in both variants — no runtime branching on undefined vs null.
 

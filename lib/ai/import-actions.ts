@@ -30,9 +30,9 @@ export async function checkClientDuplicates(
   const supabase = createServerClient()
 
   const emails = candidates
-    .map(c => c.email)
+    .map((c) => c.email)
     .filter((e): e is string => !!e && !e.includes('@placeholder.import'))
-  const names = candidates.map(c => c.full_name.trim().toLowerCase())
+  const names = candidates.map((c) => c.full_name.trim().toLowerCase())
 
   // Run email match and full client name fetch in parallel.
   // Name matching is done in JS rather than via PostgREST .or() because
@@ -54,7 +54,8 @@ export async function checkClientDuplicates(
 
   const byEmail: DuplicateCheckResult['byEmail'] = {}
   for (const row of emailResult.data || []) {
-    if (row.email) byEmail[row.email.toLowerCase()] = row as { id: string; full_name: string; email: string }
+    if (row.email)
+      byEmail[row.email.toLowerCase()] = row as { id: string; full_name: string; email: string }
   }
 
   const byName: DuplicateCheckResult['byName'] = {}
@@ -77,25 +78,35 @@ export async function importClient(parsed: ParsedClient) {
   const supabase = createServerClient()
 
   // Build regular_guests JSON
-  const regularGuests = parsed.regular_guests.length > 0
-    ? parsed.regular_guests as unknown as Json
-    : null
+  const regularGuests =
+    parsed.regular_guests.length > 0 ? (parsed.regular_guests as unknown as Json) : null
 
   // Build personal_milestones JSON
-  const personalMilestones = parsed.personal_milestones as Json ?? null
+  const personalMilestones = (parsed.personal_milestones as Json) ?? null
 
   const { data: client, error } = await supabase
     .from('clients')
     .insert({
       tenant_id: user.tenantId!,
       full_name: parsed.full_name,
-      email: parsed.email || `${parsed.full_name.toLowerCase().replace(/\s+/g, '.')}@placeholder.import`,
+      email:
+        parsed.email || `${parsed.full_name.toLowerCase().replace(/\s+/g, '.')}@placeholder.import`,
       phone: parsed.phone,
       partner_name: parsed.partner_name,
-      address: parsed.address || (parsed.addresses.length > 0
-        ? [parsed.addresses[0].address, parsed.addresses[0].city, parsed.addresses[0].state, parsed.addresses[0].zip].filter(Boolean).join(', ')
-        : null),
-      dietary_restrictions: parsed.dietary_restrictions.length > 0 ? parsed.dietary_restrictions : null,
+      address:
+        parsed.address ||
+        (parsed.addresses.length > 0
+          ? [
+              parsed.addresses[0].address,
+              parsed.addresses[0].city,
+              parsed.addresses[0].state,
+              parsed.addresses[0].zip,
+            ]
+              .filter(Boolean)
+              .join(', ')
+          : null),
+      dietary_restrictions:
+        parsed.dietary_restrictions.length > 0 ? parsed.dietary_restrictions : null,
       allergies: parsed.allergies.length > 0 ? parsed.allergies : null,
       dislikes: parsed.dislikes.length > 0 ? parsed.dislikes : null,
       spice_tolerance: parsed.spice_tolerance,
@@ -110,8 +121,10 @@ export async function importClient(parsed: ParsedClient) {
       kitchen_size: parsed.kitchen_size,
       kitchen_constraints: parsed.kitchen_constraints,
       house_rules: parsed.house_rules,
-      equipment_available: parsed.equipment_available.length > 0 ? parsed.equipment_available : null,
-      equipment_must_bring: parsed.equipment_must_bring.length > 0 ? parsed.equipment_must_bring : null,
+      equipment_available:
+        parsed.equipment_available.length > 0 ? parsed.equipment_available : null,
+      equipment_must_bring:
+        parsed.equipment_must_bring.length > 0 ? parsed.equipment_must_bring : null,
       vibe_notes: parsed.vibe_notes,
       what_they_care_about: parsed.what_they_care_about,
       wine_beverage_preferences: parsed.wine_beverage_preferences,
@@ -151,17 +164,17 @@ export async function importClients(parsedClients: ParsedClient[]) {
       results.push({
         success: false,
         error: err instanceof Error ? err.message : 'Unknown error',
-        name: parsed.full_name
+        name: parsed.full_name,
       })
     }
   }
 
   revalidatePath('/clients')
   return {
-    success: results.every(r => r.success),
-    imported: results.filter(r => r.success).length,
-    failed: results.filter(r => !r.success).length,
-    results
+    success: results.every((r) => r.success),
+    imported: results.filter((r) => r.success).length,
+    failed: results.filter((r) => !r.success).length,
+    results,
   }
 }
 
@@ -209,25 +222,18 @@ export async function importRecipe(parsed: ParsedRecipe) {
       const ing = parsed.ingredients[i]
 
       // Find or create the ingredient in the ingredients table
-      const ingredientId = await findOrCreateIngredient(
-        supabase,
-        user.tenantId!,
-        user.id,
-        ing
-      )
+      const ingredientId = await findOrCreateIngredient(supabase, user.tenantId!, user.id, ing)
 
       // Create the recipe_ingredient link
-      await supabase
-        .from('recipe_ingredients')
-        .insert({
-          recipe_id: recipe.id,
-          ingredient_id: ingredientId,
-          quantity: ing.quantity,
-          unit: ing.unit,
-          preparation_notes: ing.preparation_notes,
-          is_optional: ing.is_optional,
-          sort_order: i
-        })
+      await supabase.from('recipe_ingredients').insert({
+        recipe_id: recipe.id,
+        ingredient_id: ingredientId,
+        quantity: ing.quantity,
+        unit: ing.unit,
+        preparation_notes: ing.preparation_notes,
+        is_optional: ing.is_optional,
+        sort_order: i,
+      })
     }
   }
 
@@ -300,7 +306,7 @@ export async function importBrainDump(parsed: BrainDumpResult): Promise<BrainDum
     clients: [],
     recipes: [],
     notes: parsed.notes,
-    unstructured: parsed.unstructured
+    unstructured: parsed.unstructured,
   }
 
   // Import clients
@@ -310,13 +316,13 @@ export async function importBrainDump(parsed: BrainDumpResult): Promise<BrainDum
       result.clients.push({
         success: true,
         name: client.full_name,
-        id: (imported.client as { id: string }).id
+        id: (imported.client as { id: string }).id,
       })
     } catch (err) {
       result.clients.push({
         success: false,
         name: client.full_name,
-        error: err instanceof Error ? err.message : 'Unknown error'
+        error: err instanceof Error ? err.message : 'Unknown error',
       })
     }
   }
@@ -328,13 +334,13 @@ export async function importBrainDump(parsed: BrainDumpResult): Promise<BrainDum
       result.recipes.push({
         success: true,
         name: recipe.name,
-        id: (imported.recipe as { id: string }).id
+        id: (imported.recipe as { id: string }).id,
       })
     } catch (err) {
       result.recipes.push({
         success: false,
         name: recipe.name,
-        error: err instanceof Error ? err.message : 'Unknown error'
+        error: err instanceof Error ? err.message : 'Unknown error',
       })
     }
   }
@@ -342,7 +348,7 @@ export async function importBrainDump(parsed: BrainDumpResult): Promise<BrainDum
   // Save brain dump notes to chef_documents so they aren't lost
   const allNotes = [
     ...parsed.notes,
-    ...parsed.unstructured.map(text => ({
+    ...parsed.unstructured.map((text) => ({
       type: 'general',
       content: text,
       suggestedAction: 'Review and classify this note manually.',

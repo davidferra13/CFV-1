@@ -16,12 +16,12 @@ export { generateState, generateCodeVerifier } from './types'
 // Meta handles both Instagram and Facebook via the same OAuth app.
 // The callback route creates two rows (one per sub-platform) from a single OAuth flow.
 const ADAPTERS = {
-  instagram:      metaAdapter,      // Meta
-  facebook:       metaAdapter,      // Meta (same app)
-  tiktok:         tiktokAdapter,
-  x:              xAdapter,
-  linkedin:       linkedinAdapter,
-  pinterest:      pinterestAdapter,
+  instagram: metaAdapter, // Meta
+  facebook: metaAdapter, // Meta (same app)
+  tiktok: tiktokAdapter,
+  x: xAdapter,
+  linkedin: linkedinAdapter,
+  pinterest: pinterestAdapter,
   youtube_shorts: youtubeAdapter,
 } as const
 

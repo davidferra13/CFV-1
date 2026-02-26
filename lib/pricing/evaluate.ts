@@ -83,9 +83,9 @@ export interface PricingEligibilityContext {
 // only the final output numbers change.
 
 export type PricingAdjustmentType =
-  | 'loyalty_discount'  // subtract a fixed amount for returning clients
-  | 'surcharge'         // add for extra complexity, extended time, etc.
-  | 'custom_total'      // override the entire computed total (chef sets their own price)
+  | 'loyalty_discount' // subtract a fixed amount for returning clients
+  | 'surcharge' // add for extra complexity, extended time, etc.
+  | 'custom_total' // override the entire computed total (chef sets their own price)
 
 export interface PricingAdjustment {
   type: PricingAdjustmentType
@@ -112,11 +112,11 @@ export interface PricingEvaluationInput {
   // ── Service details (mirrors PricingInput) ────────────────────────────────
   serviceType: ServiceType
   guestCount: number
-  courseCount?: number         // required for private_dinner; ignored otherwise
-  eventDate?: string           // ISO YYYY-MM-DD
+  courseCount?: number // required for private_dinner; ignored otherwise
+  eventDate?: string // ISO YYYY-MM-DD
   distanceMiles?: number
-  multiNightPackage?: string   // key from MULTI_NIGHT_PACKAGES
-  numberOfDays?: number        // for weekly service types
+  multiNightPackage?: string // key from MULTI_NIGHT_PACKAGES
+  numberOfDays?: number // for weekly service types
   weekendPremiumEnabled?: boolean
   addOns?: PricingInput['addOns']
 
@@ -365,9 +365,7 @@ export async function evaluateChefPricing(
   // AI path (eligibility context present): keep false — the AI should never
   // silently apply a premium the client hasn't been told about.
   const weekendPremiumEnabled =
-    inputWeekendPremium !== undefined
-      ? inputWeekendPremium
-      : eligibility === undefined // true = chef tool, false = AI path
+    inputWeekendPremium !== undefined ? inputWeekendPremium : eligibility === undefined // true = chef tool, false = AI path
 
   const pricingInput = { ...rest, weekendPremiumEnabled }
 
@@ -398,8 +396,8 @@ export async function evaluateChefPricing(
   const clientFacingText: string | null = breakdown.requiresCustomPricing
     ? null
     : rangeResult.hasRange && rangeResult.low && rangeResult.high
-    ? formatWeeklyRangeForEmail(breakdown, rangeResult.low, rangeResult.high)
-    : formatPricingForEmail(breakdown)
+      ? formatWeeklyRangeForEmail(breakdown, rangeResult.low, rangeResult.high)
+      : formatPricingForEmail(breakdown)
 
   const chefSummaryText = formatPricingForChef(breakdown, {
     serviceType: input.serviceType,
@@ -458,14 +456,10 @@ function assessEligibility(ctx?: PricingEligibilityContext): {
   // 2. Client referenced prior pricing in their message
   // (3rd trigger — "question cannot be answered without pricing" — is handled
   //  by the AI agent and passed as clientAskedForPricing = true when applicable)
-  const hasTrigger =
-    ctx.clientAskedForPricing ||
-    ctx.clientReferencedPriorPricing === true
+  const hasTrigger = ctx.clientAskedForPricing || ctx.clientReferencedPriorPricing === true
 
   if (!hasTrigger) {
-    failReasons.push(
-      'Client has not asked for pricing — do not volunteer pricing unprompted'
-    )
+    failReasons.push('Client has not asked for pricing — do not volunteer pricing unprompted')
   }
 
   // ── Gate: all four context requirements must be met ───────────────────────
@@ -834,7 +828,11 @@ function formatWeeklyRangeForEmail(
       `Since this falls on ${breakdown.holidayName}, a holiday premium is already included in those figures.`
     )
   }
-  if (breakdown.isNearHoliday && breakdown.nearHolidayName && breakdown.nearHolidayPremiumCents > 0) {
+  if (
+    breakdown.isNearHoliday &&
+    breakdown.nearHolidayName &&
+    breakdown.nearHolidayPremiumCents > 0
+  ) {
     lines.push(
       `This date falls just before ${breakdown.nearHolidayName}, so a proximity premium is included as well.`
     )
@@ -850,7 +848,9 @@ function formatWeeklyRangeForEmail(
 
   // Travel (included in the totals above)
   if (breakdown.travelFeeCents > 0) {
-    lines.push(`Travel reimbursement of ${formatCentsAsDollars(breakdown.travelFeeCents)} is included based on mileage.`)
+    lines.push(
+      `Travel reimbursement of ${formatCentsAsDollars(breakdown.travelFeeCents)} is included based on mileage.`
+    )
   }
 
   // Groceries — always shown, always billed separately
@@ -940,7 +940,8 @@ export function formatPricingForChef(
     // Base service fee — annotate which rate table and course count were used
     if (breakdown.pricingModel === 'per_person' && breakdown.perPersonCents > 0) {
       const rateTable = breakdown.isCouple ? 'Couples rate' : 'Group rate'
-      const courseNote = breakdown.courseCount !== undefined ? `, ${breakdown.courseCount}-course` : ''
+      const courseNote =
+        breakdown.courseCount !== undefined ? `, ${breakdown.courseCount}-course` : ''
       lines.push(
         `  ${step++}. Base rate:    ${formatCentsAsDollars(breakdown.perPersonCents)}/person × ${breakdown.guestCount} = ${formatCentsAsDollars(breakdown.serviceFeeCents)}  [${rateTable}${courseNote}]`
       )

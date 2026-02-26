@@ -38,7 +38,7 @@ test.describe('Clients — Status Views', () => {
 
   test('/clients/active — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/clients/active')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -80,7 +80,7 @@ test.describe('Clients — Communication', () => {
 
   test('/clients/communication — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/clients/communication')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -114,7 +114,7 @@ test.describe('Clients — History', () => {
 
   test('/clients/history — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/clients/history')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -155,7 +155,7 @@ test.describe('Clients — Insights', () => {
 
   test('/clients/insights — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/clients/insights')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -189,7 +189,7 @@ test.describe('Clients — Loyalty', () => {
 
   test('/clients/loyalty — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/clients/loyalty')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -217,7 +217,7 @@ test.describe('Clients — Preferences', () => {
 
   test('/clients/preferences — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/clients/preferences')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -234,13 +234,19 @@ test.describe('Clients — Preferences', () => {
 // ─── Client Recurring Events ──────────────────────────────────────────────────
 
 test.describe('Clients — Recurring Events', () => {
-  test('/clients/[id]/recurring — seeded client recurring events load', async ({ page, seedIds }) => {
+  test('/clients/[id]/recurring — seeded client recurring events load', async ({
+    page,
+    seedIds,
+  }) => {
     const resp = await page.goto(`/clients/${seedIds.clientId}/recurring`)
     await page.waitForLoadState('networkidle')
     expect(resp?.status()).not.toBe(500)
   })
 
-  test('/clients/[id]/recurring — shows recurring content or empty state', async ({ page, seedIds }) => {
+  test('/clients/[id]/recurring — shows recurring content or empty state', async ({
+    page,
+    seedIds,
+  }) => {
     await page.goto(`/clients/${seedIds.clientId}/recurring`)
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -249,7 +255,7 @@ test.describe('Clients — Recurring Events', () => {
 
   test('/clients/[id]/recurring — no JS errors', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto(`/clients/${seedIds.clientId}/recurring`)
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)

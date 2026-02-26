@@ -12,8 +12,8 @@ export interface PipelineStage {
   key: string
   label: string
   count: number
-  conversionFromPrev: number | null   // % that reached this from the previous stage
-  dropoffFromPrev: number | null       // % that dropped off (1 - conversionFromPrev)
+  conversionFromPrev: number | null // % that reached this from the previous stage
+  dropoffFromPrev: number | null // % that dropped off (1 - conversionFromPrev)
 }
 
 export interface StageConversionData {
@@ -36,7 +36,15 @@ const INQUIRY_LABELS: Record<string, string> = {
   confirmed: 'Confirmed',
 }
 
-const EVENT_STAGE_ORDER = ['draft', 'proposed', 'accepted', 'paid', 'confirmed', 'in_progress', 'completed']
+const EVENT_STAGE_ORDER = [
+  'draft',
+  'proposed',
+  'accepted',
+  'paid',
+  'confirmed',
+  'in_progress',
+  'completed',
+]
 const EVENT_LABELS: Record<string, string> = {
   draft: 'Draft',
   proposed: 'Proposed',
@@ -58,14 +66,11 @@ function buildFunnel(
   for (const key of stageOrder) {
     const count = countMap.get(key) ?? 0
     const conversionFromPrev =
-      prevCount !== null && prevCount > 0
-        ? Math.round((count / prevCount) * 100)
-        : null
-    const dropoffFromPrev =
-      conversionFromPrev !== null ? 100 - conversionFromPrev : null
+      prevCount !== null && prevCount > 0 ? Math.round((count / prevCount) * 100) : null
+    const dropoffFromPrev = conversionFromPrev !== null ? 100 - conversionFromPrev : null
 
     stages.push({ key, label: labels[key] ?? key, count, conversionFromPrev, dropoffFromPrev })
-    if (count > 0) prevCount = count   // Only update if non-zero to avoid divide-by-zero cascades
+    if (count > 0) prevCount = count // Only update if non-zero to avoid divide-by-zero cascades
   }
 
   return stages
@@ -77,15 +82,9 @@ export async function getStageConversionData(): Promise<StageConversionData> {
 
   const [inquiriesRes, eventsRes] = await Promise.all([
     // Count per status for ALL inquiries (including terminal states)
-    supabase
-      .from('inquiries')
-      .select('status')
-      .eq('tenant_id', user.tenantId!),
+    supabase.from('inquiries').select('status').eq('tenant_id', user.tenantId!),
 
-    supabase
-      .from('events')
-      .select('status')
-      .eq('tenant_id', user.tenantId!),
+    supabase.from('events').select('status').eq('tenant_id', user.tenantId!),
   ])
 
   // Build count maps

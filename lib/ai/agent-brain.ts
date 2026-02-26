@@ -9,25 +9,25 @@ import { generateRateCardString, DEPOSIT_PERCENTAGE } from '@/lib/pricing/consta
 // ─── Chef Identity (injected at runtime, never hardcoded) ────────────────────
 
 export interface ChefIdentity {
-  fullName: string   // e.g., "David Ferragamo" — from display_name or business_name
-  firstName: string  // e.g., "David" — derived from fullName
+  fullName: string // e.g., "David Ferragamo" — from display_name or business_name
+  firstName: string // e.g., "David" — derived from fullName
 }
 
 // ─── Lifecycle State Definitions ─────────────────────────────────────────────
 // Maps to 02-LIFECYCLE.md's 11-state engagement arc
 
 export type LifecycleState =
-  | 'INBOUND_SIGNAL'       // State 0: Raw message, no validation
-  | 'QUALIFIED_INQUIRY'    // State 1: Legitimate request, basic info known
-  | 'DISCOVERY_COMPLETE'   // State 2: All non-financial data captured
-  | 'PRICING_PRESENTED'    // State 3: Quote sent to client
-  | 'TERMS_ACCEPTED'       // State 4: Client accepted scope + pricing
-  | 'BOOKED'               // State 5: Deposit received
-  | 'MENU_LOCKED'          // State 6: Menu finalized
-  | 'EXECUTION_READY'      // State 7: All prep done, ready to cook
-  | 'IN_PROGRESS'          // State 8: Service underway
-  | 'SERVICE_COMPLETE'     // State 9: Post-event, closure tasks open
-  | 'CLOSED'               // State 10: All tasks done, archived
+  | 'INBOUND_SIGNAL' // State 0: Raw message, no validation
+  | 'QUALIFIED_INQUIRY' // State 1: Legitimate request, basic info known
+  | 'DISCOVERY_COMPLETE' // State 2: All non-financial data captured
+  | 'PRICING_PRESENTED' // State 3: Quote sent to client
+  | 'TERMS_ACCEPTED' // State 4: Client accepted scope + pricing
+  | 'BOOKED' // State 5: Deposit received
+  | 'MENU_LOCKED' // State 6: Menu finalized
+  | 'EXECUTION_READY' // State 7: All prep done, ready to cook
+  | 'IN_PROGRESS' // State 8: Service underway
+  | 'SERVICE_COMPLETE' // State 9: Post-event, closure tasks open
+  | 'CLOSED' // State 10: All tasks done, archived
 
 // Email generation stage (from 03-EMAIL_RULES.md gatekeeper)
 export type EmailStage = 'discovery' | 'pricing' | 'booking' | 'post_service'
@@ -89,9 +89,9 @@ function loadDocument(doc: BrainDocument): string {
 // Don't send ALL rules every time — select only what's relevant
 
 interface AgentBrainContext {
-  systemRules: string       // Condensed rules for the system instruction
-  validationRules: string   // Post-generation validation / firewall rules
-  rateCard: string          // Pricing data (only when pricing is allowed)
+  systemRules: string // Condensed rules for the system instruction
+  validationRules: string // Post-generation validation / firewall rules
+  rateCard: string // Pricing data (only when pricing is allowed)
 }
 
 /**
@@ -99,7 +99,10 @@ interface AgentBrainContext {
  * This is the main export for the correspondence engine.
  * Chef identity is injected at runtime — never hardcoded.
  */
-export function getAgentBrainForState(detection: LifecycleDetectionResult, chef: ChefIdentity): AgentBrainContext {
+export function getAgentBrainForState(
+  detection: LifecycleDetectionResult,
+  chef: ChefIdentity
+): AgentBrainContext {
   const { emailStage, pricingAllowed } = detection
 
   // Always-included: brand voice (condensed), email firewall, edge cases
@@ -199,20 +202,29 @@ export function detectLifecycleState(input: DetectionInput): LifecycleDetectionR
       event.follow_up_sent &&
       event.aar_filed
     ) {
-      return buildDetection('CLOSED', 'post_service', 'high',
-        'Event completed with all closure tasks done', input)
+      return buildDetection(
+        'CLOSED',
+        'post_service',
+        'high',
+        'Event completed with all closure tasks done',
+        input
+      )
     }
 
     // State 9: SERVICE_COMPLETE
     if (event.status === 'completed') {
-      return buildDetection('SERVICE_COMPLETE', 'post_service', 'high',
-        'Event completed, closure tasks still open', input)
+      return buildDetection(
+        'SERVICE_COMPLETE',
+        'post_service',
+        'high',
+        'Event completed, closure tasks still open',
+        input
+      )
     }
 
     // State 8: IN_PROGRESS
     if (event.status === 'in_progress') {
-      return buildDetection('IN_PROGRESS', 'booking', 'high',
-        'Service currently underway', input)
+      return buildDetection('IN_PROGRESS', 'booking', 'high', 'Service currently underway', input)
     }
 
     // State 7: EXECUTION_READY
@@ -222,27 +234,47 @@ export function detectLifecycleState(input: DetectionInput): LifecycleDetectionR
       event.execution_sheet_ready &&
       event.equipment_list_ready
     ) {
-      return buildDetection('EXECUTION_READY', 'booking', 'high',
-        'All prep complete, ready for execution', input)
+      return buildDetection(
+        'EXECUTION_READY',
+        'booking',
+        'high',
+        'All prep complete, ready for execution',
+        input
+      )
     }
 
     // State 6: MENU_LOCKED
     if (event.status === 'confirmed' && event.menu_id) {
-      return buildDetection('MENU_LOCKED', 'booking', 'high',
-        'Menu attached and event confirmed', input)
+      return buildDetection(
+        'MENU_LOCKED',
+        'booking',
+        'high',
+        'Menu attached and event confirmed',
+        input
+      )
     }
 
     // State 5: BOOKED
     if (event.status === 'paid' || event.status === 'confirmed') {
-      return buildDetection('BOOKED', 'booking', 'high',
-        `Event status: ${event.status}, deposit received`, input)
+      return buildDetection(
+        'BOOKED',
+        'booking',
+        'high',
+        `Event status: ${event.status}, deposit received`,
+        input
+      )
     }
 
     // Event exists but still in early states — fall through to quote/inquiry logic
     if (event.status === 'accepted') {
       // Quote accepted, but not yet paid = TERMS_ACCEPTED
-      return buildDetection('TERMS_ACCEPTED', 'booking', 'high',
-        'Event accepted, awaiting deposit', input)
+      return buildDetection(
+        'TERMS_ACCEPTED',
+        'booking',
+        'high',
+        'Event accepted, awaiting deposit',
+        input
+      )
     }
   }
 
@@ -251,20 +283,29 @@ export function detectLifecycleState(input: DetectionInput): LifecycleDetectionR
   if (quote) {
     // State 4: TERMS_ACCEPTED
     if (quote.status === 'accepted') {
-      return buildDetection('TERMS_ACCEPTED', 'booking', 'high',
-        'Quote accepted by client', input)
+      return buildDetection('TERMS_ACCEPTED', 'booking', 'high', 'Quote accepted by client', input)
     }
 
     // State 3: PRICING_PRESENTED
     if (quote.status === 'sent') {
-      return buildDetection('PRICING_PRESENTED', 'pricing', 'high',
-        'Quote sent, awaiting client response', input)
+      return buildDetection(
+        'PRICING_PRESENTED',
+        'pricing',
+        'high',
+        'Quote sent, awaiting client response',
+        input
+      )
     }
 
     // Quote exists in draft = pricing is being prepared internally
     if (quote.status === 'draft') {
-      return buildDetection('DISCOVERY_COMPLETE', 'pricing', 'medium',
-        'Quote in draft, discovery likely complete', input)
+      return buildDetection(
+        'DISCOVERY_COMPLETE',
+        'pricing',
+        'medium',
+        'Quote in draft, discovery likely complete',
+        input
+      )
     }
   }
 
@@ -272,14 +313,18 @@ export function detectLifecycleState(input: DetectionInput): LifecycleDetectionR
 
   // State 3: PRICING_PRESENTED (via inquiry status)
   if (inquiry.status === 'quoted') {
-    return buildDetection('PRICING_PRESENTED', 'pricing', 'high',
-      'Inquiry marked as quoted', input)
+    return buildDetection('PRICING_PRESENTED', 'pricing', 'high', 'Inquiry marked as quoted', input)
   }
 
   // State 2: DISCOVERY_COMPLETE
   if (inquiry.status === 'awaiting_chef') {
-    return buildDetection('DISCOVERY_COMPLETE', 'pricing', 'high',
-      'All data collected, awaiting chef action', input)
+    return buildDetection(
+      'DISCOVERY_COMPLETE',
+      'pricing',
+      'high',
+      'All data collected, awaiting chef action',
+      input
+    )
   }
 
   // State 1 vs State 0: Determine from data completeness
@@ -291,36 +336,60 @@ export function detectLifecycleState(input: DetectionInput): LifecycleDetectionR
     // If we have the three blocking discovery fields, it's a qualified inquiry
     // heading toward discovery complete
     if (hasDate && hasGuestCount && hasLocation) {
-      return buildDetection('DISCOVERY_COMPLETE', 'pricing', 'medium',
-        'Core discovery data present but inquiry still in early status', input)
+      return buildDetection(
+        'DISCOVERY_COMPLETE',
+        'pricing',
+        'medium',
+        'Core discovery data present but inquiry still in early status',
+        input
+      )
     }
 
     // Qualified inquiry: at least some structured data
     if (hasDate || hasGuestCount || hasLocation || inquiry.client_id) {
-      return buildDetection('QUALIFIED_INQUIRY', 'discovery', 'high',
-        'Partial discovery data available', input)
+      return buildDetection(
+        'QUALIFIED_INQUIRY',
+        'discovery',
+        'high',
+        'Partial discovery data available',
+        input
+      )
     }
 
     // Inbound signal: raw message, no structured data
     if (inquiry.status === 'new' && !hasDate && !hasGuestCount && !hasLocation) {
-      return buildDetection('INBOUND_SIGNAL', 'discovery', 'medium',
-        'New inquiry with no structured data yet', input)
+      return buildDetection(
+        'INBOUND_SIGNAL',
+        'discovery',
+        'medium',
+        'New inquiry with no structured data yet',
+        input
+      )
     }
 
     // Default for early states
-    return buildDetection('QUALIFIED_INQUIRY', 'discovery', 'medium',
-      'Early inquiry state', input)
+    return buildDetection('QUALIFIED_INQUIRY', 'discovery', 'medium', 'Early inquiry state', input)
   }
 
   // Confirmed inquiry = converted to event, but if event wasn't passed, default
   if (inquiry.status === 'confirmed') {
-    return buildDetection('BOOKED', 'booking', 'medium',
-      'Inquiry confirmed (event data not provided)', input)
+    return buildDetection(
+      'BOOKED',
+      'booking',
+      'medium',
+      'Inquiry confirmed (event data not provided)',
+      input
+    )
   }
 
   // Fallback: default to earliest applicable state (Global Rule #3)
-  return buildDetection('QUALIFIED_INQUIRY', 'discovery', 'low',
-    'Could not determine state with confidence, defaulting to discovery', input)
+  return buildDetection(
+    'QUALIFIED_INQUIRY',
+    'discovery',
+    'low',
+    'Could not determine state with confidence, defaulting to discovery',
+    input
+  )
 }
 
 // ─── Build Detection Result ──────────────────────────────────────────────────
@@ -330,12 +399,12 @@ function buildDetection(
   emailStage: EmailStage,
   confidence: 'high' | 'medium' | 'low',
   reason: string,
-  input: DetectionInput,
+  input: DetectionInput
 ): LifecycleDetectionResult {
   const dataFields = assessDataCompleteness(input, emailStage)
   const missingBlocking = dataFields
-    .filter(f => f.status === 'missing_blocking')
-    .map(f => f.field)
+    .filter((f) => f.status === 'missing_blocking')
+    .map((f) => f.field)
 
   const pricingAllowed = determinePricingEligibility(input, emailStage)
 
@@ -378,7 +447,11 @@ function assessDataCompleteness(input: DetectionInput, stage: EmailStage): DataF
 
   // Dietary restrictions
   if (inquiry.confirmed_dietary_restrictions && inquiry.confirmed_dietary_restrictions.length > 0) {
-    fields.push({ field: 'dietary_restrictions', status: 'known', value: inquiry.confirmed_dietary_restrictions.join(', ') })
+    fields.push({
+      field: 'dietary_restrictions',
+      status: 'known',
+      value: inquiry.confirmed_dietary_restrictions.join(', '),
+    })
   } else {
     fields.push({ field: 'dietary_restrictions', status: 'missing_non_blocking' })
   }
@@ -415,7 +488,8 @@ function determinePricingEligibility(input: DetectionInput, stage: EmailStage): 
 
 function extractBrandVoiceRules(chef: ChefIdentity): string {
   const doc = loadDocument('brandVoice')
-  if (!doc) return `Voice: calm, direct, grounded, human. First person (I, me, my). Never: we, our, the team. Sign off as ${chef.firstName}.`
+  if (!doc)
+    return `Voice: calm, direct, grounded, human. First person (I, me, my). Never: we, our, the team. Sign off as ${chef.firstName}.`
 
   // Condense the key rules into a structured format
   // Chef identity is injected at runtime — never hardcoded
@@ -530,23 +604,35 @@ HARD STRIP RULES (remove if found in output):
 - Legal content (unless Booking stage)
 
 STAGE-SPECIFIC VALIDATION:
-${stage === 'discovery' ? `DISCOVERY — FORBIDDEN in output:
+${
+  stage === 'discovery'
+    ? `DISCOVERY — FORBIDDEN in output:
 - ANY pricing (numbers, ranges, per-person, totals, "starting at")
 - Deposits, payment language, retainers
 - Booking or confirmation language
 - Availability guarantees
 - Menu specifics or course counts
 - Urgency, scarcity, deadline framing
-- Bullets, numbered lists, headers, sections` : ''}
-${stage === 'pricing' ? `PRICING — FORBIDDEN in output:
+- Bullets, numbered lists, headers, sections`
+    : ''
+}
+${
+  stage === 'pricing'
+    ? `PRICING — FORBIDDEN in output:
 - Payment links or demands
 - Statements implying event is booked or date secured
 - Urgency or pressure to commit
-- Itemized math or internal fee breakdowns` : ''}
-${stage === 'booking' ? `BOOKING — FORBIDDEN in output:
+- Itemized math or internal fee breakdowns`
+    : ''
+}
+${
+  stage === 'booking'
+    ? `BOOKING — FORBIDDEN in output:
 - New pricing options or surprise fees
 - Assumptions beyond confirmed facts
-- Internal artifacts` : ''}
+- Internal artifacts`
+    : ''
+}
 
 OUTPUT FORMAT (non-negotiable):
 1. Subject line
@@ -575,12 +661,12 @@ export type ConversationDepth = 1 | 2 | 3 | 4
 export function detectConversationDepth(
   messageCount: number,
   hasEvent: boolean,
-  eventCompleted: boolean,
+  eventCompleted: boolean
 ): ConversationDepth {
-  if (eventCompleted) return 4            // Post-service: warm, appreciative
-  if (hasEvent) return 3                  // Booking/logistics: direct, minimal pleasantries
-  if (messageCount >= 3) return 2         // Back-and-forth: relaxed, shorter
-  return 1                                // First response: polite, professional, slightly formal
+  if (eventCompleted) return 4 // Post-service: warm, appreciative
+  if (hasEvent) return 3 // Booking/logistics: direct, minimal pleasantries
+  if (messageCount >= 3) return 2 // Back-and-forth: relaxed, shorter
+  return 1 // First response: polite, professional, slightly formal
 }
 
 export function getDepthInstruction(depth: ConversationDepth, chef?: ChefIdentity): string {

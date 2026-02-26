@@ -22,6 +22,7 @@ This feature lives fully inside ChefFlow at `/social`.
 5. Click `Generate Annual Queue`.
 
 Notes:
+
 - `Replace existing year` overwrites existing posts for the selected year.
 - Reserved slots are generated as flexible placeholders for timely campaigns.
 

@@ -66,7 +66,12 @@ export type PhaseTimeStats = {
 }
 
 export type AARTrends = {
-  trend: { period: string; calm: number | null; preparation: number | null; execution: number | null }[]
+  trend: {
+    period: string
+    calm: number | null
+    preparation: number | null
+    execution: number | null
+  }[]
   topForgotten: { item: string; count: number }[]
 }
 
@@ -259,11 +264,11 @@ export async function getGuestCountDistribution(): Promise<GuestCountBucket[]> {
     { label: '21+', min: 21, max: Infinity },
   ]
 
-  const counts = BUCKETS.map(b => ({ label: b.label, count: 0, min: b.min, max: b.max }))
+  const counts = BUCKETS.map((b) => ({ label: b.label, count: 0, min: b.min, max: b.max }))
 
   for (const e of events ?? []) {
     const g = e.guest_count as number
-    const bucket = counts.find(b => g >= b.min && g <= b.max)
+    const bucket = counts.find((b) => g >= b.min && g <= b.max)
     if (bucket) bucket.count++
   }
 
@@ -335,10 +340,27 @@ export async function getMonthlyEventVolume(): Promise<MonthlyVolume[]> {
     return []
   }
 
-  const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const MONTH_NAMES = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ]
 
   type MonthAgg = { count: number; totalCents: number; completedCount: number }
-  const agg: MonthAgg[] = Array.from({ length: 12 }, () => ({ count: 0, totalCents: 0, completedCount: 0 }))
+  const agg: MonthAgg[] = Array.from({ length: 12 }, () => ({
+    count: 0,
+    totalCents: 0,
+    completedCount: 0,
+  }))
 
   for (const e of events ?? []) {
     const month = parseDate(e.event_date as string).getMonth()
@@ -376,7 +398,7 @@ export async function getDayOfWeekDistribution(): Promise<DayOfWeekStat[]> {
   }
 
   const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-  const counts = DAY_NAMES.map(day => ({ day, count: 0 }))
+  const counts = DAY_NAMES.map((day) => ({ day, count: 0 }))
 
   for (const e of events ?? []) {
     const dow = parseDate(e.event_date as string).getDay()
@@ -419,9 +441,7 @@ export async function getMonthlyRevenueTrend(months = 18): Promise<RevenueTrendP
     const key = format(new Date(entry.created_at as string), 'MMM yy')
     if (scaffold[key] === undefined) continue
     const amount =
-      entry.entry_type === 'refund'
-        ? -Math.abs(entry.amount_cents ?? 0)
-        : (entry.amount_cents ?? 0)
+      entry.entry_type === 'refund' ? -Math.abs(entry.amount_cents ?? 0) : (entry.amount_cents ?? 0)
     scaffold[key] += amount
   }
 
@@ -507,12 +527,12 @@ export async function getRetentionStats(): Promise<RetentionStats> {
 
   const all = clients ?? []
   const total = all.length
-  const newClients = all.filter(c => (c.total_events_count ?? 0) <= 1).length
-  const returningClients = all.filter(c => (c.total_events_count ?? 0) > 1).length
+  const newClients = all.filter((c) => (c.total_events_count ?? 0) <= 1).length
+  const returningClients = all.filter((c) => (c.total_events_count ?? 0) > 1).length
 
   const sixMonthsAgo = new Date()
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
-  const dormant = all.filter(c => {
+  const dormant = all.filter((c) => {
     if (!c.last_event_date) return false
     return parseDate(c.last_event_date as string) < sixMonthsAgo
   }).length
@@ -571,11 +591,11 @@ export async function getClientLTVDistribution(): Promise<LTVBucket[]> {
     { label: '$10k+', min: 1000000, max: Infinity },
   ]
 
-  const counts = BUCKETS.map(b => ({ label: b.label, clients: 0, min: b.min, max: b.max }))
+  const counts = BUCKETS.map((b) => ({ label: b.label, clients: 0, min: b.min, max: b.max }))
 
   for (const c of clients ?? []) {
     const v = c.lifetime_value_cents ?? 0
-    const bucket = counts.find(b => v >= b.min && v <= b.max)
+    const bucket = counts.find((b) => v >= b.min && v <= b.max)
     if (bucket) bucket.clients++
   }
 
@@ -658,7 +678,7 @@ export async function getPhaseTimeStats(): Promise<PhaseTimeStats> {
     avgGuests > 0 ? Math.round((avgServiceMin / avgGuests) * 10) / 10 : 0
 
   return {
-    phaseAverages: PHASES.map(p => ({
+    phaseAverages: PHASES.map((p) => ({
       phase: p.label,
       avg_minutes: agg[p.label].count > 0 ? Math.round(agg[p.label].sum / agg[p.label].count) : 0,
     })),
@@ -814,11 +834,11 @@ export async function getFinancialIntelligenceStats(): Promise<FinancialIntellig
 export type TakeAChefROI = {
   tacClientCount: number
   totalEventsFromTacClients: number
-  platformBookingsCount: number   // inquiries with channel = take_a_chef
-  directBookingsCount: number     // repeat events from TAC clients, non-platform channel
-  conversionRate: number          // % of TAC clients who booked direct again
-  estimatedCommissionPaidCents: number    // expenses tagged as platform commission
-  estimatedCommissionSavedCents: number  // direct bookings × avg event value × 25%
+  platformBookingsCount: number // inquiries with channel = take_a_chef
+  directBookingsCount: number // repeat events from TAC clients, non-platform channel
+  conversionRate: number // % of TAC clients who booked direct again
+  estimatedCommissionPaidCents: number // expenses tagged as platform commission
+  estimatedCommissionSavedCents: number // direct bookings × avg event value × 25%
   avgEventValueCents: number
   topTacClients: { clientId: string; name: string; totalEvents: number; directEvents: number }[]
 }
@@ -863,9 +883,7 @@ export async function getTakeAChefROI(): Promise<TakeAChefROI> {
     const allEvents = events ?? []
 
     // 3. Get inquiry channels for these events to split platform vs direct
-    const inquiryIds = allEvents
-      .map((e) => e.inquiry_id)
-      .filter(Boolean) as string[]
+    const inquiryIds = allEvents.map((e) => e.inquiry_id).filter(Boolean) as string[]
 
     let inquiryChannelMap: Record<string, string> = {}
     if (inquiryIds.length > 0) {
@@ -924,16 +942,16 @@ export async function getTakeAChefROI(): Promise<TakeAChefROI> {
     )
 
     // 6. Estimate commission saved on direct bookings
-    const avgEventValueCents = allEvents.length > 0
-      ? Math.round(totalRevenueCents / allEvents.length)
-      : 0
+    const avgEventValueCents =
+      allEvents.length > 0 ? Math.round(totalRevenueCents / allEvents.length) : 0
     const estimatedCommissionSavedCents = Math.round(directBookings * avgEventValueCents * 0.25)
 
     // 7. Conversion rate: TAC clients with at least one direct booking
-    const clientsWithDirectBookings = Object.values(clientEventCounts).filter((c) => c.direct > 0).length
-    const conversionRate = tacClients.length > 0
-      ? Math.round((clientsWithDirectBookings / tacClients.length) * 100)
-      : 0
+    const clientsWithDirectBookings = Object.values(clientEventCounts).filter(
+      (c) => c.direct > 0
+    ).length
+    const conversionRate =
+      tacClients.length > 0 ? Math.round((clientsWithDirectBookings / tacClients.length) * 100) : 0
 
     // 8. Top TAC clients by total events
     const topTacClients = Object.entries(clientEventCounts)

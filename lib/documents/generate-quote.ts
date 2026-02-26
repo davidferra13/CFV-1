@@ -14,7 +14,7 @@ import { format, parseISO } from 'date-fns'
 export type QuoteDocumentData = {
   quote: {
     id: string
-    quoteRef: string                         // "QUOTE-{YYYY}-{NNNN}" derived from created_at + truncated id
+    quoteRef: string // "QUOTE-{YYYY}-{NNNN}" derived from created_at + truncated id
     pricingModel: 'per_person' | 'flat_rate' | 'custom'
     totalQuotedCents: number
     pricePerPersonCents: number | null
@@ -22,8 +22,8 @@ export type QuoteDocumentData = {
     depositRequired: boolean
     depositAmountCents: number | null
     depositPercentage: number | null
-    validUntil: string | null                // ISO date string
-    pricingNotes: string | null              // "What's included" from chef's notes
+    validUntil: string | null // ISO date string
+    pricingNotes: string | null // "What's included" from chef's notes
     sentAt: string | null
   }
   chef: {
@@ -37,7 +37,7 @@ export type QuoteDocumentData = {
   }
   event: {
     occasion: string | null
-    eventDate: string | null                 // ISO date string (from event or inquiry)
+    eventDate: string | null // ISO date string (from event or inquiry)
     guestCount: number | null
     location: string | null
     serviceStyle: string | null
@@ -47,8 +47,8 @@ export type QuoteDocumentData = {
   menu: Array<{
     courseNumber: number
     courseName: string
-    description: string | null              // FOH description (dish.description)
-    componentNames: string[]                // Fallback if no description
+    description: string | null // FOH description (dish.description)
+    componentNames: string[] // Fallback if no description
   }>
   cancellationPolicy: {
     cutoffDays: number
@@ -65,13 +65,15 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
   // Fetch quote with client
   const { data: quote } = await supabase
     .from('quotes')
-    .select(`
+    .select(
+      `
       id, created_at, pricing_model, total_quoted_cents, price_per_person_cents,
       guest_count_estimated, deposit_required, deposit_amount_cents,
       deposit_percentage, valid_until, pricing_notes, sent_at,
       event_id, inquiry_id,
       client:clients(full_name, email)
-    `)
+    `
+    )
     .eq('id', quoteId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -105,16 +107,22 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
   if (quote.event_id) {
     const { data: event } = await supabase
       .from('events')
-      .select(`
+      .select(
+        `
         occasion, event_date, guest_count, location_address, location_city,
         location_state, service_style, dietary_restrictions, allergies
-      `)
+      `
+      )
       .eq('id', quote.event_id)
       .eq('tenant_id', user.tenantId!)
       .single()
 
     if (event) {
-      const locationParts = [event.location_address, event.location_city, event.location_state].filter(Boolean)
+      const locationParts = [
+        event.location_address,
+        event.location_city,
+        event.location_state,
+      ].filter(Boolean)
       eventDetails = {
         occasion: event.occasion,
         eventDate: event.event_date,
@@ -145,7 +153,10 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
 
         if (dishes && dishes.length > 0) {
           // Group by course number for FOH presentation
-          const courseMap = new Map<number, { name: string; description: string | null; dishIds: string[] }>()
+          const courseMap = new Map<
+            number,
+            { name: string; description: string | null; dishIds: string[] }
+          >()
           for (const dish of dishes) {
             const existing = courseMap.get(dish.course_number)
             if (existing) {
@@ -166,7 +177,7 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
           }
 
           // Fetch component names as fallback for courses without descriptions
-          const allDishIds = dishes.map(d => d.id)
+          const allDishIds = dishes.map((d) => d.id)
           const { data: components } = await supabase
             .from('components')
             .select('dish_id, name')
@@ -184,7 +195,7 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
           menuCourses = Array.from(courseMap.entries())
             .sort((a, b) => a[0] - b[0])
             .map(([courseNumber, data]) => {
-              const allComponentNames = data.dishIds.flatMap(id => compsByDish.get(id) || [])
+              const allComponentNames = data.dishIds.flatMap((id) => compsByDish.get(id) || [])
               return {
                 courseNumber,
                 courseName: data.name,
@@ -199,7 +210,9 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
     // Fallback: pull event details from inquiry
     const { data: inquiry } = await supabase
       .from('inquiries')
-      .select('confirmed_date, confirmed_guest_count, confirmed_location, confirmed_occasion, confirmed_dietary_restrictions')
+      .select(
+        'confirmed_date, confirmed_guest_count, confirmed_location, confirmed_occasion, confirmed_dietary_restrictions'
+      )
       .eq('id', quote.inquiry_id)
       .eq('tenant_id', user.tenantId!)
       .single()
@@ -285,7 +298,12 @@ export function renderQuote(pdf: PDFLayout, data: QuoteDocumentData) {
   ])
 
   if (quote.validUntil) {
-    pdf.text(`This quote is valid until ${format(parseISO(quote.validUntil), 'MMMM d, yyyy')}.`, 8, 'italic', 0)
+    pdf.text(
+      `This quote is valid until ${format(parseISO(quote.validUntil), 'MMMM d, yyyy')}.`,
+      8,
+      'italic',
+      0
+    )
     pdf.space(1)
   }
 
@@ -325,12 +343,19 @@ export function renderQuote(pdf: PDFLayout, data: QuoteDocumentData) {
       pdf.space(1)
     }
   } else {
-    pdf.text("Menu to be finalized. I'll share the full menu details with you shortly.", 9, 'italic', 0)
+    pdf.text(
+      "Menu to be finalized. I'll share the full menu details with you shortly.",
+      9,
+      'italic',
+      0
+    )
     pdf.space(1)
   }
 
   // Dietary note
-  const allDietary = [...(event.dietaryRestrictions || []), ...(event.allergies || [])].filter(Boolean)
+  const allDietary = [...(event.dietaryRestrictions || []), ...(event.allergies || [])].filter(
+    Boolean
+  )
   if (allDietary.length > 0) {
     pdf.text(`Dietary accommodations: ${allDietary.join(', ')}`, 8, 'italic', 0)
     pdf.space(1)
@@ -340,14 +365,18 @@ export function renderQuote(pdf: PDFLayout, data: QuoteDocumentData) {
   pdf.sectionHeader('YOUR INVESTMENT', 11, true)
 
   // Single line item — menu first means the number lands in context, not first
-  const pricingLabel = quote.pricingModel === 'per_person' && quote.pricePerPersonCents
-    ? `${formatCents(quote.pricePerPersonCents)} per person`
-    : quote.pricingModel === 'flat_rate'
-    ? 'Flat rate'
-    : 'Custom pricing'
+  const pricingLabel =
+    quote.pricingModel === 'per_person' && quote.pricePerPersonCents
+      ? `${formatCents(quote.pricePerPersonCents)} per person`
+      : quote.pricingModel === 'flat_rate'
+        ? 'Flat rate'
+        : 'Custom pricing'
 
   const guestNote = guestCount ? ` (${guestCount} guests)` : ''
-  pdf.keyValue('Service total', `${formatCents(quote.totalQuotedCents)}${guestNote ? '  ·  ' + pricingLabel : ''}`)
+  pdf.keyValue(
+    'Service total',
+    `${formatCents(quote.totalQuotedCents)}${guestNote ? '  ·  ' + pricingLabel : ''}`
+  )
 
   if (quote.depositRequired && quote.depositAmountCents) {
     const depositLabel = quote.depositPercentage
@@ -360,8 +389,8 @@ export function renderQuote(pdf: PDFLayout, data: QuoteDocumentData) {
 
   if (quote.pricingNotes) {
     pdf.space(2)
-    pdf.text('What\'s included:', 9, 'bold', 0)
-    const lines = quote.pricingNotes.split('\n').filter(l => l.trim())
+    pdf.text("What's included:", 9, 'bold', 0)
+    const lines = quote.pricingNotes.split('\n').filter((l) => l.trim())
     for (const line of lines) {
       pdf.bullet(line.replace(/^[-•]\s*/, ''), 9)
     }
@@ -375,18 +404,29 @@ export function renderQuote(pdf: PDFLayout, data: QuoteDocumentData) {
   const cutoff = cancellationPolicy.cutoffDays
   const depositRefundable = cancellationPolicy.depositRefundable
 
-  const cancellationText = cutoff > 0
-    ? `Cancellations ${cutoff}+ days before the event: full refund. Within ${cutoff} days: no refund on balance.${depositRefundable ? '' : ' Deposits are non-refundable.'}`
-    : 'All payments are non-refundable once made. Please contact me if you need to reschedule.'
+  const cancellationText =
+    cutoff > 0
+      ? `Cancellations ${cutoff}+ days before the event: full refund. Within ${cutoff} days: no refund on balance.${depositRefundable ? '' : ' Deposits are non-refundable.'}`
+      : 'All payments are non-refundable once made. Please contact me if you need to reschedule.'
 
   pdf.text(cancellationText, 8, 'normal', 0)
   pdf.space(1)
-  pdf.text('Final guest count confirmed 48 hours prior to the event. Additional guests may incur extra charges.', 8, 'normal', 0)
+  pdf.text(
+    'Final guest count confirmed 48 hours prior to the event. Additional guests may incur extra charges.',
+    8,
+    'normal',
+    0
+  )
   pdf.space(2)
 
   // ── SECTION 5: CALL TO ACTION ─────────────────────────────────────────────
   pdf.sectionHeader('READY TO BOOK?', 10, true)
-  pdf.text(`I'd love to cook for you. Reply to this email or reach me directly at ${chef.email}${chef.phone ? ' / ' + chef.phone : ''} to confirm your date.`, 9, 'normal', 0)
+  pdf.text(
+    `I'd love to cook for you. Reply to this email or reach me directly at ${chef.email}${chef.phone ? ' / ' + chef.phone : ''} to confirm your date.`,
+    9,
+    'normal',
+    0
+  )
   pdf.space(1)
   pdf.text(`Looking forward to it,`, 9, 'italic', 0)
   pdf.text(chef.businessName, 9, 'bold', 0)

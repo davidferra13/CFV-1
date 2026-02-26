@@ -36,13 +36,13 @@ This lets the layout server component read the current URL path without a redire
 
 ### Wizard Steps
 
-| # | Title | Saves To | Server Action |
-|---|---|---|---|
-| 1 | Set Up Your Profile | `chefs.display_name`, `chefs.bio` | `updateChefFullProfile()` |
-| 2 | Brand Your Portal | `chefs.tagline`, `chefs.portal_primary_color` | `updateChefPortalTheme()` |
-| 3 | Your Public URL | `chefs.slug` | `updateChefSlug()` |
-| 4 | Get Paid | `chefs.stripe_account_id` (via Stripe) | `createConnectAccountLink(true)` |
-| 5 | Done | `chefs.onboarding_completed_at` | `markOnboardingComplete()` |
+| #   | Title               | Saves To                                      | Server Action                    |
+| --- | ------------------- | --------------------------------------------- | -------------------------------- |
+| 1   | Set Up Your Profile | `chefs.display_name`, `chefs.bio`             | `updateChefFullProfile()`        |
+| 2   | Brand Your Portal   | `chefs.tagline`, `chefs.portal_primary_color` | `updateChefPortalTheme()`        |
+| 3   | Your Public URL     | `chefs.slug`                                  | `updateChefSlug()`               |
+| 4   | Get Paid            | `chefs.stripe_account_id` (via Stripe)        | `createConnectAccountLink(true)` |
+| 5   | Done                | `chefs.onboarding_completed_at`               | `markOnboardingComplete()`       |
 
 Every step has "Skip for now" so chefs are never blocked.
 
@@ -56,19 +56,20 @@ The wizard's "Go to Dashboard" button (step 5) calls `markOnboardingComplete()` 
 
 ## Key Files
 
-| File | Role |
-|---|---|
-| `app/(chef)/onboarding/page.tsx` | Server component — loads profile + Connect status, passes to wizard |
-| `components/onboarding/onboarding-wizard.tsx` | `'use client'` multi-step wizard UI |
-| `lib/onboarding/actions.ts` | `checkSlugAvailability()` server action |
-| `lib/chef/profile-actions.ts` | `markOnboardingComplete()`, `getOnboardingStatus()` |
-| `app/(chef)/layout.tsx` | Gate: redirects to /onboarding if not complete |
-| `middleware.ts` | Sets `x-pathname` request header; adds `/chefs` + `/survey` to skipAuthPaths |
-| `supabase/migrations/20260303000021_onboarding_and_stripe_connect.sql` | Adds `onboarding_completed_at` to `chefs`; backfills existing chefs |
+| File                                                                   | Role                                                                         |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `app/(chef)/onboarding/page.tsx`                                       | Server component — loads profile + Connect status, passes to wizard          |
+| `components/onboarding/onboarding-wizard.tsx`                          | `'use client'` multi-step wizard UI                                          |
+| `lib/onboarding/actions.ts`                                            | `checkSlugAvailability()` server action                                      |
+| `lib/chef/profile-actions.ts`                                          | `markOnboardingComplete()`, `getOnboardingStatus()`                          |
+| `app/(chef)/layout.tsx`                                                | Gate: redirects to /onboarding if not complete                               |
+| `middleware.ts`                                                        | Sets `x-pathname` request header; adds `/chefs` + `/survey` to skipAuthPaths |
+| `supabase/migrations/20260303000021_onboarding_and_stripe_connect.sql` | Adds `onboarding_completed_at` to `chefs`; backfills existing chefs          |
 
 ## Database
 
 Column added to `chefs` table:
+
 ```sql
 onboarding_completed_at TIMESTAMPTZ DEFAULT NULL
 -- NULL = wizard not yet completed

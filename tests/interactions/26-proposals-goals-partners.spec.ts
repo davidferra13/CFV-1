@@ -51,7 +51,7 @@ test.describe('Proposals — Hub', () => {
 
   test('/proposals — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/proposals')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -77,7 +77,7 @@ test.describe('Proposals — Templates & Addons', () => {
 
   test('/proposals/templates — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/proposals/templates')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -99,7 +99,7 @@ test.describe('Proposals — Templates & Addons', () => {
 
   test('/proposals/addons — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/proposals/addons')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -108,9 +108,7 @@ test.describe('Proposals — Templates & Addons', () => {
   test('Proposal templates section is present or empty on hub', async ({ page }) => {
     await page.goto('/proposals')
     await page.waitForLoadState('networkidle')
-    const templateSection = page
-      .getByText(/template|use template|from template/i)
-      .first()
+    const templateSection = page.getByText(/template|use template|from template/i).first()
     const isVisible = await templateSection.isVisible().catch(() => false)
     // Informational
     const _ = isVisible
@@ -143,7 +141,7 @@ test.describe('Goals — Dashboard', () => {
 
   test('/goals — no JS errors on load', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/goals')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -182,7 +180,7 @@ test.describe('Goals — Setup', () => {
 
   test('/goals/setup — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/goals/setup')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -227,7 +225,7 @@ test.describe('Partners — Hub', () => {
 
   test('/partners — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/partners')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -253,7 +251,7 @@ test.describe('Partners — Add New', () => {
 
   test('/partners/new — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/partners/new')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)

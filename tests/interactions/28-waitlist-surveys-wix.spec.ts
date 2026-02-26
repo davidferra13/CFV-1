@@ -40,7 +40,7 @@ test.describe('Waitlist — Hub', () => {
 
   test('/waitlist — no JS errors on load', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/waitlist')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -61,9 +61,7 @@ test.describe('Waitlist — Hub', () => {
   test('/waitlist — shows status of waitlist entries', async ({ page }) => {
     await page.goto('/waitlist')
     await page.waitForLoadState('networkidle')
-    const statusIndicator = page
-      .getByText(/pending|invited|accepted|declined|active/i)
-      .first()
+    const statusIndicator = page.getByText(/pending|invited|accepted|declined|active/i).first()
     const isVisible = await statusIndicator.isVisible().catch(() => false)
     // Informational — only visible if entries exist
     const _ = isVisible
@@ -75,7 +73,7 @@ test.describe('Waitlist — Hub', () => {
 test.describe('Waitlist — Add Entry', () => {
   test('/waitlist — Add button opens form without crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/waitlist')
     await page.waitForLoadState('networkidle')
@@ -97,17 +95,12 @@ test.describe('Waitlist — Add Entry', () => {
     await page.goto('/waitlist')
     await page.waitForLoadState('networkidle')
 
-    const addBtn = page
-      .getByRole('button', { name: /add|new|invite/i })
-      .first()
+    const addBtn = page.getByRole('button', { name: /add|new|invite/i }).first()
 
     if (await addBtn.isVisible()) {
       await addBtn.click()
       await page.waitForTimeout(400)
-      const nameField = page
-        .getByLabel(/name/i)
-        .first()
-        .or(page.getByPlaceholder(/name/i).first())
+      const nameField = page.getByLabel(/name/i).first().or(page.getByPlaceholder(/name/i).first())
       const isVisible = await nameField.isVisible().catch(() => false)
       // Informational — only present after the modal opens
       const _ = isVisible
@@ -118,9 +111,7 @@ test.describe('Waitlist — Add Entry', () => {
     await page.goto('/waitlist')
     await page.waitForLoadState('networkidle')
 
-    const addBtn = page
-      .getByRole('button', { name: /add|new|invite/i })
-      .first()
+    const addBtn = page.getByRole('button', { name: /add|new|invite/i }).first()
 
     if (await addBtn.isVisible()) {
       await addBtn.click()
@@ -169,7 +160,7 @@ test.describe('Surveys — Hub', () => {
 
   test('/surveys — no JS errors on load', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/surveys')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -214,7 +205,7 @@ test.describe('Surveys — Wix Integration', () => {
 
   test('/settings/integrations — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/settings/integrations')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)

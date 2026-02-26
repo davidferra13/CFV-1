@@ -15,24 +15,24 @@ This implementation adds that orchestration layer.
 
 ## New Files
 
-| File | Purpose |
-|---|---|
-| `components/events/close-out-wizard.tsx` | 5-screen guided wizard for chef post-event closure |
+| File                                        | Purpose                                             |
+| ------------------------------------------- | --------------------------------------------------- |
+| `components/events/close-out-wizard.tsx`    | 5-screen guided wizard for chef post-event closure  |
 | `app/(chef)/events/[id]/close-out/page.tsx` | Server page that fetches wizard data and renders it |
-| `components/client/post-event-banner.tsx` | Review prompt banner shown on client My Events page |
+| `components/client/post-event-banner.tsx`   | Review prompt banner shown on client My Events page |
 
 ---
 
 ## Modified Files
 
-| File | What Changed |
-|---|---|
-| `lib/events/financial-summary-actions.ts` | Added `recordTip()` and `getEventCloseOutData()` |
-| `components/events/event-transitions.tsx` | "Mark Completed" button now redirects to `/events/[id]/close-out` instead of refreshing |
-| `app/(client)/my-events/page.tsx` | Added PostEventBanner, balance-due badge + "Pay Balance" button on completed events, "Leave Review" button |
-| `app/(client)/my-events/[id]/page.tsx` | Added `id="review"` anchor to feedback section, red balance-due display + "Pay Remaining Balance" for completed events with outstanding balance |
-| `lib/email/templates/event-completed.tsx` | Two CTAs (View Receipt + Leave Review), better subject line, HR divider |
-| `lib/email/notifications.ts` | Passes `receiptUrl` + `reviewUrl` (with `#review` anchor) to email template |
+| File                                      | What Changed                                                                                                                                    |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lib/events/financial-summary-actions.ts` | Added `recordTip()` and `getEventCloseOutData()`                                                                                                |
+| `components/events/event-transitions.tsx` | "Mark Completed" button now redirects to `/events/[id]/close-out` instead of refreshing                                                         |
+| `app/(client)/my-events/page.tsx`         | Added PostEventBanner, balance-due badge + "Pay Balance" button on completed events, "Leave Review" button                                      |
+| `app/(client)/my-events/[id]/page.tsx`    | Added `id="review"` anchor to feedback section, red balance-due display + "Pay Remaining Balance" for completed events with outstanding balance |
+| `lib/email/templates/event-completed.tsx` | Two CTAs (View Receipt + Leave Review), better subject line, HR divider                                                                         |
+| `lib/email/notifications.ts`              | Passes `receiptUrl` + `reviewUrl` (with `#review` anchor) to email template                                                                     |
 
 ---
 
@@ -100,14 +100,17 @@ Client event detail page:
 ## New Server Actions
 
 ### `recordTip(eventId, amountCents, paymentMethod)`
+
 `lib/events/financial-summary-actions.ts`
 
 Records a cash/offline tip as an immutable ledger entry (`entry_type = 'tip'`). Requires event to be `in_progress` or `completed`. Uses admin client for the insert (same pattern as `recordOfflinePayment`). Revalidates event and close-out paths.
 
 ### `getEventCloseOutData(eventId): CloseOutData | null`
+
 `lib/events/financial-summary-actions.ts`
 
 Single aggregated fetch for the wizard page. Returns:
+
 - Event metadata (occasion, date, client first name, aarFiled, financialClosed, mileageMiles)
 - Financial snapshot (quoted, paid, tip, gross profit, margin %, food cost %, hourly rate, mileage deduction)
 - Existing tip entry (to skip/confirm on wizard step 1)
@@ -122,29 +125,34 @@ Returns `null` if event is not found, not owned by chef, or not in `completed` s
 
 Three bugs caught and corrected before shipping:
 
-| Bug | Where | Fix |
-|---|---|---|
-| Column name mismatch | `getEventCloseOutData()` — queried `shopping_minutes` but DB column is `time_shopping_minutes` (added with `time_` prefix in migration 20260216000003) | Fixed all 5 column names |
-| Hardcoded chef name | `app/(client)/my-events/page.tsx` — PostEventBanner showed "your chef" | Added single `chefs` table lookup for `business_name` when unreviewed event found |
-| Missing follow-up step | Wizard success screen had no way to mark `follow_up_sent = true`, leaving the post-event queue item perpetually pending | Added follow-up prompt to the success screen — calls existing `markFollowUpSent()` action; queue item clears automatically |
+| Bug                    | Where                                                                                                                                                  | Fix                                                                                                                        |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| Column name mismatch   | `getEventCloseOutData()` — queried `shopping_minutes` but DB column is `time_shopping_minutes` (added with `time_` prefix in migration 20260216000003) | Fixed all 5 column names                                                                                                   |
+| Hardcoded chef name    | `app/(client)/my-events/page.tsx` — PostEventBanner showed "your chef"                                                                                 | Added single `chefs` table lookup for `business_name` when unreviewed event found                                          |
+| Missing follow-up step | Wizard success screen had no way to mark `follow_up_sent = true`, leaving the post-event queue item perpetually pending                                | Added follow-up prompt to the success screen — calls existing `markFollowUpSent()` action; queue item clears automatically |
 
 ---
 
 ## Architecture Notes
 
 ### Immutability preserved
+
 `recordTip()` uses the same append-only pattern as all other ledger writes. No existing entries are modified.
 
 ### No new database migrations needed
+
 All columns used (`financial_closed`, `aar_filed`, `mileage_miles`, `tip_amount_cents` via ledger trigger) already exist from prior migrations.
 
 ### Wizard is idempotent
+
 Each step checks current state before allowing action:
+
 - Step 1: skips form if tip already in ledger
 - Step 4: skips form if AAR already filed
 - Close step: shows "already closed" if financially_closed = true
 
 ### Client banner is zero-cost
+
 PostEventBanner uses `sessionStorage` for dismiss state — no database read/write. The list page does a single bulk query (`client_reviews IN (event_ids)`) rather than per-event queries.
 
 ---

@@ -3,8 +3,16 @@
 // components if needed, without triggering the 'use server' object export restriction.
 
 export type CourseType =
-  | 'AMUSE' | 'APP' | 'SOUP' | 'SALAD' | 'FISH'
-  | 'INTERMEZZO' | 'MAIN' | 'CHEESE' | 'DESSERT' | 'PETIT_FOUR'
+  | 'AMUSE'
+  | 'APP'
+  | 'SOUP'
+  | 'SALAD'
+  | 'FISH'
+  | 'INTERMEZZO'
+  | 'MAIN'
+  | 'CHEESE'
+  | 'DESSERT'
+  | 'PETIT_FOUR'
 
 export const COURSE_COLORS: Record<CourseType, string> = {
   AMUSE: '#8b5cf6',
@@ -20,14 +28,29 @@ export const COURSE_COLORS: Record<CourseType, string> = {
 }
 
 export const COURSE_ORDER: CourseType[] = [
-  'AMUSE', 'APP', 'SOUP', 'SALAD', 'FISH',
-  'INTERMEZZO', 'MAIN', 'CHEESE', 'DESSERT', 'PETIT_FOUR',
+  'AMUSE',
+  'APP',
+  'SOUP',
+  'SALAD',
+  'FISH',
+  'INTERMEZZO',
+  'MAIN',
+  'CHEESE',
+  'DESSERT',
+  'PETIT_FOUR',
 ]
 
 export type StationType =
-  | 'SAUCIER' | 'POISSONNIER' | 'ROTISSEUR' | 'GRILLARDIN'
-  | 'FRITURIER' | 'ENTREMETIER' | 'TOURNANT' | 'PATISSIER'
-  | 'GARDE_MANGER' | 'BOUCHER'
+  | 'SAUCIER'
+  | 'POISSONNIER'
+  | 'ROTISSEUR'
+  | 'GRILLARDIN'
+  | 'FRITURIER'
+  | 'ENTREMETIER'
+  | 'TOURNANT'
+  | 'PATISSIER'
+  | 'GARDE_MANGER'
+  | 'BOUCHER'
 
 export const STATION_LABELS: Record<StationType, string> = {
   SAUCIER: 'Saucier (Sauces)',

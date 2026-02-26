@@ -33,16 +33,19 @@ If an email starts to feel like a proposal, a business overview, or a policy exp
 Emails move one step at a time. Never ask for everything at once. Never jump ahead.
 
 **First response to an inquiry:**
+
 1. Acknowledge the message
 2. Confirm availability or clarify the date
 3. Note key preferences or allergies simply
 4. Ask for the one or two missing pieces needed to move forward (usually date or address)
 
 **After logistics are confirmed:**
+
 - Introduce menu direction at a high level
 - Clarify tricky dietary details
 
 **Later in the conversation:**
+
 - Discuss pricing, deposits, and agreements only when appropriate
 
 ## What Emails Should Do
@@ -78,11 +81,13 @@ Clients mention anniversaries, travel, Airbnbs, favorite foods, context around t
 ## Normalizing the Experience
 
 For first-time clients:
+
 - Acknowledge briefly, lower the stakes, do not over-reassure
 - Examples: "That's totally fine. A lot of people I cook for are doing this for the first time." / "No problem at all. This is pretty straightforward once we lock the basics."
 - One sentence, then move on immediately
 
 For experienced clients:
+
 - Do not change tone. Treat it as routine.
 - Examples: "That works. Once the date and address are locked, I'll send over a few menu directions." / "Sounds good. Same process on my end."
 
@@ -90,12 +95,12 @@ For experienced clients:
 
 Tone evolves as the thread progresses. Never reset to formal once rapport exists.
 
-| Depth | When | Tone |
-|-------|------|------|
-| 1 — First Response | Initial reply | Polite, professional, slightly formal |
-| 2 — Back-and-Forth | Multiple exchanges | Relaxed, shorter sentences, fewer sign-offs |
+| Depth                   | When               | Tone                                              |
+| ----------------------- | ------------------ | ------------------------------------------------- |
+| 1 — First Response      | Initial reply      | Polite, professional, slightly formal             |
+| 2 — Back-and-Forth      | Multiple exchanges | Relaxed, shorter sentences, fewer sign-offs       |
 | 3 — Booking / Logistics | Finalizing details | Direct, minimal pleasantries, assumes familiarity |
-| 4 — Post-Service | After the dinner | Warm, appreciative, human |
+| 4 — Post-Service        | After the dinner   | Warm, appreciative, human                         |
 
 By five or more emails in, sign-offs may be shortened or omitted entirely. Ending naturally on the last sentence signals comfort, not disengagement.
 
@@ -110,6 +115,7 @@ Emails are plain text. No logos, footers, or titles.
 ## Whimsical Moments
 
 Small surprises or extra touches are allowed but must be:
+
 - Understated and optional
 - Operationally safe
 - Never framed as giveaways, discounts, or big promises

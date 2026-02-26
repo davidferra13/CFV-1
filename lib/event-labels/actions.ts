@@ -67,17 +67,15 @@ export async function upsertEventLabel(
     return
   }
 
-  const { error } = await supabase
-    .from('chef_event_type_labels' as any)
-    .upsert(
-      {
-        tenant_id: chef.entityId,
-        default_label: defaultLabel,
-        custom_label: customLabel.trim(),
-        label_type: labelType,
-      },
-      { onConflict: 'tenant_id,default_label,label_type' }
-    )
+  const { error } = await supabase.from('chef_event_type_labels' as any).upsert(
+    {
+      tenant_id: chef.entityId,
+      default_label: defaultLabel,
+      custom_label: customLabel.trim(),
+      label_type: labelType,
+    },
+    { onConflict: 'tenant_id,default_label,label_type' }
+  )
 
   if (error) throw new Error(error.message)
 

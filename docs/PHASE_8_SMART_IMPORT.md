@@ -13,6 +13,7 @@ ChefFlow's forms are thorough — 35+ fields per client, structured ingredients 
 ### Core Engine: `lib/ai/parse.ts`
 
 A generic `parseWithAI<T>()` function that:
+
 1. Takes a system prompt (domain-specific instructions) and user text
 2. Sends both to the Anthropic API (Claude Sonnet)
 3. Validates the response with Zod (type-safe, catches malformed AI output)
@@ -22,15 +23,16 @@ The function is model-agnostic in structure — the system prompt is what specia
 
 ### Specialized Parsers
 
-| File | Purpose |
-|------|---------|
-| `lib/ai/parse-client.ts` | Single client extraction with confidence scoring |
-| `lib/ai/parse-clients-bulk.ts` | Multi-client extraction from one text dump |
-| `lib/ai/parse-recipe.ts` | Recipe with ingredients, method, yield, allergens |
-| `lib/ai/parse-brain-dump.ts` | Categorizes mixed input into clients, recipes, notes |
-| `lib/ai/parse-inquiry.ts` | Inquiry data from messages/emails (for Smart Fill) |
+| File                           | Purpose                                              |
+| ------------------------------ | ---------------------------------------------------- |
+| `lib/ai/parse-client.ts`       | Single client extraction with confidence scoring     |
+| `lib/ai/parse-clients-bulk.ts` | Multi-client extraction from one text dump           |
+| `lib/ai/parse-recipe.ts`       | Recipe with ingredients, method, yield, allergens    |
+| `lib/ai/parse-brain-dump.ts`   | Categorizes mixed input into clients, recipes, notes |
+| `lib/ai/parse-inquiry.ts`      | Inquiry data from messages/emails (for Smart Fill)   |
 
 Each parser has a tailored system prompt that understands the domain. Key design decisions:
+
 - **Allergies are flagged prominently** — safety-critical, the AI is instructed to over-flag rather than miss
 - **Confidence scoring per field** — "confirmed" (explicitly stated), "inferred" (deduced), "unknown"
 - **Money in cents** — consistent with the ledger-first financial model
@@ -39,6 +41,7 @@ Each parser has a tailored system prompt that understands the domain. Key design
 ### Server Actions: `lib/ai/import-actions.ts`
 
 Four import functions, all using `requireChef()` + tenant scoping:
+
 - `importClient()` — creates a client record from parsed data
 - `importClients()` — batch version, iterates and reports per-record results
 - `importRecipe()` — creates recipe + finds/creates ingredients + links via recipe_ingredients
@@ -51,6 +54,7 @@ Recipe import is notable: it uses a `findOrCreateIngredient()` helper that check
 `app/(chef)/import/page.tsx` + `components/import/smart-import-hub.tsx`
 
 Three-tab interface:
+
 1. **Brain Dump** — paste anything, AI categorizes and structures it
 2. **Import Clients** — optimized for client data (auto-detects single vs bulk)
 3. **Import Recipe** — optimized for recipe capture
@@ -58,6 +62,7 @@ Three-tab interface:
 Flow: Input → Parse → Review → Save
 
 The review phase shows:
+
 - Confidence badges (green/yellow/red)
 - Allergy alerts (red, prominent)
 - Field-level confidence indicators (checkmark = confirmed, ? = inferred)
@@ -81,28 +86,28 @@ A "Paste from text" link at the top of the inquiry form opens a modal. Chef past
 
 ## Files Created
 
-| File | Purpose |
-|------|---------|
-| `lib/ai/parse.ts` | Core AI parsing engine |
-| `lib/ai/parse-client.ts` | Client parser |
-| `lib/ai/parse-clients-bulk.ts` | Bulk client parser |
-| `lib/ai/parse-recipe.ts` | Recipe parser |
-| `lib/ai/parse-brain-dump.ts` | Brain dump categorizer |
-| `lib/ai/parse-inquiry.ts` | Inquiry Smart Fill parser |
-| `lib/ai/import-actions.ts` | Server actions for saving parsed data |
-| `app/(chef)/import/page.tsx` | Smart Import hub page |
-| `components/import/smart-import-hub.tsx` | Import hub client component |
-| `components/import/smart-fill-modal.tsx` | Reusable Smart Fill modal |
+| File                                     | Purpose                               |
+| ---------------------------------------- | ------------------------------------- |
+| `lib/ai/parse.ts`                        | Core AI parsing engine                |
+| `lib/ai/parse-client.ts`                 | Client parser                         |
+| `lib/ai/parse-clients-bulk.ts`           | Bulk client parser                    |
+| `lib/ai/parse-recipe.ts`                 | Recipe parser                         |
+| `lib/ai/parse-brain-dump.ts`             | Brain dump categorizer                |
+| `lib/ai/parse-inquiry.ts`                | Inquiry Smart Fill parser             |
+| `lib/ai/import-actions.ts`               | Server actions for saving parsed data |
+| `app/(chef)/import/page.tsx`             | Smart Import hub page                 |
+| `components/import/smart-import-hub.tsx` | Import hub client component           |
+| `components/import/smart-fill-modal.tsx` | Reusable Smart Fill modal             |
 
 ## Files Modified
 
-| File | Change |
-|------|--------|
-| `components/navigation/chef-nav.tsx` | Added "Import" nav item |
+| File                                    | Change                                      |
+| --------------------------------------- | ------------------------------------------- |
+| `components/navigation/chef-nav.tsx`    | Added "Import" nav item                     |
 | `components/inquiries/inquiry-form.tsx` | Added Smart Fill button + modal integration |
-| `lib/utils/currency.ts` | Added `formatCentsToDisplay()` utility |
-| `.env.local.example` | Added `ANTHROPIC_API_KEY` variable |
-| `package.json` / `package-lock.json` | Added `@anthropic-ai/sdk` dependency |
+| `lib/utils/currency.ts`                 | Added `formatCentsToDisplay()` utility      |
+| `.env.local.example`                    | Added `ANTHROPIC_API_KEY` variable          |
+| `package.json` / `package-lock.json`    | Added `@anthropic-ai/sdk` dependency        |
 
 ## Design Decisions
 

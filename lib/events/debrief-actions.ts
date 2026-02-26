@@ -60,7 +60,9 @@ export async function getEventDebriefBlanks(eventId: string): Promise<DebriefBla
   // Fetch the event
   const { data: event, error: eventError } = await supabase
     .from('events')
-    .select('id, status, client_id, occasion, event_date, debrief_completed_at, chef_outcome_notes, chef_outcome_rating')
+    .select(
+      'id, status, client_id, occasion, event_date, debrief_completed_at, chef_outcome_notes, chef_outcome_rating'
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -73,21 +75,19 @@ export async function getEventDebriefBlanks(eventId: string): Promise<DebriefBla
     event.client_id
       ? supabase
           .from('clients')
-          .select(`
+          .select(
+            `
             id, full_name, preferred_name, personal_milestones,
             dietary_restrictions, allergies, dislikes,
             vibe_notes, fun_qa_answers
-          `)
+          `
+          )
           .eq('id', event.client_id)
           .eq('tenant_id', user.tenantId!)
           .single()
       : Promise.resolve({ data: null, error: null }),
 
-    supabase
-      .from('menus')
-      .select('id')
-      .eq('event_id', eventId)
-      .eq('tenant_id', user.tenantId!),
+    supabase.from('menus').select('id').eq('event_id', eventId).eq('tenant_id', user.tenantId!),
 
     supabase
       .from('event_photos')
@@ -106,9 +106,7 @@ export async function getEventDebriefBlanks(eventId: string): Promise<DebriefBla
     const allergies = (client.allergies as string[] | null) ?? []
     const currentAnswers = ((client as any).fun_qa_answers as FunQAAnswers) ?? {}
 
-    const missingFunQA = FUN_QA_QUESTIONS.filter(
-      (q) => !currentAnswers[q.key]
-    ).map((q) => ({
+    const missingFunQA = FUN_QA_QUESTIONS.filter((q) => !currentAnswers[q.key]).map((q) => ({
       questionKey: q.key,
       questionText: q.question,
       emoji: q.emoji,
@@ -161,11 +159,19 @@ export async function getEventDebriefBlanks(eventId: string): Promise<DebriefBla
         .not('recipe_id', 'is', null)
 
       if (components && components.length > 0) {
-        const recipeIds = [...new Set(components.map((c: { recipe_id: string | null }) => c.recipe_id).filter((id): id is string => id !== null))]
+        const recipeIds = [
+          ...new Set(
+            components
+              .map((c: { recipe_id: string | null }) => c.recipe_id)
+              .filter((id): id is string => id !== null)
+          ),
+        ]
 
         const { data: recipes } = await supabase
           .from('recipes')
-          .select('id, name, category, method_detailed, notes, prep_time_minutes, cook_time_minutes')
+          .select(
+            'id, name, category, method_detailed, notes, prep_time_minutes, cook_time_minutes'
+          )
           .in('id', recipeIds)
           .eq('tenant_id', user.tenantId!)
 
@@ -182,8 +188,7 @@ export async function getEventDebriefBlanks(eventId: string): Promise<DebriefBla
             // Only surface recipes with text-field blanks the chef can fill in the debrief.
             // Missing photo is excluded: dish photos go in the gallery section above.
             .filter(
-              (r: DebriefRecipeBlank) =>
-                r.missingDetailedMethod || r.missingNotes || r.missingTimes
+              (r: DebriefRecipeBlank) => r.missingDetailedMethod || r.missingNotes || r.missingTimes
             )
         }
       }
@@ -381,9 +386,12 @@ export async function saveRecipeDebrief(
   // Build update payload — only include provided fields
   const updatePayload: Record<string, unknown> = {}
   if (data.notes !== undefined) updatePayload.notes = data.notes || null
-  if (data.method_detailed !== undefined) updatePayload.method_detailed = data.method_detailed || null
-  if (data.prep_time_minutes !== undefined) updatePayload.prep_time_minutes = data.prep_time_minutes || null
-  if (data.cook_time_minutes !== undefined) updatePayload.cook_time_minutes = data.cook_time_minutes || null
+  if (data.method_detailed !== undefined)
+    updatePayload.method_detailed = data.method_detailed || null
+  if (data.prep_time_minutes !== undefined)
+    updatePayload.prep_time_minutes = data.prep_time_minutes || null
+  if (data.cook_time_minutes !== undefined)
+    updatePayload.cook_time_minutes = data.cook_time_minutes || null
   if (data.photo_url !== undefined) updatePayload.photo_url = data.photo_url || null
 
   if (Object.keys(updatePayload).length === 0) return { success: true }
@@ -527,7 +535,9 @@ export async function completeDebrief(
  * NEVER writes to the database. Returns text for the chef to edit and save.
  * Aligned with AI Policy: draft-only, chef must explicitly save.
  */
-export async function generateDebriefDraft(eventId: string): Promise<{ draft: string } | { error: string }> {
+export async function generateDebriefDraft(
+  eventId: string
+): Promise<{ draft: string } | { error: string }> {
   const user = await requireChef()
   const supabase = createServerClient()
 
@@ -538,13 +548,15 @@ export async function generateDebriefDraft(eventId: string): Promise<{ draft: st
   // Fetch context to ground the draft
   const { data: event } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       occasion, event_date, guest_count, special_requests,
       client:clients(full_name, vibe_notes),
       menus(
         dishes(course_name, name)
       )
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -554,10 +566,13 @@ export async function generateDebriefDraft(eventId: string): Promise<{ draft: st
   const clientName = (event.client as any)?.full_name ?? 'the client'
   const occasion = event.occasion ?? 'dinner'
   const guestCount = event.guest_count ?? 0
-  const date = new Date(event.event_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })
+  const date = new Date(event.event_date).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+  })
 
   // Build a menu summary
-  const dishes = ((event.menus as unknown) as any[])?.[0]?.dishes ?? []
+  const dishes = (event.menus as unknown as any[])?.[0]?.dishes ?? []
   const menuLines = dishes
     .slice(0, 8)
     .map((d: { course_name: string; name: string }) => `${d.course_name}: ${d.name}`)

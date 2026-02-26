@@ -140,7 +140,9 @@ export function validateOwnedWebsiteUrls(chefWebsiteUrl: string | null, urls: st
   }
 }
 
-async function fetchGooglePlaceReviews(config: Record<string, unknown>): Promise<NormalizedExternalReview[]> {
+async function fetchGooglePlaceReviews(
+  config: Record<string, unknown>
+): Promise<NormalizedExternalReview[]> {
   const { placeId, placeUrl } = normalizeGoogleSourceConfig(config)
   const apiKey = process.env.GOOGLE_PLACES_API_KEY
 
@@ -275,12 +277,16 @@ function extractRating(node: Record<string, unknown>) {
   return normalizeRating(reviewRating)
 }
 
-function normalizeWebsiteReview(node: Record<string, unknown>, pageUrl: string): NormalizedExternalReview | null {
-  const reviewTextRaw = typeof node.reviewBody === 'string'
-    ? node.reviewBody
-    : typeof node.description === 'string'
-      ? node.description
-      : ''
+function normalizeWebsiteReview(
+  node: Record<string, unknown>,
+  pageUrl: string
+): NormalizedExternalReview | null {
+  const reviewTextRaw =
+    typeof node.reviewBody === 'string'
+      ? node.reviewBody
+      : typeof node.description === 'string'
+        ? node.description
+        : ''
 
   const reviewText = reviewTextRaw.trim()
   if (!reviewText) return null
@@ -290,13 +296,16 @@ function normalizeWebsiteReview(node: Record<string, unknown>, pageUrl: string):
   const reviewDate = normalizeDateToIsoDate(node.datePublished ?? node.dateCreated)
   const rating = extractRating(node)
 
-  const explicitId = typeof node['@id'] === 'string'
-    ? node['@id'].trim()
-    : typeof node.id === 'string'
-      ? node.id.trim()
-      : ''
+  const explicitId =
+    typeof node['@id'] === 'string'
+      ? node['@id'].trim()
+      : typeof node.id === 'string'
+        ? node.id.trim()
+        : ''
 
-  const sourceReviewId = explicitId || `website:${hashId(`${sourceUrl}|${authorName ?? ''}|${reviewDate ?? ''}|${reviewText}`)}`
+  const sourceReviewId =
+    explicitId ||
+    `website:${hashId(`${sourceUrl}|${authorName ?? ''}|${reviewDate ?? ''}|${reviewText}`)}`
 
   return {
     sourceReviewId,
@@ -309,7 +318,9 @@ function normalizeWebsiteReview(node: Record<string, unknown>, pageUrl: string):
   }
 }
 
-async function fetchWebsiteJsonLdReviews(config: Record<string, unknown>): Promise<NormalizedExternalReview[]> {
+async function fetchWebsiteJsonLdReviews(
+  config: Record<string, unknown>
+): Promise<NormalizedExternalReview[]> {
   const { urls } = normalizeWebsiteSourceConfig(config)
   const reviews: NormalizedExternalReview[] = []
 
@@ -423,7 +434,10 @@ async function markSyncFailure(supabase: any, sourceId: string, message: string)
     .eq('id', sourceId)
 }
 
-export async function syncExternalReviewSource(source: ExternalReviewSourceRecord, supabaseClient?: any): Promise<ExternalSyncResult> {
+export async function syncExternalReviewSource(
+  source: ExternalReviewSourceRecord,
+  supabaseClient?: any
+): Promise<ExternalSyncResult> {
   const supabase: any = supabaseClient ?? createServerClient({ admin: true })
 
   try {
@@ -497,15 +511,20 @@ export async function syncExternalReviewSource(source: ExternalReviewSourceRecor
   }
 }
 
-export async function syncExternalReviewSourceById(sourceId: string, options?: {
-  admin?: boolean
-  skipIntervalCheck?: boolean
-}) {
+export async function syncExternalReviewSourceById(
+  sourceId: string,
+  options?: {
+    admin?: boolean
+    skipIntervalCheck?: boolean
+  }
+) {
   const supabase: any = createServerClient({ admin: options?.admin ?? true })
 
   const { data, error } = await supabase
     .from('external_review_sources')
-    .select('id, tenant_id, provider, label, config, active, sync_interval_minutes, last_synced_at, last_cursor, last_error')
+    .select(
+      'id, tenant_id, provider, label, config, active, sync_interval_minutes, last_synced_at, last_cursor, last_error'
+    )
     .eq('id', sourceId)
     .single()
 
@@ -542,7 +561,9 @@ export async function syncAllActiveExternalReviewSources(limit = 100) {
 
   const { data, error } = await supabase
     .from('external_review_sources')
-    .select('id, tenant_id, provider, label, config, active, sync_interval_minutes, last_synced_at, last_cursor, last_error')
+    .select(
+      'id, tenant_id, provider, label, config, active, sync_interval_minutes, last_synced_at, last_cursor, last_error'
+    )
     .eq('active', true)
     .order('updated_at', { ascending: true })
     .limit(Math.max(1, Math.min(limit, 500)))

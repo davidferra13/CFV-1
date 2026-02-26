@@ -27,22 +27,20 @@ export async function savePushSubscription(input: PushSubscriptionInput): Promis
     return
   }
 
-  const { error } = await supabase
-    .from('push_subscriptions')
-    .upsert(
-      {
-        tenant_id: user.tenantId,
-        auth_user_id: user.id,
-        endpoint: input.endpoint,
-        p256dh: input.p256dh,
-        auth_key: input.auth,
-        device_label: input.deviceLabel ?? null,
-        is_active: true,
-        failed_count: 0,
-        last_used_at: new Date().toISOString(),
-      },
-      { onConflict: 'endpoint' },
-    )
+  const { error } = await supabase.from('push_subscriptions').upsert(
+    {
+      tenant_id: user.tenantId,
+      auth_user_id: user.id,
+      endpoint: input.endpoint,
+      p256dh: input.p256dh,
+      auth_key: input.auth,
+      device_label: input.deviceLabel ?? null,
+      is_active: true,
+      failed_count: 0,
+      last_used_at: new Date().toISOString(),
+    },
+    { onConflict: 'endpoint' }
+  )
 
   if (error) {
     console.error('[savePushSubscription] Upsert failed:', error)
@@ -74,7 +72,7 @@ export async function removePushSubscription(endpoint: string): Promise<void> {
  */
 export async function resubscribePushSubscription(
   oldEndpoint: string | null,
-  newSub: PushSubscriptionInput,
+  newSub: PushSubscriptionInput
 ): Promise<void> {
   const user = await requireAuth()
   const supabase = createServerClient({ admin: true })
@@ -121,10 +119,7 @@ export async function getActiveSubscriptions(authUserId: string) {
 export async function deactivateSubscription(endpoint: string): Promise<void> {
   const supabase = createServerClient({ admin: true })
 
-  await supabase
-    .from('push_subscriptions')
-    .update({ is_active: false })
-    .eq('endpoint', endpoint)
+  await supabase.from('push_subscriptions').update({ is_active: false }).eq('endpoint', endpoint)
 }
 
 /**

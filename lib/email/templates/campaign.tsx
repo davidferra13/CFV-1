@@ -3,13 +3,23 @@
 // Body is plain text with newlines — converted to paragraphs for display.
 // Includes a compliant unsubscribe footer on every marketing email.
 
-import { Text, Link, Html, Head, Body, Container, Section, Hr, Preview } from '@react-email/components'
+import {
+  Text,
+  Link,
+  Html,
+  Head,
+  Body,
+  Container,
+  Section,
+  Hr,
+  Preview,
+} from '@react-email/components'
 import * as React from 'react'
 
 type CampaignEmailProps = {
   chefName: string
-  bodyText: string      // Plain text body (after token rendering). Newlines become paragraphs.
-  previewText?: string  // Email preview/snippet (first ~90 chars visible in inbox)
+  bodyText: string // Plain text body (after token rendering). Newlines become paragraphs.
+  previewText?: string // Email preview/snippet (first ~90 chars visible in inbox)
   unsubscribeUrl: string
 }
 

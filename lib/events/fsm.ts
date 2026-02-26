@@ -21,37 +21,44 @@ export type EventStatus =
   | 'cancelled'
 
 export const ALL_EVENT_STATUSES: EventStatus[] = [
-  'draft', 'proposed', 'accepted', 'paid', 'confirmed', 'in_progress', 'completed', 'cancelled',
+  'draft',
+  'proposed',
+  'accepted',
+  'paid',
+  'confirmed',
+  'in_progress',
+  'completed',
+  'cancelled',
 ]
 
 export const TERMINAL_STATES: EventStatus[] = ['completed', 'cancelled']
 
 /** Valid next states for each current state */
 export const TRANSITION_RULES: Record<EventStatus, EventStatus[]> = {
-  draft:       ['proposed', 'paid', 'cancelled'],
-  proposed:    ['accepted', 'cancelled'],
-  accepted:    ['paid', 'cancelled'],
-  paid:        ['confirmed', 'cancelled'],
-  confirmed:   ['in_progress', 'cancelled'],
+  draft: ['proposed', 'paid', 'cancelled'],
+  proposed: ['accepted', 'cancelled'],
+  accepted: ['paid', 'cancelled'],
+  paid: ['confirmed', 'cancelled'],
+  confirmed: ['in_progress', 'cancelled'],
   in_progress: ['completed', 'cancelled'],
-  completed:   [], // Terminal state — no further transitions
-  cancelled:   [], // Terminal state — no further transitions
+  completed: [], // Terminal state — no further transitions
+  cancelled: [], // Terminal state — no further transitions
 }
 
 export type TransitionActor = 'chef' | 'client' | 'system'
 
 /** Who is allowed to trigger each transition */
 export const TRANSITION_PERMISSIONS: Record<string, TransitionActor | TransitionActor[]> = {
-  'draft->proposed':        'chef',
-  'proposed->accepted':     'client',
-  'proposed->cancelled':    ['chef', 'client'],
-  'accepted->cancelled':    ['chef', 'client'],
-  'accepted->paid':         'system',   // Stripe webhook only
-  'draft->paid':            'system',   // Instant-book: Stripe webhook
-  'paid->confirmed':        'chef',
+  'draft->proposed': 'chef',
+  'proposed->accepted': 'client',
+  'proposed->cancelled': ['chef', 'client'],
+  'accepted->cancelled': ['chef', 'client'],
+  'accepted->paid': 'system', // Stripe webhook only
+  'draft->paid': 'system', // Instant-book: Stripe webhook
+  'paid->confirmed': 'chef',
   'confirmed->in_progress': 'chef',
   'in_progress->completed': 'chef',
-  '*->cancelled':           'chef',     // Chef can cancel from any non-terminal state
+  '*->cancelled': 'chef', // Chef can cancel from any non-terminal state
 }
 
 /**
@@ -78,8 +85,7 @@ export function isActorPermitted(
   actor: TransitionActor
 ): boolean {
   const key = `${from}->${to}`
-  const permission =
-    TRANSITION_PERMISSIONS[key] ?? TRANSITION_PERMISSIONS['*->cancelled']
+  const permission = TRANSITION_PERMISSIONS[key] ?? TRANSITION_PERMISSIONS['*->cancelled']
 
   if (!permission) return false
 
@@ -101,24 +107,30 @@ export function validateTransition(
     const allowed = getAllowedTransitions(from)
     return {
       valid: false,
-      reason: allowed.length === 0
-        ? `Cannot transition from terminal state '${from}'`
-        : `Invalid transition from '${from}' to '${to}'. Allowed: ${allowed.join(', ')}`,
+      reason:
+        allowed.length === 0
+          ? `Cannot transition from terminal state '${from}'`
+          : `Invalid transition from '${from}' to '${to}'. Allowed: ${allowed.join(', ')}`,
     }
   }
 
   // 2. Check actor permissions
   if (!isActorPermitted(from, to, actor as TransitionActor)) {
     const key = `${from}->${to}`
-    const permission =
-      TRANSITION_PERMISSIONS[key] ?? TRANSITION_PERMISSIONS['*->cancelled']
+    const permission = TRANSITION_PERMISSIONS[key] ?? TRANSITION_PERMISSIONS['*->cancelled']
     const allowed = Array.isArray(permission) ? permission : [permission]
 
     if (allowed.includes('system')) {
-      return { valid: false, reason: 'This transition can only be triggered by the system (webhook)' }
+      return {
+        valid: false,
+        reason: 'This transition can only be triggered by the system (webhook)',
+      }
     }
 
-    return { valid: false, reason: `'${allowed.join(' or ')}' permission required for this transition` }
+    return {
+      valid: false,
+      reason: `'${allowed.join(' or ')}' permission required for this transition`,
+    }
   }
 
   return { valid: true }

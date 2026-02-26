@@ -10,7 +10,12 @@ import { z } from 'zod'
 
 // --- Types ---
 
-export type MilestoneType = 'birthday' | 'anniversary' | 'child_born' | 'booking_anniversary' | 'other'
+export type MilestoneType =
+  | 'birthday'
+  | 'anniversary'
+  | 'child_born'
+  | 'booking_anniversary'
+  | 'other'
 
 export type Milestone = {
   type: MilestoneType
@@ -106,15 +111,25 @@ export async function getUpcomingMilestones(daysAhead: number = 30): Promise<Upc
       if (!milestone.date) continue
 
       const milestoneDate = new Date(milestone.date)
-      const isRecurring = ['birthday', 'anniversary', 'booking_anniversary'].includes(milestone.type)
+      const isRecurring = ['birthday', 'anniversary', 'booking_anniversary'].includes(
+        milestone.type
+      )
 
       let nextOccurrence: Date
       if (isRecurring) {
         // Match on month+day, set to current year
-        nextOccurrence = new Date(today.getFullYear(), milestoneDate.getMonth(), milestoneDate.getDate())
+        nextOccurrence = new Date(
+          today.getFullYear(),
+          milestoneDate.getMonth(),
+          milestoneDate.getDate()
+        )
         // If it already passed this year, check next year
         if (nextOccurrence < today) {
-          nextOccurrence = new Date(today.getFullYear() + 1, milestoneDate.getMonth(), milestoneDate.getDate())
+          nextOccurrence = new Date(
+            today.getFullYear() + 1,
+            milestoneDate.getMonth(),
+            milestoneDate.getDate()
+          )
         }
       } else {
         nextOccurrence = milestoneDate

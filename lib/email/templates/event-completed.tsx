@@ -30,9 +30,8 @@ export function EventCompletedEmail({
       <Text style={paragraph}>Hi {clientName},</Text>
 
       <Text style={paragraph}>
-        Your <strong>{occasion}</strong> on {eventDate} with{' '}
-        <strong>{chefName}</strong> is complete. We hope it was an experience
-        worth remembering.
+        Your <strong>{occasion}</strong> on {eventDate} with <strong>{chefName}</strong> is
+        complete. We hope it was an experience worth remembering.
       </Text>
 
       <Button style={primaryButton} href={receiptUrl}>
@@ -42,17 +41,15 @@ export function EventCompletedEmail({
       <Hr style={divider} />
 
       <Text style={paragraph}>
-        If you have a moment, your feedback means the world to {chefName} and
-        helps them continue delivering exceptional experiences.
+        If you have a moment, your feedback means the world to {chefName} and helps them continue
+        delivering exceptional experiences.
       </Text>
 
       <Button style={secondaryButton} href={reviewUrl}>
         Leave a Review
       </Button>
 
-      <Text style={muted}>
-        It only takes a minute. Thank you for choosing ChefFlow!
-      </Text>
+      <Text style={muted}>It only takes a minute. Thank you for choosing ChefFlow!</Text>
     </BaseLayout>
   )
 }

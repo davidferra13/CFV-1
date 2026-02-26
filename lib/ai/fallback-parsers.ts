@@ -15,7 +15,8 @@ const ALLERGY_KEYWORDS = [
   'egg',
 ]
 
-const RECIPE_VERB_PATTERN = /\b(sear|saute|simmer|bake|roast|whisk|deglaze|marinate|braise|poach|grill|recipe|ingredients?)\b/i
+const RECIPE_VERB_PATTERN =
+  /\b(sear|saute|simmer|bake|roast|whisk|deglaze|marinate|braise|poach|grill|recipe|ingredients?)\b/i
 
 function normalizeWhitespace(value: string): string {
   return value.replace(/\s+/g, ' ').trim()
@@ -32,14 +33,14 @@ function splitBlocks(rawText: string): string[] {
 
   const byBlankLines = normalized
     .split(/\n{2,}/)
-    .map(block => block.trim())
+    .map((block) => block.trim())
     .filter(Boolean)
 
   if (byBlankLines.length > 1) return byBlankLines
 
   return normalized
     .split(/\n(?=(?:[-*]\s+)?[A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2}\s*[-:])/)
-    .map(block => block.trim())
+    .map((block) => block.trim())
     .filter(Boolean)
 }
 
@@ -72,8 +73,8 @@ function inferSpiceTolerance(block: string): ParsedClient['spice_tolerance'] {
 
 function extractAllergies(block: string): string[] {
   const lower = block.toLowerCase()
-  const hits = ALLERGY_KEYWORDS.filter(keyword => lower.includes(keyword))
-  return [...new Set(hits.map(value => value.replace('allergic', 'allergy')))]
+  const hits = ALLERGY_KEYWORDS.filter((keyword) => lower.includes(keyword))
+  return [...new Set(hits.map((value) => value.replace('allergic', 'allergy')))]
 }
 
 function inferAverageSpendCents(block: string): number | null {
@@ -116,9 +117,14 @@ function buildClient(block: string, index: number): ParsedClient {
   const email = firstMatch(normalized, /\b([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})\b/i)
   const phone = firstMatch(normalized, /(\+?\d[\d\s().-]{7,}\d)/)
   const partnerName =
-    firstMatch(normalized, /\b(?:married to|partner(?: is)?|husband(?: is)?|wife(?: is)?)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i) ||
-    null
-  const address = firstMatch(normalized, /\b(\d{1,6}\s+[A-Za-z0-9.\s]+(?:St|Street|Ave|Avenue|Rd|Road|Blvd|Lane|Ln|Dr|Drive)\b[^.,;]*)/i)
+    firstMatch(
+      normalized,
+      /\b(?:married to|partner(?: is)?|husband(?: is)?|wife(?: is)?)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i
+    ) || null
+  const address = firstMatch(
+    normalized,
+    /\b(\d{1,6}\s+[A-Za-z0-9.\s]+(?:St|Street|Ave|Avenue|Rd|Road|Blvd|Lane|Ln|Dr|Drive)\b[^.,;]*)/i
+  )
 
   return {
     full_name: fullName,
@@ -139,7 +145,10 @@ function buildClient(block: string, index: number): ParsedClient {
     household_members: [],
     addresses: [],
     parking_instructions: null,
-    access_instructions: firstMatch(normalized, /\b(?:enter|entry|access)\s+(?:through|via)\s+([^.,;]+)/i),
+    access_instructions: firstMatch(
+      normalized,
+      /\b(?:enter|entry|access)\s+(?:through|via)\s+([^.,;]+)/i
+    ),
     kitchen_size: null,
     kitchen_constraints: null,
     house_rules: null,
@@ -207,9 +216,7 @@ export function parseClientsHeuristically(
     parsed.push(buildClient(rawText, 0))
   }
 
-  const warnings = [
-    warning || 'Used fallback parser. Review fields before saving.',
-  ]
+  const warnings = [warning || 'Used fallback parser. Review fields before saving.']
 
   return {
     parsed,

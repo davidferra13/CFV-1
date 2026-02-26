@@ -37,6 +37,7 @@ The main `draftResponseForInquiry()` function was expanded from a simple fetch-a
 The return type was expanded from `{ draft, flags }` to include `lifecycleState`, `emailStage`, `missingBlocking`, `pricingAllowed`, `conversationDepth`, and `confidence`. This gives the UI enough information to display state context alongside the draft.
 
 Post-generation validation now checks for:
+
 - Escalation markers
 - Low-confidence state detection
 - Missing blocking data
@@ -91,23 +92,24 @@ Chef reviews and approves (UI layer, unchanged)
 
 ### Lifecycle State Mapping
 
-| Lifecycle State | Codebase Trigger | Email Stage |
-|----------------|-----------------|-------------|
-| INBOUND_SIGNAL | inquiry.status=new, no structured data | discovery |
-| QUALIFIED_INQUIRY | inquiry.status=new/awaiting_client, partial data | discovery |
-| DISCOVERY_COMPLETE | inquiry.status=awaiting_chef or all core data present | pricing |
-| PRICING_PRESENTED | inquiry.status=quoted or quote.status=sent | pricing |
-| TERMS_ACCEPTED | quote.status=accepted or event.status=accepted | booking |
-| BOOKED | event.status=paid/confirmed | booking |
-| MENU_LOCKED | event.status=confirmed + menu_id present | booking |
-| EXECUTION_READY | event confirmed + all prep booleans true | booking |
-| IN_PROGRESS | event.status=in_progress | booking |
-| SERVICE_COMPLETE | event.status=completed | post_service |
-| CLOSED | completed + financially_closed + follow_up_sent + aar_filed | post_service |
+| Lifecycle State    | Codebase Trigger                                            | Email Stage  |
+| ------------------ | ----------------------------------------------------------- | ------------ |
+| INBOUND_SIGNAL     | inquiry.status=new, no structured data                      | discovery    |
+| QUALIFIED_INQUIRY  | inquiry.status=new/awaiting_client, partial data            | discovery    |
+| DISCOVERY_COMPLETE | inquiry.status=awaiting_chef or all core data present       | pricing      |
+| PRICING_PRESENTED  | inquiry.status=quoted or quote.status=sent                  | pricing      |
+| TERMS_ACCEPTED     | quote.status=accepted or event.status=accepted              | booking      |
+| BOOKED             | event.status=paid/confirmed                                 | booking      |
+| MENU_LOCKED        | event.status=confirmed + menu_id present                    | booking      |
+| EXECUTION_READY    | event confirmed + all prep booleans true                    | booking      |
+| IN_PROGRESS        | event.status=in_progress                                    | booking      |
+| SERVICE_COMPLETE   | event.status=completed                                      | post_service |
+| CLOSED             | completed + financially_closed + follow_up_sent + aar_filed | post_service |
 
 ### Pricing Gate
 
 Pricing is allowed only when ALL of these are true:
+
 1. Email stage is `pricing` or `booking` (never `discovery`)
 2. Guest count is known
 3. Date is known
@@ -149,6 +151,7 @@ When pricing is forbidden, the rate card is not included in the AI context at al
 ## AI Policy Compliance
 
 Per `docs/AI_POLICY.md`:
+
 - AI drafts only -- never owns truth, never mutates canonical state
 - Chef approval gate preserved (the system drafts, the chef sends)
 - No lifecycle transitions, no ledger writes, no identity changes

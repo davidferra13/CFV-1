@@ -9,16 +9,16 @@ A full conversation management system for Gustav (the Mission Control AI). Conve
 
 ## Vocabulary
 
-| Term | Meaning |
-|------|---------|
-| **Conversation** | A single chat session with Gustav |
-| **Project** | A folder that groups related conversations |
-| **Uncategorized** | Default home for unassigned conversations |
-| **Pinned** | A conversation starred to float to the top |
-| **Archived** | Hidden but not deleted |
-| **Bookmark** | A flag on a specific message |
-| **Template** | A saved starter prompt |
-| **Action Log** | Audit trail of all actions Gustav executed |
+| Term              | Meaning                                    |
+| ----------------- | ------------------------------------------ |
+| **Conversation**  | A single chat session with Gustav          |
+| **Project**       | A folder that groups related conversations |
+| **Uncategorized** | Default home for unassigned conversations  |
+| **Pinned**        | A conversation starred to float to the top |
+| **Archived**      | Hidden but not deleted                     |
+| **Bookmark**      | A flag on a specific message               |
+| **Template**      | A saved starter prompt                     |
+| **Action Log**    | Audit trail of all actions Gustav executed |
 
 ## Data Model
 
@@ -34,52 +34,62 @@ IndexedDB database: `gustav-conversations` (v1)
 ## Features
 
 ### Conversation Persistence
+
 - Every message (user + assistant) is saved to IndexedDB automatically
 - Conversations survive page reloads
 - Auto-title from first user message (deterministic, no AI)
 - Auto-prune: max 500 conversations, 1000 messages each
 
 ### Projects
+
 - Create named folders with emoji icons
 - Move conversations between projects
 - Collapse/expand project groups (persisted in localStorage)
 
 ### Smart Auto-Project
+
 - Keyword-based (Formula > AI rule): "deploy" suggests Deployments, "ollama" suggests AI/Ollama, etc.
 - Shows a subtle banner after first message: "Move to Deployments? [Yes] [No]"
 
 ### Pin / Archive
+
 - Pin conversations to the top of the list
 - Archive conversations to hide without deleting
 - Archived section collapsed by default
 
 ### Bookmarks
+
 - Bookmark individual messages via hover toolbar
 - Bookmark count shown on conversation items
 
 ### Search
+
 - Full-text search across conversation titles and message content
 - Highlighted matching snippets
 - Click result to load the conversation
 
 ### Action Log
+
 - Chronological log of every action Gustav executed
 - Grouped by date
 - Click to jump to the source conversation
 - Shows success/failure status per action
 
 ### Templates
+
 - Save frequently used prompts
 - Run a template: creates new conversation + auto-sends the prompt
 - Optionally auto-assigns to a project
 
 ### Voice Input
+
 - Web Speech API (speech-to-text)
 - Click the microphone button in the input area
 - Pulsing red animation when listening
 - Transcript fills the input field
 
 ### Export
+
 - JSON export: full structured data (for backup/import)
 - Markdown export: readable document format
 - Project export: all conversations in a project as one JSON file
@@ -96,13 +106,13 @@ The chat drawer (400x520px) has 5 switchable views:
 
 ## Keyboard Shortcuts
 
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl+/` | Toggle chat drawer |
-| `Ctrl+N` | New conversation |
-| `Ctrl+H` | Toggle list view |
+| Shortcut | Action                   |
+| -------- | ------------------------ |
+| `Ctrl+/` | Toggle chat drawer       |
+| `Ctrl+N` | New conversation         |
+| `Ctrl+H` | Toggle list view         |
 | `Ctrl+F` | Search (when not typing) |
-| `Escape` | Go back / close |
+| `Escape` | Go back / close          |
 
 ## Storage Architecture
 
@@ -124,6 +134,7 @@ This runs 25 automated tests covering project CRUD, conversation CRUD, messages,
 ## Privacy
 
 Follows the same privacy-by-architecture principle as Remy:
+
 - "We don't have your data" > "We promise not to look"
 - All conversation data lives in the browser's IndexedDB
 - The server relays messages to Ollama and executes actions — it never stores conversation history

@@ -54,7 +54,9 @@ export async function getPreviewClientEvents(clientId: string) {
 
   const { data: events, error } = await supabase
     .from('events')
-    .select('id, occasion, event_date, guest_count, status, quoted_price_cents, location_address, location_city')
+    .select(
+      'id, occasion, event_date, guest_count, status, quoted_price_cents, location_address, location_city'
+    )
     .eq('client_id', clientId)
     .eq('tenant_id', user.tenantId!)
     .order('event_date', { ascending: true })
@@ -86,7 +88,9 @@ export async function getPreviewClientQuotes(clientId: string) {
 
   const { data: quotes, error } = await supabase
     .from('quotes')
-    .select('id, quote_name, total_quoted_cents, status, created_at, valid_until, deposit_amount_cents, deposit_percentage, pricing_notes, inquiry:inquiries(id, confirmed_occasion)')
+    .select(
+      'id, quote_name, total_quoted_cents, status, created_at, valid_until, deposit_amount_cents, deposit_percentage, pricing_notes, inquiry:inquiries(id, confirmed_occasion)'
+    )
     .eq('client_id', clientId)
     .in('status', ['sent', 'accepted', 'rejected'])
     .order('created_at', { ascending: false })

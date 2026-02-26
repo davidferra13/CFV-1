@@ -11,11 +11,11 @@ import { createBrowserClient } from '@supabase/ssr'
 export function subscribeToMessages(
   filterColumn: 'inquiry_id' | 'event_id' | 'client_id',
   filterValue: string,
-  onMessage: (payload: { new: Record<string, unknown> }) => void,
+  onMessage: (payload: { new: Record<string, unknown> }) => void
 ) {
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
   const channel = supabase
@@ -28,7 +28,7 @@ export function subscribeToMessages(
         table: 'messages',
         filter: `${filterColumn}=eq.${filterValue}`,
       },
-      onMessage,
+      onMessage
     )
     .subscribe()
 
@@ -43,11 +43,11 @@ export function subscribeToMessages(
  */
 export function subscribeToChefNotifications(
   tenantId: string,
-  onNotification: (payload: { new: Record<string, unknown> }) => void,
+  onNotification: (payload: { new: Record<string, unknown> }) => void
 ) {
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
   const channel = supabase
@@ -60,7 +60,7 @@ export function subscribeToChefNotifications(
         table: 'messages',
         filter: `tenant_id=eq.${tenantId}`,
       },
-      onNotification,
+      onNotification
     )
     .subscribe()
 

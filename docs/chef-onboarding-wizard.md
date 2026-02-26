@@ -72,7 +72,7 @@ Step 4 calls `Notification.requestPermission()` directly in the browser. No serv
 
 - `Button` variants: `primary`, `secondary`, `ghost` only (no `outline`, `default`, `warning`)
 - `Card`, `CardContent` from `components/ui/card.tsx`
-- Dynamic progress bar width uses `style={{ width: \`${pct}%\` }}` — the established pattern across 25+ components in this codebase (e.g. `close-out-wizard.tsx`, `goal-progress-bar.tsx`)
+- Dynamic progress bar width uses `style={{ width: \`${pct}%\` }}`— the established pattern across 25+ components in this codebase (e.g.`close-out-wizard.tsx`, `goal-progress-bar.tsx`)
 - No `react-markdown` usage — raw `<pre className="whitespace-pre-wrap">` for the contract preview
 - `useTransition` + `router.push` for the final navigation to avoid blocking the UI during the server action call
 

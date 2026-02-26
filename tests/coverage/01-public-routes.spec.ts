@@ -10,7 +10,10 @@ import { test, expect } from '../helpers/fixtures'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-async function assertPageLoads(page: Parameters<Parameters<typeof test>[1]>[0]['page'], url: string) {
+async function assertPageLoads(
+  page: Parameters<Parameters<typeof test>[1]>[0]['page'],
+  url: string
+) {
   const errors: string[] = []
   page.on('pageerror', (err) => errors.push(err.message))
 
@@ -93,14 +96,21 @@ test.describe('Public — Chef Profile Pages', () => {
     await page.waitForLoadState('networkidle')
   })
 
-  test('/chef/[slug]/gift-cards — gift card page loads (or graceful 404)', async ({ page, seedIds }) => {
-    const response = await page.goto(`/chef/${seedIds.chefSlug}/gift-cards`, { waitUntil: 'domcontentloaded' })
+  test('/chef/[slug]/gift-cards — gift card page loads (or graceful 404)', async ({
+    page,
+    seedIds,
+  }) => {
+    const response = await page.goto(`/chef/${seedIds.chefSlug}/gift-cards`, {
+      waitUntil: 'domcontentloaded',
+    })
     // Accept either a real page (200) or a not-found (404) — just not a crash (500)
     expect(response?.status() ?? 0).toBeLessThan(500)
   })
 
   test('/chef/invalid-slug — handles unknown chef slug gracefully', async ({ page }) => {
-    const response = await page.goto('/chef/this-chef-does-not-exist-xyz123', { waitUntil: 'domcontentloaded' })
+    const response = await page.goto('/chef/this-chef-does-not-exist-xyz123', {
+      waitUntil: 'domcontentloaded',
+    })
     expect(response?.status() ?? 0).toBeLessThan(500)
     // Should show a not-found message, not a blank page
     const bodyText = await page.locator('body').innerText()
@@ -129,7 +139,9 @@ test.describe('Public — Booking Funnel', () => {
 
 test.describe('Public — Share Token Pages', () => {
   test('/share/invalid-token — handles bad share token gracefully', async ({ page }) => {
-    const response = await page.goto('/share/definitely-not-a-real-token', { waitUntil: 'domcontentloaded' })
+    const response = await page.goto('/share/definitely-not-a-real-token', {
+      waitUntil: 'domcontentloaded',
+    })
     // Should return 200 with an error message, or 404 — not a crash
     expect(response?.status() ?? 0).toBeLessThan(500)
   })
@@ -139,7 +151,9 @@ test.describe('Public — Share Token Pages', () => {
 
 test.describe('Public — Unsubscribe', () => {
   test('/unsubscribe — handles missing/bad token gracefully', async ({ page }) => {
-    const response = await page.goto('/unsubscribe?token=invalid', { waitUntil: 'domcontentloaded' })
+    const response = await page.goto('/unsubscribe?token=invalid', {
+      waitUntil: 'domcontentloaded',
+    })
     expect(response?.status() ?? 0).toBeLessThan(500)
   })
 })

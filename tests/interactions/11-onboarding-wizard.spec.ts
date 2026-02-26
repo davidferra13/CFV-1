@@ -47,7 +47,7 @@ test.describe('Onboarding — Entry Point', () => {
 
   test('/onboarding does not throw JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/onboarding')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -80,24 +80,20 @@ test.describe('Onboarding — Clients Step', () => {
     await page.goto('/onboarding/clients')
     await page.waitForLoadState('networkidle')
     // Should show options to import, add, or skip clients
-    const clientContent = page
-      .getByText(/client|import|add|skip|contact/i)
-      .first()
+    const clientContent = page.getByText(/client|import|add|skip|contact/i).first()
     await expect(clientContent).toBeVisible({ timeout: 10_000 })
   })
 
   test('/onboarding/clients has navigation forward', async ({ page }) => {
     await page.goto('/onboarding/clients')
     await page.waitForLoadState('networkidle')
-    const nextBtn = page
-      .getByRole('button', { name: /continue|next|skip|proceed/i })
-      .first()
+    const nextBtn = page.getByRole('button', { name: /continue|next|skip|proceed/i }).first()
     await expect(nextBtn).toBeVisible({ timeout: 10_000 })
   })
 
   test('/onboarding/clients does not throw JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/onboarding/clients')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -118,24 +114,20 @@ test.describe('Onboarding — Recipes Step', () => {
   test('/onboarding/recipes has recipe-related content', async ({ page }) => {
     await page.goto('/onboarding/recipes')
     await page.waitForLoadState('networkidle')
-    const recipeContent = page
-      .getByText(/recipe|dish|cuisine|add|import|skip/i)
-      .first()
+    const recipeContent = page.getByText(/recipe|dish|cuisine|add|import|skip/i).first()
     await expect(recipeContent).toBeVisible({ timeout: 10_000 })
   })
 
   test('/onboarding/recipes has navigation forward', async ({ page }) => {
     await page.goto('/onboarding/recipes')
     await page.waitForLoadState('networkidle')
-    const nextBtn = page
-      .getByRole('button', { name: /continue|next|skip|proceed/i })
-      .first()
+    const nextBtn = page.getByRole('button', { name: /continue|next|skip|proceed/i }).first()
     await expect(nextBtn).toBeVisible({ timeout: 10_000 })
   })
 
   test('/onboarding/recipes does not throw JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/onboarding/recipes')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -156,24 +148,20 @@ test.describe('Onboarding — Staff Step', () => {
   test('/onboarding/staff has staff-related content', async ({ page }) => {
     await page.goto('/onboarding/staff')
     await page.waitForLoadState('networkidle')
-    const staffContent = page
-      .getByText(/staff|assistant|helper|team|solo|skip/i)
-      .first()
+    const staffContent = page.getByText(/staff|assistant|helper|team|solo|skip/i).first()
     await expect(staffContent).toBeVisible({ timeout: 10_000 })
   })
 
   test('/onboarding/staff has navigation forward', async ({ page }) => {
     await page.goto('/onboarding/staff')
     await page.waitForLoadState('networkidle')
-    const nextBtn = page
-      .getByRole('button', { name: /continue|next|skip|proceed|finish/i })
-      .first()
+    const nextBtn = page.getByRole('button', { name: /continue|next|skip|proceed|finish/i }).first()
     await expect(nextBtn).toBeVisible({ timeout: 10_000 })
   })
 
   test('/onboarding/staff does not throw JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/onboarding/staff')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -194,9 +182,7 @@ test.describe('Onboarding — Loyalty Step', () => {
   test('/onboarding/loyalty has loyalty/rewards-related content', async ({ page }) => {
     await page.goto('/onboarding/loyalty')
     await page.waitForLoadState('networkidle')
-    const loyaltyContent = page
-      .getByText(/loyalty|reward|point|referral|program|skip/i)
-      .first()
+    const loyaltyContent = page.getByText(/loyalty|reward|point|referral|program|skip/i).first()
     await expect(loyaltyContent).toBeVisible({ timeout: 10_000 })
   })
 
@@ -211,7 +197,7 @@ test.describe('Onboarding — Loyalty Step', () => {
 
   test('/onboarding/loyalty does not throw JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/onboarding/loyalty')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -241,7 +227,7 @@ test.describe('Onboarding — Step Accessibility', () => {
 
   test('All onboarding steps accessible without JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     for (const step of onboardingSteps) {
       await page.goto(step.path)

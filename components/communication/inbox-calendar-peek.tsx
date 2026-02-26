@@ -54,7 +54,10 @@ export function InboxCalendarPeek({ events }: { events: CalendarEvent[] }) {
                 <div className="text-sm text-stone-400">No events on this date.</div>
               ) : (
                 eventsForDay.map((event) => (
-                  <div key={event.id} className="rounded-lg border border-stone-700 bg-stone-900 px-3 py-2">
+                  <div
+                    key={event.id}
+                    className="rounded-lg border border-stone-700 bg-stone-900 px-3 py-2"
+                  >
                     <div className="text-sm font-medium text-stone-100">{event.title}</div>
                     <div className="text-xs text-stone-400">{event.extendedProps.clientName}</div>
                   </div>

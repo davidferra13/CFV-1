@@ -78,13 +78,13 @@ Currently uses default ranges (current month for distribution, 6 months for tren
 
 ## Chart Components (`components/analytics/`)
 
-| Component | Chart Type | Library |
-|-----------|-----------|---------|
-| `SourceDistributionChart` | Horizontal BarChart | Recharts |
-| `ConversionFunnelChart` | Grouped BarChart | Recharts |
-| `RevenueBySourceChart` | BarChart | Recharts |
-| `SourceTrendsChart` | LineChart (multi-line) | Recharts |
-| `SourcePieChart` | PieChart | Recharts |
+| Component                 | Chart Type             | Library  |
+| ------------------------- | ---------------------- | -------- |
+| `SourceDistributionChart` | Horizontal BarChart    | Recharts |
+| `ConversionFunnelChart`   | Grouped BarChart       | Recharts |
+| `RevenueBySourceChart`    | BarChart               | Recharts |
+| `SourceTrendsChart`       | LineChart (multi-line) | Recharts |
+| `SourcePieChart`          | PieChart               | Recharts |
 
 All chart components are `'use client'` and receive pre-fetched data as props.
 

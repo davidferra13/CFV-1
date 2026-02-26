@@ -50,7 +50,11 @@ test.describe('Mutation — Lead', () => {
     await page.goto('/leads')
     await page.waitForLoadState('networkidle')
 
-    const leadVisible = await page.getByText(uniqueName).first().isVisible().catch(() => false)
+    const leadVisible = await page
+      .getByText(uniqueName)
+      .first()
+      .isVisible()
+      .catch(() => false)
     expect(leadVisible, `Created lead "${uniqueName}" should appear in /leads list`).toBeTruthy()
   })
 
@@ -81,7 +85,11 @@ test.describe('Mutation — Lead', () => {
 
       await page.goto('/leads')
       await page.waitForLoadState('networkidle')
-      const visible = await page.getByText(uniqueName).first().isVisible().catch(() => false)
+      const visible = await page
+        .getByText(uniqueName)
+        .first()
+        .isVisible()
+        .catch(() => false)
       if (visible) {
         expect(visible).toBeTruthy()
       }
@@ -132,7 +140,11 @@ test.describe('Mutation — Call Log', () => {
     await page.goto('/calls')
     await page.waitForLoadState('networkidle')
 
-    const callVisible = await page.getByText(uniqueNote).first().isVisible().catch(() => false)
+    const callVisible = await page
+      .getByText(uniqueNote)
+      .first()
+      .isVisible()
+      .catch(() => false)
     expect(callVisible, `Logged call "${uniqueNote}" should appear in /calls list`).toBeTruthy()
   })
 })
@@ -174,8 +186,15 @@ test.describe('Mutation — Partner', () => {
     await page.goto('/partners')
     await page.waitForLoadState('networkidle')
 
-    const partnerVisible = await page.getByText(uniqueName).first().isVisible().catch(() => false)
-    expect(partnerVisible, `Created partner "${uniqueName}" should appear in /partners list`).toBeTruthy()
+    const partnerVisible = await page
+      .getByText(uniqueName)
+      .first()
+      .isVisible()
+      .catch(() => false)
+    expect(
+      partnerVisible,
+      `Created partner "${uniqueName}" should appear in /partners list`
+    ).toBeTruthy()
   })
 })
 
@@ -192,7 +211,7 @@ test.describe('Mutation — Expense', () => {
       .first()
       .or(page.getByRole('link', { name: /add expense|new expense/i }).first())
 
-    if (!await addExpenseBtn.isVisible()) {
+    if (!(await addExpenseBtn.isVisible())) {
       // Expense form may be elsewhere — try /expenses/new if it exists
       const resp = await page.goto('/expenses/new')
       await page.waitForLoadState('networkidle')
@@ -234,7 +253,11 @@ test.describe('Mutation — Expense', () => {
     await page.goto('/finance/expenses')
     await page.waitForLoadState('networkidle')
 
-    const expenseVisible = await page.getByText(uniqueDesc).first().isVisible().catch(() => false)
+    const expenseVisible = await page
+      .getByText(uniqueDesc)
+      .first()
+      .isVisible()
+      .catch(() => false)
     expect(
       expenseVisible,
       `Created expense "${uniqueDesc}" should appear in finance expenses`
@@ -253,7 +276,7 @@ test.describe('Mutation — Inventory Waste', () => {
       .getByRole('button', { name: /add waste|log waste|new entry|record/i })
       .first()
 
-    if (!await addBtn.isVisible()) return
+    if (!(await addBtn.isVisible())) return
 
     await addBtn.click()
     await page.waitForTimeout(400)
@@ -289,8 +312,15 @@ test.describe('Mutation — Inventory Waste', () => {
     await page.goto('/inventory/waste')
     await page.waitForLoadState('networkidle')
 
-    const wasteVisible = await page.getByText(uniqueItem).first().isVisible().catch(() => false)
-    expect(wasteVisible, `Waste entry "${uniqueItem}" should appear in /inventory/waste`).toBeTruthy()
+    const wasteVisible = await page
+      .getByText(uniqueItem)
+      .first()
+      .isVisible()
+      .catch(() => false)
+    expect(
+      wasteVisible,
+      `Waste entry "${uniqueItem}" should appear in /inventory/waste`
+    ).toBeTruthy()
   })
 })
 
@@ -306,7 +336,7 @@ test.describe('Mutation — Goal', () => {
       .first()
       .or(page.locator('input[type="number"]').first())
 
-    if (!await targetField.isVisible()) return
+    if (!(await targetField.isVisible())) return
 
     const uniqueValue = String(Math.floor(Math.random() * 90000) + 10000)
     await targetField.fill(uniqueValue)
@@ -324,7 +354,11 @@ test.describe('Mutation — Goal', () => {
     await page.waitForLoadState('networkidle')
 
     // The goal value should appear somewhere on the goals page
-    const goalVisible = await page.getByText(uniqueValue).first().isVisible().catch(() => false)
+    const goalVisible = await page
+      .getByText(uniqueValue)
+      .first()
+      .isVisible()
+      .catch(() => false)
     if (goalVisible) {
       expect(goalVisible).toBeTruthy()
     }
@@ -337,7 +371,7 @@ test.describe('Mutation — Goal', () => {
 test.describe('Mutation — Proposal', () => {
   test('Start proposal from hub → form interaction does not crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/proposals')
     await page.waitForLoadState('networkidle')
@@ -371,7 +405,7 @@ test.describe('Mutation — Proposal', () => {
 test.describe('Mutation — Invoice', () => {
   test('Create invoice from finance → no crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/finance/invoices')
     await page.waitForLoadState('networkidle')
@@ -392,7 +426,7 @@ test.describe('Mutation — Invoice', () => {
 
   test('Finance invoices list survives navigation to draft sub-view', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/finance/invoices/draft')
     await page.waitForLoadState('networkidle')
@@ -414,14 +448,12 @@ test.describe('Mutation — Invoice', () => {
 test.describe('Mutation — Staff Availability', () => {
   test('Staff availability page — can open and interact with form', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/staff/availability')
     await page.waitForLoadState('networkidle')
 
-    const editBtn = page
-      .getByRole('button', { name: /edit|add|set availability|update/i })
-      .first()
+    const editBtn = page.getByRole('button', { name: /edit|add|set availability|update/i }).first()
 
     if (await editBtn.isVisible()) {
       await editBtn.click()
@@ -437,14 +469,12 @@ test.describe('Mutation — Staff Availability', () => {
 test.describe('Mutation — Clock In/Out', () => {
   test('/staff/clock — clock page loads and is interactive', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/staff/clock')
     await page.waitForLoadState('networkidle')
 
-    const clockBtn = page
-      .getByRole('button', { name: /clock in|clock out|start|stop/i })
-      .first()
+    const clockBtn = page.getByRole('button', { name: /clock in|clock out|start|stop/i }).first()
 
     const isVisible = await clockBtn.isVisible().catch(() => false)
     // Informational — may only show for staff users
@@ -461,11 +491,9 @@ test.describe('Mutation — Waitlist', () => {
     await page.goto('/waitlist')
     await page.waitForLoadState('networkidle')
 
-    const addBtn = page
-      .getByRole('button', { name: /add|new|invite/i })
-      .first()
+    const addBtn = page.getByRole('button', { name: /add|new|invite/i }).first()
 
-    if (!await addBtn.isVisible()) return
+    if (!(await addBtn.isVisible())) return
 
     await addBtn.click()
     await page.waitForTimeout(400)
@@ -497,8 +525,15 @@ test.describe('Mutation — Waitlist', () => {
     await page.goto('/waitlist')
     await page.waitForLoadState('networkidle')
 
-    const waitlistVisible = await page.getByText(uniqueName).first().isVisible().catch(() => false)
-    expect(waitlistVisible, `Waitlist entry "${uniqueName}" should appear in /waitlist`).toBeTruthy()
+    const waitlistVisible = await page
+      .getByText(uniqueName)
+      .first()
+      .isVisible()
+      .catch(() => false)
+    expect(
+      waitlistVisible,
+      `Waitlist entry "${uniqueName}" should appear in /waitlist`
+    ).toBeTruthy()
   })
 })
 
@@ -507,7 +542,7 @@ test.describe('Mutation — Waitlist', () => {
 test.describe('Mutation — Lead Stage Transition', () => {
   test('Lead in /leads/new can be moved to qualified stage', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/leads/new')
     await page.waitForLoadState('networkidle')

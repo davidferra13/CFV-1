@@ -29,13 +29,13 @@ The queue sits on top of existing domain data — it doesn't replace any busines
 
 Pure function. No database. Five weighted dimensions produce a 0-1000 score:
 
-| Dimension | Range | Description |
-|-----------|-------|-------------|
-| Time Pressure | 0-400 | How soon is the deadline? Overdue = max. |
-| Impact | 0-250 | Business consequence of delay (set per provider) |
-| Blocking | 0/150 | Does this block downstream work? |
-| Staleness | 0-100 | How long has this sat untouched? |
-| Revenue | 0-100 | Money at stake (logarithmic) |
+| Dimension     | Range | Description                                      |
+| ------------- | ----- | ------------------------------------------------ |
+| Time Pressure | 0-400 | How soon is the deadline? Overdue = max.         |
+| Impact        | 0-250 | Business consequence of delay (set per provider) |
+| Blocking      | 0/150 | Does this block downstream work?                 |
+| Staleness     | 0-100 | How long has this sat untouched?                 |
+| Revenue       | 0-100 | Money at stake (logarithmic)                     |
 
 Score thresholds map to urgency tiers: critical (>=600), high (>=400), normal (>=200), low (<200).
 
@@ -43,16 +43,16 @@ Score thresholds map to urgency tiers: critical (>=600), high (>=400), normal (>
 
 8 providers, each returning `QueueItem[]`:
 
-| Provider | Domain | What it surfaces |
-|----------|--------|-----------------|
-| `inquiry.ts` | inquiry | New/awaiting_chef inquiries, overdue follow-ups |
-| `message.ts` | message | Outbound drafts/approved messages pending action |
-| `quote.ts` | quote | Draft quotes, expiring sent quotes, unlinked accepted quotes |
-| `event.ts` | event | WorkItems from stages 1-13 (converted from Work Surface) |
-| `financial.ts` | financial | Outstanding balances, missing receipts, unclosed financials |
+| Provider        | Domain     | What it surfaces                                                |
+| --------------- | ---------- | --------------------------------------------------------------- |
+| `inquiry.ts`    | inquiry    | New/awaiting_chef inquiries, overdue follow-ups                 |
+| `message.ts`    | message    | Outbound drafts/approved messages pending action                |
+| `quote.ts`      | quote      | Draft quotes, expiring sent quotes, unlinked accepted quotes    |
+| `event.ts`      | event      | WorkItems from stages 1-13 (converted from Work Surface)        |
+| `financial.ts`  | financial  | Outstanding balances, missing receipts, unclosed financials     |
 | `post-event.ts` | post_event | Unfiled AARs, unsent follow-ups/review links, incomplete resets |
-| `client.ts` | client | Birthday/milestone outreach, dormant client re-engagement |
-| `culinary.ts` | culinary | Draft menus on upcoming events, seasonal windows ending |
+| `client.ts`     | client     | Birthday/milestone outreach, dormant client re-engagement       |
+| `culinary.ts`   | culinary   | Draft menus on upcoming events, seasonal windows ending         |
 
 All providers run in parallel via `Promise.all`. Each handles its own errors gracefully (returns `[]` on failure).
 

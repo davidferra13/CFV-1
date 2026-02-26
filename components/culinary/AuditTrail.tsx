@@ -1,16 +1,16 @@
-import React from 'react';
+import React from 'react'
 
 export type AuditTrailEntry = {
-  id: string;
-  timestamp: string;
-  action: string;
-  user?: string;
-  details?: string;
-};
+  id: string
+  timestamp: string
+  action: string
+  user?: string
+  details?: string
+}
 
 export type AuditTrailProps = {
-  entries: AuditTrailEntry[];
-};
+  entries: AuditTrailEntry[]
+}
 
 const AuditTrail: React.FC<AuditTrailProps> = ({ entries }) => {
   return (
@@ -20,7 +20,7 @@ const AuditTrail: React.FC<AuditTrailProps> = ({ entries }) => {
         {entries.length === 0 ? (
           <li>No audit entries.</li>
         ) : (
-          entries.map(entry => (
+          entries.map((entry) => (
             <li key={entry.id}>
               <strong>{entry.action}</strong> by {entry.user || 'Unknown'} at {entry.timestamp}
               {entry.details && <div>{entry.details}</div>}
@@ -29,7 +29,7 @@ const AuditTrail: React.FC<AuditTrailProps> = ({ entries }) => {
         )}
       </ul>
     </div>
-  );
-};
+  )
+}
 
-export default AuditTrail;
+export default AuditTrail

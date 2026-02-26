@@ -1,13 +1,15 @@
 import type { GoalSnapshot } from '@/lib/goals/types'
 
 interface GoalHistorySparklineProps {
-  snapshots: GoalSnapshot[]  // ordered oldest → newest
+  snapshots: GoalSnapshot[] // ordered oldest → newest
 }
 
 export function GoalHistorySparkline({ snapshots }: GoalHistorySparklineProps) {
   if (snapshots.length === 0) {
     return (
-      <p className="text-sm text-stone-400 italic">No history yet — check back after the next cron run.</p>
+      <p className="text-sm text-stone-400 italic">
+        No history yet — check back after the next cron run.
+      </p>
     )
   }
 

@@ -13,18 +13,19 @@ This document defines the response procedures for catastrophic incidents that af
 
 ### Severity Levels
 
-| Level | Description | Response SLA |
-|-------|-------------|--------------|
-| P1 — Critical | Production completely down or data breach confirmed | Immediate (< 15 min) |
-| P2 — High | Major feature unavailable, auth broken, payments failing | < 1 hour |
-| P3 — Medium | Degraded performance, partial feature outage | < 4 hours |
-| P4 — Low | Minor bugs, cosmetic issues | Next business day |
+| Level         | Description                                              | Response SLA         |
+| ------------- | -------------------------------------------------------- | -------------------- |
+| P1 — Critical | Production completely down or data breach confirmed      | Immediate (< 15 min) |
+| P2 — High     | Major feature unavailable, auth broken, payments failing | < 1 hour             |
+| P3 — Medium   | Degraded performance, partial feature outage             | < 4 hours            |
+| P4 — Low      | Minor bugs, cosmetic issues                              | Next business day    |
 
 ---
 
 ## Runbook A — Database Corruption or Accidental Mass Deletion
 
 **Indicators:**
+
 - Supabase dashboard shows schema errors or missing tables
 - Application throws 500s for all DB queries
 - Users report data missing en masse
@@ -32,24 +33,29 @@ This document defines the response procedures for catastrophic incidents that af
 **Steps:**
 
 1. **Immediately set maintenance mode** (prevents new writes that could worsen state):
+
    ```bash
    # In Vercel dashboard: Project > Settings > Environment Variables
    # Add: MAINTENANCE_MODE=1 (Production)
    # Redeploy (takes ~2 min)
    ```
+
    Middleware should check `process.env.MAINTENANCE_MODE` and return 503. If not implemented:
+
    ```bash
    # Alternative: redirect all traffic at Cloudflare
    # Cloudflare > cheflowhq.com > Rules > Redirect Rules > "Maintenance" rule
    ```
 
 2. **Identify the scope** — run these queries to assess damage:
+
    ```sql
    SELECT COUNT(*) FROM chefs;
    SELECT COUNT(*) FROM events;
    SELECT COUNT(*) FROM ledger_entries;
    SELECT COUNT(*) FROM clients;
    ```
+
    Compare against last known good counts.
 
 3. **Do NOT push any more migrations** — freeze the schema.
@@ -63,6 +69,7 @@ This document defines the response procedures for catastrophic incidents that af
    - Wait 10–30 minutes for restore to complete
 
 5. **Verify restored data**:
+
    ```sql
    -- On the restored project:
    SELECT COUNT(*) FROM chefs;      -- Compare to known values
@@ -71,6 +78,7 @@ This document defines the response procedures for catastrophic incidents that af
    ```
 
 6. **If restored data is good** — migrate production to restored project:
+
    ```bash
    # Option A: Copy rows back to production using SQL INSERT ... SELECT
    # Option B: Promote restored project to production by swapping env vars
@@ -95,6 +103,7 @@ This document defines the response procedures for catastrophic incidents that af
 ## Runbook B — Data Breach (Unauthorized Data Access)
 
 **Indicators:**
+
 - Suspicious admin_audit_log entries
 - Supabase alerts for unusual query volume
 - External report of leaked data
@@ -115,6 +124,7 @@ This document defines the response procedures for catastrophic incidents that af
    - Redeploy Vercel to pick up new keys
 
 3. **Identify the breach vector**:
+
    ```sql
    -- Check admin audit log for suspicious actions
    SELECT * FROM admin_audit_log ORDER BY created_at DESC LIMIT 100;
@@ -151,11 +161,13 @@ This document defines the response procedures for catastrophic incidents that af
 ## Runbook C — Key Compromise (Single Secret Exposed)
 
 **Indicators:**
+
 - Secret found in git history, log file, or error message
 - Unexpected API usage on Stripe dashboard
 - Unauthorized ledger entries
 
 **Steps:**
+
 1. Identify which key was exposed and from which service.
 2. Follow the emergency rotation procedure in `docs/key-rotation-policy.md`.
 3. Audit for any unauthorized actions the compromised key may have taken:
@@ -172,6 +184,7 @@ This document defines the response procedures for catastrophic incidents that af
 ## Runbook D — Vercel Account Compromise
 
 **Indicators:**
+
 - Unknown deployments in Vercel dashboard
 - Environment variables modified without authorization
 - `vercel.json` or cron schedule changed unexpectedly
@@ -198,6 +211,7 @@ This document defines the response procedures for catastrophic incidents that af
 ## Runbook E — DNS Hijack / Domain Compromise
 
 **Indicators:**
+
 - `cheflowhq.com` resolves to wrong IP
 - SSL certificate warning on production site
 - Cloudflare dashboard shows unauthorized DNS changes
@@ -218,6 +232,7 @@ This document defines the response procedures for catastrophic incidents that af
 ## Runbook F — Stripe Account Suspension or Dispute Spike
 
 **Indicators:**
+
 - Stripe dashboard shows "Account suspended" or "Payouts paused"
 - Webhook delivery failures from Stripe
 - Sudden spike in chargebacks/disputes
@@ -243,6 +258,7 @@ This document defines the response procedures for catastrophic incidents that af
 ## Runbook G — Extended Vercel / Hosting Outage
 
 **Indicators:**
+
 - Vercel status page shows incident (status.vercel.com)
 - App unreachable but DNS resolves correctly
 
@@ -292,22 +308,22 @@ This document defines the response procedures for catastrophic incidents that af
 
 ## Incident Log
 
-| Date | Incident Type | Severity | RTO Achieved | Notes |
-|------|--------------|----------|--------------|-------|
-| (no incidents yet) | — | — | — | — |
+| Date               | Incident Type | Severity | RTO Achieved | Notes |
+| ------------------ | ------------- | -------- | ------------ | ----- |
+| (no incidents yet) | —             | —        | —            | —     |
 
 ---
 
 ## Recovery Contacts
 
-| Service | Dashboard | Support |
-|---------|-----------|---------|
-| Supabase | app.supabase.com | supabase.com/support |
-| Vercel | vercel.com/dashboard | vercel.com/help |
-| Stripe | dashboard.stripe.com | support.stripe.com |
-| Cloudflare | dash.cloudflare.com | cloudflare.com/support |
-| Resend | resend.com/dashboard | resend.com/support |
-| Upstash | console.upstash.com | upstash.com/docs |
+| Service    | Dashboard            | Support                |
+| ---------- | -------------------- | ---------------------- |
+| Supabase   | app.supabase.com     | supabase.com/support   |
+| Vercel     | vercel.com/dashboard | vercel.com/help        |
+| Stripe     | dashboard.stripe.com | support.stripe.com     |
+| Cloudflare | dash.cloudflare.com  | cloudflare.com/support |
+| Resend     | resend.com/dashboard | resend.com/support     |
+| Upstash    | console.upstash.com  | upstash.com/docs       |
 
 ---
 
@@ -323,4 +339,4 @@ Run this drill every quarter (takes ~1 hour):
 - [ ] Confirm all team members know their role in this runbook
 - [ ] Update incident log table above with drill result
 
-*Last drill: (pending — first drill not yet conducted)*
+_Last drill: (pending — first drill not yet conducted)_

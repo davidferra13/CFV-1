@@ -15,7 +15,9 @@ Eleven documentation gaps were closed across operational, performance, and archi
 ## Files Created
 
 ### `docs/api-reference.md` (#59)
+
 Complete API reference for all ChefFlow endpoints:
+
 - `/api/v1/events` — list and get events with query params, response schema, pagination
 - `/api/v1/clients` — list clients with search, pagination
 - `/api/health` — public health check with full response schema
@@ -25,7 +27,9 @@ Complete API reference for all ChefFlow endpoints:
 - Rate limiting: 100 req/min per tenant, response headers documented
 
 ### `docs/access-control-matrix.md` (#74)
+
 Single-table "Role X can do Action Y on Resource Z" reference:
+
 - 5 roles documented: chef, client, system, admin, anonymous
 - 4 enforcement layers: middleware, server action guard, RLS, tenant scoping
 - Route protection table for all route patterns
@@ -35,7 +39,9 @@ Single-table "Role X can do Action Y on Resource Z" reference:
 - Links to automated tests that verify each boundary
 
 ### `docs/slos-and-uptime.md` (#56)
+
 Three-tier SLO structure:
+
 - **Tier 1 (critical path):** 99.9% availability — Stripe webhooks, FSM transitions, payment intent creation
 - **Tier 2 (core workflow):** 99.5% — Dashboard, event list, email delivery
 - **Tier 3 (supporting):** 90–95% — AI generation, grocery pricing, cron execution
@@ -45,15 +51,18 @@ Three-tier SLO structure:
 - Manual measurement procedures until APM is integrated
 
 ### `docs/performance-and-capacity.md` (#68, #75, #76, #77)
+
 Four topics in one document (they share assumptions about current scale):
 
 **Pagination standards (#68):**
+
 - Standard response envelope: `{ data: [], meta: { total, page, limit, pages, has_more } }`
 - Strategy decision: cursor-based for append-only tables (activity log), offset for everything else
 - Standard query parameters and limits per entity type
 - Filter application pattern for server actions
 
 **Performance budget (#75):**
+
 - Page load budget: server render time, LCP, TTFB targets per major page
 - API response budget: p50/p95/p99 by endpoint type
 - Server action budget: CRUD vs. PDF vs. AI vs. email
@@ -61,12 +70,14 @@ Four topics in one document (they share assumptions about current scale):
 - DB query budget by operation type with "action if exceeded"
 
 **Load testing strategy (#76):**
+
 - Recommended tool: k6 (open source)
 - 5 test scenarios: smoke, load, stress, spike, webhook-flood
 - Targets for 6-month horizon (200 concurrent chefs, 2K req/min)
 - Schedule: before major releases (load), quarterly (stress)
 
 **Capacity planning (#77):**
+
 - Supabase Free tier limits with current usage and headroom
 - Vercel Hobby limits — **critical finding**: ChefFlow has 9 crons but Hobby only allows 2. Requires Vercel Pro.
 - DB row growth estimates at 12 months (well within Free tier capacity)
@@ -74,7 +85,9 @@ Four topics in one document (they share assumptions about current scale):
 - Connection pool sizing: 60 connections on Free, mitigation via PgBouncer transaction mode
 
 ### `docs/feature-flags.md` (#51)
+
 Authoritative flag registry (required to be updated when flags change):
+
 - Global flags (env vars): all 7 documented with type, default, purpose, sunset status
 - Per-chef flags: all 8 documented with description, default, enabling path, lifecycle stage
 - Flag lifecycle policy: Alpha → Beta → Stable → Sunset → Removed
@@ -83,7 +96,9 @@ Authoritative flag registry (required to be updated when flags change):
 - How to add a new per-chef flag (JSONB column, no migration needed)
 
 ### `docs/staging-environment-plan.md` (#37)
+
 Why staging doesn't exist yet, and exactly what to build when it's needed:
+
 - Trigger criteria for when to set up staging
 - Architecture: Vercel Preview + separate Supabase project
 - Environment variable mapping production → staging
@@ -93,7 +108,9 @@ Why staging doesn't exist yet, and exactly what to build when it's needed:
 - Promotion checklist: staging → production
 
 ### `docs/domain-events.md` (#71)
+
 Design document for migrating from point-to-point to event-driven architecture:
+
 - Current state: 10+ sequential try-catch blocks in `transitionEvent()`
 - Problems documented: coupling, performance, AI Policy constraint
 - Domain event schema: `{ id, type, aggregateType, aggregateId, tenantId, occurredAt, payload, source, actorId }`
@@ -103,7 +120,9 @@ Design document for migrating from point-to-point to event-driven architecture:
 - Migration path showing before/after code
 
 ### `docs/documentation-policy.md` (#79)
+
 The meta-doc — policy for managing 344+ docs:
+
 - Core rule: every code change → doc change
 - Document categories with owners and review frequencies
 - Naming conventions for 6 document types
@@ -134,13 +153,13 @@ The explicit decision is to NOT refactor `transitionEvent()` yet. The current po
 
 With Category 5 complete, all 54 originally missing/partial items are now addressed:
 
-| Category | Items | Status |
-|----------|-------|--------|
-| 1 — Observability | 7 items | ✅ Complete |
-| 2 — CI/CD + Testing | 4 items | ✅ Complete |
-| 3 — Security Docs | 6 items | ✅ Complete |
-| 4 — Infrastructure Code | 7 items | ✅ Complete |
-| 5 — Operational Docs | 11 items | ✅ Complete |
-| **Total** | **35 items** | **✅ All complete** |
+| Category                | Items        | Status              |
+| ----------------------- | ------------ | ------------------- |
+| 1 — Observability       | 7 items      | ✅ Complete         |
+| 2 — CI/CD + Testing     | 4 items      | ✅ Complete         |
+| 3 — Security Docs       | 6 items      | ✅ Complete         |
+| 4 — Infrastructure Code | 7 items      | ✅ Complete         |
+| 5 — Operational Docs    | 11 items     | ✅ Complete         |
+| **Total**               | **35 items** | **✅ All complete** |
 
 The system audit scorecard (`docs/audit-system-concepts.md`) should be reviewed and updated with the new status of each addressed item.

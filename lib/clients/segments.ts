@@ -7,7 +7,9 @@ import { z } from 'zod'
 const SegmentSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
-  filters: z.array(z.object({ field: z.string(), op: z.string(), value: z.union([z.string(), z.number()]) })),
+  filters: z.array(
+    z.object({ field: z.string(), op: z.string(), value: z.union([z.string(), z.number()]) })
+  ),
   color: z.string().optional(),
 })
 
@@ -39,6 +41,10 @@ export async function createSegment(input: z.infer<typeof SegmentSchema>) {
 export async function deleteSegment(id: string) {
   const user = await requireChef()
   const supabase = createServerClient()
-  await supabase.from('client_segments' as any).delete().eq('id', id).eq('tenant_id', user.entityId)
+  await supabase
+    .from('client_segments' as any)
+    .delete()
+    .eq('id', id)
+    .eq('tenant_id', user.entityId)
   revalidatePath('/clients/segments')
 }

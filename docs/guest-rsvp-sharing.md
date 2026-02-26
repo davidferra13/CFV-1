@@ -7,6 +7,7 @@ Added a complete guest RSVP and event sharing system that lets clients share eve
 ## Why
 
 Previously, chefs had to ask clients for guest counts and dietary information manually. Guests arrived uninformed about menus and event details. This feature creates a self-service intelligence layer where:
+
 - Guest counts auto-compute from RSVPs (no more asking)
 - Dietary restrictions and allergies are collected per guest at RSVP time
 - The event page is "living" -- guests always see current info
@@ -15,6 +16,7 @@ Previously, chefs had to ask clients for guest counts and dietary information ma
 ## How It Works
 
 ### Flow
+
 1. **Client** opens their event detail page and clicks "Share with Guests"
 2. System generates a unique shareable link (token-based, same pattern as client invitations)
 3. Client copies the link and sends it however they want (text, email, DM, etc.)
@@ -24,7 +26,9 @@ Previously, chefs had to ask clients for guest counts and dietary information ma
 7. **Client** also sees RSVP progress on their event page
 
 ### Chef Visibility Controls
+
 Per-event toggles controlling what guests see on the shared page:
+
 - Date & Time (default: on)
 - Location (default: on)
 - Occasion (default: on)
@@ -35,6 +39,7 @@ Per-event toggles controlling what guests see on the shared page:
 - Chef Name (default: on)
 
 ### Token Architecture
+
 - **Share token**: One per shareable link. Created by client, validated publicly. 32-byte hex.
 - **Guest token**: One per guest RSVP. Used for editing responses. Also 32-byte hex.
 - Stored as cookies for returning guest detection (90-day expiry).
@@ -43,60 +48,64 @@ Per-event toggles controlling what guests see on the shared page:
 ## Database Schema (Layer 7)
 
 ### `event_shares` table
+
 - Links an event to a shareable token
 - Has `visibility_settings` JSONB column (chef-controlled)
 - Can be revoked by client (`is_active` flag)
 - Tenant-scoped
 
 ### `event_guests` table
+
 - One record per RSVP response
 - Stores: name, email (optional), RSVP status, dietary restrictions, allergies, notes, plus-one
 - Has optional `auth_user_id` for future account linking
 - Unique constraint on `(event_share_id, email)` prevents duplicate RSVPs per email
 
 ### `event_rsvp_summary` view
+
 - Aggregates per event: total guests, attending/declined/maybe/pending counts, plus-one count
 - Collects all dietary restrictions and allergies from attending/maybe guests
 - Used by both chef and client UI
 
 ### New enum: `rsvp_status`
+
 - `pending`, `attending`, `declined`, `maybe`
 
 ## Files Created
 
-| File | Purpose |
-|------|---------|
-| `supabase/migrations/20260221000001_layer_7_guest_rsvp.sql` | Database schema |
-| `lib/sharing/actions.ts` | All server actions (9 actions) |
-| `app/(public)/share/[token]/page.tsx` | Public guest-facing event page |
-| `components/sharing/rsvp-form.tsx` | Interactive RSVP form |
-| `components/sharing/share-event-button.tsx` | Share link creation + copy UI |
-| `components/sharing/client-rsvp-summary.tsx` | Client-side RSVP progress view |
-| `components/sharing/chef-guest-panel.tsx` | Chef-side guest intelligence panel |
+| File                                                        | Purpose                            |
+| ----------------------------------------------------------- | ---------------------------------- |
+| `supabase/migrations/20260221000001_layer_7_guest_rsvp.sql` | Database schema                    |
+| `lib/sharing/actions.ts`                                    | All server actions (9 actions)     |
+| `app/(public)/share/[token]/page.tsx`                       | Public guest-facing event page     |
+| `components/sharing/rsvp-form.tsx`                          | Interactive RSVP form              |
+| `components/sharing/share-event-button.tsx`                 | Share link creation + copy UI      |
+| `components/sharing/client-rsvp-summary.tsx`                | Client-side RSVP progress view     |
+| `components/sharing/chef-guest-panel.tsx`                   | Chef-side guest intelligence panel |
 
 ## Files Modified
 
-| File | Change |
-|------|--------|
-| `middleware.ts` | Added `/share` to public paths (line 17), updated path matching to support subpaths |
-| `app/(client)/my-events/[id]/page.tsx` | Added Share with Guests card with RSVP summary |
-| `app/(chef)/events/[id]/page.tsx` | Added Guests & RSVPs section with intelligence panel |
+| File                                   | Change                                                                              |
+| -------------------------------------- | ----------------------------------------------------------------------------------- |
+| `middleware.ts`                        | Added `/share` to public paths (line 17), updated path matching to support subpaths |
+| `app/(client)/my-events/[id]/page.tsx` | Added Share with Guests card with RSVP summary                                      |
+| `app/(chef)/events/[id]/page.tsx`      | Added Guests & RSVPs section with intelligence panel                                |
 
 ## Server Actions
 
-| Action | Auth Level | Purpose |
-|--------|-----------|---------|
-| `createEventShare(eventId)` | Client | Generate share token + link |
-| `revokeEventShare(shareId)` | Client | Deactivate a share link |
-| `addGuestManually(input)` | Client | Add guest with pending RSVP |
-| `updateGuestVisibility(shareId, settings)` | Chef | Toggle visibility per event |
-| `getEventGuests(eventId)` | Chef/Client | Full guest list |
-| `getEventRSVPSummary(eventId)` | Chef/Client | Aggregate counts + dietary |
-| `getEventShares(eventId)` | Chef/Client | Share link records |
-| `getEventShareByToken(token)` | Public | Event details for guest page |
-| `submitRSVP(input)` | Public | Guest submits RSVP |
-| `updateRSVP(input)` | Public | Guest updates RSVP |
-| `getGuestByToken(token)` | Public | Fetch existing RSVP |
+| Action                                     | Auth Level  | Purpose                      |
+| ------------------------------------------ | ----------- | ---------------------------- |
+| `createEventShare(eventId)`                | Client      | Generate share token + link  |
+| `revokeEventShare(shareId)`                | Client      | Deactivate a share link      |
+| `addGuestManually(input)`                  | Client      | Add guest with pending RSVP  |
+| `updateGuestVisibility(shareId, settings)` | Chef        | Toggle visibility per event  |
+| `getEventGuests(eventId)`                  | Chef/Client | Full guest list              |
+| `getEventRSVPSummary(eventId)`             | Chef/Client | Aggregate counts + dietary   |
+| `getEventShares(eventId)`                  | Chef/Client | Share link records           |
+| `getEventShareByToken(token)`              | Public      | Event details for guest page |
+| `submitRSVP(input)`                        | Public      | Guest submits RSVP           |
+| `updateRSVP(input)`                        | Public      | Guest updates RSVP           |
+| `getGuestByToken(token)`                   | Public      | Fetch existing RSVP          |
 
 ## Architectural Decisions
 
@@ -121,6 +130,7 @@ Per-event toggles controlling what guests see on the shared page:
 ## Connection to System
 
 This feature fits into the existing event lifecycle:
+
 - Share links can be created for any event status except `draft` and `cancelled`
 - RSVP data is tenant-scoped following the multi-tenant isolation pattern
 - All server actions follow existing patterns: `requireChef()`, `requireClient()`, `createServerClient()`

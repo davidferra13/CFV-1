@@ -21,7 +21,7 @@ export function detectFileType(file: File): FileType {
 
 export async function parseFile(
   file: File,
-  onProgress?: (msg: string, pct: number) => void,
+  onProgress?: (msg: string, pct: number) => void
 ): Promise<ParseResult> {
   onProgress?.('Reading file...', 10)
   const type = detectFileType(file)
@@ -29,12 +29,15 @@ export async function parseFile(
   if (type === 'csv') {
     const text = await file.text()
     onProgress?.('Parsing CSV...', 50)
-    const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
+    const lines = text
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean)
     if (lines.length === 0) return { records: [], headers: [], errors: [] }
 
-    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''))
-    const records = lines.slice(1).map(line => {
-      const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''))
+    const headers = lines[0].split(',').map((h) => h.trim().replace(/^"|"$/g, ''))
+    const records = lines.slice(1).map((line) => {
+      const values = line.split(',').map((v) => v.trim().replace(/^"|"$/g, ''))
       const rec: ImportRecord = {}
       headers.forEach((h, i) => {
         rec[h] = values[i] ?? null

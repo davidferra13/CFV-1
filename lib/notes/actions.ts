@@ -34,7 +34,9 @@ export interface ClientNote {
 const AddNoteSchema = z.object({
   client_id: z.string().uuid(),
   note_text: z.string().min(1).max(5000),
-  category: z.enum(['general', 'dietary', 'preference', 'logistics', 'relationship']).default('general'),
+  category: z
+    .enum(['general', 'dietary', 'preference', 'logistics', 'relationship'])
+    .default('general'),
   event_id: z.string().uuid().nullable().optional(),
   pinned: z.boolean().optional(),
 })
@@ -80,7 +82,8 @@ export async function addClientNote(input: z.infer<typeof AddNoteSchema>) {
   // Log chef activity (non-blocking)
   try {
     const { logChefActivity } = await import('@/lib/activity/log-chef')
-    const preview = validated.note_text.length > 60 ? validated.note_text.slice(0, 60) + '…' : validated.note_text
+    const preview =
+      validated.note_text.length > 60 ? validated.note_text.slice(0, 60) + '…' : validated.note_text
     await logChefActivity({
       tenantId: user.tenantId!,
       actorId: user.id,
@@ -102,10 +105,7 @@ export async function addClientNote(input: z.infer<typeof AddNoteSchema>) {
 /**
  * Update a note.
  */
-export async function updateClientNote(
-  noteId: string,
-  input: z.infer<typeof UpdateNoteSchema>
-) {
+export async function updateClientNote(noteId: string, input: z.infer<typeof UpdateNoteSchema>) {
   const user = await requireChef()
   const validated = UpdateNoteSchema.parse(input)
   const supabase = createServerClient()

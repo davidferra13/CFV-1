@@ -21,7 +21,8 @@ export async function publishLinkedIn(
   credential: PlatformCredential
 ): Promise<PublishResult> {
   const token = credential.accessToken
-  const authorUrn = (credential.additionalData.urn as string) || `urn:li:person:${credential.externalAccountId}`
+  const authorUrn =
+    (credential.additionalData.urn as string) || `urn:li:person:${credential.externalAccountId}`
   const text = buildCaption(post)
 
   try {

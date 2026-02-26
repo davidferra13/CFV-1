@@ -20,6 +20,7 @@ The system already tracked all financial data in the ledger (immutable, append-o
 ### 1. `getClientFinancialDetail(clientId)` — `lib/clients/actions.ts`
 
 New server action that returns three things in parallel:
+
 - **`eventBreakdown`** — all events for the client with quoted price, total paid, outstanding balance, payment status, deposit amount, tip amount. Fetched from `events` table + `event_financial_summary` view joined by event_id.
 - **`ledgerEntries`** — full payment history (all ledger entries) for this client, ordered newest-first, with event context joined.
 - **`summary`** — aggregate totals across active (non-cancelled) events: total quoted, total paid, total outstanding, total refunded, total tips, collection rate %.
@@ -41,12 +42,14 @@ Pure presentational server component (no client JS needed). Three sections:
 | Collection Rate | Blue | % of quoted amount collected |
 
 **Event Breakdown** — table with one row per event:
+
 - Event name (linked to `/events/[id]`), date, event status, quoted, paid, outstanding, payment status badge
 - Color-coded: paid = green, deposit_paid = blue, partial = amber, unpaid = red, refunded = stone
 - Cancelled events shown at 60% opacity with "—" for financial columns
 - Totals row at the bottom when there's more than one event
 
 **Payment History** — full ledger entries for this client:
+
 - Date, event name (linked), entry type badge (colored), amount (+/-), description
 - Refunds shown with "−" prefix in red; payments shown "+" in green
 
@@ -80,14 +83,15 @@ ClientDetailPage (server)
 ## No Schema Changes
 
 No migrations required. All data already existed in:
+
 - `events` table
 - `ledger_entries` table
 - `event_financial_summary` SQL view (defined in Layer 3 migration)
 
 ## Files Modified
 
-| File | Change |
-|---|---|
-| `lib/clients/actions.ts` | Added `getClientFinancialDetail()` |
-| `components/clients/client-financial-panel.tsx` | New component (created) |
-| `app/(chef)/clients/[id]/page.tsx` | Import + fetch + render the panel |
+| File                                            | Change                             |
+| ----------------------------------------------- | ---------------------------------- |
+| `lib/clients/actions.ts`                        | Added `getClientFinancialDetail()` |
+| `components/clients/client-financial-panel.tsx` | New component (created)            |
+| `app/(chef)/clients/[id]/page.tsx`              | Import + fetch + render the panel  |

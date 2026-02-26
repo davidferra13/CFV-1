@@ -39,7 +39,7 @@ export interface SocialConnectionStatus {
 export interface GoogleReviewStats {
   totalReviews: number
   avgRating: number
-  ratingDistribution: Record<string, number>  // "1"-"5" → count
+  ratingDistribution: Record<string, number> // "1"-"5" → count
   newReviewsLast7d: number
   ratingTrend: Array<{ date: string; avgRating: number; totalReviews: number }>
 }
@@ -59,16 +59,26 @@ export async function getSocialConnectionStatuses(): Promise<SocialConnectionSta
 
   const { data } = await supabase
     .from('social_connected_accounts')
-    .select('platform, is_active, platform_account_handle, platform_account_name, last_refreshed_at')
+    .select(
+      'platform, is_active, platform_account_handle, platform_account_name, last_refreshed_at'
+    )
     .eq('tenant_id', chef.id)
 
-  const platforms = ['instagram', 'facebook', 'tiktok', 'linkedin', 'x', 'pinterest', 'youtube_shorts']
+  const platforms = [
+    'instagram',
+    'facebook',
+    'tiktok',
+    'linkedin',
+    'x',
+    'pinterest',
+    'youtube_shorts',
+  ]
   const connectedMap = new Map<string, typeof data extends (infer T)[] ? T : never>()
   for (const row of data ?? []) {
     if (row.is_active) connectedMap.set(row.platform, row)
   }
 
-  return platforms.map(platform => {
+  return platforms.map((platform) => {
     const conn = connectedMap.get(platform)
     return {
       platform,
@@ -81,7 +91,7 @@ export async function getSocialConnectionStatuses(): Promise<SocialConnectionSta
 }
 
 export async function getLatestSocialSnapshot(
-  platform: string,
+  platform: string
 ): Promise<SocialPlatformSnapshot | null> {
   const chef = await requireChef()
   const supabase = await createServerClient()
@@ -115,7 +125,7 @@ export async function getLatestSocialSnapshot(
 
 export async function getSocialGrowthTrend(
   platform: string,
-  months: number = 6,
+  months: number = 6
 ): Promise<SocialGrowthTrend[]> {
   const chef = await requireChef()
   const supabase = await createServerClient()
@@ -131,7 +141,7 @@ export async function getSocialGrowthTrend(
     .gte('snapshot_date', cutoff.toISOString().slice(0, 10))
     .order('snapshot_date', { ascending: true })
 
-  return (data ?? []).map(row => ({
+  return (data ?? []).map((row) => ({
     date: row.snapshot_date,
     followers: row.followers,
     engagementRate: row.avg_engagement_rate ? Number(row.avg_engagement_rate) : null,
@@ -141,8 +151,12 @@ export async function getSocialGrowthTrend(
 
 export async function getFollowerGrowthRate(
   platform: string,
-  periodDays: number = 30,
-): Promise<{ currentFollowers: number | null; growthCount: number | null; growthRate: number | null }> {
+  periodDays: number = 30
+): Promise<{
+  currentFollowers: number | null
+  growthCount: number | null
+  growthRate: number | null
+}> {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
@@ -186,7 +200,8 @@ export async function getGoogleReviewStats(): Promise<GoogleReviewStats | null> 
   if (!reviews?.length) return null
 
   const totalReviews = reviews.length
-  const avgRating = Math.round(reviews.reduce((s, r) => s + Number(r.rating ?? 0), 0) / totalReviews * 10) / 10
+  const avgRating =
+    Math.round((reviews.reduce((s, r) => s + Number(r.rating ?? 0), 0) / totalReviews) * 10) / 10
 
   const ratingDistribution: Record<string, number> = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 }
   for (const r of reviews) {
@@ -196,7 +211,9 @@ export async function getGoogleReviewStats(): Promise<GoogleReviewStats | null> 
 
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-  const newReviews = reviews.filter(r => r.first_seen_at && new Date(r.first_seen_at) >= sevenDaysAgo).length
+  const newReviews = reviews.filter(
+    (r) => r.first_seen_at && new Date(r.first_seen_at) >= sevenDaysAgo
+  ).length
 
   // Monthly trend (last 12 months)
   const monthMap = new Map<string, { total: number; sum: number }>()
@@ -242,9 +259,10 @@ export async function getExternalReviewSummary(): Promise<ExternalReviewSummary[
       .order('review_date', { ascending: false })
 
     const total = reviews?.length ?? 0
-    const avg = total > 0
-      ? Math.round(reviews!.reduce((s, r) => s + Number(r.rating ?? 0), 0) / total * 10) / 10
-      : 0
+    const avg =
+      total > 0
+        ? Math.round((reviews!.reduce((s, r) => s + Number(r.rating ?? 0), 0) / total) * 10) / 10
+        : 0
 
     results.push({
       provider: source.provider,

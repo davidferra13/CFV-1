@@ -23,10 +23,10 @@ export type QueueDomain =
  * Urgency tiers for visual treatment and filtering.
  */
 export type QueueUrgency =
-  | 'critical'    // Needs action NOW (event today, overdue payment)
-  | 'high'        // Should act today (expiring quote, approaching event)
-  | 'normal'      // Act this week
-  | 'low'         // Nice to do, no pressure
+  | 'critical' // Needs action NOW (event today, overdue payment)
+  | 'high' // Should act today (expiring quote, approaching event)
+  | 'normal' // Act this week
+  | 'low' // Nice to do, no pressure
 
 // ============================================
 // QUEUE ITEM

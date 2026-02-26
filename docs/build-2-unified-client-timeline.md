@@ -6,12 +6,12 @@ A chronological activity feed on every client detail page that aggregates events
 
 ## Files Created / Modified
 
-| File | Role |
-|---|---|
-| `lib/clients/unified-timeline.ts` | Server action `getUnifiedClientTimeline(clientId)` — queries five sources and merges into sorted `UnifiedTimelineItem[]` |
-| `lib/clients/unified-timeline-utils.ts` | `SOURCE_CONFIG` map defining color, icon, and label for each item type |
-| `components/clients/unified-client-timeline.tsx` | `'use client'` component — renders the vertical timeline UI with colored dots and "show more" truncation |
-| `app/(chef)/clients/[id]/page.tsx` | Modified — fetches timeline in parallel with other client data, renders it in the Activity tab |
+| File                                             | Role                                                                                                                     |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| `lib/clients/unified-timeline.ts`                | Server action `getUnifiedClientTimeline(clientId)` — queries five sources and merges into sorted `UnifiedTimelineItem[]` |
+| `lib/clients/unified-timeline-utils.ts`          | `SOURCE_CONFIG` map defining color, icon, and label for each item type                                                   |
+| `components/clients/unified-client-timeline.tsx` | `'use client'` component — renders the vertical timeline UI with colored dots and "show more" truncation                 |
+| `app/(chef)/clients/[id]/page.tsx`               | Modified — fetches timeline in parallel with other client data, renders it in the Activity tab                           |
 
 ## How It Works
 

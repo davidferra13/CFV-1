@@ -14,14 +14,44 @@ export type CulinaryBadge = {
 }
 
 export const CULINARY_BADGES: CulinaryBadge[] = [
-  { id: 'first_event', name: 'First Event', description: 'Completed your first event.', icon: 'medal' },
-  { id: 'tasting_menu_pro', name: 'Tasting Pro', description: 'Hosted 3+ tasting menus.', icon: 'star' },
-  { id: 'world_traveler', name: 'World Traveler', description: 'Explored 5+ cuisines.', icon: 'globe' },
-  { id: 'party_host', name: 'Party Host', description: 'Hosted a party of 20+ guests.', icon: 'party-popper' },
+  {
+    id: 'first_event',
+    name: 'First Event',
+    description: 'Completed your first event.',
+    icon: 'medal',
+  },
+  {
+    id: 'tasting_menu_pro',
+    name: 'Tasting Pro',
+    description: 'Hosted 3+ tasting menus.',
+    icon: 'star',
+  },
+  {
+    id: 'world_traveler',
+    name: 'World Traveler',
+    description: 'Explored 5+ cuisines.',
+    icon: 'globe',
+  },
+  {
+    id: 'party_host',
+    name: 'Party Host',
+    description: 'Hosted a party of 20+ guests.',
+    icon: 'party-popper',
+  },
   { id: 'loyal_patron', name: 'Loyal Patron', description: 'Completed 10+ events.', icon: 'heart' },
   { id: 'big_spender', name: 'Connoisseur', description: 'Spent $10,000+ on events.', icon: 'gem' },
-  { id: 'repeat_monthly', name: 'Monthly Regular', description: 'Booked events 3 months in a row.', icon: 'calendar-check' },
-  { id: 'referral_champ', name: 'Referral Champion', description: 'Referred 3+ new clients.', icon: 'users' },
+  {
+    id: 'repeat_monthly',
+    name: 'Monthly Regular',
+    description: 'Booked events 3 months in a row.',
+    icon: 'calendar-check',
+  },
+  {
+    id: 'referral_champ',
+    name: 'Referral Champion',
+    description: 'Referred 3+ new clients.',
+    icon: 'users',
+  },
 ]
 
 // ============================================================
@@ -36,10 +66,30 @@ export type MilestoneReward = {
 }
 
 export const MILESTONE_REWARDS: MilestoneReward[] = [
-  { id: 'mr-100', peopleServedThreshold: 100, rewardDescription: '10% off next event', rewardType: 'discount' },
-  { id: 'mr-250', peopleServedThreshold: 250, rewardDescription: 'Free appetizer course', rewardType: 'free_course' },
-  { id: 'mr-500', peopleServedThreshold: 500, rewardDescription: 'Free dessert course', rewardType: 'free_course' },
-  { id: 'mr-1000', peopleServedThreshold: 1000, rewardDescription: "Chef's tasting menu upgrade", rewardType: 'upgrade' },
+  {
+    id: 'mr-100',
+    peopleServedThreshold: 100,
+    rewardDescription: '10% off next event',
+    rewardType: 'discount',
+  },
+  {
+    id: 'mr-250',
+    peopleServedThreshold: 250,
+    rewardDescription: 'Free appetizer course',
+    rewardType: 'free_course',
+  },
+  {
+    id: 'mr-500',
+    peopleServedThreshold: 500,
+    rewardDescription: 'Free dessert course',
+    rewardType: 'free_course',
+  },
+  {
+    id: 'mr-1000',
+    peopleServedThreshold: 1000,
+    rewardDescription: "Chef's tasting menu upgrade",
+    rewardType: 'upgrade',
+  },
 ]
 
 // ============================================================

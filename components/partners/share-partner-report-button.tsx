@@ -30,17 +30,14 @@ export function SharePartnerReportButton({ partnerId }: { partnerId: string }) {
 
   return (
     <div className="relative">
-      <Button
-        variant="secondary"
-        onClick={handleShare}
-        disabled={isPending}
-        loading={isPending}
-      >
+      <Button variant="secondary" onClick={handleShare} disabled={isPending} loading={isPending}>
         <Share2 className="w-4 h-4 mr-1.5" />
         {copied ? 'Link Copied!' : 'Share with Partner'}
       </Button>
       {error && (
-        <p className="absolute top-full mt-1 right-0 text-xs text-red-600 whitespace-nowrap">{error}</p>
+        <p className="absolute top-full mt-1 right-0 text-xs text-red-600 whitespace-nowrap">
+          {error}
+        </p>
       )}
     </div>
   )

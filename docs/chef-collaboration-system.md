@@ -11,13 +11,17 @@ Private chefs frequently work with other chefs — co-hosting dinners, calling i
 ## Architecture Decisions
 
 ### Events retain their original `tenant_id`
+
 Event ownership at the database level does not change even when another chef becomes the "primary" collaborator. This preserves RLS integrity, financial immutability (ledger entries remain scoped to the original tenant), and keeps the Stripe/payment linkage simple. Collaboration access is granted via the `event_collaborators` junction table, which the RLS system consults.
 
 ### Connection gate
+
 Only chefs with an **accepted** `chef_connections` row can invite each other. This prevents unsolicited collaboration requests and keeps the feature within the trusted Chef Network. The search modal only surfaces connected chefs.
 
 ### Role-based permissions
+
 Four roles, each with default permission sets:
+
 - `primary` — full access, takes over operational leadership on handoff
 - `co_host` — full access except closing/cancelling the event
 - `sous_chef` — kitchen-only access (can assign staff, cannot touch menu or financials)
@@ -26,30 +30,32 @@ Four roles, each with default permission sets:
 Permissions are stored as a JSONB object and can be overridden per-collaborator after invitation. Keys: `can_modify_menu`, `can_assign_staff`, `can_view_financials`, `can_communicate_with_client`, `can_close_event`.
 
 ### Recipe sharing creates editable copies
+
 When a recipe share is accepted, the server performs a deep copy: the recipe record plus all `recipe_ingredients` are duplicated into the receiving chef's `tenant_id`. Ingredients are matched by name (case-insensitive) within the target namespace; new ingredients are created if no match exists. The original recipe is never modified. The `recipe_shares.created_recipe_id` field points to the copy for traceability.
 
 ## Files Created
 
-| File | Purpose |
-|------|---------|
-| `supabase/migrations/20260304000007_business_opt_in.sql` | Adds `is_business` flag to `chef_preferences` |
+| File                                                               | Purpose                                                                  |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| `supabase/migrations/20260304000007_business_opt_in.sql`           | Adds `is_business` flag to `chef_preferences`                            |
 | `supabase/migrations/20260304000008_chef_collaboration_system.sql` | Creates `event_collaborators`, `recipe_shares`, and expands `events` RLS |
-| `lib/collaboration/types.ts` | Shared TypeScript types for roles, permissions, statuses |
-| `lib/collaboration/actions.ts` | All collaboration server actions |
-| `components/events/event-collaborators-panel.tsx` | Event detail UI panel (invite, manage, handoff) |
+| `lib/collaboration/types.ts`                                       | Shared TypeScript types for roles, permissions, statuses                 |
+| `lib/collaboration/actions.ts`                                     | All collaboration server actions                                         |
+| `components/events/event-collaborators-panel.tsx`                  | Event detail UI panel (invite, manage, handoff)                          |
 
 ## Files Modified
 
-| File | Change |
-|------|--------|
-| `app/(chef)/events/[id]/page.tsx` | Renders `EventCollaboratorsPanel`; shows collaborator role banner for non-owner visitors |
-| `lib/events/actions.ts` | `getEventById` — removed explicit `tenant_id` filter; access now enforced entirely by RLS |
-| `app/(chef)/recipes/[id]/recipe-detail-client.tsx` | Adds Share button and `RecipeShareModal` inline component |
-| `app/(chef)/dashboard/page.tsx` | Adds "Collaboration Invitations", "Recipe Shares", and "Collaborating On" sections |
+| File                                               | Change                                                                                    |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `app/(chef)/events/[id]/page.tsx`                  | Renders `EventCollaboratorsPanel`; shows collaborator role banner for non-owner visitors  |
+| `lib/events/actions.ts`                            | `getEventById` — removed explicit `tenant_id` filter; access now enforced entirely by RLS |
+| `app/(chef)/recipes/[id]/recipe-detail-client.tsx` | Adds Share button and `RecipeShareModal` inline component                                 |
+| `app/(chef)/dashboard/page.tsx`                    | Adds "Collaboration Invitations", "Recipe Shares", and "Collaborating On" sections        |
 
 ## Database Schema
 
 ### `event_collaborators`
+
 ```
 id UUID PK
 event_id → events(id) CASCADE
@@ -65,6 +71,7 @@ UNIQUE (event_id, chef_id)
 ```
 
 ### `recipe_shares`
+
 ```
 id UUID PK
 original_recipe_id → recipes(id) CASCADE
@@ -79,44 +86,48 @@ UNIQUE (original_recipe_id, to_chef_id)
 ```
 
 ### RLS Additions
+
 - `event_collaborators`: owner manages all rows; collaborating chef manages their own row
 - `events`: new `collaborators_can_view_events` policy lets accepted collaborators SELECT events
 - `recipe_shares`: each chef manages their own send/receive rows
 
 ### `chef_network_feature_preferences` Extensions
+
 - `event_collaboration BOOLEAN DEFAULT TRUE` — opt-out flag to stop receiving event invitations
 - `recipe_sharing BOOLEAN DEFAULT TRUE` — opt-out flag to stop receiving recipe share requests
 
 ## Server Action Reference (`lib/collaboration/actions.ts`)
 
 ### Event collaboration
-| Function | Description |
-|----------|-------------|
-| `getEventCollaborators(eventId)` | List all collaborators on an event (owner or accepted collaborator can call) |
-| `inviteChefToEvent(input)` | Invite a connected chef; validates connection and opt-in preference |
-| `respondToEventInvitation(input)` | Accept or decline an incoming invitation |
-| `updateCollaboratorRole(input)` | Change a collaborator's role and permissions (owner only) |
-| `removeCollaborator(collaboratorId)` | Remove a collaborator (owner or self) |
-| `handoffEvent(input)` | Promote new primary chef; original becomes observer |
-| `getPendingCollaborationInvitations()` | Incoming pending invitations for the current chef |
-| `getCollaboratingOnEvents()` | Events the current chef is an accepted collaborator on |
-| `getConnectedChefsForCollaboration(search?)` | Search connected chefs for invite modal |
+
+| Function                                     | Description                                                                  |
+| -------------------------------------------- | ---------------------------------------------------------------------------- |
+| `getEventCollaborators(eventId)`             | List all collaborators on an event (owner or accepted collaborator can call) |
+| `inviteChefToEvent(input)`                   | Invite a connected chef; validates connection and opt-in preference          |
+| `respondToEventInvitation(input)`            | Accept or decline an incoming invitation                                     |
+| `updateCollaboratorRole(input)`              | Change a collaborator's role and permissions (owner only)                    |
+| `removeCollaborator(collaboratorId)`         | Remove a collaborator (owner or self)                                        |
+| `handoffEvent(input)`                        | Promote new primary chef; original becomes observer                          |
+| `getPendingCollaborationInvitations()`       | Incoming pending invitations for the current chef                            |
+| `getCollaboratingOnEvents()`                 | Events the current chef is an accepted collaborator on                       |
+| `getConnectedChefsForCollaboration(search?)` | Search connected chefs for invite modal                                      |
 
 ### Recipe sharing
-| Function | Description |
-|----------|-------------|
-| `shareRecipe(input)` | Send a recipe share invitation to a connected chef |
-| `respondToRecipeShare(input)` | Accept (creates deep copy) or decline a share |
-| `getPendingRecipeShares()` | Incoming pending recipe shares |
-| `getOutgoingRecipeShares(recipeId?)` | Shares sent by the current chef |
+
+| Function                             | Description                                        |
+| ------------------------------------ | -------------------------------------------------- |
+| `shareRecipe(input)`                 | Send a recipe share invitation to a connected chef |
+| `respondToRecipeShare(input)`        | Accept (creates deep copy) or decline a share      |
+| `getPendingRecipeShares()`           | Incoming pending recipe shares                     |
+| `getOutgoingRecipeShares(recipeId?)` | Shares sent by the current chef                    |
 
 ## UI Components
 
-| Component | Location | Purpose |
-|-----------|----------|---------|
-| `EventCollaboratorsPanel` | `components/events/event-collaborators-panel.tsx` | Owner's management UI: invite, role changes, handoff |
-| `CollaborationInvitationCard` | same file | Invited chef's card: shows inviter, event name, role, Accept/Decline |
-| `PendingRecipeShareCard` | same file | Recipe share recipient's card: shows sender, recipe name, Accept & Copy/Decline |
+| Component                     | Location                                          | Purpose                                                                         |
+| ----------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `EventCollaboratorsPanel`     | `components/events/event-collaborators-panel.tsx` | Owner's management UI: invite, role changes, handoff                            |
+| `CollaborationInvitationCard` | same file                                         | Invited chef's card: shows inviter, event name, role, Accept/Decline            |
+| `PendingRecipeShareCard`      | same file                                         | Recipe share recipient's card: shows sender, recipe name, Accept & Copy/Decline |
 
 Both invitation cards are self-contained — they call `router.refresh()` internally after responding, so they work correctly whether rendered on the dashboard or any other page.
 
@@ -150,10 +161,10 @@ Both invitation cards are self-contained — they call `router.refresh()` intern
 
 Two transactional emails are now sent automatically — both are fire-and-forget (errors logged, never thrown):
 
-| Trigger | Template | Recipient | Subject line |
-| --- | --- | --- | --- |
-| `inviteChefToEvent` | `collaboration-invite.tsx` | Invited chef | `{inviterName} invited you to collaborate on {occasion}` |
-| `shareRecipe` | `recipe-share.tsx` | Receiving chef | `{sharerName} shared a recipe with you: {recipeName}` |
+| Trigger             | Template                   | Recipient      | Subject line                                             |
+| ------------------- | -------------------------- | -------------- | -------------------------------------------------------- |
+| `inviteChefToEvent` | `collaboration-invite.tsx` | Invited chef   | `{inviterName} invited you to collaborate on {occasion}` |
+| `shareRecipe`       | `recipe-share.tsx`         | Receiving chef | `{sharerName} shared a recipe with you: {recipeName}`    |
 
 Both emails include a CTA button linking directly to `/dashboard` where the invitation card is waiting.
 Both gracefully skip if `RESEND_API_KEY` is not configured (dev environments).
@@ -166,11 +177,11 @@ The RLS expansion on `events` (SELECT only) allows collaborating chefs to load t
 
 Three targeted fixes applied after initial release:
 
-| Fix | File | Description |
-| --- | ---- | ----------- |
-| Event date on invitation card | `components/events/event-collaborators-panel.tsx` | The formatted event date (e.g. "Mar 15, 2026") is now displayed beside the event name in `CollaborationInvitationCard` so the invited chef can evaluate timing before accepting |
-| Post-handoff dashboard dedup | `lib/collaboration/actions.ts` | `getCollaboratingOnEvents` now filters out events where `tenant_id === caller's id`. After a handoff, the original chef retains an observer row in `event_collaborators`, which previously caused their own event to appear twice on the dashboard (once in Events, once in Collaborating On). Now only appears in the main Events list. |
-| Dashboard cache revalidation on send | `lib/collaboration/actions.ts` | `inviteChefToEvent` and `shareRecipe` now call `revalidatePath('/dashboard')` so the recipient chef's Next.js cache is cleared, ensuring pending items appear on their next dashboard visit without a manual refresh. |
+| Fix                                  | File                                              | Description                                                                                                                                                                                                                                                                                                                              |
+| ------------------------------------ | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Event date on invitation card        | `components/events/event-collaborators-panel.tsx` | The formatted event date (e.g. "Mar 15, 2026") is now displayed beside the event name in `CollaborationInvitationCard` so the invited chef can evaluate timing before accepting                                                                                                                                                          |
+| Post-handoff dashboard dedup         | `lib/collaboration/actions.ts`                    | `getCollaboratingOnEvents` now filters out events where `tenant_id === caller's id`. After a handoff, the original chef retains an observer row in `event_collaborators`, which previously caused their own event to appear twice on the dashboard (once in Events, once in Collaborating On). Now only appears in the main Events list. |
+| Dashboard cache revalidation on send | `lib/collaboration/actions.ts`                    | `inviteChefToEvent` and `shareRecipe` now call `revalidatePath('/dashboard')` so the recipient chef's Next.js cache is cleared, ensuring pending items appear on their next dashboard visit without a manual refresh.                                                                                                                    |
 
 ## Verification
 

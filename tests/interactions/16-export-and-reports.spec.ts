@@ -41,7 +41,7 @@ test.describe('Reports — Finance Reporting', () => {
 
     test(`${report.path} — no JS errors`, async ({ page }) => {
       const errors: string[] = []
-      page.on('pageerror', err => errors.push(err.message))
+      page.on('pageerror', (err) => errors.push(err.message))
       await page.goto(report.path)
       await page.waitForLoadState('networkidle')
       expect(errors, `${report.label} should not throw JS errors`).toHaveLength(0)
@@ -86,7 +86,7 @@ test.describe('Reports — Finance Data', () => {
 test.describe('Reports — Export Actions', () => {
   test('/finance/reporting — export button does not crash when clicked', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/finance/reporting')
     await page.waitForLoadState('networkidle')
 
@@ -107,13 +107,11 @@ test.describe('Reports — Export Actions', () => {
 
   test('/finance/reporting/profit-loss — export does not crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/finance/reporting/profit-loss')
     await page.waitForLoadState('networkidle')
 
-    const exportBtn = page
-      .getByRole('button', { name: /export|download|csv|pdf/i })
-      .first()
+    const exportBtn = page.getByRole('button', { name: /export|download|csv|pdf/i }).first()
 
     if (await exportBtn.isVisible()) {
       await exportBtn.click()
@@ -147,7 +145,7 @@ test.describe('Reports — Analytics', () => {
 
     test(`${analytics.path} — no JS errors`, async ({ page }) => {
       const errors: string[] = []
-      page.on('pageerror', err => errors.push(err.message))
+      page.on('pageerror', (err) => errors.push(err.message))
       await page.goto(analytics.path)
       await page.waitForLoadState('networkidle')
       expect(errors, `${analytics.label} should not throw JS errors`).toHaveLength(0)
@@ -179,7 +177,7 @@ test.describe('Reports — Event Financial', () => {
 
   test('/events/[completed]/financial — no JS errors', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto(`/events/${seedIds.eventIds.completed}/financial`)
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -235,7 +233,7 @@ test.describe('Reports — Payout Records', () => {
 
   test('/finance/payouts — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/finance/payouts')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)

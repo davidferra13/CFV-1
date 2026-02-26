@@ -66,7 +66,7 @@ function getRedisRatelimit(max: number, windowSeconds: number): Ratelimit | null
 export async function checkRateLimit(
   key: string,
   max: number = 5,
-  windowMs: number = 15 * 60 * 1000,
+  windowMs: number = 15 * 60 * 1000
 ): Promise<void> {
   const windowSeconds = Math.ceil(windowMs / 1000)
   const limiter = getRedisRatelimit(max, windowSeconds)

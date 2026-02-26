@@ -2,11 +2,7 @@
 // Time-aware nudges that surface BEFORE the chef is under pressure.
 // Pure computation — no DB calls.
 
-import type {
-  PrepPrompt,
-  SchedulingEvent,
-  ChefPreferences,
-} from './types'
+import type { PrepPrompt, SchedulingEvent, ChefPreferences } from './types'
 
 // ============================================
 // HELPERS

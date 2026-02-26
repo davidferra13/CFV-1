@@ -14,11 +14,13 @@
 **What was built:**
 
 #### `lib/gmail/actions.ts` — Follow-up timer on email send
+
 - `approveAndSendMessage()` now sets `follow_up_due_at` to 48 hours from the moment the email is sent
 - This activates the existing priority queue (which already surfaces overdue follow-ups within a 48-hour window)
 - Timer resets every time the chef sends a new message to the client
 
 #### `app/api/scheduled/follow-ups/route.ts` — Cron endpoint for overdue follow-ups
+
 - Secured with `CRON_SECRET` bearer token (same pattern as Gmail sync)
 - Queries: `inquiries WHERE follow_up_due_at <= NOW() AND status = 'awaiting_client'`
 - For each overdue inquiry: creates a `follow_up_due` notification for the chef
@@ -26,10 +28,12 @@
 - Chef is notified via the bell icon — they decide whether to act
 
 #### `lib/notifications/types.ts` — New `follow_up_due` action
+
 - Added to `NotificationAction` union type
 - Config: category `inquiry`, icon `Bell`, `toastByDefault: true`
 
 #### `vercel.json` — Cron schedules configured
+
 - Gmail sync: every 5 minutes (`*/5 * * * *`)
 - Follow-up checks: every 6 hours (`0 */6 * * *`)
 - Lifecycle maintenance: daily at 3 AM (`0 3 * * *`)
@@ -41,6 +45,7 @@
 **What was built:**
 
 #### `lib/stripe/checkout.ts` — Stripe Checkout Session helper
+
 - `createPaymentCheckoutUrl(eventId, tenantId)` — Creates a hosted Stripe Checkout Session
 - Determines amount: deposit (if unpaid) or remaining balance
 - Sets `payment_intent_data.metadata` with `event_id`, `tenant_id`, `client_id`, `payment_type` — so the existing webhook handler processes it identically to direct PaymentIntents
@@ -49,18 +54,21 @@
 - Returns `null` if event is not in `accepted` status (not ready for payment)
 
 #### `lib/gmail/actions.ts` — Placeholder resolution on send
+
 - Before sending via Gmail, `approveAndSendMessage()` checks for `[PAYMENT_LINK]` in the body
 - If found: looks up the inquiry's `converted_to_event_id`, creates a Checkout Session, replaces the placeholder with the actual URL
 - If generation fails: replaces with `(payment link will be sent separately)` — never sends a raw placeholder
 - The resolved body is persisted to the `messages` table so the record has the actual link
 
 #### `lib/ai/correspondence.ts` — Payment context for AI drafts
+
 - At booking stage, if the inquiry has been converted to an event in `accepted` status:
   - Appends context telling the AI to use `[PAYMENT_LINK]` placeholder
   - The AI includes it naturally in the draft per the booking rules in `06-BOOKING_PAYMENT.md`
 - If not at booking stage or no event exists: no payment context added
 
 #### How it integrates with existing Stripe webhook
+
 - The Checkout Session creates a PaymentIntent with metadata
 - Existing `payment_intent.succeeded` webhook handler processes it identically
 - Ledger entry → event transition to `paid` → chef notification all fire automatically
@@ -72,12 +80,14 @@
 **What was built:**
 
 #### `lib/gmail/actions.ts` — Auto-advance on chef email send
+
 - `approveAndSendMessage()` now auto-transitions:
   - `new` → `awaiting_client` (chef responded to new inquiry)
   - `awaiting_chef` → `awaiting_client` (chef responded to client reply)
 - DB trigger auto-logs to `inquiry_state_transitions` (immutable audit trail)
 
 #### `lib/gmail/sync.ts` — Auto-advance on client reply
+
 - `handleExistingThread()` now:
   1. Looks up the linked inquiry by `gmail_thread_id` (finds any message in the same thread that has an `inquiry_id`)
   2. Links the new reply message to the same inquiry
@@ -87,6 +97,7 @@
 - Notification now includes `actionUrl` and `inquiryId` for proper deep linking
 
 #### `app/api/scheduled/lifecycle/route.ts` — Periodic lifecycle maintenance
+
 - Secured with `CRON_SECRET` bearer token
 - **Stale inquiry expiration:** Inquiries in `awaiting_client` with no `updated_at` for 30 days → auto-transitions to `expired`, clears follow-up timer, notifies chef
 - **Quote expiration:** Quotes in `sent` status with `expires_at` in the past → auto-transitions to `expired`
@@ -137,6 +148,7 @@ Chef sends email (approveAndSendMessage)
 ## AI Policy Compliance
 
 All three features respect the AI Policy:
+
 - **Follow-up reminders:** Notify chef, don't auto-send. Chef decides whether to act.
 - **Payment links:** AI suggests `[PAYMENT_LINK]` placeholder. Chef reviews and approves before it's resolved into an actual Stripe session.
 - **Lifecycle advancement:** Status transitions are deterministic rules (email sent → awaiting_client, reply received → awaiting_chef). No AI involvement in state transitions.
@@ -147,22 +159,22 @@ Litmus test: unplug AI → follow-ups still fire, payment links still resolve, l
 
 ## Files Modified
 
-| File | Change |
-|---|---|
-| `lib/gmail/actions.ts` | Payment link resolution, follow-up timer, auto-advance inquiry |
-| `lib/gmail/sync.ts` | Thread-based inquiry linking, auto-advance on reply |
-| `lib/ai/correspondence.ts` | Payment link context for booking stage AI drafts |
-| `lib/notifications/actions.ts` | Removed stale `(as any)` casts, added `Json` type |
-| `lib/notifications/types.ts` | Added `follow_up_due` notification action |
-| `vercel.json` | Cron schedules for all three endpoints |
+| File                           | Change                                                         |
+| ------------------------------ | -------------------------------------------------------------- |
+| `lib/gmail/actions.ts`         | Payment link resolution, follow-up timer, auto-advance inquiry |
+| `lib/gmail/sync.ts`            | Thread-based inquiry linking, auto-advance on reply            |
+| `lib/ai/correspondence.ts`     | Payment link context for booking stage AI drafts               |
+| `lib/notifications/actions.ts` | Removed stale `(as any)` casts, added `Json` type              |
+| `lib/notifications/types.ts`   | Added `follow_up_due` notification action                      |
+| `vercel.json`                  | Cron schedules for all three endpoints                         |
 
 ## Files Created
 
-| File | Purpose |
-|---|---|
-| `lib/stripe/checkout.ts` | Stripe Checkout Session URL generator |
-| `app/api/scheduled/follow-ups/route.ts` | Cron: overdue follow-up notifications |
-| `app/api/scheduled/lifecycle/route.ts` | Cron: stale inquiry expiration, quote expiration |
+| File                                    | Purpose                                          |
+| --------------------------------------- | ------------------------------------------------ |
+| `lib/stripe/checkout.ts`                | Stripe Checkout Session URL generator            |
+| `app/api/scheduled/follow-ups/route.ts` | Cron: overdue follow-up notifications            |
+| `app/api/scheduled/lifecycle/route.ts`  | Cron: stale inquiry expiration, quote expiration |
 
 ---
 

@@ -32,15 +32,13 @@ const STAGE_ICONS: Record<string, string> = {
  * Convert pre-fetched WorkItems (stages 1-13) into scored QueueItems.
  * Called from build.ts which already has the DashboardWorkSurface.
  */
-export function convertWorkItemsToQueueItems(
-  workItems: WorkItem[]
-): QueueItem[] {
+export function convertWorkItemsToQueueItems(workItems: WorkItem[]): QueueItem[] {
   const now = new Date()
 
   // Filter to stages 1-13 only — post-event handled by dedicated providers
-  const preEventItems = workItems.filter(wi => wi.stageNumber <= 13)
+  const preEventItems = workItems.filter((wi) => wi.stageNumber <= 13)
 
-  return preEventItems.map(wi => {
+  return preEventItems.map((wi) => {
     const eventDate = new Date(wi.eventDate)
     const hoursUntilEvent = (eventDate.getTime() - now.getTime()) / 3600000
 

@@ -37,10 +37,10 @@ export type ComponentFrequency = {
 }
 
 export type ClientMenuHistory = {
-  entries: MenuHistoryEntry[]           // Most recent first
+  entries: MenuHistoryEntry[] // Most recent first
   totalEvents: number
-  topComponents: ComponentFrequency[]   // Most frequently served components (top 8)
-  cuisinesServed: string[]              // Distinct cuisine types used
+  topComponents: ComponentFrequency[] // Most frequently served components (top 8)
+  cuisinesServed: string[] // Distinct cuisine types used
 }
 
 // ── Server Action ──────────────────────────────────────────────────────────────
@@ -68,17 +68,18 @@ export async function getClientMenuHistory(clientId: string): Promise<ClientMenu
   if (!events || events.length === 0) return empty
 
   // 2. Fetch menus for events that have a menu_id
-  const menuIds = events
-    .map(e => e.menu_id)
-    .filter((id): id is string => !!id)
+  const menuIds = events.map((e) => e.menu_id).filter((id): id is string => !!id)
 
-  const menuMap = new Map<string, {
-    id: string
-    name: string
-    cuisine_type: string | null
-    simple_mode: boolean
-    simple_mode_content: string | null
-  }>()
+  const menuMap = new Map<
+    string,
+    {
+      id: string
+      name: string
+      cuisine_type: string | null
+      simple_mode: boolean
+      simple_mode_content: string | null
+    }
+  >()
 
   if (menuIds.length > 0) {
     const { data: menus } = await supabase
@@ -93,19 +94,20 @@ export async function getClientMenuHistory(clientId: string): Promise<ClientMenu
   }
 
   // 3. Fetch all dishes for those menus (only non-simple-mode)
-  const nonSimpleMenuIds = [...menuMap.values()]
-    .filter(m => !m.simple_mode)
-    .map(m => m.id)
+  const nonSimpleMenuIds = [...menuMap.values()].filter((m) => !m.simple_mode).map((m) => m.id)
 
-  const dishMap = new Map<string, {
-    id: string
-    menu_id: string
-    course_number: number
-    course_name: string
-    name: string | null
-    dietary_tags: string[]
-    allergen_flags: string[]
-  }[]>()  // keyed by menu_id → array of dishes
+  const dishMap = new Map<
+    string,
+    {
+      id: string
+      menu_id: string
+      course_number: number
+      course_name: string
+      name: string | null
+      dietary_tags: string[]
+      allergen_flags: string[]
+    }[]
+  >() // keyed by menu_id → array of dishes
 
   if (nonSimpleMenuIds.length > 0) {
     const { data: dishes } = await supabase
@@ -133,9 +135,9 @@ export async function getClientMenuHistory(clientId: string): Promise<ClientMenu
 
   // 4. Fetch all components for those dishes
   const allDishes = [...dishMap.values()].flat()
-  const dishIds = allDishes.map(d => d.id)
+  const dishIds = allDishes.map((d) => d.id)
 
-  const componentMap = new Map<string, string[]>()  // dish_id → component names
+  const componentMap = new Map<string, string[]>() // dish_id → component names
 
   if (dishIds.length > 0) {
     const { data: components } = await supabase
@@ -153,7 +155,7 @@ export async function getClientMenuHistory(clientId: string): Promise<ClientMenu
   }
 
   // 5. Assemble MenuHistoryEntry per event
-  const entries: MenuHistoryEntry[] = events.map(event => {
+  const entries: MenuHistoryEntry[] = events.map((event) => {
     const menu = event.menu_id ? menuMap.get(event.menu_id) : undefined
 
     if (!menu) {
@@ -172,7 +174,7 @@ export async function getClientMenuHistory(clientId: string): Promise<ClientMenu
     }
 
     const dishesForMenu = dishMap.get(menu.id) ?? []
-    const dishes: DishHistory[] = dishesForMenu.map(d => ({
+    const dishes: DishHistory[] = dishesForMenu.map((d) => ({
       courseNumber: d.course_number,
       courseName: d.course_name,
       dishName: d.name,

@@ -46,7 +46,7 @@ export async function buildVapidAuthHeader(audience: string): Promise<string> {
     privateKeyDer,
     { name: 'ECDSA', namedCurve: 'P-256' },
     false,
-    ['sign'],
+    ['sign']
   )
 
   // Build JWT header + payload
@@ -54,10 +54,10 @@ export async function buildVapidAuthHeader(audience: string): Promise<string> {
   const now = Math.floor(Date.now() / 1000)
   const payload = base64urlEncode(
     JSON.stringify({
-      aud: audience,   // Push service origin (e.g. https://fcm.googleapis.com)
+      aud: audience, // Push service origin (e.g. https://fcm.googleapis.com)
       exp: now + 12 * 3600, // 12 hours
       sub: subject,
-    }),
+    })
   )
 
   const signingInput = `${header}.${payload}`
@@ -66,7 +66,7 @@ export async function buildVapidAuthHeader(audience: string): Promise<string> {
   const signatureBuffer = await subtle.sign(
     { name: 'ECDSA', hash: 'SHA-256' },
     privateKey,
-    signingInputBytes,
+    signingInputBytes
   )
 
   const signature = base64urlEncodeBuffer(new Uint8Array(signatureBuffer))

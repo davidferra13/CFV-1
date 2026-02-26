@@ -11,7 +11,7 @@ function getKey(): Buffer {
   if (!keyB64) {
     throw new Error(
       'SOCIAL_TOKEN_ENCRYPTION_KEY is not set. Generate a 32-byte key with: ' +
-        'node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'base64\'))"'
+        "node -e \"console.log(require('crypto').randomBytes(32).toString('base64'))\""
     )
   }
   const key = Buffer.from(keyB64, 'base64')

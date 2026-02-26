@@ -8,13 +8,7 @@ import { revalidatePath } from 'next/cache'
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type CustomFieldEntityType = 'event' | 'client' | 'recipe'
-export type CustomFieldType =
-  | 'text'
-  | 'number'
-  | 'date'
-  | 'select'
-  | 'multi_select'
-  | 'toggle'
+export type CustomFieldType = 'text' | 'number' | 'date' | 'select' | 'multi_select' | 'toggle'
 
 export interface CustomFieldDefinition {
   id: string
@@ -104,17 +98,14 @@ export async function getAllCustomFieldDefinitions(): Promise<
 /**
  * Create a new custom field definition after Zod validation.
  */
-export async function createCustomFieldDefinition(
-  raw: unknown
-): Promise<CustomFieldDefinition> {
+export async function createCustomFieldDefinition(raw: unknown): Promise<CustomFieldDefinition> {
   const chef = await requireChef()
   const parsed = CreateDefinitionSchema.safeParse(raw)
   if (!parsed.success) {
     throw new Error(parsed.error.issues.map((e: { message: string }) => e.message).join(', '))
   }
 
-  const { entity_type, field_name, field_type, options, is_required, display_order } =
-    parsed.data
+  const { entity_type, field_name, field_type, options, is_required, display_order } = parsed.data
 
   // Validate that select/multi_select have at least one option
   if ((field_type === 'select' || field_type === 'multi_select') && !options?.length) {
@@ -182,7 +173,10 @@ export async function saveCustomFieldValues(
 
   if (defError) throw new Error(defError.message)
   const defMap = new Map<string, CustomFieldType>(
-    (defs as unknown as { id: string; field_type: CustomFieldType }[]).map((d) => [d.id, d.field_type])
+    (defs as unknown as { id: string; field_type: CustomFieldType }[]).map((d) => [
+      d.id,
+      d.field_type,
+    ])
   )
 
   const upserts = Object.entries(values).map(([defId, raw]) => {

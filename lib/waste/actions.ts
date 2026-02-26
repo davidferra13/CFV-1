@@ -41,7 +41,7 @@ export interface WasteEntry {
   qty: number
   unit: IngredientUnit
   reason: WasteReason
-  cost_estimate: number | null  // cents
+  cost_estimate: number | null // cents
   event_id: string | null
   notes: string | null
   occurred_at: string
@@ -137,7 +137,10 @@ export async function getWasteStats(period?: 'week' | 'month' | 'all'): Promise<
   for (const entry of entries) {
     const cost = entry.cost_estimate || 0
     totalCost += cost
-    byReason.set(entry.reason as WasteReason, (byReason.get(entry.reason as WasteReason) || 0) + cost)
+    byReason.set(
+      entry.reason as WasteReason,
+      (byReason.get(entry.reason as WasteReason) || 0) + cost
+    )
   }
 
   let topReason: [WasteReason, number] | null = null

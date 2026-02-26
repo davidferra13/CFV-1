@@ -9,7 +9,7 @@ type Props = {
   chefName: string
   clientName: string
   occasion: string | null
-  followUpNote: string | null   // The reminder note the chef set
+  followUpNote: string | null // The reminder note the chef set
   daysOverdue: number
   clientUrl: string
 }
@@ -22,7 +22,8 @@ export function FollowUpDueChefEmail({
   daysOverdue,
   clientUrl,
 }: Props) {
-  const overdueLabel = daysOverdue === 0 ? 'today' : daysOverdue === 1 ? 'yesterday' : `${daysOverdue} days ago`
+  const overdueLabel =
+    daysOverdue === 0 ? 'today' : daysOverdue === 1 ? 'yesterday' : `${daysOverdue} days ago`
   const eventLabel = occasion || 'their event'
 
   return (
@@ -30,8 +31,8 @@ export function FollowUpDueChefEmail({
       <Text style={heading}>Follow-up due</Text>
       <Text style={paragraph}>Hi {chefName},</Text>
       <Text style={paragraph}>
-        A follow-up with <strong>{clientName}</strong> regarding{' '}
-        <em>{eventLabel}</em> was due {overdueLabel}.
+        A follow-up with <strong>{clientName}</strong> regarding <em>{eventLabel}</em> was due{' '}
+        {overdueLabel}.
       </Text>
 
       {followUpNote && (
@@ -66,7 +67,12 @@ export function FollowUpDueChefEmail({
   )
 }
 
-const heading = { fontSize: '24px', fontWeight: '600' as const, color: '#18181b', margin: '0 0 16px' }
+const heading = {
+  fontSize: '24px',
+  fontWeight: '600' as const,
+  color: '#18181b',
+  margin: '0 0 16px',
+}
 const paragraph = { fontSize: '15px', lineHeight: '1.6', color: '#374151', margin: '0 0 16px' }
 const noteBox = {
   backgroundColor: '#fffbeb',
@@ -75,6 +81,13 @@ const noteBox = {
   padding: '16px',
   margin: '0 0 24px',
 }
-const noteLabel = { fontSize: '12px', fontWeight: '600' as const, color: '#92400e', textTransform: 'uppercase' as const, letterSpacing: '0.05em', margin: '0 0 6px' }
+const noteLabel = {
+  fontSize: '12px',
+  fontWeight: '600' as const,
+  color: '#92400e',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.05em',
+  margin: '0 0 6px',
+}
 const noteText = { fontSize: '15px', color: '#374151', margin: '0' }
 const muted = { fontSize: '13px', color: '#9ca3af', margin: '0' }

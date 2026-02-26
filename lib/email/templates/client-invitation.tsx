@@ -21,9 +21,7 @@ export function ClientInvitationEmail({
   return (
     <BaseLayout preview={`${chefName} invited you to CheFlow`}>
       <Text style={heading}>You&apos;re invited!</Text>
-      <Text style={paragraph}>
-        Hi {clientName},
-      </Text>
+      <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>
         <strong>{chefName}</strong> has invited you to join CheFlow — where you can view event
         details, review quotes, make payments, and communicate directly with your chef.
@@ -32,8 +30,8 @@ export function ClientInvitationEmail({
         Accept Invitation
       </Button>
       <Text style={muted}>
-        This invitation expires in {expiresInDays} days. If you didn&apos;t expect this,
-        you can safely ignore this email.
+        This invitation expires in {expiresInDays} days. If you didn&apos;t expect this, you can
+        safely ignore this email.
       </Text>
     </BaseLayout>
   )

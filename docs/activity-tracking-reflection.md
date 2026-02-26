@@ -3,6 +3,7 @@
 ## What Changed
 
 Added lightweight client engagement tracking. Chefs can now see:
+
 - **"Active Now"** — which clients are browsing the portal right now
 - **Recent Activity** — chronological feed of client actions (logins, event views, quote views)
 
@@ -17,6 +18,7 @@ Wix provides real-time visitor tracking ("see who's on your site"). ChefFlow's e
 ### Lightweight Event Table
 
 `activity_events` stores one row per tracked action:
+
 - `actor_type` (client/chef/system) + `actor_id` (auth user)
 - `event_type` (portal_login, event_viewed, quote_viewed, etc.)
 - `entity_type` + `entity_id` for context (which event, which quote)
@@ -35,24 +37,24 @@ Table is added to `supabase_realtime` publication, so the "Active Now" widget co
 
 ## Files Created
 
-| File | Purpose |
-|---|---|
-| `supabase/migrations/20260221000017_activity_tracking.sql` | Schema + RLS + Realtime |
-| `lib/activity/types.ts` | TypeScript types |
-| `lib/activity/track.ts` | Lightweight `trackActivity()` function |
-| `lib/activity/actions.ts` | `getActiveClients()`, `getRecentActivity()`, `getClientTimeline()`, `getEngagementStats()` |
-| `app/api/activity/track/route.ts` | Client-side tracking POST endpoint |
-| `app/api/scheduled/activity-cleanup/route.ts` | 90-day TTL cleanup cron |
-| `components/dashboard/active-clients-card.tsx` | "Who's online" widget |
-| `components/dashboard/activity-feed.tsx` | Recent activity feed |
-| `components/activity/activity-tracker.tsx` | Client-side tracking component |
+| File                                                       | Purpose                                                                                    |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `supabase/migrations/20260221000017_activity_tracking.sql` | Schema + RLS + Realtime                                                                    |
+| `lib/activity/types.ts`                                    | TypeScript types                                                                           |
+| `lib/activity/track.ts`                                    | Lightweight `trackActivity()` function                                                     |
+| `lib/activity/actions.ts`                                  | `getActiveClients()`, `getRecentActivity()`, `getClientTimeline()`, `getEngagementStats()` |
+| `app/api/activity/track/route.ts`                          | Client-side tracking POST endpoint                                                         |
+| `app/api/scheduled/activity-cleanup/route.ts`              | 90-day TTL cleanup cron                                                                    |
+| `components/dashboard/active-clients-card.tsx`             | "Who's online" widget                                                                      |
+| `components/dashboard/activity-feed.tsx`                   | Recent activity feed                                                                       |
+| `components/activity/activity-tracker.tsx`                 | Client-side tracking component                                                             |
 
 ## Files Modified
 
-| File | Change |
-|---|---|
-| `app/(chef)/dashboard/page.tsx` | Added Client Activity section with both widgets |
-| `app/(client)/layout.tsx` | Added `<ActivityTracker eventType="portal_login" />` |
+| File                            | Change                                               |
+| ------------------------------- | ---------------------------------------------------- |
+| `app/(chef)/dashboard/page.tsx` | Added Client Activity section with both widgets      |
+| `app/(client)/layout.tsx`       | Added `<ActivityTracker eventType="portal_login" />` |
 
 ## How It Connects
 

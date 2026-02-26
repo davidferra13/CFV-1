@@ -15,7 +15,7 @@ import { format } from 'date-fns'
 
 export type InvoicePaymentEntry = {
   id: string
-  date: string           // formatted display date
+  date: string // formatted display date
   description: string
   entryType: string
   paymentMethod: string
@@ -103,7 +103,7 @@ export async function assignInvoiceNumber(eventId: string) {
     .eq('id', eventId)
     .single()
 
-  if (!event || event.invoice_number) return  // already set, nothing to do
+  if (!event || event.invoice_number) return // already set, nothing to do
 
   const invoiceNumber = await generateInvoiceNumber(event.tenant_id)
 
@@ -132,14 +132,16 @@ export async function getInvoiceData(eventId: string): Promise<InvoiceData | nul
 
   const { data: event } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, occasion, event_date, guest_count, status, tenant_id,
       quoted_price_cents, deposit_amount_cents, payment_status,
       tip_amount_cents, pricing_model,
       invoice_number, invoice_issued_at,
       location_city, location_state,
       client:clients(id, full_name, email)
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -157,7 +159,9 @@ export async function getInvoiceData(eventId: string): Promise<InvoiceData | nul
   // Fetch ledger entries for this event
   const { data: ledgerEntries } = await supabase
     .from('ledger_entries')
-    .select('id, amount_cents, entry_type, payment_method, received_at, created_at, description, transaction_reference, is_refund')
+    .select(
+      'id, amount_cents, entry_type, payment_method, received_at, created_at, description, transaction_reference, is_refund'
+    )
     .eq('event_id', eventId)
     .eq('tenant_id', user.tenantId!)
     .order('created_at', { ascending: true })
@@ -177,14 +181,16 @@ export async function getInvoiceDataForClient(eventId: string): Promise<InvoiceD
 
   const { data: event } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, occasion, event_date, guest_count, status, tenant_id,
       quoted_price_cents, deposit_amount_cents, payment_status,
       tip_amount_cents, pricing_model,
       invoice_number, invoice_issued_at,
       location_city, location_state,
       client:clients(id, full_name, email)
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('client_id', user.entityId!)
     .single()
@@ -201,7 +207,9 @@ export async function getInvoiceDataForClient(eventId: string): Promise<InvoiceD
 
   const { data: ledgerEntries } = await supabase
     .from('ledger_entries')
-    .select('id, amount_cents, entry_type, payment_method, received_at, created_at, description, transaction_reference, is_refund')
+    .select(
+      'id, amount_cents, entry_type, payment_method, received_at, created_at, description, transaction_reference, is_refund'
+    )
     .eq('event_id', eventId)
     .eq('client_id', user.entityId!)
     .order('created_at', { ascending: true })
@@ -251,7 +259,7 @@ type RawLedgerEntry = {
 function buildInvoiceData(event: RawEvent, chef: RawChef, entries: RawLedgerEntry[]): InvoiceData {
   const clientData = event.client as { id: string; full_name: string; email: string } | null
 
-  const paymentEntries: InvoicePaymentEntry[] = entries.map(e => {
+  const paymentEntries: InvoicePaymentEntry[] = entries.map((e) => {
     const dateStr = e.received_at ?? e.created_at
     return {
       id: e.id,
@@ -268,17 +276,17 @@ function buildInvoiceData(event: RawEvent, chef: RawChef, entries: RawLedgerEntr
 
   // Total paid = sum of non-refund, non-tip entries
   const totalPaidCents = entries
-    .filter(e => !e.is_refund)
+    .filter((e) => !e.is_refund)
     .reduce((sum, e) => sum + e.amount_cents, 0)
 
   // Total refunded = sum of refund entries (stored as positive, applied as deduction)
   const totalRefundedCents = entries
-    .filter(e => e.is_refund)
+    .filter((e) => e.is_refund)
     .reduce((sum, e) => sum + Math.abs(e.amount_cents), 0)
 
   const quotedPriceCents = event.quoted_price_cents ?? 0
   const servicePaid = entries
-    .filter(e => !e.is_refund && e.entry_type !== 'tip')
+    .filter((e) => !e.is_refund && e.entry_type !== 'tip')
     .reduce((sum, e) => sum + e.amount_cents, 0)
 
   const balanceDueCents = Math.max(0, quotedPriceCents - servicePaid + totalRefundedCents)
@@ -307,9 +315,10 @@ function buildInvoiceData(event: RawEvent, chef: RawChef, entries: RawLedgerEntr
       pricingModel: event.pricing_model,
     },
     quotedPriceCents: event.quoted_price_cents,
-    pricePerPersonCents: event.pricing_model === 'per_person' && event.quoted_price_cents && event.guest_count
-      ? Math.round(event.quoted_price_cents / event.guest_count)
-      : null,
+    pricePerPersonCents:
+      event.pricing_model === 'per_person' && event.quoted_price_cents && event.guest_count
+        ? Math.round(event.quoted_price_cents / event.guest_count)
+        : null,
     depositAmountCents: event.deposit_amount_cents,
     paymentStatus: event.payment_status,
     paymentEntries,

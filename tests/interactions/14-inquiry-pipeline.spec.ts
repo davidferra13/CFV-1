@@ -30,7 +30,7 @@ test.describe('Inquiry Pipeline — List', () => {
 
   test('/inquiries — no JS errors on load', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/inquiries')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -87,7 +87,7 @@ test.describe('Inquiry Pipeline — Detail', () => {
       return
     }
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto(`/inquiries/${inquiryId}`)
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -132,9 +132,7 @@ test.describe('Inquiry Pipeline — New Inquiry Form', () => {
   test('/inquiries/new — empty submit stays on page or shows error', async ({ page }) => {
     await page.goto('/inquiries/new')
     await page.waitForLoadState('networkidle')
-    const submitBtn = page
-      .getByRole('button', { name: /save|create|add|submit|log/i })
-      .first()
+    const submitBtn = page.getByRole('button', { name: /save|create|add|submit|log/i }).first()
     if (await submitBtn.isVisible()) {
       await submitBtn.click()
       await page.waitForTimeout(1000)
@@ -154,7 +152,7 @@ test.describe('Inquiry Pipeline — New Inquiry Form', () => {
 
   test('/inquiries/new — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/inquiries/new')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -174,7 +172,7 @@ test.describe('Inquiry Pipeline — Leads', () => {
 
   test('/leads — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/leads')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -202,7 +200,7 @@ test.describe('Inquiry Pipeline — Calls', () => {
 
   test('/calls — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/calls')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -237,7 +235,7 @@ test.describe('Inquiry Pipeline — Quote Creation', () => {
 
   test('/quotes/new — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/quotes/new')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -264,7 +262,7 @@ test.describe('Inquiry Pipeline — Pipeline View', () => {
 
   test('/pipeline — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/pipeline')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)

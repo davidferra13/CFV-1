@@ -33,12 +33,14 @@ export async function fetchChecklistData(eventId: string): Promise<ChecklistData
   // Fetch event basics
   const { data: event } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       occasion, event_date, departure_time,
       location_address, location_city, location_state,
       access_instructions,
       client:clients(full_name)
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -61,9 +63,9 @@ export async function fetchChecklistData(eventId: string): Promise<ChecklistData
       access_instructions: event.access_instructions,
     },
     clientName: clientData?.full_name ?? 'Unknown',
-    permanentItems: allItems.filter(i => i.category === 'permanent'),
-    eventSpecificItems: allItems.filter(i => i.category === 'event_specific'),
-    learnedItems: allItems.filter(i => i.category === 'learned'),
+    permanentItems: allItems.filter((i) => i.category === 'permanent'),
+    eventSpecificItems: allItems.filter((i) => i.category === 'event_specific'),
+    learnedItems: allItems.filter((i) => i.category === 'learned'),
   }
 }
 
@@ -108,7 +110,9 @@ export function renderChecklist(pdf: PDFLayout, data: ChecklistData) {
   }
 
   // Footer with departure info
-  const location = [event.location_address, event.location_city, event.location_state].filter(Boolean).join(', ')
+  const location = [event.location_address, event.location_city, event.location_state]
+    .filter(Boolean)
+    .join(', ')
   const footerParts: string[] = []
   if (event.departure_time) footerParts.push(`Leave by ${event.departure_time}`)
   footerParts.push(location)

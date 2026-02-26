@@ -12,17 +12,17 @@
 
 Before this audit, the following security foundations were already in place:
 
-| Area | Status |
-| --- | --- |
-| Supabase RLS enabled on all tables | ✅ Solid |
-| Stripe webhook signature verification | ✅ Solid |
-| All server actions call requireChef()/requireClient() | ✅ Solid |
-| Zod validation on every server action input | ✅ Solid |
-| Cron/scheduled routes protected by CRON_SECRET | ✅ Solid |
+| Area                                                        | Status   |
+| ----------------------------------------------------------- | -------- |
+| Supabase RLS enabled on all tables                          | ✅ Solid |
+| Stripe webhook signature verification                       | ✅ Solid |
+| All server actions call requireChef()/requireClient()       | ✅ Solid |
+| Zod validation on every server action input                 | ✅ Solid |
+| Cron/scheduled routes protected by CRON_SECRET              | ✅ Solid |
 | No eval(), no SQL concatenation, no dangerouslySetInnerHTML | ✅ Solid |
-| No hardcoded secrets in source code | ✅ Solid |
-| Immutable ledger enforced by DB triggers | ✅ Solid |
-| FSM state transitions validated in code + DB | ✅ Solid |
+| No hardcoded secrets in source code                         | ✅ Solid |
+| Immutable ledger enforced by DB triggers                    | ✅ Solid |
+| FSM state transitions validated in code + DB                | ✅ Solid |
 
 ---
 
@@ -34,11 +34,11 @@ Before this audit, the following security foundations were already in place:
 
 **What was added:**
 
-| Header | Value | Purpose |
-| --- | --- | --- |
-| `X-XSS-Protection` | `1; mode=block` | Legacy XSS filter for older browsers |
-| `Permissions-Policy` | `geolocation=(), microphone=(), camera=(), payment=(self "https://js.stripe.com")` | Restricts browser API access |
-| `Content-Security-Policy` | See below | Blocks code injection, clickjacking, data exfiltration |
+| Header                    | Value                                                                              | Purpose                                                |
+| ------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `X-XSS-Protection`        | `1; mode=block`                                                                    | Legacy XSS filter for older browsers                   |
+| `Permissions-Policy`      | `geolocation=(), microphone=(), camera=(), payment=(self "https://js.stripe.com")` | Restricts browser API access                           |
+| `Content-Security-Policy` | See below                                                                          | Blocks code injection, clickjacking, data exfiltration |
 
 **CSP breakdown:**
 
@@ -182,10 +182,10 @@ Also: Removed a redundant `createServerClient({ admin: true })` call — the fun
 
 `npm audit` reports two CVEs against `next@14.2.x`:
 
-| CVE | Description | Our Risk |
-| --- | --- | --- |
+| CVE                   | Description                                     | Our Risk                                                              |
+| --------------------- | ----------------------------------------------- | --------------------------------------------------------------------- |
 | `GHSA-9g9p-9gw9-jx7f` | Image Optimizer DoS via wildcard remotePatterns | **Low** — our remotePatterns uses a specific hostname, not a wildcard |
-| `GHSA-h25m-26qc-wcjf` | RSC deserialization DoS | **Medium** — we use RSC; Vercel DDoS protection mitigates impact |
+| `GHSA-h25m-26qc-wcjf` | RSC deserialization DoS                         | **Medium** — we use RSC; Vercel DDoS protection mitigates impact      |
 
 **Fix:** `npm install next@16` — however, this is a major version bump and requires testing for breaking changes. Recommended as a separate tracked task.
 
@@ -203,23 +203,23 @@ These are **not exploitable at runtime** — they only run locally during `npm r
 
 ## How to Verify These Changes
 
-| Fix | Verification |
-| --- | --- |
-| HTTP headers | Deploy preview → [securityheaders.com](https://securityheaders.com) — should score A or better |
-| Open redirect | Browse to `/auth/signin?redirect=https://evil.com` → must land on `/` after login, not evil.com |
-| Rate limiter | Attempt signin 6× with same email in 15 min → 6th attempt must be rejected |
-| Upstash (when configured) | Check Upstash dashboard for command counts after login attempts |
-| Stripe metadata validation | Confirmed by code review; visible in server logs if triggered |
-| Gift card entropy | `crypto.randomBytes(8)` confirmed in source |
-| Gitignore | `git status` must no longer show `.env.local.backup*` files |
+| Fix                        | Verification                                                                                    |
+| -------------------------- | ----------------------------------------------------------------------------------------------- |
+| HTTP headers               | Deploy preview → [securityheaders.com](https://securityheaders.com) — should score A or better  |
+| Open redirect              | Browse to `/auth/signin?redirect=https://evil.com` → must land on `/` after login, not evil.com |
+| Rate limiter               | Attempt signin 6× with same email in 15 min → 6th attempt must be rejected                      |
+| Upstash (when configured)  | Check Upstash dashboard for command counts after login attempts                                 |
+| Stripe metadata validation | Confirmed by code review; visible in server logs if triggered                                   |
+| Gift card entropy          | `crypto.randomBytes(8)` confirmed in source                                                     |
+| Gitignore                  | `git status` must no longer show `.env.local.backup*` files                                     |
 
 ---
 
 ## Packages Updated by `npm audit fix`
 
-| Package | From | To | Vulnerability |
-| --- | --- | --- | --- |
-| `jspdf` | 4.1.0 | 4.2.0 | PDF injection via AcroForm and addJS |
-| `tar` | 7.5.7 | 7.5.9 | Arbitrary file read/write via symlink |
-| `supabase` CLI | 2.76.8 | 2.76.11 | Inherited tar fix |
-| `@typescript-eslint/*` | 8.55.0 | 8.56.0 | minimatch ReDoS in linting tools |
+| Package                | From   | To      | Vulnerability                         |
+| ---------------------- | ------ | ------- | ------------------------------------- |
+| `jspdf`                | 4.1.0  | 4.2.0   | PDF injection via AcroForm and addJS  |
+| `tar`                  | 7.5.7  | 7.5.9   | Arbitrary file read/write via symlink |
+| `supabase` CLI         | 2.76.8 | 2.76.11 | Inherited tar fix                     |
+| `@typescript-eslint/*` | 8.55.0 | 8.56.0  | minimatch ReDoS in linting tools      |

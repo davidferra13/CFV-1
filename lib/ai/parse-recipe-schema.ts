@@ -5,9 +5,20 @@
 import { z } from 'zod'
 
 const RECIPE_CATEGORIES = [
-  'sauce', 'protein', 'starch', 'vegetable', 'fruit', 'dessert',
-  'bread', 'pasta', 'soup', 'salad', 'appetizer', 'condiment',
-  'beverage', 'other'
+  'sauce',
+  'protein',
+  'starch',
+  'vegetable',
+  'fruit',
+  'dessert',
+  'bread',
+  'pasta',
+  'soup',
+  'salad',
+  'appetizer',
+  'condiment',
+  'beverage',
+  'other',
 ] as const
 
 const ParsedIngredientSchema = z.object({
@@ -17,12 +28,27 @@ const ParsedIngredientSchema = z.object({
   preparation_notes: z.string().nullable().default(null),
   is_optional: z.boolean().default(false),
   estimated: z.boolean().default(false),
-  category: z.enum([
-    'protein', 'produce', 'dairy', 'pantry', 'spice', 'oil',
-    'alcohol', 'baking', 'frozen', 'canned', 'fresh_herb',
-    'dry_herb', 'condiment', 'beverage', 'specialty', 'other'
-  ]).default('other'),
-  allergen_flags: z.array(z.string()).default([])
+  category: z
+    .enum([
+      'protein',
+      'produce',
+      'dairy',
+      'pantry',
+      'spice',
+      'oil',
+      'alcohol',
+      'baking',
+      'frozen',
+      'canned',
+      'fresh_herb',
+      'dry_herb',
+      'condiment',
+      'beverage',
+      'specialty',
+      'other',
+    ])
+    .default('other'),
+  allergen_flags: z.array(z.string()).default([]),
 })
 
 export type ParsedIngredient = z.infer<typeof ParsedIngredientSchema>
@@ -45,10 +71,12 @@ export const ParsedRecipeSchema = z.object({
     allergen_flags: z.array(z.string()).default([]),
     adaptations: z.string().nullable().default(null),
     notes: z.string().nullable().default(null),
-    field_confidence: z.record(z.string(), z.enum(['confirmed', 'inferred', 'unknown'])).default({})
+    field_confidence: z
+      .record(z.string(), z.enum(['confirmed', 'inferred', 'unknown']))
+      .default({}),
   }),
   confidence: z.enum(['high', 'medium', 'low']),
-  warnings: z.array(z.string()).default([])
+  warnings: z.array(z.string()).default([]),
 })
 
 export type ParsedRecipe = z.infer<typeof ParsedRecipeSchema>['parsed']

@@ -11,7 +11,7 @@ import { requireChef } from '@/lib/auth/get-user'
 
 export interface DateRange {
   start: string // YYYY-MM-DD
-  end: string   // YYYY-MM-DD
+  end: string // YYYY-MM-DD
 }
 
 export interface MetricResult {
@@ -60,7 +60,7 @@ export interface RevenueStrategy {
 export async function solveRevenueClosure(
   goalCents: number,
   bookedCents: number,
-  remainingDays: number,
+  remainingDays: number
 ): Promise<{ strategies: RevenueStrategy[]; gap: number; achievable: boolean }> {
   const gap = goalCents - bookedCents
   if (gap <= 0) {
@@ -71,10 +71,10 @@ export async function solveRevenueClosure(
 
   // Strategy tiers based on typical private chef events
   const tiers = [
-    { label: 'intimate dinner (2-4 guests)', avg: 80000 },    // $800
-    { label: 'dinner party (6-8 guests)', avg: 150000 },       // $1,500
-    { label: 'large event (10-20 guests)', avg: 300000 },      // $3,000
-    { label: 'premium tasting (4-6 guests)', avg: 200000 },    // $2,000
+    { label: 'intimate dinner (2-4 guests)', avg: 80000 }, // $800
+    { label: 'dinner party (6-8 guests)', avg: 150000 }, // $1,500
+    { label: 'large event (10-20 guests)', avg: 300000 }, // $3,000
+    { label: 'premium tasting (4-6 guests)', avg: 200000 }, // $2,000
   ]
 
   for (const tier of tiers) {
@@ -91,7 +91,7 @@ export async function solveRevenueClosure(
   return {
     strategies,
     gap,
-    achievable: strategies.some(s => s.achievable),
+    achievable: strategies.some((s) => s.achievable),
   }
 }
 
@@ -131,26 +131,26 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
 
   // Revenue from ledger
   const income = allLedger
-    .filter(l => l.entry_type === 'payment')
+    .filter((l) => l.entry_type === 'payment')
     .reduce((s, l) => s + l.amount_cents, 0)
   const refunds = allLedger
-    .filter(l => l.entry_type === 'refund')
+    .filter((l) => l.entry_type === 'refund')
     .reduce((s, l) => s + Math.abs(l.amount_cents), 0)
 
   // Booked value from quoted_price_cents
-  const nonCancelled = allEvents.filter(e => e.status !== 'cancelled')
+  const nonCancelled = allEvents.filter((e) => e.status !== 'cancelled')
   const bookedValue = nonCancelled.reduce((s, e) => s + ((e as any).quoted_price_cents || 0), 0)
 
   // Completed
-  const completed = allEvents.filter(e => e.status === 'completed')
+  const completed = allEvents.filter((e) => e.status === 'completed')
 
   // Conversion — inquiries that became events (status = confirmed or have a linked event)
-  const converted = allInquiries.filter(i => i.status === 'confirmed' || (i as any).converted_to_event_id)
+  const converted = allInquiries.filter(
+    (i) => i.status === 'confirmed' || (i as any).converted_to_event_id
+  )
 
   // Average event value
-  const avgValue = nonCancelled.length > 0
-    ? Math.round(bookedValue / nonCancelled.length)
-    : 0
+  const avgValue = nonCancelled.length > 0 ? Math.round(bookedValue / nonCancelled.length) : 0
 
   return {
     totalRevenue: {
@@ -166,9 +166,10 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
       definition: 'Count of inquiries created in period',
     },
     conversionRate: {
-      value: allInquiries.length > 0
-        ? Math.round((converted.length / allInquiries.length) * 1000) / 10
-        : 0,
+      value:
+        allInquiries.length > 0
+          ? Math.round((converted.length / allInquiries.length) * 1000) / 10
+          : 0,
       definition: 'Percentage of inquiries that converted to events',
     },
     eventsCompleted: {
@@ -200,7 +201,8 @@ export async function computeRevenueByMonth(range: DateRange): Promise<RevenueBy
   for (const entry of ledger || []) {
     const key = (entry.created_at as string).slice(0, 7) // YYYY-MM
     const current = monthMap.get(key) || 0
-    const amount = entry.entry_type === 'refund' ? -Math.abs(entry.amount_cents) : entry.amount_cents
+    const amount =
+      entry.entry_type === 'refund' ? -Math.abs(entry.amount_cents) : entry.amount_cents
     monthMap.set(key, current + amount)
   }
 
@@ -261,16 +263,32 @@ export async function computeSeasonalPerformance(range: DateRange): Promise<Seas
     .gte('event_date', range.start)
     .lte('event_date', range.end)
 
-  const monthMap = new Map<string, {
-    total: number; cancelled: number; guestSum: number; guestCount: number; revenue: number
-  }>()
+  const monthMap = new Map<
+    string,
+    {
+      total: number
+      cancelled: number
+      guestSum: number
+      guestCount: number
+      revenue: number
+    }
+  >()
 
   for (const e of events || []) {
     const key = (e.event_date as string).slice(0, 7)
-    const entry = monthMap.get(key) || { total: 0, cancelled: 0, guestSum: 0, guestCount: 0, revenue: 0 }
+    const entry = monthMap.get(key) || {
+      total: 0,
+      cancelled: 0,
+      guestSum: 0,
+      guestCount: 0,
+      revenue: 0,
+    }
     entry.total++
     if (e.status === 'cancelled') entry.cancelled++
-    if (e.guest_count && e.guest_count > 0) { entry.guestSum += e.guest_count; entry.guestCount++ }
+    if (e.guest_count && e.guest_count > 0) {
+      entry.guestSum += e.guest_count
+      entry.guestCount++
+    }
     entry.revenue += (e as any).quoted_price_cents || 0
     monthMap.set(key, entry)
   }
@@ -288,20 +306,25 @@ export async function computeSeasonalPerformance(range: DateRange): Promise<Seas
 
 // ─── CSV Export ─────────────────────────────────────────────────────────────
 
-export async function exportToCSV(rows: Record<string, unknown>[], filename: string): Promise<string> {
+export async function exportToCSV(
+  rows: Record<string, unknown>[],
+  filename: string
+): Promise<string> {
   if (rows.length === 0) return ''
   const headers = Object.keys(rows[0])
   const csvLines = [
     headers.join(','),
-    ...rows.map(r =>
-      headers.map(h => {
-        const val = r[h]
-        if (val == null) return ''
-        const str = String(val)
-        return str.includes(',') || str.includes('"') || str.includes('\n')
-          ? `"${str.replace(/"/g, '""')}"`
-          : str
-      }).join(',')
+    ...rows.map((r) =>
+      headers
+        .map((h) => {
+          const val = r[h]
+          if (val == null) return ''
+          const str = String(val)
+          return str.includes(',') || str.includes('"') || str.includes('\n')
+            ? `"${str.replace(/"/g, '""')}"`
+            : str
+        })
+        .join(',')
     ),
   ]
   return csvLines.join('\n')

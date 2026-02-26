@@ -83,7 +83,9 @@ export async function getExternalReviewSources(): Promise<ExternalReviewSourceSu
 
   const { data, error } = await supabase
     .from('external_review_sources')
-    .select('id, provider, label, active, sync_interval_minutes, config, last_synced_at, last_error, created_at')
+    .select(
+      'id, provider, label, active, sync_interval_minutes, config, last_synced_at, last_error, created_at'
+    )
     .eq('tenant_id', user.tenantId)
     .order('created_at', { ascending: false })
 
@@ -117,17 +119,15 @@ export async function createExternalReviewSource(input: CreateExternalReviewSour
     }
   }
 
-  const { error } = await supabase
-    .from('external_review_sources')
-    .insert({
-      tenant_id: user.tenantId,
-      provider: validated.provider,
-      label: validated.label,
-      config,
-      active: validated.active,
-      sync_interval_minutes: validated.sync_interval_minutes,
-      created_by: user.id,
-    })
+  const { error } = await supabase.from('external_review_sources').insert({
+    tenant_id: user.tenantId,
+    provider: validated.provider,
+    label: validated.label,
+    config,
+    active: validated.active,
+    sync_interval_minutes: validated.sync_interval_minutes,
+    created_by: user.id,
+  })
 
   if (error) {
     console.error('[createExternalReviewSource] Error:', error)

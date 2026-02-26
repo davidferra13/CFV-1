@@ -10,10 +10,10 @@ export interface CampaignEmailStats {
   totalCampaigns: number
   totalRecipients: number
   totalSent: number
-  openRate: number       // %
-  clickRate: number      // %
-  bounceRate: number     // %
-  spamRate: number       // %
+  openRate: number // %
+  clickRate: number // %
+  bounceRate: number // %
+  spamRate: number // %
   unsubscribeRate: number // %
   bestCampaign: { name: string; openRate: number } | null
 }
@@ -27,16 +27,16 @@ export interface MarketingSpendByChannel {
 export interface CostPerLeadByChannel {
   channel: string
   spendCents: number
-  leads: number          // inquiries from this channel
+  leads: number // inquiries from this channel
   costPerLeadCents: number
-  costPerAcquisitionCents: number  // per booked event
+  costPerAcquisitionCents: number // per booked event
   bookedEvents: number
 }
 
 export interface ReviewStats {
   totalReviews: number
   avgRating: number
-  reviewRate: number     // reviews / completed events %
+  reviewRate: number // reviews / completed events %
   ratingDistribution: Array<{ stars: number; count: number; percent: number }>
   recentReviews: Array<{ clientName: string; rating: number; createdAt: string }>
 }
@@ -87,7 +87,7 @@ export async function getCampaignEmailStats(): Promise<CampaignEmailStats> {
     }
   }
 
-  const campaignIds = campaigns.map(c => c.id)
+  const campaignIds = campaigns.map((c) => c.id)
 
   const { data: recipients } = await supabase
     .from('campaign_recipients')
@@ -96,12 +96,12 @@ export async function getCampaignEmailStats(): Promise<CampaignEmailStats> {
     .in('campaign_id', campaignIds)
 
   const all = recipients ?? []
-  const sent = all.filter(r => r.sent_at)
-  const opens = all.filter(r => r.opened_at)
-  const clicks = all.filter(r => r.clicked_at)
-  const bounces = all.filter(r => r.bounced_at)
-  const spam = all.filter(r => r.spam_at)
-  const unsubs = all.filter(r => r.unsubscribed_at)
+  const sent = all.filter((r) => r.sent_at)
+  const opens = all.filter((r) => r.opened_at)
+  const clicks = all.filter((r) => r.clicked_at)
+  const bounces = all.filter((r) => r.bounced_at)
+  const spam = all.filter((r) => r.spam_at)
+  const unsubs = all.filter((r) => r.unsubscribed_at)
 
   // Best campaign by open rate
   const campaignStats = new Map<string, { opens: number; sent: number; name: string }>()
@@ -113,10 +113,11 @@ export async function getCampaignEmailStats(): Promise<CampaignEmailStats> {
       if (r.opened_at) s.opens++
     }
   }
-  const bestCampaign = Array.from(campaignStats.values())
-    .filter(c => c.sent > 0)
-    .map(c => ({ name: c.name, openRate: pct(c.opens, c.sent) }))
-    .sort((a, b) => b.openRate - a.openRate)[0] ?? null
+  const bestCampaign =
+    Array.from(campaignStats.values())
+      .filter((c) => c.sent > 0)
+      .map((c) => ({ name: c.name, openRate: pct(c.opens, c.sent) }))
+      .sort((a, b) => b.openRate - a.openRate)[0] ?? null
 
   return {
     totalCampaigns: campaigns.length,
@@ -133,7 +134,7 @@ export async function getCampaignEmailStats(): Promise<CampaignEmailStats> {
 
 export async function getMarketingSpendByChannel(
   startDate: string,
-  endDate: string,
+  endDate: string
 ): Promise<MarketingSpendByChannel[]> {
   const chef = await requireChef()
   const supabase = await createServerClient()
@@ -164,7 +165,7 @@ export async function getMarketingSpendByChannel(
 
 export async function getCostPerLeadByChannel(
   startDate: string,
-  endDate: string,
+  endDate: string
 ): Promise<CostPerLeadByChannel[]> {
   const chef = await requireChef()
   const supabase = await createServerClient()
@@ -252,25 +253,29 @@ export async function getReviewStats(): Promise<ReviewStats> {
   const totalReviews = all.length
   const completedCount = completedEvents ?? 0
 
-  const avgRating = totalReviews > 0
-    ? Math.round(all.reduce((s, r) => s + r.rating, 0) / totalReviews * 10) / 10
-    : 0
+  const avgRating =
+    totalReviews > 0
+      ? Math.round((all.reduce((s, r) => s + r.rating, 0) / totalReviews) * 10) / 10
+      : 0
 
-  const ratingDist = [5, 4, 3, 2, 1].map(stars => {
-    const count = all.filter(r => r.rating === stars).length
+  const ratingDist = [5, 4, 3, 2, 1].map((stars) => {
+    const count = all.filter((r) => r.rating === stars).length
     return { stars, count, percent: pct(count, totalReviews) }
   })
 
   // Get client names for recent reviews
-  const recentIds = all.slice(0, 5).map(r => r.client_id).filter(Boolean) as string[]
+  const recentIds = all
+    .slice(0, 5)
+    .map((r) => r.client_id)
+    .filter(Boolean) as string[]
   const { data: clients } = await supabase
     .from('clients')
     .select('id, full_name')
     .in('id', recentIds)
 
-  const nameMap = new Map((clients ?? []).map(c => [c.id, c.full_name]))
+  const nameMap = new Map((clients ?? []).map((c) => [c.id, c.full_name]))
 
-  const recentReviews = all.slice(0, 5).map(r => ({
+  const recentReviews = all.slice(0, 5).map((r) => ({
     clientName: nameMap.get(r.client_id ?? '') ?? 'Anonymous',
     rating: r.rating,
     createdAt: r.created_at,

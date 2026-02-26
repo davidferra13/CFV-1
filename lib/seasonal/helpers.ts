@@ -13,11 +13,11 @@ export function getCurrentSeason(
   palettes: SeasonalPalette[],
   date: Date = new Date()
 ): SeasonalPalette | null {
-  const explicit = palettes.find(p => p.is_active)
+  const explicit = palettes.find((p) => p.is_active)
   if (explicit) return explicit
 
   const monthDay = formatMonthDay(date)
-  return palettes.find(p => isDateInRange(monthDay, p.start_month_day, p.end_month_day)) ?? null
+  return palettes.find((p) => isDateInRange(monthDay, p.start_month_day, p.end_month_day)) ?? null
 }
 
 /**
@@ -28,9 +28,7 @@ export function getActiveMicroWindows(
   date: Date = new Date()
 ): MicroWindow[] {
   const monthDay = formatMonthDay(date)
-  return palette.micro_windows.filter(
-    w => isDateInRange(monthDay, w.start_date, w.end_date)
-  )
+  return palette.micro_windows.filter((w) => isDateInRange(monthDay, w.start_date, w.end_date))
 }
 
 /**
@@ -42,7 +40,7 @@ export function getEndingMicroWindows(
   date: Date = new Date()
 ): MicroWindow[] {
   const year = date.getFullYear()
-  return palette.micro_windows.filter(w => {
+  return palette.micro_windows.filter((w) => {
     let endDate = parseMonthDay(w.end_date, year)
     // If the end date is before the current date but the window crosses year boundary,
     // use next year's end date
@@ -58,14 +56,9 @@ export function getEndingMicroWindows(
 /**
  * Get micro-windows active on a specific calendar date (for schedule sidebar).
  */
-export function getMicroWindowsForDate(
-  palette: SeasonalPalette,
-  targetDate: Date
-): MicroWindow[] {
+export function getMicroWindowsForDate(palette: SeasonalPalette, targetDate: Date): MicroWindow[] {
   const monthDay = formatMonthDay(targetDate)
-  return palette.micro_windows.filter(
-    w => isDateInRange(monthDay, w.start_date, w.end_date)
-  )
+  return palette.micro_windows.filter((w) => isDateInRange(monthDay, w.start_date, w.end_date))
 }
 
 // --- Internal helpers ---

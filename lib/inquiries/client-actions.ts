@@ -88,9 +88,7 @@ export async function getClientInquiries(): Promise<ClientInquiryListItem[]> {
  * Returns full inquiry detail for the client, including transition history
  * and linked quotes. Returns null if not found or not owned by this client.
  */
-export async function getClientInquiryById(
-  inquiryId: string
-): Promise<ClientInquiryDetail | null> {
+export async function getClientInquiryById(inquiryId: string): Promise<ClientInquiryDetail | null> {
   const user = await requireClient()
   const supabase = createServerClient()
 

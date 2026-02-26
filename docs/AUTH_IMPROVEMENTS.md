@@ -10,10 +10,12 @@
 ### 1. Email Verification Flow
 
 **Files modified:**
+
 - `lib/auth/actions.ts` -- Changed `email_confirm: true` to `email_confirm: false` in both `signUpChef()` and `signUpClient()` admin.createUser calls. This tells Supabase to send a verification email instead of auto-confirming the user.
 - `app/auth/signup/page.tsx` -- Both `handleChefSubmit` and `handleClientSubmit` now redirect to `/auth/verify-email` instead of `/auth/signin?message=Account created successfully`.
 
 **Files created:**
+
 - `app/auth/verify-email/page.tsx` -- Static server component matching the auth page layout (centered card, ChefFlow branding). Instructs the user to check their email and provides a link back to sign in.
 
 **Why:** Auto-confirming emails is a security gap. Real email verification ensures the user owns the email address they signed up with, prevents throwaway signups, and aligns with standard auth practices.
@@ -21,10 +23,12 @@
 ### 2. Change Password
 
 **Files created:**
+
 - `app/(chef)/settings/change-password/page.tsx` -- Server component that calls `requireChef()` and renders the client form. Follows the same layout pattern as the main settings page.
 - `components/settings/change-password-form.tsx` -- Client component with three fields: current password, new password, confirm new password. Client-side validation for 8-char minimum and password match. Uses `useTransition` for the async action call, consistent with `preferences-form.tsx` patterns.
 
 **Server action added to `lib/auth/actions.ts`:**
+
 - `changePassword(currentPassword, newPassword)` -- Re-verifies identity by attempting `signInWithPassword` with the current password before calling `updateUser`. This prevents session hijacking from allowing a password change without knowledge of the old password.
 
 **Why:** Users need to be able to change their password without going through the forgot-password email flow. Re-verification with the current password is a standard security measure.
@@ -32,10 +36,12 @@
 ### 3. Account Deletion
 
 **Files created:**
+
 - `app/(chef)/settings/delete-account/page.tsx` -- Server component with `requireChef()` guard and a prominent warning alert about permanent data loss. Renders the deletion form below.
 - `components/settings/delete-account-form.tsx` -- Client component requiring two confirmations: typing "DELETE" literally and entering their password. Uses the `danger` button variant for visual severity. Calls server action and lets server-side redirect handle the post-deletion navigation.
 
 **Server action added to `lib/auth/actions.ts`:**
+
 - `deleteAccount(password)` -- Verifies password via `signInWithPassword`, then uses the admin client to call `admin.deleteUser(user.id)` (which cascades via DB foreign key constraints), signs out the session, and redirects to `/`.
 
 **Why:** GDPR and general user rights require the ability to delete an account. The double confirmation (type DELETE + password) prevents accidental deletion.
@@ -43,6 +49,7 @@
 ### 4. Invitation Revocation
 
 **File modified:**
+
 - `lib/auth/invitations.ts` -- Added `revokeInvitation(invitationId)` function. Added imports for `requireChef` and `revalidatePath`.
 
 **How it works:** Sets `used_at` to the current timestamp on the invitation, but only if the invitation belongs to the chef's tenant and hasn't already been used (`used_at IS NULL`). This effectively invalidates the token without deleting the record, preserving the audit trail. Revalidates `/clients` to update any displayed invitation list.
@@ -52,6 +59,7 @@
 ### 5. Settings Page Navigation
 
 **File modified:**
+
 - `app/(chef)/settings/page.tsx` -- Added an "Account" section at the bottom with links to Change Password and Delete Account. The delete account link uses red-tinted border/hover styling to signal danger.
 
 ---

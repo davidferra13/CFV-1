@@ -13,6 +13,7 @@ Six targeted bug fixes across the financial calculation and export system. Each 
 **Problem:** In the all-events-master CSV export (`exportAllEventsCSV`), refund amounts from `event_financial_summary.total_refunded_cents` were displayed as positive dollar values. Since refunds represent money leaving the business, they should appear as negative in the CSV for clarity and accounting consistency.
 
 **What Changed:**
+
 - Per-event row (line ~319): `formatDollars(refundCents)` changed to `formatDollars(-refundCents)`
 - Grand totals row (line ~368): `formatDollars(grandRefunds)` changed to `formatDollars(-grandRefunds)`
 
@@ -27,6 +28,7 @@ Six targeted bug fixes across the financial calculation and export system. Each 
 **Problem:** `getMonthlyFinancialSummary()` computed `averageFoodCostPercent` as a simple arithmetic mean of per-event food cost percentages. This is mathematically incorrect when events have different revenue sizes. A $500 event at 40% food cost and a $5,000 event at 25% food cost should not average to 32.5% -- the correct weighted answer is closer to 26.4%.
 
 **What Changed:**
+
 - Replaced `foodCostSum` / `foodCostCount` accumulators with `totalFoodCostCents` and `totalFoodCostRevenueCents`
 - In the loop: derive food cost dollars from `revCents * food_cost_percentage / 100` and accumulate
 - Final computation: `Math.round((totalFoodCostCents / totalFoodCostRevenueCents) * 100)`
@@ -42,6 +44,7 @@ Six targeted bug fixes across the financial calculation and export system. Each 
 **Problem:** When filters (entry type, start date, end date) are applied to the ledger entries table, the running balance column recalculates based only on filtered entries. Users could misinterpret the filtered running balance as their actual total balance.
 
 **What Changed:**
+
 - Added `isFiltered` boolean check: `filterType !== 'all' || startDate !== '' || endDate !== ''`
 - Added amber warning banner below the filters section: "Balance shown reflects filtered entries only"
 - Added "Filtered view" sub-label on the Balance column header when filters are active
@@ -57,6 +60,7 @@ Six targeted bug fixes across the financial calculation and export system. Each 
 **Problem:** Profit margins were rounded inconsistently across the codebase. CSV exports used `.toFixed(1)` (1 decimal place: "65.3%") while the event profit summary used `Math.round()` (whole numbers: "65%"). This caused visual discrepancies between the dashboard and exports.
 
 **What Changed:**
+
 - `lib/expenses/actions.ts` `getEventProfitSummary()`:
   - `profitMarginPercent`: `Math.round(...)` changed to `parseFloat(((value) * 100).toFixed(1))`
   - `foodCostPercent`: same pattern applied
@@ -73,10 +77,13 @@ Six targeted bug fixes across the financial calculation and export system. Each 
 **Problem:** `convertInquiryToEvent()` would create a draft event even when no pricing was established. The `quotedPriceCents` could be `null` (no accepted quote and no confirmed budget) or `0`, resulting in events with no price that would later cause division-by-zero in profit calculations and confuse the financial pipeline.
 
 **What Changed:**
+
 - Added validation gate after `quotedPriceCents` is resolved (from accepted quote or inquiry budget):
   ```typescript
   if (!quotedPriceCents || quotedPriceCents <= 0) {
-    throw new Error('Cannot convert inquiry to event without a confirmed price. Please attach a quote first.')
+    throw new Error(
+      'Cannot convert inquiry to event without a confirmed price. Please attach a quote first.'
+    )
   }
   ```
 
@@ -91,6 +98,7 @@ Six targeted bug fixes across the financial calculation and export system. Each 
 **Problem:** In `duplicateMenu()`, component inserts inside the dish-copying loop had no error checking. If a component insert failed (e.g., constraint violation, network issue), the failure was silently swallowed, resulting in an incomplete duplicate with missing components and no indication of the problem.
 
 **What Changed:**
+
 - Destructured `{ error }` from the component insert result
 - Added error check after each insert:
   ```typescript

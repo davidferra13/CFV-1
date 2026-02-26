@@ -8,6 +8,7 @@
 ## What Was Already Complete
 
 The feature flags system was production-ready before this task:
+
 - `lib/admin/flag-actions.ts` — `toggleChefFlag()`, `setBulkChefFlags()`, both audit-logged
 - `components/admin/flag-toggle-panel.tsx` — per-chef toggle switches with optimistic updates
 - `app/(admin)/admin/flags/page.tsx` — flag legend + per-chef control grid
@@ -30,21 +31,22 @@ Pure computation helper — no DB calls. Takes existing data already available o
 **Four dimensions:**
 | Dimension | Max | What It Measures |
 |-----------|-----|-----------------|
-| Activity  | 30  | Events in the last 90 days |
-| Revenue   | 25  | Total GMV level (paid ledger entries) |
-| Clients   | 25  | Client roster size |
-| Setup     | 20  | Profile completeness + usage after signup |
+| Activity | 30 | Events in the last 90 days |
+| Revenue | 25 | Total GMV level (paid ledger entries) |
+| Clients | 25 | Client roster size |
+| Setup | 20 | Profile completeness + usage after signup |
 
 **Score → Tier:**
-| Score    | Tier       |
+| Score | Tier |
 |----------|------------|
-| 80–100   | Thriving   |
-| 60–79    | Active     |
-| 40–59    | Building   |
-| 20–39    | Stalled    |
-| 0–19     | At Risk    |
+| 80–100 | Thriving |
+| 60–79 | Active |
+| 40–59 | Building |
+| 20–39 | Stalled |
+| 0–19 | At Risk |
 
 **Design decisions:**
+
 - `recentEventCount` is optional — if not provided, falls back to a capped estimate from total events. This lets the admin list (which doesn't query recent events) still show a useful score.
 - Accounts > 30 days old with zero events are capped at "Setup" score of 6 to reflect stalled onboarding.
 
@@ -72,9 +74,9 @@ Thin wrapper around `computeChefHealthScore` that renders a colored badge (`Thri
 
 ## Files Modified / Created
 
-| File | Change |
-|------|--------|
-| `lib/chefs/health-score.ts` | New — scoring model, types, tier labels/colors |
-| `components/admin/chef-health-badge.tsx` | New — badge component |
-| `app/(admin)/admin/users/page.tsx` | Added Health column + badge |
-| `app/(admin)/admin/users/[chefId]/page.tsx` | Added badge in header + breakdown card |
+| File                                        | Change                                         |
+| ------------------------------------------- | ---------------------------------------------- |
+| `lib/chefs/health-score.ts`                 | New — scoring model, types, tier labels/colors |
+| `components/admin/chef-health-badge.tsx`    | New — badge component                          |
+| `app/(admin)/admin/users/page.tsx`          | Added Health column + badge                    |
+| `app/(admin)/admin/users/[chefId]/page.tsx` | Added badge in header + breakdown card         |

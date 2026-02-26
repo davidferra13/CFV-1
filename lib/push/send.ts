@@ -32,7 +32,7 @@ type SendResult = 'sent' | 'failed' | 'gone'
  */
 export async function sendPushNotification(
   subscription: PushSubscriptionRecord,
-  payload: PushPayload,
+  payload: PushPayload
 ): Promise<SendResult> {
   try {
     const endpoint = subscription.endpoint
@@ -44,7 +44,7 @@ export async function sendPushNotification(
     const encryptedBody = await encryptPayload(
       JSON.stringify(payload),
       subscription.p256dh,
-      subscription.auth_key,
+      subscription.auth_key
     )
 
     const response = await fetch(endpoint, {
@@ -53,7 +53,7 @@ export async function sendPushNotification(
         Authorization: vapidAuth,
         'Content-Type': 'application/octet-stream',
         'Content-Encoding': 'aes128gcm',
-        TTL: '86400',  // Message time-to-live: 24 hours
+        TTL: '86400', // Message time-to-live: 24 hours
         Urgency: payload.action_url ? 'high' : 'normal',
       },
       body: encryptedBody,
@@ -68,7 +68,9 @@ export async function sendPushNotification(
       return 'sent'
     }
 
-    console.error(`[sendPushNotification] Push service returned ${response.status} for endpoint ${endpoint}`)
+    console.error(
+      `[sendPushNotification] Push service returned ${response.status} for endpoint ${endpoint}`
+    )
     return 'failed'
   } catch (err) {
     console.error('[sendPushNotification] Error:', err)
@@ -82,7 +84,7 @@ export async function sendPushNotification(
 async function encryptPayload(
   plaintext: string,
   p256dhBase64url: string,
-  authBase64url: string,
+  authBase64url: string
 ): Promise<ArrayBuffer> {
   const { subtle } = globalThis.crypto
 
@@ -91,11 +93,9 @@ async function encryptPayload(
   const authSecret = base64urlToBytes(authBase64url)
 
   // Generate ephemeral ECDH key pair
-  const ephemeralKeyPair = await subtle.generateKey(
-    { name: 'ECDH', namedCurve: 'P-256' },
-    true,
-    ['deriveBits'],
-  )
+  const ephemeralKeyPair = await subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, [
+    'deriveBits',
+  ])
 
   // Import recipient's public key
   const recipientPublicKey = await subtle.importKey(
@@ -103,14 +103,14 @@ async function encryptPayload(
     recipientPublicKeyBytes as unknown as Uint8Array<ArrayBuffer>,
     { name: 'ECDH', namedCurve: 'P-256' },
     false,
-    [],
+    []
   )
 
   // Derive shared ECDH secret
   const ecdhSecret = await subtle.deriveBits(
     { name: 'ECDH', public: recipientPublicKey },
     ephemeralKeyPair.privateKey,
-    256,
+    256
   )
 
   // Export ephemeral public key (uncompressed, 65 bytes)
@@ -123,12 +123,26 @@ async function encryptPayload(
   const prk = await hkdf(
     new Uint8Array(ecdhSecret),
     new Uint8Array(authSecret),
-    concat(new TextEncoder().encode('WebPush: info\x00'), new Uint8Array(recipientPublicKeyBytes), new Uint8Array(ephemeralPublicKeyRaw)),
-    32,
+    concat(
+      new TextEncoder().encode('WebPush: info\x00'),
+      new Uint8Array(recipientPublicKeyBytes),
+      new Uint8Array(ephemeralPublicKeyRaw)
+    ),
+    32
   )
 
-  const contentEncryptionKey = await hkdf(prk, new Uint8Array(salt), new TextEncoder().encode('Content-Encoding: aes128gcm\x00'), 16)
-  const nonce = await hkdf(prk, new Uint8Array(salt), new TextEncoder().encode('Content-Encoding: nonce\x00'), 12)
+  const contentEncryptionKey = await hkdf(
+    prk,
+    new Uint8Array(salt),
+    new TextEncoder().encode('Content-Encoding: aes128gcm\x00'),
+    16
+  )
+  const nonce = await hkdf(
+    prk,
+    new Uint8Array(salt),
+    new TextEncoder().encode('Content-Encoding: nonce\x00'),
+    12
+  )
 
   // Import content encryption key
   const aesKey = await subtle.importKey(
@@ -136,21 +150,17 @@ async function encryptPayload(
     contentEncryptionKey,
     { name: 'AES-GCM', length: 128 },
     false,
-    ['encrypt'],
+    ['encrypt']
   )
 
   // Encrypt: plaintext + 0x02 padding delimiter
   const plaintextBytes = new TextEncoder().encode(plaintext)
   const paddedPlaintext = concat(plaintextBytes, new Uint8Array([0x02]))
 
-  const ciphertext = await subtle.encrypt(
-    { name: 'AES-GCM', iv: nonce },
-    aesKey,
-    paddedPlaintext,
-  )
+  const ciphertext = await subtle.encrypt({ name: 'AES-GCM', iv: nonce }, aesKey, paddedPlaintext)
 
   // Build aes128gcm content encoding header (RFC 8188)
-  const rs = 4096  // Record size
+  const rs = 4096 // Record size
   const keyIdLen = new Uint8Array(ephemeralPublicKeyRaw).length
 
   const header = new Uint8Array(16 + 4 + 1 + keyIdLen)
@@ -168,7 +178,7 @@ async function hkdf(
   ikm: Uint8Array<ArrayBuffer>,
   salt: Uint8Array<ArrayBuffer>,
   info: Uint8Array<ArrayBuffer>,
-  length: number,
+  length: number
 ): Promise<Uint8Array<ArrayBuffer>> {
   const { subtle } = globalThis.crypto
 
@@ -176,7 +186,7 @@ async function hkdf(
   const bits = await subtle.deriveBits(
     { name: 'HKDF', hash: 'SHA-256', salt, info },
     key,
-    length * 8,
+    length * 8
   )
   return new Uint8Array(bits) as Uint8Array<ArrayBuffer>
 }

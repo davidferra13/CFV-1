@@ -57,14 +57,8 @@ try {
 // 2. Playwright config checks
 // ============================================================
 
-check(
-  'playwright.config.ts must contain port 3100',
-  playwrightConfig.includes('3100')
-)
-check(
-  'playwright.config.ts must use single worker',
-  playwrightConfig.includes('workers: 1')
-)
+check('playwright.config.ts must contain port 3100', playwrightConfig.includes('3100'))
+check('playwright.config.ts must use single worker', playwrightConfig.includes('workers: 1'))
 check(
   'playwright.config.ts must be sequential (fullyParallel: false)',
   playwrightConfig.includes('fullyParallel: false')
@@ -74,10 +68,7 @@ check(
 // 3. Package.json checks
 // ============================================================
 
-check(
-  'package.json "dev" script must use port 3100',
-  packageJson.includes('-p 3100')
-)
+check('package.json "dev" script must use port 3100', packageJson.includes('-p 3100'))
 
 // ============================================================
 // 4. Test directory structure
@@ -93,18 +84,12 @@ check('tests/helpers/ directory must exist', fs.existsSync(helpersDir))
 // 5. Required env vars (check .env.local or process.env)
 // ============================================================
 
-const requiredVars = [
-  'NEXT_PUBLIC_SUPABASE_URL',
-  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-]
+const requiredVars = ['NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY']
 
 for (const varName of requiredVars) {
   const inEnv = !!process.env[varName]
   const inFile = envLocal.includes(varName)
-  check(
-    `${varName} must be set in environment or .env.local`,
-    inEnv || inFile
-  )
+  check(`${varName} must be set in environment or .env.local`, inEnv || inFile)
 }
 
 // ============================================================
@@ -112,17 +97,11 @@ for (const varName of requiredVars) {
 // ============================================================
 
 const migrationsDir = path.join(ROOT, 'supabase', 'migrations')
-check(
-  'supabase/migrations/ directory must exist',
-  fs.existsSync(migrationsDir)
-)
+check('supabase/migrations/ directory must exist', fs.existsSync(migrationsDir))
 
 if (fs.existsSync(migrationsDir)) {
-  const migrations = fs.readdirSync(migrationsDir).filter(f => f.endsWith('.sql'))
-  check(
-    'At least one migration file must exist',
-    migrations.length > 0
-  )
+  const migrations = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql'))
+  check('At least one migration file must exist', migrations.length > 0)
 }
 
 // ============================================================

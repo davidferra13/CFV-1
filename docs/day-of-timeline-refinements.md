@@ -13,19 +13,19 @@
 
 The full scheduling engine was already complete before this session:
 
-| Layer | File | Status |
-| --- | --- | --- |
-| Timeline generator | `lib/scheduling/timeline.ts` | Built |
-| DOP engine | `lib/scheduling/dop.ts` | Built |
-| Prep prompts | `lib/scheduling/prep-prompts.ts` | Built |
-| Types | `lib/scheduling/types.ts` | Built |
-| Server actions | `lib/scheduling/actions.ts` | Built |
-| TimelineView component | `components/scheduling/timeline-view.tsx` | Built |
-| DOPView component | `components/scheduling/dop-view.tsx` | Built |
-| Event schedule page | `app/(chef)/events/[id]/schedule/page.tsx` | Built |
-| Calendar / week / agenda views | `components/scheduling/` | Built |
-| Dashboard integration (today's schedule) | `app/(chef)/dashboard/page.tsx` | Built |
-| Schedule link from event detail header | `app/(chef)/events/[id]/page.tsx` line 171 | Already present |
+| Layer                                    | File                                       | Status          |
+| ---------------------------------------- | ------------------------------------------ | --------------- |
+| Timeline generator                       | `lib/scheduling/timeline.ts`               | Built           |
+| DOP engine                               | `lib/scheduling/dop.ts`                    | Built           |
+| Prep prompts                             | `lib/scheduling/prep-prompts.ts`           | Built           |
+| Types                                    | `lib/scheduling/types.ts`                  | Built           |
+| Server actions                           | `lib/scheduling/actions.ts`                | Built           |
+| TimelineView component                   | `components/scheduling/timeline-view.tsx`  | Built           |
+| DOPView component                        | `components/scheduling/dop-view.tsx`       | Built           |
+| Event schedule page                      | `app/(chef)/events/[id]/schedule/page.tsx` | Built           |
+| Calendar / week / agenda views           | `components/scheduling/`                   | Built           |
+| Dashboard integration (today's schedule) | `app/(chef)/dashboard/page.tsx`            | Built           |
+| Schedule link from event detail header   | `app/(chef)/events/[id]/page.tsx` line 171 | Already present |
 
 ---
 
@@ -99,12 +99,12 @@ Updated the JSDoc header comment on `generateTimeline` to remove `FINISH PREP` a
 
 These items are in the spec but require deeper data or significant new infrastructure:
 
-| Gap | Reason Not Built Yet |
-| --- | --- |
-| PREP NOW vs PREP AFTER SHOPPING split | Requires prep list tasks tagged with a phase. Without that data, any split is a guess. |
-| Live "now" indicator | `TimelineView` is a server component; NOW marker is static at render time. Needs client component with `setInterval`. |
-| Timeline recalculation when behind | Recovery path has no underlying mechanism. Significant real-time feature. |
-| Historical actuals / learning | Requires tracking estimated vs actual duration per event. No data model yet. |
-| Timeline state machine (generated/active/adjusted/closed) | Spec describes formal states; not in DB or code. |
+| Gap                                                       | Reason Not Built Yet                                                                                                  |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| PREP NOW vs PREP AFTER SHOPPING split                     | Requires prep list tasks tagged with a phase. Without that data, any split is a guess.                                |
+| Live "now" indicator                                      | `TimelineView` is a server component; NOW marker is static at render time. Needs client component with `setInterval`. |
+| Timeline recalculation when behind                        | Recovery path has no underlying mechanism. Significant real-time feature.                                             |
+| Historical actuals / learning                             | Requires tracking estimated vs actual duration per event. No data model yet.                                          |
+| Timeline state machine (generated/active/adjusted/closed) | Spec describes formal states; not in DB or code.                                                                      |
 
 None of these block current use. The core engine is fully functional.

@@ -40,7 +40,7 @@ export type ResolvedChannels = ChannelSet & {
 export async function resolveChannels(
   tenantId: string,
   authUserId: string,
-  action: NotificationAction,
+  action: NotificationAction
 ): Promise<ResolvedChannels> {
   const category: NotificationCategory = NOTIFICATION_CONFIG[action].category
 

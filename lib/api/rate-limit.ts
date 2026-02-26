@@ -18,7 +18,9 @@ function getRatelimiter() {
   return ratelimit
 }
 
-export async function checkRateLimit(identifier: string): Promise<{ success: boolean; remaining: number; reset: number }> {
+export async function checkRateLimit(
+  identifier: string
+): Promise<{ success: boolean; remaining: number; reset: number }> {
   const limiter = getRatelimiter()
   if (!limiter) {
     // No Redis configured — allow all requests in dev

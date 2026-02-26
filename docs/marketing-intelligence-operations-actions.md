@@ -19,6 +19,7 @@ All files follow established ChefFlow patterns: `'use server'`, `requireChef()` 
 ### Marketing Domain (`lib/marketing/`)
 
 #### 1. `ab-test-actions.ts`
+
 - **Table:** `ab_tests` (migration `20260312000005`)
 - **Tenant scope:** `chef_id`
 - **Exports:**
@@ -29,6 +30,7 @@ All files follow established ChefFlow patterns: `'use server'`, `requireChef()` 
 - **Types:** `ABTest`, `ABTestWithStats`, `CreateABTestInput`
 
 #### 2. `segmentation-actions.ts`
+
 - **Table:** `client_segments` (migration `20260308000001`)
 - **Tenant scope:** `tenant_id`
 - **Exports:**
@@ -39,6 +41,7 @@ All files follow established ChefFlow patterns: `'use server'`, `requireChef()` 
 - **Note:** Filters are stored as structured JSONB entries (`{field, op, value}`) compatible with existing segment schema.
 
 #### 3. `content-performance-actions.ts`
+
 - **Table:** `content_performance` (migration `20260312000005`)
 - **Tenant scope:** `chef_id`
 - **Exports:**
@@ -50,6 +53,7 @@ All files follow established ChefFlow patterns: `'use server'`, `requireChef()` 
 ### Operations Domain (`lib/operations/`)
 
 #### 4. `kds-actions.ts`
+
 - **Table:** `service_courses` (migration `20260312000006`)
 - **Tenant scope:** `chef_id`
 - **Exports:**
@@ -63,6 +67,7 @@ All files follow established ChefFlow patterns: `'use server'`, `requireChef()` 
 - **Note:** Course lifecycle: pending -> fired -> plated -> served | eighty_sixed
 
 #### 5. `document-version-actions.ts`
+
 - **Table:** `document_versions` (migration `20260310000001`)
 - **Tenant scope:** `tenant_id`
 - **Exports:**
@@ -73,6 +78,7 @@ All files follow established ChefFlow patterns: `'use server'`, `requireChef()` 
 - **Note:** Supports entity types: menu, quote, recipe, contract, prep_sheet
 
 #### 6. `document-comment-actions.ts`
+
 - **Table:** `document_comments` (migration `20260312000006`)
 - **Tenant scope:** `chef_id`
 - **Exports:**
@@ -82,6 +88,7 @@ All files follow established ChefFlow patterns: `'use server'`, `requireChef()` 
 - **Types:** `DocumentComment`, `AddCommentInput`, `DocumentType`
 
 #### 7. `split-billing-actions.ts`
+
 - **Table:** `events.split_billing` JSONB column (migration `20260312000006`)
 - **Tenant scope:** `tenant_id` (on events table)
 - **Exports:**
@@ -107,6 +114,7 @@ All files follow established ChefFlow patterns: `'use server'`, `requireChef()` 
 ## Migration Dependencies
 
 These server actions depend on tables from the following existing migrations:
+
 - `20260308000001_client_segments.sql` — `client_segments` table
 - `20260310000001_document_versions.sql` — `document_versions` table
 - `20260312000005_marketing_intelligence.sql` — `ab_tests`, `content_performance` tables

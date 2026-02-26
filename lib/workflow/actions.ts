@@ -19,10 +19,12 @@ export async function getDashboardWorkSurface(): Promise<DashboardWorkSurface> {
   // Fetch events with client data
   const { data: events, error: eventsError } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       *,
       client:clients(id, full_name, email)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .order('event_date', { ascending: true })
 
@@ -36,7 +38,7 @@ export async function getDashboardWorkSurface(): Promise<DashboardWorkSurface> {
   }
 
   // Fetch menus for all events via menus.event_id FK
-  const eventIds = events.map(e => e.id)
+  const eventIds = events.map((e) => e.id)
 
   const { data: menus } = await supabase
     .from('menus')
@@ -44,14 +46,11 @@ export async function getDashboardWorkSurface(): Promise<DashboardWorkSurface> {
     .in('event_id', eventIds)
 
   // Fetch dish counts per menu in one query
-  const menuIds = (menus || []).map(m => m.id)
+  const menuIds = (menus || []).map((m) => m.id)
   const dishCountsByMenu = new Map<string, number>()
 
   if (menuIds.length > 0) {
-    const { data: dishes } = await supabase
-      .from('dishes')
-      .select('menu_id')
-      .in('menu_id', menuIds)
+    const { data: dishes } = await supabase.from('dishes').select('menu_id').in('menu_id', menuIds)
 
     if (dishes) {
       for (const dish of dishes) {
@@ -76,7 +75,7 @@ export async function getDashboardWorkSurface(): Promise<DashboardWorkSurface> {
         id: menu.id,
         name: menu.name,
         status: menu.status,
-        dishCount: dishCountsByMenu.get(menu.id) || 0
+        dishCount: dishCountsByMenu.get(menu.id) || 0,
       })
       menusByEvent.set(menu.event_id, existing)
     }
@@ -89,14 +88,14 @@ export async function getDashboardWorkSurface(): Promise<DashboardWorkSurface> {
         financialByEvent.set(f.event_id, {
           totalPaidCents: f.total_paid_cents ?? 0,
           outstandingBalanceCents: f.outstanding_balance_cents ?? 0,
-          paymentStatus: f.payment_status
+          paymentStatus: f.payment_status,
         })
       }
     }
   }
 
   // Assemble contexts
-  const contexts: EventContext[] = events.map(event => ({
+  const contexts: EventContext[] = events.map((event) => ({
     event: {
       id: event.id,
       occasion: event.occasion,
@@ -108,10 +107,10 @@ export async function getDashboardWorkSurface(): Promise<DashboardWorkSurface> {
       deposit_amount_cents: event.deposit_amount_cents,
       serve_time: event.serve_time,
       status: event.status,
-      client: event.client as EventContext['event']['client']
+      client: event.client as EventContext['event']['client'],
     },
     menus: menusByEvent.get(event.id) || [],
-    financial: financialByEvent.get(event.id) || null
+    financial: financialByEvent.get(event.id) || null,
   }))
 
   return getPreparableActions(contexts)

@@ -31,12 +31,10 @@ export function EventReminderEmail({
   return (
     <BaseLayout preview={`Reminder: ${occasion} tomorrow`}>
       <Text style={heading}>Your event is tomorrow!</Text>
+      <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>
-        Hi {clientName},
-      </Text>
-      <Text style={paragraph}>
-        Just a friendly reminder that <strong>{chefName}</strong> will be with you
-        tomorrow for your <strong>{occasion}</strong>. Here are the details:
+        Just a friendly reminder that <strong>{chefName}</strong> will be with you tomorrow for your{' '}
+        <strong>{occasion}</strong>. Here are the details:
       </Text>
       <table style={detailsTable}>
         <tbody>

@@ -15,20 +15,24 @@ Private chefs have a relationship-based business. Staying top-of-mind with past 
 The existing `sendCampaignNow()` had three critical problems: it sent raw HTML without rendering tokens, it used `dangerouslySetInnerHTML` instead of a proper React email component, and it had no unsubscribe link (a legal requirement in most jurisdictions). All three are now fixed.
 
 **`lib/marketing/tokens.ts`** (new)
+
 - `renderTokens(template, ctx)` — replaces `{{first_name}}`, `{{last_name}}`, `{{full_name}}`, `{{chef_name}}`, `{{last_event_date}}`, `{{unsubscribe_url}}` in any string
 - `splitName(fullName)` — splits a full name into first/last for token context
 - `AVAILABLE_TOKENS` — exported array for the UI toolbar
 
 **`lib/email/templates/campaign.tsx`** (new)
+
 - Proper Resend React component matching the existing 31 transactional templates
 - Converts newline-separated plain text into individual `<Text>` paragraphs
 - Includes a compliant footer: "This message was sent by [Chef Name] via CheFlow." + unsubscribe link
 
 **`lib/marketing/actions.ts`** (overhauled)
+
 - `sendCampaignNow()`: inserts each `campaign_recipients` row first (to get its UUID as the unsubscribe token), renders tokens per-recipient, sends via Resend directly (using `getResendClient()`) to capture the `resend_message_id`, updates the row with `sent_at` + `resend_message_id`
 - `recordUnsubscribeByRecipientId(recipientId)`: public action (no auth) that uses the admin Supabase client to set `clients.marketing_unsubscribed = true` — used by the public unsubscribe page
 
 **`app/(public)/unsubscribe/page.tsx`** (new)
+
 - `/unsubscribe?rid=<campaign_recipient_id>` — no authentication required
 - Calls `recordUnsubscribeByRecipientId()` and shows a clean confirmation page
 - Distinguishes between "unsubscribed" and "invalid link" states
@@ -38,6 +42,7 @@ The existing `sendCampaignNow()` had three critical problems: it sent raw HTML w
 Campaigns now respect client communication preferences instead of blasting everyone by email.
 
 **`getChannelSplit(segment)`** — splits the resolved audience by `clients.preferred_contact_method`:
+
 - `email` — will receive the campaign automatically
 - `sms` — prefer text; system queues a draft SMS to copy
 - `call` — prefer phone; system shows a call list with phone numbers
@@ -60,6 +65,7 @@ The campaign builder's **preview step** now shows this breakdown before you send
 ### Phase C — Campaign Analytics
 
 **`app/(chef)/marketing/[id]/page.tsx`** (new)
+
 - Stats cards: Total | Sent | Opened (rate) | Clicked (rate) | Unsubscribed
 - Revenue attribution card: events booked within 30 days of send by campaign recipients
 - Full recipient table: per-email delivery status
@@ -74,6 +80,7 @@ Campaign list on `/marketing` is now clickable — each card links to its detail
 **New migration `20260304000003`** adds `campaign_templates` table.
 
 **6 pre-seeded system templates** (auto-seeded per chef on first load):
+
 1. Re-Engagement — "It's been a while — dinner soon?"
 2. Seasonal Announcement — "New seasonal menus are live"
 3. Birthday — "Happy birthday, {{first_name}}"
@@ -90,6 +97,7 @@ Campaign list on `/marketing` is now clickable — each card links to its detail
 ### Phase E — 1:1 Direct Outreach
 
 **`sendDirectOutreach(input)`** — server action for sending individual messages from a client's profile:
+
 - `email`: calls `sendEmail()` with the `CampaignEmail` template + token rendering
 - `sms`: calls `sendSms()` with the message body
 - `call_note` / `instagram_note`: logs the note to `direct_outreach_log` only (no delivery)
@@ -97,6 +105,7 @@ Campaign list on `/marketing` is now clickable — each card links to its detail
 All channels are logged to `direct_outreach_log` with channel, body, delivered status, and error if applicable.
 
 **`components/marketing/direct-outreach-panel.tsx`** (new)
+
 - Auto-selects the client's preferred contact method as the default channel
 - Disables email if no email on file, SMS if no phone
 - Shows call/Instagram as "log only" with a note
@@ -115,11 +124,13 @@ Campaign builder now includes a **schedule toggle** — shows a datetime-local p
 ### Phase G — Automated Sequences
 
 **New migration `20260304000004`** adds:
+
 - `automated_sequences` — one row per sequence (name, trigger_type, is_active)
 - `sequence_steps` — email steps with delay_days and subject/body
 - `sequence_enrollments` — per-client enrollment tracking with UNIQUE(sequence_id, client_id) to prevent double-enrollment
 
 **Three trigger types:**
+
 - `birthday` — enroll 7 days (configurable) before birthday; checked by daily cron
 - `dormant_90` — enroll when client crosses 90 days without an event
 - `post_event` — enroll N days after event completes (hook in `enrollInSequence()`)
@@ -135,6 +146,7 @@ Campaign builder now includes a **schedule toggle** — shows a datetime-local p
 ### Phase H — Resend Webhook (Open/Click Tracking)
 
 **`app/api/webhooks/resend/route.ts`** (new)
+
 - Receives `email.opened` and `email.clicked` events from Resend
 - Verifies HMAC-SHA256 signature against `RESEND_WEBHOOK_SECRET`
 - Looks up `campaign_recipients` by `resend_message_id`
@@ -144,6 +156,7 @@ Campaign builder now includes a **schedule toggle** — shows a datetime-local p
 **`resend_message_id` column** added to `campaign_recipients` via migration `20260304000003`. Populated at send time from Resend's response.
 
 **Setup required in Resend dashboard:**
+
 1. Webhooks → Add endpoint → `https://your-domain.com/api/webhooks/resend`
 2. Events: `email.opened`, `email.clicked`
 3. Copy signing secret → set `RESEND_WEBHOOK_SECRET` env var
@@ -151,6 +164,7 @@ Campaign builder now includes a **schedule toggle** — shows a datetime-local p
 ### Phase I — Marketing Page Overhaul
 
 `/marketing` now shows:
+
 - Summary stats (total campaigns, total emails sent, scheduled count)
 - Clickable campaign list with status badges and inline stats
 - Quick links to Sequences and Templates pages
@@ -158,43 +172,43 @@ Campaign builder now includes a **schedule toggle** — shows a datetime-local p
 
 ## New Migrations
 
-| File | Tables Added |
-|---|---|
-| `20260304000003_campaign_system_v2.sql` | `campaign_templates`, `direct_outreach_log`, + `resend_message_id` column on `campaign_recipients` |
-| `20260304000004_automated_sequences.sql` | `automated_sequences`, `sequence_steps`, `sequence_enrollments` |
+| File                                     | Tables Added                                                                                       |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `20260304000003_campaign_system_v2.sql`  | `campaign_templates`, `direct_outreach_log`, + `resend_message_id` column on `campaign_recipients` |
+| `20260304000004_automated_sequences.sql` | `automated_sequences`, `sequence_steps`, `sequence_enrollments`                                    |
 
 ## New Environment Variables
 
-| Variable | Purpose | Required |
-|---|---|---|
+| Variable                | Purpose                          | Required                |
+| ----------------------- | -------------------------------- | ----------------------- |
 | `RESEND_WEBHOOK_SECRET` | Verify Resend webhook signatures | For open/click tracking |
 
 (Existing: `RESEND_API_KEY`, `TWILIO_*` already required for email/SMS)
 
 ## File Map
 
-| File | Status | What |
-|---|---|---|
-| `lib/marketing/tokens.ts` | New | Token rendering |
-| `lib/email/templates/campaign.tsx` | New | Campaign email template |
-| `lib/marketing/actions.ts` | Overhauled | All campaign, template, sequence, outreach actions |
-| `app/(public)/unsubscribe/page.tsx` | New | Public unsubscribe page |
-| `app/(chef)/marketing/page.tsx` | Overhauled | Tabbed marketing hub |
-| `app/(chef)/marketing/campaign-builder-client.tsx` | Overhauled | Template picker, token toolbar, channel split, schedule |
-| `app/(chef)/marketing/[id]/page.tsx` | New | Campaign detail + analytics |
-| `app/(chef)/marketing/[id]/save-template-button.tsx` | New | Save campaign as template |
-| `app/(chef)/marketing/sequences/page.tsx` | New | Sequence list + builder |
-| `app/(chef)/marketing/sequences/sequence-builder-client.tsx` | New | Sequence creation form |
-| `app/(chef)/marketing/sequences/sequence-toggle-button.tsx` | New | Active/pause toggle |
-| `app/(chef)/marketing/templates/page.tsx` | New | Template library |
-| `app/(chef)/marketing/templates/create-template-client.tsx` | New | Create template form |
-| `app/(chef)/marketing/templates/template-actions-client.tsx` | New | Delete template |
-| `components/marketing/direct-outreach-panel.tsx` | New | 1:1 outreach component |
-| `app/(chef)/clients/[id]/page.tsx` | Modified | Added Direct Outreach panel + outreach history |
-| `app/api/scheduled/campaigns/route.ts` | New | Scheduled campaign cron |
-| `app/api/scheduled/sequences/route.ts` | New | Sequence processing cron |
-| `app/api/webhooks/resend/route.ts` | New | Resend open/click webhook |
-| `vercel.json` | Modified | Added 2 new cron entries |
+| File                                                         | Status     | What                                                    |
+| ------------------------------------------------------------ | ---------- | ------------------------------------------------------- |
+| `lib/marketing/tokens.ts`                                    | New        | Token rendering                                         |
+| `lib/email/templates/campaign.tsx`                           | New        | Campaign email template                                 |
+| `lib/marketing/actions.ts`                                   | Overhauled | All campaign, template, sequence, outreach actions      |
+| `app/(public)/unsubscribe/page.tsx`                          | New        | Public unsubscribe page                                 |
+| `app/(chef)/marketing/page.tsx`                              | Overhauled | Tabbed marketing hub                                    |
+| `app/(chef)/marketing/campaign-builder-client.tsx`           | Overhauled | Template picker, token toolbar, channel split, schedule |
+| `app/(chef)/marketing/[id]/page.tsx`                         | New        | Campaign detail + analytics                             |
+| `app/(chef)/marketing/[id]/save-template-button.tsx`         | New        | Save campaign as template                               |
+| `app/(chef)/marketing/sequences/page.tsx`                    | New        | Sequence list + builder                                 |
+| `app/(chef)/marketing/sequences/sequence-builder-client.tsx` | New        | Sequence creation form                                  |
+| `app/(chef)/marketing/sequences/sequence-toggle-button.tsx`  | New        | Active/pause toggle                                     |
+| `app/(chef)/marketing/templates/page.tsx`                    | New        | Template library                                        |
+| `app/(chef)/marketing/templates/create-template-client.tsx`  | New        | Create template form                                    |
+| `app/(chef)/marketing/templates/template-actions-client.tsx` | New        | Delete template                                         |
+| `components/marketing/direct-outreach-panel.tsx`             | New        | 1:1 outreach component                                  |
+| `app/(chef)/clients/[id]/page.tsx`                           | Modified   | Added Direct Outreach panel + outreach history          |
+| `app/api/scheduled/campaigns/route.ts`                       | New        | Scheduled campaign cron                                 |
+| `app/api/scheduled/sequences/route.ts`                       | New        | Sequence processing cron                                |
+| `app/api/webhooks/resend/route.ts`                           | New        | Resend open/click webhook                               |
+| `vercel.json`                                                | Modified   | Added 2 new cron entries                                |
 
 ## How It All Connects
 

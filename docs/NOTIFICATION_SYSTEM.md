@@ -29,6 +29,7 @@ Action happens (event transition, payment, etc.)
 ### Database (Migration: 20260221000003)
 
 **`notifications`** - Persistent notification history
+
 - Tenant-scoped, recipient-scoped
 - Classified by category (inquiry/quote/event/payment/chat/client/system) and action (new_inquiry, payment_received, etc.)
 - Tracks read_at and archived_at for state management
@@ -38,6 +39,7 @@ Action happens (event transition, payment, etc.)
 - RLS: recipients read own, chefs read tenant, no hard deletes
 
 **`notification_preferences`** - Per-category toast toggles
+
 - Per-user, per-category on/off for toast notifications
 - Missing row = toast enabled (default behavior from NOTIFICATION_CONFIG)
 
@@ -69,6 +71,7 @@ Uses `postgres_changes` on the notifications table filtered by `recipient_id`. S
 ### Nav Integration (components/navigation/chef-nav.tsx)
 
 Bell appears in three places:
+
 1. **Desktop expanded sidebar** - Next to the collapse toggle in the header
 2. **Desktop collapsed/rail mode** - Below the expand toggle, above nav items
 3. **Mobile top bar** - Between the logo and hamburger menu
@@ -84,38 +87,38 @@ Pattern follows the existing `postEventSystemMessage()` approach at transitions.
 
 ## Notification Categories & Actions
 
-| Category | Actions | Toast by Default |
-|----------|---------|-----------------|
-| inquiry | new_inquiry, inquiry_reply, inquiry_expired | Yes (except expired) |
-| quote | quote_accepted, quote_rejected, quote_expiring | Yes (except expiring) |
-| event | proposal_accepted, event_paid, event_completed, event_cancelled | Yes (except completed) |
-| payment | payment_received, payment_failed, refund_processed, dispute_created | Always |
-| chat | new_message | No (has its own unread system) |
-| client | client_signup, review_submitted | Yes |
-| system | system_alert | Yes |
+| Category | Actions                                                             | Toast by Default               |
+| -------- | ------------------------------------------------------------------- | ------------------------------ |
+| inquiry  | new_inquiry, inquiry_reply, inquiry_expired                         | Yes (except expired)           |
+| quote    | quote_accepted, quote_rejected, quote_expiring                      | Yes (except expiring)          |
+| event    | proposal_accepted, event_paid, event_completed, event_cancelled     | Yes (except completed)         |
+| payment  | payment_received, payment_failed, refund_processed, dispute_created | Always                         |
+| chat     | new_message                                                         | No (has its own unread system) |
+| client   | client_signup, review_submitted                                     | Yes                            |
+| system   | system_alert                                                        | Yes                            |
 
 ## Files Created
 
-| File | Purpose |
-|------|---------|
-| supabase/migrations/20260221000003_notifications.sql | Database schema |
-| lib/notifications/types.ts | Type definitions and display config |
-| lib/notifications/actions.ts | Server actions (CRUD) |
-| lib/notifications/realtime.ts | Real-time subscription |
-| components/notifications/toast-provider.tsx | Sonner toast config |
-| components/notifications/notification-provider.tsx | Context + real-time + toast logic |
-| components/notifications/notification-bell.tsx | Bell button with badge |
-| components/notifications/notification-panel.tsx | Dropdown notification list |
+| File                                                 | Purpose                             |
+| ---------------------------------------------------- | ----------------------------------- |
+| supabase/migrations/20260221000003_notifications.sql | Database schema                     |
+| lib/notifications/types.ts                           | Type definitions and display config |
+| lib/notifications/actions.ts                         | Server actions (CRUD)               |
+| lib/notifications/realtime.ts                        | Real-time subscription              |
+| components/notifications/toast-provider.tsx          | Sonner toast config                 |
+| components/notifications/notification-provider.tsx   | Context + real-time + toast logic   |
+| components/notifications/notification-bell.tsx       | Bell button with badge              |
+| components/notifications/notification-panel.tsx      | Dropdown notification list          |
 
 ## Files Modified
 
-| File | Change |
-|------|--------|
-| app/(chef)/layout.tsx | Added ToastProvider + NotificationProvider wrapping |
-| components/navigation/chef-nav.tsx | Added NotificationBell to desktop header, rail mode, and mobile top bar |
-| lib/events/transitions.ts | Added non-blocking notification creation on client-initiated transitions |
-| app/api/webhooks/stripe/route.ts | Added non-blocking notifications for payment/refund/dispute events |
-| package.json | Added `sonner` dependency |
+| File                               | Change                                                                   |
+| ---------------------------------- | ------------------------------------------------------------------------ |
+| app/(chef)/layout.tsx              | Added ToastProvider + NotificationProvider wrapping                      |
+| components/navigation/chef-nav.tsx | Added NotificationBell to desktop header, rail mode, and mobile top bar  |
+| lib/events/transitions.ts          | Added non-blocking notification creation on client-initiated transitions |
+| app/api/webhooks/stripe/route.ts   | Added non-blocking notifications for payment/refund/dispute events       |
+| package.json                       | Added `sonner` dependency                                                |
 
 ## Post-Implementation Steps
 

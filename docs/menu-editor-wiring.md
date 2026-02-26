@@ -17,11 +17,11 @@ None of those documents had real data to work with until the editor was wired up
 
 ## Files Changed
 
-| File | Change |
-|------|--------|
-| `lib/menus/actions.ts` | Fixed `component_category` enum to match DB (added fruit, dessert, bread, cheese, condiment, beverage; removed base, topping, seasoning). Added `transport_category` to both Create and Update schemas. Exported `COMPONENT_CATEGORIES`, `TRANSPORT_CATEGORIES`, `ComponentCategory`, `TransportCategory` for UI consumption. |
-| `components/culinary/MenuEditor.tsx` | Full rebuild. Now a real `'use client'` component that reads real data and calls server actions for every mutation. |
-| `app/(chef)/culinary/menus/[id]/page.tsx` | Converted from a client component using mock data to a proper async server component calling `getMenuById`. |
+| File                                      | Change                                                                                                                                                                                                                                                                                                                        |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lib/menus/actions.ts`                    | Fixed `component_category` enum to match DB (added fruit, dessert, bread, cheese, condiment, beverage; removed base, topping, seasoning). Added `transport_category` to both Create and Update schemas. Exported `COMPONENT_CATEGORIES`, `TRANSPORT_CATEGORIES`, `ComponentCategory`, `TransportCategory` for UI consumption. |
+| `components/culinary/MenuEditor.tsx`      | Full rebuild. Now a real `'use client'` component that reads real data and calls server actions for every mutation.                                                                                                                                                                                                           |
+| `app/(chef)/culinary/menus/[id]/page.tsx` | Converted from a client component using mock data to a proper async server component calling `getMenuById`.                                                                                                                                                                                                                   |
 
 ## MenuEditor Architecture
 

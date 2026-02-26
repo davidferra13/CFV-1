@@ -85,7 +85,9 @@ export async function getResumeItems(): Promise<ResumeItem[]> {
 async function getActiveEvents(supabase: SupabaseClient, tenantId: string): Promise<ResumeItem[]> {
   const { data, error } = await supabase
     .from('events')
-    .select('id, status, occasion, event_date, guest_count, updated_at, clients:client_id(full_name)')
+    .select(
+      'id, status, occasion, event_date, guest_count, updated_at, clients:client_id(full_name)'
+    )
     .eq('tenant_id', tenantId)
     .in('status', ['draft', 'proposed', 'accepted', 'paid', 'confirmed', 'in_progress'])
     .order('updated_at', { ascending: false })
@@ -93,9 +95,11 @@ async function getActiveEvents(supabase: SupabaseClient, tenantId: string): Prom
 
   if (error || !data) return []
 
-  return (data as unknown as EventRow[]).map(e => {
+  return (data as unknown as EventRow[]).map((e) => {
     const clientName = e.clients?.full_name || 'Unknown client'
-    const dateStr = e.event_date ? new Date(e.event_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'No date'
+    const dateStr = e.event_date
+      ? new Date(e.event_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      : 'No date'
     const guestStr = e.guest_count ? `${e.guest_count} guests` : ''
 
     return {
@@ -124,21 +128,26 @@ async function getActiveMenus(supabase: SupabaseClient, tenantId: string): Promi
   if (error || !data) return []
 
   const rows = data as unknown as MenuRow[]
-  const menuIds = rows.map(m => m.id)
-  const { data: dishes } = menuIds.length > 0
-    ? await supabase.from('dishes').select('menu_id').in('menu_id', menuIds)
-    : { data: [] }
+  const menuIds = rows.map((m) => m.id)
+  const { data: dishes } =
+    menuIds.length > 0
+      ? await supabase.from('dishes').select('menu_id').in('menu_id', menuIds)
+      : { data: [] }
 
   const dishCounts: Record<string, number> = {}
   for (const d of (dishes || []) as Array<{ menu_id: string }>) {
     dishCounts[d.menu_id] = (dishCounts[d.menu_id] || 0) + 1
   }
 
-  return rows.map(m => {
+  return rows.map((m) => {
     const eventName = m.events?.occasion
     const clientName = m.events?.clients?.full_name
     const count = dishCounts[m.id] || 0
-    const parts = [eventName ? `for "${eventName}"` : 'standalone', clientName, `${count} dish${count !== 1 ? 'es' : ''}`].filter(Boolean)
+    const parts = [
+      eventName ? `for "${eventName}"` : 'standalone',
+      clientName,
+      `${count} dish${count !== 1 ? 'es' : ''}`,
+    ].filter(Boolean)
 
     return {
       id: m.id,
@@ -154,10 +163,15 @@ async function getActiveMenus(supabase: SupabaseClient, tenantId: string): Promi
   })
 }
 
-async function getActiveInquiries(supabase: SupabaseClient, tenantId: string): Promise<ResumeItem[]> {
+async function getActiveInquiries(
+  supabase: SupabaseClient,
+  tenantId: string
+): Promise<ResumeItem[]> {
   const { data, error } = await supabase
     .from('inquiries')
-    .select('id, status, channel, confirmed_occasion, next_action_required, next_action_by, follow_up_due_at, updated_at, clients:client_id(full_name)')
+    .select(
+      'id, status, channel, confirmed_occasion, next_action_required, next_action_by, follow_up_due_at, updated_at, clients:client_id(full_name)'
+    )
     .eq('tenant_id', tenantId)
     .in('status', ['new', 'awaiting_client', 'awaiting_chef', 'quoted'])
     .order('updated_at', { ascending: false })
@@ -165,10 +179,13 @@ async function getActiveInquiries(supabase: SupabaseClient, tenantId: string): P
 
   if (error || !data) return []
 
-  return (data as unknown as InquiryRow[]).map(inq => {
+  return (data as unknown as InquiryRow[]).map((inq) => {
     const clientName = inq.clients?.full_name || 'Unknown'
-    const action = inq.next_action_required || statusToAction(inq.status, inq.next_action_by || undefined)
-    const followUp = inq.follow_up_due_at ? `follow-up ${formatRelativeDate(inq.follow_up_due_at)}` : ''
+    const action =
+      inq.next_action_required || statusToAction(inq.status, inq.next_action_by || undefined)
+    const followUp = inq.follow_up_due_at
+      ? `follow-up ${formatRelativeDate(inq.follow_up_due_at)}`
+      : ''
     const parts = [clientName, `via ${inq.channel}`, action, followUp].filter(Boolean)
 
     return {
@@ -193,7 +210,9 @@ async function getActiveInquiries(supabase: SupabaseClient, tenantId: string): P
 async function getActiveQuotes(supabase: SupabaseClient, tenantId: string): Promise<ResumeItem[]> {
   const { data, error } = await supabase
     .from('quotes')
-    .select('id, status, quote_name, total_quoted_cents, valid_until, updated_at, clients:client_id(full_name), events:event_id(occasion)')
+    .select(
+      'id, status, quote_name, total_quoted_cents, valid_until, updated_at, clients:client_id(full_name), events:event_id(occasion)'
+    )
     .eq('tenant_id', tenantId)
     .in('status', ['draft', 'sent'])
     .order('updated_at', { ascending: false })
@@ -201,7 +220,7 @@ async function getActiveQuotes(supabase: SupabaseClient, tenantId: string): Prom
 
   if (error || !data) return []
 
-  return (data as unknown as QuoteRow[]).map(q => {
+  return (data as unknown as QuoteRow[]).map((q) => {
     const clientName = q.clients?.full_name || 'Unknown'
     const eventName = q.events?.occasion
     const amount = q.total_quoted_cents ? `$${(q.total_quoted_cents / 100).toLocaleString()}` : ''
@@ -217,12 +236,19 @@ async function getActiveQuotes(supabase: SupabaseClient, tenantId: string): Prom
       statusColor: q.status === 'draft' ? 'amber' : 'purple',
       lastActionAt: q.updated_at,
       href: `/pipeline/quotes/${q.id}`,
-      context: { client_name: clientName, event_name: eventName, total_cents: q.total_quoted_cents },
+      context: {
+        client_name: clientName,
+        event_name: eventName,
+        total_cents: q.total_quoted_cents,
+      },
     }
   })
 }
 
-async function getRecentPinnedNotes(supabase: SupabaseClient, tenantId: string): Promise<ResumeItem[]> {
+async function getRecentPinnedNotes(
+  supabase: SupabaseClient,
+  tenantId: string
+): Promise<ResumeItem[]> {
   const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
 
   const { data, error } = await supabase
@@ -236,7 +262,7 @@ async function getRecentPinnedNotes(supabase: SupabaseClient, tenantId: string):
 
   if (error || !data) return []
 
-  return (data as unknown as NoteRow[]).map(n => {
+  return (data as unknown as NoteRow[]).map((n) => {
     const clientName = n.clients?.full_name || 'Unknown'
     const preview = n.note_text.length > 80 ? `${n.note_text.slice(0, 80)}...` : n.note_text
 

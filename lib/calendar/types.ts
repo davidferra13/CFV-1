@@ -27,18 +27,18 @@ export type UnifiedCalendarItem = {
   type: UnifiedCalendarItemType
   category: CalendarCategory
   title: string
-  startDate: string         // ISO YYYY-MM-DD
-  endDate: string           // ISO YYYY-MM-DD (same as startDate for single-day)
-  startTime?: string        // HH:MM (omit for all-day)
-  endTime?: string          // HH:MM
+  startDate: string // ISO YYYY-MM-DD
+  endDate: string // ISO YYYY-MM-DD (same as startDate for single-day)
+  startTime?: string // HH:MM (omit for all-day)
+  endTime?: string // HH:MM
   allDay: boolean
-  color: string             // hex
+  color: string // hex
   borderStyle: 'solid' | 'dashed' | 'dotted'
-  url?: string              // deep link to detail page
-  isBlocking: boolean       // whether this item blocks a booking
-  status?: string           // event/call status
-  subType?: string          // prep_block_type, calendar entry_type, etc.
-  isMultiDay: boolean       // convenience: endDate !== startDate
+  url?: string // deep link to detail page
+  isBlocking: boolean // whether this item blocks a booking
+  status?: string // event/call status
+  subType?: string // prep_block_type, calendar entry_type, etc.
+  isMultiDay: boolean // convenience: endDate !== startDate
 }
 
 export type CalendarFilters = {
@@ -64,7 +64,7 @@ export const DEFAULT_CALENDAR_FILTERS: CalendarFilters = {
 }
 
 export type WeekDensity = {
-  weekStart: string        // Monday of the week, ISO date
+  weekStart: string // Monday of the week, ISO date
   eventCount: number
   prepBlockCount: number
   calendarEntryCount: number

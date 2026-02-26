@@ -14,19 +14,19 @@ The full activity tracking infrastructure was already built and working (Supabas
 
 ## New Files
 
-| File | Purpose |
-|---|---|
-| `app/(chef)/clients/presence/page.tsx` | Server page — fetches initial data, renders the monitor |
+| File                                              | Purpose                                                                       |
+| ------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `app/(chef)/clients/presence/page.tsx`            | Server page — fetches initial data, renders the monitor                       |
 | `components/activity/client-presence-monitor.tsx` | Client component — real-time Supabase Realtime subscription, full-page layout |
 
 ## Modified Files
 
-| File | Change |
-|---|---|
-| `lib/activity/types.ts` | Added `ActiveClientWithContext` type |
-| `lib/activity/actions.ts` | Added `getActiveClientsWithContext()` server action |
-| `components/activity/live-presence-panel.tsx` | Added "View all →" link to `/clients/presence` in panel header |
-| `app/(chef)/clients/insights/page.tsx` | Added "Who's Online" card, "Active Today" stat, fetches `getEngagementStats()` |
+| File                                          | Change                                                                         |
+| --------------------------------------------- | ------------------------------------------------------------------------------ |
+| `lib/activity/types.ts`                       | Added `ActiveClientWithContext` type                                           |
+| `lib/activity/actions.ts`                     | Added `getActiveClientsWithContext()` server action                            |
+| `components/activity/live-presence-panel.tsx` | Added "View all →" link to `/clients/presence` in panel header                 |
+| `app/(chef)/clients/insights/page.tsx`        | Added "Who's Online" card, "Active Today" stat, fetches `getEngagementStats()` |
 
 ## How It Works
 
@@ -44,6 +44,7 @@ The full activity tracking infrastructure was already built and working (Supabas
 ### `getActiveClientsWithContext()`
 
 New server action in `lib/activity/actions.ts` that:
+
 1. Calls the existing `getActiveClients(minutesWindow)` for the base presence data
 2. Fires two parallel queries:
    - All activity events for active client IDs in the last 14 days → runs `computeEngagementScore()` per client
@@ -53,6 +54,7 @@ New server action in `lib/activity/actions.ts` that:
 ### `ClientPresenceMonitor` Layout
 
 **Active Clients panel:**
+
 - "Online Now" section (< 5 min) with animated green pulse — emerald background header
 - "Recently Active" section (5–60 min) — stone background header
 - Each row: avatar, client name, `EngagementBadge` (HOT/WARM/COLD), what they're doing (e.g. "on the payment page"), event occasion name if available, time-ago
@@ -60,6 +62,7 @@ New server action in `lib/activity/actions.ts` that:
 - Clicking any row → `/clients/{id}`
 
 **Live Activity Stream:**
+
 - Rolling feed of the last 30 client events (24-hour window)
 - Prepended in real-time as the Realtime subscription fires
 - Excludes `session_heartbeat` from display (still written to DB for engagement scoring)
@@ -68,12 +71,14 @@ New server action in `lib/activity/actions.ts` that:
 ### Realtime Subscription
 
 Uses the identical Supabase Realtime pattern from `LivePresencePanel`:
+
 ```
 channel(`client-presence-monitor:${tenantId}`)
   .on('postgres_changes', { event: 'INSERT', table: 'activity_events', filter: tenant_id=eq.${tenantId} })
 ```
 
 When a new INSERT arrives:
+
 - Updates the active clients list (dedup by client_id, expiry by RECENT_WINDOW_MS)
 - Prepends the event to the activity stream (if not a heartbeat)
 - Uses name cache + async lookup for unknown clients (same fallback as LivePresencePanel)
@@ -89,12 +94,12 @@ All data already exists in `activity_events` (Realtime-enabled). No new DB table
 
 ## Related Infrastructure
 
-| Component | File |
-|---|---|
-| Dashboard widget (compact) | `components/activity/live-presence-panel.tsx` |
-| Client tracking | `components/activity/activity-tracker.tsx` |
-| Heartbeat | `components/activity/session-heartbeat.tsx` |
-| Engagement scoring | `lib/activity/engagement.ts` |
-| Intent notifications | `lib/activity/intent-notifications.ts` |
-| Activity feed page | `app/(chef)/activity/page.tsx` |
-| Per-client timeline | `app/(chef)/clients/[id]/page.tsx` → `ClientActivityTimeline` |
+| Component                  | File                                                          |
+| -------------------------- | ------------------------------------------------------------- |
+| Dashboard widget (compact) | `components/activity/live-presence-panel.tsx`                 |
+| Client tracking            | `components/activity/activity-tracker.tsx`                    |
+| Heartbeat                  | `components/activity/session-heartbeat.tsx`                   |
+| Engagement scoring         | `lib/activity/engagement.ts`                                  |
+| Intent notifications       | `lib/activity/intent-notifications.ts`                        |
+| Activity feed page         | `app/(chef)/activity/page.tsx`                                |
+| Per-client timeline        | `app/(chef)/clients/[id]/page.tsx` → `ClientActivityTimeline` |

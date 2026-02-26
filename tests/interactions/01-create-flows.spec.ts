@@ -25,13 +25,14 @@ test.describe('Create Flows — Client', () => {
     const email = `interaction.client.${ts}@chefflow.test`
 
     // Full name field
-    const nameField = page.getByLabel(/full name/i).first()
+    const nameField = page
+      .getByLabel(/full name/i)
+      .first()
       .or(page.getByPlaceholder(/full name/i).first())
     await nameField.fill(name)
 
     // Email field
-    const emailField = page.getByLabel(/email/i).first()
-      .or(page.getByPlaceholder(/email/i).first())
+    const emailField = page.getByLabel(/email/i).first().or(page.getByPlaceholder(/email/i).first())
     await emailField.fill(email)
 
     // Submit
@@ -42,9 +43,15 @@ test.describe('Create Flows — Client', () => {
     await page.waitForLoadState('networkidle')
     const url = page.url()
     // Either redirected to client detail or the list shows the new client
-    const nameVisible = await page.getByText(name).isVisible().catch(() => false)
+    const nameVisible = await page
+      .getByText(name)
+      .isVisible()
+      .catch(() => false)
     const navigatedAway = !url.endsWith('/clients/new')
-    expect(nameVisible || navigatedAway, 'Client creation should succeed or navigate away from /new').toBeTruthy()
+    expect(
+      nameVisible || navigatedAway,
+      'Client creation should succeed or navigate away from /new'
+    ).toBeTruthy()
   })
 })
 
@@ -56,12 +63,16 @@ test.describe('Create Flows — Expense', () => {
     await page.waitForLoadState('networkidle')
 
     // Amount field
-    const amountField = page.getByLabel(/amount/i).first()
+    const amountField = page
+      .getByLabel(/amount/i)
+      .first()
       .or(page.getByPlaceholder(/amount/i).first())
     await amountField.fill('42.50')
 
     // Description field
-    const descField = page.getByLabel(/description|note/i).first()
+    const descField = page
+      .getByLabel(/description|note/i)
+      .first()
       .or(page.getByPlaceholder(/description|note/i).first())
     await descField.fill(`${INTERACTION_PREFIX} Expense`)
 
@@ -88,7 +99,9 @@ test.describe('Create Flows — Recipe', () => {
     const recipeName = `${INTERACTION_PREFIX} Recipe ${ts}`
 
     // Recipe name
-    const nameField = page.getByLabel(/name|title/i).first()
+    const nameField = page
+      .getByLabel(/name|title/i)
+      .first()
       .or(page.getByPlaceholder(/recipe name|name|title/i).first())
     await nameField.fill(recipeName)
 
@@ -99,8 +112,12 @@ test.describe('Create Flows — Recipe', () => {
     await page.waitForLoadState('networkidle')
     const url = page.url()
     // If redirect occurred, recipe was saved
-    const savedOrNavigated = !url.endsWith('/recipes/new') ||
-      await page.getByText(recipeName).isVisible().catch(() => false)
+    const savedOrNavigated =
+      !url.endsWith('/recipes/new') ||
+      (await page
+        .getByText(recipeName)
+        .isVisible()
+        .catch(() => false))
     expect(savedOrNavigated, 'Recipe form should submit and navigate or show recipe').toBeTruthy()
   })
 
@@ -108,7 +125,9 @@ test.describe('Create Flows — Recipe', () => {
     await page.goto('/recipes/new')
     await page.waitForLoadState('networkidle')
     // Page should have at minimum a name/title field
-    const nameField = page.getByLabel(/name|title/i).first()
+    const nameField = page
+      .getByLabel(/name|title/i)
+      .first()
       .or(page.getByPlaceholder(/recipe name|name/i).first())
     await expect(nameField).toBeVisible({ timeout: 10_000 })
   })
@@ -121,7 +140,9 @@ test.describe('Create Flows — Menu', () => {
     await page.goto('/menus/new')
     await page.waitForLoadState('networkidle')
     // Should have a name field
-    const nameField = page.getByLabel(/menu name|name|title/i).first()
+    const nameField = page
+      .getByLabel(/menu name|name|title/i)
+      .first()
       .or(page.getByPlaceholder(/menu name|name/i).first())
     await expect(nameField).toBeVisible({ timeout: 10_000 })
   })
@@ -133,7 +154,9 @@ test.describe('Create Flows — Menu', () => {
     const ts = Date.now()
     const menuName = `${INTERACTION_PREFIX} Menu ${ts}`
 
-    const nameField = page.getByLabel(/menu name|name|title/i).first()
+    const nameField = page
+      .getByLabel(/menu name|name|title/i)
+      .first()
       .or(page.getByPlaceholder(/menu name|name/i).first())
     await nameField.fill(menuName)
 
@@ -142,8 +165,12 @@ test.describe('Create Flows — Menu', () => {
 
     await page.waitForLoadState('networkidle')
     const url = page.url()
-    const savedOrNavigated = !url.endsWith('/menus/new') ||
-      await page.getByText(menuName).isVisible().catch(() => false)
+    const savedOrNavigated =
+      !url.endsWith('/menus/new') ||
+      (await page
+        .getByText(menuName)
+        .isVisible()
+        .catch(() => false))
     expect(savedOrNavigated, 'Menu form should submit or show menu name').toBeTruthy()
   })
 })

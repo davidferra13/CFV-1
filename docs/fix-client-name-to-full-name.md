@@ -13,13 +13,19 @@
 **`app/(chef)/clients/communication/page.tsx`** — line 72
 
 Before:
+
 ```tsx
-{(client as any).full_name ?? (client as any).name}
+{
+  ;(client as any).full_name ?? (client as any).name
+}
 ```
 
 After:
+
 ```tsx
-{client.full_name}
+{
+  client.full_name
+}
 ```
 
 ---
@@ -29,6 +35,7 @@ After:
 The `clients` table uses `full_name` as its name column — there is no `name` column. The `getClientsWithStats()` action returns raw DB rows spread-merged with stats, so the correct field is always `full_name`.
 
 The prior defensive expression `(client as any).full_name ?? (client as any).name` was written with a safety fallback to `.name` that:
+
 1. Is unnecessary — `full_name` is always present on clients rows
 2. Uses `as any` casts that suppress TypeScript type checking
 3. The `.name` fallback would always be `undefined` since the field does not exist
@@ -41,20 +48,20 @@ The correct form is a direct `client.full_name` access, which TypeScript can ver
 
 All 29 `page.tsx` files in `app/(chef)/clients/` were reviewed. The findings:
 
-| File | `.name` hits | Verdict |
-|---|---|---|
-| `communication/page.tsx` | `(client as any).full_name ?? (client as any).name` | **Fixed** — changed to `client.full_name` |
-| `insights/page.tsx` | `topClient.full_name`, `mostFrequent.full_name` | Already correct |
-| `insights/top-clients/page.tsx` | `client.full_name` | Already correct |
-| `insights/most-frequent/page.tsx` | `client.full_name` | Already correct |
-| `insights/at-risk/page.tsx` | `client.full_name` | Already correct |
-| `preferences/dietary-restrictions/page.tsx` | `client.full_name` | Already correct |
-| `preferences/allergies/page.tsx` | `client.full_name` | Already correct |
-| `preferences/favorite-dishes/page.tsx` | `client.full_name` | Already correct |
-| `preferences/dislikes/page.tsx` | `client.full_name` | Already correct |
-| `[id]/page.tsx` | `reward.name` | Correct — reward object, not client |
-| `history/past-menus/page.tsx` | `menu.name` | Correct — menu object, not client |
-| All others | None | No client `.name` usage |
+| File                                        | `.name` hits                                        | Verdict                                   |
+| ------------------------------------------- | --------------------------------------------------- | ----------------------------------------- |
+| `communication/page.tsx`                    | `(client as any).full_name ?? (client as any).name` | **Fixed** — changed to `client.full_name` |
+| `insights/page.tsx`                         | `topClient.full_name`, `mostFrequent.full_name`     | Already correct                           |
+| `insights/top-clients/page.tsx`             | `client.full_name`                                  | Already correct                           |
+| `insights/most-frequent/page.tsx`           | `client.full_name`                                  | Already correct                           |
+| `insights/at-risk/page.tsx`                 | `client.full_name`                                  | Already correct                           |
+| `preferences/dietary-restrictions/page.tsx` | `client.full_name`                                  | Already correct                           |
+| `preferences/allergies/page.tsx`            | `client.full_name`                                  | Already correct                           |
+| `preferences/favorite-dishes/page.tsx`      | `client.full_name`                                  | Already correct                           |
+| `preferences/dislikes/page.tsx`             | `client.full_name`                                  | Already correct                           |
+| `[id]/page.tsx`                             | `reward.name`                                       | Correct — reward object, not client       |
+| `history/past-menus/page.tsx`               | `menu.name`                                         | Correct — menu object, not client         |
+| All others                                  | None                                                | No client `.name` usage                   |
 
 A broader sweep of `app/(chef)/` was also run for `.name` on client/chef objects. No other instances of `client.name`, `topClient.name`, or `c.name` referring to the `clients` table were found. All other `.name` references throughout the chef app refer to legitimate non-client objects: recipes, menus, ingredients, components, rewards, partners, campaigns, certifications, equipment, staff members, and vendor records — all of which have a `name` column.
 

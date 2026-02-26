@@ -32,7 +32,9 @@ export function SocialMonthGrid({ posts, month: _month, year: _year, postsPerWee
     )
   }
 
-  const weeks = Object.keys(byWeek).map(Number).sort((a, b) => a - b)
+  const weeks = Object.keys(byWeek)
+    .map(Number)
+    .sort((a, b) => a - b)
 
   if (weeks.length === 0) {
     return (

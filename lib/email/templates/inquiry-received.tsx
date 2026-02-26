@@ -22,13 +22,10 @@ export function InquiryReceivedEmail({
   return (
     <BaseLayout preview={`${chefName} received your inquiry`}>
       <Text style={heading}>Inquiry received</Text>
+      <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>
-        Hi {clientName},
-      </Text>
-      <Text style={paragraph}>
-        Thank you for reaching out to <strong>{chefName}</strong>. Your inquiry
-        has been received and will be reviewed shortly. You can expect to hear
-        back within 1–2 business days.
+        Thank you for reaching out to <strong>{chefName}</strong>. Your inquiry has been received
+        and will be reviewed shortly. You can expect to hear back within 1–2 business days.
       </Text>
       <table style={detailsTable}>
         <tbody>
@@ -45,8 +42,8 @@ export function InquiryReceivedEmail({
         </tbody>
       </table>
       <Text style={footer}>
-        Once your chef reviews the details, they will send you a formal
-        proposal to review and approve.
+        Once your chef reviews the details, they will send you a formal proposal to review and
+        approve.
       </Text>
     </BaseLayout>
   )

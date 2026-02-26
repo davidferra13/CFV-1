@@ -6,11 +6,11 @@ Added three new import capabilities to the Smart Import Hub, expanding it from 3
 
 ### New Tabs
 
-| Tab | Input | Output | Parser |
-|-----|-------|--------|--------|
-| **Import Receipt** | Photo upload (JPEG/PNG/WebP) | Expense record | `parseReceiptImage()` (existing, now wired in) |
-| **Import Document** | Pasted text | `chef_documents` record | `parseDocumentFromText()` (new) |
-| **Upload File** | Image or PDF upload | Auto-detected type (client/recipe/receipt/document) | `parseDocumentWithVision()` (new) |
+| Tab                 | Input                        | Output                                              | Parser                                         |
+| ------------------- | ---------------------------- | --------------------------------------------------- | ---------------------------------------------- |
+| **Import Receipt**  | Photo upload (JPEG/PNG/WebP) | Expense record                                      | `parseReceiptImage()` (existing, now wired in) |
+| **Import Document** | Pasted text                  | `chef_documents` record                             | `parseDocumentFromText()` (new)                |
+| **Upload File**     | Image or PDF upload          | Auto-detected type (client/recipe/receipt/document) | `parseDocumentWithVision()` (new)              |
 
 ### New Database Table
 
@@ -23,25 +23,26 @@ Added three new import capabilities to the Smart Import Hub, expanding it from 3
 
 ## Files Created
 
-| File | Purpose |
-|------|---------|
-| `lib/ai/import-receipt-action.ts` | Server action: receipt extraction to expense via `createExpense()` |
-| `lib/ai/parse-document-text.ts` | AI parser: text to structured document (title, type, summary, key terms) |
-| `lib/ai/parse-document-vision.ts` | AI vision parser: image/PDF to auto-detected data type |
-| `lib/documents/import-actions.ts` | Server action: save parsed document to `chef_documents` table |
-| `supabase/migrations/20260216000004_chef_documents.sql` | Database migration |
+| File                                                    | Purpose                                                                  |
+| ------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `lib/ai/import-receipt-action.ts`                       | Server action: receipt extraction to expense via `createExpense()`       |
+| `lib/ai/parse-document-text.ts`                         | AI parser: text to structured document (title, type, summary, key terms) |
+| `lib/ai/parse-document-vision.ts`                       | AI vision parser: image/PDF to auto-detected data type                   |
+| `lib/documents/import-actions.ts`                       | Server action: save parsed document to `chef_documents` table            |
+| `supabase/migrations/20260216000004_chef_documents.sql` | Database migration                                                       |
 
 ## Files Modified
 
-| File | Changes |
-|------|---------|
+| File                                     | Changes                                                                                   |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------- |
 | `components/import/smart-import-hub.tsx` | Added 3 tabs, file upload zone, receipt review card, document review card, vision routing |
-| `app/(chef)/import/page.tsx` | Fetches events list for receipt-to-expense attachment |
-| `types/database.ts` | Regenerated with `chef_documents` table |
+| `app/(chef)/import/page.tsx`             | Fetches events list for receipt-to-expense attachment                                     |
+| `types/database.ts`                      | Regenerated with `chef_documents` table                                                   |
 
 ## How It Works
 
 ### Receipt Import
+
 1. Chef uploads receipt photo
 2. Existing `parseReceiptImage()` extracts store, date, line items, totals via Claude vision
 3. Review card shows extracted data with line item table
@@ -49,6 +50,7 @@ Added three new import capabilities to the Smart Import Hub, expanding it from 3
 5. Save calls `createExpense()` — same path as manual expense entry
 
 ### Document Import
+
 1. Chef pastes contract, policy, or template text
 2. `parseDocumentFromText()` sends to Claude with Zod-validated schema
 3. AI extracts: title, document_type, summary, key_terms, tags
@@ -56,6 +58,7 @@ Added three new import capabilities to the Smart Import Hub, expanding it from 3
 5. Save inserts into `chef_documents` table
 
 ### File Upload (Multi-Type Detection)
+
 1. Chef uploads any image or PDF
 2. `parseDocumentWithVision()` sends to Claude vision
 3. AI classifies content as: client_info, recipe, receipt, or document

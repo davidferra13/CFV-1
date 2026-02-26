@@ -18,74 +18,74 @@ All new AI output is **draft/insight only** — nothing becomes canonical withou
 
 ### Ollama-Routed (Privacy-First, Local Llama)
 
-| File | What It Does |
-|------|-------------|
-| `allergen-risk.ts` | Guest × dish allergen risk matrix with safe/may_contain/contains levels |
-| `client-preference-profile.ts` | Synthesizes all event + message history into structured client profile |
-| `expense-categorizer.ts` | Auto-classifies manual expense descriptions into categories |
-| `lead-scoring.ts` | Scores inquiries 0–100 by conversion likelihood with hot/warm/cold tier |
-| `pricing-intelligence.ts` | Suggests optimal price band from historical accepted quotes |
-| `sentiment-analysis.ts` | Analyzes client message thread for sentiment trend + risk flags |
-| `tax-deduction-identifier.ts` | Scans expense ledger for potentially missed/miscategorized deductions |
-| `temp-log-anomaly.ts` | Checks temperature log entries against FDA Food Code standards |
-| `client-portal-triage.ts` | Classifies + drafts holding responses for mid-service client messages |
-| `carry-forward-match.ts` | Matches leftover ingredients from past events to upcoming event needs |
-| `business-insights.ts` | AI narrative over revenue, pipeline, seasonality, and profitability data |
+| File                           | What It Does                                                             |
+| ------------------------------ | ------------------------------------------------------------------------ |
+| `allergen-risk.ts`             | Guest × dish allergen risk matrix with safe/may_contain/contains levels  |
+| `client-preference-profile.ts` | Synthesizes all event + message history into structured client profile   |
+| `expense-categorizer.ts`       | Auto-classifies manual expense descriptions into categories              |
+| `lead-scoring.ts`              | Scores inquiries 0–100 by conversion likelihood with hot/warm/cold tier  |
+| `pricing-intelligence.ts`      | Suggests optimal price band from historical accepted quotes              |
+| `sentiment-analysis.ts`        | Analyzes client message thread for sentiment trend + risk flags          |
+| `tax-deduction-identifier.ts`  | Scans expense ledger for potentially missed/miscategorized deductions    |
+| `temp-log-anomaly.ts`          | Checks temperature log entries against FDA Food Code standards           |
+| `client-portal-triage.ts`      | Classifies + drafts holding responses for mid-service client messages    |
+| `carry-forward-match.ts`       | Matches leftover ingredients from past events to upcoming event needs    |
+| `business-insights.ts`         | AI narrative over revenue, pipeline, seasonality, and profitability data |
 
 ### Gemini-Routed (Quality-Critical, Creative)
 
-| File | What It Does |
-|------|-------------|
-| `service-timeline.ts` | Minute-by-minute service run-of-show from chef arrival through cleanup |
-| `prep-timeline.ts` | Backward-scheduled prep plan from service time through all recipe prep |
-| `staff-briefing-ai.ts` | Full AI-drafted staff briefing document (extends deterministic panel) |
-| `contingency-ai.ts` | "If X fails, do Y" plans tailored to each event's specific risk profile |
-| `contract-generator.ts` | Full service agreement draft with all standard private chef clauses |
-| `recipe-scaling.ts` | Technique-aware scaling (not just multiplication — adjusts methods too) |
-| `grocery-consolidation.ts` | Merges all recipe ingredients, groups by store section, flags allergens |
-| `menu-nutritional.ts` | Per-serving nutritional estimates for the full proposed menu |
-| `review-request.ts` | Personalized review request referencing specific dishes and moments |
-| `gratuity-framing.ts` | Recommends approach and drafts language for gratuity presentation |
-| `social-captions.ts` | Instagram/Facebook/Twitter captions in 3 tones (no client details) |
-| `chef-bio.ts` | Updated bio copy, tagline, LinkedIn headline from recent event data |
-| `testimonial-selection.ts` | Scores and surfaces strongest client quotes for portfolio use |
-| `aar-generator.ts` | Full AAR narrative draft from event data (extends partial debrief AI) |
-| `equipment-depreciation-explainer.ts` | Chef-friendly depreciation schedule explanation per item |
-| `vendor-comparison.ts` | Best-value analysis across multiple vendor quotes for same category |
-| `permit-checklist.ts` | Step-by-step permit renewal checklist with lead times and estimated costs |
+| File                                  | What It Does                                                              |
+| ------------------------------------- | ------------------------------------------------------------------------- |
+| `service-timeline.ts`                 | Minute-by-minute service run-of-show from chef arrival through cleanup    |
+| `prep-timeline.ts`                    | Backward-scheduled prep plan from service time through all recipe prep    |
+| `staff-briefing-ai.ts`                | Full AI-drafted staff briefing document (extends deterministic panel)     |
+| `contingency-ai.ts`                   | "If X fails, do Y" plans tailored to each event's specific risk profile   |
+| `contract-generator.ts`               | Full service agreement draft with all standard private chef clauses       |
+| `recipe-scaling.ts`                   | Technique-aware scaling (not just multiplication — adjusts methods too)   |
+| `grocery-consolidation.ts`            | Merges all recipe ingredients, groups by store section, flags allergens   |
+| `menu-nutritional.ts`                 | Per-serving nutritional estimates for the full proposed menu              |
+| `review-request.ts`                   | Personalized review request referencing specific dishes and moments       |
+| `gratuity-framing.ts`                 | Recommends approach and drafts language for gratuity presentation         |
+| `social-captions.ts`                  | Instagram/Facebook/Twitter captions in 3 tones (no client details)        |
+| `chef-bio.ts`                         | Updated bio copy, tagline, LinkedIn headline from recent event data       |
+| `testimonial-selection.ts`            | Scores and surfaces strongest client quotes for portfolio use             |
+| `aar-generator.ts`                    | Full AAR narrative draft from event data (extends partial debrief AI)     |
+| `equipment-depreciation-explainer.ts` | Chef-friendly depreciation schedule explanation per item                  |
+| `vendor-comparison.ts`                | Best-value analysis across multiple vendor quotes for same category       |
+| `permit-checklist.ts`                 | Step-by-step permit renewal checklist with lead times and estimated costs |
 
 ---
 
 ## New UI Components (`components/ai/`)
 
-| Component | Surface Location |
-|-----------|-----------------|
-| `allergen-risk-panel.tsx` | Event detail → Guests section |
-| `service-timeline-panel.tsx` | Event detail → Day-Of tab |
-| `prep-timeline-panel.tsx` | Event detail → Production tab |
-| `pricing-intelligence-panel.tsx` | Event detail → Quote creation |
-| `contract-generator-panel.tsx` | Event detail → Documents section |
-| `aar-generator-panel.tsx` | Event detail → Post-event tab |
-| `review-request-panel.tsx` | Event detail → Post-event actions |
-| `gratuity-panel.tsx` | Event detail → Post-event payment flow |
-| `client-preference-panel.tsx` | Client detail page sidebar |
-| `lead-score-badge.tsx` | Inquiry list view + inquiry detail |
-| `sentiment-badge.tsx` | Client detail → Messages section |
-| `business-insights-panel.tsx` | Dashboard → Business section |
-| `tax-deduction-panel.tsx` | Finance → Tax section |
-| `social-captions-panel.tsx` | Event detail + Marketing section |
-| `chef-bio-panel.tsx` | Settings → Profile page |
-| `testimonial-panel.tsx` | Marketing section + Client portal |
-| `grocery-consolidation-panel.tsx` | Event detail → Grocery quote panel |
-| `menu-nutritional-panel.tsx` | Event detail → Menu builder |
-| `temp-log-anomaly-panel.tsx` | Event detail → TempLogPanel (augment) |
-| `contingency-ai-panel.tsx` | Event detail → ContingencyPanel (augment) |
-| `carry-forward-match-panel.tsx` | Event detail → AvailableLeftovers panel |
-| `permit-checklist-panel.tsx` | Settings → Compliance section |
-| `equipment-depreciation-panel.tsx` | Finance → Tax → Depreciation section |
-| `recipe-scaling-panel.tsx` | Recipe detail page |
-| `staff-briefing-ai-panel.tsx` | Event detail → Staff section |
-| `expense-categorize-suggest.tsx` | Expense entry form (inline) |
+| Component                          | Surface Location                          |
+| ---------------------------------- | ----------------------------------------- |
+| `allergen-risk-panel.tsx`          | Event detail → Guests section             |
+| `service-timeline-panel.tsx`       | Event detail → Day-Of tab                 |
+| `prep-timeline-panel.tsx`          | Event detail → Production tab             |
+| `pricing-intelligence-panel.tsx`   | Event detail → Quote creation             |
+| `contract-generator-panel.tsx`     | Event detail → Documents section          |
+| `aar-generator-panel.tsx`          | Event detail → Post-event tab             |
+| `review-request-panel.tsx`         | Event detail → Post-event actions         |
+| `gratuity-panel.tsx`               | Event detail → Post-event payment flow    |
+| `client-preference-panel.tsx`      | Client detail page sidebar                |
+| `lead-score-badge.tsx`             | Inquiry list view + inquiry detail        |
+| `sentiment-badge.tsx`              | Client detail → Messages section          |
+| `business-insights-panel.tsx`      | Dashboard → Business section              |
+| `tax-deduction-panel.tsx`          | Finance → Tax section                     |
+| `social-captions-panel.tsx`        | Event detail + Marketing section          |
+| `chef-bio-panel.tsx`               | Settings → Profile page                   |
+| `testimonial-panel.tsx`            | Marketing section + Client portal         |
+| `grocery-consolidation-panel.tsx`  | Event detail → Grocery quote panel        |
+| `menu-nutritional-panel.tsx`       | Event detail → Menu builder               |
+| `temp-log-anomaly-panel.tsx`       | Event detail → TempLogPanel (augment)     |
+| `contingency-ai-panel.tsx`         | Event detail → ContingencyPanel (augment) |
+| `carry-forward-match-panel.tsx`    | Event detail → AvailableLeftovers panel   |
+| `permit-checklist-panel.tsx`       | Settings → Compliance section             |
+| `equipment-depreciation-panel.tsx` | Finance → Tax → Depreciation section      |
+| `recipe-scaling-panel.tsx`         | Recipe detail page                        |
+| `staff-briefing-ai-panel.tsx`      | Event detail → Staff section              |
+| `expense-categorize-suggest.tsx`   | Expense entry form (inline)               |
 
 ---
 
@@ -113,6 +113,7 @@ Quality-Critical Creative → GEMINI (gemini-2.0-flash)
 ## AI Policy Compliance
 
 Every new module follows the existing AI policy (`docs/AI_POLICY.md`):
+
 - **Draft only** — no canonical writes without chef action
 - **Chef confirmation required** — all output displayed for review first
 - **Non-blocking** — AI errors degrade gracefully, never break the main flow
@@ -126,7 +127,9 @@ Every new module follows the existing AI policy (`docs/AI_POLICY.md`):
 To connect these panels into the app:
 
 ### Event Detail Page (`app/(chef)/events/[id]/page.tsx`)
+
 Add imports and render within appropriate sections:
+
 - `<AllergenRiskPanel eventId={event.id} />` → near Guests section
 - `<ServiceTimelinePanel eventId={event.id} />` → Day-Of section
 - `<PrepTimelinePanel eventId={event.id} />` → Production section
@@ -144,28 +147,35 @@ Add imports and render within appropriate sections:
 - `<SocialCaptionsPanel eventId={event.id} />` → Post-event actions
 
 ### Client Detail Page
+
 - `<ClientPreferencePanel clientId={client.id} />` → sidebar
 - `<SentimentBadge clientId={client.id} />` → messages section header
 - `<LeadScoreBadge inquiryId={inquiry.id} />` → inquiry list/detail
 
 ### Dashboard
+
 - `<BusinessInsightsPanel />` → Business section
 
 ### Finance/Tax
+
 - `<TaxDeductionPanel />` → finance/tax page
 - `<EquipmentDepreciationPanel />` → finance/tax/depreciation
 
 ### Settings/Profile
+
 - `<ChefBioPanel />` → settings/profile
 - `<PermitChecklistPanel />` → settings/compliance
 
 ### Marketing
+
 - `<TestimonialPanel />` → marketing section
 
 ### Recipe Detail
+
 - `<RecipeScalingPanel recipeId={recipe.id} />` → below recipe card
 
 ### Expense Form (inline)
+
 - `<ExpenseCategorizeSuggest description={desc} amountCents={amount} onAccept={setCategory} />` → expense form
 
 ---

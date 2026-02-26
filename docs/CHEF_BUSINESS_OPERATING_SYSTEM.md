@@ -1,4 +1,5 @@
 # Private Chef Business Operating System
+
 ## The Complete Hierarchy of Everything That Matters
 
 **Version:** 1.0
@@ -14,6 +15,7 @@ This is not organized alphabetically. It is not organized by department.
 It is organized by **what kills the business first if it's neglected.**
 
 Every domain has:
+
 - **What it includes** — the key components, with nothing left out
 - **ChefFlow coverage** — ✅ Built / ⚠️ Partial / ❌ Missing
 - **What breaks** if the domain is neglected
@@ -26,18 +28,18 @@ Work top to bottom. The higher the tier, the more urgent the neglect.
 
 A solo private chef is simultaneously:
 
-| Hat | Function |
-|-----|----------|
-| CEO | Strategy, pricing, positioning, planning |
-| Chef | Recipes, menus, food safety, culinary execution |
-| Sales Rep | Leads, inquiry conversion, proposals |
-| Account Manager | Client relationships, retention, follow-up |
+| Hat                | Function                                             |
+| ------------------ | ---------------------------------------------------- |
+| CEO                | Strategy, pricing, positioning, planning             |
+| Chef               | Recipes, menus, food safety, culinary execution      |
+| Sales Rep          | Leads, inquiry conversion, proposals                 |
+| Account Manager    | Client relationships, retention, follow-up           |
 | Operations Manager | Logistics, scheduling, procurement, day-of execution |
-| Bookkeeper | Invoicing, expenses, tax compliance |
-| Marketer | Social media, website, referrals, brand |
-| HR Manager | Hiring assistants, managing coverage, onboarding |
-| IT Director | Systems, tools, automations, integrations |
-| Customer Service | Problem handling, complaints, reputation |
+| Bookkeeper         | Invoicing, expenses, tax compliance                  |
+| Marketer           | Social media, website, referrals, brand              |
+| HR Manager         | Hiring assistants, managing coverage, onboarding     |
+| IT Director        | Systems, tools, automations, integrations            |
+| Customer Service   | Problem handling, complaints, reputation             |
 
 No domain in this document is optional. Every hat must be worn. The only question is whether a system wears it — or whether the chef carries it alone in their head until something breaks.
 
@@ -54,6 +56,7 @@ No domain in this document is optional. Every hat must be worn. The only questio
 > Every lead from every channel must be captured, routed, and acknowledged. Missing a single lead is not just lost revenue — it is a person who will tell others you didn't respond.
 
 **What it includes:**
+
 - Receiving inquiries from: email, website contact form, referral phone calls, Instagram DMs, text messages, Wix submissions, word-of-mouth handoffs
 - Routing all channels into a single unified inbox — no lead lives only in Gmail, only in a DM, only in a voicemail
 - Acknowledging every inquiry within a defined response window
@@ -76,6 +79,7 @@ Gmail OAuth sync, Wix webhook ingestion, the unified communication inbox with tr
 > The chef must be able to produce a clear, accurate price and a professional proposal document without doing math by hand each time. One mispriced event is a night of work done at a loss.
 
 **What it includes:**
+
 - A deterministic pricing engine (inputs → exact price, not an estimate)
 - Per-person vs. flat-rate vs. package pricing modes
 - Guest count tiers (couples vs. groups vs. large parties)
@@ -101,6 +105,7 @@ The pricing engine at [lib/pricing/compute.ts](lib/pricing/compute.ts) handles a
 > Every dollar owed must be collected, recorded, and traceable. A chef who cannot clearly answer "has this client paid in full?" has a financial risk, not just an accounting inconvenience.
 
 **What it includes:**
+
 - Online card payment via Stripe (deposit and balance)
 - Offline payment recording: Venmo, Zelle, PayPal, cash, check, ACH
 - Automated payment reminders at configured intervals before the event
@@ -133,6 +138,7 @@ draft → proposed → accepted → paid → confirmed → in_progress → compl
 Any non-terminal state can transition to `cancelled`. `completed` and `cancelled` are permanent.
 
 **What it includes:**
+
 - Enforced, irreversible state transitions — you cannot go backward
 - Immutable audit trail of every status change (who, when, from, to)
 - State-gated document generation (grocery list not available until confirmed; receipt not available until completed)
@@ -151,6 +157,7 @@ The 8-state FSM with immutable `event_state_transitions` audit log, server-side 
 > The chef must be legally permitted to operate. If they are not, the business does not exist.
 
 **What it includes:**
+
 - Food handler certification / ServSafe (current, not expired)
 - Liability insurance (general + professional, adequate coverage limits)
 - Business entity filing (LLC, sole proprietor, etc.)
@@ -173,6 +180,7 @@ ChefFlow does not track certifications, insurance policies, licenses, or complia
 > A private chef business lives and dies on word-of-mouth and reviews. One unaddressed disaster can undo years of goodwill. One outstanding event, when properly captured, compounds for years.
 
 **What it includes:**
+
 - Systematic post-event review requests to every client
 - Capture and display of internal reviews (submitted through ChefFlow)
 - External review monitoring (Google, Yelp, Facebook, Resy, OpenTable)
@@ -196,6 +204,7 @@ Internal reviews from clients, external review import from multiple platforms, u
 > The chef will get sick. A family emergency will happen. The question is not whether — it is whether there is a plan.
 
 **What it includes:**
+
 - A list of trusted colleagues who can cover at short notice
 - A handoff document: what the cover chef needs to know (menu, client notes, kitchen layout, key contacts)
 - Client notification templates for unexpected coverage situations
@@ -215,6 +224,7 @@ The chef network and connections system exists for professional discovery. But t
 > Every event must end with a complete financial record before it is marked complete. Money in, money out, everything reconciled.
 
 **What it includes:**
+
 - Balance payment collection or confirmation before completion
 - Tip recording
 - Grocery receipt reconciliation (what was actually spent vs. quoted food cost)
@@ -241,6 +251,7 @@ Offline payment recording, tip logging, AI-powered receipt scanning, and expense
 > The menu is the product. It must be designed with the client's specific needs in mind, documented precisely, approved before any food is purchased, and locked before prep begins.
 
 **What it includes:**
+
 - A recipe library with method notes, timing, allergen flags, and dietary tags
 - Menu templates that can be reused and customized per event
 - Per-dish component tracking (each dish has 2-6 components, each with prep requirements)
@@ -265,14 +276,14 @@ The full culinary data model, recipe library, allergen/dietary flags, seasonal p
 
 **The six documents:**
 
-| Document | Audience | Purpose |
-|----------|----------|---------|
-| Grocery List | Chef (shopping) | What to buy, where, budget, organized by store stop |
-| Prep Sheet | Chef (at-home) | At-home vs. on-site tasks, priority order, departure time |
-| Packing List | Chef (loading car) | Food by transport zone, equipment, verification counts |
-| Execution Sheet | Chef (on-site) | Clean timeline, fire order, allergen warnings |
-| Front-of-House Menu | Client (table) | What's being served, beautifully formatted |
-| Receipt / Invoice | Client (payment) | Financial summary, amounts paid, balance due |
+| Document            | Audience           | Purpose                                                   |
+| ------------------- | ------------------ | --------------------------------------------------------- |
+| Grocery List        | Chef (shopping)    | What to buy, where, budget, organized by store stop       |
+| Prep Sheet          | Chef (at-home)     | At-home vs. on-site tasks, priority order, departure time |
+| Packing List        | Chef (loading car) | Food by transport zone, equipment, verification counts    |
+| Execution Sheet     | Chef (on-site)     | Clean timeline, fire order, allergen warnings             |
+| Front-of-House Menu | Client (table)     | What's being served, beautifully formatted                |
+| Receipt / Invoice   | Client (payment)   | Financial summary, amounts paid, balance due              |
 
 **ChefFlow coverage: ✅ Built**
 All six documents are implemented as generated PDFs. The grocery list handles stop-by-stop organization. The prep sheet has AT HOME / BEFORE LEAVING / ON-SITE sections with priority ordering. The packing list has transport zones (cold, frozen, room_temp, fragile, liquid) with equipment from three sources. The FOH menu auto-delivers to the client at confirmation.
@@ -288,6 +299,7 @@ All six documents are implemented as generated PDFs. The grocery list handles st
 > The grocery run is the most expensive, time-consuming, and error-prone step of every event. An undisciplined procurement process directly costs money.
 
 **What it includes:**
+
 - Finalized grocery list with quantities pulled from recipe ingredients, scaled to guest count
 - Budget guardrail (estimated food cost vs. quoted amount)
 - Store routing (which items come from which store, in travel order)
@@ -312,6 +324,7 @@ Grocery list generation, AI receipt scanning with line-item extraction, expense 
 > The chef has one body. They can only be in one place. Double-booking is not a minor inconvenience — it is a business-ending failure.
 
 **What it includes:**
+
 - A calendar view of all events by date
 - Hard enforcement: no two confirmed events on the same date
 - Soft-hold for proposed events (prevent other bookings from being confirmed on that date)
@@ -335,6 +348,7 @@ The events table has `event_date` but no `start_ts / end_ts`. There is no overla
 > If the chef doesn't know how many hours each event actually takes, they cannot know their true hourly rate. A $3,000 event that takes 22 hours is $136/hr. A $2,000 event that takes 8 hours is $250/hr.
 
 **What it includes:**
+
 - Phase-level time tracking: shopping, prep, travel, setup, service, cleanup, debrief
 - Comparison of actual time vs. historical average for the same event type
 - Cumulative hours per period (monthly, annual)
@@ -356,6 +370,7 @@ Phase-level time fields, insights analytics with phase time breakdowns and servi
 > Every event is an opportunity to improve. Without a structured debrief, lessons evaporate by the next morning. With one, the chef gets better every single time.
 
 **What it includes:**
+
 - Rating dimensions: calm under pressure, preparation quality, execution quality, client satisfaction
 - What went well (positive reinforcement)
 - What broke or was forgotten (feeds the non-negotiables checklist)
@@ -376,6 +391,7 @@ The post-event debrief system is complete. It uses fill-in-the-blanks detection 
 > Clients have questions before, during, and after their event. Unanswered questions create anxiety and reduce perceived value.
 
 **What it includes:**
+
 - Real-time chat between chef and client
 - File and image sharing in chat (menu updates, shopping confirmations)
 - Message history preserved and searchable
@@ -402,6 +418,7 @@ Real-time chat with file/image sharing, history, typing indicators, presence, se
 > The best private chef businesses are built on deep relationships. Clients return not because the food was good — but because the chef remembered that their daughter is lactose intolerant and their husband won't drink Chardonnay.
 
 **What it includes:**
+
 - Complete profile per client: name, contact, location, dietary restrictions, allergies, preferences, occasion history
 - Kitchen notes (equipment available, oven model, parking instructions)
 - Household notes (pets, access codes, table setup preferences)
@@ -427,6 +444,7 @@ All of the above is implemented. Client profiles, dietary/allergy/preference dat
 > The chef must know, at any moment, whether they are making money. Not just whether revenue is coming in — but whether each event type, each client, and each month is actually profitable.
 
 **What it includes:**
+
 - Revenue tracking by period, client, and event type
 - Expense tracking by category with receipt documentation
 - Per-event P&L: service fee received minus food cost (gross margin)
@@ -450,6 +468,7 @@ The ledger is immutable and accurate. Revenue tracking, expense categorization, 
 > April is not the time to reconstruct a year of finances. Tax preparation is a year-round discipline, not an annual emergency.
 
 **What it includes:**
+
 - Annual income summary (total gross receipts, categorized by quarter)
 - 1099-ready summary (total earned from each payment method, deductible amounts)
 - Self-employment tax estimation (15.3% on net earnings)
@@ -478,6 +497,7 @@ Financial export as CSV exists. Expense categories are rich and well-structured.
 > The chef cannot personally follow up on every lead, every unpaid invoice, every dormant client, and every post-event review request. These must run automatically.
 
 **What it includes:**
+
 - Quote expiry reminders to clients (before auto-expiry)
 - Payment reminders at configurable intervals before the event
 - Post-event review request (3 days after completion)
@@ -501,6 +521,7 @@ The full automation engine with built-in rules, a custom rule builder with guide
 > The majority of private chef clients come from referrals. Knowing which sources generate which revenue — and nurturing those sources — is fundamental to sustainable growth.
 
 **What it includes:**
+
 - Partner profiles: event planners, concierges, florists, venues, real estate agents, nannies
 - Attribution: which partner sent which client, which events resulted
 - Revenue by partner source
@@ -522,6 +543,7 @@ Partner profiles, attribution, revenue tracking, analytics, shareable report lin
 > Without a target, every month is just survival. With one, every month has a measurable progress signal.
 
 **What it includes:**
+
 - Annual revenue target broken into monthly milestones
 - Booking count targets (events per month)
 - New client acquisition goals
@@ -543,6 +565,7 @@ The multi-goal system with six goal types, a 4-step setup wizard, monthly snapsh
 > A handshake is not a contract. Every event requires a written agreement — not because clients are untrustworthy, but because clarity prevents conflict.
 
 **What it includes:**
+
 - Contract templates with variable fields: client name, event date, location, scope, menu summary, payment terms, cancellation policy
 - E-signature workflow (client signs digitally; signature is timestamped and stored)
 - Contract stored and linked to the event record
@@ -571,6 +594,7 @@ The cancellation policy engine exists and is displayed to clients on the payment
 > Knowing that 40 inquiries came in last quarter means nothing if you don't know that 30% became quotes, 15% became bookings, and that the ones who ghosted all came from Instagram.
 
 **What it includes:**
+
 - Conversion rate at each pipeline stage (inquiry → quote → accepted → paid)
 - Win/loss analysis (why did leads go cold? what stage do most drop off?)
 - Source attribution (which channels produce the highest-converting leads?)
@@ -593,6 +617,7 @@ The inquiry FSM tracks stages. Source attribution exists. The unified inbox hand
 > The chef's existing client list is the most valuable asset they have. Most of them would book again — they just need a reason to remember.
 
 **What it includes:**
+
 - Email broadcast to all clients or a defined segment (all clients who haven't booked in 6 months)
 - Seasonal promotions (summer menu launch, holiday availability announcement)
 - Re-engagement campaigns (we miss you — here's something special)
@@ -613,6 +638,7 @@ The transactional email system is complete (event confirmations, payment receipt
 > Social media is the chef's portfolio in motion. It is evidence of craft, consistency, and creativity to every potential client who looks them up.
 
 **What it includes:**
+
 - Annual content calendar with 52 planned posting weeks
 - Content vault: event photos, dish photos, behind-the-scenes videos, quotes, testimonials
 - Post drafting with platform-specific caption and hashtag sets (Instagram, TikTok, Facebook, Pinterest)
@@ -636,6 +662,7 @@ The social queue system with annual generation, content vault, post editing, pre
 > The chef's public page is their storefront. Someone who hears about them through a referral will look them up before calling. What they find determines whether they contact the chef at all.
 
 **What it includes:**
+
 - Public chef profile at a memorable URL (cheflowhq.com/chef/[name])
 - High-quality bio, cuisine style, service description
 - Portfolio gallery (a selection of past event photos, with client permission)
@@ -659,6 +686,7 @@ Public profile page, public inquiry form, network opt-in/out, and the integratio
 > Gift cards require zero chef time to sell and can be redeemed months later. Loyalty tiers give existing clients a reason to stay loyal rather than try someone new.
 
 **What it includes:**
+
 - Self-serve gift card purchase page (client buys a gift card without chef involvement)
 - Gift card issuance and delivery via email
 - Redemption at checkout with ledger credit
@@ -681,6 +709,7 @@ Gift card purchase, issuance, and redemption workflows, the loyalty program with
 > Revenue at the end of the year is largely a function of reviews collected all year. Reviews are compounding — the chef with 80 five-star reviews will convert referrals at a higher rate than the chef with 8.
 
 **What it includes:**
+
 - Post-event review request sent automatically at a defined interval after completion
 - Internal review collection (star rating + written feedback)
 - External review monitoring (Google Business Profile, Yelp, Facebook)
@@ -709,6 +738,7 @@ Internal review collection, external review import, unified reviews page, and pu
 > Every event that starts with a blank grocery list re-buys everything. Every event that checks what's on hand first saves money and a second shopping trip.
 
 **What it includes:**
+
 - On-hand pantry inventory (staples, leftover event ingredients, specialty items)
 - Carry-forward detection: when generating a grocery list, check pantry first and deduct what's on hand
 - Post-event leftover logging: ingredients not used get added to pantry inventory
@@ -728,6 +758,7 @@ The grocery list generator has a placeholder for this. The `unused_ingredients` 
 > Equipment fails at the worst possible moment when it's not tracked. And nobody can claim a replacement on insurance without an inventory list.
 
 **What it includes:**
+
 - Master equipment list: every item the chef owns and uses professionally
 - Condition tracking (excellent, good, needs repair, needs replacement)
 - Maintenance schedule: knife sharpening, cutting board oil, deep cleaning dates
@@ -748,6 +779,7 @@ Equipment is tracked only at the event level (what to bring to this specific eve
 > Weekly meal prep clients are the most stable revenue a private chef can have. Managing them with individual events is possible but inefficient. They need a dedicated billing model.
 
 **What it includes:**
+
 - Recurring service agreements (weekly, bi-weekly, monthly)
 - Automatic billing at the start of each service period
 - Automatic event creation per service date
@@ -768,6 +800,7 @@ Individual events are fully supported. Recurring billing, subscription managemen
 > Every time the chef writes the same response from scratch, they're wasting time that a saved template could give back. Every lesson that isn't written down is forgotten within a week.
 
 **What it includes:**
+
 - Response templates: inquiry acknowledgment, quote follow-up, payment reminder, post-event thank-you
 - SOP documents: how to set up for a formal dinner, how to handle a dietary emergency on-site, how to handle a last-minute guest count increase
 - Chef journal: private space for reflection, growth observations, lessons from difficult events
@@ -788,6 +821,7 @@ Response templates exist. The AI agent brain is built (static documents, not dyn
 > It is not enough to know what events exist. The system must understand that the chef needs time before, between, and after events — and enforce it automatically.
 
 **What it includes:**
+
 - Prep buffer enforcement: the day before a 12-person dinner party should not accept another event without an explicit override
 - Recovery buffer: the day after a demanding event should not be booked for prep-heavy work
 - Minimum lead time: the system should refuse to confirm events booked with less than X days notice unless overridden
@@ -806,6 +840,7 @@ This connects directly to the critical gap in Tier 2.4 (Scheduling and Availabil
 > Every mile driven for business is a deductible expense. Without a log, the deduction is lost. A private chef can drive 10,000+ business miles per year — at the IRS rate, that is thousands of dollars in deductions.
 
 **What it includes:**
+
 - Trip log linked to events (going to shop, going to client, returning home)
 - Auto-populated from event location when possible
 - IRS standard mileage rate applied automatically
@@ -831,6 +866,7 @@ The pricing engine uses mileage to calculate travel costs for quotes. But there 
 > The moment the chef hires a prep cook, a server, or a sous chef — even for one event — they need a system for that person.
 
 **What it includes:**
+
 - Team member accounts with event-scoped access (the assistant can see this event's prep sheet but not the client's payment history)
 - Role-based permissions: assistant vs. sous chef vs. event coordinator
 - Task assignment with deadlines
@@ -851,6 +887,7 @@ The platform is currently single-user per chef tenant. The architecture (tenant 
 > The chef's trusted peers are also their safety net. A structured coverage protocol turns a disaster scenario into a managed handoff.
 
 **What it includes:**
+
 - Coverage contact list: trusted colleagues with their availability and cuisine specialties
 - Handoff document generator: produces a single PDF with everything a coverage chef needs (menu, client profile, kitchen notes, timeline, access instructions)
 - Client notification workflow: professional communication explaining the situation without panic
@@ -869,6 +906,7 @@ The chef network and connection system exists for discovery. No coverage workflo
 > Some chefs run two distinct service lines: intimate dinner experiences at one price point and corporate catering at another. These require different menus, pricing, branding, and communication styles.
 
 **What it includes:**
+
 - Multiple brand profiles under one operator account
 - Separate pricing, menus, and branding per service line
 - Separate public profiles and inquiry forms
@@ -888,15 +926,15 @@ Single brand per chef tenant. No sub-brand or service line segmentation exists.
 
 **Priority integration list:**
 
-| Integration | Value | Priority |
-|-------------|-------|---------|
-| Google Calendar (two-way sync) | Chef's events appear on personal calendar; blocks from calendar reflect in ChefFlow | **Critical** |
-| iCal export / subscription feed | One-click subscribe for external calendar apps | High |
-| QuickBooks / Wave (financial export) | Accountant-ready export without re-entering data | High |
-| Calendly / Acuity (intake scheduling) | Discovery calls book automatically | Medium |
-| Instagram / TikTok / Facebook (publishing) | Social queue publishes without manual steps | Medium |
-| Zapier / Make (custom automation) | Chef connects ChefFlow to any other tool | Medium |
-| Square / Clover (POS) | On-site point-of-sale for event-day add-ons | Low |
+| Integration                                | Value                                                                               | Priority     |
+| ------------------------------------------ | ----------------------------------------------------------------------------------- | ------------ |
+| Google Calendar (two-way sync)             | Chef's events appear on personal calendar; blocks from calendar reflect in ChefFlow | **Critical** |
+| iCal export / subscription feed            | One-click subscribe for external calendar apps                                      | High         |
+| QuickBooks / Wave (financial export)       | Accountant-ready export without re-entering data                                    | High         |
+| Calendly / Acuity (intake scheduling)      | Discovery calls book automatically                                                  | Medium       |
+| Instagram / TikTok / Facebook (publishing) | Social queue publishes without manual steps                                         | Medium       |
+| Zapier / Make (custom automation)          | Chef connects ChefFlow to any other tool                                            | Medium       |
+| Square / Clover (POS)                      | On-site point-of-sale for event-day add-ons                                         | Low          |
 
 **ChefFlow coverage: ⚠️ Partial**
 Gmail OAuth and Wix webhook ingestion are live. The Integration Platform Master Plan with the provider-agnostic hub architecture is fully designed. Google Calendar sync is designed but not implemented.
@@ -908,6 +946,7 @@ Gmail OAuth and Wix webhook ingestion are live. The Integration Platform Master 
 > At scale, hindsight is not enough. The chef needs to know what is likely to happen next month based on what is in the pipeline today.
 
 **What it includes:**
+
 - Revenue forecasting: pipeline-weighted forward projections (confirmed events + probable conversions)
 - Demand forecasting: which months will be slow based on 3 years of history?
 - Client lifetime value prediction: which new clients are likely to become repeat bookers?
@@ -927,41 +966,41 @@ The insights page with 14 analytics dimensions, menu engineering, revenue engine
 
 ## Do These Now
 
-| # | Feature | Tier | Why |
-|---|---------|------|-----|
-| 1 | Calendar + double-booking prevention | 2 | One double-booking is catastrophic and irreversible |
-| 2 | Contract + e-signature system | 3 | Every event needs a signed agreement; currently unprotected |
-| 3 | Email broadcast + campaigns | 4 | 200 past clients, zero outreach capability; direct revenue |
-| 4 | 1099 + tax preparation summary | 5 | Annual pain point; April is not the time to reconstruct a year |
+| #   | Feature                              | Tier | Why                                                            |
+| --- | ------------------------------------ | ---- | -------------------------------------------------------------- |
+| 1   | Calendar + double-booking prevention | 2    | One double-booking is catastrophic and irreversible            |
+| 2   | Contract + e-signature system        | 3    | Every event needs a signed agreement; currently unprotected    |
+| 3   | Email broadcast + campaigns          | 4    | 200 past clients, zero outreach capability; direct revenue     |
+| 4   | 1099 + tax preparation summary       | 5    | Annual pain point; April is not the time to reconstruct a year |
 
 ## Build in the Next 90 Days
 
-| # | Feature | Tier | Why |
-|---|---------|------|-----|
-| 5 | Inventory + pantry management | 5 | Real money wasted every event on re-buying on-hand items |
-| 6 | Subscription + retainer billing | 5 | Weekly clients need automation, not manual invoicing |
-| 7 | Social media publishing | 4 | Queue system built; last mile is publishing |
-| 8 | Self-serve gift card purchase | 4 | Zero-labor revenue; client can buy without chef involvement |
+| #   | Feature                         | Tier | Why                                                         |
+| --- | ------------------------------- | ---- | ----------------------------------------------------------- |
+| 5   | Inventory + pantry management   | 5    | Real money wasted every event on re-buying on-hand items    |
+| 6   | Subscription + retainer billing | 5    | Weekly clients need automation, not manual invoicing        |
+| 7   | Social media publishing         | 4    | Queue system built; last mile is publishing                 |
+| 8   | Self-serve gift card purchase   | 4    | Zero-labor revenue; client can buy without chef involvement |
 
 ## Build in 6 Months
 
-| # | Feature | Tier | Why |
-|---|---------|------|-----|
-| 9 | Lead conversion funnel analytics | 4 | Understand which follow-up behaviors actually close business |
-| 10 | Mileage log | 5 | Thousands in IRS deductions lost without documentation |
-| 11 | Menu approval workflow | 2 | Client sign-off before menu is locked |
-| 12 | Per-event P&L view | 3 | Margin visibility per engagement |
-| 13 | Automated post-event review request | 4 | Increases review volume without chef effort |
-| 14 | Emergency coverage protocol | 1 | One sick night without a system ends a relationship |
+| #   | Feature                             | Tier | Why                                                          |
+| --- | ----------------------------------- | ---- | ------------------------------------------------------------ |
+| 9   | Lead conversion funnel analytics    | 4    | Understand which follow-up behaviors actually close business |
+| 10  | Mileage log                         | 5    | Thousands in IRS deductions lost without documentation       |
+| 11  | Menu approval workflow              | 2    | Client sign-off before menu is locked                        |
+| 12  | Per-event P&L view                  | 3    | Margin visibility per engagement                             |
+| 13  | Automated post-event review request | 4    | Increases review volume without chef effort                  |
+| 14  | Emergency coverage protocol         | 1    | One sick night without a system ends a relationship          |
 
 ## Scale Phase
 
-| # | Feature | Tier | Trigger |
-|---|---------|------|---------|
-| 15 | Team + assistant management | 6 | First hire |
-| 16 | Multi-brand support | 6 | Second service line |
-| 17 | Platform integrations (QuickBooks, publishing) | 6 | 100+ events/year |
-| 18 | Revenue forecasting + cohort analytics | 6 | 3 years of data |
+| #   | Feature                                        | Tier | Trigger             |
+| --- | ---------------------------------------------- | ---- | ------------------- |
+| 15  | Team + assistant management                    | 6    | First hire          |
+| 16  | Multi-brand support                            | 6    | Second service line |
+| 17  | Platform integrations (QuickBooks, publishing) | 6    | 100+ events/year    |
+| 18  | Revenue forecasting + cohort analytics         | 6    | 3 years of data     |
 
 ---
 
@@ -987,4 +1026,4 @@ Every domain in this system is built on these non-negotiable constraints. Any fe
 
 ---
 
-*This document is the north star for ChefFlow. When in doubt about what to build next, start here. When a feature request arrives, find where it lives in this hierarchy. When something falls through the cracks, find the gap in this document and fix it.*
+_This document is the north star for ChefFlow. When in doubt about what to build next, start here. When a feature request arrives, find where it lives in this hierarchy. When something falls through the cracks, find the gap in this document and fix it._

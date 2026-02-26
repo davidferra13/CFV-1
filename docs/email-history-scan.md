@@ -38,6 +38,7 @@ The **Historical Email Scan** system fixes this. It's an opt-in background featu
 | `historical_scan_last_run_at` | `TIMESTAMPTZ` | Last cron batch timestamp |
 
 **New table `gmail_historical_findings`:**
+
 - One row per email that classified as `inquiry` or `existing_thread` at `high` or `medium` confidence
 - Unique on `(tenant_id, gmail_message_id)` — same dedup guarantee as `gmail_sync_log`
 - Status lifecycle: `pending → imported | dismissed`
@@ -62,15 +63,15 @@ Added `listMessagesPage(accessToken, { pageToken?, query?, maxResults? })` — a
 
 ### Server Actions (`lib/gmail/historical-scan-actions.ts`)
 
-| Action | Purpose |
-|---|---|
-| `enableHistoricalEmailScan()` | Sets `enabled=true, status='idle'` |
-| `disableHistoricalEmailScan()` | Sets `enabled=false, status='paused'` — preserves progress |
-| `getHistoricalScanStatus()` | Returns scan state for settings display |
-| `getHistoricalFindings(filter, limit)` | Fetches findings by status |
-| `importHistoricalFinding(findingId)` | Parses email → creates client + inquiry → marks `imported` |
-| `dismissHistoricalFinding(findingId)` | Marks single finding as `dismissed` |
-| `dismissAllFindings(filter)` | Batch dismiss with optional confidence/classification filter |
+| Action                                 | Purpose                                                      |
+| -------------------------------------- | ------------------------------------------------------------ |
+| `enableHistoricalEmailScan()`          | Sets `enabled=true, status='idle'`                           |
+| `disableHistoricalEmailScan()`         | Sets `enabled=false, status='paused'` — preserves progress   |
+| `getHistoricalScanStatus()`            | Returns scan state for settings display                      |
+| `getHistoricalFindings(filter, limit)` | Fetches findings by status                                   |
+| `importHistoricalFinding(findingId)`   | Parses email → creates client + inquiry → marks `imported`   |
+| `dismissHistoricalFinding(findingId)`  | Marks single finding as `dismissed`                          |
+| `dismissAllFindings(filter)`           | Batch dismiss with optional confidence/classification filter |
 
 ### Cron Job (`app/api/scheduled/email-history-scan/route.ts`)
 
@@ -99,19 +100,20 @@ Added `listMessagesPage(accessToken, { pageToken?, query?, maxResults? })` — a
 
 ## How Opt-In / Opt-Out Works
 
-| Action | Result |
-|---|---|
-| Toggle ON | `enabled=true, status='idle'` → cron picks it up within 15 min |
-| Toggle OFF | `enabled=false, status='paused'` → cron skips chef; progress preserved |
-| Gmail disconnected | Cron skips because `gmail_connected=false`; scan effectively paused |
-| Toggle ON after pause | Resumes from saved `historical_scan_page_token` — does not restart |
-| Scan completes | `status='completed'` — cron skips permanently; all findings available to review |
+| Action                | Result                                                                          |
+| --------------------- | ------------------------------------------------------------------------------- |
+| Toggle ON             | `enabled=true, status='idle'` → cron picks it up within 15 min                  |
+| Toggle OFF            | `enabled=false, status='paused'` → cron skips chef; progress preserved          |
+| Gmail disconnected    | Cron skips because `gmail_connected=false`; scan effectively paused             |
+| Toggle ON after pause | Resumes from saved `historical_scan_page_token` — does not restart              |
+| Scan completes        | `status='completed'` — cron skips permanently; all findings available to review |
 
 ---
 
 ## Import Flow
 
 When a chef clicks **Import as Inquiry** on a finding:
+
 1. The finding's `body_preview` (first 500 chars) is parsed by `parseInquiryFromText()` (existing)
 2. Sender email/name extracted from `from_address` field
 3. `createClientFromLead()` finds or creates the client record (existing)

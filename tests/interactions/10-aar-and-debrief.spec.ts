@@ -25,7 +25,9 @@ test.describe('AAR — Structure', () => {
     await page.goto(`/events/${seedIds.eventIds.completed}/aar`)
     await page.waitForLoadState('networkidle')
     // Should show the event name or occasion
-    await expect(page.getByText(/TEST Completed New Years Dinner|completed/i)).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText(/TEST Completed New Years Dinner|completed/i)).toBeVisible({
+      timeout: 10_000,
+    })
   })
 
   test('AAR has "How calm were you?" rating', async ({ page, seedIds }) => {
@@ -67,7 +69,7 @@ test.describe('AAR — Structure', () => {
 
   test('AAR does not crash when ratings are clicked', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/events/${seedIds.eventIds.completed}/aar`)
     await page.waitForLoadState('networkidle')
@@ -87,7 +89,7 @@ test.describe('AAR — Structure', () => {
 test.describe('AAR — Form Filling', () => {
   test('Can fill calm rating + note + save without crashing', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/events/${seedIds.eventIds.completed}/aar`)
     await page.waitForLoadState('networkidle')
@@ -168,7 +170,7 @@ test.describe('Debrief — Structure', () => {
 
   test('Debrief does not crash on filling fields', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/events/${seedIds.eventIds.completed}/debrief`)
     await page.waitForLoadState('networkidle')
@@ -195,7 +197,7 @@ test.describe('Interactive / Mid-Service Notes', () => {
 
   test('Interactive page does not crash', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/events/${seedIds.eventIds.confirmed}/interactive`)
     await page.waitForLoadState('networkidle')

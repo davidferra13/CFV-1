@@ -10,7 +10,14 @@ import { z } from 'zod'
 
 // --- Schemas ---
 
-const SubstitutionReasonEnum = z.enum(['unavailable', 'price', 'quality', 'preference', 'forgot', 'other'])
+const SubstitutionReasonEnum = z.enum([
+  'unavailable',
+  'price',
+  'quality',
+  'preference',
+  'forgot',
+  'other',
+])
 
 const LogSubstitutionSchema = z.object({
   event_id: z.string().uuid(),

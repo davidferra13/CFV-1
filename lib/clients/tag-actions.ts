@@ -45,7 +45,10 @@ export async function addClientTag(clientId: string, tag: string): Promise<void>
 
   await supabase
     .from('client_tags' as any)
-    .upsert({ client_id: clientId, tenant_id: user.tenantId!, tag: trimmed }, { onConflict: 'client_id,tag' })
+    .upsert(
+      { client_id: clientId, tenant_id: user.tenantId!, tag: trimmed },
+      { onConflict: 'client_id,tag' }
+    )
 
   revalidatePath(`/clients/${clientId}`)
   revalidatePath('/clients')

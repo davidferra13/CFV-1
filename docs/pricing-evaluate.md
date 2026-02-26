@@ -67,40 +67,40 @@ One function. Internally it runs six steps:
 
 ```typescript
 interface PricingEvaluationInput {
-  serviceType: ServiceType     // required
-  guestCount: number           // required
-  courseCount?: number         // required for private_dinner
-  eventDate?: string           // ISO YYYY-MM-DD
+  serviceType: ServiceType // required
+  guestCount: number // required
+  courseCount?: number // required for private_dinner
+  eventDate?: string // ISO YYYY-MM-DD
   distanceMiles?: number
   multiNightPackage?: string
-  numberOfDays?: number        // for weekly types
+  numberOfDays?: number // for weekly types
   weekendPremiumEnabled?: boolean
   addOns?: AddOnInput[]
-  eligibility?: PricingEligibilityContext  // AI gate; omit to always allow
-  adjustment?: PricingAdjustment           // discount / surcharge / override
+  eligibility?: PricingEligibilityContext // AI gate; omit to always allow
+  adjustment?: PricingAdjustment // discount / surcharge / override
 }
 ```
 
 ### Result (key fields)
 
-| Field | What it is |
-|-------|-----------|
-| `pricingAllowed` | Whether pricing can be shown to client right now |
-| `eligibilityFailReasons` | Why not (empty when allowed) |
-| `breakdown` | Full `PricingBreakdown` from the engine — always computed |
-| `hasRange` | true for weekly_standard / weekly_commitment |
-| `rangeLow` / `rangeHigh` | Low and high sides of weekly day rate range |
-| `finalTotalCents` | Total after any adjustment |
-| `finalDepositCents` | 50% of finalTotal |
-| `finalBalanceCents` | Remaining balance |
-| `adjustmentApplied` | Whether an adjustment was applied |
-| `clientFacingText` | Paste-ready email paragraph (`null` when requiresCustomPricing) |
-| `chefSummaryText` | Full internal breakdown (never send to client) |
-| `requiresCustomPricing` | Engine couldn't compute a final number |
-| `validationErrors` | Specific input errors |
-| `pendingConfirmations` | Prices needing chef confirmation before quoting |
-| `warnings` | Non-blocking notes (feasibility, missing data, etc.) |
-| `chefChecklist` | Pre-send verification list |
+| Field                    | What it is                                                      |
+| ------------------------ | --------------------------------------------------------------- |
+| `pricingAllowed`         | Whether pricing can be shown to client right now                |
+| `eligibilityFailReasons` | Why not (empty when allowed)                                    |
+| `breakdown`              | Full `PricingBreakdown` from the engine — always computed       |
+| `hasRange`               | true for weekly_standard / weekly_commitment                    |
+| `rangeLow` / `rangeHigh` | Low and high sides of weekly day rate range                     |
+| `finalTotalCents`        | Total after any adjustment                                      |
+| `finalDepositCents`      | 50% of finalTotal                                               |
+| `finalBalanceCents`      | Remaining balance                                               |
+| `adjustmentApplied`      | Whether an adjustment was applied                               |
+| `clientFacingText`       | Paste-ready email paragraph (`null` when requiresCustomPricing) |
+| `chefSummaryText`        | Full internal breakdown (never send to client)                  |
+| `requiresCustomPricing`  | Engine couldn't compute a final number                          |
+| `validationErrors`       | Specific input errors                                           |
+| `pendingConfirmations`   | Prices needing chef confirmation before quoting                 |
+| `warnings`               | Non-blocking notes (feasibility, missing data, etc.)            |
+| `chefChecklist`          | Pre-send verification list                                      |
 
 ---
 
@@ -111,6 +111,7 @@ formatPricingForChef(breakdown: PricingBreakdown, options?: {...}): string
 ```
 
 Can be called standalone with just a `PricingBreakdown`. The options object adds:
+
 - Rate range display (low/high sides)
 - Adjustment summary
 - Service type label and formatted date
@@ -173,11 +174,11 @@ The summary reflects `finalTotalCents` (post-adjustment) and appends `(adjusted)
 
 `weekendPremiumEnabled` has different defaults depending on call context:
 
-| Context | Default |
-| ------- | ------- |
+| Context                                     | Default                                 |
+| ------------------------------------------- | --------------------------------------- |
 | No `eligibility` passed (chef quoting tool) | `true` — apply on Fri/Sat automatically |
-| `eligibility` context passed (AI path) | `false` — must be explicit opt-in |
-| Explicitly passed either way | Explicit value is always respected |
+| `eligibility` context passed (AI path)      | `false` — must be explicit opt-in       |
+| Explicitly passed either way                | Explicit value is always respected      |
 
 **Rationale:** The chef is building a real quote and needs to see the accurate price. The AI should never silently apply a premium the client hasn't been told about.
 
@@ -208,10 +209,12 @@ if (result.clientFacingText === null) {
 `assessEligibility()` formalises the rules from `docs/agent-brain/04-PRICING.md`:
 
 **Trigger (at least one must be true):**
+
 - `clientAskedForPricing: true`
 - `clientReferencedPriorPricing: true`
 
 **Gate (all must be true):**
+
 - `guestCountKnown: true`
 - `dateKnown: true`
 - `locationKnown: true`
@@ -248,11 +251,11 @@ This is correct because weekend and holiday premiums are percentage-based on `se
 
 Three types:
 
-| Type | Effect |
-|------|--------|
-| `loyalty_discount` | Subtracts `amountCents` from total. Deposit recalculated on new total. |
-| `surcharge` | Adds `amountCents` to total. Deposit recalculated on new total. |
-| `custom_total` | Replaces entire computed total with `totalCents`. Deposit recalculated. |
+| Type               | Effect                                                                  |
+| ------------------ | ----------------------------------------------------------------------- |
+| `loyalty_discount` | Subtracts `amountCents` from total. Deposit recalculated on new total.  |
+| `surcharge`        | Adds `amountCents` to total. Deposit recalculated on new total.         |
+| `custom_total`     | Replaces entire computed total with `totalCents`. Deposit recalculated. |
 
 The original `breakdown.totalServiceCents` is preserved. Only `finalTotalCents`, `finalDepositCents`, `finalBalanceCents` reflect the adjustment.
 
@@ -270,12 +273,12 @@ Collected from the breakdown and input:
 
 ## How It Connects to the System
 
-| System | How it uses this |
-|--------|-----------------|
-| **Chef quote form** | Call `evaluateChefPricing()` on form submission; gate on `requiresCustomPricing`; show `chefSummaryText` for review; submit `finalTotalCents` to `createQuoteFromPricingInput()` |
-| **AI agent brain** | Pass `eligibility` context; gate response on `pricingAllowed`; use `clientFacingText` as the pricing paragraph |
-| **Event detail page** | Call with no eligibility context to always compute; display breakdown for chef |
-| **Inquiry response composer** | Use `pricingAllowed` to decide whether to show pricing in draft reply |
+| System                        | How it uses this                                                                                                                                                                 |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Chef quote form**           | Call `evaluateChefPricing()` on form submission; gate on `requiresCustomPricing`; show `chefSummaryText` for review; submit `finalTotalCents` to `createQuoteFromPricingInput()` |
+| **AI agent brain**            | Pass `eligibility` context; gate response on `pricingAllowed`; use `clientFacingText` as the pricing paragraph                                                                   |
+| **Event detail page**         | Call with no eligibility context to always compute; display breakdown for chef                                                                                                   |
+| **Inquiry response composer** | Use `pricingAllowed` to decide whether to show pricing in draft reply                                                                                                            |
 
 ---
 
@@ -291,12 +294,12 @@ Collected from the breakdown and input:
 
 These come from constants.ts and are surfaced through `pendingConfirmations` in every evaluation that uses them:
 
-| Item | Current Value | Status |
-|------|---------------|--------|
-| Wine pairing | $35/person | Confirm |
-| Charcuterie board | $150 flat | Confirm |
-| Extra appetizer course | $25/person | Confirm |
-| Birthday dessert | $75 flat | Confirm |
+| Item                           | Current Value  | Status           |
+| ------------------------------ | -------------- | ---------------- |
+| Wine pairing                   | $35/person     | Confirm          |
+| Charcuterie board              | $150 flat      | Confirm          |
+| Extra appetizer course         | $25/person     | Confirm          |
+| Birthday dessert               | $75 flat       | Confirm          |
 | 3-night packages (×4 variants) | $0 placeholder | Set actual price |
 | 4-night packages (×4 variants) | $0 placeholder | Set actual price |
-| Minimum booking floor | $300 | Confirm |
+| Minimum booking floor          | $300           | Confirm          |

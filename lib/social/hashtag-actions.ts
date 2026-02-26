@@ -67,7 +67,8 @@ export async function updateHashtagSet(
 
   const updates: Record<string, unknown> = {}
   if (input.set_name !== undefined) updates.set_name = input.set_name.trim()
-  if (input.hashtags !== undefined) updates.hashtags = input.hashtags.map((h) => h.trim()).filter(Boolean)
+  if (input.hashtags !== undefined)
+    updates.hashtags = input.hashtags.map((h) => h.trim()).filter(Boolean)
   if ('pillar' in input) updates.pillar = input.pillar ?? null
 
   const { data, error } = await supabase

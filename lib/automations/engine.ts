@@ -14,10 +14,10 @@ import type { AutomationRule, AutomationContext, TriggerEvent, Condition } from 
 // no_response_timeout) from firing hundreds of times per cycle.
 
 const COOLDOWN_HOURS: Partial<Record<TriggerEvent, number>> = {
-  event_approaching: 12,   // at most once per 12h per event
+  event_approaching: 12, // at most once per 12h per event
   no_response_timeout: 24, // at most once per 24h per inquiry
-  follow_up_overdue: 24,   // at most once per 24h (rescheduling resets the trigger)
-  quote_expiring: 24,      // at most once per 24h per quote
+  follow_up_overdue: 24, // at most once per 24h (rescheduling resets the trigger)
+  quote_expiring: 24, // at most once per 24h per quote
 }
 
 // ─── Main Entry Point ────────────────────────────────────────────────────

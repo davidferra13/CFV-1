@@ -40,6 +40,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ## Core Entities
 
 ### Chef
+
 **Definition**: A tenant owner who operates a culinary business using ChefFlow.
 
 **Usage**: Always capitalize when referring to the role (e.g., "Chef portal"). Lowercase when generic (e.g., "a chef prepares food").
@@ -51,6 +52,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Client
+
 **Definition**: An end-user customer who books events with a Chef.
 
 **Usage**: Always capitalize when referring to the role (e.g., "Client portal"). Lowercase when generic.
@@ -64,6 +66,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Tenant
+
 **Definition**: An isolated data partition belonging to a single Chef. All data is scoped to a tenant.
 
 **Usage**: "Tenant" and "Chef" are often synonymous (tenant_id = chef.id), but "tenant" emphasizes data isolation, while "Chef" emphasizes the user role.
@@ -75,6 +78,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Event
+
 **Definition**: A booked culinary service with a specific date, location, client, and menu.
 
 **Usage**: Singular "event", plural "events". Not "booking", "job", "gig", "order".
@@ -86,6 +90,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Menu
+
 **Definition**: A structured list of dishes (sections + items) created by a Chef.
 
 **Usage**: Can be a "menu template" (reusable) or an "event menu" (linked to specific event).
@@ -97,6 +102,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Subaccount
+
 **Definition**: A limited-access user within a Chef's tenant (e.g., assistant, sous chef).
 
 **Usage**: "Chef subaccount" or "subaccount user". Always lowercase "subaccount".
@@ -110,6 +116,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ## Roles and Access
 
 ### Role
+
 **Definition**: A user's permission level, determining which portal they access and what actions they can perform.
 
 **Allowed Values**: `chef`, `chef_subaccount`, `client`
@@ -121,9 +128,11 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Portal
+
 **Definition**: A distinct user interface tailored to a specific role.
 
 **Portals**:
+
 - **Chef Portal**: `/chef/*` (chefs and subaccounts)
 - **Client Portal**: `/client/*` (clients)
 - **Public Layer**: `/` (unauthenticated visitors)
@@ -135,6 +144,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Authority
+
 **Definition**: The definitive source of truth for a decision or piece of data.
 
 **Example**: "Server is authoritative for all business logic" (server authority)
@@ -146,6 +156,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Projection
+
 **Definition**: A filtered, read-only view of data tailored for a specific audience.
 
 **Example**: "Client-safe projection" excludes chef-private fields like `internal_notes`.
@@ -157,9 +168,11 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Boundary
+
 **Definition**: A logical separation between system components, often enforcing trust or access rules.
 
 **Examples**:
+
 - **Trust Boundary**: Server vs. client (server never trusts client input)
 - **Tenant Boundary**: Data isolation between tenants
 - **Portal Boundary**: Chef Portal vs. Client Portal
@@ -173,6 +186,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ## Event Lifecycle
 
 ### Draft
+
 **Definition**: Event status before being shared with the Client. Fully editable by Chef.
 
 **Database**: `status = 'draft'`
@@ -182,6 +196,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Proposed
+
 **Definition**: Event status after Chef sends proposal to Client. Client can now view and accept/decline.
 
 **Database**: `status = 'proposed'`
@@ -191,6 +206,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Accepted
+
 **Definition**: Event status after Client accepts proposal. Awaiting payment.
 
 **Database**: `status = 'accepted'`
@@ -200,6 +216,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Paid
+
 **Definition**: Event status after deposit payment succeeds. Stripe webhook triggers this transition.
 
 **Database**: `status = 'paid'`
@@ -209,6 +226,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Confirmed
+
 **Definition**: Event status after Chef confirms all details are final. Ready for preparation.
 
 **Database**: `status = 'confirmed'`
@@ -218,6 +236,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### In Progress
+
 **Definition**: Event status when event is actively being executed (day of event).
 
 **Database**: `status = 'in_progress'`
@@ -229,6 +248,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Completed / Executed
+
 **Definition**: Event status after event has been successfully executed. Terminal state.
 
 **Database**: `status = 'completed'` OR `status = 'executed'`
@@ -240,6 +260,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Canceled
+
 **Definition**: Event status when event is canceled before execution. Terminal state.
 
 **Database**: `status = 'canceled'`
@@ -251,6 +272,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Terminal State
+
 **Definition**: An event status from which no further transitions are allowed.
 
 **Terminal States**: `completed`, `canceled`
@@ -260,6 +282,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Transition
+
 **Definition**: A change from one event status to another, logged in the audit trail.
 
 **Database**: `event_transitions` table
@@ -273,6 +296,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ## Financial Terms
 
 ### Ledger
+
 **Definition**: An append-only log of all financial transactions. The single source of truth for payment state.
 
 **Database**: `ledger_entries` table
@@ -284,6 +308,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Ledger Entry
+
 **Definition**: A single immutable record in the ledger representing a financial event.
 
 **Database**: One row in `ledger_entries`
@@ -295,6 +320,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Append-Only
+
 **Definition**: A data structure where records can be added but never updated or deleted.
 
 **Applied To**: Ledger entries, event transitions, audit logs
@@ -306,6 +332,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Minor Units
+
 **Definition**: The smallest currency denomination (cents for USD, pence for GBP).
 
 **Usage**: "Store amounts in minor units" (e.g., $10.00 = 1000 cents)
@@ -317,6 +344,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Deposit
+
 **Definition**: A partial payment made upfront to secure an event booking.
 
 **Database**: `deposit_amount_cents` column
@@ -328,6 +356,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Balance
+
 **Definition**: The remaining amount owed after partial payments.
 
 **Calculation**: `balance = total - collected`
@@ -339,6 +368,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Fully Paid
+
 **Definition**: Payment state where collected amount equals or exceeds total amount.
 
 **Calculation**: `collected >= total`
@@ -350,6 +380,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Idempotency
+
 **Definition**: The property that an operation can be repeated multiple times with the same result (no duplicate effects).
 
 **Applied To**: Stripe webhooks, ledger writes, invite acceptance
@@ -363,6 +394,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ## Data Architecture
 
 ### RLS (Row-Level Security)
+
 **Definition**: Database-enforced access control that filters query results based on user session.
 
 **Applied To**: All Supabase tables
@@ -374,6 +406,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Immutability
+
 **Definition**: The property that a record, once created, can never be modified or deleted.
 
 **Applied To**: Ledger entries, event transitions, user roles (V1)
@@ -385,6 +418,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Tenant Isolation
+
 **Definition**: Data segregation ensuring one tenant cannot access another tenant's data.
 
 **Enforcement**: RLS policies, foreign key constraints, server-side checks
@@ -396,6 +430,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Projection Contract
+
 **Definition**: A formal specification of which fields are visible to which roles.
 
 **Example**: Client projection of menu excludes `chef_notes` field.
@@ -407,6 +442,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### View (Database)
+
 **Definition**: A virtual table derived from underlying tables, often used for computed data.
 
 **Examples**: `event_financial_summary`, `client_events`
@@ -418,6 +454,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Derived Data
+
 **Definition**: Data computed from other tables, not stored directly.
 
 **Examples**: Event balance (from ledger), loyalty points (from events)
@@ -431,6 +468,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ## Security Concepts
 
 ### Server Authority
+
 **Definition**: The principle that all critical business logic and validation happens on the server, never trusting client input.
 
 **Usage**: "Server is authoritative", "server-side enforcement"
@@ -440,6 +478,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Fail Closed
+
 **Definition**: The principle that systems default to denial when uncertain (opposite of "fail open").
 
 **Example**: If role is unknown, deny access (don't default to a permissive role).
@@ -449,6 +488,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Defense in Depth
+
 **Definition**: Layered security approach with multiple enforcement points.
 
 **Layers**: Middleware, server layout, RLS, server actions
@@ -458,6 +498,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Safe Freeze
+
 **Definition**: A UI state where an operation is pending and user input is temporarily disabled to prevent race conditions.
 
 **Example**: "Processing payment..." (button disabled until webhook confirms)
@@ -469,6 +510,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Signed URL
+
 **Definition**: A temporary URL with embedded authentication, used for secure file access.
 
 **Applied To**: Menu PDFs, attachment downloads
@@ -482,6 +524,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ## System Concepts
 
 ### Webhook
+
 **Definition**: An HTTP callback sent by external service (Stripe) to notify ChefFlow of events.
 
 **Example**: `payment_intent.succeeded` webhook triggers ledger entry creation.
@@ -493,6 +536,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Server Action
+
 **Definition**: A Next.js function marked `'use server'` that executes server-side business logic, callable from client components.
 
 **Example**: `createEvent()`, `transitionEvent()`, `acceptProposal()`
@@ -504,6 +548,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Revalidation
+
 **Definition**: Next.js cache invalidation triggered after data mutation to ensure UI reflects latest data.
 
 **Example**: After creating event, revalidate `/events` path.
@@ -515,6 +560,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Service Role
+
 **Definition**: A privileged Supabase client that bypasses RLS, used only for system operations.
 
 **Usage**: Stripe webhooks use service role to write ledger entries.
@@ -526,6 +572,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Guard
+
 **Definition**: A precondition check that determines if a state transition is allowed.
 
 **Example**: "Can only transition to `paid` if deposit amount is collected"
@@ -535,6 +582,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Side Effect
+
 **Definition**: An action triggered by a state transition (e.g., sending email, creating ledger entry).
 
 **Example**: Transitioning to `paid` creates a ledger entry (side effect).
@@ -546,6 +594,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ## Technical Terms
 
 ### Schema
+
 **Definition**: The structure of database tables, columns, types, and constraints.
 
 **Usage**: "Database schema", "schema migration", "schema contract"
@@ -555,6 +604,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Migration
+
 **Definition**: A versioned SQL script that modifies database schema.
 
 **Usage**: "Run migrations", "migration script", "database migration"
@@ -564,6 +614,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Enum
+
 **Definition**: A database type with a fixed set of allowed values.
 
 **Examples**: `event_status`, `ledger_entry_type`, `user_role`
@@ -575,6 +626,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### UUID
+
 **Definition**: Universally Unique Identifier, used as primary keys in ChefFlow.
 
 **Format**: `550e8400-e29b-41d4-a716-446655440000`
@@ -586,6 +638,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Seed Data
+
 **Definition**: Pre-populated data used for development, testing, or demo environments.
 
 **Usage**: "Seed database", "seed script", "seed scenarios"
@@ -595,6 +648,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Verification Script
+
 **Definition**: An automated test that validates system invariants (RLS, immutability, etc.).
 
 **Examples**: `verify-rls.sql`, `verify-immutability.sql`
@@ -606,6 +660,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Acceptance Test
+
 **Definition**: A black-box test scenario verifying system behavior from a user perspective.
 
 **Usage**: "Acceptance test scenario", "acceptance criteria"
@@ -617,6 +672,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ## User Interface Terms
 
 ### Dashboard
+
 **Definition**: The main overview page after login, showing key metrics and recent activity.
 
 **Usage**: "Chef dashboard", "Client dashboard"
@@ -626,6 +682,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Invitation
+
 **Definition**: A one-time link sent to a Client's email, allowing them to create an account.
 
 **Database**: `invitations` table (if exists) or embedded in `clients` table
@@ -637,6 +694,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Notification
+
 **Definition**: A system-generated message alerting users of events (e.g., payment received).
 
 **Usage**: "Email notification", "in-app notification"
@@ -646,6 +704,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Attachment
+
 **Definition**: A file uploaded by Chef or Client and linked to an event thread.
 
 **Database**: `attachments` table
@@ -657,6 +716,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Thread
+
 **Definition**: A conversation context scoped to a specific event, containing messages and attachments.
 
 **Usage**: "Event thread", "message thread"
@@ -668,6 +728,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ## Naming Conventions (Code)
 
 ### Table Names
+
 **Convention**: Plural, lowercase, snake_case
 
 **Examples**: `events`, `ledger_entries`, `event_transitions`, `user_roles`
@@ -677,6 +738,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Column Names
+
 **Convention**: Lowercase, snake_case
 
 **Examples**: `tenant_id`, `created_at`, `amount_cents`, `is_finalized`
@@ -686,6 +748,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Enum Values
+
 **Convention**: Lowercase, snake_case
 
 **Examples**: `charge_succeeded`, `in_progress`, `chef_subaccount`
@@ -695,6 +758,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### TypeScript Types
+
 **Convention**: PascalCase for types, camelCase for variables
 
 **Examples**: `Event`, `LedgerEntry`, `CreateEventInput`
@@ -704,6 +768,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### File Names
+
 **Convention**: kebab-case for files
 
 **Examples**: `event-actions.ts`, `verify-rls.sql`, `create-event-form.tsx`
@@ -713,6 +778,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Markdown Docs
+
 **Convention**: UPPER_SNAKE_CASE for topic docs, kebab-case for procedural docs
 
 **Examples**: `SYSTEM_LAWS.md`, `PERMISSION_MATRIX.md`, `059-data-seeding-guide.md`
@@ -722,6 +788,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ## Anti-Patterns (Avoid)
 
 ### Don't Say "User"
+
 **Problem**: Ambiguous (Chef? Client? Public visitor?)
 
 **Use Instead**: Specify role (Chef, Client, unauthenticated visitor)
@@ -729,6 +796,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Don't Say "Customer"
+
 **Problem**: Ambiguous (Client? Chef as our customer?)
 
 **Use Instead**: "Client" for end-users, "Chef" for our customers
@@ -736,6 +804,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Don't Say "Booking"
+
 **Problem**: Not ChefFlow terminology
 
 **Use Instead**: "Event"
@@ -743,6 +812,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Don't Say "Transaction"
+
 **Problem**: Ambiguous (database transaction? payment?)
 
 **Use Instead**: "Ledger entry" (financial), "database transaction" (SQL)
@@ -750,6 +820,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Don't Say "Record"
+
 **Problem**: Too generic
 
 **Use Instead**: Specific entity (event, client, ledger entry)
@@ -757,6 +828,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Don't Say "Status"
+
 **Problem**: Ambiguous (event status? payment status? user status?)
 
 **Use Instead**: Qualified status (event status, payment state)
@@ -764,6 +836,7 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 ---
 
 ### Don't Say "Cancelled" (British Spelling)
+
 **Problem**: Inconsistent with American English codebase
 
 **Use Instead**: "canceled" (one 'l')
@@ -772,16 +845,16 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 
 ## Acronyms and Abbreviations
 
-| Acronym | Full Term | Usage |
-|---------|-----------|-------|
-| **RLS** | Row-Level Security | Database access control |
-| **UUID** | Universally Unique Identifier | Primary key format |
-| **API** | Application Programming Interface | External service integration |
-| **UI** | User Interface | Frontend components |
-| **UX** | User Experience | Design principles |
-| **DoD** | Definition of Done | Completion criteria |
-| **V1** | Version 1 | Initial release scope |
-| **MVP** | Minimum Viable Product | Synonymous with V1 |
+| Acronym  | Full Term                         | Usage                        |
+| -------- | --------------------------------- | ---------------------------- |
+| **RLS**  | Row-Level Security                | Database access control      |
+| **UUID** | Universally Unique Identifier     | Primary key format           |
+| **API**  | Application Programming Interface | External service integration |
+| **UI**   | User Interface                    | Frontend components          |
+| **UX**   | User Experience                   | Design principles            |
+| **DoD**  | Definition of Done                | Completion criteria          |
+| **V1**   | Version 1                         | Initial release scope        |
+| **MVP**  | Minimum Viable Product            | Synonymous with V1           |
 
 ---
 
@@ -790,10 +863,12 @@ This document is the **single source of truth** for all ChefFlow terminology. It
 When using terms from this glossary in documentation:
 
 **Good**:
+
 - "The Chef creates an Event in draft status" (uses glossary terms)
 - "RLS enforces tenant isolation" (uses exact glossary phrase)
 
 **Bad**:
+
 - "The user creates a booking" (ambiguous, not glossary terms)
 - "Row level security prevents cross-customer access" (inconsistent phrasing)
 
@@ -802,6 +877,7 @@ When using terms from this glossary in documentation:
 ## Updating This Glossary
 
 **Process**:
+
 1. Identify term conflict or ambiguity
 2. Propose canonical definition in GitHub issue
 3. Update this glossary (requires approval)

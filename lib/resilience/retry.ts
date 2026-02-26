@@ -44,10 +44,7 @@ const DEFAULT_OPTIONS: Required<RetryOptions> = {
  *   { maxAttempts: 5, onRetry: (attempt, err) => log.warn('Retry', { attempt, err }) }
  * )
  */
-export async function withRetry<T>(
-  fn: () => Promise<T>,
-  options: RetryOptions = {}
-): Promise<T> {
+export async function withRetry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
   const opts = { ...DEFAULT_OPTIONS, ...options }
   let lastError: unknown
 
@@ -86,8 +83,8 @@ export function isTransientError(error: unknown): boolean {
   // HTTP status-code based classification
   const status = extractHttpStatus(error)
   if (status !== null) {
-    if (status === 429) return true          // Rate limited — always retry
-    if (status >= 500 && status < 600) return true  // Server errors
+    if (status === 429) return true // Rate limited — always retry
+    if (status >= 500 && status < 600) return true // Server errors
     if (status >= 400 && status < 500) return false // Client errors — permanent
   }
 

@@ -53,8 +53,12 @@ export async function getYearEndTaxPackage(taxYear: number): Promise<TaxPackage>
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const yearStart = startOfYear(new Date(taxYear, 0, 1)).toISOString().split('T')[0]
-  const yearEnd = endOfYear(new Date(taxYear, 11, 31)).toISOString().split('T')[0]
+  const yearStart = startOfYear(new Date(taxYear, 0, 1))
+    .toISOString()
+    .split('T')[0]
+  const yearEnd = endOfYear(new Date(taxYear, 11, 31))
+    .toISOString()
+    .split('T')[0]
 
   const [eventsResult, expensesResult, tipsResult, mileageData] = await Promise.all([
     supabase
@@ -86,14 +90,8 @@ export async function getYearEndTaxPackage(taxYear: number): Promise<TaxPackage>
   const tips = tipsResult.data || []
   const { totalMiles, totalDeductionCents: mileageDeductionCents } = mileageData
 
-  const grossRevenueCents = completedEvents.reduce(
-    (s, e) => s + (e.quoted_price_cents || 0),
-    0
-  )
-  const tipsCents = tips.reduce(
-    (s, t) => s + (t.amount_cents || 0),
-    0
-  )
+  const grossRevenueCents = completedEvents.reduce((s, e) => s + (e.quoted_price_cents || 0), 0)
+  const tipsCents = tips.reduce((s, t) => s + (t.amount_cents || 0), 0)
   const completedEventCount = completedEvents.length
 
   // Group expenses by category
@@ -116,10 +114,8 @@ export async function getYearEndTaxPackage(taxYear: number): Promise<TaxPackage>
     }))
     .sort((a, b) => b.amountCents - a.amountCents)
 
-  const totalDeductibleExpensesCents = expensesByCategory.reduce(
-    (s, c) => s + c.amountCents,
-    0
-  ) + mileageDeductionCents
+  const totalDeductibleExpensesCents =
+    expensesByCategory.reduce((s, c) => s + c.amountCents, 0) + mileageDeductionCents
   const netIncomeCents = Math.max(0, grossRevenueCents + tipsCents - totalDeductibleExpensesCents)
   const estimatedAnnualTax = Math.round(netIncomeCents * 0.25)
   const quarterlyTax = Math.round(estimatedAnnualTax / 4)

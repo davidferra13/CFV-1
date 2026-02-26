@@ -10,8 +10,8 @@ type Props = {
   clientName: string
   chefName: string
   occasion: string
-  eventDate: string       // Already formatted
-  daysUntilEvent: number  // 7, 3, or 1
+  eventDate: string // Already formatted
+  daysUntilEvent: number // 7, 3, or 1
   amountDueFormatted: string
   depositAmountFormatted: string | null
   paymentUrl: string
@@ -28,23 +28,24 @@ export function PaymentReminderEmail({
   paymentUrl,
 }: Props) {
   const urgency = daysUntilEvent === 1 ? 'urgent' : daysUntilEvent <= 3 ? 'soon' : 'upcoming'
-  const subjectHint = daysUntilEvent === 1
-    ? 'Payment due today'
-    : `Payment due in ${daysUntilEvent} days`
+  const subjectHint =
+    daysUntilEvent === 1 ? 'Payment due today' : `Payment due in ${daysUntilEvent} days`
 
-  const headingText = daysUntilEvent === 1
-    ? 'Final payment reminder'
-    : daysUntilEvent <= 3
-    ? 'Payment due soon'
-    : 'Payment reminder'
+  const headingText =
+    daysUntilEvent === 1
+      ? 'Final payment reminder'
+      : daysUntilEvent <= 3
+        ? 'Payment due soon'
+        : 'Payment reminder'
 
   return (
     <BaseLayout preview={`${subjectHint} — ${occasion} with ${chefName}`}>
       <Text style={heading}>{headingText}</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>
-        Your {occasion} with {chefName} is {daysUntilEvent === 1 ? 'tomorrow' : `in ${daysUntilEvent} days`}{' '}
-        ({eventDate}) and payment has not yet been received.
+        Your {occasion} with {chefName} is{' '}
+        {daysUntilEvent === 1 ? 'tomorrow' : `in ${daysUntilEvent} days`} ({eventDate}) and payment
+        has not yet been received.
         {depositAmountFormatted
           ? ` A deposit of ${depositAmountFormatted} is required to secure your booking.`
           : ` The full amount of ${amountDueFormatted} is due before the event.`}
@@ -93,7 +94,8 @@ export function PaymentReminderEmail({
 
       {urgency === 'urgent' && (
         <Text style={{ ...paragraph, color: '#dc2626', fontWeight: '600' as const }}>
-          If payment is not received, your booking may be at risk. Please complete payment as soon as possible.
+          If payment is not received, your booking may be at risk. Please complete payment as soon
+          as possible.
         </Text>
       )}
 
@@ -105,9 +107,26 @@ export function PaymentReminderEmail({
   )
 }
 
-const heading = { fontSize: '24px', fontWeight: '600' as const, color: '#18181b', margin: '0 0 16px' }
+const heading = {
+  fontSize: '24px',
+  fontWeight: '600' as const,
+  color: '#18181b',
+  margin: '0 0 16px',
+}
 const paragraph = { fontSize: '15px', lineHeight: '1.6', color: '#374151', margin: '0 0 16px' }
 const detailsTable = { width: '100%', marginBottom: '24px', borderCollapse: 'collapse' as const }
-const detailLabel = { fontSize: '13px', color: '#6b7280', padding: '8px 0', borderBottom: '1px solid #f3f4f6', width: '140px' }
-const detailValue = { fontSize: '15px', fontWeight: '600' as const, color: '#18181b', padding: '8px 0', borderBottom: '1px solid #f3f4f6' }
+const detailLabel = {
+  fontSize: '13px',
+  color: '#6b7280',
+  padding: '8px 0',
+  borderBottom: '1px solid #f3f4f6',
+  width: '140px',
+}
+const detailValue = {
+  fontSize: '15px',
+  fontWeight: '600' as const,
+  color: '#18181b',
+  padding: '8px 0',
+  borderBottom: '1px solid #f3f4f6',
+}
 const muted = { fontSize: '13px', color: '#9ca3af', margin: '0' }

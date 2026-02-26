@@ -9,8 +9,8 @@
 // Deposits are non-refundable by default; chef can override per-event at refund time.
 
 export type CancellationPolicyConfig = {
-  cancellationCutoffDays: number  // Default 15
-  depositRefundable: boolean      // Default false
+  cancellationCutoffDays: number // Default 15
+  depositRefundable: boolean // Default false
 }
 
 export const DEFAULT_POLICY: CancellationPolicyConfig = {
@@ -21,7 +21,7 @@ export const DEFAULT_POLICY: CancellationPolicyConfig = {
 export type LedgerSnapshot = {
   totalPaidCents: number
   totalRefundedCents: number
-  depositPaidCents: number  // Sum of 'deposit' entry_type entries
+  depositPaidCents: number // Sum of 'deposit' entry_type entries
 }
 
 export type CancellationRefundResult = {
@@ -50,7 +50,9 @@ export function computeCancellationRefund(
   policy: CancellationPolicyConfig = DEFAULT_POLICY
 ): CancellationRefundResult {
   const netPaidCents = ledger.totalPaidCents - ledger.totalRefundedCents
-  const depositPaidCents = policy.depositRefundable ? 0 : Math.min(ledger.depositPaidCents, netPaidCents)
+  const depositPaidCents = policy.depositRefundable
+    ? 0
+    : Math.min(ledger.depositPaidCents, netPaidCents)
   const balancePaidCents = Math.max(0, netPaidCents - depositPaidCents)
 
   // Days until event (negative = event has passed)
@@ -74,7 +76,8 @@ export function computeCancellationRefund(
         depositRefundCents,
         balanceRefundCents: balancePaidCents,
         policyTier: 'full_refund_24hr',
-        description: 'Full refund — cancelled within 24 hours of payment and event is more than 3 days away.',
+        description:
+          'Full refund — cancelled within 24 hours of payment and event is more than 3 days away.',
         depositNonRefundableWarning: !policy.depositRefundable && depositPaidCents > 0,
       }
     }
@@ -110,7 +113,9 @@ export function computeCancellationRefund(
  * Return a short human-readable summary of the cancellation policy.
  * Used in UI banners and email footers.
  */
-export function getCancellationPolicySummary(policy: CancellationPolicyConfig = DEFAULT_POLICY): string {
+export function getCancellationPolicySummary(
+  policy: CancellationPolicyConfig = DEFAULT_POLICY
+): string {
   const lines = [
     `Cancel ${policy.cancellationCutoffDays}+ days before your event: full balance refund.`,
     `Cancel within 24 hours of payment (event >3 days away): full balance refund.`,

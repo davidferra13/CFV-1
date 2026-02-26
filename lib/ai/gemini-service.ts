@@ -52,7 +52,7 @@ export async function draftChefResponse(
   context: string,
   tone: string,
   latestClientMessage: string,
-  chefName?: { fullName: string; firstName: string },
+  chefName?: { fullName: string; firstName: string }
 ) {
   const ai = getClient()
   const name = chefName ?? { fullName: 'Chef', firstName: 'Chef' }
@@ -151,9 +151,10 @@ Write the email from scratch. Do not copy, paste, summarize, or compress from th
 
   // ── User Prompt: The specific inquiry context ─────────────────────────────
 
-  const threadSection = params.threadMessages.length > 0
-    ? `CONVERSATION THREAD (most recent messages):\n${params.threadMessages.join('\n')}`
-    : 'No prior messages in thread. This is the first response.'
+  const threadSection =
+    params.threadMessages.length > 0
+      ? `CONVERSATION THREAD (most recent messages):\n${params.threadMessages.join('\n')}`
+      : 'No prior messages in thread. This is the first response.'
 
   const repeatClientNote = params.isRepeatClient
     ? 'NOTE: This is a REPEAT CLIENT. Do not reset to formal first-contact tone. Reference past context naturally. Skip discovery questions for data already on file.'
@@ -163,9 +164,10 @@ Write the email from scratch. Do not copy, paste, summarize, or compress from th
     ? 'PRICING: Allowed at this stage. Use rate card values. Present in paragraph form, conversational. Include grocery model and deposit info.'
     : 'PRICING: FORBIDDEN at this stage. Do not include any dollar amounts, cost references, or pricing language.'
 
-  const missingDataDirective = params.missingBlocking.length > 0
-    ? `MISSING DATA (blocking): ${params.missingBlocking.join(', ')}. You should collect the single most important missing piece in this response. Ask naturally, not like a form.`
-    : 'All blocking data is present.'
+  const missingDataDirective =
+    params.missingBlocking.length > 0
+      ? `MISSING DATA (blocking): ${params.missingBlocking.join(', ')}. You should collect the single most important missing piece in this response. Ask naturally, not like a form.`
+      : 'All blocking data is present.'
 
   const prompt = `INQUIRY ANALYSIS:
 ${params.inquirySummary}
@@ -246,10 +248,10 @@ Return only valid JSON.`,
 export async function inferEquipmentFromTechniques(
   techniques: { name: string; confidence: number }[],
   componentText: string,
-  prepHint?: string,
+  prepHint?: string
 ) {
   const ai = getClient()
-  const techniqueNames = techniques.map(t => t.name).join(', ')
+  const techniqueNames = techniques.map((t) => t.name).join(', ')
 
   const response = await ai.models.generateContent({
     model: 'gemini-2.0-flash',
@@ -324,7 +326,16 @@ Return only valid JSON.`,
         properties: {
           stoveType: {
             type: Type.STRING,
-            enum: ['GAS_PROFESSIONAL', 'GAS_RESIDENTIAL', 'INDUCTION_HIGH', 'INDUCTION_HOME', 'ELECTRIC_COIL', 'ELECTRIC_GLASS', 'MIXED', 'UNKNOWN'],
+            enum: [
+              'GAS_PROFESSIONAL',
+              'GAS_RESIDENTIAL',
+              'INDUCTION_HIGH',
+              'INDUCTION_HOME',
+              'ELECTRIC_COIL',
+              'ELECTRIC_GLASS',
+              'MIXED',
+              'UNKNOWN',
+            ],
           },
           ovenCount: { type: Type.NUMBER },
           hasConvectionOven: { type: Type.BOOLEAN },

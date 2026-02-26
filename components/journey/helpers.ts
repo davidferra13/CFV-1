@@ -1,7 +1,7 @@
 export function parseLines(value: string): string[] {
   return value
     .split(/[\n,]/g)
-    .map(item => item.trim())
+    .map((item) => item.trim())
     .filter(Boolean)
 }
 

@@ -6,18 +6,18 @@ _Run: 2026-02-19. Full static analysis + pattern matching across all 139 pages, 
 
 ## Scorecard
 
-| # | Category | Bugs Found | Fixed | Status |
-| --- | --- | --- | --- | --- |
-| 1 | TypeScript / Build Health | 1 critical | ✅ | Clean |
-| 2 | Loading States & Error Boundaries | 4 missing skeletons | ✅ | Clean |
-| 3 | Empty States | 0 | — | Clean |
-| 4 | Financial Integrity | 0 | — | Clean |
-| 5 | Tenant Isolation | 1 critical | ✅ | Clean |
-| 6 | Event FSM Guard Rails | 0 | — | Clean |
-| 7 | Form UX & Double-Submission | 1 minor | ✅ | Clean |
-| 8 | Email & Notification Flows | 0 | — | Clean |
-| 9 | Mobile / Responsive Design | 0 | — | Clean |
-| 10 | Accessibility & SEO | 3 missing | ✅ | Clean |
+| #   | Category                          | Bugs Found          | Fixed | Status |
+| --- | --------------------------------- | ------------------- | ----- | ------ |
+| 1   | TypeScript / Build Health         | 1 critical          | ✅    | Clean  |
+| 2   | Loading States & Error Boundaries | 4 missing skeletons | ✅    | Clean  |
+| 3   | Empty States                      | 0                   | —     | Clean  |
+| 4   | Financial Integrity               | 0                   | —     | Clean  |
+| 5   | Tenant Isolation                  | 1 critical          | ✅    | Clean  |
+| 6   | Event FSM Guard Rails             | 0                   | —     | Clean  |
+| 7   | Form UX & Double-Submission       | 1 minor             | ✅    | Clean  |
+| 8   | Email & Notification Flows        | 0                   | —     | Clean  |
+| 9   | Mobile / Responsive Design        | 0                   | —     | Clean  |
+| 10  | Accessibility & SEO               | 3 missing           | ✅    | Clean  |
 
 **Total bugs found: 10. Total fixed: 10. Zero remaining.**
 
@@ -34,6 +34,7 @@ had no TypeScript errors.
 Next build will regenerate cleanly.
 
 **Additional findings (no fix needed):**
+
 - 982 `as any` usages across the codebase — high but mostly unavoidable Supabase typing
   patterns. No `@ts-ignore` or `@ts-expect-error` were found.
 - 17 ESLint warnings about `<img>` vs `<Image />` — non-blocking, low priority.
@@ -41,6 +42,7 @@ Next build will regenerate cleanly.
 - All critical component exports verified present and correct.
 
 **Files changed:**
+
 - `.next/` — deleted (cleared stale build cache)
 
 ---
@@ -107,6 +109,7 @@ matching every other query in the codebase.
 quotes (15), inquiries — all pass tenant scoping checks.
 
 **Files changed:**
+
 - `lib/documents/actions.ts` — line 61: `chef_id` → `tenant_id`
 
 ---
@@ -142,6 +145,7 @@ cancel buttons disabled during `loading` state. Error paths all reset loading in
 or `catch` blocks.
 
 **Files changed:**
+
 - `components/expenses/expense-form.tsx` — line 590: added `disabled={loading}`
 
 ---
@@ -179,6 +183,7 @@ or `catch` blocks.
 ## Category 10 — Accessibility & SEO
 
 **Accessibility: CLEAN (no fixes needed)**
+
 - All form inputs rendered via `Input`/`Select`/`Textarea` components which generate `<label>` elements
 - `quote-form.tsx` uses explicit `htmlFor` on pricing calculator labels
 - All buttons use `focus-visible:ring-2` — correct pattern, no `outline-none` anti-pattern
@@ -187,17 +192,19 @@ or `catch` blocks.
 
 **SEO: 3 gaps fixed**
 
-| Gap | Fix |
-| --- | --- |
-| No `robots.txt` | Created `app/robots.ts` — allows public routes, disallows all private routes |
-| No sitemap | Created `app/sitemap.ts` — static routes + dynamic chef profile routes queried from DB |
+| Gap                           | Fix                                                                                    |
+| ----------------------------- | -------------------------------------------------------------------------------------- |
+| No `robots.txt`               | Created `app/robots.ts` — allows public routes, disallows all private routes           |
+| No sitemap                    | Created `app/sitemap.ts` — static routes + dynamic chef profile routes queried from DB |
 | No Open Graph / Twitter cards | Added `openGraph` + `twitter` metadata to homepage and chef profile `generateMetadata` |
 
 **Files created:**
+
 - `app/robots.ts` — crawl rules + sitemap reference
 - `app/sitemap.ts` — static routes + all `profile_public = true` chef slugs
 
 **Files changed:**
+
 - `app/(public)/page.tsx` — added `openGraph` + `twitter` metadata
 - `app/(public)/chef/[slug]/page.tsx` — added `openGraph` (with chef image) + `twitter` to `generateMetadata`
 
@@ -205,24 +212,24 @@ or `catch` blocks.
 
 ## Full Fix Log (All Categories)
 
-| File | Change | Category |
-| --- | --- | --- |
-| `.next/` | Deleted stale build cache | 1 |
-| `app/(chef)/events/[id]/loading.tsx` | Created — event detail skeleton | 2 |
-| `app/(chef)/inquiries/[id]/loading.tsx` | Created — inquiry detail skeleton | 2 |
-| `app/(chef)/clients/[id]/loading.tsx` | Created — client detail skeleton | 2 |
-| `app/(chef)/quotes/[id]/loading.tsx` | Created — quote detail skeleton | 2 |
-| `lib/documents/actions.ts` | `chef_id` → `tenant_id` in event_contracts query | 5 |
-| `components/expenses/expense-form.tsx` | Added `disabled={loading}` to receipt submit | 7 |
-| `app/robots.ts` | Created — crawl rules | 10 |
-| `app/sitemap.ts` | Created — XML sitemap with dynamic chef slugs | 10 |
-| `app/(public)/page.tsx` | Added OG + Twitter metadata | 10 |
-| `app/(public)/chef/[slug]/page.tsx` | Added OG + Twitter metadata with chef image | 10 |
-| `components/events/print-button.tsx` | Created — client PrintButton (from prior audit) | Prior |
-| `app/(chef)/events/[id]/invoice/page.tsx` | Replaced inline onClick with `<PrintButton />` | Prior |
-| `app/(chef)/finance/tax/tax-center-client.tsx` | Added `TaxYearSelect` client export | Prior |
-| `app/(chef)/finance/tax/page.tsx` | Replaced `window.location` select with `<TaxYearSelect />` | Prior |
-| `app/(chef)/inquiries/[id]/page.tsx` | Removed invalid server-component `onClick` from anchor | Prior |
+| File                                           | Change                                                     | Category |
+| ---------------------------------------------- | ---------------------------------------------------------- | -------- |
+| `.next/`                                       | Deleted stale build cache                                  | 1        |
+| `app/(chef)/events/[id]/loading.tsx`           | Created — event detail skeleton                            | 2        |
+| `app/(chef)/inquiries/[id]/loading.tsx`        | Created — inquiry detail skeleton                          | 2        |
+| `app/(chef)/clients/[id]/loading.tsx`          | Created — client detail skeleton                           | 2        |
+| `app/(chef)/quotes/[id]/loading.tsx`           | Created — quote detail skeleton                            | 2        |
+| `lib/documents/actions.ts`                     | `chef_id` → `tenant_id` in event_contracts query           | 5        |
+| `components/expenses/expense-form.tsx`         | Added `disabled={loading}` to receipt submit               | 7        |
+| `app/robots.ts`                                | Created — crawl rules                                      | 10       |
+| `app/sitemap.ts`                               | Created — XML sitemap with dynamic chef slugs              | 10       |
+| `app/(public)/page.tsx`                        | Added OG + Twitter metadata                                | 10       |
+| `app/(public)/chef/[slug]/page.tsx`            | Added OG + Twitter metadata with chef image                | 10       |
+| `components/events/print-button.tsx`           | Created — client PrintButton (from prior audit)            | Prior    |
+| `app/(chef)/events/[id]/invoice/page.tsx`      | Replaced inline onClick with `<PrintButton />`             | Prior    |
+| `app/(chef)/finance/tax/tax-center-client.tsx` | Added `TaxYearSelect` client export                        | Prior    |
+| `app/(chef)/finance/tax/page.tsx`              | Replaced `window.location` select with `<TaxYearSelect />` | Prior    |
+| `app/(chef)/inquiries/[id]/page.tsx`           | Removed invalid server-component `onClick` from anchor     | Prior    |
 
 ---
 

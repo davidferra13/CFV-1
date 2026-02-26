@@ -31,17 +31,17 @@ import {
 
 describe('isValidTransition — valid forward paths', () => {
   const validPaths: [EventStatus, EventStatus][] = [
-    ['draft',       'proposed'],
-    ['draft',       'paid'],       // Instant-book
-    ['draft',       'cancelled'],
-    ['proposed',    'accepted'],
-    ['proposed',    'cancelled'],
-    ['accepted',    'paid'],
-    ['accepted',    'cancelled'],
-    ['paid',        'confirmed'],
-    ['paid',        'cancelled'],
-    ['confirmed',   'in_progress'],
-    ['confirmed',   'cancelled'],
+    ['draft', 'proposed'],
+    ['draft', 'paid'], // Instant-book
+    ['draft', 'cancelled'],
+    ['proposed', 'accepted'],
+    ['proposed', 'cancelled'],
+    ['accepted', 'paid'],
+    ['accepted', 'cancelled'],
+    ['paid', 'confirmed'],
+    ['paid', 'cancelled'],
+    ['confirmed', 'in_progress'],
+    ['confirmed', 'cancelled'],
     ['in_progress', 'completed'],
     ['in_progress', 'cancelled'],
   ]
@@ -59,20 +59,20 @@ describe('isValidTransition — valid forward paths', () => {
 
 describe('isValidTransition — invalid/skipping transitions', () => {
   const invalidPaths: [EventStatus, EventStatus][] = [
-    ['draft',       'accepted'],
-    ['draft',       'confirmed'],
-    ['draft',       'in_progress'],
-    ['draft',       'completed'],
-    ['proposed',    'paid'],
-    ['proposed',    'confirmed'],
-    ['proposed',    'in_progress'],
-    ['proposed',    'completed'],
-    ['accepted',    'confirmed'],
-    ['accepted',    'in_progress'],
-    ['accepted',    'completed'],
-    ['paid',        'in_progress'],
-    ['paid',        'completed'],
-    ['confirmed',   'completed'],
+    ['draft', 'accepted'],
+    ['draft', 'confirmed'],
+    ['draft', 'in_progress'],
+    ['draft', 'completed'],
+    ['proposed', 'paid'],
+    ['proposed', 'confirmed'],
+    ['proposed', 'in_progress'],
+    ['proposed', 'completed'],
+    ['accepted', 'confirmed'],
+    ['accepted', 'in_progress'],
+    ['accepted', 'completed'],
+    ['paid', 'in_progress'],
+    ['paid', 'completed'],
+    ['confirmed', 'completed'],
   ]
 
   for (const [from, to] of invalidPaths) {

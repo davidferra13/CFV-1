@@ -12,18 +12,19 @@
 
 The `event_status` enum was upgraded from a 4-state model to an 8-state model that matches the master document's full event lifecycle:
 
-| Old (4-state) | New (8-state) |
-|---|---|
-| upcoming | draft |
-| — | proposed |
-| — | accepted |
-| — | paid |
-| — | confirmed |
-| in_progress | in_progress |
-| completed | completed |
-| canceled | cancelled (double-l) |
+| Old (4-state) | New (8-state)        |
+| ------------- | -------------------- |
+| upcoming      | draft                |
+| —             | proposed             |
+| —             | accepted             |
+| —             | paid                 |
+| —             | confirmed            |
+| in_progress   | in_progress          |
+| completed     | completed            |
+| canceled      | cancelled (double-l) |
 
 **Changes made:**
+
 - Replaced `event_status` enum with 8 values: `draft`, `proposed`, `accepted`, `paid`, `confirmed`, `in_progress`, `completed`, `cancelled`
 - Updated `validate_event_state_transition()` trigger to enforce the new transition map:
   - `draft` -> `proposed` | `cancelled`
@@ -65,6 +66,7 @@ The `event_status` enum was upgraded from a 4-state model to an 8-state model th
 **Command:** `npx supabase gen types typescript --project-id luefkpakzvxcsqroxyhz > types/database.ts`
 
 **Verified:**
+
 - 23 tables present (all expected tables)
 - `event_status` enum has exactly 8 values
 - `menus.event_id` exists and is nullable

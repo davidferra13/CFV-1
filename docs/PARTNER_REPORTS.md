@@ -22,15 +22,15 @@ Assembles comprehensive report data for a single partner over a time period.
     contact_name: string | null
   }
   period: {
-    label: string        // e.g., "February 2026"
-    start: string        // ISO date
-    end: string          // ISO date
+    label: string // e.g., "February 2026"
+    start: string // ISO date
+    end: string // ISO date
   }
   summary: {
     totalReferrals: number
     completedEvents: number
     totalGuests: number
-    totalRevenue: number  // in cents
+    totalRevenue: number // in cents
   }
   events: Array<{
     date: string
@@ -43,12 +43,13 @@ Assembles comprehensive report data for a single partner over a time period.
     name: string
     referrals: number
     events: number
-    revenue: number       // in cents
+    revenue: number // in cents
   }>
 }
 ```
 
 **Data sources:**
+
 - Partner info from `referral_partners`
 - Inquiries linked via `referral_partner_id` within the date range
 - Events linked via `referral_partner_id` within the date range
@@ -78,6 +79,7 @@ Server component that fetches report data and renders a print-optimized layout.
 ### Access
 
 Navigate from partner detail page via "View Report" button, or directly at:
+
 ```
 /partners/[id]/report
 ```
@@ -86,8 +88,8 @@ Navigate from partner detail page via "View Report" button, or directly at:
 
 ## Components
 
-| Component | File | Purpose |
-|-----------|------|---------|
+| Component              | File                                             | Purpose                        |
+| ---------------------- | ------------------------------------------------ | ------------------------------ |
 | `PartnerReportActions` | `components/partners/partner-report-actions.tsx` | Print button (hidden in print) |
 
 ---

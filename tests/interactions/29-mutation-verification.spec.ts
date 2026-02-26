@@ -25,7 +25,9 @@ test.describe('Mutation Verification — Client', () => {
     await page.waitForLoadState('networkidle')
 
     // Fill full name (required on all client forms)
-    const nameField = page.getByLabel(/full name/i).first()
+    const nameField = page
+      .getByLabel(/full name/i)
+      .first()
       .or(page.getByPlaceholder(/full name|name/i).first())
       .or(page.locator('input[name="full_name"], input[name="name"]').first())
     if (await nameField.isVisible()) {
@@ -53,8 +55,15 @@ test.describe('Mutation Verification — Client', () => {
     await page.goto('/clients')
     await page.waitForLoadState('networkidle')
 
-    const clientVisible = await page.getByText(uniqueName).first().isVisible().catch(() => false)
-    expect(clientVisible, `Created client "${uniqueName}" should appear in /clients list`).toBeTruthy()
+    const clientVisible = await page
+      .getByText(uniqueName)
+      .first()
+      .isVisible()
+      .catch(() => false)
+    expect(
+      clientVisible,
+      `Created client "${uniqueName}" should appear in /clients list`
+    ).toBeTruthy()
   })
 })
 
@@ -68,14 +77,18 @@ test.describe('Mutation Verification — Expense', () => {
     await page.waitForLoadState('networkidle')
 
     // Fill description
-    const descField = page.getByLabel(/description|note|what/i).first()
+    const descField = page
+      .getByLabel(/description|note|what/i)
+      .first()
       .or(page.locator('input[name="description"], textarea[name="description"]').first())
     if (await descField.isVisible()) {
       await descField.fill(uniqueDesc)
     }
 
     // Fill amount
-    const amountField = page.locator('input[type="number"], input[name="amount"], input[name="amount_cents"]').first()
+    const amountField = page
+      .locator('input[type="number"], input[name="amount"], input[name="amount_cents"]')
+      .first()
     if (await amountField.isVisible()) {
       await amountField.fill('42')
     }
@@ -93,7 +106,11 @@ test.describe('Mutation Verification — Expense', () => {
     await page.goto('/expenses')
     await page.waitForLoadState('networkidle')
 
-    const expenseVisible = await page.getByText(uniqueDesc).first().isVisible().catch(() => false)
+    const expenseVisible = await page
+      .getByText(uniqueDesc)
+      .first()
+      .isVisible()
+      .catch(() => false)
     // Expense may appear in list or on event detail — just check the expenses page loads
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(20)
@@ -112,7 +129,9 @@ test.describe('Mutation Verification — Recipe', () => {
     await page.waitForLoadState('networkidle')
 
     // Fill recipe name
-    const nameField = page.getByLabel(/name|title/i).first()
+    const nameField = page
+      .getByLabel(/name|title/i)
+      .first()
       .or(page.getByPlaceholder(/recipe name|name/i).first())
       .or(page.locator('input[name="name"]').first())
     if (await nameField.isVisible()) {
@@ -132,8 +151,15 @@ test.describe('Mutation Verification — Recipe', () => {
     await page.goto('/recipes')
     await page.waitForLoadState('networkidle')
 
-    const recipeVisible = await page.getByText(uniqueName).first().isVisible().catch(() => false)
-    expect(recipeVisible, `Created recipe "${uniqueName}" should appear in /recipes list`).toBeTruthy()
+    const recipeVisible = await page
+      .getByText(uniqueName)
+      .first()
+      .isVisible()
+      .catch(() => false)
+    expect(
+      recipeVisible,
+      `Created recipe "${uniqueName}" should appear in /recipes list`
+    ).toBeTruthy()
   })
 })
 
@@ -142,7 +168,7 @@ test.describe('Mutation Verification — Recipe', () => {
 test.describe('Mutation Verification — Goal', () => {
   test('Create goal → persists in /goals dashboard', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/goals/setup')
     await page.waitForLoadState('networkidle')
@@ -194,7 +220,9 @@ test.describe('Mutation Verification — Menu', () => {
     await page.waitForLoadState('networkidle')
 
     // Fill menu name
-    const nameField = page.getByLabel(/name|title/i).first()
+    const nameField = page
+      .getByLabel(/name|title/i)
+      .first()
       .or(page.getByPlaceholder(/menu name|name/i).first())
       .or(page.locator('input[name="name"]').first())
     if (await nameField.isVisible()) {
@@ -214,7 +242,11 @@ test.describe('Mutation Verification — Menu', () => {
     await page.goto('/menus')
     await page.waitForLoadState('networkidle')
 
-    const menuVisible = await page.getByText(uniqueName).first().isVisible().catch(() => false)
+    const menuVisible = await page
+      .getByText(uniqueName)
+      .first()
+      .isVisible()
+      .catch(() => false)
     expect(menuVisible, `Created menu "${uniqueName}" should appear in /menus list`).toBeTruthy()
   })
 })
@@ -245,7 +277,9 @@ test.describe('Mutation Verification — Settings', () => {
     await page.goto('/settings/my-profile')
     await page.waitForLoadState('networkidle')
 
-    const taglineField = page.getByLabel(/tagline/i).first()
+    const taglineField = page
+      .getByLabel(/tagline/i)
+      .first()
       .or(page.getByPlaceholder(/tagline/i).first())
 
     if (!(await taglineField.isVisible())) {
@@ -277,7 +311,7 @@ test.describe('Mutation Verification — Settings', () => {
 
   test('Notification toggle change persists across reload', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/settings/notifications')
     await page.waitForLoadState('networkidle')
@@ -312,7 +346,7 @@ test.describe('Mutation Verification — Settings', () => {
 test.describe('Mutation Verification — Event Data', () => {
   test('AAR save → data visible on next load', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/events/${seedIds.eventIds.completed}/aar`)
     await page.waitForLoadState('networkidle')
@@ -350,7 +384,7 @@ test.describe('Mutation Verification — Event Data', () => {
 
   test('Close-out tip data survives step navigation', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto(`/events/${seedIds.eventIds.completed}/close-out`)
     await page.waitForLoadState('networkidle')

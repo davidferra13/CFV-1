@@ -18,20 +18,21 @@ type MessageStatus = Database['public']['Enums']['message_status']
 // VALIDATION SCHEMAS
 // ============================================
 
-const CreateMessageSchema = z.object({
-  body: z.string().min(1, 'Message content is required'),
-  direction: z.enum(['inbound', 'outbound']),
-  channel: z.enum(['text', 'email', 'instagram', 'take_a_chef', 'phone', 'internal_note']),
-  inquiry_id: z.string().uuid().nullable().optional(),
-  event_id: z.string().uuid().nullable().optional(),
-  client_id: z.string().uuid().nullable().optional(),
-  subject: z.string().nullable().optional(),
-  sent_at: z.string().nullable().optional(),
-  status: z.enum(['draft', 'approved', 'sent', 'logged']).optional(),
-}).refine(
-  (data) => data.inquiry_id || data.event_id || data.client_id,
-  { message: 'Message must be attached to an inquiry, event, or client' }
-)
+const CreateMessageSchema = z
+  .object({
+    body: z.string().min(1, 'Message content is required'),
+    direction: z.enum(['inbound', 'outbound']),
+    channel: z.enum(['text', 'email', 'instagram', 'take_a_chef', 'phone', 'internal_note']),
+    inquiry_id: z.string().uuid().nullable().optional(),
+    event_id: z.string().uuid().nullable().optional(),
+    client_id: z.string().uuid().nullable().optional(),
+    subject: z.string().nullable().optional(),
+    sent_at: z.string().nullable().optional(),
+    status: z.enum(['draft', 'approved', 'sent', 'logged']).optional(),
+  })
+  .refine((data) => data.inquiry_id || data.event_id || data.client_id, {
+    message: 'Message must be attached to an inquiry, event, or client',
+  })
 
 const UpdateMessageSchema = z.object({
   body: z.string().min(1).optional(),
@@ -134,10 +135,7 @@ export async function getMessages(filters?: {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  let query = supabase
-    .from('messages')
-    .select('*')
-    .eq('tenant_id', user.tenantId!)
+  let query = supabase.from('messages').select('*').eq('tenant_id', user.tenantId!)
 
   if (filters?.inquiry_id) query = query.eq('inquiry_id', filters.inquiry_id)
   if (filters?.event_id) query = query.eq('event_id', filters.event_id)
@@ -193,10 +191,7 @@ export async function getMessageThread(
   // For inquiry or event, build combined thread if needed
   const filterColumn = entityType === 'inquiry' ? 'inquiry_id' : 'event_id'
 
-  let query = supabase
-    .from('messages')
-    .select('*')
-    .eq('tenant_id', user.tenantId!)
+  let query = supabase.from('messages').select('*').eq('tenant_id', user.tenantId!)
 
   if (options?.includeInquiryMessages && options?.inquiryId && entityType === 'event') {
     // Combined thread: event messages + inquiry messages
@@ -377,11 +372,13 @@ export async function deleteResponseTemplate(id: string) {
  * These are suggestions — the chef can customize or replace them entirely.
  * Professional but warm tone, reflecting a private chef's real communication style.
  */
-export async function getDefaultTemplates(): Promise<Array<{
-  name: string
-  template_text: string
-  category: string
-}>> {
+export async function getDefaultTemplates(): Promise<
+  Array<{
+    name: string
+    template_text: string
+    category: string
+  }>
+> {
   return [
     {
       name: 'First response - new inquiry',
@@ -403,8 +400,7 @@ export async function getDefaultTemplates(): Promise<Array<{
     },
     {
       name: 'Scheduling confirmation',
-      template_text:
-        "We're all set! I'll arrive at [time] on [date]. Looking forward to it.",
+      template_text: "We're all set! I'll arrive at [time] on [date]. Looking forward to it.",
       category: 'scheduling',
     },
     {
@@ -452,16 +448,14 @@ export async function seedDefaultTemplates() {
 
   const defaults = await getDefaultTemplates()
 
-  const { error } = await supabase
-    .from('response_templates')
-    .insert(
-      defaults.map((t) => ({
-        tenant_id: user.tenantId!,
-        name: t.name,
-        template_text: t.template_text,
-        category: t.category,
-      }))
-    )
+  const { error } = await supabase.from('response_templates').insert(
+    defaults.map((t) => ({
+      tenant_id: user.tenantId!,
+      name: t.name,
+      template_text: t.template_text,
+      category: t.category,
+    }))
+  )
 
   if (error) {
     console.error('[seedDefaultTemplates] Error:', error)

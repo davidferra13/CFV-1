@@ -29,7 +29,7 @@ test.describe('Culinary — Hub', () => {
 
   test('/culinary — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/culinary')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -58,7 +58,7 @@ test.describe('Culinary — Components', () => {
 
   test('/culinary/components — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/culinary/components')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -92,7 +92,7 @@ test.describe('Culinary — Costing', () => {
 
   test('/culinary/costing — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/culinary/costing')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -125,7 +125,7 @@ test.describe('Culinary — Ingredients', () => {
 
   test('/culinary/ingredients — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/culinary/ingredients')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -154,7 +154,7 @@ test.describe('Culinary — Menus', () => {
 
   test('/culinary/menus — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/culinary/menus')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -170,11 +170,7 @@ test.describe('Culinary — Menus', () => {
 // ─── Prep ─────────────────────────────────────────────────────────────────────
 
 test.describe('Culinary — Prep', () => {
-  const prepRoutes = [
-    '/culinary/prep',
-    '/culinary/prep/shopping',
-    '/culinary/prep/timeline',
-  ]
+  const prepRoutes = ['/culinary/prep', '/culinary/prep/shopping', '/culinary/prep/timeline']
 
   for (const route of prepRoutes) {
     test(`${route} — loads without 500`, async ({ page }) => {
@@ -193,7 +189,7 @@ test.describe('Culinary — Prep', () => {
 
   test('/culinary/prep — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/culinary/prep')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -221,7 +217,7 @@ test.describe('Culinary — Recipes', () => {
 
   test('/culinary/recipes — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/culinary/recipes')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)

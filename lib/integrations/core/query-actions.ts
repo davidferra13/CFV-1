@@ -3,7 +3,11 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { INTEGRATION_PROVIDER_META } from './providers'
-import type { IntegrationConnectionSummary, IntegrationEventSummary, IntegrationProvider } from './types'
+import type {
+  IntegrationConnectionSummary,
+  IntegrationEventSummary,
+  IntegrationProvider,
+} from './types'
 
 function toProvider(value: string): IntegrationProvider {
   return value as IntegrationProvider
@@ -19,7 +23,9 @@ export async function getIntegrationConnections(): Promise<IntegrationConnection
 
   const { data, error } = await supabase
     .from('integration_connections')
-    .select('id, provider, status, auth_type, external_account_name, external_account_id, last_sync_at, error_count, last_error, connected_at')
+    .select(
+      'id, provider, status, auth_type, external_account_name, external_account_id, last_sync_at, error_count, last_error, connected_at'
+    )
     .eq('tenant_id', user.tenantId)
     .order('connected_at', { ascending: false })
 
@@ -49,7 +55,9 @@ export async function getRecentIntegrationEvents(limit = 25): Promise<Integratio
 
   const { data, error } = await supabase
     .from('integration_events')
-    .select('id, provider, source_event_type, canonical_event_type, status, received_at, processed_at, error')
+    .select(
+      'id, provider, source_event_type, canonical_event_type, status, received_at, processed_at, error'
+    )
     .eq('tenant_id', user.tenantId)
     .order('received_at', { ascending: false })
     .limit(Math.max(1, Math.min(limit, 100)))
@@ -78,7 +86,9 @@ export async function getIntegrationProviderOverview() {
     getRecentIntegrationEvents(50),
   ])
 
-  const connected = new Set(connections.filter((c) => c.status === 'connected').map((c) => c.provider))
+  const connected = new Set(
+    connections.filter((c) => c.status === 'connected').map((c) => c.provider)
+  )
 
   return INTEGRATION_PROVIDER_META.map((meta) => {
     const providerConnections = connections.filter((c) => c.provider === meta.provider)
@@ -90,11 +100,12 @@ export async function getIntegrationProviderOverview() {
       isConnected: connected.has(meta.provider),
       connectionCount: providerConnections.length,
       errorCount: providerConnections.reduce((sum, conn) => sum + (conn.errorCount || 0), 0),
-      lastSyncAt: providerConnections
-        .map((conn) => conn.lastSyncAt)
-        .filter(Boolean)
-        .sort()
-        .reverse()[0] ?? null,
+      lastSyncAt:
+        providerConnections
+          .map((conn) => conn.lastSyncAt)
+          .filter(Boolean)
+          .sort()
+          .reverse()[0] ?? null,
       lastEventStatus: lastEvent?.status ?? null,
       lastEventAt: lastEvent?.receivedAt ?? null,
     }

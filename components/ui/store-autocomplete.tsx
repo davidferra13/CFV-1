@@ -55,11 +55,7 @@ export function StoreAutocomplete({
 
   if (!apiKey || !isLoaded) {
     return (
-      <Input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-      />
+      <Input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} />
     )
   }
 
@@ -73,11 +69,7 @@ export function StoreAutocomplete({
         fields: ['name', 'formatted_address', 'place_id'],
       }}
     >
-      <Input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-      />
+      <Input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} />
     </Autocomplete>
   )
 }

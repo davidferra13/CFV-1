@@ -26,14 +26,13 @@ export function PostEventSurveyEmail({
       <Text style={paragraph}>Hi {clientName},</Text>
 
       <Text style={paragraph}>
-        Thank you for having <strong>{chefName}</strong> for your{' '}
-        <strong>{occasion}</strong>. We hope it was everything you imagined.
+        Thank you for having <strong>{chefName}</strong> for your <strong>{occasion}</strong>. We
+        hope it was everything you imagined.
       </Text>
 
       <Text style={paragraph}>
-        Your feedback takes less than 2 minutes and helps{' '}
-        <strong>{chefName}</strong> continue delivering exceptional
-        experiences.
+        Your feedback takes less than 2 minutes and helps <strong>{chefName}</strong> continue
+        delivering exceptional experiences.
       </Text>
 
       <Button style={primaryButton} href={surveyUrl}>
@@ -43,8 +42,7 @@ export function PostEventSurveyEmail({
       <Hr style={divider} />
 
       <Text style={muted}>
-        This link is unique to you. The survey is optional and takes about
-        90 seconds to complete.
+        This link is unique to you. The survey is optional and takes about 90 seconds to complete.
       </Text>
     </BaseLayout>
   )

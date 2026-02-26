@@ -5,6 +5,7 @@ Date: 2026-02-18
 ## Scope Completed
 
 ### 1) Client Self-Service Profile (`/my-profile`)
+
 - Added reusable `TagInput` component for array fields.
 - Added client profile server actions:
   - `getMyProfile()`
@@ -15,6 +16,7 @@ Date: 2026-02-18
 - Supports personal info, dietary preferences, kitchen/logistics, and family details.
 
 ### 2) Reward Redemption (`/my-rewards`)
+
 - Added client redemption action:
   - `lib/loyalty/client-loyalty-actions.ts` (`clientRedeemReward`)
 - Added rewards page + card component:
@@ -29,6 +31,7 @@ Date: 2026-02-18
   - Recent loyalty transactions
 
 ### 3) Client Event Cancellation
+
 - Added client cancellation button/modal:
   - `app/(client)/my-events/[id]/cancel-event-button.tsx`
 - Updated FSM transition permissions for client cancellation in early states:
@@ -40,6 +43,7 @@ Date: 2026-02-18
 - Wired button into event detail page.
 
 ### 4) Receipt PDF Download
+
 - Added receipt generator:
   - `lib/documents/generate-receipt.ts`
 - Added client API endpoint:
@@ -47,6 +51,7 @@ Date: 2026-02-18
 - Added "Download Receipt" link on event detail payment history card.
 
 ### 5) Consolidated Chef Profile (`/settings/my-profile`)
+
 - Added profile actions:
   - `lib/chef/profile-actions.ts`
   - `getChefFullProfile()`
@@ -66,6 +71,7 @@ Date: 2026-02-18
 - Added prominent "My Profile" link card to settings home.
 
 ### 6) Navigation + Middleware Updates
+
 - Added client route guards for:
   - `/my-profile`
   - `/my-rewards`
@@ -83,5 +89,6 @@ Date: 2026-02-18
 6. Chef can open `/settings/my-profile`, edit all fields, and persist changes.
 
 ## Notes
+
 - All changes were implemented without DB migrations.
 - Tier downgrade is still prevented on reward redemption.

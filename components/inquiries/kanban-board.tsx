@@ -94,9 +94,7 @@ function formatColumnRevenue(cents: number): string {
 }
 
 function KanbanColumn({ column, cards }: KanbanColumnProps) {
-  const [collapsed, setCollapsed] = useState<boolean>(
-    column.collapsedByDefault ?? false
-  )
+  const [collapsed, setCollapsed] = useState<boolean>(column.collapsedByDefault ?? false)
 
   const accentClass = COLUMN_ACCENT[column.id] ?? 'border-t-stone-300'
   const totalBudgetCents = cards.reduce((sum, c) => sum + (c.budget_cents ?? 0), 0)
@@ -115,9 +113,7 @@ function KanbanColumn({ column, cards }: KanbanColumnProps) {
           aria-expanded={!collapsed}
         >
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <span className="font-semibold text-stone-800 text-sm">
-              {column.label}
-            </span>
+            <span className="font-semibold text-stone-800 text-sm">{column.label}</span>
             <Badge variant={column.badgeVariant}>{cards.length}</Badge>
             {revenueLabel && (
               <span className="text-xs text-emerald-700 font-medium ml-auto shrink-0">
@@ -126,11 +122,7 @@ function KanbanColumn({ column, cards }: KanbanColumnProps) {
             )}
           </div>
           <span className="text-stone-400 group-hover:text-stone-600 transition-colors shrink-0">
-            {collapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
+            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </span>
         </button>
       </div>
@@ -139,13 +131,9 @@ function KanbanColumn({ column, cards }: KanbanColumnProps) {
       {!collapsed && (
         <div className="flex flex-col gap-2 p-3 overflow-y-auto">
           {cards.length === 0 ? (
-            <p className="text-center text-xs text-stone-400 py-6">
-              No inquiries here
-            </p>
+            <p className="text-center text-xs text-stone-400 py-6">No inquiries here</p>
           ) : (
-            cards.map((inquiry) => (
-              <KanbanCard key={inquiry.id} inquiry={inquiry} />
-            ))
+            cards.map((inquiry) => <KanbanCard key={inquiry.id} inquiry={inquiry} />)
           )}
         </div>
       )}
@@ -190,11 +178,7 @@ export function KanbanBoard({ inquiries }: KanbanBoardProps) {
     <div className="overflow-x-auto pb-4">
       <div className="flex gap-4 min-w-max">
         {COLUMNS.map((col) => (
-          <KanbanColumn
-            key={col.id}
-            column={col}
-            cards={columnCards[col.id] ?? []}
-          />
+          <KanbanColumn key={col.id} column={col} cards={columnCards[col.id] ?? []} />
         ))}
       </div>
     </div>

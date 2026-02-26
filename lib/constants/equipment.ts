@@ -66,7 +66,7 @@ export const MASTER_EQUIPMENT_CATALOG: Record<string, string[]> = {
     'Recycling Bags',
     'First-Aid Kit',
   ],
-  'Utensils': [
+  Utensils: [
     'Measuring Cups',
     'Measuring Spoons',
     'Vegetable Peeler',

@@ -19,6 +19,7 @@ Six infrastructure gaps were closed with new code. These address the transition 
 Centralizes all Zod schemas in one file with no `'use server'` directive (safe to import anywhere).
 
 **What's in it:**
+
 - `UuidSchema`, `DateStringSchema`, `CentsSchema`, `PositiveCentsSchema`, `PhoneSchema` — primitives
 - `EventStatusSchema`, `TransitionEventInputSchema` — FSM types
 - `EventBaseSchema`, `ClientBaseSchema`, `LedgerEntrySchema` — entity schemas
@@ -26,6 +27,7 @@ Centralizes all Zod schemas in one file with no `'use server'` directive (safe t
 - `safeValidate()` — non-throwing validation helper returning `{ success, data | error }`
 
 **Usage:**
+
 ```typescript
 import { TransitionEventInputSchema, safeValidate } from '@/lib/validation/schemas'
 const result = safeValidate(TransitionEventInputSchema, rawInput)
@@ -34,11 +36,13 @@ const result = safeValidate(TransitionEventInputSchema, rawInput)
 ### `lib/resilience/retry.ts` — Retry with Exponential Backoff (#47)
 
 `withRetry()` wraps any async function with exponential backoff retry logic:
+
 - Full-jitter backoff (prevents thundering herd)
 - `isTransientError()` classifier: retries on 429, 5xx, network errors; throws immediately on 4xx
 - `pushToDLQ()` helper to call after max retries exhausted
 
 **Usage:**
+
 ```typescript
 import { withRetry, pushToDLQ } from '@/lib/resilience/retry'
 try {
@@ -55,6 +59,7 @@ Prevents cascading failures when external services are down.
 **State machine:** `CLOSED` → `OPEN` (on N failures) → `HALF_OPEN` (after timeout) → `CLOSED` (on success)
 
 **Pre-configured breakers for all external services:**
+
 ```typescript
 import { breakers } from '@/lib/resilience/circuit-breaker'
 await breakers.stripe.execute(() => stripe.charges.create(...))
@@ -69,6 +74,7 @@ await breakers.gemini.execute(() => model.generateContent(...))
 Client-side React hooks for live data updates via Supabase WebSockets (Postgres Changes API).
 
 **Hooks provided:**
+
 - `useEventStatusSubscription(eventId, onStatusChange)` — fires when event FSM transitions
 - `useNotificationSubscription(tenantId, onNotification)` — fires on new notification rows
 - `useChatMessageSubscription(conversationId, onMessage)` — fires on new chat messages
@@ -102,6 +108,7 @@ The critical atomicity gap: previously, if the `event_state_transitions` INSERT 
 
 **2. `dead_letter_queue` table:**
 Stores permanently failed jobs (those that exhausted max retry attempts):
+
 - `job_type`: `'automation'`, `'webhook_delivery'`, `'cron'`, `'email'`
 - `job_id`: original job ID or idempotency key
 - `payload`: JSONB for replay
@@ -109,6 +116,7 @@ Stores permanently failed jobs (those that exhausted max retry attempts):
 
 **3. `job_retry_log` table:**
 Tracks retry state for active jobs before they reach DLQ:
+
 - Unique on `(job_type, job_id)` — prevents duplicate retry entries
 - `next_retry_at` for scheduling
 - `status`: `pending | retrying | succeeded | dead`
@@ -116,12 +124,14 @@ Tracks retry state for active jobs before they reach DLQ:
 ### `20260320000002_automation_idempotency.sql` (#18)
 
 **Idempotency for automation executions:**
+
 - Adds `idempotency_key TEXT` to `automation_executions` (if table exists)
 - Adds `status`, `attempt_number`, `last_error`, `dlq_id` columns
 - Creates `UNIQUE INDEX` on `(tenant_id, idempotency_key)` — prevents double-firing
 
 **`automation_execution_log` table (standalone):**
 Purpose-built log with idempotency enforcement even if the original `automation_executions` table has different structure:
+
 - `UNIQUE INDEX` on `(tenant_id, idempotency_key)` — any duplicate attempt hits the constraint and returns without re-executing
 
 ---
@@ -131,6 +141,7 @@ Purpose-built log with idempotency enforcement even if the original `automation_
 ### Why in-memory circuit breakers?
 
 An in-memory circuit breaker resets on cold start (every Vercel serverless invocation). This is acceptable because:
+
 1. Supabase Realtime provides per-connection isolation anyway
 2. The circuit trips based on failures within a single invocation — which is usually a cron run or API call
 3. For persistent state, wire `getCircuitBreaker()` to use Upstash Redis (future improvement)

@@ -9,7 +9,7 @@ import { BaseLayout } from './base-layout'
 type Props = {
   chefName: string
   clientName: string
-  messagePreview: string   // First ~120 chars of the message
+  messagePreview: string // First ~120 chars of the message
   conversationUrl: string
 }
 
@@ -50,14 +50,19 @@ export function NewMessageChefEmail({
       </div>
 
       <Text style={muted}>
-        You&apos;re receiving this because a client messaged you on ChefFlow.
-        Manage notification preferences in your settings.
+        You&apos;re receiving this because a client messaged you on ChefFlow. Manage notification
+        preferences in your settings.
       </Text>
     </BaseLayout>
   )
 }
 
-const heading = { fontSize: '24px', fontWeight: '600' as const, color: '#18181b', margin: '0 0 16px' }
+const heading = {
+  fontSize: '24px',
+  fontWeight: '600' as const,
+  color: '#18181b',
+  margin: '0 0 16px',
+}
 const paragraph = { fontSize: '15px', lineHeight: '1.6', color: '#374151', margin: '0 0 16px' }
 const quoteBox = {
   backgroundColor: '#f9fafb',

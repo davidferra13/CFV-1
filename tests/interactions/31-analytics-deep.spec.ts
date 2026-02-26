@@ -40,7 +40,7 @@ test.describe('Analytics — Hub', () => {
 
   test('/analytics — no JS errors on load', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/analytics')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -74,7 +74,7 @@ test.describe('Analytics — Benchmarks', () => {
 
   test('/analytics/benchmarks — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/analytics/benchmarks')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -97,7 +97,10 @@ test.describe('Analytics — Client LTV', () => {
     expect(bodyText.trim().length).toBeGreaterThan(20)
   })
 
-  test('/analytics/client-ltv — data is tenant-scoped (no Chef B data)', async ({ page, seedIds }) => {
+  test('/analytics/client-ltv — data is tenant-scoped (no Chef B data)', async ({
+    page,
+    seedIds,
+  }) => {
     await page.goto('/analytics/client-ltv')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
@@ -107,7 +110,7 @@ test.describe('Analytics — Client LTV', () => {
 
   test('/analytics/client-ltv — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/analytics/client-ltv')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -132,7 +135,7 @@ test.describe('Analytics — Demand', () => {
 
   test('/analytics/demand — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/analytics/demand')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -157,7 +160,7 @@ test.describe('Analytics — Pipeline', () => {
 
   test('/analytics/pipeline — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/analytics/pipeline')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -182,7 +185,7 @@ test.describe('Analytics — Reports', () => {
 
   test('/analytics/reports — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/analytics/reports')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -210,7 +213,7 @@ test.describe('Analytics — Cross-Section', () => {
 
   test('Navigating across analytics sub-routes does not produce JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     const routes = ['/analytics', '/analytics/benchmarks', '/analytics/client-ltv']
     for (const route of routes) {

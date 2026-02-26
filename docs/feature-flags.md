@@ -19,15 +19,15 @@ ChefFlow has two categories of feature flags:
 
 Defined in `lib/features.ts`.
 
-| Flag | Variable | Type | Default | Purpose | Sunset Date |
-|------|----------|------|---------|---------|-------------|
-| Communication Triage UI | `COMM_TRIAGE_ENABLED` | boolean | `false` | Enables `/inbox` communication triage view and dual-write ingestion pipeline | TBD |
-| Ops Copilot | `OPS_COPILOT_ENABLED` | boolean | `false` | Enables scheduled copilot planning runs and run logging | TBD |
-| Ops Autonomy Level | `OPS_AUTONOMY_LEVEL` | integer | `0` | `0` = draft only, `1` = assisted, `2` = auto-safe | TBD |
-| PWA Build | `ENABLE_PWA_BUILD=1` | boolean | off | Enables next-pwa manifest/service worker generation (disabled on Windows due to build bug) | TBD |
-| Sentry Force Enable | `SENTRY_FORCE_ENABLE=true` | boolean | off | Enables Sentry in local development (default: production only) | permanent |
-| E2E Remote DB | `SUPABASE_E2E_ALLOW_REMOTE=true` | boolean | off | Allows E2E tests to run against remote Supabase (not local) | permanent |
-| Maintenance Mode | `MAINTENANCE_MODE=1` | boolean | off | Displays maintenance page to all visitors (see disaster-recovery.md) | emergency use only |
+| Flag                    | Variable                         | Type    | Default | Purpose                                                                                    | Sunset Date        |
+| ----------------------- | -------------------------------- | ------- | ------- | ------------------------------------------------------------------------------------------ | ------------------ |
+| Communication Triage UI | `COMM_TRIAGE_ENABLED`            | boolean | `false` | Enables `/inbox` communication triage view and dual-write ingestion pipeline               | TBD                |
+| Ops Copilot             | `OPS_COPILOT_ENABLED`            | boolean | `false` | Enables scheduled copilot planning runs and run logging                                    | TBD                |
+| Ops Autonomy Level      | `OPS_AUTONOMY_LEVEL`             | integer | `0`     | `0` = draft only, `1` = assisted, `2` = auto-safe                                          | TBD                |
+| PWA Build               | `ENABLE_PWA_BUILD=1`             | boolean | off     | Enables next-pwa manifest/service worker generation (disabled on Windows due to build bug) | TBD                |
+| Sentry Force Enable     | `SENTRY_FORCE_ENABLE=true`       | boolean | off     | Enables Sentry in local development (default: production only)                             | permanent          |
+| E2E Remote DB           | `SUPABASE_E2E_ALLOW_REMOTE=true` | boolean | off     | Allows E2E tests to run against remote Supabase (not local)                                | permanent          |
+| Maintenance Mode        | `MAINTENANCE_MODE=1`             | boolean | off     | Displays maintenance page to all visitors (see disaster-recovery.md)                       | emergency use only |
 
 ---
 
@@ -37,16 +37,16 @@ Managed via `lib/admin/flag-actions.ts` and the admin panel.
 
 Table: `chef_feature_flags` (migration: `20260306000011_chef_feature_flags.sql`)
 
-| Flag Name | Description | Default | Who enables it | Status |
-|-----------|-------------|---------|----------------|--------|
-| `beta_realtime` | Enable Supabase Realtime subscription hooks (live event status, notifications) | false | Admin on request | Beta |
-| `beta_calendar_sync` | Enable Google Calendar two-way sync | false | Admin on request | Beta |
-| `beta_client_portal_v2` | Enable redesigned client portal | false | Admin on request | Beta |
-| `advanced_analytics` | Enable advanced revenue analytics charts | false | Admin on request | Stable |
-| `ops_copilot` | Per-chef override for Ops Copilot (requires global flag ON) | false | Admin on request | Alpha |
-| `comm_triage` | Per-chef override for Communication Triage (requires global flag ON) | false | Admin on request | Alpha |
-| `instacart_integration` | Enable Instacart cart generation in Grocery Quote | false | Admin on request | Beta |
-| `mealme_pricing` | Enable MealMe local store pricing in Grocery Quote | false | Admin on request | Beta |
+| Flag Name               | Description                                                                    | Default | Who enables it   | Status |
+| ----------------------- | ------------------------------------------------------------------------------ | ------- | ---------------- | ------ |
+| `beta_realtime`         | Enable Supabase Realtime subscription hooks (live event status, notifications) | false   | Admin on request | Beta   |
+| `beta_calendar_sync`    | Enable Google Calendar two-way sync                                            | false   | Admin on request | Beta   |
+| `beta_client_portal_v2` | Enable redesigned client portal                                                | false   | Admin on request | Beta   |
+| `advanced_analytics`    | Enable advanced revenue analytics charts                                       | false   | Admin on request | Stable |
+| `ops_copilot`           | Per-chef override for Ops Copilot (requires global flag ON)                    | false   | Admin on request | Alpha  |
+| `comm_triage`           | Per-chef override for Communication Triage (requires global flag ON)           | false   | Admin on request | Alpha  |
+| `instacart_integration` | Enable Instacart cart generation in Grocery Quote                              | false   | Admin on request | Beta   |
+| `mealme_pricing`        | Enable MealMe local store pricing in Grocery Quote                             | false   | Admin on request | Beta   |
 
 ---
 
@@ -115,4 +115,4 @@ All flag changes are logged to `admin_audit_log` via `logAdminAction()`.
 
 ---
 
-*Last updated: 2026-02-20*
+_Last updated: 2026-02-20_

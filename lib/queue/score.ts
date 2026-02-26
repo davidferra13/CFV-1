@@ -25,9 +25,7 @@ export function computeScore(inputs: ScoreInputs): number {
   const staleness = scoreStaleness(inputs.hoursSinceCreated)
   const revenue = scoreRevenue(inputs.revenueCents)
 
-  return Math.round(
-    Math.min(1000, time + impact + blocking + staleness + revenue)
-  )
+  return Math.round(Math.min(1000, time + impact + blocking + staleness + revenue))
 }
 
 /**

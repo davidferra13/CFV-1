@@ -13,17 +13,17 @@ Two gaps in the FOH menu system were closed:
 
 The `renderFrontOfHouseMenu` function was updated for a more elegant, restaurant-quality look:
 
-| Element | Before | After |
-| --- | --- | --- |
-| Title font | Helvetica Bold 18pt | Times-Roman Bold 20pt |
-| Date line | Helvetica Italic 10pt | Times-Roman Italic 10pt |
-| "For [Client]" | Helvetica 9pt black | Helvetica 8pt muted gray |
-| Separator | 0.3pt gray line | 0.5pt dark line, inset 30mm |
-| "COURSE N" label | Helvetica Bold 8pt | Removed |
-| Course name | Helvetica Bold 13pt | Times-Roman Bold 14pt |
-| Description | Helvetica 9pt | Times-Roman Italic 9pt |
-| Dietary tags | Helvetica Italic 7pt | Helvetica Italic 7pt, muted (unchanged) |
-| Between courses | Just spacing | Light gray rule + spacing |
+| Element          | Before                | After                                   |
+| ---------------- | --------------------- | --------------------------------------- |
+| Title font       | Helvetica Bold 18pt   | Times-Roman Bold 20pt                   |
+| Date line        | Helvetica Italic 10pt | Times-Roman Italic 10pt                 |
+| "For [Client]"   | Helvetica 9pt black   | Helvetica 8pt muted gray                |
+| Separator        | 0.3pt gray line       | 0.5pt dark line, inset 30mm             |
+| "COURSE N" label | Helvetica Bold 8pt    | Removed                                 |
+| Course name      | Helvetica Bold 13pt   | Times-Roman Bold 14pt                   |
+| Description      | Helvetica 9pt         | Times-Roman Italic 9pt                  |
+| Dietary tags     | Helvetica Italic 7pt  | Helvetica Italic 7pt, muted (unchanged) |
+| Between courses  | Just spacing          | Light gray rule + spacing               |
 
 The `drawCenteredText` helper was updated to accept `font: 'helvetica' | 'times'` so serif/sans can be mixed intentionally.
 
@@ -88,13 +88,13 @@ All four document generators previously used `new Date(event_date)` to parse dat
 
 **Fixed with `parseISO` from date-fns**, which treats date-only strings as **local midnight** — correct behavior regardless of server timezone.
 
-| File | Change |
-| --- | --- |
-| `generate-front-of-house-menu.ts` | `format(parseISO(event.event_date), ...)` |
-| `generate-prep-sheet.ts` | `format(parseISO(event.event_date), ...)` |
-| `generate-execution-sheet.ts` | `format(parseISO(event.event_date), ...)` |
-| `generate-receipt.ts` | `format(parseISO(data.event.event_date), ...)` |
-| `lib/email/notifications.ts` | `parseISO(date).toLocaleDateString(...)` in `formatDate` |
+| File                              | Change                                                   |
+| --------------------------------- | -------------------------------------------------------- |
+| `generate-front-of-house-menu.ts` | `format(parseISO(event.event_date), ...)`                |
+| `generate-prep-sheet.ts`          | `format(parseISO(event.event_date), ...)`                |
+| `generate-execution-sheet.ts`     | `format(parseISO(event.event_date), ...)`                |
+| `generate-receipt.ts`             | `format(parseISO(data.event.event_date), ...)`           |
+| `lib/email/notifications.ts`      | `parseISO(date).toLocaleDateString(...)` in `formatDate` |
 
 The `notifications.ts` fix covers every transactional email (proposed, confirmed, reminder, cancelled, FOH menu ready, etc.) — they all pass `event_date` through `formatDate`.
 

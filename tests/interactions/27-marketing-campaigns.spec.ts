@@ -40,7 +40,7 @@ test.describe('Marketing — Hub', () => {
 
   test('/marketing — no JS errors on load', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/marketing')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -49,9 +49,7 @@ test.describe('Marketing — Hub', () => {
   test('/marketing — has links to campaigns, sequences, or templates', async ({ page }) => {
     await page.goto('/marketing')
     await page.waitForLoadState('networkidle')
-    const subNav = page
-      .locator('a[href*="/marketing/"]')
-      .first()
+    const subNav = page.locator('a[href*="/marketing/"]').first()
     const isVisible = await subNav.isVisible().catch(() => false)
     // Informational — may embed sub-sections directly
     const _ = isVisible
@@ -88,7 +86,7 @@ test.describe('Marketing — Campaigns via Hub', () => {
 
   test('/marketing — no JS errors on hub', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/marketing')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -96,7 +94,7 @@ test.describe('Marketing — Campaigns via Hub', () => {
 
   test('/marketing — clicking a campaign item does not crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/marketing')
     await page.waitForLoadState('networkidle')
@@ -131,7 +129,7 @@ test.describe('Marketing — Sequences', () => {
 
   test('/marketing/sequences — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/marketing/sequences')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -169,7 +167,7 @@ test.describe('Marketing — Templates', () => {
 
   test('/marketing/templates — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/marketing/templates')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -190,7 +188,7 @@ test.describe('Marketing — Automated Follow-Ups', () => {
 
   test('Navigating between marketing sub-sections does not error', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
 
     const sections = ['/marketing', '/marketing/sequences', '/marketing/templates']
     for (const path of sections) {

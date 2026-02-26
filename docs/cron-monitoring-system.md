@@ -2,16 +2,17 @@
 
 ## What Was Added
 
-| File | Purpose |
-|------|---------|
-| `supabase/migrations/20260306000002_cron_executions.sql` | `cron_executions` table |
-| `lib/cron/heartbeat.ts` | `recordCronHeartbeat()` utility |
-| `app/api/scheduled/monitor/route.ts` | Monitor endpoint |
-| `vercel.json` | Added monitor to cron schedule (every 30 min past the hour) |
+| File                                                     | Purpose                                                     |
+| -------------------------------------------------------- | ----------------------------------------------------------- |
+| `supabase/migrations/20260306000002_cron_executions.sql` | `cron_executions` table                                     |
+| `lib/cron/heartbeat.ts`                                  | `recordCronHeartbeat()` utility                             |
+| `app/api/scheduled/monitor/route.ts`                     | Monitor endpoint                                            |
+| `vercel.json`                                            | Added monitor to cron schedule (every 30 min past the hour) |
 
 ## The Problem
 
 18 scheduled cron jobs run on Vercel. Before this change, there was no way to know if any of them were failing silently. A cron that:
+
 - Hits a Vercel function timeout (25s limit)
 - Swallows an exception in a try/catch
 - Fails to connect to the database
@@ -40,16 +41,16 @@ Example: `lifecycle` runs at 3 AM daily. Expected interval = 1440 minutes. Alert
 
 ## Cron Names (match monitor config)
 
-| Cron | Name Used in Heartbeat |
-|------|------------------------|
-| Lifecycle reminders | `lifecycle` |
-| Follow-ups | `follow-ups` |
-| Revenue goals | `revenue-goals` |
-| Loyalty expiry | `loyalty-expiry` |
-| Activity cleanup | `activity-cleanup` |
-| Push cleanup | (not yet wired — add following the pattern below) |
-| Gmail sync | (not yet wired) |
-| ...and 11 more | (not yet wired) |
+| Cron                | Name Used in Heartbeat                            |
+| ------------------- | ------------------------------------------------- |
+| Lifecycle reminders | `lifecycle`                                       |
+| Follow-ups          | `follow-ups`                                      |
+| Revenue goals       | `revenue-goals`                                   |
+| Loyalty expiry      | `loyalty-expiry`                                  |
+| Activity cleanup    | `activity-cleanup`                                |
+| Push cleanup        | (not yet wired — add following the pattern below) |
+| Gmail sync          | (not yet wired)                                   |
+| ...and 11 more      | (not yet wired)                                   |
 
 ## Adding Heartbeat to Remaining Crons
 

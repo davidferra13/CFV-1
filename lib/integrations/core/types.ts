@@ -47,7 +47,10 @@ export type NormalizedIntegrationEvent = {
 export type ProviderAdapter = {
   provider: IntegrationProvider
   normalizeWebhook: (payload: Record<string, unknown>) => Promise<NormalizedIntegrationEvent>
-  pullSince?: (connectionId: string, cursor?: string | null) => Promise<NormalizedIntegrationEvent[]>
+  pullSince?: (
+    connectionId: string,
+    cursor?: string | null
+  ) => Promise<NormalizedIntegrationEvent[]>
 }
 
 export type IntegrationConnectionSummary = {

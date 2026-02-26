@@ -13,12 +13,12 @@ ChefFlow's architecture is built on three deterministic pillars: the event FSM, 
 
 ## The Four Allowed Zones
 
-| Zone | Nature | Example |
-|------|--------|---------|
-| Drafting Assistance | Chef-controlled output | Proposal drafts, message rewrites |
-| Structured Suggestions | Temporary, accept-to-commit | Pricing ranges, prep timelines |
-| Insight Surfaces | Read-only analysis | Revenue trends, margin alerts |
-| NL → Structured Input | Parse with confirmation | Inquiry parsing, menu extraction |
+| Zone                   | Nature                      | Example                           |
+| ---------------------- | --------------------------- | --------------------------------- |
+| Drafting Assistance    | Chef-controlled output      | Proposal drafts, message rewrites |
+| Structured Suggestions | Temporary, accept-to-commit | Pricing ranges, prep timelines    |
+| Insight Surfaces       | Read-only analysis          | Revenue trends, margin alerts     |
+| NL → Structured Input  | Parse with confirmation     | Inquiry parsing, menu extraction  |
 
 Every zone requires explicit chef confirmation before anything becomes canonical.
 
@@ -38,6 +38,7 @@ Every zone requires explicit chef confirmation before anything becomes canonical
 ## Implementation Guideline
 
 When building any AI-assisted feature:
+
 1. AI output goes to a **suggestion buffer** (UI state or temp table), never directly to canonical tables
 2. Chef reviews and explicitly accepts
 3. Acceptance triggers normal system writes (standard server actions)

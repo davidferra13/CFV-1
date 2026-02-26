@@ -4,13 +4,7 @@ import { Download } from 'lucide-react'
 import type { TaxPackage } from '@/lib/finance/tax-package'
 import { formatCurrency } from '@/lib/utils/currency'
 
-export function TaxPackageExport({
-  taxData,
-  taxYear,
-}: {
-  taxData: TaxPackage
-  taxYear: number
-}) {
+export function TaxPackageExport({ taxData, taxYear }: { taxData: TaxPackage; taxYear: number }) {
   function handleExport() {
     const rows: string[][] = []
 
@@ -29,7 +23,10 @@ export function TaxPackageExport({
     row(esc('Item'), esc('Amount'))
     row(esc('Gross Revenue (Line 1)'), esc(formatCurrency(taxData.grossRevenueCents)))
     row(esc('Tips Received (Line 1)'), esc(formatCurrency(taxData.tipsCents)))
-    row(esc('Total Gross Income'), esc(formatCurrency(taxData.grossRevenueCents + taxData.tipsCents)))
+    row(
+      esc('Total Gross Income'),
+      esc(formatCurrency(taxData.grossRevenueCents + taxData.tipsCents))
+    )
     row(esc('Completed Events'), esc(String(taxData.completedEventCount)))
     blank()
 
@@ -52,14 +49,22 @@ export function TaxPackageExport({
       esc('Mileage Deduction (Line 9)'),
       esc('Line 9'),
       esc(formatCurrency(mileageDeduction)),
-      esc(`${taxData.mileage.totalMiles.toFixed(1)} miles @ $${(taxData.mileage.irsRateCentsPerMile / 100).toFixed(2)}/mi`)
+      esc(
+        `${taxData.mileage.totalMiles.toFixed(1)} miles @ $${(taxData.mileage.irsRateCentsPerMile / 100).toFixed(2)}/mi`
+      )
     )
     blank()
-    row(esc('TOTAL DEDUCTIBLE EXPENSES'), esc(''), esc(formatCurrency(taxData.totalDeductibleExpensesCents)), esc(''))
+    row(
+      esc('TOTAL DEDUCTIBLE EXPENSES'),
+      esc(''),
+      esc(formatCurrency(taxData.totalDeductibleExpensesCents)),
+      esc('')
+    )
     blank()
 
     // Net Income
-    const netIncome = taxData.grossRevenueCents + taxData.tipsCents - taxData.totalDeductibleExpensesCents
+    const netIncome =
+      taxData.grossRevenueCents + taxData.tipsCents - taxData.totalDeductibleExpensesCents
     row(esc('=== NET INCOME ==='))
     row(esc('Estimated Net Profit'), esc(''), esc(formatCurrency(Math.max(0, netIncome))), esc(''))
     blank()
@@ -76,7 +81,7 @@ export function TaxPackageExport({
     row(esc('IRS Rate'), esc(`$${(taxData.mileage.irsRateCentsPerMile / 100).toFixed(2)}/mile`))
     row(esc('Total Mileage Deduction'), esc(formatCurrency(taxData.mileage.totalDeductionCents)))
 
-    const csv = rows.map(r => r.join(',')).join('\r\n')
+    const csv = rows.map((r) => r.join(',')).join('\r\n')
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')

@@ -68,7 +68,7 @@ function parseRawCsv(text: string): string[][] {
       if (ch === '\r' && next === '\n') i++ // skip \r\n pair
       current.push(cell)
       cell = ''
-      if (current.some(c => c.trim())) lines.push(current)
+      if (current.some((c) => c.trim())) lines.push(current)
       current = []
     } else {
       cell += ch
@@ -77,7 +77,7 @@ function parseRawCsv(text: string): string[][] {
 
   // Last cell / row
   current.push(cell)
-  if (current.some(c => c.trim())) lines.push(current)
+  if (current.some((c) => c.trim())) lines.push(current)
 
   return lines
 }
@@ -114,12 +114,41 @@ function detectColumnType(header: string, format: string): CsvColumnType {
   }
 
   // Generic detection — order matters (more specific first)
-  const nameExact = ['name', 'full_name', 'fullname', 'contact', 'contact_name', 'client', 'client_name', 'display_name']
+  const nameExact = [
+    'name',
+    'full_name',
+    'fullname',
+    'contact',
+    'contact_name',
+    'client',
+    'client_name',
+    'display_name',
+  ]
   const firstExact = ['first_name', 'firstname', 'first', 'given_name', 'forename']
   const lastExact = ['last_name', 'lastname', 'last', 'family_name', 'surname']
   const emailExact = ['email', 'email_address', 'e_mail', 'email_1', 'primary_email', 'mail']
-  const phoneExact = ['phone', 'phone_number', 'mobile', 'cell', 'telephone', 'tel', 'phone_1', 'primary_phone', 'cell_phone', 'mobile_phone']
-  const notesExact = ['notes', 'note', 'comments', 'comment', 'memo', 'description', 'remarks', 'additional_info']
+  const phoneExact = [
+    'phone',
+    'phone_number',
+    'mobile',
+    'cell',
+    'telephone',
+    'tel',
+    'phone_1',
+    'primary_phone',
+    'cell_phone',
+    'mobile_phone',
+  ]
+  const notesExact = [
+    'notes',
+    'note',
+    'comments',
+    'comment',
+    'memo',
+    'description',
+    'remarks',
+    'additional_info',
+  ]
   const addressExact = ['address', 'street', 'street_address', 'address_1', 'street_line_1']
   const cityExact = ['city', 'town']
   const stateExact = ['state', 'province', 'region']
@@ -143,26 +172,21 @@ function detectColumnType(header: string, format: string): CsvColumnType {
 // ROW → ParsedClient
 // ============================================
 
-function rowToClient(
-  row: string[],
-  mappings: CsvColumnMapping[]
-): ParsedClient | null {
+function rowToClient(row: string[], mappings: CsvColumnMapping[]): ParsedClient | null {
   const get = (type: CsvColumnType): string | null => {
-    const m = mappings.find(m => m.detected === type)
+    const m = mappings.find((m) => m.detected === type)
     if (!m || m.index >= row.length) return null
     return row[m.index]?.trim() || null
   }
 
   // Support multiple email/phone columns — use first non-empty
-  const emailMappings = mappings.filter(m => m.detected === 'email')
-  const emailVal = emailMappings
-    .map(m => row[m.index]?.trim())
-    .find(v => v && v.length > 0) || null
+  const emailMappings = mappings.filter((m) => m.detected === 'email')
+  const emailVal =
+    emailMappings.map((m) => row[m.index]?.trim()).find((v) => v && v.length > 0) || null
 
-  const phoneMappings = mappings.filter(m => m.detected === 'phone')
-  const phoneVal = phoneMappings
-    .map(m => row[m.index]?.trim())
-    .find(v => v && v.length > 0) || null
+  const phoneMappings = mappings.filter((m) => m.detected === 'phone')
+  const phoneVal =
+    phoneMappings.map((m) => row[m.index]?.trim()).find((v) => v && v.length > 0) || null
 
   // Build full name
   let fullName = get('full_name')
@@ -264,12 +288,10 @@ export function parseClientsCsv(csvText: string): CsvParseResult {
     }
   }
 
-  const headers = rows[0].map(h => h.trim().replace(/^"|"$/g, ''))
+  const headers = rows[0].map((h) => h.trim().replace(/^"|"$/g, ''))
   const dataRows = rows.slice(1)
 
-  const format: CsvParseResult['format'] = isGoogleContacts(headers)
-    ? 'google_contacts'
-    : 'generic'
+  const format: CsvParseResult['format'] = isGoogleContacts(headers) ? 'google_contacts' : 'generic'
 
   const columnMappings: CsvColumnMapping[] = headers.map((header, index) => ({
     index,
@@ -281,9 +303,9 @@ export function parseClientsCsv(csvText: string): CsvParseResult {
 
   // Quality checks
   const hasName = columnMappings.some(
-    m => m.detected === 'full_name' || m.detected === 'first_name' || m.detected === 'last_name'
+    (m) => m.detected === 'full_name' || m.detected === 'first_name' || m.detected === 'last_name'
   )
-  const hasEmail = columnMappings.some(m => m.detected === 'email')
+  const hasEmail = columnMappings.some((m) => m.detected === 'email')
 
   if (!hasName) {
     warnings.push(
@@ -296,9 +318,7 @@ export function parseClientsCsv(csvText: string): CsvParseResult {
     )
   }
   if (format === 'google_contacts') {
-    warnings.push(
-      'Google Contacts format detected. Importing: name, email, phone, and notes.'
-    )
+    warnings.push('Google Contacts format detected. Importing: name, email, phone, and notes.')
   }
 
   // Parse all rows
@@ -307,7 +327,7 @@ export function parseClientsCsv(csvText: string): CsvParseResult {
 
   for (const row of dataRows) {
     // Skip entirely blank rows
-    if (!row.some(c => c.trim())) continue
+    if (!row.some((c) => c.trim())) continue
     const client = rowToClient(row, columnMappings)
     if (client) {
       clients.push(client)
@@ -328,7 +348,7 @@ export function parseClientsCsv(csvText: string): CsvParseResult {
     columnMappings,
     headers,
     previewRows,
-    totalRows: dataRows.filter(r => r.some(c => c.trim())).length,
+    totalRows: dataRows.filter((r) => r.some((c) => c.trim())).length,
     skippedRows,
     warnings,
     format,

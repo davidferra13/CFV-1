@@ -22,11 +22,15 @@ export type NetworkFeatureDefinition = {
   placeholder: string
 }
 
-export const NETWORK_FEATURE_DEFINITIONS: Record<NetworkFeatureKey, Omit<NetworkFeatureDefinition, 'key'>> = {
+export const NETWORK_FEATURE_DEFINITIONS: Record<
+  NetworkFeatureKey,
+  Omit<NetworkFeatureDefinition, 'key'>
+> = {
   availability: {
     label: 'Availability',
     description: 'Open dates, location, service type, and guest range.',
-    placeholder: 'Open for bookings on March 12-15 in Boston, MA. Up to 14 guests. DM if you need coverage.',
+    placeholder:
+      'Open for bookings on March 12-15 in Boston, MA. Up to 14 guests. DM if you need coverage.',
   },
   referral_asks: {
     label: 'Referral Asks',
@@ -46,12 +50,14 @@ export const NETWORK_FEATURE_DEFINITIONS: Record<NetworkFeatureKey, Omit<Network
   menu_spotlights: {
     label: 'Menu Spotlights',
     description: 'Share dishes, tasting ideas, and seasonal concepts.',
-    placeholder: 'Testing a spring menu: charred asparagus, preserved lemon aioli, and herb-crusted halibut.',
+    placeholder:
+      'Testing a spring menu: charred asparagus, preserved lemon aioli, and herb-crusted halibut.',
   },
   sourcing_intel: {
     label: 'Sourcing Intel',
     description: 'Share vendor leads, ingredient quality, and price shifts.',
-    placeholder: 'Heads up: local sea scallops are excellent this week and priced lower than last month.',
+    placeholder:
+      'Heads up: local sea scallops are excellent this week and priced lower than last month.',
   },
   operational_tips: {
     label: 'Operational Tips',
@@ -76,7 +82,8 @@ export const NETWORK_FEATURE_DEFINITIONS: Record<NetworkFeatureKey, Omit<Network
   professional_proof: {
     label: 'Professional Proof',
     description: 'Milestones, wins, press, certifications, testimonials.',
-    placeholder: 'Just completed food safety recertification and added two new vegan tasting menus.',
+    placeholder:
+      'Just completed food safety recertification and added two new vegan tasting menus.',
   },
   questions_to_network: {
     label: 'Questions To Network',

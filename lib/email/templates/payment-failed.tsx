@@ -21,16 +21,13 @@ export function PaymentFailedEmail({
   return (
     <BaseLayout preview={`Payment failed for ${occasion}`}>
       <Text style={heading}>Payment unsuccessful</Text>
-      <Text style={paragraph}>
-        Hi {clientName},
-      </Text>
+      <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>
         Your payment for <strong>{occasion}</strong> could not be processed.
         {errorMessage && ` Reason: ${errorMessage}.`}
       </Text>
       <Text style={paragraph}>
-        Please try again with a different payment method or contact your bank for more
-        information.
+        Please try again with a different payment method or contact your bank for more information.
       </Text>
       <Button style={button} href={retryUrl}>
         Retry Payment

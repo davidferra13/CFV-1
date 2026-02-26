@@ -19,16 +19,16 @@ This change delivers:
 
 ## The 8 Printed Sheets
 
-| # | Type | Label | Always Available? |
-| --- | --- | --- | --- |
-| 1 | `summary` | Event Summary | ✅ Yes |
-| 2 | `grocery` | Grocery List | When menu + dishes + components |
-| 3 | `foh` | Front-of-House Menu | When menu + dishes |
-| 4 | `prep` | Prep Sheet | When menu + dishes + components |
-| 5 | `execution` | Execution Sheet | When menu + dishes + components + serve time |
-| 6 | `checklist` | Non-Negotiables Checklist | ✅ Yes |
-| 7 | `packing` | Packing List | ✅ Yes |
-| 8 | `reset` | Post-Service Reset Checklist | ✅ Yes |
+| #   | Type        | Label                        | Always Available?                            |
+| --- | ----------- | ---------------------------- | -------------------------------------------- |
+| 1   | `summary`   | Event Summary                | ✅ Yes                                       |
+| 2   | `grocery`   | Grocery List                 | When menu + dishes + components              |
+| 3   | `foh`       | Front-of-House Menu          | When menu + dishes                           |
+| 4   | `prep`      | Prep Sheet                   | When menu + dishes + components              |
+| 5   | `execution` | Execution Sheet              | When menu + dishes + components + serve time |
+| 6   | `checklist` | Non-Negotiables Checklist    | ✅ Yes                                       |
+| 7   | `packing`   | Packing List                 | ✅ Yes                                       |
+| 8   | `reset`     | Post-Service Reset Checklist | ✅ Yes                                       |
 
 Documents are available as soon as the required data exists — never gated on event FSM state. The `?type=all` combined PDF generates all 8 pages.
 

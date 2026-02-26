@@ -4,6 +4,7 @@
 **Owner:** Platform engineer / founder
 
 This document covers two types of rollback:
+
 1. **Deployment rollback** — reverting application code to a previous version
 2. **Migration rollback** — undoing database schema changes
 
@@ -14,12 +15,14 @@ This document covers two types of rollback:
 ### When to Roll Back
 
 Roll back a deployment immediately if:
+
 - `/api/health` returns status `error` after deployment
 - TypeScript errors or 500s appear on routes that were previously working
 - A critical business flow is broken (payments, FSM transitions, auth)
 - Error rate spikes significantly in Sentry within 10 minutes of deployment
 
 **Do not roll back for:**
+
 - Minor UI regressions that don't affect data integrity
 - Features not yet released to users (use feature flags instead)
 
@@ -74,12 +77,14 @@ Fix the issue, test locally (`npx next build --no-lint && npx tsc --noEmit --ski
 ### Preventing the Need for Rollbacks
 
 The CI pipeline (`.github/workflows/ci.yml`) blocks merges if:
+
 - TypeScript check fails
 - Unit tests fail
 - Build fails
 - Smoke tests fail (on PRs to main)
 
 Always run before deploying manually:
+
 ```bash
 npx tsc --noEmit --skipLibCheck  # TypeScript check
 npx next build --no-lint         # Build check
@@ -124,6 +129,7 @@ ALTER TABLE events DROP COLUMN IF EXISTS bad_column_name;
 **Step 2 — Announce before applying**
 
 Show the SQL to the team before running. Per CLAUDE.md data safety rules:
+
 - Warn explicitly about data loss
 - Get explicit approval
 - Back up before applying if there is any data at risk
@@ -228,9 +234,9 @@ Bad deployment detected
 
 ## Rollback Log
 
-| Date | Type | What was rolled back | Reason | Time to restore |
-|------|------|---------------------|--------|-----------------|
-| (no rollbacks yet) | — | — | — | — |
+| Date               | Type | What was rolled back | Reason | Time to restore |
+| ------------------ | ---- | -------------------- | ------ | --------------- |
+| (no rollbacks yet) | —    | —                    | —      | —               |
 
 ---
 

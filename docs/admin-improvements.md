@@ -15,6 +15,7 @@ This update completes the admin panel from "read-only dashboards + scaffolding" 
 ## New Capabilities
 
 ### 1. Feature Flag Toggles (`/admin/flags`)
+
 **Before:** Read-only dot indicators. Toggle controls disabled.
 **After:** Live toggle switches per chef. Optimistic updates with rollback on failure.
 
@@ -26,6 +27,7 @@ This update completes the admin panel from "read-only dashboards + scaffolding" 
 ---
 
 ### 2. Platform Announcement Banner (`/admin/communications`)
+
 **Before:** Disabled textarea.
 **After:** Fully functional. Three severity levels (info/warning/critical). Live preview. Persists across sessions until cleared.
 
@@ -38,6 +40,7 @@ This update completes the admin panel from "read-only dashboards + scaffolding" 
 ---
 
 ### 3. Direct Email (`/admin/communications`)
+
 **Before:** Disabled form.
 **After:** Fully functional. Sends via Resend (already configured in env).
 
@@ -48,6 +51,7 @@ This update completes the admin panel from "read-only dashboards + scaffolding" 
 ---
 
 ### 4. Broadcast Email (`/admin/communications`)
+
 **Before:** Disabled buttons.
 **After:** Fully functional. Two targets: all chefs, inactive chefs (60+ days).
 
@@ -59,6 +63,7 @@ This update completes the admin panel from "read-only dashboards + scaffolding" 
 ---
 
 ### 5. Chef Deactivation / Reactivation (`/admin/users/[chefId]`)
+
 **Before:** No mechanism to block a bad-actor chef.
 **After:** Full suspend/reactivate flow with confirmation gate.
 
@@ -72,6 +77,7 @@ This update completes the admin panel from "read-only dashboards + scaffolding" 
 ---
 
 ### 6. Admin Ledger Correction (`/admin/users/[chefId]`)
+
 **Before:** Ledger was read-only from admin panel; required direct DB access.
 **After:** Admin can issue credits (+) or debits (–) via the UI.
 
@@ -84,6 +90,7 @@ This update completes the admin panel from "read-only dashboards + scaffolding" 
 ---
 
 ### 7. Referral Partners Page (`/admin/referral-partners`)
+
 **Before:** No admin visibility into referral partner data.
 **After:** Full cross-tenant view of all partners.
 
@@ -108,10 +115,10 @@ This update completes the admin panel from "read-only dashboards + scaffolding" 
 
 ## Migration Summary
 
-| File | What It Does |
-|---|---|
-| `20260307000003_platform_settings.sql` | Key-value store for platform config (announcement text/type, future settings). Service-role only RLS. |
-| `20260307000004_chef_account_status.sql` | Adds `account_status` column to `chefs` (active/suspended). Safe default = active. |
+| File                                     | What It Does                                                                                          |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `20260307000003_platform_settings.sql`   | Key-value store for platform config (announcement text/type, future settings). Service-role only RLS. |
+| `20260307000004_chef_account_status.sql` | Adds `account_status` column to `chefs` (active/suspended). Safe default = active.                    |
 
 Both migrations applied to remote Supabase as of this build.
 

@@ -68,15 +68,16 @@ Client replies to chef's Gmail email
 
 ## Required Environment Variables
 
-| Variable | Purpose | Where to verify |
-|----------|---------|-----------------|
-| `GOOGLE_CLIENT_ID` | OAuth app client ID | Vercel → Settings → Environment Variables |
-| `GOOGLE_CLIENT_SECRET` | OAuth app client secret | Vercel → Settings → Environment Variables |
-| `NEXT_PUBLIC_SITE_URL` | Base URL for OAuth redirect | Must match redirect URI in Google Cloud Console |
-| `CRON_SECRET` | Authenticates Vercel Cron requests | Vercel auto-injects as `Authorization: Bearer {CRON_SECRET}` |
-| `COMM_TRIAGE_ENABLED` | Must be `true` to enable communication inbox pipeline | Set to `true` in Vercel env |
+| Variable               | Purpose                                               | Where to verify                                              |
+| ---------------------- | ----------------------------------------------------- | ------------------------------------------------------------ |
+| `GOOGLE_CLIENT_ID`     | OAuth app client ID                                   | Vercel → Settings → Environment Variables                    |
+| `GOOGLE_CLIENT_SECRET` | OAuth app client secret                               | Vercel → Settings → Environment Variables                    |
+| `NEXT_PUBLIC_SITE_URL` | Base URL for OAuth redirect                           | Must match redirect URI in Google Cloud Console              |
+| `CRON_SECRET`          | Authenticates Vercel Cron requests                    | Vercel auto-injects as `Authorization: Bearer {CRON_SECRET}` |
+| `COMM_TRIAGE_ENABLED`  | Must be `true` to enable communication inbox pipeline | Set to `true` in Vercel env                                  |
 
 **Google Cloud Console redirect URI must be:**
+
 ```
 https://cheflowhq.com/api/auth/google/connect/callback
 ```
@@ -86,22 +87,26 @@ https://cheflowhq.com/api/auth/google/connect/callback
 ## Diagnosing Issues
 
 ### Cron not running
+
 - Vercel Dashboard → Cron Jobs → `/api/gmail/sync`
 - If returning 500: `CRON_SECRET` is not set in environment
 - If returning 401: `CRON_SECRET` value doesn't match what Vercel is sending
 
 ### Gmail disconnects (expired token)
+
 - Symptoms: `gmail_sync_errors` counter rising, `gmail_connected = false`
 - Chef sees: Amber banner on `/inbox` saying "Gmail is disconnected"
 - Fix: Settings → Connected Accounts → "Connect Gmail" (re-authorizes)
 - Root cause: Google revokes tokens after long inactivity or if user revokes access
 
 ### Emails not appearing in inbox
+
 - Check `gmail_sync_log` in Supabase for the tenant — see what classifications are happening
 - If `COMM_TRIAGE_ENABLED` is not `true`, emails create inquiries/messages records but NOT communication_events, so they won't appear in the unified inbox
 - Check the inbox page URL — triage mode is at `/inbox`, thread detail at `/inbox/triage/{threadId}`
 
 ### Chef replies not in inbox thread
+
 - After this audit fix (2026-02-19), outbound messages are now ingested into `communication_events`
 - If `COMM_TRIAGE_ENABLED` is false, outbound ingestion is also skipped (by design)
 
@@ -109,19 +114,19 @@ https://cheflowhq.com/api/auth/google/connect/callback
 
 ## Key Files
 
-| File | Purpose |
-|------|---------|
-| `lib/gmail/sync.ts` | Main sync engine — classification, inquiry creation, thread linking |
-| `lib/gmail/google-auth.ts` | OAuth initiation, token refresh, connection status, disconnect |
-| `lib/gmail/actions.ts` | Server actions — triggerGmailSync, approveAndSendMessage, getGmailSyncHistory |
-| `lib/gmail/client.ts` | Gmail API wrapper — list messages, fetch message, send email |
-| `lib/gmail/classify.ts` | AI email classification (Gemini/Claude) |
-| `lib/communication/pipeline.ts` | Communication event ingestion pipeline |
-| `lib/communication/actions.ts` | Thread management — snooze, link, resolve, star |
-| `app/api/gmail/sync/route.ts` | Cron endpoint — runs for all connected chefs |
-| `app/api/auth/google/connect/callback/route.ts` | OAuth callback — exchanges code for tokens |
-| `components/settings/connected-accounts.tsx` | Settings UI — connect, sync, disconnect |
-| `app/(chef)/inbox/page.tsx` | Inbox page — triage mode or legacy mode |
+| File                                            | Purpose                                                                       |
+| ----------------------------------------------- | ----------------------------------------------------------------------------- |
+| `lib/gmail/sync.ts`                             | Main sync engine — classification, inquiry creation, thread linking           |
+| `lib/gmail/google-auth.ts`                      | OAuth initiation, token refresh, connection status, disconnect                |
+| `lib/gmail/actions.ts`                          | Server actions — triggerGmailSync, approveAndSendMessage, getGmailSyncHistory |
+| `lib/gmail/client.ts`                           | Gmail API wrapper — list messages, fetch message, send email                  |
+| `lib/gmail/classify.ts`                         | AI email classification (Gemini/Claude)                                       |
+| `lib/communication/pipeline.ts`                 | Communication event ingestion pipeline                                        |
+| `lib/communication/actions.ts`                  | Thread management — snooze, link, resolve, star                               |
+| `app/api/gmail/sync/route.ts`                   | Cron endpoint — runs for all connected chefs                                  |
+| `app/api/auth/google/connect/callback/route.ts` | OAuth callback — exchanges code for tokens                                    |
+| `components/settings/connected-accounts.tsx`    | Settings UI — connect, sync, disconnect                                       |
+| `app/(chef)/inbox/page.tsx`                     | Inbox page — triage mode or legacy mode                                       |
 
 ---
 

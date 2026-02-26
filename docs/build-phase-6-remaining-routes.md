@@ -14,19 +14,19 @@ Phase 6 closes the final route coverage gaps discovered after a strict post-Phas
 
 **`tests/interactions/41-remaining-routes.spec.ts`**
 
-| Route Group | Routes | Tests |
-|---|---|---|
-| Queue | `/queue` | 3 |
-| Import | `/import` | 3 |
-| Help | `/help`, `/help/[slug]` | 4 |
-| Insights | `/insights`, `/insights/time-analysis` | 5 |
-| Schedule (top-level) | `/schedule` | 3 |
-| Activity | `/activity` | 4 |
-| Financials (chef view) | `/financials` | 4 |
-| Operations | `/operations`, `/operations/kitchen-rentals`, `/operations/equipment` | 7 |
-| Expenses (standalone tree) | `/expenses`, `/expenses/new` | 7 |
-| Expense mutation | `/expenses/new` → `/expenses` list | 1 |
-| Events — schedule sub-page | `/events/[id]/schedule` | 3 |
+| Route Group                | Routes                                                                | Tests |
+| -------------------------- | --------------------------------------------------------------------- | ----- |
+| Queue                      | `/queue`                                                              | 3     |
+| Import                     | `/import`                                                             | 3     |
+| Help                       | `/help`, `/help/[slug]`                                               | 4     |
+| Insights                   | `/insights`, `/insights/time-analysis`                                | 5     |
+| Schedule (top-level)       | `/schedule`                                                           | 3     |
+| Activity                   | `/activity`                                                           | 4     |
+| Financials (chef view)     | `/financials`                                                         | 4     |
+| Operations                 | `/operations`, `/operations/kitchen-rentals`, `/operations/equipment` | 7     |
+| Expenses (standalone tree) | `/expenses`, `/expenses/new`                                          | 7     |
+| Expense mutation           | `/expenses/new` → `/expenses` list                                    | 1     |
+| Events — schedule sub-page | `/events/[id]/schedule`                                               | 3     |
 
 **Total new tests: ~44**
 
@@ -91,7 +91,11 @@ test('Create expense via /expenses/new → appears in /expenses list', async ({ 
   await page.goto('/expenses/new')
   // ... fill form, save ...
   await page.goto('/expenses')
-  const expenseVisible = await page.getByText(uniqueDesc).first().isVisible().catch(() => false)
+  const expenseVisible = await page
+    .getByText(uniqueDesc)
+    .first()
+    .isVisible()
+    .catch(() => false)
   expect(expenseVisible).toBeTruthy()
 })
 ```
@@ -110,17 +114,17 @@ expect(bodyText).not.toContain(seedIds.chefBId)
 
 ## Test Count After Phase 6
 
-| Layer | Files | Tests (approx) |
-|---|---|---|
-| Smoke | 1 | 6 |
-| E2E | 17 | 127 |
-| Coverage | 6 | 377 |
-| Interactions Phase 1-2 | 20 | ~600 |
-| Interactions Phase 3 | 10 | ~156 |
-| Interactions Phase 4 | 8 | ~267 |
-| Interactions Phase 5 | 2 | ~77 |
-| Interactions Phase 6 | 1 | ~44 |
-| **Total** | **65 files** | **~1,654** |
+| Layer                  | Files        | Tests (approx) |
+| ---------------------- | ------------ | -------------- |
+| Smoke                  | 1            | 6              |
+| E2E                    | 17           | 127            |
+| Coverage               | 6            | 377            |
+| Interactions Phase 1-2 | 20           | ~600           |
+| Interactions Phase 3   | 10           | ~156           |
+| Interactions Phase 4   | 8            | ~267           |
+| Interactions Phase 5   | 2            | ~77            |
+| Interactions Phase 6   | 1            | ~44            |
+| **Total**              | **65 files** | **~1,654**     |
 
 ---
 
@@ -149,10 +153,10 @@ npm run test:report
 
 After Phase 6, all discoverable chef-facing routes have at least load tests. The only intentionally uncovered areas are:
 
-| Category | Reason |
-|---|---|
-| File upload flows | Requires real files; better as integration tests |
-| Stripe payment flows | Requires Stripe test mode |
-| Real-time presence/chat | Requires multiple concurrent sessions |
-| Email delivery | Requires email service integration |
-| Public chef profile (`/chef/[slug]/**`) | Covered by coverage layer |
+| Category                                | Reason                                           |
+| --------------------------------------- | ------------------------------------------------ |
+| File upload flows                       | Requires real files; better as integration tests |
+| Stripe payment flows                    | Requires Stripe test mode                        |
+| Real-time presence/chat                 | Requires multiple concurrent sessions            |
+| Email delivery                          | Requires email service integration               |
+| Public chef profile (`/chef/[slug]/**`) | Covered by coverage layer                        |

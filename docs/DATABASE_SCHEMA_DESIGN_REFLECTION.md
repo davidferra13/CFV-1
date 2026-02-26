@@ -1,6 +1,8 @@
 # Database Schema Design - Implementation Reflection
+
 **Created:** February 15, 2026
 **Related Files:**
+
 - [DATABASE_SCHEMA_DESIGN.md](./DATABASE_SCHEMA_DESIGN.md)
 - [STATISTICS_INVENTORY.md](./STATISTICS_INVENTORY.md)
 - [STATISTICS_INVENTORY_REFLECTION.md](./STATISTICS_INVENTORY_REFLECTION.md)
@@ -32,6 +34,7 @@ A complete database schema design for ChefFlow that maps every measurement from 
 ### Immutability by Design
 
 **Ledger-First Financial Model:**
+
 ```sql
 CREATE TRIGGER prevent_ledger_modification
   BEFORE UPDATE OR DELETE ON ledger_entries
@@ -42,6 +45,7 @@ CREATE TRIGGER prevent_ledger_modification
 Financial records are append-only at the database level. Not application-level validation that can be bypassed. Database-enforced immutability.
 
 **Why it matters:**
+
 - Full audit trail (every payment, refund, tip is timestamped forever)
 - No silent overwrites (can't change "$400 received" to "$500")
 - Computed balances always accurate (SUM of ledger = truth)
@@ -61,6 +65,7 @@ EXECUTE FUNCTION unlock_grocery_list_on_menu_lock();
 When a menu's `locked_at` timestamp is set, the database automatically sets the event's `grocery_list_ready_at` timestamp. The system knows "menu locked → grocery list can now be built."
 
 **Why it matters:**
+
 - Progressive preparation is enforced by the database, not application logic
 - Chef sees "grocery list is ready to build" automatically
 - No manual toggling of readiness states
@@ -78,6 +83,7 @@ EXECUTE FUNCTION update_event_financial_totals();
 ```
 
 When a ledger entry is added:
+
 1. Database recalculates `event.total_paid_cents` (SUM of deposits + installments + final payments)
 2. Database recalculates `event.total_tips_cents` (SUM of tips)
 3. Database recalculates `event.outstanding_balance_cents` (quoted - paid)
@@ -97,6 +103,7 @@ EXECUTE FUNCTION update_client_loyalty_tier();
 ```
 
 When an event is marked completed:
+
 1. Database counts total guests served for that client
 2. Database assigns tier: bronze (<20), silver (20-49), gold (50-99), platinum (100+)
 3. Database sets loyalty_points_balance = total_guests_served
@@ -110,6 +117,7 @@ Client loyalty tier is always accurate, never stale. No cron jobs, no manual rec
 ### 1. JSONB vs Normalized Tables
 
 **Use JSONB for:**
+
 - `status_history` — append-only audit logs, not frequently queried individually
 - `dietary_restrictions`, `allergies`, `allergen_flags` — simple arrays
 - `household` (partner, children, regular_guests) — flexible structure per client
@@ -120,12 +128,14 @@ Client loyalty tier is always accurate, never stale. No cron jobs, no manual rec
 - `recipe.ingredients` — recipe-specific ingredient list with costs
 
 **Use Normalized Tables for:**
+
 - `clients ↔ events` — heavily queried relationship (one-to-many)
 - `events ↔ ledger_entries` — financial aggregations (SUM, AVG)
 - `clients ↔ loyalty_rewards` — redemption tracking
 - `menus ↔ events` — menu reuse, template tracking
 
 **Rationale:**
+
 - JSONB: Flexible, denormalized, fast writes, good for append-only or event-specific data
 - Normalized: Relational integrity, aggregation performance, queryable relationships
 
@@ -133,6 +143,7 @@ Client loyalty tier is always accurate, never stale. No cron jobs, no manual rec
 
 **Why Materialized:**
 Client lifetime metrics (total revenue, events completed, guests served) are expensive to calculate on every query:
+
 ```sql
 SELECT SUM(total_paid_cents) FROM events WHERE client_id = ? AND status = 'completed'
 ```
@@ -140,6 +151,7 @@ SELECT SUM(total_paid_cents) FROM events WHERE client_id = ? AND status = 'compl
 Run this for every client on dashboard load = N+1 query problem.
 
 **Solution:**
+
 ```sql
 CREATE MATERIALIZED VIEW client_lifetime_metrics AS
 SELECT
@@ -153,11 +165,13 @@ GROUP BY c.id;
 ```
 
 **Refresh Strategy:**
+
 - Refresh after every event status change to 'completed'
 - Refresh nightly (for safety)
 - Dashboard reads from materialized view (instant)
 
 **Trade-off:**
+
 - Slightly stale data (up to event close)
 - But acceptable: client lifetime metrics don't need real-time accuracy
 
@@ -165,11 +179,13 @@ GROUP BY c.id;
 
 **Why NOT Materialized:**
 Event financial summary needs to be real-time accurate:
+
 - `total_paid_cents` updates when ledger entry added
 - `food_cost_percentage` updates when expense added
 - Dashboard shows current state of event
 
 **Solution:**
+
 ```sql
 CREATE VIEW event_financial_summary AS
 SELECT
@@ -189,6 +205,7 @@ Computed on read, always current.
 `packing_lists.items` is JSONB. How to aggregate across all events to find most forgotten items?
 
 **Solution:**
+
 ```sql
 CREATE VIEW forgotten_items_frequency AS
 SELECT
@@ -217,15 +234,17 @@ This drives the non-negotiables checklist auto-update.
 
 **Pattern:**
 Every state machine table has `status_history` JSONB:
+
 ```json
 [
-  {"status": "draft", "timestamp": "2026-02-01T10:00:00Z", "changed_by": "user_id_1"},
-  {"status": "proposed", "timestamp": "2026-02-02T14:00:00Z", "changed_by": "user_id_1"},
-  {"status": "accepted", "timestamp": "2026-02-03T09:00:00Z", "changed_by": "user_id_2"}
+  { "status": "draft", "timestamp": "2026-02-01T10:00:00Z", "changed_by": "user_id_1" },
+  { "status": "proposed", "timestamp": "2026-02-02T14:00:00Z", "changed_by": "user_id_1" },
+  { "status": "accepted", "timestamp": "2026-02-03T09:00:00Z", "changed_by": "user_id_2" }
 ]
 ```
 
 **Enforced by Trigger:**
+
 ```sql
 CREATE TRIGGER trg_log_event_status_change
 BEFORE UPDATE ON events
@@ -236,6 +255,7 @@ EXECUTE FUNCTION log_status_change();
 Application code only sets `events.status = 'accepted'`. Database automatically appends to `status_history`.
 
 **Analytics Unlocked:**
+
 - Time from inquiry to booking: `status_history[status='accepted'].timestamp - status_history[status='draft'].timestamp`
 - Conversion velocity: AVG(time to acceptance) by month
 - Who changed what when: full audit trail
@@ -243,6 +263,7 @@ Application code only sets `events.status = 'accepted'`. Database automatically 
 ### 6. Multi-Tenant Isolation via RLS
 
 **Every table has:**
+
 ```sql
 ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
 
@@ -251,11 +272,13 @@ CREATE POLICY clients_isolation ON clients
 ```
 
 **How it works:**
+
 1. Application sets session variable: `SET app.current_chef_id = 'chef-uuid'`
 2. All queries automatically filter by `chef_id`
 3. Chef A cannot see Chef B's data (database-enforced, not application logic)
 
 **Why:**
+
 - Multi-tenant from day one
 - No risk of cross-tenant data leaks
 - Scales to 1000 chefs without code changes
@@ -263,6 +286,7 @@ CREATE POLICY clients_isolation ON clients
 ### 7. Leftover Value Transfer
 
 **Schema Support:**
+
 ```sql
 -- Event A (Feb 14):
 leftover_value_carried_forward_cents = 1500  -- $15 of cheese + cake
@@ -274,6 +298,7 @@ adjusted_food_cost_cents = 6500  -- 8000 - 1500
 ```
 
 **Calculation:**
+
 ```sql
 adjusted_food_cost_cents = total_food_cost_cents - leftover_value_received_cents
 food_cost_percentage = (adjusted_food_cost_cents / total_revenue_cents) * 100
@@ -288,6 +313,7 @@ True food cost percentage becomes accurate when leftovers are tracked.
 ### Dashboard Queries (Optimized)
 
 **"What can I safely prepare right now?"**
+
 ```sql
 SELECT * FROM events
 WHERE chef_id = current_chef_id
@@ -302,6 +328,7 @@ ORDER BY event_date ASC;
 ```
 
 **"Revenue this month vs $10K target"**
+
 ```sql
 SELECT
   total_revenue_cents,
@@ -313,6 +340,7 @@ WHERE chef_id = current_chef_id
 ```
 
 **"Top 10 clients by lifetime value"**
+
 ```sql
 SELECT
   first_name,
@@ -327,6 +355,7 @@ LIMIT 10;
 ```
 
 **"Calm rating trend (last 10 events)"**
+
 ```sql
 SELECT
   e.event_date,
@@ -343,6 +372,7 @@ LIMIT 10;
 ```
 
 **"Most commonly forgotten items (all time)"**
+
 ```sql
 SELECT item_name, times_forgotten, forget_rate_percentage
 FROM forgotten_items_frequency
@@ -352,6 +382,7 @@ LIMIT 10;
 ```
 
 All of these queries are **fast** because:
+
 - Indexes on `(chef_id, event_date)`
 - Materialized view for client metrics
 - Regular views for real-time event financials
@@ -364,57 +395,69 @@ All of these queries are **fast** because:
 ### Why Layered (Not One Big Migration)
 
 **Layer 1: Foundation**
+
 - Core entities: `chefs`, `clients`, `inquiries`, `events`
 - RLS policies
 - Basic immutability triggers
 
 **Why first:**
+
 - Everything else depends on these
 - Test multi-tenancy early
 - Verify RLS works before adding complexity
 
 **Layer 2: Financial**
+
 - `ledger_entries`, `expenses`
 - Financial computation triggers
 - Views: `event_financial_summary`, `monthly_revenue_summary`
 
 **Why second:**
+
 - Depends on `events` existing
 - Critical for business: revenue tracking, margin calculation
 - Test immutability trigger on ledger
 
 **Layer 3: Menu & Recipe**
+
 - `menus`, `recipes`
 - Menu lock → grocery unlock trigger
 
 **Why third:**
+
 - Depends on `events` existing
 - Recipe bible can start building from real events
 - Progressive unlocking can be tested
 
 **Layer 4: Operations**
+
 - `grocery_lists`, `packing_lists`, `timelines`, `after_action_reviews`
 - Forgotten items view
 
 **Why fourth:**
+
 - Depends on `events` and `menus` existing
 - Operational workflow support
 - After Action Review required for terminal state
 
 **Layer 5: Communication & Loyalty**
+
 - `messages`, `loyalty_rewards`
 - Client loyalty tier trigger
 
 **Why fifth:**
+
 - Depends on `clients` and `events` existing
 - Nice-to-have, not critical path
 - Loyalty tier auto-calculation tested
 
 **Layer 6: Materialized Views**
+
 - `client_lifetime_metrics` (materialized)
 - Refresh policies
 
 **Why last:**
+
 - Depends on all core tables existing
 - Performance optimization layer
 - Can be added after core functionality works
@@ -429,6 +472,7 @@ Each layer can be rolled back independently without breaking earlier layers.
 ### 1. Immutability Tests
 
 **Test: Cannot UPDATE ledger_entries**
+
 ```sql
 INSERT INTO ledger_entries (chef_id, event_id, client_id, entry_type, amount_cents, transaction_date)
 VALUES ('chef-1', 'event-1', 'client-1', 'deposit', 20000, NOW());
@@ -438,6 +482,7 @@ UPDATE ledger_entries SET amount_cents = 30000 WHERE id = 'ledger-1';
 ```
 
 **Test: Cannot DELETE ledger_entries**
+
 ```sql
 DELETE FROM ledger_entries WHERE id = 'ledger-1';
 -- Expected: ERROR: This table is append-only. DELETE operations are not allowed.
@@ -446,6 +491,7 @@ DELETE FROM ledger_entries WHERE id = 'ledger-1';
 ### 2. Trigger Tests
 
 **Test: Event financial totals auto-update**
+
 ```sql
 -- Event quoted at $400
 INSERT INTO events (chef_id, client_id, quoted_price_cents, ...) VALUES (..., 40000, ...);
@@ -466,6 +512,7 @@ SELECT total_paid_cents, outstanding_balance_cents FROM events WHERE id = 'event
 ```
 
 **Test: Client loyalty tier auto-update**
+
 ```sql
 -- Client starts at bronze (0 guests)
 INSERT INTO clients (chef_id, first_name, last_name, ...) VALUES (...);
@@ -486,6 +533,7 @@ SELECT total_guests_served, loyalty_tier FROM clients WHERE id = 'client-1';
 ```
 
 **Test: Menu lock → grocery list unlock**
+
 ```sql
 -- Event has menu_id
 INSERT INTO events (menu_id, ...) VALUES ('menu-1', ...);
@@ -505,6 +553,7 @@ SELECT grocery_list_ready_at FROM events WHERE id = 'event-1';
 ### 3. RLS Tests
 
 **Test: Chef A cannot see Chef B's data**
+
 ```sql
 -- Set session as Chef A
 SET app.current_chef_id = 'chef-a-uuid';
@@ -528,6 +577,7 @@ SELECT * FROM clients;
 ### 4. View Tests
 
 **Test: event_financial_summary calculations**
+
 ```sql
 -- Event: $400 quoted, $500 paid (including $100 tip), $220 food cost, 6 guests, 480 minutes invested
 -- Expected:
@@ -550,6 +600,7 @@ WHERE event_id = 'event-1';
 ```
 
 **Test: forgotten_items_frequency aggregation**
+
 ```sql
 -- Create packing lists with forgotten items
 INSERT INTO packing_lists (chef_id, event_id, items) VALUES
@@ -567,6 +618,7 @@ SELECT item_name, times_forgotten FROM forgotten_items_frequency WHERE chef_id =
 ### 5. Feb 14 Observation Test Case
 
 **Seed database with Feb 14 dinner data:**
+
 - Client: Michel (repeat client, 5th Valentine's Day)
 - Event: 4 guests, $400 quoted, $500 received, 4 courses, 39 components
 - Grocery spend: $220 (business) + cognac (liquor store)
@@ -576,6 +628,7 @@ SELECT item_name, times_forgotten FROM forgotten_items_frequency WHERE chef_id =
 - Preparation rating: 2/5 (everything last-minute)
 
 **Verify Calculations:**
+
 ```sql
 SELECT
   revenue_per_guest_cents,  -- Expected: 125 ($1.25)
@@ -587,6 +640,7 @@ WHERE event_id = 'michel-vday-2026';
 ```
 
 **Verify Client Lifetime Metrics:**
+
 ```sql
 SELECT
   total_events_completed,  -- Expected: 5 (5th consecutive year)
@@ -597,6 +651,7 @@ WHERE client_id = 'michel-client-uuid';
 ```
 
 **Verify Forgotten Items:**
+
 ```sql
 SELECT item_name FROM forgotten_items_frequency
 WHERE chef_id = 'chef-david-uuid'
@@ -610,20 +665,20 @@ WHERE chef_id = 'chef-david-uuid'
 
 ### Coverage Verification
 
-| Entity | Raw Fields Required | Raw Fields in Schema | Derived Calcs Required | Derived Calcs in Views/Triggers | Coverage |
-|---|---|---|---|---|---|
-| Client | 38 | 38 | 21 | 21 (view + triggers) | ✅ 100% |
-| Event | 68 | 68 | 37 | 37 (view + triggers) | ✅ 100% |
-| Menu | 18 | 18 | 11 | 11 (view) | ✅ 100% |
-| Recipe | 28 | 28 | 5 | 5 (view) | ✅ 100% |
-| Inquiry | 26 | 26 | 8 | 8 (view) | ✅ 100% |
-| Financial | 31 | 31 | 27 | 27 (view + triggers) | ✅ 100% |
-| Message | 15 | 15 | 3 | 3 (view) | ✅ 100% |
-| Grocery | 8 | 8 | 9 | 9 (view) | ✅ 100% |
-| Packing | 5 | 5 | 5 | 5 (view) | ✅ 100% |
-| Timeline | 12 | 12 | 4 | 4 (application layer) | ✅ 100% |
-| Loyalty | 6 | 6 | 3 | 3 (trigger) | ✅ 100% |
-| AAR | 13 | 13 | — | — | ✅ 100% |
+| Entity    | Raw Fields Required | Raw Fields in Schema | Derived Calcs Required | Derived Calcs in Views/Triggers | Coverage |
+| --------- | ------------------- | -------------------- | ---------------------- | ------------------------------- | -------- |
+| Client    | 38                  | 38                   | 21                     | 21 (view + triggers)            | ✅ 100%  |
+| Event     | 68                  | 68                   | 37                     | 37 (view + triggers)            | ✅ 100%  |
+| Menu      | 18                  | 18                   | 11                     | 11 (view)                       | ✅ 100%  |
+| Recipe    | 28                  | 28                   | 5                      | 5 (view)                        | ✅ 100%  |
+| Inquiry   | 26                  | 26                   | 8                      | 8 (view)                        | ✅ 100%  |
+| Financial | 31                  | 31                   | 27                     | 27 (view + triggers)            | ✅ 100%  |
+| Message   | 15                  | 15                   | 3                      | 3 (view)                        | ✅ 100%  |
+| Grocery   | 8                   | 8                    | 9                      | 9 (view)                        | ✅ 100%  |
+| Packing   | 5                   | 5                    | 5                      | 5 (view)                        | ✅ 100%  |
+| Timeline  | 12                  | 12                   | 4                      | 4 (application layer)           | ✅ 100%  |
+| Loyalty   | 6                   | 6                    | 3                      | 3 (trigger)                     | ✅ 100%  |
+| AAR       | 13                  | 13                   | —                      | —                               | ✅ 100%  |
 
 **Result:** Every measurement from the statistics inventory is supported by the schema.
 
@@ -632,6 +687,7 @@ WHERE chef_id = 'chef-david-uuid'
 ## What's NOT in This Schema (V1 Scope Exclusions)
 
 ### Explicitly Excluded
+
 - ❌ Staff management tables (no staff in V1)
 - ❌ Inventory management (no ingredient inventory tracking)
 - ❌ Stripe integration tables (V1 is manual payment tracking)
@@ -641,6 +697,7 @@ WHERE chef_id = 'chef-david-uuid'
 - ❌ Real-time notifications (no push notifications, no live dashboards during service)
 
 ### Deferred to V2+
+
 - Ingredient price database (for now, prices entered per recipe)
 - Market availability tracking (flexible items marked manually)
 - Weather impact tracking (not required for V1)
@@ -652,6 +709,7 @@ WHERE chef_id = 'chef-david-uuid'
 ## Readiness for Implementation
 
 ### Prerequisites Complete
+
 ✅ Statistics inventory (all measurements defined)
 ✅ Schema design (all tables, views, functions, triggers defined)
 ✅ Migration layering strategy (6 layers, dependency order)
@@ -659,6 +717,7 @@ WHERE chef_id = 'chef-david-uuid'
 ✅ Type generation plan (Supabase gen types)
 
 ### Next Steps
+
 1. **Write Migration Files** — Translate schema design into `.sql` migration files
 2. **Run Migrations Locally** — Test on local Supabase instance
 3. **Verify Triggers Work** — Test immutability, auto-calculations, progressive unlocking
@@ -673,18 +732,23 @@ WHERE chef_id = 'chef-david-uuid'
 ## Critical Success Factors
 
 ### 1. Immutability Must Hold
+
 If `ledger_entries` can be modified, the entire financial model collapses. Test this thoroughly.
 
 ### 2. RLS Must Work
+
 If Chef A can see Chef B's data, multi-tenancy fails. Test this before production.
 
 ### 3. Triggers Must Be Reliable
+
 If `event.total_paid_cents` gets out of sync with ledger, financial state is wrong. Triggers must be bulletproof.
 
 ### 4. Materialized View Refresh Must Happen
+
 If `client_lifetime_metrics` never refreshes, dashboard shows stale data. Implement refresh logic early.
 
 ### 5. Forgotten Items Aggregation Must Perform
+
 If forgotten items view is slow, non-negotiables checklist lags. Test JSONB aggregation performance.
 
 ---
@@ -692,37 +756,49 @@ If forgotten items view is slow, non-negotiables checklist lags. Test JSONB aggr
 ## How This Schema Supports the Master Document's Vision
 
 ### "What can I safely prepare right now?"
+
 **Enabled by:**
+
 - `events.menu_locked_at`, `grocery_list_ready_at`, `prep_list_ready_at` timestamps
 - Progressive unlocking triggers
 - Dashboard query filters on readiness gates
 
 ### "Did this dinner feel calm?"
+
 **Enabled by:**
+
 - `after_action_reviews.calm_rating` (1-5)
 - `calm_rating` trend view (last 10 events)
 - Calm event percentage aggregation
 
 ### "What's my real profit margin?"
+
 **Enabled by:**
+
 - `event_financial_summary` view with `gross_margin_percentage`
 - `adjusted_food_cost_cents` (accounts for leftover value transfers)
 - Monthly revenue summary vs $10K target
 
 ### "Recipe bible that builds over time"
+
 **Enabled by:**
+
 - `recipes.source_event_id` (captured from real events)
 - `recipes.times_used` (reuse tracking)
 - Post-event prompt: "You made Diane Sauce tonight but there's no recipe. Want to record it?"
 
 ### "Most commonly forgotten items → non-negotiables checklist"
+
 **Enabled by:**
+
 - `packing_lists.items` with `was_forgotten` boolean
 - `forgotten_items_frequency` view (aggregates across all events)
 - Auto-update non-negotiables based on forget frequency
 
 ### "Repeat clients feel remembered"
+
 **Enabled by:**
+
 - `clients.household` (partner, children, regular guests)
 - `clients.personal_milestones` (birthdays, anniversaries)
 - `clients.relationship_vibe` (free-text memory bank)

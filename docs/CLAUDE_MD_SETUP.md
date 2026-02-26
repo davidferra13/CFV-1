@@ -20,6 +20,7 @@ The `CLAUDE.md` file exists to prevent this by establishing mandatory rules that
 ## What the Rules Cover
 
 ### 1. Data Safety (Highest Priority)
+
 - No migration can contain `DROP TABLE`, `DROP COLUMN`, `DELETE`, or `TRUNCATE` without explicit warning and approval
 - No column type changes or renames without explaining the risk first
 - All migrations must be additive by default (add, don't remove)
@@ -27,14 +28,17 @@ The `CLAUDE.md` file exists to prevent this by establishing mandatory rules that
 - User must be reminded to back up before applying migrations
 
 ### 2. Development Workflow
+
 - Changes must be explained in plain terms before being made
 - Every code change requires a follow-up `.md` document
 - Feature branches for new work (not direct commits to `main`)
 
 ### 3. Architecture Reminders
+
 - Existing patterns (server actions, role checks, tenant scoping, ledger model) are documented so they're consistently followed
 
 ### 4. Key File Locations
+
 - Quick reference table so Claude doesn't need to search for core files every session
 
 ## How It Connects to the System

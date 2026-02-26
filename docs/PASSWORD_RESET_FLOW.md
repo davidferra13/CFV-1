@@ -7,14 +7,17 @@ Added a complete password reset flow to the ChefFlow V1 authentication system. U
 ## Files Created
 
 ### `app/auth/forgot-password/page.tsx`
+
 Client component with a single email input form. On submit, calls the `requestPasswordReset` server action. Displays a success message after submission regardless of whether the email exists (prevents email enumeration). Includes a "Try Again" button and "Back to Sign In" link. Matches the existing auth page visual style exactly.
 
 ### `app/auth/reset-password/page.tsx`
+
 Client component with new password and confirm password inputs. This page is the destination after a user clicks the reset link in their email. By the time the user arrives here, the auth callback route has already exchanged the recovery code for a Supabase session. On submit, calls the `updatePassword` server action. Validates password match and minimum length client-side before submitting. On success, shows a confirmation message and auto-redirects to sign-in after 2 seconds.
 
 ## Files Edited
 
 ### `lib/auth/actions.ts`
+
 Added two new Zod schemas and two new server actions:
 
 - **`PasswordResetRequestSchema`** -- validates email format
@@ -23,9 +26,11 @@ Added two new Zod schemas and two new server actions:
 - **`updatePassword(newPassword)`** -- verifies the user is authenticated (session exists from the recovery code exchange), then calls `supabase.auth.updateUser()` to set the new password.
 
 ### `app/auth/callback/route.ts`
+
 Updated the comment from "OAuth callback handler" to "Auth callback handler" since it now serves both OAuth and password recovery flows. Added context-aware error handling: when the `next` parameter indicates a password reset flow, the error redirects to `/auth/forgot-password` with an appropriate expiration message instead of the generic sign-in error.
 
 ### `app/auth/signin/page.tsx`
+
 Added a "Forgot password?" link next to the "Stay signed in" checkbox. The two elements are now in a flex row with `justify-between`, placing the checkbox on the left and the link on the right.
 
 ## How the Flow Works
@@ -51,6 +56,7 @@ Added a "Forgot password?" link next to the "Stay signed in" checkbox. The two e
 ## Connection to the System
 
 This flow integrates with the existing auth infrastructure:
+
 - Uses the same `createServerClient()` from `lib/supabase/server.ts`
 - Follows the established `'use server'` action pattern with Zod validation
 - Reuses the existing `/auth/callback` route for code exchange

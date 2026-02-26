@@ -106,7 +106,8 @@ export async function publishX(
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
-      const detail = (err as any)?.detail ?? (err as any)?.errors?.[0]?.message ?? `X API ${res.status}`
+      const detail =
+        (err as any)?.detail ?? (err as any)?.errors?.[0]?.message ?? `X API ${res.status}`
       const retriable = res.status === 429 || res.status >= 500
       return { success: false, error: detail, retriable }
     }

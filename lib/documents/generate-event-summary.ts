@@ -11,8 +11,8 @@ import { format, parseISO } from 'date-fns'
 import type { jsPDF } from 'jspdf'
 
 // ─── Column Geometry ────────────────────────────────────────────────────────
-const COL_GAP = 9        // mm between columns
-const COL_WIDTH = (CONTENT_WIDTH - COL_GAP) / 2  // ~91.5mm each
+const COL_GAP = 9 // mm between columns
+const COL_WIDTH = (CONTENT_WIDTH - COL_GAP) / 2 // ~91.5mm each
 const LEFT_X = MARGIN_X
 const RIGHT_X = MARGIN_X + COL_WIDTH + COL_GAP
 
@@ -130,7 +130,8 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
   // Core event + client
   const { data: event } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, event_date, serve_time, arrival_time, guest_count, status, occasion,
       allergies, dietary_restrictions, special_requests,
       location_address, location_city, location_state, location_zip,
@@ -143,7 +144,8 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
         house_rules, vibe_notes, family_notes, what_they_care_about,
         payment_behavior, tipping_pattern
       )
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -197,7 +199,7 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
       .order('sort_order', { ascending: true })
 
     if (dishes && dishes.length > 0) {
-      const dishIds = dishes.map(d => d.id)
+      const dishIds = dishes.map((d) => d.id)
       const { data: components } = await supabase
         .from('components')
         .select('dish_id, name, category, execution_notes, sort_order')
@@ -212,19 +214,22 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
         compsByDish.set(comp.dish_id, arr)
       }
 
-      const courseMap = new Map<number, {
-        courseName: string
-        dishDescription: string | null
-        dishAllergenFlags: string[]
-        components: NonNullable<typeof components>
-      }>()
+      const courseMap = new Map<
+        number,
+        {
+          courseName: string
+          dishDescription: string | null
+          dishAllergenFlags: string[]
+          components: NonNullable<typeof components>
+        }
+      >()
 
       for (const dish of dishes) {
         const existing = courseMap.get(dish.course_number)
         const dishComps = compsByDish.get(dish.id) || []
         if (existing) {
           existing.components.push(...dishComps)
-          for (const flag of (dish.allergen_flags ?? [])) {
+          for (const flag of dish.allergen_flags ?? []) {
             if (!existing.dishAllergenFlags.includes(flag)) {
               existing.dishAllergenFlags.push(flag)
             }
@@ -249,7 +254,7 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
             dishDescription: data.dishDescription,
             dishAllergenFlags: data.dishAllergenFlags,
             componentCount: data.components.length,
-            components: data.components.map(c => ({
+            components: data.components.map((c) => ({
               name: c.name,
               category: c.category,
               execution_notes: c.execution_notes,
@@ -299,20 +304,20 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
       payment_behavior: clientData?.payment_behavior ?? null,
       tipping_pattern: clientData?.tipping_pattern ?? null,
     },
-    guests: (guestsResult.data || []).map(g => ({
+    guests: (guestsResult.data || []).map((g) => ({
       full_name: g.full_name,
       allergies: g.allergies ?? null,
       dietary_restrictions: g.dietary_restrictions ?? null,
       notes: g.notes ?? null,
     })),
-    ledger: (ledgerResult.data || []).map(l => ({
+    ledger: (ledgerResult.data || []).map((l) => ({
       entry_type: l.entry_type,
       amount_cents: l.amount_cents,
       description: l.description,
       received_at: l.received_at ?? null,
       payment_method: l.payment_method ?? null,
     })),
-    transitions: (transitionsResult.data || []).map(t => ({
+    transitions: (transitionsResult.data || []).map((t) => ({
       from_status: t.from_status ?? null,
       to_status: t.to_status,
       transitioned_at: t.transitioned_at,
@@ -327,7 +332,14 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
 // These helpers use jsPDF directly (via pdf.doc) for explicit X-positioned column rendering.
 // Each returns the new Y position after rendering.
 
-function colSectionHeader(doc: jsPDF, x: number, w: number, y: number, label: string, fontSize = 8): number {
+function colSectionHeader(
+  doc: jsPDF,
+  x: number,
+  w: number,
+  y: number,
+  label: string,
+  fontSize = 8
+): number {
   const lh = fontSize * 0.38
   const boxH = lh + 2.5
   doc.setFillColor(240, 240, 240)
@@ -342,7 +354,15 @@ function colSectionHeader(doc: jsPDF, x: number, w: number, y: number, label: st
   return y + boxH + 1.5
 }
 
-function colKeyValue(doc: jsPDF, x: number, w: number, y: number, label: string, value: string, fontSize = 8): number {
+function colKeyValue(
+  doc: jsPDF,
+  x: number,
+  w: number,
+  y: number,
+  label: string,
+  value: string,
+  fontSize = 8
+): number {
   const lh = fontSize * 0.38
   doc.setFontSize(fontSize)
   doc.setFont('helvetica', 'bold')
@@ -363,7 +383,16 @@ function colKeyValue(doc: jsPDF, x: number, w: number, y: number, label: string,
   return y + lh + 0.3
 }
 
-function colText(doc: jsPDF, x: number, w: number, y: number, text: string, fontSize = 7.5, style: 'normal' | 'bold' | 'italic' = 'normal', color?: [number, number, number]): number {
+function colText(
+  doc: jsPDF,
+  x: number,
+  w: number,
+  y: number,
+  text: string,
+  fontSize = 7.5,
+  style: 'normal' | 'bold' | 'italic' = 'normal',
+  color?: [number, number, number]
+): number {
   const lh = fontSize * 0.38
   doc.setFontSize(fontSize)
   doc.setFont('helvetica', style)
@@ -404,19 +433,22 @@ function buildFinancialSummary(data: EventSummaryData): string {
     paid: 'PAID IN FULL',
     refunded: 'REFUNDED',
   }
-  const statusLabel = event.payment_status ? (statusMap[event.payment_status] ?? event.payment_status) : 'Not yet invoiced'
+  const statusLabel = event.payment_status
+    ? (statusMap[event.payment_status] ?? event.payment_status)
+    : 'Not yet invoiced'
 
   // If we have ledger entries, show the most recent payment detail
   if (ledger.length > 0) {
-    const lastPayment = [...ledger].reverse().find(l => l.amount_cents > 0 && !l.entry_type.includes('refund'))
+    const lastPayment = [...ledger]
+      .reverse()
+      .find((l) => l.amount_cents > 0 && !l.entry_type.includes('refund'))
     if (lastPayment && lastPayment.received_at) {
       const dateStr = format(new Date(lastPayment.received_at), 'MMM d')
       const amount = `$${(lastPayment.amount_cents / 100).toFixed(0)}`
 
       if (event.payment_status === 'paid') {
-        const tipNote = event.tip_amount_cents > 0
-          ? ` (+$${(event.tip_amount_cents / 100).toFixed(0)} tip)`
-          : ''
+        const tipNote =
+          event.tip_amount_cents > 0 ? ` (+$${(event.tip_amount_cents / 100).toFixed(0)} tip)` : ''
         return `PAID — ${amount} received ${dateStr}${tipNote}`
       }
       if (event.payment_status === 'deposit_paid') {
@@ -447,7 +479,7 @@ function buildHistoryEntries(data: EventSummaryData): string[] {
   entries.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
   const recent = entries.slice(-10)
 
-  return recent.map(e => {
+  return recent.map((e) => {
     const dateStr = format(e.timestamp, 'MMM d h:mm a')
     return `${dateStr} — ${e.label}`
   })
@@ -491,27 +523,28 @@ export function renderEventSummary(pdf: PDFLayout, data: EventSummaryData) {
   // Merge all allergy sources: event, client, each guest
   const allAllergies = new Set<string>()
   for (const a of event.allergies) allAllergies.add(a.trim())
-  for (const a of (client.allergies ?? [])) allAllergies.add(a.trim())
+  for (const a of client.allergies ?? []) allAllergies.add(a.trim())
   for (const g of guests) {
-    for (const a of (g.allergies ?? [])) allAllergies.add(a.trim())
+    for (const a of g.allergies ?? []) allAllergies.add(a.trim())
   }
 
   const allDietary = new Set<string>()
   for (const d of event.dietary_restrictions) allDietary.add(d.trim())
-  for (const d of (client.dietary_restrictions ?? [])) allDietary.add(d.trim())
+  for (const d of client.dietary_restrictions ?? []) allDietary.add(d.trim())
   for (const g of guests) {
-    for (const d of (g.dietary_restrictions ?? [])) allDietary.add(d.trim())
+    for (const d of g.dietary_restrictions ?? []) allDietary.add(d.trim())
   }
 
   const hasAlerts = allAllergies.size > 0 || allDietary.size > 0
 
   if (hasAlerts) {
-    const allergyLine = allAllergies.size > 0
-      ? `ALLERGIES: ${Array.from(allAllergies).map(a => a.toUpperCase()).join(', ')}`
-      : null
-    const dietaryLine = allDietary.size > 0
-      ? `DIETARY: ${Array.from(allDietary).join(', ')}`
-      : null
+    const allergyLine =
+      allAllergies.size > 0
+        ? `ALLERGIES: ${Array.from(allAllergies)
+            .map((a) => a.toUpperCase())
+            .join(', ')}`
+        : null
+    const dietaryLine = allDietary.size > 0 ? `DIETARY: ${Array.from(allDietary).join(', ')}` : null
 
     const alertText = [allergyLine, dietaryLine].filter(Boolean).join('  |  ')
     const fullText = `!! ALLERGY / DIETARY !!  ${alertText}`
@@ -554,13 +587,18 @@ export function renderEventSummary(pdf: PDFLayout, data: EventSummaryData) {
   }
 
   // Guest count
-  const guestLabel = guests.length > 0
-    ? `${event.guest_count} (${guests.map(g => g.full_name).join(', ')})`
-    : `${event.guest_count}`
+  const guestLabel =
+    guests.length > 0
+      ? `${event.guest_count} (${guests.map((g) => g.full_name).join(', ')})`
+      : `${event.guest_count}`
   leftY = colKeyValue(doc, LEFT_X, COL_WIDTH, leftY, 'Guests', guestLabel)
 
   // Relationship notes: combine vibe_notes + family_notes + what_they_care_about
-  const relNotesParts = [client.vibe_notes, client.family_notes, client.what_they_care_about].filter(Boolean)
+  const relNotesParts = [
+    client.vibe_notes,
+    client.family_notes,
+    client.what_they_care_about,
+  ].filter(Boolean)
   if (relNotesParts.length > 0) {
     const combined = relNotesParts.join(' | ')
     // Truncate to ~3 lines worth of text
@@ -572,7 +610,12 @@ export function renderEventSummary(pdf: PDFLayout, data: EventSummaryData) {
   // Section: LOCATION
   leftY = colSectionHeader(doc, LEFT_X, COL_WIDTH, leftY, 'LOCATION')
 
-  const addressParts = [event.location_address, event.location_city, event.location_state, event.location_zip].filter(Boolean)
+  const addressParts = [
+    event.location_address,
+    event.location_city,
+    event.location_state,
+    event.location_zip,
+  ].filter(Boolean)
   if (addressParts.length > 0) {
     leftY = colKeyValue(doc, LEFT_X, COL_WIDTH, leftY, 'Address', addressParts.join(', '))
   }
@@ -611,9 +654,10 @@ export function renderEventSummary(pdf: PDFLayout, data: EventSummaryData) {
 
   // Rate
   if (event.quoted_price_cents) {
-    const rateLabel = event.pricing_model === 'per_person'
-      ? `$${(event.quoted_price_cents / 100).toFixed(0)}/person`
-      : `$${(event.quoted_price_cents / 100).toFixed(0)} flat rate`
+    const rateLabel =
+      event.pricing_model === 'per_person'
+        ? `$${(event.quoted_price_cents / 100).toFixed(0)}/person`
+        : `$${(event.quoted_price_cents / 100).toFixed(0)} flat rate`
     rightY = colKeyValue(doc, RIGHT_X, COL_WIDTH, rightY, 'Total', rateLabel)
   } else {
     rightY = colKeyValue(doc, RIGHT_X, COL_WIDTH, rightY, 'Total', 'Not yet quoted')
@@ -672,7 +716,7 @@ export function renderEventSummary(pdf: PDFLayout, data: EventSummaryData) {
       if (course.dishDescription) {
         pdf.text(course.dishDescription, 8, 'italic', 6)
       } else if (course.components.length > 0) {
-        const compList = course.components.map(c => c.name).join(', ')
+        const compList = course.components.map((c) => c.name).join(', ')
         pdf.text(compList, 8, 'italic', 6)
       }
     }
@@ -698,19 +742,20 @@ export function renderEventSummary(pdf: PDFLayout, data: EventSummaryData) {
     // Merge allergies for conflict detection
     const mergedAllergies = new Set<string>()
     for (const a of event.allergies) mergedAllergies.add(a.toLowerCase())
-    for (const a of (client.allergies ?? [])) mergedAllergies.add(a.toLowerCase())
+    for (const a of client.allergies ?? []) mergedAllergies.add(a.toLowerCase())
     for (const g of guests) {
-      for (const a of (g.allergies ?? [])) mergedAllergies.add(a.toLowerCase())
+      for (const a of g.allergies ?? []) mergedAllergies.add(a.toLowerCase())
     }
 
     for (const course of courses) {
       const conflictingAllergens = course.dishAllergenFlags
-        .filter(flag => mergedAllergies.has(flag.toLowerCase()))
-        .map(a => a.toUpperCase())
+        .filter((flag) => mergedAllergies.has(flag.toLowerCase()))
+        .map((a) => a.toUpperCase())
 
-      const courseHeaderText = conflictingAllergens.length > 0
-        ? `COURSE ${course.courseNumber} — ${course.courseName} (${course.componentCount}) \u26a0 ${conflictingAllergens.join(', ')}`
-        : `COURSE ${course.courseNumber} — ${course.courseName} (${course.componentCount} components)`
+      const courseHeaderText =
+        conflictingAllergens.length > 0
+          ? `COURSE ${course.courseNumber} — ${course.courseName} (${course.componentCount}) \u26a0 ${conflictingAllergens.join(', ')}`
+          : `COURSE ${course.courseNumber} — ${course.courseName} (${course.componentCount} components)`
 
       if (!pdf.wouldOverflow(3)) {
         pdf.courseHeader(courseHeaderText)

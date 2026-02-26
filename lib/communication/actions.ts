@@ -34,7 +34,10 @@ function mapSourceToInquiryChannel(source: string) {
 function parseSenderIdentity(senderIdentity: string) {
   const emailMatch = senderIdentity.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)
   const email = emailMatch ? emailMatch[0].toLowerCase() : null
-  const stripped = senderIdentity.replace(email || '', '').replace(/[<>\(\)]/g, '').trim()
+  const stripped = senderIdentity
+    .replace(email || '', '')
+    .replace(/[<>\(\)]/g, '')
+    .trim()
   const clientName = stripped || email?.split('@')[0] || 'Unknown client'
   return { clientName, email }
 }
@@ -62,12 +65,19 @@ async function logAction(input: {
   })
 }
 
-export async function getCommunicationInbox(tab?: CommunicationTab, limit = 50): Promise<Array<CommunicationInboxItem & {
-  suggestions: SuggestedLink[]
-  client_name: string | null
-  linked_inquiry_title: string | null
-  linked_event_title: string | null
-}>> {
+export async function getCommunicationInbox(
+  tab?: CommunicationTab,
+  limit = 50
+): Promise<
+  Array<
+    CommunicationInboxItem & {
+      suggestions: SuggestedLink[]
+      client_name: string | null
+      linked_inquiry_title: string | null
+      linked_event_title: string | null
+    }
+  >
+> {
   const user = await requireChef()
   const supabase: any = createServerClient({ admin: true })
 
@@ -96,42 +106,76 @@ export async function getCommunicationInbox(tab?: CommunicationTab, limit = 50):
   const { data: suggestions } = eventIds.length
     ? await supabase
         .from('suggested_links' as any)
-        .select('id, communication_event_id, suggested_entity_type, suggested_entity_id, confidence_score, status')
+        .select(
+          'id, communication_event_id, suggested_entity_type, suggested_entity_id, confidence_score, status'
+        )
         .eq('tenant_id', user.tenantId!)
         .in('communication_event_id', eventIds)
         .order('confidence_score', { ascending: false })
     : { data: [] as any[] }
 
-  const clientIds = Array.from(new Set(items.map((item) => item.client_id).filter(Boolean))) as string[]
-  const inquiryIds = Array.from(new Set(items.filter((i) => i.linked_entity_type === 'inquiry' && i.linked_entity_id).map((i) => i.linked_entity_id!)))
-  const eventLinkIds = Array.from(new Set(items.filter((i) => i.linked_entity_type === 'event' && i.linked_entity_id).map((i) => i.linked_entity_id!)))
+  const clientIds = Array.from(
+    new Set(items.map((item) => item.client_id).filter(Boolean))
+  ) as string[]
+  const inquiryIds = Array.from(
+    new Set(
+      items
+        .filter((i) => i.linked_entity_type === 'inquiry' && i.linked_entity_id)
+        .map((i) => i.linked_entity_id!)
+    )
+  )
+  const eventLinkIds = Array.from(
+    new Set(
+      items
+        .filter((i) => i.linked_entity_type === 'event' && i.linked_entity_id)
+        .map((i) => i.linked_entity_id!)
+    )
+  )
 
   const [{ data: clients }, { data: inquiries }, { data: events }] = await Promise.all([
     clientIds.length
-      ? supabase.from('clients').select('id, full_name').eq('tenant_id', user.tenantId!).in('id', clientIds)
+      ? supabase
+          .from('clients')
+          .select('id, full_name')
+          .eq('tenant_id', user.tenantId!)
+          .in('id', clientIds)
       : Promise.resolve({ data: [] as any[] }),
     inquiryIds.length
-      ? supabase.from('inquiries').select('id, confirmed_occasion').eq('tenant_id', user.tenantId!).in('id', inquiryIds)
+      ? supabase
+          .from('inquiries')
+          .select('id, confirmed_occasion')
+          .eq('tenant_id', user.tenantId!)
+          .in('id', inquiryIds)
       : Promise.resolve({ data: [] as any[] }),
     eventLinkIds.length
-      ? supabase.from('events').select('id, occasion').eq('tenant_id', user.tenantId!).in('id', eventLinkIds)
+      ? supabase
+          .from('events')
+          .select('id, occasion')
+          .eq('tenant_id', user.tenantId!)
+          .in('id', eventLinkIds)
       : Promise.resolve({ data: [] as any[] }),
   ])
 
   const clientNameById = new Map((clients || []).map((c: any) => [c.id, c.full_name]))
-  const inquiryTitleById = new Map((inquiries || []).map((i: any) => [i.id, i.confirmed_occasion || 'Inquiry']))
+  const inquiryTitleById = new Map(
+    (inquiries || []).map((i: any) => [i.id, i.confirmed_occasion || 'Inquiry'])
+  )
   const eventTitleById = new Map((events || []).map((e: any) => [e.id, e.occasion || 'Event']))
 
   return items.map((item) => ({
     ...item,
-    suggestions: (suggestions || []).filter((s: any) => s.communication_event_id === item.communication_event_id),
+    suggestions: (suggestions || []).filter(
+      (s: any) => s.communication_event_id === item.communication_event_id
+    ),
     client_name: item.client_id ? String(clientNameById.get(item.client_id) || '') || null : null,
-    linked_inquiry_title: item.linked_entity_type === 'inquiry' && item.linked_entity_id
-      ? String(inquiryTitleById.get(item.linked_entity_id) || 'Inquiry')
-      : null,
-    linked_event_title: item.linked_entity_type === 'event' && item.linked_entity_id
-      ? String(eventTitleById.get(item.linked_entity_id) || 'Event')
-      : null,
+    linked_inquiry_title:
+      item.linked_entity_type === 'inquiry' && item.linked_entity_id
+        ? String(inquiryTitleById.get(item.linked_entity_id) || 'Inquiry')
+        : null,
+    linked_event_title:
+      item.linked_entity_type === 'event' && item.linked_entity_id
+        ? String(eventTitleById.get(item.linked_entity_id) || 'Event')
+        : null,
   }))
 }
 
@@ -168,7 +212,10 @@ export async function getCommunicationInboxStats(): Promise<CommunicationInboxSt
   return stats
 }
 
-export async function linkCommunicationEventToInquiry(communicationEventId: string, inquiryId: string) {
+export async function linkCommunicationEventToInquiry(
+  communicationEventId: string,
+  inquiryId: string
+) {
   const user = await requireChef()
   const supabase: any = createServerClient({ admin: true })
 
@@ -231,7 +278,10 @@ export async function linkCommunicationEventToInquiry(communicationEventId: stri
   return { success: true }
 }
 
-export async function attachCommunicationEventToEvent(communicationEventId: string, eventId: string) {
+export async function attachCommunicationEventToEvent(
+  communicationEventId: string,
+  eventId: string
+) {
   const user = await requireChef()
   const supabase: any = createServerClient({ admin: true })
 
@@ -300,7 +350,9 @@ export async function createInquiryFromCommunicationEvent(communicationEventId: 
 
   const { data: event } = await supabase
     .from('communication_events' as any)
-    .select('id, tenant_id, source, sender_identity, raw_content, resolved_client_id, thread_id, status, linked_entity_type, linked_entity_id')
+    .select(
+      'id, tenant_id, source, sender_identity, raw_content, resolved_client_id, thread_id, status, linked_entity_type, linked_entity_id'
+    )
     .eq('id', communicationEventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -355,7 +407,10 @@ export async function createInquiryFromCommunicationEvent(communicationEventId: 
   return { success: true, inquiryId }
 }
 
-export async function addInternalNoteFromCommunication(communicationEventId: string, noteText: string) {
+export async function addInternalNoteFromCommunication(
+  communicationEventId: string,
+  noteText: string
+) {
   const user = await requireChef()
   const supabase: any = createServerClient({ admin: true })
 
@@ -560,7 +615,9 @@ export async function reopenCommunication(communicationEventId: string) {
   return { success: true }
 }
 
-export async function getCommunicationClassificationRules(): Promise<CommunicationClassificationRule[]> {
+export async function getCommunicationClassificationRules(): Promise<
+  CommunicationClassificationRule[]
+> {
   const user = await requireChef()
   const supabase: any = createServerClient({ admin: true })
 
@@ -714,7 +771,9 @@ export async function createManualCommunicationLog(input: {
   return { success: true }
 }
 
-export async function upsertCommunicationClassificationRule(rule: Omit<CommunicationClassificationRule, 'id'> & { id?: string }) {
+export async function upsertCommunicationClassificationRule(
+  rule: Omit<CommunicationClassificationRule, 'id'> & { id?: string }
+) {
   const user = await requireChef()
   const supabase: any = createServerClient({ admin: true })
 
@@ -733,18 +792,16 @@ export async function upsertCommunicationClassificationRule(rule: Omit<Communica
       .eq('id', rule.id)
       .eq('tenant_id', user.tenantId!)
   } else {
-    await supabase
-      .from('communication_classification_rules' as any)
-      .insert({
-        tenant_id: user.tenantId!,
-        name: rule.name,
-        is_active: rule.is_active,
-        match_field: rule.match_field,
-        operator: rule.operator,
-        match_value: rule.match_value,
-        label: rule.label,
-        priority: rule.priority,
-      })
+    await supabase.from('communication_classification_rules' as any).insert({
+      tenant_id: user.tenantId!,
+      name: rule.name,
+      is_active: rule.is_active,
+      match_field: rule.match_field,
+      operator: rule.operator,
+      match_value: rule.match_value,
+      label: rule.label,
+      priority: rule.priority,
+    })
   }
 
   revalidatePath('/inbox')
@@ -820,7 +877,9 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
   // Fetch all events for this thread in chronological order
   const { data: events, error: eventsError } = await supabase
     .from('communication_events' as any)
-    .select('id, timestamp, direction, source, sender_identity, raw_content, linked_entity_type, linked_entity_id, status')
+    .select(
+      'id, timestamp, direction, source, sender_identity, raw_content, linked_entity_type, linked_entity_id, status'
+    )
     .eq('thread_id', threadId)
     .eq('tenant_id', user.tenantId!)
     .order('timestamp', { ascending: true })
@@ -844,7 +903,12 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
       .eq('chef_id', user.tenantId!)
       .single()
     if (inquiry) {
-      const label = [inquiry.occasion, inquiry.event_date ? new Date(inquiry.event_date).toLocaleDateString() : null].filter(Boolean).join(' · ')
+      const label = [
+        inquiry.occasion,
+        inquiry.event_date ? new Date(inquiry.event_date).toLocaleDateString() : null,
+      ]
+        .filter(Boolean)
+        .join(' · ')
       linked_inquiry = { id: inquiry.id, title: label || 'Inquiry' }
     }
   } else if (lastLinked?.linked_entity_type === 'event' && lastLinked.linked_entity_id) {
@@ -855,7 +919,12 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
       .eq('chef_id', user.tenantId!)
       .single()
     if (event) {
-      const label = [event.title, event.event_date ? new Date(event.event_date).toLocaleDateString() : null].filter(Boolean).join(' · ')
+      const label = [
+        event.title,
+        event.event_date ? new Date(event.event_date).toLocaleDateString() : null,
+      ]
+        .filter(Boolean)
+        .join(' · ')
       linked_event = { id: event.id, title: label || 'Event' }
     }
   }
@@ -867,7 +936,9 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
   if (eventIds.length > 0) {
     const { data: rawSuggestions } = await supabase
       .from('suggested_links' as any)
-      .select('id, communication_event_id, suggested_entity_type, suggested_entity_id, confidence_score')
+      .select(
+        'id, communication_event_id, suggested_entity_type, suggested_entity_id, confidence_score'
+      )
       .in('communication_event_id', eventIds)
       .eq('status', 'pending')
       .order('confidence_score', { ascending: false })
@@ -882,7 +953,10 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
           .eq('chef_id', user.tenantId!)
           .single()
         if (inq) {
-          entity_title = [inq.occasion, inq.event_date ? new Date(inq.event_date).toLocaleDateString() : null].filter(Boolean).join(' · ') || 'Inquiry'
+          entity_title =
+            [inq.occasion, inq.event_date ? new Date(inq.event_date).toLocaleDateString() : null]
+              .filter(Boolean)
+              .join(' · ') || 'Inquiry'
         }
       } else if (s.suggested_entity_type === 'event') {
         const { data: ev } = await supabase
@@ -892,7 +966,10 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
           .eq('chef_id', user.tenantId!)
           .single()
         if (ev) {
-          entity_title = [ev.title, ev.event_date ? new Date(ev.event_date).toLocaleDateString() : null].filter(Boolean).join(' · ') || 'Event'
+          entity_title =
+            [ev.title, ev.event_date ? new Date(ev.event_date).toLocaleDateString() : null]
+              .filter(Boolean)
+              .join(' · ') || 'Event'
         }
       }
       enrichedSuggestions.push({
@@ -953,18 +1030,16 @@ export async function logMessageToThread(input: {
 
   const now = new Date().toISOString()
 
-  await supabase
-    .from('communication_events' as any)
-    .insert({
-      tenant_id: user.tenantId!,
-      thread_id: input.threadId,
-      source: 'manual_log',
-      timestamp: now,
-      sender_identity: senderIdentity,
-      raw_content: content,
-      normalized_content: content.toLowerCase().replace(/\s+/g, ' ').trim(),
-      direction: input.direction,
-    })
+  await supabase.from('communication_events' as any).insert({
+    tenant_id: user.tenantId!,
+    thread_id: input.threadId,
+    source: 'manual_log',
+    timestamp: now,
+    sender_identity: senderIdentity,
+    raw_content: content,
+    normalized_content: content.toLowerCase().replace(/\s+/g, ' ').trim(),
+    direction: input.direction,
+  })
 
   // Update thread last_activity_at
   await supabase

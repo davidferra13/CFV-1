@@ -25,12 +25,10 @@ export function PaymentConfirmationEmail({
   return (
     <BaseLayout preview={`Payment of ${amountFormatted} received`}>
       <Text style={heading}>Payment confirmed</Text>
+      <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>
-        Hi {clientName},
-      </Text>
-      <Text style={paragraph}>
-        Your {paymentType} of <strong>{amountFormatted}</strong> for {occasion} has been
-        received. Thank you!
+        Your {paymentType} of <strong>{amountFormatted}</strong> for {occasion} has been received.
+        Thank you!
       </Text>
       <table style={detailsTable}>
         <tbody>
@@ -57,8 +55,8 @@ export function PaymentConfirmationEmail({
         </tbody>
       </table>
       <Text style={muted}>
-        Your chef will be in touch to confirm the remaining details. If you have questions,
-        reach out to your chef directly through CheFlow.
+        Your chef will be in touch to confirm the remaining details. If you have questions, reach
+        out to your chef directly through CheFlow.
       </Text>
     </BaseLayout>
   )

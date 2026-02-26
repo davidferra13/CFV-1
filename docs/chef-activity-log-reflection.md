@@ -11,6 +11,7 @@ Previously, ChefFlow tracked **client** portal activity (logins, views via `acti
 ## What Was Built
 
 ### Database Layer
+
 - **New table: `chef_activity_log`** — Permanent, append-only record of chef actions
   - Columns: action, domain, entity_type, entity_id, summary (human-readable), context (JSONB), client_id
   - Indexed for: tenant+time, tenant+client+time, tenant+domain+time, tenant+entity lookups
@@ -19,6 +20,7 @@ Previously, ChefFlow tracked **client** portal activity (logins, views via `acti
   - Migration: `supabase/migrations/20260221000020_chef_activity_log.sql`
 
 ### Logging Utility
+
 - **`lib/activity/log-chef.ts`** — `logChefActivity()` function
   - Non-blocking, fire-and-forget pattern (matches existing `trackActivity()`)
   - Uses admin client for universal access
@@ -27,6 +29,7 @@ Previously, ChefFlow tracked **client** portal activity (logins, views via `acti
 ### Instrumented Server Actions (15 total)
 
 **Phase 1 — Core operations:**
+
 - `lib/events/transitions.ts` — Event state transitions (draft→proposed→...→completed/cancelled)
 - `lib/events/actions.ts` — Event create + update
 - `lib/inquiries/actions.ts` — Inquiry create + transition
@@ -37,12 +40,14 @@ Previously, ChefFlow tracked **client** portal activity (logins, views via `acti
 - `lib/notes/actions.ts` — Client notes
 
 **Phase 2 — Communication & operational:**
+
 - `lib/chat/actions.ts` — Chat messages (chef only)
 - `lib/messages/actions.ts` — CRM messages (email/text/phone)
 - `lib/expenses/actions.ts` — Expense creation
 - `lib/aar/actions.ts` — After-action reviews
 
 ### Query Layer
+
 - **`lib/activity/chef-actions.ts`** — Server actions for querying chef activity
   - `getChefActivity()` — Full feed with domain/client/time filters
   - `getChefActivitySummary()` — Compact 5-item feed for dashboard
@@ -50,18 +55,21 @@ Previously, ChefFlow tracked **client** portal activity (logins, views via `acti
   - `getActivityCountsByDomain()` — Domain badge counts
 
 ### Resume Logic
+
 - **`lib/activity/resume.ts`** — "Pick Up Where You Left Off" computed queries
   - Pulls from: active events, draft/shared menus, active inquiries, draft/sent quotes, pinned/recent notes
   - No new table — aggregates existing data
   - Shows: entity name, status, context, last action, direct link
 
 ### UI Components
+
 - **`components/activity/chef-activity-feed.tsx`** — Activity feed with day grouping, domain badges, context lines, entity links
 - **`components/activity/resume-section.tsx`** — "Pick Up" card with status badges and entity links
 - **`components/activity/activity-filters.tsx`** — Tab switcher (My/Client/All) + domain pills + time range selector
 - **`components/activity/client-activity-timeline.tsx`** — Combined chef+client activity on client detail page
 
 ### Pages & Integration
+
 - **`app/(chef)/activity/page.tsx`** — Dedicated Activity page with resume section, tabs, filters, and feed
 - **Dashboard** — Added "My Recent Activity" card (3-column grid with Active Clients and Client Activity)
 - **Client Detail** — Added Activity Timeline section showing combined chef+client activity

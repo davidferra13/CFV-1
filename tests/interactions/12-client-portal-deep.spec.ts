@@ -116,7 +116,7 @@ test.describe('Client Portal — Event Detail', () => {
 
   test('/my-events/[confirmed] — no JS errors', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto(`/my-events/${seedIds.eventIds.confirmed}`)
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -158,7 +158,10 @@ test.describe('Client Portal — Event Detail', () => {
 // ─── Client Portal — Menu Approval ────────────────────────────────────────────
 
 test.describe('Client Portal — Menu Approval', () => {
-  test('/my-events/[confirmed]/approve-menu — menu approval page loads', async ({ page, seedIds }) => {
+  test('/my-events/[confirmed]/approve-menu — menu approval page loads', async ({
+    page,
+    seedIds,
+  }) => {
     await page.goto(`/my-events/${seedIds.eventIds.confirmed}/approve-menu`)
     await page.waitForLoadState('networkidle')
     expect(page.url()).not.toMatch(/auth\/signin/)
@@ -166,7 +169,10 @@ test.describe('Client Portal — Menu Approval', () => {
     expect(bodyText.trim().length).toBeGreaterThan(20)
   })
 
-  test('/my-events/[confirmed]/approve-menu — shows menu or approval content', async ({ page, seedIds }) => {
+  test('/my-events/[confirmed]/approve-menu — shows menu or approval content', async ({
+    page,
+    seedIds,
+  }) => {
     await page.goto(`/my-events/${seedIds.eventIds.confirmed}/approve-menu`)
     await page.waitForLoadState('networkidle')
     const hasMenuContent = await page
@@ -182,17 +188,22 @@ test.describe('Client Portal — Menu Approval', () => {
 
   test('/my-events/[confirmed]/approve-menu — no JS errors on load', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto(`/my-events/${seedIds.eventIds.confirmed}/approve-menu`)
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
   })
 
-  test('/my-events/[confirmed]/approve-menu — approve button visible if menu assigned', async ({ page, seedIds }) => {
+  test('/my-events/[confirmed]/approve-menu — approve button visible if menu assigned', async ({
+    page,
+    seedIds,
+  }) => {
     await page.goto(`/my-events/${seedIds.eventIds.confirmed}/approve-menu`)
     await page.waitForLoadState('networkidle')
     // The approve button may or may not be present depending on whether a menu is assigned
-    const approveBtn = page.getByRole('button', { name: /approve|looks great|confirm menu/i }).first()
+    const approveBtn = page
+      .getByRole('button', { name: /approve|looks great|confirm menu/i })
+      .first()
     const isVisible = await approveBtn.isVisible().catch(() => false)
     // Not a hard requirement — just informational if visible
     if (isVisible) {
@@ -212,7 +223,10 @@ test.describe('Client Portal — Payment', () => {
     expect(bodyText.trim().length).toBeGreaterThan(20)
   })
 
-  test('/my-events/[paid]/pay — shows payment amount or Stripe elements', async ({ page, seedIds }) => {
+  test('/my-events/[paid]/pay — shows payment amount or Stripe elements', async ({
+    page,
+    seedIds,
+  }) => {
     await page.goto(`/my-events/${seedIds.eventIds.paid}/pay`)
     await page.waitForLoadState('networkidle')
     // Should show a dollar amount, payment instructions, or Stripe iframe
@@ -228,7 +242,7 @@ test.describe('Client Portal — Payment', () => {
 
   test('/my-events/[paid]/pay — no JS errors on load', async ({ page, seedIds }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto(`/my-events/${seedIds.eventIds.paid}/pay`)
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -285,7 +299,7 @@ test.describe('Client Portal — Quote Interaction', () => {
 
   test('/my-quotes — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/my-quotes')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -300,13 +314,14 @@ test.describe('Client Portal — Profile', () => {
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
     // Should have pre-filled data
-    const hasData = bodyText.includes('alice') || bodyText.includes('Alice') || bodyText.includes('e2e')
+    const hasData =
+      bodyText.includes('alice') || bodyText.includes('Alice') || bodyText.includes('e2e')
     expect(hasData || bodyText.trim().length > 50).toBeTruthy()
   })
 
   test('/my-profile — can type in a profile field without crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/my-profile')
     await page.waitForLoadState('networkidle')
 
@@ -345,7 +360,7 @@ test.describe('Client Portal — Inquiry Detail', () => {
 
   test('/my-inquiries — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/my-inquiries')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)

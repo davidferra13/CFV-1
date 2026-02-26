@@ -148,7 +148,18 @@ export const INVENTORY_CATEGORIES = [
 
 export type InventoryCategory = (typeof INVENTORY_CATEGORIES)[number]
 
-export const INVENTORY_UNITS = ['pcs', 'g', 'kg', 'oz', 'lb', 'L', 'ml', 'cup', 'tbsp', 'tsp'] as const
+export const INVENTORY_UNITS = [
+  'pcs',
+  'g',
+  'kg',
+  'oz',
+  'lb',
+  'L',
+  'ml',
+  'cup',
+  'tbsp',
+  'tsp',
+] as const
 export type InventoryUnit = (typeof INVENTORY_UNITS)[number]
 
 // ============================================================

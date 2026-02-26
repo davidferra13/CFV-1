@@ -24,6 +24,7 @@ This allows instant-book events to skip the proposal/acceptance flow entirely.
 ### New Database Columns
 
 **On `chefs`** (migration `20260312000014_dual_booking_model.sql`):
+
 - `booking_model` — `'inquiry_first'` or `'instant_book'`
 - `booking_base_price_cents` — Base event price (required for instant-book)
 - `booking_pricing_type` — `'flat_rate'` or `'per_person'`
@@ -33,6 +34,7 @@ This allows instant-book events to skip the proposal/acceptance flow entirely.
 Note: `booking_deposit_percent` already existed from migration `20260307000012`.
 
 **On `events`**:
+
 - `booking_source` — `'inquiry'`, `'instant_book'`, or null
 
 ### Instant-Book Flow
@@ -59,30 +61,31 @@ Note: `booking_deposit_percent` already existed from migration `20260307000012`.
 ### Settings UI
 
 Chef settings > Booking Page now includes:
+
 - Booking model radio: "Inquiry First" / "Instant Book"
 - When instant-book selected: pricing type, base price, deposit type, deposit amount
 - Validation: instant-book requires `booking_base_price_cents > 0` and `stripe_onboarding_complete`
 
 ## Files Modified
 
-| File | Change |
-|------|--------|
-| `lib/events/transitions.ts` | `draft` can now transition to `paid`; `draft->paid` permission = `system` |
-| `lib/booking/booking-settings-actions.ts` | Extended type, getters, setters for dual-mode fields; new `getPublicBookingConfig()` |
-| `components/settings/booking-page-settings.tsx` | Model selector, pricing/deposit config UI |
-| `app/book/[chefSlug]/page.tsx` | Fetches booking model columns, passes `bookingConfig` prop |
-| `app/book/[chefSlug]/booking-page-client.tsx` | Forwards `bookingConfig`, adjusts messaging per model |
-| `components/booking/booking-form.tsx` | Dual-mode: inquiry submit vs instant-book checkout; live pricing summary |
-| `app/book/[chefSlug]/thank-you/page.tsx` | Detects `?mode=instant` for booking-confirmed messaging |
-| `app/api/webhooks/stripe/route.ts` | Detects `booking_source: 'instant_book'` in metadata, sends chef email |
-| `lib/email/notifications.ts` | New `sendInstantBookingChefEmail()` function |
+| File                                            | Change                                                                               |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `lib/events/transitions.ts`                     | `draft` can now transition to `paid`; `draft->paid` permission = `system`            |
+| `lib/booking/booking-settings-actions.ts`       | Extended type, getters, setters for dual-mode fields; new `getPublicBookingConfig()` |
+| `components/settings/booking-page-settings.tsx` | Model selector, pricing/deposit config UI                                            |
+| `app/book/[chefSlug]/page.tsx`                  | Fetches booking model columns, passes `bookingConfig` prop                           |
+| `app/book/[chefSlug]/booking-page-client.tsx`   | Forwards `bookingConfig`, adjusts messaging per model                                |
+| `components/booking/booking-form.tsx`           | Dual-mode: inquiry submit vs instant-book checkout; live pricing summary             |
+| `app/book/[chefSlug]/thank-you/page.tsx`        | Detects `?mode=instant` for booking-confirmed messaging                              |
+| `app/api/webhooks/stripe/route.ts`              | Detects `booking_source: 'instant_book'` in metadata, sends chef email               |
+| `lib/email/notifications.ts`                    | New `sendInstantBookingChefEmail()` function                                         |
 
 ## Files Created
 
-| File | Purpose |
-|------|---------|
-| `lib/booking/instant-book-actions.ts` | `createInstantBookingCheckout()` — core instant-book server action |
-| `lib/email/templates/instant-booking-chef.tsx` | Email template for instant-book chef notification |
+| File                                           | Purpose                                                            |
+| ---------------------------------------------- | ------------------------------------------------------------------ |
+| `lib/booking/instant-book-actions.ts`          | `createInstantBookingCheckout()` — core instant-book server action |
+| `lib/email/templates/instant-booking-chef.tsx` | Email template for instant-book chef notification                  |
 
 ## Edge Cases
 

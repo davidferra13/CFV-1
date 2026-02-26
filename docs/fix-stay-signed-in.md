@@ -29,11 +29,12 @@ This design is correct. The bug was not in the architecture — it was in how co
 The `redirectWithCookies` helper in `middleware.ts` is responsible for copying session cookies from the middleware response onto redirect responses. This ensures that when a token refresh happens on a request that also redirects, the refreshed cookies are not lost.
 
 **The broken implementation:**
+
 ```ts
 function redirectWithCookies(url: URL, sourceResponse: NextResponse): NextResponse {
   const redirectResponse = NextResponse.redirect(url)
   sourceResponse.cookies.getAll().forEach((cookie) => {
-    redirectResponse.cookies.set(cookie.name, cookie.value)  // ← drops ALL options
+    redirectResponse.cookies.set(cookie.name, cookie.value) // ← drops ALL options
   })
   return redirectResponse
 }
@@ -87,12 +88,14 @@ When `rememberMe = false` (session-only), the middleware's `setAll()` callback a
 ## Verification
 
 **Persistent session (rememberMe = true):**
+
 1. Sign in with "Stay signed in" checked
 2. Close the browser completely
 3. Reopen and navigate to the app
 4. Should still be logged in (no redirect to `/auth/signin`)
 
 **Session-only (rememberMe = false):**
+
 1. Sign in with "Stay signed in" unchecked
 2. Close the browser
 3. Reopen and navigate to the app

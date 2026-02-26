@@ -8,19 +8,19 @@ All secrets must be rotated proactively on a defined schedule and reactively on 
 
 ## Rotation Schedule
 
-| Secret | Rotation Frequency | Owner | Last Rotated |
-|--------|--------------------|-------|--------------|
-| `SUPABASE_SERVICE_ROLE_KEY` | Every 6 months or on personnel change | Engineering | (log here) |
-| `STRIPE_SECRET_KEY` | Every 6 months | Engineering | (log here) |
-| `STRIPE_WEBHOOK_SECRET` | On endpoint creation/change | Engineering | (log here) |
-| `CRON_SECRET` | Every 3 months | Engineering | (log here) |
-| `RESEND_API_KEY` | Every 6 months | Engineering | (log here) |
-| `GEMINI_API_KEY` | Every 12 months or on compromise | Engineering | (log here) |
-| `GOOGLE_CLIENT_SECRET` | Every 12 months | Engineering | (log here) |
-| `MEALME_API_KEY` | Every 12 months | Engineering | (log here) |
-| `SENTRY_AUTH_TOKEN` | Every 6 months | Engineering | (log here) |
-| `UPSTASH_REDIS_REST_TOKEN` | Every 6 months | Engineering | (log here) |
-| `ADMIN_EMAILS` | On team change | Engineering | (log here) |
+| Secret                      | Rotation Frequency                    | Owner       | Last Rotated |
+| --------------------------- | ------------------------------------- | ----------- | ------------ |
+| `SUPABASE_SERVICE_ROLE_KEY` | Every 6 months or on personnel change | Engineering | (log here)   |
+| `STRIPE_SECRET_KEY`         | Every 6 months                        | Engineering | (log here)   |
+| `STRIPE_WEBHOOK_SECRET`     | On endpoint creation/change           | Engineering | (log here)   |
+| `CRON_SECRET`               | Every 3 months                        | Engineering | (log here)   |
+| `RESEND_API_KEY`            | Every 6 months                        | Engineering | (log here)   |
+| `GEMINI_API_KEY`            | Every 12 months or on compromise      | Engineering | (log here)   |
+| `GOOGLE_CLIENT_SECRET`      | Every 12 months                       | Engineering | (log here)   |
+| `MEALME_API_KEY`            | Every 12 months                       | Engineering | (log here)   |
+| `SENTRY_AUTH_TOKEN`         | Every 6 months                        | Engineering | (log here)   |
+| `UPSTASH_REDIS_REST_TOKEN`  | Every 6 months                        | Engineering | (log here)   |
+| `ADMIN_EMAILS`              | On team change                        | Engineering | (log here)   |
 
 ---
 
@@ -29,6 +29,7 @@ All secrets must be rotated proactively on a defined schedule and reactively on 
 ### Step 1: Generate new secret
 
 For secrets you control (e.g., `CRON_SECRET`):
+
 ```bash
 openssl rand -hex 32
 ```
@@ -38,6 +39,7 @@ For service-issued secrets (Stripe, Supabase, etc.): generate via their dashboar
 ### Step 2: Add the new secret to Vercel WITHOUT removing the old one
 
 For Stripe webhook secrets, Stripe supports multiple active secrets during rotation:
+
 1. Create a new webhook endpoint in Stripe dashboard
 2. Copy the new `whsec_...` value
 3. Add `STRIPE_WEBHOOK_SECRET_NEW=whsec_newvalue` to Vercel env vars
@@ -45,6 +47,7 @@ For Stripe webhook secrets, Stripe supports multiple active secrets during rotat
 5. After 24h, remove old secret and rename NEW to STRIPE_WEBHOOK_SECRET
 
 For single-secret systems (CRON_SECRET, Supabase service role):
+
 1. Update Vercel env var to new value
 2. Trigger a new Vercel deployment (picks up new env)
 3. Old requests in-flight with old secret will fail (typically < 1 minute window)
@@ -52,6 +55,7 @@ For single-secret systems (CRON_SECRET, Supabase service role):
 ### Step 3: Verify
 
 After deployment:
+
 ```bash
 # Test cron endpoint with new secret
 curl -H "Authorization: Bearer $NEW_CRON_SECRET" https://cheflowhq.com/api/scheduled/monitor
@@ -95,6 +99,7 @@ git push origin --force-with-lease
 ### Notify
 
 If a customer-affecting secret is compromised (Stripe key, Supabase service role):
+
 1. Notify all active customers of potential impact within 72 hours (GDPR requirement)
 2. Check Stripe dashboard for unauthorized charges
 3. Check Supabase audit log for unexpected queries
@@ -138,4 +143,4 @@ Add TruffleHog to CI (see `.github/workflows/ci.yml`) to catch accidental secret
 
 ---
 
-*Last reviewed: 2026-02-20. Review this document when rotating any secret.*
+_Last reviewed: 2026-02-20. Review this document when rotating any secret._

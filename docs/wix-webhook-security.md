@@ -17,6 +17,7 @@ The authentication mechanism is a per-chef `webhook_secret` stored in the `wix_c
 **After:** The header is explicitly preferred. The query param is still accepted for backward compatibility (existing Wix automations that send `?secret=` continue to work) but now logs a security notice.
 
 **Why this matters:** Query parameters appear in:
+
 - Server access logs (Vercel, Nginx, etc.)
 - Reverse proxy access logs
 - CDN logs
@@ -44,6 +45,7 @@ The query now selects `webhook_secret` in addition to `chef_id, tenant_id, auto_
 ## Why True HMAC Isn't Available
 
 Wix Automations HTTP Action sends webhooks without signing them. The only configuration options in the Wix interface are:
+
 - The target URL (where to send)
 - Custom headers (key-value pairs)
 - The HTTP method (POST)
@@ -55,6 +57,7 @@ There is no option for Wix to sign the payload with a shared key. This contrasts
 ## Updating Existing Wix Automations
 
 To upgrade existing automations from query param to header delivery:
+
 1. In Wix Automations, edit the HTTP Action
 2. Add a custom header: `X-Wix-Webhook-Secret: <the-secret-value>`
 3. Remove the `?secret=` from the URL

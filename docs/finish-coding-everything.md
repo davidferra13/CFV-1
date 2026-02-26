@@ -14,13 +14,16 @@ The user asked to "finish coding everything." This triggered a full audit of the
 ## Audit Findings
 
 ### Pages & Features (70 pages checked)
+
 All 70+ pages examined are **real, data-bound implementations** — not placeholders. This includes the culinary section (recipes, menus, ingredients, costing, prep, vendors), operations (equipment, kitchen rentals), calls, calendar, staff, goals, marketing, social, compliance, contracts, and all filter sub-pages across events, inquiries, quotes, leads, and clients.
 
 **Only two things were genuinely missing:**
+
 1. `app/(chef)/culinary/page.tsx` — the hub landing page for `/culinary`. Navigating to that URL resulted in a 404.
 2. `app/(chef)/operations/page.tsx` — the hub landing page for `/operations`. Same issue.
 
 ### TypeScript (108KB of errors → 0 errors)
+
 The `types/database.ts` file was **out of date**. It had a junk header line (`Initialising login role...`) from a previous `supabase gen types` run, and was missing ~40 tables and columns that had been added via migrations since the last successful type regeneration (e.g. `sms_send_log`, `automated_emails_enabled`, `transport_category`, `event_contracts`, and others).
 
 A newer, more complete type output existed in `types/gen-output.txt` (a saved copy from a more recent gen run, also with a junk header). Stripping the PowerShell junk from `gen-output.txt` and writing it cleanly to `database.ts` eliminated all TypeScript errors in one shot.
@@ -40,6 +43,7 @@ A newer, more complete type output existed in `types/gen-output.txt` (a saved co
 ### 2. `app/(chef)/culinary/page.tsx` — Created hub page
 
 A full hub landing page for the `/culinary` section, matching the visual style of the rest of the app:
+
 - Real data: fetches recipe count, active menu count, ingredient count, vendor count
 - 4-card stat row with live numbers
 - 6 nav tiles (Recipes, Menus, Ingredients, Food Costing, Prep Overview, Vendor Directory), each with icon, label, and description
@@ -47,6 +51,7 @@ A full hub landing page for the `/culinary` section, matching the visual style o
 ### 3. `app/(chef)/operations/page.tsx` — Created hub page
 
 A full hub landing page for the `/operations` section:
+
 - Real data: fetches equipment inventory, overdue maintenance items, rental history, kitchen rentals
 - 4-card stat row (equipment items, maintenance due, kitchen rentals, total rental spend)
 - Overdue maintenance count highlighted in amber when > 0
@@ -56,11 +61,11 @@ A full hub landing page for the `/operations` section:
 
 ## Files Changed
 
-| File | Change |
-|---|---|
-| `types/database.ts` | Replaced with clean content from `gen-output.txt` (strips junk header, adds ~40 missing tables/columns) |
-| `app/(chef)/culinary/page.tsx` | **New.** Culinary section hub with stats + nav tiles |
-| `app/(chef)/operations/page.tsx` | **New.** Operations section hub with stats + nav tiles |
+| File                             | Change                                                                                                  |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `types/database.ts`              | Replaced with clean content from `gen-output.txt` (strips junk header, adds ~40 missing tables/columns) |
+| `app/(chef)/culinary/page.tsx`   | **New.** Culinary section hub with stats + nav tiles                                                    |
+| `app/(chef)/operations/page.tsx` | **New.** Operations section hub with stats + nav tiles                                                  |
 
 ---
 

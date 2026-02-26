@@ -65,13 +65,13 @@ const routes: RouteCheck[] = [
 function checkRoute(route: RouteCheck): boolean {
   const fullPath = join(process.cwd(), route.path)
   const exists = existsSync(fullPath)
-  
+
   if (exists) {
     console.log(`✓ ${route.description.padEnd(30)} ${route.path}`)
   } else {
     console.log(`✗ ${route.description.padEnd(30)} ${route.path}`)
   }
-  
+
   return exists
 }
 
@@ -81,8 +81,8 @@ function main() {
   console.log()
 
   const results = routes.map(checkRoute)
-  const passed = results.filter(r => r).length
-  const failed = results.filter(r => !r).length
+  const passed = results.filter((r) => r).length
+  const failed = results.filter((r) => !r).length
 
   console.log()
   console.log('='.repeat(80))

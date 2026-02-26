@@ -7,7 +7,9 @@ Added a kanban board view as an alternative to the existing list view on the Inq
 ## Files created
 
 ### `components/inquiries/kanban-card.tsx`
+
 A `'use client'` component rendering a single inquiry card. Receives a flat `KanbanCardInquiry` shape (id, status, client_name, occasion, event_date, guest_count, created_at). Displays:
+
 - Client name (bold, truncated)
 - Occasion with a Tag icon
 - Event date formatted as "Mar 15, 2026" with a Calendar icon
@@ -17,21 +19,24 @@ A `'use client'` component rendering a single inquiry card. Receives a flat `Kan
 Clicking the card calls `router.push('/inquiries/[id]')`.
 
 ### `components/inquiries/kanban-board.tsx`
+
 A `'use client'` component that renders the full board. Defines six columns in pipeline order:
 
-| Column | Statuses captured | Badge variant | Collapsed by default |
-|---|---|---|---|
-| New | `new` | default | no |
-| Awaiting Chef | `awaiting_chef`, `awaiting_response` | warning | no |
-| Awaiting Client | `awaiting_client` | info | no |
-| Quoted | `quoted` | info | no |
-| Confirmed | `confirmed` | success | no |
-| Declined / Expired | `declined`, `expired` | error | yes |
+| Column             | Statuses captured                    | Badge variant | Collapsed by default |
+| ------------------ | ------------------------------------ | ------------- | -------------------- |
+| New                | `new`                                | default       | no                   |
+| Awaiting Chef      | `awaiting_chef`, `awaiting_response` | warning       | no                   |
+| Awaiting Client    | `awaiting_client`                    | info          | no                   |
+| Quoted             | `quoted`                             | info          | no                   |
+| Confirmed          | `confirmed`                          | success       | no                   |
+| Declined / Expired | `declined`, `expired`                | error         | yes                  |
 
 Each column has a colored top border accent and a sticky header showing the column label and a count badge. The header is a button that toggles the column's collapsed state. The board itself is a horizontally scrollable flex container; each column has `min-width: 280px` / `max-width: 320px`.
 
 ### `components/inquiries/inquiries-view-wrapper.tsx`
+
 A `'use client'` component that owns the toggle state. Receives:
+
 - `children: React.ReactNode` — the existing list view (server component subtree) passed as a slot
 - `inquiries: KanbanBoardInquiry[]` — pre-fetched inquiry data mapped for the kanban board
 
@@ -40,6 +45,7 @@ On mount it reads `localStorage` to restore the last-used view preference withou
 ## Files modified
 
 ### `app/(chef)/inquiries/page.tsx`
+
 Two additions only — the existing `InquiryList` server component was not touched:
 
 1. Import of `InquiriesViewWrapper`.

@@ -6,15 +6,15 @@ A marketing automation module that lets chefs build multi-step follow-up email s
 
 ## Files Created / Modified
 
-| File | Role |
-|---|---|
-| `app/(chef)/marketing/sequences/page.tsx` | Sequences list page — trigger type, step count, enrollment count, active toggle |
-| `lib/marketing/actions.ts` | `listSequences()` — fetches sequences with step and enrollment counts |
-| `lib/followup/sequence-builder-actions.ts` | Server actions: create, update, delete sequence and its steps |
-| `lib/followup/rule-actions.ts` | Server actions: manage followup trigger rules |
-| `components/followup/rule-builder.tsx` | UI for configuring trigger rules (trigger type, audience filter, conditions) |
-| `components/followup/sequence-timeline.tsx` | Visual preview of sequence steps laid out on a time axis |
-| `supabase/migrations/20260312000004_proposals_and_followups.sql` | Adds `marketing_sequences`, `sequence_steps`, `sequence_enrollments` tables |
+| File                                                             | Role                                                                            |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `app/(chef)/marketing/sequences/page.tsx`                        | Sequences list page — trigger type, step count, enrollment count, active toggle |
+| `lib/marketing/actions.ts`                                       | `listSequences()` — fetches sequences with step and enrollment counts           |
+| `lib/followup/sequence-builder-actions.ts`                       | Server actions: create, update, delete sequence and its steps                   |
+| `lib/followup/rule-actions.ts`                                   | Server actions: manage followup trigger rules                                   |
+| `components/followup/rule-builder.tsx`                           | UI for configuring trigger rules (trigger type, audience filter, conditions)    |
+| `components/followup/sequence-timeline.tsx`                      | Visual preview of sequence steps laid out on a time axis                        |
+| `supabase/migrations/20260312000004_proposals_and_followups.sql` | Adds `marketing_sequences`, `sequence_steps`, `sequence_enrollments` tables     |
 
 ## How It Works
 

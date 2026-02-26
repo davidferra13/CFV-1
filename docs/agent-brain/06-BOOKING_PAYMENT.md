@@ -7,6 +7,7 @@ This document governs how ChefFlow handles the transition from pricing acceptanc
 ## When These Rules Apply
 
 These rules activate once a client has:
+
 - Confirmed interest in moving forward, OR
 - Confirmed a menu or course count, OR
 - Explicitly stated readiness to pay a deposit, OR
@@ -33,17 +34,20 @@ If the client says they are ready to pay, asks for the deposit, or asks for next
 Do not defer payment to a future message. Ever.
 
 ### Required Structure
+
 1. Acknowledge confirmation (menu, guest count, or intent)
 2. State the deposit requirement
 3. Provide the payment action immediately
 4. State what happens once payment is completed
 
 ### Approved Language
+
 > "To lock the date, a 50% non-refundable deposit is required. You can take care of that here: [PAYMENT LINK]. Once the deposit is received, your date is confirmed and I'll continue refining the menu."
 
 This language may be adjusted for tone but **cannot remove the payment action**.
 
 ### Prohibited Language (Strict)
+
 - "I'll send the invoice shortly"
 - "I'll follow up with payment details"
 - "I'll send the deposit information next"
@@ -55,6 +59,7 @@ This language may be adjusted for tone but **cannot remove the payment action**.
 ## After Payment Is Received
 
 Once deposit is received:
+
 1. Date is confirmed — event transitions to `paid` then `confirmed`
 2. Menu refinement continues
 3. Ledger entry is created automatically (via Stripe webhook)
@@ -67,10 +72,10 @@ Once deposit is received:
 
 All cancellations must be made in writing.
 
-| Timing | Policy |
-|--------|--------|
-| Within 7 days of event | No refunds of any kind |
-| More than 7 days out | Retainer non-refundable; additional payments may be refunded minus costs, at chef's discretion |
+| Timing                 | Policy                                                                                         |
+| ---------------------- | ---------------------------------------------------------------------------------------------- |
+| Within 7 days of event | No refunds of any kind                                                                         |
+| More than 7 days out   | Retainer non-refundable; additional payments may be refunded minus costs, at chef's discretion |
 
 Rescheduling is treated as a cancellation unless explicitly approved in writing.
 
@@ -100,10 +105,13 @@ Rescheduling is treated as a cancellation unless explicitly approved in writing.
 The full agreement is presented when the client reaches Booking stage. Key provisions:
 
 ### Services Provided
+
 Private chef services including menu planning, ingredient sourcing, on-site food preparation, cooking, and kitchen cleanup. Independent service provider, one-person business. No assistants, servers, bartenders, rentals, tableware, or beverages unless explicitly agreed in writing.
 
 ### Venue & Kitchen
+
 Client is responsible for:
+
 - Legal access to the property
 - Safe, functional kitchen with working utilities
 - Adequate workspace and standard equipment
@@ -112,12 +120,15 @@ Client is responsible for:
 Chef reserves the right to refuse service or modify execution if conditions are unsafe.
 
 ### Allergies & Dietary
+
 Client must disclose all allergies and restrictions in writing. Reasonable care is taken but a completely allergen-free environment cannot be guaranteed.
 
 ### Intellectual Property
+
 Menus, concepts, and written materials remain IP of DF Private Chef LLC. Chef reserves the right to photograph food for portfolio unless client objects in writing prior to service.
 
 ### Force Majeure
+
 Not liable for failure to perform due to illness, accidents, extreme weather, government action, or emergencies. Liability limited to refund of amounts paid excluding retainer.
 
 ---
@@ -125,6 +136,7 @@ Not liable for failure to perform due to illness, accidents, extreme weather, go
 ## Relationship to Codebase
 
 The codebase handles booking execution through:
+
 - **Stripe PaymentIntent** for deposit collection
 - **Webhook handler** for payment confirmation → ledger append + event FSM transition
 - **Quote acceptance** triggers the booking flow

@@ -32,17 +32,18 @@ Event Occurs (inquiry created, status changed, etc.)
 
 ### Trigger Points (where evaluateAutomations is called)
 
-| File | Trigger | When |
-|---|---|---|
-| `lib/inquiries/actions.ts` → `createInquiry()` | `inquiry_created` | Chef manually creates an inquiry |
-| `lib/inquiries/actions.ts` → `transitionInquiry()` | `inquiry_status_changed` | Inquiry moves between states |
-| `lib/events/transitions.ts` → `transitionEvent()` | `event_status_changed` | Event moves between states |
-| `lib/wix/process.ts` → `processWixSubmission()` | `wix_submission_received` | Wix form processed into inquiry |
-| `app/api/scheduled/automations/route.ts` | `follow_up_overdue`, `no_response_timeout`, `event_approaching` | Cron (every 15 min) |
+| File                                               | Trigger                                                         | When                             |
+| -------------------------------------------------- | --------------------------------------------------------------- | -------------------------------- |
+| `lib/inquiries/actions.ts` → `createInquiry()`     | `inquiry_created`                                               | Chef manually creates an inquiry |
+| `lib/inquiries/actions.ts` → `transitionInquiry()` | `inquiry_status_changed`                                        | Inquiry moves between states     |
+| `lib/events/transitions.ts` → `transitionEvent()`  | `event_status_changed`                                          | Event moves between states       |
+| `lib/wix/process.ts` → `processWixSubmission()`    | `wix_submission_received`                                       | Wix form processed into inquiry  |
+| `app/api/scheduled/automations/route.ts`           | `follow_up_overdue`, `no_response_timeout`, `event_approaching` | Cron (every 15 min)              |
 
 ### Condition Evaluation
 
 Conditions are stored as JSONB arrays. Each condition has:
+
 - `field` — dot-path into the context fields (e.g., `status`, `channel`, `days_since_last_contact`)
 - `op` — comparison operator (`eq`, `neq`, `gt`, `lt`, `gte`, `lte`, `contains`, `in`)
 - `value` — expected value
@@ -51,12 +52,12 @@ All conditions are AND-evaluated. Empty conditions array = always match.
 
 ### Action Types
 
-| Action | What It Does | Client-Facing? |
-|---|---|---|
-| `create_notification` | Creates a chef notification | No |
-| `create_follow_up_task` | Sets `follow_up_due_at` on the inquiry | No |
+| Action                  | What It Does                                          | Client-Facing?  |
+| ----------------------- | ----------------------------------------------------- | --------------- |
+| `create_notification`   | Creates a chef notification                           | No              |
+| `create_follow_up_task` | Sets `follow_up_due_at` on the inquiry                | No              |
 | `send_template_message` | Creates a **draft** message + notifies chef to review | No (draft only) |
-| `create_internal_note` | Creates an `internal_note` message on the inquiry | No |
+| `create_internal_note`  | Creates an `internal_note` message on the inquiry     | No              |
 
 ### Template Interpolation
 
@@ -69,28 +70,28 @@ Action configs support `{{field_name}}` placeholders that get replaced with cont
 
 ## Files Created
 
-| File | Purpose |
-|---|---|
-| `supabase/migrations/20260221000018_automations.sql` | Schema: `automation_rules` + `automation_executions` |
-| `lib/automations/types.ts` | TypeScript types + trigger/action label constants |
-| `lib/automations/conditions.ts` | Condition evaluation logic |
-| `lib/automations/action-handlers.ts` | Per-action execution (notification, follow-up, draft, note) |
-| `lib/automations/engine.ts` | Core `evaluateAutomations()` function |
-| `lib/automations/actions.ts` | CRUD server actions for rules + execution log queries |
-| `app/api/scheduled/automations/route.ts` | Cron for time-based triggers (every 15 min) |
-| `app/(chef)/settings/automations/page.tsx` | Rule management page (server component) |
-| `app/(chef)/settings/automations/automations-list.tsx` | Rule list + builder toggle (client component) |
-| `components/automations/rule-builder.tsx` | Trigger + condition + action form builder |
-| `components/automations/execution-log.tsx` | Execution log viewer |
+| File                                                   | Purpose                                                     |
+| ------------------------------------------------------ | ----------------------------------------------------------- |
+| `supabase/migrations/20260221000018_automations.sql`   | Schema: `automation_rules` + `automation_executions`        |
+| `lib/automations/types.ts`                             | TypeScript types + trigger/action label constants           |
+| `lib/automations/conditions.ts`                        | Condition evaluation logic                                  |
+| `lib/automations/action-handlers.ts`                   | Per-action execution (notification, follow-up, draft, note) |
+| `lib/automations/engine.ts`                            | Core `evaluateAutomations()` function                       |
+| `lib/automations/actions.ts`                           | CRUD server actions for rules + execution log queries       |
+| `app/api/scheduled/automations/route.ts`               | Cron for time-based triggers (every 15 min)                 |
+| `app/(chef)/settings/automations/page.tsx`             | Rule management page (server component)                     |
+| `app/(chef)/settings/automations/automations-list.tsx` | Rule list + builder toggle (client component)               |
+| `components/automations/rule-builder.tsx`              | Trigger + condition + action form builder                   |
+| `components/automations/execution-log.tsx`             | Execution log viewer                                        |
 
 ## Files Modified
 
-| File | Change |
-|---|---|
-| `lib/inquiries/actions.ts` | Added `evaluateAutomations()` call in `createInquiry()` and `transitionInquiry()` |
-| `lib/events/transitions.ts` | Added `evaluateAutomations()` call in `transitionEvent()` |
-| `lib/wix/process.ts` | Added `evaluateAutomations()` call after Wix submission processing |
-| `app/(chef)/settings/page.tsx` | Added Automations link in Communication section |
+| File                           | Change                                                                            |
+| ------------------------------ | --------------------------------------------------------------------------------- |
+| `lib/inquiries/actions.ts`     | Added `evaluateAutomations()` call in `createInquiry()` and `transitionInquiry()` |
+| `lib/events/transitions.ts`    | Added `evaluateAutomations()` call in `transitionEvent()`                         |
+| `lib/wix/process.ts`           | Added `evaluateAutomations()` call after Wix submission processing                |
+| `app/(chef)/settings/page.tsx` | Added Automations link in Communication section                                   |
 
 ## How It Connects
 

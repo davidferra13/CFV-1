@@ -56,6 +56,7 @@ event_prep_blocks
 Zero DB calls. Mirrors the pattern of `timeline.ts` and `dop.ts`.
 
 **`suggestPrepBlocks(event, existingBlocks, prefs)`**
+
 - Calls `generateTimeline()` to get the departure time
 - Works backward to compute prep_session start, packing start
 - Uses `shop_day_before` preference to determine grocery_run date
@@ -64,6 +65,7 @@ Zero DB calls. Mirrors the pattern of `timeline.ts` and `dop.ts`.
 - Skips types already covered by existing blocks
 
 **`detectGaps(events, existingBlocks, prefs)`**
+
 - For each upcoming non-terminal event, checks which required types are missing
 - Returns `SchedulingGap[]` sorted: critical (< 48h) → warning (< 7 days) → info
 
@@ -71,18 +73,18 @@ Zero DB calls. Mirrors the pattern of `timeline.ts` and `dop.ts`.
 
 All actions follow `'use server'` + `requireChef()` + tenant scoping pattern.
 
-| Action | Description |
-|---|---|
-| `getEventPrepBlocks(eventId)` | Blocks for one event |
-| `getWeekPrepBlocks(offset)` | Mon–Sun window |
-| `getYearSummary(year)` | 52-week grid data |
-| `getSchedulingGaps()` | All upcoming events missing required blocks |
-| `createPrepBlock(input)` | Chef manually creates a block |
-| `bulkCreatePrepBlocks(blocks[])` | Save chef-confirmed suggestions |
-| `updatePrepBlock(id, updates)` | Edit a block |
-| `deletePrepBlock(id)` | Remove a block |
-| `completePrepBlock(id)` | Mark done |
-| `uncompletePrepBlock(id)` | Undo completion |
+| Action                            | Description                                  |
+| --------------------------------- | -------------------------------------------- |
+| `getEventPrepBlocks(eventId)`     | Blocks for one event                         |
+| `getWeekPrepBlocks(offset)`       | Mon–Sun window                               |
+| `getYearSummary(year)`            | 52-week grid data                            |
+| `getSchedulingGaps()`             | All upcoming events missing required blocks  |
+| `createPrepBlock(input)`          | Chef manually creates a block                |
+| `bulkCreatePrepBlocks(blocks[])`  | Save chef-confirmed suggestions              |
+| `updatePrepBlock(id, updates)`    | Edit a block                                 |
+| `deletePrepBlock(id)`             | Remove a block                               |
+| `completePrepBlock(id)`           | Mark done                                    |
+| `uncompletePrepBlock(id)`         | Undo completion                              |
 | `autoSuggestEventBlocks(eventId)` | Generate suggestions — **never saves to DB** |
 
 **AI Policy compliance:** `autoSuggestEventBlocks` returns suggestions in memory only. The UI shows them to the chef for review. `bulkCreatePrepBlocks` is only called after explicit chef confirmation.
@@ -92,6 +94,7 @@ All actions follow `'use server'` + `requireChef()` + tenant scoping pattern.
 Client component embedded in the event detail page (`/events/[id]`), below the DOP progress bar.
 
 Shows:
+
 - All prep blocks for the event, grouped by date
 - Completion toggles per block
 - "Auto-schedule" → suggestions → edit dates/times → confirm flow
@@ -160,6 +163,7 @@ Year view shows this week as amber (events, all scheduled) instead of red
 ## Type System
 
 New types in `lib/scheduling/types.ts`:
+
 - `PrepBlockType` — enum of 10 block types
 - `PREP_BLOCK_TYPE_LABELS` — display labels for each type
 - `PrepBlock` — persisted block from DB
@@ -174,14 +178,17 @@ New types in `lib/scheduling/types.ts`:
 ## Verification Steps
 
 1. **Apply migration:**
+
    ```
    supabase db push --linked
    ```
 
 2. **Regenerate types:**
+
    ```
    supabase gen types typescript --linked > types/database.ts
    ```
+
    (This removes the `@ts-nocheck` need from `prep-block-actions.ts`)
 
 3. **Smoke test engine:**

@@ -14,9 +14,11 @@ A complete dark mode system for ChefFlow V1 using `next-themes` with Tailwind CS
 ## Files Modified
 
 ### `tailwind.config.ts`
+
 Added `darkMode: 'class'` at the top of the config object. This tells Tailwind to apply dark variants only when a `.dark` class is present on the `<html>` element — the standard `next-themes` integration pattern. No color palette or content changes were made.
 
 ### `app/layout.tsx`
+
 - Added `import { ThemeProvider } from '@/components/ui/theme-provider'`
 - Added `suppressHydrationWarning` to the `<html>` element (required by `next-themes` to silence the expected class mismatch during SSR hydration)
 - Wrapped the body's children in `<ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>`
@@ -27,19 +29,25 @@ Added `darkMode: 'class'` at the top of the config object. This tells Tailwind t
 ## Files Created
 
 ### `components/ui/theme-provider.tsx`
+
 A thin `'use client'` wrapper around `NextThemesProvider`. Isolates the client boundary at the provider level so the root layout can remain a server component. Accepts all standard `ThemeProviderProps`.
 
 ### `components/ui/theme-toggle.tsx`
+
 A `'use client'` button component that reads the current theme via `useTheme()` and toggles between `'light'` and `'dark'`. Uses the `mounted` guard pattern to avoid hydration mismatches — renders `null` until mounted client-side. Uses `Button` with `variant="ghost"` and `size="sm"`, and `Sun`/`Moon` icons from `lucide-react`.
 
 ### `app/(chef)/settings/appearance/page.tsx`
+
 A new settings sub-page at `/settings/appearance`. Protected by `requireChef()`. Renders a single card with the `ThemeToggle` component. Uses `dark:` Tailwind variants for card background, borders, and text so it looks correct in both modes. Title metadata: `Appearance - ChefFlow`.
 
 ### `components/ui/undo-toast.tsx`
+
 A utility function `showUndoToast(message, onUndo, duration?)` that wraps `sonner`'s `toast()` with a pre-wired `Undo` action button. Exported as a named function (not a React component). Useful for any optimistic-update pattern that needs a brief undo window.
 
 ### `lib/undo/use-undo-stack.ts`
+
 A generic client-side React hook `useUndoStack<T>(initialState)` that maintains a history stack of states with descriptions. API:
+
 - `current` — the current state value
 - `push(description, newState)` — saves current state to history and advances to `newState`
 - `undo()` — pops history, restores previous state, returns the description string (or `null` if nothing to undo)
@@ -63,7 +71,7 @@ A generic client-side React hook `useUndoStack<T>(initialState)` that maintains 
 ```tsx
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 // Inside any layout or nav component:
-<ThemeToggle />
+;<ThemeToggle />
 ```
 
 The component handles its own mounting guard and requires no props.
@@ -80,6 +88,7 @@ Only files that are actively being modified should receive `dark:` class additio
 ```
 
 Common stone-scale mappings used in this project:
+
 - Background: `bg-white` / `dark:bg-stone-900`
 - Card: `bg-stone-50` / `dark:bg-stone-800`
 - Border: `border-stone-200` / `dark:border-stone-700`

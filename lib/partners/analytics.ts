@@ -12,8 +12,8 @@ import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns'
 // ============================================
 
 export type DateRange = {
-  from: string  // ISO date string
-  to: string    // ISO date string
+  from: string // ISO date string
+  to: string // ISO date string
 }
 
 export type SourceDataPoint = {
@@ -188,13 +188,13 @@ export async function getRevenueBySource(range?: DateRange): Promise<RevenueData
   }
 
   // Get the inquiry channel for each event
-  const inquiryIds = (events || []).map(e => e.inquiry_id).filter((id): id is string => id != null)
-  const { data: inquiries } = inquiryIds.length > 0
-    ? await supabase
-        .from('inquiries')
-        .select('id, channel')
-        .in('id', inquiryIds)
-    : { data: [] }
+  const inquiryIds = (events || [])
+    .map((e) => e.inquiry_id)
+    .filter((id): id is string => id != null)
+  const { data: inquiries } =
+    inquiryIds.length > 0
+      ? await supabase.from('inquiries').select('id, channel').in('id', inquiryIds)
+      : { data: [] }
 
   const channelMap: Record<string, string> = {}
   for (const inq of inquiries || []) {
@@ -204,7 +204,7 @@ export async function getRevenueBySource(range?: DateRange): Promise<RevenueData
   const revenue: Record<string, number> = {}
   for (const evt of events || []) {
     const channel = evt.inquiry_id ? channelMap[evt.inquiry_id] : null
-    const label = channel ? (CHANNEL_LABELS[channel] || channel) : 'Direct'
+    const label = channel ? CHANNEL_LABELS[channel] || channel : 'Direct'
     revenue[label] = (revenue[label] || 0) + (evt.quoted_price_cents || 0)
   }
 
@@ -276,7 +276,7 @@ export async function getPartnerLeaderboard(range?: DateRange): Promise<PartnerL
 
   if (error || !partners || partners.length === 0) return []
 
-  const partnerIds = partners.map(p => p.id)
+  const partnerIds = partners.map((p) => p.id)
 
   // Get inquiries in range linked to partners
   const { data: inquiries } = await supabase
@@ -295,16 +295,25 @@ export async function getPartnerLeaderboard(range?: DateRange): Promise<PartnerL
     .in('referral_partner_id', partnerIds)
 
   // Aggregate
-  const stats: Record<string, {
-    inquiry_count: number
-    event_count: number
-    completed_count: number
-    revenue_cents: number
-    guest_count: number
-  }> = {}
+  const stats: Record<
+    string,
+    {
+      inquiry_count: number
+      event_count: number
+      completed_count: number
+      revenue_cents: number
+      guest_count: number
+    }
+  > = {}
 
   for (const pid of partnerIds) {
-    stats[pid] = { inquiry_count: 0, event_count: 0, completed_count: 0, revenue_cents: 0, guest_count: 0 }
+    stats[pid] = {
+      inquiry_count: 0,
+      event_count: 0,
+      completed_count: 0,
+      revenue_cents: 0,
+      guest_count: 0,
+    }
   }
 
   for (const inq of inquiries || []) {
@@ -325,16 +334,17 @@ export async function getPartnerLeaderboard(range?: DateRange): Promise<PartnerL
   }
 
   return partners
-    .map(p => ({
+    .map((p) => ({
       id: p.id,
       name: p.name,
       partner_type: p.partner_type,
       ...stats[p.id],
-      conversion_rate: stats[p.id].inquiry_count > 0
-        ? Math.round((stats[p.id].completed_count / stats[p.id].inquiry_count) * 100)
-        : 0,
+      conversion_rate:
+        stats[p.id].inquiry_count > 0
+          ? Math.round((stats[p.id].completed_count / stats[p.id].inquiry_count) * 100)
+          : 0,
     }))
-    .filter(p => p.inquiry_count > 0 || p.event_count > 0)
+    .filter((p) => p.inquiry_count > 0 || p.event_count > 0)
     .sort((a, b) => b.revenue_cents - a.revenue_cents)
 }
 

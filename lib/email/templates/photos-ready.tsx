@@ -31,21 +31,15 @@ export function PhotosReadyEmail({
       <Text style={heading}>Your event photos are ready!</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>
-        <strong>{chefName}</strong> has uploaded {photoLabel} from your{' '}
-        <strong>{occasion}</strong> on {eventDate}. Head to your portal to view and
-        download them.
+        <strong>{chefName}</strong> has uploaded {photoLabel} from your <strong>{occasion}</strong>{' '}
+        on {eventDate}. Head to your portal to view and download them.
       </Text>
 
-      <Button
-        href={`${appUrl}/my-events/${eventId}`}
-        style={ctaButton}
-      >
+      <Button href={`${appUrl}/my-events/${eventId}`} style={ctaButton}>
         View Your Photos →
       </Button>
 
-      <Text style={muted}>
-        Photos are available in your event portal for download at any time.
-      </Text>
+      <Text style={muted}>Photos are available in your event portal for download at any time.</Text>
     </BaseLayout>
   )
 }

@@ -150,8 +150,7 @@ async function getAccountInfo(accessToken: string): Promise<AccountInfo> {
 
 export const xAdapter = {
   platform: 'x' as const,
-  buildAuthUrl: async (state: string, codeVerifier?: string) =>
-    buildAuthUrl(state, codeVerifier),
+  buildAuthUrl: async (state: string, codeVerifier?: string) => buildAuthUrl(state, codeVerifier),
   exchangeCode,
   refreshAccessToken,
   getAccountInfo,

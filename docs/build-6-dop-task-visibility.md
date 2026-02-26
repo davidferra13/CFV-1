@@ -19,6 +19,7 @@ Grade before: **C**. Grade after: **B+** (toward A as tasks accumulate real data
 ## New Files
 
 ### `lib/scheduling/task-digest.ts`
+
 **Server action** that aggregates all outstanding DOP tasks across every active/recent event into a single digest.
 
 - Fetches events from 7 days ago → future (non-cancelled) — covers both upcoming tasks and post-service tasks
@@ -27,16 +28,27 @@ Grade before: **C**. Grade after: **B+** (toward A as tasks accumulate real data
 - Returns `DOPTaskDigest`: flat list of `DigestTask` objects with event context, sorted by urgency (overdue first) then event date
 
 Key type:
+
 ```typescript
 interface DigestTask {
-  taskId, taskLabel, taskDescription, taskCategory
-  isOverdue, deadline, phase
-  eventId, eventOccasion, eventDate, clientName
-  eventHref, scheduleHref
+  taskId
+  taskLabel
+  taskDescription
+  taskCategory
+  isOverdue
+  deadline
+  phase
+  eventId
+  eventOccasion
+  eventDate
+  clientName
+  eventHref
+  scheduleHref
 }
 ```
 
 ### `components/dashboard/dop-task-panel.tsx`
+
 **Dashboard widget** that renders the DOP task digest as a card grouped by event.
 
 - Overdue tasks: red background, red text, "Was due [time]" label
@@ -47,6 +59,7 @@ interface DigestTask {
 - Empty state: green card with "All caught up" message
 
 ### `components/dashboard/accountability-panel.tsx`
+
 **Extracted and enhanced accountability widget** that was previously rendered inline in the dashboard page.
 
 - Shows: events completed this week, follow-ups sent (ratio), closed on time, receipts uploaded
@@ -59,9 +72,11 @@ interface DigestTask {
 ## Modified Files
 
 ### `lib/scheduling/dop-completions.ts`
+
 Added `revalidatePath('/dashboard')` to `toggleDOPTaskCompletion` — so when a chef checks a task from anywhere (dashboard panel, event schedule, etc.), the dashboard's server state also revalidates on the next visit.
 
 ### `app/(chef)/dashboard/page.tsx`
+
 - Added imports: `getDOPTaskDigest`, `DOPTaskPanel`, `AccountabilityPanel`
 - Added `emptyDOPDigest` default constant
 - Added `dopTaskDigest` to the `Promise.all()` batch (with `safe()` wrapper)

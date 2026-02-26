@@ -17,7 +17,7 @@ function getStripe(): Stripe {
   const StripeLib = require('stripe')
   const StripeCtor = StripeLib.default || StripeLib
   return new StripeCtor(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2025-12-18.acacia' as Stripe.LatestApiVersion
+    apiVersion: '2025-12-18.acacia' as Stripe.LatestApiVersion,
   })
 }
 
@@ -81,7 +81,8 @@ export async function createPaymentIntent(eventId: string) {
   const stripe = getStripe()
 
   // Fetch chef's Stripe Connect config for transfer routing
-  const { getChefStripeConfig, computeApplicationFee } = await import('@/lib/stripe/transfer-routing')
+  const { getChefStripeConfig, computeApplicationFee } =
+    await import('@/lib/stripe/transfer-routing')
   const chefConfig = await getChefStripeConfig(event.tenant_id)
 
   // Build PaymentIntent params
@@ -96,8 +97,8 @@ export async function createPaymentIntent(eventId: string) {
       transfer_routed: chefConfig.canReceiveTransfers ? 'true' : 'false',
     },
     automatic_payment_methods: {
-      enabled: true
-    }
+      enabled: true,
+    },
   }
 
   // Route to chef's connected Stripe account if ready
@@ -124,7 +125,7 @@ export async function createPaymentIntent(eventId: string) {
 
   return {
     clientSecret: paymentIntent.client_secret,
-    amount: amountCents
+    amount: amountCents,
   }
 }
 
@@ -164,6 +165,6 @@ export async function getEventPaymentStatus(eventId: string) {
     totalPaidCents: summary?.total_paid_cents ?? 0,
     outstandingBalanceCents: summary?.outstanding_balance_cents ?? 0,
     quotedPriceCents: event.quoted_price_cents ?? 0,
-    depositAmountCents: event.deposit_amount_cents ?? 0
+    depositAmountCents: event.deposit_amount_cents ?? 0,
   }
 }

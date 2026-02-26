@@ -108,13 +108,13 @@ Future enhancement: add `allergen_flags` to the `components` table for precise p
 
 ## What Was NOT Changed
 
-| File | Status |
-| --- | --- |
-| `generate-front-of-house-menu.ts` | Untouched — separate elegant client-facing document |
-| `generate-prep-sheet.ts` | Untouched — still owns the at-home / on-site split |
-| `lib/documents/actions.ts` | Untouched — readiness checks unchanged |
-| `app/api/documents/[eventId]/route.ts` | Untouched — API unchanged |
-| `components/documents/document-section.tsx` | Untouched — UI unchanged |
+| File                                        | Status                                              |
+| ------------------------------------------- | --------------------------------------------------- |
+| `generate-front-of-house-menu.ts`           | Untouched — separate elegant client-facing document |
+| `generate-prep-sheet.ts`                    | Untouched — still owns the at-home / on-site split  |
+| `lib/documents/actions.ts`                  | Untouched — readiness checks unchanged              |
+| `app/api/documents/[eventId]/route.ts`      | Untouched — API unchanged                           |
+| `components/documents/document-section.tsx` | Untouched — UI unchanged                            |
 
 ---
 

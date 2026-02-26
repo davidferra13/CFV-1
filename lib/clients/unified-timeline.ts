@@ -15,10 +15,10 @@ export type { TimelineItemSource } from './unified-timeline-utils'
 export type UnifiedTimelineItem = {
   id: string
   source: TimelineItemSource
-  timestamp: string        // ISO string used for sorting
-  summary: string          // One-line human-readable description
-  detail?: string          // Optional second line (amount, body snippet, etc.)
-  href?: string            // Clickable link if entity has a page
+  timestamp: string // ISO string used for sorting
+  summary: string // One-line human-readable description
+  detail?: string // Optional second line (amount, body snippet, etc.)
+  href?: string // Clickable link if entity has a page
   actor?: 'chef' | 'client' | 'system'
 }
 
@@ -48,7 +48,9 @@ export async function getUnifiedClientTimeline(
   const [eventsRes, inquiriesRes, messagesRes, ledgerRes, reviewsRes] = await Promise.all([
     supabase
       .from('events')
-      .select('id, created_at, event_date, status, occasion, guest_count, quoted_price_cents, cancelled_at')
+      .select(
+        'id, created_at, event_date, status, occasion, guest_count, quoted_price_cents, cancelled_at'
+      )
       .eq('client_id', clientId)
       .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false })
@@ -111,7 +113,9 @@ export async function getUnifiedClientTimeline(
         row.occasion,
         row.guest_count ? `${row.guest_count} guests` : null,
         row.quoted_price_cents ? formatCents(row.quoted_price_cents) : null,
-      ].filter(Boolean).join(' · '),
+      ]
+        .filter(Boolean)
+        .join(' · '),
       href: `/events/${row.id}`,
       actor: 'chef',
     })
@@ -180,7 +184,9 @@ export async function getUnifiedClientTimeline(
         formatCents(Math.abs(row.amount_cents)),
         row.payment_method,
         snippet(row.description, 40),
-      ].filter(Boolean).join(' · '),
+      ]
+        .filter(Boolean)
+        .join(' · '),
       actor: 'system',
     })
   }

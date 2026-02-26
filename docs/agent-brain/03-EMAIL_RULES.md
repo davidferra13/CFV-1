@@ -21,21 +21,25 @@ If lifecycle state or data sufficiency is unclear — **default to Discovery**. 
 The following must **never** appear in any client-facing email. If found in upstream AI output, strip before presenting to the chef for review.
 
 ### Internal System Artifacts
+
 - "SERVICE BLUEPRINT", section headers, workflow labels
 - Schema names, template names, system names ("ChefFlow", "queue", "FSM")
 - Packing lists, ingredient lists, equipment lists, execution timelines
 - Pricing tables, itemized breakdowns, formulas
 
 ### AI / Meta Content
+
 - "AI:", "Assistant:", "System:", "Note:"
 - Any explanation of how the response was generated
 - Any reference to rules, documents, or policies being applied
 
 ### Placeholders & Debug
+
 - "I don't know", "TBD", "[Insert ___]"
 - Any missing-data indicators
 
 ### Legal Content (unless at Booking stage)
+
 - Terms of service, booking agreements, legal clauses
 - Numbered contract sections
 
@@ -46,7 +50,9 @@ The following must **never** appear in any client-facing email. If found in upst
 Before any email draft is generated, determine the stage:
 
 ### Stage 1 Detection (Discovery)
+
 Treat as Stage 1 if ANY of these are true:
+
 - First contact from the client
 - Client is asking about availability, process, or "how this works"
 - Client has not explicitly asked for pricing
@@ -56,7 +62,9 @@ Treat as Stage 1 if ANY of these are true:
 Stage 1 is a human conversation. It is not a transaction.
 
 ### Stage 2 Detection (Pricing / Follow-up)
+
 Treat as Stage 2 only if:
+
 - Client has confirmed date AND full address, OR
 - Client explicitly asks about pricing or cost
 
@@ -65,6 +73,7 @@ Treat as Stage 2 only if:
 If any of these appear, the draft is **invalid** — discard and rewrite:
 
 **Forbidden phrases:**
+
 - "Thanks for your inquiry"
 - "To move forward"
 - "I've noted for my review"
@@ -74,6 +83,7 @@ If any of these appear, the draft is **invalid** — discard and rewrite:
 - "Based on your request"
 
 **Forbidden tone:**
+
 - Administrative language
 - Corporate or platform voice
 - Checklist or form language
@@ -148,6 +158,7 @@ The client email must be **written from scratch** every time. Upstream AI output
 ## Output Format (Non-Negotiable)
 
 Every client email contains only:
+
 1. Subject line
 2. Email body (2–4 short paragraphs)
 3. Sign-off ("Best," or similar + "David")
@@ -161,12 +172,14 @@ Forbidden: bullets (unless mirroring a client's list), lists, headers, sections,
 ## Status Confirmation Summaries
 
 Include a brief bullet summary when:
+
 - A menu is being confirmed
 - A course count is selected
 - The conversation has progressed beyond initial inquiry
 - The client is nearing booking
 
 **Structure:**
+
 ```
 Where we're at:
 • Date: Saturday, March 15th
@@ -181,6 +194,7 @@ Still to confirm:
 ```
 
 Rules:
+
 - Max 5–7 bullets total
 - No paragraphs inside bullets
 - Do not include on first-touch responses
@@ -191,6 +205,7 @@ Rules:
 ## Failure Behavior
 
 If any rule above is violated:
+
 1. Discard the entire draft
 2. Rewrite from scratch
 3. Make it shorter

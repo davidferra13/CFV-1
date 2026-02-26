@@ -12,12 +12,14 @@
 Created a pure-function pricing engine that computes exact pricing from the rate card. No AI, no estimation — just David's actual rates as code.
 
 **What it does:**
+
 - `computePricing(input)` — Takes service type, guest count, course count, event date, and distance. Returns a full `PricingBreakdown` with every line item in cents.
 - `generateQuoteFromPricing(input)` — Produces a quote-ready object that can be passed directly to `createQuote()`.
 - `formatPricingForEmail(pricing)` — Generates human-readable pricing text for the AI to use in email drafts.
 - `detectHoliday(date)` — Identifies Tier 1/2/3 holidays including floating holidays (Thanksgiving, Easter, Mother's Day, etc.) using the Anonymous Gregorian algorithm for Easter.
 
 **Rate card encoded:**
+
 - Couples (2 guests): $200/$250/$300 per person for 3/4/5 courses
 - Groups (3+): $155/$185/$215 per person for 3/4/5 courses
 - Multi-night packages: $700–$1,100
@@ -34,18 +36,21 @@ The AI brain docs (`04-PRICING.md`) explicitly state: "All arithmetic must be de
 ### 2. Auto-Client Creation — `lib/clients/actions.ts` + `lib/gmail/sync.ts`
 
 **New function: `createClientFromLead(tenantId, lead)`**
+
 - Creates a client record from lead data (name, email, phone, dietary restrictions)
 - Idempotent: returns existing client if email already exists in tenant
 - Uses admin Supabase client (no auth session required) for automated pipelines
 - Does NOT require the invitation flow — creates the record directly
 
 **Gmail sync pipeline updated:**
+
 - When a new inquiry email arrives and no client exists for that sender, the system now auto-creates a client record
 - The inquiry is linked to the new client via `client_id`
 - Original lead data is still preserved in `unknown_fields` for audit trail
 - Non-fatal: if client creation fails, inquiry still gets created (just without client link)
 
 **What this unblocks:**
+
 - Repeat client detection in the AI correspondence engine (checks prior events by client_id)
 - Client portal access for future interactions
 - Event linking when inquiry converts to event

@@ -17,7 +17,8 @@ The `generate-prep-sheet.ts` document generator was substantially overhauled fro
 The v1 prep sheet fetched dishes and components, split them into AT HOME (`is_make_ahead = true`) vs ON SITE (`is_make_ahead = false`), and rendered two bullet-point sections. That was it.
 
 Missing:
-- No distinction between tasks doable *before* vs *after* shopping
+
+- No distinction between tasks doable _before_ vs _after_ shopping
 - No priority ordering within courses
 - No recipe method notes
 - No allergen/dietary flags on individual tasks
@@ -36,6 +37,7 @@ Missing:
 The most critical innovation from the spec. When the chef looks at a flat list and has to mentally figure out what's doable right now, the cognitive load triggers avoidance. When the list clearly separates "do these now, no excuses" from "do these after shopping," the activation barrier drops.
 
 **Implementation:** For each AT HOME component, we check the ingredients linked through its recipe:
+
 - If all required (non-optional) ingredients have `is_staple = true` → **PREP NOW**
 - If any required ingredient has `is_staple = false` → **PREP AFTER SHOPPING**
 - If no recipe is linked → **PREP AFTER SHOPPING** (safe default)
@@ -75,6 +77,7 @@ Departure time is now the most prominent time in the header (shown as **LEAVE BY
 ## Auto-Send at Confirmation
 
 When an event transitions from `paid` → `confirmed`, the system now:
+
 1. Sends the event confirmation email to the client (existing)
 2. Auto-sends the FOH menu PDF to client + chef (existing)
 3. **NEW: Auto-sends the prep sheet PDF to the chef only** (chef-internal, client never sees it)
@@ -87,19 +90,20 @@ The prep sheet is also always available on-demand from the event page document s
 
 ## Files Modified
 
-| File | What Changed |
-|---|---|
-| `lib/documents/generate-prep-sheet.ts` | Full rewrite — new types, deep query (recipes + ingredients), PREP NOW/AFTER split, priority sort, method notes, allergen flags, component counts, BEFORE LEAVING section, checkboxes |
-| `lib/events/transitions.ts` | Added `sendPrepSheetReadyEmail` to import; added prep sheet auto-send block at `paid → confirmed` |
-| `lib/email/notifications.ts` | Added `sendPrepSheetReadyEmail` function; added `PrepSheetReadyEmail` import |
-| `lib/email/templates/prep-sheet-ready.tsx` | New — chef-facing email with prep sheet PDF attached |
-| `docs/prep-list-generation.md` | This file |
+| File                                       | What Changed                                                                                                                                                                          |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lib/documents/generate-prep-sheet.ts`     | Full rewrite — new types, deep query (recipes + ingredients), PREP NOW/AFTER split, priority sort, method notes, allergen flags, component counts, BEFORE LEAVING section, checkboxes |
+| `lib/events/transitions.ts`                | Added `sendPrepSheetReadyEmail` to import; added prep sheet auto-send block at `paid → confirmed`                                                                                     |
+| `lib/email/notifications.ts`               | Added `sendPrepSheetReadyEmail` function; added `PrepSheetReadyEmail` import                                                                                                          |
+| `lib/email/templates/prep-sheet-ready.tsx` | New — chef-facing email with prep sheet PDF attached                                                                                                                                  |
+| `docs/prep-list-generation.md`             | This file                                                                                                                                                                             |
 
 ---
 
 ## No Database Changes
 
 All required data already existed in the schema:
+
 - `ingredients.is_staple` — for the PREP NOW/AFTER split
 - `components.recipe_id` — links component to recipe
 - `recipes.method`, `recipes.prep_time_minutes`, `recipes.cook_time_minutes` — for method notes and priority sorting

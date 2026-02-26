@@ -32,18 +32,23 @@ export async function getMileageLogs(eventId?: string): Promise<MileageEntry[]> 
 
   const { data } = await query
 
-  return ((data ?? []) as any[]).map((r: any): MileageEntry => ({
-    id: r.id,
-    eventId: r.event_id,
-    tripDate: r.trip_date,
-    description: r.description,
-    miles: Number(r.miles),
-    irsRateCents: r.irs_rate_cents,
-    deductionCents: r.deduction_cents,
-  }))
+  return ((data ?? []) as any[]).map(
+    (r: any): MileageEntry => ({
+      id: r.id,
+      eventId: r.event_id,
+      tripDate: r.trip_date,
+      description: r.description,
+      miles: Number(r.miles),
+      irsRateCents: r.irs_rate_cents,
+      deductionCents: r.deduction_cents,
+    })
+  )
 }
 
-export async function getYtdMileageSummary(): Promise<{ totalMiles: number; totalDeductionCents: number }> {
+export async function getYtdMileageSummary(): Promise<{
+  totalMiles: number
+  totalDeductionCents: number
+}> {
   const user = await requireChef()
   const supabase = createServerClient()
 

@@ -13,7 +13,7 @@ export type SmsResult = 'sent' | 'failed' | 'not_configured'
  */
 export async function sendSms(to: string, body: string): Promise<SmsResult> {
   const accountSid = process.env.TWILIO_ACCOUNT_SID
-  const authToken  = process.env.TWILIO_AUTH_TOKEN
+  const authToken = process.env.TWILIO_AUTH_TOKEN
   const fromNumber = process.env.TWILIO_FROM_NUMBER
 
   if (!accountSid || !authToken || !fromNumber) {

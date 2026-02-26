@@ -77,7 +77,9 @@ export async function getPartnerReportData(
   // Get events for this partner (all time, for comprehensive view)
   const { data: events } = await supabase
     .from('events')
-    .select('id, event_date, occasion, guest_count, status, quoted_price_cents, partner_location_id, location_address')
+    .select(
+      'id, event_date, occasion, guest_count, status, quoted_price_cents, partner_location_id, location_address'
+    )
     .eq('tenant_id', user.tenantId!)
     .eq('referral_partner_id', partnerId)
     .gte('event_date', from)
@@ -97,24 +99,27 @@ export async function getPartnerReportData(
   }
 
   // Calculate summary
-  const completedEvents = (events || []).filter(e => e.status === 'completed')
+  const completedEvents = (events || []).filter((e) => e.status === 'completed')
   const totalReferrals = (inquiries || []).length
   const eventsCompleted = completedEvents.length
   const guestsServed = completedEvents.reduce((sum, e) => sum + (e.guest_count || 0), 0)
   const revenueCents = completedEvents.reduce((sum, e) => sum + (e.quoted_price_cents || 0), 0)
-  const conversionRate = totalReferrals > 0 ? Math.round((eventsCompleted / totalReferrals) * 100) : 0
+  const conversionRate =
+    totalReferrals > 0 ? Math.round((eventsCompleted / totalReferrals) * 100) : 0
 
   // Location breakdown
   const locBreakdown: Record<string, { referral_count: number; event_count: number }> = {}
   for (const inq of inquiries || []) {
     if (inq.partner_location_id && locationMap[inq.partner_location_id]) {
-      if (!locBreakdown[inq.partner_location_id]) locBreakdown[inq.partner_location_id] = { referral_count: 0, event_count: 0 }
+      if (!locBreakdown[inq.partner_location_id])
+        locBreakdown[inq.partner_location_id] = { referral_count: 0, event_count: 0 }
       locBreakdown[inq.partner_location_id].referral_count++
     }
   }
   for (const evt of events || []) {
     if (evt.partner_location_id && locationMap[evt.partner_location_id]) {
-      if (!locBreakdown[evt.partner_location_id]) locBreakdown[evt.partner_location_id] = { referral_count: 0, event_count: 0 }
+      if (!locBreakdown[evt.partner_location_id])
+        locBreakdown[evt.partner_location_id] = { referral_count: 0, event_count: 0 }
       locBreakdown[evt.partner_location_id].event_count++
     }
   }
@@ -133,7 +138,7 @@ export async function getPartnerReportData(
       revenue_cents: revenueCents,
       conversion_rate: conversionRate,
     },
-    events: (events || []).map(e => ({
+    events: (events || []).map((e) => ({
       id: e.id,
       event_date: e.event_date,
       occasion: e.occasion,

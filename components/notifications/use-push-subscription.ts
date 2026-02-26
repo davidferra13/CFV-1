@@ -9,10 +9,7 @@
 // Returns 'default' when eligible but not yet subscribed.
 
 import { useState, useEffect, useCallback } from 'react'
-import {
-  savePushSubscription,
-  removePushSubscription,
-} from '@/lib/push/subscriptions'
+import { savePushSubscription, removePushSubscription } from '@/lib/push/subscriptions'
 
 export type PushState = 'unsupported' | 'denied' | 'default' | 'subscribed'
 

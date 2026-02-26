@@ -150,8 +150,7 @@ async function getAccountInfo(accessToken: string): Promise<AccountInfo> {
 
 export const tiktokAdapter = {
   platform: 'tiktok' as const,
-  buildAuthUrl: async (state: string, codeVerifier?: string) =>
-    buildAuthUrl(state, codeVerifier),
+  buildAuthUrl: async (state: string, codeVerifier?: string) => buildAuthUrl(state, codeVerifier),
   exchangeCode,
   refreshAccessToken,
   getAccountInfo,
@@ -159,4 +158,6 @@ export const tiktokAdapter = {
   get redirectUri() {
     return redirectUri()
   },
-} satisfies Omit<PlatformAdapter, 'buildAuthUrl'> & { buildAuthUrl: (s: string, v?: string) => Promise<string> }
+} satisfies Omit<PlatformAdapter, 'buildAuthUrl'> & {
+  buildAuthUrl: (s: string, v?: string) => Promise<string>
+}

@@ -3,12 +3,15 @@
 ## What Changed and Why
 
 ### The Problem
-Before this feature, ingredient prices in ChefFlow had to be entered manually by the chef — after they returned from shopping. This meant a chef couldn't get a reliable food cost estimate *before* quoting a client. They were guessing.
+
+Before this feature, ingredient prices in ChefFlow had to be entered manually by the chef — after they returned from shopping. This meant a chef couldn't get a reliable food cost estimate _before_ quoting a client. They were guessing.
 
 This mirrors a real culinary school exercise: students were required to fill an actual cart at the store they planned to shop at (Hannaford To Go, Shaw's To Go, etc.) to price out every dinner before quoting it. This feature automates that exercise.
 
 ### What Was Built
+
 An automated "Grocery Quote" system that:
+
 1. Takes the event's existing grocery ingredient list (already generated from menu → recipes → ingredients)
 2. Queries **Spoonacular** (US average supermarket prices) and **Kroger** (real shelf prices) concurrently for each ingredient
 3. Averages the results into a single estimated food cost
@@ -27,18 +30,24 @@ Market Basket, Hannaford, Shaw's, Stop & Shop, and Whole Foods have **no public 
 ## Files Added
 
 ### `lib/grocery/pricing-actions.ts`
+
 Server actions for the pricing engine:
+
 - `runGroceryPriceQuote(eventId)` — main action. Fetches ingredients from event menu, queries Spoonacular + Kroger in parallel, saves results to DB, builds Instacart link. Returns cached result if run within 24h.
 - `getLatestGroceryQuote(eventId)` — fetches the most recent completed quote for an event.
 
 ### `lib/grocery/instacart-actions.ts`
+
 - `buildInstacartCartLink(items[])` — POSTs to Instacart Developer Platform API (`/idp/v1/products/products_link`), returns a shareable URL. Degrades gracefully to `null` if `INSTACART_API_KEY` is not set.
 
 ### `app/(chef)/events/[id]/grocery-quote/page.tsx`
+
 New page at `/events/[id]/grocery-quote`. Server component that loads the latest saved quote and renders the panel. Linked from the event detail page header.
 
 ### `components/events/grocery-quote-panel.tsx`
+
 Client component with full interactivity:
+
 - "Get Grocery Quote" / "Refresh Prices" button (calls `runGroceryPriceQuote`)
 - Loading skeleton with "this may take 10–30s" note (API calls are ~40 requests for 20 ingredients)
 - Price comparison table (Spoonacular | Kroger | Avg Estimate per ingredient)
@@ -47,7 +56,9 @@ Client component with full interactivity:
 - "Save Prices to Recipe Bible" → writes per-unit averages back to `ingredients.last_price_cents`
 
 ### `supabase/migrations/20260313000001_grocery_pricing.sql`
+
 Two new tables (purely additive, no existing tables touched):
+
 - `grocery_price_quotes` — snapshot per pricing run (totals, Instacart link, status)
 - `grocery_price_quote_items` — per-ingredient results (Spoonacular price, Kroger price, average)
 
@@ -58,9 +69,11 @@ Both tables have RLS scoped to the chef's tenant via `user_roles`.
 ## Files Modified
 
 ### `lib/recipes/actions.ts`
+
 Added `bulkUpdateIngredientPrices(updates[])` at the end of the file. Writes per-unit average prices from a grocery quote back to `ingredients.last_price_cents + last_price_date`. Uses `Promise.all` for parallel updates, scoped to the chef's tenant.
 
 ### `app/(chef)/events/[id]/page.tsx`
+
 Added "Grocery Quote" button to the event header button row. Only shown when the event has a menu (`eventMenus` is truthy) and the event is not cancelled.
 
 ---
@@ -91,12 +104,14 @@ KROGER_CLIENT_SECRET=your_client_secret
 ## How It Connects to the System
 
 ### Ingredient Flow (before this feature)
+
 ```
 Menu → Dishes → Components → Recipes → recipe_ingredients → ingredients.last_price_cents
                                                                      ↑ manually entered
 ```
 
 ### Ingredient Flow (after this feature)
+
 ```
 Menu → Dishes → Components → Recipes → recipe_ingredients → ingredients.last_price_cents
                                                                      ↑ auto-updated via
@@ -104,6 +119,7 @@ Menu → Dishes → Components → Recipes → recipe_ingredients → ingredient
 ```
 
 ### Financial Impact
+
 - `projectedFoodCostCents` in `EventFinancialSummaryData` is computed from `last_price_cents × quantity × scale_factor`
 - After a chef runs a Grocery Quote and saves prices, every future event using those same ingredients gets a more accurate projected food cost automatically
 - The budget bar on the quote page compares estimate vs `quoted_price_cents × (1 - target_margin%)`, using the same budget guardrail logic as the grocery list generator
@@ -113,18 +129,21 @@ Menu → Dishes → Components → Recipes → recipe_ingredients → ingredient
 ## API Notes
 
 ### Spoonacular
+
 - Free tier: 150 requests/day (adequate for ~3-4 dinners/day in dev)
 - Production: $99/month
 - Returns cost for the exact quantity + unit requested — handles unit conversion (lbs, cups, oz, etc.)
 - Coverage: global ingredient database, US average pricing
 
 ### Kroger
+
 - Free: `developer.kroger.com`
 - OAuth `client_credentials` flow (token cached 30 min in module scope)
 - Returns real shelf price per package — used as reference price, not scaled by quantity
 - Coverage: Kroger-family chains only (Kroger, Harris Teeter, Fred Meyer, etc.) — not in New England, but valuable for national deployments
 
 ### Instacart Developer Platform
+
 - Requires partner approval (~1 week turnaround)
 - Coverage: 85,000+ stores including all major New England chains
 - Generates a shareable URL — chef picks their specific store inside Instacart
@@ -137,11 +156,13 @@ Menu → Dishes → Components → Recipes → recipe_ingredients → ingredient
 MealMe is the only legitimate API covering Market Basket, Hannaford, Shaw's, Stop & Shop, Whole Foods, Walmart, and every major NE chain with real-time prices.
 
 **To enable:**
+
 1. Contact [mealme.ai](https://www.mealme.ai) sales to obtain an enterprise API key
 2. Add `MEALME_API_KEY=your_key` to `.env.local` and Vercel
 3. The "Local Stores" column in the comparison table lights up automatically on next quote run
 
 **How it works in code:**
+
 - `getMealMePrice(name, zipCode)` in `lib/grocery/pricing-actions.ts`
 - Step 1: `GET /search/store/v3` — find nearest grocery store by chef's zip code
 - Step 2: `GET /search/item/v3?store_id=...&q=...` — find ingredient at that store
@@ -155,6 +176,7 @@ MealMe is the only legitimate API covering Market Basket, Hannaford, Shaw's, Sto
 ---
 
 ## Future Enhancements
+
 - **Per-chef preferred store** setting (auto-select store in Instacart link)
 - **Price history chart** per ingredient (trend over time using `grocery_price_quote_items`)
 - **Auto-refresh trigger** — when a quote is older than 72h and event is approaching, notify chef

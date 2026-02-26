@@ -38,7 +38,7 @@ export async function buildPriorityQueue(
   ]
   // Deduplicate work items (fragile is a subset of preparable)
   const seenWorkIds = new Set<string>()
-  const uniqueWorkItems = allWorkItems.filter(wi => {
+  const uniqueWorkItems = allWorkItems.filter((wi) => {
     if (seenWorkIds.has(wi.id)) return false
     seenWorkIds.add(wi.id)
     return true
@@ -104,11 +104,20 @@ export async function buildPriorityQueue(
 
 function computeSummary(items: QueueItem[]): QueueSummary {
   const byDomain: Record<QueueDomain, number> = {
-    inquiry: 0, message: 0, quote: 0, event: 0,
-    financial: 0, post_event: 0, client: 0, culinary: 0,
+    inquiry: 0,
+    message: 0,
+    quote: 0,
+    event: 0,
+    financial: 0,
+    post_event: 0,
+    client: 0,
+    culinary: 0,
   }
   const byUrgency: Record<QueueUrgency, number> = {
-    critical: 0, high: 0, normal: 0, low: 0,
+    critical: 0,
+    high: 0,
+    normal: 0,
+    low: 0,
   }
 
   for (const item of items) {
@@ -124,10 +133,7 @@ function computeSummary(items: QueueItem[]): QueueSummary {
   }
 }
 
-async function safeProvider(
-  name: string,
-  fn: () => Promise<QueueItem[]>
-): Promise<QueueItem[]> {
+async function safeProvider(name: string, fn: () => Promise<QueueItem[]>): Promise<QueueItem[]> {
   try {
     return await fn()
   } catch (err) {

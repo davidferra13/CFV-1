@@ -44,6 +44,7 @@ Source: `public/logo.png`. Run again any time the logo changes: `npx tsx scripts
 Installed `next-pwa` which uses Workbox to auto-generate a service worker at build time.
 
 Config:
+
 - `dest: 'public'` — SW files (`sw.js`, `workbox-*.js`) written to `public/` at build time
 - `disable: process.env.NODE_ENV === 'development'` — SW is disabled in dev to avoid caching bugs during development
 - `fallbacks.document: '/offline.html'` — when a page navigation fails (no network + not cached), serve the offline page
@@ -55,6 +56,7 @@ The generated SW files are excluded from git (see `.gitignore`). They are regene
 ### 5. Offline Fallback Page (`public/offline.html`)
 
 A standalone HTML page (no framework dependencies) served by the service worker when:
+
 - The user has no network
 - The requested page isn't in the SW cache
 
@@ -73,16 +75,19 @@ Added CSS utility classes for iOS devices with notch/Dynamic Island/home indicat
 `viewportFit: 'cover'` in the viewport export (step 3) is required for `env(safe-area-inset-*)` to return non-zero values on iOS. Without `viewport-fit=cover`, the browser clips the layout away from the notch area and the env() values are always 0.
 
 Applied to:
+
 - Bottom nav bars in `chef-nav.tsx` and `client-nav.tsx` → `pb-safe` on the `<nav>` element
 - Main content wrappers in `chef-main-content.tsx` and `client-nav.tsx` (ClientMainContent) → `pb-mobile-nav` replaces `pb-16`
 
 ### 7. Touch Interaction Polish (`app/globals.css`)
 
 **`touch-action: manipulation`** added to `button, a, [role="button"], [role="link"], label`:
+
 - Eliminates the 300ms click delay browsers add to distinguish tap from double-tap-to-zoom
 - Makes the app feel instantly responsive, like a native app
 
 **Input font-size fix** — `font-size: max(16px, 0.875rem)` on all form inputs:
+
 - iOS Safari auto-zooms the page when a focused input has `font-size < 16px`
 - This fix prevents that jarring auto-zoom without restricting user zoom globally (which would be an accessibility regression)
 
@@ -99,11 +104,13 @@ Changed `sm` size from `h-8` (32px) → `h-10` (40px). 32px is below the WCAG 2.
 ## How to Verify
 
 ### Lighthouse PWA Audit
+
 1. Deploy to Vercel (or run production build locally)
 2. Open Chrome DevTools → Lighthouse → select "Progressive Web App"
 3. Run audit — target: all checks green
 
 ### iOS "Add to Home Screen"
+
 1. Open the app in Safari on iPhone
 2. Tap the Share button → "Add to Home Screen"
 3. Confirm: icon shows ChefFlow logo (not a screenshot), title is "ChefFlow"
@@ -111,17 +118,20 @@ Changed `sm` size from `h-8` (32px) → `h-10` (40px). 32px is below the WCAG 2.
 5. On iPhone 14 Pro or similar: confirm bottom nav is above the home indicator (safe area working)
 
 ### Android PWA Install
+
 1. Open the app in Chrome on Android
 2. After a few seconds of interaction, Chrome should show a bottom sheet or address bar install prompt
 3. Install → confirm icon and launch behavior
 
 ### Offline Mode
+
 1. Install the app (either platform)
 2. Disable network (airplane mode)
 3. Try navigating to a page — confirm `offline.html` appears with branded message
 4. Re-enable network → tap "Try Again" → confirm normal navigation resumes
 
 ### Safe Areas (Notch Devices)
+
 - On iPhone with Dynamic Island (14 Pro+): bottom nav should sit visibly above the home indicator line
 - On iPhone SE (no notch): bottom nav should look identical to before (safe area inset is 0)
 
@@ -129,9 +139,9 @@ Changed `sm` size from `h-8` (32px) → `h-10` (40px). 32px is below the WCAG 2.
 
 ## Dependencies Added
 
-| Package | Type | Purpose |
-|---|---|---|
+| Package    | Type | Purpose                               |
+| ---------- | ---- | ------------------------------------- |
 | `next-pwa` | prod | Service worker generation via Workbox |
-| `sharp` | dev | PNG icon generation script |
+| `sharp`    | dev  | PNG icon generation script            |
 
 `tailwindcss-safe-area` was considered but requires Tailwind v4 (project uses v3). Safe area utilities were implemented directly in `globals.css` via `@layer utilities` instead.

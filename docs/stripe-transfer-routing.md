@@ -18,12 +18,14 @@ Stripe automatically creates a transfer at charge time and auto-reverses it on r
 ### New Database Tables
 
 **`stripe_transfers`** — Tracks every transfer to connected accounts:
+
 - Links to tenant, event, and Stripe IDs (transfer, payment_intent, charge)
 - Records gross amount, platform fee, and net transfer (all in cents)
 - Status: `pending` / `paid` / `failed` / `reversed`
 - `is_deferred` flag for payments collected before chef completed Connect onboarding
 
 **`platform_fee_ledger`** — Append-only platform revenue tracking:
+
 - Immutable (enforced by database trigger, same pattern as `ledger_entries`)
 - Entry types: `fee`, `fee_refund`, `adjustment`
 - Service-role only access (admin visibility)
@@ -37,22 +39,22 @@ Migration: `20260312000010_stripe_transfer_routing.sql`
 
 ## Files Modified
 
-| File | Change |
-|------|--------|
-| `lib/stripe/actions.ts` | PaymentIntent now includes `transfer_data` + `application_fee_amount` |
-| `lib/stripe/checkout.ts` | Checkout Session includes same routing params |
-| `lib/stripe/refund.ts` | Refunds include `reverse_transfer: true` + `refund_application_fee: true` |
+| File                               | Change                                                                                      |
+| ---------------------------------- | ------------------------------------------------------------------------------------------- |
+| `lib/stripe/actions.ts`            | PaymentIntent now includes `transfer_data` + `application_fee_amount`                       |
+| `lib/stripe/checkout.ts`           | Checkout Session includes same routing params                                               |
+| `lib/stripe/refund.ts`             | Refunds include `reverse_transfer: true` + `refund_application_fee: true`                   |
 | `app/api/webhooks/stripe/route.ts` | Records transfers after payment; handles `transfer.*` and `application_fee.refunded` events |
 
 ## Files Created
 
-| File | Purpose |
-|------|---------|
-| `lib/stripe/transfer-routing.ts` | `getChefStripeConfig()`, `computeApplicationFee()`, `recordStripeTransfer()`, `recordPlatformFee()` |
-| `lib/stripe/deferred-transfers.ts` | Admin action: resolve payments collected before chef completed Connect |
-| `lib/stripe/payout-actions.ts` | Chef-facing: `getChefPayoutSummary()`, `getChefTransfers()` |
-| `lib/admin/reconciliation-actions.ts` | Admin: `getPlatformReconciliation()` — cross-tenant GMV/fees/transfers |
-| `app/(admin)/admin/reconciliation/page.tsx` | Admin reconciliation dashboard |
+| File                                        | Purpose                                                                                             |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `lib/stripe/transfer-routing.ts`            | `getChefStripeConfig()`, `computeApplicationFee()`, `recordStripeTransfer()`, `recordPlatformFee()` |
+| `lib/stripe/deferred-transfers.ts`          | Admin action: resolve payments collected before chef completed Connect                              |
+| `lib/stripe/payout-actions.ts`              | Chef-facing: `getChefPayoutSummary()`, `getChefTransfers()`                                         |
+| `lib/admin/reconciliation-actions.ts`       | Admin: `getPlatformReconciliation()` — cross-tenant GMV/fees/transfers                              |
+| `app/(admin)/admin/reconciliation/page.tsx` | Admin reconciliation dashboard                                                                      |
 
 ## Edge Cases
 

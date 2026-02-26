@@ -8,7 +8,7 @@ import type { Notification } from './types'
 function getSupabaseClient() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 }
 
@@ -18,7 +18,7 @@ function getSupabaseClient() {
  */
 export function subscribeToNotifications(
   recipientId: string,
-  onNotification: (notification: Notification) => void,
+  onNotification: (notification: Notification) => void
 ): () => void {
   const supabase = getSupabaseClient()
 
@@ -34,7 +34,7 @@ export function subscribeToNotifications(
       },
       (payload) => {
         onNotification(payload.new as Notification)
-      },
+      }
     )
     .subscribe()
 

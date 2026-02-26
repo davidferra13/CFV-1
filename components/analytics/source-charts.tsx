@@ -4,27 +4,45 @@
 'use client'
 
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  PieChart, Pie, Cell,
-  LineChart, Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
 } from 'recharts'
 
 const COLORS = [
-  '#8b5cf6', '#06b6d4', '#f59e0b', '#10b981', '#ef4444',
-  '#ec4899', '#6366f1', '#14b8a6', '#f97316', '#64748b',
+  '#8b5cf6',
+  '#06b6d4',
+  '#f59e0b',
+  '#10b981',
+  '#ef4444',
+  '#ec4899',
+  '#6366f1',
+  '#14b8a6',
+  '#f97316',
+  '#64748b',
 ]
 
 function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(cents / 100)
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(cents / 100)
 }
 
 // ─── Source Distribution (Horizontal Bar) ─────────────
 
-export function SourceDistributionChart({
-  data,
-}: {
-  data: { name: string; count: number }[]
-}) {
+export function SourceDistributionChart({ data }: { data: { name: string; count: number }[] }) {
   if (data.length === 0) return <EmptyChart message="No inquiry data yet" />
 
   return (
@@ -32,7 +50,12 @@ export function SourceDistributionChart({
       <BarChart data={data} layout="vertical" margin={{ left: 20, right: 20 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
         <XAxis type="number" tick={{ fontSize: 12, fill: '#78716c' }} />
-        <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: '#44403c' }} width={100} />
+        <YAxis
+          type="category"
+          dataKey="name"
+          tick={{ fontSize: 12, fill: '#44403c' }}
+          width={100}
+        />
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
           formatter={(value: any) => [value, 'Inquiries']}
@@ -56,7 +79,12 @@ export function ConversionFunnelChart({
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={data.slice(0, 8)} margin={{ left: 10, right: 10, bottom: 20 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
-        <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#78716c' }} angle={-30} textAnchor="end" />
+        <XAxis
+          dataKey="name"
+          tick={{ fontSize: 11, fill: '#78716c' }}
+          angle={-30}
+          textAnchor="end"
+        />
         <YAxis tick={{ fontSize: 12, fill: '#78716c' }} />
         <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }} />
         <Legend />
@@ -81,11 +109,13 @@ export function RevenueBySourceChart({
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={data} margin={{ left: 10, right: 10, bottom: 20 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
-        <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#78716c' }} angle={-30} textAnchor="end" />
-        <YAxis
-          tick={{ fontSize: 12, fill: '#78716c' }}
-          tickFormatter={(v) => formatCurrency(v)}
+        <XAxis
+          dataKey="name"
+          tick={{ fontSize: 11, fill: '#78716c' }}
+          angle={-30}
+          textAnchor="end"
         />
+        <YAxis tick={{ fontSize: 12, fill: '#78716c' }} tickFormatter={(v) => formatCurrency(v)} />
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
           formatter={(value: any) => [formatCurrency(value), 'Revenue']}
@@ -111,7 +141,12 @@ export function SourceTrendsChart({
     <ResponsiveContainer width="100%" height={300}>
       <LineChart data={data} margin={{ left: 10, right: 10, bottom: 20 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
-        <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#78716c' }} angle={-30} textAnchor="end" />
+        <XAxis
+          dataKey="month"
+          tick={{ fontSize: 10, fill: '#78716c' }}
+          angle={-30}
+          textAnchor="end"
+        />
         <YAxis tick={{ fontSize: 12, fill: '#78716c' }} />
         <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }} />
         <Legend />
@@ -132,11 +167,7 @@ export function SourceTrendsChart({
 
 // ─── Source Distribution Pie ──────────────────────────
 
-export function SourcePieChart({
-  data,
-}: {
-  data: { name: string; count: number }[]
-}) {
+export function SourcePieChart({ data }: { data: { name: string; count: number }[] }) {
   if (data.length === 0) return <EmptyChart message="No data yet" />
 
   return (
@@ -169,8 +200,6 @@ export function SourcePieChart({
 
 function EmptyChart({ message }: { message: string }) {
   return (
-    <div className="flex items-center justify-center h-48 text-stone-400 text-sm">
-      {message}
-    </div>
+    <div className="flex items-center justify-center h-48 text-stone-400 text-sm">{message}</div>
   )
 }

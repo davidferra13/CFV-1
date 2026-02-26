@@ -11,20 +11,26 @@ A full receipt digitization pipeline: upload a receipt photo → AI extracts lin
 Three new tables, all with `tenant_id` RLS:
 
 ### `receipt_photos`
+
 One record per uploaded receipt photo. Tracks pipeline state via `upload_status`:
+
 - `pending` — uploaded, not yet processed
 - `processing` — OCR in flight
 - `extracted` — AI extraction complete, awaiting chef review
 - `approved` — chef approved, business items copied to expenses
 
 ### `receipt_extractions`
+
 Structured header data from one receipt photo. Fields:
+
 - `store_name`, `store_location`, `purchase_date`, `payment_method`
 - `subtotal_cents`, `tax_cents`, `total_cents`
 - `extraction_confidence` (DECIMAL 0.00–1.00 mapped from AI's high/medium/low)
 
 ### `receipt_line_items`
+
 Individual items from a receipt extraction:
+
 - `description` — full item name (AI expands abbreviations)
 - `price_cents` — total price for the line
 - `expense_tag` — `business | personal | unknown` (AI pre-tags personal items; chef adjusts)
@@ -42,7 +48,9 @@ Individual items from a receipt extraction:
 - **`getReceiptSummaryForEvent(eventId)`** — Fetches all receipts with nested extractions and line items.
 
 ### `components/events/receipt-summary-client.tsx`
+
 Interactive client component:
+
 - Per-receipt blocks with photo thumbnail, store info, payment method, totals
 - Line items table with inline editing (click to edit description, dropdowns for category + tag)
 - Confidence badge (green/amber/red based on AI's confidence score)
@@ -50,6 +58,7 @@ Interactive client component:
 - "Extract with AI" button (→ OCR), "Re-extract" button, "Approve" button
 
 ### `app/(chef)/events/[id]/receipts/page.tsx`
+
 Server component wrapper that fetches data and renders `<ReceiptSummaryClient>`.
 
 ## Integration

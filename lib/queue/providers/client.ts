@@ -63,13 +63,13 @@ export async function getClientQueueItems(
       .limit(5)
 
     if (dormantClients && dormantClients.length > 0) {
-      const clientIds = dormantClients.map(c => c.client_id).filter(Boolean) as string[]
+      const clientIds = dormantClients.map((c) => c.client_id).filter(Boolean) as string[]
       const { data: clients } = await supabase
         .from('clients')
         .select('id, full_name')
         .in('id', clientIds)
 
-      const nameMap = new Map((clients || []).map(c => [c.id, c.full_name]))
+      const nameMap = new Map((clients || []).map((c) => [c.id, c.full_name]))
 
       for (const dc of dormantClients) {
         if (!dc.client_id) continue

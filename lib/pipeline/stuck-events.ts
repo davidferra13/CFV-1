@@ -10,12 +10,12 @@ import { createServerClient } from '@/lib/supabase/server'
 
 // Days allowed in each state before flagged as stuck
 const STUCK_THRESHOLDS_DAYS: Record<string, number> = {
-  draft:       7,   // Should be proposed within a week of creation
-  proposed:    14,  // Client should respond within 2 weeks
-  accepted:    7,   // Deposit should be collected within a week
-  paid:        7,   // Chef should confirm within a week of deposit
-  confirmed:   60,  // Long runway is fine, but flag extremely stale records
-  in_progress: 2,   // Should complete within 2 days of starting
+  draft: 7, // Should be proposed within a week of creation
+  proposed: 14, // Client should respond within 2 weeks
+  accepted: 7, // Deposit should be collected within a week
+  paid: 7, // Chef should confirm within a week of deposit
+  confirmed: 60, // Long runway is fine, but flag extremely stale records
+  in_progress: 2, // Should complete within 2 days of starting
 }
 
 export interface StuckEvent {
@@ -32,18 +32,29 @@ export async function getStuckEvents(limit = 5): Promise<StuckEvent[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const activeStatuses = Object.keys(STUCK_THRESHOLDS_DAYS) as Array<'draft' | 'proposed' | 'accepted' | 'paid' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled'>
+  const activeStatuses = Object.keys(STUCK_THRESHOLDS_DAYS) as Array<
+    | 'draft'
+    | 'proposed'
+    | 'accepted'
+    | 'paid'
+    | 'confirmed'
+    | 'in_progress'
+    | 'completed'
+    | 'cancelled'
+  >
 
   const { data: events } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id,
       occasion,
       status,
       event_date,
       updated_at,
       clients:client_id (full_name)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .in('status', activeStatuses)
     .order('updated_at', { ascending: true })
@@ -76,6 +87,6 @@ export async function getStuckEvents(limit = 5): Promise<StuckEvent[]> {
   }
 
   // Sort by most stuck first (ratio of stuckDays / threshold, descending)
-  stuck.sort((a, b) => (b.stuckDays / b.thresholdDays) - (a.stuckDays / a.thresholdDays))
+  stuck.sort((a, b) => b.stuckDays / b.thresholdDays - a.stuckDays / a.thresholdDays)
   return stuck.slice(0, limit)
 }

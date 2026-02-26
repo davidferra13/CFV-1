@@ -25,7 +25,7 @@ function getStripe(): Stripe {
  */
 export async function createPaymentCheckoutUrl(
   eventId: string,
-  tenantId: string,
+  tenantId: string
 ): Promise<string | null> {
   const supabase = createServerClient({ admin: true })
 
@@ -68,7 +68,8 @@ export async function createPaymentCheckoutUrl(
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
   // Fetch chef's Stripe Connect config for transfer routing
-  const { getChefStripeConfig, computeApplicationFee } = await import('@/lib/stripe/transfer-routing')
+  const { getChefStripeConfig, computeApplicationFee } =
+    await import('@/lib/stripe/transfer-routing')
   const chefConfig = await getChefStripeConfig(tenantId)
 
   const transferRouted = chefConfig.canReceiveTransfers && !!chefConfig.stripeAccountId
@@ -99,26 +100,28 @@ export async function createPaymentCheckoutUrl(
     }
   }
 
-  const session = await breakers.stripe.execute(() => stripe.checkout.sessions.create({
-    mode: 'payment',
-    line_items: [
-      {
-        price_data: {
-          currency: 'usd',
-          unit_amount: amountCents,
-          product_data: {
-            name: `${event.occasion || 'Private Chef Event'} — ${paymentType === 'deposit' ? 'Deposit' : 'Payment'}`,
+  const session = await breakers.stripe.execute(() =>
+    stripe.checkout.sessions.create({
+      mode: 'payment',
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            unit_amount: amountCents,
+            product_data: {
+              name: `${event.occasion || 'Private Chef Event'} — ${paymentType === 'deposit' ? 'Deposit' : 'Payment'}`,
+            },
           },
+          quantity: 1,
         },
-        quantity: 1,
-      },
-    ],
-    payment_intent_data: paymentIntentData as any,
-    success_url: `${appUrl}/my-events/${eventId}?payment=success`,
-    cancel_url: `${appUrl}/my-events/${eventId}?payment=cancelled`,
-    customer_email: (event.client as { email: string | null })?.email || undefined,
-    expires_at: Math.floor(Date.now() / 1000) + 72 * 3600, // 72 hours
-  }))
+      ],
+      payment_intent_data: paymentIntentData as any,
+      success_url: `${appUrl}/my-events/${eventId}?payment=success`,
+      cancel_url: `${appUrl}/my-events/${eventId}?payment=cancelled`,
+      customer_email: (event.client as { email: string | null })?.email || undefined,
+      expires_at: Math.floor(Date.now() / 1000) + 72 * 3600, // 72 hours
+    })
+  )
 
   return session.url
 }

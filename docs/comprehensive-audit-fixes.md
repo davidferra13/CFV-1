@@ -27,6 +27,7 @@ A thorough audit of the entire ChefFlow codebase was conducted across three dime
 **Problem:** No security headers were configured. Missing HSTS, clickjacking protection, and MIME sniffing prevention.
 
 **Fix:** Added `headers()` function to next.config.js with:
+
 - `Strict-Transport-Security: max-age=31536000; includeSubDomains`
 - `X-Content-Type-Options: nosniff`
 - `X-Frame-Options: DENY`
@@ -45,6 +46,7 @@ CSP was intentionally omitted - it requires knowing all external domains (Supaba
 ### 4. Pricing Constants Consolidation (Single Source of Truth)
 
 **Files:**
+
 - **Created:** `lib/pricing/constants.ts` - shared constants file
 - **Modified:** `lib/pricing/compute.ts` - imports from constants
 - **Modified:** `lib/ai/agent-brain.ts` - imports from constants
@@ -56,6 +58,7 @@ CSP was intentionally omitted - it requires knowing all external domains (Supaba
 ### 5. Contact Form - Actually Functional
 
 **Files:**
+
 - **Created:** `lib/contact/actions.ts` - server action
 - **Created:** `supabase/migrations/20260221000007_contact_submissions.sql` - table
 - **Modified:** `app/(public)/contact/page.tsx` - wired to server action
@@ -77,18 +80,23 @@ CSP was intentionally omitted - it requires knowing all external domains (Supaba
 ## Not Fixed (Deferred / Requires Further Decision)
 
 ### @ts-nocheck on Chat Files
+
 9 files have `@ts-nocheck`. Cannot be removed until the pending migrations are applied and types are regenerated. The existing error handling already degrades gracefully (returns empty arrays for missing tables).
 
 ### FSM Transition Logging
+
 Currently non-blocking. Making it blocking would surface audit gaps but could leave the system in an inconsistent state if the log insert fails after the state update succeeds. The correct fix is a database-level transaction (RPC function that does both atomically). This is a design decision, not a quick fix.
 
 ### Rate Limiting
+
 In-memory rate limiting per serverless instance. Needs Redis/Upstash for proper distributed rate limiting. Infrastructure decision.
 
 ### Console.log Cleanup
+
 228 console.log/error calls across the codebase. Many are legitimate server-side logging. Should be replaced with a structured logging service (Sentry, Pino, etc.) as an infrastructure decision, not a line-by-line cleanup.
 
 ### 72 `as any` Casts
+
 Most exist because generated types don't include chat/notes/insights tables yet. Will resolve naturally after migrations are applied and types regenerated.
 
 ---
@@ -97,9 +105,9 @@ Most exist because generated types don't include chat/notes/insights tables yet.
 
 Per the batching rule, these migration files were created but NOT pushed:
 
-| Timestamp | File | Purpose |
-|-----------|------|---------|
-| 20260221000007 | `contact_submissions.sql` | Contact form submissions table |
+| Timestamp      | File                      | Purpose                                           |
+| -------------- | ------------------------- | ------------------------------------------------- |
+| 20260221000007 | `contact_submissions.sql` | Contact form submissions table                    |
 | 20260221000008 | `fix_guest_share_rls.sql` | Remove USING(true) policies on guest/share tables |
 
 **Reminder:** Back up database before pushing migrations.
@@ -108,15 +116,15 @@ Per the batching rule, these migration files were created but NOT pushed:
 
 ## Files Changed
 
-| File | Change |
-|------|--------|
-| `app/api/auth/google/connect/callback/route.ts` | Added ownership check |
-| `next.config.js` | Added security headers |
-| `lib/chat/actions.ts` | Added MIME_TO_EXT map, fixed extension derivation |
-| `lib/pricing/constants.ts` | **NEW** - shared pricing constants |
-| `lib/pricing/compute.ts` | Imports from constants.ts |
-| `lib/ai/agent-brain.ts` | Imports from constants.ts, rate card from shared source |
-| `lib/contact/actions.ts` | **NEW** - contact form server action |
-| `app/(public)/contact/page.tsx` | Wired to real server action |
-| `supabase/migrations/20260221000007_contact_submissions.sql` | **NEW** |
-| `supabase/migrations/20260221000008_fix_guest_share_rls.sql` | **NEW** |
+| File                                                         | Change                                                  |
+| ------------------------------------------------------------ | ------------------------------------------------------- |
+| `app/api/auth/google/connect/callback/route.ts`              | Added ownership check                                   |
+| `next.config.js`                                             | Added security headers                                  |
+| `lib/chat/actions.ts`                                        | Added MIME_TO_EXT map, fixed extension derivation       |
+| `lib/pricing/constants.ts`                                   | **NEW** - shared pricing constants                      |
+| `lib/pricing/compute.ts`                                     | Imports from constants.ts                               |
+| `lib/ai/agent-brain.ts`                                      | Imports from constants.ts, rate card from shared source |
+| `lib/contact/actions.ts`                                     | **NEW** - contact form server action                    |
+| `app/(public)/contact/page.tsx`                              | Wired to real server action                             |
+| `supabase/migrations/20260221000007_contact_submissions.sql` | **NEW**                                                 |
+| `supabase/migrations/20260221000008_fix_guest_share_rls.sql` | **NEW**                                                 |

@@ -7,6 +7,7 @@ Added a complete post-event feedback system that collects internal client review
 ## Why
 
 After every completed event, the chef needs two things:
+
 1. **Internal feedback** - business intelligence about what clients loved and what could improve, with star ratings for tracking quality over time
 2. **Google Reviews** - the most important external marketing channel. Rather than building a complex integration, each chef simply configures their Google Business review URL in settings, and clients are redirected there after leaving internal feedback
 
@@ -27,26 +28,27 @@ No data was dropped or modified. Purely additive.
 
 ## New Files
 
-| File | Purpose |
-|------|---------|
-| `lib/reviews/actions.ts` | Server actions: submit review, fetch review, record Google click, get/update Google URL, chef review stats |
-| `components/reviews/client-feedback-form.tsx` | Star rating + written feedback form with display consent toggle. Shows Google Review CTA after submission |
-| `components/reviews/submitted-review.tsx` | Read-only view of already-submitted review with persistent Google CTA |
-| `components/reviews/chef-reviews-list.tsx` | Chef dashboard: stats cards + all reviews with ratings, consent badges, feedback details |
-| `components/settings/google-review-url-form.tsx` | Chef settings: configure Google Business review link |
-| `app/(chef)/reviews/page.tsx` | Chef reviews dashboard page |
+| File                                             | Purpose                                                                                                    |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| `lib/reviews/actions.ts`                         | Server actions: submit review, fetch review, record Google click, get/update Google URL, chef review stats |
+| `components/reviews/client-feedback-form.tsx`    | Star rating + written feedback form with display consent toggle. Shows Google Review CTA after submission  |
+| `components/reviews/submitted-review.tsx`        | Read-only view of already-submitted review with persistent Google CTA                                      |
+| `components/reviews/chef-reviews-list.tsx`       | Chef dashboard: stats cards + all reviews with ratings, consent badges, feedback details                   |
+| `components/settings/google-review-url-form.tsx` | Chef settings: configure Google Business review link                                                       |
+| `app/(chef)/reviews/page.tsx`                    | Chef reviews dashboard page                                                                                |
 
 ## Modified Files
 
-| File | Change |
-|------|--------|
+| File                                   | Change                                                                                                           |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `app/(client)/my-events/[id]/page.tsx` | Added inline feedback form for completed events. Shows form if no review, shows submitted review if already done |
-| `app/(chef)/settings/page.tsx` | Added "Client Reviews" section with Google Review URL config and link to reviews dashboard |
-| `types/database.ts` | Regenerated with `client_reviews` table and `google_review_url` column |
+| `app/(chef)/settings/page.tsx`         | Added "Client Reviews" section with Google Review URL config and link to reviews dashboard                       |
+| `types/database.ts`                    | Regenerated with `client_reviews` table and `google_review_url` column                                           |
 
 ## How It Works
 
 ### Client Flow
+
 1. Client views a completed event at `/my-events/[id]`
 2. If no review exists: shows feedback form with star rating, text fields, and display consent checkbox
 3. Client submits feedback -> stored in `client_reviews` table
@@ -55,11 +57,13 @@ No data was dropped or modified. Purely additive.
 6. If client returns later: shows their submitted review with a reminder to leave a Google review (if they haven't clicked yet)
 
 ### Chef Flow
+
 1. Chef configures Google Business review URL in Settings -> Client Reviews
 2. Chef views all feedback at `/reviews` - stats dashboard with total reviews, average rating, public consent count, Google click-throughs
 3. Each review shows client name, event, star rating, feedback text, "loved" and "could improve" sections, consent status, and Google click status
 
 ### Integration with Existing Systems
+
 - Leverages existing `review_link_sent` flag on events table - set to `true` when client clicks Google review
 - Post-event queue already surfaces "send review link" task at 72-hour window
 - Follows established patterns: server actions with `'use server'`, `requireChef()`/`requireClient()` auth, tenant scoping, Zod validation

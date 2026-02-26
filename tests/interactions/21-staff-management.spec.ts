@@ -52,7 +52,7 @@ test.describe('Staff — Roster', () => {
 
   test('/staff — clicking tab does not crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/staff')
     await page.waitForLoadState('networkidle')
     const tab = page.getByRole('tab').first()
@@ -65,7 +65,7 @@ test.describe('Staff — Roster', () => {
 
   test('/staff — no JS errors on load', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/staff')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -85,7 +85,7 @@ test.describe('Staff — Schedule', () => {
 
   test('/staff/schedule — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/staff/schedule')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -105,7 +105,7 @@ test.describe('Staff — Availability', () => {
 
   test('/staff/availability — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/staff/availability')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -125,7 +125,7 @@ test.describe('Staff — Clock In/Out', () => {
 
   test('/staff/clock — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/staff/clock')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -145,7 +145,7 @@ test.describe('Staff — Performance', () => {
 
   test('/staff/performance — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/staff/performance')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -176,7 +176,7 @@ test.describe('Staff — Labor Reporting', () => {
 
   test('/staff/labor — no JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/staff/labor')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)

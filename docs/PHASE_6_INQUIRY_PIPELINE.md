@@ -6,22 +6,22 @@ This phase adds the inquiry pipeline: the system that captures every potential d
 
 ### Files Created
 
-| File | Purpose |
-|------|---------|
-| `lib/inquiries/actions.ts` | 8 server action functions for full inquiry CRUD and pipeline management |
-| `components/inquiries/inquiry-status-badge.tsx` | Status + channel badge components |
-| `components/inquiries/inquiry-form.tsx` | Quick capture form (client component) |
-| `components/inquiries/inquiry-transitions.tsx` | Pipeline transition buttons (client component) |
-| `app/(chef)/inquiries/page.tsx` | Pipeline view — tabs + filtered list |
-| `app/(chef)/inquiries/new/page.tsx` | Quick capture page — log new inquiry fast |
-| `app/(chef)/inquiries/[id]/page.tsx` | Detail page — full inquiry view with transitions |
+| File                                            | Purpose                                                                 |
+| ----------------------------------------------- | ----------------------------------------------------------------------- |
+| `lib/inquiries/actions.ts`                      | 8 server action functions for full inquiry CRUD and pipeline management |
+| `components/inquiries/inquiry-status-badge.tsx` | Status + channel badge components                                       |
+| `components/inquiries/inquiry-form.tsx`         | Quick capture form (client component)                                   |
+| `components/inquiries/inquiry-transitions.tsx`  | Pipeline transition buttons (client component)                          |
+| `app/(chef)/inquiries/page.tsx`                 | Pipeline view — tabs + filtered list                                    |
+| `app/(chef)/inquiries/new/page.tsx`             | Quick capture page — log new inquiry fast                               |
+| `app/(chef)/inquiries/[id]/page.tsx`            | Detail page — full inquiry view with transitions                        |
 
 ### Files Modified
 
-| File | Change |
-|------|--------|
+| File                                 | Change                                              |
+| ------------------------------------ | --------------------------------------------------- |
 | `components/navigation/chef-nav.tsx` | Added "Inquiries" link between Dashboard and Events |
-| `app/(chef)/dashboard/page.tsx` | Added inquiry stats card + new inquiry alert banner |
+| `app/(chef)/dashboard/page.tsx`      | Added inquiry stats card + new inquiry alert banner |
 
 ---
 
@@ -29,19 +29,19 @@ This phase adds the inquiry pipeline: the system that captures every potential d
 
 The spec assumed certain column names that didn't match the actual `inquiries` table. Key adaptations:
 
-| Spec Concept | Actual DB Column | Notes |
-|---|---|---|
-| `client_name` | `unknown_fields.client_name` (JSON) | No name column on inquiries; linked via `client_id` or stored in JSON |
-| `client_email` | `unknown_fields.client_email` (JSON) | Same pattern for unlinked leads |
-| `event_date` | `confirmed_date` | All event facts use `confirmed_*` prefix |
-| `guest_count` | `confirmed_guest_count` | |
-| `location_*` (4 fields) | `confirmed_location` (single text) | Schema uses one location field, not address/city/state/zip |
-| `budget_range` (text) | `confirmed_budget_cents` (integer) | Stored in cents, consistent with ledger model |
-| `dietary_restrictions` | `confirmed_dietary_restrictions` (text[]) | |
-| `service_style` | `confirmed_service_expectations` (text) | Free text, not enum — allows richer description |
-| `raw_message` | `source_message` | |
-| `notes` | `unknown_fields.notes` (JSON) | |
-| `referral_source` | `unknown_fields.referral_source` (JSON) | |
+| Spec Concept            | Actual DB Column                          | Notes                                                                 |
+| ----------------------- | ----------------------------------------- | --------------------------------------------------------------------- |
+| `client_name`           | `unknown_fields.client_name` (JSON)       | No name column on inquiries; linked via `client_id` or stored in JSON |
+| `client_email`          | `unknown_fields.client_email` (JSON)      | Same pattern for unlinked leads                                       |
+| `event_date`            | `confirmed_date`                          | All event facts use `confirmed_*` prefix                              |
+| `guest_count`           | `confirmed_guest_count`                   |                                                                       |
+| `location_*` (4 fields) | `confirmed_location` (single text)        | Schema uses one location field, not address/city/state/zip            |
+| `budget_range` (text)   | `confirmed_budget_cents` (integer)        | Stored in cents, consistent with ledger model                         |
+| `dietary_restrictions`  | `confirmed_dietary_restrictions` (text[]) |                                                                       |
+| `service_style`         | `confirmed_service_expectations` (text)   | Free text, not enum — allows richer description                       |
+| `raw_message`           | `source_message`                          |                                                                       |
+| `notes`                 | `unknown_fields.notes` (JSON)             |                                                                       |
+| `referral_source`       | `unknown_fields.referral_source` (JSON)   |                                                                       |
 
 The `unknown_fields` JSON column is the escape hatch for data that doesn't have dedicated columns. This is by design — the inquiry schema is deliberately simpler than the event schema because inquiries capture rough facts that get refined during qualification.
 
@@ -82,18 +82,23 @@ expired → new (can be reopened)
 ## UI Design Decisions
 
 ### Pipeline View (Option B: Tabs + List)
+
 Chose filtered list with status tabs over Kanban columns. Simpler to build, easier to scan on mobile, and follows the existing events page pattern exactly.
 
 ### Quick Capture Form
+
 Only **channel** and **client name** are required. Everything else is optional. The form is organized into sections: Required → Contact Info → Event Details → Context. The chef can log an inquiry from a text message in under 10 seconds.
 
 ### Client Linking
+
 The form offers an optional "Link to Existing Client" dropdown. When selected, it auto-fills name/email/phone. When not selected, the chef types a free-text name and the info goes to `unknown_fields`. Auto-linking by email happens server-side in `createInquiry`.
 
 ### Detail Page
+
 Shows: contact info, confirmed facts (with missing facts highlighted in amber), pipeline management fields, transition buttons, internal notes, original message, and status history timeline.
 
 ### Dashboard Integration
+
 - Amber alert banner when new inquiries exist: "You have 3 new inquiries that need a response"
 - Inquiry stats card in the business context grid (changed from 2-col to 3-col layout)
 - Active count = new + awaiting_client + awaiting_chef + quoted
@@ -102,19 +107,19 @@ Shows: contact info, confirmed facts (with missing facts highlighted in amber), 
 
 ## convertInquiryToEvent — Field Mapping
 
-| Inquiry Field | Event Field | Notes |
-|---|---|---|
-| `client_id` | `client_id` | Required — must be linked before conversion |
-| `confirmed_date` | `event_date` | Required — must be confirmed before conversion |
-| `confirmed_guest_count` | `guest_count` | Defaults to 1 if not confirmed |
-| `confirmed_location` | `location_address` | Single field → address; city/zip default to 'TBD' |
-| `confirmed_occasion` | `occasion` | Direct map |
-| `confirmed_budget_cents` | `quoted_price_cents` | Budget becomes initial quote for draft |
-| `confirmed_dietary_restrictions` | `dietary_restrictions` | Direct map (string[]) |
-| `confirmed_service_expectations` | `special_requests` | Free text → special requests |
-| `confirmed_cannabis_preference` | `cannabis_preference` | String → boolean conversion |
-| — | `serve_time` | Defaults to 'TBD' (required on events) |
-| `id` | `inquiry_id` | FK linking event back to source inquiry |
+| Inquiry Field                    | Event Field            | Notes                                             |
+| -------------------------------- | ---------------------- | ------------------------------------------------- |
+| `client_id`                      | `client_id`            | Required — must be linked before conversion       |
+| `confirmed_date`                 | `event_date`           | Required — must be confirmed before conversion    |
+| `confirmed_guest_count`          | `guest_count`          | Defaults to 1 if not confirmed                    |
+| `confirmed_location`             | `location_address`     | Single field → address; city/zip default to 'TBD' |
+| `confirmed_occasion`             | `occasion`             | Direct map                                        |
+| `confirmed_budget_cents`         | `quoted_price_cents`   | Budget becomes initial quote for draft            |
+| `confirmed_dietary_restrictions` | `dietary_restrictions` | Direct map (string[])                             |
+| `confirmed_service_expectations` | `special_requests`     | Free text → special requests                      |
+| `confirmed_cannabis_preference`  | `cannabis_preference`  | String → boolean conversion                       |
+| —                                | `serve_time`           | Defaults to 'TBD' (required on events)            |
+| `id`                             | `inquiry_id`           | FK linking event back to source inquiry           |
 
 The draft event will have 'TBD' values for location_city, location_zip, and serve_time. The chef edits these in the event detail page before proposing to the client.
 

@@ -53,6 +53,7 @@ Server actions for the API Keys UI:
 ## 3. Public REST API (`app/api/v1/`)
 
 All routes follow the same pattern:
+
 1. Validate `Authorization: Bearer cf_live_...` header via `validateApiKey`
 2. Check rate limit via `checkRateLimit`
 3. Query Supabase with admin client (bypasses RLS) scoped to `ctx.tenantId`
@@ -120,6 +121,7 @@ Server actions for the Webhooks UI:
 ## 6. `lib/compliance/data-export.ts`
 
 Server action that pulls all chef-owned data in parallel:
+
 - `events` (all columns)
 - `clients` (all columns)
 - `expenses` (all columns)

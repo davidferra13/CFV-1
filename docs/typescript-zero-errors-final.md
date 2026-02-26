@@ -16,6 +16,7 @@ This document covers the final TypeScript cleanup pass that brought the codebase
 ### 1. `lib/menus/actions.ts` — `ComponentCategory` not in scope
 
 **Error:**
+
 ```
 lib/menus/actions.ts(754,39): error TS2304: Cannot find name 'ComponentCategory'.
 lib/menus/actions.ts(791,39): error TS2304: Cannot find name 'ComponentCategory'.
@@ -24,11 +25,13 @@ lib/menus/actions.ts(791,39): error TS2304: Cannot find name 'ComponentCategory'
 **Root cause:** The file re-exports `ComponentCategory` on line 116 (`export type { ComponentCategory, TransportCategory } from './constants'`) but never imports it into the local scope. The type was used as a cast on two `.insert()` / `.update()` calls.
 
 **Fix:** Added one import line at the top of the file:
+
 ```typescript
 import type { ComponentCategory } from './constants'
 ```
 
 **Files changed:**
+
 - [lib/menus/actions.ts](../lib/menus/actions.ts) — line 12, added import
 
 ---
@@ -36,6 +39,7 @@ import type { ComponentCategory } from './constants'
 ### 2. `lib/calendar/actions.ts` — File was a stub with `test` on line 1
 
 **Error:**
+
 ```
 lib/calendar/actions.ts(1,1): error TS2582: Cannot find name 'test'.
 app/(chef)/calendar/*.tsx(n,n): error TS2306: File 'lib/calendar/actions.ts' is not a module.
@@ -46,6 +50,7 @@ app/(chef)/calendar/*.tsx(n,n): error TS2306: File 'lib/calendar/actions.ts' is 
 **State at fix time:** The file already had a full implementation from a previous write in the same session. The errors resolved once the `.next` build cache was cleared.
 
 **What the file does:**
+
 - Exports `UnifiedCalendarItem` type (re-exported from `lib/calendar/types.ts`)
 - Implements `getUnifiedCalendar(startDate, endDate): Promise<UnifiedCalendarItem[]>` — queries 7 data sources in parallel and maps them to the unified calendar item shape:
   1. Events (any non-cancelled status)
@@ -62,6 +67,7 @@ app/(chef)/calendar/*.tsx(n,n): error TS2306: File 'lib/calendar/actions.ts' is 
 ### 3. `app/api/scheduled/push-cleanup/route.ts` — Invalid `.select()` overload
 
 **Error:**
+
 ```
 app/api/scheduled/push-cleanup/route.ts(49,19): error TS2554: Expected 0-1 arguments, but got 2.
 ```
@@ -71,6 +77,7 @@ app/api/scheduled/push-cleanup/route.ts(49,19): error TS2554: Expected 0-1 argum
 **Fix:** Changed to `.select('id')` and derived the count from `data?.length ?? 0`.
 
 **Files changed:**
+
 - [app/api/scheduled/push-cleanup/route.ts](../app/api/scheduled/push-cleanup/route.ts)
 
 ---
@@ -80,6 +87,7 @@ app/api/scheduled/push-cleanup/route.ts(49,19): error TS2554: Expected 0-1 argum
 Same pattern as push-cleanup. Fixed in the same session.
 
 **Files changed:**
+
 - [app/api/scheduled/loyalty-expiry/route.ts](../app/api/scheduled/loyalty-expiry/route.ts)
 
 ---

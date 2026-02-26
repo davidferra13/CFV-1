@@ -6,17 +6,17 @@ A public-facing booking page at `/book/[chefSlug]` that lets prospective clients
 
 ## Files Created / Modified
 
-| File | Role |
-|---|---|
-| `app/book/[chefSlug]/page.tsx` | Server page — fetches chef profile and booking settings, passes to client component |
-| `app/book/[chefSlug]/booking-page-client.tsx` | Client component — renders calendar, then booking form after date selection |
-| `app/book/[chefSlug]/thank-you/page.tsx` | Confirmation page shown after successful submission |
-| `app/book/[chefSlug]/availability/route.ts` | JSON API endpoint returning blocked/unavailable dates |
-| `components/booking/booking-calendar.tsx` | Date picker grid — highlights available vs. blocked dates |
-| `components/booking/booking-form.tsx` | Multi-step form — guest count, event type, contact info, message |
-| `components/settings/booking-page-settings.tsx` | Settings UI embedded in chef's Settings → Booking Page tab |
-| `lib/booking/booking-settings-actions.ts` | Server actions: `getBookingSettings`, `upsertBookingSettings` |
-| `lib/booking/instant-book-actions.ts` | Server action that writes the inquiry/instant-book record |
+| File                                            | Role                                                                                |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `app/book/[chefSlug]/page.tsx`                  | Server page — fetches chef profile and booking settings, passes to client component |
+| `app/book/[chefSlug]/booking-page-client.tsx`   | Client component — renders calendar, then booking form after date selection         |
+| `app/book/[chefSlug]/thank-you/page.tsx`        | Confirmation page shown after successful submission                                 |
+| `app/book/[chefSlug]/availability/route.ts`     | JSON API endpoint returning blocked/unavailable dates                               |
+| `components/booking/booking-calendar.tsx`       | Date picker grid — highlights available vs. blocked dates                           |
+| `components/booking/booking-form.tsx`           | Multi-step form — guest count, event type, contact info, message                    |
+| `components/settings/booking-page-settings.tsx` | Settings UI embedded in chef's Settings → Booking Page tab                          |
+| `lib/booking/booking-settings-actions.ts`       | Server actions: `getBookingSettings`, `upsertBookingSettings`                       |
+| `lib/booking/instant-book-actions.ts`           | Server action that writes the inquiry/instant-book record                           |
 
 ## How It Works
 

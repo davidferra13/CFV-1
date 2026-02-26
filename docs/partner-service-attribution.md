@@ -11,6 +11,7 @@ This feature closes the loop with four capabilities:
 ## 1. Per-Event Attribution (Event Form)
 
 **Files changed:**
+
 - `components/events/event-form.tsx`
 - `app/(chef)/events/new/page.tsx`
 - `app/(chef)/events/[id]/edit/page.tsx`
@@ -25,6 +26,7 @@ The event detail page (`app/(chef)/events/[id]/page.tsx`) now shows a "Partner V
 ## 2. Bulk Event Assignment (Partner Detail Page)
 
 **Files changed/created:**
+
 - `app/(chef)/partners/[id]/page.tsx`
 - `components/partners/bulk-assign-events.tsx`
 - `lib/partners/actions.ts` → `getEventsNotAssignedToPartner()`, `bulkAssignEventsToPartner()`
@@ -43,6 +45,7 @@ This action only touches partner FK columns, never status or financial data.
 ## 3. Service History on Partner Detail Page
 
 **Files changed:**
+
 - `app/(chef)/partners/[id]/page.tsx`
 - `lib/partners/actions.ts` → `getPartnerEvents()`
 
@@ -58,6 +61,7 @@ The partner detail page now shows a **Service History** section below the bulk-a
 ## 4. Shareable Partner Contribution Report
 
 **Files changed/created:**
+
 - `supabase/migrations/20260301000003_partner_share_token.sql`
 - `lib/partners/actions.ts` → `generatePartnerShareLink()`, `getPartnerContributionReport()`
 - `components/partners/share-partner-report-button.tsx`
@@ -102,14 +106,14 @@ The columns `events.referral_partner_id` and `events.partner_location_id` alread
 
 ## New Functions in `lib/partners/actions.ts`
 
-| Function | Auth | Purpose |
-|---|---|---|
-| `getPartnersWithLocations()` | Chef | Lightweight query for form dropdowns |
-| `getPartnerEvents(partnerId)` | Chef | Full event history for a partner |
-| `getEventsNotAssignedToPartner(partnerId)` | Chef | Events available for bulk assignment |
-| `bulkAssignEventsToPartner(partnerId, locationId, eventIds[])` | Chef | Batch-tag events to partner (no status restriction) |
-| `generatePartnerShareLink(partnerId)` | Chef | Generate/return public share URL |
-| `getPartnerContributionReport(token)` | Public (admin client) | Fetch report data by token |
+| Function                                                       | Auth                  | Purpose                                             |
+| -------------------------------------------------------------- | --------------------- | --------------------------------------------------- |
+| `getPartnersWithLocations()`                                   | Chef                  | Lightweight query for form dropdowns                |
+| `getPartnerEvents(partnerId)`                                  | Chef                  | Full event history for a partner                    |
+| `getEventsNotAssignedToPartner(partnerId)`                     | Chef                  | Events available for bulk assignment                |
+| `bulkAssignEventsToPartner(partnerId, locationId, eventIds[])` | Chef                  | Batch-tag events to partner (no status restriction) |
+| `generatePartnerShareLink(partnerId)`                          | Chef                  | Generate/return public share URL                    |
+| `getPartnerContributionReport(token)`                          | Public (admin client) | Fetch report data by token                          |
 
 ---
 

@@ -37,17 +37,17 @@ export type PackingListData = {
   }
   clientName: string
   // Food items by transport zone (only is_make_ahead = true components)
-  coldItems: PackingComponent[]      // cold + liquid (cooler, perishable)
-  frozenItems: PackingComponent[]    // frozen (cooler, pack last)
-  roomTempItems: PackingComponent[]  // room_temp (dry goods bag)
-  fragileItems: PackingComponent[]   // fragile (own padded container)
+  coldItems: PackingComponent[] // cold + liquid (cooler, perishable)
+  frozenItems: PackingComponent[] // frozen (cooler, pack last)
+  roomTempItems: PackingComponent[] // room_temp (dry goods bag)
+  fragileItems: PackingComponent[] // fragile (own padded container)
   // Component verification counts per course
   courseVerification: { courseNumber: number; courseName: string; count: number }[]
   totalFoodItems: number
   // Equipment — single source of truth, passed to both PDF and interactive UI
-  standardKitItems: string[]         // always-bring kit (defined here, not in client component)
-  mustBringEquipment: string[]       // from client.equipment_must_bring[]
-  eventEquipment: string[]           // triggered by service_style / special_requests
+  standardKitItems: string[] // always-bring kit (defined here, not in client component)
+  mustBringEquipment: string[] // from client.equipment_must_bring[]
+  eventEquipment: string[] // triggered by service_style / special_requests
   // Site info
   kitchenNotes: string | null
   houseRules: string | null
@@ -84,14 +84,16 @@ export async function fetchPackingListData(eventId: string): Promise<PackingList
   // Note: equipment_must_bring, kitchen_notes, house_rules were added in operational_refinements migration
   const { data: event } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       occasion, event_date, departure_time,
       location_address, location_city, location_state,
       access_instructions, service_style, special_requests,
       client:clients(
         full_name, equipment_must_bring, kitchen_notes, house_rules
       )
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -135,8 +137,8 @@ export async function fetchPackingListData(eventId: string): Promise<PackingList
       .order('course_number', { ascending: true })
 
     if (dishes && dishes.length > 0) {
-      const dishIds = dishes.map(d => d.id)
-      const dishMap = new Map(dishes.map(d => [d.id, d]))
+      const dishIds = dishes.map((d) => d.id)
+      const dishMap = new Map(dishes.map((d) => [d.id, d]))
 
       // Fetch only make-ahead components — these are what get packed
       // Note: transport_category was added in migration 20260301000001.
@@ -158,7 +160,7 @@ export async function fetchPackingListData(eventId: string): Promise<PackingList
         .order('sort_order', { ascending: true })
         .returns<RawComp[]>()
 
-      components = (rawComps || []).map(c => {
+      components = (rawComps || []).map((c) => {
         const dish = dishMap.get(c.dish_id)
         return {
           name: c.name,
@@ -173,10 +175,12 @@ export async function fetchPackingListData(eventId: string): Promise<PackingList
 
   // Sort food items into transport zones
   // cold and liquid both go in the cooler (cold section)
-  const coldItems = components.filter(c => c.transport_category === 'cold' || c.transport_category === 'liquid')
-  const frozenItems = components.filter(c => c.transport_category === 'frozen')
-  const roomTempItems = components.filter(c => c.transport_category === 'room_temp')
-  const fragileItems = components.filter(c => c.transport_category === 'fragile')
+  const coldItems = components.filter(
+    (c) => c.transport_category === 'cold' || c.transport_category === 'liquid'
+  )
+  const frozenItems = components.filter((c) => c.transport_category === 'frozen')
+  const roomTempItems = components.filter((c) => c.transport_category === 'room_temp')
+  const fragileItems = components.filter((c) => c.transport_category === 'fragile')
 
   // Component verification counts per course
   const countsByCourse = new Map<number, { courseName: string; count: number }>()
@@ -200,7 +204,8 @@ export async function fetchPackingListData(eventId: string): Promise<PackingList
   if (serviceStyle === 'buffet') eventEquipment.push(...EQUIPMENT_TRIGGERS.buffet)
   if (serviceStyle === 'cocktail') eventEquipment.push(...EQUIPMENT_TRIGGERS.cocktail)
   if (specialRequests.includes('sous vide')) eventEquipment.push(...EQUIPMENT_TRIGGERS.sous_vide)
-  if (specialRequests.includes('grill') || specialRequests.includes('bbq')) eventEquipment.push(...EQUIPMENT_TRIGGERS.grill)
+  if (specialRequests.includes('grill') || specialRequests.includes('bbq'))
+    eventEquipment.push(...EQUIPMENT_TRIGGERS.grill)
   if (frozenItems.length > 0) eventEquipment.push(...EQUIPMENT_TRIGGERS.dessert_frozen)
 
   // Deduplicate event equipment (multiple triggers can fire the same item)
@@ -237,16 +242,30 @@ export async function fetchPackingListData(eventId: string): Promise<PackingList
 
 export function renderPackingList(pdf: PDFLayout, data: PackingListData) {
   const {
-    event, clientName,
-    coldItems, frozenItems, roomTempItems, fragileItems,
-    courseVerification, totalFoodItems,
-    standardKitItems, mustBringEquipment, eventEquipment,
-    kitchenNotes, houseRules,
+    event,
+    clientName,
+    coldItems,
+    frozenItems,
+    roomTempItems,
+    fragileItems,
+    courseVerification,
+    totalFoodItems,
+    standardKitItems,
+    mustBringEquipment,
+    eventEquipment,
+    kitchenNotes,
+    houseRules,
   } = data
 
   // Estimate total item count for font scaling
-  const totalItems = coldItems.length + frozenItems.length + roomTempItems.length +
-    fragileItems.length + standardKitItems.length + mustBringEquipment.length + eventEquipment.length
+  const totalItems =
+    coldItems.length +
+    frozenItems.length +
+    roomTempItems.length +
+    fragileItems.length +
+    standardKitItems.length +
+    mustBringEquipment.length +
+    eventEquipment.length
 
   if (totalItems > 30) pdf.setFontScale(0.85)
   if (totalItems > 45) pdf.setFontScale(0.75)
@@ -323,9 +342,18 @@ export function renderPackingList(pdf: PDFLayout, data: PackingListData) {
   }
 
   // Fallback when no food items exist yet
-  if (coldItems.length === 0 && frozenItems.length === 0 && roomTempItems.length === 0 && fragileItems.length === 0) {
+  if (
+    coldItems.length === 0 &&
+    frozenItems.length === 0 &&
+    roomTempItems.length === 0 &&
+    fragileItems.length === 0
+  ) {
     pdf.sectionHeader('FOOD ITEMS', 11, true)
-    pdf.text('No make-ahead components found. Add components to the menu with "Make ahead" checked.', 8, 'italic')
+    pdf.text(
+      'No make-ahead components found. Add components to the menu with "Make ahead" checked.',
+      8,
+      'italic'
+    )
     pdf.space(1)
   }
 
@@ -360,7 +388,12 @@ export function renderPackingList(pdf: PDFLayout, data: PackingListData) {
   if (courseVerification.length > 0) {
     pdf.sectionHeader('COMPONENT VERIFICATION', 11, true)
     for (const { courseNumber, courseName, count } of courseVerification) {
-      pdf.text(`Course ${courseNumber} — ${courseName}: ${count} item${count !== 1 ? 's' : ''}`, 9, 'normal', 2)
+      pdf.text(
+        `Course ${courseNumber} — ${courseName}: ${count} item${count !== 1 ? 's' : ''}`,
+        9,
+        'normal',
+        2
+      )
     }
     pdf.text(`TOTAL: ${totalFoodItems} food items to pack`, 9, 'bold', 2)
     pdf.space(1)
@@ -378,7 +411,9 @@ export function renderPackingList(pdf: PDFLayout, data: PackingListData) {
 
   const footerParts: string[] = []
   if (event.departure_time_display) footerParts.push(`Depart ${event.departure_time_display}`)
-  footerParts.push([event.location_city, event.location_state].filter(Boolean).join(', ') || location)
+  footerParts.push(
+    [event.location_city, event.location_state].filter(Boolean).join(', ') || location
+  )
   if (event.access_instructions) footerParts.push(`Access: ${event.access_instructions}`)
 
   pdf.footer(footerParts.filter(Boolean).join('  |  '))

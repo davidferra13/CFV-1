@@ -110,15 +110,26 @@ export function renderFinancialSummary(pdf: PDFLayout, data: EventFinancialSumma
   // ── SECTION 3: COSTS ─────────────────────────────────────────────────────
   if (pdf.wouldOverflow(40)) pdf.newPage()
   pdf.sectionHeader('COSTS', 10, true)
-  dataRow(pdf, 'Grocery & ingredient spend',
-    costs.actualGrocerySpendCents > 0 ? formatCents(costs.actualGrocerySpendCents) : 'Pending')
+  dataRow(
+    pdf,
+    'Grocery & ingredient spend',
+    costs.actualGrocerySpendCents > 0 ? formatCents(costs.actualGrocerySpendCents) : 'Pending'
+  )
   if (costs.leftoverCreditInCents && costs.leftoverCreditInCents > 0) {
-    dataRow(pdf, 'Leftover credit received (from prior event)',
-      `−${formatCents(costs.leftoverCreditInCents)}`, 'ingredients carried in')
+    dataRow(
+      pdf,
+      'Leftover credit received (from prior event)',
+      `−${formatCents(costs.leftoverCreditInCents)}`,
+      'ingredients carried in'
+    )
   }
   if (costs.leftoverCreditOutCents && costs.leftoverCreditOutCents > 0) {
-    dataRow(pdf, 'Leftover carried to next event',
-      `−${formatCents(costs.leftoverCreditOutCents)}`, 'surplus applied forward')
+    dataRow(
+      pdf,
+      'Leftover carried to next event',
+      `−${formatCents(costs.leftoverCreditOutCents)}`,
+      'surplus applied forward'
+    )
   }
   dataRow(pdf, 'Net food cost', formatCents(costs.netFoodCostCents))
   if (costs.additionalExpensesCents > 0) {
@@ -148,7 +159,11 @@ export function renderFinancialSummary(pdf: PDFLayout, data: EventFinancialSumma
     dataRow(pdf, 'Total', formatMinutes(time.totalMinutes))
     if (time.effectiveHourlyRateCents) {
       pdf.space(1)
-      pdf.text(`Effective hourly rate: ${formatCents(time.effectiveHourlyRateCents)}/hr`, 10, 'bold')
+      pdf.text(
+        `Effective hourly rate: ${formatCents(time.effectiveHourlyRateCents)}/hr`,
+        10,
+        'bold'
+      )
     }
   } else {
     pdf.text('Time not logged for this event.', 9, 'italic')
@@ -162,8 +177,12 @@ export function renderFinancialSummary(pdf: PDFLayout, data: EventFinancialSumma
   if (mileage.miles) {
     dataRow(pdf, 'Miles driven', `${mileage.miles} mi`)
     if (mileage.deductionValueCents) {
-      dataRow(pdf, 'IRS deduction value', formatCents(mileage.deductionValueCents),
-        `${mileage.miles} mi × $${(mileage.irsMileageRateCentsPerMile / 100).toFixed(2)}`)
+      dataRow(
+        pdf,
+        'IRS deduction value',
+        formatCents(mileage.deductionValueCents),
+        `${mileage.miles} mi × $${(mileage.irsMileageRateCentsPerMile / 100).toFixed(2)}`
+      )
     }
   } else {
     pdf.text('Mileage not entered.', 9, 'italic')
@@ -174,20 +193,35 @@ export function renderFinancialSummary(pdf: PDFLayout, data: EventFinancialSumma
   if (comparison) {
     if (pdf.wouldOverflow(25)) pdf.newPage()
     pdf.sectionHeader('VS. YOUR AVERAGE', 10, true)
-    const fcSign = comparison.vsAverageFoodCostPercent !== null && comparison.vsAverageFoodCostPercent > 0 ? '+' : ''
-    const mgSign = comparison.vsAverageMarginPercent !== null && comparison.vsAverageMarginPercent > 0 ? '+' : ''
-    dataRow(pdf, 'Food cost vs. your average',
+    const fcSign =
+      comparison.vsAverageFoodCostPercent !== null && comparison.vsAverageFoodCostPercent > 0
+        ? '+'
+        : ''
+    const mgSign =
+      comparison.vsAverageMarginPercent !== null && comparison.vsAverageMarginPercent > 0 ? '+' : ''
+    dataRow(
+      pdf,
+      'Food cost vs. your average',
       `${fcSign}${comparison.vsAverageFoodCostPercent}%`,
-      comparison.vsAverageFoodCostPercent !== null && comparison.vsAverageFoodCostPercent > 0 ? 'higher than average' : 'lower than average')
-    dataRow(pdf, 'Margin vs. your average',
+      comparison.vsAverageFoodCostPercent !== null && comparison.vsAverageFoodCostPercent > 0
+        ? 'higher than average'
+        : 'lower than average'
+    )
+    dataRow(
+      pdf,
+      'Margin vs. your average',
       `${mgSign}${comparison.vsAverageMarginPercent}%`,
-      comparison.vsAverageMarginPercent !== null && comparison.vsAverageMarginPercent > 0 ? 'above average' : 'below average')
+      comparison.vsAverageMarginPercent !== null && comparison.vsAverageMarginPercent > 0
+        ? 'above average'
+        : 'below average'
+    )
   }
 
   // Footer
-  const footerStatus = event.financialClosed && event.financialClosedAt
-    ? `Closed ${format(new Date(event.financialClosedAt), 'MMM d, yyyy')}`
-    : statusLabel
+  const footerStatus =
+    event.financialClosed && event.financialClosedAt
+      ? `Closed ${format(new Date(event.financialClosedAt), 'MMM d, yyyy')}`
+      : statusLabel
   pdf.footer(`${event.occasion ?? 'Event'} · ${eventDate} · ${footerStatus}`)
 }
 

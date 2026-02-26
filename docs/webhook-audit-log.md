@@ -2,17 +2,18 @@
 
 ## What Was Added
 
-| File | Purpose |
-|------|---------|
-| `supabase/migrations/20260306000003_webhook_events.sql` | `webhook_events` table |
-| `lib/webhooks/audit-log.ts` | `logWebhookEvent()` utility |
-| `app/api/webhooks/stripe/route.ts` | Audit log wired |
-| `app/api/webhooks/resend/route.ts` | Audit log wired |
-| `app/api/webhooks/wix/route.ts` | Audit log wired |
+| File                                                    | Purpose                     |
+| ------------------------------------------------------- | --------------------------- |
+| `supabase/migrations/20260306000003_webhook_events.sql` | `webhook_events` table      |
+| `lib/webhooks/audit-log.ts`                             | `logWebhookEvent()` utility |
+| `app/api/webhooks/stripe/route.ts`                      | Audit log wired             |
+| `app/api/webhooks/resend/route.ts`                      | Audit log wired             |
+| `app/api/webhooks/wix/route.ts`                         | Audit log wired             |
 
 ## The Problem
 
 Before this change, there was no central record of which webhooks fired and what happened. If a payment was processed incorrectly, you could look in:
+
 - The Stripe dashboard (useful, but external)
 - The Supabase ledger table (shows what was written, not what triggered it)
 - Server logs (ephemeral, no structured search)
@@ -37,12 +38,12 @@ received_at        | 2026-03-06T18:34:22Z
 
 ## Provider Coverage
 
-| Provider | Event Logged | When |
-|----------|-------------|------|
-| Stripe | All event types | Immediately after signature verification |
-| Resend | `email.opened`, `email.clicked` | After DB update (success or failure) |
-| Wix | `form_submission` | After submission stored |
-| Generic | Not yet wired | — |
+| Provider | Event Logged                    | When                                     |
+| -------- | ------------------------------- | ---------------------------------------- |
+| Stripe   | All event types                 | Immediately after signature verification |
+| Resend   | `email.opened`, `email.clicked` | After DB update (success or failure)     |
+| Wix      | `form_submission`               | After submission stored                  |
+| Generic  | Not yet wired                   | —                                        |
 
 ## Auto-Cleanup
 

@@ -125,7 +125,9 @@ base.describe('Auth Boundaries — Client Cannot Access Chef Portal', () => {
     base.test(`client session → ${route} redirects away`, async ({ page }) => {
       await page.goto(route, { waitUntil: 'domcontentloaded' })
       const url = page.url()
-      expect(url, `client should not be able to access ${route}`).not.toMatch(new RegExp(route + '$'))
+      expect(url, `client should not be able to access ${route}`).not.toMatch(
+        new RegExp(route + '$')
+      )
     })
   }
 })
@@ -147,7 +149,9 @@ base.describe('Auth Boundaries — Chef Cannot Access Admin', () => {
     base.test(`chef session → ${route} redirects to unauthorized`, async ({ page }) => {
       await page.goto(route, { waitUntil: 'domcontentloaded' })
       const url = page.url()
-      expect(url, `chef should not access admin route ${route}`).toMatch(/unauthorized|auth\/signin/)
+      expect(url, `chef should not access admin route ${route}`).toMatch(
+        /unauthorized|auth\/signin/
+      )
     })
   }
 })

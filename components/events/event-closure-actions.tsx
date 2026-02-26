@@ -34,7 +34,9 @@ export function EventClosureActions({ eventId, resetComplete, followUpSent }: Pr
   return (
     <div className="space-y-2">
       {error && (
-        <Alert variant="error" title="Error">{error}</Alert>
+        <Alert variant="error" title="Error">
+          {error}
+        </Alert>
       )}
 
       {!resetComplete && (

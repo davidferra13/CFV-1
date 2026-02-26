@@ -159,7 +159,7 @@ function generatePlan(
       // Last payment gets the remainder to avoid rounding issues
       amounts.push(remainingCents)
     } else {
-      const amount = Math.round(totalCents * percentages[i] / 100)
+      const amount = Math.round((totalCents * percentages[i]) / 100)
       amounts.push(amount)
       remainingCents -= amount
     }
@@ -250,11 +250,12 @@ export async function calculateInstallments(
       installmentNumber: i + 1,
       amountCents: amounts[i],
       dueDateIso,
-      label: i === 0
-        ? 'Due at booking'
-        : i === validated.numberOfPayments - 1
-          ? 'Final payment'
-          : `Payment ${i + 1}`,
+      label:
+        i === 0
+          ? 'Due at booking'
+          : i === validated.numberOfPayments - 1
+            ? 'Final payment'
+            : `Payment ${i + 1}`,
     })
   }
 

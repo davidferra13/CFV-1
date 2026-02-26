@@ -15,7 +15,9 @@
 ## What Exists
 
 ### `components/search/global-search.tsx`
+
 Full-featured search overlay with:
+
 - **Ctrl/Cmd+K** global keyboard shortcut to open
 - 300ms debounced real-time search
 - Grouped results display (12 entity types)
@@ -26,26 +28,28 @@ Full-featured search overlay with:
 - Auto-close and reset on route change
 
 ### `lib/search/universal-search.ts`
+
 Server action searching across 12 entity types in parallel:
 
-| Type | Searches |
-|---|---|
-| Pages | Navigation config — title, href, category |
-| Clients | full_name, email, phone |
-| Events | occasion, location_address, special_requests |
-| Inquiries | source_message, confirmed_occasion |
-| Menus | name, description, notes |
-| Recipes | name, description, notes |
-| Quotes | quote_name, internal_notes, pricing_notes |
-| Expenses | description, vendor_name, notes |
-| Partners | name, contact_name, email, notes |
-| Notes | note_text (client notes) |
-| Messages | subject, body |
-| Conversations | last_message_preview |
+| Type          | Searches                                     |
+| ------------- | -------------------------------------------- |
+| Pages         | Navigation config — title, href, category    |
+| Clients       | full_name, email, phone                      |
+| Events        | occasion, location_address, special_requests |
+| Inquiries     | source_message, confirmed_occasion           |
+| Menus         | name, description, notes                     |
+| Recipes       | name, description, notes                     |
+| Quotes        | quote_name, internal_notes, pricing_notes    |
+| Expenses      | description, vendor_name, notes              |
+| Partners      | name, contact_name, email, notes             |
+| Notes         | note_text (client notes)                     |
+| Messages      | subject, body                                |
+| Conversations | last_message_preview                         |
 
 All queries tenant-scoped, 8-result limit per entity type.
 
 ### Wiring
+
 - `components/navigation/chef-nav.tsx` — mounted in desktop header, mobile header, and rail mode (3 locations)
 
 ---

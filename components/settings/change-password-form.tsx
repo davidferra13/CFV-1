@@ -88,11 +88,7 @@ export function ChangePasswordForm() {
             autoComplete="new-password"
           />
 
-          <Button
-            type="submit"
-            variant="primary"
-            loading={isPending}
-          >
+          <Button type="submit" variant="primary" loading={isPending}>
             Update Password
           </Button>
         </CardContent>

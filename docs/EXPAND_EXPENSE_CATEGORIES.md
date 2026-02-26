@@ -9,18 +9,18 @@ Added 10 new values to the `expense_category` PostgreSQL enum, bringing the tota
 
 ### New Categories
 
-| Value | Label | Example Use |
-|-------|-------|-------------|
-| `vehicle` | Vehicle | Parking, tolls, car wash, maintenance |
-| `venue_rental` | Venue/Rental | Venue fees, kitchen rental, event space |
-| `subscriptions` | Subscriptions | Wix, software, online tools |
-| `marketing` | Marketing | Ads, business cards, social media |
-| `labor` | Labor | Hired sous chefs, servers, assistants |
-| `insurance_licenses` | Insurance/Licenses | Business insurance, food handler permits |
-| `professional_services` | Professional Services | Accountant, lawyer, consulting |
-| `education` | Education | Classes, certifications, culinary books |
-| `uniforms` | Uniforms | Chef coats, aprons, laundry |
-| `utilities` | Utilities | Business phone, internet |
+| Value                   | Label                 | Example Use                              |
+| ----------------------- | --------------------- | ---------------------------------------- |
+| `vehicle`               | Vehicle               | Parking, tolls, car wash, maintenance    |
+| `venue_rental`          | Venue/Rental          | Venue fees, kitchen rental, event space  |
+| `subscriptions`         | Subscriptions         | Wix, software, online tools              |
+| `marketing`             | Marketing             | Ads, business cards, social media        |
+| `labor`                 | Labor                 | Hired sous chefs, servers, assistants    |
+| `insurance_licenses`    | Insurance/Licenses    | Business insurance, food handler permits |
+| `professional_services` | Professional Services | Accountant, lawyer, consulting           |
+| `education`             | Education             | Classes, certifications, culinary books  |
+| `uniforms`              | Uniforms              | Chef coats, aprons, laundry              |
+| `utilities`             | Utilities             | Business phone, internet                 |
 
 ### gas_mileage vs vehicle
 
@@ -31,6 +31,7 @@ Added 10 new values to the `expense_category` PostgreSQL enum, bringing the tota
 Previously, category labels, colors, and option lists were duplicated across 5 files. Extracted into a single source of truth:
 
 **`lib/constants/expense-categories.ts`** exports:
+
 - `EXPENSE_CATEGORIES` — flat map of all 17 categories with labels and colors
 - `EXPENSE_CATEGORY_GROUPS` — 5 groups for organized UI display
 - `EXPENSE_CATEGORY_VALUES` — tuple for Zod validation
@@ -39,13 +40,13 @@ Previously, category labels, colors, and option lists were duplicated across 5 f
 
 ### Category Groups
 
-| Group | Categories |
-|-------|-----------|
-| Food & Drink | Groceries, Alcohol, Specialty Items |
-| Travel & Vehicle | Gas/Mileage, Vehicle |
-| Operations | Equipment, Supplies, Venue/Rental, Labor, Uniforms |
+| Group             | Categories                                                                                |
+| ----------------- | ----------------------------------------------------------------------------------------- |
+| Food & Drink      | Groceries, Alcohol, Specialty Items                                                       |
+| Travel & Vehicle  | Gas/Mileage, Vehicle                                                                      |
+| Operations        | Equipment, Supplies, Venue/Rental, Labor, Uniforms                                        |
 | Business Overhead | Subscriptions, Marketing, Insurance/Licenses, Professional Services, Education, Utilities |
-| Other | Other |
+| Other             | Other                                                                                     |
 
 ## UI Changes
 
@@ -59,17 +60,17 @@ None. The `getEventProfitSummary()` switch statement tracks food costs (grocerie
 
 ## Files Modified
 
-| File | Change |
-|------|--------|
-| `lib/constants/expense-categories.ts` | NEW — shared constants module |
-| `components/ui/select.tsx` | Added `groups` prop for optgroup support |
-| `lib/expenses/actions.ts` | Zod enum now imports from shared constants |
-| `components/expenses/expense-form.tsx` | Uses grouped select for category dropdown |
-| `app/(chef)/expenses/page.tsx` | Grouped filter bar, uses shared helpers |
-| `app/(chef)/expenses/[id]/page.tsx` | Uses `getCategoryLabel()` from shared constants |
-| `components/import/smart-import-hub.tsx` | Uses shared `EXPENSE_CATEGORY_OPTIONS` |
-| `types/database.ts` | Manually added 10 new enum values |
-| `supabase/migrations/20260218000001_expand_expense_categories.sql` | NEW — ALTER TYPE for each new value |
+| File                                                               | Change                                          |
+| ------------------------------------------------------------------ | ----------------------------------------------- |
+| `lib/constants/expense-categories.ts`                              | NEW — shared constants module                   |
+| `components/ui/select.tsx`                                         | Added `groups` prop for optgroup support        |
+| `lib/expenses/actions.ts`                                          | Zod enum now imports from shared constants      |
+| `components/expenses/expense-form.tsx`                             | Uses grouped select for category dropdown       |
+| `app/(chef)/expenses/page.tsx`                                     | Grouped filter bar, uses shared helpers         |
+| `app/(chef)/expenses/[id]/page.tsx`                                | Uses `getCategoryLabel()` from shared constants |
+| `components/import/smart-import-hub.tsx`                           | Uses shared `EXPENSE_CATEGORY_OPTIONS`          |
+| `types/database.ts`                                                | Manually added 10 new enum values               |
+| `supabase/migrations/20260218000001_expand_expense_categories.sql` | NEW — ALTER TYPE for each new value             |
 
 ## Migration
 

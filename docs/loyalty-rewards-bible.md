@@ -48,13 +48,13 @@ every point movement in the system.
 
 ### 2b. Point Types (transaction types)
 
-| Type | Description | Examples |
-|---|---|---|
-| `earned` | Base points from a completed event | 10 pts × 8 guests = 80 pts |
-| `bonus` | Automatic bonus on top of base earn | Milestone bonus, large party, welcome |
-| `redeemed` | Points spent on a reward (stored negative) | -100 pts for "$25 off" |
-| `adjustment` | Manual correction by chef | Correcting a data entry error |
-| `expired` | Reserved for future expiry implementation | Not currently in use |
+| Type         | Description                                | Examples                              |
+| ------------ | ------------------------------------------ | ------------------------------------- |
+| `earned`     | Base points from a completed event         | 10 pts × 8 guests = 80 pts            |
+| `bonus`      | Automatic bonus on top of base earn        | Milestone bonus, large party, welcome |
+| `redeemed`   | Points spent on a reward (stored negative) | -100 pts for "$25 off"                |
+| `adjustment` | Manual correction by chef                  | Correcting a data entry error         |
+| `expired`    | Reserved for future expiry implementation  | Not currently in use                  |
 
 ### 2c. Spendable Balance vs. Lifetime Earned
 
@@ -77,16 +77,16 @@ and the default point value.
 
 ### 3.1 Welcome Bonus ⭐ AUTOMATIC
 
-| Field | Value |
-|---|---|
-| **Trigger** | Client completes an invitation-based signup |
-| **Who detects** | System — fires inside `signUpClient()` immediately |
-| **Chef action required** | None |
-| **Default points** | 25 pts (configurable in Loyalty Settings) |
-| **Idempotency** | `clients.has_received_welcome_points` flag prevents double-award |
-| **Conditions** | Client must be joining via a chef's invitation link. Standalone signups with no tenant receive this when they first activate a chef relationship. |
-| **Transaction type** | `bonus` |
-| **Description recorded** | "Welcome bonus — thanks for joining!" |
+| Field                    | Value                                                                                                                                             |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Trigger**              | Client completes an invitation-based signup                                                                                                       |
+| **Who detects**          | System — fires inside `signUpClient()` immediately                                                                                                |
+| **Chef action required** | None                                                                                                                                              |
+| **Default points**       | 25 pts (configurable in Loyalty Settings)                                                                                                         |
+| **Idempotency**          | `clients.has_received_welcome_points` flag prevents double-award                                                                                  |
+| **Conditions**           | Client must be joining via a chef's invitation link. Standalone signups with no tenant receive this when they first activate a chef relationship. |
+| **Transaction type**     | `bonus`                                                                                                                                           |
+| **Description recorded** | "Welcome bonus — thanks for joining!"                                                                                                             |
 
 **Design intent:** The client should arrive at their first `/my-rewards` page
 and already have points waiting for them. This immediately makes the program
@@ -96,16 +96,16 @@ feel valuable without any additional effort.
 
 ### 3.2 Base Event Points ⭐ AUTOMATIC
 
-| Field | Value |
-|---|---|
-| **Trigger** | Chef marks event as `completed` |
-| **Who detects** | System — `completeEvent()` calls `awardEventPoints()` automatically |
-| **Chef action required** | None (fires as a side effect of completing the event) |
-| **Default points** | `points_per_guest × guest_count` (default: 10 pts/guest) |
-| **Idempotency** | `events.loyalty_points_awarded` flag prevents double-award |
-| **Conditions** | Event must be in `completed` status. Loyalty program must be active. |
-| **Transaction type** | `earned` |
-| **Description recorded** | "{N} guests × {pts} pts/guest" |
+| Field                    | Value                                                                |
+| ------------------------ | -------------------------------------------------------------------- |
+| **Trigger**              | Chef marks event as `completed`                                      |
+| **Who detects**          | System — `completeEvent()` calls `awardEventPoints()` automatically  |
+| **Chef action required** | None (fires as a side effect of completing the event)                |
+| **Default points**       | `points_per_guest × guest_count` (default: 10 pts/guest)             |
+| **Idempotency**          | `events.loyalty_points_awarded` flag prevents double-award           |
+| **Conditions**           | Event must be in `completed` status. Loyalty program must be active. |
+| **Transaction type**     | `earned`                                                             |
+| **Description recorded** | "{N} guests × {pts} pts/guest"                                       |
 
 **Example:** A dinner for 8 guests at 10 pts/guest → 80 points awarded.
 
@@ -117,15 +117,15 @@ incentivises clients to bring more guests.
 
 ### 3.3 Large Party Bonus ⭐ AUTOMATIC
 
-| Field | Value |
-|---|---|
-| **Trigger** | Same as base event points, evaluated at same time |
-| **Who detects** | System — inside `awardEventPoints()` |
-| **Chef action required** | None |
-| **Default points** | Configurable (default: +50 pts when ≥ 10 guests) |
-| **Conditions** | `guest_count >= bonus_large_party_threshold` AND program active |
-| **Transaction type** | `bonus` |
-| **Description recorded** | "Large party bonus ({N}+ guests)" |
+| Field                    | Value                                                           |
+| ------------------------ | --------------------------------------------------------------- |
+| **Trigger**              | Same as base event points, evaluated at same time               |
+| **Who detects**          | System — inside `awardEventPoints()`                            |
+| **Chef action required** | None                                                            |
+| **Default points**       | Configurable (default: +50 pts when ≥ 10 guests)                |
+| **Conditions**           | `guest_count >= bonus_large_party_threshold` AND program active |
+| **Transaction type**     | `bonus`                                                         |
+| **Description recorded** | "Large party bonus ({N}+ guests)"                               |
 
 **Design intent:** Clients hosting larger parties deserve extra recognition.
 This also gives chefs a mechanical incentive to encourage larger bookings.
@@ -134,16 +134,16 @@ This also gives chefs a mechanical incentive to encourage larger bookings.
 
 ### 3.4 Milestone Bonuses ⭐ AUTOMATIC
 
-| Field | Value |
-|---|---|
-| **Trigger** | Same event completion — evaluated against `total_events_completed` |
-| **Who detects** | System — inside `awardEventPoints()`, evaluated for each milestone |
-| **Chef action required** | None |
-| **Default milestones** | Configurable JSON array on `loyalty_config.milestone_bonuses` |
-| **Example defaults** | 5th event: +50 pts · 10th event: +100 pts · 25th event: +200 pts |
-| **Conditions** | `currentEventsCompleted === milestone.events` (exact match) |
-| **Transaction type** | `bonus` |
-| **Description recorded** | "Milestone bonus: {N}th event completed!" |
+| Field                    | Value                                                              |
+| ------------------------ | ------------------------------------------------------------------ |
+| **Trigger**              | Same event completion — evaluated against `total_events_completed` |
+| **Who detects**          | System — inside `awardEventPoints()`, evaluated for each milestone |
+| **Chef action required** | None                                                               |
+| **Default milestones**   | Configurable JSON array on `loyalty_config.milestone_bonuses`      |
+| **Example defaults**     | 5th event: +50 pts · 10th event: +100 pts · 25th event: +200 pts   |
+| **Conditions**           | `currentEventsCompleted === milestone.events` (exact match)        |
+| **Transaction type**     | `bonus`                                                            |
+| **Description recorded** | "Milestone bonus: {N}th event completed!"                          |
 
 **Design intent:** This is the "10th dinner" mechanic. A client on their 9th
 dinner knows exactly what they get when they book the 10th. After the 10th,
@@ -152,6 +152,7 @@ forward pull.
 
 **How to configure milestones:**
 Go to Loyalty Settings → Program Settings → Milestone Bonuses. Add rows like:
+
 - Events: 5, Bonus: 50 pts → client gets +50 on their 5th event
 - Events: 10, Bonus: 100 pts → client gets +100 on their 10th event
 - Events: 20, Bonus: 150 pts
@@ -161,17 +162,18 @@ Go to Loyalty Settings → Program Settings → Milestone Bonuses. Add rows like
 
 ### 3.5 Manual Bonus Points (Chef-awarded) ⭐ MANUAL — CHEF APPROVAL IMPLIED
 
-| Field | Value |
-|---|---|
-| **Trigger** | Chef clicks "Award Bonus Points" on a client profile |
-| **Who detects** | Chef initiates — system records |
-| **Chef action required** | Yes — chef enters amount and reason |
-| **Amount** | Chef-specified; any positive integer |
-| **Conditions** | Loyalty program must be active; chef must be authenticated |
-| **Transaction type** | `bonus` |
-| **Description recorded** | Chef-entered reason (e.g., "Referral: introduced Sarah") |
+| Field                    | Value                                                      |
+| ------------------------ | ---------------------------------------------------------- |
+| **Trigger**              | Chef clicks "Award Bonus Points" on a client profile       |
+| **Who detects**          | Chef initiates — system records                            |
+| **Chef action required** | Yes — chef enters amount and reason                        |
+| **Amount**               | Chef-specified; any positive integer                       |
+| **Conditions**           | Loyalty program must be active; chef must be authenticated |
+| **Transaction type**     | `bonus`                                                    |
+| **Description recorded** | Chef-entered reason (e.g., "Referral: introduced Sarah")   |
 
 **Use cases:**
+
 - Referral: client introduced a new client who booked
 - Exceptional circumstances: event ran long, chef wants to show appreciation
 - Birthday or anniversary recognition
@@ -201,13 +203,13 @@ the referred client's first event completes.
 
 ### 3.7 Adjustment (Chef correction)
 
-| Field | Value |
-|---|---|
-| **Trigger** | Chef issues via bonus points or a future admin tool |
-| **Who detects** | Chef initiates |
-| **Amount** | Positive (to add) — for deductions the chef contacts support |
-| **Transaction type** | `adjustment` (or `bonus` if using the current bonus UI) |
-| **When to use** | Correcting errors, e.g., wrong guest count on a past event |
+| Field                | Value                                                        |
+| -------------------- | ------------------------------------------------------------ |
+| **Trigger**          | Chef issues via bonus points or a future admin tool          |
+| **Who detects**      | Chef initiates                                               |
+| **Amount**           | Positive (to add) — for deductions the chef contacts support |
+| **Transaction type** | `adjustment` (or `bonus` if using the current bonus UI)      |
+| **When to use**      | Correcting errors, e.g., wrong guest count on a past event   |
 
 ---
 
@@ -219,12 +221,12 @@ social recognition and can be used by the chef to target outreach (e.g.,
 
 ### 4a. Tier Thresholds (default, all configurable)
 
-| Tier | Lifetime Points Required | Default Range |
-|---|---|---|
-| 🥉 Bronze | 0+ | 0–199 |
-| 🥈 Silver | 200+ | 200–499 |
-| 🥇 Gold | 500+ | 500–999 |
-| 💎 Platinum | 1,000+ | 1,000+ |
+| Tier        | Lifetime Points Required | Default Range |
+| ----------- | ------------------------ | ------------- |
+| 🥉 Bronze   | 0+                       | 0–199         |
+| 🥈 Silver   | 200+                     | 200–499       |
+| 🥇 Gold     | 500+                     | 500–999       |
+| 💎 Platinum | 1,000+                   | 1,000+        |
 
 ### 4b. Tier Calculation Rules
 
@@ -254,25 +256,25 @@ or exclusive menu items. These are not yet implemented.
 A reward is a service that the chef commits to deliver when a client redeems
 enough points. Rewards are **never cash**. They are:
 
-| Reward Type | What It Means |
-|---|---|
-| `free_course` | Chef adds a bonus course (appetizer, dessert, etc.) to the meal |
-| `free_dinner` | Complimentary full dinner (covers service; client pays ingredients) |
-| `discount_fixed` | A fixed dollar amount off the next booking |
-| `discount_percent` | A percentage off the next booking |
-| `upgrade` | Chef's choice upgrade — elevated presentation, extra courses, etc. |
+| Reward Type        | What It Means                                                       |
+| ------------------ | ------------------------------------------------------------------- |
+| `free_course`      | Chef adds a bonus course (appetizer, dessert, etc.) to the meal     |
+| `free_dinner`      | Complimentary full dinner (covers service; client pays ingredients) |
+| `discount_fixed`   | A fixed dollar amount off the next booking                          |
+| `discount_percent` | A percentage off the next booking                                   |
+| `upgrade`          | Chef's choice upgrade — elevated presentation, extra courses, etc.  |
 
 ### 5b. Default Reward Catalog (seeded on first use)
 
-| Reward | Type | Points |
-|---|---|---|
-| Complimentary appetizer course | free_course | 50 pts |
-| Complimentary dessert course | free_course | 75 pts |
-| $25 off your next dinner | discount_fixed | 100 pts |
-| 15% off dinner for two | discount_percent | 150 pts |
-| Chef's tasting menu experience | upgrade | 200 pts |
-| 50% off a dinner for two | discount_percent | 250 pts |
-| Free dinner for two | free_dinner | 300 pts |
+| Reward                         | Type             | Points  |
+| ------------------------------ | ---------------- | ------- |
+| Complimentary appetizer course | free_course      | 50 pts  |
+| Complimentary dessert course   | free_course      | 75 pts  |
+| $25 off your next dinner       | discount_fixed   | 100 pts |
+| 15% off dinner for two         | discount_percent | 150 pts |
+| Chef's tasting menu experience | upgrade          | 200 pts |
+| 50% off a dinner for two       | discount_percent | 250 pts |
+| Free dinner for two            | free_dinner      | 300 pts |
 
 These are starting points. The chef can add, edit, and remove rewards at any
 time from the Loyalty Dashboard → Rewards Catalog.
@@ -310,6 +312,7 @@ time from the Loyalty Dashboard → Rewards Catalog.
 
 Chef can redeem rewards on behalf of a client from the client profile page.
 This is used when:
+
 - Chef wants to apply a reward to a specific event
 - Client requested a redemption via phone/message
 - Chef is comping a service proactively
@@ -349,13 +352,13 @@ They are tracked in `client_incentives` and `incentive_redemptions`, not in
 
 Key distinctions:
 
-| Feature | Points | Gift Cards / Vouchers |
-|---|---|---|
-| Source | Earned through service | Purchased with cash or issued by chef |
-| Value | No cash value | Real dollar value (gift cards) or discount (vouchers) |
-| Redemption | Service rewards | Applied to event invoice via code |
-| Ledger | loyalty_transactions (no financial write) | ledger_entries (financial write) |
-| RPC | n/a | `redeem_incentive()` (atomic) |
+| Feature    | Points                                    | Gift Cards / Vouchers                                 |
+| ---------- | ----------------------------------------- | ----------------------------------------------------- |
+| Source     | Earned through service                    | Purchased with cash or issued by chef                 |
+| Value      | No cash value                             | Real dollar value (gift cards) or discount (vouchers) |
+| Redemption | Service rewards                           | Applied to event invoice via code                     |
+| Ledger     | loyalty_transactions (no financial write) | ledger_entries (financial write)                      |
+| RPC        | n/a                                       | `redeem_incentive()` (atomic)                         |
 
 Clients can see both on `/my-rewards` — points in the upper section, gift
 cards/vouchers in the lower section.
@@ -367,18 +370,18 @@ cards/vouchers in the lower section.
 All settings live in `loyalty_config` — one row per chef/tenant. Accessed via
 **Loyalty Dashboard → Program Settings**.
 
-| Setting | Default | What It Controls |
-|---|---|---|
-| `is_active` | true | Master switch. When false, no points are awarded for new events |
-| `points_per_guest` | 10 | Base earn rate per guest served at a completed event |
-| `welcome_points` | 25 | Bonus given when a new client joins via invitation |
-| `bonus_large_party_threshold` | 10 | Guest count that triggers the large party bonus |
-| `bonus_large_party_points` | 50 | Points added for hitting the large party threshold |
-| `milestone_bonuses` | JSON | Array of `{events, bonus}` objects for milestone rewards |
-| `referral_points` | 100 | Reference value for manual referral bonuses (not auto-applied) |
-| `tier_silver_min` | 200 | Lifetime points needed for Silver |
-| `tier_gold_min` | 500 | Lifetime points needed for Gold |
-| `tier_platinum_min` | 1000 | Lifetime points needed for Platinum |
+| Setting                       | Default | What It Controls                                                |
+| ----------------------------- | ------- | --------------------------------------------------------------- |
+| `is_active`                   | true    | Master switch. When false, no points are awarded for new events |
+| `points_per_guest`            | 10      | Base earn rate per guest served at a completed event            |
+| `welcome_points`              | 25      | Bonus given when a new client joins via invitation              |
+| `bonus_large_party_threshold` | 10      | Guest count that triggers the large party bonus                 |
+| `bonus_large_party_points`    | 50      | Points added for hitting the large party threshold              |
+| `milestone_bonuses`           | JSON    | Array of `{events, bonus}` objects for milestone rewards        |
+| `referral_points`             | 100     | Reference value for manual referral bonuses (not auto-applied)  |
+| `tier_silver_min`             | 200     | Lifetime points needed for Silver                               |
+| `tier_gold_min`               | 500     | Lifetime points needed for Gold                                 |
+| `tier_platinum_min`           | 1000    | Lifetime points needed for Platinum                             |
 
 ---
 
@@ -439,56 +442,56 @@ they have the points they have and what they need to do to earn more.
 
 ## 11. Data Architecture Quick Reference
 
-| Table | Purpose |
-|---|---|
-| `loyalty_config` | One row per chef — all program settings |
-| `loyalty_transactions` | Immutable point ledger (earned, redeemed, bonus, adjustment) |
-| `loyalty_rewards` | Reward catalog (soft-deletable with `is_active`) |
-| `loyalty_reward_redemptions` | Pending delivery queue — what rewards need to be honoured |
-| `clients.loyalty_points` | Live spendable balance (updated on every transaction) |
-| `clients.loyalty_tier` | Current tier (recalculated on every award) |
-| `clients.total_events_completed` | Cumulative events — used for milestone checks |
-| `clients.total_guests_served` | Cumulative guests — informational |
-| `clients.has_received_welcome_points` | Idempotency guard for welcome bonus |
-| `client_incentives` | Gift cards & vouchers (separate from points) |
-| `incentive_redemptions` | Atomic audit trail for gift card/voucher usage |
+| Table                                 | Purpose                                                      |
+| ------------------------------------- | ------------------------------------------------------------ |
+| `loyalty_config`                      | One row per chef — all program settings                      |
+| `loyalty_transactions`                | Immutable point ledger (earned, redeemed, bonus, adjustment) |
+| `loyalty_rewards`                     | Reward catalog (soft-deletable with `is_active`)             |
+| `loyalty_reward_redemptions`          | Pending delivery queue — what rewards need to be honoured    |
+| `clients.loyalty_points`              | Live spendable balance (updated on every transaction)        |
+| `clients.loyalty_tier`                | Current tier (recalculated on every award)                   |
+| `clients.total_events_completed`      | Cumulative events — used for milestone checks                |
+| `clients.total_guests_served`         | Cumulative guests — informational                            |
+| `clients.has_received_welcome_points` | Idempotency guard for welcome bonus                          |
+| `client_incentives`                   | Gift cards & vouchers (separate from points)                 |
+| `incentive_redemptions`               | Atomic audit trail for gift card/voucher usage               |
 
 ---
 
 ## 12. Key Code Locations
 
-| What | File |
-|---|---|
-| All loyalty config/reward/award actions (chef) | `lib/loyalty/actions.ts` |
-| Client-initiated reward redemption | `lib/loyalty/client-loyalty-actions.ts` |
-| Welcome points + delivery tracking | `lib/loyalty/auto-award.ts` |
-| Voucher/gift card management | `lib/loyalty/voucher-actions.ts` |
-| Code validation + atomic redemption | `lib/loyalty/redemption-actions.ts` |
-| Gift card purchase via Stripe | `lib/loyalty/gift-card-purchase-actions.ts` |
-| Auto-award hook in event FSM | `lib/events/transitions.ts` → `completeEvent()` |
-| Welcome points hook in auth | `lib/auth/actions.ts` → `signUpClient()` |
-| Chef loyalty dashboard | `app/(chef)/loyalty/page.tsx` |
-| Client rewards portal | `app/(client)/my-rewards/page.tsx` |
-| Pending deliveries UI (chef) | `components/loyalty/pending-deliveries-panel.tsx` |
-| How-to-earn explanation (client) | `components/loyalty/how-to-earn-panel.tsx` |
-| Schema: loyalty foundation | `supabase/migrations/20260216000002_loyalty_program.sql` |
-| Schema: vouchers & gift cards | `supabase/migrations/20260224000015_vouchers_and_gift_cards.sql` |
-| Schema: gift card redemption | `supabase/migrations/20260227000001_gift_card_redemption_and_purchase.sql` |
-| Schema: welcome points + delivery | `supabase/migrations/20260305000001_loyalty_welcome_and_delivery.sql` |
+| What                                           | File                                                                       |
+| ---------------------------------------------- | -------------------------------------------------------------------------- |
+| All loyalty config/reward/award actions (chef) | `lib/loyalty/actions.ts`                                                   |
+| Client-initiated reward redemption             | `lib/loyalty/client-loyalty-actions.ts`                                    |
+| Welcome points + delivery tracking             | `lib/loyalty/auto-award.ts`                                                |
+| Voucher/gift card management                   | `lib/loyalty/voucher-actions.ts`                                           |
+| Code validation + atomic redemption            | `lib/loyalty/redemption-actions.ts`                                        |
+| Gift card purchase via Stripe                  | `lib/loyalty/gift-card-purchase-actions.ts`                                |
+| Auto-award hook in event FSM                   | `lib/events/transitions.ts` → `completeEvent()`                            |
+| Welcome points hook in auth                    | `lib/auth/actions.ts` → `signUpClient()`                                   |
+| Chef loyalty dashboard                         | `app/(chef)/loyalty/page.tsx`                                              |
+| Client rewards portal                          | `app/(client)/my-rewards/page.tsx`                                         |
+| Pending deliveries UI (chef)                   | `components/loyalty/pending-deliveries-panel.tsx`                          |
+| How-to-earn explanation (client)               | `components/loyalty/how-to-earn-panel.tsx`                                 |
+| Schema: loyalty foundation                     | `supabase/migrations/20260216000002_loyalty_program.sql`                   |
+| Schema: vouchers & gift cards                  | `supabase/migrations/20260224000015_vouchers_and_gift_cards.sql`           |
+| Schema: gift card redemption                   | `supabase/migrations/20260227000001_gift_card_redemption_and_purchase.sql` |
+| Schema: welcome points + delivery              | `supabase/migrations/20260305000001_loyalty_welcome_and_delivery.sql`      |
 
 ---
 
 ## 13. What Is Not Yet Built
 
-| Feature | Status | Notes |
-|---|---|---|
-| Automated referral tracking | ❌ Not built | Manual bonus via chef is the workaround |
-| Points expiration | ❌ Not built | `expired` transaction type exists; no cron job yet |
-| Tier-exclusive rewards | ❌ Not built | Tier is visible but not yet a gate on rewards |
-| Loyalty leaderboard (client-facing) | ❌ Not built | Top clients visible to chef only |
-| Birthday auto-bonus | ❌ Not built | Requires birthday field on client profile |
-| SMS notifications for point awards | ❌ Not built | Email + in-app only |
-| Points earned chart | ❌ Not built | Transaction history only; no visualization |
+| Feature                             | Status       | Notes                                              |
+| ----------------------------------- | ------------ | -------------------------------------------------- |
+| Automated referral tracking         | ❌ Not built | Manual bonus via chef is the workaround            |
+| Points expiration                   | ❌ Not built | `expired` transaction type exists; no cron job yet |
+| Tier-exclusive rewards              | ❌ Not built | Tier is visible but not yet a gate on rewards      |
+| Loyalty leaderboard (client-facing) | ❌ Not built | Top clients visible to chef only                   |
+| Birthday auto-bonus                 | ❌ Not built | Requires birthday field on client profile          |
+| SMS notifications for point awards  | ❌ Not built | Email + in-app only                                |
+| Points earned chart                 | ❌ Not built | Transaction history only; no visualization         |
 
 ---
 
@@ -496,40 +499,40 @@ they have the points they have and what they need to do to earn more.
 
 **Q: Do points ever expire?**
 A: Not currently. The `expired` transaction type is reserved for a future
-   cron-based expiry system. Until it is built, points do not expire.
+cron-based expiry system. Until it is built, points do not expire.
 
 **Q: What happens if the chef pauses the program?**
 A: Setting `is_active = false` stops new points from being awarded. Existing
-   balances, transactions, and pending deliveries are preserved. Reactivating
-   resumes normal operation.
+balances, transactions, and pending deliveries are preserved. Reactivating
+resumes normal operation.
 
 **Q: Can a client have a negative point balance?**
 A: No. The `clientRedeemReward()` action checks for sufficient balance before
-   deducting. A redemption will fail with an error if the client lacks points.
+deducting. A redemption will fail with an error if the client lacks points.
 
 **Q: Can the chef take points away?**
 A: There is no "deduct points" button. The `adjustment` transaction type exists
-   in the schema for this purpose, but there is intentionally no UI for it to
-   prevent accidental deductions. If a correction is genuinely needed, it should
-   be done carefully and the client should be informed.
+in the schema for this purpose, but there is intentionally no UI for it to
+prevent accidental deductions. If a correction is genuinely needed, it should
+be done carefully and the client should be informed.
 
 **Q: What happens if `awardEventPoints` fails?**
 A: The failure is caught and logged but does not roll back the event completion.
-   The chef is not notified automatically — the `loyalty_points_awarded` flag
-   on the event will remain `false`, which a future retry mechanism could use
-   to reprocess. For now, the chef can use "Award Bonus Points" as a manual
-   workaround for any missed awards.
+The chef is not notified automatically — the `loyalty_points_awarded` flag
+on the event will remain `false`, which a future retry mechanism could use
+to reprocess. For now, the chef can use "Award Bonus Points" as a manual
+workaround for any missed awards.
 
 **Q: Does redeeming a reward affect the client's tier?**
 A: No. Tier is calculated from lifetime earned points only. Redemptions deduct
-   from the spendable balance but are invisible to the tier calculation.
+from the spendable balance but are invisible to the tier calculation.
 
 **Q: Can a client redeem a reward without an upcoming event?**
 A: Yes. The reward enters the `pending` delivery queue. It stays there until
-   the chef marks it as delivered at whatever future event they honour it at.
+the chef marks it as delivered at whatever future event they honour it at.
 
 ---
 
-*Last updated: 2026-03-05*
-*Owner: ChefFlow platform team*
-*Status: Complete and production-ready*
+_Last updated: 2026-03-05_
+_Owner: ChefFlow platform team_
+_Status: Complete and production-ready_

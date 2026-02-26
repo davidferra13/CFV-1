@@ -19,6 +19,7 @@ This work makes it possible for a chef to **bring their entire existing business
 ### 1. CSV / Spreadsheet Client Import (new)
 
 **Files:**
+
 - `lib/ai/parse-csv-clients.ts` — deterministic CSV parser, no AI required
 - `components/import/csv-import.tsx` — full import flow UI
 - `components/import/smart-import-hub.tsx` — new "CSV / Spreadsheet" tab
@@ -32,6 +33,7 @@ A chef can drop a `.csv` file or paste CSV text directly. The parser auto-detect
 - **Generic CSV** — detects columns by header name matching (name, full_name, email, phone, notes, address, city, state, zip and many variants)
 
 **Review flow:**
+
 1. Upload or paste → "Detect Columns" button
 2. See a column mapping preview + first 5 rows of data
 3. Duplicate check runs automatically (by email + name match against existing clients)
@@ -45,6 +47,7 @@ A chef can drop a `.csv` file or paste CSV text directly. The parser auto-detect
 ### 2. Historical Events Import (new)
 
 **Files:**
+
 - `lib/events/historical-import-actions.ts` — `importHistoricalEvent()`, `importHistoricalEvents()`, `getClientsForHistoricalImport()`
 - `components/import/past-events-import.tsx` — multi-row form UI
 - `components/import/smart-import-hub.tsx` — new "Past Events" tab
@@ -53,12 +56,14 @@ A chef can drop a `.csv` file or paste CSV text directly. The parser auto-detect
 **What it does:**
 
 A chef fills out a spreadsheet-style form with their past events. Each row has:
+
 - **Date** (required)
 - **Client** (required — select from existing or type a new name)
 - Occasion, Guest Count, City, Service Style
 - Amount Paid + Payment Method
 
 **How events are created:**
+
 - Inserted directly as `status: 'completed'` — no FSM traversal
 - If a client name doesn't match an existing client, a minimal client record is created automatically
 - If amount > $0, a `ledger_entries` record is inserted (entry_type: `payment`) so the chef's financial history is accurate in reports
@@ -83,6 +88,7 @@ A chef fills out a spreadsheet-style form with their past events. Each row has:
 **File:** `lib/ai/import-actions.ts` — `checkClientDuplicates()` (new server action)
 
 Called immediately after CSV or text parsing. Checks all candidate clients against:
+
 - Exact email match (excluding placeholder emails)
 - Case-insensitive full name match
 
@@ -97,6 +103,7 @@ Results are shown in the review phase as "possible duplicate" badges on affected
 **File:** `components/dashboard/onboarding-accelerator.tsx`
 
 The "Get Started" card on the dashboard now:
+
 - Leads with **"Import your contacts"** (CSV upload) as step 1
 - Shows **"Log your past events"** as step 2
 - Then live inquiry → quote (normal workflow)
@@ -111,16 +118,16 @@ This reverses the previous guidance. The old guidance optimized for workflow com
 
 The tabs on `/import` are now ordered by chef priority:
 
-| Tab | Mode | Requires AI |
-|---|---|---|
-| Brain Dump | `brain-dump` | Yes (fallback without) |
-| **CSV / Spreadsheet** | `csv` | **No** |
-| **Past Events** | `past-events` | **No** |
-| Import Clients | `clients` | Yes |
-| Import Recipe | `recipe` | Yes |
-| Import Receipt | `receipt` | Yes (vision) |
-| Import Document | `document` | Yes |
-| Upload File | `file-upload` | Yes (vision) |
+| Tab                   | Mode          | Requires AI            |
+| --------------------- | ------------- | ---------------------- |
+| Brain Dump            | `brain-dump`  | Yes (fallback without) |
+| **CSV / Spreadsheet** | `csv`         | **No**                 |
+| **Past Events**       | `past-events` | **No**                 |
+| Import Clients        | `clients`     | Yes                    |
+| Import Recipe         | `recipe`      | Yes                    |
+| Import Receipt        | `receipt`     | Yes (vision)           |
+| Import Document       | `document`    | Yes                    |
+| Upload File           | `file-upload` | Yes (vision)           |
 
 CSV and Past Events are placed immediately after Brain Dump because they require no API key and handle the most common Day 1 data.
 
@@ -145,6 +152,7 @@ When a chef types a client name that doesn't match an existing client, the histo
 ### No Migration Required
 
 All new features use existing database tables:
+
 - `clients` — existing
 - `events` — existing (status `'completed'` was always valid)
 - `ledger_entries` — existing
@@ -195,10 +203,10 @@ No schema changes needed.
 
 ## What's Still Missing (Future Work)
 
-| Gap | Priority | Notes |
-| --- | --- | --- |
-| Menu/dish import | Medium | No bulk import path for menus yet — must build in UI |
-| Recipe import from URL | Low | Useful but not Day 1 |
-| Edit individual clients before CSV import | Medium | Currently: skip or import as-is |
-| Merge duplicate clients | Medium | Can identify but not merge in-app yet |
-| Financial history import (non-event payments) | Low | Ledger immutability makes this complex |
+| Gap                                           | Priority | Notes                                                |
+| --------------------------------------------- | -------- | ---------------------------------------------------- |
+| Menu/dish import                              | Medium   | No bulk import path for menus yet — must build in UI |
+| Recipe import from URL                        | Low      | Useful but not Day 1                                 |
+| Edit individual clients before CSV import     | Medium   | Currently: skip or import as-is                      |
+| Merge duplicate clients                       | Medium   | Can identify but not merge in-app yet                |
+| Financial history import (non-event payments) | Low      | Ledger immutability makes this complex               |

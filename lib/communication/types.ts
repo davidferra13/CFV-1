@@ -1,4 +1,10 @@
-export type CommunicationSource = 'email' | 'website_form' | 'sms' | 'instagram' | 'takeachef' | 'manual_log'
+export type CommunicationSource =
+  | 'email'
+  | 'website_form'
+  | 'sms'
+  | 'instagram'
+  | 'takeachef'
+  | 'manual_log'
 export type CommunicationDirection = 'inbound' | 'outbound'
 export type CommunicationStatus = 'unlinked' | 'linked' | 'resolved'
 export type ThreadState = 'active' | 'snoozed' | 'closed'

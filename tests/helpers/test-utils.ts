@@ -75,5 +75,5 @@ export function formatCentsForAssertion(cents: number): string {
  * Wait helper — use sparingly, prefer Playwright's built-in waiting.
  */
 export function wait(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }

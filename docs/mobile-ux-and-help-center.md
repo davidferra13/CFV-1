@@ -12,7 +12,7 @@
 
 A full-screen, step-by-step mobile UI for the Day-Of Protocol checklist. Key design decisions:
 
-**Architecture adaptation:** The spec assumed a flat DB table of tasks (`dop_task_completions`), but the real system generates tasks computationally in `lib/scheduling/dop.ts` from event flags and preferences. `dop_task_completions` stores only *manual confirmation keys* (task_keys for tasks the system can't auto-detect). The component was built to match the real architecture.
+**Architecture adaptation:** The spec assumed a flat DB table of tasks (`dop_task_completions`), but the real system generates tasks computationally in `lib/scheduling/dop.ts` from event flags and preferences. `dop_task_completions` stores only _manual confirmation keys_ (task_keys for tasks the system can't auto-detect). The component was built to match the real architecture.
 
 - `flattenDOPSchedule()` flattens a `DOPSchedule` into an ordered list, skipping `not_applicable` phases
 - Distinguishes between auto-complete tasks (event flags — read-only) and manually-toggleable tasks (uses `toggleDOPTaskCompletion`)
@@ -23,6 +23,7 @@ A full-screen, step-by-step mobile UI for the Day-Of Protocol checklist. Key des
 - Compressed timeline warning shown if `schedule.isCompressed` is true
 
 **Props interface:**
+
 ```ts
 interface DopMobileViewProps {
   eventId: string
@@ -52,6 +53,7 @@ Floating action button visible only on mobile (`sm:hidden`). Two actions:
 **Capture Receipt** — triggers `<input type="file" capture="environment">` to open the native camera app. The image is not uploaded automatically; a toast tells the chef to finish logging it from the full Expenses page. (Full upload flow would require a storage bucket integration.)
 
 **Quick Expense** — bottom-sheet modal with amount (numeric keyboard) and description. Calls `createExpense` from `lib/expenses/actions` with defaults:
+
 - `category: 'other'`
 - `payment_method: 'card'`
 - `expense_date: today`
@@ -68,10 +70,11 @@ Backdrop tap and Cancel button both dismiss the modal. Enter key in either input
 Listens to `window.addEventListener('online' | 'offline')` and renders a fixed-top banner. Returns `null` when online and outside the 3-second reconnection window, so there is zero DOM impact in the normal case.
 
 Usage — add to chef layout or root layout:
+
 ```tsx
 import { OfflineBanner } from '@/components/ui/offline-banner'
 // ...
-<OfflineBanner />
+;<OfflineBanner />
 ```
 
 ---

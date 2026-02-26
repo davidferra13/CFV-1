@@ -6,13 +6,13 @@ Added the ability for chefs to upload a **business logo** separate from their pe
 
 ## Files Modified
 
-| File | Change |
-| --- | --- |
-| `supabase/migrations/20260304000010_chef_logo.sql` | New `logo_url TEXT` column on `chefs` + new `chef-logos` storage bucket |
-| `lib/chef/profile-actions.ts` | `logo_url` added to schema, types, get, and update; new `uploadChefLogo` action |
-| `app/(chef)/settings/my-profile/chef-profile-form.tsx` | Logo upload section with file picker and rectangular preview |
-| `lib/profile/actions.ts` | `logo_url` added to the public chef profile select query |
-| `app/(public)/chef/[slug]/page.tsx` | Logo displayed in the hero section above the profile photo |
+| File                                                            | Change                                                                              |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `supabase/migrations/20260304000010_chef_logo.sql`              | New `logo_url TEXT` column on `chefs` + new `chef-logos` storage bucket             |
+| `lib/chef/profile-actions.ts`                                   | `logo_url` added to schema, types, get, and update; new `uploadChefLogo` action     |
+| `app/(chef)/settings/my-profile/chef-profile-form.tsx`          | Logo upload section with file picker and rectangular preview                        |
+| `lib/profile/actions.ts`                                        | `logo_url` added to the public chef profile select query                            |
+| `app/(public)/chef/[slug]/page.tsx`                             | Logo displayed in the hero section above the profile photo                          |
 | `app/(chef)/settings/client-preview/public-profile-preview.tsx` | Logo added to the preview mirror so Settings → Client Preview matches the live page |
 
 ## How It Works
@@ -41,14 +41,14 @@ Added the ability for chefs to upload a **business logo** separate from their pe
 
 ## Distinction from Profile Photo
 
-| | Profile Photo | Business Logo |
-| --- | --- | --- |
-| Column | `profile_image_url` | `logo_url` |
-| Bucket | `chef-profile-images` | `chef-logos` |
-| Max size | 10MB | 5MB |
-| Formats | JPEG, PNG, HEIC, HEIF, WebP | JPEG, PNG, WebP, SVG |
-| Display shape | Circular avatar | Rectangular, object-contain |
-| Intended use | Personal headshot | Brand mark / business logo |
+|               | Profile Photo               | Business Logo               |
+| ------------- | --------------------------- | --------------------------- |
+| Column        | `profile_image_url`         | `logo_url`                  |
+| Bucket        | `chef-profile-images`       | `chef-logos`                |
+| Max size      | 10MB                        | 5MB                         |
+| Formats       | JPEG, PNG, HEIC, HEIF, WebP | JPEG, PNG, WebP, SVG        |
+| Display shape | Circular avatar             | Rectangular, object-contain |
+| Intended use  | Personal headshot           | Brand mark / business logo  |
 
 ## Migration
 

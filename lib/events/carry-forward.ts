@@ -17,7 +17,7 @@ export type CarryForwardItem = {
   sourceEventOccasion: string | null
   sourceEventDate: string
   storageLocation: string | null
-  useByDate: string | null  // ISO date YYYY-MM-DD, null if not set
+  useByDate: string | null // ISO date YYYY-MM-DD, null if not set
 }
 
 /**
@@ -34,7 +34,8 @@ export async function getAvailableCarryForwardItems(
   // Fetch reusable leftovers from other events (no transfer yet)
   const { data, error } = await supabase
     .from('unused_ingredients')
-    .select(`
+    .select(
+      `
       id,
       ingredient_name,
       estimated_cost_cents,
@@ -43,7 +44,8 @@ export async function getAvailableCarryForwardItems(
       use_by_date,
       event_id,
       events!inner(id, occasion, event_date)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .eq('reason', 'leftover_reusable')
     .eq('expired', false)

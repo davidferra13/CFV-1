@@ -55,36 +55,40 @@ const MIME_TO_EXT: Record<string, string> = {
 // VALIDATION SCHEMAS
 // ============================================
 
-const CreateConversationSchema = z.object({
-  client_id: z.string().uuid(),
-  context_type: z.enum(['standalone', 'inquiry', 'event']).default('standalone'),
-  inquiry_id: z.string().uuid().nullable().optional(),
-  event_id: z.string().uuid().nullable().optional(),
-  initial_message: z.string().min(1).optional(),
-}).refine(
-  (data) => {
-    if (data.context_type === 'inquiry') return !!data.inquiry_id
-    if (data.context_type === 'event') return !!data.event_id
-    return true
-  },
-  { message: 'Context type must have matching ID set' }
-)
+const CreateConversationSchema = z
+  .object({
+    client_id: z.string().uuid(),
+    context_type: z.enum(['standalone', 'inquiry', 'event']).default('standalone'),
+    inquiry_id: z.string().uuid().nullable().optional(),
+    event_id: z.string().uuid().nullable().optional(),
+    initial_message: z.string().min(1).optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.context_type === 'inquiry') return !!data.inquiry_id
+      if (data.context_type === 'event') return !!data.event_id
+      return true
+    },
+    { message: 'Context type must have matching ID set' }
+  )
 
-const SendMessageSchema = z.object({
-  conversation_id: z.string().uuid(),
-  message_type: z.enum(['text', 'image', 'file', 'link', 'event_ref']).default('text'),
-  body: z.string().optional(),
-  link_url: z.string().url().optional(),
-  referenced_event_id: z.string().uuid().optional(),
-}).refine(
-  (data) => {
-    if (data.message_type === 'text') return !!data.body?.trim()
-    if (data.message_type === 'link') return !!data.link_url
-    if (data.message_type === 'event_ref') return !!data.referenced_event_id
-    return true
-  },
-  { message: 'Message must have content matching its type' }
-)
+const SendMessageSchema = z
+  .object({
+    conversation_id: z.string().uuid(),
+    message_type: z.enum(['text', 'image', 'file', 'link', 'event_ref']).default('text'),
+    body: z.string().optional(),
+    link_url: z.string().url().optional(),
+    referenced_event_id: z.string().uuid().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.message_type === 'text') return !!data.body?.trim()
+      if (data.message_type === 'link') return !!data.link_url
+      if (data.message_type === 'event_ref') return !!data.referenced_event_id
+      return true
+    },
+    { message: 'Message must have content matching its type' }
+  )
 
 const GetMessagesSchema = z.object({
   conversation_id: z.string().uuid(),
@@ -139,9 +143,7 @@ export async function createConversation(input: z.infer<typeof CreateConversatio
     conversation_id: string
     auth_user_id: string
     role: 'chef' | 'client'
-  }> = [
-    { conversation_id: conversation.id, auth_user_id: user.id, role: 'chef' },
-  ]
+  }> = [{ conversation_id: conversation.id, auth_user_id: user.id, role: 'chef' }]
 
   // Only add client as participant if they have an auth account
   if (client.auth_user_id) {
@@ -152,9 +154,7 @@ export async function createConversation(input: z.infer<typeof CreateConversatio
     })
   }
 
-  const { error: partError } = await supabase
-    .from('conversation_participants')
-    .insert(participants)
+  const { error: partError } = await supabase.from('conversation_participants').insert(participants)
 
   if (partError) {
     console.error('[createConversation] Participant error:', partError)
@@ -192,10 +192,7 @@ export async function getOrCreateConversation(input: {
   const contextType = input.context_type || 'standalone'
 
   // Try to find existing conversation
-  let query = supabase
-    .from('conversations')
-    .select('*')
-    .eq('tenant_id', user.tenantId!)
+  let query = supabase.from('conversations').select('*').eq('tenant_id', user.tenantId!)
 
   if (contextType === 'event' && input.event_id) {
     query = query.eq('event_id', input.event_id).eq('context_type', 'event')
@@ -247,7 +244,8 @@ export async function getConversationInbox(): Promise<ConversationWithDetails[]>
   // Fetch conversations with participants
   const { data: conversations, error: convError } = await supabase
     .from('conversations')
-    .select(`
+    .select(
+      `
       *,
       conversation_participants (
         id,
@@ -257,7 +255,8 @@ export async function getConversationInbox(): Promise<ConversationWithDetails[]>
         notifications_muted,
         joined_at
       )
-    `)
+    `
+    )
     .in('id', conversationIds)
     .order('last_message_at', { ascending: false, nullsFirst: false })
 
@@ -330,9 +329,7 @@ export async function getConversationInbox(): Promise<ConversationWithDetails[]>
       (p: ConversationParticipant) => p.auth_user_id !== user.id
     )
 
-    const otherInfo = otherParticipant
-      ? nameMap.get(otherParticipant.auth_user_id)
-      : undefined
+    const otherInfo = otherParticipant ? nameMap.get(otherParticipant.auth_user_id) : undefined
 
     return {
       id: conv.id,
@@ -512,7 +509,7 @@ export async function sendChatMessage(input: z.infer<typeof SendMessageSchema>) 
       validated.conversation_id,
       message.id,
       validated.body ?? 'Sent a message',
-      user.tenantId,
+      user.tenantId
     ).catch((err) => console.error('[sendChatMessage] Chef notification failed:', err))
   }
 
@@ -520,7 +517,11 @@ export async function sendChatMessage(input: z.infer<typeof SendMessageSchema>) 
   if (user.role === 'chef' && user.tenantId) {
     try {
       const { logChefActivity } = await import('@/lib/activity/log-chef')
-      const preview = validated.body ? (validated.body.length > 60 ? validated.body.slice(0, 60) + '…' : validated.body) : 'message'
+      const preview = validated.body
+        ? validated.body.length > 60
+          ? validated.body.slice(0, 60) + '…'
+          : validated.body
+        : 'message'
       await logChefActivity({
         tenantId: user.tenantId,
         actorId: user.id,
@@ -529,7 +530,10 @@ export async function sendChatMessage(input: z.infer<typeof SendMessageSchema>) 
         entityType: 'chat_message',
         entityId: message.id,
         summary: `Sent chat message: "${preview}"`,
-        context: { conversation_id: validated.conversation_id, message_type: validated.message_type },
+        context: {
+          conversation_id: validated.conversation_id,
+          message_type: validated.message_type,
+        },
       })
     } catch (err) {
       console.error('[sendChatMessage] Activity log failed (non-blocking):', err)
@@ -685,7 +689,9 @@ export async function sendFileMessage(conversationId: string, formData: FormData
   const maxLabel = isImage ? '10MB' : '25MB'
 
   if (file.size > maxSize) {
-    throw new Error(`File too large: ${(file.size / 1024 / 1024).toFixed(1)}MB. Maximum: ${maxLabel}`)
+    throw new Error(
+      `File too large: ${(file.size / 1024 / 1024).toFixed(1)}MB. Maximum: ${maxLabel}`
+    )
   }
 
   // Generate a unique ID for the message first (we need it for storage path)
@@ -911,10 +917,7 @@ export async function clientGetOrCreateConversation(input?: {
   const contextType = input?.context_type || 'standalone'
 
   // Try to find existing conversation for this context
-  let query = supabase
-    .from('conversations')
-    .select('*')
-    .eq('tenant_id', user.tenantId!)
+  let query = supabase.from('conversations').select('*').eq('tenant_id', user.tenantId!)
 
   if (contextType === 'event' && input?.event_id) {
     query = query.eq('event_id', input.event_id).eq('context_type', 'event')
@@ -974,9 +977,7 @@ export async function clientGetOrCreateConversation(input?: {
     { conversation_id: conversation.id, auth_user_id: chef.auth_user_id, role: 'chef' as const },
   ]
 
-  const { error: partError } = await supabase
-    .from('conversation_participants')
-    .insert(participants)
+  const { error: partError } = await supabase.from('conversation_participants').insert(participants)
 
   if (partError) {
     console.error('[clientGetOrCreateConversation] Participant error:', partError)
@@ -1042,7 +1043,7 @@ async function notifyChefOfClientMessage(
   conversationId: string,
   messageId: string,
   messageBody: string,
-  clientTenantId: string | undefined | null,
+  clientTenantId: string | undefined | null
 ): Promise<void> {
   const { createServerClient } = await import('@/lib/supabase/server')
   const supabase = createServerClient({ admin: true })
@@ -1059,7 +1060,8 @@ async function notifyChefOfClientMessage(
   const tenantId = conversation.tenant_id
 
   // Load chef identity
-  const { createNotification, getChefAuthUserId, getChefProfile } = await import('@/lib/notifications/actions')
+  const { createNotification, getChefAuthUserId, getChefProfile } =
+    await import('@/lib/notifications/actions')
   const [chefUserId, chefProfile] = await Promise.all([
     getChefAuthUserId(tenantId),
     getChefProfile(tenantId),

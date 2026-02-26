@@ -43,6 +43,7 @@ Release is restricted to `'new'` status only. If the chef has already started wo
 ### 4. UI: Release Button (`components/inquiries/inquiry-transitions.tsx`)
 
 A "Release to Marketplace" button (secondary variant) appears in the action group for inquiries that:
+
 - Are in `'new'` status
 - Were auto-assigned from a contact submission (verified by linked contact_submission)
 
@@ -61,13 +62,13 @@ The page now fetches the linked contact submission alongside other data and pass
 
 ## Files Modified
 
-| File | Change |
-|------|--------|
-| `.env.local` | Added `PLATFORM_OWNER_CHEF_ID` |
-| `lib/contact/actions.ts` | Auto-assign logic after contact form insert |
-| `lib/contact/claim.ts` | Added `releaseToMarketplace()` + `getLinkedContactSubmission()` |
-| `app/(chef)/inquiries/[id]/page.tsx` | Fetch linked submission, pass `canRelease` prop |
-| `components/inquiries/inquiry-transitions.tsx` | Added "Release to Marketplace" button |
+| File                                           | Change                                                          |
+| ---------------------------------------------- | --------------------------------------------------------------- |
+| `.env.local`                                   | Added `PLATFORM_OWNER_CHEF_ID`                                  |
+| `lib/contact/actions.ts`                       | Auto-assign logic after contact form insert                     |
+| `lib/contact/claim.ts`                         | Added `releaseToMarketplace()` + `getLinkedContactSubmission()` |
+| `app/(chef)/inquiries/[id]/page.tsx`           | Fetch linked submission, pass `canRelease` prop                 |
+| `components/inquiries/inquiry-transitions.tsx` | Added "Release to Marketplace" button                           |
 
 ## How It Connects
 

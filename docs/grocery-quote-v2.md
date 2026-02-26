@@ -14,7 +14,9 @@ V2 adds four improvements on top of the existing V1 (Spoonacular + Kroger + Meal
 ## New Files
 
 ### `lib/grocery/usda-prices.ts`
+
 Static lookup table of ~160 USDA ERS Northeast Urban Average Retail Food Prices (Q1 2026).
+
 - Source: USDA Economic Research Service, Northeast Urban division
 - All prices in cents per common purchase unit (lb, bunch, dozen, pint, etc.)
 - Already NE-regional — no multiplier applied to these
@@ -22,14 +24,18 @@ Static lookup table of ~160 USDA ERS Northeast Urban Average Retail Food Prices 
 - Update quarterly by re-downloading the ERS data CSVs
 
 ### `lib/grocery/regional-multipliers.ts`
+
 Per-category Northeast price multipliers derived from BLS CPI Northeast Division vs US City Average.
+
 - Applied ONLY to Spoonacular + Kroger (national averages)
 - USDA prices are already NE — no multiplier applied to those
 - MealMe prices are real-time local stores — no multiplier applied
 - Key multipliers: produce 1.18x, fresh_herb 1.20x, specialty 1.22x, protein 1.15x, dairy 1.12x
 
 ### `supabase/migrations/20260313000004_grocery_accuracy.sql`
+
 Additive migration — three nullable columns on `grocery_price_quotes`:
+
 - `actual_grocery_cost_cents INT` — what the chef actually spent
 - `accuracy_delta_pct DECIMAL(6,2)` — computed: (actual - estimated) / estimated × 100
 - `actual_cost_logged_at TIMESTAMPTZ` — when it was recorded
@@ -40,6 +46,7 @@ Additive migration — three nullable columns on `grocery_price_quotes`:
 ## Modified Files
 
 ### `lib/grocery/pricing-actions.ts`
+
 - Added `lookupUsdaPrice` + `getNeMultiplier` imports
 - Extended type `IngredientPriceResult` with: `category`, `usdaCents`, `hasNoApiData`
 - Extended type `GroceryQuoteResult` with: `usdaTotalCents`, `actualGroceryCostCents`, `accuracyDeltaPct`
@@ -60,6 +67,7 @@ Additive migration — three nullable columns on `grocery_price_quotes`:
   producing $9.98 instead of ~$4.99. Unknown unit combinations fall back to null (other sources used).
 
 ### `components/events/grocery-quote-panel.tsx`
+
 - Added **USDA (NE)** column (blue text) to the price table, between Qty and Spoonacular
 - Rows with `hasNoApiData === true` get amber background + "no market data" label
 - Footer row now shows USDA total alongside Spoonacular/Kroger/MealMe totals
@@ -68,6 +76,7 @@ Additive migration — three nullable columns on `grocery_price_quotes`:
   is present. Shows: Estimated total | Actual spent | Delta % (green < 10%, amber ≥ 10%)
 
 ### `components/events/close-out-wizard.tsx`
+
 - Added import for `logActualGroceryCost` from `@/lib/grocery/pricing-actions`
 - `ReceiptsStep` (Step 1) now includes a grocery cost input section visible in all three branches
   (no expenses / all receipts / missing receipts)
@@ -98,6 +107,7 @@ Additive migration — three nullable columns on `grocery_price_quotes`:
 ## Self-Calibration Path
 
 The `accuracy_delta_pct` column is the foundation for future tuning:
+
 - If the delta is consistently +20% (estimates too low), the NE multipliers need an upward nudge
 - If consistently -10% (estimates too high), multipliers can be softened
 - The query `SELECT AVG(accuracy_delta_pct) FROM grocery_price_quotes WHERE tenant_id = $1`
@@ -107,14 +117,14 @@ The `accuracy_delta_pct` column is the foundation for future tuning:
 
 ## Environment Variables Required
 
-| Variable | Source | Required? |
-|---|---|---|
-| `SPOONACULAR_API_KEY` | spoonacular.com — free 150 req/day | Yes (but degrades gracefully) |
-| `KROGER_CLIENT_ID` | developer.kroger.com — free | Yes (but degrades gracefully) |
-| `KROGER_CLIENT_SECRET` | developer.kroger.com — free | Yes (but degrades gracefully) |
-| `INSTACART_API_KEY` | Instacart partner program | Optional — cart links only |
-| `MEALME_API_KEY` | mealme.ai enterprise | Optional — real NE store prices |
-| USDA prices | Built-in static table | No key needed, always available |
+| Variable               | Source                             | Required?                       |
+| ---------------------- | ---------------------------------- | ------------------------------- |
+| `SPOONACULAR_API_KEY`  | spoonacular.com — free 150 req/day | Yes (but degrades gracefully)   |
+| `KROGER_CLIENT_ID`     | developer.kroger.com — free        | Yes (but degrades gracefully)   |
+| `KROGER_CLIENT_SECRET` | developer.kroger.com — free        | Yes (but degrades gracefully)   |
+| `INSTACART_API_KEY`    | Instacart partner program          | Optional — cart links only      |
+| `MEALME_API_KEY`       | mealme.ai enterprise               | Optional — real NE store prices |
+| USDA prices            | Built-in static table              | No key needed, always available |
 
 ---
 

@@ -6,54 +6,60 @@ Phase 15 adds a **communication log** to ChefFlow. This is not a sending system 
 
 ### New Files
 
-| File | Purpose |
-|------|---------|
-| `lib/messages/actions.ts` | 10 server actions for messages and templates CRUD |
-| `components/messages/message-log-form.tsx` | Quick inline form for logging a message |
-| `components/messages/message-thread.tsx` | Chronological conversation thread display |
-| `components/messages/template-manager.tsx` | Full CRUD management UI for response templates |
-| `app/(chef)/settings/templates/page.tsx` | Templates management page |
+| File                                       | Purpose                                           |
+| ------------------------------------------ | ------------------------------------------------- |
+| `lib/messages/actions.ts`                  | 10 server actions for messages and templates CRUD |
+| `components/messages/message-log-form.tsx` | Quick inline form for logging a message           |
+| `components/messages/message-thread.tsx`   | Chronological conversation thread display         |
+| `components/messages/template-manager.tsx` | Full CRUD management UI for response templates    |
+| `app/(chef)/settings/templates/page.tsx`   | Templates management page                         |
 
 ### Modified Files
 
-| File | Change |
-|------|--------|
-| `app/(chef)/inquiries/[id]/page.tsx` | Added Communication section with thread + log form |
-| `app/(chef)/events/[id]/page.tsx` | Added Communication section; combined thread shows inquiry + event messages |
-| `app/(chef)/clients/[id]/page.tsx` | Added Communication History showing ALL messages across all inquiries/events |
-| `app/(chef)/settings/page.tsx` | Added link to Response Templates sub-page |
+| File                                 | Change                                                                       |
+| ------------------------------------ | ---------------------------------------------------------------------------- |
+| `app/(chef)/inquiries/[id]/page.tsx` | Added Communication section with thread + log form                           |
+| `app/(chef)/events/[id]/page.tsx`    | Added Communication section; combined thread shows inquiry + event messages  |
+| `app/(chef)/clients/[id]/page.tsx`   | Added Communication History showing ALL messages across all inquiries/events |
+| `app/(chef)/settings/page.tsx`       | Added link to Response Templates sub-page                                    |
 
 ## Architecture Decisions
 
 ### Communication Log, Not Dispatcher
+
 V1 does not send texts or emails. The chef communicates through normal channels (phone, text, Instagram) and LOGS the communication in ChefFlow. This was a deliberate scope decision — the value is the unified history, not automation.
 
 ### Messages Must Be Attached
+
 Every message links to at least one of: `inquiry_id`, `event_id`, `client_id`. The Zod schema enforces this with a `.refine()` check. No orphaned messages.
 
 ### Combined Event Threads
+
 When an event was converted from an inquiry, the event detail page shows the combined message thread (inquiry messages + event messages). This gives the chef the full conversation arc from first contact through event execution.
 
 ### Client-Level History
+
 The client detail page shows ALL messages for that client across every inquiry and every event. This is the full relationship record — everything ever said to/from that client.
 
 ### Default Templates Are Suggestions
+
 The 7 default templates are seeded on first visit to the templates page if the chef has no templates. They're written in a professional but warm tone. The chef can edit, delete, or replace them entirely.
 
 ### Template Quick-Fill, Not Auto-Send
+
 Selecting a template pre-fills the message body textarea. The chef edits it, sends it on their phone/text/email, then clicks "Log Message." Templates reduce "what do I say?" friction without any automation.
 
 ## Schema Mapping
 
 The spec used slightly different names than the actual DB schema:
 
-| Spec Term | Actual DB Column |
-|-----------|-----------------|
-| `content` | `body` |
+| Spec Term                   | Actual DB Column                   |
+| --------------------------- | ---------------------------------- |
+| `content`                   | `body`                             |
 | `channel: in_person, other` | `channel: internal_note` (DB enum) |
-| template `content` | `template_text` |
-| template `category` enum | `category` as plain TEXT |
-| `status: logged` (default) | `status: 'logged'` (correct) |
+| template `content`          | `template_text`                    |
+| template `category` enum    | `category` as plain TEXT           |
+| `status: logged` (default)  | `status: 'logged'` (correct)       |
 
 ## Server Actions (10 Functions)
 
@@ -72,6 +78,7 @@ The spec used slightly different names than the actual DB schema:
 ## UI Components
 
 ### MessageLogForm
+
 - Direction toggle: "I sent" / "I received"
 - Channel dropdown: Text, Email, Instagram, Take a Chef, Phone, Internal Note
 - Datetime picker defaulting to now
@@ -80,6 +87,7 @@ The spec used slightly different names than the actual DB schema:
 - Compact form designed for inline use on detail pages
 
 ### MessageThread
+
 - Chat-style layout: outbound messages right-aligned with brand color, inbound left-aligned
 - Internal notes displayed full-width with dashed border
 - Channel badge per message (color-coded)
@@ -88,6 +96,7 @@ The spec used slightly different names than the actual DB schema:
 - Empty state messaging
 
 ### TemplateManager
+
 - Grouped by category with sorted display
 - Inline create/edit form
 - Delete with confirmation

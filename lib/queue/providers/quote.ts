@@ -14,11 +14,13 @@ export async function getQuoteQueueItems(
 
   const { data: quotes } = await supabase
     .from('quotes')
-    .select(`
+    .select(
+      `
       id, status, total_quoted_cents, valid_until, created_at,
       event_id,
       client:clients(id, full_name)
-    `)
+    `
+    )
     .eq('tenant_id', tenantId)
     .in('status', ['draft', 'sent', 'accepted'])
 

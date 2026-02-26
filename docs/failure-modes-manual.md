@@ -422,6 +422,7 @@
 
 - **Symptom:** Everything on Pi runs extremely slowly. Ollama takes minutes per response.
 - **Fix:**
+
   ```bash
   ssh pi
   vcgencmd measure_temp     # should be < 80C

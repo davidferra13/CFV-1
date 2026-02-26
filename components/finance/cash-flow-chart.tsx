@@ -63,26 +63,35 @@ export function CashFlowChart({ initialForecast }: Props) {
         <Card>
           <CardContent className="py-3">
             <p className="text-xs text-stone-500">Confirmed Income</p>
-            <p className="text-xl font-semibold text-emerald-600">{formatCents(forecast.totalConfirmedInCents)}</p>
+            <p className="text-xl font-semibold text-emerald-600">
+              {formatCents(forecast.totalConfirmedInCents)}
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-3">
             <p className="text-xs text-stone-500">Projected Income</p>
-            <p className="text-xl font-semibold text-blue-600">{formatCents(forecast.totalProjectedInCents)}</p>
+            <p className="text-xl font-semibold text-blue-600">
+              {formatCents(forecast.totalProjectedInCents)}
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-3">
             <p className="text-xs text-stone-500">Expenses</p>
-            <p className="text-xl font-semibold text-red-600">{formatCents(forecast.totalConfirmedOutCents)}</p>
+            <p className="text-xl font-semibold text-red-600">
+              {formatCents(forecast.totalConfirmedOutCents)}
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-3">
             <p className="text-xs text-stone-500">Net ({days}d)</p>
-            <p className={`text-xl font-semibold ${totalNet >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-              {totalNet < 0 ? '-' : ''}{formatCents(totalNet)}
+            <p
+              className={`text-xl font-semibold ${totalNet >= 0 ? 'text-emerald-600' : 'text-red-600'}`}
+            >
+              {totalNet < 0 ? '-' : ''}
+              {formatCents(totalNet)}
             </p>
           </CardContent>
         </Card>
@@ -118,7 +127,10 @@ export function CashFlowChart({ initialForecast }: Props) {
               <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#78716c' }} />
               <YAxis tickFormatter={formatDollars} tick={{ fontSize: 11, fill: '#78716c' }} />
               <Tooltip
-                formatter={(v: number | undefined) => [`$${(Math.abs(v ?? 0) / 100).toLocaleString()}`, '']}
+                formatter={(v: number | undefined) => [
+                  `$${(Math.abs(v ?? 0) / 100).toLocaleString()}`,
+                  '',
+                ]}
               />
               <Legend />
               <Bar dataKey="Confirmed In" fill="#10b981" radius={[4, 4, 0, 0]} />

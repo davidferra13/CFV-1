@@ -13,14 +13,14 @@ export type BuildRevenueGoalRangeProgressInput = {
   projectedCents: number
 }
 
-export function buildRangeProgress(input: BuildRevenueGoalRangeProgressInput): RevenueGoalRangeProgress {
+export function buildRangeProgress(
+  input: BuildRevenueGoalRangeProgressInput
+): RevenueGoalRangeProgress {
   const target = Math.max(0, Math.round(input.targetCents))
   const realized = Math.max(0, Math.round(input.realizedCents))
   const projected = Math.max(realized, Math.round(input.projectedCents))
   const gap = Math.max(0, target - projected)
-  const progressPercent = target > 0
-    ? Math.min(999, Math.round((projected / target) * 100))
-    : 0
+  const progressPercent = target > 0 ? Math.min(999, Math.round((projected / target) * 100)) : 0
 
   return {
     start: input.start,
@@ -46,7 +46,7 @@ export function applyPipelineWeight(
 ): number {
   const quoteWeight = nudgeLevel === 'aggressive' ? 0.55 : nudgeLevel === 'standard' ? 0.45 : 0.35
   const inquiryWeight = nudgeLevel === 'aggressive' ? 0.35 : nudgeLevel === 'standard' ? 0.25 : 0.15
-  return Math.round((quotesTotalCents * quoteWeight) + (inquiriesTotalCents * inquiryWeight))
+  return Math.round(quotesTotalCents * quoteWeight + inquiriesTotalCents * inquiryWeight)
 }
 
 function dollars(cents: number): string {
@@ -128,7 +128,8 @@ export function buildRevenueGoalRecommendations(input: {
     recs.push({
       id: 'on-track-maintain',
       title: 'On track to hit goal',
-      description: 'Current trajectory is healthy. Keep conversion velocity steady and protect open premium dates.',
+      description:
+        'Current trajectory is healthy. Keep conversion velocity steady and protect open premium dates.',
       href: '/financials',
       severity: 'low',
       confidence: 0.9,

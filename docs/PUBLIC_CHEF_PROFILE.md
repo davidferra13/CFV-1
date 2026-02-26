@@ -15,6 +15,7 @@ A public-facing page where anyone can discover a chef's partner venues (Airbnbs,
 Example: `chefflow.com/chef/chef-david`
 
 The slug is set by the chef in Settings → Public Profile. It must be:
+
 - Lowercase letters, numbers, and hyphens only
 - Unique across all chefs
 - Stored in `chefs.slug` column
@@ -23,12 +24,12 @@ The slug is set by the chef in Settings → Public Profile. It must be:
 
 ## Profile Actions (`lib/profile/actions.ts`)
 
-| Function | Auth | Description |
-|----------|------|-------------|
+| Function                     | Auth          | Description                                                                                                                                    |
+| ---------------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | `getPublicChefProfile(slug)` | None (public) | Returns chef name, business name, tagline, bio, profile image, and all showcase-visible partners with locations and images. Uses admin client. |
-| `updateChefSlug(slug)` | Chef | Set/change slug with uniqueness check and format validation |
-| `updateChefTagline(tagline)` | Chef | Update public tagline |
-| `getChefSlug()` | Chef | Returns current chef's slug and tagline for settings display |
+| `updateChefSlug(slug)`       | Chef          | Set/change slug with uniqueness check and format validation                                                                                    |
+| `updateChefTagline(tagline)` | Chef          | Update public tagline                                                                                                                          |
+| `getChefSlug()`              | Chef          | Returns current chef's slug and tagline for settings display                                                                                   |
 
 ### Public Data Shape
 
@@ -130,6 +131,7 @@ Accessible from Settings → Public Profile section.
 ### Component
 
 `PublicProfileSettings` (`components/settings/public-profile-settings.tsx`) — Client component handling:
+
 - Slug editing with input validation (lowercase, alphanumeric, hyphens)
 - Tagline textarea
 - Partner showcase visibility toggles (calls `updatePartner` to flip `is_showcase_visible`)
@@ -167,16 +169,16 @@ This creates a self-reinforcing flywheel where the chef's public profile acts as
 
 ## Files Created
 
-| File | Purpose |
-|------|---------|
-| `lib/profile/actions.ts` | Public profile server actions |
-| `app/(public)/chef/[slug]/page.tsx` | Public profile page |
-| `components/public/partner-showcase.tsx` | Showcase grid and cards |
-| `app/(chef)/settings/public-profile/page.tsx` | Showcase settings page |
-| `components/settings/public-profile-settings.tsx` | Settings client component |
+| File                                              | Purpose                       |
+| ------------------------------------------------- | ----------------------------- |
+| `lib/profile/actions.ts`                          | Public profile server actions |
+| `app/(public)/chef/[slug]/page.tsx`               | Public profile page           |
+| `components/public/partner-showcase.tsx`          | Showcase grid and cards       |
+| `app/(chef)/settings/public-profile/page.tsx`     | Showcase settings page        |
+| `components/settings/public-profile-settings.tsx` | Settings client component     |
 
 ## Files Modified
 
-| File | Change |
-|------|--------|
+| File                           | Change                                                   |
+| ------------------------------ | -------------------------------------------------------- |
 | `app/(chef)/settings/page.tsx` | Added "Public Profile" section with link and URL preview |

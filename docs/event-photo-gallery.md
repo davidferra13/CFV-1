@@ -14,6 +14,7 @@ Chefs can now upload photos of dishes and dinners directly to ChefFlow after com
 2. **Client relationship** — clients can view their own dinner's photos in their event portal, which reinforces the experience, encourages repeat bookings, and gives them something to share.
 
 Photos appear in three places:
+
 - **Chef event detail page** (`/events/[id]`) — full upload/manage interface, available once the event is `in_progress` or `completed`.
 - **Client event portal** (`/my-events/[id]`) — read-only gallery with a lightbox viewer, appears only when the chef has uploaded at least one photo.
 - **Chef inquiry page** (`/inquiries/[id]`) — if the inquiry was converted to an event, the event's photos appear at the bottom of the inquiry so the chef can reference past dinner photos during repeat booking conversations.
@@ -26,25 +27,26 @@ Photos appear in three places:
 
 Migration: `supabase/migrations/20260228000004_event_photo_gallery.sql`
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | UUID | Primary key, also used as the filename in storage |
-| `tenant_id` | UUID FK → chefs | Tenant isolation — mandatory |
-| `event_id` | UUID FK → events | The dinner this photo belongs to |
-| `storage_path` | TEXT | Relative path in `event-photos` bucket: `{tenant_id}/{event_id}/{id}.{ext}` |
-| `filename_original` | TEXT | Original filename (display only) |
-| `content_type` | TEXT | MIME type — extension always derived from this, never from filename |
-| `size_bytes` | BIGINT | File size for display |
-| `caption` | TEXT nullable | Chef-added caption per photo |
-| `display_order` | INTEGER | Sort order within the event gallery (lower = first) |
-| `uploaded_by` | UUID FK → auth.users | The chef's auth user ID |
-| `created_at` | TIMESTAMPTZ | Auto-set |
-| `updated_at` | TIMESTAMPTZ | Auto-managed by trigger |
-| `deleted_at` | TIMESTAMPTZ nullable | Soft delete — NULL = active |
+| Column              | Type                 | Notes                                                                       |
+| ------------------- | -------------------- | --------------------------------------------------------------------------- |
+| `id`                | UUID                 | Primary key, also used as the filename in storage                           |
+| `tenant_id`         | UUID FK → chefs      | Tenant isolation — mandatory                                                |
+| `event_id`          | UUID FK → events     | The dinner this photo belongs to                                            |
+| `storage_path`      | TEXT                 | Relative path in `event-photos` bucket: `{tenant_id}/{event_id}/{id}.{ext}` |
+| `filename_original` | TEXT                 | Original filename (display only)                                            |
+| `content_type`      | TEXT                 | MIME type — extension always derived from this, never from filename         |
+| `size_bytes`        | BIGINT               | File size for display                                                       |
+| `caption`           | TEXT nullable        | Chef-added caption per photo                                                |
+| `display_order`     | INTEGER              | Sort order within the event gallery (lower = first)                         |
+| `uploaded_by`       | UUID FK → auth.users | The chef's auth user ID                                                     |
+| `created_at`        | TIMESTAMPTZ          | Auto-set                                                                    |
+| `updated_at`        | TIMESTAMPTZ          | Auto-managed by trigger                                                     |
+| `deleted_at`        | TIMESTAMPTZ nullable | Soft delete — NULL = active                                                 |
 
 **Key constraint:** No hard DELETE policy via RLS. All deletion is soft-delete via `UPDATE SET deleted_at`. The storage object is removed by the server action after the DB soft-delete succeeds.
 
 **Indexes:**
+
 - `(event_id, display_order) WHERE deleted_at IS NULL` — primary read pattern
 - `(tenant_id, created_at DESC) WHERE deleted_at IS NULL` — future cross-event portfolio queries
 
@@ -54,11 +56,11 @@ Migration: `supabase/migrations/20260228000004_event_photo_gallery.sql`
 
 Migration: `supabase/migrations/20260228000005_event_photos_bucket.sql`
 
-| Setting | Value |
-|---|---|
-| Bucket ID | `event-photos` |
-| Public | `false` (PRIVATE) |
-| Max file size | 10 MB |
+| Setting            | Value                                                               |
+| ------------------ | ------------------------------------------------------------------- |
+| Bucket ID          | `event-photos`                                                      |
+| Public             | `false` (PRIVATE)                                                   |
+| Max file size      | 10 MB                                                               |
 | Allowed MIME types | `image/jpeg`, `image/png`, `image/heic`, `image/heif`, `image/webp` |
 
 **Path format:** `{tenant_id}/{event_id}/{photo_id}.{ext}`
@@ -75,21 +77,21 @@ The first segment is always `tenant_id`, which is used in storage-level RLS poli
 
 ### `event_photos` table
 
-| Policy | Role | Operation | Condition |
-|---|---|---|---|
-| `event_photos_chef_select` | Chef | SELECT | `tenant_id = get_current_tenant_id()` |
-| `event_photos_chef_insert` | Chef | INSERT | `tenant_id = get_current_tenant_id()` |
-| `event_photos_chef_update` | Chef | UPDATE | `tenant_id = get_current_tenant_id()` |
-| `event_photos_client_select` | Client | SELECT | `deleted_at IS NULL` AND `events.client_id = get_current_client_id()` |
+| Policy                       | Role   | Operation | Condition                                                             |
+| ---------------------------- | ------ | --------- | --------------------------------------------------------------------- |
+| `event_photos_chef_select`   | Chef   | SELECT    | `tenant_id = get_current_tenant_id()`                                 |
+| `event_photos_chef_insert`   | Chef   | INSERT    | `tenant_id = get_current_tenant_id()`                                 |
+| `event_photos_chef_update`   | Chef   | UPDATE    | `tenant_id = get_current_tenant_id()`                                 |
+| `event_photos_client_select` | Client | SELECT    | `deleted_at IS NULL` AND `events.client_id = get_current_client_id()` |
 
 ### `storage.objects` (event-photos bucket)
 
-| Policy | Operation | Condition |
-|---|---|---|
-| `event_photos_chef_upload` | INSERT | Chef role + path segment 1 = tenant_id |
-| `event_photos_chef_select` | SELECT | Chef role + path segment 1 = tenant_id |
-| `event_photos_chef_delete` | DELETE | Chef role + path segment 1 = tenant_id |
-| `event_photos_client_select` | SELECT | Client role + path segment 2 (event_id) → events.client_id = client |
+| Policy                       | Operation | Condition                                                           |
+| ---------------------------- | --------- | ------------------------------------------------------------------- |
+| `event_photos_chef_upload`   | INSERT    | Chef role + path segment 1 = tenant_id                              |
+| `event_photos_chef_select`   | SELECT    | Chef role + path segment 1 = tenant_id                              |
+| `event_photos_chef_delete`   | DELETE    | Chef role + path segment 1 = tenant_id                              |
+| `event_photos_client_select` | SELECT    | Client role + path segment 2 (event_id) → events.client_id = client |
 
 ---
 
@@ -99,14 +101,14 @@ File: `lib/events/photo-actions.ts`
 
 All actions are `'use server'`. All mutations call `revalidatePath`.
 
-| Function | Role | Description |
-|---|---|---|
-| `uploadEventPhoto(eventId, formData)` | Chef | Upload one photo. `formData` keys: `photo` (File), `caption` (string, optional). Returns `{ success, photo }` |
-| `getEventPhotosForChef(eventId)` | Chef | List active photos with signed URLs |
-| `getEventPhotosForClient(eventId)` | Client | Same, but verifies `events.client_id = user.entityId` first |
-| `deleteEventPhoto(photoId)` | Chef | Soft-delete in DB + remove storage object |
-| `updatePhotoCaption(photoId, caption)` | Chef | Update the caption for a single photo |
-| `reorderEventPhotos(eventId, orderedPhotoIds[])` | Chef | Assign `display_order` 0..n-1 based on array position |
+| Function                                         | Role   | Description                                                                                                   |
+| ------------------------------------------------ | ------ | ------------------------------------------------------------------------------------------------------------- |
+| `uploadEventPhoto(eventId, formData)`            | Chef   | Upload one photo. `formData` keys: `photo` (File), `caption` (string, optional). Returns `{ success, photo }` |
+| `getEventPhotosForChef(eventId)`                 | Chef   | List active photos with signed URLs                                                                           |
+| `getEventPhotosForClient(eventId)`               | Client | Same, but verifies `events.client_id = user.entityId` first                                                   |
+| `deleteEventPhoto(photoId)`                      | Chef   | Soft-delete in DB + remove storage object                                                                     |
+| `updatePhotoCaption(photoId, caption)`           | Chef   | Update the caption for a single photo                                                                         |
+| `reorderEventPhotos(eventId, orderedPhotoIds[])` | Chef   | Assign `display_order` 0..n-1 based on array position                                                         |
 
 **50-photo cap** is enforced in `uploadEventPhoto` by counting active photos before upload.
 
@@ -125,6 +127,7 @@ File: `components/events/event-photo-gallery.tsx` (`'use client'`)
 Props: `{ eventId: string, initialPhotos: EventPhoto[] }`
 
 Features:
+
 - Drag-and-drop upload zone + click-to-select (multiple files)
 - Sequential upload with per-file progress counter ("Uploading 2 of 5…")
 - Photo grid: 2 cols mobile / 3 cols sm / 4 cols lg
@@ -140,6 +143,7 @@ File: `components/events/client-event-photo-gallery.tsx` (`'use client'`)
 Props: `{ photos: EventPhoto[] }`
 
 Features:
+
 - Returns `null` if no photos (section disappears entirely)
 - Grid with hover-reveal caption overlay
 - Full lightbox: click to open, previous/next navigation, caption, counter
@@ -178,12 +182,12 @@ Signed URLs are generated server-side on every page load with a **1-hour expiry*
 
 ## Limits
 
-| Limit | Value |
-|---|---|
-| Photos per event | 50 |
-| Max file size | 10 MB |
-| Accepted formats | JPEG, PNG, HEIC, HEIF, WebP |
-| Signed URL expiry | 1 hour |
+| Limit             | Value                       |
+| ----------------- | --------------------------- |
+| Photos per event  | 50                          |
+| Max file size     | 10 MB                       |
+| Accepted formats  | JPEG, PNG, HEIC, HEIF, WebP |
+| Signed URL expiry | 1 hour                      |
 
 ---
 

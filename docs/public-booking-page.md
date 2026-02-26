@@ -13,14 +13,14 @@ The public booking page at `/book/[chefSlug]` is a fully-implemented, no-auth pu
 
 ## File Map
 
-| File | Role |
-|------|------|
-| `app/book/[chefSlug]/page.tsx` | Server component — fetches chef public profile by `booking_slug`, renders layout + `BookingPageClient` |
-| `app/book/[chefSlug]/booking-page-client.tsx` | Client wrapper — manages `selectedDate` state, gates calendar → form two-step flow |
-| `app/book/[chefSlug]/availability/route.ts` | API route — returns per-day availability for a month (`available` / `blocked` / `unavailable`) |
-| `app/book/[chefSlug]/thank-you/page.tsx` | Confirmation page — dual-mode (inquiry vs. instant-book) messaging |
-| `components/booking/booking-calendar.tsx` | Month grid — fetches availability per month, color-coded, click to select |
-| `components/booking/booking-form.tsx` | Full intake form — all required fields, dual-mode submit, live pricing |
+| File                                          | Role                                                                                                   |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `app/book/[chefSlug]/page.tsx`                | Server component — fetches chef public profile by `booking_slug`, renders layout + `BookingPageClient` |
+| `app/book/[chefSlug]/booking-page-client.tsx` | Client wrapper — manages `selectedDate` state, gates calendar → form two-step flow                     |
+| `app/book/[chefSlug]/availability/route.ts`   | API route — returns per-day availability for a month (`available` / `blocked` / `unavailable`)         |
+| `app/book/[chefSlug]/thank-you/page.tsx`      | Confirmation page — dual-mode (inquiry vs. instant-book) messaging                                     |
+| `components/booking/booking-calendar.tsx`     | Month grid — fetches availability per month, color-coded, click to select                              |
+| `components/booking/booking-form.tsx`         | Full intake form — all required fields, dual-mode submit, live pricing                                 |
 
 ---
 
@@ -57,12 +57,14 @@ The public booking page at `/book/[chefSlug]` is a fully-implemented, no-auth pu
 ## Booking Modes
 
 ### Inquiry-First (`booking_model = 'inquiry_first'`)
+
 - Form shows "Submit Request"
 - On submit: `submitPublicInquiry()` server action creates inquiry record
 - Redirects to `/book/[slug]/thank-you`
 - Copy: "Request Received — expect a response within 24 hours"
 
 ### Instant-Book (`booking_model = 'instant_book'`)
+
 - Live pricing summary shown as guest count changes
 - Deposit types: `percent` (configurable %) or `fixed` (flat amount)
 - Pricing type: `flat_rate` or `per_person`
@@ -73,19 +75,19 @@ The public booking page at `/book/[chefSlug]` is a fully-implemented, no-auth pu
 
 ## Chef Booking Settings (pulled from `chefs` table)
 
-| Field | Purpose |
-|-------|---------|
-| `booking_enabled` | Master on/off; page returns 404 if false |
-| `booking_slug` | URL-safe identifier, used in the booking URL |
-| `booking_headline` | Hero headline on the public page |
-| `booking_bio_short` | Short bio shown below headline |
-| `booking_model` | `inquiry_first` \| `instant_book` |
-| `booking_base_price_cents` | Base price for instant-book pricing |
-| `booking_pricing_type` | `flat_rate` \| `per_person` |
-| `booking_deposit_type` | `percent` \| `fixed` |
-| `booking_deposit_percent` | Deposit % (if percent mode) |
-| `booking_deposit_fixed_cents` | Fixed deposit amount (if fixed mode) |
-| `booking_min_notice_days` | Minimum advance notice required |
+| Field                         | Purpose                                      |
+| ----------------------------- | -------------------------------------------- |
+| `booking_enabled`             | Master on/off; page returns 404 if false     |
+| `booking_slug`                | URL-safe identifier, used in the booking URL |
+| `booking_headline`            | Hero headline on the public page             |
+| `booking_bio_short`           | Short bio shown below headline               |
+| `booking_model`               | `inquiry_first` \| `instant_book`            |
+| `booking_base_price_cents`    | Base price for instant-book pricing          |
+| `booking_pricing_type`        | `flat_rate` \| `per_person`                  |
+| `booking_deposit_type`        | `percent` \| `fixed`                         |
+| `booking_deposit_percent`     | Deposit % (if percent mode)                  |
+| `booking_deposit_fixed_cents` | Fixed deposit amount (if fixed mode)         |
+| `booking_min_notice_days`     | Minimum advance notice required              |
 
 ---
 

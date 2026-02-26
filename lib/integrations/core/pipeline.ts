@@ -5,7 +5,8 @@ function canonicalizeEventType(sourceEventType: string): string {
   const normalized = sourceEventType.toLowerCase()
 
   if (normalized.includes('lead')) return 'lead_created'
-  if (normalized.includes('appointment') || normalized.includes('booking')) return 'appointment_booked'
+  if (normalized.includes('appointment') || normalized.includes('booking'))
+    return 'appointment_booked'
   if (normalized.includes('cancel')) return 'appointment_canceled'
   if (normalized.includes('order')) return 'order_created'
   if (normalized.includes('payment') || normalized.includes('charge')) return 'payment_captured'

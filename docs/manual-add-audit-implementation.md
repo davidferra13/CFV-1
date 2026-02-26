@@ -12,6 +12,7 @@ ChefFlow's dashboard had inconsistent manual data entry capabilities. Some secti
 ## Audit Results
 
 A comprehensive audit of all 20 chef dashboard sections found:
+
 - **10 sections** already had manual add capabilities
 - **4 sections** were missing manual add where it should exist
 - **6 sections** were appropriately read-only (reporting, discovery, automation)
@@ -21,6 +22,7 @@ A comprehensive audit of all 20 chef dashboard sections found:
 ### Feature 1: Leads — Manual Lead Entry
 
 **Files modified:**
+
 - `app/(chef)/leads/page.tsx` — Added "+ Log Manual Lead" button in header
 - `components/leads/leads-list.tsx` — Added button in empty state
 - `components/inquiries/inquiry-form.tsx` — Added `referral` and `walk_in` channel options
@@ -33,10 +35,12 @@ A comprehensive audit of all 20 chef dashboard sections found:
 ### Feature 2: Chat — New Conversation from Inbox
 
 **Files modified:**
+
 - `app/(chef)/chat/page.tsx` — Added `NewConversationButton` in header
 - `components/chat/chat-inbox.tsx` — Updated empty state text
 
 **Files created:**
+
 - `components/chat/new-conversation-button.tsx` — Client picker modal with search
 
 **Design decision:** Reuses existing `getOrCreateConversation()` with `context_type: 'standalone'`, which handles deduplication. If a standalone conversation already exists with the selected client, it navigates there instead of creating a duplicate.
@@ -44,10 +48,12 @@ A comprehensive audit of all 20 chef dashboard sections found:
 ### Feature 3: AAR — File AAR from List Page
 
 **Files modified:**
+
 - `app/(chef)/aar/page.tsx` — Added `FileAARButton` in header and empty state
 - `lib/aar/actions.ts` — Added `getEventsWithoutAAR()` query
 
 **Files created:**
+
 - `components/aar/file-aar-button.tsx` — Event picker modal showing completed events without AARs
 
 **Design decision:** Shows all completed events without time limit (no date cutoff). Chefs may want to retroactively file AARs for old events. The picker navigates to the existing AAR form at `/events/{id}/aar`.
@@ -55,15 +61,18 @@ A comprehensive audit of all 20 chef dashboard sections found:
 ### Feature 4: Reviews — Chef Feedback Logging
 
 **Files modified:**
+
 - `app/(chef)/reviews/page.tsx` — Added `LogFeedbackButton` and fetches chef feedback
 - `components/reviews/chef-reviews-list.tsx` — Added "Logged Feedback" section below client reviews
 
 **Files created:**
+
 - `supabase/migrations/20260221000012_chef_feedback.sql` — New `chef_feedback` table
 - `lib/reviews/chef-feedback-actions.ts` — `logChefFeedback()` and `getChefFeedback()` actions
 - `components/reviews/log-feedback-button.tsx` — Feedback logging modal form
 
 **Design decision:** Created a separate `chef_feedback` table instead of extending `client_reviews`. Rationale:
+
 - `client_reviews` has `NOT NULL` constraints on `event_id` and `client_id`, plus a `UNIQUE` on `event_id`. External feedback often has neither.
 - RLS policies on `client_reviews` only allow client inserts. Adding chef insert would change the security model.
 - Separate table keeps client-submitted reviews pure and untainted.
@@ -78,6 +87,7 @@ A comprehensive audit of all 20 chef dashboard sections found:
 ## Post-Migration
 
 After applying migrations to the remote database:
+
 ```bash
 npx supabase db push --linked
 npx supabase gen types typescript --linked > types/database.ts

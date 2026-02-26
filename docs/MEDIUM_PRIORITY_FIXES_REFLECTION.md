@@ -34,6 +34,7 @@
 **File:** `app/(client)/my-events/[id]/pay/payment-section.tsx`
 
 **What changed:**
+
 - Added `retryCount` state (`useState(0)`)
 - Added `retryCount` to the `useEffect` dependency array so incrementing it re-triggers payment intent initialization
 - Added `setLoading(true)` and `setError(null)` at the start of `initPayment()` to reset state on retry
@@ -48,6 +49,7 @@
 ## Fix 4: @ts-nocheck File Documentation
 
 **Files modified:**
+
 - `lib/analytics/revenue-engine.ts` - Added DEFERRED comment explaining dependency on menu_items table and total_price column
 - `lib/analytics/menu-engineering.ts` - Added DEFERRED comment explaining dependency on menu_items table
 - `lib/events/fire-order.ts` - Added DEFERRED comment explaining dependency on menu_sections/menu_items tables
@@ -67,6 +69,7 @@
 **File:** `lib/auth/actions.ts`
 
 **What changed:**
+
 - Added an in-memory rate limiter using a `Map<string, { count: number; resetAt: number }>`
 - `checkRateLimit(key, maxAttempts=5, windowMs=15min)` throws if a given key exceeds 5 attempts in 15 minutes
 - Added `checkRateLimit(validated.email)` after Zod validation in `signIn`, `signUpChef`, and `signUpClient`
@@ -74,6 +77,7 @@
 **Why:** Without rate limiting, an attacker could brute-force passwords or spam account creation. The in-memory approach is lightweight (no Redis dependency), resets on deploy (acceptable for V1), and provides basic protection against automated attacks.
 
 **Limitations:**
+
 - Per-process: in a multi-instance deployment, each process has its own map (not shared)
 - Resets on deploy/restart
 - Not IP-based (uses email as key, so an attacker could try different emails)
@@ -85,8 +89,8 @@
 
 ## Import Changes Summary
 
-| File | New Import |
-|------|-----------|
+| File                      | New Import                                                |
+| ------------------------- | --------------------------------------------------------- |
 | `lib/expenses/actions.ts` | `import { getChefPreferences } from '@/lib/chef/actions'` |
 
 No new external dependencies were added across any fix.

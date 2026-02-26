@@ -1,4 +1,5 @@
 # LAYER 5 SCHEMA PROPOSAL
+
 ## Planning & Production Documents
 
 Version 1.0 — February 16, 2026
@@ -10,6 +11,7 @@ Version 1.0 — February 16, 2026
 Layer 5 implements the complete planning and production document system that allows a chef to prepare for an event with confidence. These documents unlock progressively as facts confirm and represent the externalized execution workflow that reduces mental load and prevents forgotten items.
 
 **Design Principles:**
+
 - Documents unlock progressively (menu confirmed → grocery list → prep list → packing list → execution sheet)
 - Documents are versioned (never overwrite, capture state at generation time)
 - Documents link to the event + menu + components they represent
@@ -22,6 +24,7 @@ Layer 5 implements the complete planning and production document system that all
 - Everything is tenant-scoped
 
 **Three Printed Sheets:**
+
 1. **Prep Sheet** — Used at home, organized by course order, gets messy
 2. **Service Execution Sheet** — Goes to client's house, clean, on-site actions only
 3. **Non-Negotiables Checklist** — Gloves, gum, uniform, towels, trash bags, etc.
@@ -35,6 +38,7 @@ A grocery list belongs to an event and is generated from the menu's recipes and 
 ### Columns
 
 #### Identity & Relationships
+
 - `id` — UUID, PRIMARY KEY, default gen_random_uuid()
 - `tenant_id` — UUID, NOT NULL, FK to chefs.id (tenant scoping)
 - `event_id` — UUID, NOT NULL, FK to events.id ON DELETE CASCADE
@@ -43,6 +47,7 @@ A grocery list belongs to an event and is generated from the menu's recipes and 
 - `updated_at` — TIMESTAMPTZ, NOT NULL, default now()
 
 #### Document Metadata
+
 - `version` — INTEGER, NOT NULL, default 1 (increments on regeneration)
 - `generated_at` — TIMESTAMPTZ, NOT NULL, default now()
 - `generated_by` — UUID, nullable, FK to auth.users.id
@@ -53,6 +58,7 @@ A grocery list belongs to an event and is generated from the menu's recipes and 
   - archived: historical record
 
 #### Shopping Metadata
+
 - `shopping_completed_at` — TIMESTAMPTZ, nullable
 - `total_estimated_cost_cents` — INTEGER, nullable (sum of ingredient estimates)
 - `actual_cost_cents` — INTEGER, nullable (recorded after shopping)
@@ -60,16 +66,19 @@ A grocery list belongs to an event and is generated from the menu's recipes and 
 - `notes` — TEXT, nullable (chef notes)
 
 #### Status Timestamps
+
 - `finalized_at` — TIMESTAMPTZ, nullable
 - `archived_at` — TIMESTAMPTZ, nullable
 
 ### Indexes
+
 - `idx_grocery_lists_tenant_id` on (tenant_id)
 - `idx_grocery_lists_event_id` on (event_id)
 - `idx_grocery_lists_menu_id` on (menu_id)
 - `idx_grocery_lists_status` on (status)
 
 ### Triggers
+
 - `update_updated_at_timestamp` — set updated_at = now() on UPDATE
 
 ---
@@ -81,6 +90,7 @@ Individual items on a grocery list. Generated from recipe_ingredients but can be
 ### Columns
 
 #### Identity & Relationships
+
 - `id` — UUID, PRIMARY KEY, default gen_random_uuid()
 - `grocery_list_id` — UUID, NOT NULL, FK to grocery_lists.id ON DELETE CASCADE
 - `ingredient_id` — UUID, nullable, FK to ingredients.id (null if manual item)
@@ -88,6 +98,7 @@ Individual items on a grocery list. Generated from recipe_ingredients but can be
 - `updated_at` — TIMESTAMPTZ, NOT NULL, default now()
 
 #### Item Details
+
 - `item_name` — TEXT, NOT NULL (ingredient name or custom item)
 - `category` — ingredient_category enum, nullable (for organizing list)
 - `quantity` — DECIMAL(10,3), NOT NULL
@@ -96,6 +107,7 @@ Individual items on a grocery list. Generated from recipe_ingredients but can be
 - `actual_price_cents` — INTEGER, nullable (recorded after shopping)
 
 #### Source Tracking
+
 - `source` — grocery_item_source enum, NOT NULL, default 'recipe'
   - Values: recipe, manual, staple
   - recipe: auto-generated from recipe_ingredients
@@ -103,6 +115,7 @@ Individual items on a grocery list. Generated from recipe_ingredients but can be
   - staple: chef always has this, added for verification
 
 #### Shopping Metadata
+
 - `is_purchased` — BOOLEAN, NOT NULL, default false
 - `purchased_at` — TIMESTAMPTZ, nullable
 - `vendor` — TEXT, nullable (store name)
@@ -110,11 +123,13 @@ Individual items on a grocery list. Generated from recipe_ingredients but can be
 - `sort_order` — INTEGER, NOT NULL, default 0
 
 ### Indexes
+
 - `idx_grocery_list_items_grocery_list_id` on (grocery_list_id)
 - `idx_grocery_list_items_ingredient_id` on (ingredient_id)
 - `idx_grocery_list_items_category` on (category)
 
 ### Triggers
+
 - `update_updated_at_timestamp` — set updated_at = now() on UPDATE
 
 ---
@@ -126,6 +141,7 @@ A prep list belongs to an event and organizes all production tasks by course ord
 ### Columns
 
 #### Identity & Relationships
+
 - `id` — UUID, PRIMARY KEY, default gen_random_uuid()
 - `tenant_id` — UUID, NOT NULL, FK to chefs.id (tenant scoping)
 - `event_id` — UUID, NOT NULL, FK to events.id ON DELETE CASCADE
@@ -134,6 +150,7 @@ A prep list belongs to an event and organizes all production tasks by course ord
 - `updated_at` — TIMESTAMPTZ, NOT NULL, default now()
 
 #### Document Metadata
+
 - `version` — INTEGER, NOT NULL, default 1
 - `generated_at` — TIMESTAMPTZ, NOT NULL, default now()
 - `generated_by` — UUID, nullable, FK to auth.users.id
@@ -145,6 +162,7 @@ A prep list belongs to an event and organizes all production tasks by course ord
   - archived: historical record
 
 #### Execution Metadata
+
 - `prep_started_at` — TIMESTAMPTZ, nullable
 - `prep_completed_at` — TIMESTAMPTZ, nullable
 - `total_tasks` — INTEGER, NOT NULL, default 0
@@ -152,15 +170,18 @@ A prep list belongs to an event and organizes all production tasks by course ord
 - `notes` — TEXT, nullable
 
 #### Status Timestamps
+
 - `archived_at` — TIMESTAMPTZ, nullable
 
 ### Indexes
+
 - `idx_prep_lists_tenant_id` on (tenant_id)
 - `idx_prep_lists_event_id` on (event_id)
 - `idx_prep_lists_menu_id` on (menu_id)
 - `idx_prep_lists_status` on (status)
 
 ### Triggers
+
 - `update_updated_at_timestamp` — set updated_at = now() on UPDATE
 - `update_prep_list_task_counts` — recompute total_tasks and completed_tasks when prep_list_items change
 
@@ -173,6 +194,7 @@ Individual prep tasks on a prep list. Generated from menu components + recipes b
 ### Columns
 
 #### Identity & Relationships
+
 - `id` — UUID, PRIMARY KEY, default gen_random_uuid()
 - `prep_list_id` — UUID, NOT NULL, FK to prep_lists.id ON DELETE CASCADE
 - `component_id` — UUID, nullable, FK to components.id (links to menu component)
@@ -181,29 +203,34 @@ Individual prep tasks on a prep list. Generated from menu components + recipes b
 - `updated_at` — TIMESTAMPTZ, NOT NULL, default now()
 
 #### Task Details
+
 - `course_number` — INTEGER, NOT NULL (which course this belongs to)
 - `task_description` — TEXT, NOT NULL (e.g., "Make Diane Sauce", "Boil potatoes for smashed potatoes")
 - `priority` — INTEGER, NOT NULL, default 0 (higher = do first within course)
 - `estimated_time_minutes` — INTEGER, nullable
 
 #### Make-Ahead Classification
+
 - `can_make_ahead` — BOOLEAN, NOT NULL, default false
 - `make_ahead_window_hours` — INTEGER, nullable (safe window before event)
 - `texture_sensitive` — BOOLEAN, NOT NULL, default false (can't be made too early)
 
 #### Execution Tracking
+
 - `is_completed` — BOOLEAN, NOT NULL, default false
 - `completed_at` — TIMESTAMPTZ, nullable
 - `notes` — TEXT, nullable
 - `sort_order` — INTEGER, NOT NULL, default 0
 
 ### Indexes
+
 - `idx_prep_list_items_prep_list_id` on (prep_list_id)
 - `idx_prep_list_items_component_id` on (component_id)
 - `idx_prep_list_items_recipe_id` on (recipe_id)
 - `idx_prep_list_items_course` on (course_number, priority DESC)
 
 ### Triggers
+
 - `update_updated_at_timestamp` — set updated_at = now() on UPDATE
 
 ---
@@ -215,6 +242,7 @@ Equipment list tracks items the chef must bring vs items assumed to exist at the
 ### Columns
 
 #### Identity & Relationships
+
 - `id` — UUID, PRIMARY KEY, default gen_random_uuid()
 - `tenant_id` — UUID, NOT NULL, FK to chefs.id (tenant scoping)
 - `event_id` — UUID, NOT NULL, FK to events.id ON DELETE CASCADE
@@ -222,6 +250,7 @@ Equipment list tracks items the chef must bring vs items assumed to exist at the
 - `updated_at` — TIMESTAMPTZ, NOT NULL, default now()
 
 #### Document Metadata
+
 - `version` — INTEGER, NOT NULL, default 1
 - `generated_at` — TIMESTAMPTZ, NOT NULL, default now()
 - `generated_by` — UUID, nullable, FK to auth.users.id
@@ -229,15 +258,18 @@ Equipment list tracks items the chef must bring vs items assumed to exist at the
   - States: draft, finalized, archived
 
 #### Status Timestamps
+
 - `finalized_at` — TIMESTAMPTZ, nullable
 - `archived_at` — TIMESTAMPTZ, nullable
 
 ### Indexes
+
 - `idx_equipment_lists_tenant_id` on (tenant_id)
 - `idx_equipment_lists_event_id` on (event_id)
 - `idx_equipment_lists_status` on (status)
 
 ### Triggers
+
 - `update_updated_at_timestamp` — set updated_at = now() on UPDATE
 
 ---
@@ -249,12 +281,14 @@ Individual equipment items with classification (must-bring, assume-exists, confi
 ### Columns
 
 #### Identity & Relationships
+
 - `id` — UUID, PRIMARY KEY, default gen_random_uuid()
 - `equipment_list_id` — UUID, NOT NULL, FK to equipment_lists.id ON DELETE CASCADE
 - `created_at` — TIMESTAMPTZ, NOT NULL, default now()
 - `updated_at` — TIMESTAMPTZ, NOT NULL, default now()
 
 #### Item Details
+
 - `item_name` — TEXT, NOT NULL (e.g., "Chef knife", "Cutting board", "Cooler")
 - `category` — equipment_category enum, NOT NULL
   - Values: knife, tool, cookware, serveware, storage, safety, cleaning, other
@@ -265,6 +299,7 @@ Individual equipment items with classification (must-bring, assume-exists, confi
   - confirm_required: ask client if they have (e.g., stand mixer, immersion blender)
 
 #### Packing Metadata
+
 - `is_packed` — BOOLEAN, NOT NULL, default false
 - `packed_at` — TIMESTAMPTZ, nullable
 - `quantity` — INTEGER, NOT NULL, default 1
@@ -272,11 +307,13 @@ Individual equipment items with classification (must-bring, assume-exists, confi
 - `sort_order` — INTEGER, NOT NULL, default 0
 
 ### Indexes
+
 - `idx_equipment_list_items_equipment_list_id` on (equipment_list_id)
 - `idx_equipment_list_items_category` on (category)
 - `idx_equipment_list_items_classification` on (classification)
 
 ### Triggers
+
 - `update_updated_at_timestamp` — set updated_at = now() on UPDATE
 
 ---
@@ -288,6 +325,7 @@ Packing list verifies component counts match menu structure. Organized by storag
 ### Columns
 
 #### Identity & Relationships
+
 - `id` — UUID, PRIMARY KEY, default gen_random_uuid()
 - `tenant_id` — UUID, NOT NULL, FK to chefs.id (tenant scoping)
 - `event_id` — UUID, NOT NULL, FK to events.id ON DELETE CASCADE
@@ -296,6 +334,7 @@ Packing list verifies component counts match menu structure. Organized by storag
 - `updated_at` — TIMESTAMPTZ, NOT NULL, default now()
 
 #### Document Metadata
+
 - `version` — INTEGER, NOT NULL, default 1
 - `generated_at` — TIMESTAMPTZ, NOT NULL, default now()
 - `generated_by` — UUID, nullable, FK to auth.users.id
@@ -303,6 +342,7 @@ Packing list verifies component counts match menu structure. Organized by storag
   - States: draft, in_progress, verified, archived
 
 #### Packing Metadata
+
 - `total_components` — INTEGER, NOT NULL, default 0 (from menu)
 - `packed_components` — INTEGER, NOT NULL, default 0
 - `packing_started_at` — TIMESTAMPTZ, nullable
@@ -310,15 +350,18 @@ Packing list verifies component counts match menu structure. Organized by storag
 - `verification_notes` — TEXT, nullable
 
 #### Status Timestamps
+
 - `archived_at` — TIMESTAMPTZ, nullable
 
 ### Indexes
+
 - `idx_packing_lists_tenant_id` on (tenant_id)
 - `idx_packing_lists_event_id` on (event_id)
 - `idx_packing_lists_menu_id` on (menu_id)
 - `idx_packing_lists_status` on (status)
 
 ### Triggers
+
 - `update_updated_at_timestamp` — set updated_at = now() on UPDATE
 
 ---
@@ -330,6 +373,7 @@ Individual packing items organized by storage type and course. Links to menu com
 ### Columns
 
 #### Identity & Relationships
+
 - `id` — UUID, PRIMARY KEY, default gen_random_uuid()
 - `packing_list_id` — UUID, NOT NULL, FK to packing_lists.id ON DELETE CASCADE
 - `component_id` — UUID, nullable, FK to components.id (links to menu component)
@@ -338,6 +382,7 @@ Individual packing items organized by storage type and course. Links to menu com
 - `updated_at` — TIMESTAMPTZ, NOT NULL, default now()
 
 #### Item Details
+
 - `course_number` — INTEGER, nullable (which course, null for equipment/tools)
 - `item_name` — TEXT, NOT NULL (e.g., "Diane Sauce in container", "Chef knife")
 - `storage_type` — packing_storage_type enum, NOT NULL
@@ -345,6 +390,7 @@ Individual packing items organized by storage type and course. Links to menu com
 - `container_type` — TEXT, nullable (e.g., "cooler", "tote bag", "knife roll")
 
 #### Packing Metadata
+
 - `is_packed` — BOOLEAN, NOT NULL, default false
 - `packed_at` — TIMESTAMPTZ, nullable
 - `quantity` — INTEGER, NOT NULL, default 1
@@ -352,12 +398,14 @@ Individual packing items organized by storage type and course. Links to menu com
 - `sort_order` — INTEGER, NOT NULL, default 0
 
 ### Indexes
+
 - `idx_packing_list_items_packing_list_id` on (packing_list_id)
 - `idx_packing_list_items_component_id` on (component_id)
 - `idx_packing_list_items_storage_type` on (storage_type)
 - `idx_packing_list_items_course` on (course_number)
 
 ### Triggers
+
 - `update_updated_at_timestamp` — set updated_at = now() on UPDATE
 
 ---
@@ -369,6 +417,7 @@ Day-of schedule working backwards from arrival time. Includes all stops (grocery
 ### Columns
 
 #### Identity & Relationships
+
 - `id` — UUID, PRIMARY KEY, default gen_random_uuid()
 - `tenant_id` — UUID, NOT NULL, FK to chefs.id (tenant scoping)
 - `event_id` — UUID, NOT NULL, FK to events.id ON DELETE CASCADE
@@ -376,11 +425,13 @@ Day-of schedule working backwards from arrival time. Includes all stops (grocery
 - `updated_at` — TIMESTAMPTZ, NOT NULL, default now()
 
 #### Document Metadata
+
 - `version` — INTEGER, NOT NULL, default 1
 - `generated_at` — TIMESTAMPTZ, NOT NULL, default now()
 - `generated_by` — UUID, nullable, FK to auth.users.id
 
 #### Timeline Metadata
+
 - `event_start_time` — TIMESTAMPTZ, NOT NULL (arrival at client)
 - `wake_up_time` — TIMESTAMPTZ, nullable (absolute latest)
 - `total_prep_time_minutes` — INTEGER, nullable
@@ -388,10 +439,12 @@ Day-of schedule working backwards from arrival time. Includes all stops (grocery
 - `notes` — TEXT, nullable
 
 ### Indexes
+
 - `idx_timelines_tenant_id` on (tenant_id)
 - `idx_timelines_event_id` on (event_id)
 
 ### Triggers
+
 - `update_updated_at_timestamp` — set updated_at = now() on UPDATE
 
 ---
@@ -403,12 +456,14 @@ Individual time blocks in the day-of schedule (wake up, shop, prep, pack, travel
 ### Columns
 
 #### Identity & Relationships
+
 - `id` — UUID, PRIMARY KEY, default gen_random_uuid()
 - `timeline_id` — UUID, NOT NULL, FK to timelines.id ON DELETE CASCADE
 - `created_at` — TIMESTAMPTZ, NOT NULL, default now()
 - `updated_at` — TIMESTAMPTZ, NOT NULL, default now()
 
 #### Time Block Details
+
 - `item_type` — timeline_item_type enum, NOT NULL
   - Values: wake_up, shop, prep, pack, travel, arrive, buffer
 - `description` — TEXT, NOT NULL (e.g., "Leave for Market Basket + One Stop")
@@ -419,15 +474,18 @@ Individual time blocks in the day-of schedule (wake up, shop, prep, pack, travel
 - `sort_order` — INTEGER, NOT NULL, default 0
 
 #### Tracking
+
 - `is_completed` — BOOLEAN, NOT NULL, default false
 - `completed_at` — TIMESTAMPTZ, nullable
 
 ### Indexes
+
 - `idx_timeline_items_timeline_id` on (timeline_id)
 - `idx_timeline_items_scheduled_time` on (scheduled_time)
 - `idx_timeline_items_item_type` on (item_type)
 
 ### Triggers
+
 - `update_updated_at_timestamp` — set updated_at = now() on UPDATE
 
 ---
@@ -439,6 +497,7 @@ Service execution sheet for on-site use. Clean, only shows what happens at clien
 ### Columns
 
 #### Identity & Relationships
+
 - `id` — UUID, PRIMARY KEY, default gen_random_uuid()
 - `tenant_id` — UUID, NOT NULL, FK to chefs.id (tenant scoping)
 - `event_id` — UUID, NOT NULL, FK to events.id ON DELETE CASCADE
@@ -447,21 +506,25 @@ Service execution sheet for on-site use. Clean, only shows what happens at clien
 - `updated_at` — TIMESTAMPTZ, NOT NULL, default now()
 
 #### Document Metadata
+
 - `version` — INTEGER, NOT NULL, default 1
 - `generated_at` — TIMESTAMPTZ, NOT NULL, default now()
 - `generated_by` — UUID, nullable, FK to auth.users.id
 
 #### Execution Metadata
+
 - `service_started_at` — TIMESTAMPTZ, nullable
 - `service_completed_at` — TIMESTAMPTZ, nullable
 - `notes` — TEXT, nullable
 
 ### Indexes
+
 - `idx_execution_sheets_tenant_id` on (tenant_id)
 - `idx_execution_sheets_event_id` on (event_id)
 - `idx_execution_sheets_menu_id` on (menu_id)
 
 ### Triggers
+
 - `update_updated_at_timestamp` — set updated_at = now() on UPDATE
 
 ---
@@ -473,6 +536,7 @@ On-site actions organized by course. Includes component counts, plating notes, t
 ### Columns
 
 #### Identity & Relationships
+
 - `id` — UUID, PRIMARY KEY, default gen_random_uuid()
 - `execution_sheet_id` — UUID, NOT NULL, FK to execution_sheets.id ON DELETE CASCADE
 - `component_id` — UUID, nullable, FK to components.id
@@ -480,6 +544,7 @@ On-site actions organized by course. Includes component counts, plating notes, t
 - `updated_at` — TIMESTAMPTZ, NOT NULL, default now()
 
 #### Item Details
+
 - `course_number` — INTEGER, NOT NULL
 - `course_name` — TEXT, NOT NULL (e.g., "Steak Diane with Sides")
 - `action_type` — execution_action_type enum, NOT NULL
@@ -490,16 +555,19 @@ On-site actions organized by course. Includes component counts, plating notes, t
 - `sort_order` — INTEGER, NOT NULL, default 0
 
 #### Tracking
+
 - `is_completed` — BOOLEAN, NOT NULL, default false
 - `completed_at` — TIMESTAMPTZ, nullable
 
 ### Indexes
+
 - `idx_execution_sheet_items_execution_sheet_id` on (execution_sheet_id)
 - `idx_execution_sheet_items_component_id` on (component_id)
 - `idx_execution_sheet_items_course` on (course_number, sort_order)
 - `idx_execution_sheet_items_action_type` on (action_type)
 
 ### Triggers
+
 - `update_updated_at_timestamp` — set updated_at = now() on UPDATE
 
 ---
@@ -507,6 +575,7 @@ On-site actions organized by course. Includes component counts, plating notes, t
 ## ENUMS
 
 ### `grocery_list_status`
+
 ```
 draft
 finalized
@@ -514,6 +583,7 @@ archived
 ```
 
 ### `grocery_item_source`
+
 ```
 recipe
 manual
@@ -521,6 +591,7 @@ staple
 ```
 
 ### `prep_list_status`
+
 ```
 draft
 active
@@ -529,6 +600,7 @@ archived
 ```
 
 ### `equipment_list_status`
+
 ```
 draft
 finalized
@@ -536,6 +608,7 @@ archived
 ```
 
 ### `equipment_category`
+
 ```
 knife
 tool
@@ -548,6 +621,7 @@ other
 ```
 
 ### `equipment_classification`
+
 ```
 must_bring
 assume_exists
@@ -555,6 +629,7 @@ confirm_required
 ```
 
 ### `packing_list_status`
+
 ```
 draft
 in_progress
@@ -563,6 +638,7 @@ archived
 ```
 
 ### `packing_storage_type`
+
 ```
 cold
 dry
@@ -572,6 +648,7 @@ non_negotiables
 ```
 
 ### `timeline_item_type`
+
 ```
 wake_up
 shop
@@ -583,6 +660,7 @@ buffer
 ```
 
 ### `execution_action_type`
+
 ```
 verification
 cooking
@@ -596,21 +674,26 @@ client_note
 ## TRIGGERS
 
 ### 1. `update_updated_at_timestamp`
+
 **Tables:** All 12 tables in Layer 5
 **Action:** BEFORE UPDATE, set NEW.updated_at = now()
 
 ### 2. `update_prep_list_task_counts`
+
 **Table:** prep_lists
 **Action:** AFTER INSERT/UPDATE/DELETE on prep_list_items
 **Logic:**
+
 - Recompute total_tasks = COUNT of prep_list_items
 - Recompute completed_tasks = COUNT where is_completed = true
 - Update prep_lists.total_tasks and completed_tasks
 
 ### 3. `update_packing_list_component_counts`
+
 **Table:** packing_lists
 **Action:** AFTER INSERT/UPDATE/DELETE on packing_list_items
 **Logic:**
+
 - Recompute packed_components = COUNT where is_packed = true
 - Update packing_lists.packed_components
 
@@ -661,9 +744,11 @@ All tables follow the same tenant isolation pattern established in Layers 1-4 us
 ## VIEWS (for derived metrics)
 
 ### 1. `event_planning_status`
+
 Shows which planning documents exist for each event and their status.
 
 **Columns:**
+
 - event_id
 - tenant_id
 - has_grocery_list (boolean)
@@ -678,9 +763,11 @@ Shows which planning documents exist for each event and their status.
 - planning_complete (boolean — all documents generated)
 
 ### 2. `prep_progress_summary`
+
 Per-event prep completion tracking.
 
 **Columns:**
+
 - event_id
 - prep_list_id
 - total_tasks
@@ -691,9 +778,11 @@ Per-event prep completion tracking.
 - estimated_total_time_minutes
 
 ### 3. `packing_verification_summary`
+
 Per-event packing verification status.
 
 **Columns:**
+
 - event_id
 - packing_list_id
 - expected_components (from menu)
@@ -709,9 +798,11 @@ Per-event packing verification status.
 ## HELPER FUNCTIONS
 
 ### 1. `generate_grocery_list_from_menu(p_event_id UUID, p_menu_id UUID)`
+
 Returns grocery list ID. Auto-generates grocery list items from menu → dishes → components → recipes → ingredients.
 
 **Logic:**
+
 1. Create grocery_list record
 2. For each recipe in menu, aggregate recipe_ingredients
 3. Group by ingredient_id, SUM quantities
@@ -720,9 +811,11 @@ Returns grocery list ID. Auto-generates grocery list items from menu → dishes 
 6. Return grocery_list.id
 
 ### 2. `generate_prep_list_from_menu(p_event_id UUID, p_menu_id UUID)`
+
 Returns prep list ID. Auto-generates prep list items from menu → dishes → components → recipes.
 
 **Logic:**
+
 1. Create prep_list record
 2. For each component in menu, create prep_list_item
 3. Set course_number from dish.course_number
@@ -732,9 +825,11 @@ Returns prep list ID. Auto-generates prep list items from menu → dishes → co
 7. Return prep_list.id
 
 ### 3. `generate_packing_list_from_menu(p_event_id UUID, p_menu_id UUID)`
+
 Returns packing list ID. Auto-generates packing list items from menu components + equipment list.
 
 **Logic:**
+
 1. Create packing_list record
 2. Set total_components = get_menu_total_component_count(p_menu_id)
 3. For each component in menu, create packing_list_item with storage_type = 'cold' (default)
@@ -743,9 +838,11 @@ Returns packing list ID. Auto-generates packing list items from menu components 
 6. Return packing_list.id
 
 ### 4. `generate_timeline_from_event(p_event_id UUID)`
+
 Returns timeline ID. Auto-generates day-of schedule working backwards from arrival time.
 
 **Logic:**
+
 1. Create timeline record
 2. Get event.arrival_time
 3. Create timeline_items working backwards:
@@ -760,9 +857,11 @@ Returns timeline ID. Auto-generates day-of schedule working backwards from arriv
 4. Return timeline.id
 
 ### 5. `generate_execution_sheet_from_menu(p_event_id UUID, p_menu_id UUID)`
+
 Returns execution sheet ID. Auto-generates on-site action list from menu structure.
 
 **Logic:**
+
 1. Create execution_sheet record
 2. For each dish in menu, create execution_sheet_items:
    - verification: "Course X has Y components" (from get_dish_component_count)
@@ -778,15 +877,18 @@ Returns execution sheet ID. Auto-generates on-site action list from menu structu
 ## DATA INTEGRITY RULES
 
 ### Document Versioning
+
 1. **All document tables** — version field increments on regeneration (never overwrite)
 2. **Documents link to snapshots** — documents reference event_id + menu_id at generation time
 
 ### Cascade Deletion Rules
+
 1. **events → all planning documents** — CASCADE (documents deleted when event deleted)
 2. **menus → document items** — SET NULL (items remain if menu deleted)
 3. **Parent documents → child items** — CASCADE (items deleted when parent document deleted)
 
 ### Computed Fields (trigger-maintained)
+
 1. **prep_lists.total_tasks** — COUNT of prep_list_items
 2. **prep_lists.completed_tasks** — COUNT where is_completed = true
 3. **packing_lists.packed_components** — COUNT where is_packed = true
@@ -797,6 +899,7 @@ Returns execution sheet ID. Auto-generates on-site action list from menu structu
 ## MIGRATION DEPENDENCIES
 
 Layer 5 depends on:
+
 - Layer 1: chefs, user_roles, auth schema
 - Layer 3: events
 - Layer 4: menus, dishes, components, recipes, ingredients
@@ -808,6 +911,7 @@ Layer 5 depends on:
 With Layer 5 complete, ChefFlow can now:
 
 ### Progressive Document Unlocking
+
 - Menu confirmed → grocery list auto-generates
 - Guest count confirmed → grocery list quantities finalized
 - Grocery list finalized → prep list unlocks
@@ -815,6 +919,7 @@ With Layer 5 complete, ChefFlow can now:
 - All documents ready → timeline and execution sheet generated
 
 ### Grocery List Management
+
 - Auto-generate from recipes + ingredients
 - Filter out staples (chef always has)
 - Group by store/category
@@ -822,6 +927,7 @@ With Layer 5 complete, ChefFlow can now:
 - Mark items as purchased while shopping
 
 ### Prep List Execution
+
 - Organize tasks by course order
 - Priority within each course (longest cook time first)
 - Separate make-ahead from day-of tasks
@@ -829,18 +935,21 @@ With Layer 5 complete, ChefFlow can now:
 - Prevent forgotten components
 
 ### Equipment Tracking
+
 - Must-bring items (chef owns)
 - Assume-exists items (client has)
 - Confirm-required items (ask client)
 - Prevent forgotten tools
 
 ### Packing Verification
+
 - Component count verification (Course 3 has 5 components → 5 containers)
 - Organize by storage type (cold → dry → tools)
 - Track packing progress
 - Non-negotiables checklist (gloves, gum, uniform, towels)
 
 ### Day-Of Scheduling
+
 - Timeline working backwards from arrival
 - All stops mapped (grocery, liquor, client)
 - Wake-up time calculated
@@ -848,6 +957,7 @@ With Layer 5 complete, ChefFlow can now:
 - Anti-procrastination structure
 
 ### On-Site Execution
+
 - Clean execution sheet (no prep notes)
 - Component counts per course
 - Dietary restrictions flagged
@@ -860,6 +970,7 @@ With Layer 5 complete, ChefFlow can now:
 ## WHAT'S NOT in Layer 5
 
 **Deferred to Layer 6 (Loyalty & Referrals):**
+
 - loyalty_points_ledger table (append-only)
 - loyalty_rewards table
 - loyalty_tiers table
@@ -867,6 +978,7 @@ With Layer 5 complete, ChefFlow can now:
 - referral_rewards table
 
 **Future Refinements (Post-V1):**
+
 - AI-generated grocery lists from natural language menus
 - Route optimization for shopping stops
 - Calendar integration for timeline
@@ -881,20 +993,24 @@ With Layer 5 complete, ChefFlow can now:
 Layer 5 must support generation of exactly three printed documents per event:
 
 ### 1. Prep Sheet
+
 **Source:** prep_list + prep_list_items
 **Format:** Organized by course order, priority DESC within each course
 **Usage:** Used at home during cooking, gets messy, dies after prep
 **Requirements:**
+
 - Longest cook time tasks at top of each course
 - Pack-only tasks at bottom
 - Make-ahead tasks flagged
 - Estimated time per task
 
 ### 2. Service Execution Sheet
+
 **Source:** execution_sheet + execution_sheet_items
 **Format:** Clean, organized by course, on-site actions only
 **Usage:** Goes to client's house, taped to counter
 **Requirements:**
+
 - Component counts for packing verification
 - Dietary restrictions and allergens flagged prominently
 - Plating notes
@@ -902,10 +1018,12 @@ Layer 5 must support generation of exactly three printed documents per event:
 - Clean menu for reference
 
 ### 3. Non-Negotiables Checklist
+
 **Source:** packing_list_items with storage_type = 'non_negotiables'
 **Format:** Simple checklist
 **Usage:** Checked before walking out the door
 **Requirements:**
+
 - Gloves, gum/mints, clean uniform, clean shoes
 - Towels, trash bags, parchment paper
 - Salt, oil, pepper

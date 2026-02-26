@@ -15,6 +15,7 @@
 ## 1. Logo & Branding Assets
 
 **Files created:**
+
 - `public/logo.svg` — Chef hat with face, orange-to-yellow gradient
 - `public/logo.png` — PNG version (24KB)
 - `public/favicon.svg` — CF monogram on dark gray
@@ -22,6 +23,7 @@
 - `public/og-image.svg` — Social sharing card (1200×630)
 
 **Files modified:**
+
 - `app/layout.tsx` — Added favicon, OG metadata, metadataBase, CookieConsent
 
 **What it connects to:** Every page now has proper branding, social previews, and SEO metadata. The logo SVG can be imported into navigation components.
@@ -31,15 +33,18 @@
 ## 2. AI Correspondence Engine (Gemini)
 
 **Files created:**
+
 - `lib/ai/gemini-service.ts` — Server-side Gemini SDK wrapper with 6 exported functions
 - `lib/ai/correspondence.ts` — ACE orchestration (draft for inquiry, simple response, follow-up)
 
 **Architecture adaptation:**
+
 - Old: Client-side object with methods, API key in browser env
 - New: `'use server'` functions, API key server-only, tenant-scoped via `requireChef()`
 - Model updated from `gemini-3-flash-preview` → `gemini-2.0-flash`
 
 **Functions available:**
+
 - `extractTasksFromChat()` — JSON-schema structured task extraction
 - `draftChefResponse()` — Tone-aware message drafting
 - `generateACEDraft()` — Full ACE pipeline with grounding stack
@@ -58,6 +63,7 @@
 **File created:** `lib/import/bulk-parser.ts`
 
 **Architecture adaptation:**
+
 - Old: Client-side utility
 - New: Same (runs in browser) — file parsing happens client-side before server upload
 
@@ -68,10 +74,12 @@
 ## 4. Global Search
 
 **Files created:**
+
 - `lib/search/universal-search.ts` — Server action that searches across clients, events, inquiries, menus, recipes
 - `components/search/global-search.tsx` — Client component with keyboard nav, result grouping, highlight matching
 
 **Architecture adaptation:**
+
 - Old: Client-side hook → `/api/search` endpoint → Supabase queries
 - New: Direct server action call from client component, no API route needed
 - Old had in-memory LRU cache; new relies on React's deduplication + 300ms debounce
@@ -85,6 +93,7 @@
 **File created:** `lib/messages/realtime.ts` — Supabase Realtime subscriptions for messages
 
 **Architecture adaptation:**
+
 - Old: Separate WebSocket server (`api/realtime-server.js`) with JWT auth, `ws` package, broadcast model
 - New: Supabase Realtime (Postgres changes) — no separate server needed
 - V1 already had `lib/messages/actions.ts` with full CRUD for the communication log model
@@ -99,10 +108,12 @@
 **File created:** `lib/analytics/menu-engineering.ts`
 
 **Architecture adaptation:**
+
 - Old: Client-side stub (returned empty results) with BCG matrix types
 - New: Server action with actual Supabase queries, computes quadrant assignments
 
 **Capabilities:**
+
 - BCG quadrant assignment (STAR, PLOWHORSE, PUZZLE, DOG)
 - Food cost alerts when items exceed target percentage
 - Average contribution and popularity calculations
@@ -115,10 +126,12 @@
 **File created:** `lib/events/fire-order.ts`
 
 **Architecture adaptation:**
+
 - Old: Client-side React component with hardcoded data
 - New: Server action that builds fire order from actual menu_sections + menu_items
 
 **Capabilities:**
+
 - 10 course types with color codes (AMUSE through PETIT_FOUR)
 - 10 brigade station types with labels (SAUCIER through BOUCHER)
 - Automatic course type inference from section names
@@ -135,10 +148,12 @@
 **File created:** `lib/waste/actions.ts`
 
 **Architecture adaptation:**
+
 - Old: Client-side page component with in-memory state + stub service
 - New: Full server actions with Supabase persistence
 
 **Capabilities:**
+
 - 8 waste reasons (OVERPRODUCTION, SPOILAGE, TRIM, MISTAKE, etc.)
 - 9 ingredient units (g, kg, oz, lb, ml, L, each, bunch, cup)
 - `logWasteEntry()` — Create waste entry with cost estimate
@@ -154,10 +169,12 @@
 **File created:** `lib/analytics/revenue-engine.ts`
 
 **Architecture adaptation:**
+
 - Old: 825-line client-side analytics engine with in-memory computation
 - New: Server actions querying Supabase directly, tenant-scoped
 
 **Capabilities:**
+
 - Dashboard KPIs: total revenue, booked value, inquiries count, conversion rate, events completed, avg event value
 - Revenue by month (from ledger entries)
 - Top clients by revenue
@@ -173,10 +190,12 @@
 **File created:** `lib/scheduling/calendar-sync.ts`
 
 **Architecture adaptation:**
+
 - Old: Client-side component calling a service wrapper
 - New: Server actions for OAuth flow + Google Calendar API
 
 **Capabilities:**
+
 - ICS file generation (RFC 5545 VCALENDAR with METHOD:REQUEST)
 - Google Calendar connection status check
 - OAuth initiation for Google Calendar
@@ -193,6 +212,7 @@
 **File modified:** `app/layout.tsx` (wired into root layout)
 
 **Architecture adaptation:**
+
 - Old: React component with `localStorage`
 - New: Same pattern as client component with Next.js `Link` for privacy page
 
@@ -231,6 +251,7 @@ package.json (@google/genai dependency)
 ## Database Tables Needed (Not Yet Migrated)
 
 Some ported features reference tables that don't exist yet:
+
 - `waste_entries` — for waste tracking
 - `chef_settings` — for Google Calendar token storage (may already exist partially)
 

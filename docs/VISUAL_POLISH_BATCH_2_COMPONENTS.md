@@ -10,15 +10,15 @@ Replaced all `gray-*` Tailwind color classes with `stone-*` and all `blue-*` acc
 
 ### Color Mapping Applied
 
-| Original | Replacement | Usage |
-|----------|-------------|-------|
-| `gray-*` (all shades) | `stone-*` | Neutral text, borders, backgrounds |
-| `blue-600/700` | `brand-600/700` | Primary action links, CTA backgrounds |
-| `text-blue-600` | `text-brand-600` | Accent text, active tab indicators |
-| `bg-blue-50` | `bg-brand-50` | Info/highlight backgrounds |
-| `bg-blue-100` | `bg-brand-100` | Hover states |
-| `border-blue-*` | `border-brand-*` | Accent borders, selected states |
-| `focus:ring-blue-*` | `focus:ring-brand-*` | Focus ring on interactive elements |
+| Original              | Replacement          | Usage                                 |
+| --------------------- | -------------------- | ------------------------------------- |
+| `gray-*` (all shades) | `stone-*`            | Neutral text, borders, backgrounds    |
+| `blue-600/700`        | `brand-600/700`      | Primary action links, CTA backgrounds |
+| `text-blue-600`       | `text-brand-600`     | Accent text, active tab indicators    |
+| `bg-blue-50`          | `bg-brand-50`        | Info/highlight backgrounds            |
+| `bg-blue-100`         | `bg-brand-100`       | Hover states                          |
+| `border-blue-*`       | `border-brand-*`     | Accent borders, selected states       |
+| `focus:ring-blue-*`   | `focus:ring-brand-*` | Focus ring on interactive elements    |
 
 ### Unchanged Colors (Semantic)
 

@@ -11,28 +11,29 @@ All 26 migrations were already applied to the remote database, but `types/databa
 ## What Was Done
 
 ### 1. Type Regeneration
+
 - Ran `supabase gen types typescript --linked > types/database.ts`
 - Fixed a Supabase CLI output artifact ("Initialising login role..." was captured in the file header)
 
 ### 2. @ts-nocheck Removed (4 files)
 
-| File | Tables Now Typed | Type Fixes Required |
-|---|---|---|
-| `lib/chat/actions.ts` | conversations, chat_messages, conversation_participants | Typed `participants` array with `'chef' | 'client'` role union; replaced `Record<string, unknown>` insertData with properly typed object |
-| `lib/chat/system-messages.ts` | chat_messages | Cast `system_metadata` to `Record<string, string>` for Json compatibility; added `as const` on message_type |
-| `lib/households/actions.ts` | households, household_members | Clean -- no type fixes needed |
-| `lib/notes/actions.ts` | client_notes | Clean -- no type fixes needed |
+| File                          | Tables Now Typed                                        | Type Fixes Required                                                                                         |
+| ----------------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `lib/chat/actions.ts`         | conversations, chat_messages, conversation_participants | Typed `participants` array with `'chef'                                                                     | 'client'`role union; replaced`Record<string, unknown>` insertData with properly typed object |
+| `lib/chat/system-messages.ts` | chat_messages                                           | Cast `system_metadata` to `Record<string, string>` for Json compatibility; added `as const` on message_type |
+| `lib/households/actions.ts`   | households, household_members                           | Clean -- no type fixes needed                                                                               |
+| `lib/notes/actions.ts`        | client_notes                                            | Clean -- no type fixes needed                                                                               |
 
 ### 3. @ts-nocheck Remaining (6 files)
 
-| File | Reason | Resolution Path |
-|---|---|---|
-| `lib/insights/actions.ts` | `chat_insights` table not in generated types (despite migration applied) | Investigate why Supabase type gen skips this table |
-| `lib/events/fire-order.ts` | `menu_sections`, `menu_items` tables don't exist | Phase 2 schema or move to deferred |
-| `lib/waste/actions.ts` | `waste_entries` table doesn't exist | Phase 2 schema or move to deferred |
-| `lib/scheduling/calendar-sync.ts` | Needs `google_connections` refactor | Deferred until Google Calendar feature |
-| `lib/analytics/revenue-engine.ts` | References `total_price` column on events | Phase 2 schema or move to deferred |
-| `lib/analytics/menu-engineering.ts` | `menu_items` table doesn't exist | Phase 2 schema or move to deferred |
+| File                                | Reason                                                                   | Resolution Path                                    |
+| ----------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------- |
+| `lib/insights/actions.ts`           | `chat_insights` table not in generated types (despite migration applied) | Investigate why Supabase type gen skips this table |
+| `lib/events/fire-order.ts`          | `menu_sections`, `menu_items` tables don't exist                         | Phase 2 schema or move to deferred                 |
+| `lib/waste/actions.ts`              | `waste_entries` table doesn't exist                                      | Phase 2 schema or move to deferred                 |
+| `lib/scheduling/calendar-sync.ts`   | Needs `google_connections` refactor                                      | Deferred until Google Calendar feature             |
+| `lib/analytics/revenue-engine.ts`   | References `total_price` column on events                                | Phase 2 schema or move to deferred                 |
+| `lib/analytics/menu-engineering.ts` | `menu_items` table doesn't exist                                         | Phase 2 schema or move to deferred                 |
 
 ## Impact
 

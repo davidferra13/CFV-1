@@ -11,6 +11,7 @@ Without Stripe Connect, chefs receive payments into the platform account and mus
 ## Account Type: Express
 
 Express was chosen over Standard and Custom because:
+
 - Chefs are independent businesses (not platform employees) — Express fits
 - Stripe hosts the onboarding UI — reduces implementation burden
 - Stripe handles KYC, tax reporting, and payout scheduling
@@ -40,12 +41,13 @@ Stripe fires account.updated webhook (async)
 
 The DB has two columns on `chefs`:
 
-| Column | Type | Meaning |
-|---|---|---|
-| `stripe_account_id` | TEXT | Stripe acct_xxx ID; NULL = never started |
-| `stripe_onboarding_complete` | BOOLEAN | true = charges_enabled confirmed |
+| Column                       | Type    | Meaning                                  |
+| ---------------------------- | ------- | ---------------------------------------- |
+| `stripe_account_id`          | TEXT    | Stripe acct_xxx ID; NULL = never started |
+| `stripe_onboarding_complete` | BOOLEAN | true = charges_enabled confirmed         |
 
 `getConnectAccountStatus()` derives three states:
+
 - **Not connected**: `stripe_account_id IS NULL`
 - **Pending**: `stripe_account_id` set but `stripe_onboarding_complete = false`
 - **Connected**: `stripe_onboarding_complete = true`
@@ -70,18 +72,19 @@ This implementation covers Connect **onboarding and status display only**. Routi
 
 ## Key Files
 
-| File | Role |
-|---|---|
-| `lib/stripe/connect.ts` | `getConnectAccountStatus`, `createConnectAccountLink`, `refreshConnectAccountStatus`, `updateConnectStatusFromWebhook` |
-| `app/api/stripe/connect/callback/route.ts` | Handles Stripe return redirect; syncs status and routes back to wizard or settings |
-| `app/(chef)/settings/stripe-connect/page.tsx` | Server component — loads status, renders `StripeConnectClient` |
-| `app/(chef)/settings/stripe-connect/stripe-connect-client.tsx` | `'use client'` — Connect CTA, pending/connected states, refresh button |
-| `app/api/webhooks/stripe/route.ts` | Added `account.updated` webhook handler |
-| `supabase/migrations/20260303000021_onboarding_and_stripe_connect.sql` | Adds `stripe_account_id` and `stripe_onboarding_complete` to `chefs` |
+| File                                                                   | Role                                                                                                                   |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `lib/stripe/connect.ts`                                                | `getConnectAccountStatus`, `createConnectAccountLink`, `refreshConnectAccountStatus`, `updateConnectStatusFromWebhook` |
+| `app/api/stripe/connect/callback/route.ts`                             | Handles Stripe return redirect; syncs status and routes back to wizard or settings                                     |
+| `app/(chef)/settings/stripe-connect/page.tsx`                          | Server component — loads status, renders `StripeConnectClient`                                                         |
+| `app/(chef)/settings/stripe-connect/stripe-connect-client.tsx`         | `'use client'` — Connect CTA, pending/connected states, refresh button                                                 |
+| `app/api/webhooks/stripe/route.ts`                                     | Added `account.updated` webhook handler                                                                                |
+| `supabase/migrations/20260303000021_onboarding_and_stripe_connect.sql` | Adds `stripe_account_id` and `stripe_onboarding_complete` to `chefs`                                                   |
 
 ## Database
 
 Columns added to `chefs` table:
+
 ```sql
 stripe_account_id           TEXT DEFAULT NULL,
 stripe_onboarding_complete  BOOLEAN NOT NULL DEFAULT FALSE

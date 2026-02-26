@@ -19,10 +19,12 @@ Four data-driven insight/suggestion features surfaced throughout the chef UI. Al
 **Data source:** `quotes` table — last 90 days, statuses: sent/accepted/rejected/expired.
 
 **Files created:**
+
 - `lib/analytics/quote-insights.ts` — `getQuoteAcceptanceInsights()`
 - `components/analytics/quote-acceptance-insights.tsx` — `QuoteAcceptanceInsightsPanel`
 
 **Surfaces in:**
+
 - `/quotes` — above the status tab row
 - `/dashboard` — as a full-width card below the Business Snapshot grid
 
@@ -37,10 +39,12 @@ Four data-driven insight/suggestion features surfaced throughout the chef UI. Al
 **Data source:** `quotes` (accepted, matching model + guest range) + `event_financial_summary` view.
 
 **Files created:**
+
 - `lib/analytics/pricing-suggestions.ts` — `getPricingSuggestion()`
 - `components/analytics/pricing-suggestion-panel.tsx` — `PricingSuggestionPanel` (client component, collapsible)
 
 **Files modified:**
+
 - `components/quotes/quote-form.tsx` — added `pricingSuggestion?: PricingSuggestion | null` prop; renders panel between pricing history and price calculator
 - `app/(chef)/quotes/new/page.tsx` — fetches suggestion server-side via `getPricingSuggestion()` when guest count is known; passes to `QuoteForm`
 
@@ -55,10 +59,12 @@ Four data-driven insight/suggestion features surfaced throughout the chef UI. Al
 **Data source:** `recipes` table + `recipe_ingredients.allergen_flags` for non-optional ingredients.
 
 **Files created:**
+
 - `lib/analytics/menu-recommendations.ts` — `getMenuRecommendations()`
 - `components/analytics/menu-recommendation-hints.tsx` — `MenuRecommendationHints` (server component)
 
 **Files modified:**
+
 - `app/(chef)/menus/[id]/page.tsx` — added `getMenuRecommendations()` to parallel fetch; renders `MenuRecommendationHints` below the menu editor. Event's `dietary_restrictions` and `allergies` are passed if a linked event exists.
 
 **Reason badges:** `proven` (success) = popular + recent, `popular` (info) = cooked 3+ times, `recent` (default) = cooked within 30 days.
@@ -84,10 +90,12 @@ Four data-driven insight/suggestion features surfaced throughout the chef UI. Al
 **Data source:** `inquiries`, `quotes` (accepted, for tenant avg), `client_financial_summary` view, `events` (date conflict check).
 
 **Files created:**
+
 - `lib/analytics/booking-score.ts` — `getBookingScoreForInquiry()` + `getBookingScoresForOpenInquiries()`
 - `components/analytics/booking-score-badge.tsx` — `BookingScoreBadge` (client component, hover tooltip)
 
 **Files modified:**
+
 - `app/(chef)/inquiries/page.tsx` — `InquiryList` now fetches all open inquiry scores in parallel; renders `BookingScoreBadge` next to status badge on each open inquiry
 - `app/(chef)/inquiries/[id]/page.tsx` — added `getBookingScoreForInquiry()` to the page's `Promise.all()`; renders badge next to `EngagementBadge` in header
 

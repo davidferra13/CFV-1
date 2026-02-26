@@ -115,7 +115,12 @@ export class PDFLayout {
   }
 
   /** Body text — wraps to content width */
-  text(text: string, size: number = 9, style: 'normal' | 'bold' | 'italic' = 'normal', indent: number = 0) {
+  text(
+    text: string,
+    size: number = 9,
+    style: 'normal' | 'bold' | 'italic' = 'normal',
+    indent: number = 0
+  ) {
     const s = this.scaledSize(size)
     this.doc.setFontSize(s)
     this.doc.setFont('helvetica', style)

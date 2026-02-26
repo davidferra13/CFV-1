@@ -33,8 +33,8 @@ const TIER_1_HOLIDAYS = [
   { month: 12, day: 24, name: 'Christmas Eve' },
   { month: 12, day: 25, name: 'Christmas Day' },
   { month: 12, day: 31, name: "New Year's Eve" },
-  { month: 1,  day: 1,  name: "New Year's Day" },   // Jan 1 — major cooking holiday
-  { month: 2,  day: 14, name: "Valentine's Day" },
+  { month: 1, day: 1, name: "New Year's Day" }, // Jan 1 — major cooking holiday
+  { month: 2, day: 14, name: "Valentine's Day" },
 ]
 
 const TIER_2_HOLIDAYS = [
@@ -64,13 +64,13 @@ export type ServiceType =
 export interface PricingInput {
   serviceType: ServiceType
   guestCount: number
-  courseCount?: number          // required for private_dinner; ignored for all other service types
-  eventDate?: string            // ISO date string (YYYY-MM-DD)
+  courseCount?: number // required for private_dinner; ignored for all other service types
+  eventDate?: string // ISO date string (YYYY-MM-DD)
   distanceMiles?: number
-  multiNightPackage?: string    // key from MULTI_NIGHT_PACKAGES
-  numberOfDays?: number         // for weekly types; defaults to 1
+  multiNightPackage?: string // key from MULTI_NIGHT_PACKAGES
+  numberOfDays?: number // for weekly types; defaults to 1
   weekendPremiumEnabled?: boolean // opt-in Fri/Sat uplift; defaults to false
-  addOns?: AddOnInput[]         // optional named or custom add-on line items
+  addOns?: AddOnInput[] // optional named or custom add-on line items
 }
 
 export interface PricingBreakdown {
@@ -83,7 +83,7 @@ export interface PricingBreakdown {
   // Exact holiday premium
   holidayName: string | null
   holidayTier: HolidayTier | null
-  holidayPremiumPercent: number  // e.g., 0.45 = 45%
+  holidayPremiumPercent: number // e.g., 0.45 = 45%
   holidayPremiumCents: number
 
   // Holiday proximity premium (near-holiday; mutually exclusive with exact holiday)
@@ -105,9 +105,9 @@ export interface PricingBreakdown {
   addOnTotalCents: number
 
   // Totals
-  subtotalCents: number      // service + weekend + holiday premiums (before travel + add-ons)
-  totalServiceCents: number  // subtotal + travel + add-ons (after minimum floor)
-  depositCents: number       // DEPOSIT_PERCENTAGE of totalServiceCents
+  subtotalCents: number // service + weekend + holiday premiums (before travel + add-ons)
+  totalServiceCents: number // subtotal + travel + add-ons (after minimum floor)
+  depositCents: number // DEPOSIT_PERCENTAGE of totalServiceCents
   depositPercent: number
 
   // Minimum booking floor
@@ -120,11 +120,11 @@ export interface PricingBreakdown {
   pricingModel: 'per_person' | 'flat_rate' | 'custom'
   isCouple: boolean
   isLargeGroup: boolean
-  requiresCustomPricing: boolean  // true when engine cannot compute a final number
+  requiresCustomPricing: boolean // true when engine cannot compute a final number
   numberOfDays: number
   notes: string[]
   validationErrors: string[]
-  balanceDueHours: number    // always BALANCE_DUE_HOURS_BEFORE (24)
+  balanceDueHours: number // always BALANCE_DUE_HOURS_BEFORE (24)
 }
 
 // ─── Input Validation ─────────────────────────────────────────────────────────
@@ -144,7 +144,11 @@ export function validatePricingInput(input: PricingInput): { valid: boolean; err
 
   // courseCount: required and must be 3–5 for private_dinner; ignored for all other types
   if (input.serviceType === 'private_dinner') {
-    if (input.courseCount === undefined || !Number.isInteger(input.courseCount) || input.courseCount < 1) {
+    if (
+      input.courseCount === undefined ||
+      !Number.isInteger(input.courseCount) ||
+      input.courseCount < 1
+    ) {
       errors.push('Course count is required for private dinner and must be a positive integer')
     } else if (input.courseCount < 3 || input.courseCount > 5) {
       errors.push(
@@ -216,11 +220,18 @@ export function validatePricingInput(input: PricingInput): { valid: boolean; err
         if (!addOn.label || addOn.label.trim() === '') {
           errors.push('Custom add-on must have a label')
         }
-        if (addOn.type === 'per_person' && (addOn.perPersonCents === undefined || addOn.perPersonCents < 0)) {
-          errors.push(`Custom add-on "${addOn.label || 'unnamed'}" (per_person) must have a non-negative perPersonCents`)
+        if (
+          addOn.type === 'per_person' &&
+          (addOn.perPersonCents === undefined || addOn.perPersonCents < 0)
+        ) {
+          errors.push(
+            `Custom add-on "${addOn.label || 'unnamed'}" (per_person) must have a non-negative perPersonCents`
+          )
         }
         if (addOn.type === 'flat' && (addOn.flatCents === undefined || addOn.flatCents < 0)) {
-          errors.push(`Custom add-on "${addOn.label || 'unnamed'}" (flat) must have a non-negative flatCents`)
+          errors.push(
+            `Custom add-on "${addOn.label || 'unnamed'}" (flat) must have a non-negative flatCents`
+          )
         }
       } else {
         // Belt-and-suspenders runtime check even though TypeScript enforces the key
@@ -250,28 +261,33 @@ function computeAddOns(
   for (const addOn of addOns) {
     if (addOn.key === 'custom') {
       const unitCents =
-        addOn.type === 'per_person'
-          ? (addOn.perPersonCents ?? 0)
-          : (addOn.flatCents ?? 0)
+        addOn.type === 'per_person' ? (addOn.perPersonCents ?? 0) : (addOn.flatCents ?? 0)
       const quantity =
-        addOn.type === 'per_person'
-          ? (addOn.quantity ?? guestCount)
-          : (addOn.quantity ?? 1)
+        addOn.type === 'per_person' ? (addOn.quantity ?? guestCount) : (addOn.quantity ?? 1)
       const lineTotalCents = unitCents * quantity
-      lines.push({ key: 'custom', label: addOn.label, type: addOn.type, unitCents, quantity, totalCents: lineTotalCents })
+      lines.push({
+        key: 'custom',
+        label: addOn.label,
+        type: addOn.type,
+        unitCents,
+        quantity,
+        totalCents: lineTotalCents,
+      })
       totalCents += lineTotalCents
     } else {
       const def = ADD_ON_CATALOG[addOn.key]
-      const unitCents =
-        def.type === 'per_person'
-          ? (def.perPersonCents ?? 0)
-          : (def.flatCents ?? 0)
+      const unitCents = def.type === 'per_person' ? (def.perPersonCents ?? 0) : (def.flatCents ?? 0)
       const quantity =
-        def.type === 'per_person'
-          ? (addOn.quantity ?? guestCount)
-          : (addOn.quantity ?? 1)
+        def.type === 'per_person' ? (addOn.quantity ?? guestCount) : (addOn.quantity ?? 1)
       const lineTotalCents = unitCents * quantity
-      lines.push({ key: addOn.key, label: def.label, type: def.type, unitCents, quantity, totalCents: lineTotalCents })
+      lines.push({
+        key: addOn.key,
+        label: def.label,
+        type: def.type,
+        unitCents,
+        quantity,
+        totalCents: lineTotalCents,
+      })
       totalCents += lineTotalCents
     }
   }
@@ -282,7 +298,6 @@ function computeAddOns(
 // ─── Core Pricing Function ───────────────────────────────────────────────────
 
 export async function computePricing(input: PricingInput): Promise<PricingBreakdown> {
-
   // ── Step 0: Validate input ────────────────────────────────────────────────
   const validation = validatePricingInput(input)
   const validationErrors = validation.errors
@@ -290,7 +305,7 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
   const {
     serviceType,
     guestCount,
-    courseCount,               // intentionally kept as undefined when not provided
+    courseCount, // intentionally kept as undefined when not provided
     eventDate,
     distanceMiles = 0,
     weekendPremiumEnabled = false,
@@ -340,7 +355,6 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
   // Buyout guests bypass the rate table entirely — skip if already custom.
   if (!isBuyout) {
     switch (serviceType) {
-
       case 'private_dinner': {
         // Couples rates apply to 1–2 guests; group rates apply to 3+
         const rateTable = isCouple ? COUPLES_RATES : GROUP_RATES
@@ -494,11 +508,11 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
       holidayTier = holiday.tier
       const premium = HOLIDAY_PREMIUMS[holiday.tier]
       holidayPremiumPercent = premium.default
-      holidayPremiumCents = Math.round(
-        (serviceFeeCents + weekendPremiumCents) * premium.default
-      )
+      holidayPremiumCents = Math.round((serviceFeeCents + weekendPremiumCents) * premium.default)
       if (requiresCustomPricing) {
-        notes.push(`Note: ${holiday.name} (Tier ${holiday.tier}) detected — factor into custom quote`)
+        notes.push(
+          `Note: ${holiday.name} (Tier ${holiday.tier}) detected — factor into custom quote`
+        )
       } else {
         notes.push(
           `${holiday.name} — Tier ${holiday.tier} premium (+${Math.round(premium.default * 100)}%) = ${formatCentsAsDollars(holidayPremiumCents)}`
@@ -644,13 +658,15 @@ function buildDefaultQuoteName(input: PricingInput, pricing: PricingBreakdown): 
   }
 }
 
-export async function generateQuoteFromPricing(input: PricingInput & {
-  clientId: string
-  inquiryId?: string
-  eventId?: string
-  quoteName?: string
-  pricingNotes?: string
-}) {
+export async function generateQuoteFromPricing(
+  input: PricingInput & {
+    clientId: string
+    inquiryId?: string
+    eventId?: string
+    quoteName?: string
+    pricingNotes?: string
+  }
+) {
   const pricing = await computePricing(input)
 
   return {
@@ -659,7 +675,7 @@ export async function generateQuoteFromPricing(input: PricingInput & {
     event_id: input.eventId || null,
     quote_name: input.quoteName || buildDefaultQuoteName(input, pricing),
     pricing_model: pricing.pricingModel,
-    total_quoted_cents: pricing.totalServiceCents,  // includes travel + add-ons
+    total_quoted_cents: pricing.totalServiceCents, // includes travel + add-ons
     price_per_person_cents: pricing.perPersonCents || null,
     guest_count_estimated: input.guestCount,
     deposit_required: true,
@@ -833,14 +849,13 @@ export function formatPricingForEmail(pricing: PricingBreakdown): string {
 
   // ── Guard: custom pricing ─────────────────────────────────────────────────
   if (pricing.requiresCustomPricing) {
-    const reasonNotes = pricing.notes.filter(n =>
-      n.toLowerCase().includes('custom') ||
-      n.toLowerCase().includes('requires') ||
-      n.toLowerCase().includes('buyout')
+    const reasonNotes = pricing.notes.filter(
+      (n) =>
+        n.toLowerCase().includes('custom') ||
+        n.toLowerCase().includes('requires') ||
+        n.toLowerCase().includes('buyout')
     )
-    lines.push(
-      `This booking requires a custom quote. ${reasonNotes.join(' ')}`
-    )
+    lines.push(`This booking requires a custom quote. ${reasonNotes.join(' ')}`)
     if (pricing.validationErrors.length > 0) {
       lines.push(`[INTERNAL: ${pricing.validationErrors.join('; ')}]`)
     }
@@ -902,7 +917,7 @@ export function formatPricingForEmail(pricing: PricingBreakdown): string {
   // ── Add-ons ───────────────────────────────────────────────────────────────
   if (pricing.addOnLines.length > 0) {
     const descriptions = pricing.addOnLines.map(
-      line => `${line.label} (${formatCentsAsDollars(line.totalCents)})`
+      (line) => `${line.label} (${formatCentsAsDollars(line.totalCents)})`
     )
     lines.push(
       `Add-ons included: ${descriptions.join(', ')} — ${formatCentsAsDollars(pricing.addOnTotalCents)} total.`
@@ -915,9 +930,10 @@ export function formatPricingForEmail(pricing: PricingBreakdown): string {
   }
 
   // ── Groceries ─────────────────────────────────────────────────────────────
-  const groceryContext = pricing.numberOfDays > 1
-    ? `for a booking of ${pricing.numberOfDays} days`
-    : 'for a booking this size'
+  const groceryContext =
+    pricing.numberOfDays > 1
+      ? `for a booking of ${pricing.numberOfDays} days`
+      : 'for a booking this size'
   lines.push(
     `Groceries are billed separately at actual cost based on real receipts, usually in the ${formatCentsAsDollars(pricing.estimatedGroceryCents.low)}–${formatCentsAsDollars(pricing.estimatedGroceryCents.high)} range ${groceryContext}.`
   )

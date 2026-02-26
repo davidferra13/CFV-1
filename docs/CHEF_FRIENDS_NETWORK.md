@@ -12,59 +12,68 @@ This feature adds a chef-to-chef social layer to ChefFlow. Chefs can now discove
 ### Database (Migration: `20260221000002_chef_friends_network.sql`)
 
 **New enum:**
+
 - `chef_connection_status` -- pending, accepted, declined
 
 **New columns on `chefs`:**
+
 - `display_name` (TEXT) -- optional public name for the directory
 - `bio` (TEXT) -- short bio visible to other chefs
 - `profile_image_url` (TEXT) -- avatar URL
 
 **New column on `chef_preferences`:**
+
 - `network_discoverable` (BOOLEAN, default false) -- opt-in toggle
 
 **New table: `chef_connections`**
+
 - Stores the friendship graph: requester, addressee, status, timestamps
 - Constraint prevents self-connections
 - Unique constraint on (requester_id, addressee_id) prevents duplicates
 - Partial indexes on `status = 'accepted'` for fast friend-list queries
 
 **RLS Policies:**
+
 - `chef_connections`: chefs can see/update connections they participate in, insert only as requester
 - `chefs_network_discovery`: cross-tenant SELECT for discoverable chef profiles
 - `chef_preferences_network_check`: cross-tenant SELECT for discoverable chef preferences (location)
 
 **Helper function:**
+
 - `are_chefs_connected(chef_a, chef_b)` -- returns boolean, works regardless of request direction
 
 ### Server Actions (`lib/network/actions.ts`)
 
-| Action | Purpose |
-|--------|---------|
-| `searchChefs` | Find discoverable chefs by name, annotated with connection status |
-| `sendConnectionRequest` | Create a pending connection (with re-request support for declined) |
-| `respondToConnectionRequest` | Accept or decline (addressee only) |
-| `getMyConnections` | List accepted friends with profile + location info |
-| `getPendingRequests` | List incoming + outgoing pending requests |
-| `removeConnection` | Soft-remove (set to declined) |
-| `toggleNetworkDiscoverable` | Flip the privacy toggle on/off |
-| `updateChefProfile` | Update display_name, bio, profile_image_url |
-| `getNetworkDiscoverable` | Read current toggle state |
-| `getChefProfile` | Read current profile fields |
+| Action                       | Purpose                                                            |
+| ---------------------------- | ------------------------------------------------------------------ |
+| `searchChefs`                | Find discoverable chefs by name, annotated with connection status  |
+| `sendConnectionRequest`      | Create a pending connection (with re-request support for declined) |
+| `respondToConnectionRequest` | Accept or decline (addressee only)                                 |
+| `getMyConnections`           | List accepted friends with profile + location info                 |
+| `getPendingRequests`         | List incoming + outgoing pending requests                          |
+| `removeConnection`           | Soft-remove (set to declined)                                      |
+| `toggleNetworkDiscoverable`  | Flip the privacy toggle on/off                                     |
+| `updateChefProfile`          | Update display_name, bio, profile_image_url                        |
+| `getNetworkDiscoverable`     | Read current toggle state                                          |
+| `getChefProfile`             | Read current profile fields                                        |
 
 ### UI
 
 **Network page** (`/network`):
+
 - Search bar with debounced results
 - Contextual action buttons per result (Connect / Request Sent / Accept-Decline / Connected)
 - Pending requests section (received with accept/decline, sent with pending badge)
 - Friends list with filter, inline remove with confirmation
 
 **Settings integration** (`/settings`):
+
 - New "Chef Network" section with discoverability toggle
 - Link to `/settings/profile` sub-page for editing display name, bio, image URL
 - Profile preview showing how you'll appear to others
 
 **Navigation:**
+
 - "Network" item added to sidebar standalone top items (Handshake icon)
 - `/network` added to middleware chefPaths for route protection
 
@@ -112,23 +121,23 @@ This is ChefFlow's first cross-tenant feature. Every existing query uses `.eq('t
 
 ## Files Created
 
-| File | Purpose |
-|------|---------|
-| `supabase/migrations/20260221000002_chef_friends_network.sql` | Database migration |
-| `lib/network/actions.ts` | All server actions |
-| `app/(chef)/network/page.tsx` | Network page (server component) |
-| `app/(chef)/network/chef-search.tsx` | Search UI (client component) |
-| `app/(chef)/network/pending-requests.tsx` | Pending requests UI |
-| `app/(chef)/network/friends-list.tsx` | Friends list UI |
-| `components/network/chef-card.tsx` | Reusable chef card |
-| `components/network/discoverability-toggle.tsx` | Privacy toggle |
-| `app/(chef)/settings/profile/page.tsx` | Profile settings page |
-| `app/(chef)/settings/profile/profile-form.tsx` | Profile edit form |
+| File                                                          | Purpose                         |
+| ------------------------------------------------------------- | ------------------------------- |
+| `supabase/migrations/20260221000002_chef_friends_network.sql` | Database migration              |
+| `lib/network/actions.ts`                                      | All server actions              |
+| `app/(chef)/network/page.tsx`                                 | Network page (server component) |
+| `app/(chef)/network/chef-search.tsx`                          | Search UI (client component)    |
+| `app/(chef)/network/pending-requests.tsx`                     | Pending requests UI             |
+| `app/(chef)/network/friends-list.tsx`                         | Friends list UI                 |
+| `components/network/chef-card.tsx`                            | Reusable chef card              |
+| `components/network/discoverability-toggle.tsx`               | Privacy toggle                  |
+| `app/(chef)/settings/profile/page.tsx`                        | Profile settings page           |
+| `app/(chef)/settings/profile/profile-form.tsx`                | Profile edit form               |
 
 ## Files Modified
 
-| File | Change |
-|------|--------|
-| `components/navigation/chef-nav.tsx` | Added Network nav item with Handshake icon |
-| `middleware.ts` | Added `/network` to chefPaths |
-| `app/(chef)/settings/page.tsx` | Added Chef Network section with toggle + profile link |
+| File                                 | Change                                                |
+| ------------------------------------ | ----------------------------------------------------- |
+| `components/navigation/chef-nav.tsx` | Added Network nav item with Handshake icon            |
+| `middleware.ts`                      | Added `/network` to chefPaths                         |
+| `app/(chef)/settings/page.tsx`       | Added Chef Network section with toggle + profile link |

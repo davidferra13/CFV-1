@@ -20,6 +20,7 @@ For every combination of recipe category (protein, soup, sauce, salad, starch, p
 - `rawNote` — explains the yield loss (e.g. "25% cooking loss — buy ~8 oz raw per guest")
 
 Examples:
+
 - `protein + main` → 6 oz cooked, rawFactor 1.33, "buy ~8 oz raw per guest"
 - `soup + first` → 6 oz (180 ml), no yield loss
 - `sauce + main` → 1.5 oz (3 tbsp), "make 20–25% extra for reduction waste"
@@ -29,24 +30,25 @@ Examples:
 
 The sub-linear scaling rule: as a recipe batch grows, flavor compounds concentrate. The system encodes the correct exponent for each ingredient category:
 
-| Category | Exponent | Rule |
-|---|---|---|
-| protein | 1.00 | Always linear — buy exactly by weight |
-| produce | 1.00 | Linear |
-| baking | 1.00 | Always linear — baking is chemistry |
-| beverage | 1.00 | Linear |
-| frozen | 1.00 | Linear |
-| dairy | 0.92 | Cream/butter slightly concentrate |
-| alcohol | 0.90 | Wine/spirits concentrate as liquid reduces |
-| fresh_herb | 0.90 | Near-linear for garnish, slightly sub for flavoring |
-| pantry | 0.85 | Stocks, canned goods more efficient at scale |
-| oil | 0.88 | Cooking fat coats larger volumes more efficiently |
-| specialty | 0.85 | Flavor-forward specialty items |
-| condiment | 0.80 | Mustard, Worcestershire, fish sauce — sub-linear |
-| spice | 0.75 | Highly sub-linear — 5× recipe needs ~3.3× spice |
-| dry_herb | 0.75 | Same as spice — dried herbs concentrate like spice |
+| Category   | Exponent | Rule                                                |
+| ---------- | -------- | --------------------------------------------------- |
+| protein    | 1.00     | Always linear — buy exactly by weight               |
+| produce    | 1.00     | Linear                                              |
+| baking     | 1.00     | Always linear — baking is chemistry                 |
+| beverage   | 1.00     | Linear                                              |
+| frozen     | 1.00     | Linear                                              |
+| dairy      | 0.92     | Cream/butter slightly concentrate                   |
+| alcohol    | 0.90     | Wine/spirits concentrate as liquid reduces          |
+| fresh_herb | 0.90     | Near-linear for garnish, slightly sub for flavoring |
+| pantry     | 0.85     | Stocks, canned goods more efficient at scale        |
+| oil        | 0.88     | Cooking fat coats larger volumes more efficiently   |
+| specialty  | 0.85     | Flavor-forward specialty items                      |
+| condiment  | 0.80     | Mustard, Worcestershire, fish sauce — sub-linear    |
+| spice      | 0.75     | Highly sub-linear — 5× recipe needs ~3.3× spice     |
+| dry_herb   | 0.75     | Same as spice — dried herbs concentrate like spice  |
 
 At a 2× scale the difference is small. At 5× scale it matters significantly:
+
 - 5× recipe, linear: 1 tsp spice → 5 tsp
 - 5× recipe, smart (0.75 exponent): 1 tsp → 3.34 tsp — **33% less than linear**
 
@@ -77,12 +79,14 @@ Replaces the previous simple multiplier with a professional tool. Integrated int
 4. System computes scale factor from `recipe.yield_quantity` (e.g. base 8 servings → for 20 guests = ×2.5)
 
 **Portion Standard Panel (blue):**
+
 - Shows standard oz per guest for that category + course
 - Shows total to prepare (e.g. "4.5 lbs for 12 main course guests")
 - Shows raw purchase quantity with yield loss if applicable (proteins, vegetables)
 - If recipe has no yield_quantity: shows the standard as a reference but explains ingredient scaling isn't possible yet
 
 **Scaled Ingredient Table:**
+
 - Two modes: **Smart (sub-linear)** and **Linear**
 - Smart mode default — each ingredient scaled by its category's exponent
 - For sub-linear ingredients, shows "−18% vs linear" badge so the chef understands why the spice amount is lower
@@ -92,6 +96,7 @@ Replaces the previous simple multiplier with a professional tool. Integrated int
 
 **Copy Scaled Recipe button:**
 Produces a plain-text mise-en-place card with:
+
 - Header with dish name, course, guest count, scale factor
 - All scaled ingredients with culinary fractions
 - Portion reference section (oz per person, total, purchase quantity)

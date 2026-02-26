@@ -141,7 +141,13 @@ export function createLogger(scope: string, defaultCtx: LogContext = {}) {
         emit(buildEntry('info', label, { ...opts, durationMs: Date.now() - start }))
         return result
       } catch (err) {
-        emit(buildEntry('error', `${label} failed`, { ...opts, error: err, durationMs: Date.now() - start }))
+        emit(
+          buildEntry('error', `${label} failed`, {
+            ...opts,
+            error: err,
+            durationMs: Date.now() - start,
+          })
+        )
         throw err
       }
     },

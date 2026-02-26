@@ -15,6 +15,7 @@ The column `estimated_food_cost_cents` was added by migration `20260322000027_es
 ### 2. `lib/expenses/actions.ts` — Add estimate to profit summary
 
 `getEventProfitSummary()` now:
+
 - Includes `estimated_food_cost_cents` in the event data `.select()` query
 - Returns a new `estimatedFoodCost` object with four fields:
   - `estimatedCents` — the grocery quote estimate (from the event row)
@@ -54,12 +55,12 @@ Chef views event detail
 
 ## Files Modified
 
-| File | Change |
-|------|--------|
-| `lib/grocery/pricing-actions.ts` | Non-blocking write of `averageTotal` to `events.estimated_food_cost_cents` |
-| `lib/expenses/actions.ts` | Added `estimated_food_cost_cents` to event select; added `estimatedFoodCost` to return |
-| `app/(chef)/events/[id]/page.tsx` | Estimated vs actual display in Profit Summary section |
-| `components/events/grocery-quote-panel.tsx` | "Estimate saved to event" confirmation line |
+| File                                        | Change                                                                                 |
+| ------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `lib/grocery/pricing-actions.ts`            | Non-blocking write of `averageTotal` to `events.estimated_food_cost_cents`             |
+| `lib/expenses/actions.ts`                   | Added `estimated_food_cost_cents` to event select; added `estimatedFoodCost` to return |
+| `app/(chef)/events/[id]/page.tsx`           | Estimated vs actual display in Profit Summary section                                  |
+| `components/events/grocery-quote-panel.tsx` | "Estimate saved to event" confirmation line                                            |
 
 ## Dependencies
 

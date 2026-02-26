@@ -22,10 +22,12 @@ export async function getLedgerEntries(filters: LedgerEntryFilters = {}) {
 
   let query = supabase
     .from('ledger_entries')
-    .select(`
+    .select(
+      `
       *,
       event:events(id, occasion, event_date)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
 
   // Apply filters
@@ -62,20 +64,28 @@ export async function exportLedgerCSV(filters: LedgerEntryFilters = {}) {
   const entries = await getLedgerEntries(filters)
 
   // Build CSV
-  const headers = ['Date', 'Event', 'Type', 'Amount (cents)', 'Payment Method', 'Description', 'Transaction Ref']
-  const rows = entries.map(entry => [
+  const headers = [
+    'Date',
+    'Event',
+    'Type',
+    'Amount (cents)',
+    'Payment Method',
+    'Description',
+    'Transaction Ref',
+  ]
+  const rows = entries.map((entry) => [
     new Date(entry.created_at).toISOString(),
     entry.event?.occasion || 'N/A',
     entry.entry_type,
     entry.amount_cents.toString(),
     entry.payment_method,
     entry.description,
-    entry.transaction_reference || ''
+    entry.transaction_reference || '',
   ])
 
   const csv = [
     headers.join(','),
-    ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
   ].join('\n')
 
   return csv

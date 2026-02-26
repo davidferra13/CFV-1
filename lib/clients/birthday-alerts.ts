@@ -14,27 +14,39 @@ export type UpcomingMilestone = {
   clientId: string
   clientName: string
   type: 'birthday' | 'anniversary' | 'milestone'
-  label: string       // "Birthday", "Wedding Anniversary", or custom label
-  date: string        // ISO date of next occurrence (this year or next)
-  daysUntil: number   // 0 = today, 1 = tomorrow, …
-  noteText: string    // original milestone text for display
+  label: string // "Birthday", "Wedding Anniversary", or custom label
+  date: string // ISO date of next occurrence (this year or next)
+  daysUntil: number // 0 = today, 1 = tomorrow, …
+  noteText: string // original milestone text for display
 }
 
 // ─── Month name mapping ───────────────────────────────────────────────────────
 
 const MONTH_NAMES: Record<string, number> = {
-  january: 1, jan: 1,
-  february: 2, feb: 2,
-  march: 3, mar: 3,
-  april: 4, apr: 4,
+  january: 1,
+  jan: 1,
+  february: 2,
+  feb: 2,
+  march: 3,
+  mar: 3,
+  april: 4,
+  apr: 4,
   may: 5,
-  june: 6, jun: 6,
-  july: 7, jul: 7,
-  august: 8, aug: 8,
-  september: 9, sep: 9, sept: 9,
-  october: 10, oct: 10,
-  november: 11, nov: 11,
-  december: 12, dec: 12,
+  june: 6,
+  jun: 6,
+  july: 7,
+  jul: 7,
+  august: 8,
+  aug: 8,
+  september: 9,
+  sep: 9,
+  sept: 9,
+  october: 10,
+  oct: 10,
+  november: 11,
+  nov: 11,
+  december: 12,
+  dec: 12,
 }
 
 function parseMilestoneDate(text: string): { month: number; day: number } | null {
@@ -74,9 +86,7 @@ function nextOccurrence(month: number, day: number, today: Date): Date {
  * Get clients with birthdays or anniversaries within the next `lookaheadDays` days.
  * Parses personal_milestones as free-form text and extracts date patterns.
  */
-export async function getUpcomingMilestones(
-  lookaheadDays = 14
-): Promise<UpcomingMilestone[]> {
+export async function getUpcomingMilestones(lookaheadDays = 14): Promise<UpcomingMilestone[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
@@ -98,7 +108,10 @@ export async function getUpcomingMilestones(
     if (!milestones.trim()) continue
 
     // Split into lines/segments
-    const lines = milestones.split(/[;\n,]/).map(l => l.trim()).filter(Boolean)
+    const lines = milestones
+      .split(/[;\n,]/)
+      .map((l) => l.trim())
+      .filter(Boolean)
 
     for (const line of lines) {
       const lower = line.toLowerCase()
@@ -109,7 +122,11 @@ export async function getUpcomingMilestones(
       if (lower.includes('birthday') || lower.includes('born') || lower.includes('bday')) {
         type = 'birthday'
         label = 'Birthday'
-      } else if (lower.includes('anniversary') || lower.includes('wedding') || lower.includes('married')) {
+      } else if (
+        lower.includes('anniversary') ||
+        lower.includes('wedding') ||
+        lower.includes('married')
+      ) {
         type = 'anniversary'
         label = lower.includes('wedding') ? 'Wedding Anniversary' : 'Anniversary'
       }

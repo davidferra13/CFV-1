@@ -24,6 +24,7 @@ Removed all hardcoded personal information from the codebase so that when deploy
 **Files:** `components/settings/preferences-form.tsx`, `components/events/shopping-substitutions.tsx`, `components/import/smart-import-hub.tsx`, `components/inquiries/inquiry-form.tsx`
 
 All form placeholder text was using real personal data:
+
 - "Market Basket" -> "Store name"
 - "One Stop Liquor" -> "Store name"
 - "123 Main St, Haverhill, MA" -> "Store address"
@@ -48,6 +49,7 @@ All form placeholder text was using real personal data:
 The AI correspondence engine was hardcoded to write as "David Ferragamo" with sign-offs as "David". Every chef using the platform would have gotten emails signed as the wrong person.
 
 **Changes:**
+
 - Added `ChefIdentity` type: `{ fullName: string; firstName: string }`
 - `getAgentBrainForState()` now accepts a `ChefIdentity` parameter
 - `extractBrandVoiceRules()` injects the chef's name at runtime
@@ -77,6 +79,7 @@ The AI correspondence engine was hardcoded to write as "David Ferragamo" with si
 ## Architecture Impact
 
 The agent-brain system now follows a clean injection pattern:
+
 1. Chef signs up with a `business_name`
 2. Chef optionally sets a `display_name` in their Network Profile
 3. When AI drafts are generated, the chef's identity is fetched from DB and injected into all prompts
