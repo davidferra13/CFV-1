@@ -2166,7 +2166,7 @@ async function loadConversation(convId) {
 
         const msgDiv = document.createElement('div')
         msgDiv.className = `chat-msg ${role}`
-        const cleaned = msg.content.replace(/<action>[\w/]+(?::[^<]+)?<\/action>/g, '').trim()
+        const cleaned = msg.content.replace(/<action>[\w/\-]+(?::[^<]+)?<\/action>/g, '').trim()
         if (role === 'bot' && cleaned) {
           msgDiv.innerHTML = renderMarkdown(cleaned)
         } else {
@@ -2234,7 +2234,7 @@ function appendChatMessage(role, content, extraClass) {
 
   const div = document.createElement('div')
   div.className = `chat-msg ${role}${extraClass ? ' ' + extraClass : ''}`
-  const displayContent = content.replace(/<action>[\w/]+(?::[^<]+)?<\/action>/g, '').trim()
+  const displayContent = content.replace(/<action>[\w/\-]+(?::[^<]+)?<\/action>/g, '').trim()
   if (role === 'bot' && displayContent) {
     div.innerHTML = renderMarkdown(displayContent)
   } else {
@@ -2352,7 +2352,7 @@ async function sendChat() {
 
           if (chunk.type === 'token') {
             fullResponse += chunk.content
-            const cleaned = fullResponse.replace(/<action>[\w/]+(?::[^<]+)?<\/action>/g, '').trim()
+            const cleaned = fullResponse.replace(/<action>[\w/\-]+(?::[^<]+)?<\/action>/g, '').trim()
             if (!sendChat._renderTimer) {
               sendChat._renderTimer = setTimeout(() => {
                 botMsg.innerHTML = renderMarkdown(cleaned)
@@ -2396,7 +2396,7 @@ async function sendChat() {
 
     // Final markdown render
     if (sendChat._renderTimer) { clearTimeout(sendChat._renderTimer); sendChat._renderTimer = null }
-    const finalCleaned = fullResponse.replace(/<action>[\w/]+(?::[^<]+)?<\/action>/g, '').trim()
+    const finalCleaned = fullResponse.replace(/<action>[\w/\-]+(?::[^<]+)?<\/action>/g, '').trim()
     if (finalCleaned) botMsg.innerHTML = renderMarkdown(finalCleaned)
     botMsg.classList.remove('streaming')
 

@@ -572,18 +572,16 @@ async function supabaseQuery(endpoint, { select, filters = [], order, limit = 50
     return { ok: false, error: 'Supabase credentials not configured' }
   }
   try {
-    let url = `${CONFIG.supabaseUrl}/rest/v1/${endpoint}`
     const params = []
     if (select) params.push(`select=${encodeURIComponent(select)}`)
-    for (const f of filters) params.push(f)
+    for (const f of filters) params.push(f) // filters are pre-formatted PostgREST syntax
     if (order) params.push(`order=${encodeURIComponent(order)}`)
     if (limit) params.push(`limit=${limit}`)
-    if (extra) params.push(extra)
-    if (params.length) url += '?' + params.join('&')
+    const url = `${CONFIG.supabaseUrl}/rest/v1/${endpoint}${params.length ? '?' + params.join('&') : ''}`
 
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), 10000)
-    const res = await fetch(url, {
+    const res = await fetch(url.toString(), {
       headers: {
         'apikey': CONFIG.supabaseServiceKey,
         'Authorization': `Bearer ${CONFIG.supabaseServiceKey}`,
@@ -592,7 +590,14 @@ async function supabaseQuery(endpoint, { select, filters = [], order, limit = 50
       signal: controller.signal,
     })
     clearTimeout(timer)
-    if (!res.ok) return { ok: false, error: `Supabase returned ${res.status}: ${await res.text()}` }
+    if (!res.ok) {
+      const errBody = await res.text()
+      // Truncate HTML error pages (Cloudflare worker crashes)
+      const cleanErr = errBody.startsWith('<!DOCTYPE') || errBody.startsWith('<html')
+        ? `Cloudflare/Supabase error ${res.status} (may be rate-limited — try again in a moment)`
+        : errBody.slice(0, 300)
+      return { ok: false, error: `Supabase ${res.status}: ${cleanErr}` }
+    }
     const data = await res.json()
     return { ok: true, data, count: data.length }
   } catch (err) {
@@ -674,21 +679,27 @@ async function getClients(param) {
     order: 'created_at.desc',
     limit: 25,
   }
-  if (param && param.trim()) {
-    opts.filters = [`full_name=ilike.*${param.trim()}*`]
-  }
+  opts.limit = 200 // Fetch more for local filtering
   const result = await supabaseQuery('clients', opts)
   if (!result.ok) return result
+  let clients = result.data
+  if (param && param.trim()) {
+    const q = param.trim().toLowerCase()
+    clients = clients.filter(c =>
+      (c.full_name || '').toLowerCase().includes(q) ||
+      (c.email || '').toLowerCase().includes(q)
+    )
+  }
   return {
     ok: true,
-    clients: result.data.map(c => ({
+    clients: clients.slice(0, 25).map(c => ({
       name: c.full_name || 'Unknown',
       email: c.email || '',
       phone: c.phone || '',
       since: c.created_at?.slice(0, 10) || '',
     })),
-    total: result.data.length,
-    message: `${result.data.length} clients${param ? ` matching "${param}"` : ''}`,
+    total: clients.length,
+    message: `${clients.length} clients${param ? ` matching "${param}"` : ''}`,
   }
 }
 
@@ -975,7 +986,7 @@ Gustav — senior ops engineer, mission control vibe. Direct, efficient, dry hum
 }
 
 async function parseAndExecuteActions(responseText) {
-  const actionRegex = /<action>([\w/]+)(?::([^<]+))?<\/action>/g
+  const actionRegex = /<action>([\w/\-]+)(?::([^<]+))?<\/action>/g
   const actions = []
   let match
   while ((match = actionRegex.exec(responseText)) !== null) {
