@@ -57,7 +57,11 @@ export function LocationsClient({ initialLocations, initialStock }: Props) {
         await createStorageLocation({
           name: name.trim(),
           locationType: locType as any,
-          temperatureZone: tempZone || undefined,
+          temperatureZone: (tempZone || undefined) as
+            | 'frozen'
+            | 'ambient'
+            | 'refrigerated'
+            | undefined,
           notes: notes.trim() || undefined,
         })
         setShowForm(false)

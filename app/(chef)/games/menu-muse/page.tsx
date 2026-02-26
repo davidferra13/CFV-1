@@ -248,7 +248,7 @@ function MicroWindowCard({ mw }: { mw: MuseData['seasonal']['active_micro_window
 
 export default function MenuMusePage() {
   const searchParams = useSearchParams()
-  const eventId = searchParams.get('eventId') ?? undefined
+  const eventId = searchParams?.get('eventId') ?? undefined
 
   const [data, setData] = useState<MuseData | null>(null)
   const [loading, setLoading] = useState(true)

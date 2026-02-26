@@ -13,7 +13,7 @@
 
 import { createServer } from 'node:http'
 import { exec, spawn } from 'node:child_process'
-import { readFile } from 'node:fs/promises'
+import { readFile, appendFile, stat } from 'node:fs/promises'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
@@ -29,11 +29,14 @@ const CONFIG = {
   devPort: 3100,
   betaUrl: 'https://beta.cheflowhq.com',
   betaHealthUrl: 'https://beta.cheflowhq.com/api/health',
+  prodUrl: 'https://app.cheflowhq.com',
+  prodHealthUrl: 'https://app.cheflowhq.com/api/health',
   ollamaPcUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
   ollamaPiUrl: process.env.OLLAMA_PI_URL || 'http://10.0.0.177:11434',
   ollamaPcModel: process.env.OLLAMA_MODEL || 'qwen3-coder:30b',
   ollamaPiModel: process.env.OLLAMA_PI_MODEL || 'qwen3:8b',
   piSsh: 'ssh pi',
+  logFile: join(PROJECT_ROOT, 'mission-control.log'),
 }
 
 // ── Event Log + SSE ───────────────────────────────────────────────
@@ -51,6 +54,9 @@ function log(source, message, type = 'info') {
       client.write(`data: ${JSON.stringify(entry)}\n\n`)
     } catch { sseClients.delete(client) }
   }
+  // Persist to log file (non-blocking, errors silently)
+  const ts = new Date(entry.time).toISOString()
+  appendFile(CONFIG.logFile, `[${ts}] [${type}] [${source}] ${message}\n`).catch(() => {})
 }
 
 // ── Process tracking ──────────────────────────────────────────────
@@ -145,6 +151,64 @@ async function checkOllama(url, model) {
   return result
 }
 
+async function checkProduction() {
+  const check = await httpCheck(CONFIG.prodHealthUrl, 6000)
+  let details = null
+  if (check.ok) {
+    try {
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), 5000)
+      const res = await fetch(CONFIG.prodHealthUrl, { signal: controller.signal, cache: 'no-store' })
+      clearTimeout(timer)
+      details = await res.json()
+    } catch { /* ignore */ }
+  }
+  // Try to get last deploy info and usage from Vercel API
+  let vercel = null
+  try {
+    const token = process.env.VERCEL_TOKEN
+    if (token) {
+      // Get recent deployments
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), 8000)
+      const res = await fetch('https://api.vercel.com/v6/deployments?limit=3&projectId=' + (process.env.VERCEL_PROJECT_ID || ''), {
+        headers: { Authorization: `Bearer ${token}` },
+        signal: controller.signal,
+      })
+      clearTimeout(timer)
+      if (res.ok) {
+        const data = await res.json()
+        const deployments = (data.deployments || []).map(d => ({
+          url: d.url,
+          state: d.state,
+          created: d.created,
+          target: d.target,
+          meta: { branch: d.meta?.githubCommitRef, message: d.meta?.githubCommitMessage },
+        }))
+        vercel = { deployments }
+      }
+      // Get usage/billing if available
+      try {
+        const teamRes = await fetch('https://api.vercel.com/v2/teams?limit=1', {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (teamRes.ok) {
+          const teamData = await teamRes.json()
+          vercel = vercel || {}
+          vercel.team = teamData.teams?.[0]?.name
+        }
+      } catch { /* ignore */ }
+    }
+  } catch { /* ignore */ }
+  return {
+    online: check.ok,
+    latency: check.latency,
+    status: check.status,
+    details,
+    vercel,
+  }
+}
+
 async function checkGitStatus() {
   try {
     const [branchResult, statusResult, logResult] = await Promise.all([
@@ -165,9 +229,10 @@ async function checkGitStatus() {
 }
 
 async function getAllStatus() {
-  const [dev, beta, ollamaPc, ollamaPi, git] = await Promise.allSettled([
+  const [dev, beta, prod, ollamaPc, ollamaPi, git] = await Promise.allSettled([
     checkDevServer(),
     checkBetaServer(),
+    checkProduction(),
     checkOllama(CONFIG.ollamaPcUrl, CONFIG.ollamaPcModel),
     checkOllama(CONFIG.ollamaPiUrl, CONFIG.ollamaPiModel),
     checkGitStatus(),
@@ -175,11 +240,19 @@ async function getAllStatus() {
   return {
     dev: dev.status === 'fulfilled' ? dev.value : { online: false },
     beta: beta.status === 'fulfilled' ? beta.value : { online: false },
+    prod: prod.status === 'fulfilled' ? prod.value : { online: false },
     ollamaPc: ollamaPc.status === 'fulfilled' ? ollamaPc.value : { online: false },
     ollamaPi: ollamaPi.status === 'fulfilled' ? ollamaPi.value : { online: false },
     git: git.status === 'fulfilled' ? git.value : { branch: 'unknown' },
     timestamp: Date.now(),
   }
+}
+
+async function readPersistentLog(lines = 100) {
+  try {
+    const content = await readFile(CONFIG.logFile, 'utf-8')
+    return content.trim().split('\n').slice(-lines)
+  } catch { return [] }
 }
 
 // ── Actions ───────────────────────────────────────────────────────
@@ -507,6 +580,12 @@ async function handleRequest(req, res) {
       jobs[id] = { id: job.id, status: job.status, startTime: job.startTime, elapsed: Date.now() - job.startTime }
     }
     return json(res, jobs)
+  }
+
+  if (path === '/api/logs' && method === 'GET') {
+    const lines = parseInt(url.searchParams.get('lines') || '100', 10)
+    const logLines = await readPersistentLog(lines)
+    return json(res, { lines: logLines })
   }
 
   // 404

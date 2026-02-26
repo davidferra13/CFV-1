@@ -569,6 +569,7 @@ body {
     <div class="header-dots">
       <span class="header-dot"><span class="dot checking" id="hd-dev"></span> Dev</span>
       <span class="header-dot"><span class="dot checking" id="hd-beta"></span> Beta</span>
+      <span class="header-dot"><span class="dot checking" id="hd-prod"></span> Prod</span>
       <span class="header-dot"><span class="dot checking" id="hd-ollama-pc"></span> Ollama PC</span>
       <span class="header-dot"><span class="dot checking" id="hd-ollama-pi"></span> Ollama Pi</span>
     </div>
@@ -587,6 +588,11 @@ body {
         <span class="nav-dot checking" id="nd-beta"></span>
         <span class="nav-icon">&#x1F310;</span>
         <span class="nav-label">Beta</span>
+      </a>
+      <a class="nav-item" data-section="prod" title="Production (Vercel)">
+        <span class="nav-dot checking" id="nd-prod"></span>
+        <span class="nav-icon">&#x1F680;</span>
+        <span class="nav-label">Prod</span>
       </a>
       <a class="nav-item" data-section="ollama" title="Ollama AI">
         <span class="nav-dot checking" id="nd-ollama"></span>
@@ -674,6 +680,42 @@ body {
           <button class="btn btn-danger" onclick="confirmAction('rollback')">&#x23EA; Rollback</button>
           <button class="btn btn-ghost" onclick="openUrl('https://beta.cheflowhq.com')">&#x1F310; Open Beta</button>
         </div>
+      </div>
+
+      <!-- ─── Production Panel ─── -->
+      <div class="panel" id="panel-prod">
+        <div class="panel-header">
+          <h2 class="panel-title">Production (Vercel)</h2>
+          <span class="status-badge offline" id="badge-prod">
+            <span class="dot checking"></span>
+            <span>Checking...</span>
+          </span>
+        </div>
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-label">URL</div>
+            <div class="info-value small">app.cheflowhq.com</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Latency</div>
+            <div class="info-value small" id="prod-latency">--</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">DB Status</div>
+            <div class="info-value small" id="prod-db">--</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Last Deploy</div>
+            <div class="info-value small" id="prod-last-deploy">--</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-ghost" onclick="openUrl('https://app.cheflowhq.com')">&#x1F310; Open Production</button>
+          <button class="btn btn-ghost" onclick="openUrl('https://vercel.com/dashboard')">&#x2699;&#xFE0F; Vercel Dashboard</button>
+        </div>
+        <div class="divider"></div>
+        <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Recent Deployments</h3>
+        <div class="commit-list" id="prod-deployments"></div>
       </div>
 
       <!-- ─── Ollama Panel ─── -->
@@ -805,6 +847,7 @@ body {
     <div class="sb-items">
       <span class="sb-item"><span class="sb-dot offline" id="sb-dev"></span> Dev</span>
       <span class="sb-item"><span class="sb-dot offline" id="sb-beta"></span> Beta</span>
+      <span class="sb-item"><span class="sb-dot offline" id="sb-prod"></span> Prod</span>
       <span class="sb-item"><span class="sb-dot offline" id="sb-pc"></span> Ollama PC</span>
       <span class="sb-item"><span class="sb-dot offline" id="sb-pi"></span> Ollama Pi</span>
     </div>
@@ -867,17 +910,20 @@ function updateUI(s) {
   // Header dots
   setDot('hd-dev', s.dev.online)
   setDot('hd-beta', s.beta.online)
+  setDot('hd-prod', s.prod?.online)
   setDot('hd-ollama-pc', s.ollamaPc.online)
   setDot('hd-ollama-pi', s.ollamaPi.online)
 
   // Sidebar dots
   setDot('nd-dev', s.dev.online)
   setDot('nd-beta', s.beta.online)
+  setDot('nd-prod', s.prod?.online)
   setDot('nd-ollama', s.ollamaPc.online || s.ollamaPi.online)
 
   // Status bar dots
   setDot('sb-dev', s.dev.online)
   setDot('sb-beta', s.beta.online)
+  setDot('sb-prod', s.prod?.online)
   setDot('sb-pc', s.ollamaPc.online)
   setDot('sb-pi', s.ollamaPi.online)
 
@@ -894,6 +940,28 @@ function updateUI(s) {
   if (dbEl) {
     dbEl.textContent = s.beta.online ? (dbOk ? 'Connected' : 'Unknown') : 'Offline'
     dbEl.className = `info-value small ${s.beta.online ? (dbOk ? 'success' : 'warning') : 'error'}`
+  }
+
+  // Production panel
+  if (s.prod) {
+    setBadge('badge-prod', s.prod.online)
+    setText('prod-latency', s.prod.online ? `${s.prod.latency}ms` : 'Offline')
+    const prodDbOk = s.prod.details?.checks?.database === 'ok'
+    const prodDbEl = document.getElementById('prod-db')
+    if (prodDbEl) {
+      prodDbEl.textContent = s.prod.online ? (prodDbOk ? 'Connected' : 'Unknown') : 'Offline'
+      prodDbEl.className = `info-value small ${s.prod.online ? (prodDbOk ? 'success' : 'warning') : 'error'}`
+    }
+    // Vercel deployments
+    if (s.prod.vercel?.deployments?.length) {
+      const last = s.prod.vercel.deployments[0]
+      const lastDate = new Date(last.created)
+      const ago = timeAgo(lastDate)
+      setText('prod-last-deploy', `${ago} (${last.state})`)
+      renderDeployments(s.prod.vercel.deployments)
+    } else {
+      setText('prod-last-deploy', s.prod.online ? 'No Vercel token' : 'Offline')
+    }
   }
 
   // Ollama panels
@@ -964,6 +1032,32 @@ function renderCommits(commits) {
   el.innerHTML = commits.map(c => {
     const [hash, ...rest] = c.split(' ')
     return `<div class="commit-item"><span class="commit-hash">${hash}</span><span class="commit-msg">${rest.join(' ')}</span></div>`
+  }).join('')
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+
+function timeAgo(date) {
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
+  if (seconds < 60) return 'just now'
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`
+  return `${Math.floor(seconds / 86400)}d ago`
+}
+
+function renderDeployments(deployments) {
+  const el = document.getElementById('prod-deployments')
+  if (!el) return
+  el.innerHTML = deployments.map(d => {
+    const date = new Date(d.created)
+    const ago = timeAgo(date)
+    const stateColor = d.state === 'READY' ? 'var(--success)' : d.state === 'ERROR' ? 'var(--error)' : 'var(--warning)'
+    const branch = d.meta?.branch || '—'
+    const msg = d.meta?.message || '—'
+    return `<div class="commit-item">
+      <span class="commit-hash" style="color:${stateColor}">${d.state}</span>
+      <span class="commit-msg">${branch} — ${msg} (${ago})</span>
+    </div>`
   }).join('')
 }
 
@@ -1082,9 +1176,10 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeConfirm()
   if (e.key === '1') switchSection('dev')
   if (e.key === '2') switchSection('beta')
-  if (e.key === '3') switchSection('ollama')
-  if (e.key === '4') switchSection('git')
-  if (e.key === '5') switchSection('build')
+  if (e.key === '3') switchSection('prod')
+  if (e.key === '4') switchSection('ollama')
+  if (e.key === '5') switchSection('git')
+  if (e.key === '6') switchSection('build')
 })
 
 function switchSection(section) {
@@ -1099,7 +1194,7 @@ setInterval(refreshStatus, 5000)
 connectSSE()
 
 addLog('info', 'system', 'Mission Control connected')
-addLog('info', 'system', 'Keyboard shortcuts: 1-5 switch panels, Esc closes dialogs')
+addLog('info', 'system', 'Keyboard shortcuts: 1-6 switch panels, Esc closes dialogs')
 </script>
 </body>
 </html>
