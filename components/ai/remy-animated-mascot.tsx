@@ -29,7 +29,7 @@ import type { Viseme, RemyEmotion } from '@/lib/ai/remy-visemes'
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 
-const CROSSFADE_DURATION_MS = 180
+const CROSSFADE_DURATION_MS = 300
 
 // ─── Props ──────────────────────────────────────────────────────────────────
 
@@ -217,7 +217,7 @@ function BodyLayer({
               alt="Remy the ChefFlow assistant"
               fill
               sizes={`${effectiveSize}px`}
-              className="object-contain object-bottom pointer-events-none select-none"
+              className="object-cover object-top pointer-events-none select-none"
               priority
               onError={onImageError}
             />
@@ -327,13 +327,14 @@ export function RemyAnimatedMascot({
       )}
 
       {/* Current state — fading in (or full opacity if no crossfade) */}
+      {/* Dim body when speaking so the lip-sync avatar is the dominant face */}
       <BodyLayer
         bodyState={bodyState}
         effectiveSize={effectiveSize}
         reducedMotion={reducedMotion}
         isSpeaking={isSpeaking}
         onAnimComplete={onAnimComplete}
-        opacity={1}
+        opacity={isSpeaking ? 0.35 : 1}
         imageError={imageError}
         onImageError={handleImageError}
       />
