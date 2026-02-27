@@ -344,6 +344,12 @@ export const navGroups: NavGroup[] = [
     module: 'culinary',
     items: [
       {
+        href: '/menus',
+        label: 'Menus',
+        icon: UtensilsCrossed,
+        children: [{ href: '/menus/dishes', label: 'Dish Index' }],
+      },
+      {
         href: '/recipes',
         label: 'Recipes',
         icon: UtensilsCrossed,

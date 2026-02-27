@@ -3,7 +3,7 @@
 
 import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
 import type { AgentActionPreview } from '@/lib/ai/command-types'
-import { createMenu, updateMenu, attachMenuToEvent, getMenus } from '@/lib/menus/actions'
+import { createMenu, updateMenu, applyMenuToEvent, getMenus } from '@/lib/menus/actions'
 import { searchClientsByName } from '@/lib/clients/actions'
 import { createServerClient } from '@/lib/supabase/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
@@ -177,10 +177,12 @@ export const menuAgentActions: AgentActionDefinition[] = [
 
     async commitAction(payload) {
       if (payload._error) return { success: false, message: 'Menu or event not found.' }
-      await attachMenuToEvent(String(payload.eventId), String(payload.menuId))
+      const result = await applyMenuToEvent(String(payload.menuId), String(payload.eventId))
       return {
         success: true,
-        message: 'Menu linked to event!',
+        message: result.wasDuplicated
+          ? 'Template duplicated and linked to event!'
+          : 'Menu linked to event!',
         redirectUrl: `/events/${payload.eventId}`,
       }
     },

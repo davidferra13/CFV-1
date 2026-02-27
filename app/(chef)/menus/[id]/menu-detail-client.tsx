@@ -377,7 +377,7 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
           <Button variant="ghost" onClick={() => router.back()}>
             Back
           </Button>
-          {event && (
+          {event ? (
             <Button
               variant="secondary"
               onClick={() =>
@@ -385,6 +385,19 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
               }
             >
               View FOH PDF
+            </Button>
+          ) : (
+            <Button
+              variant="secondary"
+              onClick={() =>
+                window.open(
+                  `/api/documents/foh-preview/${menu.id}`,
+                  '_blank',
+                  'noopener,noreferrer'
+                )
+              }
+            >
+              Preview FOH
             </Button>
           )}
           <Button variant="secondary" onClick={handlePrintBackOfHouse}>

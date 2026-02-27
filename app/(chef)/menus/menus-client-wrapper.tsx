@@ -1,16 +1,31 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
-import { Archive, Copy, Eye, FileText, Plus, Search, SlidersHorizontal, X } from 'lucide-react'
+import {
+  Archive,
+  CalendarDays,
+  ChefHat,
+  Copy,
+  Eye,
+  FileText,
+  Loader2,
+  Plus,
+  Search,
+  SlidersHorizontal,
+  Users,
+  X,
+} from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
-import { duplicateMenu, transitionMenu } from '@/lib/menus/actions'
+import { formatCurrency } from '@/lib/utils/currency'
+import { duplicateMenu, transitionMenu, getMenuQuickViewData } from '@/lib/menus/actions'
+import type { MenuQuickViewData } from '@/lib/menus/actions'
 
 type Menu = {
   id: string
@@ -49,6 +64,7 @@ type StatusFilter = 'all' | 'draft' | 'confirmed' | 'archived'
 type EventTypeFilter = 'all' | 'birthday' | 'holiday' | 'regular'
 
 const PAGE_SIZE = 12
+const COMPLETED_STATUSES = new Set(['completed', 'cancelled'])
 
 function getDisplayStatus(status: Menu['status']): 'draft' | 'confirmed' | 'archived' {
   if (status === 'shared' || status === 'locked') return 'confirmed'
@@ -83,6 +99,108 @@ function statusLabel(status: ReturnType<typeof getDisplayStatus>) {
   return 'Draft'
 }
 
+function isActiveMenu(menu: Menu, eventsById: Record<string, EventLite>): boolean {
+  if (!menu.event_id) return false
+  const event = eventsById[menu.event_id]
+  if (!event) return false
+  return !COMPLETED_STATUSES.has(event.status)
+}
+
+// ============================================
+// MENU CARD (shared between active + library)
+// ============================================
+
+function MenuCard({
+  menu,
+  menuEvent,
+  costSummary,
+  isActive,
+  onClick,
+}: {
+  menu: Menu
+  menuEvent: EventLite | null
+  costSummary: MenuCostSummary | undefined
+  isActive: boolean
+  onClick: () => void
+}) {
+  const displayStatus = getDisplayStatus(menu.status)
+  const eventType = getEventTypeLabel(menuEvent?.occasion)
+
+  return (
+    <button type="button" onClick={onClick} className="text-left">
+      <Card
+        interactive
+        className={`h-full transition-all duration-200 hover:border-brand-600/50 ${
+          isActive
+            ? 'border-brand-500/40 bg-gradient-to-br from-stone-900 via-stone-900 to-brand-950/20'
+            : 'border-stone-700/80 bg-gradient-to-br from-stone-900 via-stone-900 to-stone-800'
+        }`}
+      >
+        <CardContent className="space-y-3 pt-5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h3 className="line-clamp-1 text-lg font-semibold text-stone-100">{menu.name}</h3>
+              {isActive && menuEvent ? (
+                <p className="mt-1 flex items-center gap-1 text-xs text-brand-400">
+                  <CalendarDays className="h-3 w-3" />
+                  {format(new Date(menuEvent.event_date), 'MMM d, yyyy')}
+                </p>
+              ) : (
+                <p className="mt-1 text-xs text-stone-400">
+                  Created {format(new Date(menu.created_at), 'MMM d, yyyy')}
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col items-end gap-1">
+              <Badge variant={statusBadgeVariant(displayStatus)}>
+                {statusLabel(displayStatus)}
+              </Badge>
+              {isActive && (
+                <Badge variant="info" className="text-[10px]">
+                  Active
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          <p className="line-clamp-2 min-h-[40px] text-sm text-stone-400">
+            {menu.description || 'No description provided.'}
+          </p>
+
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="default" className="capitalize">
+              {eventType}
+            </Badge>
+            {menu.is_template && <Badge variant="info">Template</Badge>}
+            {menu.cuisine_type && <Badge variant="default">{menu.cuisine_type}</Badge>}
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 text-xs text-stone-500">
+            <div>
+              <p className="text-stone-400">Guests</p>
+              <p className="font-medium text-stone-200">
+                {menu.target_guest_count ? `${menu.target_guest_count}` : 'Not set'}
+              </p>
+            </div>
+            <div>
+              <p className="text-stone-400">Food cost</p>
+              <p className="font-medium text-stone-200">
+                {costSummary?.food_cost_percentage != null
+                  ? `${costSummary.food_cost_percentage.toFixed(1)}%`
+                  : 'Pending'}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </button>
+  )
+}
+
+// ============================================
+// MAIN COMPONENT
+// ============================================
+
 export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
@@ -95,6 +213,11 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
   const [selectedMenuId, setSelectedMenuId] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [busyAction, setBusyAction] = useState<'archive' | 'duplicate' | null>(null)
+
+  // Quick view data (lazy-loaded per menu)
+  const [quickViewData, setQuickViewData] = useState<MenuQuickViewData | null>(null)
+  const [quickViewLoading, setQuickViewLoading] = useState(false)
+  const [quickViewCache, setQuickViewCache] = useState<Record<string, MenuQuickViewData>>({})
 
   const selectedMenu = selectedMenuId
     ? menus.find((menu) => menu.id === selectedMenuId) || null
@@ -109,10 +232,28 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
     setPage(1)
   }, [searchTerm, sortBy, statusFilter, eventTypeFilter, fromDate, toDate])
 
+  // Separate active menus from library
+  const activeMenus = useMemo(() => {
+    return menus
+      .filter((m) => isActiveMenu(m, eventsById))
+      .sort((a, b) => {
+        const eventA = a.event_id ? eventsById[a.event_id] : null
+        const eventB = b.event_id ? eventsById[b.event_id] : null
+        const dateA = eventA ? new Date(eventA.event_date).getTime() : 0
+        const dateB = eventB ? new Date(eventB.event_date).getTime() : 0
+        return dateA - dateB // soonest event first
+      })
+  }, [menus, eventsById])
+
+  const activeMenuIds = useMemo(() => new Set(activeMenus.map((m) => m.id)), [activeMenus])
+
   const filteredMenus = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase()
 
     const filtered = menus.filter((menu) => {
+      // Exclude active menus from the library grid (they have their own section)
+      if (activeMenuIds.has(menu.id)) return false
+
       const status = getDisplayStatus(menu.status)
       if (statusFilter !== 'all' && status !== statusFilter) return false
 
@@ -159,20 +300,53 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
     })
 
     return filtered
-  }, [menus, eventsById, searchTerm, sortBy, statusFilter, eventTypeFilter, fromDate, toDate])
+  }, [
+    menus,
+    eventsById,
+    activeMenuIds,
+    searchTerm,
+    sortBy,
+    statusFilter,
+    eventTypeFilter,
+    fromDate,
+    toDate,
+  ])
 
   const totalPages = Math.max(1, Math.ceil(filteredMenus.length / PAGE_SIZE))
   const currentPage = Math.min(page, totalPages)
   const paginatedMenus = filteredMenus.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
-  const openMenuModal = (menuId: string) => {
-    setError('')
-    setSelectedMenuId(menuId)
-  }
+  const openMenuModal = useCallback(
+    async (menuId: string) => {
+      setError('')
+      setSelectedMenuId(menuId)
+
+      // Load quick view data (use cache if available)
+      if (quickViewCache[menuId]) {
+        setQuickViewData(quickViewCache[menuId])
+        setQuickViewLoading(false)
+      } else {
+        setQuickViewData(null)
+        setQuickViewLoading(true)
+        try {
+          const data = await getMenuQuickViewData(menuId)
+          setQuickViewData(data)
+          setQuickViewCache((prev) => ({ ...prev, [menuId]: data }))
+        } catch {
+          // Non-blocking: modal still shows basic info
+          setQuickViewData(null)
+        } finally {
+          setQuickViewLoading(false)
+        }
+      }
+    },
+    [quickViewCache]
+  )
 
   const closeMenuModal = () => {
     setBusyAction(null)
     setSelectedMenuId(null)
+    setQuickViewData(null)
   }
 
   const handleDuplicate = async () => {
@@ -204,83 +378,135 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
     }
   }
 
+  const totalMenuCount = menus.length
+
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Menus</h1>
-          <p className="mt-1 text-stone-400">Centralized back-of-house menu management</p>
+          <p className="mt-1 text-stone-400">
+            {totalMenuCount} menu{totalMenuCount === 1 ? '' : 's'} in your library
+          </p>
         </div>
-        <Link href="/menus/new">
-          <Button>
-            <Plus className="mr-1.5 h-4 w-4" />
-            Add Menu
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/menus/dishes">
+            <Button variant="secondary">
+              <ChefHat className="mr-1.5 h-4 w-4" />
+              Dish Index
+            </Button>
+          </Link>
+          <Link href="/menus/new">
+            <Button>
+              <Plus className="mr-1.5 h-4 w-4" />
+              Add Menu
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {error && <Alert variant="error">{error}</Alert>}
 
-      <Card>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_180px_180px]">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
-              <Input
-                type="text"
-                placeholder="Search by menu, cuisine, status, or event..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
+      {/* ============================================ */}
+      {/* ACTIVE MENUS SECTION                         */}
+      {/* ============================================ */}
+      {activeMenus.length > 0 && (
+        <div>
+          <div className="mb-3 flex items-center gap-2">
+            <div className="h-5 w-1 rounded-full bg-brand-500" />
+            <h2 className="text-lg font-semibold text-stone-100">Active Menus</h2>
+            <span className="text-sm text-stone-400">
+              ({activeMenus.length} linked to upcoming events)
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {activeMenus.map((menu) => (
+              <MenuCard
+                key={menu.id}
+                menu={menu}
+                menuEvent={menu.event_id ? (eventsById[menu.event_id] ?? null) : null}
+                costSummary={costByMenuId[menu.id]}
+                isActive
+                onClick={() => openMenuModal(menu.id)}
               />
-            </div>
-            <select
-              className="h-10 rounded-lg border border-stone-600 bg-stone-900 px-3 text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortValue)}
-              aria-label="Sort menus"
-            >
-              <option value="created_desc">Newest first</option>
-              <option value="created_asc">Oldest first</option>
-              <option value="name">Name (A-Z)</option>
-              <option value="status">Status</option>
-            </select>
-            <div className="flex items-center gap-2 rounded-lg border border-stone-700 bg-stone-900 px-3">
-              <SlidersHorizontal className="h-4 w-4 text-stone-400" />
-              <span className="text-sm text-stone-400">
-                {filteredMenus.length} menu{filteredMenus.length === 1 ? '' : 's'}
-              </span>
-            </div>
+            ))}
           </div>
+        </div>
+      )}
 
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <select
-              className="h-10 rounded-lg border border-stone-600 bg-stone-900 px-3 text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-              aria-label="Filter by status"
-            >
-              <option value="all">All statuses</option>
-              <option value="draft">Draft</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="archived">Archived</option>
-            </select>
-            <select
-              className="h-10 rounded-lg border border-stone-600 bg-stone-900 px-3 text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
-              value={eventTypeFilter}
-              onChange={(e) => setEventTypeFilter(e.target.value as EventTypeFilter)}
-              aria-label="Filter by event type"
-            >
-              <option value="all">All event types</option>
-              <option value="birthday">Birthday</option>
-              <option value="holiday">Holiday</option>
-              <option value="regular">Regular</option>
-            </select>
-            <Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
-            <Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+      {/* ============================================ */}
+      {/* MENU LIBRARY (search, filter, paginate)      */}
+      {/* ============================================ */}
+      <div>
+        {activeMenus.length > 0 && (
+          <div className="mb-3 flex items-center gap-2">
+            <div className="h-5 w-1 rounded-full bg-stone-600" />
+            <h2 className="text-lg font-semibold text-stone-100">Menu Library</h2>
           </div>
-        </CardContent>
-      </Card>
+        )}
+
+        <Card>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_180px_180px]">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+                <Input
+                  type="text"
+                  placeholder="Search by menu, cuisine, status, or event..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <select
+                className="h-10 rounded-lg border border-stone-600 bg-stone-900 px-3 text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortValue)}
+                aria-label="Sort menus"
+              >
+                <option value="created_desc">Newest first</option>
+                <option value="created_asc">Oldest first</option>
+                <option value="name">Name (A-Z)</option>
+                <option value="status">Status</option>
+              </select>
+              <div className="flex items-center gap-2 rounded-lg border border-stone-700 bg-stone-900 px-3">
+                <SlidersHorizontal className="h-4 w-4 text-stone-400" />
+                <span className="text-sm text-stone-400">
+                  {filteredMenus.length} menu{filteredMenus.length === 1 ? '' : 's'}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <select
+                className="h-10 rounded-lg border border-stone-600 bg-stone-900 px-3 text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+                aria-label="Filter by status"
+              >
+                <option value="all">All statuses</option>
+                <option value="draft">Draft</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="archived">Archived</option>
+              </select>
+              <select
+                className="h-10 rounded-lg border border-stone-600 bg-stone-900 px-3 text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                value={eventTypeFilter}
+                onChange={(e) => setEventTypeFilter(e.target.value as EventTypeFilter)}
+                aria-label="Filter by event type"
+              >
+                <option value="all">All event types</option>
+                <option value="birthday">Birthday</option>
+                <option value="holiday">Holiday</option>
+                <option value="regular">Regular</option>
+              </select>
+              <Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+              <Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {filteredMenus.length === 0 ? (
         <Card>
@@ -294,71 +520,16 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
       ) : (
         <>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {paginatedMenus.map((menu) => {
-              const displayStatus = getDisplayStatus(menu.status)
-              const menuEvent = menu.event_id ? eventsById[menu.event_id] : null
-              const eventType = getEventTypeLabel(menuEvent?.occasion)
-              const costSummary = costByMenuId[menu.id]
-
-              return (
-                <button
-                  type="button"
-                  key={menu.id}
-                  onClick={() => openMenuModal(menu.id)}
-                  className="text-left"
-                >
-                  <Card
-                    interactive
-                    className="h-full border-stone-700/80 bg-gradient-to-br from-stone-900 via-stone-900 to-stone-800 transition-all duration-200 hover:border-brand-600/50"
-                  >
-                    <CardContent className="space-y-3 pt-5">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <h3 className="line-clamp-1 text-lg font-semibold text-stone-100">
-                            {menu.name}
-                          </h3>
-                          <p className="mt-1 text-xs text-stone-400">
-                            Created {format(new Date(menu.created_at), 'MMM d, yyyy')}
-                          </p>
-                        </div>
-                        <Badge variant={statusBadgeVariant(displayStatus)}>
-                          {statusLabel(displayStatus)}
-                        </Badge>
-                      </div>
-
-                      <p className="line-clamp-2 min-h-[40px] text-sm text-stone-400">
-                        {menu.description || 'No description provided.'}
-                      </p>
-
-                      <div className="flex flex-wrap gap-2">
-                        <Badge variant="default" className="capitalize">
-                          {eventType}
-                        </Badge>
-                        {menu.is_template && <Badge variant="info">Template</Badge>}
-                        {menu.cuisine_type && <Badge variant="default">{menu.cuisine_type}</Badge>}
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2 text-xs text-stone-500">
-                        <div>
-                          <p className="text-stone-400">Guests</p>
-                          <p className="font-medium text-stone-200">
-                            {menu.target_guest_count ? `${menu.target_guest_count}` : 'Not set'}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-stone-400">Food cost</p>
-                          <p className="font-medium text-stone-200">
-                            {costSummary?.food_cost_percentage != null
-                              ? `${costSummary.food_cost_percentage.toFixed(1)}%`
-                              : 'Pending'}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </button>
-              )
-            })}
+            {paginatedMenus.map((menu) => (
+              <MenuCard
+                key={menu.id}
+                menu={menu}
+                menuEvent={menu.event_id ? (eventsById[menu.event_id] ?? null) : null}
+                costSummary={costByMenuId[menu.id]}
+                isActive={false}
+                onClick={() => openMenuModal(menu.id)}
+              />
+            ))}
           </div>
 
           {totalPages > 1 && (
@@ -389,6 +560,9 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
         </>
       )}
 
+      {/* ============================================ */}
+      {/* RICH QUICK VIEW MODAL                        */}
+      {/* ============================================ */}
       {selectedMenu && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4"
@@ -396,111 +570,310 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
           aria-modal="true"
         >
           <div className="absolute inset-0" onClick={closeMenuModal} aria-hidden="true" />
-          <div className="animate-in relative w-full max-w-3xl rounded-2xl border border-stone-700 bg-stone-900 p-5 shadow-2xl transition-all duration-200 md:p-6">
+          <div className="animate-in relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-stone-700 bg-stone-900 p-5 shadow-2xl md:p-6">
+            {/* Modal Header */}
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs uppercase tracking-wider text-stone-500">Menu Quick Access</p>
+                <p className="text-xs uppercase tracking-wider text-stone-500">Menu Quick View</p>
                 <h2 className="mt-1 text-2xl font-semibold text-stone-100">{selectedMenu.name}</h2>
-                <p className="mt-1 text-sm text-stone-400">
-                  Choose the version you want, then use quick actions to maintain this menu.
-                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <Badge variant={statusBadgeVariant(selectedMenuStatus!)}>
+                    {statusLabel(selectedMenuStatus!)}
+                  </Badge>
+                  {selectedMenu.is_template && <Badge variant="info">Template</Badge>}
+                  {selectedMenu.cuisine_type && (
+                    <Badge variant="default">{selectedMenu.cuisine_type}</Badge>
+                  )}
+                  {selectedMenu.target_guest_count && (
+                    <Badge variant="default">
+                      <Users className="mr-1 h-3 w-3" />
+                      {selectedMenu.target_guest_count} guests
+                    </Badge>
+                  )}
+                </div>
               </div>
               <button
                 type="button"
                 onClick={closeMenuModal}
                 className="rounded-lg p-2 text-stone-400 transition-colors hover:bg-stone-800 hover:text-stone-200"
-                aria-label="Close menu options"
+                aria-label="Close"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <Card className="border-stone-700">
-                <CardContent className="space-y-3 pt-5">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-brand-500" />
-                    <p className="font-medium text-stone-200">Front of House Version</p>
+            {quickViewLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
+                <span className="ml-2 text-sm text-stone-400">Loading menu details...</span>
+              </div>
+            ) : quickViewData ? (
+              <div className="space-y-5">
+                {/* Courses + Stats grid */}
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                  {/* Courses list (takes 2 columns) */}
+                  <div className="lg:col-span-2">
+                    <p className="mb-2 text-xs uppercase tracking-wider text-stone-500">
+                      Courses ({quickViewData.courses.length})
+                    </p>
+                    {quickViewData.courses.length === 0 ? (
+                      <div className="rounded-lg border border-dashed border-stone-700 bg-stone-950 p-4 text-center text-sm text-stone-500">
+                        No courses added yet
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {quickViewData.courses.map((course, i) => (
+                          <div
+                            key={i}
+                            className="flex items-start justify-between rounded-lg border border-stone-700/60 bg-stone-800/40 px-3 py-2.5"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-600/20 text-xs font-medium text-brand-400">
+                                  {course.courseNumber}
+                                </span>
+                                <p className="font-medium text-stone-200">{course.courseName}</p>
+                              </div>
+                              {course.description && (
+                                <p className="ml-7 mt-0.5 text-xs text-stone-400 line-clamp-1">
+                                  {course.description}
+                                </p>
+                              )}
+                              {course.dietaryTags.length > 0 && (
+                                <div className="ml-7 mt-1 flex flex-wrap gap-1">
+                                  {course.dietaryTags.map((tag) => (
+                                    <span
+                                      key={tag}
+                                      className="rounded bg-emerald-900/40 px-1.5 py-0.5 text-[10px] font-medium text-emerald-400"
+                                    >
+                                      {tag}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <span className="ml-2 whitespace-nowrap text-xs text-stone-500">
+                              {course.componentCount} component
+                              {course.componentCount !== 1 ? 's' : ''}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <p className="text-sm text-stone-400">
-                    Clean printable menu for guests. Includes dish names, descriptions, and dietary
-                    markers.
-                  </p>
-                  <div className="rounded-lg border border-dashed border-stone-700 bg-stone-950 p-3 text-xs text-stone-400">
-                    {selectedMenuEvent
-                      ? `Linked to ${selectedMenuEvent.occasion || 'event'} on ${format(new Date(selectedMenuEvent.event_date), 'MMM d, yyyy')}`
-                      : 'Link this menu to an event to generate the FOH printable PDF.'}
+
+                  {/* Stats sidebar */}
+                  <div className="space-y-3">
+                    {/* Cost summary */}
+                    <div className="rounded-lg border border-stone-700 bg-stone-800/40 p-3">
+                      <p className="mb-2 text-xs uppercase tracking-wider text-stone-500">
+                        Cost Summary
+                      </p>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-stone-400">Cost / Guest</span>
+                          <span className="font-medium text-stone-200">
+                            {quickViewData.costPerGuestCents != null
+                              ? formatCurrency(quickViewData.costPerGuestCents)
+                              : 'Pending'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-stone-400">Food Cost %</span>
+                          <span className="font-medium text-stone-200">
+                            {quickViewData.foodCostPercentage != null
+                              ? `${quickViewData.foodCostPercentage.toFixed(1)}%`
+                              : 'Pending'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-stone-400">Components</span>
+                          <span className="font-medium text-stone-200">
+                            {quickViewData.totalComponents}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Dietary & Allergens */}
+                    {(quickViewData.allDietaryTags.length > 0 ||
+                      quickViewData.allAllergenFlags.length > 0) && (
+                      <div className="rounded-lg border border-stone-700 bg-stone-800/40 p-3">
+                        {quickViewData.allDietaryTags.length > 0 && (
+                          <div className="mb-2">
+                            <p className="mb-1 text-xs text-stone-500">Accommodates</p>
+                            <div className="flex flex-wrap gap-1">
+                              {quickViewData.allDietaryTags.map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="rounded bg-emerald-900/40 px-1.5 py-0.5 text-[10px] font-medium text-emerald-400"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {quickViewData.allAllergenFlags.length > 0 && (
+                          <div>
+                            <p className="mb-1 text-xs text-stone-500">Contains</p>
+                            <div className="flex flex-wrap gap-1">
+                              {quickViewData.allAllergenFlags.map((flag) => (
+                                <span
+                                  key={flag}
+                                  className="rounded bg-amber-900/40 px-1.5 py-0.5 text-[10px] font-medium text-amber-400"
+                                >
+                                  {flag}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Linked event */}
+                    <div className="rounded-lg border border-stone-700 bg-stone-800/40 p-3">
+                      <p className="mb-2 text-xs uppercase tracking-wider text-stone-500">
+                        Linked Event
+                      </p>
+                      {quickViewData.linkedEvent ? (
+                        <Link
+                          href={`/events/${quickViewData.linkedEvent.id}`}
+                          className="block text-sm hover:text-brand-400"
+                          onClick={closeMenuModal}
+                        >
+                          <p className="font-medium text-stone-200">
+                            {quickViewData.linkedEvent.occasion || 'Untitled Event'}
+                          </p>
+                          <p className="text-xs text-stone-400">
+                            {format(new Date(quickViewData.linkedEvent.eventDate), 'MMM d, yyyy')}
+                            {quickViewData.linkedEvent.clientName &&
+                              ` — ${quickViewData.linkedEvent.clientName}`}
+                          </p>
+                          <Badge variant="default" className="mt-1 capitalize">
+                            {quickViewData.linkedEvent.status.replace('_', ' ')}
+                          </Badge>
+                        </Link>
+                      ) : (
+                        <p className="text-sm text-stone-500">Not linked to an event</p>
+                      )}
+                    </div>
                   </div>
-                  {selectedMenuEvent ? (
+                </div>
+
+                {/* Action Bar */}
+                <div className="flex flex-wrap items-center gap-3 border-t border-stone-700 pt-4">
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="secondary"
+                      onClick={() => router.push(`/menus/${selectedMenu.id}/editor`)}
+                    >
+                      Edit
+                    </Button>
+                    <Button onClick={() => router.push(`/menus/${selectedMenu.id}`)}>
+                      <Eye className="mr-1.5 h-4 w-4" />
+                      Full BOH View
+                    </Button>
+                  </div>
+
+                  <div className="h-6 w-px bg-stone-700" />
+
+                  <div className="flex flex-wrap gap-2">
+                    {/* FOH buttons */}
+                    {selectedMenuEvent ? (
+                      <a
+                        href={`/api/documents/${selectedMenuEvent.id}?type=foh`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex h-10 items-center justify-center rounded-lg border border-stone-600 bg-stone-800 px-4 text-sm font-medium text-stone-200 transition-colors hover:bg-stone-700"
+                      >
+                        <FileText className="mr-1.5 h-4 w-4" />
+                        FOH PDF
+                      </a>
+                    ) : (
+                      <a
+                        href={`/api/documents/foh-preview/${selectedMenu.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex h-10 items-center justify-center rounded-lg border border-stone-600 bg-stone-800 px-4 text-sm font-medium text-stone-200 transition-colors hover:bg-stone-700"
+                      >
+                        <FileText className="mr-1.5 h-4 w-4" />
+                        Preview FOH
+                      </a>
+                    )}
+                  </div>
+
+                  <div className="h-6 w-px bg-stone-700" />
+
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="secondary"
+                      onClick={handleDuplicate}
+                      disabled={busyAction !== null}
+                    >
+                      <Copy className="mr-1.5 h-4 w-4" />
+                      {busyAction === 'duplicate' ? 'Duplicating...' : 'Duplicate'}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={handleArchiveToggle}
+                      disabled={busyAction !== null}
+                    >
+                      <Archive className="mr-1.5 h-4 w-4" />
+                      {selectedMenuStatus === 'archived'
+                        ? busyAction === 'archive'
+                          ? 'Restoring...'
+                          : 'Restore'
+                        : busyAction === 'archive'
+                          ? 'Archiving...'
+                          : 'Archive'}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              // Fallback if quick view data failed to load
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <Card className="border-stone-700">
+                  <CardContent className="space-y-3 pt-5">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-brand-500" />
+                      <p className="font-medium text-stone-200">Front of House Version</p>
+                    </div>
+                    <p className="text-sm text-stone-400">
+                      Clean printable menu for guests with dish names and dietary markers.
+                    </p>
                     <a
-                      href={`/api/documents/${selectedMenuEvent.id}?type=foh`}
+                      href={
+                        selectedMenuEvent
+                          ? `/api/documents/${selectedMenuEvent.id}?type=foh`
+                          : `/api/documents/foh-preview/${selectedMenu.id}`
+                      }
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex h-10 items-center justify-center rounded-lg bg-brand-600 px-4 text-sm font-medium text-white transition-colors hover:bg-brand-700"
                     >
-                      View Front of House Version
+                      {selectedMenuEvent ? 'View FOH PDF' : 'Preview FOH'}
                     </a>
-                  ) : (
-                    <Button variant="secondary" disabled>
-                      View Front of House Version
+                  </CardContent>
+                </Card>
+                <Card className="border-stone-700">
+                  <CardContent className="space-y-3 pt-5">
+                    <div className="flex items-center gap-2">
+                      <Eye className="h-4 w-4 text-brand-500" />
+                      <p className="font-medium text-stone-200">Back of House Version</p>
+                    </div>
+                    <p className="text-sm text-stone-400">
+                      Full operational detail with components, prep notes, and cost analytics.
+                    </p>
+                    <Button onClick={() => router.push(`/menus/${selectedMenu.id}`)}>
+                      View BOH
                     </Button>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card className="border-stone-700">
-                <CardContent className="space-y-3 pt-5">
-                  <div className="flex items-center gap-2">
-                    <Eye className="h-4 w-4 text-brand-500" />
-                    <p className="font-medium text-stone-200">Back of House Version</p>
-                  </div>
-                  <p className="text-sm text-stone-400">
-                    Full operational detail with components, prep notes, dietary flags, and cost
-                    analytics.
-                  </p>
-                  <div className="rounded-lg border border-dashed border-stone-700 bg-stone-950 p-3 text-xs text-stone-400">
-                    Includes editor access, component-level prep workflow, and recipe links.
-                  </div>
-                  <Button onClick={() => router.push(`/menus/${selectedMenu.id}`)}>
-                    View Back of House Version
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="mt-5 rounded-xl border border-stone-700 bg-stone-800/40 p-4">
-              <p className="mb-3 text-xs uppercase tracking-wider text-stone-500">Quick Actions</p>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => router.push(`/menus/${selectedMenu.id}/editor`)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={handleDuplicate}
-                  disabled={busyAction !== null}
-                >
-                  <Copy className="mr-1.5 h-4 w-4" />
-                  {busyAction === 'duplicate' ? 'Duplicating...' : 'Duplicate'}
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={handleArchiveToggle}
-                  disabled={busyAction !== null}
-                >
-                  <Archive className="mr-1.5 h-4 w-4" />
-                  {selectedMenuStatus === 'archived'
-                    ? busyAction === 'archive'
-                      ? 'Restoring...'
-                      : 'Restore to Draft'
-                    : busyAction === 'archive'
-                      ? 'Archiving...'
-                      : 'Archive'}
-                </Button>
+                  </CardContent>
+                </Card>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}

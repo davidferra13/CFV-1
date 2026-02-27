@@ -1509,3 +1509,225 @@ export async function getMenuPrepTimeline(menuId: string): Promise<PrepTimelineS
     components: grouped.get(offset) || [],
   }))
 }
+
+// ============================================
+// QUICK VIEW DATA (for menu list modal)
+// ============================================
+
+export type MenuQuickViewData = {
+  courses: {
+    courseName: string
+    courseNumber: number
+    description: string | null
+    componentCount: number
+    dietaryTags: string[]
+    allergenFlags: string[]
+  }[]
+  totalComponents: number
+  allDietaryTags: string[]
+  allAllergenFlags: string[]
+  costPerGuestCents: number | null
+  foodCostPercentage: number | null
+  linkedEvent: {
+    id: string
+    occasion: string | null
+    eventDate: string
+    status: string
+    clientName: string | null
+  } | null
+}
+
+/**
+ * Fetch rich quick view data for a menu (lazy-loaded when modal opens).
+ * Returns courses with component counts, aggregated dietary/allergen info,
+ * cost summary, and linked event details.
+ */
+export async function getMenuQuickViewData(menuId: string): Promise<MenuQuickViewData> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  // Fetch dishes with component counts
+  const { data: dishes } = await supabase
+    .from('dishes')
+    .select(
+      'id, course_name, course_number, description, dietary_tags, allergen_flags, components(id)'
+    )
+    .eq('menu_id', menuId)
+    .eq('tenant_id', user.tenantId!)
+    .order('course_number', { ascending: true })
+
+  // Fetch menu for event_id
+  const { data: menu } = await supabase
+    .from('menus')
+    .select('event_id')
+    .eq('id', menuId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  // Fetch cost summary
+  const { data: costData } = await supabase
+    .from('menu_cost_summary' as any)
+    .select('cost_per_guest_cents, food_cost_percentage')
+    .eq('menu_id', menuId)
+    .maybeSingle()
+
+  // Fetch linked event if present
+  let linkedEvent: MenuQuickViewData['linkedEvent'] = null
+  if (menu?.event_id) {
+    const { data: event } = await supabase
+      .from('events')
+      .select('id, occasion, event_date, status, clients(full_name)')
+      .eq('id', menu.event_id)
+      .eq('tenant_id', user.tenantId!)
+      .single()
+
+    if (event) {
+      linkedEvent = {
+        id: event.id,
+        occasion: event.occasion,
+        eventDate: event.event_date,
+        status: event.status,
+        clientName: (event.clients as any)?.full_name ?? null,
+      }
+    }
+  }
+
+  const allDietaryTags = new Set<string>()
+  const allAllergenFlags = new Set<string>()
+  let totalComponents = 0
+
+  const courses = (dishes || []).map((dish) => {
+    const componentCount = Array.isArray(dish.components) ? dish.components.length : 0
+    totalComponents += componentCount
+    const tags = (dish.dietary_tags || []) as string[]
+    const flags = (dish.allergen_flags || []) as string[]
+    tags.forEach((t) => allDietaryTags.add(t))
+    flags.forEach((f) => allAllergenFlags.add(f))
+    return {
+      courseName: dish.course_name,
+      courseNumber: dish.course_number,
+      description: dish.description,
+      componentCount,
+      dietaryTags: tags,
+      allergenFlags: flags,
+    }
+  })
+
+  return {
+    courses,
+    totalComponents,
+    allDietaryTags: Array.from(allDietaryTags),
+    allAllergenFlags: Array.from(allAllergenFlags),
+    costPerGuestCents: (costData as any)?.cost_per_guest_cents ?? null,
+    foodCostPercentage: (costData as any)?.food_cost_percentage ?? null,
+    linkedEvent,
+  }
+}
+
+// ============================================
+// APPLY MENU TO EVENT (auto-duplicate templates)
+// ============================================
+
+/**
+ * Apply a menu to an event. If the menu is a template, duplicates it first
+ * so the original stays clean. Non-templates are attached directly.
+ */
+export async function applyMenuToEvent(menuId: string, eventId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data: menu } = await supabase
+    .from('menus')
+    .select('id, is_template, name')
+    .eq('id', menuId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!menu) throw new UnknownAppError('Menu not found')
+
+  let targetMenuId = menuId
+  let wasDuplicated = false
+
+  if (menu.is_template) {
+    const result = await duplicateMenu(menuId)
+    targetMenuId = result.menu.id
+    wasDuplicated = true
+
+    // Rename the copy: remove " (Copy)" and mark it as event-specific
+    await supabase
+      .from('menus')
+      .update({
+        name: menu.name.replace(/ \(Copy\)$/, ''),
+        is_template: false,
+        updated_by: user.id,
+      })
+      .eq('id', targetMenuId)
+      .eq('tenant_id', user.tenantId!)
+  }
+
+  await attachMenuToEvent(eventId, targetMenuId)
+  return { success: true, menuId: targetMenuId, wasDuplicated }
+}
+
+// ============================================
+// DISH INDEX (cross-menu dish library)
+// ============================================
+
+export type DishIndexEntry = {
+  id: string
+  courseName: string
+  description: string | null
+  courseNumber: number
+  dietaryTags: string[]
+  allergenFlags: string[]
+  chefNotes: string | null
+  menuId: string
+  menuName: string
+  menuStatus: string
+  eventId: string | null
+  componentCount: number
+  createdAt: string
+}
+
+/**
+ * Get a rich index of all dishes across all menus for the chef.
+ * Used by the Dish Index page (/menus/dishes).
+ */
+export async function getDishIndex(): Promise<DishIndexEntry[]> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data, error } = await supabase
+    .from('dishes')
+    .select(
+      `
+      id, course_name, description, course_number,
+      dietary_tags, allergen_flags, chef_notes, created_at,
+      menu:menus!inner(id, name, status, event_id),
+      components(id)
+    `
+    )
+    .eq('tenant_id', user.tenantId!)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('[getDishIndex] Error:', error)
+    return []
+  }
+
+  return (data || []).map((d: any) => ({
+    id: d.id,
+    courseName: d.course_name || 'Untitled Dish',
+    description: d.description,
+    courseNumber: d.course_number,
+    dietaryTags: d.dietary_tags || [],
+    allergenFlags: d.allergen_flags || [],
+    chefNotes: d.chef_notes,
+    menuId: d.menu?.id || '',
+    menuName: d.menu?.name || '',
+    menuStatus: d.menu?.status || 'draft',
+    eventId: d.menu?.event_id || null,
+    componentCount: Array.isArray(d.components) ? d.components.length : 0,
+    createdAt: d.created_at,
+  }))
+}
