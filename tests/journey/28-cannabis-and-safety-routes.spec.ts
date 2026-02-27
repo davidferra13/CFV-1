@@ -6,7 +6,7 @@
 //
 // Run: npx playwright test --project=journey-chef tests/journey/28-cannabis-and-safety-routes.spec.ts
 
-import { test } from '../helpers/fixtures'
+import { test, expect } from '../helpers/fixtures'
 import {
   assertPageLoads,
   assertNoPageErrors,
@@ -76,6 +76,38 @@ test.describe('Safety Routes - Incident Operations (#449-454)', () => {
 
   test('cannabis unlock route has content (#454)', async ({ page }) => {
     await page.goto('/cannabis/unlock')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    await assertPageHasContent(page)
+  })
+})
+
+test.describe('Additional Specialty Routes (#476-480)', () => {
+  test('cannabis invite route loads (#476)', async ({ page }) => {
+    await assertPageLoads(page, '/cannabis/invite')
+  })
+
+  test('cannabis handbook route loads (#477)', async ({ page }) => {
+    await assertPageLoads(page, '/cannabis/handbook')
+  })
+
+  test('cannabis event control-packet route loads for seeded event (#478)', async ({
+    page,
+    seedIds,
+  }) => {
+    await page.goto(`/cannabis/events/${seedIds.eventIds.confirmed}/control-packet`)
+    await page.waitForLoadState('networkidle')
+    expect(page.url()).not.toMatch(/auth\/signin/)
+  })
+
+  test('business-health protection route loads (#479)', async ({ page }) => {
+    await assertPageLoads(page, '/settings/protection/business-health')
+  })
+
+  test('portfolio-removal protection route has content (#480)', async ({ page }) => {
+    await page.goto('/settings/protection/portfolio-removal')
     await page.waitForLoadState('networkidle')
 
     if (page.url().includes('auth/signin')) return

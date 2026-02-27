@@ -221,6 +221,23 @@ export default defineConfig({
         viewport: { width: 375, height: 812 },
       },
     },
+    // ── Journey Tests ─────────────────────────────────────────────────────────────
+    // Remy Journey Suite — 335 scenarios covering everything a chef would do
+    // in their first month. Tests UI and features directly (no LLM invocation).
+    // Run: npm run test:journey
+    {
+      name: 'journey-chef',
+      testMatch: ['**/journey/[0-2][0-9]-*.spec.ts'],
+      use: { storageState: '.auth/chef.json' },
+    },
+    // ── Diagnostic Tests ────────────────────────────────────────────────────────
+    // Systematic test-diagnose-fix suites for every untested feature area.
+    // Run: npx playwright test -p diagnostic
+    {
+      name: 'diagnostic',
+      testMatch: ['**/diagnostic/*.spec.ts'],
+      use: { storageState: '.auth/chef.json' },
+    },
     // ── Soak Tests ──────────────────────────────────────────────────────────────
     // Software aging detection — uses separate config: playwright.soak.config.ts
     // Run: npm run test:soak (full) or npm run test:soak:quick (10 iterations)

@@ -100,3 +100,30 @@ test.describe('Finance Deep Routes - Planning and Tax (#391-394)', () => {
     await assertPageHasContent(page)
   })
 })
+
+test.describe('Finance Deep Routes - Payroll and Tax Extensions (#481-485)', () => {
+  test('payroll hub route loads (#481)', async ({ page }) => {
+    await assertPageLoads(page, '/finance/payroll')
+  })
+
+  test('payroll run route loads (#482)', async ({ page }) => {
+    await assertPageLoads(page, '/finance/payroll/run')
+  })
+
+  test('payroll employees route loads (#483)', async ({ page }) => {
+    await assertPageLoads(page, '/finance/payroll/employees')
+  })
+
+  test('payroll W2 route loads (#484)', async ({ page }) => {
+    await assertPageLoads(page, '/finance/payroll/w2')
+  })
+
+  test('tax 1099-NEC route has content (#485)', async ({ page }) => {
+    await page.goto('/finance/tax/1099-nec')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    await assertPageHasContent(page)
+  })
+})
