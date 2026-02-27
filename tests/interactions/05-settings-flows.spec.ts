@@ -196,3 +196,50 @@ test.describe('Settings — System Health', () => {
     expect(bodyText.trim().length).toBeGreaterThan(50)
   })
 })
+
+test.describe('Settings - Notifications (Client Visit Alerts)', () => {
+  test('/settings/notifications - Clients category exposes channel switches', async ({ page }) => {
+    await page.goto('/settings/notifications', { waitUntil: 'domcontentloaded' })
+
+    const clientsRow = page.locator('tbody tr', { hasText: 'Clients' }).first()
+    await expect(clientsRow).toBeVisible()
+    await expect(clientsRow.locator('[role="switch"]')).toHaveCount(3)
+  })
+
+  test('/settings/notifications - Clients email switch is interactive without JS errors', async ({
+    page,
+  }) => {
+    const errors: string[] = []
+    page.on('pageerror', (err) => errors.push(err.message))
+
+    await page.goto('/settings/notifications', { waitUntil: 'domcontentloaded' })
+
+    const clientsRow = page.locator('tbody tr', { hasText: 'Clients' }).first()
+    const emailSwitch = clientsRow.locator('[role="switch"]').nth(0)
+
+    await expect(emailSwitch).toBeVisible()
+    await emailSwitch.click()
+    await expect(emailSwitch).toBeVisible()
+    expect(errors).toHaveLength(0)
+  })
+
+  test('/settings/notifications - attention controls section is interactive', async ({ page }) => {
+    const errors: string[] = []
+    page.on('pageerror', (err) => errors.push(err.message))
+
+    await page.goto('/settings/notifications', { waitUntil: 'domcontentloaded' })
+
+    const quietHoursToggle = page
+      .locator('label', { hasText: /enable quiet hours/i })
+      .locator('input[type="checkbox"]')
+      .first()
+    await expect(quietHoursToggle).toBeVisible()
+    await quietHoursToggle.click()
+
+    const saveAttentionControls = page.getByRole('button', { name: /save attention controls/i })
+    await expect(saveAttentionControls).toBeVisible()
+    await saveAttentionControls.click()
+
+    expect(errors).toHaveLength(0)
+  })
+})
