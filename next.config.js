@@ -63,6 +63,14 @@ const nextConfig = {
         hostname: 'res.cloudinary.com',
         pathname: '/dcyqefyzi/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.pexels.com',
+      },
     ],
   },
   async headers() {

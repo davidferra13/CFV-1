@@ -1,9 +1,12 @@
 import { notFound } from 'next/navigation'
+import Image from 'next/image'
 import { RecipeScalingPanel } from '@/components/ai/recipe-scaling-panel'
 import Link from 'next/link'
 import { getRecipeById } from '@/lib/recipes/actions'
+import { getPlaceholderImage } from '@/lib/images/placeholder-actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { NutritionLookupPanel } from '@/components/recipes/nutrition-lookup-panel'
+import { FoodPlaceholderImage } from '@/components/ui/food-placeholder-image'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -16,8 +19,28 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
   const totalMinutes =
     r.total_time_minutes ?? (r.prep_time_minutes ?? 0) + (r.cook_time_minutes ?? 0)
 
+  // If recipe has its own photo, use that. Otherwise fetch a stock placeholder.
+  const hasOwnPhoto = !!r.photo_url
+  const placeholderImage = hasOwnPhoto ? null : await getPlaceholderImage(r.name)
+
   return (
     <div className="space-y-6">
+      {/* Hero image — own photo or stock placeholder */}
+      {hasOwnPhoto ? (
+        <div className="relative w-full rounded-xl overflow-hidden" style={{ aspectRatio: '21/9' }}>
+          <Image
+            src={r.photo_url}
+            alt={r.name}
+            fill
+            sizes="(max-width: 768px) 100vw, 800px"
+            className="object-cover"
+            priority
+          />
+        </div>
+      ) : (
+        <FoodPlaceholderImage image={placeholderImage} size="hero" />
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>

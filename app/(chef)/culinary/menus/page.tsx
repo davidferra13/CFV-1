@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getMenus } from '@/lib/menus/actions'
+import { getPlaceholderImages } from '@/lib/images/placeholder-actions'
+import { FoodPlaceholderImage } from '@/components/ui/food-placeholder-image'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import {
@@ -44,6 +46,13 @@ export default async function ChefMenusPage() {
   await requireChef()
   const menus = await getMenus()
   const activeMenus = menus.filter((m) => m.status !== 'archived')
+
+  // Batch-fetch placeholder images for menu thumbnails
+  const menuQueries = activeMenus.map((m) => ({
+    id: m.id,
+    query: [m.name, m.cuisine_type].filter(Boolean).join(' '),
+  }))
+  const placeholders = menuQueries.length > 0 ? await getPlaceholderImages(menuQueries) : {}
 
   return (
     <div className="space-y-6">
@@ -95,17 +104,22 @@ export default async function ChefMenusPage() {
               {activeMenus.map((menu) => (
                 <TableRow key={menu.id}>
                   <TableCell className="font-medium">
-                    <Link
-                      href={`/culinary/menus/${menu.id}`}
-                      className="text-brand-600 hover:text-brand-300 hover:underline"
-                    >
-                      {menu.name}
-                    </Link>
-                    {menu.description && (
-                      <p className="text-xs text-stone-400 mt-0.5 truncate max-w-xs">
-                        {menu.description}
-                      </p>
-                    )}
+                    <div className="flex items-center gap-3">
+                      <FoodPlaceholderImage image={placeholders[menu.id] ?? null} size="thumb" />
+                      <div>
+                        <Link
+                          href={`/culinary/menus/${menu.id}`}
+                          className="text-brand-600 hover:text-brand-300 hover:underline"
+                        >
+                          {menu.name}
+                        </Link>
+                        {menu.description && (
+                          <p className="text-xs text-stone-400 mt-0.5 truncate max-w-xs">
+                            {menu.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <span

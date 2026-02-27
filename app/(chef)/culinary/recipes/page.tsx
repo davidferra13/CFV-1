@@ -1,7 +1,10 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getRecipes } from '@/lib/recipes/actions'
+import { getPlaceholderImages } from '@/lib/images/placeholder-actions'
+import { FoodPlaceholderImage } from '@/components/ui/food-placeholder-image'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import {
@@ -37,6 +40,13 @@ const CATEGORY_STYLES: Record<string, string> = {
 export default async function ChefRecipesPage() {
   await requireChef()
   const recipes = await getRecipes()
+
+  // Batch-fetch placeholder images for recipes without their own photo
+  const needPlaceholders = recipes
+    .filter((r: any) => !r.photo_url)
+    .map((r: any) => ({ id: r.id, query: r.name }))
+  const placeholders =
+    needPlaceholders.length > 0 ? await getPlaceholderImages(needPlaceholders) : {}
 
   return (
     <div className="space-y-6">
@@ -89,12 +99,31 @@ export default async function ChefRecipesPage() {
               {recipes.map((recipe) => (
                 <TableRow key={recipe.id}>
                   <TableCell className="font-medium">
-                    <Link
-                      href={`/culinary/recipes/${recipe.id}`}
-                      className="text-brand-600 hover:text-brand-300 hover:underline"
-                    >
-                      {recipe.name}
-                    </Link>
+                    <div className="flex items-center gap-3">
+                      {(recipe as any).photo_url ? (
+                        <div className="relative w-10 h-10 rounded-md overflow-hidden flex-shrink-0">
+                          <Image
+                            src={(recipe as any).photo_url}
+                            alt={recipe.name}
+                            fill
+                            sizes="40px"
+                            className="object-cover"
+                            unoptimized
+                          />
+                        </div>
+                      ) : (
+                        <FoodPlaceholderImage
+                          image={placeholders[recipe.id] ?? null}
+                          size="thumb"
+                        />
+                      )}
+                      <Link
+                        href={`/culinary/recipes/${recipe.id}`}
+                        className="text-brand-600 hover:text-brand-300 hover:underline"
+                      >
+                        {recipe.name}
+                      </Link>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <span
