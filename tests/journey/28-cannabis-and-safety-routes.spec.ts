@@ -115,3 +115,18 @@ test.describe('Additional Specialty Routes (#476-480)', () => {
     await assertPageHasContent(page)
   })
 })
+
+test.describe('Additional Cannabis Namespace Routes (#504-505)', () => {
+  test('chef cannabis handbook route loads (#504)', async ({ page }) => {
+    await assertPageLoads(page, '/chef/cannabis/handbook')
+  })
+
+  test('chef cannabis RSVPs route has content (#505)', async ({ page }) => {
+    await page.goto('/chef/cannabis/rsvps')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    await assertPageHasContent(page)
+  })
+})

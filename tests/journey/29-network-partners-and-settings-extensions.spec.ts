@@ -247,3 +247,17 @@ test.describe('Partner Dynamic Coverage (#500)', () => {
     await assertPageHasContent(page)
   })
 })
+
+test.describe('Additional Settings Deep Routes (#501-503)', () => {
+  test('settings incidents route loads (#501)', async ({ page }) => {
+    await assertPageLoads(page, '/settings/incidents')
+  })
+
+  test('settings menu templates route loads (#502)', async ({ page }) => {
+    await assertPageLoads(page, '/settings/menu-templates')
+  })
+
+  test('settings professional momentum route loads (#503)', async ({ page }) => {
+    await assertPageLoads(page, '/settings/professional/momentum')
+  })
+})
