@@ -97,7 +97,7 @@ export async function getRevenuePerUnitStats(
   endDate: string
 ): Promise<RevenuePerUnitStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
@@ -166,7 +166,7 @@ export async function getRevenueByDayOfWeek(
   endDate: string
 ): Promise<RevenueByDayOfWeek[]> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
@@ -200,7 +200,7 @@ export async function getRevenueByEventType(
   endDate: string
 ): Promise<RevenueByEventType[]> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
@@ -234,7 +234,7 @@ export async function getRevenueByEventType(
 
 export async function getRevenueBySeason(): Promise<RevenueBySeason[]> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
@@ -267,7 +267,7 @@ export async function getTrueLaborCostStats(
   endDate: string
 ): Promise<TrueLaborCostStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   // Get owner hourly rate from preferences
   const { data: prefs } = await supabase
@@ -359,7 +359,7 @@ export async function getTrueLaborCostStats(
 export async function getCapacityStats(month: string): Promise<CapacityStats> {
   // month = YYYY-MM
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: prefs } = await supabase
     .from('chef_preferences')
@@ -408,7 +408,7 @@ export async function getCarryForwardStats(
   endDate: string
 ): Promise<CarryForwardStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
@@ -449,7 +449,7 @@ export async function getCarryForwardStats(
 
 export async function getBreakEvenStats(): Promise<BreakEvenStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   // Estimate fixed costs: last 3 months avg of non-event expenses
   const threeMonthsAgo = new Date()

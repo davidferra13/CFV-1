@@ -5,8 +5,8 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { extractBearerToken, validateDeviceToken, validateStaffPin } from '@/lib/devices/token'
 
-// Rate limiter: max 5 failed PIN attempts per device per 5 minutes
-const failedAttempts = new Map<string, { count: number; resetAt: number }>()
+const MAX_PIN_ATTEMPTS = 5
+const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000 // 5 minutes
 
 export async function POST(request: Request) {
   try {
@@ -27,14 +27,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'PIN is required' }, { status: 400 })
     }
 
-    // Rate limit check
-    const now = Date.now()
-    const bucket = failedAttempts.get(device.deviceId) || { count: 0, resetAt: now + 300000 }
-    if (now > bucket.resetAt) {
-      bucket.count = 0
-      bucket.resetAt = now + 300000
-    }
-    if (bucket.count >= 5) {
+    // DB-based rate limit — count recent pin_failed events for this device
+    const supabase = createAdminClient()
+    const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString()
+
+    const { count: failedCount } = await supabase
+      .from('device_events')
+      .select('*', { count: 'exact', head: true })
+      .eq('device_id', device.deviceId)
+      .eq('type', 'pin_failed')
+      .gte('created_at', windowStart)
+
+    if ((failedCount ?? 0) >= MAX_PIN_ATTEMPTS) {
       return NextResponse.json(
         { error: 'Too many failed attempts. Please wait 5 minutes.' },
         { status: 429 }
@@ -43,18 +47,13 @@ export async function POST(request: Request) {
 
     const staff = await validateStaffPin(device.tenantId, pin)
     if (!staff) {
-      // Track failed attempt
-      bucket.count++
-      failedAttempts.set(device.deviceId, bucket)
-
-      // Log failed attempt (non-blocking)
-      const supabase = createAdminClient()
+      // Log failed attempt to DB (serves as rate limit counter)
       try {
         await supabase.from('device_events').insert({
           device_id: device.deviceId,
           tenant_id: device.tenantId,
           type: 'pin_failed',
-          payload: { attempts_remaining: 5 - bucket.count },
+          payload: { attempts_remaining: MAX_PIN_ATTEMPTS - (failedCount ?? 0) - 1 },
         })
       } catch (e) {
         console.error('[kiosk/verify-pin] Event log failed (non-blocking):', e)
@@ -62,9 +61,6 @@ export async function POST(request: Request) {
 
       return NextResponse.json({ error: 'Invalid PIN' }, { status: 401 })
     }
-
-    // Clear failed attempts on success
-    failedAttempts.delete(device.deviceId)
 
     // Create device session
     const supabase = createAdminClient()

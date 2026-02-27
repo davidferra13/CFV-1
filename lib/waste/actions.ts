@@ -67,7 +67,7 @@ export async function logWasteEntry(input: {
   notes?: string
 }) {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data, error } = await supabase
     .from('waste_entries')
@@ -99,7 +99,7 @@ export async function getWasteEntries(filters?: {
   eventId?: string
 }): Promise<WasteEntry[]> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   let query = supabase
     .from('waste_entries')

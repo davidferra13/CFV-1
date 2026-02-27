@@ -51,7 +51,7 @@ async function resolveAudience(
   chefEntityId: string,
   segment: Record<string, unknown>
 ): Promise<AudienceClient[]> {
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
   const baseSelect = 'id, full_name, email, phone, preferred_contact_method'
 
   // Base query factory
@@ -173,7 +173,7 @@ async function resolveAudience(
 export async function createCampaign(input: CampaignInput) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
   const data = CampaignSchema.parse(input)
 
   const { data: campaign, error } = await supabase
@@ -195,7 +195,7 @@ export async function createCampaign(input: CampaignInput) {
 export async function updateCampaign(id: string, input: Partial<CampaignInput>) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { error } = await supabase
     .from('marketing_campaigns')
@@ -211,7 +211,7 @@ export async function updateCampaign(id: string, input: Partial<CampaignInput>) 
 export async function deleteCampaign(id: string) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { error } = await supabase
     .from('marketing_campaigns')
@@ -227,7 +227,7 @@ export async function deleteCampaign(id: string) {
 export async function listCampaigns() {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data, error } = await supabase
     .from('marketing_campaigns')
@@ -242,7 +242,7 @@ export async function listCampaigns() {
 export async function getCampaign(id: string) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data, error } = await supabase
     .from('marketing_campaigns')
@@ -311,7 +311,7 @@ export async function getChannelSplit(segment: Record<string, unknown>): Promise
 // ============================================
 
 async function getChefDisplayName(chefEntityId: string): Promise<string> {
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
   // Try chef_preferences for display_name first, fall back to chefs.name
   const { data: prefs } = await supabase
     .from('chef_preferences')
@@ -325,7 +325,7 @@ async function getChefDisplayName(chefEntityId: string): Promise<string> {
 export async function sendCampaignNow(campaignId: string) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: campaign, error: campErr } = await supabase
     .from('marketing_campaigns')
@@ -501,7 +501,7 @@ export async function recordUnsubscribeByRecipientId(recipientId: string) {
 export async function getCampaignStats(campaignId: string) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: recipients } = await supabase
     .from('campaign_recipients')
@@ -530,7 +530,7 @@ export async function getCampaignStats(campaignId: string) {
 export async function getCampaignRecipients(campaignId: string) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data } = await supabase
     .from('campaign_recipients')
@@ -552,7 +552,7 @@ export async function getCampaignRecipients(campaignId: string) {
 export async function getCampaignRevenueAttribution(campaignId: string) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: campaign } = await supabase
     .from('marketing_campaigns')
@@ -602,7 +602,7 @@ export async function getCampaignRevenueAttribution(campaignId: string) {
 export async function listCampaignTemplates() {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   // Ensure system templates are seeded for this chef
   await ensureSystemTemplatesSeeded(chef.entityId, supabase)
@@ -645,7 +645,7 @@ export async function createCampaignTemplate(input: {
 }) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { error } = await supabase.from('campaign_templates').insert({
     ...input,
@@ -660,7 +660,7 @@ export async function createCampaignTemplate(input: {
 export async function deleteCampaignTemplate(id: string) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { error } = await supabase
     .from('campaign_templates')
@@ -676,7 +676,7 @@ export async function deleteCampaignTemplate(id: string) {
 export async function saveAsTemplate(campaignId: string, templateName: string) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: campaign } = await supabase
     .from('marketing_campaigns')
@@ -711,7 +711,7 @@ export async function sendDirectOutreach(input: {
 }) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   // Fetch client
   const { data: client } = await supabase
@@ -783,7 +783,7 @@ export async function sendDirectOutreach(input: {
 export async function getClientOutreachHistory(clientId: string) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data } = await supabase
     .from('direct_outreach_log')
@@ -805,7 +805,7 @@ export async function getClientOutreachHistory(clientId: string) {
  * Called from /api/scheduled/campaigns cron.
  */
 export async function processScheduledCampaigns() {
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: due } = await supabase
     .from('marketing_campaigns')
@@ -842,7 +842,7 @@ const SequenceSchema = z.object({
 export async function listSequences() {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data, error } = await supabase
     .from('automated_sequences')
@@ -862,7 +862,7 @@ export async function createSequence(input: {
 }) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
   const data = SequenceSchema.parse(input)
 
   const { data: seq, error } = await supabase
@@ -886,7 +886,7 @@ export async function createSequence(input: {
 export async function toggleSequence(id: string, isActive: boolean) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { error } = await supabase
     .from('automated_sequences')
@@ -901,7 +901,7 @@ export async function toggleSequence(id: string, isActive: boolean) {
 export async function deleteSequence(id: string) {
   const chef = await requireChef()
   await requirePro('marketing')
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   await supabase.from('automated_sequences').delete().eq('id', id).eq('chef_id', chef.entityId)
 
@@ -918,7 +918,7 @@ export async function enrollInSequence(
   triggerType: 'birthday' | 'dormant_90' | 'post_event',
   firstSendAt: Date
 ) {
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: sequences } = await supabase
     .from('automated_sequences')
@@ -961,7 +961,7 @@ export async function enrollInSequence(
  * Called from /api/scheduled/sequences cron (daily).
  */
 export async function processSequences() {
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   // Find all pending enrollments due to send
   const { data: pending } = await supabase
@@ -1067,7 +1067,7 @@ export async function processSequences() {
  * Called from the sequences cron.
  */
 export async function processBirthdayEnrollments() {
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   // Find all active birthday sequences
   const { data: sequences } = await supabase

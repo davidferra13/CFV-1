@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import type { StaffPinSession } from '@/lib/devices/types'
+import { enqueueInquiry, replayQueue, getQueueSize } from '@/lib/devices/offline-queue'
 
 interface KioskInquiryFormProps {
   token: string
@@ -18,6 +19,15 @@ export function KioskInquiryForm({ token, staffSession, onSubmitted }: KioskInqu
   const [notes, setNotes] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [queuedCount, setQueuedCount] = useState(0)
+
+  // Try to replay any queued inquiries when the form mounts (back online)
+  useEffect(() => {
+    setQueuedCount(getQueueSize())
+    replayQueue().then((sent) => {
+      if (sent > 0) setQueuedCount(getQueueSize())
+    })
+  }, [])
 
   function resetForm() {
     setFullName('')
@@ -82,15 +92,28 @@ export function KioskInquiryForm({ token, staffSession, onSubmitted }: KioskInqu
       resetForm()
       onSubmitted()
     } catch {
-      setError('Network error. Please try again.')
-      setLoading(false)
+      // Network failure — queue for later submission
+      enqueueInquiry(token, {
+        full_name: fullName.trim(),
+        email: email.trim() || undefined,
+        phone: phone.trim() || undefined,
+        event_date: eventDate,
+        party_size: parseInt(partySize),
+        notes: notes.trim() || undefined,
+        staff_member_id: staffSession?.staff_member_id,
+        session_id: staffSession?.session_id,
+      })
+      setQueuedCount(getQueueSize())
+      resetForm()
+      onSubmitted()
     }
   }
 
-  // Get tomorrow's date as minimum for date picker
-  const tomorrow = new Date()
-  tomorrow.setDate(tomorrow.getDate() + 1)
-  const minDate = tomorrow.toISOString().split('T')[0]
+  // Get today's date as minimum for date picker (memoized — only changes once per day)
+  const minDate = useMemo(() => {
+    const today = new Date()
+    return today.toISOString().split('T')[0]
+  }, [])
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-lg space-y-5">
@@ -149,6 +172,7 @@ export function KioskInquiryForm({ token, staffSession, onSubmitted }: KioskInqu
           <label className="mb-1.5 block text-sm font-medium text-stone-300">Event Date *</label>
           <input
             type="date"
+            title="Event date"
             value={eventDate}
             onChange={(e) => setEventDate(e.target.value)}
             min={minDate}
@@ -192,6 +216,12 @@ export function KioskInquiryForm({ token, staffSession, onSubmitted }: KioskInqu
       >
         {loading ? 'Submitting...' : 'Submit Inquiry'}
       </button>
+
+      {queuedCount > 0 && (
+        <p className="text-center text-xs text-yellow-500">
+          {queuedCount} inquiry(s) queued — will auto-submit when connection restores
+        </p>
+      )}
     </form>
   )
 }

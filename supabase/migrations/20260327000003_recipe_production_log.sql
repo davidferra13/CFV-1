@@ -25,7 +25,7 @@ CREATE TABLE recipe_production_log (
 CREATE INDEX idx_prod_log_recipe ON recipe_production_log(recipe_id, produced_at DESC);
 CREATE INDEX idx_prod_log_tenant ON recipe_production_log(tenant_id, produced_at DESC);
 CREATE INDEX idx_prod_log_expiry ON recipe_production_log(tenant_id, discard_at)
-  WHERE discard_at IS NOT NULL AND discard_at > now();
+  WHERE discard_at IS NOT NULL;
 
 -- RLS
 ALTER TABLE recipe_production_log ENABLE ROW LEVEL SECURITY;

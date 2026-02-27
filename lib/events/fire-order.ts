@@ -100,7 +100,7 @@ const STATION_LABELS: Record<StationType, string> = {
 
 export async function getFireOrder(eventId: string): Promise<FireOrderResult> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   // Fetch event with menu
   const { data: event, error: eventErr } = await supabase

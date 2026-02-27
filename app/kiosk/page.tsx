@@ -62,24 +62,34 @@ export default function KioskPage() {
     setView('form')
   }, [])
 
+  const endStaffSession = useCallback(
+    (reason: string) => {
+      if (staffSession && token) {
+        fetch('/api/kiosk/end-session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            session_id: staffSession.session_id,
+            reason,
+          }),
+        }).catch(() => {})
+      }
+      setStaffSession(null)
+      setView(config?.require_staff_pin ? 'pin' : 'form')
+    },
+    [staffSession, token, config]
+  )
+
   const handleIdleReset = useCallback(() => {
-    // Clear staff session on idle — back to PIN entry
-    if (staffSession && token) {
-      fetch('/api/kiosk/end-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          session_id: staffSession.session_id,
-          reason: 'idle',
-        }),
-      }).catch(() => {})
-    }
-    setStaffSession(null)
-    setView(config?.require_staff_pin ? 'pin' : 'form')
-  }, [staffSession, token, config])
+    endStaffSession('idle')
+  }, [endStaffSession])
+
+  const handleSwitchStaff = useCallback(() => {
+    endStaffSession('manual_lock')
+  }, [endStaffSession])
 
   const handleHardReset = useCallback(() => {
     // Log hard reset event
@@ -124,6 +134,7 @@ export default function KioskPage() {
             businessName={config?.business_name || 'ChefFlow'}
             staffName={staffSession?.staff_name || null}
             onHardReset={handleHardReset}
+            onSwitchStaff={staffSession ? handleSwitchStaff : undefined}
           />
 
           <main className="flex flex-1 items-center justify-center p-6">
@@ -137,7 +148,12 @@ export default function KioskPage() {
               />
             )}
 
-            {view === 'success' && <KioskSuccessScreen onReset={handleSuccessReset} />}
+            {view === 'success' && (
+              <KioskSuccessScreen
+                onReset={handleSuccessReset}
+                countdownSeconds={config?.success_display_seconds}
+              />
+            )}
           </main>
         </div>
       </IdleResetProvider>

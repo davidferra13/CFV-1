@@ -99,7 +99,7 @@ async function getChefDisplayName(chefEntityId: string, supabase: any): Promise<
 
 export async function createPushDinner(input: PushDinnerInput): Promise<string> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const token = generateToken()
   const seats = input.seats_available ?? input.guest_count_max ?? 12
@@ -136,7 +136,7 @@ export async function createPushDinner(input: PushDinnerInput): Promise<string> 
 
 export async function updatePushDinner(id: string, input: Partial<PushDinnerInput>): Promise<void> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { error } = await supabase
     .from('marketing_campaigns')
@@ -151,7 +151,7 @@ export async function updatePushDinner(id: string, input: Partial<PushDinnerInpu
 
 export async function getPushDinner(id: string): Promise<PushDinner | null> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data, error } = await supabase
     .from('marketing_campaigns')
@@ -166,7 +166,7 @@ export async function getPushDinner(id: string): Promise<PushDinner | null> {
 
 export async function listPushDinners(): Promise<PushDinner[]> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data, error } = await supabase
     .from('marketing_campaigns')
@@ -182,7 +182,7 @@ export async function listPushDinners(): Promise<PushDinner[]> {
 
 export async function cancelPushDinner(id: string): Promise<void> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { error } = await supabase
     .from('marketing_campaigns')
@@ -204,7 +204,7 @@ export async function addRecipientsToCampaign(
   clients: Array<{ id: string; email: string }>
 ): Promise<void> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   // Verify campaign ownership
   const { data: campaign } = await supabase
@@ -244,7 +244,7 @@ export async function addRecipientsToCampaign(
 
 export async function getCampaignRecipients(campaignId: string): Promise<PushDinnerRecipient[]> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data, error } = await supabase
     .from('campaign_recipients')
@@ -267,7 +267,7 @@ export async function updateDraft(
   body: string
 ): Promise<void> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { error } = await supabase
     .from('campaign_recipients')
@@ -285,7 +285,7 @@ export async function updateDraft(
 
 export async function approveDraft(recipientId: string): Promise<void> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { error } = await supabase
     .from('campaign_recipients')
@@ -298,7 +298,7 @@ export async function approveDraft(recipientId: string): Promise<void> {
 
 export async function approveAllDrafts(campaignId: string): Promise<void> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const now = new Date().toISOString()
 
@@ -316,7 +316,7 @@ export async function approveAllDrafts(campaignId: string): Promise<void> {
 
 export async function skipRecipient(recipientId: string): Promise<void> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { error } = await supabase
     .from('campaign_recipients')
@@ -340,7 +340,7 @@ export type LaunchResult = {
 
 export async function launchCampaign(campaignId: string): Promise<LaunchResult> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   // Verify ownership + status
   const { data: campaign, error: campErr } = await supabase
@@ -471,7 +471,7 @@ export type PushDinnerStats = {
 
 export async function getPushDinnerStats(campaignId: string): Promise<PushDinnerStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data } = await supabase
     .from('campaign_recipients')

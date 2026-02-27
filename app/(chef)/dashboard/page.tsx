@@ -504,7 +504,7 @@ export default async function ChefDashboard() {
     safe(
       'chefProfile',
       async () => {
-        const supabase = await createServerClient()
+        const supabase = createServerClient()
         const { data } = await supabase
           .from('chefs')
           .select('slug, display_name')

@@ -29,7 +29,7 @@ CREATE POLICY "Chefs can upload menu files"
   WITH CHECK (
     bucket_id = 'menu-uploads'
     AND (storage.foldername(name))[1] = (
-      SELECT tenant_id::text FROM user_roles
+      SELECT entity_id::text FROM user_roles
       WHERE auth_user_id = auth.uid()
       LIMIT 1
     )
@@ -42,7 +42,7 @@ CREATE POLICY "Chefs can read own menu files"
   USING (
     bucket_id = 'menu-uploads'
     AND (storage.foldername(name))[1] = (
-      SELECT tenant_id::text FROM user_roles
+      SELECT entity_id::text FROM user_roles
       WHERE auth_user_id = auth.uid()
       LIMIT 1
     )

@@ -13,7 +13,7 @@ export async function submitCheckin(input: {
 }) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -48,7 +48,7 @@ export async function getCheckinHistory(): Promise<
 > {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_growth_checkins')
@@ -65,7 +65,7 @@ export async function getCheckinHistory(): Promise<
 export async function isDue(): Promise<boolean> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const since = new Date()
   since.setDate(since.getDate() - 90)
@@ -84,7 +84,7 @@ export async function isDue(): Promise<boolean> {
 export async function getLatestSatisfactionScore(): Promise<number | null> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data } = await supabase
     .from('chef_growth_checkins')

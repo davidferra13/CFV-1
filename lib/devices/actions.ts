@@ -76,9 +76,33 @@ export async function listDevices(): Promise<DeviceWithOnlineStatus[]> {
 
   if (error) throw new Error(`Failed to list devices: ${error.message}`)
 
+  // Fetch active sessions to show who's currently using each device
+  const deviceIds = (data || []).map((d) => d.id)
+  const { data: activeSessions } = deviceIds.length
+    ? await supabase
+        .from('device_sessions')
+        .select('device_id, staff_member_id')
+        .in('device_id', deviceIds)
+        .eq('status', 'active')
+    : { data: [] }
+
+  // Fetch staff names for active sessions
+  const staffIds = [
+    ...new Set((activeSessions || []).map((s) => s.staff_member_id).filter(Boolean)),
+  ]
+  const { data: staffMembers } = staffIds.length
+    ? await supabase.from('staff_members').select('id, name').in('id', staffIds)
+    : { data: [] }
+
+  const staffMap = new Map((staffMembers || []).map((s) => [s.id, s.name]))
+  const sessionMap = new Map(
+    (activeSessions || []).map((s) => [s.device_id, staffMap.get(s.staff_member_id!) || null])
+  )
+
   return (data || []).map((d) => ({
     ...d,
     online_status: getOnlineStatus(d.last_seen_at),
+    active_staff_name: sessionMap.get(d.id) || null,
   })) as DeviceWithOnlineStatus[]
 }
 
@@ -108,6 +132,46 @@ export async function getDeviceDetail(deviceId: string) {
     device: { ...device, online_status: getOnlineStatus(device.last_seen_at) },
     events: events || [],
   }
+}
+
+// ─── Enable Device (re-enable a disabled device) ────────────────────
+
+export async function enableDevice(deviceId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  // Only disabled devices can be re-enabled
+  const { data: device } = await supabase
+    .from('devices')
+    .select('status')
+    .eq('id', deviceId)
+    .eq('tenant_id', user.entityId)
+    .single()
+
+  if (!device) throw new Error('Device not found')
+  if (device.status !== 'disabled') throw new Error('Only disabled devices can be re-enabled')
+
+  const { error } = await supabase
+    .from('devices')
+    .update({ status: 'active' })
+    .eq('id', deviceId)
+    .eq('tenant_id', user.entityId)
+
+  if (error) throw new Error(`Failed to enable device: ${error.message}`)
+
+  try {
+    await supabase.from('device_events').insert({
+      device_id: deviceId,
+      tenant_id: user.entityId,
+      type: 'enabled',
+      payload: { enabled_by: user.id },
+    })
+  } catch (e) {
+    console.error('[enableDevice] Event log failed (non-blocking):', e)
+  }
+
+  revalidatePath('/settings/devices')
+  return { success: true }
 }
 
 // ─── Disable Device ─────────────────────────────────────────────────
@@ -225,6 +289,39 @@ export async function updateDevice(deviceId: string, input: unknown) {
 
   revalidatePath('/settings/devices')
   return { success: true }
+}
+
+// ─── List Device Events (audit log) ─────────────────────────────────
+
+export async function listDeviceEvents(deviceId: string, limit = 50) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data, error } = await supabase
+    .from('device_events')
+    .select('id, device_id, staff_member_id, type, payload, created_at')
+    .eq('device_id', deviceId)
+    .eq('tenant_id', user.entityId)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (error) throw new Error(`Failed to list events: ${error.message}`)
+
+  // Fetch staff names for attribution
+  const staffIds = [...new Set((data || []).map((e) => e.staff_member_id).filter(Boolean))]
+  const { data: staffMembers } = staffIds.length
+    ? await supabase
+        .from('staff_members')
+        .select('id, name')
+        .in('id', staffIds as string[])
+    : { data: [] }
+
+  const staffMap = new Map((staffMembers || []).map((s) => [s.id, s.name]))
+
+  return (data || []).map((e) => ({
+    ...e,
+    staff_name: e.staff_member_id ? staffMap.get(e.staff_member_id) || null : null,
+  }))
 }
 
 // ─── Staff PIN Management ───────────────────────────────────────────

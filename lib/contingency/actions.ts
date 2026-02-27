@@ -22,7 +22,7 @@ export type EmergencyContactInput = z.infer<typeof EmergencyContactSchema>
 
 export async function createEmergencyContact(input: EmergencyContactInput) {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
   const data = EmergencyContactSchema.parse(input)
 
   const { error } = await supabase.from('chef_emergency_contacts').insert({
@@ -37,7 +37,7 @@ export async function createEmergencyContact(input: EmergencyContactInput) {
 
 export async function updateEmergencyContact(id: string, input: EmergencyContactInput) {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
   const data = EmergencyContactSchema.parse(input)
 
   const { error } = await supabase
@@ -52,7 +52,7 @@ export async function updateEmergencyContact(id: string, input: EmergencyContact
 
 export async function deleteEmergencyContact(id: string) {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { error } = await supabase
     .from('chef_emergency_contacts')
@@ -66,7 +66,7 @@ export async function deleteEmergencyContact(id: string) {
 
 export async function listEmergencyContacts() {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_emergency_contacts')
@@ -104,7 +104,7 @@ export type ContingencyNoteInput = z.infer<typeof ContingencyNoteSchema>
 
 export async function upsertContingencyNote(eventId: string, input: ContingencyNoteInput) {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
   const data = ContingencyNoteSchema.parse(input)
 
   // Check if record already exists for this event+scenario
@@ -143,7 +143,7 @@ export async function upsertContingencyNote(eventId: string, input: ContingencyN
 
 export async function deleteContingencyNote(id: string) {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { error } = await supabase
     .from('event_contingency_notes')
@@ -156,7 +156,7 @@ export async function deleteContingencyNote(id: string) {
 
 export async function getEventContingencyNotes(eventId: string) {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data, error } = await supabase
     .from('event_contingency_notes')

@@ -1,4 +1,4 @@
-﻿-- Phase 2 QOL maturity: metrics + notification quiet/digest settings
+-- Phase 2 QOL maturity: metrics + notification quiet/digest settings
 
 -- 1) Notification quiet-window + digest controls
 ALTER TABLE chef_preferences

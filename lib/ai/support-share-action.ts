@@ -33,7 +33,7 @@ export async function shareConversationWithSupport(
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase = await createServerClient()
+    const supabase = createServerClient()
 
     const { data, error } = await supabase
       .from('remy_support_shares')
@@ -73,7 +73,7 @@ export async function getMySupportShares(): Promise<
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase = await createServerClient()
+    const supabase = createServerClient()
 
     const { data, error } = await supabase
       .from('remy_support_shares')

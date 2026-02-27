@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import type { StaffPinSession } from '@/lib/devices/types'
 
 interface StaffPinEntryProps {
@@ -8,73 +8,118 @@ interface StaffPinEntryProps {
   onVerified: (session: StaffPinSession) => void
 }
 
+// Generate a short click sound using Web Audio API (no asset files needed)
+function playClickSound() {
+  try {
+    const ctx = new AudioContext()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.frequency.value = 1200
+    osc.type = 'sine'
+    gain.gain.value = 0.08
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05)
+    osc.start(ctx.currentTime)
+    osc.stop(ctx.currentTime + 0.05)
+    // Clean up after sound finishes
+    setTimeout(() => ctx.close(), 100)
+  } catch {
+    // Audio not available — ignore silently
+  }
+}
+
 export function StaffPinEntry({ token, onVerified }: StaffPinEntryProps) {
   const [pin, setPin] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [shake, setShake] = useState(false)
+  const submitRef = useRef<(() => void) | null>(null)
 
   const maxDigits = 6
+
+  const handleSubmit = useCallback(
+    async (pinToSubmit?: string) => {
+      const submitPin = pinToSubmit ?? pin
+      if (submitPin.length < 4) {
+        setError('PIN must be at least 4 digits')
+        return
+      }
+
+      setLoading(true)
+      setError('')
+
+      try {
+        const res = await fetch('/api/kiosk/verify-pin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ pin: submitPin }),
+        })
+
+        const data = await res.json()
+
+        if (!res.ok) {
+          setPin('')
+          setError(data.error || 'Invalid PIN')
+          setShake(true)
+          setTimeout(() => setShake(false), 500)
+          setLoading(false)
+          return
+        }
+
+        onVerified({
+          staff_member_id: data.staff_member_id,
+          staff_name: data.staff_name,
+          session_id: data.session_id,
+        })
+      } catch {
+        setError('Network error')
+        setLoading(false)
+      }
+    },
+    [pin, token, onVerified]
+  )
+
+  // Store latest submit function for auto-submit
+  submitRef.current = () => handleSubmit()
 
   const handleDigit = useCallback(
     (digit: string) => {
       if (pin.length >= maxDigits) return
+      playClickSound()
       setError('')
-      setPin((prev) => prev + digit)
+      const newPin = pin + digit
+      setPin(newPin)
+      // Auto-submit when max length reached
+      if (newPin.length === maxDigits) {
+        // Small delay so the dot animation renders before submission
+        setTimeout(() => handleSubmit(newPin), 150)
+      }
     },
-    [pin]
+    [pin, handleSubmit]
   )
 
   const handleBackspace = useCallback(() => {
+    playClickSound()
     setPin((prev) => prev.slice(0, -1))
     setError('')
   }, [])
 
   const handleClear = useCallback(() => {
+    playClickSound()
     setPin('')
     setError('')
   }, [])
 
-  const handleSubmit = useCallback(async () => {
-    if (pin.length < 4) {
-      setError('PIN must be at least 4 digits')
-      return
-    }
-
-    setLoading(true)
+  // Reset PIN when component re-mounts (e.g., returning from idle)
+  useEffect(() => {
+    setPin('')
     setError('')
-
-    try {
-      const res = await fetch('/api/kiosk/verify-pin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ pin }),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        setPin('')
-        setError(data.error || 'Invalid PIN')
-        setShake(true)
-        setTimeout(() => setShake(false), 500)
-        setLoading(false)
-        return
-      }
-
-      onVerified({
-        staff_member_id: data.staff_member_id,
-        staff_name: data.staff_name,
-        session_id: data.session_id,
-      })
-    } catch {
-      setError('Network error')
-      setLoading(false)
-    }
-  }, [pin, token, onVerified])
+    setLoading(false)
+  }, [])
 
   const digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', '']
 
@@ -132,6 +177,7 @@ export function StaffPinEntry({ token, onVerified }: StaffPinEntryProps) {
             return (
               <button
                 key="clear"
+                type="button"
                 onClick={handleClear}
                 className="rounded-xl bg-stone-800 py-5 text-lg font-medium text-stone-400 transition-colors active:bg-stone-700"
               >
@@ -144,6 +190,8 @@ export function StaffPinEntry({ token, onVerified }: StaffPinEntryProps) {
             return (
               <button
                 key="back"
+                type="button"
+                title="Backspace"
                 onClick={handleBackspace}
                 className="flex items-center justify-center rounded-xl bg-stone-800 py-5 text-lg text-stone-400 transition-colors active:bg-stone-700"
               >
@@ -166,6 +214,7 @@ export function StaffPinEntry({ token, onVerified }: StaffPinEntryProps) {
           return (
             <button
               key={digit}
+              type="button"
               onClick={() => handleDigit(digit)}
               disabled={loading}
               className="rounded-xl bg-stone-800 py-5 text-2xl font-semibold text-stone-100 transition-colors active:bg-stone-700 disabled:opacity-50"
@@ -176,9 +225,10 @@ export function StaffPinEntry({ token, onVerified }: StaffPinEntryProps) {
         })}
       </div>
 
-      {/* Submit button */}
+      {/* Submit button — for 4-5 digit PINs (6-digit auto-submits) */}
       <button
-        onClick={handleSubmit}
+        type="button"
+        onClick={() => handleSubmit()}
         disabled={loading || pin.length < 4}
         className="w-full rounded-xl bg-brand-500 py-4 text-lg font-semibold text-white transition-colors hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
       >

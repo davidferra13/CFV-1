@@ -55,7 +55,7 @@ export async function computeMenuEngineering(
   targetFoodCostPct: number = 30
 ): Promise<MenuEngineeringResult> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   // Get menu items with their recipes and cost data
   // TODO: menu_items table does not exist yet — using dishes as proxy

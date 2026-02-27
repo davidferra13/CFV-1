@@ -12,7 +12,7 @@ export async function upsertCapability(input: {
 }) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { error } = await supabase.from('chef_capability_inventory').upsert(
     {
@@ -44,7 +44,7 @@ export async function getCapabilityProfile(): Promise<
 > {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_capability_inventory')
@@ -72,7 +72,7 @@ export async function getCapabilityProfile(): Promise<
 export async function checkCapabilityForCuisine(cuisine: string): Promise<string | null> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data } = await supabase
     .from('chef_capability_inventory')

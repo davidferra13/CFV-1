@@ -72,7 +72,7 @@ function pct(numerator: number, denominator: number): number {
 
 export async function getClientRetentionStats(): Promise<ClientRetentionStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   // Count distinct clients with completed events
   const { data: events } = await supabase
@@ -135,7 +135,7 @@ export async function getClientRetentionStats(): Promise<ClientRetentionStats> {
 
 export async function getClientChurnStats(): Promise<ClientChurnStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const now = new Date()
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString()
@@ -180,7 +180,7 @@ export async function getClientChurnStats(): Promise<ClientChurnStats> {
 
 export async function getRevenueConcentration(): Promise<RevenueConcentrationStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   // Get total revenue per client from ledger
   const { data: ledger } = await supabase
@@ -253,7 +253,7 @@ export async function getClientAcquisitionStats(
   endDate: string
 ): Promise<ClientAcquisitionStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   // New clients in period = clients whose first_event_date falls in range
   const { count: newClients } = await supabase
@@ -294,7 +294,7 @@ export async function getClientAcquisitionStats(
 
 export async function getReferralConversionStats(): Promise<ReferralConversionStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: inquiries } = await supabase
     .from('inquiries')
@@ -333,7 +333,7 @@ export async function getReferralConversionStats(): Promise<ReferralConversionSt
 
 export async function getNpsStats(): Promise<NpsStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
   const db = supabase as any
 
   const { data: surveys } = await db

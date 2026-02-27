@@ -678,6 +678,27 @@ Private data categories that must stay local:
 - Business analytics, insights, lead scores, pricing history
 - Temperature logs, staff data, event operational details
 
+### Gemini/Ollama Boundary (Audited 2026-02-27)
+
+The boundary below is **final**. Do not move files back to Gemini or add new Gemini calls for private data.
+
+| File                                                        | AI Backend | Why                                                    |
+| ----------------------------------------------------------- | ---------- | ------------------------------------------------------ |
+| `lib/ai/gemini-service.ts`                                  | **Gemini** | Generic tasks, technique lists, kitchen specs — no PII |
+| `lib/ai/campaign-outreach.ts` (`draftCampaignConcept` only) | **Gemini** | Generic themes/occasions — no client data              |
+| `lib/ai/campaign-outreach.ts` (`draftPersonalizedOutreach`) | **Ollama** | Client names, dietary prefs, event history             |
+| `lib/ai/parse-recipe.ts`                                    | **Ollama** | Chef IP (recipe text)                                  |
+| `lib/ai/parse-brain-dump.ts`                                | **Ollama** | Client names, notes, recipes                           |
+| `lib/ai/aar-generator.ts`                                   | **Ollama** | Client names, financials, temp logs                    |
+| `lib/ai/contingency-ai.ts`                                  | **Ollama** | Location, dietary restrictions, allergies              |
+| `lib/ai/grocery-consolidation.ts`                           | **Ollama** | Dietary restrictions, allergies, guest count           |
+| `lib/ai/equipment-depreciation-explainer.ts`                | **Ollama** | Equipment prices, depreciation schedules               |
+| `lib/ai/chef-bio.ts`                                        | **Ollama** | Chef name, business name, event history                |
+| `lib/ai/contract-generator.ts`                              | **Ollama** | Client PII, event details, pricing                     |
+| `lib/ai/remy-actions.ts`                                    | **Ollama** | All client/chef conversational data                    |
+
+**Rule:** If a new AI file handles ANY private data category listed above, it MUST use `parseWithOllama`. No exceptions, no "just this once."
+
 ---
 
 ### General Architecture

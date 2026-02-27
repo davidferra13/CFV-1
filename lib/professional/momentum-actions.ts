@@ -6,7 +6,7 @@ import { requireChef } from '@/lib/auth/get-user'
 export async function computeAndStoreMomentum() {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -96,7 +96,7 @@ export async function getMomentumHistory(): Promise<
 > {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_momentum_snapshots')
@@ -120,7 +120,7 @@ export async function getCurrentMomentum(): Promise<{
 } | null> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data } = await supabase
     .from('chef_momentum_snapshots')

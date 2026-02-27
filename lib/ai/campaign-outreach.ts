@@ -118,7 +118,7 @@ export interface PersonalizedDraft {
  */
 export async function draftPersonalizedOutreach(recipientId: string): Promise<PersonalizedDraft> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   // 1. Load recipient → client → campaign
   const { data: recipient } = await supabase
@@ -242,7 +242,7 @@ export type GenerateAllResult = {
 
 export async function generateAllDrafts(campaignId: string): Promise<GenerateAllResult> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   // Fetch recipients that don't have a draft yet
   const { data: recipients } = await supabase

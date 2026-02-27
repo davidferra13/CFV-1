@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { getQrCodeUrl } from '@/lib/qr/qr-code'
+import { useState, useEffect, useRef } from 'react'
+import QRCode from 'qrcode'
 
 interface PairingDisplayProps {
   pairingCode: string
@@ -52,7 +52,20 @@ export function PairingDisplay({ pairingCode, expiresAt, onClose }: PairingDispl
   }
 
   const pairingUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/kiosk/pair?code=${pairingCode}`
-  const qrUrl = getQrCodeUrl(pairingUrl, 200)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  // Generate QR code on a canvas (self-hosted, no external API)
+  useEffect(() => {
+    if (canvasRef.current) {
+      QRCode.toCanvas(canvasRef.current, pairingUrl, {
+        width: 200,
+        margin: 2,
+        color: { dark: '#1c1917', light: '#ffffff' },
+      }).catch(() => {
+        // Silently fail — code is still visible as text
+      })
+    }
+  }, [pairingUrl])
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -117,17 +130,11 @@ export function PairingDisplay({ pairingCode, expiresAt, onClose }: PairingDispl
             </div>
           </div>
 
-          {/* QR code */}
+          {/* QR code — generated locally, no external API */}
           <div>
             <p className="mb-2 text-sm text-stone-400">Or scan this QR code</p>
             <div className="flex justify-center">
-              <img
-                src={qrUrl}
-                alt="Pairing QR code"
-                width={200}
-                height={200}
-                className="rounded-lg border border-stone-700 bg-white p-2"
-              />
+              <canvas ref={canvasRef} className="rounded-lg border border-stone-700 bg-white p-2" />
             </div>
           </div>
 

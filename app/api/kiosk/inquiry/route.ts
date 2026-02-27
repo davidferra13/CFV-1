@@ -12,15 +12,24 @@ const KioskInquirySchema = z.object({
   full_name: z.string().min(1, 'Name is required').max(200),
   email: z.string().email('Valid email required').optional().or(z.literal('')),
   phone: z.string().min(1, 'Phone or email is required').max(30).optional().or(z.literal('')),
-  event_date: z.string().min(1, 'Date is required'),
+  event_date: z
+    .string()
+    .min(1, 'Date is required')
+    .refine((d) => {
+      const date = new Date(d)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      return date >= today
+    }, 'Event date cannot be in the past'),
   party_size: z.number().int().positive().max(500),
   notes: z.string().max(2000).optional().or(z.literal('')),
   staff_member_id: z.string().uuid().optional(),
   session_id: z.string().uuid().optional(),
 })
 
-// Rate limiter: max 10 submissions per device per 5 minutes
-const submitCounts = new Map<string, { count: number; resetAt: number }>()
+const MAX_SUBMISSIONS = 10
+const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000 // 5 minutes
+const DEDUP_WINDOW_MS = 5 * 60 * 1000 // 5 minutes
 
 export async function POST(request: Request) {
   try {
@@ -34,18 +43,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid or inactive device' }, { status: 401 })
     }
 
-    // Rate limit check
-    const now = Date.now()
-    const bucket = submitCounts.get(device.deviceId) || { count: 0, resetAt: now + 300000 }
-    if (now > bucket.resetAt) {
-      bucket.count = 0
-      bucket.resetAt = now + 300000
-    }
-    if (bucket.count >= 10) {
+    const supabase = createAdminClient()
+    const tenantId = device.tenantId
+
+    // DB-based rate limit — count recent submissions for this device
+    const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString()
+    const { count: recentCount } = await supabase
+      .from('device_events')
+      .select('*', { count: 'exact', head: true })
+      .eq('device_id', device.deviceId)
+      .eq('type', 'submitted_inquiry')
+      .gte('created_at', windowStart)
+
+    if ((recentCount ?? 0) >= MAX_SUBMISSIONS) {
       return NextResponse.json({ error: 'Too many submissions. Please wait.' }, { status: 429 })
     }
-    bucket.count++
-    submitCounts.set(device.deviceId, bucket)
 
     const body = await request.json()
     const parsed = KioskInquirySchema.parse(body)
@@ -57,15 +69,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email or phone number is required' }, { status: 400 })
     }
 
-    const supabase = createAdminClient()
-    const tenantId = device.tenantId
+    // Duplicate inquiry detection — same name + date from same device within 5 min
+    const dedupStart = new Date(Date.now() - DEDUP_WINDOW_MS).toISOString()
+    const { count: dupeCount } = await supabase
+      .from('device_events')
+      .select('*', { count: 'exact', head: true })
+      .eq('device_id', device.deviceId)
+      .eq('type', 'submitted_inquiry')
+      .gte('created_at', dedupStart)
+      .contains('payload', { client_name: parsed.full_name.trim() })
 
-    // Get chef business name for context
-    const { data: chef } = await supabase
-      .from('chefs')
-      .select('business_name')
-      .eq('id', tenantId)
-      .single()
+    if ((dupeCount ?? 0) > 0) {
+      return NextResponse.json(
+        { error: 'This inquiry was already submitted. Please start a new one.' },
+        { status: 409 }
+      )
+    }
 
     // 1. Create or find client (use email if provided, otherwise phone as identifier)
     // For phone-only submissions, use a unique placeholder email to avoid collisions

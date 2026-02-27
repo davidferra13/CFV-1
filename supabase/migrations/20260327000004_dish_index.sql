@@ -240,8 +240,8 @@ SELECT
   di.season_affinity,
   di.archived,
   r.name AS recipe_name,
-  rcs.total_cost_cents AS recipe_cost_cents,
-  rcs.per_portion_cost_cents,
+  rcs.total_ingredient_cost_cents AS recipe_cost_cents,
+  rcs.cost_per_portion_cents AS per_portion_cost_cents,
   COALESCE(fb.avg_rating, 0) AS avg_rating,
   COALESCE(fb.feedback_count, 0) AS feedback_count
 FROM dish_index di

@@ -1,6 +1,9 @@
 -- New integrations: QuickBooks, DocuSign, Zapier, Yelp, iCal feed, Apple/Google Pay toggle
 -- Additive only — no drops, no deletes.
 
+-- pgcrypto needed for gen_random_bytes() in webhook secret generation
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
+
 -- ============================================================
 -- 1. Extend integration_provider enum with new providers
 -- ============================================================
@@ -47,7 +50,7 @@ CREATE TABLE IF NOT EXISTS zapier_webhook_subscriptions (
   tenant_id       UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   target_url      TEXT NOT NULL,
   event_types     TEXT[] NOT NULL DEFAULT '{}',
-  secret          TEXT NOT NULL DEFAULT encode(gen_random_bytes(32), 'hex'),
+  secret          TEXT NOT NULL DEFAULT encode(extensions.gen_random_bytes(32), 'hex'),
   is_active       BOOLEAN NOT NULL DEFAULT true,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -103,8 +106,14 @@ ALTER TABLE expenses
 -- ============================================================
 -- 6. DocuSign envelope tracking on contracts table
 -- ============================================================
-ALTER TABLE contracts
-  ADD COLUMN IF NOT EXISTS docusign_envelope_id TEXT,
-  ADD COLUMN IF NOT EXISTS docusign_status TEXT,
-  ADD COLUMN IF NOT EXISTS docusign_sent_at TIMESTAMPTZ,
-  ADD COLUMN IF NOT EXISTS docusign_signed_at TIMESTAMPTZ;
+-- contracts table may not exist yet — skip if absent
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'contracts') THEN
+    ALTER TABLE contracts
+      ADD COLUMN IF NOT EXISTS docusign_envelope_id TEXT,
+      ADD COLUMN IF NOT EXISTS docusign_status TEXT,
+      ADD COLUMN IF NOT EXISTS docusign_sent_at TIMESTAMPTZ,
+      ADD COLUMN IF NOT EXISTS docusign_signed_at TIMESTAMPTZ;
+  END IF;
+END $$;

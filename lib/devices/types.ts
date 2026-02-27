@@ -75,6 +75,7 @@ export interface KioskConfig {
   idle_timeout_seconds: number
   require_staff_pin: boolean
   status: DeviceStatus
+  success_display_seconds?: number
 }
 
 export interface StaffPinSession {
@@ -85,6 +86,11 @@ export interface StaffPinSession {
 
 export interface DeviceWithOnlineStatus extends Device {
   online_status: 'online' | 'stale' | 'offline'
+  active_staff_name?: string | null
+}
+
+export interface KioskConfigExtended extends KioskConfig {
+  success_display_seconds: number
 }
 
 /** Computed from last_seen_at */

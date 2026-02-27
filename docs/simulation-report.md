@@ -1,45 +1,73 @@
 # ChefFlow AI Simulation Report
 
-_Auto-generated — last run: 2026-02-27T17:28:33.728Z_
-_Run ID: 009766a4-2d7a-4eb3-a639-ed52d9759fcf_
+_Auto-generated — last run: 2026-02-27T19:04:52.183Z_
+_Run ID: 30e05b31-10ca-42d8-8a2d-afbe2c522e6b_
 
 ---
 
 ## Summary
 
-The system's pass rate remains low at 33%, with inquiry_parse, allergen_risk, correspondence, and quote_draft all failing. The improvements seen in prior runs have stalled. The failing modules show issues with hallucination, missing data detection, and prompt clarity.
+The system is still struggling with core parsing and validation tasks. Three modules remain completely failing: inquiry_parse, client_parse, and correspondence. The quote_draft module is also failing due to incorrect pricing logic. The allergen_risk and menu_suggestions modules are now stable and passing consistently.
 
 ## Failures & Root Causes
 
-**inquiry_parse**
-The module is hallucinating client names and guest counts when none are present. It's not properly handling cases where the input lacks required information, instead generating false data. This suggests the model is overconfident in generating content without sufficient input.
+### inquiry_parse
 
-**allergen_risk**
-The module fails to detect genuine allergen conflicts. It's not properly scanning menu items against guest restrictions, even when clear conflicts exist. The system lacks a robust cross-checking mechanism between guest restrictions and menu ingredients.
+The module fails to extract basic client information from inquiry notes. It's not reliably identifying client names or guest counts, even when these are clearly stated in the input. The module appears to be missing explicit instructions to prioritize structured data extraction over hallucination.
 
-**correspondence**
-The module produces generic or missing correspondence content. It's not requiring or properly extracting client-specific details from input. The prompt lacks clear instructions to ensure subject and body content are specific and complete.
+### client_parse
 
-**quote_draft**
-The module generates unrealistic pricing. It's not properly constraining price calculations or validating against known pricing ranges. The system lacks clear boundaries for expected pricing parameters.
+The parser is making incorrect assumptions about contact details and dietary information. It's incorrectly identifying phone numbers without explicit labeling and is adding empty allergies arrays when the original note only mentions dietary restrictions. The module lacks clear boundaries on what information it should extract versus what it should ignore.
+
+### correspondence
+
+The module fails to generate properly structured correspondence with required elements. It's not including subject lines or client-specific content in the body, suggesting it's not properly following the prompt's requirements for content structure and personalization.
+
+### quote_draft
+
+The pricing module produces unrealistic values that exceed expected ranges. It's not properly applying the pricing formula or respecting the maximum price thresholds defined in the system. The module lacks validation logic to ensure outputs fall within acceptable ranges.
 
 ## Prompt Fix Recommendations
 
-**inquiry_parse**
-Add explicit rules: "If no client name is mentioned, respond with 'undefined'. If no guest count is specified, respond with 'undefined'. Never hallucinate these values. Always return 'undefined' when input lacks explicit information."
+### inquiry_parse
 
-**allergen_risk**
-Add: "Cross-check every menu item against each guest's restrictions. If a menu item contains an allergen that a guest is restricted from, set riskLevel='contains'. If a menu item is completely safe, set riskLevel='safe'. If a menu item is partially safe but contains one restricted ingredient, set riskLevel='contains'. Always verify ingredients against restrictions."
+Add explicit extraction rules:
 
-**correspondence**
-Add: "The subject line must contain the client's name. The body must include specific details about the client's occasion, guest count, and any special requests. If any required information is missing from input, return an error message indicating which fields are missing."
+- "Extract client name only if clearly stated as a person's name (e.g., 'Sarah Johnson')"
+- "Extract guest count only if explicitly mentioned as a number of people"
+- "If client name or guest count cannot be clearly identified, return undefined for that field"
+- "Do not infer or hallucinate missing information"
 
-**quote_draft**
-Add: "Calculate total price using the formula: (per_person_rate \* guest_count) + grocery_cost + travel_cost. The per_person_rate must be between $85-$175. The total price must be within $0-$10,000. If the calculated price exceeds these bounds, return an error message with the specific constraint violation."
+### client_parse
+
+Add explicit exclusion rules:
+
+- "Only extract phone numbers if explicitly labeled as such in the original note"
+- "Do not add allergies unless explicitly mentioned as allergies in the original note"
+- "If dietary restrictions are mentioned but not specific allergies, return allergies: []"
+- "Do not assume contact details are phone numbers unless explicitly labeled"
+
+### correspondence
+
+Add explicit structure requirements:
+
+- "Generate subject line with client name and occasion"
+- "Include client name in body text"
+- "Include specific details about the event or request"
+- "Do not use generic or empty body content"
+
+### quote_draft
+
+Add explicit pricing validation:
+
+- "Apply the formula: $85/$125/$175 per person based on party size"
+- "Calculate total price with 30% grocery cost, $150 travel, 50% deposit"
+- "Ensure per-person rate does not exceed $500"
+- "Ensure total price does not exceed $10,000"
 
 ## What's Working Well
 
-client_parse and menu_suggestions are consistently passing. These modules show recent improvement over previous runs, maintaining their performance. The system's ability to parse client information and generate menu suggestions remains solid.
+The allergen_risk and menu_suggestions modules are consistently passing. These modules have stabilized after previous fixes and are reliably processing their respective inputs. The system's ability to handle complex dietary and menu logic has improved significantly since the initial run.
 
 ---
 

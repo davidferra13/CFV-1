@@ -7,7 +7,7 @@ import { revalidatePath } from 'next/cache'
 export async function recordLostReason(quoteId: string, reason: string, notes?: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { error } = await supabase
     .from('quotes')
@@ -26,7 +26,7 @@ export async function recordLostReason(quoteId: string, reason: string, notes?: 
 export async function getLossAnalysis(): Promise<Array<{ reason: string; count: number }>> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const since = new Date()
   since.setFullYear(since.getFullYear() - 1)

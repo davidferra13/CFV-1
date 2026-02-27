@@ -54,7 +54,7 @@ function pct(n: number, d: number) {
 
 export async function getRecipeUsageStats(): Promise<RecipeUsageStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: recipes } = await supabase
     .from('recipes')
@@ -96,7 +96,7 @@ export async function getRecipeUsageStats(): Promise<RecipeUsageStats> {
 
 export async function getDishPerformanceStats(): Promise<DishPerformanceStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
@@ -160,7 +160,7 @@ export async function getDishPerformanceStats(): Promise<DishPerformanceStats> {
 
 export async function getIngredientCostStats(): Promise<IngredientCostStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: ingredients } = await supabase
     .from('ingredients')
@@ -199,7 +199,7 @@ export async function getIngredientCostStats(): Promise<IngredientCostStats> {
 
 export async function getMenuApprovalStats(): Promise<MenuApprovalStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data } = await supabase
     .from('menu_approval_requests')
@@ -241,7 +241,7 @@ export async function getMostCommonDietaryRestrictions(): Promise<
   Array<{ restriction: string; count: number; percent: number }>
 > {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: events } = await supabase
     .from('events')

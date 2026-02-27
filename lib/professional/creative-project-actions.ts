@@ -12,7 +12,7 @@ export async function createCreativeProject(input: {
 }) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { error } = await supabase.from('chef_creative_projects').insert({
     tenant_id: tenantId,
@@ -33,7 +33,7 @@ export async function updateCreativeProject(
 ) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { error } = await supabase
     .from('chef_creative_projects')
@@ -48,7 +48,7 @@ export async function updateCreativeProject(
 export async function deleteCreativeProject(id: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { error } = await supabase
     .from('chef_creative_projects')
@@ -74,7 +74,7 @@ export async function listCreativeProjects(filters?: { status?: string }): Promi
 > {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   let query = supabase
     .from('chef_creative_projects')

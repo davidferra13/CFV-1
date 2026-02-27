@@ -43,6 +43,15 @@ export function IdleResetProvider({
       document.addEventListener(event, resetTimer, { passive: true })
     })
 
+    // Treat tab becoming hidden as immediate idle on a kiosk (shouldn't switch apps)
+    function handleVisibilityChange() {
+      if (document.hidden) {
+        // Tab hidden — trigger idle reset immediately
+        onReset()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
     // Start the initial timer
     resetTimer()
 
@@ -50,11 +59,12 @@ export function IdleResetProvider({
       events.forEach((event) => {
         document.removeEventListener(event, resetTimer)
       })
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
       if (timerRef.current) {
         clearTimeout(timerRef.current)
       }
     }
-  }, [resetTimer, active])
+  }, [resetTimer, active, onReset])
 
   return <>{children}</>
 }
