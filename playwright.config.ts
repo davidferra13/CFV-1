@@ -58,6 +58,10 @@ export default defineConfig({
         storageState: '.auth/client.json',
       },
     },
+    {
+      name: 'cross-portal',
+      testMatch: ['**/e2e/chef_client_golden_path.spec.ts', '**/e2e/client_rls_negative.spec.ts'],
+    },
     // Public pages — no auth
     {
       name: 'public',

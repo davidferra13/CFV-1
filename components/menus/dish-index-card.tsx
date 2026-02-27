@@ -24,7 +24,12 @@ interface DishIndexCardProps {
     rotation_status: string
     linked_recipe_id?: string | null
     prep_complexity?: string | null
-    recipes?: { id: string; name: string; category: string } | null
+    recipes?: {
+      id: string
+      name: string
+      category: string
+      calories_per_serving?: number | null
+    } | null
   }
 }
 
@@ -66,6 +71,11 @@ export function DishIndexCard({ dish }: DishIndexCardProps) {
               {dish.linked_recipe_id && (
                 <span className="text-[10px] bg-blue-900/40 text-blue-400 px-2 py-0.5 rounded-full">
                   Recipe linked
+                </span>
+              )}
+              {dish.recipes?.calories_per_serving != null && (
+                <span className="text-[10px] bg-stone-800 text-stone-300 px-2 py-0.5 rounded-full">
+                  {dish.recipes.calories_per_serving} kcal/serv
                 </span>
               )}
             </div>

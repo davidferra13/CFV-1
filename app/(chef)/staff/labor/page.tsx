@@ -1,65 +1,31 @@
-// Labor Dashboard Page
-// Monthly labor cost analytics with chart, ratio targets, and event-level breakdown.
-
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { getLaborByMonth } from '@/lib/staff/labor-dashboard-actions'
-import { LaborDashboard } from '@/components/staff/labor-dashboard'
+import { PayrollReport } from '@/components/staffing/PayrollReport'
+import { getPayrollReportForPeriod } from '@/lib/staffing/actions'
 
 export const metadata: Metadata = { title: 'Labor Dashboard - ChefFlow' }
+
+function getCurrentMonthWindow() {
+  const now = new Date()
+  const start = new Date(now.getFullYear(), now.getMonth(), 1)
+  return {
+    startDate: start.toISOString().split('T')[0],
+    endDate: now.toISOString().split('T')[0],
+  }
+}
 
 export default async function StaffLaborPage() {
   await requireChef()
 
-  const now = new Date()
-  const currentYear = now.getFullYear()
-  const currentMonth = now.getMonth() + 1
-
-  // Fetch labor data for each month of the current year plus current month detail
-  const monthPromises = Array.from({ length: currentMonth }, (_, i) => {
-    const month = i + 1
-    return getLaborByMonth(currentYear, month).catch(() => ({
-      year: currentYear,
-      month,
-      events: [],
-      totalLaborCents: 0,
-      totalRevenueCents: 0,
-      laborRevenueRatio: 0,
-    }))
-  })
-
-  const monthResults = await Promise.all(monthPromises)
-
-  // Build the labor-by-month series for the chart
-  const MONTH_NAMES = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ]
-  const laborByMonth = monthResults.map((r: any) => ({
-    month: MONTH_NAMES[r.month - 1],
-    laborCents: r.totalLaborCents ?? 0,
-    revenueCents: r.totalRevenueCents ?? 0,
-    ratio: r.laborRevenueRatio ?? 0,
-  }))
-
-  // Current month event-level detail
-  const currentMonthData = monthResults[monthResults.length - 1] as any
-  const currentMonthDetail = ((currentMonthData?.events ?? []) as any[]).map((e: any) => ({
-    eventName: e.eventName || e.title || 'Event',
-    laborCents: e.laborCents ?? e.totalPayCents ?? 0,
-    revenueCents: e.revenueCents ?? 0,
-    staffCount: e.staffCount ?? e.entries?.length ?? 0,
+  const period = getCurrentMonthWindow()
+  const report = await getPayrollReportForPeriod(period.startDate, period.endDate).catch(() => ({
+    startDate: period.startDate,
+    endDate: period.endDate,
+    rows: [],
+    totalHours: 0,
+    totalMinutes: 0,
+    totalLaborCostCents: 0,
   }))
 
   return (
@@ -70,11 +36,11 @@ export default async function StaffLaborPage() {
         </Link>
         <h1 className="text-3xl font-bold text-stone-100 mt-1">Labor Dashboard</h1>
         <p className="text-stone-500 mt-1">
-          Track labor costs against revenue. Target 20-30% labor ratio for healthy margins.
+          Payroll-period labor totals from clocked entries and staff hourly rates.
         </p>
       </div>
 
-      <LaborDashboard laborByMonth={laborByMonth} currentMonthDetail={currentMonthDetail} />
+      <PayrollReport initialData={report} />
     </div>
   )
 }

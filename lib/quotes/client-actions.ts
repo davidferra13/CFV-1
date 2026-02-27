@@ -5,6 +5,7 @@
 
 import { requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import type { Database, Json } from '@/types/database'
 
@@ -106,25 +107,52 @@ export async function acceptQuote(quoteId: string) {
     frozen_at: new Date().toISOString(),
   }
 
-  // Update quote to accepted
-  const { error: updateError } = await supabase
+  // Update quote to accepted. Prefer client-scoped update (RLS-enforced).
+  const updatePayload = {
+    status: 'accepted',
+    accepted_at: new Date().toISOString(),
+    snapshot_frozen: true,
+    pricing_snapshot: pricingSnapshot as unknown as Json,
+  }
+
+  const { data: updatedByClient, error: updateError } = await supabase
     .from('quotes')
-    .update({
-      status: 'accepted',
-      accepted_at: new Date().toISOString(),
-      snapshot_frozen: true,
-      pricing_snapshot: pricingSnapshot as unknown as Json,
-    })
+    .update(updatePayload)
     .eq('id', quoteId)
     .eq('client_id', user.entityId)
+    .eq('status', 'sent')
+    .select('id')
+    .maybeSingle()
 
   if (updateError) {
     console.error('[acceptQuote] Error:', updateError)
-    throw new Error('Failed to accept quote')
+    throw new Error(`Failed to accept quote: ${updateError.message}`)
   }
 
   // Downstream effects use admin client to bypass RLS
-  const adminSupabase = createServerClient({ admin: true })
+  const adminSupabase = createAdminClient()
+
+  // Backward compatibility: if UPDATE returned no row due missing client UPDATE policy,
+  // complete the transition via admin client after ownership was already verified above.
+  if (!updatedByClient) {
+    const { data: updatedByAdmin, error: adminUpdateError } = await adminSupabase
+      .from('quotes')
+      .update(updatePayload)
+      .eq('id', quoteId)
+      .eq('client_id', user.entityId)
+      .eq('status', 'sent')
+      .select('id')
+      .maybeSingle()
+
+    if (adminUpdateError || !updatedByAdmin) {
+      console.error('[acceptQuote] Admin fallback failed:', adminUpdateError)
+      throw new Error(
+        adminUpdateError
+          ? `Failed to accept quote: ${adminUpdateError.message}`
+          : 'Failed to accept quote: no rows updated'
+      )
+    }
+  }
 
   // If linked to inquiry at 'quoted' → transition to 'confirmed'
   if (quote.inquiry_id) {
@@ -192,19 +220,45 @@ export async function rejectQuote(quoteId: string, reason?: string) {
     throw new Error('Quote is not pending review')
   }
 
-  const { error: updateError } = await supabase
+  const updatePayload = {
+    status: 'rejected',
+    rejected_at: new Date().toISOString(),
+    rejected_reason: reason || null,
+  }
+
+  const { data: updatedByClient, error: updateError } = await supabase
     .from('quotes')
-    .update({
-      status: 'rejected',
-      rejected_at: new Date().toISOString(),
-      rejected_reason: reason || null,
-    })
+    .update(updatePayload)
     .eq('id', quoteId)
     .eq('client_id', user.entityId)
+    .eq('status', 'sent')
+    .select('id')
+    .maybeSingle()
 
   if (updateError) {
     console.error('[rejectQuote] Error:', updateError)
-    throw new Error('Failed to reject quote')
+    throw new Error(`Failed to reject quote: ${updateError.message}`)
+  }
+
+  if (!updatedByClient) {
+    const adminSupabase = createAdminClient()
+    const { data: updatedByAdmin, error: adminUpdateError } = await adminSupabase
+      .from('quotes')
+      .update(updatePayload)
+      .eq('id', quoteId)
+      .eq('client_id', user.entityId)
+      .eq('status', 'sent')
+      .select('id')
+      .maybeSingle()
+
+    if (adminUpdateError || !updatedByAdmin) {
+      console.error('[rejectQuote] Admin fallback failed:', adminUpdateError)
+      throw new Error(
+        adminUpdateError
+          ? `Failed to reject quote: ${adminUpdateError.message}`
+          : 'Failed to reject quote: no rows updated'
+      )
+    }
   }
 
   revalidatePath('/my-quotes')
@@ -250,8 +304,7 @@ async function notifyChefOfQuoteAccepted(
   if (!chefUserId) return
 
   // Load client name
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase = createServerClient({ admin: true })
+  const supabase = createAdminClient()
   const { data: client } = await supabase
     .from('clients')
     .select('full_name')
@@ -316,8 +369,7 @@ async function notifyChefOfQuoteRejected(
   if (!chefUserId) return
 
   // Load client name
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase = createServerClient({ admin: true })
+  const supabase = createAdminClient()
   const { data: client } = await supabase
     .from('clients')
     .select('full_name')

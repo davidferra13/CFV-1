@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -38,6 +38,10 @@ type RecipeInfo = {
   id: string
   name: string
   category: string
+  calories_per_serving?: number | null
+  protein_per_serving_g?: number | null
+  fat_per_serving_g?: number | null
+  carbs_per_serving_g?: number | null
 }
 
 type Component = {
@@ -133,6 +137,37 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
   // Edit form state
   const [name, setName] = useState(menu.name)
   const [description, setDescription] = useState(menu.description || '')
+
+  const nutritionSummary = useMemo(() => {
+    let componentCountWithNutrition = 0
+    let calories = 0
+    let protein = 0
+    let fat = 0
+    let carbs = 0
+
+    for (const dish of menu.dishes) {
+      for (const component of dish.components) {
+        if (!component.recipe_id) continue
+        const linkedRecipe = recipeMap[component.recipe_id]
+        if (!linkedRecipe) continue
+        if (linkedRecipe.calories_per_serving == null) continue
+
+        componentCountWithNutrition += 1
+        calories += linkedRecipe.calories_per_serving ?? 0
+        protein += linkedRecipe.protein_per_serving_g ?? 0
+        fat += linkedRecipe.fat_per_serving_g ?? 0
+        carbs += linkedRecipe.carbs_per_serving_g ?? 0
+      }
+    }
+
+    return {
+      componentCountWithNutrition,
+      calories: Math.round(calories),
+      protein: Math.round(protein * 10) / 10,
+      fat: Math.round(fat * 10) / 10,
+      carbs: Math.round(carbs * 10) / 10,
+    }
+  }, [menu.dishes, recipeMap])
 
   const handleEdit = () => {
     setIsEditing(true)
@@ -456,6 +491,21 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
             </p>
           </CardContent>
         </Card>
+        <Card>
+          <CardContent className="py-4">
+            <p className="text-xs uppercase tracking-wider text-stone-500">Nutrition Snapshot</p>
+            <p className="mt-1 text-2xl font-semibold text-stone-100">
+              {nutritionSummary.componentCountWithNutrition > 0
+                ? `${nutritionSummary.calories} kcal`
+                : 'Pending'}
+            </p>
+            <p className="text-xs text-stone-500 mt-1">
+              {nutritionSummary.componentCountWithNutrition > 0
+                ? `${nutritionSummary.protein}g P • ${nutritionSummary.fat}g F • ${nutritionSummary.carbs}g C`
+                : 'Link recipes and calculate nutrition'}
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {error && <Alert variant="error">{error}</Alert>}
@@ -651,6 +701,11 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
                                     </Link>
                                   ) : (
                                     <span className="text-xs text-stone-400">No recipe</span>
+                                  )}
+                                  {linkedRecipe?.calories_per_serving != null && (
+                                    <span className="text-xs text-stone-500">
+                                      {linkedRecipe.calories_per_serving} kcal/serv
+                                    </span>
                                   )}
                                 </div>
                                 <div className="flex gap-1">

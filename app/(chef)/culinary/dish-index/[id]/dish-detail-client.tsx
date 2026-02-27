@@ -306,16 +306,41 @@ export function DishDetailClient({
       <Card className="p-4">
         <h3 className="text-sm font-semibold text-stone-300 mb-3">Linked Recipe</h3>
         {dish.linked_recipe_id ? (
-          <div className="flex items-center justify-between">
-            <Link
-              href={`/culinary/recipes/${(dish.recipes as { id: string })?.id || dish.linked_recipe_id}`}
-              className="text-brand-400 hover:underline text-sm"
-            >
-              {(dish.recipes as { name: string })?.name || 'View Recipe'}
-            </Link>
-            <Button size="sm" variant="secondary" onClick={handleUnlinkRecipe}>
-              Unlink
-            </Button>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Link
+                href={`/culinary/recipes/${(dish.recipes as { id: string })?.id || dish.linked_recipe_id}`}
+                className="text-brand-400 hover:underline text-sm"
+              >
+                {(dish.recipes as { name: string })?.name || 'View Recipe'}
+              </Link>
+              <Button size="sm" variant="secondary" onClick={handleUnlinkRecipe}>
+                Unlink
+              </Button>
+            </div>
+            {(dish.recipes as { calories_per_serving?: number | null } | null)
+              ?.calories_per_serving != null && (
+              <div className="flex flex-wrap gap-2">
+                <span className="text-xs rounded bg-stone-800 px-2 py-1 text-stone-300">
+                  {(dish.recipes as any).calories_per_serving} kcal/serving
+                </span>
+                {(dish.recipes as any).protein_per_serving_g != null && (
+                  <span className="text-xs rounded bg-stone-800 px-2 py-1 text-stone-300">
+                    {(dish.recipes as any).protein_per_serving_g}g protein
+                  </span>
+                )}
+                {(dish.recipes as any).fat_per_serving_g != null && (
+                  <span className="text-xs rounded bg-stone-800 px-2 py-1 text-stone-300">
+                    {(dish.recipes as any).fat_per_serving_g}g fat
+                  </span>
+                )}
+                {(dish.recipes as any).carbs_per_serving_g != null && (
+                  <span className="text-xs rounded bg-stone-800 px-2 py-1 text-stone-300">
+                    {(dish.recipes as any).carbs_per_serving_g}g carbs
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           <div>

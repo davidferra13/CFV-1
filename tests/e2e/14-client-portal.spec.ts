@@ -22,29 +22,34 @@ test.describe('Client Portal', () => {
     await expect(page).not.toHaveURL(/^\/events$/)
   })
 
-  test('confirmed event appears in client event list', async ({ page }) => {
+  test('completed owned event appears in client event list', async ({ page }) => {
     await page.goto(ROUTES.clientEvents)
     await page.waitForLoadState('networkidle')
-    await expect(page.getByText('TEST Confirmed Wedding Dinner')).toBeVisible({ timeout: 10_000 })
+    await expect(
+      page.getByRole('link', { name: /view receipt/i }).first(),
+      'Expected at least one completed event action for the seeded client'
+    ).toBeVisible({ timeout: 10_000 })
   })
 
-  test('completed event appears in client event list', async ({ page }) => {
+  test('draft event is hidden from client event list', async ({ page, seedIds }) => {
     await page.goto(ROUTES.clientEvents)
     await page.waitForLoadState('networkidle')
-    await expect(page.getByText('TEST Completed New Years Dinner')).toBeVisible({ timeout: 10_000 })
+    await expect(page.locator(`a[href="/my-events/${seedIds.eventIds.draft}"]`)).toHaveCount(0)
   })
 
-  test('clicking event navigates to client event detail', async ({ page, seedIds }) => {
+  test('clicking completed event navigates to client event detail', async ({ page, seedIds }) => {
     await page.goto(ROUTES.clientEvents)
-    const link = page.getByRole('link').filter({ hasText: 'TEST Confirmed Wedding Dinner' }).first()
+    const link = page.locator(`a[href="/my-events/${seedIds.eventIds.completed}"]`).first()
     await link.click()
-    await expect(page).toHaveURL(new RegExp(`/my-events/${seedIds.eventIds.confirmed}`))
+    await expect(page).toHaveURL(new RegExp(`/my-events/${seedIds.eventIds.completed}`))
   })
 
-  test('client event detail shows occasion', async ({ page, seedIds }) => {
-    await page.goto(`/my-events/${seedIds.eventIds.confirmed}`)
+  test('client event detail shows owned event content', async ({ page, seedIds }) => {
+    await page.goto(`/my-events/${seedIds.eventIds.completed}`)
     await expect(page).not.toHaveURL(/auth\/signin/)
-    await expect(page.getByText('TEST Confirmed Wedding Dinner')).toBeVisible({ timeout: 10_000 })
+    await expect(
+      page.getByRole('heading', { name: /TEST Completed New Years Dinner/i })
+    ).toBeVisible({ timeout: 10_000 })
   })
 
   test('/my-quotes loads for client', async ({ page }) => {
@@ -56,13 +61,17 @@ test.describe('Client Portal', () => {
   test('/my-profile renders for client', async ({ page }) => {
     await page.goto(ROUTES.myProfile)
     await expect(page).not.toHaveURL(/auth\/signin/)
-    await expect(page.getByText(/profile|name|contact/i)).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByRole('heading', { name: /my profile/i })).toBeVisible({
+      timeout: 10_000,
+    })
   })
 
   test('/my-rewards renders for client', async ({ page }) => {
     await page.goto(ROUTES.myRewards)
     await expect(page).not.toHaveURL(/auth\/signin/)
-    await expect(page.getByText(/reward|loyalty|points/i)).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByRole('heading', { name: /^rewards$/i })).toBeVisible({
+      timeout: 10_000,
+    })
   })
 
   test('/my-inquiries renders for client', async ({ page }) => {

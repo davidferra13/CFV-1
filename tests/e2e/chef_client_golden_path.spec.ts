@@ -1,0 +1,272 @@
+import { test, expect } from '../helpers/fixtures'
+import { createClient } from '@supabase/supabase-js'
+
+const BASE_URL = 'http://localhost:3100'
+const TRANSIENT_500_TEXT = /internal server error/i
+
+function requireEnv(name: string): string {
+  const value = process.env[name]
+  if (!value) throw new Error(`[golden-path] Missing required env var: ${name}`)
+  return value
+}
+
+function getAdminSupabase() {
+  const url = requireEnv('NEXT_PUBLIC_SUPABASE_URL')
+  const serviceKey = requireEnv('SUPABASE_SERVICE_ROLE_KEY')
+  return createClient(url, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+}
+
+function daysFromNow(days: number): string {
+  const d = new Date()
+  d.setDate(d.getDate() + days)
+  return d.toISOString().slice(0, 10)
+}
+
+async function gotoWithRetryOn500(page: any, url: string, attempts = 3) {
+  for (let i = 0; i < attempts; i++) {
+    await page.goto(url)
+    const has500 = await page
+      .getByText(TRANSIENT_500_TEXT)
+      .first()
+      .isVisible()
+      .catch(() => false)
+    if (!has500) return
+    if (i < attempts - 1) {
+      await page.waitForTimeout(1000 * (i + 1))
+      await page.reload()
+    }
+  }
+  await expect(page.getByText(TRANSIENT_500_TEXT)).toHaveCount(0)
+}
+
+test.describe('Chef <-> Client Golden Contract Flow', () => {
+  test.setTimeout(120_000)
+
+  test('chef sends quote, client accepts, chef sees reflected state, client sees FOH output', async ({
+    browser,
+    seedIds,
+  }) => {
+    const admin = getAdminSupabase()
+    const suffix = Date.now().toString()
+
+    const goldenQuoteName = `TEST Golden Quote ${suffix}`
+    const hiddenDraftQuoteName = `TEST Hidden Draft ${suffix}`
+    const fohOccasion = `TEST Golden FOH Event ${suffix}`
+
+    const { data: fohEvent, error: fohEventError } = await admin
+      .from('events')
+      .insert({
+        tenant_id: seedIds.chefId,
+        client_id: seedIds.clientId,
+        event_date: daysFromNow(10),
+        serve_time: '18:00:00',
+        guest_count: 6,
+        occasion: fohOccasion,
+        location_address: '100 Golden Contract Way',
+        location_city: 'Boston',
+        location_state: 'MA',
+        location_zip: '02101',
+        status: 'confirmed',
+        service_style: 'plated',
+        pricing_model: 'flat_rate',
+        quoted_price_cents: 125000,
+        deposit_amount_cents: 31250,
+      })
+      .select('id')
+      .single()
+    if (fohEventError || !fohEvent) throw new Error(`[golden-path] Failed to create FOH event`)
+
+    const { data: fohMenu, error: fohMenuError } = await admin
+      .from('menus')
+      .insert({
+        tenant_id: seedIds.chefId,
+        event_id: fohEvent.id,
+        name: `TEST Golden FOH Menu ${suffix}`,
+        description: 'Golden path menu for FOH document assertions',
+        status: 'draft',
+        is_template: false,
+      })
+      .select('id')
+      .single()
+    if (fohMenuError || !fohMenu) throw new Error(`[golden-path] Failed to create FOH menu`)
+
+    const { error: dishError } = await admin.from('dishes').insert({
+      tenant_id: seedIds.chefId,
+      menu_id: fohMenu.id,
+      course_number: 1,
+      course_name: 'TEST Golden First Course',
+      sort_order: 1,
+      dietary_tags: [],
+      allergen_flags: [],
+    })
+    if (dishError) throw new Error(`[golden-path] Failed to create FOH dish`)
+
+    const { data: seededDraftQuote, error: seededDraftQuoteError } = await admin
+      .from('quotes')
+      .select('id')
+      .eq('id', seedIds.quoteIds.draft)
+      .single()
+    if (seededDraftQuoteError || !seededDraftQuote) {
+      throw new Error('[golden-path] Seed draft quote not found')
+    }
+
+    const goldenQuote = { id: seededDraftQuote.id }
+
+    const { error: resetQuoteError } = await admin
+      .from('quotes')
+      .update({
+        tenant_id: seedIds.chefId,
+        client_id: seedIds.clientId,
+        inquiry_id: seedIds.inquiryIds.awaitingChef,
+        quote_name: goldenQuoteName,
+        pricing_model: 'flat_rate',
+        total_quoted_cents: 88000,
+        deposit_required: true,
+        deposit_amount_cents: 22000,
+        status: 'draft',
+        sent_at: null,
+        accepted_at: null,
+        rejected_at: null,
+        expired_at: null,
+        snapshot_frozen: false,
+      })
+      .eq('id', goldenQuote.id)
+    if (resetQuoteError) throw new Error('[golden-path] Failed to reset draft quote fixture')
+
+    const { error: hiddenDraftError } = await admin.from('quotes').insert({
+      tenant_id: seedIds.chefId,
+      client_id: seedIds.clientId,
+      inquiry_id: seedIds.inquiryIds.awaitingChef,
+      quote_name: hiddenDraftQuoteName,
+      pricing_model: 'flat_rate',
+      total_quoted_cents: 41000,
+      deposit_required: false,
+      status: 'draft',
+      valid_until: daysFromNow(14),
+    })
+    if (hiddenDraftError) throw new Error(`[golden-path] Failed to create hidden draft quote`)
+
+    const chefContext = await browser.newContext({
+      baseURL: BASE_URL,
+      storageState: '.auth/chef.json',
+    })
+    const clientContext = await browser.newContext({
+      baseURL: BASE_URL,
+      storageState: '.auth/client.json',
+    })
+    const chefPage = await chefContext.newPage()
+    const clientPage = await clientContext.newPage()
+
+    try {
+      await gotoWithRetryOn500(chefPage, `/quotes/${goldenQuote.id}`)
+      await expect(
+        chefPage.getByRole('heading', { name: new RegExp(goldenQuoteName) })
+      ).toBeVisible({
+        timeout: 15_000,
+      })
+      await chefPage.getByRole('button', { name: /send to client/i }).click()
+      await chefPage
+        .getByRole('button', { name: /send quote/i })
+        .last()
+        .click()
+
+      await expect
+        .poll(
+          async () => {
+            const { data } = await admin
+              .from('quotes')
+              .select('status')
+              .eq('id', goldenQuote.id)
+              .single()
+            return data?.status ?? 'missing'
+          },
+          { timeout: 60_000 }
+        )
+        .toBe('sent')
+
+      const { data: quoteAfterSend, error: quoteAfterSendError } = await admin
+        .from('quotes')
+        .select('status, sent_at')
+        .eq('id', goldenQuote.id)
+        .single()
+      if (quoteAfterSendError || !quoteAfterSend)
+        throw new Error('[golden-path] Could not read quote after chef send')
+      expect(quoteAfterSend.status).toBe('sent')
+      expect(quoteAfterSend.sent_at).toBeTruthy()
+
+      await clientPage.goto('/my-quotes')
+      await expect(clientPage.getByText(hiddenDraftQuoteName)).toHaveCount(0)
+      await expect(clientPage.getByText(goldenQuoteName)).toBeVisible()
+
+      await gotoWithRetryOn500(clientPage, `/my-quotes/${goldenQuote.id}`)
+      await expect(clientPage.getByRole('button', { name: /^Accept Quote$/ }).first()).toBeVisible({
+        timeout: 15_000,
+      })
+      for (let i = 0; i < 3; i++) {
+        await clientPage
+          .getByRole('button', { name: /^Accept Quote$/ })
+          .first()
+          .click()
+        const modalVisible = await clientPage
+          .getByText(/accept this quote\?/i)
+          .first()
+          .isVisible()
+          .catch(() => false)
+        if (modalVisible) break
+        await clientPage.waitForTimeout(250)
+      }
+      await expect(clientPage.getByText(/accept this quote\?/i)).toBeVisible()
+      await clientPage
+        .getByRole('button', { name: /^Accept Quote$/ })
+        .nth(1)
+        .click()
+      await clientPage.waitForURL(/\/my-quotes$/, { timeout: 15_000 })
+
+      await expect
+        .poll(
+          async () => {
+            const { data } = await admin
+              .from('quotes')
+              .select('status')
+              .eq('id', goldenQuote.id)
+              .single()
+            return data?.status ?? 'missing'
+          },
+          { timeout: 60_000 }
+        )
+        .toBe('accepted')
+
+      const { data: quoteAfterAccept, error: quoteAfterAcceptError } = await admin
+        .from('quotes')
+        .select('status, accepted_at, snapshot_frozen')
+        .eq('id', goldenQuote.id)
+        .single()
+      if (quoteAfterAcceptError || !quoteAfterAccept) {
+        throw new Error('[golden-path] Could not read quote after client acceptance')
+      }
+      expect(quoteAfterAccept.accepted_at).toBeTruthy()
+      expect(quoteAfterAccept.snapshot_frozen).toBe(true)
+
+      await gotoWithRetryOn500(clientPage, `/my-quotes/${goldenQuote.id}`)
+      await expect(clientPage.getByText(/you accepted this quote on/i)).toBeVisible()
+
+      await gotoWithRetryOn500(clientPage, `/my-events/${fohEvent.id}`)
+      await expect(clientPage.getByRole('heading', { name: fohOccasion })).toBeVisible()
+      const downloadLink = clientPage.getByRole('link', { name: /download menu pdf/i })
+      await expect(downloadLink).toBeVisible()
+      const href = await downloadLink.getAttribute('href')
+      expect(href).toBeTruthy()
+      const fohResp = await clientPage.request.get(href!)
+      expect(fohResp.status()).toBe(200)
+      expect((fohResp.headers()['content-type'] || '').toLowerCase()).toContain('pdf')
+
+      await gotoWithRetryOn500(chefPage, '/quotes/accepted')
+      await expect(chefPage.getByRole('link', { name: new RegExp(goldenQuoteName) })).toBeVisible()
+    } finally {
+      await chefContext.close()
+      await clientContext.close()
+    }
+  })
+})

@@ -15,6 +15,8 @@ import {
   updateRecipeIngredient,
 } from '@/lib/recipes/actions'
 import { ProductLookupPanel } from '@/components/recipes/product-lookup-panel'
+import { NutritionalCalculator } from '@/components/recipes/NutritionalCalculator'
+import { recalculateAndSaveRecipeNutrition } from '@/lib/recipes/nutritional-calculator-actions'
 
 const RECIPE_CATEGORIES = [
   'sauce',
@@ -226,6 +228,8 @@ export function EditRecipeClient({ recipe }: Props) {
           sort_order: startOrder + i,
         })
       }
+
+      await recalculateAndSaveRecipeNutrition(recipe.id).catch(() => null)
 
       router.push(`/recipes/${recipe.id}`)
       router.refresh()
@@ -579,6 +583,23 @@ export function EditRecipeClient({ recipe }: Props) {
           </div>
         </CardContent>
       </Card>
+
+      <NutritionalCalculator
+        ingredients={[
+          ...existingIngredients.map((ingredient) => ({
+            name: ingredient.ingredient.name,
+            quantity: Number(ingredient.quantity) || 0,
+            unit: ingredient.unit,
+          })),
+          ...newIngredients.map((ingredient) => ({
+            name: ingredient.name,
+            quantity: Number(ingredient.quantity) || 0,
+            unit: ingredient.unit,
+          })),
+        ]}
+        servings={parseInt(servings || '1', 10) || 1}
+        onApplyCalories={(calories) => setCaloriesPerServing(String(Math.max(0, calories)))}
+      />
 
       {/* Save/Cancel */}
       <div className="flex justify-end gap-3">

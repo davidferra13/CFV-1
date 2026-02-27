@@ -1,11 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 const DEVICE_TOKEN_KEY = 'chefflow_kiosk_token'
 
 export default function KioskPairPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center p-8" />}>
+      <KioskPairContent />
+    </Suspense>
+  )
+}
+
+function KioskPairContent() {
   const searchParams = useSearchParams()
   const [code, setCode] = useState('')
   const [error, setError] = useState('')

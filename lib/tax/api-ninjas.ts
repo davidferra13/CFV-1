@@ -69,11 +69,15 @@ export async function getSalesTaxRate(zipCode: string): Promise<SalesTaxResult |
   }
 
   try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 5_000)
+
     // Layer 3: Next.js fetch cache (7 days) + external API
     const res = await fetch(`${API_NINJAS_BASE}/salestax?zip_code=${zipCode}`, {
       headers: { 'X-Api-Key': getApiKey() },
       next: { revalidate: 86400 * 7 },
-    })
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timeout))
     if (!res.ok) return null
     const data = await res.json()
     const result = Array.isArray(data) ? data[0] : data

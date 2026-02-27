@@ -183,6 +183,12 @@ export function RecipeLibraryClient({ recipes }: Props) {
                         {recipe.ingredient_count !== 1 ? 's' : ''}
                       </span>
                     )}
+                    {recipe.calories_per_serving != null && (
+                      <span>
+                        {recipe.calories_per_serving} kcal
+                        {recipe.servings ? ` / ${recipe.servings} servings` : '/ serving'}
+                      </span>
+                    )}
                     {recipe.times_cooked > 0 && <span>Used {recipe.times_cooked}x</span>}
                     {recipe.total_cost_cents != null && recipe.has_all_prices && (
                       <span>${(recipe.total_cost_cents / 100).toFixed(2)}</span>

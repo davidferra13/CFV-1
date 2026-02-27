@@ -1,6 +1,6 @@
 // Client Quote Detail — View and respond to a single quote
 
-import { notFound } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { requireClient } from '@/lib/auth/get-user'
 import { getClientQuoteById } from '@/lib/quotes/client-actions'
@@ -20,7 +20,7 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
   const quote = await getClientQuoteById(params.id)
 
   if (!quote) {
-    notFound()
+    redirect('/my-quotes')
   }
 
   const isPending = quote.status === 'sent'

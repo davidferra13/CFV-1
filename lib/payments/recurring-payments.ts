@@ -1,0 +1,171 @@
+import { requireChef } from '@/lib/auth/get-user'
+import { createServerClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
+
+const RecurringPaymentSchema = z.object({
+  client_id: z.string().uuid(),
+  amount_cents: z.number().int().positive(),
+  description: z.string().max(500).optional(),
+  frequency: z.enum(['weekly', 'biweekly', 'monthly']).default('monthly'),
+  next_send_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  late_fee_cents: z.number().int().min(0).default(0),
+  late_fee_days: z.number().int().min(0).default(0),
+})
+
+export type RecurringPaymentPlan = {
+  id: string
+  chef_id: string
+  client_id: string
+  amount_cents: number
+  description: string | null
+  frequency: string
+  is_active: boolean
+  next_send_date: string | null
+  last_sent_at: string | null
+}
+
+function addFrequencyDays(date: string, frequency: string): string {
+  const value = new Date(`${date}T00:00:00`)
+  if (frequency === 'weekly') {
+    value.setDate(value.getDate() + 7)
+  } else if (frequency === 'biweekly') {
+    value.setDate(value.getDate() + 14)
+  } else {
+    value.setMonth(value.getMonth() + 1)
+  }
+  return value.toISOString().slice(0, 10)
+}
+
+export async function listRecurringPaymentPlans(): Promise<RecurringPaymentPlan[]> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data, error } = await supabase
+    .from('recurring_invoices')
+    .select(
+      'id, chef_id, client_id, amount_cents, description, frequency, is_active, next_send_date, last_sent_at'
+    )
+    .eq('chef_id', user.tenantId!)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    throw new Error(`Failed to load recurring payment plans: ${error.message}`)
+  }
+
+  return (data || []) as RecurringPaymentPlan[]
+}
+
+export async function createRecurringPaymentPlan(input: z.infer<typeof RecurringPaymentSchema>) {
+  const user = await requireChef()
+  const validated = RecurringPaymentSchema.parse(input)
+  const supabase: any = createServerClient()
+
+  const { data, error } = await supabase
+    .from('recurring_invoices')
+    .insert({
+      chef_id: user.tenantId!,
+      client_id: validated.client_id,
+      amount_cents: validated.amount_cents,
+      description: validated.description || null,
+      frequency: validated.frequency,
+      next_send_date: validated.next_send_date,
+      late_fee_cents: validated.late_fee_cents,
+      late_fee_days: validated.late_fee_days,
+      is_active: true,
+    })
+    .select(
+      'id, chef_id, client_id, amount_cents, description, frequency, is_active, next_send_date, last_sent_at'
+    )
+    .single()
+
+  if (error || !data) {
+    throw new Error(`Failed to create recurring payment plan: ${error?.message || 'Unknown error'}`)
+  }
+
+  revalidatePath('/finance/recurring')
+  return data as RecurringPaymentPlan
+}
+
+export async function setRecurringPaymentPlanActive(planId: string, active: boolean) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { error } = await supabase
+    .from('recurring_invoices')
+    .update({
+      is_active: active,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', planId)
+    .eq('chef_id', user.tenantId!)
+
+  if (error) {
+    throw new Error(`Failed to update recurring payment plan state: ${error.message}`)
+  }
+
+  revalidatePath('/finance/recurring')
+  return { success: true }
+}
+
+export async function listDueRecurringPayments(daysAhead = 7) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+  const today = new Date()
+  const fromDate = today.toISOString().slice(0, 10)
+  const toDateValue = new Date(today)
+  toDateValue.setDate(toDateValue.getDate() + Math.max(daysAhead, 0))
+  const toDate = toDateValue.toISOString().slice(0, 10)
+
+  const { data, error } = await supabase
+    .from('recurring_invoices')
+    .select(
+      'id, chef_id, client_id, amount_cents, description, frequency, next_send_date, is_active, clients(full_name, email)'
+    )
+    .eq('chef_id', user.tenantId!)
+    .eq('is_active', true)
+    .gte('next_send_date', fromDate)
+    .lte('next_send_date', toDate)
+    .order('next_send_date', { ascending: true })
+
+  if (error) {
+    throw new Error(`Failed to load due recurring payments: ${error.message}`)
+  }
+
+  return (data || []) as Array<any>
+}
+
+export async function markRecurringPaymentSent(planId: string, sentDate: string) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data: plan, error: fetchError } = await supabase
+    .from('recurring_invoices')
+    .select('id, frequency, next_send_date')
+    .eq('id', planId)
+    .eq('chef_id', user.tenantId!)
+    .single()
+
+  if (fetchError || !plan) {
+    throw new Error('Recurring payment plan not found')
+  }
+
+  const nextDate = addFrequencyDays(plan.next_send_date || sentDate, plan.frequency)
+
+  const { error } = await supabase
+    .from('recurring_invoices')
+    .update({
+      last_sent_at: `${sentDate}T00:00:00`,
+      next_send_date: nextDate,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', planId)
+    .eq('chef_id', user.tenantId!)
+
+  if (error) {
+    throw new Error(`Failed to mark recurring payment as sent: ${error.message}`)
+  }
+
+  revalidatePath('/finance/recurring')
+  return { success: true, nextDate }
+}

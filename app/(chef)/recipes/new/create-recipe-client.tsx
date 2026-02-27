@@ -12,6 +12,8 @@ import { Alert } from '@/components/ui/alert'
 import { createRecipe, addIngredientToRecipe, linkRecipeToComponent } from '@/lib/recipes/actions'
 import { parseRecipeFromText } from '@/lib/ai/parse-recipe'
 import type { ParsedRecipe, ParsedIngredient } from '@/lib/ai/parse-recipe'
+import { NutritionalCalculator } from '@/components/recipes/NutritionalCalculator'
+import { recalculateAndSaveRecipeNutrition } from '@/lib/recipes/nutritional-calculator-actions'
 
 const RECIPE_CATEGORIES = [
   'sauce',
@@ -237,6 +239,9 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
       if (prefillComponent?.componentId) {
         await linkRecipeToComponent(recipeId, prefillComponent.componentId)
       }
+
+      // Nutrition enrichment is non-blocking for the primary save path.
+      await recalculateAndSaveRecipeNutrition(recipeId).catch(() => null)
 
       router.push(`/recipes/${recipeId}`)
     } catch (err: any) {
@@ -663,6 +668,16 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
               </div>
             </CardContent>
           </Card>
+
+          <NutritionalCalculator
+            ingredients={ingredients.map((ingredient) => ({
+              name: ingredient.name,
+              quantity: Number(ingredient.quantity) || 0,
+              unit: ingredient.unit,
+            }))}
+            servings={parseInt(servings || '1', 10) || 1}
+            onApplyCalories={(calories) => setCaloriesPerServing(String(Math.max(0, calories)))}
+          />
 
           {/* Actions */}
           <div className="flex justify-between">

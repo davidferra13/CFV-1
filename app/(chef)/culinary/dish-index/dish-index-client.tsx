@@ -297,6 +297,11 @@ type DishIndexCardProps = {
     rotation_status: string
     linked_recipe_id?: string | null
     prep_complexity?: string | null
-    recipes?: { id: string; name: string; category: string } | null
+    recipes?: {
+      id: string
+      name: string
+      category: string
+      calories_per_serving?: number | null
+    } | null
   }
 }

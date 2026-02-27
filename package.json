@@ -44,6 +44,7 @@
     "test:e2e:smoke": "npx playwright test --project=smoke",
     "test:e2e:chef": "npx playwright test --project=chef",
     "test:e2e:client": "npx playwright test --project=client",
+    "test:e2e:cross-portal": "npx playwright test --project=cross-portal",
     "test:e2e:ui": "npx playwright test --ui",
     "test:all": "npm run test:unit && npm run test:e2e:smoke",
     "test:coverage": "npx playwright test --project=coverage-public --project=coverage-chef --project=coverage-client --project=coverage-admin --project=coverage-auth-boundaries --project=coverage-api",

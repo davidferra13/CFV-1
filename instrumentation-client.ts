@@ -38,3 +38,6 @@ Sentry.init({
     return event
   },
 })
+
+// Needed for App Router navigation spans in recent @sentry/nextjs.
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart

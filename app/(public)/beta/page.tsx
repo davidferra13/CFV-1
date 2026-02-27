@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { BetaSignupForm } from '@/components/beta/beta-signup-form'
-import { getBetaSignupCount, BETA_CAPACITY } from '@/lib/beta/actions'
+import { getBetaSignupCount } from '@/lib/beta/actions'
+import { BETA_CAPACITY } from '@/lib/beta/constants'
 
 export const metadata: Metadata = {
   title: 'Join the Beta | ChefFlow',

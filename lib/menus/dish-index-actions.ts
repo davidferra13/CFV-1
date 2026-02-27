@@ -92,7 +92,7 @@ export async function createDishIndexEntry(input: CreateDishIndexInput) {
     return { error: `A dish named "${existing.name}" already exists as ${parsed.course}` }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('dish_index')
     .insert({
       tenant_id: tenantId,
@@ -146,7 +146,7 @@ export async function getDishIndex(filters?: {
     .select(
       `
       *,
-      recipes:linked_recipe_id(id, name, category)
+      recipes:linked_recipe_id(id, name, category, calories_per_serving)
     `,
       { count: 'exact' }
     )
@@ -201,12 +201,23 @@ export async function getDishById(dishId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('dish_index')
     .select(
       `
       *,
-      recipes:linked_recipe_id(id, name, category, prep_time_minutes, cook_time_minutes)
+      recipes:linked_recipe_id(
+        id,
+        name,
+        category,
+        prep_time_minutes,
+        cook_time_minutes,
+        servings,
+        calories_per_serving,
+        protein_per_serving_g,
+        fat_per_serving_g,
+        carbs_per_serving_g
+      )
     `
     )
     .eq('id', dishId)

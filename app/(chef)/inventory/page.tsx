@@ -31,6 +31,12 @@ const SUB_PAGES = [
     icon: 'truck',
   },
   {
+    href: '/inventory/procurement',
+    label: 'Procurement Hub',
+    description: 'Supplier directory plus purchase order workflow in one procurement center',
+    icon: 'procurement',
+  },
+  {
     href: '/inventory/audits',
     label: 'Physical Audits',
     description: 'Run full, cycle, or spot count audits — verify stock levels match your records',
@@ -93,6 +99,7 @@ const ICON_MAP: Record<string, string> = {
   meal: '\uD83C\uDF7D\uFE0F',
   clock: '\u23F0',
   forecast: '\uD83D\uDCC8',
+  procurement: '\uD83D\uDED2',
 }
 
 export default async function InventoryPage() {
@@ -137,7 +144,7 @@ export default async function InventoryPage() {
             <Link href="/inventory/counts" className="text-brand-600 hover:underline">
               inventory counts
             </Link>{' '}
-            if you haven't set up ingredient tracking yet.
+            if you haven&apos;t set up ingredient tracking yet.
           </p>
         </div>
       )}

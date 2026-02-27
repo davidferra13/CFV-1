@@ -487,6 +487,24 @@ export function RecipeDetailClient({ recipe }: Props) {
                 <dd className="text-stone-100 mt-1">{(recipe as any).calories_per_serving} kcal</dd>
               </div>
             )}
+            {(recipe as any).protein_per_serving_g != null && (
+              <div>
+                <dt className="text-sm font-medium text-stone-500">Protein / Serving</dt>
+                <dd className="text-stone-100 mt-1">{(recipe as any).protein_per_serving_g} g</dd>
+              </div>
+            )}
+            {(recipe as any).fat_per_serving_g != null && (
+              <div>
+                <dt className="text-sm font-medium text-stone-500">Fat / Serving</dt>
+                <dd className="text-stone-100 mt-1">{(recipe as any).fat_per_serving_g} g</dd>
+              </div>
+            )}
+            {(recipe as any).carbs_per_serving_g != null && (
+              <div>
+                <dt className="text-sm font-medium text-stone-500">Carbs / Serving</dt>
+                <dd className="text-stone-100 mt-1">{(recipe as any).carbs_per_serving_g} g</dd>
+              </div>
+            )}
             {(recipe as any).difficulty && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Difficulty</dt>

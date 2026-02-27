@@ -23,9 +23,6 @@ type BetaOnboardingLinkInput = {
   source?: string
 }
 
-/** Maximum beta capacity. Change this to increase the cap. */
-export const BETA_CAPACITY = 25
-
 // Admin email for signup notifications
 const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || 'info@cheflowhq.com'
 

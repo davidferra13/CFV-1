@@ -1,7 +1,7 @@
 // Page for new users to select their role (Chef or Client)
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { isRedirectError } from 'next/dist/client/components/redirect'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
@@ -10,6 +10,14 @@ import { Alert } from '@/components/ui/alert'
 import { assignRole } from '@/lib/auth/actions'
 
 export default function RoleSelectionPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-stone-800" />}>
+      <RoleSelectionContent />
+    </Suspense>
+  )
+}
+
+function RoleSelectionContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const signupRef = searchParams?.get('ref')?.trim().toLowerCase() || undefined

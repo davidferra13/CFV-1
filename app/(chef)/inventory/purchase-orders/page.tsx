@@ -28,11 +28,18 @@ export default async function PurchaseOrdersPage() {
               shelf.
             </p>
           </div>
-          <Link href="/inventory/purchase-orders/new">
-            <button className="inline-flex items-center justify-center font-medium bg-brand-600 text-white hover:bg-brand-700 h-10 px-4 py-2 text-sm rounded-lg">
-              + New PO
-            </button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/inventory/procurement">
+              <button className="inline-flex items-center justify-center font-medium border border-stone-600 text-stone-200 hover:bg-stone-800 h-10 px-4 py-2 text-sm rounded-lg">
+                Procurement Hub
+              </button>
+            </Link>
+            <Link href="/inventory/purchase-orders/new">
+              <button className="inline-flex items-center justify-center font-medium bg-brand-600 text-white hover:bg-brand-700 h-10 px-4 py-2 text-sm rounded-lg">
+                + New PO
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
 

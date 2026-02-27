@@ -4,6 +4,11 @@ import { requireAdmin } from '@/lib/auth/admin'
 import { getPlatformFinancialOverview, getPlatformLedgerEntries } from '@/lib/admin/platform-stats'
 import { redirect } from 'next/navigation'
 import { DollarSign } from 'lucide-react'
+import { ProfitAndLossReport } from '@/components/finance/ProfitAndLossReport'
+import {
+  getDefaultProfitLossWindow,
+  getProfitAndLossReport,
+} from '@/lib/finance/profit-loss-report-actions'
 
 function formatCents(cents: number): string {
   return (
@@ -27,13 +32,39 @@ export default async function AdminFinancialsPage() {
     redirect('/unauthorized')
   }
 
-  const [overview, ledger] = await Promise.allSettled([
+  const window = getDefaultProfitLossWindow()
+  const [overview, ledger, pnl] = await Promise.allSettled([
     getPlatformFinancialOverview(),
     getPlatformLedgerEntries(200),
+    getProfitAndLossReport(window.startDate, window.endDate),
   ])
 
   const fin = overview.status === 'fulfilled' ? overview.value : null
   const entries = ledger.status === 'fulfilled' ? ledger.value : []
+  const pnlData =
+    pnl.status === 'fulfilled'
+      ? pnl.value
+      : {
+          startDate: window.startDate,
+          endDate: window.endDate,
+          revenue: {
+            billingRevenueCents: 0,
+            commerceRevenueCents: 0,
+            salesRevenueCents: 0,
+            totalRevenueCents: 0,
+          },
+          cogs: { purchaseOrdersCents: 0 },
+          operatingExpenses: {
+            expenseTableCents: 0,
+            laborFromPayrollCents: 0,
+            totalOperatingExpensesCents: 0,
+          },
+          totals: {
+            grossProfitCents: 0,
+            netProfitLossCents: 0,
+            profitMarginPercent: 0,
+          },
+        }
 
   return (
     <div className="space-y-6">
@@ -79,6 +110,8 @@ export default async function AdminFinancialsPage() {
           </div>
         </div>
       )}
+
+      <ProfitAndLossReport initialData={pnlData} />
 
       {/* Ledger entries */}
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">

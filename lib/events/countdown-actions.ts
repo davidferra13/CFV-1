@@ -5,6 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import { getCurrentUser } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -36,16 +37,26 @@ const ToggleCountdownSchema = z.object({
  * Returns the event date, time until the event, and whether countdown is enabled.
  */
 export async function getEventCountdown(eventId: string): Promise<EventCountdown | null> {
-  const user = await requireChef()
+  const user = await getCurrentUser()
+  if (!user) {
+    throw new Error('Authentication required')
+  }
+
   const supabase = createServerClient()
   const validatedEventId = EventIdSchema.parse(eventId)
 
-  const { data: event, error } = await supabase
+  let query = supabase
     .from('events')
     .select('id, occasion, event_date, serve_time, status, countdown_enabled')
     .eq('id', validatedEventId)
-    .eq('tenant_id', user.tenantId!)
-    .single()
+
+  if (user.role === 'chef') {
+    query = query.eq('tenant_id', user.tenantId!)
+  } else {
+    query = query.eq('client_id', user.entityId).not('status', 'eq', 'draft')
+  }
+
+  const { data: event, error } = await query.single()
 
   if (error || !event) {
     return null

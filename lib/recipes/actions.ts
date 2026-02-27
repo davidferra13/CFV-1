@@ -204,6 +204,8 @@ export type RecipeListItem = {
   category: RecipeCategory
   method: string
   dietary_tags: string[]
+  servings: number | null
+  calories_per_serving: number | null
   prep_time_minutes: number | null
   cook_time_minutes: number | null
   yield_quantity: number | null
@@ -272,6 +274,8 @@ export async function getRecipes(filters?: {
       category: r.category,
       method: r.method,
       dietary_tags: r.dietary_tags || [],
+      servings: r.servings ?? null,
+      calories_per_serving: r.calories_per_serving ?? null,
       prep_time_minutes: r.prep_time_minutes,
       cook_time_minutes: r.cook_time_minutes,
       yield_quantity: r.yield_quantity,

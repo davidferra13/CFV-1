@@ -39,8 +39,10 @@ export default async function MenuDetailPage({ params }: Props) {
   const [recipeMapResult, recommendations] = await Promise.all([
     recipeIds.size > 0
       ? createServerClient()
-          .from('recipes')
-          .select('id, name, category')
+          .from('recipes' as any)
+          .select(
+            'id, name, category, calories_per_serving, protein_per_serving_g, fat_per_serving_g, carbs_per_serving_g'
+          )
           .in('id', Array.from(recipeIds))
           .eq('tenant_id', user.tenantId!)
       : Promise.resolve({ data: null }),
@@ -50,7 +52,18 @@ export default async function MenuDetailPage({ params }: Props) {
     }).catch(() => null),
   ])
 
-  let recipeMap: Record<string, { id: string; name: string; category: string }> = {}
+  let recipeMap: Record<
+    string,
+    {
+      id: string
+      name: string
+      category: string
+      calories_per_serving: number | null
+      protein_per_serving_g: number | null
+      fat_per_serving_g: number | null
+      carbs_per_serving_g: number | null
+    }
+  > = {}
   if (recipeMapResult.data) {
     recipeMap = Object.fromEntries(recipeMapResult.data.map((r) => [r.id, r]))
   }
