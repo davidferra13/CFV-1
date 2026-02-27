@@ -437,3 +437,41 @@ test.describe('Static Route Literal Closure (#523-527)', () => {
     await assertPageLoads(page, '/unauthorized')
   })
 })
+
+test.describe('Additional Static and Calls Coverage (#528-532)', () => {
+  test('inventory demand route loads (#528)', async ({ page }) => {
+    await assertPageLoads(page, '/inventory/demand')
+  })
+
+  test('inventory expiry route loads (#529)', async ({ page }) => {
+    await assertPageLoads(page, '/inventory/expiry')
+  })
+
+  test('settings billing route loads (#530)', async ({ page }) => {
+    await assertPageLoads(page, '/settings/billing')
+  })
+
+  test('settings compliance haccp route loads (#531)', async ({ page }) => {
+    await assertPageLoads(page, '/settings/compliance/haccp')
+  })
+
+  test('call edit route is reachable from calls list (#532)', async ({ page }) => {
+    await page.goto('/calls')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const callLink = page.locator('a[href^="/calls/"]').first()
+    if ((await callLink.count()) === 0) return
+
+    const href = await callLink.getAttribute('href')
+    if (!href) return
+
+    const callId = href.split('/')[2]
+    if (!callId) return
+
+    await page.goto(`/calls/${callId}/edit`)
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+})
