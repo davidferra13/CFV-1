@@ -155,3 +155,23 @@ base.describe('Auth Boundaries — Chef Cannot Access Admin', () => {
     })
   }
 })
+
+base.describe('Auth Boundaries - Unauthenticated Partner Routes', () => {
+  const partnerRoutes = [
+    '/partner/dashboard',
+    '/partner/events',
+    '/partner/locations',
+    '/partner/preview',
+    '/partner/profile',
+  ]
+
+  for (const route of partnerRoutes) {
+    base.test(`unauthenticated -> ${route} redirects to sign-in`, async ({ page }) => {
+      await page.goto(`${BASE_URL}${route}`, { waitUntil: 'domcontentloaded' })
+      const url = page.url()
+      expect(url, `${route} should reject unauthenticated users`).toMatch(
+        /auth\/signin|unauthorized/
+      )
+    })
+  }
+})
