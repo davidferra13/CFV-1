@@ -415,3 +415,25 @@ test.describe('Remaining Dynamic Chef Route Literals (#520-522)', () => {
     await assertPageHasContent(page)
   })
 })
+
+test.describe('Static Route Literal Closure (#523-527)', () => {
+  test('commands route loads (#523)', async ({ page }) => {
+    await assertPageLoads(page, '/commands')
+  })
+
+  test('remy history route loads (#524)', async ({ page }) => {
+    await assertPageLoads(page, '/remy')
+  })
+
+  test('marketing push-dinners route loads (#525)', async ({ page }) => {
+    await assertPageLoads(page, '/marketing/push-dinners')
+  })
+
+  test('testimonials route loads (#526)', async ({ page }) => {
+    await assertPageLoads(page, '/testimonials')
+  })
+
+  test('unauthorized route loads (#527)', async ({ page }) => {
+    await assertPageLoads(page, '/unauthorized')
+  })
+})
