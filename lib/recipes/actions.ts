@@ -68,6 +68,10 @@ const CreateRecipeSchema = z.object({
   yield_unit: z.string().optional(),
   yield_description: z.string().optional(),
   dietary_tags: z.array(z.string()).optional(),
+  servings: z.number().int().positive().optional(),
+  calories_per_serving: z.number().int().positive().optional(),
+  difficulty: z.number().int().min(1).max(5).optional(),
+  equipment: z.array(z.string()).optional(),
 })
 
 export type CreateRecipeInput = z.infer<typeof CreateRecipeSchema>
@@ -87,6 +91,10 @@ const UpdateRecipeSchema = z.object({
   yield_unit: z.string().nullable().optional(),
   yield_description: z.string().nullable().optional(),
   dietary_tags: z.array(z.string()).optional(),
+  servings: z.number().int().positive().nullable().optional(),
+  calories_per_serving: z.number().int().positive().nullable().optional(),
+  difficulty: z.number().int().min(1).max(5).nullable().optional(),
+  equipment: z.array(z.string()).optional(),
 })
 
 export type UpdateRecipeInput = z.infer<typeof UpdateRecipeSchema>
@@ -167,9 +175,13 @@ export async function createRecipe(input: CreateRecipeInput) {
       yield_unit: validated.yield_unit || null,
       yield_description: validated.yield_description || null,
       dietary_tags: validated.dietary_tags || [],
+      servings: validated.servings || null,
+      calories_per_serving: validated.calories_per_serving || null,
+      difficulty: validated.difficulty || null,
+      equipment: validated.equipment || [],
       created_by: user.id,
       updated_by: user.id,
-    })
+    } as any)
     .select()
     .single()
 
@@ -490,10 +502,15 @@ export async function updateRecipe(recipeId: string, input: UpdateRecipeInput) {
   if (validated.yield_description !== undefined)
     updateData.yield_description = validated.yield_description
   if (validated.dietary_tags !== undefined) updateData.dietary_tags = validated.dietary_tags
+  if (validated.servings !== undefined) updateData.servings = validated.servings
+  if (validated.calories_per_serving !== undefined)
+    updateData.calories_per_serving = validated.calories_per_serving
+  if (validated.difficulty !== undefined) updateData.difficulty = validated.difficulty
+  if (validated.equipment !== undefined) updateData.equipment = validated.equipment
 
   const { data: recipe, error } = await supabase
     .from('recipes')
-    .update(updateData)
+    .update(updateData as any)
     .eq('id', recipeId)
     .eq('tenant_id', user.tenantId!)
     .select()

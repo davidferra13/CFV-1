@@ -85,6 +85,9 @@ export function RecipeLibraryClient({ recipes }: Props) {
           </p>
         </div>
         <div className="flex gap-2">
+          <Link href="/recipes/production-log">
+            <Button variant="ghost">Production Log</Button>
+          </Link>
           <Link href="/recipes/ingredients">
             <Button variant="secondary">Ingredients</Button>
           </Link>

@@ -647,10 +647,11 @@
 
 ### 6.2 Recipes
 
-- **`/recipes`** — Recipe book with search, category filter, sort, seasonal banner. Per card links to detail.
-- **`/recipes/new`** — Smart Import (AI parse from text) or Manual Entry (all fields + dynamic ingredient rows).
-- **`/recipes/[id]`** — Detail with ingredients, scaling calculator, nutrition panel (on-demand USDA data — per-serving macros + ingredient breakdown), method, cost summary, event history. Duplicate/Share/Delete buttons.
-- **`/recipes/[id]/edit`** — Full edit form (ingredient names locked, new ingredients highlighted).
+- **`/recipes`** — Recipe book with search, category filter, sort, seasonal banner. "Production Log" button in header. Per card links to detail.
+- **`/recipes/new`** — Smart Import (AI parse from text) or Manual Entry (all fields + dynamic ingredient rows). Includes servings, calories/serving, difficulty (1-5 clickable scale), equipment (comma-separated), notes.
+- **`/recipes/[id]`** — Detail with ingredients, scaling calculator, nutrition panel (on-demand USDA data — per-serving macros + ingredient breakdown), method, cost summary, event history. Shows servings, calories/serving, difficulty (visual 1-5 scale with label), equipment (pill badges). Production History panel (log entries with shelf life color coding, inline log form). Duplicate/Share/Delete buttons.
+- **`/recipes/[id]/edit`** — Full edit form (ingredient names locked, new ingredients highlighted). Includes servings, calories/serving, difficulty (1-5 clickable scale), equipment (comma-separated).
+- **`/recipes/production-log`** — Global production log (business owner view). Stats cards (total productions, unique recipes, use-soon, expired). Search + shelf status filter. Color-coded entries link to recipe detail.
 - **`/recipes/ingredients`** — Ingredient library with inline edit per row (name, category, unit, price).
 - **`/recipes/sprint`** — Queue-based recipe capture: paste description → AI parse → save → next. Progress bar + skip/done.
 

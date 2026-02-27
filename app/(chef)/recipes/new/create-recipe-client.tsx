@@ -73,6 +73,10 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
   const [yieldQty, setYieldQty] = useState('')
   const [yieldUnit, setYieldUnit] = useState('')
   const [dietaryTags, setDietaryTags] = useState('')
+  const [servings, setServings] = useState('')
+  const [caloriesPerServing, setCaloriesPerServing] = useState('')
+  const [difficulty, setDifficulty] = useState<number>(0)
+  const [equipment, setEquipment] = useState('')
   const [ingredients, setIngredients] = useState<IngredientRow[]>([
     {
       name: '',
@@ -200,6 +204,15 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
               .map((t) => t.trim())
               .filter(Boolean)
           : undefined,
+        servings: servings ? parseInt(servings) : undefined,
+        calories_per_serving: caloriesPerServing ? parseInt(caloriesPerServing) : undefined,
+        difficulty: difficulty >= 1 ? difficulty : undefined,
+        equipment: equipment
+          ? equipment
+              .split(',')
+              .map((e) => e.trim())
+              .filter(Boolean)
+          : undefined,
       })
 
       const recipeId = result.recipe.id
@@ -249,6 +262,10 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
     setYieldQty('')
     setYieldUnit('')
     setDietaryTags('')
+    setServings('')
+    setCaloriesPerServing('')
+    setDifficulty(0)
+    setEquipment('')
     setIngredients([
       {
         name: '',
@@ -496,6 +513,62 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
                   value={dietaryTags}
                   onChange={(e) => setDietaryTags(e.target.value)}
                   placeholder="gluten-free, dairy-free (comma separated)"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-stone-300 mb-1">Servings</label>
+                  <Input
+                    type="number"
+                    value={servings}
+                    onChange={(e) => setServings(e.target.value)}
+                    placeholder="e.g. 4"
+                    min={1}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-300 mb-1">
+                    Calories / Serving
+                  </label>
+                  <Input
+                    type="number"
+                    value={caloriesPerServing}
+                    onChange={(e) => setCaloriesPerServing(e.target.value)}
+                    placeholder="e.g. 320"
+                    min={0}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-300 mb-1">
+                    Difficulty (1–5)
+                  </label>
+                  <div className="flex gap-1 mt-1">
+                    {[1, 2, 3, 4, 5].map((level) => (
+                      <button
+                        key={level}
+                        type="button"
+                        onClick={() => setDifficulty(difficulty === level ? 0 : level)}
+                        className={`w-9 h-9 rounded-md text-sm font-medium transition-colors ${
+                          level <= difficulty
+                            ? 'bg-brand-500 text-white'
+                            : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
+                        }`}
+                      >
+                        {level}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-stone-300 mb-1">Equipment</label>
+                <Input
+                  type="text"
+                  value={equipment}
+                  onChange={(e) => setEquipment(e.target.value)}
+                  placeholder="stand mixer, food processor, blowtorch (comma separated)"
                 />
               </div>
 

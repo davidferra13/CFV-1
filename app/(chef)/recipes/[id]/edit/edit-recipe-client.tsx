@@ -83,6 +83,12 @@ export function EditRecipeClient({ recipe }: Props) {
   const [yieldQty, setYieldQty] = useState(recipe.yield_quantity?.toString() || '')
   const [yieldUnit, setYieldUnit] = useState(recipe.yield_unit || '')
   const [dietaryTags, setDietaryTags] = useState((recipe.dietary_tags || []).join(', '))
+  const [servings, setServings] = useState((recipe as any).servings?.toString() || '')
+  const [caloriesPerServing, setCaloriesPerServing] = useState(
+    (recipe as any).calories_per_serving?.toString() || ''
+  )
+  const [difficulty, setDifficulty] = useState<number>((recipe as any).difficulty || 0)
+  const [equipment, setEquipment] = useState(((recipe as any).equipment || []).join(', '))
 
   // Ingredients state
   const [existingIngredients, setExistingIngredients] = useState<ExistingIngredient[]>(
@@ -173,6 +179,15 @@ export function EditRecipeClient({ recipe }: Props) {
           ? dietaryTags
               .split(',')
               .map((t) => t.trim())
+              .filter(Boolean)
+          : [],
+        servings: servings ? parseInt(servings) : null,
+        calories_per_serving: caloriesPerServing ? parseInt(caloriesPerServing) : null,
+        difficulty: difficulty >= 1 ? difficulty : null,
+        equipment: equipment
+          ? equipment
+              .split(',')
+              .map((e) => e.trim())
               .filter(Boolean)
           : [],
       })
@@ -325,6 +340,62 @@ export function EditRecipeClient({ recipe }: Props) {
               value={dietaryTags}
               onChange={(e) => setDietaryTags(e.target.value)}
               placeholder="gluten-free, dairy-free (comma separated)"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-stone-300 mb-1">Servings</label>
+              <Input
+                type="number"
+                value={servings}
+                onChange={(e) => setServings(e.target.value)}
+                placeholder="e.g. 4"
+                min={1}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-stone-300 mb-1">
+                Calories / Serving
+              </label>
+              <Input
+                type="number"
+                value={caloriesPerServing}
+                onChange={(e) => setCaloriesPerServing(e.target.value)}
+                placeholder="e.g. 320"
+                min={0}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-stone-300 mb-1">
+                Difficulty (1–5)
+              </label>
+              <div className="flex gap-1 mt-1">
+                {[1, 2, 3, 4, 5].map((level) => (
+                  <button
+                    key={level}
+                    type="button"
+                    onClick={() => setDifficulty(difficulty === level ? 0 : level)}
+                    className={`w-9 h-9 rounded-md text-sm font-medium transition-colors ${
+                      level <= difficulty
+                        ? 'bg-brand-500 text-white'
+                        : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
+                    }`}
+                  >
+                    {level}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Equipment</label>
+            <Input
+              type="text"
+              value={equipment}
+              onChange={(e) => setEquipment(e.target.value)}
+              placeholder="stand mixer, food processor, blowtorch (comma separated)"
             />
           </div>
 
