@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { z } from 'zod'
+import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-validator'
 
 // ── In-memory IP rate limiting (no Redis dependency for embed route) ──
 const ipBuckets = new Map<string, { count: number; windowStart: number }>()
@@ -119,6 +120,24 @@ export async function POST(request: NextRequest) {
         { success: true, message: 'Inquiry submitted successfully.' },
         { status: 200, headers: corsHeaders }
       )
+    }
+
+    // Email validation (local-only — no external API call during form submission)
+    try {
+      const emailCheck = validateEmailLocal(data.email)
+      if (!emailCheck.isValid) {
+        const suggestion = suggestEmailCorrection(data.email)
+        return NextResponse.json(
+          {
+            error: emailCheck.reason || 'Invalid email address',
+            emailSuggestion: suggestion || undefined,
+          },
+          { status: 400, headers: corsHeaders }
+        )
+      }
+    } catch (err) {
+      // Non-blocking — if the validator itself fails, let the inquiry through
+      console.error('[embed-inquiry] Email validation failed (non-blocking):', err)
     }
 
     const supabase = createAdminClient()

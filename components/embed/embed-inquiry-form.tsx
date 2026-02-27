@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef, FormEvent } from 'react'
+import { useState, useEffect, useRef, FormEvent, useCallback } from 'react'
+import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-validator'
 
 interface Props {
   chefId: string
@@ -147,6 +148,29 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null)
+
+  const handleEmailBlur = useCallback(() => {
+    const email = formData.email.trim()
+    if (!email) {
+      setEmailSuggestion(null)
+      return
+    }
+
+    // Check for typo suggestion first
+    const suggestion = suggestEmailCorrection(email)
+    if (suggestion) {
+      setEmailSuggestion(suggestion)
+      return
+    }
+
+    // Run local validation
+    const result = validateEmailLocal(email)
+    if (!result.isValid) {
+      setErrors((prev) => ({ ...prev, email: result.reason || 'Invalid email' }))
+    }
+    setEmailSuggestion(null)
+  }, [formData.email])
 
   const validate = (): boolean => {
     const errs: FormErrors = {}
@@ -220,6 +244,13 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
       const result = await res.json()
 
       if (!res.ok) {
+        // If server returned an email suggestion, show it inline instead of a generic error
+        if (result.emailSuggestion) {
+          setEmailSuggestion(result.emailSuggestion)
+          setErrors((prev) => ({ ...prev, email: result.error }))
+          setIsSubmitting(false)
+          return
+        }
         throw new Error(result.error || 'Submission failed')
       }
 
@@ -460,10 +491,40 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
               name="email"
               type="email"
               value={formData.email}
-              onChange={handleChange}
+              onChange={(e) => {
+                handleChange(e)
+                if (emailSuggestion) setEmailSuggestion(null)
+              }}
+              onBlur={handleEmailBlur}
               placeholder="your@email.com"
             />
             {errors.email && <p style={errorStyle}>{errors.email}</p>}
+            {emailSuggestion && (
+              <p style={{ fontSize: '12px', color: '#d97706', marginTop: '2px' }}>
+                Did you mean{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData((prev) => ({ ...prev, email: emailSuggestion }))
+                    setEmailSuggestion(null)
+                    setErrors((prev) => ({ ...prev, email: undefined }))
+                  }}
+                  style={{
+                    color: accentColor,
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    fontSize: '12px',
+                    padding: 0,
+                    textDecoration: 'underline',
+                  }}
+                >
+                  {emailSuggestion}
+                </button>
+                ?
+              </p>
+            )}
           </div>
 
           {/* Phone */}

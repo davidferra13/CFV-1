@@ -34,6 +34,7 @@ import { differenceInDays } from 'date-fns'
 import { getChefArchetype } from '@/lib/archetypes/actions'
 import { getAccountDeletionStatus } from '@/lib/compliance/account-deletion-actions'
 import { ArchetypeSelector } from '@/components/onboarding/archetype-selector'
+import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
 
 export default async function ChefLayout({ children }: { children: React.ReactNode }) {
   // Server-side role check - happens BEFORE any client code ships
@@ -189,8 +190,11 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                 {/* Business milestone celebrations â€” fires once per threshold, replayable */}
                 <MilestoneOverlay />
 
-                {/* Page info â€” contextual help overlay */}
+                {/* Page info -- contextual help overlay */}
                 <PageInfoButton />
+
+                {/* Analytics identity -- associates events with logged-in user */}
+                <AnalyticsIdentify userId={user.id} email={user.email} role={user.role} />
               </div>
             </KeyboardShortcutsWrapper>
           </NotificationProvider>

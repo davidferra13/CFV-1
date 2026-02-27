@@ -13,6 +13,7 @@ import { executeWithIdempotency } from '@/lib/mutations/idempotency'
 import { createConflictError } from '@/lib/mutations/conflict'
 import { UnknownAppError, ValidationError } from '@/lib/errors/app-error'
 import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
+import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-validator'
 
 type InquiryStatus = Database['public']['Enums']['inquiry_status']
 type InquiryChannel = Database['public']['Enums']['inquiry_channel']
@@ -103,6 +104,24 @@ export async function createInquiry(input: CreateInquiryInput) {
   const user = await requireChef()
   const validated = CreateInquirySchema.parse(input)
   const supabase = createServerClient()
+
+  // Email validation (local-only — no external API call during form submission)
+  if (validated.client_email) {
+    try {
+      const emailCheck = validateEmailLocal(validated.client_email)
+      if (!emailCheck.isValid) {
+        const suggestion = suggestEmailCorrection(validated.client_email)
+        return {
+          success: false,
+          error: emailCheck.reason || 'Invalid email address',
+          emailSuggestion: suggestion || undefined,
+        }
+      }
+    } catch (err) {
+      // Non-blocking — if the validator itself fails, let the inquiry through
+      console.error('[createInquiry] Email validation failed (non-blocking):', err)
+    }
+  }
 
   let clientId = validated.client_id || null
 
