@@ -3,15 +3,17 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import type { Viseme, VisemeFrame } from './remy-visemes'
-import { processStreamChunk, getFrameDuration, VISEME_IMAGES } from './remy-visemes'
+import type { RemyEmotion } from './remy-visemes'
+import { processStreamChunk, getFrameDuration } from './remy-visemes'
+import { detectEmotion } from './remy-emotion'
 
 export interface LipSyncState {
   /** Current viseme being displayed */
   currentViseme: Viseme
-  /** Image path for the current viseme */
-  currentImage: string
   /** Whether Remy is currently "speaking" (animating mouth) */
   isSpeaking: boolean
+  /** Current emotion — determines the rest-state face between responses */
+  currentEmotion: RemyEmotion
 }
 
 interface LipSyncInternals {
@@ -23,6 +25,8 @@ interface LipSyncInternals {
   timer: ReturnType<typeof setTimeout> | null
   /** Whether we're actively processing the queue */
   isProcessing: boolean
+  /** Accumulated text buffer for emotion detection */
+  textBuffer: string
 }
 
 /**
@@ -30,7 +34,7 @@ interface LipSyncInternals {
  *
  * Usage:
  * 1. Call `feedText(chunk)` every time a new streaming token arrives
- * 2. Read `currentViseme` / `currentImage` to render the correct mouth
+ * 2. Read `currentViseme` to render the correct mouth via sprite sheet
  * 3. Call `stopSpeaking()` when the response is complete
  * 4. Call `reset()` when starting a new message
  *
@@ -39,20 +43,24 @@ interface LipSyncInternals {
  * - Natural timing — punctuation causes longer pauses
  * - Queue management — fast token bursts don't skip frames
  * - Automatic return to resting when queue drains
+ * - Emotion detection from accumulated response text
  */
 export function useRemyLipSync(): LipSyncState & {
   feedText: (chunk: string) => void
   stopSpeaking: () => void
   reset: () => void
+  setEmotion: (emotion: RemyEmotion) => void
 } {
   const [currentViseme, setCurrentViseme] = useState<Viseme>('rest')
   const [isSpeaking, setIsSpeaking] = useState(false)
+  const [currentEmotion, setCurrentEmotion] = useState<RemyEmotion>('neutral')
 
   const internals = useRef<LipSyncInternals>({
     frameQueue: [],
     pendingChar: null,
     timer: null,
     isProcessing: false,
+    textBuffer: '',
   })
 
   // Process the next frame in the queue
@@ -96,6 +104,10 @@ export function useRemyLipSync(): LipSyncState & {
       if (!chunk) return
 
       const state = internals.current
+
+      // Accumulate text for emotion detection
+      state.textBuffer += chunk
+
       const [frames, newPending] = processStreamChunk(chunk, state.pendingChar)
       state.pendingChar = newPending
 
@@ -113,8 +125,9 @@ export function useRemyLipSync(): LipSyncState & {
   )
 
   /**
-   * Signal that the response is complete. Flushes any pending character
-   * and lets the queue drain naturally before returning to rest.
+   * Signal that the response is complete. Flushes any pending character,
+   * detects emotion from the accumulated text, and lets the queue drain
+   * naturally before returning to rest.
    */
   const stopSpeaking = useCallback(() => {
     const state = internals.current
@@ -126,6 +139,13 @@ export function useRemyLipSync(): LipSyncState & {
       if (frames.length > 0) {
         state.frameQueue.push(...frames)
       }
+    }
+
+    // Detect emotion from the full response text
+    if (state.textBuffer.length > 0) {
+      const emotion = detectEmotion(state.textBuffer)
+      setCurrentEmotion(emotion)
+      state.textBuffer = ''
     }
 
     // If nothing is processing and queue is empty, go to rest immediately
@@ -148,8 +168,15 @@ export function useRemyLipSync(): LipSyncState & {
     state.pendingChar = null
     state.timer = null
     state.isProcessing = false
+    state.textBuffer = ''
     setCurrentViseme('rest')
     setIsSpeaking(false)
+    setCurrentEmotion('neutral')
+  }, [])
+
+  /** Manually set emotion (e.g., for greeting or error states) */
+  const setEmotion = useCallback((emotion: RemyEmotion) => {
+    setCurrentEmotion(emotion)
   }, [])
 
   // Cleanup on unmount
@@ -162,10 +189,11 @@ export function useRemyLipSync(): LipSyncState & {
 
   return {
     currentViseme,
-    currentImage: VISEME_IMAGES[currentViseme],
     isSpeaking,
+    currentEmotion,
     feedText,
     stopSpeaking,
     reset,
+    setEmotion,
   }
 }

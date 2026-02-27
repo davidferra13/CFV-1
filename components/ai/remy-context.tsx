@@ -6,7 +6,7 @@
 
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 import { useRemyLipSync } from '@/lib/ai/use-remy-lip-sync'
-import type { Viseme } from '@/lib/ai/remy-visemes'
+import type { Viseme, RemyEmotion } from '@/lib/ai/remy-visemes'
 
 type MascotState = 'idle' | 'thinking' | 'success' | 'nudge' | 'sleeping'
 
@@ -20,9 +20,11 @@ interface RemyContextValue {
   // Lip-sync (produced by drawer streaming, consumed by mascot)
   currentViseme: Viseme
   isSpeaking: boolean
+  currentEmotion: RemyEmotion
   feedText: (chunk: string) => void
   stopSpeaking: () => void
   resetLipSync: () => void
+  setEmotion: (e: RemyEmotion) => void
 
   // Mascot animation state
   mascotState: MascotState
@@ -82,9 +84,11 @@ export function RemyProvider({ children }: { children: React.ReactNode }) {
     toggleDrawer,
     currentViseme: lipSync.currentViseme,
     isSpeaking: lipSync.isSpeaking,
+    currentEmotion: lipSync.currentEmotion,
     feedText: lipSync.feedText,
     stopSpeaking: lipSync.stopSpeaking,
     resetLipSync: lipSync.reset,
+    setEmotion: lipSync.setEmotion,
     mascotState,
     setMascotState,
     isLoading,

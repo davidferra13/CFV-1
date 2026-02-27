@@ -11,7 +11,8 @@ import { RemyDrawer } from '@/components/ai/remy-drawer'
 const MINIMIZED_KEY = 'remy-minimized'
 
 function RemyInner() {
-  const { toggleDrawer, currentViseme, isSpeaking, mascotState, isLoading } = useRemyContext()
+  const { toggleDrawer, currentViseme, isSpeaking, currentEmotion, mascotState, isLoading } =
+    useRemyContext()
 
   const [minimized, setMinimized] = useState(false)
 
@@ -45,6 +46,7 @@ function RemyInner() {
         state={isLoading ? 'thinking' : mascotState}
         viseme={currentViseme}
         isSpeaking={isSpeaking}
+        emotion={currentEmotion}
         minimized={minimized}
         onToggleMinimize={toggleMinimize}
         ariaLabel="Toggle Remy chat (Ctrl+K)"

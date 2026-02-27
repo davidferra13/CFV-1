@@ -1,25 +1,73 @@
 // Remy Lip-Sync Viseme Engine
-// Maps text characters/phonemes to mouth-shape image paths.
+// Maps text characters/phonemes to sprite sheet frame coordinates.
 // Deterministic — no AI, no network calls. Pure lookup table.
+//
+// Sprite sheet: /public/images/remy/remy-sprite.png
+// Layout: 4 columns x 4 rows = 16 frames, each ~260x256px
+// Each frame is a COMPLETE Remy face (hat, eyes, mouth).
 
 // ─── Viseme Types ─────────────────────────────────────────────────────────────
 
-export type Viseme = 'rest' | 'ah' | 'eh' | 'ee' | 'oh' | 'ooh' | 'fv' | 'lth' | 'chsh'
+export type Viseme =
+  | 'rest' // M P B — closed mouth
+  | 'ah' // AH — wide open
+  | 'eh' // EH — mid open
+  | 'ee' // EE — tight teeth
+  | 'oh' // OH — round open
+  | 'ooh' // OO W Q — puckered
+  | 'fv' // F V — bottom lip bite
+  | 'lth' // L TH — tongue
+  | 'chsh' // CH SH — forward flare
+  | 'rer' // R ER — tight er
+  | 'kgn' // K G N — relaxed open
+  | 'gasp' // GASP — small vertical (surprise)
 
-// ─── Image Paths ──────────────────────────────────────────────────────────────
-// These map to the files in /public/images/
-// Filenames will be normalized once the developer finalizes all 9 images.
+// ─── Emotion Types ──────────────────────────────────────────────────────────
 
-export const VISEME_IMAGES: Record<Viseme, string> = {
-  rest: '/images/remy/remy-mouth-rest.jpg',
-  ah: '/images/remy/remy-mouth-ah.png',
-  eh: '/images/remy/remy-mouth-eh.png',
-  ee: '/images/remy/remy-mouth-ee.png',
-  oh: '/images/remy/remy-mouth-oh.png',
-  ooh: '/images/remy/remy-mouth-ooh.png',
-  fv: '/images/remy/remy-mouth-fv.png',
-  lth: '/images/remy/remy-mouth-lth.png',
-  chsh: '/images/remy/remy-mouth-chsh.png',
+export type RemyEmotion = 'neutral' | 'happy' | 'sad' | 'angry' | 'surprised'
+
+// ─── Sprite Sheet Constants ─────────────────────────────────────────────────
+
+export const SPRITE_PATH = '/images/remy/remy-sprite.png'
+export const SPRITE_COLS = 4
+export const SPRITE_ROWS = 4
+export const FRAME_WIDTH = 260 // px per cell in the source image
+export const FRAME_HEIGHT = 256 // px per cell in the source image
+
+/** Pixels of label text at top of each sprite cell to skip via CSS offset */
+export const LABEL_CROP_TOP = 40
+
+export interface SpriteFrame {
+  col: number // 0-3
+  row: number // 0-3
+}
+
+// ─── Viseme → Sprite Frame Coordinates ──────────────────────────────────────
+
+export const VISEME_FRAMES: Record<Viseme, SpriteFrame> = {
+  rest: { col: 0, row: 0 }, // M P B
+  ah: { col: 1, row: 0 }, // AH
+  eh: { col: 2, row: 0 }, // EH
+  ee: { col: 3, row: 0 }, // EE
+  oh: { col: 0, row: 1 }, // OH
+  ooh: { col: 1, row: 1 }, // OO W Q
+  fv: { col: 2, row: 1 }, // F V
+  lth: { col: 3, row: 1 }, // L TH
+  chsh: { col: 0, row: 2 }, // CH SH
+  rer: { col: 1, row: 2 }, // R ER
+  kgn: { col: 2, row: 2 }, // K G N
+  gasp: { col: 2, row: 3 }, // GASP
+}
+
+// ─── Emotion → Sprite Frame Coordinates ─────────────────────────────────────
+// Used as the "rest" face between responses based on sentiment.
+
+export const EMOTION_FRAMES: Record<RemyEmotion, SpriteFrame> = {
+  neutral: { col: 0, row: 0 }, // same as rest (M P B)
+  happy: { col: 3, row: 2 }, // closed smile
+  sad: { col: 0, row: 3 }, // closed frown
+  angry: { col: 1, row: 3 }, // teeth frown
+  surprised: { col: 2, row: 3 }, // GASP
 }
 
 // ─── Digraph Detection ────────────────────────────────────────────────────────
@@ -29,6 +77,8 @@ const DIGRAPHS: [string, Viseme][] = [
   ['SH', 'chsh'],
   ['CH', 'chsh'],
   ['TH', 'lth'],
+  ['NG', 'kgn'],
+  ['ER', 'rer'],
 ]
 
 // ─── Single Character → Viseme Map ───────────────────────────────────────────
@@ -46,13 +96,9 @@ const CHAR_VISEME: Record<string, Viseme> = {
   // Eh — slightly open (E)
   E: 'eh',
 
-  // Ee — wide smile, teeth touching (C, D, G, K, N, R, S, T, X, Y, Z)
+  // Ee — tight teeth (C, D, S, T, X, Y, Z)
   C: 'ee',
   D: 'ee',
-  G: 'ee',
-  K: 'ee',
-  N: 'ee',
-  R: 'ee',
   S: 'ee',
   T: 'ee',
   X: 'ee',
@@ -74,7 +120,15 @@ const CHAR_VISEME: Record<string, Viseme> = {
   // L — tongue behind teeth
   L: 'lth',
 
-  // H, J default to slightly open
+  // R — tight ER (distinct from ee)
+  R: 'rer',
+
+  // K, G, N — relaxed open (distinct from ee)
+  K: 'kgn',
+  G: 'kgn',
+  N: 'kgn',
+
+  // H, J defaults
   H: 'eh',
   J: 'ee',
 }

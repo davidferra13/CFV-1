@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import { RemyTalkingAvatar } from '@/components/ai/remy-talking-avatar'
-import type { Viseme } from '@/lib/ai/remy-visemes'
+import type { Viseme, RemyEmotion } from '@/lib/ai/remy-visemes'
 
 const SLEEP_TIMEOUT_MS = 60_000
 const SPEECH_HOVER_DELAY_MS = 500
@@ -24,6 +24,8 @@ interface RemyMascotButtonProps {
   viseme?: Viseme
   /** Whether Remy is currently speaking (lip-sync active) */
   isSpeaking?: boolean
+  /** Current emotion — passed to talking avatar for rest-state face */
+  emotion?: RemyEmotion
   /** Whether Remy is minimized (only chef hat peeks out) */
   minimized?: boolean
   /** Callback to toggle minimized state */
@@ -38,6 +40,7 @@ export function RemyMascotButton({
   ariaLabel = 'Chat with Remy',
   viseme,
   isSpeaking: speakingProp = false,
+  emotion = 'neutral',
   minimized = false,
   onToggleMinimize,
 }: RemyMascotButtonProps) {
@@ -212,7 +215,12 @@ export function RemyMascotButton({
                 speakingProp ? 'opacity-100' : 'opacity-0',
               ].join(' ')}
             >
-              <RemyTalkingAvatar viseme={viseme} isSpeaking={speakingProp} size="lg" />
+              <RemyTalkingAvatar
+                viseme={viseme}
+                isSpeaking={speakingProp}
+                emotion={emotion}
+                size="lg"
+              />
             </div>
           )}
 

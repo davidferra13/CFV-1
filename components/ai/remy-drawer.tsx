@@ -301,6 +301,7 @@ export function RemyDrawer() {
     closeDrawer,
     currentViseme,
     isSpeaking: lipSyncSpeaking,
+    currentEmotion,
     feedText,
     stopSpeaking: lipSyncStop,
     resetLipSync,
@@ -1346,7 +1347,12 @@ export function RemyDrawer() {
                   <ChevronsRight className="h-5 w-5" />
                 </button>
               )}
-              <RemyTalkingAvatar viseme={currentViseme} isSpeaking={lipSyncSpeaking} size="sm" />
+              <RemyTalkingAvatar
+                viseme={currentViseme}
+                isSpeaking={lipSyncSpeaking}
+                emotion={currentEmotion}
+                size="sm"
+              />
               <span className="font-semibold text-white">
                 {drawerView === 'chat'
                   ? 'Remy'
@@ -1898,6 +1904,7 @@ export function RemyDrawer() {
                     <RemyTalkingAvatar
                       viseme={currentViseme}
                       isSpeaking={lipSyncSpeaking}
+                      emotion={currentEmotion}
                       size="sm"
                     />
                     <div className="max-w-[80%] space-y-1">

@@ -203,6 +203,32 @@ test.describe('Error Handling — API Endpoints', () => {
     })
     expect(resp.status()).toBe(401)
   })
+
+  test('Daily report cron endpoint rejects POST requests', async ({ page }) => {
+    const resp = await page.request.post('/api/scheduled/daily-report', {
+      headers: { 'Content-Type': 'application/json' },
+      data: {},
+    })
+    expect(resp.status()).toBeGreaterThanOrEqual(400)
+    expect(resp.status()).toBeLessThan(500)
+  })
+
+  test('Daily report cron endpoint rejects OPTIONS requests', async ({ page }) => {
+    const resp = await page.request.fetch('/api/scheduled/daily-report', {
+      method: 'OPTIONS',
+    })
+    expect(resp.status()).toBeGreaterThanOrEqual(400)
+    expect(resp.status()).toBeLessThan(500)
+  })
+
+  test('Daily report cron endpoint with empty bearer token returns 401', async ({ page }) => {
+    const resp = await page.request.get('/api/scheduled/daily-report', {
+      headers: {
+        Authorization: 'Bearer ',
+      },
+    })
+    expect(resp.status()).toBe(401)
+  })
 })
 
 // ─── JS Error Resilience ───────────────────────────────────────────────────────

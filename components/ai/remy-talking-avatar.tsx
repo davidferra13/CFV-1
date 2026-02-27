@@ -1,107 +1,111 @@
 'use client'
 
-// Remy Talking Avatar — Layered lip-sync animation.
+// Remy Talking Avatar — Sprite sheet lip-sync animation.
 //
 // Architecture:
-//   Base layer:  Resting face (always visible — eyes, hat, body never change)
-//   Mouth layer: Current viseme image, CSS clip-path'd to show ONLY the mouth region
+//   Single <div> with background-image pointing to a 4x4 sprite sheet.
+//   CSS background-position selects the active frame (viseme or emotion).
+//   Each frame is a complete Remy face — no clip-path needed.
 //
-// This means the eyes stay perfectly consistent across all mouth shapes.
-// The AI-generated images had different eye expressions per viseme — this
-// approach ignores everything above the mouth and only uses the mouth portion.
+// Sprite: /images/remy/remy-sprite.png (1040x1024, 16 frames)
 
 import { useEffect, useRef } from 'react'
-import Image from 'next/image'
-import type { Viseme } from '@/lib/ai/remy-visemes'
-import { VISEME_IMAGES } from '@/lib/ai/remy-visemes'
-
-// All visemes except 'rest' (rest is the base layer, not an overlay)
-const MOUTH_VISEMES = (Object.keys(VISEME_IMAGES) as Viseme[]).filter((v) => v !== 'rest')
+import type { Viseme, RemyEmotion } from '@/lib/ai/remy-visemes'
+import {
+  SPRITE_PATH,
+  SPRITE_COLS,
+  SPRITE_ROWS,
+  FRAME_WIDTH,
+  FRAME_HEIGHT,
+  LABEL_CROP_TOP,
+  VISEME_FRAMES,
+  EMOTION_FRAMES,
+} from '@/lib/ai/remy-visemes'
 
 interface RemyTalkingAvatarProps {
-  /** Current viseme to display */
+  /** Current viseme to display (used when speaking) */
   viseme: Viseme
-  /** Whether Remy is currently speaking (enables subtle animation) */
+  /** Whether Remy is currently speaking (enables lip-sync frames) */
   isSpeaking?: boolean
+  /** Current emotion — determines the rest-state face when not speaking */
+  emotion?: RemyEmotion
   /** Size variant */
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
   /** Extra CSS classes */
   className?: string
 }
 
 const SIZES = {
-  sm: { width: 40, height: 40, imgClass: 'w-10 h-10' },
-  md: { width: 56, height: 56, imgClass: 'w-14 h-14' },
-  lg: { width: 80, height: 80, imgClass: 'w-20 h-20' },
-  xl: { width: 120, height: 120, imgClass: 'w-[120px] h-[120px]' },
+  sm: 40,
+  md: 56,
+  lg: 80,
+  xl: 120,
 } as const
 
-// Clip-path that reveals ONLY the mouth region (bottom ~35% of the image).
-// The polygon covers the lower portion of the face where the mouth sits.
-// Coordinates: inset(top from-left from-bottom from-right)
-// "inset(62% 15% 0% 15%)" = top 62% hidden, sides 15% hidden, bottom 0% visible
-const MOUTH_CLIP_PATH = 'inset(58% 10% 0% 10%)'
+/**
+ * Calculate CSS background-position and background-size for a sprite frame.
+ * Accounts for label text cropping at the top of each cell.
+ */
+function getSpriteStyles(col: number, row: number, displaySize: number) {
+  // Scale factor: map the display size to each frame's width
+  const scale = displaySize / FRAME_WIDTH
+
+  // Full sprite dimensions at this scale
+  const bgWidth = FRAME_WIDTH * SPRITE_COLS * scale
+  const bgHeight = FRAME_HEIGHT * SPRITE_ROWS * scale
+
+  // Position: shift to show the correct cell, offset by label crop
+  const posX = -(col * FRAME_WIDTH * scale)
+  const posY = -(row * FRAME_HEIGHT * scale + LABEL_CROP_TOP * scale)
+
+  return {
+    backgroundImage: `url(${SPRITE_PATH})`,
+    backgroundSize: `${bgWidth}px ${bgHeight}px`,
+    backgroundPosition: `${posX}px ${posY}px`,
+    backgroundRepeat: 'no-repeat' as const,
+  }
+}
 
 export function RemyTalkingAvatar({
   viseme,
   isSpeaking = false,
+  emotion = 'neutral',
   size = 'md',
   className = '',
 }: RemyTalkingAvatarProps) {
   const preloaded = useRef(false)
 
-  // Preload all viseme images on mount to eliminate flicker
+  // Preload the sprite sheet on mount
   useEffect(() => {
     if (preloaded.current) return
     preloaded.current = true
-
-    Object.values(VISEME_IMAGES).forEach((src) => {
-      const img = new window.Image()
-      img.src = src
-    })
+    const img = new window.Image()
+    img.src = SPRITE_PATH
   }, [])
 
-  const { width, height, imgClass } = SIZES[size]
+  const displaySize = SIZES[size]
+
+  // Pick the frame: viseme when speaking, emotion when resting
+  const frame = isSpeaking ? VISEME_FRAMES[viseme] : EMOTION_FRAMES[emotion]
+
+  const spriteStyles = getSpriteStyles(frame.col, frame.row, displaySize)
 
   return (
     <div
       className={[
         'relative flex-shrink-0 rounded-full overflow-hidden bg-stone-200',
-        imgClass,
         isSpeaking ? 'ring-2 ring-brand-400/50 ring-offset-1 ring-offset-stone-900' : '',
         className,
       ]
         .filter(Boolean)
         .join(' ')}
-    >
-      {/* Base layer — resting face (always visible, provides consistent eyes) */}
-      <Image
-        src={VISEME_IMAGES.rest}
-        alt="Remy"
-        width={width}
-        height={height}
-        className="absolute inset-0 object-cover"
-        priority
-      />
-
-      {/* Mouth overlay layer — clip-path'd to show ONLY the mouth region.
-           All visemes are stacked; only the active one is visible (opacity).
-           The clip-path ensures eyes/hat/body from the base layer show through. */}
-      {MOUTH_VISEMES.map((v) => (
-        <Image
-          key={v}
-          src={VISEME_IMAGES[v]}
-          alt=""
-          width={width}
-          height={height}
-          className={[
-            'absolute inset-0 object-cover transition-opacity duration-[30ms]',
-            v === viseme ? 'opacity-100' : 'opacity-0',
-          ].join(' ')}
-          style={{ clipPath: MOUTH_CLIP_PATH }}
-          aria-hidden={v !== viseme}
-        />
-      ))}
-    </div>
+      style={{
+        width: displaySize,
+        height: displaySize,
+        ...spriteStyles,
+      }}
+      role="img"
+      aria-label={isSpeaking ? 'Remy speaking' : `Remy ${emotion}`}
+    />
   )
 }
