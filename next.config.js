@@ -177,7 +177,13 @@ const nextConfig = {
 
 // Sentry source-map upload and performance instrumentation.
 // withSentryConfig is a no-op if SENTRY_DSN is not set.
-const { withSentryConfig } = require('@sentry/nextjs')
+// Gracefully skip if @sentry/nextjs is not installed (e.g., Pi beta builds).
+let withSentryConfig
+try {
+  withSentryConfig = require('@sentry/nextjs').withSentryConfig
+} catch {
+  withSentryConfig = null
+}
 
 const sentryConfig = {
   // Upload source maps to Sentry during build (requires SENTRY_ORG + SENTRY_PROJECT in env).
@@ -194,4 +200,6 @@ const sentryConfig = {
   disableClientWebpackPlugin: true,
 }
 
-module.exports = withSentryConfig(withPWA(nextConfig), sentryConfig)
+module.exports = withSentryConfig
+  ? withSentryConfig(withPWA(nextConfig), sentryConfig)
+  : withPWA(nextConfig)
