@@ -1235,3 +1235,41 @@ The Remy drawer (`components/ai/remy-drawer.tsx`) has 5 views accessible via ico
 | Event FSM states          | 8                                                                        |
 | Total audit lines         | ~8,600 (master + 5 companion docs)                                       |
 | Companion documents       | 5                                                                        |
+| Kiosk pages               | 3 (main, pair, disabled)                                                 |
+| Kiosk API routes          | 6 (pair, verify-pin, heartbeat, inquiry, status, end-session)            |
+| Device management         | 1 settings page (/settings/devices)                                      |
+
+---
+
+## 21. Kiosk & Device Fleet (added 2026-02-27)
+
+### Kiosk Routes (public, no auth)
+
+| Route             | What it shows                                                                                                                                        |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/kiosk`          | Main kiosk screen. Checks device token → PIN entry → inquiry form → success. Includes idle reset (90s default) and 30s heartbeat.                    |
+| `/kiosk/pair`     | Pairing screen. Input for 8-char pairing code (or auto from `?code=` param). On success, stores device token in localStorage, redirects to `/kiosk`. |
+| `/kiosk/disabled` | "Device Disabled" screen. Long-press (3s) reveals "Unpair Device" button.                                                                            |
+
+### Kiosk Components
+
+| Component                  | Purpose                                                                |
+| -------------------------- | ---------------------------------------------------------------------- |
+| `kiosk-header.tsx`         | Business name + active staff name. Long-press (3s) reveals hard reset. |
+| `staff-pin-entry.tsx`      | Touch-friendly numpad for 4-6 digit PIN. Shake animation on error.     |
+| `kiosk-inquiry-form.tsx`   | Customer inquiry form: name, email/phone, date, party size, notes.     |
+| `kiosk-success-screen.tsx` | "Thank you!" with 10s countdown + "Start Over" button.                 |
+| `idle-reset-provider.tsx`  | Tracks activity. Clears staff session on timeout.                      |
+| `heartbeat-provider.tsx`   | 30s heartbeat. Detects disabled/revoked device.                        |
+
+### Chef Portal: Settings → Devices (`/settings/devices`)
+
+| Element                 | Type             | Description                                                                                                                                  |
+| ----------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| "Add Device" button     | Button → Modal   | Opens `CreateDeviceModal`: name, type (iPad/Android/Browser), location, idle timeout, require PIN toggle. On submit shows pairing code + QR. |
+| Device fleet table      | Table            | Columns: Device (icon + name), Status (badge with online dot), Flow, Location, Last Seen (relative time), Actions.                           |
+| Disable button          | Button           | Sets device status to 'disabled'. Kiosk locks out within 30s via heartbeat.                                                                  |
+| Revoke button           | Button (confirm) | Permanently revokes device. Clears token. Requires re-pairing.                                                                               |
+| Show Code / Re-pair     | Button → Modal   | Generates new pairing code + QR with 15-min expiry.                                                                                          |
+| Staff PINs section      | Table            | Staff name, role, PIN status (set/not set), Set/Change/Remove PIN actions. Inline PIN input (4-6 digits).                                    |
+| Kiosk Permissions panel | Static display   | Two-column CAN/CANNOT list showing exactly what staff can and cannot do on kiosk devices.                                                    |
