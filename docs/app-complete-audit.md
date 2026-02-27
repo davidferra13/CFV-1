@@ -898,6 +898,29 @@ Protected time reminder (purple callout). Completion celebration when all done.
 
 ---
 
+## 14b. CHARITY HUB
+
+**Route:** `/charity` — Read-only aggregation page surfacing all charity-related entities across the system.
+
+**Header:** Title "Charity Hub" + subtitle. Summary stat cards (Events, Menus, Financial Entries, Misc Mentions counts).
+
+**Empty state:** Shown when no charity-related items found. Lists example keywords.
+
+**Sections (collapsible via CharitySection component):**
+
+| Section                           | Data Source                                                                          | Links To                                                     |
+| --------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
+| Charity-Related Events            | `events` table (occasion, special_requests, kitchen_notes, site_notes)               | `/events/{id}`                                               |
+| Charity-Related Menus             | `menus` table (name, description, notes)                                             | `/menus` or `/events/{eventId}`                              |
+| Charity-Related Financial Entries | `ledger_entries` table (description, internal_notes)                                 | `/finance/ledger`                                            |
+| Misc Mentions                     | `client_notes`, `inquiry_notes`, `inquiries`, `client_tags`, `prospects`, `messages` | `/clients/{id}`, `/inquiries/{id}`, `/prospecting`, `/inbox` |
+
+**Interactive elements:** Section expand/collapse toggle (chevron). Each row is a clickable link to the source entity.
+
+**Keyword matching:** Centralized in `lib/charity/charity-keywords.ts`. ~19 keywords including charity, nonprofit, fundraiser, donation, benefit gala, pro bono, volunteer, etc. (bare `gala` excluded — too broad).
+
+---
+
 ## 15. SETTINGS
 
 > **Full element-by-element detail → [`docs/ui-audit-settings.md`](ui-audit-settings.md)** (1730 lines, 50 pages)
