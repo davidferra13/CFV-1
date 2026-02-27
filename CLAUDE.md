@@ -252,6 +252,37 @@ If you encounter any of these patterns during normal work, **flag them to the de
 
 When you find either during normal work, add it to your session report. Don't wait to be asked.
 
+### Cache Invalidation — Write It, Bust It
+
+**When you mutate data, you MUST invalidate every cache that reads that data.** Stale cache = stale UI = hallucination.
+
+- If a server action writes to the `chefs` table and the layout uses `unstable_cache` with tag `chef-layout-{chefId}`, the action MUST call `revalidateTag('chef-layout-{chefId}')`.
+- `revalidatePath` does NOT bust `unstable_cache` tags. You must use `revalidateTag` for tagged caches.
+- When adding a new `unstable_cache`, document which mutations should bust it — don't leave it for "later."
+- When adding a new mutation on cached data, search for `unstable_cache` and `revalidateTag` in the codebase to find all caches that read the data you're writing. Bust every one.
+
+### `@ts-nocheck` Files Must Not Export Callable Actions
+
+Files with `// @ts-nocheck` reference nonexistent tables, use wrong column names, or have unresolved type errors. **They will crash at runtime.** These files must NOT export server actions or functions that other code can import and call.
+
+- If you encounter a `@ts-nocheck` file that exports server actions: either fix the types and remove `@ts-nocheck`, or remove the exports and add a comment explaining why the file is deferred.
+- Never create a new file with `@ts-nocheck`. Fix the types or don't write the file.
+- When reviewing code, flag any `@ts-nocheck` file that has `export async function` — it's a crash waiting to happen.
+
+### Hallucination Scan — On-Demand Audit
+
+When the developer says **"run hallucination scan"**, **"audit for hallucinations"**, **"check for lies"**, or any variation, run the full Zero Hallucination audit:
+
+1. **Optimistic updates** — search all `startTransition` and `useTransition` calls for missing `try/catch` + rollback
+2. **Silent failures** — search for catch blocks that return zero/default/empty without UI feedback
+3. **No-op handlers** — search for `onClick` with empty bodies, `// placeholder`, `// TODO`, `return { success: true }` on functions that don't persist
+4. **Hardcoded display values** — search for dollar amounts, counts, or metrics that aren't from a query or constant
+5. **Stale cache** — check that every `unstable_cache` tag has matching `revalidateTag` calls in all relevant mutations
+6. **`@ts-nocheck` exports** — find files with both `@ts-nocheck` and `export` that could crash on call
+7. **Demo/sample data visibility** — check that `is_demo` or equivalent flags are consumed by the UI
+
+Report findings in the same format as `docs/zero-hallucination-audit.md`. Update that file with any new findings.
+
 ### Why This Exists
 
 A private chef platform handles real money, real clients, real dietary restrictions (allergies can be life-threatening), and real business decisions. When the dashboard says "$0 revenue," a chef might think their business is failing. When a notification toggle says "on" but was never saved, a chef misses a $5,000 booking. When a dietary note appears saved but wasn't persisted, someone could have an allergic reaction. **Every lie the UI tells has real consequences.** Zero tolerance.
