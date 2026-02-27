@@ -149,3 +149,52 @@ test.describe('Client Portal — Chef Route Rejection', () => {
     expect(url).not.toMatch(/\/financials$/)
   })
 })
+
+test.describe('Client Portal - Additional Route Coverage', () => {
+  test('/my-cannabis - client cannabis page loads', async ({ page }) => {
+    await assertClientPageLoads(page, '/my-cannabis')
+  })
+
+  test('/my-chat/[id] - conversation detail route is reachable', async ({ page }) => {
+    await assertClientPageLoads(page, '/my-chat')
+
+    const conversationLink = page.locator('a[href^="/my-chat/"]').first()
+    if ((await conversationLink.count()) === 0) return
+
+    const href = await conversationLink.getAttribute('href')
+    if (!href) return
+
+    const response = await page.goto(href, { waitUntil: 'domcontentloaded' })
+    expect(response?.status() ?? 0).toBeLessThan(500)
+  })
+
+  test('/my-events/[id]/event-summary - completed event summary loads', async ({
+    page,
+    seedIds,
+  }) => {
+    const response = await page.goto(`/my-events/${seedIds.eventIds.completed}/event-summary`, {
+      waitUntil: 'domcontentloaded',
+    })
+    expect(response?.status() ?? 0).toBeLessThan(500)
+  })
+
+  test('/my-events/[id]/pre-event-checklist - checklist route responds', async ({
+    page,
+    seedIds,
+  }) => {
+    const response = await page.goto(
+      `/my-events/${seedIds.eventIds.completed}/pre-event-checklist`,
+      {
+        waitUntil: 'domcontentloaded',
+      }
+    )
+    expect(response?.status() ?? 0).toBeLessThan(500)
+  })
+
+  test('/survey/[token] - invalid survey token handled gracefully', async ({ page }) => {
+    const response = await page.goto('/survey/not-a-real-survey-token', {
+      waitUntil: 'domcontentloaded',
+    })
+    expect(response?.status() ?? 0).toBeLessThan(500)
+  })
+})
