@@ -919,9 +919,50 @@ Protected time reminder (purple callout). Completion celebration when all done.
 | Charity-Related Financial Entries | `ledger_entries` table (description, internal_notes)                                 | `/finance/ledger`                                            |
 | Misc Mentions                     | `client_notes`, `inquiry_notes`, `inquiries`, `client_tags`, `prospects`, `messages` | `/clients/{id}`, `/inquiries/{id}`, `/prospecting`, `/inbox` |
 
-**Interactive elements:** Section expand/collapse toggle (chevron). Each row is a clickable link to the source entity.
+**Interactive elements:** Section expand/collapse toggle (chevron). Each row is a clickable link to the source entity. "Log Charity Hours" button links to `/charity/hours`.
 
 **Keyword matching:** Centralized in `lib/charity/charity-keywords.ts`. ~19 keywords including charity, nonprofit, fundraiser, donation, benefit gala, pro bono, volunteer, etc. (bare `gala` excluded — too broad).
+
+## 14c. CHARITY HOURS
+
+**Route:** `/charity/hours` — Log volunteer hours at organizations, discover nonprofits.
+
+**Header:** Back link to `/charity`. Title "Charity Hours" + subtitle.
+
+**Summary cards:** Total Hours, Entries Logged, Organizations, Verified 501(c) — 4 stat cards in a row.
+
+**Log Hours form (Card):**
+
+- Recent org chips (clickable, auto-fills form with previously logged organizations)
+- Organization search via Google Places autocomplete (`StoreAutocomplete`). "Can't find it? Enter manually" fallback
+- After selection: auto-checks ProPublica for 501(c) verification → shows green badge + EIN if found
+- Date input (default today, max today), Hours input (step 0.25, min 0.25, max 24), Notes textarea
+- Submit button → `logCharityHours()` server action
+- Edit mode: when editing an existing entry, form pre-fills and shows "Update Hours" button
+
+**Find Charities (Card):**
+
+- State dropdown (50 states + DC)
+- NTEE category filter chips (10 categories: Arts, Education, Environment & Animals, Health, Human Services, International, Public Benefit, Religion, Mutual Benefit, Other)
+- Optional keyword search input (debounced 500ms)
+- Results list showing org name, 501(c) badge, city/state, income level, EIN
+- Click a result → auto-fills the log form above + scrolls to it
+- "Load more" pagination
+- Data source: ProPublica Nonprofit Explorer API (1.8M IRS-registered nonprofits)
+
+**Your Logged Hours (Card):**
+
+- Table of logged entries: date, organization name + 501(c) badge, address, hours, notes
+- Edit button → switches form to edit mode
+- Delete button → confirmation dialog → `deleteCharityHours()` server action
+- Empty state when no hours logged
+
+**World Food Programme feed (Card):**
+
+- Latest 6 stories from WFP RSS feed (`wfp.org/rss.xml`)
+- Each story: title (linked), description snippet, publish date
+- "See all" link to `wfp.org/news`
+- Graceful degradation if feed is unavailable
 
 ---
 

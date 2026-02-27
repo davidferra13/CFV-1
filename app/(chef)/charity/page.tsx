@@ -14,7 +14,9 @@ import {
 import { CHARITY_KEYWORDS } from '@/lib/charity/charity-keywords'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { CharitySection } from '@/components/charity/charity-section'
+import { Clock } from 'lucide-react'
 
 export const metadata: Metadata = { title: 'Charity Hub - ChefFlow' }
 
@@ -69,11 +71,19 @@ export default async function CharityHubPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-stone-100">Charity Hub</h1>
-        <p className="text-sm text-stone-500 mt-1">
-          All charity, nonprofit, and fundraiser-related activity across your account
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-stone-100">Charity Hub</h1>
+          <p className="text-sm text-stone-500 mt-1">
+            All charity, nonprofit, and fundraiser-related activity across your account
+          </p>
+        </div>
+        <Link href="/charity/hours">
+          <Button variant="primary">
+            <Clock className="w-4 h-4 mr-1.5" />
+            Log Charity Hours
+          </Button>
+        </Link>
       </div>
 
       {/* Summary cards */}

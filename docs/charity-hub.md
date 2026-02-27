@@ -68,3 +68,50 @@ Edit `CHARITY_KEYWORDS` in `lib/charity/charity-keywords.ts`. No other changes n
 1. Add a new fetch function in `lib/charity/actions.ts` using the same pattern
 2. Add a new `CharitySection` block in `app/(chef)/charity/page.tsx`
 3. Update the summary card grid if needed
+
+---
+
+## Charity Hours Logging (`/charity/hours`)
+
+**Added:** 2026-02-27
+**Tier:** Free (core chef identity)
+
+### What It Does
+
+Chefs can log volunteer/charity hours at specific organizations, discover nonprofits to volunteer at, and stay informed about World Food Programme activities. The page has four sections:
+
+1. **Log Hours** — Search for any organization via Google Places autocomplete, auto-verify 501(c) status via ProPublica, enter date/hours/notes
+2. **Find Charities** — Browse 1.8M IRS-registered nonprofits by state and category (not limited to food-related)
+3. **Logged Hours** — View, edit, and delete past entries
+4. **WFP Feed** — Live news from the World Food Programme RSS feed
+
+### External APIs
+
+| API                           | Purpose                                   | Cost             | Auth        |
+| ----------------------------- | ----------------------------------------- | ---------------- | ----------- |
+| Google Places                 | Org search (reuses `StoreAutocomplete`)   | Already have key | Client-side |
+| ProPublica Nonprofit Explorer | 501(c) verification + nonprofit discovery | Free, no key     | Server-side |
+| WFP RSS                       | Live news feed                            | Free, no key     | Server-side |
+
+### Database
+
+Single table: `charity_hours` (migration `20260328000008`). No separate organizations table — recent orgs derived from `SELECT DISTINCT` on the hours table.
+
+### Hours File Locations
+
+| File                                                   | Purpose                                        |
+| ------------------------------------------------------ | ---------------------------------------------- |
+| `supabase/migrations/20260328000008_charity_hours.sql` | Table + RLS + indexes                          |
+| `lib/charity/hours-types.ts`                           | TypeScript types + NTEE categories + US states |
+| `lib/charity/propublica-actions.ts`                    | ProPublica API server actions                  |
+| `lib/charity/hours-actions.ts`                         | CRUD server actions                            |
+| `lib/charity/wfp-actions.ts`                           | WFP RSS feed server action                     |
+| `components/charity/charity-hour-form.tsx`             | Log hours form                                 |
+| `components/charity/charity-hours-list.tsx`            | Logged hours table                             |
+| `components/charity/charity-hours-summary.tsx`         | Summary stat cards                             |
+| `components/charity/charity-hours-client.tsx`          | Client wrapper (edit state)                    |
+| `components/charity/nonprofit-search.tsx`              | Find Charities browser                         |
+| `components/charity/nonprofit-badge.tsx`               | 501(c) verified badge                          |
+| `components/charity/wfp-feed.tsx`                      | WFP news feed UI                               |
+| `app/(chef)/charity/hours/page.tsx`                    | Page (server component)                        |
+| `app/(chef)/charity/hours/loading.tsx`                 | Loading skeleton                               |
