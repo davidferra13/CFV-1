@@ -10,6 +10,7 @@ import { format, parseISO } from 'date-fns'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import {
   autoSuggestEventBlocks,
   bulkCreatePrepBlocks,
@@ -372,6 +373,7 @@ type PrepBlockCardProps = {
 
 function PrepBlockCard({ block, onToggleComplete, onDelete }: PrepBlockCardProps) {
   const [pending, setPending] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   async function handleToggle() {
     setPending(true)
@@ -379,8 +381,12 @@ function PrepBlockCard({ block, onToggleComplete, onDelete }: PrepBlockCardProps
     setPending(false)
   }
 
-  async function handleDelete() {
-    if (!confirm('Delete this prep block?')) return
+  function handleDelete() {
+    setShowDeleteConfirm(true)
+  }
+
+  async function handleConfirmedDelete() {
+    setShowDeleteConfirm(false)
     setPending(true)
     await onDelete(block.id)
     setPending(false)
@@ -438,6 +444,17 @@ function PrepBlockCard({ block, onToggleComplete, onDelete }: PrepBlockCardProps
       >
         ✕
       </button>
+
+      <ConfirmModal
+        open={showDeleteConfirm}
+        title="Delete this prep block?"
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        loading={pending}
+        onConfirm={handleConfirmedDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </div>
   )
 }

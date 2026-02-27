@@ -498,15 +498,19 @@ export default async function ChefDashboard() {
     safe('dailyPlanStats', getDailyPlanStats, null),
     safe('responseTimeSummary', getResponseTimeSummary, emptyResponseTimeSummary),
     safe('pendingFollowUps', () => getStaleInquiries(3), emptyPendingFollowUps),
-    safe('chefProfile', async () => {
-      const supabase = await createServerClient()
-      const { data } = await supabase
-        .from('chefs')
-        .select('slug, display_name')
-        .eq('id', user.entityId)
-        .single()
-      return data as { slug: string | null; display_name: string | null } | null
-    }, null),
+    safe(
+      'chefProfile',
+      async () => {
+        const supabase = await createServerClient()
+        const { data } = await supabase
+          .from('chefs')
+          .select('slug, display_name')
+          .eq('id', user.entityId)
+          .single()
+        return data as { slug: string | null; display_name: string | null } | null
+      },
+      null
+    ),
   ])
 
   // ============================================
@@ -859,6 +863,14 @@ export default async function ChefDashboard() {
       {/* RECIPE DEBT (always visible when debt > 0)   */}
       {/* ============================================ */}
       <RecipeDebtWidget debt={recipeDebt} />
+
+      {/* ============================================ */}
+      {/* INVITE A CHEF — referral card                */}
+      {/* ============================================ */}
+      <InviteChefCard
+        chefSlug={chefProfile?.slug}
+        chefName={chefProfile?.display_name ?? undefined}
+      />
 
       {/* ============================================ */}
       {/* SECTION 1: TODAY'S SCHEDULE                   */}
@@ -2002,3 +2014,6 @@ export default async function ChefDashboard() {
 
       {/* AI Business Insights — revenue patterns, profitability, seasonal trends */}
       <BusinessInsightsPanel />
+    </div>
+  )
+}

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import {
   toggleMessageVisibility,
   toggleMessagePin,
@@ -29,6 +30,7 @@ type Props = {
 export function GuestMessagesPanel({ messages, eventId }: Props) {
   const router = useRouter()
   const [loadingId, setLoadingId] = useState<string | null>(null)
+  const [deleteMessageId, setDeleteMessageId] = useState<string | null>(null)
 
   const visibleCount = messages.filter((m) => m.is_visible).length
   const hiddenCount = messages.filter((m) => !m.is_visible).length
@@ -57,8 +59,14 @@ export function GuestMessagesPanel({ messages, eventId }: Props) {
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm('Delete this message permanently?')) return
+  function handleDelete(id: string) {
+    setDeleteMessageId(id)
+  }
+
+  async function handleConfirmedDelete() {
+    if (!deleteMessageId) return
+    const id = deleteMessageId
+    setDeleteMessageId(null)
     setLoadingId(id)
     try {
       await deleteGuestMessage(id)
@@ -212,6 +220,17 @@ export function GuestMessagesPanel({ messages, eventId }: Props) {
           )
         })}
       </div>
+
+      <ConfirmModal
+        open={deleteMessageId !== null}
+        title="Delete this message?"
+        description="This will permanently remove the message. This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        loading={loadingId !== null}
+        onConfirm={handleConfirmedDelete}
+        onCancel={() => setDeleteMessageId(null)}
+      />
     </Card>
   )
 }

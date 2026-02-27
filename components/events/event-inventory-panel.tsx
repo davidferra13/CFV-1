@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import {
   previewEventDeduction,
   executeEventDeduction,
@@ -24,6 +25,7 @@ export function EventInventoryPanel({ eventId, eventStatus }: Props) {
   const [preview, setPreview] = useState<any | null>(null)
   const [showPreview, setShowPreview] = useState(false)
   const [error, setError] = useState('')
+  const [showDeductConfirm, setShowDeductConfirm] = useState(false)
 
   const canDeduct = ['confirmed', 'paid'].includes(eventStatus)
   const isActive = eventStatus === 'in_progress'
@@ -43,12 +45,11 @@ export function EventInventoryPanel({ eventId, eventStatus }: Props) {
   }
 
   function handleDeduct() {
-    if (
-      !confirm(
-        'Execute inventory deduction for this event? This will remove ingredients from stock.'
-      )
-    )
-      return
+    setShowDeductConfirm(true)
+  }
+
+  function handleConfirmedDeduct() {
+    setShowDeductConfirm(false)
     setError('')
     startTransition(async () => {
       try {
@@ -155,6 +156,17 @@ export function EventInventoryPanel({ eventId, eventStatus }: Props) {
           )}
         </div>
       )}
+
+      <ConfirmModal
+        open={showDeductConfirm}
+        title="Execute inventory deduction?"
+        description="This will remove ingredients from stock for this event."
+        confirmLabel="Execute Deduction"
+        variant="danger"
+        loading={isPending}
+        onConfirm={handleConfirmedDeduct}
+        onCancel={() => setShowDeductConfirm(false)}
+      />
     </Card>
   )
 }

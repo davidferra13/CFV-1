@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react'
 import {
   getConversations,
   getArchivedConversations,
@@ -35,6 +35,7 @@ import {
   Bookmark,
   Plus,
 } from 'lucide-react'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 
 interface RemyConversationListProps {
   onSelectConversation: (id: string) => void
@@ -77,6 +78,8 @@ export function RemyConversationList({
   const [editingProject, setEditingProject] = useState<string | null>(null)
   const [editProjectName, setEditProjectName] = useState('')
   const [showMoveMenu, setShowMoveMenu] = useState<string | null>(null)
+  const [deleteConversationId, setDeleteConversationId] = useState<string | null>(null)
+  const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null)
   const contextMenuRef = useRef<HTMLDivElement>(null)
 
   const loadData = useCallback(async () => {
@@ -145,10 +148,15 @@ export function RemyConversationList({
     loadData()
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this conversation? This cannot be undone.')) return
-    await deleteConversation(id)
+  const handleDelete = (id: string) => {
+    setDeleteConversationId(id)
     setContextMenu(null)
+  }
+
+  const handleConfirmedDeleteConversation = async () => {
+    if (!deleteConversationId) return
+    await deleteConversation(deleteConversationId)
+    setDeleteConversationId(null)
     loadData()
   }
 
@@ -221,10 +229,15 @@ export function RemyConversationList({
     loadData()
   }
 
-  const handleDeleteProject = async (id: string) => {
-    if (!confirm('Delete this project? Conversations will be moved to Uncategorized.')) return
-    await deleteProject(id, null)
+  const handleDeleteProject = (id: string) => {
+    setDeleteProjectId(id)
     setProjectContextMenu(null)
+  }
+
+  const handleConfirmedDeleteProject = async () => {
+    if (!deleteProjectId) return
+    await deleteProject(deleteProjectId, null)
+    setDeleteProjectId(null)
     loadData()
   }
 
@@ -600,6 +613,26 @@ export function RemyConversationList({
           />
         </div>
       )}
+
+      <ConfirmModal
+        open={deleteConversationId !== null}
+        title="Delete this conversation?"
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={handleConfirmedDeleteConversation}
+        onCancel={() => setDeleteConversationId(null)}
+      />
+
+      <ConfirmModal
+        open={deleteProjectId !== null}
+        title="Delete this project?"
+        description="Conversations will be moved to Uncategorized."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={handleConfirmedDeleteProject}
+        onCancel={() => setDeleteProjectId(null)}
+      />
     </div>
   )
 }

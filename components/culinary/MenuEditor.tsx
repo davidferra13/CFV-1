@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import {
   addDishToMenu,
   updateDish,
@@ -355,9 +356,14 @@ function ComponentRow({
 }) {
   const [editing, setEditing] = useState(false)
   const [deleting, startDelete] = useTransition()
+  const [showDeleteComponentConfirm, setShowDeleteComponentConfirm] = useState(false)
 
   const handleDelete = () => {
-    if (!confirm(`Delete "${component.name}"? This cannot be undone.`)) return
+    setShowDeleteComponentConfirm(true)
+  }
+
+  const handleConfirmedDeleteComponent = () => {
+    setShowDeleteComponentConfirm(false)
     startDelete(async () => {
       await deleteComponent(component.id)
       onDeleted()
@@ -420,80 +426,98 @@ function ComponentRow({
   }
 
   return (
-    <div
-      className={`flex items-start gap-3 py-2 px-1 rounded group ${deleting ? 'opacity-50' : ''}`}
-    >
-      <div className="flex-1 min-w-0 space-y-1">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-medium text-stone-100">{component.name}</span>
-          <Badge variant="default">
-            {CATEGORY_LABELS[(component.category ?? 'other') as ComponentCategory]}
-          </Badge>
-          {component.is_make_ahead && (
-            <Badge
-              variant={
-                TRANSPORT_BADGE_COLORS[
-                  (component.transport_category ?? 'room_temp') as TransportCategory
-                ]
-              }
-            >
-              {TRANSPORT_LABELS[(component.transport_category ?? 'room_temp') as TransportCategory]}
+    <>
+      <div
+        className={`flex items-start gap-3 py-2 px-1 rounded group ${deleting ? 'opacity-50' : ''}`}
+      >
+        <div className="flex-1 min-w-0 space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-medium text-stone-100">{component.name}</span>
+            <Badge variant="default">
+              {CATEGORY_LABELS[(component.category ?? 'other') as ComponentCategory]}
             </Badge>
+            {component.is_make_ahead && (
+              <Badge
+                variant={
+                  TRANSPORT_BADGE_COLORS[
+                    (component.transport_category ?? 'room_temp') as TransportCategory
+                  ]
+                }
+              >
+                {
+                  TRANSPORT_LABELS[
+                    (component.transport_category ?? 'room_temp') as TransportCategory
+                  ]
+                }
+              </Badge>
+            )}
+            {component.is_make_ahead && component.make_ahead_window_hours && (
+              <span className="text-xs text-stone-400">
+                {component.make_ahead_window_hours}h lead
+              </span>
+            )}
+            {(component as any).portion_quantity && (
+              <span className="text-xs text-stone-400">
+                {(component as any).portion_quantity}
+                {(component as any).portion_unit ?? ''}/plate
+              </span>
+            )}
+          </div>
+          {((component as any).prep_day_offset != null ||
+            (component as any).prep_time_of_day ||
+            (component as any).prep_station) && (
+            <p className="text-xs text-stone-400 leading-relaxed">
+              {[
+                (component as any).prep_day_offset != null
+                  ? (PREP_DAY_OPTIONS.find((o) => o.value === (component as any).prep_day_offset)
+                      ?.label ?? `${Math.abs((component as any).prep_day_offset)} days before`)
+                  : null,
+                (component as any).prep_time_of_day
+                  ? PREP_TIME_LABELS[(component as any).prep_time_of_day as PrepTimeOfDay]
+                  : null,
+                (component as any).prep_station
+                  ? `${(component as any).prep_station} station`
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(' \u00B7 ')}
+            </p>
           )}
-          {component.is_make_ahead && component.make_ahead_window_hours && (
-            <span className="text-xs text-stone-400">
-              {component.make_ahead_window_hours}h lead
-            </span>
-          )}
-          {(component as any).portion_quantity && (
-            <span className="text-xs text-stone-400">
-              {(component as any).portion_quantity}
-              {(component as any).portion_unit ?? ''}/plate
-            </span>
+          {component.execution_notes && (
+            <p className="text-xs text-stone-500 leading-relaxed">{component.execution_notes}</p>
           )}
         </div>
-        {((component as any).prep_day_offset != null ||
-          (component as any).prep_time_of_day ||
-          (component as any).prep_station) && (
-          <p className="text-xs text-stone-400 leading-relaxed">
-            {[
-              (component as any).prep_day_offset != null
-                ? (PREP_DAY_OPTIONS.find((o) => o.value === (component as any).prep_day_offset)
-                    ?.label ?? `${Math.abs((component as any).prep_day_offset)} days before`)
-                : null,
-              (component as any).prep_time_of_day
-                ? PREP_TIME_LABELS[(component as any).prep_time_of_day as PrepTimeOfDay]
-                : null,
-              (component as any).prep_station ? `${(component as any).prep_station} station` : null,
-            ]
-              .filter(Boolean)
-              .join(' \u00B7 ')}
-          </p>
-        )}
-        {component.execution_notes && (
-          <p className="text-xs text-stone-500 leading-relaxed">{component.execution_notes}</p>
+        {!locked && (
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              className="text-xs text-stone-400 hover:text-stone-300 px-2 py-1 rounded hover:bg-stone-700"
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deleting}
+              className="text-xs text-red-400 hover:text-red-700 px-2 py-1 rounded hover:bg-red-950"
+            >
+              {deleting ? '…' : 'Delete'}
+            </button>
+          </div>
         )}
       </div>
-      {!locked && (
-        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-          <button
-            type="button"
-            onClick={() => setEditing(true)}
-            className="text-xs text-stone-400 hover:text-stone-300 px-2 py-1 rounded hover:bg-stone-700"
-          >
-            Edit
-          </button>
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={deleting}
-            className="text-xs text-red-400 hover:text-red-700 px-2 py-1 rounded hover:bg-red-950"
-          >
-            {deleting ? '…' : 'Delete'}
-          </button>
-        </div>
-      )}
-    </div>
+      <ConfirmModal
+        open={showDeleteComponentConfirm}
+        title={`Delete "${component.name}"?`}
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        loading={deleting}
+        onConfirm={handleConfirmedDeleteComponent}
+        onCancel={() => setShowDeleteComponentConfirm(false)}
+      />
+    </>
   )
 }
 
@@ -514,6 +538,7 @@ function DishCard({
   const [dishDesc, setDishDesc] = useState(dish.description ?? '')
   const [saving, startSave] = useTransition()
   const [deleting, startDelete] = useTransition()
+  const [showDeleteCourseConfirm, setShowDeleteCourseConfirm] = useState(false)
   // Force re-render after component mutations (so new components appear)
   const [, forceRefresh] = useState(0)
 
@@ -528,8 +553,11 @@ function DishCard({
   }
 
   const handleDeleteDish = () => {
-    if (!confirm(`Delete Course ${dish.course_number}? All components will also be deleted.`))
-      return
+    setShowDeleteCourseConfirm(true)
+  }
+
+  const handleConfirmedDeleteCourse = () => {
+    setShowDeleteCourseConfirm(false)
     startDelete(async () => {
       await deleteDish(dish.id)
       onDeleted()
@@ -696,6 +724,17 @@ function DishCard({
             )}
           </div>
         )}
+
+        <ConfirmModal
+          open={showDeleteCourseConfirm}
+          title={`Delete Course ${dish.course_number}?`}
+          description="All components will also be deleted. This cannot be undone."
+          confirmLabel="Delete"
+          variant="danger"
+          loading={deleting}
+          onConfirm={handleConfirmedDeleteCourse}
+          onCancel={() => setShowDeleteCourseConfirm(false)}
+        />
       </CardContent>
     </Card>
   )

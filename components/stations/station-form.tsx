@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import {
   createStation,
   updateStation,
@@ -36,6 +37,7 @@ export function StationForm({ station, onDone }: Props) {
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   function update(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))

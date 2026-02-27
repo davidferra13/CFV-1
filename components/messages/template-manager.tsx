@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 
 type Template = {
   id: string

@@ -83,6 +83,7 @@
 23. [Help Center](#23-help-center)
 24. [Games](#24-games)
 25. [Dev Tools](#25-dev-tools)
+26. [Blog](#26-blog)
 
 ---
 
@@ -1176,6 +1177,20 @@ The Remy drawer (`components/ai/remy-drawer.tsx`) has 5 views accessible via ico
 > **Full element-by-element detail → [`docs/ui-audit-secondary-pages.md`](ui-audit-secondary-pages.md)** § Dev Tools
 
 **Route:** `/dev/simulate` (admin only) — Simulation Lab for Ollama quality testing. Module selection chips, scenarios-per-module slider (1-10), estimated time display, "Run Simulation" button. Results panel with pass rates. Run history table with timestamp, module, pass/fail counts, and "View Details" expand.
+
+---
+
+## 26. BLOG
+
+| Route          | Content                                                                                                                                                                                                 |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/blog`        | Blog index page. Article cards with tags, title (linked), description, author, reading time, and publish date. Dark theme with brand hover effects. Static post registry in `lib/blog/posts.ts`.        |
+| `/blog/[slug]` | Individual blog post. Back link, tags, title, author/date/reading-time meta bar, markdown content (custom regex renderer), and bottom CTA card linking to signup. BlogPosting JSON-LD + breadcrumb SEO. |
+
+**Components:**
+
+- `NewsletterSignup` (`components/marketing/newsletter-signup.tsx`) — compact email form in public footer. States: idle → loading → success/error. Server action upserts to `newsletter_subscribers` table.
+- `InviteChefCard` (`components/marketing/invite-chef-card.tsx`) — referral share card on chef dashboard. Generates `?ref=slug` signup URL. Copy-to-clipboard + native Web Share API on mobile.
 
 ---
 

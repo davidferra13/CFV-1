@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import {
   deleteRecipe,
   createRecipe,
@@ -49,6 +50,7 @@ export function RecipeDetailClient({ recipe }: Props) {
   const [showShareModal, setShowShareModal] = useState(false)
   const [shareSuccess, setShareSuccess] = useState<string | null>(null)
   const [showSubRecipeModal, setShowSubRecipeModal] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const handleAddSubRecipe = async (input: {
     child_recipe_id: string
@@ -81,9 +83,12 @@ export function RecipeDetailClient({ recipe }: Props) {
     }
   }
 
-  const handleDelete = async () => {
-    if (!confirm('Delete this recipe? It will be unlinked from any menu components.')) return
+  const handleDelete = () => {
+    setShowDeleteConfirm(true)
+  }
 
+  const handleConfirmedDelete = async () => {
+    setShowDeleteConfirm(false)
     setLoading(true)
     try {
       await deleteRecipe(recipe.id)
@@ -494,6 +499,17 @@ export function RecipeDetailClient({ recipe }: Props) {
           </CardContent>
         </Card>
       )}
+
+      <ConfirmModal
+        open={showDeleteConfirm}
+        title="Delete this recipe?"
+        description="It will be unlinked from any menu components. This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        loading={loading}
+        onConfirm={handleConfirmedDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </div>
   )
 }
