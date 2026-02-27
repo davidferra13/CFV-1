@@ -21,10 +21,11 @@
 
 ## Character Description
 
-Remy is a round, warm-toned chef character — a small potato/dumpling-shaped body with rosy cheeks, a big chef's hat (toque), stubby arms and legs, and an expressive face. Art style is hand-painted/watercolor with soft edges. Transparent PNG backgrounds throughout.
+Remy is a round, warm-toned chef character — a small potato/dumpling-shaped body with rosy cheeks, a big chef's hat (toque), stubby arms and legs, and an expressive face. **Remy is gender-neutral** — no gendered pronouns, no gendered features. Refer to Remy as "Remy" or "they/them." Art style is hand-painted/watercolor with soft edges. Transparent PNG backgrounds throughout.
 
 **Design constants:**
 
+- **Gender-neutral** — no gendered clothing, features, or voice assumptions
 - Round body, terracotta/peach skin tone
 - Oversized white toque (chef hat) — always present
 - Rosy pink cheeks
@@ -214,8 +215,8 @@ Remy currently communicates only through text. The goal is to give Remy a **dist
 
 ### Requirements
 
-- **Warm and friendly** — like a favorite uncle who happens to be a chef
-- **Slight character** — a touch of personality (gentle accent? slight rasp? warm baritone?) without being cartoonish
+- **Warm and friendly** — like a favorite person who happens to be a chef
+- **Slight character** — a touch of personality (gentle accent? slight rasp? warm tone?) without being cartoonish
 - **Not robotic** — no TTS artifacts, no uncanny valley, no "Siri voice"
 - **Fast enough for streaming** — voice synthesis needs to keep up with Remy's text streaming (token by token)
 - **Local/private** — consistent with ChefFlow's privacy-first architecture (no sending client conversation text to cloud TTS)
@@ -224,12 +225,12 @@ Remy currently communicates only through text. The goal is to give Remy a **dist
 
 #### Tier 1 — Local TTS (Privacy-First)
 
-| Engine                  | Quality                               | Speed                   | Runs On        | Cost | Notes                                                                                                                       |
-| ----------------------- | ------------------------------------- | ----------------------- | -------------- | ---- | --------------------------------------------------------------------------------------------------------------------------- |
-| **Piper TTS**           | Good — natural prosody, many voices   | Real-time+              | CPU (PC or Pi) | Free | ONNX-based, ~50 high-quality voices. Can run on Pi for beta. Best local option. Pre-built voices include warm male options. |
-| **Coqui TTS (XTTS v2)** | Excellent — near-human, voice cloning | ~Real-time with GPU     | GPU preferred  | Free | Can clone a voice from 6 seconds of audio. Heavier than Piper (~2GB model). Might need PC GPU.                              |
-| **Bark (Suno)**         | Very good — expressive, laughs/sighs  | Slower than real-time   | GPU required   | Free | 5-10 sec per clip. Too slow for streaming. Good for pre-rendered clips (greetings, celebrations).                           |
-| **StyleTTS 2**          | Excellent — state of the art local    | Near real-time with GPU | GPU required   | Free | Research-grade quality. Harder to set up but amazing results.                                                               |
+| Engine                  | Quality                               | Speed                   | Runs On        | Cost | Notes                                                                                             |
+| ----------------------- | ------------------------------------- | ----------------------- | -------------- | ---- | ------------------------------------------------------------------------------------------------- |
+| **Piper TTS**           | Good — natural prosody, many voices   | Real-time+              | CPU (PC or Pi) | Free | ONNX-based, ~50 high-quality voices. Best local option. Gender-neutral options available.         |
+| **Coqui TTS (XTTS v2)** | Excellent — near-human, voice cloning | ~Real-time with GPU     | GPU preferred  | Free | Can clone a voice from 6 seconds of audio. Heavier than Piper (~2GB model). Might need PC GPU.    |
+| **Bark (Suno)**         | Very good — expressive, laughs/sighs  | Slower than real-time   | GPU required   | Free | 5-10 sec per clip. Too slow for streaming. Good for pre-rendered clips (greetings, celebrations). |
+| **StyleTTS 2**          | Excellent — state of the art local    | Near real-time with GPU | GPU required   | Free | Research-grade quality. Harder to set up but amazing results.                                     |
 
 #### Tier 2 — Cloud TTS (Higher Quality, Privacy Trade-off)
 
@@ -238,7 +239,7 @@ Remy currently communicates only through text. The goal is to give Remy a **dist
 | **ElevenLabs**       | Best-in-class — indistinguishable from human | ~200ms first byte | $5-22/mo      | Voice cloning, streaming API. Privacy concern: conversation text leaves local machine. |
 | **PlayHT 2.0**       | Excellent                                    | ~300ms            | $9-49/mo      | Good streaming support, voice cloning.                                                 |
 | **OpenAI TTS**       | Very good                                    | Fast              | Per-token     | "Fable" and "Onyx" voices are warm. Same privacy concern.                              |
-| **Azure Neural TTS** | Very good                                    | Fast              | Per-character | "Guy" and "Davis" are warm male voices. Enterprise-grade.                              |
+| **Azure Neural TTS** | Very good                                    | Fast              | Per-character | "Guy" and "Davis" are warm voices. Enterprise-grade.                                   |
 
 #### Recommended Architecture
 

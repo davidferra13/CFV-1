@@ -403,7 +403,9 @@ interface SpriteManifest {
 
 **Voice ID:** `cjVigY5qzO86Huf0OWal`
 
-ElevenLabs describes Eric as "a smooth tenor pitch from a man in his 40s — perfect for agentic use cases." Warm, trustworthy, professional without being stiff. The best match for a chef concierge character.
+ElevenLabs describes Eric as "a smooth tenor pitch — perfect for agentic use cases." Warm, trustworthy, professional without being stiff. A strong candidate for Remy's voice, though we should also audition gender-neutral and androgynous voices — Remy is gender-neutral and the voice should reflect that.
+
+**Also consider:** River (`SAz9YHcvj6GT2YYXdXww`) — a relaxed, neutral voice described as "gender-neutral." Could be the best match for Remy's character.
 
 **Runner-up:** George (`JBFqnCBsd6RMkjVDRZzb`) — British accent, warm resonance. Adds European chef energy if we want more character.
 
@@ -460,7 +462,11 @@ Played in browser → User hears Remy speak
 
 **What leaves the machine:** Only Remy's AI-generated response text. Not the user's messages, not client data, not event details. The user's input stays in Ollama and IndexedDB. Remy's output text is not PII — it's AI-generated prose.
 
-**Voice toggle:** Users can disable voice entirely. Text-only mode works exactly as it does today.
+**Voice & sound are OFF by default.** Users must opt in via a settings toggle. Nobody should hear unexpected audio from a web app — that's annoying and unprofessional. The toggle enables both voice synthesis and sound effects together, or they can be toggled independently:
+
+- **Voice:** OFF by default. Opt-in via Remy drawer settings.
+- **Sound effects:** OFF by default. Opt-in via Remy drawer settings.
+- **Text-only mode** (default) works exactly as it does today — zero audio, zero surprise.
 
 ---
 
@@ -557,6 +563,8 @@ ws.onmessage = (event) => {
 ## Animation Triggers & App Events {#triggers}
 
 ### Event-to-Animation Map
+
+> **Sound effects and voice clips only play when the user has opted in.** Both are OFF by default. Animations (visual) always play regardless of audio settings.
 
 | App Event              | Body State          | Emotion     | Sound Effect  | Voice Clip              |
 | ---------------------- | ------------------- | ----------- | ------------- | ----------------------- |
