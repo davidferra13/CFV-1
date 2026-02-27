@@ -338,6 +338,15 @@ export default async function SettingsPage() {
                 workspace focused.
               </p>
             </Link>
+            <Link
+              href="/settings/payment-methods"
+              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+            >
+              <p className="font-medium text-stone-100">Digital Wallets</p>
+              <p className="text-sm text-stone-500 mt-1">
+                Enable or disable Apple Pay and Google Pay for your client checkout sessions.
+              </p>
+            </Link>
           </div>
         </SettingsCategory>
       </div>
@@ -474,6 +483,26 @@ export default async function SettingsPage() {
                     Manage POS, website, scheduling, and CRM integrations in one place.
                   </p>
                 </Link>
+                <Link
+                  href="/settings/calendar-sync"
+                  className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+                >
+                  <p className="font-medium text-stone-100">Calendar Sync (iCal)</p>
+                  <p className="text-sm text-stone-500 mt-1">
+                    Generate a subscribe-by-URL feed that auto-syncs events to Apple Calendar,
+                    Outlook, or Google Calendar.
+                  </p>
+                </Link>
+                <Link
+                  href="/settings/zapier"
+                  className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+                >
+                  <p className="font-medium text-stone-100">Zapier & Webhooks</p>
+                  <p className="text-sm text-stone-500 mt-1">
+                    Connect ChefFlow to 5,000+ apps via Zapier or Make. Manage webhook subscriptions
+                    and delivery logs.
+                  </p>
+                </Link>
               </div>
             </div>
           </div>
@@ -516,6 +545,15 @@ export default async function SettingsPage() {
         >
           <div className="space-y-3">
             <GoogleReviewUrlForm currentUrl={googleReviewUrl} />
+            <Link
+              href="/settings/yelp"
+              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+            >
+              <p className="font-medium text-stone-100">Yelp Reviews</p>
+              <p className="text-sm text-stone-500 mt-1">
+                Connect your Yelp business listing to automatically sync reviews into ChefFlow.
+              </p>
+            </Link>
             <Link
               href="/reviews"
               className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"

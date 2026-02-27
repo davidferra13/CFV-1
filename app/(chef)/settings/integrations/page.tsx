@@ -11,6 +11,8 @@ import { getOAuthConnectionStatuses } from '@/lib/integrations/core/connection-s
 import { TakeAChefSetup } from '@/components/integrations/take-a-chef-setup'
 import { getTakeAChefStats } from '@/lib/gmail/take-a-chef-stats'
 import { createServerClient } from '@/lib/supabase/server'
+import { Suspense } from 'react'
+import { IntegrationCallbackToast } from '@/components/settings/integration-callback-toast'
 
 export const metadata: Metadata = { title: 'Integrations - ChefFlow' }
 
@@ -38,6 +40,9 @@ export default async function IntegrationsSettingsPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      <Suspense>
+        <IntegrationCallbackToast />
+      </Suspense>
       <div>
         <Link
           href="/settings"

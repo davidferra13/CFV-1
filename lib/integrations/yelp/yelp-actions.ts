@@ -1,0 +1,113 @@
+'use server'
+
+import { createServerClient } from '@/lib/supabase/server'
+import { requireChef } from '@/lib/auth/require-chef'
+import { revalidatePath } from 'next/cache'
+
+export async function saveYelpBusinessId(businessId: string, businessName: string) {
+  const user = await requireChef()
+  const supabase = createServerClient({ admin: true })
+
+  // Upsert an integration_connection record for Yelp
+  await supabase.from('integration_connections').upsert(
+    {
+      id: crypto.randomUUID(),
+      chef_id: user.entityId,
+      tenant_id: user.entityId,
+      provider: 'yelp',
+      auth_type: 'api_key',
+      status: 'connected',
+      external_account_id: businessId,
+      external_account_name: businessName,
+      config: { business_id: businessId },
+      connected_at: new Date().toISOString(),
+    },
+    { onConflict: 'tenant_id,provider' }
+  )
+
+  revalidatePath('/settings/yelp')
+  return { success: true }
+}
+
+export async function removeYelpBusinessId() {
+  const user = await requireChef()
+  const supabase = createServerClient({ admin: true })
+
+  await supabase
+    .from('integration_connections')
+    .update({ status: 'disconnected' })
+    .eq('tenant_id', user.entityId)
+    .eq('provider', 'yelp')
+
+  revalidatePath('/settings/yelp')
+  return { success: true }
+}
+
+export async function getYelpConnection() {
+  const user = await requireChef()
+  const supabase = createServerClient({ admin: true })
+
+  const { data } = await supabase
+    .from('integration_connections')
+    .select('external_account_id, external_account_name, config')
+    .eq('tenant_id', user.entityId)
+    .eq('provider', 'yelp')
+    .eq('status', 'connected')
+    .single()
+
+  if (!data) return { businessId: null, businessName: null }
+
+  return {
+    businessId: data.external_account_id,
+    businessName: data.external_account_name,
+  }
+}
+
+export async function getYelpReviewCount() {
+  const user = await requireChef()
+  const supabase = createServerClient({ admin: true })
+
+  const { count } = await supabase
+    .from('external_reviews')
+    .select('id', { count: 'exact', head: true })
+    .eq('tenant_id', user.entityId)
+    .eq('provider', 'yelp')
+
+  return count ?? 0
+}
+
+export async function syncYelpReviewsAction(businessId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient({ admin: true })
+  const { fetchYelpReviews } = await import('@/lib/integrations/yelp/yelp-sync')
+
+  const reviews = await fetchYelpReviews({ business_id: businessId })
+  const nowIso = new Date().toISOString()
+
+  if (reviews.length === 0) return { newCount: 0 }
+
+  const rows = reviews.map((review) => ({
+    tenant_id: user.entityId,
+    provider: 'yelp' as const,
+    source_review_id: review.sourceReviewId,
+    source_url: review.sourceUrl,
+    author_name: review.authorName,
+    rating: review.rating,
+    review_text: review.reviewText,
+    review_date: review.reviewDate,
+    raw_payload: review.rawPayload,
+    last_seen_at: nowIso,
+  }))
+
+  const { data, error } = await supabase
+    .from('external_reviews')
+    .upsert(rows, { onConflict: 'tenant_id,provider,source_review_id' })
+    .select('id')
+
+  if (error) throw new Error(`Failed to sync Yelp reviews: ${error.message}`)
+
+  revalidatePath('/reviews')
+  revalidatePath('/settings/yelp')
+
+  return { newCount: (data || []).length }
+}

@@ -82,12 +82,13 @@ export async function fetchYelpReviews(
 // Search for a Yelp business by name and location (for setup wizard)
 export async function searchYelpBusiness(
   term: string,
-  location: string
+  location?: string
 ): Promise<
   Array<{
     id: string
     alias: string
     name: string
+    location: { display_address: string[] }
     rating: number
     review_count: number
     url: string
@@ -97,10 +98,10 @@ export async function searchYelpBusiness(
 
   const params = new URLSearchParams({
     term,
-    location,
-    categories: 'personalchefs,caterers,chefs',
     limit: '5',
   })
+  if (location) params.set('location', location)
+  else params.set('location', 'United States')
 
   const response = await fetch(`${YELP_API_BASE}/businesses/search?${params}`, {
     headers: {
@@ -119,6 +120,7 @@ export async function searchYelpBusiness(
       id: string
       alias: string
       name: string
+      location: { display_address: string[] }
       rating: number
       review_count: number
       url: string
@@ -129,6 +131,7 @@ export async function searchYelpBusiness(
     id: b.id,
     alias: b.alias,
     name: b.name,
+    location: b.location || { display_address: [] },
     rating: b.rating,
     review_count: b.review_count,
     url: b.url,
