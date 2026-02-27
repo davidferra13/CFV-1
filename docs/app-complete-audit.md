@@ -212,6 +212,7 @@
 - **Events Card:** this month + YTD counts, guests, "All Events" → `/events`
 - **Inquiries Card:** active count, breakdown, "Pipeline" → `/inquiries`
 - **YoY Cards:** revenue, events, avg event value (current year vs prior year with trend)
+- **Prospecting Widget:** active pipeline count, conversion rate, follow-ups due links → `/prospecting?status=follow_up`, hot leads (responded/meeting) → `/prospecting/pipeline`, converted count, new leads → `/prospecting/queue`, "Hub" → `/prospecting`. Only shows when total prospects > 0.
 - **Pipeline Forecast:** expected + best case revenue, stage breakdown, "X open →" → `/inquiries`
 - **Stuck Events:** per event link to `/events/${id}` showing days stuck
 - **Multi-Event Day Alert:** warning with event links
@@ -545,13 +546,16 @@
 
 ### 4.6 Prospecting (Admin Only)
 
-**Route:** `/prospecting` — Stats, filter form, prospect table.
+**Route:** `/prospecting` — Header buttons: AI Scrub, Pipeline, Call Queue, Clusters, Import CSV, **Add Prospect** (expands inline form: name, type, category, email, phone, contact person, city, state, notes). 4 stat cards (Total, New/Queued, Follow-ups Due, Converted). **Conversion Funnel Panel** (bar chart showing pipeline stages with counts, percentages, avg days-in-stage, win rate summary). Filter form (search, region, status select, Filter/Clear buttons). Batch actions row: Batch Re-Enrich, Export CSV, Sync Reminders. Prospect table with checkbox selection + **Bulk Action Bar** (Set Status/Stage/Priority dropdowns, Delete with confirm modal).
 
-**`/prospecting/[id]`** — Full dossier: contact info, gatekeeper intel, quick call log (outcome buttons + follow-up select + notes), approach strategy, talking points, call script, intelligence card, notes timeline. "Convert to Inquiry" and "Delete" buttons.
+**`/prospecting/[id]`** — Full dossier: contact info, gatekeeper intel, quick call log (outcome buttons + follow-up select + notes), **Send Email Panel** (Gmail integration — shows "Connect Gmail" link if Gmail not connected, else shows subject/body form that sends via Gmail API and auto-advances pipeline), **inline tag editor** (add/remove tags with Enter key), approach strategy, talking points, call script, intelligence card, outreach log, notes timeline, **stage history timeline** (from → to badges with timestamps), similar prospects merge panel. "Convert to Inquiry" and "Delete" buttons.
 
 **`/prospecting/queue`** — Daily call queue builder.
 **`/prospecting/scrub`** — AI lead scrub (paste query → Ollama generates dossiers).
 **`/prospecting/scripts`** — Call script CRUD.
+**`/prospecting/pipeline`** — Kanban-style pipeline view.
+**`/prospecting/clusters`** — Geographic cluster view.
+**`/prospecting/import`** — CSV import.
 
 ### 4.7 Guest Leads
 

@@ -1221,6 +1221,22 @@ export async function bulkUpdateProspects(
 
   if (Object.keys(updatePayload).length === 0) throw new Error('No updates specified')
 
+  // Fetch current stages before update (for accurate stage history)
+  let currentStages = new Map<string, string | null>()
+  if (updates.pipeline_stage) {
+    const { data: current } = await supabase
+      .from('prospects')
+      .select('id, pipeline_stage')
+      .in('id', prospectIds)
+      .eq('chef_id', user.tenantId!)
+
+    if (current) {
+      for (const p of current) {
+        currentStages.set(p.id, p.pipeline_stage ?? null)
+      }
+    }
+  }
+
   const { error } = await supabase
     .from('prospects')
     .update(updatePayload)
@@ -1229,13 +1245,13 @@ export async function bulkUpdateProspects(
 
   if (error) throw new Error('Bulk update failed')
 
-  // Record stage history for pipeline stage changes
+  // Record stage history for pipeline stage changes (with accurate from_stage)
   if (updates.pipeline_stage) {
     try {
       const historyRows = prospectIds.map((id) => ({
         prospect_id: id,
         chef_id: user.tenantId!,
-        from_stage: null,
+        from_stage: currentStages.get(id) ?? null,
         to_stage: updates.pipeline_stage!,
         notes: 'Bulk update',
       }))

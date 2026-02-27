@@ -4,11 +4,13 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Phone, ExternalLink, User, Building2 } from 'lucide-react'
+import { Phone, ExternalLink, User, Building2, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { Prospect } from '@/lib/prospecting/types'
 import { PROSPECT_CATEGORY_LABELS, PROSPECT_STATUS_COLORS } from '@/lib/prospecting/constants'
 import type { ProspectCategory, ProspectStatus } from '@/lib/prospecting/constants'
 import { BulkActionBar } from './bulk-action-bar'
+
+const PAGE_SIZE = 25
 
 interface ProspectTableProps {
   prospects: Prospect[]
@@ -16,6 +18,7 @@ interface ProspectTableProps {
 
 export function ProspectTable({ prospects }: ProspectTableProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [currentPage, setCurrentPage] = useState(0)
 
   if (prospects.length === 0) {
     return (
@@ -26,13 +29,27 @@ export function ProspectTable({ prospects }: ProspectTableProps) {
     )
   }
 
-  const allSelected = selectedIds.size === prospects.length && prospects.length > 0
+  const totalPages = Math.ceil(prospects.length / PAGE_SIZE)
+  const pageStart = currentPage * PAGE_SIZE
+  const pageEnd = Math.min(pageStart + PAGE_SIZE, prospects.length)
+  const pageProspects = prospects.slice(pageStart, pageEnd)
+
+  const allPageSelected =
+    pageProspects.length > 0 && pageProspects.every((p) => selectedIds.has(p.id))
 
   function toggleAll() {
-    if (allSelected) {
-      setSelectedIds(new Set())
+    if (allPageSelected) {
+      setSelectedIds((prev) => {
+        const next = new Set(prev)
+        for (const p of pageProspects) next.delete(p.id)
+        return next
+      })
     } else {
-      setSelectedIds(new Set(prospects.map((p) => p.id)))
+      setSelectedIds((prev) => {
+        const next = new Set(prev)
+        for (const p of pageProspects) next.add(p.id)
+        return next
+      })
     }
   }
 
@@ -62,9 +79,9 @@ export function ProspectTable({ prospects }: ProspectTableProps) {
               <th className="py-3 px-2 w-8" aria-label="Select all">
                 <input
                   type="checkbox"
-                  checked={allSelected}
+                  checked={allPageSelected}
                   onChange={toggleAll}
-                  title="Select all prospects"
+                  title="Select all on this page"
                   className="rounded border-stone-600"
                 />
               </th>
@@ -79,7 +96,7 @@ export function ProspectTable({ prospects }: ProspectTableProps) {
             </tr>
           </thead>
           <tbody>
-            {prospects.map((p) => (
+            {pageProspects.map((p) => (
               <tr
                 key={p.id}
                 className={`border-b border-stone-800 hover:bg-stone-800 transition-colors ${
@@ -195,6 +212,49 @@ export function ProspectTable({ prospects }: ProspectTableProps) {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between pt-2">
+          <span className="text-xs text-stone-500">
+            Showing {pageStart + 1}–{pageEnd} of {prospects.length}
+            {selectedIds.size > 0 && (
+              <span className="text-brand-400 ml-2">({selectedIds.size} selected)</span>
+            )}
+          </span>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+              disabled={currentPage === 0}
+              className="h-7 w-7 p-0"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <Button
+                key={i}
+                variant={i === currentPage ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setCurrentPage(i)}
+                className="h-7 w-7 p-0 text-xs"
+              >
+                {i + 1}
+              </Button>
+            ))}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={currentPage === totalPages - 1}
+              className="h-7 w-7 p-0"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
