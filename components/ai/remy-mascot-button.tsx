@@ -115,20 +115,21 @@ export function RemyMascotButton({
   }, [])
 
   // --- Animation class based on state ---
+  // Remy is glued to the bottom of the browser — the mascot image is cut
+  // horizontally to sit flush with the browser edge. No vertical movement allowed
+  // except minimize (translate down to hide body, chef hat peeks out).
   const animationClass = (() => {
     if (minimized) return 'translate-y-[80%] transition-transform duration-500 ease-in-out'
     switch (effectiveState) {
       case 'sleeping':
         return 'translate-y-[70%] transition-transform duration-1000 ease-in'
-      case 'success':
-        return 'animate-mascot-hop'
       case 'nudge':
-        return 'animate-mascot-wiggle'
+        return 'animate-mascot-wiggle' // horizontal wiggle only, no vertical
+      case 'success':
       case 'thinking':
-        return '' // No bob during thinking — bubble is the indicator
       case 'idle':
       default:
-        return 'animate-mascot-bob'
+        return '' // No animation — stay flush with browser bottom
     }
   })()
 
@@ -160,7 +161,6 @@ export function RemyMascotButton({
         onClick={minimized ? (onToggleMinimize ?? onClick) : onClick}
         className={[
           'w-[60px] h-[70px] sm:w-[80px] sm:h-[93px] lg:w-[100px] lg:h-[116px]',
-          'animate-mascot-peek',
           'group cursor-pointer',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-900 rounded-t-xl',
         ].join(' ')}
@@ -177,13 +177,7 @@ export function RemyMascotButton({
           effectiveState !== 'sleeping' && <SpeechBubble text={greeting} />}
 
         {/* Mascot image with state-driven animation */}
-        <div
-          className={[
-            'relative w-full h-full transition-transform duration-200 ease-out',
-            'group-hover:-translate-y-1 group-active:translate-y-0',
-            animationClass,
-          ].join(' ')}
-        >
+        <div className={['relative w-full h-full', animationClass].join(' ')}>
           {/* Base mascot image — always rendered, fades when speaking */}
           <Image
             src="/images/remy-mascot.png"

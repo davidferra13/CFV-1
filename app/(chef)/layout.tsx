@@ -23,7 +23,6 @@ import { MilestoneOverlay } from '@/components/ui/milestone-overlay'
 import { BreadcrumbTracker } from '@/components/activity/breadcrumb-tracker'
 import { QuickCapture } from '@/components/mobile/quick-capture'
 import { FeedbackNudgeModal } from '@/components/feedback/feedback-nudge-modal'
-import { PageInfoButton } from '@/components/ui/page-info'
 import { ThemeProvider } from '@/components/ui/theme-provider'
 import { EnvironmentBadge } from '@/components/ui/environment-badge'
 import { DeletionPendingBanner } from '@/components/settings/deletion-pending-banner'
@@ -189,9 +188,6 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
 
                 {/* Business milestone celebrations â€” fires once per threshold, replayable */}
                 <MilestoneOverlay />
-
-                {/* Page info -- contextual help overlay */}
-                <PageInfoButton />
 
                 {/* Analytics identity -- associates events with logged-in user */}
                 <AnalyticsIdentify userId={user.id} email={user.email} role={user.role} />

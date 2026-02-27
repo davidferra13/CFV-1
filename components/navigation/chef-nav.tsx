@@ -630,6 +630,23 @@ export function ChefSidebar({
                 </Link>
               )
             })}
+
+            {/* Sign Out — inside nav so it's above the Remy mascot */}
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await signOut()
+                } catch (e) {
+                  console.error('[sign-out]', e)
+                }
+                window.location.href = '/'
+              }}
+              title="Sign Out"
+              className="flex items-center justify-center w-10 h-10 rounded-lg text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors"
+            >
+              <LogOut className="w-[18px] h-[18px]" />
+            </button>
           </div>
         ) : (
           /* ── EXPANDED MODE ── */
@@ -736,31 +753,26 @@ export function ChefSidebar({
                 </Link>
               )
             })}
+
+            {/* Sign Out — inside nav so it's above the Remy mascot */}
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await signOut()
+                } catch (e) {
+                  console.error('[sign-out]', e)
+                }
+                window.location.href = '/'
+              }}
+              className="flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors border-l-2 border-transparent"
+            >
+              <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
+              Sign Out
+            </button>
           </div>
         )}
       </nav>
-
-      {/* Bottom — AI status + Sign Out */}
-      <div className={`border-t border-stone-800 ${collapsed ? 'p-1.5' : 'p-3'}`}>
-        <button
-          type="button"
-          onClick={async () => {
-            try {
-              await signOut()
-            } catch (e) {
-              console.error('[sign-out]', e)
-            }
-            window.location.href = '/'
-          }}
-          title={collapsed ? 'Sign Out' : undefined}
-          className={`flex items-center rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors ${
-            collapsed ? 'justify-center w-10 h-10 mx-auto' : 'gap-3 w-full px-3 py-2'
-          }`}
-        >
-          <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
-          {!collapsed && 'Sign Out'}
-        </button>
-      </div>
     </aside>
   )
 }
