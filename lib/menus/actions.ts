@@ -856,6 +856,16 @@ export async function transitionMenu(menuId: string, toStatus: MenuStatus, reaso
     console.error('[transitionMenu] Activity log failed (non-blocking):', err)
   }
 
+  // Auto-index dishes when a menu is locked (non-blocking side effect)
+  if (toStatus === 'locked') {
+    try {
+      const { indexDishesFromMenu } = await import('@/lib/menus/dish-index-bridge')
+      await indexDishesFromMenu(menuId, user.tenantId!, user.id)
+    } catch (err) {
+      console.error('[transitionMenu] Dish index bridge failed (non-blocking):', err)
+    }
+  }
+
   return { success: true }
 }
 

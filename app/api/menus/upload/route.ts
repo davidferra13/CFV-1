@@ -1,21 +1,32 @@
 // API route for menu file upload processing
-// Accepts file data (base64) or pasted text, processes through the pipeline
+// Accepts FormData (file upload) or JSON (pasted text)
 
 import { NextRequest, NextResponse } from 'next/server'
 import { requireChef } from '@/lib/auth/get-user'
+import { createServerClient } from '@/lib/supabase/server'
 import {
   createUploadJob,
   processUploadJob,
   processFromPastedText,
 } from '@/lib/menus/upload-actions'
 
+const MENU_UPLOADS_BUCKET = 'menu-uploads'
+const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50 MB
+
 export async function POST(request: NextRequest) {
   try {
-    await requireChef()
-    const body = await request.json()
+    const user = await requireChef()
+    const tenantId = user.tenantId!
+    const contentType = request.headers.get('content-type') || ''
 
-    // Pasted text mode
-    if (body.pastedText) {
+    // JSON body = pasted text mode
+    if (contentType.includes('application/json')) {
+      const body = await request.json()
+
+      if (!body.pastedText) {
+        return NextResponse.json({ error: 'No pasted text provided' }, { status: 400 })
+      }
+
       const result = await processFromPastedText(body.pastedText, {
         event_date: body.eventDate,
         event_type: body.eventType,
@@ -25,31 +36,68 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(result)
     }
 
-    // File upload mode
-    if (body.fileName && body.fileData) {
-      // Create job record
-      const job = await createUploadJob({
-        file_name: body.fileName,
-        file_type: body.fileType || 'unknown',
-        event_date: body.eventDate,
-        event_type: body.eventType,
-        client_name: body.clientName,
-        notes: body.notes,
-      })
+    // FormData = file upload mode
+    const formData = await request.formData()
+    const file = formData.get('file') as File | null
 
-      // Decode base64 to buffer
-      const buffer = Buffer.from(body.fileData, 'base64')
-
-      // Process the file
-      await processUploadJob(job.id, buffer, body.fileName)
-
-      return NextResponse.json({
-        jobId: job.id,
-        status: 'review',
-      })
+    if (!file || file.size === 0) {
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    return NextResponse.json({ error: 'No file data or text provided' }, { status: 400 })
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: `File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum is 50 MB.` },
+        { status: 400 }
+      )
+    }
+
+    const fileName = file.name
+    const fileExt = fileName.split('.').pop()?.toLowerCase() || 'bin'
+
+    // Create the upload job record
+    const job = await createUploadJob({
+      file_name: fileName,
+      file_type: fileExt,
+      event_date: (formData.get('eventDate') as string) || undefined,
+      event_type: (formData.get('eventType') as string) || undefined,
+      client_name: (formData.get('clientName') as string) || undefined,
+      notes: (formData.get('notes') as string) || undefined,
+    })
+
+    // Store the original file in Supabase Storage
+    const supabase = createServerClient()
+    const storagePath = `${tenantId}/${job.id}/${fileName}`
+
+    const { error: storageError } = await supabase.storage
+      .from(MENU_UPLOADS_BUCKET)
+      .upload(storagePath, file, {
+        contentType: file.type || 'application/octet-stream',
+        upsert: false,
+      })
+
+    if (storageError) {
+      console.error('[menu-upload] Storage upload failed:', storageError)
+      // Non-blocking — processing can still work from the buffer
+    } else {
+      // Save the storage path to the job record
+      await supabase
+        .from('menu_upload_jobs')
+        .update({ file_storage_path: storagePath })
+        .eq('id', job.id)
+        .eq('tenant_id', tenantId)
+    }
+
+    // Read file into buffer for processing
+    const arrayBuffer = await file.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
+
+    // Process the file (extract text → parse → save)
+    await processUploadJob(job.id, buffer, fileName)
+
+    return NextResponse.json({
+      jobId: job.id,
+      status: 'review',
+    })
   } catch (err) {
     console.error('[menu-upload] Error:', err)
     return NextResponse.json(

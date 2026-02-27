@@ -43,6 +43,7 @@ import {
   UtensilsCrossed,
   Gamepad2,
   Palette,
+  Upload,
   Warehouse,
 } from 'lucide-react'
 
@@ -347,7 +348,11 @@ export const navGroups: NavGroup[] = [
         href: '/menus',
         label: 'Menus',
         icon: UtensilsCrossed,
-        children: [{ href: '/menus/dishes', label: 'Dish Index' }],
+        children: [
+          { href: '/culinary/dish-index', label: 'Dish Index' },
+          { href: '/menus/upload', label: 'Menu Upload', icon: Upload },
+          { href: '/culinary/dish-index/insights', label: 'Dish Insights' },
+        ],
       },
       {
         href: '/recipes',

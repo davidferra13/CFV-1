@@ -89,21 +89,13 @@ export function MenuUploadZone({ onFilesProcessed, onPastedText }: MenuUploadZon
       )
 
       try {
-        // Read file as ArrayBuffer
-        const arrayBuffer = await uploadFile.file.arrayBuffer()
-        const base64 = btoa(
-          new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
-        )
+        // Send file as FormData (no base64 bloat, supports large files)
+        const formData = new FormData()
+        formData.append('file', uploadFile.file)
 
-        // Call the upload API
         const response = await fetch('/api/menus/upload', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            fileName: uploadFile.file.name,
-            fileType: uploadFile.file.name.split('.').pop()?.toLowerCase(),
-            fileData: base64,
-          }),
+          body: formData,
         })
 
         if (!response.ok) {

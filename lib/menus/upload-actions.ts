@@ -278,7 +278,7 @@ export async function approveAndIndexDishes(input: z.infer<typeof ApproveDishesB
     // Check if dish already exists (dedup by canonical name + course)
     const { data: existing } = await supabase
       .from('dish_index')
-      .select('id, times_served')
+      .select('id, times_served, first_served')
       .eq('tenant_id', tenantId)
       .eq('canonical_name', canonical)
       .eq('course', dish.course)
@@ -293,8 +293,11 @@ export async function approveAndIndexDishes(input: z.infer<typeof ApproveDishesB
         times_served: existing.times_served + 1,
       }
       if (job.event_date) {
-        // Update first_served if this is earlier
         updates.last_served = job.event_date
+        // Update first_served if this event is earlier than the current earliest
+        if (!existing.first_served || job.event_date < existing.first_served) {
+          updates.first_served = job.event_date
+        }
       }
       await supabase.from('dish_index').update(updates).eq('id', dishId).eq('tenant_id', tenantId)
     } else {

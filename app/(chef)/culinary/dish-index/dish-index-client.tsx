@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { DishIndexCard } from '@/components/menus/dish-index-card'
+import { DishQuickAdd } from '@/components/menus/dish-quick-add'
 import { getDishIndex } from '@/lib/menus/dish-index-actions'
 import {
   DISH_COURSES,
@@ -80,6 +81,10 @@ export function DishIndexClient({ initialDishes, totalCount, stats }: DishIndexC
     [search, courseFilter, rotationFilter, recipeFilter, sortBy]
   )
 
+  const handleDishAdded = useCallback(() => {
+    applyFilters()
+  }, [applyFilters])
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -92,6 +97,7 @@ export function DishIndexClient({ initialDishes, totalCount, stats }: DishIndexC
             </span>
           </div>
           <div className="flex gap-2">
+            <DishQuickAdd onDishAdded={handleDishAdded} />
             <Link href="/menus/upload">
               <Button variant="secondary">Upload Menus</Button>
             </Link>
