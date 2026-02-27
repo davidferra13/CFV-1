@@ -114,15 +114,16 @@ export function RemyMascotButton({
     }
   }, [])
 
+  // Whether Remy should show the hat-only asset (minimized or sleeping)
+  const showHat = minimized || effectiveState === 'sleeping'
+
   // --- Animation class based on state ---
   // Remy is glued to the bottom of the browser — the mascot image is cut
-  // horizontally to sit flush with the browser edge. No vertical movement allowed
-  // except minimize (translate down to hide body, chef hat peeks out).
+  // horizontally to sit flush with the browser edge. No vertical movement allowed.
+  // When minimized/sleeping, we crossfade to the hat-only image instead of translating.
   const animationClass = (() => {
-    if (minimized) return 'translate-y-[70%] transition-transform duration-500 ease-in-out'
+    if (showHat) return 'translate-y-[50%] transition-transform duration-500 ease-in-out'
     switch (effectiveState) {
-      case 'sleeping':
-        return 'translate-y-[60%] transition-transform duration-1000 ease-in'
       case 'nudge':
         return 'animate-mascot-wiggle' // horizontal wiggle only, no vertical
       case 'success':
@@ -178,7 +179,7 @@ export function RemyMascotButton({
 
         {/* Mascot image with state-driven animation */}
         <div className={['relative w-full h-full', animationClass].join(' ')}>
-          {/* Base mascot image — always rendered, fades when speaking */}
+          {/* Full mascot — hidden when minimized/sleeping or speaking */}
           <Image
             src="/images/remy-mascot.png"
             alt="Remy the ChefFlow assistant"
@@ -186,9 +187,21 @@ export function RemyMascotButton({
             sizes="(max-width: 640px) 60px, (max-width: 1024px) 80px, 100px"
             className={[
               'object-contain object-bottom pointer-events-none select-none transition-opacity duration-300',
-              speakingProp ? 'opacity-0' : 'opacity-100',
+              showHat || speakingProp ? 'opacity-0' : 'opacity-100',
             ].join(' ')}
             priority
+          />
+
+          {/* Hat-only image — visible when minimized or sleeping */}
+          <Image
+            src="/images/remy-hat.png"
+            alt="Remy's chef hat"
+            fill
+            sizes="(max-width: 640px) 60px, (max-width: 1024px) 80px, 100px"
+            className={[
+              'object-contain object-bottom pointer-events-none select-none transition-opacity duration-300',
+              showHat && !speakingProp ? 'opacity-100' : 'opacity-0',
+            ].join(' ')}
           />
 
           {/* Talking avatar overlay — visible when speaking */}
