@@ -82,6 +82,7 @@ import {
 } from '@/lib/ai/remy-memory-actions'
 import { shareConversationWithSupport } from '@/lib/ai/support-share-action'
 import { toast } from 'sonner'
+import type { BodyEvent } from '@/lib/ai/remy-body-state'
 import type {
   RemyMessage,
   RemyMemoryItem,
@@ -305,7 +306,7 @@ export function RemyDrawer() {
     feedText,
     stopSpeaking: lipSyncStop,
     resetLipSync,
-    setMascotState,
+    dispatchBody,
     setIsLoading: setContextLoading,
   } = useRemyContext()
   const [collapsed, setCollapsed] = useState(false)
@@ -317,9 +318,13 @@ export function RemyDrawer() {
     (val: boolean) => {
       setLoadingInternal(val)
       setContextLoading(val)
-      setMascotState(val ? 'thinking' : 'idle')
+      if (val) {
+        dispatchBody({ type: 'RESPONSE_STARTED' })
+      }
+      // Note: RESPONSE_ENDED is dispatched explicitly at the end of streaming,
+      // not here — because setLoading(false) is also called on cancel/error
     },
-    [setContextLoading, setMascotState]
+    [setContextLoading, dispatchBody]
   )
   const [streamingContent, setStreamingContent] = useState('')
   const [streamingIntent, setStreamingIntent] = useState<string | undefined>()
@@ -975,15 +980,50 @@ export function RemyDrawer() {
     setStreamingContent('')
     setStreamingIntent(undefined)
     resetLipSync()
+    dispatchBody({ type: 'RESPONSE_ENDED' })
     toast.success('Request cancelled')
-  }, [resetLipSync, setLoading])
+  }, [resetLipSync, setLoading, dispatchBody])
 
   // ─── Streaming Send ─────────────────────────────────────────────────────────
+
+  // ─── Debug Commands ──────────────────────────────────────────────────────
+  // Secret words to trigger body states for testing.
+  // Type these in the chat input to fire the corresponding animation.
+  const DEBUG_COMMANDS: Record<string, BodyEvent['type']> = {
+    'remy wave': 'DRAWER_OPENED',
+    'remy think': 'RESPONSE_STARTED',
+    'remy speak': 'FIRST_TOKEN',
+    'remy done': 'RESPONSE_ENDED',
+    'remy celebrate': 'SUCCESS',
+    'remy error': 'ERROR',
+    'remy nudge': 'NUDGE',
+    'remy sleep': 'IDLE_TIMEOUT',
+    'remy wake': 'INTERACT',
+    'remy whisk': 'WHISKING',
+    'remy exit': 'DRAWER_CLOSED',
+    'remy idle': 'INTERACT',
+  }
 
   const handleSend = useCallback(
     async (text?: string) => {
       const message = (text ?? input).trim()
       if (!message || loading) return
+
+      // Check for debug commands — intercept before API call
+      const debugEvent = DEBUG_COMMANDS[message.toLowerCase()]
+      if (debugEvent) {
+        setInput('')
+        dispatchBody({ type: debugEvent } as BodyEvent)
+        const debugMsg: RemyMessage = {
+          id: generateId(),
+          role: 'remy',
+          content: `[Debug] Fired \`${debugEvent}\` → body state transition`,
+          timestamp: new Date().toISOString(),
+        }
+        setMessages((prev) => [...prev, debugMsg])
+        return
+      }
+
       setInput('')
 
       let convId = currentConversationId
@@ -1027,6 +1067,10 @@ export function RemyDrawer() {
         console.error('[non-blocking] Save user msg failed', err)
       )
 
+      // Declare outside try so finally block can access them
+      let timeoutId: ReturnType<typeof setTimeout> | undefined
+      let reader: ReadableStreamDefaultReader<Uint8Array> | undefined
+
       try {
         // Create an AbortController so we can cancel the request
         const controller = new AbortController()
@@ -1034,8 +1078,7 @@ export function RemyDrawer() {
 
         // Hard client-side timeout: 2 min — generous for a big model, but
         // won't let a stuck request run forever. Cancel button is always available.
-        const timeoutId = setTimeout(() => controller.abort(), 120_000)
-        let reader: ReadableStreamDefaultReader<Uint8Array> | undefined
+        timeoutId = setTimeout(() => controller.abort(), 120_000)
 
         const response = await fetch('/api/remy/stream', {
           method: 'POST',
@@ -1055,6 +1098,7 @@ export function RemyDrawer() {
 
         const decoder = new TextDecoder()
         let fullContent = ''
+        let hasReceivedFirstToken = false
         let tasks: RemyTaskResult[] | undefined
         let navSuggestions: NavigationSuggestion[] | undefined
         let memoryItems: RemyMemoryItem[] | undefined
@@ -1075,6 +1119,10 @@ export function RemyDrawer() {
 
               switch (event.type) {
                 case 'token':
+                  if (!hasReceivedFirstToken) {
+                    hasReceivedFirstToken = true
+                    dispatchBody({ type: 'FIRST_TOKEN' })
+                  }
                   fullContent += event.data as string
                   setStreamingContent(fullContent)
                   feedText(event.data as string)
@@ -1120,6 +1168,14 @@ export function RemyDrawer() {
         setStreamingIntent(undefined)
         lipSyncStop()
 
+        // Transition body state: response is done
+        const hasTasks = tasks && tasks.length > 0 && tasks.some((t) => t.status === 'done')
+        if (hasTasks) {
+          dispatchBody({ type: 'SUCCESS' })
+        } else {
+          dispatchBody({ type: 'RESPONSE_ENDED' })
+        }
+
         playNotificationSound()
 
         saveLocalMessage(convId, 'remy', cleanContent, { tasks, navSuggestions })
@@ -1163,6 +1219,7 @@ export function RemyDrawer() {
         resetLipSync()
         // If the user cancelled or the timeout fired, don't show a scary error
         if (err instanceof DOMException && err.name === 'AbortError') {
+          dispatchBody({ type: 'RESPONSE_ENDED' })
           const cancelMsg: RemyMessage = {
             id: generateId(),
             role: 'remy',
@@ -1173,6 +1230,7 @@ export function RemyDrawer() {
           setStreamingContent('')
           setStreamingIntent(undefined)
         } else {
+          dispatchBody({ type: 'ERROR' })
           const errMsg = err instanceof Error ? err.message : 'Remy is having trouble. Try again.'
           const isOllamaOffline =
             errMsg.includes('Local AI is offline') || errMsg.includes('Ollama')
@@ -1208,6 +1266,7 @@ export function RemyDrawer() {
       feedText,
       lipSyncStop,
       resetLipSync,
+      dispatchBody,
     ]
   )
 
