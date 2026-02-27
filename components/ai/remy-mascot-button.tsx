@@ -179,9 +179,9 @@ export function RemyMascotButton({
 
         {/* Mascot image with state-driven animation */}
         <div className={['relative w-full h-full', animationClass].join(' ')}>
-          {/* Full mascot — hidden when minimized/sleeping or speaking */}
+          {/* Idle mascot — the default visible state */}
           <Image
-            src="/images/remy-mascot.png"
+            src="/images/remy-idle.png"
             alt="Remy the ChefFlow assistant"
             fill
             sizes="(max-width: 640px) 60px, (max-width: 1024px) 80px, 100px"
