@@ -244,3 +244,46 @@ test.describe('Public - Additional Tokenized Routes', () => {
     expect(response?.status() ?? 0).toBeLessThan(500)
   })
 })
+
+test.describe('Public - Additional Public Pages', () => {
+  test('/book/[chefSlug]/thank-you - thank-you page responds', async ({ page, seedIds }) => {
+    const response = await page.goto(`/book/${seedIds.chefSlug}/thank-you`, {
+      waitUntil: 'domcontentloaded',
+    })
+    expect(response?.status() ?? 0).toBeLessThan(500)
+  })
+
+  test('/cannabis/public - cannabis public page loads', async ({ page }) => {
+    await assertPageLoads(page, '/cannabis/public')
+  })
+
+  test('/chef/[slug]/gift-cards/success - success page responds', async ({ page, seedIds }) => {
+    const response = await page.goto(`/chef/${seedIds.chefSlug}/gift-cards/success`, {
+      waitUntil: 'domcontentloaded',
+    })
+    expect(response?.status() ?? 0).toBeLessThan(500)
+  })
+
+  test('/chef/[slug]/partner-signup - chef partner signup page responds', async ({
+    page,
+    seedIds,
+  }) => {
+    const response = await page.goto(`/chef/${seedIds.chefSlug}/partner-signup`, {
+      waitUntil: 'domcontentloaded',
+    })
+    expect(response?.status() ?? 0).toBeLessThan(500)
+  })
+
+  test('/event/[eventId]/guest/[secureToken] - invalid guest token handled gracefully', async ({
+    page,
+    seedIds,
+  }) => {
+    const response = await page.goto(
+      `/event/${seedIds.eventIds.completed}/guest/not-a-real-token`,
+      {
+        waitUntil: 'domcontentloaded',
+      }
+    )
+    expect(response?.status() ?? 0).toBeLessThan(500)
+  })
+})
