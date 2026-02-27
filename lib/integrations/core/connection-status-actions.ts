@@ -1,6 +1,6 @@
 'use server'
 
-import { requireChef } from '@/lib/auth/require-chef'
+import { requireChef } from '@/lib/auth/get-user'
 
 type ConnectionStatus = {
   connected: boolean

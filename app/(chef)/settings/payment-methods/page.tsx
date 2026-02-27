@@ -4,11 +4,11 @@ import { ArrowLeft } from 'lucide-react'
 import { requireChef } from '@/lib/auth/get-user'
 import { getPaymentMethodSettings } from '@/lib/integrations/payments/payment-method-settings'
 import { PaymentMethodsSettings } from '@/components/settings/payment-methods-settings'
+import { UpgradeGate } from '@/components/billing/upgrade-gate'
 
 export const metadata: Metadata = { title: 'Payment Methods - ChefFlow' }
 
-export default async function PaymentMethodsPage() {
-  await requireChef()
+async function PaymentMethodsContent() {
   const settings = await getPaymentMethodSettings()
 
   return (
@@ -32,5 +32,15 @@ export default async function PaymentMethodsPage() {
         googlePayEnabled={settings.googlePayEnabled}
       />
     </div>
+  )
+}
+
+export default async function PaymentMethodsPage() {
+  const user = await requireChef()
+
+  return (
+    <UpgradeGate chefId={user.entityId} featureSlug="integrations">
+      <PaymentMethodsContent />
+    </UpgradeGate>
   )
 }

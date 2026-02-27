@@ -42,8 +42,8 @@ export function YelpSettings({
 
     startTransition(async () => {
       try {
-        const { searchYelpBusiness } = await import('@/lib/integrations/yelp/yelp-sync')
-        const results = await searchYelpBusiness(
+        const { searchYelpBusinessAction } = await import('@/lib/integrations/yelp/yelp-actions')
+        const results = await searchYelpBusinessAction(
           searchQuery.trim(),
           searchLocation.trim() || undefined
         )

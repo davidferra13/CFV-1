@@ -1,11 +1,13 @@
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
-import { requireChef } from '@/lib/auth/require-chef'
+import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 
 // iCal feed management — enable/disable and get the feed URL.
 
 export async function getICalFeedStatus() {
+  await requirePro('integrations')
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
 
@@ -30,6 +32,7 @@ export async function getICalFeedStatus() {
 }
 
 export async function toggleICalFeed(enabled: boolean) {
+  await requirePro('integrations')
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
 
@@ -60,6 +63,7 @@ export async function toggleICalFeed(enabled: boolean) {
 }
 
 export async function regenerateICalFeedToken() {
+  await requirePro('integrations')
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
 

@@ -1,40 +1,21 @@
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
-import { requireChef } from '@/lib/auth/require-chef'
+import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
+import { ZAPIER_EVENT_TYPES, type ZapierEventType } from '@/lib/integrations/zapier/zapier-events'
 
 // Zapier/Make webhook automation layer.
-// Chefs subscribe to ChefFlow events → we POST to their Zapier/Make webhook URL.
+// Chefs subscribe to ChefFlow events and we POST to their webhook URLs.
 
-export const ZAPIER_EVENT_TYPES = [
-  'inquiry.created',
-  'inquiry.updated',
-  'event.created',
-  'event.status_changed',
-  'event.completed',
-  'client.created',
-  'client.updated',
-  'payment.received',
-  'payment.refunded',
-  'invoice.created',
-  'invoice.sent',
-  'quote.sent',
-  'quote.accepted',
-  'contract.signed',
-  'expense.created',
-  'review.received',
-  'task.completed',
-] as const
-
-export type ZapierEventType = (typeof ZAPIER_EVENT_TYPES)[number]
-
-// ── Subscription management ──
+// Subscription management
 
 export async function createWebhookSubscription(input: {
   targetUrl: string
   eventTypes: string[]
   label?: string
 }) {
+  await requirePro('integrations')
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
 
@@ -72,6 +53,7 @@ export async function createWebhookSubscription(input: {
 }
 
 export async function listWebhookSubscriptions() {
+  await requirePro('integrations')
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
 
@@ -87,6 +69,7 @@ export async function listWebhookSubscriptions() {
 }
 
 export async function deleteWebhookSubscription(subscriptionId: string) {
+  await requirePro('integrations')
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
 
@@ -102,6 +85,7 @@ export async function deleteWebhookSubscription(subscriptionId: string) {
 }
 
 export async function getRecentDeliveries(subscriptionId: string, limit = 20) {
+  await requirePro('integrations')
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
 
@@ -118,7 +102,7 @@ export async function getRecentDeliveries(subscriptionId: string, limit = 20) {
   return data || []
 }
 
-// ── Event dispatch (called internally by server actions) ──
+// Event dispatch (called internally by server actions)
 
 export async function dispatchWebhookEvent(
   tenantId: string,
@@ -196,13 +180,14 @@ export async function dispatchWebhookEvent(
     }
   })
 
-  // Don't await — fire and forget (non-blocking side effect)
+  // Do not await. Fire and forget (non-blocking side effect)
   Promise.allSettled(deliveries).catch(() => {})
 }
 
-// ── Test webhook ──
+// Test webhook
 
 export async function testWebhookSubscription(subscriptionId: string) {
+  await requirePro('integrations')
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
 

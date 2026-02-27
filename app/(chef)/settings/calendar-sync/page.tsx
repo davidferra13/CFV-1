@@ -4,12 +4,11 @@ import { ArrowLeft } from 'lucide-react'
 import { requireChef } from '@/lib/auth/get-user'
 import { getICalFeedStatus } from '@/lib/integrations/ical/ical-actions'
 import { ICalFeedSettings } from '@/components/settings/ical-feed-settings'
+import { UpgradeGate } from '@/components/billing/upgrade-gate'
 
 export const metadata: Metadata = { title: 'Calendar Sync - ChefFlow' }
 
-export default async function CalendarSyncPage() {
-  await requireChef()
-
+async function CalendarSyncContent() {
   const feedStatus = await getICalFeedStatus()
 
   return (
@@ -30,5 +29,15 @@ export default async function CalendarSyncPage() {
 
       <ICalFeedSettings enabled={feedStatus.enabled} feedUrl={feedStatus.feedUrl} />
     </div>
+  )
+}
+
+export default async function CalendarSyncPage() {
+  const user = await requireChef()
+
+  return (
+    <UpgradeGate chefId={user.entityId} featureSlug="integrations">
+      <CalendarSyncContent />
+    </UpgradeGate>
   )
 }

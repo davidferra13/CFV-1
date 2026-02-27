@@ -1,7 +1,8 @@
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
-import { requireChef } from '@/lib/auth/require-chef'
+import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { encryptOAuthToken, decryptOAuthToken } from '@/lib/integrations/core/token-crypto'
 
 // QuickBooks Online OAuth 2.0 + REST API client.
@@ -35,6 +36,7 @@ function getApiBase() {
 }
 
 export async function initiateQuickBooksConnect(): Promise<{ redirectUrl: string }> {
+  await requirePro('integrations')
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
 
@@ -370,6 +372,7 @@ export async function getQuickBooksConnectionStatus(tenantId: string) {
 }
 
 export async function disconnectQuickBooks() {
+  await requirePro('integrations')
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
 

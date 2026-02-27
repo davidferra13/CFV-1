@@ -1,7 +1,8 @@
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
-import { requireChef } from '@/lib/auth/require-chef'
+import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { encryptOAuthToken, decryptOAuthToken } from '@/lib/integrations/core/token-crypto'
 
 // Square OAuth 2.0 + Payments API client.
@@ -50,6 +51,7 @@ function getApiBase() {
 }
 
 export async function initiateSquareConnect(): Promise<{ redirectUrl: string }> {
+  await requirePro('integrations')
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
 
@@ -294,6 +296,7 @@ export async function getSquareConnectionStatus(tenantId: string) {
 }
 
 export async function disconnectSquare() {
+  await requirePro('integrations')
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
 

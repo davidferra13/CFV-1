@@ -1,13 +1,15 @@
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
-import { requireChef } from '@/lib/auth/require-chef'
+import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 
 // Apple Pay / Google Pay toggle per chef.
 // Stripe Checkout already supports these automatically — this toggle
 // allows chefs to selectively disable payment methods they don't want.
 
 export async function getPaymentMethodSettings() {
+  await requirePro('integrations')
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
 
@@ -27,6 +29,7 @@ export async function updatePaymentMethodSettings(input: {
   applePayEnabled?: boolean
   googlePayEnabled?: boolean
 }) {
+  await requirePro('integrations')
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
 

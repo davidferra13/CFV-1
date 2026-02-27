@@ -1,10 +1,12 @@
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
-import { requireChef } from '@/lib/auth/require-chef'
+import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { revalidatePath } from 'next/cache'
 
 export async function saveYelpBusinessId(businessId: string, businessName: string) {
+  await requirePro('integrations')
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
 
@@ -30,6 +32,7 @@ export async function saveYelpBusinessId(businessId: string, businessName: strin
 }
 
 export async function removeYelpBusinessId() {
+  await requirePro('integrations')
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
 
@@ -44,6 +47,7 @@ export async function removeYelpBusinessId() {
 }
 
 export async function getYelpConnection() {
+  await requirePro('integrations')
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
 
@@ -64,6 +68,7 @@ export async function getYelpConnection() {
 }
 
 export async function getYelpReviewCount() {
+  await requirePro('integrations')
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
 
@@ -76,7 +81,14 @@ export async function getYelpReviewCount() {
   return count ?? 0
 }
 
+export async function searchYelpBusinessAction(term: string, location?: string) {
+  await requirePro('integrations')
+  const { searchYelpBusiness } = await import('@/lib/integrations/yelp/yelp-sync')
+  return searchYelpBusiness(term, location)
+}
+
 export async function syncYelpReviewsAction(businessId: string) {
+  await requirePro('integrations')
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
   const { fetchYelpReviews } = await import('@/lib/integrations/yelp/yelp-sync')

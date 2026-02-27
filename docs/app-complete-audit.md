@@ -925,7 +925,7 @@ Protected time reminder (purple callout). Completion celebration when all done.
 
 > **Full element-by-element detail → [`docs/ui-audit-settings.md`](ui-audit-settings.md)** (1730 lines, 50 pages)
 
-**Route:** `/settings` — 50 sub-pages organized in 5 visual groups with 20 collapsible categories.
+**Route:** `/settings` — 54 sub-pages organized in 5 visual groups with 20 collapsible categories.
 
 Each category has a unique lucide-react icon and animated chevron expand/collapse. Categories 1–8 ("Your Business" + "Communication") are **primary** — brand-orange left border accent and orange icon. Categories 9–20 are **secondary** — muted stone icon, no accent.
 
@@ -938,7 +938,7 @@ Each category has a unique lucide-react icon and animated chevron expand/collaps
 | 3   | Availability Rules  | CalendarClock | Hard blocks, event limits, buffer time                                                             |
 | 4   | Booking Page        | CalendarCheck | Shareable link with slug, headline, bio, min notice, pricing model, deposit                        |
 | 5   | Event Configuration | Settings2     | Event types & labels, custom fields                                                                |
-| 6   | Payments & Billing  | CreditCard    | Stripe payouts, subscription & billing, module toggles                                             |
+| 6   | Payments & Billing  | CreditCard    | Stripe payouts, subscription & billing, module toggles, payment methods (Apple Pay/Google Pay)     |
 
 **Group: Communication** — Messaging, automations, and alerts
 
@@ -949,11 +949,11 @@ Each category has a unique lucide-react icon and animated chevron expand/collaps
 
 **Group: Connections & AI** — External services, reviews, and intelligence
 
-| #   | Category                          | Icon  | Sub-pages                                                             |
-| --- | --------------------------------- | ----- | --------------------------------------------------------------------- |
-| 9   | Connected Accounts & Integrations | Plug  | Google (Gmail + Calendar), Wix, embed widget, integrations center     |
-| 10  | AI & Privacy                      | Brain | AI Trust Center (full privacy walkthrough), culinary profile for Remy |
-| 11  | Client Reviews                    | Star  | Google review URL, view all                                           |
+| #   | Category                          | Icon  | Sub-pages                                                                                                  |
+| --- | --------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------- |
+| 9   | Connected Accounts & Integrations | Plug  | Google (Gmail + Calendar), Wix, embed widget, integrations center, Calendar Sync (iCal), Zapier & Webhooks |
+| 10  | AI & Privacy                      | Brain | AI Trust Center (full privacy walkthrough), culinary profile for Remy                                      |
+| 11  | Client Reviews                    | Star  | Google review URL, view all, Yelp reviews sync                                                             |
 
 **Group: You & Your Career** — Branding, growth, network, and appearance
 
@@ -989,6 +989,15 @@ Auto-generated FDA-compliant HACCP plan based on chef's business archetype. Free
 | Custom notes               | Per-section text notes for chef-specific procedures                                                                                    |
 
 Archetype-specific content for: private-chef, caterer, meal-prep, restaurant, food-truck, bakery.
+
+### 15.2 New Integration Settings Pages (added 2026-02-27)
+
+| Route                       | What it shows                                                                                                      |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `/settings/zapier`          | Webhook subscription manager: add/remove subscription URLs, choose event types, send test ping, inspect deliveries |
+| `/settings/yelp`            | Yelp business search/connect flow, review sync action, disconnect action, synced review count                      |
+| `/settings/calendar-sync`   | iCal feed enable/disable toggle, feed URL copy, feed token regeneration                                            |
+| `/settings/payment-methods` | Per-chef payment method toggles for Apple Pay and Google Pay in Stripe Checkout                                    |
 
 ### 20.1 Delete Account (`/settings/delete-account`)
 

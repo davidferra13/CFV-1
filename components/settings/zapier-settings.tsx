@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { Plus, Trash2, Zap, Send, Loader2, ChevronDown, ChevronRight } from 'lucide-react'
-import { ZAPIER_EVENT_TYPES, type ZapierEventType } from '@/lib/integrations/zapier/zapier-webhooks'
+import { ZAPIER_EVENT_TYPES } from '@/lib/integrations/zapier/zapier-events'
 
 type Subscription = {
   id: string

@@ -3,10 +3,12 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { getYelpConnection, getYelpReviewCount } from '@/lib/integrations/yelp/yelp-actions'
 import { YelpSettings } from '@/components/settings/yelp-settings'
+import { requireChef } from '@/lib/auth/get-user'
+import { UpgradeGate } from '@/components/billing/upgrade-gate'
 
 export const metadata: Metadata = { title: 'Yelp Reviews - ChefFlow' }
 
-export default async function YelpSettingsPage() {
+async function YelpSettingsContent() {
   const [connection, reviewCount] = await Promise.all([getYelpConnection(), getYelpReviewCount()])
 
   return (
@@ -32,5 +34,15 @@ export default async function YelpSettingsPage() {
         initialReviewCount={reviewCount}
       />
     </div>
+  )
+}
+
+export default async function YelpSettingsPage() {
+  const user = await requireChef()
+
+  return (
+    <UpgradeGate chefId={user.entityId} featureSlug="integrations">
+      <YelpSettingsContent />
+    </UpgradeGate>
   )
 }

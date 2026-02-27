@@ -3,10 +3,12 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { listWebhookSubscriptions } from '@/lib/integrations/zapier/zapier-webhooks'
 import { ZapierSettings } from '@/components/settings/zapier-settings'
+import { requireChef } from '@/lib/auth/get-user'
+import { UpgradeGate } from '@/components/billing/upgrade-gate'
 
 export const metadata: Metadata = { title: 'Zapier & Webhooks - ChefFlow' }
 
-export default async function ZapierSettingsPage() {
+async function ZapierSettingsContent() {
   const subscriptions = await listWebhookSubscriptions()
 
   return (
@@ -28,5 +30,15 @@ export default async function ZapierSettingsPage() {
 
       <ZapierSettings initialSubscriptions={subscriptions} />
     </div>
+  )
+}
+
+export default async function ZapierSettingsPage() {
+  const user = await requireChef()
+
+  return (
+    <UpgradeGate chefId={user.entityId} featureSlug="integrations">
+      <ZapierSettingsContent />
+    </UpgradeGate>
   )
 }
