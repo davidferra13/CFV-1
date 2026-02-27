@@ -16,7 +16,7 @@ import { hasCannabisAccess } from '@/lib/chef/cannabis-actions'
 import { getAnnouncement } from '@/lib/admin/platform-actions'
 import { PlatformAnnouncementBanner } from '@/components/admin/platform-announcement-banner'
 import { TrialBanner } from '@/components/billing/trial-banner'
-import { RemyDrawer } from '@/components/ai/remy-drawer'
+import { RemyWrapper } from '@/components/ai/remy-wrapper'
 import { OfflineProvider } from '@/components/offline/offline-provider'
 import { OfflineStatusBar } from '@/components/offline/offline-status-bar'
 import { MilestoneOverlay } from '@/components/ui/milestone-overlay'
@@ -179,7 +179,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                 <OfflineStatusBar />
 
                 {/* Remy â€” AI companion chatbot, Pro tier + admins */}
-                {(tierStatus.tier === 'pro' || userIsAdmin) && <RemyDrawer />}
+                {(tierStatus.tier === 'pro' || userIsAdmin) && <RemyWrapper />}
 
                 {/* Mobile quick capture FAB â€” mobile-only, hidden on desktop */}
                 <QuickCapture />

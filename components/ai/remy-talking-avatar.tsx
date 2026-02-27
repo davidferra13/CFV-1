@@ -33,6 +33,7 @@ const SIZES = {
   sm: { width: 40, height: 40, imgClass: 'w-10 h-10' },
   md: { width: 56, height: 56, imgClass: 'w-14 h-14' },
   lg: { width: 80, height: 80, imgClass: 'w-20 h-20' },
+  xl: { width: 120, height: 120, imgClass: 'w-[120px] h-[120px]' },
 } as const
 
 // Clip-path that reveals ONLY the mouth region (bottom ~35% of the image).

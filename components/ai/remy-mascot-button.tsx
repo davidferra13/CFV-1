@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
+import { RemyTalkingAvatar } from '@/components/ai/remy-talking-avatar'
+import type { Viseme } from '@/lib/ai/remy-visemes'
 
 const SLEEP_TIMEOUT_MS = 60_000
 const SPEECH_HOVER_DELAY_MS = 500
@@ -18,6 +20,14 @@ interface RemyMascotButtonProps {
   state?: 'idle' | 'thinking' | 'success' | 'nudge' | 'sleeping'
   /** Accessible label */
   ariaLabel?: string
+  /** Current lip-sync viseme — when provided, shows talking avatar overlay */
+  viseme?: Viseme
+  /** Whether Remy is currently speaking (lip-sync active) */
+  isSpeaking?: boolean
+  /** Whether Remy is minimized (only chef hat peeks out) */
+  minimized?: boolean
+  /** Callback to toggle minimized state */
+  onToggleMinimize?: () => void
 }
 
 export function RemyMascotButton({
@@ -26,11 +36,16 @@ export function RemyMascotButton({
   showOnlineDot = false,
   state: externalState,
   ariaLabel = 'Chat with Remy',
+  viseme,
+  isSpeaking: speakingProp = false,
+  minimized = false,
+  onToggleMinimize,
 }: RemyMascotButtonProps) {
   // Internal sleep state — overridden by external state if provided
   const [isSleeping, setIsSleeping] = useState(false)
   const [showSpeechBubble, setShowSpeechBubble] = useState(false)
   const [greeting, setGreeting] = useState(GREETINGS[0])
+  const [isHovered, setIsHovered] = useState(false)
 
   const hasShownBubble = useRef(false)
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -64,6 +79,8 @@ export function RemyMascotButton({
 
   // --- Hover speech bubble ---
   const handleMouseEnter = useCallback(() => {
+    setIsHovered(true)
+
     // Wake from sleep on hover
     if (isSleeping) {
       setIsSleeping(false)
@@ -82,6 +99,7 @@ export function RemyMascotButton({
   }, [isSleeping])
 
   const handleMouseLeave = useCallback(() => {
+    setIsHovered(false)
     if (hoverTimer.current) {
       clearTimeout(hoverTimer.current)
       hoverTimer.current = null
@@ -98,6 +116,7 @@ export function RemyMascotButton({
 
   // --- Animation class based on state ---
   const animationClass = (() => {
+    if (minimized) return 'translate-y-[80%] transition-transform duration-500 ease-in-out'
     switch (effectiveState) {
       case 'sleeping':
         return 'translate-y-[70%] transition-transform duration-1000 ease-in'
@@ -114,57 +133,92 @@ export function RemyMascotButton({
   })()
 
   return (
-    <button
-      onClick={onClick}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className={[
-        'fixed bottom-0 right-4 lg:right-6 z-50',
-        'w-[60px] h-[70px] sm:w-[80px] sm:h-[93px] lg:w-[100px] lg:h-[116px]',
-        'animate-mascot-peek',
-        'group cursor-pointer',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-900 rounded-t-xl',
-        className ?? '',
-      ]
+    <div
+      className={['fixed bottom-0 left-4 lg:left-6 z-40', className ?? '']
         .filter(Boolean)
         .join(' ')}
-      aria-label={ariaLabel}
-      type="button"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
-      {/* Thinking bubble */}
-      {effectiveState === 'thinking' && <ThinkingBubble />}
-
-      {/* Speech bubble (hover, once per session) */}
-      {showSpeechBubble && effectiveState !== 'thinking' && effectiveState !== 'sleeping' && (
-        <SpeechBubble text={greeting} />
+      {/* Minimize/restore toggle — shows on hover */}
+      {!minimized && isHovered && onToggleMinimize && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation()
+            onToggleMinimize()
+          }}
+          className="absolute -top-2 -right-2 z-10 w-6 h-6 rounded-full bg-stone-700 hover:bg-stone-600 text-white/70 hover:text-white flex items-center justify-center text-xs transition-all shadow-md animate-fade-slide-up"
+          aria-label="Minimize Remy"
+          title="Minimize Remy"
+        >
+          &minus;
+        </button>
       )}
 
-      {/* Mascot image with state-driven animation */}
-      <div
+      <button
+        onClick={minimized ? (onToggleMinimize ?? onClick) : onClick}
         className={[
-          'relative w-full h-full transition-transform duration-200 ease-out',
-          'group-hover:-translate-y-1 group-active:translate-y-0',
-          animationClass,
+          'w-[60px] h-[70px] sm:w-[80px] sm:h-[93px] lg:w-[100px] lg:h-[116px]',
+          'animate-mascot-peek',
+          'group cursor-pointer',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-900 rounded-t-xl',
         ].join(' ')}
+        aria-label={minimized ? 'Restore Remy' : ariaLabel}
+        type="button"
       >
-        <Image
-          src="/images/remy-mascot.png"
-          alt="Remy the ChefFlow assistant"
-          fill
-          sizes="(max-width: 640px) 60px, (max-width: 1024px) 80px, 100px"
-          className="object-contain object-bottom pointer-events-none select-none"
-          priority
-        />
+        {/* Thinking bubble */}
+        {!minimized && effectiveState === 'thinking' && <ThinkingBubble />}
 
-        {/* Online dot */}
-        {showOnlineDot && (
-          <span className="absolute top-0 right-0 flex h-3 w-3">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-300 opacity-75" />
-            <span className="relative inline-flex h-3 w-3 rounded-full bg-green-400 border-2 border-white" />
-          </span>
-        )}
-      </div>
-    </button>
+        {/* Speech bubble (hover, once per session) */}
+        {!minimized &&
+          showSpeechBubble &&
+          effectiveState !== 'thinking' &&
+          effectiveState !== 'sleeping' && <SpeechBubble text={greeting} />}
+
+        {/* Mascot image with state-driven animation */}
+        <div
+          className={[
+            'relative w-full h-full transition-transform duration-200 ease-out',
+            'group-hover:-translate-y-1 group-active:translate-y-0',
+            animationClass,
+          ].join(' ')}
+        >
+          {/* Base mascot image — always rendered, fades when speaking */}
+          <Image
+            src="/images/remy-mascot.png"
+            alt="Remy the ChefFlow assistant"
+            fill
+            sizes="(max-width: 640px) 60px, (max-width: 1024px) 80px, 100px"
+            className={[
+              'object-contain object-bottom pointer-events-none select-none transition-opacity duration-300',
+              speakingProp ? 'opacity-0' : 'opacity-100',
+            ].join(' ')}
+            priority
+          />
+
+          {/* Talking avatar overlay — visible when speaking */}
+          {viseme && (
+            <div
+              className={[
+                'absolute inset-0 flex items-center justify-center transition-opacity duration-300',
+                speakingProp ? 'opacity-100' : 'opacity-0',
+              ].join(' ')}
+            >
+              <RemyTalkingAvatar viseme={viseme} isSpeaking={speakingProp} size="lg" />
+            </div>
+          )}
+
+          {/* Online dot */}
+          {showOnlineDot && (
+            <span className="absolute top-0 right-0 flex h-3 w-3">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-300 opacity-75" />
+              <span className="relative inline-flex h-3 w-3 rounded-full bg-green-400 border-2 border-white" />
+            </span>
+          )}
+        </div>
+      </button>
+    </div>
   )
 }
 
@@ -194,9 +248,9 @@ function ThinkingBubble() {
 /** Speech bubble — small tooltip with greeting text */
 function SpeechBubble({ text }: { text: string }) {
   return (
-    <div className="absolute -top-10 right-0 whitespace-nowrap rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-stone-700 shadow-lg animate-fade-slide-up">
+    <div className="absolute -top-10 left-0 whitespace-nowrap rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-stone-700 shadow-lg animate-fade-slide-up">
       {/* Tail */}
-      <div className="absolute -bottom-1 right-4 w-2.5 h-2.5 bg-white rotate-45 rounded-sm" />
+      <div className="absolute -bottom-1 left-4 w-2.5 h-2.5 bg-white rotate-45 rounded-sm" />
       {text}
     </div>
   )

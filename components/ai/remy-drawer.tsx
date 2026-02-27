@@ -5,9 +5,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { RemyMascotButton } from '@/components/ai/remy-mascot-button'
 import { RemyTalkingAvatar } from '@/components/ai/remy-talking-avatar'
-import { useRemyLipSync } from '@/lib/ai/use-remy-lip-sync'
+import { useRemyContext } from '@/components/ai/remy-context'
 import {
   Bot,
   X,
@@ -297,11 +296,30 @@ const DRAWER_MAX_WIDTH = 800
 const DRAWER_DEFAULT_WIDTH = 448 // max-w-md equivalent
 
 export function RemyDrawer() {
-  const [open, setOpen] = useState(false)
+  const {
+    isDrawerOpen: open,
+    closeDrawer,
+    currentViseme,
+    isSpeaking: lipSyncSpeaking,
+    feedText,
+    stopSpeaking: lipSyncStop,
+    resetLipSync,
+    setMascotState,
+    setIsLoading: setContextLoading,
+  } = useRemyContext()
   const [collapsed, setCollapsed] = useState(false)
   const [messages, setMessages] = useState<RemyMessage[]>([])
   const [input, setInput] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoadingInternal] = useState(false)
+  // Sync loading state to context so mascot shows thinking animation
+  const setLoading = useCallback(
+    (val: boolean) => {
+      setLoadingInternal(val)
+      setContextLoading(val)
+      setMascotState(val ? 'thinking' : 'idle')
+    },
+    [setContextLoading, setMascotState]
+  )
   const [streamingContent, setStreamingContent] = useState('')
   const [streamingIntent, setStreamingIntent] = useState<string | undefined>()
   const [elapsedSec, setElapsedSec] = useState(0)
@@ -323,9 +341,6 @@ export function RemyDrawer() {
   const abortControllerRef = useRef<AbortController | null>(null)
   const pathname = usePathname()
   const router = useRouter()
-
-  // Lip-sync engine — drives Remy's mouth animation during streaming
-  const lipSync = useRemyLipSync()
 
   // Restore saved drawer width from sessionStorage
   useEffect(() => {
@@ -421,21 +436,6 @@ export function RemyDrawer() {
     return () => clearInterval(interval)
   }, [loading])
 
-  // Keyboard shortcut: Ctrl+K / Cmd+K to toggle Remy
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault()
-        setOpen((prev) => !prev)
-      }
-      if (e.key === 'Escape' && open) {
-        setOpen(false)
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [open])
-
   // Load available TTS voices (they load async in some browsers)
   useEffect(() => {
     function loadVoices() {
@@ -445,13 +445,6 @@ export function RemyDrawer() {
     loadVoices()
     speechSynthesis.addEventListener('voiceschanged', loadVoices)
     return () => speechSynthesis.removeEventListener('voiceschanged', loadVoices)
-  }, [])
-
-  // Listen for custom 'open-remy' event so nav buttons can open the drawer
-  useEffect(() => {
-    const handler = () => setOpen(true)
-    window.addEventListener('open-remy', handler)
-    return () => window.removeEventListener('open-remy', handler)
   }, [])
 
   // Abort in-flight Ollama request when drawer closes
@@ -980,9 +973,9 @@ export function RemyDrawer() {
     setLoading(false)
     setStreamingContent('')
     setStreamingIntent(undefined)
-    lipSync.reset()
+    resetLipSync()
     toast.success('Request cancelled')
-  }, [lipSync])
+  }, [resetLipSync, setLoading])
 
   // ─── Streaming Send ─────────────────────────────────────────────────────────
 
@@ -1027,7 +1020,7 @@ export function RemyDrawer() {
       setLoading(true)
       setStreamingContent('')
       setStreamingIntent(undefined)
-      lipSync.reset()
+      resetLipSync()
 
       saveLocalMessage(convId, 'user', message).catch((err) =>
         console.error('[non-blocking] Save user msg failed', err)
@@ -1083,7 +1076,7 @@ export function RemyDrawer() {
                 case 'token':
                   fullContent += event.data as string
                   setStreamingContent(fullContent)
-                  lipSync.feedText(event.data as string)
+                  feedText(event.data as string)
                   break
                 case 'tasks':
                   tasks = event.data as RemyTaskResult[]
@@ -1124,7 +1117,7 @@ export function RemyDrawer() {
         setMessages((prev) => [...prev, remyMsg])
         setStreamingContent('')
         setStreamingIntent(undefined)
-        lipSync.stopSpeaking()
+        lipSyncStop()
 
         playNotificationSound()
 
@@ -1166,7 +1159,7 @@ export function RemyDrawer() {
 
         autoSave(message, remyMsg)
       } catch (err: unknown) {
-        lipSync.reset()
+        resetLipSync()
         // If the user cancelled or the timeout fired, don't show a scary error
         if (err instanceof DOMException && err.name === 'AbortError') {
           const cancelMsg: RemyMessage = {
@@ -1211,7 +1204,9 @@ export function RemyDrawer() {
       currentConversationId,
       isFirstExchange,
       playNotificationSound,
-      lipSync,
+      feedText,
+      lipSyncStop,
+      resetLipSync,
     ]
   )
 
@@ -1232,7 +1227,7 @@ export function RemyDrawer() {
 
         if (result.redirectUrl) {
           setTimeout(() => {
-            setOpen(false)
+            closeDrawer()
             router.push(result.redirectUrl!)
           }, 1000)
         }
@@ -1272,9 +1267,6 @@ export function RemyDrawer() {
 
   return (
     <>
-      {/* Floating mascot trigger — hidden when drawer is open */}
-      {!open && <RemyMascotButton onClick={() => setOpen(true)} ariaLabel="Open Remy (Ctrl+K)" />}
-
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -1307,7 +1299,7 @@ export function RemyDrawer() {
           <button
             onClick={() => {
               setCollapsed(false)
-              setOpen(false)
+              closeDrawer()
             }}
             className="text-white/40 hover:text-white transition-colors p-1.5"
             aria-label="Close Remy"
@@ -1354,11 +1346,7 @@ export function RemyDrawer() {
                   <ChevronsRight className="h-5 w-5" />
                 </button>
               )}
-              <RemyTalkingAvatar
-                viseme={lipSync.currentViseme}
-                isSpeaking={lipSync.isSpeaking}
-                size="sm"
-              />
+              <RemyTalkingAvatar viseme={currentViseme} isSpeaking={lipSyncSpeaking} size="sm" />
               <span className="font-semibold text-white">
                 {drawerView === 'chat'
                   ? 'Remy'
@@ -1460,7 +1448,7 @@ export function RemyDrawer() {
                 </button>
               </div>
               <button
-                onClick={() => setOpen(false)}
+                onClick={closeDrawer}
                 className="text-white/80 hover:text-white transition-colors p-1"
                 aria-label="Close Remy (Esc)"
               >
@@ -1826,7 +1814,7 @@ export function RemyDrawer() {
                               <Link
                                 key={nav.href}
                                 href={nav.href}
-                                onClick={() => setOpen(false)}
+                                onClick={closeDrawer}
                                 className="inline-flex items-center gap-1 text-xs bg-brand-950 dark:bg-brand-900/30 text-brand-400 dark:text-brand-300 rounded-full px-3 py-1 hover:bg-brand-900 dark:hover:bg-brand-900/50 transition-colors"
                               >
                                 <ArrowRight className="h-3 w-3" />
@@ -1908,8 +1896,8 @@ export function RemyDrawer() {
                 {loading && streamingContent && (
                   <div className="flex justify-start gap-2 items-end">
                     <RemyTalkingAvatar
-                      viseme={lipSync.currentViseme}
-                      isSpeaking={lipSync.isSpeaking}
+                      viseme={currentViseme}
+                      isSpeaking={lipSyncSpeaking}
                       size="sm"
                     />
                     <div className="max-w-[80%] space-y-1">
