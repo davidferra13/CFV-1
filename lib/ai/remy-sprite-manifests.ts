@@ -59,6 +59,12 @@ export const MANIFESTS: Record<string, SpriteManifest> = {
 
   // === BODY ANIMATION SHEETS ===
 
+  // NOTE: Walk, whisk, and celebrate sprites are FULL-BODY art but the mascot
+  // button uses HEAD-CLOSEUP static poses. The framing mismatch causes Remy to
+  // shrink from face-filling to tiny-full-body on state transitions. Disabled
+  // until we have head-framed sprite sheets or a larger display context.
+  // CSS fallback animations play instead (wiggle, hop, bob).
+
   'remy-body-walk': {
     name: 'remy-body-walk',
     path: '/images/remy/sprites/remy-body-walk.png',
@@ -70,7 +76,7 @@ export const MANIFESTS: Record<string, SpriteManifest> = {
     fps: 12,
     loop: false,
     labelOffset: 0,
-    available: true,
+    available: false, // full-body — clashes with head-closeup idle pose
     // Contact poses (1,3) slightly longer, passing poses (2,4) quicker, final settle held
     frameDurations: [1.0, 1.2, 0.8, 1.2, 1.5],
   },
@@ -86,7 +92,7 @@ export const MANIFESTS: Record<string, SpriteManifest> = {
     fps: 10,
     loop: true,
     labelOffset: 0,
-    available: true,
+    available: false, // full-body — clashes with head-closeup idle pose
   },
 
   'remy-body-celebrate': {
@@ -100,7 +106,7 @@ export const MANIFESTS: Record<string, SpriteManifest> = {
     fps: 12,
     loop: false,
     labelOffset: 0,
-    available: true,
+    available: false, // full-body + portrait cells clipped by square sprite animator
     // Anticipation squash (1), fast launch (2-3), held apex (4-5), land + settle (6-8)
     frameDurations: [1.0, 1.4, 0.7, 0.7, 1.6, 1.6, 1.0, 1.8],
   },
@@ -116,7 +122,7 @@ export const MANIFESTS: Record<string, SpriteManifest> = {
     fps: 8,
     loop: false,
     labelOffset: 0,
-    available: true,
+    available: false, // different art style from chibi mascot — not mapped to any body state
     // Build-up (1-4), reaction peak held (5-8), recovery (9-12), settle with long final hold (13-16)
     frameDurations: [
       1.0, 1.0, 0.8, 0.8, 1.5, 1.5, 1.3, 1.3, 1.0, 1.0, 1.0, 1.0, 1.2, 1.2, 1.0, 2.0,
@@ -208,7 +214,7 @@ export const MANIFESTS: Record<string, SpriteManifest> = {
     fps: 0,
     loop: false,
     labelOffset: 0,
-    available: true,
+    available: false, // art style doesn't match base mascot images — causes visual glitch on blink
   },
 }
 

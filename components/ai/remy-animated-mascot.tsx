@@ -350,7 +350,7 @@ export function RemyAnimatedMascot({
           isSpeaking={isSpeaking}
           emotion={emotion}
           size={
-            effectiveSize >= 100
+            effectiveSize >= 120
               ? 'xl'
               : effectiveSize >= 80
                 ? 'lg'
@@ -393,10 +393,10 @@ function EyeOverlay({
 }) {
   const eyeManifest = getManifest('remy-eyes')
 
-  // Don't render when mouth is showing (lip-sync has its own eyes),
-  // or when open (the base mascot image already shows open eyes),
-  // or when reduced motion is enabled
-  if (!eyeManifest || eyeState === 'open' || showMouth || reducedMotion) {
+  // Disabled: remy-eyes.png has a different art style from the base mascot
+  // images (remy-idle.png etc). The mismatched eyes flash over the face during
+  // blinks, creating a jarring visual glitch. Re-enable when eye art matches.
+  if (!eyeManifest || !eyeManifest.available || eyeState === 'open' || showMouth || reducedMotion) {
     return null
   }
 

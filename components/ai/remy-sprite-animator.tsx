@@ -60,8 +60,9 @@ export function RemySpriteAnimator({
   } = manifest
   const baseFrameDuration = fps > 0 ? 1000 / fps : 80
 
-  // Scale factor: map display size to cell dimensions
+  // Scale factor: map display size to cell width, preserve aspect ratio
   const scale = size / cellWidth
+  const displayHeight = Math.round(cellHeight * scale)
 
   // Full sprite sheet dimensions at display scale
   const bgWidth = cellWidth * cols * scale
@@ -152,7 +153,7 @@ export function RemySpriteAnimator({
       className={['flex-shrink-0 overflow-hidden', className].filter(Boolean).join(' ')}
       style={{
         width: size,
-        height: size,
+        height: displayHeight,
         backgroundImage: `url(${path})`,
         backgroundSize: `${bgWidth}px ${bgHeight}px`,
         backgroundRepeat: 'no-repeat',
