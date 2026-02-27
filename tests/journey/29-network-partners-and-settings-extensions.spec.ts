@@ -224,3 +224,26 @@ test.describe('Additional Dynamic Route Coverage (#486-490)', () => {
     await assertPageHasContent(page)
   })
 })
+
+test.describe('Partner Dynamic Coverage (#500)', () => {
+  test('partner detail/edit routes are reachable from partners list (#500)', async ({ page }) => {
+    await page.goto('/partners')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const partnerLink = page.locator('a[href^="/partners/"]').first()
+    if ((await partnerLink.count()) === 0) return
+
+    await partnerLink.click()
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+
+    const editLink = page.locator('a[href$="/edit"]').first()
+    if ((await editLink.count()) === 0) return
+
+    await editLink.click()
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+})

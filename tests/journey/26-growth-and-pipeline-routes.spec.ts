@@ -118,3 +118,19 @@ test.describe('Growth Routes - Marketing Detail Coverage (#494-495)', () => {
     await assertPageHasContent(page)
   })
 })
+
+test.describe('Growth Routes - Prospecting Dynamic Coverage (#499)', () => {
+  test('prospecting detail route is reachable from queue list (#499)', async ({ page }) => {
+    await page.goto('/prospecting/queue')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const prospectLink = page.locator('a[href^="/prospecting/"]').first()
+    if ((await prospectLink.count()) === 0) return
+
+    await prospectLink.click()
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+})
