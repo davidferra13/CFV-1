@@ -51,6 +51,9 @@ export interface Prospect {
   news_intel: string | null
   last_enriched_at: string | null
   enrichment_sources: string[] | null
+  event_signals: string | null
+  scrub_type: 'standard' | 'competitor' | 'lookalike'
+  lookalike_source_id: string | null
   created_at: string
   updated_at: string
 }

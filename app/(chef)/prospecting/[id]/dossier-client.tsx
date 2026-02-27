@@ -49,6 +49,7 @@ import {
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { ReEnrichButton } from '@/components/prospecting/re-enrich-button'
+import { LookalikeButton } from '@/components/prospecting/lookalike-button'
 
 interface DossierProps {
   prospect: Prospect
@@ -202,6 +203,7 @@ export function ProspectDossierClient({
 
         <div className="flex items-center gap-2">
           <ReEnrichButton prospectId={prospect.id} />
+          <LookalikeButton prospectId={prospect.id} prospectName={prospect.name} />
           {prospect.status !== 'converted' && (
             <Button variant="secondary" size="sm" onClick={handleConvert} disabled={isPending}>
               <ArrowRightLeft className="h-4 w-4 mr-1" />
@@ -579,6 +581,46 @@ export function ProspectDossierClient({
                 <p className="text-sm text-stone-200 whitespace-pre-wrap">{prospect.news_intel}</p>
               </CardContent>
             </Card>
+          )}
+
+          {/* Event Signals (Wave 3) */}
+          {prospect.event_signals && (
+            <Card className="border-amber-800 bg-amber-950/20">
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <CalendarClock className="h-4 w-4 text-amber-400" />
+                  Upcoming Events Detected
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-stone-200 whitespace-pre-wrap">
+                  {prospect.event_signals}
+                </p>
+                <p className="text-xs text-stone-500 mt-2">
+                  Events detected on their public website. Great for outreach timing.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Scrub Source Info (Wave 3) */}
+          {prospect.scrub_type && prospect.scrub_type !== 'standard' && (
+            <div className="flex items-center gap-2 text-xs text-stone-500">
+              {prospect.scrub_type === 'competitor' && (
+                <>
+                  <Target className="h-3.5 w-3.5 text-orange-400" />
+                  <span className="text-orange-400 font-medium">
+                    Found via competitor intelligence
+                  </span>
+                </>
+              )}
+              {prospect.scrub_type === 'lookalike' && (
+                <>
+                  <Target className="h-3.5 w-3.5 text-blue-400" />
+                  <span className="text-blue-400 font-medium">Found via lookalike search</span>
+                </>
+              )}
+            </div>
           )}
 
           {/* Staleness / Enrichment Age */}

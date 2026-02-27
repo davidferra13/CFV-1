@@ -30,6 +30,10 @@ import {
   buildApproachUserPrompt,
   COLD_EMAIL_SYSTEM_PROMPT,
   buildColdEmailPrompt,
+  COMPETITOR_INTEL_SYSTEM_PROMPT,
+  buildCompetitorIntelPrompt,
+  LOOKALIKE_SYSTEM_PROMPT,
+  buildLookalikePrompt,
 } from './scrub-prompt'
 import { computeLeadScore } from './lead-scoring'
 
@@ -1310,4 +1314,534 @@ export async function getScrubSessionProgress(sessionId: string) {
     .single()
 
   return data
+}
+
+// ── Competitor Intelligence Scrub (Wave 3) ──────────────────────────────────
+// Searches for competing private chefs/caterers in a region, scrapes their
+// testimonials and portfolios, and extracts the venues/clients they serve
+// as new prospects.
+
+export async function competitorIntelScrub(region: string) {
+  await requireAdmin()
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  if (!region.trim()) throw new Error('Region is required for competitor intelligence scrub')
+
+  // Create scrub session
+  const { data: session, error: sessionError } = await supabase
+    .from('prospect_scrub_sessions')
+    .insert({
+      chef_id: user.tenantId!,
+      query: `Competitor intel: ${region.trim()}`,
+      status: 'running',
+      progress_message: 'Searching for competing chefs in the area...',
+    })
+    .select()
+    .single()
+
+  if (sessionError || !session) {
+    throw new Error('Failed to create scrub session')
+  }
+
+  let insertedCount = 0
+
+  try {
+    // Step 1: Search for competing chefs/caterers in the region
+    await updateProgress(supabase, session.id, 'Finding competing chefs and caterers...')
+
+    const searchQueries = [
+      `private chef ${region} testimonials portfolio`,
+      `luxury caterer ${region} clients events`,
+      `personal chef ${region} reviews past events`,
+    ]
+
+    const competitorPages: Array<{ name: string; url: string; content: string }> = []
+
+    for (const sq of searchQueries) {
+      if (competitorPages.length >= 5) break
+      try {
+        const results = await searchWeb(sq, 3)
+        for (const result of results) {
+          if (competitorPages.length >= 5) break
+          if (!result.url) continue
+          try {
+            const page = await readWebPage(result.url)
+            if (page.content && page.content.length > 200) {
+              competitorPages.push({
+                name: result.title || result.url,
+                url: result.url,
+                content: page.content,
+              })
+            }
+          } catch {
+            // Skip pages that fail
+          }
+        }
+      } catch {
+        // Skip failed searches
+      }
+    }
+
+    if (competitorPages.length === 0) {
+      await supabase
+        .from('prospect_scrub_sessions')
+        .update({
+          status: 'failed',
+          error_message: 'No competitor websites found',
+          progress_message: 'Failed: no competitor sites found',
+        })
+        .eq('id', session.id)
+      throw new Error(
+        'Could not find any competitor websites in that region. Try a different region.'
+      )
+    }
+
+    // Step 2: Extract venue/client names from competitor pages via Ollama
+    await updateProgress(
+      supabase,
+      session.id,
+      `Analyzing ${competitorPages.length} competitor websites for client intel...`
+    )
+
+    const allExtractedProspects: Array<z.infer<typeof ProspectFromAI>> = []
+
+    for (const competitor of competitorPages) {
+      try {
+        const wrappedPrompt =
+          COMPETITOR_INTEL_SYSTEM_PROMPT +
+          '\n\nIMPORTANT: Wrap your output in a JSON object with key "prospects" containing the array.'
+
+        const result = await parseWithOllama(
+          wrappedPrompt,
+          buildCompetitorIntelPrompt({
+            competitorName: competitor.name,
+            websiteContent: competitor.content,
+            region,
+          }),
+          ProspectArrayFromAI,
+          { timeoutMs: 60_000 }
+        )
+
+        for (const p of result.prospects) {
+          allExtractedProspects.push(p)
+        }
+      } catch (err) {
+        console.warn(`[competitor-intel] Failed to parse ${competitor.name}:`, err)
+      }
+    }
+
+    if (allExtractedProspects.length === 0) {
+      await supabase
+        .from('prospect_scrub_sessions')
+        .update({
+          status: 'completed',
+          prospect_count: 0,
+          progress_message: 'No venue/client names found on competitor websites.',
+        })
+        .eq('id', session.id)
+      return {
+        success: true,
+        sessionId: session.id,
+        totalGenerated: 0,
+        duplicatesSkipped: 0,
+        enriched: 0,
+      }
+    }
+
+    // Step 3: Deduplicate against existing database
+    await updateProgress(supabase, session.id, 'Deduplicating extracted prospects...')
+
+    const { data: existing } = await supabase
+      .from('prospects')
+      .select('name, city')
+      .eq('chef_id', user.tenantId!)
+
+    const existingList = (existing ?? []).map((e) => ({
+      name: e.name ?? '',
+      city: e.city ?? '',
+    }))
+
+    const newProspects = allExtractedProspects.slice(0, MAX_PROSPECTS_PER_SCRUB).filter((p) => {
+      return !existingList.some(
+        (e) =>
+          isSimilarName(p.name, e.name) &&
+          (normalizeCity(p.city ?? '') === normalizeCity(e.city ?? '') ||
+            !(p.city ?? '') ||
+            !(e.city ?? ''))
+      )
+    })
+
+    // Step 4: Insert with scrub_type = 'competitor'
+    const insertRows = newProspects.map((p) => ({
+      chef_id: user.tenantId!,
+      scrub_session_id: session.id,
+      name: p.name,
+      prospect_type: p.prospectType,
+      category: p.category,
+      description: p.description || null,
+      city: p.city || null,
+      state: p.state || null,
+      region: p.region || null,
+      competitors_present: p.competitorsPresent || null,
+      avg_event_budget: p.avgEventBudget || null,
+      event_types_hosted: p.eventTypesHosted?.length ? p.eventTypesHosted : null,
+      luxury_indicators: p.luxuryIndicators?.length ? p.luxuryIndicators : null,
+      source: 'competitor_intel' as const,
+      scrub_type: 'competitor' as const,
+      verified: false,
+      lead_score: computeLeadScore({
+        avgEventBudget: p.avgEventBudget,
+        eventTypesHosted: p.eventTypesHosted,
+        luxuryIndicators: p.luxuryIndicators,
+        category: p.category,
+      }),
+    }))
+
+    if (insertRows.length > 0) {
+      const { error: insertError } = await supabase.from('prospects').insert(insertRows)
+      if (insertError) {
+        console.error('[competitor-intel] Insert error:', insertError)
+      }
+    }
+
+    insertedCount = insertRows.length
+
+    // Step 5: Enrich the new prospects (web verify + contact extraction)
+    await updateProgress(
+      supabase,
+      session.id,
+      `Inserted ${insertedCount} prospects from competitor intel. Enriching...`
+    )
+
+    const { data: insertedProspects } = await supabase
+      .from('prospects')
+      .select('id')
+      .eq('scrub_session_id', session.id)
+
+    let enrichedCount = 0
+    for (const prospect of (insertedProspects ?? []).slice(0, MAX_WEB_ENRICHMENTS)) {
+      try {
+        await reEnrichProspect(prospect.id)
+        enrichedCount++
+      } catch (err) {
+        console.warn(`[competitor-intel] Enrich failed for ${prospect.id}:`, err)
+      }
+      await sleep(2_000)
+    }
+
+    await supabase
+      .from('prospect_scrub_sessions')
+      .update({
+        status: 'completed',
+        prospect_count: insertedCount,
+        enriched_count: enrichedCount,
+        progress_message: `Done! ${insertedCount} prospects from competitor intel, ${enrichedCount} enriched.`,
+      })
+      .eq('id', session.id)
+
+    revalidatePath('/prospecting')
+    return {
+      success: true,
+      sessionId: session.id,
+      totalGenerated: insertedCount,
+      duplicatesSkipped: allExtractedProspects.length - insertedCount,
+      enriched: enrichedCount,
+    }
+  } catch (err) {
+    if (insertedCount > 0) {
+      await supabase
+        .from('prospect_scrub_sessions')
+        .update({
+          status: 'completed',
+          prospect_count: insertedCount,
+          error_message: `Partial: ${err instanceof Error ? err.message : String(err)}`,
+          progress_message: `Completed with warnings. ${insertedCount} prospects from competitor intel.`,
+        })
+        .eq('id', session.id)
+
+      revalidatePath('/prospecting')
+      return {
+        success: true,
+        sessionId: session.id,
+        totalGenerated: insertedCount,
+        duplicatesSkipped: 0,
+        enriched: 0,
+      }
+    }
+
+    await supabase
+      .from('prospect_scrub_sessions')
+      .update({
+        status: 'failed',
+        error_message: err instanceof Error ? err.message : String(err),
+        progress_message: 'Failed: ' + (err instanceof Error ? err.message : String(err)),
+      })
+      .eq('id', session.id)
+
+    throw err
+  }
+}
+
+// ── Lookalike Prospecting (Wave 3) ──────────────────────────────────────────
+// Given a high-value prospect, find similar organizations in the same area.
+
+export async function lookalikeProspect(sourceProspectId: string) {
+  await requireAdmin()
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  // Load the source prospect
+  const { data: source, error } = await supabase
+    .from('prospects')
+    .select('*')
+    .eq('id', sourceProspectId)
+    .eq('chef_id', user.tenantId!)
+    .single()
+
+  if (error || !source) {
+    throw new Error('Source prospect not found')
+  }
+
+  // Create scrub session
+  const { data: session, error: sessionError } = await supabase
+    .from('prospect_scrub_sessions')
+    .insert({
+      chef_id: user.tenantId!,
+      query: `Lookalike: find more like "${source.name}"`,
+      status: 'running',
+      progress_message: `Finding prospects similar to ${source.name}...`,
+    })
+    .select()
+    .single()
+
+  if (sessionError || !session) {
+    throw new Error('Failed to create scrub session')
+  }
+
+  let insertedCount = 0
+
+  try {
+    // Step 1: Generate lookalikes via Ollama
+    await updateProgress(
+      supabase,
+      session.id,
+      `AI is finding prospects similar to ${source.name}...`
+    )
+
+    const wrappedPrompt =
+      LOOKALIKE_SYSTEM_PROMPT +
+      '\n\nIMPORTANT: Wrap your output in a JSON object with key "prospects" containing the array.'
+
+    let parsedResult: z.infer<typeof ProspectArrayFromAI>
+    try {
+      parsedResult = await parseWithOllama(
+        wrappedPrompt,
+        buildLookalikePrompt({
+          name: source.name,
+          category: source.category,
+          prospectType: source.prospect_type,
+          city: source.city,
+          state: source.state,
+          region: source.region,
+          avgEventBudget: source.avg_event_budget,
+          eventTypesHosted: source.event_types_hosted,
+          luxuryIndicators: source.luxury_indicators,
+          description: source.description,
+        }),
+        ProspectArrayFromAI,
+        { timeoutMs: PHASE_1_TIMEOUT_MS }
+      )
+    } catch {
+      await supabase
+        .from('prospect_scrub_sessions')
+        .update({
+          status: 'failed',
+          error_message: 'AI failed to generate lookalike prospects',
+          progress_message: 'Failed: AI did not return valid data',
+        })
+        .eq('id', session.id)
+      throw new Error('AI failed to generate lookalike prospects. Try again.')
+    }
+
+    const prospects = parsedResult.prospects.slice(0, MAX_PROSPECTS_PER_SCRUB)
+
+    if (prospects.length === 0) {
+      await supabase
+        .from('prospect_scrub_sessions')
+        .update({
+          status: 'completed',
+          prospect_count: 0,
+          progress_message: 'No lookalike prospects generated.',
+        })
+        .eq('id', session.id)
+      return {
+        success: true,
+        sessionId: session.id,
+        totalGenerated: 0,
+        duplicatesSkipped: 0,
+        enriched: 0,
+      }
+    }
+
+    // Step 2: Reality check via web search
+    await updateProgress(
+      supabase,
+      session.id,
+      `Validating ${prospects.length} lookalike prospects...`
+    )
+
+    const validatedProspects: Array<z.infer<typeof ProspectFromAI> & { verified: boolean }> = []
+    for (const prospect of prospects) {
+      try {
+        const searchQuery = `"${prospect.name}" ${prospect.city ?? ''} ${prospect.state ?? ''}`
+        const results = await searchWeb(searchQuery, 2)
+        validatedProspects.push({ ...prospect, verified: results.length > 0 })
+      } catch {
+        validatedProspects.push({ ...prospect, verified: false })
+      }
+    }
+
+    // Step 3: Dedup
+    await updateProgress(supabase, session.id, 'Deduplicating lookalike prospects...')
+
+    const { data: existing } = await supabase
+      .from('prospects')
+      .select('name, city')
+      .eq('chef_id', user.tenantId!)
+
+    const existingList = (existing ?? []).map((e) => ({
+      name: e.name ?? '',
+      city: e.city ?? '',
+    }))
+
+    const newProspects = validatedProspects.filter((p) => {
+      return !existingList.some(
+        (e) =>
+          isSimilarName(p.name, e.name) &&
+          (normalizeCity(p.city ?? '') === normalizeCity(e.city ?? '') ||
+            !(p.city ?? '') ||
+            !(e.city ?? ''))
+      )
+    })
+
+    // Step 4: Insert with scrub_type = 'lookalike'
+    const insertRows = newProspects.map((p) => ({
+      chef_id: user.tenantId!,
+      scrub_session_id: session.id,
+      name: p.name,
+      prospect_type: p.prospectType,
+      category: p.category,
+      description: p.description || null,
+      address: p.address || null,
+      city: p.city || null,
+      state: p.state || null,
+      zip: p.zip || null,
+      region: p.region || null,
+      contact_person: p.contactPerson || null,
+      contact_title: p.contactTitle || null,
+      annual_events_estimate: p.annualEventsEstimate || null,
+      avg_event_budget: p.avgEventBudget || null,
+      event_types_hosted: p.eventTypesHosted?.length ? p.eventTypesHosted : null,
+      luxury_indicators: p.luxuryIndicators?.length ? p.luxuryIndicators : null,
+      talking_points: p.talkingPoints || null,
+      approach_strategy: p.approachStrategy || null,
+      source: 'lookalike' as const,
+      scrub_type: 'lookalike' as const,
+      lookalike_source_id: sourceProspectId,
+      verified: p.verified,
+      lead_score: computeLeadScore({
+        avgEventBudget: p.avgEventBudget,
+        annualEventsEstimate: p.annualEventsEstimate,
+        luxuryIndicators: p.luxuryIndicators,
+        eventTypesHosted: p.eventTypesHosted,
+        category: p.category,
+        contactPerson: p.contactPerson,
+        verified: p.verified,
+      }),
+    }))
+
+    if (insertRows.length > 0) {
+      const { error: insertError } = await supabase.from('prospects').insert(insertRows)
+      if (insertError) {
+        console.error('[lookalike] Insert error:', insertError)
+      }
+    }
+
+    insertedCount = insertRows.length
+
+    // Step 5: Enrich top prospects
+    await updateProgress(
+      supabase,
+      session.id,
+      `Inserted ${insertedCount} lookalikes. Enriching top prospects...`
+    )
+
+    const { data: insertedProspects } = await supabase
+      .from('prospects')
+      .select('id')
+      .eq('scrub_session_id', session.id)
+
+    let enrichedCount = 0
+    for (const prospect of (insertedProspects ?? []).slice(0, MAX_WEB_ENRICHMENTS)) {
+      try {
+        await reEnrichProspect(prospect.id)
+        enrichedCount++
+      } catch (err) {
+        console.warn(`[lookalike] Enrich failed for ${prospect.id}:`, err)
+      }
+      await sleep(2_000)
+    }
+
+    await supabase
+      .from('prospect_scrub_sessions')
+      .update({
+        status: 'completed',
+        prospect_count: insertedCount,
+        enriched_count: enrichedCount,
+        progress_message: `Done! ${insertedCount} lookalike prospects found, ${enrichedCount} enriched.`,
+      })
+      .eq('id', session.id)
+
+    revalidatePath('/prospecting')
+    return {
+      success: true,
+      sessionId: session.id,
+      totalGenerated: insertedCount,
+      duplicatesSkipped: prospects.length - insertedCount,
+      enriched: enrichedCount,
+    }
+  } catch (err) {
+    if (insertedCount > 0) {
+      await supabase
+        .from('prospect_scrub_sessions')
+        .update({
+          status: 'completed',
+          prospect_count: insertedCount,
+          error_message: `Partial: ${err instanceof Error ? err.message : String(err)}`,
+          progress_message: `Completed with warnings. ${insertedCount} lookalike prospects.`,
+        })
+        .eq('id', session.id)
+
+      revalidatePath('/prospecting')
+      return {
+        success: true,
+        sessionId: session.id,
+        totalGenerated: insertedCount,
+        duplicatesSkipped: 0,
+        enriched: 0,
+      }
+    }
+
+    await supabase
+      .from('prospect_scrub_sessions')
+      .update({
+        status: 'failed',
+        error_message: err instanceof Error ? err.message : String(err),
+        progress_message: 'Failed: ' + (err instanceof Error ? err.message : String(err)),
+      })
+      .eq('id', session.id)
+
+    throw err
+  }
 }

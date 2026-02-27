@@ -144,3 +144,109 @@ export function buildColdEmailPrompt(prospect: {
     lines.filter(Boolean).join('\n')
   )
 }
+
+// ── Competitor Intelligence Prompt (Wave 3) ────────────────────────────────
+// Search for competing private chefs → scrape their testimonials → extract venue names.
+
+export const COMPETITOR_INTEL_SYSTEM_PROMPT = `You are a competitive intelligence analyst for a private chef business. Given web data scraped from a competing chef or caterer's website, your job is to extract the venues and clients they serve.
+
+RULES:
+- Extract every venue, organization, or individual mentioned in testimonials, portfolio, client lists, or case studies
+- For each venue/client, estimate their event frequency and budget tier based on context clues
+- Focus on organizations and venues — these are the prospects we want to approach
+- Auto-assign each prospect a type ("organization" or "individual") and a category from this list: ${categoryList}
+
+OUTPUT FORMAT:
+Return a JSON array (wrapped in { "prospects": [...] }) of prospect objects with these fields:
+{
+  "name": "Venue or client name extracted from competitor's site",
+  "prospectType": "organization" or "individual",
+  "category": "from the allowed list",
+  "description": "Why this is a good target — what the competitor did for them",
+  "city": "City if mentioned",
+  "state": "State if mentioned",
+  "region": "Region if mentioned",
+  "competitorsPresent": "The competitor chef/caterer who currently serves them",
+  "avgEventBudget": "Estimated budget based on event description",
+  "eventTypesHosted": ["types", "of", "events", "mentioned"],
+  "luxuryIndicators": ["luxury", "signals", "from", "context"]
+}
+
+Return ONLY valid JSON. No markdown, no commentary.`
+
+export function buildCompetitorIntelPrompt(competitorData: {
+  competitorName: string
+  websiteContent: string
+  region?: string
+}): string {
+  return `Analyze this competing chef/caterer's website and extract all venues and clients they serve:\n\nCompetitor: ${competitorData.competitorName}\n${competitorData.region ? `Region: ${competitorData.region}\n` : ''}\nWebsite content:\n${competitorData.websiteContent.slice(0, 4000)}`
+}
+
+// ── Lookalike Prospecting Prompt (Wave 3) ──────────────────────────────────
+// Given a successful prospect, find similar organizations in the same area.
+
+export const LOOKALIKE_SYSTEM_PROMPT = `You are an elite lead generation specialist for a private chef business. Given a profile of a successful prospect (one who has converted or shown strong interest), find SIMILAR prospects in the same region.
+
+RULES:
+- Find prospects that are similar in type, budget level, event frequency, and category
+- They should be in the same geographic area or region
+- Be SPECIFIC. Real names, real places. No generic suggestions.
+- Auto-assign each prospect a type ("organization" or "individual") and a category from this list: ${categoryList}
+- Generate up to 10 similar prospects
+
+OUTPUT FORMAT:
+Return a JSON array (wrapped in { "prospects": [...] }) matching the standard prospect schema:
+{
+  "name": "Business or person name",
+  "prospectType": "organization" or "individual",
+  "category": "from the allowed list",
+  "description": "Why this prospect is similar to the source",
+  "address": "Full street address if known",
+  "city": "City name",
+  "state": "State abbreviation",
+  "zip": "ZIP if known",
+  "region": "Broader area name",
+  "contactPerson": "Decision maker name or title",
+  "contactTitle": "Their role",
+  "annualEventsEstimate": "How often they host events",
+  "avgEventBudget": "Estimated budget per event",
+  "eventTypesHosted": ["array", "of", "event", "types"],
+  "luxuryIndicators": ["array", "of", "wealth", "signals"],
+  "talkingPoints": "2-3 personalized talking points",
+  "approachStrategy": "1 paragraph approach strategy"
+}
+
+Return ONLY valid JSON. No markdown, no commentary.`
+
+export function buildLookalikePrompt(sourceProspect: {
+  name: string
+  category: string
+  prospectType: string
+  city?: string | null
+  state?: string | null
+  region?: string | null
+  avgEventBudget?: string | null
+  eventTypesHosted?: string[] | null
+  luxuryIndicators?: string[] | null
+  description?: string | null
+}): string {
+  const lines = [
+    `Source prospect (the one we want more like): ${sourceProspect.name}`,
+    `Type: ${sourceProspect.prospectType}`,
+    `Category: ${sourceProspect.category}`,
+    sourceProspect.description ? `About: ${sourceProspect.description}` : '',
+    sourceProspect.city ? `Location: ${sourceProspect.city}, ${sourceProspect.state}` : '',
+    sourceProspect.region ? `Region: ${sourceProspect.region}` : '',
+    sourceProspect.avgEventBudget ? `Budget: ${sourceProspect.avgEventBudget}` : '',
+    sourceProspect.eventTypesHosted?.length
+      ? `Events they host: ${sourceProspect.eventTypesHosted.join(', ')}`
+      : '',
+    sourceProspect.luxuryIndicators?.length
+      ? `Luxury signals: ${sourceProspect.luxuryIndicators.join(', ')}`
+      : '',
+  ]
+  return (
+    'Find 10 prospects similar to this one in the same region:\n\n' +
+    lines.filter(Boolean).join('\n')
+  )
+}

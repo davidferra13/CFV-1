@@ -1,14 +1,15 @@
-# Prospect Scrub System — V2 + V2.1 Overhaul
+# Prospect Scrub System — V2 + V2.1 + V2.2 Overhaul
 
 **Date:** 2026-02-27
-**Status:** Complete (both waves)
+**Status:** Complete (all three waves)
 
 ## Summary
 
-Complete overhaul of the AI prospect scrubbing pipeline in two waves:
+Complete overhaul of the AI prospect scrubbing pipeline in three waves:
 
 - **V2 (Wave 1):** 10 improvements across reliability, intelligence quality, UX, and safety
 - **V2.1 (Wave 2):** 5 deep intelligence features — multi-page crawling, news intel, cold email drafts, staleness tracking, batch refresh
+- **V2.2 (Wave 3):** 4 aggressive lead generation features — seasonal scoring, event signal detection, competitor intelligence, lookalike prospecting
 
 ## V2 — Wave 1: Foundation
 
@@ -42,6 +43,15 @@ Complete overhaul of the AI prospect scrubbing pipeline in two waves:
 | **Staleness Tracking**    | `last_enriched_at` timestamp on every prospect. Dossier page shows freshness: green (< 14 days), amber (14-30 days), red (> 30 days "stale"). Never-enriched prospects get an amber prompt to click Re-Enrich.                                                                               |
 | **Batch Re-Enrich**       | "Refresh Stale Prospects" button on main prospecting page. Finds all prospects that are unverified, never enriched, or > 14 days stale. Re-enriches up to 10, lowest lead scores first (most to gain). 2s cooldown between prospects.                                                        |
 
+## V2.2 — Wave 3: Aggressive Lead Generation
+
+| Feature                     | What It Does                                                                                                                                                                                                                                                                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Seasonal Scoring**        | Lead scores now include a timing bonus (0-8 pts). Maps 14 prospect categories to their peak booking months. +8 points if current month is 1-2 months before peak (ideal outreach window), +4 if in peak. Example: yacht clubs peak May-Aug, so March-April scrubs get boosted scores for yacht clubs.                                 |
+| **Event Signal Detection**  | Deep crawl now extracts upcoming event names and dates from the prospect's website. Looks for "upcoming events" sections, scans for lines with month names + years + event keywords (gala, dinner, fundraiser, etc.). Up to 8 signals stored. Events detected = +4-7 bonus lead score points.                                         |
+| **Competitor Intelligence** | New scrub mode. Enter a region → system searches for competing private chefs/caterers → scrapes their testimonials, client lists, and portfolio pages → AI extracts venue/client names → inserts as new prospects with `scrub_type='competitor'`. All publicly available data. Includes full enrichment pipeline after extraction.    |
+| **Lookalike Prospecting**   | "Find Lookalikes" button on any prospect's dossier page. Takes the source prospect's attributes (category, region, budget, event types, luxury signals) and asks Ollama to find 10 similar organizations in the same area. Reality-checked, deduped, inserted with `scrub_type='lookalike'` and `lookalike_source_id`, then enriched. |
+
 ## Files Created
 
 | File                                                                 | Purpose                                                               |
@@ -49,20 +59,23 @@ Complete overhaul of the AI prospect scrubbing pipeline in two waves:
 | `lib/prospecting/lead-scoring.ts`                                    | Deterministic lead scoring (0-100)                                    |
 | `components/prospecting/re-enrich-button.tsx`                        | Single prospect re-enrich button                                      |
 | `components/prospecting/batch-re-enrich-button.tsx`                  | Batch refresh stale prospects button                                  |
+| `components/prospecting/lookalike-button.tsx`                        | "Find Lookalikes" button for dossier page                             |
 | `supabase/migrations/20260327000005_prospect_scrub_enhancements.sql` | `lead_score`, `verified`, `progress_message`                          |
 | `supabase/migrations/20260327000006_prospect_intelligence_depth.sql` | `draft_email`, `news_intel`, `last_enriched_at`, `enrichment_sources` |
+| `supabase/migrations/20260327000007_prospect_intelligence_wave3.sql` | `event_signals`, `scrub_type`, `lookalike_source_id`                  |
 
 ## Files Modified
 
-| File                                             | Changes                                                                                                                                  |
-| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `lib/prospecting/scrub-actions.ts`               | Complete rewrite: deep crawl, news intel, cold email Phase 4, batch re-enrich, staleness timestamps                                      |
-| `lib/prospecting/scrub-prompt.ts`                | Added `COLD_EMAIL_SYSTEM_PROMPT`, `buildColdEmailPrompt()`, news intel in approach prompt                                                |
-| `lib/prospecting/types.ts`                       | Added `lead_score`, `verified`, `draft_email`, `news_intel`, `last_enriched_at`, `enrichment_sources`                                    |
-| `components/prospecting/scrub-form.tsx`          | Updated "How It Works" to 5 phases, progress polling                                                                                     |
-| `components/prospecting/prospect-table.tsx`      | Lead score column with color-coded badges                                                                                                |
-| `app/(chef)/prospecting/[id]/dossier-client.tsx` | Draft email card (with copy button), news intel card, staleness indicator, verified/unverified badge, lead score badge, Re-Enrich button |
-| `app/(chef)/prospecting/page.tsx`                | Batch Re-Enrich button above prospect table                                                                                              |
+| File                                             | Changes                                                                                                                                                                    |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lib/prospecting/scrub-actions.ts`               | Complete rewrite: deep crawl, news intel, cold email Phase 4, batch re-enrich, staleness timestamps, event signal extraction, competitor intel scrub, lookalike scrub      |
+| `lib/prospecting/scrub-prompt.ts`                | Added cold email, competitor intel, and lookalike prompts                                                                                                                  |
+| `lib/prospecting/lead-scoring.ts`                | Added seasonal timing bonus (0-8 pts) and event signals bonus (0-7 pts), category-aware scoring                                                                            |
+| `lib/prospecting/types.ts`                       | Added `lead_score`, `verified`, `draft_email`, `news_intel`, `last_enriched_at`, `enrichment_sources`, `event_signals`, `scrub_type`, `lookalike_source_id`                |
+| `components/prospecting/scrub-form.tsx`          | Mode tabs (Standard / Competitor Intel), mode-specific inputs and "How It Works" panels                                                                                    |
+| `components/prospecting/prospect-table.tsx`      | Lead score column with color-coded badges                                                                                                                                  |
+| `app/(chef)/prospecting/[id]/dossier-client.tsx` | Draft email card, news intel card, event signals card, staleness indicator, verified badge, lead score badge, Re-Enrich button, Find Lookalikes button, scrub source badge |
+| `app/(chef)/prospecting/page.tsx`                | Batch Re-Enrich button above prospect table                                                                                                                                |
 
 ## The Pipeline (5 Phases)
 
@@ -78,14 +91,16 @@ Phase 4: Draft Email       → AI cold outreach email per prospect
 
 ## Lead Score Breakdown
 
-| Factor             | Points | How                                                                         |
-| ------------------ | ------ | --------------------------------------------------------------------------- |
-| Budget tier        | 0-25   | Parses dollar amounts: $20k+ = 25, $10k+ = 20, etc.                         |
-| Event frequency    | 0-15   | Parses numbers or keywords: "weekly" = 15, "monthly" = 10                   |
-| Luxury indicators  | 0-15   | 3 pts per indicator, capped at 15                                           |
-| Contact quality    | 0-20   | 4 pts phone, 4 email, 3 website, 4 contact person, 3 direct phone, 2 social |
-| Web verification   | 0-10   | 10 pts if confirmed to exist via web search                                 |
-| Intelligence depth | 0-15   | 5 pts each for event types, membership size, events estimate                |
+| Factor              | Points | How                                                                                  |
+| ------------------- | ------ | ------------------------------------------------------------------------------------ |
+| Budget tier         | 0-25   | Parses dollar amounts: $20k+ = 25, $10k+ = 20, etc.                                  |
+| Event frequency     | 0-15   | Parses numbers or keywords: "weekly" = 15, "monthly" = 10                            |
+| Luxury indicators   | 0-15   | 3 pts per indicator, capped at 15                                                    |
+| Contact quality     | 0-20   | 4 pts phone, 4 email, 3 website, 4 contact person, 3 direct phone, 2 social          |
+| Web verification    | 0-10   | 10 pts if confirmed to exist via web search                                          |
+| Intelligence depth  | 0-15   | 5 pts each for event types, membership size, events estimate                         |
+| **Seasonal timing** | 0-8    | +8 if 1-2 months before category's peak season, +4 if in peak. 14 categories mapped. |
+| **Event signals**   | 0-7    | +7 if 3+ upcoming events detected on their site, +4 for 1-2 events                   |
 
 ## Cold Email Prompt Design
 
@@ -101,7 +116,19 @@ Phase 4: Draft Email       → AI cold outreach email per prospect
 - Lead scoring: Formula > AI — pure math, zero LLM calls
 - Fuzzy dedup: Levenshtein distance — deterministic
 - Deep crawl: Discovers subpage links from homepage + tries common paths (`/contact`, `/events`, `/about`)
+- Event signal extraction: Regex for date-containing lines + "upcoming events" section scanning, filtered by event keywords
+- Seasonal scoring: Category-to-peak-month mapping, pure math — no AI
 - News search: Targets 2025-2026 results for recency
 - Staleness: 14-day aging threshold, 30-day stale threshold
 - Batch re-enrich: Lowest-score-first ordering — prospects with most to gain get refreshed first
+- Competitor intel: Searches for competing chefs → scrapes their sites → AI extracts venue names → full enrichment pipeline
+- Lookalike: Uses source prospect's attributes as input → AI generates similar orgs → reality check → dedup → enrich
 - All data stays local (Ollama). Web searches access only public information.
+
+## Three Scrub Modes
+
+| Mode                 | Trigger                                           | What It Does                                                                        |
+| -------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| **Standard**         | "Scrub Prospects" button on /prospecting/scrub    | Free-form query → Ollama generates → verify → enrich → strategize → email           |
+| **Competitor Intel** | "Competitor Intel" tab on /prospecting/scrub      | Region input → find competing chefs → scrape testimonials → extract venues → enrich |
+| **Lookalike**        | "Find Lookalikes" button on prospect dossier page | Source prospect → Ollama finds similar orgs → verify → dedup → enrich               |
