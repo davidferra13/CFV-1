@@ -9,16 +9,17 @@ const BASE = 'http://localhost:3100'
 test.describe('Auth — Sign In', () => {
   test('sign-in page renders email and password fields', async ({ page }) => {
     await page.goto(ROUTES.signIn)
-    await expect(page.getByLabel(/email/i)).toBeVisible({ timeout: 10_000 })
-    await expect(page.getByLabel(/password/i)).toBeVisible()
-    await expect(page.getByRole('button', { name: /sign in/i })).toBeVisible()
+    // Custom Input component has no htmlFor linkage — use type selectors
+    await expect(page.locator('input[type="email"]')).toBeVisible({ timeout: 10_000 })
+    await expect(page.locator('input[type="password"]')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Sign In', exact: true })).toBeVisible()
   })
 
   test('invalid credentials show error message', async ({ page }) => {
     await page.goto(ROUTES.signIn)
-    await page.getByLabel(/email/i).fill('nobody@example.com')
-    await page.getByLabel(/password/i).fill('WrongPassword123!')
-    await page.getByRole('button', { name: /sign in/i }).click()
+    await page.locator('input[type="email"]').fill('nobody@example.com')
+    await page.locator('input[type="password"]').fill('WrongPassword123!')
+    await page.getByRole('button', { name: 'Sign In', exact: true }).click()
     // Should show an error — not redirect to dashboard
     await page.waitForTimeout(3000)
     await expect(page).toHaveURL(/auth\/signin/)

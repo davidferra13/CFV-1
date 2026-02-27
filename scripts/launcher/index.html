@@ -1684,7 +1684,7 @@ body {
           <button class="quick-link" onclick="openUrl('http://localhost:3100/recipes')">&#x1F373; Recipes</button>
           <button class="quick-link" onclick="openUrl('http://localhost:3100/settings')">&#x2699;&#xFE0F; Settings</button>
           <button class="quick-link" onclick="openUrl('https://beta.cheflowhq.com')">&#x1F310; Beta Site</button>
-          <button class="quick-link" onclick="openUrl('https://app.cheflowhq.com')">&#x1F680; Production</button>
+          <button class="quick-link" onclick="openUrl('https://cheflowhq.com')">&#x1F680; Production</button>
           <button class="quick-link" onclick="openUrl('https://vercel.com/dashboard')">&#x25B2; Vercel</button>
           <button class="quick-link" onclick="openUrl('https://supabase.com/dashboard')">&#x1F4BE; Supabase</button>
           <button class="quick-link" onclick="openUrl('https://github.com')">&#x1F4E6; GitHub</button>
@@ -1778,7 +1778,7 @@ body {
         <div class="info-grid">
           <div class="info-card">
             <div class="info-label">URL</div>
-            <div class="info-value small">app.cheflowhq.com</div>
+            <div class="info-value small">cheflowhq.com</div>
           </div>
           <div class="info-card">
             <div class="info-label">Latency</div>
@@ -1794,7 +1794,7 @@ body {
           </div>
         </div>
         <div class="actions">
-          <button type="button" class="btn btn-ghost" onclick="openUrl('https://app.cheflowhq.com')">&#x1F310; Open Production</button>
+          <button type="button" class="btn btn-ghost" onclick="openUrl('https://cheflowhq.com')">&#x1F310; Open Production</button>
           <button type="button" class="btn btn-ghost" onclick="openUrl('https://vercel.com/dashboard')">&#x2699;&#xFE0F; Vercel Dashboard</button>
           <button type="button" class="btn-ping" onclick="ping('prod')" id="ping-prod">&#x1F4E1; Ping <span class="ping-result" id="ping-prod-result"></span></button>
         </div>
@@ -1963,6 +1963,77 @@ body {
           </span>
         </div>
 
+        <!-- Service Control Center (auto-refreshes via statusData every 5s) -->
+        <div style="margin-bottom:24px;">
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Service Control Center</h3>
+          <div id="scc-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;">
+            <!-- Dev Server -->
+            <div class="scc-card" id="scc-dev" style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+              <span class="scc-dot" id="scc-dot-dev" style="width:12px;height:12px;border-radius:50%;background:var(--warning);flex-shrink:0;transition:background 0.3s;"></span>
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:600;font-size:14px;">Dev Server</div>
+                <div style="font-size:11px;color:var(--text-muted);font-family:monospace;">localhost:3100</div>
+              </div>
+              <span class="scc-label" id="scc-label-dev" style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--warning-dim);color:var(--warning);white-space:nowrap;">Checking</span>
+              <button class="btn btn-ghost" id="scc-btn-dev" onclick="sccStartDev()" style="font-size:12px;padding:4px 10px;white-space:nowrap;">Start</button>
+            </div>
+            <!-- Beta -->
+            <div class="scc-card" id="scc-beta" style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+              <span class="scc-dot" id="scc-dot-beta" style="width:12px;height:12px;border-radius:50%;background:var(--warning);flex-shrink:0;transition:background 0.3s;"></span>
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:600;font-size:14px;">Beta Server</div>
+                <div style="font-size:11px;color:var(--text-muted);font-family:monospace;">beta.cheflowhq.com</div>
+              </div>
+              <span class="scc-label" id="scc-label-beta" style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--warning-dim);color:var(--warning);white-space:nowrap;">Checking</span>
+              <button class="btn btn-ghost" id="scc-btn-beta" onclick="sccRestartBeta()" style="font-size:12px;padding:4px 10px;white-space:nowrap;">Restart</button>
+            </div>
+            <!-- Production -->
+            <div class="scc-card" id="scc-prod" style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+              <span class="scc-dot" id="scc-dot-prod" style="width:12px;height:12px;border-radius:50%;background:var(--warning);flex-shrink:0;transition:background 0.3s;"></span>
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:600;font-size:14px;">Production</div>
+                <div style="font-size:11px;color:var(--text-muted);font-family:monospace;">cheflowhq.com</div>
+              </div>
+              <span class="scc-label" id="scc-label-prod" style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--warning-dim);color:var(--warning);white-space:nowrap;">Checking</span>
+              <button class="btn btn-ghost" id="scc-btn-prod" onclick="openUrl('https://cheflowhq.com')" style="font-size:12px;padding:4px 10px;white-space:nowrap;">Open</button>
+            </div>
+            <!-- Ollama PC -->
+            <div class="scc-card" id="scc-ollama-pc" style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+              <span class="scc-dot" id="scc-dot-ollama-pc" style="width:12px;height:12px;border-radius:50%;background:var(--warning);flex-shrink:0;transition:background 0.3s;"></span>
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:600;font-size:14px;">Ollama PC</div>
+                <div style="font-size:11px;color:var(--text-muted);font-family:monospace;">localhost:11434</div>
+              </div>
+              <span class="scc-label" id="scc-label-ollama-pc" style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--warning-dim);color:var(--warning);white-space:nowrap;">Checking</span>
+              <button class="btn btn-ghost" id="scc-btn-ollama-pc" onclick="sccToggleOllamaPc()" style="font-size:12px;padding:4px 10px;white-space:nowrap;">Start</button>
+            </div>
+            <!-- Ollama Pi -->
+            <div class="scc-card" id="scc-ollama-pi" style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+              <span class="scc-dot" id="scc-dot-ollama-pi" style="width:12px;height:12px;border-radius:50%;background:var(--warning);flex-shrink:0;transition:background 0.3s;"></span>
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:600;font-size:14px;">Ollama Pi</div>
+                <div style="font-size:11px;color:var(--text-muted);font-family:monospace;">10.0.0.177:11434</div>
+              </div>
+              <span class="scc-label" id="scc-label-ollama-pi" style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--warning-dim);color:var(--warning);white-space:nowrap;">Checking</span>
+              <button class="btn btn-ghost" id="scc-btn-ollama-pi" onclick="sccToggleOllamaPi()" style="font-size:12px;padding:4px 10px;white-space:nowrap;">Start</button>
+            </div>
+            <!-- Pi SSH -->
+            <div class="scc-card" id="scc-pi-ssh" style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+              <span class="scc-dot" id="scc-dot-pi-ssh" style="width:12px;height:12px;border-radius:50%;background:var(--warning);flex-shrink:0;transition:background 0.3s;"></span>
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:600;font-size:14px;">Pi (SSH)</div>
+                <div style="font-size:11px;color:var(--text-muted);font-family:monospace;">10.0.0.177</div>
+              </div>
+              <span class="scc-label" id="scc-label-pi-ssh" style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--warning-dim);color:var(--warning);white-space:nowrap;">Checking</span>
+              <button class="btn btn-ghost" id="scc-btn-pi-ssh" onclick="loadInfra()" style="font-size:12px;padding:4px 10px;white-space:nowrap;">Refresh</button>
+            </div>
+          </div>
+          <!-- Summary bar -->
+          <div id="scc-summary" style="margin-top:10px;padding:8px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:8px;">
+            <span id="scc-summary-text">Checking services...</span>
+          </div>
+        </div>
+
         <!-- Quick Links -->
         <div style="margin-bottom:24px;">
           <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Quick Links</h3>
@@ -1982,7 +2053,7 @@ body {
             <a href="https://beta.cheflowhq.com" target="_blank" rel="noopener" class="btn btn-ghost" style="text-align:left;justify-content:flex-start;gap:8px;padding:10px 14px;">
               <span style="font-size:16px;">&#x1F310;</span> Beta Site
             </a>
-            <a href="https://app.cheflowhq.com" target="_blank" rel="noopener" class="btn btn-ghost" style="text-align:left;justify-content:flex-start;gap:8px;padding:10px 14px;">
+            <a href="https://cheflowhq.com" target="_blank" rel="noopener" class="btn btn-ghost" style="text-align:left;justify-content:flex-start;gap:8px;padding:10px 14px;">
               <span style="font-size:16px;">&#x1F680;</span> Production Site
             </a>
           </div>
@@ -2024,7 +2095,7 @@ body {
                 <tr style="border-bottom:1px solid var(--border);">
                   <td style="padding:8px 14px;">Production</td>
                   <td style="padding:8px 14px;font-family:monospace;color:var(--brand);">443</td>
-                  <td style="padding:8px 14px;"><a href="https://app.cheflowhq.com" target="_blank" rel="noopener" style="color:var(--brand);text-decoration:none;">app.cheflowhq.com</a></td>
+                  <td style="padding:8px 14px;"><a href="https://cheflowhq.com" target="_blank" rel="noopener" style="color:var(--brand);text-decoration:none;">cheflowhq.com</a></td>
                 </tr>
                 <tr style="border-bottom:1px solid var(--border);">
                   <td style="padding:8px 14px;">Ollama PC</td>
@@ -2578,7 +2649,7 @@ body {
           <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;">
             <div style="font-size:20px;margin-bottom:6px;">&#x25B2;</div>
             <div style="font-size:14px;font-weight:700;">Vercel (Cloud)</div>
-            <div style="font-family:monospace;font-size:12px;color:var(--brand);margin-top:4px;">app.cheflowhq.com</div>
+            <div style="font-family:monospace;font-size:12px;color:var(--brand);margin-top:4px;">cheflowhq.com</div>
             <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Production</div>
             <div style="font-size:10px;color:var(--text-muted);">Public sees this</div>
             <div style="font-size:10px;color:var(--error);margin-top:4px;">Costs money to deploy</div>
@@ -3519,6 +3590,9 @@ function updateUI(s) {
 
   // Chat FAB status
   updateChatFabStatus()
+
+  // Service Control Center (infra panel)
+  updateSCC(s)
 }
 
 function setDot(id, online) {
@@ -3881,8 +3955,7 @@ async function toggleChat() {
 
   if (chatOpen) {
     drawer.classList.add('open')
-    fab.classList.add('open')
-    fabIcon.innerHTML = '&#x2715;'
+    fab.style.display = 'none'
     document.getElementById('chat-input')?.focus()
 
     // Load most recent conversation on first open
@@ -3901,6 +3974,7 @@ async function toggleChat() {
     }
   } else {
     drawer.classList.remove('open')
+    fab.style.display = ''
     fab.classList.remove('open')
     fabIcon.innerHTML = '&#x1F916;'
     closeContextMenu()
@@ -5524,6 +5598,8 @@ async function loadInfra() {
   try {
     const res = await fetch(`${API}/api/infra`)
     const data = await res.json()
+    lastInfraData = data
+    if (statusData) updateSCC(statusData)
 
     if (!data.pi || !data.pi.reachable) {
       if (piHealth) piHealth.innerHTML = `
@@ -5584,6 +5660,176 @@ async function loadInfra() {
     if (piHealth) piHealth.innerHTML = `<div style="color:#f87171;">Failed to load: ${escapeHtml(err.message)}</div>`
     if (badge) badge.textContent = 'Error'
   }
+}
+
+// ── Toast Notifications ──────────────────────────────────────────
+
+function showToast(msg, duration = 3000) {
+  let container = document.getElementById('toast-container')
+  if (!container) {
+    container = document.createElement('div')
+    container.id = 'toast-container'
+    container.style.cssText = 'position:fixed;bottom:60px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;'
+    document.body.appendChild(container)
+  }
+  const toast = document.createElement('div')
+  toast.style.cssText = 'background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-size:13px;color:var(--text);box-shadow:0 4px 12px rgba(0,0,0,0.3);opacity:0;transition:opacity 0.2s;'
+  toast.textContent = msg
+  container.appendChild(toast)
+  requestAnimationFrame(() => toast.style.opacity = '1')
+  setTimeout(() => {
+    toast.style.opacity = '0'
+    setTimeout(() => toast.remove(), 200)
+  }, duration)
+}
+
+// ── Service Control Center (SCC) ──────────────────────────────────
+
+let lastInfraData = null
+
+function updateSCC(s) {
+  if (!s) return
+  const services = [
+    { id: 'dev', online: s.dev?.online, latency: s.dev?.latency },
+    { id: 'beta', online: s.beta?.online, latency: s.beta?.latency },
+    { id: 'prod', online: s.prod?.online, latency: s.prod?.latency },
+    { id: 'ollama-pc', online: s.ollamaPc?.online, latency: s.ollamaPc?.latency },
+    { id: 'ollama-pi', online: s.ollamaPi?.online, latency: s.ollamaPi?.latency },
+  ]
+
+  let upCount = 0
+  let totalCount = services.length
+
+  for (const svc of services) {
+    const dot = document.getElementById(`scc-dot-${svc.id}`)
+    const label = document.getElementById(`scc-label-${svc.id}`)
+    const btn = document.getElementById(`scc-btn-${svc.id}`)
+    if (!dot || !label) continue
+
+    if (svc.online) {
+      upCount++
+      dot.style.background = 'var(--success)'
+      dot.style.boxShadow = '0 0 6px var(--success-glow)'
+      label.textContent = svc.latency ? `${svc.latency}ms` : 'Online'
+      label.style.background = 'rgba(74,222,128,0.15)'
+      label.style.color = '#4ade80'
+    } else {
+      dot.style.background = 'var(--error)'
+      dot.style.boxShadow = '0 0 6px var(--error-glow)'
+      label.textContent = 'Offline'
+      label.style.background = 'rgba(248,113,113,0.15)'
+      label.style.color = '#f87171'
+    }
+
+    // Update button text based on state
+    if (svc.id === 'dev' && btn) {
+      btn.textContent = svc.online ? 'Stop' : 'Start'
+      btn.onclick = svc.online ? sccStopDev : sccStartDev
+    }
+    if (svc.id === 'beta' && btn) {
+      btn.textContent = svc.online ? 'Restart' : 'Restart'
+    }
+    if (svc.id === 'ollama-pc' && btn) {
+      btn.textContent = svc.online ? 'Stop' : 'Start'
+      btn.onclick = svc.online ? () => sccOllamaAction('pc', 'stop') : () => sccOllamaAction('pc', 'start')
+    }
+    if (svc.id === 'ollama-pi' && btn) {
+      btn.textContent = svc.online ? 'Stop' : 'Start'
+      btn.onclick = svc.online ? () => sccOllamaAction('pi', 'stop') : () => sccOllamaAction('pi', 'start')
+    }
+  }
+
+  // Pi SSH status (from infra data, not status endpoint)
+  if (lastInfraData) {
+    const piDot = document.getElementById('scc-dot-pi-ssh')
+    const piLabel = document.getElementById('scc-label-pi-ssh')
+    if (piDot && piLabel) {
+      if (lastInfraData.pi?.reachable) {
+        upCount++
+        piDot.style.background = 'var(--success)'
+        piDot.style.boxShadow = '0 0 6px var(--success-glow)'
+        piLabel.textContent = 'Reachable'
+        piLabel.style.background = 'rgba(74,222,128,0.15)'
+        piLabel.style.color = '#4ade80'
+      } else {
+        piDot.style.background = 'var(--error)'
+        piDot.style.boxShadow = '0 0 6px var(--error-glow)'
+        piLabel.textContent = 'Unreachable'
+        piLabel.style.background = 'rgba(248,113,113,0.15)'
+        piLabel.style.color = '#f87171'
+      }
+    }
+    totalCount++
+  }
+
+  // Summary bar
+  const summaryText = document.getElementById('scc-summary-text')
+  if (summaryText) {
+    const allUp = upCount === totalCount
+    const color = allUp ? '#4ade80' : upCount > 0 ? '#fbbf24' : '#f87171'
+    summaryText.innerHTML = `<span style="color:${color};font-weight:600;">${upCount}/${totalCount} services online</span>`
+    if (!allUp) {
+      const downNames = services.filter(s => !s.online).map(s => {
+        const names = { dev: 'Dev', beta: 'Beta', prod: 'Prod', 'ollama-pc': 'Ollama PC', 'ollama-pi': 'Ollama Pi' }
+        return names[s.id] || s.id
+      })
+      if (lastInfraData && !lastInfraData.pi?.reachable) downNames.push('Pi SSH')
+      summaryText.innerHTML += ` <span style="margin-left:8px;color:var(--text-muted);">Down: ${downNames.join(', ')}</span>`
+    }
+  }
+}
+
+// SCC button actions
+async function sccStartDev() {
+  const btn = document.getElementById('scc-btn-dev')
+  if (btn) { btn.textContent = 'Starting...'; btn.disabled = true }
+  try {
+    await fetch(`${API}/api/dev/start`, { method: 'POST' })
+    showToast('Dev server starting...')
+    setTimeout(refreshStatus, 3000)
+  } catch (e) { showToast('Failed: ' + e.message) }
+  finally { if (btn) btn.disabled = false }
+}
+
+async function sccStopDev() {
+  const btn = document.getElementById('scc-btn-dev')
+  if (btn) { btn.textContent = 'Stopping...'; btn.disabled = true }
+  try {
+    await fetch(`${API}/api/dev/stop`, { method: 'POST' })
+    showToast('Dev server stopped')
+    setTimeout(refreshStatus, 1500)
+  } catch (e) { showToast('Failed: ' + e.message) }
+  finally { if (btn) btn.disabled = false }
+}
+
+async function sccRestartBeta() {
+  const btn = document.getElementById('scc-btn-beta')
+  if (btn) { btn.textContent = 'Restarting...'; btn.disabled = true }
+  try {
+    await fetch(`${API}/api/beta/restart`, { method: 'POST' })
+    showToast('Beta restarting...')
+    setTimeout(refreshStatus, 5000)
+  } catch (e) { showToast('Failed: ' + e.message) }
+  finally { if (btn) btn.disabled = false }
+}
+
+async function sccOllamaAction(target, action) {
+  const btn = document.getElementById(`scc-btn-ollama-${target}`)
+  if (btn) { btn.textContent = action === 'start' ? 'Starting...' : 'Stopping...'; btn.disabled = true }
+  try {
+    await fetch(`${API}/api/ollama/${target}/${action}`, { method: 'POST' })
+    showToast(`Ollama ${target.toUpperCase()} ${action}ing...`)
+    setTimeout(refreshStatus, 2000)
+  } catch (e) { showToast('Failed: ' + e.message) }
+  finally { if (btn) btn.disabled = false }
+}
+
+function sccToggleOllamaPc() {
+  sccOllamaAction('pc', statusData?.ollamaPc?.online ? 'stop' : 'start')
+}
+
+function sccToggleOllamaPi() {
+  sccOllamaAction('pi', statusData?.ollamaPi?.online ? 'stop' : 'start')
 }
 
 // ── Keyboard Shortcuts ────────────────────────────────────────────
@@ -5902,6 +6148,8 @@ function observeRebuildDOM() {
 
 refreshStatus()
 setInterval(refreshStatus, 5000)
+loadInfra() // Populate Pi SSH status for SCC on startup
+setInterval(loadInfra, 30000) // Refresh Pi health every 30s
 connectSSE()
 loadPromptQueue() // Load prompt queue on startup since Home is default
 

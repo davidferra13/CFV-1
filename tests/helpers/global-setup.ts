@@ -41,8 +41,9 @@ async function loginAndSaveState(
 
     // Cookies are now in the browser context. Navigate to / so middleware resolves
     // the role and redirects to the appropriate portal (/dashboard or /my-events).
-    await page.goto(`${BASE_URL}/`)
-    await page.waitForURL(expectedUrlPattern, { timeout: 30_000 })
+    // Generous timeout for dev server on-demand page compilation.
+    await page.goto(`${BASE_URL}/`, { timeout: 90_000 })
+    await page.waitForURL(expectedUrlPattern, { timeout: 60_000 })
     await context.addCookies([
       {
         name: 'cookieConsent',
