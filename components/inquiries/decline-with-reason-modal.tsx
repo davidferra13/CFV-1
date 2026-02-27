@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 import { declineInquiry } from '@/lib/inquiries/actions'
 import { COMMON_DECLINE_REASONS } from '@/lib/inquiries/constants'
 import { Button } from '@/components/ui/button'
+import { trackAction } from '@/lib/ai/remy-activity-tracker'
 
 interface Props {
   inquiryId: string
@@ -29,6 +30,7 @@ export function DeclineWithReasonModal({ inquiryId, onCancel }: Props) {
     setLoading(true)
     try {
       await declineInquiry(inquiryId, effectiveReason || undefined)
+      trackAction('Declined inquiry', effectiveReason || 'no reason given')
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to decline')

@@ -89,7 +89,11 @@ import type {
   RemyTaskResult,
   NavigationSuggestion,
 } from '@/lib/ai/remy-types'
-import { trackPageVisit, getSessionActivity } from '@/lib/ai/remy-activity-tracker'
+import {
+  trackPageVisit,
+  getSessionActivity,
+  initSessionTimer,
+} from '@/lib/ai/remy-activity-tracker'
 import {
   REMY_WELCOME_MESSAGE,
   NEW_USER_STARTERS,
@@ -422,7 +426,11 @@ export function RemyDrawer() {
   // Context-aware starters
   const starters = useMemo(() => getStartersForPage(pathname ?? '/dashboard'), [pathname])
 
-  // Track navigation for Remy's awareness of what the chef has been doing
+  // Initialize session timer + track navigation for Remy's awareness
+  useEffect(() => {
+    initSessionTimer()
+  }, [])
+
   useEffect(() => {
     if (pathname) trackPageVisit(pathname)
   }, [pathname])
@@ -1096,6 +1104,9 @@ export function RemyDrawer() {
             currentPage: pathname,
             recentPages: activity.recentPages,
             recentActions: activity.recentActions,
+            recentErrors: activity.recentErrors,
+            sessionMinutes: activity.sessionMinutes,
+            activeForm: activity.activeForm,
           }),
           signal: controller.signal,
         })

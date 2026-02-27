@@ -3,11 +3,12 @@
 // Staff Member Form
 // Add or edit a staff member on the chef's roster.
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { createStaffMember, updateStaffMember, type CreateStaffInput } from '@/lib/staff/actions'
+import { trackAction, setActiveForm, trackError } from '@/lib/ai/remy-activity-tracker'
 
 const ROLES = [
   { value: 'sous_chef', label: 'Sous Chef' },
@@ -47,6 +48,11 @@ export function StaffMemberForm({ member, onDone }: Props) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  useEffect(() => {
+    setActiveForm(member ? 'Edit Staff Member' : 'New Staff Member')
+    return () => setActiveForm(null)
+  }, [member])
+
   function update(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
@@ -68,13 +74,17 @@ export function StaffMemberForm({ member, onDone }: Props) {
     try {
       if (member) {
         await updateStaffMember(member.id, input)
+        trackAction('Updated staff member', form.name)
       } else {
         await createStaffMember(input)
+        trackAction('Added staff member', `${form.name} — ${form.role}`)
       }
       router.refresh()
       onDone?.()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Save failed')
+      const msg = err instanceof Error ? err.message : 'Save failed'
+      setError(msg)
+      trackError(msg, 'Staff member save')
     } finally {
       setSaving(false)
     }

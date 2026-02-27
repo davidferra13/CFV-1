@@ -5,6 +5,7 @@ import { X } from 'lucide-react'
 import type { ChefGoal } from '@/lib/goals/types'
 import { formatGoalValue, formatGoalUnit } from '@/lib/goals/engine'
 import { logGoalCheckIn } from '@/lib/goals/check-in-actions'
+import { trackAction } from '@/lib/ai/remy-activity-tracker'
 
 interface GoalCheckInModalProps {
   goal: ChefGoal
@@ -32,6 +33,10 @@ export function GoalCheckInModal({ goal, currentValue, onClose }: GoalCheckInMod
           loggedValue: parsedValue,
           notes: notes.trim() || null,
         })
+        trackAction(
+          'Logged goal progress',
+          `+${parsedValue} ${unit}${parsedValue === 1 ? '' : 's'} — ${goal.label}`
+        )
         onClose()
       } catch (err) {
         setError((err as Error).message)

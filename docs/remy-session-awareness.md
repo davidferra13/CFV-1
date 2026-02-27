@@ -1,8 +1,8 @@
 # Remy Session Awareness — Implementation Doc
 
 > **Date:** 2026-02-27
-> **Status:** Complete
-> **Scope:** Make Remy fully aware of the chef's in-session activity, current time, and browsing history
+> **Status:** Complete (Phase 2 — 2026-02-27)
+> **Scope:** Full session awareness — time, navigation, mutations, errors, session duration, form-in-progress
 
 ---
 
@@ -36,7 +36,7 @@ Remy sees the chef's last 10 actions (create/update/delete) this session. "I see
 - `getRecentActions()` — returns the list
 - `getSessionActivity()` — combined getter for API requests
 
-**20 trackAction() calls added across 10 files:**
+**32 trackAction() calls added across 18 files:**
 
 | File                                                 | Mutations Tracked                         |
 | ---------------------------------------------------- | ----------------------------------------- |
@@ -45,13 +45,67 @@ Remy sees the chef's last 10 actions (create/update/delete) this session. "I see
 | `components/events/event-transitions.tsx`            | Propose, confirm, start, complete, cancel |
 | `components/events/record-payment-modal.tsx`         | Payment recording                         |
 | `components/inquiries/inquiry-transitions.tsx`       | Status changes, convert, release, delete  |
+| `components/inquiries/decline-with-reason-modal.tsx` | Inquiry decline                           |
 | `components/expenses/expense-form.tsx`               | Manual entry, receipt upload              |
 | `app/(chef)/recipes/[id]/recipe-detail-client.tsx`   | Delete, duplicate                         |
 | `app/(chef)/menus/[id]/menu-detail-client.tsx`       | Update, duplicate, delete, archive        |
 | `components/clients/personal-info-editor.tsx`        | Personal info update                      |
 | `components/finance/add-manual-transaction-form.tsx` | Manual transaction                        |
+| `components/quotes/quote-form.tsx`                   | Quote create, update                      |
+| `components/aar/aar-form.tsx`                        | AAR create, update                        |
+| `components/staff/staff-member-form.tsx`             | Staff create, update                      |
+| `components/calendar/calendar-entry-modal.tsx`       | Calendar entry creation                   |
+| `components/goals/goal-check-in-modal.tsx`           | Goal check-in                             |
+| `components/settings/preferences-form.tsx`           | Preferences update                        |
+| `components/reviews/import-platform-review.tsx`      | Review import                             |
 
-### 4. Fixed Gaps (from audit)
+### 4. Error Awareness (Phase 2)
+
+Remy sees the chef's last 5 errors this session. "I see you hit a connection error when saving that expense — let me help troubleshoot."
+
+**Central tracking:** `lib/errors/map-error-to-ui.ts` — `mapErrorToUI()` now automatically calls `trackError()` for every error that goes through the centralized error handler. This captures all transition failures (events, quotes, inquiries) in one place.
+
+**Targeted tracking in catch blocks:**
+
+- `event-nl-form.tsx` — NL parsing failures, event creation errors
+- `expense-form.tsx` — receipt extraction, expense creation, receipt save
+- `aar-form.tsx` — AAR save failures
+- `staff-member-form.tsx` — staff save failures
+- `calendar-entry-modal.tsx` — entry creation failures
+
+**System prompt section:** `RECENT ERRORS (this session):` — shows error message, context, and timestamp. Instructs Remy to proactively offer help.
+
+### 5. Session Duration (Phase 2)
+
+Remy knows how long the chef has been working this session. "You've been at it for 3 hours — want me to help you finish up faster?"
+
+**Module:** `lib/ai/remy-activity-tracker.ts` — `initSessionTimer()` + `getSessionMinutes()`
+
+**Wired in:** `components/ai/remy-drawer.tsx` — `initSessionTimer()` called on mount
+
+**System prompt:** Shows `SESSION DURATION: 2h 15m`. If >2 hours, adds "grinding mode" note — Remy becomes more efficient and direct.
+
+### 6. Form-in-Progress Awareness (Phase 2)
+
+Remy knows when the chef is actively filling out a form. "I see you're working on a new quote — need help with pricing?"
+
+**Module:** `lib/ai/remy-activity-tracker.ts` — `setActiveForm(label)` + `getActiveForm()`
+
+**7 forms instrumented with mount/unmount hooks:**
+
+| Form               | Label                          |
+| ------------------ | ------------------------------ |
+| EventNLForm        | "New Event (natural language)" |
+| EventForm          | "New Event" / "Edit Event"     |
+| QuoteForm          | "New Quote" / "Edit Quote"     |
+| ExpenseForm        | "New Expense"                  |
+| AARForm            | "New/Edit After-Action Review" |
+| StaffMemberForm    | "New/Edit Staff Member"        |
+| CalendarEntryModal | "New Calendar Entry"           |
+
+**System prompt:** `CURRENTLY WORKING ON: "New Quote"` — Remy's answers become contextual to that form.
+
+### 7. Fixed Gaps (from audit)
 
 - **dailyPlan** — was loaded by `remy-context.ts` but never injected into the streaming route's system prompt. Now injected.
 - **emailDigest** — was in the old `remy-actions.ts` but missing from the streaming route. Now injected.
@@ -89,19 +143,35 @@ All session data stays in `sessionStorage` (cleared on tab close). Data only lea
 Chef uses the app
   → useEffect tracks page visits (sessionStorage)
   → trackAction() calls after mutations (sessionStorage)
+  → trackError() calls on failures (sessionStorage)
+  → setActiveForm() on form mount/unmount (sessionStorage)
+  → initSessionTimer() records session start (sessionStorage)
 
 Chef sends message to Remy
-  → getSessionActivity() reads sessionStorage
-  → Sent as recentPages + recentActions in POST body
-  → Server validates via validateRecentPages/validateRecentActions
-  → buildRemySystemPrompt() injects into system prompt
+  → getSessionActivity() reads all 5 channels from sessionStorage
+  → Sent as recentPages, recentActions, recentErrors, sessionMinutes, activeForm in POST body
+  → Server validates all fields in validateRemyRequestBody()
+  → buildRemySystemPrompt() injects into system prompt conditionally
   → Ollama receives full context
 ```
 
 ---
 
+## System Prompt Sections (complete)
+
+The system prompt now includes (when data is available):
+
+- `CURRENT TIME:` — always present
+- `TODAY'S DAILY PLAN:` — when dailyPlan has items
+- `EMAIL INBOX:` — when emailDigest has emails
+- `NAVIGATION TRAIL (this session):` — when pages visited
+- `RECENT ACTIONS (this session):` — when mutations tracked
+- `RECENT ERRORS (this session):` — when errors occurred
+- `SESSION DURATION:` — when >0 minutes (with "grinding mode" >2h)
+- `CURRENTLY WORKING ON:` — when chef is mid-form
+
 ## Future Improvements
 
-- Add trackAction() to more mutation points (staff assignment, quote sending, settings changes)
 - Consider adding `trackAction()` to `useFormAction()` hook if one is created
 - Could add "time on page" to navigation trail for richer context
+- Could track which form fields the chef has filled in for even more contextual help

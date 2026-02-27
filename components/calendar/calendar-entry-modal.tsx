@@ -6,9 +6,10 @@
 // - Public signal section (for target_booking only)
 // - Blocking toggle (auto-set by type, chef-overridable)
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { createCalendarEntry } from '@/lib/calendar/entry-actions'
+import { trackAction, setActiveForm, trackError } from '@/lib/ai/remy-activity-tracker'
 import type { ChefCalendarEntryType } from '@/lib/calendar/entry-actions'
 import {
   CALENDAR_COLORS,
@@ -79,6 +80,11 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
   const [blocksBookings, setBlocksBookings] = useState(
     ENTRY_TYPE_BLOCKS_BOOKINGS[entryType] ?? false
   )
+
+  useEffect(() => {
+    setActiveForm('New Calendar Entry')
+    return () => setActiveForm(null)
+  }, [])
 
   // Revenue
   const [isRevenueGenerating, setIsRevenueGenerating] = useState(false)
@@ -152,10 +158,13 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
         is_public: isTargetBooking ? isPublic : false,
         public_note: isTargetBooking && isPublic ? publicNote.trim() || undefined : undefined,
       })
+      trackAction('Created calendar entry', `${title.trim()} (${entryType})`)
       onCreated?.()
       onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create entry')
+      const msg = err instanceof Error ? err.message : 'Failed to create entry'
+      setError(msg)
+      trackError(msg, 'Calendar entry creation')
     } finally {
       setLoading(false)
     }

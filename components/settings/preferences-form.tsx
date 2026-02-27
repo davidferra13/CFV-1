@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StoreAutocomplete } from '@/components/ui/store-autocomplete'
 import { detectMyLocation } from '@/lib/geo/geo-actions'
+import { trackAction } from '@/lib/ai/remy-activity-tracker'
 
 function createCustomGoal(): RevenueGoalCustom {
   return {
@@ -125,6 +126,10 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
             .filter((goal) => goal.label && goal.period_start && goal.period_end),
           shop_day_before: shopDayBefore,
         })
+        trackAction(
+          'Updated preferences',
+          `Target margin: ${targetMargin}%, revenue goal: ${revenueGoalProgramEnabled ? 'on' : 'off'}`
+        )
         setSuccess(true)
         router.refresh()
       } catch (err) {

@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, type SelectOptionGroup } from '@/components/ui/select'
 import { Alert } from '@/components/ui/alert'
 import { logChefFeedback } from '@/lib/reviews/chef-feedback-actions'
+import { trackAction } from '@/lib/ai/remy-activity-tracker'
 
 // ============================================
 // PLATFORM METADATA
@@ -173,6 +174,7 @@ export function ImportPlatformReview() {
         feedback_date: feedbackDate,
         public_display: publicDisplay,
       })
+      trackAction('Imported review', `${rating}/5 from ${source}`)
       handleClose()
       router.refresh()
     } catch (err) {

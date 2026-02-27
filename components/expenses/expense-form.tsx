@@ -3,7 +3,7 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -16,7 +16,7 @@ import { createExpense, type CreateExpenseInput } from '@/lib/expenses/actions'
 import { ExpenseCategorizeSuggest } from '@/components/ai/expense-categorize-suggest'
 import { EXPENSE_CATEGORY_GROUPS } from '@/lib/constants/expense-categories'
 import { parseCurrencyToCents } from '@/lib/utils/currency'
-import { trackAction } from '@/lib/ai/remy-activity-tracker'
+import { trackAction, setActiveForm, trackError } from '@/lib/ai/remy-activity-tracker'
 import { format } from 'date-fns'
 
 type EventOption = {
@@ -71,6 +71,11 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
   const [mode, setMode] = useState<'manual' | 'receipt'>('manual')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    setActiveForm('New Expense')
+    return () => setActiveForm(null)
+  }, [])
 
   // Manual form state
   const [eventId, setEventId] = useState(defaultEventId || '')
@@ -158,7 +163,9 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
         }
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to extract receipt data')
+      const msg = err.message || 'Failed to extract receipt data'
+      setError(msg)
+      trackError(msg, 'Receipt extraction')
     } finally {
       setExtracting(false)
     }
@@ -217,7 +224,9 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
       trackAction('Created expense', `$${amount} at ${vendorName || 'vendor'} — ${category}`)
       router.push('/expenses')
     } catch (err: any) {
-      setError(err.message || 'Failed to create expense')
+      const msg = err.message || 'Failed to create expense'
+      setError(msg)
+      trackError(msg, 'Expense creation')
     } finally {
       setLoading(false)
     }
@@ -286,7 +295,9 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
       )
       router.push('/expenses')
     } catch (err: any) {
-      setError(err.message || 'Failed to save expense')
+      const msg = err.message || 'Failed to save expense'
+      setError(msg)
+      trackError(msg, 'Receipt expense save')
     } finally {
       setLoading(false)
     }

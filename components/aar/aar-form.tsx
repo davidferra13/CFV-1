@@ -2,7 +2,7 @@
 // Quick ratings first (two taps), forgotten items second, text notes optional
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -11,6 +11,7 @@ import { Card } from '@/components/ui/card'
 import { createAAR, updateAAR } from '@/lib/aar/actions'
 import type { CreateAARInput, UpdateAARInput } from '@/lib/aar/actions'
 import type { ChecklistItem } from '@/lib/checklist/actions'
+import { trackAction, setActiveForm, trackError } from '@/lib/ai/remy-activity-tracker'
 
 type AARFormProps = {
   eventId: string
@@ -122,6 +123,11 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  useEffect(() => {
+    setActiveForm(isEditing ? 'Edit After-Action Review' : 'New After-Action Review')
+    return () => setActiveForm(null)
+  }, [isEditing])
+
   const toggleForgotten = (item: string) => {
     setForgottenItems((prev) => {
       const next = new Set(prev)
@@ -169,6 +175,7 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
           site_notes: siteNotes || null,
         }
         await updateAAR(existingAAR.id, updateData)
+        trackAction('Updated after-action review', `Calm: ${calmRating}/5, Prep: ${prepRating}/5`)
       } else {
         const createData: CreateAARInput = {
           event_id: eventId,
@@ -183,13 +190,16 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
           site_notes: siteNotes || undefined,
         }
         await createAAR(createData)
+        trackAction('Created after-action review', `Calm: ${calmRating}/5, Prep: ${prepRating}/5`)
       }
 
       router.push(`/events/${eventId}`)
       router.refresh()
     } catch (err) {
       console.error('AAR submit error:', err)
-      setError(err instanceof Error ? err.message : 'Failed to save review')
+      const msg = err instanceof Error ? err.message : 'Failed to save review'
+      setError(msg)
+      trackError(msg, 'After-action review save')
     } finally {
       setLoading(false)
     }

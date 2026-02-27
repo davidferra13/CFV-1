@@ -13,6 +13,7 @@ import { Alert } from '@/components/ui/alert'
 import { ConflictResolutionDialog } from '@/components/ui/conflict-resolution-dialog'
 import { SaveStateBadge } from '@/components/ui/save-state-badge'
 import { DraftRestorePrompt } from '@/components/ui/draft-restore-prompt'
+import { trackAction, setActiveForm } from '@/lib/ai/remy-activity-tracker'
 import { UnsavedChangesDialog } from '@/components/ui/unsaved-changes-dialog'
 import { createQuote, getQuoteById, updateQuote, type CreateQuoteInput } from '@/lib/quotes/actions'
 import { parseCurrencyToCents, formatCurrency } from '@/lib/utils/currency'
@@ -113,6 +114,11 @@ export function QuoteForm({
   const [conflictError, setConflictError] = useState<ConflictErrorPayload | null>(null)
   const [latestConflictData, setLatestConflictData] = useState<QuoteFormData | null>(null)
   const isEditing = !!existingQuote
+
+  useEffect(() => {
+    setActiveForm(isEditing ? 'Edit Quote' : 'New Quote')
+    return () => setActiveForm(null)
+  }, [isEditing])
 
   // Form state
   const [clientId, setClientId] = useState(prefilledClientId || '')
@@ -445,6 +451,7 @@ export function QuoteForm({
         }
         const result = mutationResult.result as any
         if (result.success) {
+          trackAction('Updated quote', `$${totalAmount} — ${quoteName || pricingModel}`)
           setCommittedFormData(currentFormData)
           await durableDraft.clearDraft()
           router.push(`/quotes/${existingQuote.id}`)
@@ -474,6 +481,7 @@ export function QuoteForm({
         }
         const result = mutationResult.result as any
         if (result.success && result.quote) {
+          trackAction('Created quote', `$${totalAmount} — ${quoteName || pricingModel}`)
           setCommittedFormData(currentFormData)
           await durableDraft.clearDraft()
           router.push(`/quotes/${result.quote.id}`)

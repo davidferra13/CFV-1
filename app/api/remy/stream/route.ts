@@ -1330,7 +1330,10 @@ export async function POST(req: NextRequest) {
         favoriteChefsList,
         archetypeId,
         recentPages,
-        recentActions
+        recentActions,
+        recentErrors,
+        sessionMinutes,
+        activeForm
       )
       const historyStr = formatConversationHistory(history)
       const mixedUserMessage = `${historyStr}Chef: ${questionInput}`
@@ -1495,7 +1498,10 @@ export async function POST(req: NextRequest) {
       favoriteChefsList,
       archetypeId,
       recentPages,
-      recentActions
+      recentActions,
+      recentErrors,
+      sessionMinutes,
+      activeForm
     )
     const historyStr = formatConversationHistory(history)
     const userMessage = `${historyStr}Chef: ${message}`

@@ -33,17 +33,35 @@ export interface RecentAction {
   at: string
 }
 
+export interface RecentError {
+  /** Short error description */
+  message: string
+  /** Where it happened (e.g. "Event creation") */
+  context: string
+  /** ISO timestamp */
+  at: string
+}
+
 export interface SessionActivity {
   recentPages: PageVisit[]
   recentActions: RecentAction[]
+  recentErrors: RecentError[]
+  /** How long the chef has been active this session (minutes) */
+  sessionMinutes: number
+  /** What form the chef is currently working on, if any */
+  activeForm: string | null
 }
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const NAV_KEY = 'remy-nav-trail'
 const ACTIONS_KEY = 'remy-recent-actions'
+const ERRORS_KEY = 'remy-recent-errors'
+const SESSION_START_KEY = 'remy-session-start'
+const ACTIVE_FORM_KEY = 'remy-active-form'
 const MAX_NAV_ENTRIES = 10
 const MAX_ACTION_ENTRIES = 10
+const MAX_ERROR_ENTRIES = 5
 
 // ─── Navigation Trail ────────────────────────────────────────────────────────
 
@@ -191,6 +209,117 @@ export function getRecentActions(): RecentAction[] {
   }
 }
 
+// ─── Error Tracking ─────────────────────────────────────────────────────────
+
+/**
+ * Record a user-facing error. Call from catch blocks and error boundaries.
+ * Remy uses these to proactively offer help when things go wrong.
+ *
+ * Examples:
+ *   trackError('Failed to create event', 'Event creation')
+ *   trackError('Quote expired', 'Quote form')
+ */
+export function trackError(message: string, context: string): void {
+  if (typeof window === 'undefined') return
+
+  try {
+    const raw = sessionStorage.getItem(ERRORS_KEY)
+    const errors: RecentError[] = raw ? JSON.parse(raw) : []
+
+    errors.push({
+      message: message.slice(0, 200),
+      context: context.slice(0, 100),
+      at: new Date().toISOString(),
+    })
+
+    const trimmed = errors.slice(-MAX_ERROR_ENTRIES)
+    sessionStorage.setItem(ERRORS_KEY, JSON.stringify(trimmed))
+  } catch {
+    // sessionStorage full or unavailable
+  }
+}
+
+/**
+ * Get recent errors this session.
+ */
+export function getRecentErrors(): RecentError[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = sessionStorage.getItem(ERRORS_KEY)
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
+  }
+}
+
+// ─── Session Duration ───────────────────────────────────────────────────────
+
+/**
+ * Initialize session start time. Call once on app mount.
+ * Uses sessionStorage so it's per-tab and resets on close.
+ */
+export function initSessionTimer(): void {
+  if (typeof window === 'undefined') return
+  try {
+    if (!sessionStorage.getItem(SESSION_START_KEY)) {
+      sessionStorage.setItem(SESSION_START_KEY, new Date().toISOString())
+    }
+  } catch {
+    // sessionStorage unavailable
+  }
+}
+
+/**
+ * Get session duration in minutes.
+ */
+export function getSessionMinutes(): number {
+  if (typeof window === 'undefined') return 0
+  try {
+    const start = sessionStorage.getItem(SESSION_START_KEY)
+    if (!start) return 0
+    const elapsed = Date.now() - new Date(start).getTime()
+    return Math.round(elapsed / 60000)
+  } catch {
+    return 0
+  }
+}
+
+// ─── Form-In-Progress Tracking ──────────────────────────────────────────────
+
+/**
+ * Mark that the chef is currently working on a form.
+ * Call on form mount/focus. Pass null to clear.
+ *
+ * Examples:
+ *   setActiveForm('Creating new event')
+ *   setActiveForm('Editing quote for Smith dinner')
+ *   setActiveForm(null) // form submitted or closed
+ */
+export function setActiveForm(formLabel: string | null): void {
+  if (typeof window === 'undefined') return
+  try {
+    if (formLabel) {
+      sessionStorage.setItem(ACTIVE_FORM_KEY, formLabel)
+    } else {
+      sessionStorage.removeItem(ACTIVE_FORM_KEY)
+    }
+  } catch {
+    // sessionStorage unavailable
+  }
+}
+
+/**
+ * Get the currently active form label, if any.
+ */
+export function getActiveForm(): string | null {
+  if (typeof window === 'undefined') return null
+  try {
+    return sessionStorage.getItem(ACTIVE_FORM_KEY) || null
+  } catch {
+    return null
+  }
+}
+
 // ─── Combined Getter (for sending with Remy messages) ────────────────────────
 
 /**
@@ -200,5 +329,8 @@ export function getSessionActivity(): SessionActivity {
   return {
     recentPages: getNavTrail(),
     recentActions: getRecentActions(),
+    recentErrors: getRecentErrors(),
+    sessionMinutes: getSessionMinutes(),
+    activeForm: getActiveForm(),
   }
 }

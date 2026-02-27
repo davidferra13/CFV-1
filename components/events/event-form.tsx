@@ -25,6 +25,7 @@ import { useIdempotentMutation } from '@/lib/offline/use-idempotent-mutation'
 import { parseConflictError, type ConflictErrorPayload } from '@/lib/mutations/conflict'
 import { ValidationError } from '@/lib/errors/app-error'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
+import { setActiveForm } from '@/lib/ai/remy-activity-tracker'
 
 type Client = {
   id: string
@@ -132,6 +133,11 @@ export function EventForm({
 
   // Two-step state — edit mode starts on step 1 (both steps accessible via Back)
   const [step, setStep] = useState<1 | 2>(1)
+
+  useEffect(() => {
+    setActiveForm(mode === 'create' ? 'New Event' : 'Edit Event')
+    return () => setActiveForm(null)
+  }, [mode])
 
   // Conflict warning state
   const [conflictWarnings, setConflictWarnings] = useState<string[] | null>(null)

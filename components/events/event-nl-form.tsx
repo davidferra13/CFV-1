@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -13,7 +13,7 @@ import { Alert } from '@/components/ui/alert'
 import { Card } from '@/components/ui/card'
 import { parseEventFromText, type ParsedEventDraft } from '@/lib/events/parse-event-from-text'
 import { createEvent, type CreateEventInput } from '@/lib/events/actions'
-import { trackAction } from '@/lib/ai/remy-activity-tracker'
+import { trackAction, setActiveForm, trackError } from '@/lib/ai/remy-activity-tracker'
 
 type Client = {
   id: string
@@ -74,6 +74,11 @@ export function EventNLForm({ clients }: Props) {
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
 
+  useEffect(() => {
+    setActiveForm('New Event (natural language)')
+    return () => setActiveForm(null)
+  }, [])
+
   // ── Parse ──────────────────────────────────────────────────────────────────
 
   async function handleParse() {
@@ -85,7 +90,9 @@ export function EventNLForm({ clients }: Props) {
     setParsing(false)
 
     if (result.error || !result.draft) {
-      setParseError(result.error ?? 'Parsing failed')
+      const msg = result.error ?? 'Parsing failed'
+      setParseError(msg)
+      trackError(msg, 'Event NL parsing')
       return
     }
 
@@ -157,7 +164,9 @@ export function EventNLForm({ clients }: Props) {
         throw new Error('Failed to create event')
       }
     } catch (err) {
-      setCreateError(err instanceof Error ? err.message : 'Failed to create event')
+      const msg = err instanceof Error ? err.message : 'Failed to create event'
+      setCreateError(msg)
+      trackError(msg, 'Event creation')
       setCreating(false)
     }
   }
