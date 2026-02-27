@@ -86,6 +86,8 @@ export type NotificationAction =
   // Professional momentum
   | 'no_education_logged_90d'
   | 'quarterly_checkin_due'
+  // Client portal visit (real-time visitor alert)
+  | 'client_portal_visit'
   // Restaurant Ops — Phase 7
   | 'staff_assignment'
   | 'task_assigned'
@@ -203,6 +205,9 @@ export const NOTIFICATION_CONFIG: Record<
   // Professional momentum
   no_education_logged_90d: { category: 'wellbeing', icon: 'BookOpen', toastByDefault: false },
   quarterly_checkin_due: { category: 'wellbeing', icon: 'ClipboardCheck', toastByDefault: false },
+
+  // Client portal visit — real-time visitor alert
+  client_portal_visit: { category: 'client', icon: 'Eye', toastByDefault: true },
 
   // Restaurant Ops — Phase 7
   staff_assignment: { category: 'ops', icon: 'UserCheck', toastByDefault: true },

@@ -843,7 +843,7 @@
 | Culinary   | Recipe reuse rate, top recipes, dietary restrictions, menu modification/approval rates                                                           |
 | Benchmarks | → `/analytics/benchmarks`                                                                                                                        |
 
-**Sub-pages:** `/analytics/benchmarks` (benchmark dashboard), `/analytics/pipeline` (forecast), `/analytics/demand` (heatmap + holiday YoY), `/analytics/client-ltv` (LTV chart), `/analytics/referral-sources` (referral analytics), `/analytics/reports` (custom report builder), `/analytics/funnel` (conversion funnel: Inquiry→Quote→Booking→Completed visualization, KPI cards for response time/conversion rate/ghost rate/lead time, channel performance comparison, decline reason breakdown, lead time distribution).
+**Sub-pages:** `/analytics/daily-report` (daily business snapshot — 13 metric categories: schedule, revenue, pipeline, operations, client activity, schedule conflicts, milestones, dormant clients, action items, pipeline forecast; date navigation + regenerate button + past reports browser; emailed daily at 7 AM ET via Vercel Cron), `/analytics/benchmarks` (benchmark dashboard), `/analytics/pipeline` (forecast), `/analytics/demand` (heatmap + holiday YoY), `/analytics/client-ltv` (LTV chart), `/analytics/referral-sources` (referral analytics), `/analytics/reports` (custom report builder), `/analytics/funnel` (conversion funnel: Inquiry→Quote→Booking→Completed visualization, KPI cards for response time/conversion rate/ghost rate/lead time, channel performance comparison, decline reason breakdown, lead time distribution).
 
 ---
 

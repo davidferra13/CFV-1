@@ -5,6 +5,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import type { TablesInsert } from '@/types/database'
 import type { ActorType, ActivityEventType } from './types'
 import { incrementMetric, logActivityEvent } from './observability'
+import { triggerVisitorAlert } from './visitor-alert'
 
 export async function trackActivity(input: {
   tenantId: string
@@ -41,6 +42,16 @@ export async function trackActivity(input: {
     }
 
     incrementMetric('activity.track.success')
+
+    // Non-blocking visitor alert — notify chef when a client is on the site
+    if (input.actorType === 'client' && input.clientId) {
+      triggerVisitorAlert({
+        tenantId: input.tenantId,
+        clientId: input.clientId,
+        clientName: (input.metadata?.clientName as string) || 'A client',
+        eventType: input.eventType,
+      }).catch(() => {}) // fire-and-forget
+    }
   } catch (err) {
     incrementMetric('activity.track.failure')
     logActivityEvent('error', 'trackActivity failed (non-fatal)', {

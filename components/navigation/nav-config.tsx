@@ -704,6 +704,7 @@ export const navGroups: NavGroup[] = [
         label: 'Insights',
         icon: BarChart3,
         children: [
+          { href: '/analytics/daily-report', label: 'Daily Report' },
           { href: '/analytics', label: 'Source Analytics' },
           { href: '/analytics/reports', label: 'Custom Reports' },
           { href: '/insights/time-analysis', label: 'Time Analysis' },
