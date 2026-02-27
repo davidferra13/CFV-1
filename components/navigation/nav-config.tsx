@@ -386,6 +386,11 @@ export const navGroups: NavGroup[] = [
         label: 'Settlements',
         icon: Landmark,
       },
+      {
+        href: '/commerce/reports',
+        label: 'Reports',
+        icon: PieChart,
+      },
     ],
   },
 
