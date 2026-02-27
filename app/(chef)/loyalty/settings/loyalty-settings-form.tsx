@@ -6,7 +6,12 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { updateLoyaltyConfig, type LoyaltyConfig } from '@/lib/loyalty/actions'
+import {
+  updateLoyaltyConfig,
+  type LoyaltyConfig,
+  type ProgramMode,
+  type EarnMode,
+} from '@/lib/loyalty/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -55,11 +60,17 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
 
-  // Program toggle
-  const [isActive, setIsActive] = useState(config.is_active)
+  // Program mode & earn mode
+  const [programMode, setProgramMode] = useState<ProgramMode>(config.program_mode ?? 'full')
+  const [earnMode, setEarnMode] = useState<EarnMode>(config.earn_mode ?? 'per_guest')
+
+  // Program toggle (legacy — mapped from program_mode)
+  const isActive = programMode !== 'off'
 
   // Earn rates
   const [pointsPerGuest, setPointsPerGuest] = useState(config.points_per_guest)
+  const [pointsPerDollar, setPointsPerDollar] = useState(config.points_per_dollar ?? 1)
+  const [pointsPerEvent, setPointsPerEvent] = useState(config.points_per_event ?? 100)
   const [welcomePoints, setWelcomePoints] = useState(config.welcome_points ?? 25)
   const [referralPoints, setReferralPoints] = useState(config.referral_points ?? 100)
 
@@ -120,7 +131,11 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
       try {
         await updateLoyaltyConfig({
           is_active: isActive,
+          program_mode: programMode,
+          earn_mode: earnMode,
           points_per_guest: pointsPerGuest,
+          points_per_dollar: pointsPerDollar,
+          points_per_event: pointsPerEvent,
           welcome_points: welcomePoints,
           referral_points: referralPoints,
           bonus_large_party_threshold: largePartyEnabled ? largePartyThreshold : undefined,
@@ -140,277 +155,386 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
 
   return (
     <div className="space-y-10">
-      {/* ── Program Toggle ──────────────────────────────────────────────── */}
+      {/* ── Program Mode ──────────────────────────────────────────────── */}
       <section>
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-stone-100">Program Status</h2>
-            <p className="text-sm text-stone-500 mt-0.5">
-              When paused, no new points are awarded. Existing balances and pending deliveries are
-              preserved.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setIsActive((v) => !v)}
-            className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${
-              isActive ? 'bg-emerald-500' : 'bg-stone-300'
-            }`}
-          >
-            <span
-              className={`inline-block h-5 w-5 transform rounded-full bg-stone-900 shadow transition-transform ${
-                isActive ? 'translate-x-8' : 'translate-x-1'
+        <h2 className="text-lg font-semibold text-stone-100 mb-1">Program Mode</h2>
+        <p className="text-sm text-stone-500 mb-4">
+          Choose how your loyalty program works. Existing client data is always preserved.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[
+            {
+              key: 'full' as ProgramMode,
+              label: 'Full Program',
+              desc: 'Points, tiers, and redeemable rewards. The complete experience.',
+            },
+            {
+              key: 'lite' as ProgramMode,
+              label: 'Recognition Only',
+              desc: 'Tier badges based on visit count. No points or rewards catalog.',
+            },
+            {
+              key: 'off' as ProgramMode,
+              label: 'Disabled',
+              desc: 'No loyalty program. Hidden from clients.',
+            },
+          ].map((opt) => (
+            <button
+              key={opt.key}
+              type="button"
+              onClick={() => setProgramMode(opt.key)}
+              className={`text-left rounded-lg p-4 border transition-colors ${
+                programMode === opt.key
+                  ? 'border-brand-500 bg-brand-500/10'
+                  : 'border-stone-700 bg-stone-800/50 hover:border-stone-600'
               }`}
-            />
-          </button>
+            >
+              <p
+                className={`text-sm font-semibold ${programMode === opt.key ? 'text-brand-500' : 'text-stone-200'}`}
+              >
+                {opt.label}
+              </p>
+              <p className="text-xs text-stone-400 mt-1">{opt.desc}</p>
+            </button>
+          ))}
         </div>
-        <Badge variant={isActive ? 'success' : 'default'} className="mt-2">
-          {isActive ? 'Active — points are being awarded' : 'Paused — no new points awarded'}
+        <Badge variant={isActive ? 'success' : 'default'} className="mt-3">
+          {programMode === 'full'
+            ? 'Active — full points + tiers + rewards'
+            : programMode === 'lite'
+              ? 'Active — recognition tiers only'
+              : 'Disabled — hidden from clients'}
         </Badge>
       </section>
 
-      <hr className="border-stone-700" />
+      {programMode !== 'off' && (
+        <>
+          <hr className="border-stone-700" />
 
-      {/* ── Earn Rates ──────────────────────────────────────────────────── */}
-      <section>
-        <h2 className="text-lg font-semibold text-stone-100 mb-1">Earn Rates</h2>
-        <p className="text-sm text-stone-500 mb-5">
-          How many points clients earn from different activities. All automatic.
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <NumberField
-            label="Points per guest"
-            name="points_per_guest"
-            value={pointsPerGuest}
-            onChange={setPointsPerGuest}
-            min={1}
-            suffix="pts / guest"
-            hint="Awarded automatically when a completed event is marked done."
-          />
-          <NumberField
-            label="Welcome bonus"
-            name="welcome_points"
-            value={welcomePoints}
-            onChange={setWelcomePoints}
-            min={0}
-            suffix="pts"
-            hint="One-time bonus when an invited client creates their account. Set to 0 to disable."
-          />
-          <NumberField
-            label="Referral bonus"
-            name="referral_points"
-            value={referralPoints}
-            onChange={setReferralPoints}
-            min={0}
-            suffix="pts"
-            hint="Reference value for manual referral awards — not applied automatically."
-          />
-        </div>
-      </section>
-
-      <hr className="border-stone-700" />
-
-      {/* ── Large Party Bonus ────────────────────────────────────────────── */}
-      <section>
-        <div className="flex items-center justify-between mb-1">
-          <div>
-            <h2 className="text-lg font-semibold text-stone-100">Large Party Bonus</h2>
-            <p className="text-sm text-stone-500 mt-0.5">
-              Extra points when a client hosts a bigger group.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setLargePartyEnabled((v) => !v)}
-            className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${
-              largePartyEnabled ? 'bg-emerald-500' : 'bg-stone-300'
-            }`}
-          >
-            <span
-              className={`inline-block h-5 w-5 transform rounded-full bg-stone-900 shadow transition-transform ${
-                largePartyEnabled ? 'translate-x-8' : 'translate-x-1'
-              }`}
-            />
-          </button>
-        </div>
-
-        {largePartyEnabled && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
-            <NumberField
-              label="Minimum guests"
-              name="large_party_threshold"
-              value={largePartyThreshold}
-              onChange={setLargePartyThreshold}
-              min={2}
-              suffix="guests"
-              hint="Bonus triggers when guest count is at or above this number."
-            />
-            <NumberField
-              label="Bonus points"
-              name="large_party_bonus"
-              value={largePartyBonus}
-              onChange={setLargePartyBonus}
-              min={1}
-              suffix="pts"
-              hint="Points added on top of the base per-guest earn for that event."
-            />
-          </div>
-        )}
-      </section>
-
-      <hr className="border-stone-700" />
-
-      {/* ── Milestone Bonuses ────────────────────────────────────────────── */}
-      <section>
-        <h2 className="text-lg font-semibold text-stone-100 mb-1">Milestone Bonuses</h2>
-        <p className="text-sm text-stone-500 mb-4">
-          Award bonus points when a client reaches a specific number of completed dinners. A client
-          on their 9th dinner will be excited to book the 10th to unlock the milestone.
-        </p>
-
-        {/* Existing milestones */}
-        {milestones.length > 0 ? (
-          <div className="space-y-2 mb-4">
-            {milestones.map((m) => (
-              <div
-                key={m.events}
-                className="flex items-center justify-between px-4 py-3 rounded-lg bg-stone-800 border border-stone-700"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-lg">🏆</span>
-                  <div>
-                    <p className="text-sm font-medium text-stone-100">
-                      {ordinal(m.events)} dinner completed
+          {/* ── Earn Mode (full only) ────────────────────────────────────── */}
+          {programMode === 'full' && (
+            <section>
+              <h2 className="text-lg font-semibold text-stone-100 mb-1">How Clients Earn Points</h2>
+              <p className="text-sm text-stone-500 mb-4">
+                Choose how points are calculated when an event is completed.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+                {[
+                  {
+                    key: 'per_guest' as EarnMode,
+                    label: 'Per Guest',
+                    desc: 'Points based on guest count. Great for dinners and catering.',
+                  },
+                  {
+                    key: 'per_dollar' as EarnMode,
+                    label: 'Per Dollar Spent',
+                    desc: 'Points based on event total. Rewards bigger bookings.',
+                  },
+                  {
+                    key: 'per_event' as EarnMode,
+                    label: 'Per Event (Flat)',
+                    desc: 'Same points every event. Simple and predictable.',
+                  },
+                ].map((opt) => (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => setEarnMode(opt.key)}
+                    className={`text-left rounded-lg p-4 border transition-colors ${
+                      earnMode === opt.key
+                        ? 'border-brand-500 bg-brand-500/10'
+                        : 'border-stone-700 bg-stone-800/50 hover:border-stone-600'
+                    }`}
+                  >
+                    <p
+                      className={`text-sm font-semibold ${earnMode === opt.key ? 'text-brand-500' : 'text-stone-200'}`}
+                    >
+                      {opt.label}
                     </p>
-                    <p className="text-xs text-stone-500">+{m.bonus} bonus points</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => removeMilestone(m.events)}
-                  className="text-stone-400 hover:text-red-600 text-sm transition-colors"
-                >
-                  Remove
-                </button>
+                    <p className="text-xs text-stone-400 mt-1">{opt.desc}</p>
+                  </button>
+                ))}
               </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-stone-400 mb-4 italic">No milestones set. Add one below.</p>
-        )}
 
-        {/* Add new milestone */}
-        <div className="p-4 rounded-lg border border-dashed border-stone-600 bg-stone-800">
-          <p className="text-sm font-medium text-stone-300 mb-3">Add a milestone</p>
-          <div className="flex items-end gap-3 flex-wrap">
-            <div>
-              <label className="block text-xs text-stone-500 mb-1">After dinner #</label>
-              <Input
-                type="number"
-                min="1"
-                placeholder="e.g. 10"
-                value={newMilestoneEvents}
-                onChange={(e) => setNewMilestoneEvents(e.target.value)}
-                className="w-28"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-stone-500 mb-1">Bonus points</label>
-              <Input
-                type="number"
-                min="1"
-                placeholder="e.g. 100"
-                value={newMilestoneBonus}
-                onChange={(e) => setNewMilestoneBonus(e.target.value)}
-                className="w-28"
-              />
-            </div>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={addMilestone}
-              disabled={!newMilestoneEvents || !newMilestoneBonus}
-            >
-              Add Milestone
-            </Button>
-          </div>
-          <p className="text-xs text-stone-400 mt-2">
-            Example: After dinner #10, award +100 pts. Client will be motivated to keep booking!
-          </p>
-        </div>
-      </section>
+              {/* Earn rate fields — conditional on earn mode */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                {earnMode === 'per_guest' && (
+                  <NumberField
+                    label="Points per guest"
+                    name="points_per_guest"
+                    value={pointsPerGuest}
+                    onChange={setPointsPerGuest}
+                    min={1}
+                    suffix="pts / guest"
+                    hint="e.g. 8 guests × 10 pts = 80 points"
+                  />
+                )}
+                {earnMode === 'per_dollar' && (
+                  <NumberField
+                    label="Points per dollar"
+                    name="points_per_dollar"
+                    value={pointsPerDollar}
+                    onChange={setPointsPerDollar}
+                    min={0.01}
+                    suffix="pts / $1"
+                    hint="e.g. $2,000 event × 1 pt/$ = 2,000 points"
+                  />
+                )}
+                {earnMode === 'per_event' && (
+                  <NumberField
+                    label="Points per event"
+                    name="points_per_event"
+                    value={pointsPerEvent}
+                    onChange={setPointsPerEvent}
+                    min={1}
+                    suffix="pts / event"
+                    hint="Flat amount awarded for every completed event"
+                  />
+                )}
+                <NumberField
+                  label="Welcome bonus"
+                  name="welcome_points"
+                  value={welcomePoints}
+                  onChange={setWelcomePoints}
+                  min={0}
+                  suffix="pts"
+                  hint="One-time bonus when an invited client creates their account. Set to 0 to disable."
+                />
+                <NumberField
+                  label="Referral bonus"
+                  name="referral_points"
+                  value={referralPoints}
+                  onChange={setReferralPoints}
+                  min={0}
+                  suffix="pts"
+                  hint="Reference value for manual referral awards — not applied automatically."
+                />
+              </div>
+            </section>
+          )}
+        </>
+      )}
 
-      <hr className="border-stone-700" />
+      {/* ── Full-mode only sections ────────────────────────────────────── */}
+      {programMode === 'full' && (
+        <>
+          <hr className="border-stone-700" />
 
-      {/* ── Tier Thresholds ──────────────────────────────────────────────── */}
-      <section>
-        <h2 className="text-lg font-semibold text-stone-100 mb-1">Tier Thresholds</h2>
-        <p className="text-sm text-stone-500 mb-5">
-          Lifetime points required to reach each tier. Tiers are based on total points ever earned —
-          they never go down when a client redeems rewards.
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-stone-300 mb-1">
-              <span className="inline-flex items-center gap-1">
-                <span className="inline-block w-3 h-3 rounded-full bg-stone-400"></span>
-                Silver minimum
-              </span>
-            </label>
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                min="1"
-                value={silverMin}
-                onChange={(e) => setSilverMin(parseInt(e.target.value) || 1)}
-                className="w-28"
-              />
-              <span className="text-sm text-stone-500">lifetime pts</span>
+          {/* ── Large Party Bonus ──────────────────────────────────────── */}
+          <section>
+            <div className="flex items-center justify-between mb-1">
+              <div>
+                <h2 className="text-lg font-semibold text-stone-100">Large Party Bonus</h2>
+                <p className="text-sm text-stone-500 mt-0.5">
+                  Extra points when a client hosts a bigger group.
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="Toggle large party bonus"
+                onClick={() => setLargePartyEnabled((v) => !v)}
+                className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none ${
+                  largePartyEnabled ? 'bg-emerald-500' : 'bg-stone-300'
+                }`}
+              >
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-stone-900 shadow transition-transform ${
+                    largePartyEnabled ? 'translate-x-8' : 'translate-x-1'
+                  }`}
+                />
+              </button>
             </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-stone-300 mb-1">
-              <span className="inline-flex items-center gap-1">
-                <span className="inline-block w-3 h-3 rounded-full bg-yellow-400"></span>
-                Gold minimum
-              </span>
-            </label>
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                min="1"
-                value={goldMin}
-                onChange={(e) => setGoldMin(parseInt(e.target.value) || 1)}
-                className="w-28"
-              />
-              <span className="text-sm text-stone-500">lifetime pts</span>
+
+            {largePartyEnabled && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
+                <NumberField
+                  label="Minimum guests"
+                  name="large_party_threshold"
+                  value={largePartyThreshold}
+                  onChange={setLargePartyThreshold}
+                  min={2}
+                  suffix="guests"
+                  hint="Bonus triggers when guest count is at or above this number."
+                />
+                <NumberField
+                  label="Bonus points"
+                  name="large_party_bonus"
+                  value={largePartyBonus}
+                  onChange={setLargePartyBonus}
+                  min={1}
+                  suffix="pts"
+                  hint="Points added on top of the base earn for that event."
+                />
+              </div>
+            )}
+          </section>
+
+          <hr className="border-stone-700" />
+
+          {/* ── Milestone Bonuses ──────────────────────────────────────── */}
+          <section>
+            <h2 className="text-lg font-semibold text-stone-100 mb-1">Milestone Bonuses</h2>
+            <p className="text-sm text-stone-500 mb-4">
+              Award bonus points when a client reaches a specific number of completed dinners.
+            </p>
+
+            {milestones.length > 0 ? (
+              <div className="space-y-2 mb-4">
+                {milestones.map((m) => (
+                  <div
+                    key={m.events}
+                    className="flex items-center justify-between px-4 py-3 rounded-lg bg-stone-800 border border-stone-700"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg">🏆</span>
+                      <div>
+                        <p className="text-sm font-medium text-stone-100">
+                          {ordinal(m.events)} dinner completed
+                        </p>
+                        <p className="text-xs text-stone-500">+{m.bonus} bonus points</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeMilestone(m.events)}
+                      className="text-stone-400 hover:text-red-600 text-sm transition-colors"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-stone-400 mb-4 italic">
+                No milestones set. Add one below.
+              </p>
+            )}
+
+            <div className="p-4 rounded-lg border border-dashed border-stone-600 bg-stone-800">
+              <p className="text-sm font-medium text-stone-300 mb-3">Add a milestone</p>
+              <div className="flex items-end gap-3 flex-wrap">
+                <div>
+                  <label className="block text-xs text-stone-500 mb-1">After dinner #</label>
+                  <Input
+                    type="number"
+                    min="1"
+                    placeholder="e.g. 10"
+                    value={newMilestoneEvents}
+                    onChange={(e) => setNewMilestoneEvents(e.target.value)}
+                    className="w-28"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-stone-500 mb-1">Bonus points</label>
+                  <Input
+                    type="number"
+                    min="1"
+                    placeholder="e.g. 100"
+                    value={newMilestoneBonus}
+                    onChange={(e) => setNewMilestoneBonus(e.target.value)}
+                    className="w-28"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={addMilestone}
+                  disabled={!newMilestoneEvents || !newMilestoneBonus}
+                >
+                  Add Milestone
+                </Button>
+              </div>
+              <p className="text-xs text-stone-400 mt-2">
+                Example: After dinner #10, award +100 pts. Client will be motivated to keep booking!
+              </p>
             </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-stone-300 mb-1">
-              <span className="inline-flex items-center gap-1">
-                <span className="inline-block w-3 h-3 rounded-full bg-purple-400"></span>
-                Platinum minimum
-              </span>
-            </label>
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                min="1"
-                value={platinumMin}
-                onChange={(e) => setPlatinumMin(parseInt(e.target.value) || 1)}
-                className="w-28"
-              />
-              <span className="text-sm text-stone-500">lifetime pts</span>
+          </section>
+        </>
+      )}
+
+      {/* ── Tier Thresholds (shown for full + lite) ────────────────────── */}
+      {programMode !== 'off' && (
+        <>
+          <hr className="border-stone-700" />
+
+          <section>
+            <h2 className="text-lg font-semibold text-stone-100 mb-1">Tier Thresholds</h2>
+            <p className="text-sm text-stone-500 mb-5">
+              {programMode === 'full'
+                ? 'Lifetime points required to reach each tier. Tiers never go down when a client redeems rewards.'
+                : 'Number of completed events required to reach each tier. Tiers never go down.'}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-stone-300 mb-1">
+                  <span className="inline-flex items-center gap-1">
+                    <span className="inline-block w-3 h-3 rounded-full bg-stone-400"></span>
+                    Silver minimum
+                  </span>
+                </label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min="1"
+                    value={silverMin}
+                    onChange={(e) => setSilverMin(parseInt(e.target.value) || 1)}
+                    className="w-28"
+                  />
+                  <span className="text-sm text-stone-500">
+                    {programMode === 'full' ? 'lifetime pts' : 'events'}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-300 mb-1">
+                  <span className="inline-flex items-center gap-1">
+                    <span className="inline-block w-3 h-3 rounded-full bg-yellow-400"></span>
+                    Gold minimum
+                  </span>
+                </label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min="1"
+                    value={goldMin}
+                    onChange={(e) => setGoldMin(parseInt(e.target.value) || 1)}
+                    className="w-28"
+                  />
+                  <span className="text-sm text-stone-500">
+                    {programMode === 'full' ? 'lifetime pts' : 'events'}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-300 mb-1">
+                  <span className="inline-flex items-center gap-1">
+                    <span className="inline-block w-3 h-3 rounded-full bg-purple-400"></span>
+                    Platinum minimum
+                  </span>
+                </label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min="1"
+                    value={platinumMin}
+                    onChange={(e) => setPlatinumMin(parseInt(e.target.value) || 1)}
+                    className="w-28"
+                  />
+                  <span className="text-sm text-stone-500">
+                    {programMode === 'full' ? 'lifetime pts' : 'events'}
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        <p className="text-xs text-stone-400 mt-3">
-          Bronze is 0–{silverMin - 1} pts · Silver is {silverMin}–{goldMin - 1} pts · Gold is{' '}
-          {goldMin}–{platinumMin - 1} pts · Platinum is {platinumMin}+ pts
-        </p>
-      </section>
+            <p className="text-xs text-stone-400 mt-3">
+              {programMode === 'full'
+                ? `Bronze is 0–${silverMin - 1} pts · Silver is ${silverMin}–${goldMin - 1} pts · Gold is ${goldMin}–${platinumMin - 1} pts · Platinum is ${platinumMin}+ pts`
+                : `Bronze is 0–${silverMin - 1} events · Silver is ${silverMin}–${goldMin - 1} events · Gold is ${goldMin}–${platinumMin - 1} events · Platinum is ${platinumMin}+ events`}
+            </p>
+          </section>
+        </>
+      )}
 
       <hr className="border-stone-700" />
 

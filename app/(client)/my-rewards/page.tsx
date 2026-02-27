@@ -1,10 +1,13 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { format } from 'date-fns'
 import { requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { getMyLoyaltyStatus, type LoyaltyReward } from '@/lib/loyalty/actions'
 import { getVoucherAndGiftCards } from '@/lib/loyalty/voucher-actions'
 import { getMyPendingRedemptions } from '@/lib/loyalty/auto-award'
+import { getActiveRaffle } from '@/lib/raffle/actions'
+import { RaffleSection } from './raffle-section'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
@@ -80,29 +83,44 @@ export default async function MyRewardsPage() {
     )
   }
 
+  // Program is disabled — show minimal page
+  if (status.programMode === 'off') {
+    return (
+      <div className="max-w-5xl mx-auto space-y-6">
+        <h1 className="text-3xl font-bold text-stone-100">Rewards</h1>
+        <Alert variant="info">
+          Your chef hasn&rsquo;t enabled a loyalty program yet. Check back later!
+        </Alert>
+        <ActivityTracker eventType="rewards_viewed" metadata={{ program_mode: 'off' }} />
+      </div>
+    )
+  }
+
   const { data: client } = await supabase
     .from('clients')
     .select('tenant_id')
     .eq('id', user.entityId)
     .single()
 
-  const [incentives, rewardsResult, configResult, pendingRedemptions] = await Promise.all([
-    getVoucherAndGiftCards(),
-    supabase
-      .from('loyalty_rewards')
-      .select('*')
-      .eq('tenant_id', client?.tenant_id || '')
-      .eq('is_active', true)
-      .order('points_required', { ascending: true }),
-    supabase
-      .from('loyalty_config')
-      .select(
-        'tier_silver_min, tier_gold_min, tier_platinum_min, points_per_guest, bonus_large_party_threshold, bonus_large_party_points, milestone_bonuses'
-      )
-      .eq('tenant_id', client?.tenant_id || '')
-      .maybeSingle(),
-    getMyPendingRedemptions(),
-  ])
+  const [incentives, rewardsResult, configResult, pendingRedemptions, raffleData] =
+    await Promise.all([
+      getVoucherAndGiftCards(),
+      supabase
+        .from('loyalty_rewards')
+        .select('*')
+        .eq('tenant_id', client?.tenant_id || '')
+        .eq('is_active', true)
+        .order('points_required', { ascending: true }),
+      supabase
+        .from('loyalty_config')
+        .select(
+          'tier_silver_min, tier_gold_min, tier_platinum_min, points_per_guest, bonus_large_party_threshold, bonus_large_party_points, milestone_bonuses, earn_mode, points_per_dollar, points_per_event'
+        )
+        .eq('tenant_id', client?.tenant_id || '')
+        .maybeSingle(),
+      getMyPendingRedemptions(),
+      getActiveRaffle().catch(() => null),
+    ])
 
   const allRewards = (rewardsResult.data || []) as LoyaltyReward[]
   const configData = (configResult as any)?.data ?? null
@@ -110,11 +128,19 @@ export default async function MyRewardsPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-stone-100">Rewards</h1>
-        <p className="text-stone-400 mt-1">
-          Track your points, see your progress, and redeem available rewards.
-        </p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold text-stone-100">Rewards</h1>
+          <p className="text-stone-400 mt-1">
+            Track your points, see your progress, and redeem available rewards.
+          </p>
+        </div>
+        <Link
+          href="/my-rewards/about"
+          className="text-sm text-brand-500 hover:text-brand-400 transition-colors whitespace-nowrap"
+        >
+          How It Works &rarr;
+        </Link>
       </div>
 
       <Card>
@@ -127,12 +153,15 @@ export default async function MyRewardsPage() {
                 >
                   {TIER_LABELS[status.tier]} Member
                 </span>
-                <p className="text-2xl font-bold text-stone-100">
-                  {status.pointsBalance.toLocaleString()} points
-                </p>
+                {status.programMode === 'full' && (
+                  <p className="text-2xl font-bold text-stone-100">
+                    {status.pointsBalance.toLocaleString()} points
+                  </p>
+                )}
               </div>
               <p className="text-sm text-stone-400">
-                {status.totalEventsCompleted} completed events
+                {status.totalEventsCompleted} completed event
+                {status.totalEventsCompleted !== 1 ? 's' : ''}
               </p>
             </div>
             <Badge variant="info">{status.totalGuestsServed} guests served</Badge>
@@ -140,7 +169,6 @@ export default async function MyRewardsPage() {
 
           <div className="mt-5">
             <div className="h-2.5 w-full bg-stone-800 rounded-full overflow-hidden">
-              {/* Dynamic progress — inline style is the only option for runtime percentages */}
               {/* eslint-disable-next-line react/forbid-dom-props */}
               <div
                 className="h-full bg-brand-600 rounded-full transition-all duration-500"
@@ -152,75 +180,96 @@ export default async function MyRewardsPage() {
         </CardContent>
       </Card>
 
-      {status.availableRewards.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Available to Redeem</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {status.availableRewards.map((reward) => (
-              <RewardCard key={reward.id} reward={reward} pointsBalance={status.pointsBalance} />
-            ))}
-          </CardContent>
-        </Card>
-      ) : (
-        <Alert variant="info">
-          No rewards are currently redeemable. Keep earning points to unlock your first reward.
-        </Alert>
+      {/* Monthly Raffle — game-based entries, anonymous leaderboard */}
+      {raffleData && (
+        <RaffleSection
+          round={raffleData.round}
+          myEntries={raffleData.myEntries}
+          myAlias={raffleData.myAlias}
+          hasEntryToday={raffleData.hasEntryToday}
+          totalEntries={raffleData.totalEntries}
+          leaderboard={raffleData.leaderboard}
+          lastDrawReceipt={raffleData.lastDrawReceipt}
+        />
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All Rewards</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {allRewards.map((reward) => (
-            <RewardCard key={reward.id} reward={reward} pointsBalance={status.pointsBalance} />
-          ))}
-        </CardContent>
-      </Card>
+      {/* Full mode only: rewards catalog + pending deliveries */}
+      {status.programMode === 'full' && (
+        <>
+          {status.availableRewards.length > 0 ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Available to Redeem</CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {status.availableRewards.map((reward) => (
+                  <RewardCard
+                    key={reward.id}
+                    reward={reward}
+                    pointsBalance={status.pointsBalance}
+                  />
+                ))}
+              </CardContent>
+            </Card>
+          ) : (
+            <Alert variant="info">
+              No rewards are currently redeemable. Keep earning points to unlock your first reward.
+            </Alert>
+          )}
 
-      {/* Pending Reward Deliveries — redeemed but not yet received */}
-      {pendingRedemptions.length > 0 && (
-        <Card className="border-amber-200 bg-amber-950/30">
-          <CardHeader>
-            <CardTitle className="text-amber-900">Pending Rewards</CardTitle>
-            <p className="text-sm text-amber-700 mt-1">
-              You have redeemed these rewards. Your chef will honour them at your next event.
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {pendingRedemptions.map((r) => (
-              <div
-                key={r.id}
-                className="flex items-start justify-between gap-3 py-3 border-b border-amber-100 last:border-b-0"
-              >
-                <div>
-                  <p className="text-sm font-semibold text-stone-100">{r.reward_name}</p>
-                  <p className="text-xs text-stone-500 mt-0.5">
-                    Redeemed {format(new Date(r.created_at), 'MMM d, yyyy')} · {r.points_spent} pts
-                    spent
-                  </p>
-                </div>
-                <Badge
-                  variant={
-                    r.delivery_status === 'delivered'
-                      ? 'success'
-                      : r.delivery_status === 'cancelled'
-                        ? 'error'
-                        : 'warning'
-                  }
-                >
-                  {r.delivery_status === 'delivered'
-                    ? 'Delivered'
-                    : r.delivery_status === 'cancelled'
-                      ? 'Cancelled'
-                      : 'Pending'}
-                </Badge>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>All Rewards</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {allRewards.map((reward) => (
+                <RewardCard key={reward.id} reward={reward} pointsBalance={status.pointsBalance} />
+              ))}
+            </CardContent>
+          </Card>
+
+          {pendingRedemptions.length > 0 && (
+            <Card className="border-amber-200 bg-amber-950/30">
+              <CardHeader>
+                <CardTitle className="text-amber-900">Pending Rewards</CardTitle>
+                <p className="text-sm text-amber-700 mt-1">
+                  You have redeemed these rewards. Your chef will honour them at your next event.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {pendingRedemptions.map((r) => (
+                  <div
+                    key={r.id}
+                    className="flex items-start justify-between gap-3 py-3 border-b border-amber-100 last:border-b-0"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-stone-100">{r.reward_name}</p>
+                      <p className="text-xs text-stone-500 mt-0.5">
+                        Redeemed {format(new Date(r.created_at), 'MMM d, yyyy')} · {r.points_spent}{' '}
+                        pts spent
+                      </p>
+                    </div>
+                    <Badge
+                      variant={
+                        r.delivery_status === 'delivered'
+                          ? 'success'
+                          : r.delivery_status === 'cancelled'
+                            ? 'error'
+                            : 'warning'
+                      }
+                    >
+                      {r.delivery_status === 'delivered'
+                        ? 'Delivered'
+                        : r.delivery_status === 'cancelled'
+                          ? 'Cancelled'
+                          : 'Pending'}
+                    </Badge>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+        </>
       )}
 
       {/* Gift Cards & Vouchers */}
@@ -233,54 +282,61 @@ export default async function MyRewardsPage() {
         </CardContent>
       </Card>
 
-      {/* How to Earn — always visible so clients understand the program */}
-      {configData && (
-        <HowToEarnPanel
-          config={{
-            points_per_guest: configData.points_per_guest ?? 10,
-            bonus_large_party_threshold: configData.bonus_large_party_threshold ?? null,
-            bonus_large_party_points: configData.bonus_large_party_points ?? null,
-            milestone_bonuses: (configData.milestone_bonuses ?? []) as {
-              events: number
-              bonus: number
-            }[],
-            welcome_points: configData.welcome_points ?? 25,
-          }}
-        />
-      )}
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Points Activity</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {status.recentTransactions.length === 0 ? (
-            <p className="text-sm text-stone-400">No points activity yet.</p>
-          ) : (
-            <div className="space-y-3">
-              {status.recentTransactions.map((tx) => (
-                <div
-                  key={tx.id}
-                  className="flex items-center justify-between py-2 border-b border-stone-800 last:border-b-0"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-stone-100">{tx.description}</p>
-                    <p className="text-xs text-stone-500">
-                      {format(new Date(tx.created_at), 'PPP')}
-                    </p>
-                  </div>
-                  <span
-                    className={`text-sm font-semibold ${tx.points >= 0 ? 'text-emerald-700' : 'text-stone-300'}`}
-                  >
-                    {tx.points >= 0 ? '+' : ''}
-                    {tx.points}
-                  </span>
-                </div>
-              ))}
-            </div>
+      {/* Full mode only: how to earn + points activity */}
+      {status.programMode === 'full' && (
+        <>
+          {configData && (
+            <HowToEarnPanel
+              config={{
+                points_per_guest: configData.points_per_guest ?? 10,
+                bonus_large_party_threshold: configData.bonus_large_party_threshold ?? null,
+                bonus_large_party_points: configData.bonus_large_party_points ?? null,
+                milestone_bonuses: (configData.milestone_bonuses ?? []) as {
+                  events: number
+                  bonus: number
+                }[],
+                welcome_points: configData.welcome_points ?? 25,
+                earn_mode: configData.earn_mode ?? 'per_guest',
+                points_per_dollar: configData.points_per_dollar ?? 1,
+                points_per_event: configData.points_per_event ?? 100,
+              }}
+            />
           )}
-        </CardContent>
-      </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Points Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {status.recentTransactions.length === 0 ? (
+                <p className="text-sm text-stone-400">No points activity yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {status.recentTransactions.map((tx) => (
+                    <div
+                      key={tx.id}
+                      className="flex items-center justify-between py-2 border-b border-stone-800 last:border-b-0"
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-stone-100">{tx.description}</p>
+                        <p className="text-xs text-stone-500">
+                          {format(new Date(tx.created_at), 'PPP')}
+                        </p>
+                      </div>
+                      <span
+                        className={`text-sm font-semibold ${tx.points >= 0 ? 'text-emerald-700' : 'text-stone-300'}`}
+                      >
+                        {tx.points >= 0 ? '+' : ''}
+                        {tx.points}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
       <ActivityTracker
         eventType="rewards_viewed"
         metadata={{

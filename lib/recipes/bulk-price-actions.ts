@@ -6,6 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 
 export async function bulkUpdateIngredientPrices(
   updates: Array<{ ingredientId: string; pricePerUnitCents: number }>
@@ -27,4 +28,8 @@ export async function bulkUpdateIngredientPrices(
         .eq('tenant_id', user.tenantId!)
     )
   )
+
+  // Bust recipe/costing caches so food cost % and menu profitability update
+  revalidatePath('/recipes')
+  revalidatePath('/events')
 }

@@ -24,8 +24,9 @@ export default function AcceptProposalButton({ eventId }: { eventId: string }) {
       router.push(`/my-events/${eventId}/pay`)
     } catch (err: any) {
       setError(err.message || 'Failed to accept proposal')
-      setLoading(false)
       setShowConfirm(false)
+    } finally {
+      setLoading(false)
     }
   }
 

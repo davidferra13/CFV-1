@@ -5,6 +5,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 import type { NotificationCategory } from './types'
 
 export type CategoryPreference = {
@@ -79,6 +80,8 @@ export async function upsertCategoryPreference(
     console.error('[upsertCategoryPreference] Upsert failed:', error)
     return { error: error.message }
   }
+
+  revalidatePath('/settings/notifications')
   return { error: null }
 }
 
@@ -140,6 +143,8 @@ export async function updateSmsSettings(settings: SmsSettings): Promise<{ error:
     console.error('[updateSmsSettings] Update failed:', error)
     return { error: error.message }
   }
+
+  revalidatePath('/settings/notifications')
   return { error: null }
 }
 
@@ -202,5 +207,6 @@ export async function updateNotificationExperienceSettings(
     return { error: error.message }
   }
 
+  revalidatePath('/settings/notifications')
   return { error: null }
 }

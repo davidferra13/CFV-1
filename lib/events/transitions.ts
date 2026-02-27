@@ -807,9 +807,23 @@ export async function completeEvent(eventId: string) {
     metadata: { action: 'chef_completed', chefId: user.entityId },
   })
 
-  // Auto-award loyalty points (Tier 1 autonomous — no chef approval needed)
+  // Auto-award loyalty (Tier 1 autonomous — no chef approval needed)
+  // Branches on program_mode: full → points, lite → visit/tier only, off → skip
   try {
-    const { awardEventPoints } = await import('@/lib/loyalty/actions')
+    const { getLoyaltyConfigByTenant, awardEventPoints, awardLiteVisit } =
+      await import('@/lib/loyalty/actions')
+    const config = await getLoyaltyConfigByTenant(user.tenantId!)
+
+    if (!config || config.program_mode === 'off' || !config.is_active) {
+      return { ...result, loyalty: null }
+    }
+
+    if (config.program_mode === 'lite') {
+      const loyaltyResult = await awardLiteVisit(eventId)
+      return { ...result, loyalty: loyaltyResult }
+    }
+
+    // Full mode — award points
     const loyaltyResult = await awardEventPoints(eventId)
     return { ...result, loyalty: loyaltyResult }
   } catch (err) {

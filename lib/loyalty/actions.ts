@@ -1,5 +1,6 @@
 // Loyalty Program Server Actions
-// Points per guest served, tier management, reward catalog, auto-award
+// Universal loyalty system: full (points+tiers+rewards), lite (tiers only), or off
+// Earn modes: per_guest, per_dollar, per_event — chef configurable
 // Service-denominated rewards only — the chef never spends money
 
 'use server'
@@ -21,6 +22,8 @@ export type LoyaltyRewardType =
   | 'free_course'
   | 'free_dinner'
   | 'upgrade'
+export type ProgramMode = 'full' | 'lite' | 'off'
+export type EarnMode = 'per_guest' | 'per_dollar' | 'per_event'
 
 export type LoyaltyConfig = {
   id: string
@@ -36,6 +39,10 @@ export type LoyaltyConfig = {
   is_active: boolean
   welcome_points: number // Auto-awarded on invitation-based signup
   referral_points: number // Manual award when a client refers someone new
+  program_mode: ProgramMode // full = points+tiers+rewards, lite = tiers only, off = disabled
+  earn_mode: EarnMode // per_guest, per_dollar, per_event
+  points_per_dollar: number // Rate for per_dollar earn mode
+  points_per_event: number // Flat points for per_event earn mode
 }
 
 export type LoyaltyTransaction = {
@@ -76,6 +83,8 @@ export type ClientLoyaltyProfile = {
 }
 
 export type LoyaltyOverview = {
+  programMode: ProgramMode
+  earnMode: EarnMode
   totalClients: number
   clientsPerTier: Record<LoyaltyTier, number>
   totalPointsOutstanding: number
@@ -113,6 +122,10 @@ const UpdateLoyaltyConfigSchema = z.object({
   is_active: z.boolean().optional(),
   welcome_points: z.number().int().nonnegative().optional(),
   referral_points: z.number().int().nonnegative().optional(),
+  program_mode: z.enum(['full', 'lite', 'off']).optional(),
+  earn_mode: z.enum(['per_guest', 'per_dollar', 'per_event']).optional(),
+  points_per_dollar: z.number().positive().optional(),
+  points_per_event: z.number().int().positive().optional(),
 })
 
 const CreateRewardSchema = z.object({
@@ -329,10 +342,12 @@ export async function awardEventPoints(eventId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  // Fetch event with client info
+  // Fetch event with client info (include total_price_cents for per_dollar earn mode)
   const { data: event, error: eventError } = await supabase
     .from('events')
-    .select('id, client_id, tenant_id, guest_count, loyalty_points_awarded, status')
+    .select(
+      'id, client_id, tenant_id, guest_count, loyalty_points_awarded, status, total_price_cents'
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -352,19 +367,49 @@ export async function awardEventPoints(eventId: string) {
   // Get loyalty config
   const config = await getLoyaltyConfig()
 
-  if (!config.is_active) {
+  if (!config.is_active || config.program_mode === 'off') {
     return { success: true, programInactive: true, pointsAwarded: 0 }
   }
 
+  if (config.program_mode === 'lite') {
+    // Lite mode: visit-based tiers only, no points — handled by awardLiteVisit()
+    return { success: true, programInactive: true, pointsAwarded: 0 }
+  }
+
+  // Full mode: compute base points based on earn mode
   const guestCount = event.guest_count || 1
-  let totalPoints = guestCount * config.points_per_guest
+  let basePoints: number
+  let baseDescription: string
+
+  switch (config.earn_mode) {
+    case 'per_dollar': {
+      const eventTotalCents = (event as any).total_price_cents || 0
+      const eventTotalDollars = eventTotalCents / 100
+      basePoints = Math.round(eventTotalDollars * config.points_per_dollar)
+      baseDescription = `$${eventTotalDollars.toFixed(2)} × ${config.points_per_dollar} pts/$`
+      break
+    }
+    case 'per_event': {
+      basePoints = config.points_per_event
+      baseDescription = `Flat ${config.points_per_event} pts per event`
+      break
+    }
+    case 'per_guest':
+    default: {
+      basePoints = guestCount * config.points_per_guest
+      baseDescription = `${guestCount} guests × ${config.points_per_guest} pts/guest`
+      break
+    }
+  }
+
+  let totalPoints = basePoints
   const transactions: { type: LoyaltyTransactionType; points: number; description: string }[] = []
 
   // Base points
   transactions.push({
     type: 'earned',
-    points: guestCount * config.points_per_guest,
-    description: `${guestCount} guests × ${config.points_per_guest} pts/guest`,
+    points: basePoints,
+    description: baseDescription,
   })
 
   // Large party bonus
@@ -511,6 +556,109 @@ export async function awardEventPoints(eventId: string) {
     tierChanged: newTier !== oldTier,
     transactions,
   }
+}
+
+// =====================================================================================
+// 3b. getLoyaltyConfigByTenant — Get config without requireChef() (for internal use)
+// =====================================================================================
+
+export async function getLoyaltyConfigByTenant(tenantId: string): Promise<LoyaltyConfig | null> {
+  const supabase = createServerClient()
+
+  const { data: config } = await supabase
+    .from('loyalty_config')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!config) return null
+
+  return {
+    ...(config as any),
+    milestone_bonuses: (config as any).milestone_bonuses as { events: number; bonus: number }[],
+    welcome_points: (config as any).welcome_points ?? 0,
+    referral_points: (config as any).referral_points ?? 0,
+  }
+}
+
+// =====================================================================================
+// 3c. awardLiteVisit — Lite mode: update visit count + tier, no points
+// =====================================================================================
+
+export async function awardLiteVisit(eventId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data: event, error: eventError } = await supabase
+    .from('events')
+    .select('id, client_id, tenant_id, guest_count, loyalty_points_awarded, status')
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (eventError || !event) throw new Error('Event not found')
+  if (event.loyalty_points_awarded) return { success: true, alreadyAwarded: true }
+  if (event.status !== 'completed') throw new Error('Only completed events qualify')
+
+  const config = await getLoyaltyConfig()
+
+  // Get current client stats
+  const { data: client } = await supabase
+    .from('clients')
+    .select('total_events_completed, total_guests_served, loyalty_tier')
+    .eq('id', event.client_id)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  const guestCount = event.guest_count || 1
+  const newEventsCompleted = (client?.total_events_completed || 0) + 1
+  const newGuestsServed = (client?.total_guests_served || 0) + guestCount
+
+  // In lite mode, tier thresholds represent visit counts
+  const oldTier = (client?.loyalty_tier as LoyaltyTier) || 'bronze'
+  const newTier = computeTier(newEventsCompleted, config)
+
+  await supabase
+    .from('clients')
+    .update({
+      loyalty_tier: newTier,
+      total_events_completed: newEventsCompleted,
+      total_guests_served: newGuestsServed,
+    })
+    .eq('id', event.client_id)
+    .eq('tenant_id', user.tenantId!)
+
+  // Non-blocking: notify on tier change
+  if (newTier !== oldTier) {
+    try {
+      const { createClientNotification } = await import('@/lib/notifications/client-actions')
+      await createClientNotification({
+        tenantId: user.tenantId!,
+        clientId: event.client_id,
+        category: 'loyalty',
+        action: 'tier_upgraded',
+        title: `You reached ${newTier} tier!`,
+        body: `Congratulations! You've been recognized as a ${newTier}-tier client`,
+        actionUrl: '/my-rewards',
+        eventId,
+      })
+    } catch (err) {
+      console.error('[awardLiteVisit] Notification failed (non-blocking):', err)
+    }
+  }
+
+  // Mark event as processed
+  await supabase
+    .from('events')
+    .update({ loyalty_points_awarded: true })
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+
+  revalidatePath(`/events/${eventId}`)
+  revalidatePath(`/clients/${event.client_id}`)
+  revalidatePath('/loyalty')
+
+  return { success: true, newTier, tierChanged: newTier !== oldTier }
 }
 
 // =====================================================================================
@@ -985,6 +1133,8 @@ export async function getLoyaltyOverview(): Promise<LoyaltyOverview> {
     .filter((c): c is NonNullable<typeof c> => c !== null)
 
   return {
+    programMode: config.program_mode,
+    earnMode: config.earn_mode,
     totalClients: allClients.length,
     clientsPerTier,
     totalPointsOutstanding,
@@ -1074,6 +1224,16 @@ export async function getMyLoyaltyStatus() {
     return null
   }
 
+  // Get loyalty config for program_mode / earn_mode
+  const { data: configRow } = await supabase
+    .from('loyalty_config')
+    .select('program_mode, earn_mode')
+    .eq('tenant_id', client.tenant_id)
+    .single()
+
+  const programMode = ((configRow as any)?.program_mode || 'full') as ProgramMode
+  const earnMode = ((configRow as any)?.earn_mode || 'per_guest') as EarnMode
+
   // Get available rewards for this tenant
   const { data: rewards } = await supabase
     .from('loyalty_rewards')
@@ -1096,6 +1256,8 @@ export async function getMyLoyaltyStatus() {
   const nextReward = allRewards.find((r: any) => r.points_required > balance)
 
   return {
+    programMode,
+    earnMode,
     tier: (client.loyalty_tier || 'bronze') as LoyaltyTier,
     pointsBalance: balance,
     totalEventsCompleted: client.total_events_completed || 0,

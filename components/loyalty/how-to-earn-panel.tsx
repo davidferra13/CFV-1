@@ -3,7 +3,7 @@
 // All data is config-driven from the chef's loyalty_config.
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import type { LoyaltyConfig } from '@/lib/loyalty/actions'
+import type { LoyaltyConfig, EarnMode } from '@/lib/loyalty/actions'
 
 type Props = {
   config: Pick<
@@ -13,7 +13,11 @@ type Props = {
     | 'bonus_large_party_points'
     | 'milestone_bonuses'
     | 'welcome_points'
-  >
+  > & {
+    earn_mode?: EarnMode
+    points_per_dollar?: number
+    points_per_event?: number
+  }
 }
 
 function EarnRow({ emoji, label, points }: { emoji: string; label: string; points: string }) {
@@ -48,12 +52,28 @@ export function HowToEarnPanel({ config }: Props) {
             />
           )}
 
-          {/* Per-guest base points */}
-          <EarnRow
-            emoji="🍽️"
-            label={`Each guest you bring to a dinner — ${config.points_per_guest} pts per guest`}
-            points={`${config.points_per_guest} pts / guest`}
-          />
+          {/* Base earn — varies by earn mode */}
+          {(!config.earn_mode || config.earn_mode === 'per_guest') && (
+            <EarnRow
+              emoji="🍽️"
+              label={`Each guest you bring to a dinner — ${config.points_per_guest} pts per guest`}
+              points={`${config.points_per_guest} pts / guest`}
+            />
+          )}
+          {config.earn_mode === 'per_dollar' && (
+            <EarnRow
+              emoji="💰"
+              label={`For every dollar spent on your event — ${config.points_per_dollar ?? 1} pts per dollar`}
+              points={`${config.points_per_dollar ?? 1} pts / $1`}
+            />
+          )}
+          {config.earn_mode === 'per_event' && (
+            <EarnRow
+              emoji="📅"
+              label={`Flat ${config.points_per_event ?? 100} pts every time you book and complete a dinner`}
+              points={`${config.points_per_event ?? 100} pts / event`}
+            />
+          )}
 
           {/* Large party bonus */}
           {config.bonus_large_party_threshold && (config.bonus_large_party_points ?? 0) > 0 && (

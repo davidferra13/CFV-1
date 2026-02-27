@@ -5,6 +5,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdmin } from '@/lib/auth/admin'
+import { revalidatePath } from 'next/cache'
 import { logAdminAction } from './audit'
 
 export type AnnouncementType = 'info' | 'warning' | 'critical'
@@ -70,6 +71,9 @@ export async function setAnnouncement(
     actionType: text.trim() ? 'admin_set_announcement' : 'admin_cleared_announcement',
     details: { text: text.trim(), type },
   })
+
+  // Bust layout cache so banner appears/disappears immediately for all users
+  revalidatePath('/', 'layout')
 
   return { success: true }
 }
