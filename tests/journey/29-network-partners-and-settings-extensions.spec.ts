@@ -267,3 +267,55 @@ test.describe('Additional Settings Deep Routes (#510)', () => {
     await assertPageLoads(page, '/settings/professional/skills')
   })
 })
+
+test.describe('Additional Dynamic Coverage (#513-515)', () => {
+  test('guest detail route is reachable from guest list (#513)', async ({ page }) => {
+    await page.goto('/guests')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const guestLink = page.locator('a[href^="/guests/"]').first()
+    if ((await guestLink.count()) === 0) return
+
+    await guestLink.click()
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+
+  test('station clipboard print route is reachable from station detail (#514)', async ({
+    page,
+  }) => {
+    await page.goto('/stations')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const stationLink = page.locator('a[href^="/stations/"]').first()
+    if ((await stationLink.count()) === 0) return
+
+    await stationLink.click()
+    await page.waitForLoadState('networkidle')
+
+    const printLink = page.locator('a[href*="/clipboard/print"]').first()
+    if ((await printLink.count()) === 0) return
+
+    await printLink.click()
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+
+  test('network channel route is reachable from network page (#515)', async ({ page }) => {
+    await page.goto('/network')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const channelLink = page.locator('a[href^="/network/channels/"]').first()
+    if ((await channelLink.count()) === 0) return
+
+    await channelLink.click()
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+})

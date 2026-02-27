@@ -141,3 +141,19 @@ test.describe('Finance Deep Routes - Remaining Static Coverage (#507-509)', () =
     await assertPageLoads(page, '/finance/retainers')
   })
 })
+
+test.describe('Finance Deep Routes - Dynamic Detail Coverage (#512)', () => {
+  test('expense detail route is reachable from expenses list (#512)', async ({ page }) => {
+    await page.goto('/expenses')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const expenseLink = page.locator('a[href^="/expenses/"]').first()
+    if ((await expenseLink.count()) === 0) return
+
+    await expenseLink.click()
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+})

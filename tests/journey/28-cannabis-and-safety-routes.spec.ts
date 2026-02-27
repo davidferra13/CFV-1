@@ -130,3 +130,19 @@ test.describe('Additional Cannabis Namespace Routes (#504-505)', () => {
     await assertPageHasContent(page)
   })
 })
+
+test.describe('Safety Dynamic Detail Coverage (#511)', () => {
+  test('safety incident detail route is reachable from incidents list (#511)', async ({ page }) => {
+    await page.goto('/safety/incidents')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const incidentLink = page.locator('a[href^="/safety/incidents/"]').first()
+    if ((await incidentLink.count()) === 0) return
+
+    await incidentLink.click()
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+})
