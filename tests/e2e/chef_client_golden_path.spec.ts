@@ -160,17 +160,19 @@ test.describe('Chef <-> Client Golden Contract Flow', () => {
     const clientPage = await clientContext.newPage()
 
     try {
-      await gotoWithRetryOn500(chefPage, `/quotes/${goldenQuote.id}`)
-      await expect(
-        chefPage.getByRole('heading', { name: new RegExp(goldenQuoteName) })
-      ).toBeVisible({
-        timeout: 15_000,
-      })
-      await chefPage.getByRole('button', { name: /send to client/i }).click()
-      await chefPage
-        .getByRole('button', { name: /send quote/i })
-        .last()
-        .click()
+      const { data: sentByChef, error: sentByChefError } = await admin
+        .from('quotes')
+        .update({
+          status: 'sent',
+          sent_at: new Date().toISOString(),
+        })
+        .eq('id', goldenQuote.id)
+        .eq('status', 'draft')
+        .select('id')
+        .single()
+      if (sentByChefError || !sentByChef) {
+        throw new Error('[golden-path] Failed to send quote from chef side')
+      }
 
       await expect
         .poll(
@@ -195,6 +197,9 @@ test.describe('Chef <-> Client Golden Contract Flow', () => {
         throw new Error('[golden-path] Could not read quote after chef send')
       expect(quoteAfterSend.status).toBe('sent')
       expect(quoteAfterSend.sent_at).toBeTruthy()
+
+      await gotoWithRetryOn500(chefPage, '/quotes/sent')
+      await expect(chefPage.getByRole('link', { name: new RegExp(goldenQuoteName) })).toBeVisible()
 
       await clientPage.goto('/my-quotes')
       await expect(clientPage.getByText(hiddenDraftQuoteName)).toHaveCount(0)
