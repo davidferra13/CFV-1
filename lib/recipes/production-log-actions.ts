@@ -38,7 +38,7 @@ export async function logProduction(input: LogProductionInput) {
   // Verify the recipe belongs to this chef
   const { data: recipe, error: recipeErr } = await supabase
     .from('recipes')
-    .select('id, times_cooked')
+    .select('id, times_cooked, last_cooked_at')
     .eq('id', validated.recipe_id)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -70,13 +70,17 @@ export async function logProduction(input: LogProductionInput) {
     throw new Error('Failed to log production')
   }
 
-  // Update recipe stats: increment times_cooked and set last_cooked_at
+  // Update recipe stats: increment times_cooked, only update last_cooked_at if newer
   const producedAt = validated.produced_at || new Date().toISOString()
+  const existingLastCooked = (recipe as any).last_cooked_at
+  const shouldUpdateLastCooked =
+    !existingLastCooked || new Date(producedAt) > new Date(existingLastCooked)
+
   await supabase
     .from('recipes')
     .update({
       times_cooked: (recipe.times_cooked || 0) + 1,
-      last_cooked_at: producedAt,
+      ...(shouldUpdateLastCooked ? { last_cooked_at: producedAt } : {}),
       updated_by: user.id,
     } as any)
     .eq('id', validated.recipe_id)

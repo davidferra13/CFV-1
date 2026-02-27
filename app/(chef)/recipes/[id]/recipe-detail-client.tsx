@@ -57,6 +57,7 @@ export function RecipeDetailClient({ recipe }: Props) {
   const [shareSuccess, setShareSuccess] = useState<string | null>(null)
   const [showSubRecipeModal, setShowSubRecipeModal] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleteLogEntryId, setDeleteLogEntryId] = useState<string | null>(null)
 
   // Production log state
   const [productionLog, setProductionLog] = useState<ProductionLogEntry[]>([])
@@ -113,11 +114,13 @@ export function RecipeDetailClient({ recipe }: Props) {
     }
   }
 
-  const handleDeleteLogEntry = async (entryId: string) => {
+  const handleDeleteLogEntry = async () => {
+    if (!deleteLogEntryId) return
     setLoading(true)
     setError('')
     try {
-      await deleteProductionEntry(entryId)
+      await deleteProductionEntry(deleteLogEntryId)
+      setDeleteLogEntryId(null)
       await loadProductionLog()
       router.refresh()
     } catch (err: any) {
@@ -743,12 +746,12 @@ export function RecipeDetailClient({ recipe }: Props) {
                 </div>
                 <div>
                   <label className="block text-xs text-stone-500 mb-1">Batch Notes</label>
-                  <input
-                    type="text"
+                  <textarea
                     value={logBatchNotes}
                     onChange={(e) => setLogBatchNotes(e.target.value)}
                     placeholder="Any notes about this batch"
-                    className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm bg-stone-900"
+                    rows={2}
+                    className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm bg-stone-900 resize-y"
                   />
                 </div>
               </div>
@@ -853,7 +856,7 @@ export function RecipeDetailClient({ recipe }: Props) {
                       </div>
                       <button
                         type="button"
-                        onClick={() => handleDeleteLogEntry(entry.id)}
+                        onClick={() => setDeleteLogEntryId(entry.id)}
                         className="text-xs text-stone-500 hover:text-red-500 transition-colors"
                         disabled={loading}
                       >
@@ -877,6 +880,17 @@ export function RecipeDetailClient({ recipe }: Props) {
         loading={loading}
         onConfirm={handleConfirmedDelete}
         onCancel={() => setShowDeleteConfirm(false)}
+      />
+
+      <ConfirmModal
+        open={!!deleteLogEntryId}
+        title="Remove production entry?"
+        description="This will also decrement the times cooked counter. This cannot be undone."
+        confirmLabel="Remove"
+        variant="danger"
+        loading={loading}
+        onConfirm={handleDeleteLogEntry}
+        onCancel={() => setDeleteLogEntryId(null)}
       />
     </div>
   )
