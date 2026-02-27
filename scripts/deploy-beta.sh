@@ -81,8 +81,11 @@ ssh $SSH_OPTS "$REMOTE" << 'BUILD'
   # Install dependencies
   rm -rf node_modules/.package-lock.json 2>/dev/null || true
   npm ci --production=false 2>&1 | tail -5 || {
-    echo "  npm ci failed — retrying with clean node_modules..."
-    rm -rf node_modules
+    echo "  npm ci failed — nuking node_modules and retrying..."
+    # Pi microSD can hit ENOTEMPTY — delete files first, then dirs
+    find node_modules -type f -delete 2>/dev/null
+    find node_modules -type d -delete 2>/dev/null
+    rm -rf node_modules 2>/dev/null
     npm ci --production=false 2>&1 | tail -5
   }
   echo "  Dependencies installed"
