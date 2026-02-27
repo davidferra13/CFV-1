@@ -98,6 +98,15 @@ export const MODULES: ModuleDefinition[] = [
     alwaysVisible: false,
     navGroupId: 'more',
   },
+  {
+    slug: 'commerce',
+    label: 'Commerce',
+    description: 'POS register, counter sales, product catalog, and payment processing',
+    tier: 'pro',
+    defaultEnabled: false,
+    alwaysVisible: false,
+    navGroupId: 'commerce',
+  },
 ]
 
 /** Default enabled modules for new signups. */

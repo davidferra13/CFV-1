@@ -1,0 +1,202 @@
+'use client'
+
+import { useState, useTransition } from 'react'
+import { updateBetaSignupStatus } from '@/lib/beta/actions'
+
+interface BetaSignup {
+  id: string
+  name: string
+  email: string
+  phone: string | null
+  business_name: string | null
+  cuisine_type: string | null
+  years_in_business: string | null
+  referral_source: string | null
+  status: string
+  notes: string | null
+  created_at: string
+  invited_at: string | null
+  onboarded_at: string | null
+}
+
+const STATUS_STYLES: Record<string, string> = {
+  pending: 'bg-amber-900 text-amber-300',
+  invited: 'bg-sky-900 text-sky-300',
+  onboarded: 'bg-emerald-900 text-emerald-300',
+  declined: 'bg-red-900 text-red-300',
+}
+
+const REFERRAL_LABELS: Record<string, string> = {
+  social_media: 'Social Media',
+  friend_referral: 'Friend / Colleague',
+  google_search: 'Google Search',
+  chef_community: 'Chef Community',
+  event: 'Event / Conference',
+  other: 'Other',
+}
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
+}
+
+function SignupRow({ signup }: { signup: BetaSignup }) {
+  const [status, setStatus] = useState(signup.status)
+  const [notes, setNotes] = useState(signup.notes || '')
+  const [editingNotes, setEditingNotes] = useState(false)
+  const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState('')
+
+  function handleStatusChange(newStatus: string) {
+    const previousStatus = status
+    setStatus(newStatus)
+    setError('')
+
+    startTransition(async () => {
+      try {
+        const result = await updateBetaSignupStatus(
+          signup.id,
+          newStatus as 'pending' | 'invited' | 'onboarded' | 'declined'
+        )
+        if (!result.success) {
+          setStatus(previousStatus) // rollback
+          setError(result.error || 'Failed to update')
+        }
+      } catch {
+        setStatus(previousStatus) // rollback
+        setError('Failed to update status')
+      }
+    })
+  }
+
+  function handleNotesSave() {
+    setEditingNotes(false)
+    setError('')
+
+    startTransition(async () => {
+      try {
+        const result = await updateBetaSignupStatus(
+          signup.id,
+          status as 'pending' | 'invited' | 'onboarded' | 'declined',
+          notes
+        )
+        if (!result.success) {
+          setError(result.error || 'Failed to save notes')
+        }
+      } catch {
+        setError('Failed to save notes')
+      }
+    })
+  }
+
+  return (
+    <tr className="border-b border-slate-700/60 bg-slate-800/50 hover:bg-slate-700/40 transition-colors">
+      <td className="px-4 py-3 text-slate-400 whitespace-nowrap text-xs">
+        {formatDate(signup.created_at)}
+      </td>
+      <td className="px-4 py-3 text-slate-200 font-medium text-sm">{signup.name}</td>
+      <td className="px-4 py-3">
+        <a href={`mailto:${signup.email}`} className="text-sm text-brand-400 hover:underline">
+          {signup.email}
+        </a>
+      </td>
+      <td className="px-4 py-3 text-slate-400 text-xs">{signup.phone || '—'}</td>
+      <td className="px-4 py-3 text-slate-300 text-xs">{signup.business_name || '—'}</td>
+      <td className="px-4 py-3 text-slate-400 text-xs">{signup.cuisine_type || '—'}</td>
+      <td className="px-4 py-3 text-slate-400 text-xs">{signup.years_in_business || '—'}</td>
+      <td className="px-4 py-3 text-slate-400 text-xs">
+        {signup.referral_source
+          ? REFERRAL_LABELS[signup.referral_source] || signup.referral_source
+          : '—'}
+      </td>
+      <td className="px-4 py-3">
+        <select
+          value={status}
+          onChange={(e) => handleStatusChange(e.target.value)}
+          disabled={isPending}
+          className={`rounded-full px-2.5 py-0.5 text-xs font-medium border-0 cursor-pointer ${STATUS_STYLES[status] || 'bg-slate-700 text-slate-200'} disabled:opacity-50`}
+        >
+          <option value="pending">Pending</option>
+          <option value="invited">Invited</option>
+          <option value="onboarded">Onboarded</option>
+          <option value="declined">Declined</option>
+        </select>
+        {error && <p className="text-xs text-red-400 mt-1">{error}</p>}
+      </td>
+      <td className="px-4 py-3">
+        {editingNotes ? (
+          <div className="flex gap-1">
+            <input
+              type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleNotesSave()
+                if (e.key === 'Escape') setEditingNotes(false)
+              }}
+              className="w-full rounded border border-slate-600 bg-slate-900 px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-brand-500"
+              autoFocus
+            />
+            <button
+              onClick={handleNotesSave}
+              disabled={isPending}
+              className="text-xs text-brand-400 hover:text-brand-300 whitespace-nowrap disabled:opacity-50"
+            >
+              Save
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setEditingNotes(true)}
+            className="text-xs text-slate-500 hover:text-slate-300 truncate max-w-[120px] block text-left"
+            title={notes || 'Add notes'}
+          >
+            {notes || 'Add notes...'}
+          </button>
+        )}
+      </td>
+    </tr>
+  )
+}
+
+export function BetaSignupsTable({ signups }: { signups: BetaSignup[] }) {
+  if (signups.length === 0) {
+    return (
+      <div className="rounded-xl border border-slate-700 bg-slate-800 p-8 text-center text-slate-400 text-sm">
+        No beta signups yet. Share your /beta link to start collecting interest.
+      </div>
+    )
+  }
+
+  return (
+    <div className="rounded-xl border border-slate-700 overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-slate-700 bg-slate-800 text-left">
+            <th className="px-4 py-3 font-medium text-slate-300 whitespace-nowrap">Date</th>
+            <th className="px-4 py-3 font-medium text-slate-300">Name</th>
+            <th className="px-4 py-3 font-medium text-slate-300">Email</th>
+            <th className="px-4 py-3 font-medium text-slate-300">Phone</th>
+            <th className="px-4 py-3 font-medium text-slate-300">Business</th>
+            <th className="px-4 py-3 font-medium text-slate-300">Cuisine</th>
+            <th className="px-4 py-3 font-medium text-slate-300">Years</th>
+            <th className="px-4 py-3 font-medium text-slate-300">Source</th>
+            <th className="px-4 py-3 font-medium text-slate-300">Status</th>
+            <th className="px-4 py-3 font-medium text-slate-300">Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {signups.map((signup) => (
+            <SignupRow key={signup.id} signup={signup} />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}

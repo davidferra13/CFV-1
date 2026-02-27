@@ -25,6 +25,7 @@ export type ProFeature = {
     | 'professional'
     | 'calendar'
     | 'loyalty'
+    | 'commerce'
 }
 
 export const PRO_FEATURES: ProFeature[] = [
@@ -154,6 +155,14 @@ export const PRO_FEATURES: ProFeature[] = [
     label: 'Advanced Calendar',
     description: 'Calendar sharing, year view, protected time, ICS sync',
     category: 'calendar',
+  },
+
+  // Commerce
+  {
+    slug: 'commerce',
+    label: 'Commerce Engine',
+    description: 'POS register, counter sales, product catalog, order-ahead, payment processing',
+    category: 'commerce',
   },
 ]
 

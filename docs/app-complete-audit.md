@@ -1273,3 +1273,33 @@ The Remy drawer (`components/ai/remy-drawer.tsx`) has 5 views accessible via ico
 | Show Code / Re-pair     | Button → Modal   | Generates new pairing code + QR with 15-min expiry.                                                                                          |
 | Staff PINs section      | Table            | Staff name, role, PIN status (set/not set), Set/Change/Remove PIN actions. Inline PIN input (4-6 digits).                                    |
 | Kiosk Permissions panel | Static display   | Two-column CAN/CANNOT list showing exactly what staff can and cannot do on kiosk devices.                                                    |
+
+---
+
+## 22. Beta Signup (added 2026-02-27)
+
+### Public Routes (no auth)
+
+| Route             | What it shows                                                                                                                                                                                                                                         |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/beta`           | Beta signup form. Fields: name (required), email (required), phone, business name, cuisine type, years in business, referral source (all optional). Honeypot spam protection. Redirects to thank-you page on success.                                 |
+| `/beta/thank-you` | Branded confirmation page. Sections: "Welcome to the inner circle" hero, "What is the closed beta?", "What to expect" (3 numbered steps), "A few honest notes" (may break, feedback valued, free with special launch pricing). Back to ChefFlow link. |
+
+### Home Page CTA
+
+"Be one of the first" section added to `/` home page between "How It Works" and the final CTA. Closed Beta pill badge, heading, description, "Request early access" button linking to `/beta`.
+
+### Admin: Beta Signups (`/admin/beta`)
+
+| Element         | Type              | Description                                                                                                                   |
+| --------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Summary chips   | Static display    | Count badges: Pending, Invited, Onboarded, Declined, Total                                                                    |
+| Signups table   | Interactive table | Columns: Date, Name, Email (mailto link), Phone, Business, Cuisine, Years, Source, Status, Notes                              |
+| Status dropdown | Select per row    | Changes status (pending/invited/onboarded/declined). Updates timestamps (invited_at, onboarded_at). Optimistic with rollback. |
+| Notes           | Inline edit       | Click to edit, Enter to save. Admin private notes per signup.                                                                 |
+
+### Admin Sidebar
+
+| Nav item     | Icon   | Route         |
+| ------------ | ------ | ------------- |
+| Beta Signups | Rocket | `/admin/beta` |

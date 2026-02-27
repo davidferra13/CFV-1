@@ -164,6 +164,31 @@ export default function Home() {
 
       <HowItWorksSection />
 
+      {/* Beta CTA */}
+      <section className="relative border-y border-stone-700/50 overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-brand-900/20 via-transparent to-brand-800/10" />
+        <div className="relative mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
+          <div className="flex flex-col items-center text-center">
+            <p className="rounded-full border border-brand-700 bg-stone-900 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300 mb-4">
+              Closed Beta
+            </p>
+            <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
+              Be one of the first.
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-300">
+              We&apos;re onboarding a small group of private chefs to shape ChefFlow before public
+              launch. Spots are limited.
+            </p>
+            <Link
+              href="/beta"
+              className="mt-8 inline-flex items-center justify-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
+            >
+              Request early access
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <section className="relative mx-auto w-full max-w-6xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
         <div className="pointer-events-none absolute left-1/2 top-1/2 h-[200px] w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-800/20 blur-[50px]" />
         <h2 className="relative text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
