@@ -208,3 +208,120 @@ test.describe('Menus — Editor', () => {
     expect(errors).toHaveLength(0)
   })
 })
+
+test.describe('Menus - Assistant Panels (New Features)', () => {
+  test('/menus/[id]/editor - Cocktail Browser mode switch updates input placeholder', async ({
+    page,
+    seedIds,
+  }) => {
+    await page.goto(`/menus/${seedIds.menuId}/editor`)
+    await page.waitForLoadState('networkidle')
+    if (page.url().includes('auth/signin')) return
+
+    await expect(page.getByText(/cocktail browser/i).first()).toBeVisible()
+    await expect(page.getByPlaceholder(/cocktail name/i).first()).toBeVisible()
+
+    await page
+      .getByRole('button', { name: /by spirit/i })
+      .first()
+      .click()
+    await expect(page.getByPlaceholder(/spirit or ingredient/i).first()).toBeVisible()
+
+    await page
+      .getByRole('button', { name: /by name/i })
+      .first()
+      .click()
+    await expect(page.getByPlaceholder(/cocktail name/i).first()).toBeVisible()
+  })
+
+  test('/menus/[id] - translation action is disabled until language is selected', async ({
+    page,
+    seedIds,
+  }) => {
+    await page.goto(`/menus/${seedIds.menuId}`)
+    await page.waitForLoadState('networkidle')
+    if (page.url().includes('auth/signin')) return
+
+    await page
+      .getByRole('button', { name: /translate menu/i })
+      .first()
+      .click()
+
+    const translateAction = page.getByRole('button', { name: /^translate$/i }).first()
+    await expect(translateAction).toBeDisabled()
+
+    const languageSelect = page.getByRole('combobox').first()
+    await languageSelect.selectOption('es')
+    await expect(translateAction).toBeEnabled()
+  })
+
+  test('/menus/[id] - translation panel toggles without JS errors', async ({ page, seedIds }) => {
+    const errors: string[] = []
+    page.on('pageerror', (err) => errors.push(err.message))
+
+    await page.goto(`/menus/${seedIds.menuId}`)
+    await page.waitForLoadState('networkidle')
+    if (page.url().includes('auth/signin')) return
+
+    await page
+      .getByRole('button', { name: /translate menu/i })
+      .first()
+      .click()
+    await expect(page.getByRole('button', { name: /hide translation/i }).first()).toBeVisible()
+
+    await page
+      .getByRole('button', { name: /hide translation/i })
+      .first()
+      .click()
+    await expect(page.getByRole('button', { name: /translate menu/i }).first()).toBeVisible()
+
+    expect(errors).toHaveLength(0)
+  })
+})
+
+test.describe('Recipes - Assistant Panels (New Features)', () => {
+  test('/recipes/[id]/edit - Product Lookup toggles open and closed', async ({ page, seedIds }) => {
+    await page.goto(`/recipes/${seedIds.recipeId}/edit`)
+    await page.waitForLoadState('networkidle')
+    if (page.url().includes('auth/signin')) return
+
+    await page
+      .getByRole('button', { name: /search product/i })
+      .first()
+      .click()
+    await expect(page.getByText(/product lookup/i).first()).toBeVisible()
+
+    await page
+      .getByRole('button', { name: /hide product lookup/i })
+      .first()
+      .click()
+    await expect(page.getByText(/product lookup/i).first()).toBeHidden()
+  })
+
+  test('/recipes/[id]/edit - Product Lookup mode switch updates input placeholder', async ({
+    page,
+    seedIds,
+  }) => {
+    await page.goto(`/recipes/${seedIds.recipeId}/edit`)
+    await page.waitForLoadState('networkidle')
+    if (page.url().includes('auth/signin')) return
+
+    await page
+      .getByRole('button', { name: /search product/i })
+      .first()
+      .click()
+
+    await expect(page.getByPlaceholder(/search product name/i).first()).toBeVisible()
+    await page
+      .getByRole('button', { name: /by barcode/i })
+      .first()
+      .click()
+    await expect(page.getByPlaceholder(/enter barcode/i).first()).toBeVisible()
+
+    await page
+      .getByRole('button', { name: /by name/i })
+      .first()
+      .click()
+    await expect(page.getByPlaceholder(/search product name/i).first()).toBeVisible()
+  })
+})
