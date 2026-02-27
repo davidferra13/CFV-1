@@ -58,7 +58,7 @@ export function DeviceEventLog({ deviceId, deviceName }: DeviceEventLogProps) {
       startTransition(async () => {
         try {
           const data = await listDeviceEvents(deviceId)
-          setEvents(data)
+          setEvents(data as EventRow[])
         } catch {
           setEvents([])
         }

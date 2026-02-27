@@ -13,7 +13,7 @@ export default function KioskPairPage() {
 
   // Auto-fill from query param
   useEffect(() => {
-    const codeParam = searchParams.get('code')
+    const codeParam = searchParams?.get('code')
     if (codeParam) {
       setCode(codeParam.toUpperCase())
     }

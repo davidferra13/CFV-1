@@ -88,7 +88,9 @@ export async function listDevices(): Promise<DeviceWithOnlineStatus[]> {
 
   // Fetch staff names for active sessions
   const staffIds = [
-    ...new Set((activeSessions || []).map((s) => s.staff_member_id).filter(Boolean)),
+    ...new Set(
+      (activeSessions || []).map((s) => s.staff_member_id).filter((id): id is string => id != null)
+    ),
   ]
   const { data: staffMembers } = staffIds.length
     ? await supabase.from('staff_members').select('id, name').in('id', staffIds)
