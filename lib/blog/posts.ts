@@ -122,11 +122,11 @@ Round to $1,500 or $185/person. Clean, fair, profitable.
 
 Tracking your actual costs on every event is the only way to know if your pricing works. After 5–10 events with real data, you'll see exactly where your margins are and where to adjust.
 
-[ChefFlow](https://cheflowhq.com) tracks food costs, labor, expenses, and profit per event automatically — so you always know your real numbers. Start a free trial and see your margins on the very first event.
+[ChefFlow](/) tracks food costs, labor, expenses, and profit per event automatically — so you always know your real numbers. Start a free trial and see your margins on the very first event.
 
 ---
 
-*Have a pricing question? [Contact us](https://cheflowhq.com/contact) — we're happy to help.*
+*Have a pricing question? [Contact us](/contact) — we're happy to help.*
 `,
   },
   {
@@ -187,7 +187,7 @@ Professional client management isn't extra work — it's the foundation of a sus
 
 ---
 
-*[ChefFlow](https://cheflowhq.com) handles client management, event tracking, proposals, and follow-ups in one system — so nothing falls through the cracks. [Start free](https://cheflowhq.com/auth/signup).*
+*[ChefFlow](/) handles client management, event tracking, proposals, and follow-ups in one system — so nothing falls through the cracks. [Start free](/auth/signup).*
 `,
   },
   {
@@ -273,7 +273,7 @@ From event number one, track:
 - **Menus** — What you cooked, what worked, what to improve
 - **Follow-ups** — Thank-you messages, rebooking reminders, referral asks
 
-You can start with spreadsheets, but you'll outgrow them fast. Purpose-built tools like [ChefFlow](https://cheflowhq.com) handle all of this in one place — clients, events, menus, invoicing, payments, and follow-ups — so you can focus on cooking instead of admin.
+You can start with spreadsheets, but you'll outgrow them fast. Purpose-built tools like [ChefFlow](/) handle all of this in one place — clients, events, menus, invoicing, payments, and follow-ups — so you can focus on cooking instead of admin.
 
 ## Step 7: Collect Testimonials Religiously
 
@@ -291,7 +291,7 @@ But it's still a *business*. Treat it like one from day one, and you'll be years
 
 ---
 
-*Ready to run your private chef business like a pro? [Start your free ChefFlow trial](https://cheflowhq.com/auth/signup) — events, clients, menus, and payments in one calm workspace.*
+*Ready to run your private chef business like a pro? [Start your free ChefFlow trial](/auth/signup) — events, clients, menus, and payments in one calm workspace.*
 `,
   },
   {
@@ -423,11 +423,11 @@ Confirmation: Reply "Confirmed" to book this date.
 
 Managing proposals, tracking deposits, and following up on balances across dozens of clients gets messy fast — especially if you're juggling text messages, email, and spreadsheets.
 
-[ChefFlow](https://cheflowhq.com) lets you build proposals, track event status, manage payments, and store client dietary notes in one system. Your proposals look professional, your payment tracking is automatic, and nothing falls through the cracks.
+[ChefFlow](/) lets you build proposals, track event status, manage payments, and store client dietary notes in one system. Your proposals look professional, your payment tracking is automatic, and nothing falls through the cracks.
 
 ---
 
-*Want to level up your client communication? [Try ChefFlow free](https://cheflowhq.com/auth/signup) — professional proposals, payment tracking, and client management for private chefs.*
+*Want to level up your client communication? [Try ChefFlow free](/auth/signup) — professional proposals, payment tracking, and client management for private chefs.*
 `,
   },
   {
@@ -555,11 +555,11 @@ Even after taxes, insurance, and overhead, that's a strong income — and it's *
 
 The difference between a profitable meal prep business and a breakeven one is **knowing your numbers**. Track food cost per client, time per session, waste percentage, and profit per client.
 
-[ChefFlow](https://cheflowhq.com) tracks all of this automatically — clients, recurring events, food costs, payments, and profit margins per event. You see exactly which clients are profitable and where to optimize.
+[ChefFlow](/) tracks all of this automatically — clients, recurring events, food costs, payments, and profit margins per event. You see exactly which clients are profitable and where to optimize.
 
 ---
 
-*Ready to build your meal prep business? [Start your free ChefFlow trial](https://cheflowhq.com/auth/signup) — manage clients, track costs, and grow your recurring revenue.*
+*Ready to build your meal prep business? [Start your free ChefFlow trial](/auth/signup) — manage clients, track costs, and grow your recurring revenue.*
 `,
   },
 ]

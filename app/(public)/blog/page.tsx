@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { BLOG_POSTS } from '@/lib/blog/posts'
+import { NewsletterSignup } from '@/components/marketing/newsletter-signup'
 
 export default function BlogIndexPage() {
   return (
@@ -7,10 +8,11 @@ export default function BlogIndexPage() {
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-bold text-stone-100 mb-4">The ChefFlow Blog</h1>
-          <p className="text-lg text-stone-300 mb-12">
+          <p className="text-lg text-stone-300 mb-2">
             Tips, guides, and insights for private chefs — pricing, client management, and growing
             your business.
           </p>
+          <p className="text-sm text-stone-500 mb-12">{BLOG_POSTS.length} articles published</p>
 
           <div className="space-y-8">
             {BLOG_POSTS.map((post) => (
@@ -49,6 +51,19 @@ export default function BlogIndexPage() {
                 </div>
               </article>
             ))}
+          </div>
+
+          {/* Newsletter CTA */}
+          <div className="mt-16 rounded-xl border border-brand-700/50 bg-brand-950/40 p-8 text-center">
+            <h2 className="text-xl font-bold text-stone-100 mb-2">
+              Get chef business tips in your inbox
+            </h2>
+            <p className="text-stone-400 text-sm mb-4">
+              Practical guides on pricing, clients, and growing your private chef business. No spam.
+            </p>
+            <div className="max-w-sm mx-auto">
+              <NewsletterSignup />
+            </div>
           </div>
         </div>
       </section>

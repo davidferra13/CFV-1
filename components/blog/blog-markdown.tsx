@@ -72,11 +72,13 @@ function markdownToHtml(md: string): string {
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
   html = html.replace(/\*(.+?)\*/g, '<em>$1</em>')
 
-  // Links
-  html = html.replace(
-    /\[([^\]]+)\]\(([^)]+)\)/g,
-    '<a href="$2" class="blog-link" target="_blank" rel="noopener">$1</a>'
-  )
+  // Links — internal links (starting with /) stay in-tab, external open in new tab
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match: string, text: string, url: string) => {
+    if (url.startsWith('/') || url.startsWith('#')) {
+      return `<a href="${url}" class="blog-link">${text}</a>`
+    }
+    return `<a href="${url}" class="blog-link" target="_blank" rel="noopener">${text}</a>`
+  })
 
   // Images
   html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="blog-image" />')

@@ -45,6 +45,7 @@ export function TemplateManager({ templates }: TemplateManagerProps) {
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [deleteTemplateId, setDeleteTemplateId] = useState<string | null>(null)
 
   // Form state for create/edit
   const [formName, setFormName] = useState('')
@@ -110,8 +111,14 @@ export function TemplateManager({ templates }: TemplateManagerProps) {
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm('Delete this template?')) return
+  function handleDelete(id: string) {
+    setDeleteTemplateId(id)
+  }
+
+  async function handleConfirmedDelete() {
+    if (!deleteTemplateId) return
+    const id = deleteTemplateId
+    setDeleteTemplateId(null)
     setLoading(true)
     try {
       await deleteResponseTemplate(id)
@@ -261,6 +268,17 @@ export function TemplateManager({ templates }: TemplateManagerProps) {
             </div>
           ))
       )}
+
+      <ConfirmModal
+        open={deleteTemplateId !== null}
+        title="Delete this template?"
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        loading={loading}
+        onConfirm={handleConfirmedDelete}
+        onCancel={() => setDeleteTemplateId(null)}
+      />
     </div>
   )
 }

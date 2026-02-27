@@ -73,10 +73,14 @@ export function StationForm({ station, onDone }: Props) {
     }
   }
 
-  async function handleDelete() {
+  function handleDelete() {
     if (!station) return
-    if (!confirm(`Delete station "${station.name}"? This cannot be undone.`)) return
+    setShowDeleteConfirm(true)
+  }
 
+  async function handleConfirmedDelete() {
+    if (!station) return
+    setShowDeleteConfirm(false)
     setDeleting(true)
     setError(null)
 
@@ -127,6 +131,19 @@ export function StationForm({ station, onDone }: Props) {
           </Button>
         )}
       </div>
+
+      {station && (
+        <ConfirmModal
+          open={showDeleteConfirm}
+          title={`Delete station "${station.name}"?`}
+          description="This cannot be undone."
+          confirmLabel="Delete"
+          variant="danger"
+          loading={deleting}
+          onConfirm={handleConfirmedDelete}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
+      )}
     </form>
   )
 }
