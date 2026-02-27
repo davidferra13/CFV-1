@@ -486,6 +486,19 @@ export async function createClient(input: CreateClientInput) {
     console.error('[createClient] Activity log failed (non-blocking):', err)
   }
 
+  // Zapier/Make webhook dispatch (non-blocking)
+  try {
+    const { dispatchWebhookEvent } = await import('@/lib/integrations/zapier/zapier-webhooks')
+    await dispatchWebhookEvent(user.tenantId!, 'client.created', {
+      client_id: client.id,
+      full_name: validated.full_name,
+      email: validated.email || null,
+      phone: validated.phone || null,
+    })
+  } catch (err) {
+    console.error('[createClient] Zapier dispatch failed (non-blocking):', err)
+  }
+
   return result
 }
 

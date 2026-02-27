@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { updateBetaSignupStatus } from '@/lib/beta/actions'
+import { useState, useTransition, useMemo } from 'react'
+import { updateBetaSignupStatus, exportBetaSignupsCsv } from '@/lib/beta/actions'
+import { Download, Copy, Check, Search } from 'lucide-react'
 
 interface BetaSignup {
   id: string
@@ -46,6 +47,46 @@ function formatDate(iso: string) {
   })
 }
 
+// ── Invite Link Copy Button ──
+function CopyInviteLinkButton({ email }: { email: string }) {
+  const [copied, setCopied] = useState(false)
+  const signupUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/signup?ref=beta&email=${encodeURIComponent(email)}`
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(signupUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // fallback
+      const ta = document.createElement('textarea')
+      ta.value = signupUrl
+      document.body.appendChild(ta)
+      ta.select()
+      document.execCommand('copy')
+      document.body.removeChild(ta)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      title={copied ? 'Copied!' : 'Copy invite link'}
+      className="p-1 rounded hover:bg-slate-700 transition-colors"
+    >
+      {copied ? (
+        <Check size={14} className="text-emerald-400" />
+      ) : (
+        <Copy size={14} className="text-slate-400 hover:text-slate-200" />
+      )}
+    </button>
+  )
+}
+
+// ── Individual Row ──
 function SignupRow({ signup }: { signup: BetaSignup }) {
   const [status, setStatus] = useState(signup.status)
   const [notes, setNotes] = useState(signup.notes || '')
@@ -65,11 +106,11 @@ function SignupRow({ signup }: { signup: BetaSignup }) {
           newStatus as 'pending' | 'invited' | 'onboarded' | 'declined'
         )
         if (!result.success) {
-          setStatus(previousStatus) // rollback
+          setStatus(previousStatus)
           setError(result.error || 'Failed to update')
         }
       } catch {
-        setStatus(previousStatus) // rollback
+        setStatus(previousStatus)
         setError('Failed to update status')
       }
     })
@@ -102,9 +143,12 @@ function SignupRow({ signup }: { signup: BetaSignup }) {
       </td>
       <td className="px-4 py-3 text-slate-200 font-medium text-sm">{signup.name}</td>
       <td className="px-4 py-3">
-        <a href={`mailto:${signup.email}`} className="text-sm text-brand-400 hover:underline">
-          {signup.email}
-        </a>
+        <div className="flex items-center gap-1.5">
+          <a href={`mailto:${signup.email}`} className="text-sm text-brand-400 hover:underline">
+            {signup.email}
+          </a>
+          <CopyInviteLinkButton email={signup.email} />
+        </div>
       </td>
       <td className="px-4 py-3 text-slate-400 text-xs">{signup.phone || '—'}</td>
       <td className="px-4 py-3 text-slate-300 text-xs">{signup.business_name || '—'}</td>
@@ -165,7 +209,58 @@ function SignupRow({ signup }: { signup: BetaSignup }) {
   )
 }
 
+// ── Main Table with Search, Filter, CSV Export ──
 export function BetaSignupsTable({ signups }: { signups: BetaSignup[] }) {
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [exporting, setExporting] = useState(false)
+
+  const filtered = useMemo(() => {
+    let list = signups
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      list = list.filter((s) => s.status === statusFilter)
+    }
+
+    // Search (name, email, business name, cuisine)
+    if (search.trim()) {
+      const q = search.toLowerCase().trim()
+      list = list.filter(
+        (s) =>
+          s.name.toLowerCase().includes(q) ||
+          s.email.toLowerCase().includes(q) ||
+          (s.business_name && s.business_name.toLowerCase().includes(q)) ||
+          (s.cuisine_type && s.cuisine_type.toLowerCase().includes(q)) ||
+          (s.phone && s.phone.includes(q))
+      )
+    }
+
+    return list
+  }, [signups, search, statusFilter])
+
+  async function handleExportCsv() {
+    setExporting(true)
+    try {
+      const csv = await exportBetaSignupsCsv()
+      if (!csv) return
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `chefflow-beta-signups-${new Date().toISOString().slice(0, 10)}.csv`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('[beta-csv] Export failed:', err)
+    } finally {
+      setExporting(false)
+    }
+  }
+
   if (signups.length === 0) {
     return (
       <div className="rounded-xl border border-slate-700 bg-slate-800 p-8 text-center text-slate-400 text-sm">
@@ -175,28 +270,84 @@ export function BetaSignupsTable({ signups }: { signups: BetaSignup[] }) {
   }
 
   return (
-    <div className="rounded-xl border border-slate-700 overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-slate-700 bg-slate-800 text-left">
-            <th className="px-4 py-3 font-medium text-slate-300 whitespace-nowrap">Date</th>
-            <th className="px-4 py-3 font-medium text-slate-300">Name</th>
-            <th className="px-4 py-3 font-medium text-slate-300">Email</th>
-            <th className="px-4 py-3 font-medium text-slate-300">Phone</th>
-            <th className="px-4 py-3 font-medium text-slate-300">Business</th>
-            <th className="px-4 py-3 font-medium text-slate-300">Cuisine</th>
-            <th className="px-4 py-3 font-medium text-slate-300">Years</th>
-            <th className="px-4 py-3 font-medium text-slate-300">Source</th>
-            <th className="px-4 py-3 font-medium text-slate-300">Status</th>
-            <th className="px-4 py-3 font-medium text-slate-300">Notes</th>
-          </tr>
-        </thead>
-        <tbody>
-          {signups.map((signup) => (
-            <SignupRow key={signup.id} signup={signup} />
-          ))}
-        </tbody>
-      </table>
+    <div className="space-y-4">
+      {/* Toolbar: Search + Filter + Export */}
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Search */}
+        <div className="relative flex-1 min-w-[200px]">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+          <input
+            type="text"
+            placeholder="Search by name, email, business..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-lg border border-slate-600 bg-slate-900 pl-9 pr-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20"
+          />
+        </div>
+
+        {/* Status filter */}
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          title="Filter by status"
+          className="rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-brand-500"
+        >
+          <option value="all">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="invited">Invited</option>
+          <option value="onboarded">Onboarded</option>
+          <option value="declined">Declined</option>
+        </select>
+
+        {/* CSV Export */}
+        <button
+          type="button"
+          onClick={handleExportCsv}
+          disabled={exporting}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800 transition-colors disabled:opacity-50"
+        >
+          <Download size={14} />
+          {exporting ? 'Exporting...' : 'Export CSV'}
+        </button>
+      </div>
+
+      {/* Results count */}
+      {(search || statusFilter !== 'all') && (
+        <p className="text-xs text-slate-500">
+          Showing {filtered.length} of {signups.length} signups
+        </p>
+      )}
+
+      {/* Table */}
+      {filtered.length === 0 ? (
+        <div className="rounded-xl border border-slate-700 bg-slate-800 p-6 text-center text-slate-400 text-sm">
+          No signups match your search.
+        </div>
+      ) : (
+        <div className="rounded-xl border border-slate-700 overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-700 bg-slate-800 text-left">
+                <th className="px-4 py-3 font-medium text-slate-300 whitespace-nowrap">Date</th>
+                <th className="px-4 py-3 font-medium text-slate-300">Name</th>
+                <th className="px-4 py-3 font-medium text-slate-300">Email</th>
+                <th className="px-4 py-3 font-medium text-slate-300">Phone</th>
+                <th className="px-4 py-3 font-medium text-slate-300">Business</th>
+                <th className="px-4 py-3 font-medium text-slate-300">Cuisine</th>
+                <th className="px-4 py-3 font-medium text-slate-300">Years</th>
+                <th className="px-4 py-3 font-medium text-slate-300">Source</th>
+                <th className="px-4 py-3 font-medium text-slate-300">Status</th>
+                <th className="px-4 py-3 font-medium text-slate-300">Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((signup) => (
+                <SignupRow key={signup.id} signup={signup} />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }

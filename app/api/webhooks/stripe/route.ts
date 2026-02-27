@@ -678,6 +678,20 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
     } catch (pushErr) {
       console.error('[handlePaymentSucceeded] Push notification failed (non-blocking):', pushErr)
     }
+
+    // Zapier/Make webhook dispatch (non-blocking)
+    try {
+      const { dispatchWebhookEvent } = await import('@/lib/integrations/zapier/zapier-webhooks')
+      await dispatchWebhookEvent(tenant_id, 'payment.received', {
+        event_id,
+        client_id,
+        amount_cents: paymentIntent.amount,
+        payment_type: payment_type || 'payment',
+        stripe_payment_intent_id: paymentIntent.id,
+      })
+    } catch (zapierErr) {
+      console.error('[handlePaymentSucceeded] Zapier dispatch failed (non-blocking):', zapierErr)
+    }
   } catch (transitionError) {
     // Log but don't throw - ledger entry is what matters
     console.error('[handlePaymentSucceeded] Transition failed:', transitionError)

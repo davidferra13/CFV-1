@@ -254,6 +254,22 @@ export async function createInquiry(input: CreateInquiryInput) {
     console.error('[createInquiry] Push notification failed (non-blocking):', err)
   }
 
+  // Zapier/Make webhook dispatch (non-blocking)
+  try {
+    const { dispatchWebhookEvent } = await import('@/lib/integrations/zapier/zapier-webhooks')
+    await dispatchWebhookEvent(user.tenantId!, 'inquiry.created', {
+      inquiry_id: inquiry.id,
+      client_name: validated.client_name,
+      channel: validated.channel,
+      occasion: validated.confirmed_occasion ?? null,
+      date: validated.confirmed_date ?? null,
+      guest_count: validated.confirmed_guest_count ?? null,
+      budget_cents: validated.confirmed_budget_cents ?? null,
+    })
+  } catch (err) {
+    console.error('[createInquiry] Zapier dispatch failed (non-blocking):', err)
+  }
+
   return { success: true, inquiry }
 }
 
