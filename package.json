@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3100 -H 0.0.0.0",
+    "dev": "next dev -p 3100 -H 0.0.0.0 --turbo",
     "build": "next build",
     "tauri:dev": "npx tauri dev",
     "tauri:build": "npx tauri build",
@@ -92,7 +92,6 @@
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.36.2",
     "date-fns": "^4.1.0",
-    "googleapis": "^171.4.0",
     "inngest": "^3.52.4",
     "jspdf": "^4.1.0",
     "lucide-react": "^0.564.0",

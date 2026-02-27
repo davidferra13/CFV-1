@@ -12,7 +12,6 @@ import { PushPermissionPrompt } from '@/components/notifications/push-permission
 import { getChefLayoutData } from '@/lib/chef/layout-cache'
 import { KeyboardShortcutsWrapper } from '@/components/navigation/keyboard-shortcuts-wrapper'
 import { getOnboardingStatus } from '@/lib/chef/profile-actions'
-import { hasCannabisAccess } from '@/lib/chef/cannabis-actions'
 import { getAnnouncement } from '@/lib/admin/platform-actions'
 import { PlatformAnnouncementBanner } from '@/components/admin/platform-announcement-banner'
 import { TrialBanner } from '@/components/billing/trial-banner'
@@ -27,13 +26,16 @@ import { ThemeProvider } from '@/components/ui/theme-provider'
 import { EnvironmentBadge } from '@/components/ui/environment-badge'
 import { DeletionPendingBanner } from '@/components/settings/deletion-pending-banner'
 import { getTierForChef } from '@/lib/billing/tier'
-import { isAdmin } from '@/lib/auth/admin'
 import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
 import { differenceInDays } from 'date-fns'
-import { getChefArchetype } from '@/lib/archetypes/actions'
-import { getAccountDeletionStatus } from '@/lib/compliance/account-deletion-actions'
 import { ArchetypeSelector } from '@/components/onboarding/archetype-selector'
 import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
+import {
+  getCachedCannabisAccess,
+  getCachedChefArchetype,
+  getCachedDeletionStatus,
+  getCachedIsAdmin,
+} from '@/lib/chef/layout-data-cache'
 
 export default async function ChefLayout({ children }: { children: React.ReactNode }) {
   // Server-side role check - happens BEFORE any client code ships
@@ -54,8 +56,8 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
       redirect('/onboarding')
     }
   }
-  // Parallelized â€” all four calls are independent of each other and of layoutData.
-  // Running them concurrently saves ~3 sequential DB round-trips on every page load.
+  // Parallelized â€” all calls are independent. All 7 use unstable_cache (60s TTL)
+  // so navigating between pages costs ~0ms for these after the first load.
   const [
     layoutData,
     announcement,
@@ -75,14 +77,14 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
       isGrandfathered: true,
       subscriptionStatus: 'grandfathered',
     })),
-    // Cannabis tier check â€” non-fatal, fails closed
-    hasCannabisAccess(user.id).catch(() => false),
-    // Admin check â€” admins bypass all tier restrictions
-    isAdmin().catch(() => false),
-    // Archetype â€” null means chef hasn't picked one yet (show selector)
-    getChefArchetype().catch(() => null),
-    // Deletion status â€” non-fatal, fail closed (no banner)
-    getAccountDeletionStatus().catch(() => ({
+    // Cannabis tier check â€” cached 60s, non-fatal, fails closed
+    getCachedCannabisAccess(user.id, user.email ?? '').catch(() => false),
+    // Admin check â€” cached 60s, env-based (no DB call)
+    getCachedIsAdmin(user.email ?? '').catch(() => false),
+    // Archetype â€” cached 60s, null means chef hasn't picked one yet (show selector)
+    getCachedChefArchetype(user.entityId).catch(() => null),
+    // Deletion status â€” cached 60s, non-fatal, fail closed (no banner)
+    getCachedDeletionStatus(user.entityId).catch(() => ({
       isPending: false,
       scheduledFor: null,
       daysRemaining: null,
