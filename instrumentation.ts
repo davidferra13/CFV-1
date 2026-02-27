@@ -1,17 +1,41 @@
 // Next.js Instrumentation Hook
 // Runs once when the server process starts (both dev and production).
-// Used to register background tasks that should run automatically — no user
-// interaction required.
+// Initializes Sentry for server/edge runtimes and registers background tasks.
 //
 // Docs: https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation
 
 export async function register() {
-  // Only run in the Node.js runtime (not Edge), and only on the server.
-  if (process.env.NEXT_RUNTIME !== 'nodejs') return
+  if (process.env.NEXT_RUNTIME === 'nodejs') {
+    // ── Sentry: Node.js server (API routes, server actions) ──
+    const Sentry = await import('@sentry/nextjs')
+    Sentry.init({
+      dsn: process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN,
+      tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.2 : 1.0,
+      enabled: process.env.NODE_ENV === 'production' || process.env.SENTRY_FORCE_ENABLE === 'true',
+      sendDefaultPii: false,
+      beforeSend(event) {
+        if (event.request?.cookies) delete event.request.cookies
+        if (event.request?.headers) {
+          delete event.request.headers['cookie']
+          delete event.request.headers['authorization']
+        }
+        return event
+      },
+    })
 
-  // Auto-schedule the weekly simulation quality loop.
-  // This checks every 6 hours and fires the simulation if it hasn't run in 7 days.
-  // Ollama must be running — if it's offline the run fails gracefully and retries next check.
-  const { scheduleSimulation } = await import('./lib/simulation/auto-schedule')
-  scheduleSimulation()
+    // ── Background tasks ──
+    const { scheduleSimulation } = await import('./lib/simulation/auto-schedule')
+    scheduleSimulation()
+  }
+
+  if (process.env.NEXT_RUNTIME === 'edge') {
+    // ── Sentry: Edge runtime (middleware, Edge API routes) ──
+    const Sentry = await import('@sentry/nextjs')
+    Sentry.init({
+      dsn: process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN,
+      tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.2 : 1.0,
+      enabled: process.env.NODE_ENV === 'production' || process.env.SENTRY_FORCE_ENABLE === 'true',
+      sendDefaultPii: false,
+    })
+  }
 }
