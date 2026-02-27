@@ -79,15 +79,9 @@ ssh $SSH_OPTS "$REMOTE" << 'BUILD'
   echo "  Cleared .next cache"
 
   # Install dependencies
-  rm -rf node_modules/.package-lock.json 2>/dev/null || true
-  npm ci --production=false 2>&1 | tail -5 || {
-    echo "  npm ci failed — nuking node_modules and retrying..."
-    # Pi microSD can hit ENOTEMPTY — delete files first, then dirs
-    find node_modules -type f -delete 2>/dev/null
-    find node_modules -type d -delete 2>/dev/null
-    rm -rf node_modules 2>/dev/null
-    npm ci --production=false 2>&1 | tail -5
-  }
+  # Pi microSD can hit ENOTEMPTY — sudo rm is the only reliable cleanup
+  sudo rm -rf node_modules 2>/dev/null || true
+  npm ci --production=false 2>&1 | tail -5
   echo "  Dependencies installed"
 
   # Build with 6GB heap — app has grown past 4GB (OOMs at 4096 as of 2026-02-26)
