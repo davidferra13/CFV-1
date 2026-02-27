@@ -4,6 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { TaxClass } from './constants'
@@ -40,6 +41,7 @@ export type UpdateProductInput = Partial<CreateProductInput> & { id: string }
 
 export async function createProduct(input: CreateProductInput) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   if (!Number.isInteger(input.priceCents) || input.priceCents < 0) {
@@ -82,6 +84,7 @@ export async function createProduct(input: CreateProductInput) {
 
 export async function updateProduct(input: UpdateProductInput) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   const updates: Record<string, any> = {}
@@ -124,6 +127,7 @@ export async function updateProduct(input: UpdateProductInput) {
 
 export async function toggleProductActive(productId: string, isActive: boolean) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   const { error } = await supabase
@@ -147,6 +151,7 @@ export async function listProducts(filters?: {
   offset?: number
 }) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   let query = supabase
@@ -180,6 +185,7 @@ export async function listProducts(filters?: {
 
 export async function getProduct(productId: string) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   const { data, error } = await supabase
@@ -206,6 +212,7 @@ export async function snapshotProductFromRecipe(input: {
   taxClass?: TaxClass
 }) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   // Fetch recipe details

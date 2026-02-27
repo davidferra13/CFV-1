@@ -4,6 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { OrderQueueStatus } from './constants'
@@ -28,6 +29,7 @@ export async function createOrderQueueEntry(input: {
   notes?: string
 }) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   const { data, error } = await supabase
@@ -54,6 +56,7 @@ export async function createOrderQueueEntry(input: {
 
 export async function updateOrderStatus(orderId: string, newStatus: OrderQueueStatus) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   // Fetch current status
@@ -109,6 +112,7 @@ export async function updateOrderStatus(orderId: string, newStatus: OrderQueueSt
 
 export async function cancelOrder(orderId: string, reason: string) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   const { data: order, error: fetchErr } = await supabase
@@ -144,6 +148,7 @@ export async function cancelOrder(orderId: string, reason: string) {
 
 export async function getActiveOrders() {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   const { data, error } = await supabase
@@ -167,6 +172,7 @@ export async function getOrderQueueHistory(filters?: {
   offset?: number
 }) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   let query = supabase
@@ -194,6 +200,7 @@ export async function getOrderQueueHistory(filters?: {
 
 export async function getOrder(orderId: string) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   const { data, error } = await supabase

@@ -1,0 +1,226 @@
+﻿'use server'
+
+import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
+import { createServerClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
+
+export type CashDrawerMovementType =
+  | 'sale_payment'
+  | 'refund'
+  | 'paid_in'
+  | 'paid_out'
+  | 'adjustment'
+
+export type CashDrawerSummary = {
+  registerSessionId: string
+  status: string
+  openingCashCents: number
+  movementNetCents: number
+  expectedCashCents: number
+  breakdown: {
+    salePaymentCents: number
+    refundCents: number
+    paidInCents: number
+    paidOutCents: number
+    adjustmentCents: number
+  }
+}
+
+type MovementRecord = {
+  movement_type: CashDrawerMovementType
+  amount_cents: number
+}
+
+async function assertOpenRegisterSession(tenantId: string, registerSessionId: string) {
+  const supabase = createServerClient()
+  const { data: session, error } = await supabase
+    .from('register_sessions')
+    .select('id, status')
+    .eq('id', registerSessionId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (error || !session) {
+    throw new Error('Register session not found')
+  }
+
+  if ((session as any).status !== 'open') {
+    throw new Error('Cash movements can only be recorded on an open register session')
+  }
+
+  return session
+}
+
+function buildBreakdown(movements: MovementRecord[]) {
+  const breakdown = {
+    salePaymentCents: 0,
+    refundCents: 0,
+    paidInCents: 0,
+    paidOutCents: 0,
+    adjustmentCents: 0,
+  }
+
+  for (const movement of movements) {
+    const amount = movement.amount_cents ?? 0
+    if (movement.movement_type === 'sale_payment') breakdown.salePaymentCents += amount
+    if (movement.movement_type === 'refund') breakdown.refundCents += amount
+    if (movement.movement_type === 'paid_in') breakdown.paidInCents += amount
+    if (movement.movement_type === 'paid_out') breakdown.paidOutCents += amount
+    if (movement.movement_type === 'adjustment') breakdown.adjustmentCents += amount
+  }
+
+  return breakdown
+}
+
+export async function getCashDrawerSummary(registerSessionId: string): Promise<CashDrawerSummary> {
+  const user = await requireChef()
+  await requirePro('commerce')
+
+  const supabase = createServerClient()
+
+  const { data: session, error: sessionError } = await supabase
+    .from('register_sessions')
+    .select('id, status, opening_cash_cents')
+    .eq('id', registerSessionId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (sessionError || !session) {
+    throw new Error('Register session not found')
+  }
+
+  const { data: movements, error: movementError } = await supabase
+    .from('cash_drawer_movements')
+    .select('movement_type, amount_cents')
+    .eq('tenant_id', user.tenantId!)
+    .eq('register_session_id', registerSessionId)
+
+  if (movementError) {
+    throw new Error(`Failed to load cash drawer summary: ${movementError.message}`)
+  }
+
+  const rows = (movements ?? []) as MovementRecord[]
+  const movementNetCents = rows.reduce((sum, row) => sum + (row.amount_cents ?? 0), 0)
+  const breakdown = buildBreakdown(rows)
+
+  return {
+    registerSessionId,
+    status: (session as any).status,
+    openingCashCents: (session as any).opening_cash_cents ?? 0,
+    movementNetCents,
+    expectedCashCents: ((session as any).opening_cash_cents ?? 0) + movementNetCents,
+    breakdown,
+  }
+}
+
+export async function listCashDrawerMovements(input: {
+  registerSessionId: string
+  limit?: number
+  offset?: number
+}) {
+  const user = await requireChef()
+  await requirePro('commerce')
+
+  const supabase = createServerClient()
+  const limit = Math.max(1, Math.min(input.limit ?? 50, 250))
+  const offset = Math.max(0, input.offset ?? 0)
+
+  const { data, error, count } = await supabase
+    .from('cash_drawer_movements')
+    .select('*', { count: 'exact' })
+    .eq('tenant_id', user.tenantId!)
+    .eq('register_session_id', input.registerSessionId)
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1)
+
+  if (error) throw new Error(`Failed to list drawer movements: ${error.message}`)
+
+  return {
+    movements: data ?? [],
+    total: count ?? 0,
+  }
+}
+
+async function insertMovement(input: {
+  registerSessionId: string
+  movementType: 'paid_in' | 'paid_out' | 'adjustment'
+  amountCents: number
+  notes?: string
+}) {
+  const user = await requireChef()
+  await requirePro('commerce')
+
+  if (!Number.isInteger(input.amountCents) || input.amountCents === 0) {
+    throw new Error('Amount must be a non-zero integer (cents)')
+  }
+
+  await assertOpenRegisterSession(user.tenantId!, input.registerSessionId)
+
+  const supabase = createServerClient()
+  const { error } = await supabase.from('cash_drawer_movements').insert({
+    tenant_id: user.tenantId!,
+    register_session_id: input.registerSessionId,
+    movement_type: input.movementType,
+    amount_cents: input.amountCents,
+    notes: input.notes ?? null,
+    metadata: {
+      source: 'manual',
+    },
+    created_by: user.id,
+  } as any)
+
+  if (error) throw new Error(`Failed to record cash movement: ${error.message}`)
+
+  revalidatePath('/commerce')
+  revalidatePath('/commerce/register')
+
+  return getCashDrawerSummary(input.registerSessionId)
+}
+
+export async function recordCashPaidIn(input: {
+  registerSessionId: string
+  amountCents: number
+  notes?: string
+}) {
+  if (!Number.isInteger(input.amountCents) || input.amountCents <= 0) {
+    throw new Error('Paid in amount must be a positive integer (cents)')
+  }
+
+  return insertMovement({
+    registerSessionId: input.registerSessionId,
+    movementType: 'paid_in',
+    amountCents: input.amountCents,
+    notes: input.notes,
+  })
+}
+
+export async function recordCashPaidOut(input: {
+  registerSessionId: string
+  amountCents: number
+  notes?: string
+}) {
+  if (!Number.isInteger(input.amountCents) || input.amountCents <= 0) {
+    throw new Error('Paid out amount must be a positive integer (cents)')
+  }
+
+  return insertMovement({
+    registerSessionId: input.registerSessionId,
+    movementType: 'paid_out',
+    amountCents: -1 * input.amountCents,
+    notes: input.notes,
+  })
+}
+
+export async function recordCashAdjustment(input: {
+  registerSessionId: string
+  amountCents: number
+  notes?: string
+}) {
+  return insertMovement({
+    registerSessionId: input.registerSessionId,
+    movementType: 'adjustment',
+    amountCents: input.amountCents,
+    notes: input.notes,
+  })
+}

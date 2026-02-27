@@ -1,6 +1,7 @@
 // Product Catalog Page — list, search, manage products
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { listProducts } from '@/lib/commerce/product-actions'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -13,6 +14,7 @@ export const metadata: Metadata = { title: 'Products — ChefFlow' }
 
 export default async function ProductsPage() {
   await requireChef()
+  await requirePro('commerce')
 
   const { products, total } = await listProducts({ activeOnly: false })
 

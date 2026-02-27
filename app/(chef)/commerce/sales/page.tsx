@@ -1,6 +1,7 @@
 // Sales History Page — filterable list of all sales
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { listSales } from '@/lib/commerce/sale-actions'
 import { SalesTable } from '@/components/commerce/sales-table'
 import { Badge } from '@/components/ui/badge'
@@ -9,6 +10,7 @@ export const metadata: Metadata = { title: 'Sales — ChefFlow' }
 
 export default async function SalesPage() {
   await requireChef()
+  await requirePro('commerce')
 
   const { sales, total } = await listSales({ limit: 50 })
 

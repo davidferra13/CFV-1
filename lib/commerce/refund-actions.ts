@@ -5,6 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { canRefund } from './sale-fsm'
@@ -30,6 +31,7 @@ export type CreateRefundInput = {
  */
 export async function createRefund(input: CreateRefundInput) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   if (!Number.isInteger(input.amountCents) || input.amountCents <= 0) {
@@ -134,6 +136,7 @@ export async function createRefund(input: CreateRefundInput) {
 
 export async function getRefundsForSale(saleId: string) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   const { data, error } = await supabase

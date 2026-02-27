@@ -4,6 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { RegisterSessionStatus } from './constants'
@@ -22,6 +23,7 @@ export type OpenRegisterInput = {
  */
 export async function openRegister(input: OpenRegisterInput) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   if (!Number.isInteger(input.openingCashCents) || input.openingCashCents < 0) {
@@ -62,6 +64,7 @@ export async function openRegister(input: OpenRegisterInput) {
 
 export async function suspendRegister(sessionId: string, notes?: string) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   const { error } = await supabase
@@ -84,6 +87,7 @@ export async function suspendRegister(sessionId: string, notes?: string) {
 
 export async function resumeRegister(sessionId: string) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   const { error } = await supabase
@@ -109,6 +113,7 @@ export async function closeRegister(
   closeNotes?: string
 ) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   if (!Number.isInteger(closingCashCents) || closingCashCents < 0) {
@@ -128,14 +133,6 @@ export async function closeRegister(
     throw new Error('Register session is already closed')
   }
 
-  // Compute totals from actual cash sales during this session
-  const { data: cashPayments } = await supabase
-    .from('commerce_payments')
-    .select('amount_cents, tip_cents')
-    .eq('tenant_id', user.tenantId!)
-    .in('status', ['captured', 'settled'])
-    .eq('payment_method', 'cash')
-
   // Get sales linked to this session to filter payments
   const { data: sessionSales } = await supabase
     .from('sales')
@@ -146,21 +143,21 @@ export async function closeRegister(
   const sessionSaleIds = new Set((sessionSales ?? []).map((s: any) => s.id))
 
   // Filter to only payments for this session's sales
-  // (cashPayments is broader — we need to match by sale_id)
   const { data: sessionPayments } = await supabase
     .from('commerce_payments')
     .select('amount_cents, tip_cents, payment_method, sale_id')
     .eq('tenant_id', user.tenantId!)
     .in('status', ['captured', 'settled'])
 
-  let cashInFromSales = 0
-  for (const p of sessionPayments ?? []) {
-    if (sessionSaleIds.has((p as any).sale_id) && (p as any).payment_method === 'cash') {
-      cashInFromSales += (p as any).amount_cents + ((p as any).tip_cents ?? 0)
-    }
-  }
+  // Expected cash is now derived from itemized drawer movements.
+  const { data: movements } = await supabase
+    .from('cash_drawer_movements')
+    .select('amount_cents')
+    .eq('tenant_id', user.tenantId!)
+    .eq('register_session_id', sessionId)
 
-  const expectedCash = (session as any).opening_cash_cents + cashInFromSales
+  const movementNet = (movements ?? []).reduce((sum: number, m: any) => sum + m.amount_cents, 0)
+  const expectedCash = (session as any).opening_cash_cents + movementNet
   const variance = closingCashCents - expectedCash
 
   // Compute session totals from all session sales
@@ -202,6 +199,7 @@ export async function closeRegister(
 
 export async function getCurrentRegisterSession() {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   const { data, error } = await supabase
@@ -225,6 +223,7 @@ export async function getRegisterSessionHistory(filters?: {
   status?: RegisterSessionStatus
 }) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   let query = supabase
@@ -250,6 +249,7 @@ export async function getRegisterSessionHistory(filters?: {
 
 export async function getRegisterSession(sessionId: string) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   const { data, error } = await supabase

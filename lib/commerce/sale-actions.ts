@@ -4,6 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { SaleChannel, TaxClass } from './constants'
@@ -39,6 +40,7 @@ export type AddSaleItemInput = {
 
 export async function createSale(input: CreateSaleInput) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   const { data, error } = await supabase
@@ -66,6 +68,7 @@ export async function createSale(input: CreateSaleInput) {
 
 export async function addSaleItem(input: AddSaleItemInput) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   if (!Number.isInteger(input.unitPriceCents) || input.unitPriceCents < 0) {
@@ -129,6 +132,7 @@ export async function addSaleItem(input: AddSaleItemInput) {
 
 export async function removeSaleItem(saleId: string, itemId: string) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   const { error } = await supabase
@@ -148,6 +152,7 @@ export async function removeSaleItem(saleId: string, itemId: string) {
 
 export async function updateSaleItemQuantity(saleId: string, itemId: string, quantity: number) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   if (!Number.isInteger(quantity) || quantity < 1) {
@@ -189,6 +194,7 @@ export async function updateSaleItemQuantity(saleId: string, itemId: string, qua
 
 export async function voidSale(saleId: string, reason: string) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   // Fetch current status
@@ -225,6 +231,7 @@ export async function voidSale(saleId: string, reason: string) {
 
 export async function getSale(saleId: string) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   const { data: sale, error } = await supabase
@@ -260,6 +267,7 @@ export async function listSales(filters?: {
   offset?: number
 }) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   let query = supabase

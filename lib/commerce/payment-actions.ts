@@ -5,6 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { PaymentMethod } from '@/lib/ledger/append'
@@ -36,6 +37,7 @@ export type RecordPaymentInput = {
  */
 export async function recordPayment(input: RecordPaymentInput) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   if (!Number.isInteger(input.amountCents) || input.amountCents <= 0) {
@@ -45,7 +47,7 @@ export async function recordPayment(input: RecordPaymentInput) {
   // Fetch sale to get context
   const { data: sale, error: saleErr } = await supabase
     .from('sales')
-    .select('id, tenant_id, client_id, event_id, total_cents, status')
+    .select('id, tenant_id, client_id, event_id, total_cents, tip_cents, status')
     .eq('id', input.saleId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -117,6 +119,7 @@ export async function recordPayment(input: RecordPaymentInput) {
 
 export async function getPaymentsForSale(saleId: string) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   const { data, error } = await supabase
@@ -134,6 +137,7 @@ export async function getPaymentsForSale(saleId: string) {
 
 export async function updatePaymentStatus(paymentId: string, status: CommercePaymentStatus) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   const updates: Record<string, any> = { status }

@@ -14,7 +14,7 @@ export function CreateDeviceModal({ onClose, onCreated }: CreateDeviceModalProps
   const [name, setName] = useState('')
   const [deviceType, setDeviceType] = useState<'ipad' | 'android' | 'browser'>('browser')
   const [locationName, setLocationName] = useState('')
-  const [kioskFlow, setKioskFlow] = useState<'inquiry'>('inquiry')
+  const [kioskFlow, setKioskFlow] = useState<'inquiry' | 'order'>('inquiry')
   const [requireStaffPin, setRequireStaffPin] = useState(true)
   const [idleTimeout, setIdleTimeout] = useState(90)
   const [error, setError] = useState('')
@@ -132,6 +132,22 @@ export function CreateDeviceModal({ onClose, onCreated }: CreateDeviceModalProps
               placeholder="Main kitchen, Front desk, Pop-up stand"
               className="w-full rounded-lg bg-stone-800 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
+          </div>
+
+          {/* Kiosk Flow */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-stone-300">Kiosk Flow</label>
+            <select
+              value={kioskFlow}
+              onChange={(e) => setKioskFlow(e.target.value as typeof kioskFlow)}
+              className="w-full rounded-lg bg-stone-800 px-3 py-2.5 text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            >
+              <option value="inquiry">Inquiry Intake</option>
+              <option value="order">POS Order Register</option>
+            </select>
+            <p className="mt-1 text-xs text-stone-500">
+              Inquiry captures leads. Order runs the touch POS register flow.
+            </p>
           </div>
 
           {/* Idle Timeout */}

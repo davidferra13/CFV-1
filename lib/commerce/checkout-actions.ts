@@ -5,6 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { PaymentMethod } from '@/lib/ledger/append'
@@ -58,6 +59,7 @@ export type CounterCheckoutResult = {
  */
 export async function counterCheckout(input: CounterCheckoutInput): Promise<CounterCheckoutResult> {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   if (input.items.length === 0) {
@@ -149,7 +151,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
       tenant_id: user.tenantId!,
       sale_id: sale.id,
       client_id: input.clientId ?? null,
-      amount_cents: totalCents + tipCents,
+      amount_cents: totalCents,
       tip_cents: tipCents,
       payment_method: input.paymentMethod,
       status: 'captured',
@@ -222,6 +224,7 @@ export async function quickSale(input: {
   registerSessionId?: string
 }) {
   const user = await requireChef()
+  await requirePro('commerce')
   const supabase = createServerClient()
 
   // Fetch product

@@ -2,6 +2,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { getSale } from '@/lib/commerce/sale-actions'
 import { getPaymentsForSale } from '@/lib/commerce/payment-actions'
 import { getRefundsForSale } from '@/lib/commerce/refund-actions'
@@ -21,6 +22,7 @@ export const metadata: Metadata = { title: 'Sale Detail — ChefFlow' }
 
 export default async function SaleDetailPage({ params }: { params: Promise<{ id: string }> }) {
   await requireChef()
+  await requirePro('commerce')
   const { id } = await params
 
   let saleData

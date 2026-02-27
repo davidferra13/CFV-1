@@ -5,11 +5,12 @@ import { KioskHeader } from '@/components/kiosk/kiosk-header'
 import { StaffPinEntry } from '@/components/kiosk/staff-pin-entry'
 import { KioskInquiryForm } from '@/components/kiosk/kiosk-inquiry-form'
 import { KioskSuccessScreen } from '@/components/kiosk/kiosk-success-screen'
+import { KioskOrderRegister } from '@/components/kiosk/kiosk-order-register'
 import { IdleResetProvider } from '@/components/kiosk/idle-reset-provider'
 import { HeartbeatProvider } from '@/components/kiosk/heartbeat-provider'
 import type { KioskConfig, StaffPinSession } from '@/lib/devices/types'
 
-type KioskView = 'loading' | 'pin' | 'form' | 'success'
+type KioskView = 'loading' | 'pin' | 'form' | 'order' | 'success'
 
 const DEVICE_TOKEN_KEY = 'chefflow_kiosk_token'
 
@@ -18,6 +19,10 @@ export default function KioskPage() {
   const [config, setConfig] = useState<KioskConfig | null>(null)
   const [staffSession, setStaffSession] = useState<StaffPinSession | null>(null)
   const [token, setToken] = useState<string | null>(null)
+
+  const getWorkView = useCallback((nextConfig: KioskConfig | null) => {
+    return nextConfig?.kiosk_flow === 'order' ? 'order' : 'form'
+  }, [])
 
   // Check for existing device token on mount
   useEffect(() => {
@@ -40,27 +45,30 @@ export default function KioskPage() {
           return
         }
         setConfig(data.config)
-        setView(data.config.require_staff_pin ? 'pin' : 'form')
+        setView(data.config.require_staff_pin ? 'pin' : getWorkView(data.config))
       })
       .catch(() => {
         // Network error — show form anyway with defaults
         setConfig(null)
         setView('pin')
       })
-  }, [])
+  }, [getWorkView])
 
-  const handlePinVerified = useCallback((session: StaffPinSession) => {
-    setStaffSession(session)
-    setView('form')
-  }, [])
+  const handlePinVerified = useCallback(
+    (session: StaffPinSession) => {
+      setStaffSession(session)
+      setView(getWorkView(config))
+    },
+    [config, getWorkView]
+  )
 
   const handleInquirySubmitted = useCallback(() => {
     setView('success')
   }, [])
 
   const handleSuccessReset = useCallback(() => {
-    setView('form')
-  }, [])
+    setView(getWorkView(config))
+  }, [config, getWorkView])
 
   const endStaffSession = useCallback(
     (reason: string) => {
@@ -78,9 +86,9 @@ export default function KioskPage() {
         }).catch(() => {})
       }
       setStaffSession(null)
-      setView(config?.require_staff_pin ? 'pin' : 'form')
+      setView(config?.require_staff_pin ? 'pin' : getWorkView(config))
     },
-    [staffSession, token, config]
+    [staffSession, token, config, getWorkView]
   )
 
   const handleIdleReset = useCallback(() => {
@@ -127,7 +135,7 @@ export default function KioskPage() {
       <IdleResetProvider
         timeoutSeconds={idleTimeout}
         onReset={handleIdleReset}
-        active={view === 'form'}
+        active={view === 'form' || view === 'order'}
       >
         <div className="flex min-h-screen flex-col">
           <KioskHeader
@@ -147,6 +155,8 @@ export default function KioskPage() {
                 onSubmitted={handleInquirySubmitted}
               />
             )}
+
+            {view === 'order' && <KioskOrderRegister token={token!} staffSession={staffSession} />}
 
             {view === 'success' && (
               <KioskSuccessScreen
