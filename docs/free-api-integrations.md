@@ -97,6 +97,43 @@
 - API-key APIs read from `process.env` and throw if key is missing
 - IP-API is HTTP-only (not HTTPS) — must be server-side only
 
+## Wiring Completed (2026-02-26)
+
+Four APIs have been fully wired into the UI with server actions and client components:
+
+### Server Actions (the glue layer)
+
+| File                                 | API                     | Exports                                              |
+| ------------------------------------ | ----------------------- | ---------------------------------------------------- |
+| `lib/geo/geo-actions.ts`             | IP-API + REST Countries | `detectMyLocation()`, `getCountryDetails()`          |
+| `lib/currency/currency-actions.ts`   | Frankfurter             | `convertQuoteAmount()`                               |
+| `lib/translate/translate-actions.ts` | LibreTranslate          | `translateSingleText()`, `translateMenuItemsBatch()` |
+
+### Client Components
+
+| Component                | File                                               | What it does                                                     |
+| ------------------------ | -------------------------------------------------- | ---------------------------------------------------------------- |
+| `CurrencyConversionHint` | `components/currency/currency-conversion-hint.tsx` | Dropdown to convert a USD amount to another currency             |
+| `ClientCountryPanel`     | `components/clients/client-country-panel.tsx`      | Enter a 2-letter country code, see currency/timezone/languages   |
+| `MenuTranslateButton`    | `components/menus/menu-translate-button.tsx`       | Translate all dish names and descriptions to a selected language |
+
+### Wiring Points
+
+| Feature                | Where wired                                    | What happens                                          |
+| ---------------------- | ---------------------------------------------- | ----------------------------------------------------- |
+| IP-API location detect | `components/settings/preferences-form.tsx`     | "Detect My Location" button auto-fills city/state/ZIP |
+| Frankfurter currency   | `components/quotes/quote-form.tsx`             | Shows converted amount below "Total Quoted Amount"    |
+| REST Countries         | `app/(chef)/clients/[id]/page.tsx`             | Country details panel after Demographics section      |
+| LibreTranslate         | `app/(chef)/menus/[id]/menu-detail-client.tsx` | "Translate Menu" button in Dishes card header         |
+
+### Testing Notes
+
+- **IP-API:** Only works in deployed environments (beta/production). Returns null for private/local IPs.
+- **Frankfurter:** Works everywhere. Select a currency dropdown on any quote form.
+- **REST Countries:** Works everywhere. Enter "US", "GB", or "FR" on a client detail page.
+- **LibreTranslate:** Works everywhere. Open a menu with dishes and click "Translate Menu".
+- All features are non-blocking: if any API is down, the feature simply doesn't appear.
+
 ## Signup Links
 
 - USDA: https://fdc.nal.usda.gov/api-key-signup

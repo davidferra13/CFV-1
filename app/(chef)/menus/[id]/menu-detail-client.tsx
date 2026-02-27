@@ -532,7 +532,18 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
           {/* Dishes */}
           <Card>
             <CardHeader>
-              <CardTitle>Dishes ({menu.dishes.length})</CardTitle>
+              <div className="flex items-center justify-between gap-3">
+                <CardTitle>Dishes ({menu.dishes.length})</CardTitle>
+                {menu.dishes.length > 0 && (
+                  <MenuTranslateButton
+                    dishes={menu.dishes.map((d) => ({
+                      id: d.id,
+                      course_name: d.course_name,
+                      description: d.description,
+                    }))}
+                  />
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               {menu.dishes.length === 0 ? (
