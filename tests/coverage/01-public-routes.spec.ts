@@ -196,3 +196,13 @@ test.describe('Public — Unauthenticated Redirect Guards', () => {
     await expect(page).toHaveURL(/auth\/signin|login/, { timeout: 10_000 })
   })
 })
+
+test.describe('Public - Additional Auth Routes', () => {
+  test('/auth/partner-signup - partner auth onboarding loads', async ({ page }) => {
+    await assertPageLoads(page, '/auth/partner-signup')
+  })
+
+  test('/auth/role-selection - role picker loads', async ({ page }) => {
+    await assertPageLoads(page, '/auth/role-selection')
+  })
+})

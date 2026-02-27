@@ -115,3 +115,17 @@ test.describe('Admin — Operations', () => {
     await assertAdminPageLoads(page, '/admin/referral-partners')
   })
 })
+
+test.describe('Admin - Experience & Directory', () => {
+  test('/admin/animations - animation preview tooling', async ({ page }) => {
+    await assertAdminPageLoads(page, '/admin/animations')
+  })
+
+  test('/admin/cannabis - cannabis admin controls', async ({ page }) => {
+    await assertAdminPageLoads(page, '/admin/cannabis')
+  })
+
+  test('/admin/directory - chef directory management', async ({ page }) => {
+    await assertAdminPageLoads(page, '/admin/directory')
+  })
+})
