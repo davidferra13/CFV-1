@@ -5,7 +5,16 @@ import type { IntegrationEventSummary } from '@/lib/integrations/core/types'
 type ProviderOverviewItem = {
   provider: string
   label: string
-  category: 'website' | 'pos' | 'scheduling' | 'crm' | 'custom'
+  category:
+    | 'website'
+    | 'pos'
+    | 'scheduling'
+    | 'crm'
+    | 'custom'
+    | 'accounting'
+    | 'esignature'
+    | 'automation'
+    | 'reviews'
   supportsWebhook: boolean
   supportsPull: boolean
   supportsOAuth: boolean
@@ -25,18 +34,26 @@ function statusVariant(status: string | null) {
 }
 
 function categoryTitle(category: ProviderOverviewItem['category']) {
-  if (category === 'pos') return 'POS Systems'
+  if (category === 'pos') return 'POS & Payments'
   if (category === 'scheduling') return 'Scheduling Systems'
   if (category === 'crm') return 'Lead / CRM Systems'
   if (category === 'website') return 'Website Channels'
+  if (category === 'accounting') return 'Accounting & Bookkeeping'
+  if (category === 'esignature') return 'Contracts & E-Signatures'
+  if (category === 'automation') return 'Automation (Zapier / Make)'
+  if (category === 'reviews') return 'Reviews & Reputation'
   return 'Custom Integrations'
 }
 
 const CATEGORY_ORDER: ProviderOverviewItem['category'][] = [
   'website',
+  'accounting',
+  'esignature',
   'pos',
   'scheduling',
   'crm',
+  'automation',
+  'reviews',
   'custom',
 ]
 

@@ -1,7 +1,7 @@
 import { createHash } from 'crypto'
 import { createServerClient } from '@/lib/supabase/server'
 
-export const EXTERNAL_REVIEW_PROVIDERS = ['google_places', 'website_jsonld'] as const
+export const EXTERNAL_REVIEW_PROVIDERS = ['google_places', 'website_jsonld', 'yelp'] as const
 
 export type ExternalReviewProvider = (typeof EXTERNAL_REVIEW_PROVIDERS)[number]
 
@@ -388,6 +388,11 @@ async function pullFromProvider(source: ExternalReviewSourceRecord, chefWebsiteU
     const normalized = normalizeWebsiteSourceConfig(source.config)
     validateOwnedWebsiteUrls(chefWebsiteUrl, normalized.urls)
     return fetchWebsiteJsonLdReviews({ ...source.config, urls: normalized.urls })
+  }
+
+  if (source.provider === 'yelp') {
+    const { fetchYelpReviews } = await import('@/lib/integrations/yelp/yelp-sync')
+    return fetchYelpReviews(source.config)
   }
 
   throw new Error(`Unsupported external review provider: ${source.provider}`)

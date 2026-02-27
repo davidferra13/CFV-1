@@ -70,6 +70,7 @@ const skipAuthPaths = [
   '/staff-login',
   '/reactivate-account',
   '/kiosk',
+  '/beta',
 ]
 // Admin paths — require authentication but not a specific role (email check is in layout)
 const adminPaths = ['/admin']
@@ -107,7 +108,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/api/demo') ||
     pathname.startsWith('/api/monitoring') ||
     pathname.startsWith('/api/inngest') ||
-    pathname.startsWith('/api/kiosk')
+    pathname.startsWith('/api/kiosk') ||
+    pathname.startsWith('/api/feeds')
   ) {
     return NextResponse.next()
   }

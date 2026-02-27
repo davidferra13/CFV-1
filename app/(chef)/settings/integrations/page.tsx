@@ -46,7 +46,8 @@ export default async function IntegrationsSettingsPage() {
         </Link>
         <h1 className="text-3xl font-bold text-stone-100">Integrations</h1>
         <p className="text-stone-400 mt-1">
-          Connect ChefFlow to your website, POS systems, and scheduling or CRM tools.
+          Connect ChefFlow to your accounting, payments, contracts, scheduling, and automation
+          tools.
         </p>
       </div>
 

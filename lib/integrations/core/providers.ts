@@ -1,6 +1,15 @@
 import type { IntegrationProvider } from './types'
 
-export type IntegrationCategory = 'website' | 'pos' | 'scheduling' | 'crm' | 'custom'
+export type IntegrationCategory =
+  | 'website'
+  | 'pos'
+  | 'scheduling'
+  | 'crm'
+  | 'custom'
+  | 'accounting'
+  | 'esignature'
+  | 'automation'
+  | 'reviews'
 
 export type IntegrationProviderMeta = {
   provider: IntegrationProvider
@@ -114,6 +123,38 @@ export const INTEGRATION_PROVIDER_META: IntegrationProviderMeta[] = [
     category: 'custom',
     supportsWebhook: false,
     supportsPull: false,
+    supportsOAuth: false,
+  },
+  {
+    provider: 'quickbooks',
+    label: 'QuickBooks',
+    category: 'accounting',
+    supportsWebhook: true,
+    supportsPull: true,
+    supportsOAuth: true,
+  },
+  {
+    provider: 'docusign',
+    label: 'DocuSign',
+    category: 'esignature',
+    supportsWebhook: true,
+    supportsPull: false,
+    supportsOAuth: true,
+  },
+  {
+    provider: 'zapier',
+    label: 'Zapier',
+    category: 'automation',
+    supportsWebhook: true,
+    supportsPull: false,
+    supportsOAuth: false,
+  },
+  {
+    provider: 'yelp',
+    label: 'Yelp',
+    category: 'reviews',
+    supportsWebhook: false,
+    supportsPull: true,
     supportsOAuth: false,
   },
 ]

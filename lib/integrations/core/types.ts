@@ -15,6 +15,10 @@ export const INTEGRATION_PROVIDERS = [
   'gmail',
   'custom_webhook',
   'csv_import',
+  'quickbooks',
+  'docusign',
+  'zapier',
+  'yelp',
 ] as const
 
 export type IntegrationProvider = (typeof INTEGRATION_PROVIDERS)[number]
