@@ -63,7 +63,6 @@ export async function POST(request: Request) {
     }
 
     // Create device session
-    const supabase = createAdminClient()
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
     const sessionNow = new Date().toISOString()
 

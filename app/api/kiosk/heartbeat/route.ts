@@ -5,8 +5,6 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { extractBearerToken, validateDeviceToken } from '@/lib/devices/token'
 
-// In-memory rate limiter for heartbeat event inserts (1 per 5 min per device)
-const lastEventInsert = new Map<string, number>()
 const EVENT_INSERT_INTERVAL_MS = 5 * 60 * 1000 // 5 minutes
 
 export async function POST(request: Request) {
@@ -39,9 +37,16 @@ export async function POST(request: Request) {
       })
       .eq('id', device.deviceId)
 
-    // Rate-limited event insert (at most 1 per 5 min)
-    const lastInsert = lastEventInsert.get(device.deviceId) || 0
-    if (Date.now() - lastInsert > EVENT_INSERT_INTERVAL_MS) {
+    // DB-based rate-limited event insert (at most 1 per 5 min)
+    const windowStart = new Date(Date.now() - EVENT_INSERT_INTERVAL_MS).toISOString()
+    const { count: recentHeartbeats } = await supabase
+      .from('device_events')
+      .select('*', { count: 'exact', head: true })
+      .eq('device_id', device.deviceId)
+      .eq('type', 'heartbeat')
+      .gte('created_at', windowStart)
+
+    if ((recentHeartbeats ?? 0) === 0) {
       try {
         await supabase.from('device_events').insert({
           device_id: device.deviceId,
@@ -53,7 +58,6 @@ export async function POST(request: Request) {
             app_version: body.app_version || null,
           },
         })
-        lastEventInsert.set(device.deviceId, Date.now())
       } catch (e) {
         console.error('[kiosk/heartbeat] Event log failed (non-blocking):', e)
       }
