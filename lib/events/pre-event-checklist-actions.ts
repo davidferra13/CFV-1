@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 import { requireClient } from '@/lib/auth/get-user'
@@ -38,6 +37,7 @@ export async function confirmPreEventChecklist(eventId: string) {
 
   if (error) throw new Error('Failed to confirm checklist')
 
+  revalidatePath(`/events/${eventId}`)
   revalidatePath(`/my-events/${eventId}`)
   revalidatePath(`/my-events/${eventId}/pre-event-checklist`)
   return { success: true as const }

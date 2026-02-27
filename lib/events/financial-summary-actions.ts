@@ -378,6 +378,7 @@ export async function recordTip({
   revalidatePath(`/events/${eventId}`)
   revalidatePath(`/events/${eventId}/financial`)
   revalidatePath(`/events/${eventId}/close-out`)
+  revalidatePath(`/my-events/${eventId}`)
 
   return { success: true, entryId: entry?.id }
 }
@@ -593,6 +594,9 @@ export async function updateMileage(eventId: string, mileageMiles: number) {
     throw new Error('Failed to update mileage')
   }
 
+  revalidatePath(`/events/${eventId}`)
   revalidatePath(`/events/${eventId}/financial`)
+  revalidatePath(`/events/${eventId}/close-out`)
+  revalidatePath(`/my-events/${eventId}`)
   return { success: true }
 }

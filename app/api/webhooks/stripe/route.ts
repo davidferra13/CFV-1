@@ -9,6 +9,7 @@ import { appendLedgerEntryFromWebhook } from '@/lib/ledger/append'
 import { transitionEvent } from '@/lib/events/transitions'
 import { createServerClient } from '@/lib/supabase/server'
 import { logWebhookEvent } from '@/lib/webhooks/audit-log'
+import { revalidatePath } from 'next/cache'
 
 /**
  * Lazy Stripe client initialization
@@ -549,6 +550,27 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
       console.error('[handlePaymentSucceeded] Notification failed (non-blocking):', notifErr)
     }
 
+    // Notify client of payment confirmation in-app (non-blocking)
+    try {
+      const { createClientNotification } = await import('@/lib/notifications/client-actions')
+      const amountFormatted = (paymentIntent.amount / 100).toFixed(2)
+      await createClientNotification({
+        tenantId: tenant_id,
+        clientId: client_id,
+        category: 'payment',
+        action: 'event_paid_to_client',
+        title: 'Payment confirmed',
+        body: `Your $${amountFormatted} payment has been confirmed`,
+        actionUrl: `/my-events/${event_id}`,
+        eventId: event_id,
+      })
+    } catch (clientNotifErr) {
+      console.error(
+        '[handlePaymentSucceeded] Client notification failed (non-blocking):',
+        clientNotifErr
+      )
+    }
+
     // Send payment confirmation email to client + chef (non-blocking)
     try {
       const { data: eventData } = await supabaseAdmin
@@ -707,6 +729,20 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
     } catch (zapierErr) {
       console.error('[handlePaymentSucceeded] Zapier dispatch failed (non-blocking):', zapierErr)
     }
+
+    // Cache invalidation — financial pages, invoice, dashboard (non-blocking)
+    try {
+      revalidatePath(`/events/${event_id}`)
+      revalidatePath(`/events/${event_id}/financial`)
+      revalidatePath(`/events/${event_id}/invoice`)
+      revalidatePath(`/my-events/${event_id}`)
+      revalidatePath(`/my-events/${event_id}/invoice`)
+      revalidatePath('/events')
+      revalidatePath('/my-events')
+      revalidatePath('/dashboard')
+    } catch (cacheErr) {
+      console.error('[handlePaymentSucceeded] Cache invalidation failed (non-blocking):', cacheErr)
+    }
   } catch (transitionError) {
     // Log but don't throw - ledger entry is what matters
     console.error('[handlePaymentSucceeded] Transition failed:', transitionError)
@@ -783,6 +819,26 @@ async function handlePaymentFailed(event: Stripe.Event) {
     console.error('[handlePaymentFailed] Notification failed (non-blocking):', notifErr)
   }
 
+  // Notify client of payment failure in-app (non-blocking)
+  try {
+    const { createClientNotification } = await import('@/lib/notifications/client-actions')
+    await createClientNotification({
+      tenantId: tenant_id,
+      clientId: client_id,
+      category: 'payment',
+      action: 'event_paid_to_client',
+      title: 'Payment failed',
+      body: 'Your payment could not be processed. Please try again or use a different payment method.',
+      actionUrl: `/my-events/${event_id}`,
+      eventId: event_id,
+    })
+  } catch (clientNotifErr) {
+    console.error(
+      '[handlePaymentFailed] Client notification failed (non-blocking):',
+      clientNotifErr
+    )
+  }
+
   // Send payment failed email to client (non-blocking)
   try {
     const supabase = createServerClient({ admin: true })
@@ -810,6 +866,15 @@ async function handlePaymentFailed(event: Stripe.Event) {
     }
   } catch (emailErr) {
     console.error('[handlePaymentFailed] Email failed (non-blocking):', emailErr)
+  }
+
+  // Cache invalidation (non-blocking)
+  try {
+    revalidatePath(`/events/${event_id}`)
+    revalidatePath(`/my-events/${event_id}`)
+    revalidatePath('/dashboard')
+  } catch (cacheErr) {
+    console.error('[handlePaymentFailed] Cache invalidation failed (non-blocking):', cacheErr)
   }
 }
 
@@ -840,6 +905,58 @@ async function handlePaymentCanceled(event: Stripe.Event) {
     internal_notes: `PaymentIntent ${paymentIntent.id} was canceled. Cancellation reason: ${paymentIntent.cancellation_reason ?? 'none'}`,
     created_by: null,
   })
+
+  // Notify chef of payment cancellation (non-blocking)
+  try {
+    const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
+    const chefUserId = await getChefAuthUserId(tenant_id)
+    if (chefUserId) {
+      await createNotification({
+        tenantId: tenant_id,
+        recipientId: chefUserId,
+        category: 'payment',
+        action: 'payment_failed',
+        title: 'Payment canceled',
+        body: `A payment was canceled. Reason: ${paymentIntent.cancellation_reason ?? 'not specified'}`,
+        actionUrl: `/events/${event_id}`,
+        eventId: event_id,
+        clientId: client_id,
+      })
+    }
+  } catch (notifErr) {
+    console.error('[handlePaymentCanceled] Chef notification failed (non-blocking):', notifErr)
+  }
+
+  // Notify client of payment cancellation (non-blocking)
+  try {
+    const { createClientNotification } = await import('@/lib/notifications/client-actions')
+    await createClientNotification({
+      tenantId: tenant_id,
+      clientId: client_id,
+      category: 'payment',
+      action: 'event_paid_to_client',
+      title: 'Payment canceled',
+      body: 'Your payment has been canceled. Contact your chef if you have questions.',
+      actionUrl: `/my-events/${event_id}`,
+      eventId: event_id,
+    })
+  } catch (clientNotifErr) {
+    console.error(
+      '[handlePaymentCanceled] Client notification failed (non-blocking):',
+      clientNotifErr
+    )
+  }
+
+  // Cache invalidation (non-blocking)
+  try {
+    revalidatePath(`/events/${event_id}`)
+    revalidatePath(`/my-events/${event_id}`)
+    revalidatePath('/events')
+    revalidatePath('/my-events')
+    revalidatePath('/dashboard')
+  } catch (cacheErr) {
+    console.error('[handlePaymentCanceled] Cache invalidation failed (non-blocking):', cacheErr)
+  }
 }
 
 /**
@@ -904,6 +1021,65 @@ async function handleRefund(event: Stripe.Event) {
   } catch (notifErr) {
     console.error('[handleRefund] Notification failed (non-blocking):', notifErr)
   }
+
+  // Notify client of refund confirmation in-app (non-blocking)
+  try {
+    const { createClientNotification } = await import('@/lib/notifications/client-actions')
+    const amountFormatted = (refund.amount / 100).toFixed(2)
+    await createClientNotification({
+      tenantId: tenant_id,
+      clientId: client_id,
+      category: 'payment',
+      action: 'refund_processed_to_client',
+      title: 'Refund processed',
+      body: `A $${amountFormatted} refund has been processed`,
+      actionUrl: `/my-events/${event_id}`,
+      eventId: event_id,
+    })
+  } catch (clientNotifErr) {
+    console.error('[handleRefund] Client notification failed (non-blocking):', clientNotifErr)
+  }
+
+  // Send refund email to client (non-blocking)
+  try {
+    const supabase = createServerClient({ admin: true })
+    const { data: clientData } = await supabase
+      .from('clients')
+      .select('email, full_name')
+      .eq('id', client_id)
+      .single()
+
+    const { data: chefData } = await supabase
+      .from('chefs')
+      .select('business_name, display_name')
+      .eq('id', tenant_id)
+      .single()
+
+    if (clientData?.email) {
+      const { sendRefundInitiatedEmail } = await import('@/lib/email/notifications')
+      await sendRefundInitiatedEmail({
+        clientEmail: clientData.email,
+        clientName: clientData.full_name,
+        chefName: chefData?.business_name || chefData?.display_name || 'Your chef',
+        amountCents: refund.amount,
+        reason: refund.reason ?? 'Refund processed',
+      })
+    }
+  } catch (emailErr) {
+    console.error('[handleRefund] Client refund email failed (non-blocking):', emailErr)
+  }
+
+  // Cache invalidation (non-blocking)
+  try {
+    revalidatePath(`/events/${event_id}`)
+    revalidatePath(`/events/${event_id}/financial`)
+    revalidatePath(`/my-events/${event_id}`)
+    revalidatePath('/events')
+    revalidatePath('/my-events')
+    revalidatePath('/dashboard')
+  } catch (cacheErr) {
+    console.error('[handleRefund] Cache invalidation failed (non-blocking):', cacheErr)
+  }
 }
 
 /**
@@ -966,6 +1142,16 @@ async function handleDisputeCreated(event: Stripe.Event) {
   } catch (notifErr) {
     console.error('[handleDisputeCreated] Notification failed (non-blocking):', notifErr)
   }
+
+  // Cache invalidation (non-blocking)
+  try {
+    revalidatePath(`/events/${event_id}`)
+    revalidatePath(`/events/${event_id}/financial`)
+    revalidatePath(`/my-events/${event_id}`)
+    revalidatePath('/dashboard')
+  } catch (cacheErr) {
+    console.error('[handleDisputeCreated] Cache invalidation failed (non-blocking):', cacheErr)
+  }
 }
 
 /**
@@ -1006,6 +1192,42 @@ async function handleDisputeFundsWithdrawn(event: Stripe.Event) {
     internal_notes: `Dispute ${dispute.id} funds withdrawn. Amount: ${dispute.amount}`,
     created_by: null,
   })
+
+  // Notify chef of dispute funds withdrawal (non-blocking, urgent)
+  try {
+    const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
+    const chefUserId = await getChefAuthUserId(tenant_id)
+    if (chefUserId) {
+      const amountFormatted = (dispute.amount / 100).toFixed(2)
+      await createNotification({
+        tenantId: tenant_id,
+        recipientId: chefUserId,
+        category: 'payment',
+        action: 'dispute_funds_withdrawn',
+        title: 'Dispute funds withdrawn',
+        body: `$${amountFormatted} has been withdrawn due to a dispute`,
+        actionUrl: `/events/${event_id}`,
+        eventId: event_id,
+        clientId: client_id,
+        metadata: { amount_cents: dispute.amount, dispute_id: dispute.id },
+      })
+    }
+  } catch (notifErr) {
+    console.error('[handleDisputeFundsWithdrawn] Notification failed (non-blocking):', notifErr)
+  }
+
+  // Cache invalidation (non-blocking)
+  try {
+    revalidatePath(`/events/${event_id}`)
+    revalidatePath(`/events/${event_id}/financial`)
+    revalidatePath(`/my-events/${event_id}`)
+    revalidatePath('/dashboard')
+  } catch (cacheErr) {
+    console.error(
+      '[handleDisputeFundsWithdrawn] Cache invalidation failed (non-blocking):',
+      cacheErr
+    )
+  }
 }
 
 /**

@@ -186,6 +186,18 @@ export async function acceptQuote(quoteId: string) {
   revalidatePath(`/my-quotes/${quoteId}`)
   revalidatePath('/my-events')
 
+  // Chef-side cache invalidation
+  revalidatePath('/quotes')
+  revalidatePath(`/quotes/${quoteId}`)
+  if (quote.inquiry_id) {
+    revalidatePath(`/inquiries/${quote.inquiry_id}`)
+    revalidatePath('/inquiries')
+  }
+  if (quote.event_id) {
+    revalidatePath(`/events/${quote.event_id}`)
+    revalidatePath('/events')
+  }
+
   // Notify chef that quote was accepted (non-blocking)
   const quoteTenantId = quote.tenant_id as string | undefined
   if (quoteTenantId) {
@@ -264,6 +276,10 @@ export async function rejectQuote(quoteId: string, reason?: string) {
   revalidatePath('/my-quotes')
   revalidatePath(`/my-quotes/${quoteId}`)
 
+  // Chef-side cache invalidation
+  revalidatePath('/quotes')
+  revalidatePath(`/quotes/${quoteId}`)
+
   // Notify chef that quote was rejected (non-blocking)
   if (quote.tenant_id) {
     notifyChefOfQuoteRejected(
@@ -284,8 +300,7 @@ async function notifyChefOfQuoteAccepted(
   tenantId: string,
   quoteId: string,
   quote: {
-    name?: string | null
-    title?: string | null
+    quote_name?: string | null
     total_quoted_cents?: number | null
     deposit_required?: boolean | null
     deposit_amount_cents?: number | null
@@ -312,7 +327,7 @@ async function notifyChefOfQuoteAccepted(
     .single()
   const clientName = client?.full_name ?? 'A client'
 
-  const quoteName = quote.name || quote.title || 'Quote'
+  const quoteName = quote.quote_name || 'Quote'
   const totalCents = quote.total_quoted_cents ?? 0
   const inquiryId = quote.inquiry_id
 

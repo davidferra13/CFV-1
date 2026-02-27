@@ -1,8 +1,5 @@
-// @ts-nocheck
 // Client Self-Service Profile Actions
 // Clients can view and update their own profile information
-// @ts-nocheck used because dietary_protocols column is added by migration 20260322000001
-// and types/database.ts has not been regenerated yet.
 
 'use server'
 
@@ -10,6 +7,7 @@ import { requireClient, requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { createNotification, getChefAuthUserId } from '@/lib/notifications/actions'
 import { FUN_QA_QUESTIONS, type FunQAKey, type FunQAAnswers } from './fun-qa-constants'
 
 // Re-export for any server-side consumers that previously imported from here.
@@ -98,6 +96,13 @@ export async function updateMyProfile(input: UpdateClientProfileInput) {
     family_notes: validated.family_notes || null,
   }
 
+  // Fetch current profile to detect allergy/dietary changes (food safety)
+  const { data: oldProfile } = await supabase
+    .from('clients')
+    .select('allergies, dietary_restrictions, tenant_id')
+    .eq('id', user.entityId)
+    .single()
+
   const { error } = await supabase.from('clients').update(cleanedData).eq('id', user.entityId)
 
   if (error) {
@@ -107,6 +112,43 @@ export async function updateMyProfile(input: UpdateClientProfileInput) {
 
   revalidatePath('/my-profile')
   revalidatePath('/my-events')
+
+  // Chef-side cache
+  revalidatePath(`/clients/${user.entityId}`)
+
+  // Non-blocking: notify chef if allergy or dietary fields changed (food safety)
+  try {
+    if (oldProfile) {
+      const oldAllergies = JSON.stringify(oldProfile.allergies ?? [])
+      const newAllergies = JSON.stringify(validated.allergies ?? [])
+      const oldDietary = JSON.stringify(oldProfile.dietary_restrictions ?? [])
+      const newDietary = JSON.stringify(validated.dietary_restrictions ?? [])
+
+      if (oldAllergies !== newAllergies || oldDietary !== newDietary) {
+        const chefAuthId = await getChefAuthUserId(oldProfile.tenant_id)
+        if (chefAuthId) {
+          const changes: string[] = []
+          if (oldAllergies !== newAllergies)
+            changes.push(`Allergies: ${(validated.allergies ?? []).join(', ') || 'none'}`)
+          if (oldDietary !== newDietary)
+            changes.push(`Dietary: ${(validated.dietary_restrictions ?? []).join(', ') || 'none'}`)
+
+          await createNotification({
+            tenantId: oldProfile.tenant_id,
+            recipientId: chefAuthId,
+            category: 'client',
+            action: 'client_allergy_changed',
+            title: `${validated.full_name} updated dietary info`,
+            body: changes.join('; '),
+            clientId: user.entityId,
+          })
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[updateMyProfile] Non-blocking allergy notification failed:', err)
+  }
+
   return { success: true }
 }
 

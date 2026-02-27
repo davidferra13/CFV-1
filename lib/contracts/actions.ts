@@ -12,6 +12,8 @@ import { sendEmail } from '@/lib/email/send'
 import { ContractSentEmail } from '@/lib/email/templates/contract-sent'
 import React from 'react'
 import { format } from 'date-fns'
+import { createNotification, getChefAuthUserId, getChefProfile } from '@/lib/notifications/actions'
+import { sendContractSignedChefEmail } from '@/lib/email/notifications'
 
 // ============================================
 // SCHEMAS
@@ -365,21 +367,26 @@ export async function sendContractToClient(contractId: string) {
   const client = (contract as any).clients
   const event = (contract as any).events
 
-  if (client?.email) {
-    const signingUrl = `${process.env.NEXT_PUBLIC_APP_URL}/my-events/${contract.event_id}/contract`
-    await sendEmail({
-      to: client.email,
-      subject: `Your service contract is ready to sign`,
-      react: React.createElement(ContractSentEmail, {
-        clientName: client.full_name ?? 'there',
-        occasion: event?.occasion ?? 'your upcoming event',
-        eventDate: event?.event_date ? format(new Date(event.event_date), 'MMMM d, yyyy') : 'TBD',
-        signingUrl,
-      }),
-    })
+  try {
+    if (client?.email) {
+      const signingUrl = `${process.env.NEXT_PUBLIC_APP_URL}/my-events/${contract.event_id}/contract`
+      await sendEmail({
+        to: client.email,
+        subject: `Your service contract is ready to sign`,
+        react: React.createElement(ContractSentEmail, {
+          clientName: client.full_name ?? 'there',
+          occasion: event?.occasion ?? 'your upcoming event',
+          eventDate: event?.event_date ? format(new Date(event.event_date), 'MMMM d, yyyy') : 'TBD',
+          signingUrl,
+        }),
+      })
+    }
+  } catch (err) {
+    console.error('[sendContractToClient] Non-blocking email failed:', err)
   }
 
   revalidatePath(`/events/${contract.event_id}`)
+  revalidatePath(`/my-events/${contract.event_id}`)
   return { success: true }
 }
 
@@ -393,7 +400,7 @@ export async function recordClientView(contractId: string) {
 
   const { data: contract } = await supabase
     .from('event_contracts')
-    .select('id, status, client_id')
+    .select('id, status, client_id, event_id')
     .eq('id', contractId)
     .eq('client_id', user.entityId)
     .single()
@@ -405,6 +412,9 @@ export async function recordClientView(contractId: string) {
       .update({ status: 'viewed', viewed_at: new Date().toISOString() })
       .eq('id', contractId)
   }
+
+  revalidatePath(`/events/${contract.event_id}`)
+  revalidatePath(`/my-events/${contract.event_id}`)
 }
 
 /**
@@ -447,6 +457,50 @@ export async function signContract(input: SignContractInput) {
   }
 
   revalidatePath(`/my-events/${contract.event_id}`)
+  revalidatePath(`/events/${contract.event_id}`)
+
+  // Non-blocking: notify chef + email
+  try {
+    // Fetch contract details for notification
+    const supabaseForLookup = createServerClient()
+    const { data: fullContract } = await supabaseForLookup
+      .from('event_contracts')
+      .select('chef_id, events(occasion, event_date, clients(full_name))')
+      .eq('id', validated.contract_id)
+      .single()
+
+    if (fullContract) {
+      const chefId = (fullContract as any).chef_id
+      const chefAuthId = await getChefAuthUserId(chefId)
+      if (chefAuthId) {
+        await createNotification({
+          tenantId: chefId,
+          recipientId: chefAuthId,
+          category: 'event',
+          action: 'contract_signed',
+          title: 'Contract signed',
+          body: `${(fullContract as any).events?.clients?.full_name ?? 'Your client'} signed the contract`,
+          eventId: contract.event_id,
+        })
+      }
+
+      const chef = await getChefProfile(chefId)
+      const eventData = (fullContract as any).events
+      if (chef?.email && eventData) {
+        await sendContractSignedChefEmail({
+          chefEmail: chef.email,
+          chefName: chef.name,
+          clientName: eventData.clients?.full_name ?? 'Your client',
+          occasion: eventData.occasion ?? 'your event',
+          eventDate: eventData.event_date ?? 'TBD',
+          eventId: contract.event_id,
+        })
+      }
+    }
+  } catch (err) {
+    console.error('[signContract] Non-blocking chef notification failed:', err)
+  }
+
   return { success: true }
 }
 
@@ -480,6 +534,33 @@ export async function voidContract(contractId: string, reason?: string) {
   if (error) throw new Error('Failed to void contract')
 
   revalidatePath(`/events/${contract.event_id}`)
+  revalidatePath(`/my-events/${contract.event_id}`)
+
+  // Non-blocking: notify client that contract was voided
+  try {
+    const { createClientNotification } = await import('@/lib/notifications/client-actions')
+    const { data: eventData } = await supabase
+      .from('events')
+      .select('occasion, client_id')
+      .eq('id', contract.event_id)
+      .single()
+
+    if (eventData?.client_id) {
+      await createClientNotification({
+        tenantId: user.tenantId!,
+        clientId: eventData.client_id,
+        category: 'event',
+        action: 'contract_signed',
+        title: 'Contract voided',
+        body: `The contract for ${eventData.occasion || 'your event'} has been voided. Your chef will send an updated contract.`,
+        actionUrl: `/my-events/${contract.event_id}`,
+        eventId: contract.event_id,
+      })
+    }
+  } catch (err) {
+    console.error('[voidContract] Non-blocking client notification failed:', err)
+  }
+
   return { success: true }
 }
 
