@@ -822,6 +822,8 @@ body {
   right: 20px;
   width: 400px;
   height: 520px;
+  min-width: 320px;
+  min-height: 300px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-bright);
   border-radius: 12px;
@@ -832,6 +834,23 @@ body {
   overflow: hidden;
 }
 .chat-drawer.open { display: flex; }
+.chat-drawer.resizing { transition: none; user-select: none; }
+
+/* Resize handles — edges */
+.chat-resize-handle {
+  position: absolute;
+  z-index: 20;
+}
+.chat-resize-n  { top: -4px; left: 16px; right: 16px; height: 8px; cursor: n-resize; }
+.chat-resize-s  { bottom: -4px; left: 16px; right: 16px; height: 8px; cursor: s-resize; }
+.chat-resize-w  { left: -4px; top: 16px; bottom: 16px; width: 8px; cursor: w-resize; }
+.chat-resize-e  { right: -4px; top: 16px; bottom: 16px; width: 8px; cursor: e-resize; }
+
+/* Resize handles — corners (larger hit area, higher z-index) */
+.chat-resize-nw { top: -4px; left: -4px; width: 16px; height: 16px; cursor: nw-resize; z-index: 30; }
+.chat-resize-ne { top: -4px; right: -4px; width: 16px; height: 16px; cursor: ne-resize; z-index: 30; }
+.chat-resize-sw { bottom: -4px; left: -4px; width: 16px; height: 16px; cursor: sw-resize; z-index: 30; }
+.chat-resize-se { bottom: -4px; right: -4px; width: 16px; height: 16px; cursor: se-resize; z-index: 30; }
 
 .chat-header {
   display: flex;
@@ -3242,6 +3261,15 @@ body {
 </button>
 
 <div class="chat-drawer" id="chat-drawer">
+  <!-- Resize handles -->
+  <div class="chat-resize-handle chat-resize-n" data-resize="n"></div>
+  <div class="chat-resize-handle chat-resize-s" data-resize="s"></div>
+  <div class="chat-resize-handle chat-resize-w" data-resize="w"></div>
+  <div class="chat-resize-handle chat-resize-e" data-resize="e"></div>
+  <div class="chat-resize-handle chat-resize-nw" data-resize="nw"></div>
+  <div class="chat-resize-handle chat-resize-ne" data-resize="ne"></div>
+  <div class="chat-resize-handle chat-resize-sw" data-resize="sw"></div>
+  <div class="chat-resize-handle chat-resize-se" data-resize="se"></div>
   <!-- Chat View -->
   <div class="chat-view active" id="chat-view-chat">
     <div class="chat-header">
@@ -3741,6 +3769,90 @@ let chatAbortController = null
 let chatSoundEnabled = localStorage.getItem('gustav-sound') !== 'muted'
 let pendingFileContent = null
 let pendingFileName = null
+
+// ── Chat Drawer Resize ──────────────────────────────────────────
+;(function initChatResize() {
+  const drawer = document.getElementById('chat-drawer')
+  if (!drawer) return
+
+  let resizeDir = null
+  let startX, startY, startW, startH, startLeft, startBottom
+
+  drawer.querySelectorAll('.chat-resize-handle').forEach(handle => {
+    handle.addEventListener('pointerdown', e => {
+      e.preventDefault()
+      e.stopPropagation()
+      resizeDir = handle.dataset.resize
+      const rect = drawer.getBoundingClientRect()
+      startX = e.clientX
+      startY = e.clientY
+      startW = rect.width
+      startH = rect.height
+      startLeft = rect.left
+      startBottom = window.innerHeight - rect.bottom
+      drawer.classList.add('resizing')
+      document.addEventListener('pointermove', onMove)
+      document.addEventListener('pointerup', onUp)
+    })
+  })
+
+  function onMove(e) {
+    if (!resizeDir) return
+    const dx = e.clientX - startX
+    const dy = e.clientY - startY
+    const minW = 320, minH = 300
+    const maxW = window.innerWidth - 40
+    const maxH = window.innerHeight - 60
+
+    let newW = startW, newH = startH, newRight = null, newBottom = startBottom
+
+    // Horizontal
+    if (resizeDir.includes('e')) {
+      newW = Math.max(minW, Math.min(maxW, startW + dx))
+    }
+    if (resizeDir.includes('w')) {
+      newW = Math.max(minW, Math.min(maxW, startW - dx))
+    }
+
+    // Vertical
+    if (resizeDir.includes('s')) {
+      newH = Math.max(minH, Math.min(maxH, startH + dy))
+      newBottom = Math.max(0, startBottom - dy)
+    }
+    if (resizeDir.includes('n')) {
+      newH = Math.max(minH, Math.min(maxH, startH - dy))
+    }
+
+    drawer.style.width = newW + 'px'
+    drawer.style.height = newH + 'px'
+
+    if (resizeDir.includes('s')) {
+      drawer.style.bottom = Math.max(0, newBottom) + 'px'
+    }
+
+    // Save size
+    localStorage.setItem('gustav-drawer-w', newW)
+    localStorage.setItem('gustav-drawer-h', newH)
+    if (resizeDir.includes('s')) {
+      localStorage.setItem('gustav-drawer-bottom', Math.max(0, newBottom))
+    }
+  }
+
+  function onUp() {
+    resizeDir = null
+    drawer.classList.remove('resizing')
+    document.removeEventListener('pointermove', onMove)
+    document.removeEventListener('pointerup', onUp)
+  }
+
+  // Restore saved size on load
+  const savedW = localStorage.getItem('gustav-drawer-w')
+  const savedH = localStorage.getItem('gustav-drawer-h')
+  const savedBottom = localStorage.getItem('gustav-drawer-bottom')
+  if (savedW) drawer.style.width = savedW + 'px'
+  if (savedH) drawer.style.height = savedH + 'px'
+  if (savedBottom) drawer.style.bottom = savedBottom + 'px'
+})()
 
 // ── View Switching ───────────────────────────────────────────────
 
