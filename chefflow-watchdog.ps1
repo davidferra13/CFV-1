@@ -1,6 +1,19 @@
 $projectDir = "C:\Users\david\Documents\CFv1"
 $logFile    = "$projectDir\chefflow-watchdog.log"
 
+# ============================================
+# Mutex -- prevent duplicate watchdog instances
+# ============================================
+$mutexName = "Global\ChefFlowWatchdog"
+$createdNew = $false
+$script:watchdogMutex = New-Object System.Threading.Mutex($true, $mutexName, [ref]$createdNew)
+if (-not $createdNew) {
+    # Another watchdog is already running -- exit silently
+    exit 0
+}
+# Release mutex on exit so Task Scheduler can relaunch cleanly
+Register-EngineEvent PowerShell.Exiting -Action { $script:watchdogMutex.ReleaseMutex() } | Out-Null
+
 function Write-Log {
     param($msg)
     $ts   = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
@@ -54,7 +67,7 @@ function Ensure-OllamaRunning {
     }
 
     # If Ollama is on the Raspberry Pi (remote URL), we cannot start it from Windows.
-    # Just log the warning — the Pi manages its own Ollama service via systemctl.
+    # Just log the warning -- the Pi manages its own Ollama service via systemctl.
     if (Test-OllamaIsRemote) {
         $url = Get-OllamaBaseUrl
         Write-Log "[ollama] Remote Ollama at $url is not responding. Check that the Pi is powered on and Ollama service is running."
@@ -161,13 +174,13 @@ function Restart-PiOllama {
 
     $creds = Get-PiCredentials
     if (-not $creds) {
-        Write-Log "[pi] Cannot SSH restart — no Pi credentials found in .auth/pi.json"
+        Write-Log "[pi] Cannot SSH restart -- no Pi credentials found in .auth/pi.json"
         return $false
     }
 
     Write-Log "[pi] Attempting SSH restart of Pi Ollama..."
     try {
-        # Use key-based auth (BatchMode=yes) — no password prompt
+        # Use key-based auth (BatchMode=yes) -- no password prompt
         & ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no -o BatchMode=yes "$($creds.Username)@$($creds.Host)" "sudo systemctl restart ollama" 2>&1 | Out-Null
         $script:piRestartCount++
 
@@ -176,7 +189,7 @@ function Restart-PiOllama {
 
         $piHealthy = Test-PiOllamaHealth
         if ($piHealthy) {
-            Write-Log "[pi] SSH restart successful — Pi Ollama is back online."
+            Write-Log "[pi] SSH restart successful -- Pi Ollama is back online."
             return $true
         } else {
             Write-Log "[pi] SSH restart issued but Pi Ollama not yet responding."
@@ -191,7 +204,7 @@ function Restart-PiOllama {
 
 function Monitor-PiOllama {
     $piUrl = Get-PiUrl
-    if (-not $piUrl) { return }  # Pi not configured — nothing to monitor
+    if (-not $piUrl) { return }  # Pi not configured -- nothing to monitor
 
     $piHealthy = Test-PiOllamaHealth
     if ($null -eq $piHealthy) { return }  # Pi not configured
@@ -212,7 +225,7 @@ function Monitor-PiOllama {
 
     # After N consecutive failures, attempt SSH restart
     if ($script:piConsecutiveFailures -ge $piMaxConsecutiveFailures) {
-        Write-Log "[pi] Pi Ollama has been down for $($script:piConsecutiveFailures) checks — initiating SSH restart..."
+        Write-Log "[pi] Pi Ollama has been down for $($script:piConsecutiveFailures) checks -- initiating SSH restart..."
         $restarted = Restart-PiOllama
         if ($restarted) {
             $script:piConsecutiveFailures = 0
@@ -226,7 +239,7 @@ Write-Log "=== ChefFlow Watchdog Started (PC + Pi Monitoring) ==="
 Ensure-OllamaRunning
 
 # ============================================
-# Mission Control Dashboard — Auto-Start
+# Mission Control Dashboard -- Auto-Start
 # ============================================
 # Ensures the dashboard server (port 41937) and system tray are running
 
@@ -278,7 +291,7 @@ function Ensure-MissionControlRunning {
 
 Ensure-MissionControlRunning
 
-# Port check — prevents restart loop when server is already running
+# Port check -- prevents restart loop when server is already running
 
 $port = 3100
 
@@ -315,13 +328,18 @@ while ($true) {
         }
     }
 
-    # Every loop: check Pi Ollama (lightweight — just a GET /api/tags)
+    # Every 6 loops (~3 min): check Mission Control + tray are alive
+    if ($loopCount % 6 -eq 0) {
+        Ensure-MissionControlRunning
+    }
+
+    # Every loop: check Pi Ollama (lightweight -- just a GET /api/tags)
     Monitor-PiOllama
 
-    # If port 3100 is already listening, don't spawn a duplicate — just wait
+    # If port 3100 is already listening, don't spawn a duplicate -- just wait
     if (Test-PortInUse $port) {
         if ($loopCount -eq 1) {
-            Write-Log "Port $port already in use — server is running externally. Watching."
+            Write-Log "Port $port already in use -- server is running externally. Watching."
         }
         Start-Sleep -Seconds 30
         continue
@@ -330,7 +348,7 @@ while ($true) {
     Write-Log "Launching dev server on port $port..."
     try {
         $psi                  = New-Object System.Diagnostics.ProcessStartInfo
-        $psi.FileName         = "C:\nvm4w\nodejs\node.exe"
+        $psi.FileName         = "node"
         $psi.Arguments        = "`"$projectDir\node_modules\next\dist\bin\next`" dev -p $port -H 0.0.0.0"
         $psi.WorkingDirectory = $projectDir
         $psi.WindowStyle      = [System.Diagnostics.ProcessWindowStyle]::Hidden
@@ -342,10 +360,10 @@ while ($true) {
         $proc.WaitForExit()
 
         # If the process died in under 3 seconds, it probably hit a port conflict
-        # or a startup error — back off longer to avoid a tight loop
+        # or a startup error -- back off longer to avoid a tight loop
         Write-Log "Server stopped (exit $($proc.ExitCode)). Checking port..."
         if (Test-PortInUse $port) {
-            Write-Log "Port $port still in use after exit — another process took it. Watching."
+            Write-Log "Port $port still in use after exit -- another process took it. Watching."
             Start-Sleep -Seconds 30
             continue
         }
