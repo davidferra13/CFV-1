@@ -25,6 +25,13 @@ import {
   type ComputedAddOnLine,
 } from './constants'
 
+import {
+  warmHolidayCache,
+  getCachedHoliday,
+  isCacheWarm,
+  findNearestCachedHoliday,
+} from './holiday-cache'
+
 // ─── Holiday Date Detection ──────────────────────────────────────────────────
 
 // Holiday date detection (month-day format for fixed holidays)
@@ -490,6 +497,10 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
   // Exact match → tier premium on (serviceFeeCents + weekendPremiumCents).
   // No match → proximity check (Tier 1/2 only) → half-premium.
   // The two are mutually exclusive — never double-count.
+  //
+  // Nager.Date cache: warm the cache for the event year so floating holiday
+  // detection (Easter, Thanksgiving, etc.) can cross-reference real API dates.
+  // If the API is down, the hardcoded logic handles everything.
 
   let holidayName: string | null = null
   let holidayTier: HolidayTier | null = null
@@ -500,6 +511,16 @@ export async function computePricing(input: PricingInput): Promise<PricingBreakd
   let nearHolidayPremiumCents = 0
 
   if (eventDate) {
+    // Warm the Nager.Date holiday cache (non-blocking — falls back to hardcoded if API fails)
+    const eventYear = new Date(eventDate + 'T12:00:00').getFullYear()
+    if (!isNaN(eventYear)) {
+      try {
+        await warmHolidayCache(eventYear)
+      } catch {
+        // Non-blocking: hardcoded logic is the primary source
+      }
+    }
+
     const holiday = detectHoliday(eventDate)
 
     if (holiday) {
@@ -704,14 +725,30 @@ function detectHoliday(dateStr: string): HolidayMatch | null {
   const month = date.getMonth() + 1 // 1-indexed
   const day = date.getDate()
   const dayOfWeek = date.getDay() // 0=Sunday
+  const year = date.getFullYear()
+
+  // Check if Nager.Date cache is available for this year.
+  // If warm, floating holidays can be verified against real API data.
+  const cacheAvailable = isCacheWarm(year)
+  const cachedEntry = cacheAvailable ? getCachedHoliday(dateStr) : null
 
   // Tier 1
   for (const h of TIER_1_HOLIDAYS) {
     if ('type' in h && h.type === 'floating') {
-      // Thanksgiving: 4th Thursday of November
-      if (h.month === 11 && month === 11 && dayOfWeek === 4) {
-        const thursdays = countWeekdayInMonth(date, 4)
-        if (thursdays === 4) return { name: h.name, tier: 1 }
+      // Floating holiday — use Nager.Date cache if available, otherwise hardcoded heuristic
+      if (cacheAvailable) {
+        // Cache is warm: trust the API for floating holiday dates
+        if (cachedEntry && cachedEntry.name === h.name) {
+          return { name: h.name, tier: 1 }
+        }
+        // Cache is warm but this date is NOT this floating holiday — skip heuristic
+      } else {
+        // Cache not available — fall back to hardcoded heuristic
+        // Thanksgiving: 4th Thursday of November
+        if (h.month === 11 && month === 11 && dayOfWeek === 4) {
+          const thursdays = countWeekdayInMonth(date, 4)
+          if (thursdays === 4) return { name: h.name, tier: 1 }
+        }
       }
     } else if ('day' in h && h.month === month && h.day === day) {
       return { name: h.name, tier: 1 }
@@ -721,19 +758,28 @@ function detectHoliday(dateStr: string): HolidayMatch | null {
   // Tier 2
   for (const h of TIER_2_HOLIDAYS) {
     if ('type' in h && h.type === 'floating') {
-      // Mother's Day: 2nd Sunday of May
-      if (h.name === "Mother's Day" && month === 5 && dayOfWeek === 0) {
-        const sundays = countWeekdayInMonth(date, 0)
-        if (sundays === 2) return { name: h.name, tier: 2 }
-      }
-      // Father's Day: 3rd Sunday of June
-      if (h.name === "Father's Day" && month === 6 && dayOfWeek === 0) {
-        const sundays = countWeekdayInMonth(date, 0)
-        if (sundays === 3) return { name: h.name, tier: 2 }
-      }
-      // Easter: complex — check within +/- 1 day of known Easter dates
-      if (h.name === 'Easter' && (month === 3 || month === 4)) {
-        if (isNearEaster(date)) return { name: h.name, tier: 2 }
+      if (cacheAvailable) {
+        // Cache is warm: trust the API for floating holiday dates
+        if (cachedEntry && cachedEntry.name === h.name) {
+          return { name: h.name, tier: 2 }
+        }
+        // Cache warm but date is NOT this floating holiday — skip heuristic
+      } else {
+        // Cache not available — fall back to hardcoded heuristics
+        // Mother's Day: 2nd Sunday of May
+        if (h.name === "Mother's Day" && month === 5 && dayOfWeek === 0) {
+          const sundays = countWeekdayInMonth(date, 0)
+          if (sundays === 2) return { name: h.name, tier: 2 }
+        }
+        // Father's Day: 3rd Sunday of June
+        if (h.name === "Father's Day" && month === 6 && dayOfWeek === 0) {
+          const sundays = countWeekdayInMonth(date, 0)
+          if (sundays === 3) return { name: h.name, tier: 2 }
+        }
+        // Easter: complex — check within +/- 1 day of known Easter dates
+        if (h.name === 'Easter' && (month === 3 || month === 4)) {
+          if (isNearEaster(date)) return { name: h.name, tier: 2 }
+        }
       }
     } else if ('day' in h && h.month === month && h.day === day) {
       return { name: h.name, tier: 2 }
@@ -743,15 +789,23 @@ function detectHoliday(dateStr: string): HolidayMatch | null {
   // Tier 3
   for (const h of TIER_3_HOLIDAYS) {
     if ('type' in h && h.type === 'floating') {
-      // Memorial Day: last Monday of May
-      if (h.name === 'Memorial Day' && month === 5 && dayOfWeek === 1) {
-        const nextMonday = new Date(date)
-        nextMonday.setDate(day + 7)
-        if (nextMonday.getMonth() + 1 !== 5) return { name: h.name, tier: 3 }
-      }
-      // Labor Day: 1st Monday of September
-      if (h.name === 'Labor Day' && month === 9 && dayOfWeek === 1 && day <= 7) {
-        return { name: h.name, tier: 3 }
+      if (cacheAvailable) {
+        // Cache is warm: trust the API for floating holiday dates
+        if (cachedEntry && cachedEntry.name === h.name) {
+          return { name: h.name, tier: 3 }
+        }
+      } else {
+        // Cache not available — fall back to hardcoded heuristics
+        // Memorial Day: last Monday of May
+        if (h.name === 'Memorial Day' && month === 5 && dayOfWeek === 1) {
+          const nextMonday = new Date(date)
+          nextMonday.setDate(day + 7)
+          if (nextMonday.getMonth() + 1 !== 5) return { name: h.name, tier: 3 }
+        }
+        // Labor Day: 1st Monday of September
+        if (h.name === 'Labor Day' && month === 9 && dayOfWeek === 1 && day <= 7) {
+          return { name: h.name, tier: 3 }
+        }
       }
     } else if ('day' in h && h.month === month && h.day === day) {
       return { name: h.name, tier: 3 }
@@ -773,8 +827,13 @@ interface HolidayProximityMatch {
  * Check whether a date falls within HOLIDAY_PROXIMITY_DAYS before a Tier 1 or 2 holiday.
  * Only called when detectHoliday() returns null for the same date (mutually exclusive).
  * Returns the nearest upcoming holiday with its distance in days, or null.
+ *
+ * Uses Nager.Date cache (if warm) to also find holidays the hardcoded list might miss,
+ * then cross-references with our tier assignments. Falls back to hardcoded-only if cache
+ * is not available.
  */
 function detectHolidayProximity(dateStr: string): HolidayProximityMatch | null {
+  // Strategy: scan each day ahead using detectHoliday() (which already uses cache internally)
   for (let offset = 1; offset <= HOLIDAY_PROXIMITY_DAYS; offset++) {
     const futureDate = new Date(dateStr + 'T12:00:00')
     futureDate.setDate(futureDate.getDate() + offset)
@@ -790,6 +849,43 @@ function detectHolidayProximity(dateStr: string): HolidayProximityMatch | null {
     if (holiday && (holiday.tier === 1 || holiday.tier === 2)) {
       return { name: holiday.name, tier: holiday.tier, daysAway: offset }
     }
+  }
+
+  // Supplemental: if Nager.Date cache is warm, check for holidays that our hardcoded
+  // list might not have detected (e.g., a floating holiday the heuristic missed).
+  // Only applies if cache is warm and the above scan found nothing.
+  const year = parseInt(dateStr.slice(0, 4), 10)
+  if (!isNaN(year) && isCacheWarm(year)) {
+    const nearest = findNearestCachedHoliday(dateStr, HOLIDAY_PROXIMITY_DAYS)
+    if (nearest && nearest.daysAway > 0) {
+      // Map the cached holiday name back to a tier — only Tier 1 and 2 get proximity premiums
+      const tier = resolveCachedHolidayTier(nearest.holiday.name)
+      if (tier === 1 || tier === 2) {
+        return { name: nearest.holiday.name, tier, daysAway: nearest.daysAway }
+      }
+    }
+  }
+
+  return null
+}
+
+/**
+ * Resolve a Nager.Date holiday name to our internal tier.
+ * Returns the tier (1, 2, or 3) if the holiday is in our pricing tiers, or null if unknown.
+ * Used when the cache finds a holiday that detectHoliday() missed.
+ */
+function resolveCachedHolidayTier(holidayName: string): HolidayTier | null {
+  // Check Tier 1
+  for (const h of TIER_1_HOLIDAYS) {
+    if (h.name === holidayName) return 1
+  }
+  // Check Tier 2
+  for (const h of TIER_2_HOLIDAYS) {
+    if (h.name === holidayName) return 2
+  }
+  // Check Tier 3
+  for (const h of TIER_3_HOLIDAYS) {
+    if (h.name === holidayName) return 3
   }
   return null
 }
