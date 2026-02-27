@@ -5,6 +5,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getUnifiedCalendar } from '@/lib/calendar/actions'
+import { getWeatherForDateRange } from '@/lib/weather/weather-actions'
 import { DayViewClient } from './day-view-client'
 import { Button } from '@/components/ui/button'
 
@@ -16,7 +17,12 @@ export default async function DayViewPage({ searchParams }: { searchParams: { da
   const today = new Date().toISOString().split('T')[0]
   const date = searchParams.date ?? today
 
-  const items = await getUnifiedCalendar(date, date)
+  const [items, weatherByDate] = await Promise.all([
+    getUnifiedCalendar(date, date),
+    getWeatherForDateRange(date, date),
+  ])
+
+  const weather = weatherByDate[date] ?? null
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
@@ -43,7 +49,7 @@ export default async function DayViewPage({ searchParams }: { searchParams: { da
         </div>
       </div>
 
-      <DayViewClient date={date} items={items} chefId={user.tenantId!} />
+      <DayViewClient date={date} items={items} chefId={user.tenantId!} weather={weather} />
     </div>
   )
 }

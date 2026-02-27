@@ -7,6 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getWeekSchedule } from '@/lib/scheduling/actions'
 import { getWeekPrepBlocks, getSchedulingGaps } from '@/lib/scheduling/prep-block-actions'
 import { getCalendarEntriesForRange } from '@/lib/calendar/entry-actions'
+import { getWeatherForDateRange } from '@/lib/weather/weather-actions'
 import { WeekPlannerClient } from './week-planner-client'
 
 function getWeekBounds(offset: number): { startDate: string; endDate: string } {
@@ -32,11 +33,12 @@ export default async function WeekPlannerPage({
   const offset = parseInt(searchParams.offset ?? '0', 10)
   const { startDate, endDate } = getWeekBounds(offset)
 
-  const [weekSchedule, prepBlocks, allGaps, calendarEntries] = await Promise.all([
+  const [weekSchedule, prepBlocks, allGaps, calendarEntries, weatherByDate] = await Promise.all([
     getWeekSchedule(offset),
     getWeekPrepBlocks(offset),
     getSchedulingGaps(),
     getCalendarEntriesForRange(startDate, endDate),
+    getWeatherForDateRange(startDate, endDate),
   ])
 
   const weekEventIds = new Set(weekSchedule.days.flatMap((d) => d.events.map((e) => e.id)))
@@ -51,6 +53,7 @@ export default async function WeekPlannerPage({
           weekGaps={weekGaps}
           weekOffset={offset}
           calendarEntries={calendarEntries}
+          weatherByDate={weatherByDate}
         />
       </Suspense>
     </div>

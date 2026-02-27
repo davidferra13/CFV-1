@@ -13,11 +13,13 @@ import { format, parseISO } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { CalendarEntryModal } from '@/components/calendar/calendar-entry-modal'
 import type { UnifiedCalendarItem } from '@/lib/calendar/types'
+import type { EventWeather } from '@/lib/weather/open-meteo'
 
 type Props = {
   date: string
   items: UnifiedCalendarItem[]
   chefId: string
+  weather?: EventWeather | null
 }
 
 // Time slots: 6:00 → 23:30 in 30-min increments
@@ -58,7 +60,7 @@ const CATEGORY_TEXT_COLORS: Record<string, string> = {
   blocked: 'text-red-900',
 }
 
-export function DayViewClient({ date, items, chefId }: Props) {
+export function DayViewClient({ date, items, chefId, weather }: Props) {
   const router = useRouter()
   const [showModal, setShowModal] = useState(false)
   const [modalStartTime, setModalStartTime] = useState<string | undefined>()
@@ -131,6 +133,25 @@ export function DayViewClient({ date, items, chefId }: Props) {
               Go to Today
             </Button>
           </Link>
+        </div>
+      )}
+
+      {/* Weather banner */}
+      {weather && (
+        <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-stone-800 border border-stone-700">
+          <span className="text-2xl" role="img" aria-label={weather.description}>
+            {weather.emoji}
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-stone-200">{weather.description}</p>
+            <p className="text-xs text-stone-400">
+              {weather.tempMinF}° – {weather.tempMaxF}°F
+              {weather.precipitationMm > 0 && (
+                <span className="ml-2">{weather.precipitationMm.toFixed(1)}mm precip</span>
+              )}
+              {weather.isHistorical && <span className="ml-2">(observed)</span>}
+            </p>
+          </div>
         </div>
       )}
 

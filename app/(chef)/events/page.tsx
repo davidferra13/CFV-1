@@ -26,6 +26,7 @@ import { NoEventsIllustration } from '@/components/ui/branded-illustrations'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import { EventsViewFilterBar } from '@/components/events/events-view-filter-bar'
+import { getWeatherForEvents } from '@/lib/weather/weather-actions'
 
 type EventStatus =
   | 'all'
@@ -50,6 +51,16 @@ async function EventsList({ status }: { status: EventStatus }) {
 
   events = events.sort(
     (a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
+  )
+
+  // Fetch weather for upcoming events that have coordinates (non-blocking)
+  const weatherById = await getWeatherForEvents(
+    events.map((e) => ({
+      id: e.id,
+      event_date: e.event_date,
+      location_lat: e.location_lat ?? null,
+      location_lng: e.location_lng ?? null,
+    }))
   )
 
   if (events.length === 0) {
@@ -97,7 +108,18 @@ async function EventsList({ status }: { status: EventStatus }) {
                   {event.occasion || 'Untitled Event'}
                 </Link>
               </TableCell>
-              <TableCell>{format(new Date(event.event_date), 'MMM d, yyyy')}</TableCell>
+              <TableCell>
+                <span>{format(new Date(event.event_date), 'MMM d, yyyy')}</span>
+                {weatherById[event.id] && (
+                  <span
+                    className="ml-1.5 text-xs text-stone-400"
+                    title={`${weatherById[event.id].description} — ${weatherById[event.id].tempMinF}°–${weatherById[event.id].tempMaxF}°F`}
+                  >
+                    {weatherById[event.id].emoji} {weatherById[event.id].tempMinF}°–
+                    {weatherById[event.id].tempMaxF}°
+                  </span>
+                )}
+              </TableCell>
               <TableCell>{event.client?.full_name || 'Unknown'}</TableCell>
               <TableCell>
                 <EventStatusBadge status={event.status} />

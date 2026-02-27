@@ -30,6 +30,7 @@ import type {
 import { PREP_BLOCK_TYPE_LABELS } from '@/lib/scheduling/types'
 import type { ChefCalendarEntry } from '@/lib/calendar/entry-actions'
 import { CALENDAR_COLORS } from '@/lib/calendar/colors'
+import type { EventWeather } from '@/lib/weather/open-meteo'
 
 const BLOCK_COLORS: Record<PrepBlockType, string> = {
   grocery_run: 'bg-green-900 text-green-800 border-green-200',
@@ -319,6 +320,7 @@ type Props = {
   weekGaps: SchedulingGap[]
   weekOffset: number
   calendarEntries?: ChefCalendarEntry[]
+  weatherByDate?: Record<string, EventWeather>
 }
 
 export function WeekPlannerClient({
@@ -327,6 +329,7 @@ export function WeekPlannerClient({
   weekGaps,
   weekOffset,
   calendarEntries = [],
+  weatherByDate = {},
 }: Props) {
   const router = useRouter()
   const [, startTransition] = useTransition()
@@ -543,6 +546,15 @@ export function WeekPlannerClient({
                 <div className={`text-xs ${isToday ? 'text-amber-100' : 'text-gray-400'}`}>
                   {format(parseISO(day.date), 'MMM d')}
                 </div>
+                {weatherByDate[day.date] && (
+                  <div
+                    className={`text-xs mt-0.5 ${isToday ? 'text-amber-200' : 'text-gray-500'}`}
+                    title={`${weatherByDate[day.date].description} — ${weatherByDate[day.date].tempMinF}°–${weatherByDate[day.date].tempMaxF}°F`}
+                  >
+                    {weatherByDate[day.date].emoji} {weatherByDate[day.date].tempMinF}°–
+                    {weatherByDate[day.date].tempMaxF}°
+                  </div>
+                )}
               </div>
 
               {/* Single-day calendar entries (personal, meeting, etc.) */}
