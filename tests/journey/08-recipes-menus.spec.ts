@@ -248,3 +248,88 @@ test.describe('Recipes — Bakery Costing (#128-130)', () => {
     await assertPageHasContent(page)
   })
 })
+
+// New culinary helper panels (Product Lookup + Cocktail Browser)
+
+test.describe('Recipes and Menus - New Assistant Panels (#547-551)', () => {
+  test('recipe edit shows Product Lookup toggle button (#547)', async ({ page, seedIds }) => {
+    await page.goto(`/recipes/${seedIds.recipeId}/edit`)
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    await expect(page.getByRole('button', { name: /search product/i }).first()).toBeVisible()
+  })
+
+  test('Product Lookup panel opens and supports barcode mode toggle (#548)', async ({
+    page,
+    seedIds,
+  }) => {
+    await page.goto(`/recipes/${seedIds.recipeId}/edit`)
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    await page
+      .getByRole('button', { name: /search product/i })
+      .first()
+      .click()
+
+    await expect(page.getByText(/product lookup/i).first()).toBeVisible()
+    await expect(page.getByRole('button', { name: /by name/i }).first()).toBeVisible()
+    await expect(page.getByRole('button', { name: /by barcode/i }).first()).toBeVisible()
+
+    await page
+      .getByRole('button', { name: /by barcode/i })
+      .first()
+      .click()
+    await expect(page.getByPlaceholder(/enter barcode/i).first()).toBeVisible()
+  })
+
+  test('Product Lookup panel can be hidden after opening (#549)', async ({ page, seedIds }) => {
+    await page.goto(`/recipes/${seedIds.recipeId}/edit`)
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    await page
+      .getByRole('button', { name: /search product/i })
+      .first()
+      .click()
+    await expect(page.getByText(/product lookup/i).first()).toBeVisible()
+
+    await page
+      .getByRole('button', { name: /hide product lookup/i })
+      .first()
+      .click()
+    await expect(page.getByText(/product lookup/i).first()).toBeHidden()
+  })
+
+  test('menu editor shows Cocktail Browser panel (#550)', async ({ page, seedIds }) => {
+    await page.goto(`/menus/${seedIds.menuId}/editor`)
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    await expect(page.getByText(/cocktail browser/i).first()).toBeVisible()
+    await expect(page.getByRole('button', { name: /by name/i }).first()).toBeVisible()
+    await expect(page.getByRole('button', { name: /by spirit/i }).first()).toBeVisible()
+  })
+
+  test('Cocktail Browser mode toggle updates search placeholder (#551)', async ({
+    page,
+    seedIds,
+  }) => {
+    await page.goto(`/menus/${seedIds.menuId}/editor`)
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    await expect(page.getByPlaceholder(/cocktail name/i).first()).toBeVisible()
+    await page
+      .getByRole('button', { name: /by spirit/i })
+      .first()
+      .click()
+    await expect(page.getByPlaceholder(/spirit or ingredient/i).first()).toBeVisible()
+  })
+})

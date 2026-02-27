@@ -31,6 +31,7 @@ import Link from 'next/link'
 import { PrepTimelineView } from '@/components/menus/prep-timeline-view'
 import { MenuGeneratorUI } from '@/components/menus/menuGeneratorUI'
 import { CocktailBrowserPanel } from '@/components/menus/cocktail-browser-panel'
+import { MenuTranslateButton } from '@/components/menus/menu-translate-button'
 
 type RecipeInfo = {
   id: string
