@@ -319,3 +319,45 @@ test.describe('Additional Dynamic Coverage (#513-515)', () => {
     await assertPageHasContent(page)
   })
 })
+
+test.describe('Remaining Chef Route Literals (#516-519)', () => {
+  test('dev simulate route loads (#516)', async ({ page }) => {
+    await assertPageLoads(page, '/dev/simulate')
+  })
+
+  test('help article slug route loads (#517)', async ({ page }) => {
+    await assertPageLoads(page, '/help/events')
+  })
+
+  test('settings journey detail redirect route loads with seeded id (#518)', async ({
+    page,
+    seedIds,
+  }) => {
+    await page.goto(`/settings/journey/${seedIds.eventIds.draft}`)
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    await assertPageHasContent(page)
+  })
+
+  test('station clipboard route is reachable from stations list (#519)', async ({ page }) => {
+    await page.goto('/stations')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const stationLink = page.locator('a[href^="/stations/"]').first()
+    if ((await stationLink.count()) === 0) return
+
+    const href = await stationLink.getAttribute('href')
+    if (!href) return
+
+    const stationId = href.split('/')[2]
+    if (!stationId) return
+
+    await page.goto(`/stations/${stationId}/clipboard`)
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+})
