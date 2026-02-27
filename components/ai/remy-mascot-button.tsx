@@ -119,10 +119,10 @@ export function RemyMascotButton({
   // horizontally to sit flush with the browser edge. No vertical movement allowed
   // except minimize (translate down to hide body, chef hat peeks out).
   const animationClass = (() => {
-    if (minimized) return 'translate-y-[80%] transition-transform duration-500 ease-in-out'
+    if (minimized) return 'translate-y-[70%] transition-transform duration-500 ease-in-out'
     switch (effectiveState) {
       case 'sleeping':
-        return 'translate-y-[70%] transition-transform duration-1000 ease-in'
+        return 'translate-y-[60%] transition-transform duration-1000 ease-in'
       case 'nudge':
         return 'animate-mascot-wiggle' // horizontal wiggle only, no vertical
       case 'success':
