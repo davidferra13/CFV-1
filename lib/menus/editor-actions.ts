@@ -94,7 +94,7 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
   const { data: dishes } = await supabase
     .from('dishes')
     .select(
-      'id, course_number, course_name, description, dietary_tags, allergen_flags, chef_notes, sort_order, photo_url, plating_instructions, beverage_pairing, beverage_pairing_notes'
+      'id, course_number, course_name, name, description, dietary_tags, allergen_flags, chef_notes, sort_order, photo_url, plating_instructions, beverage_pairing, beverage_pairing_notes'
     )
     .eq('menu_id', menuId)
     .eq('tenant_id', user.tenantId!)
@@ -309,6 +309,7 @@ export async function addEditorCourse(
       tenant_id: user.tenantId!,
       course_name: data.course_name,
       course_number: data.course_number,
+      name: data.name || null,
       sort_order: data.course_number,
       dietary_tags: [],
       allergen_flags: [],
@@ -316,7 +317,7 @@ export async function addEditorCourse(
       updated_by: user.id,
     })
     .select(
-      'id, course_number, course_name, description, dietary_tags, allergen_flags, chef_notes, sort_order'
+      'id, course_number, course_name, name, description, dietary_tags, allergen_flags, chef_notes, sort_order'
     )
     .single()) as { data: any; error: any }
 

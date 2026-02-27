@@ -1004,7 +1004,7 @@ export async function getAllDishes(): Promise<{ id: string; name: string; menuNa
 
   const { data, error } = await supabase
     .from('dishes')
-    .select('id, course_name, menu:menus(name)')
+    .select('id, name, course_name, menu:menus(name)')
     .eq('tenant_id', user.tenantId!)
     .order('created_at', { ascending: false })
 
@@ -1015,7 +1015,7 @@ export async function getAllDishes(): Promise<{ id: string; name: string; menuNa
 
   return (data || []).map((d: any) => ({
     id: d.id,
-    name: d.course_name || 'Untitled Dish',
+    name: d.name || d.course_name || 'Untitled Dish',
     menuName: d.menu?.name || '',
   }))
 }
