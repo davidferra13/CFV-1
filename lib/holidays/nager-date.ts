@@ -2,6 +2,10 @@
 // https://date.nager.at/API
 // Unlimited requests, 100+ countries
 
+import { cacheGet, cacheSet } from '@/lib/cache/upstash'
+
+const CACHE_TTL = 90 * 24 * 60 * 60 // 90 days — holidays for a year never change once published
+
 export interface PublicHoliday {
   date: string // YYYY-MM-DD
   localName: string // e.g. "Thanksgiving Day"
@@ -23,18 +27,35 @@ export interface HolidayCheck {
 /**
  * Get all public holidays for a country + year.
  * Default: US holidays.
+ * Cached in Upstash Redis for 90 days — holidays for a year never change once published.
  */
 export async function getPublicHolidays(
   year: number,
   countryCode = 'US'
 ): Promise<PublicHoliday[]> {
+  const cacheKey = `holidays:${countryCode}:${year}`
+
+  // Check Upstash cache first
   try {
-    const res = await fetch(
-      `https://date.nager.at/api/v3/PublicHolidays/${year}/${countryCode}`,
-      { next: { revalidate: 86400 } } // cache 24h — holidays don't change
-    )
+    const cached = await cacheGet<PublicHoliday[]>(cacheKey)
+    if (cached !== null) return cached
+  } catch {
+    // Redis down — fall through to API
+  }
+
+  try {
+    const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${countryCode}`, {
+      next: { revalidate: 86400 },
+    })
     if (!res.ok) return []
-    return await res.json()
+    const holidays: PublicHoliday[] = await res.json()
+
+    // Store in Upstash (non-blocking)
+    if (holidays.length > 0) {
+      cacheSet(cacheKey, holidays, CACHE_TTL).catch(() => {})
+    }
+
+    return holidays
   } catch {
     return []
   }

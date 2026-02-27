@@ -3,7 +3,10 @@
 // 1,000 requests/hour, 380K+ foods, no credit card
 // Complements Spoonacular with authoritative US government nutrient data
 
+import { cacheGet, cacheSet } from '@/lib/cache/upstash'
+
 const USDA_BASE = 'https://api.nal.usda.gov/fdc/v1'
+const CACHE_TTL = 30 * 24 * 60 * 60 // 30 days — nutrition data is stable
 
 export interface UsdaFood {
   fdcId: number
@@ -43,8 +46,19 @@ function getApiKey(): string {
 /**
  * Search for foods by name.
  * Returns up to 10 results from the USDA database.
+ * Cached in Upstash Redis for 30 days.
  */
 export async function searchFoods(query: string, pageSize = 10): Promise<UsdaFood[]> {
+  const cacheKey = `usda:search:${query.toLowerCase().trim()}:${pageSize}`
+
+  // Check Upstash cache first
+  try {
+    const cached = await cacheGet<UsdaFood[]>(cacheKey)
+    if (cached !== null) return cached
+  } catch {
+    // Redis down — fall through to API
+  }
+
   try {
     const res = await fetch(`${USDA_BASE}/foods/search?api_key=${getApiKey()}`, {
       method: 'POST',
@@ -54,11 +68,18 @@ export async function searchFoods(query: string, pageSize = 10): Promise<UsdaFoo
         pageSize,
         dataType: ['Foundation', 'SR Legacy', 'Branded'],
       }),
-      next: { revalidate: 86400 }, // cache 24h — USDA data is stable
+      next: { revalidate: 86400 },
     })
     if (!res.ok) return []
     const data = await res.json()
-    return (data.foods ?? []).map(mapFood)
+    const foods: UsdaFood[] = (data.foods ?? []).map(mapFood)
+
+    // Store in Upstash (non-blocking)
+    if (foods.length > 0) {
+      cacheSet(cacheKey, foods, CACHE_TTL).catch(() => {})
+    }
+
+    return foods
   } catch {
     return []
   }
@@ -66,15 +87,31 @@ export async function searchFoods(query: string, pageSize = 10): Promise<UsdaFoo
 
 /**
  * Get detailed nutrition for a specific food by FDC ID.
+ * Cached in Upstash Redis for 30 days.
  */
 export async function getFoodDetails(fdcId: number): Promise<UsdaFood | null> {
+  const cacheKey = `usda:food:${fdcId}`
+
+  // Check Upstash cache first
+  try {
+    const cached = await cacheGet<UsdaFood>(cacheKey)
+    if (cached !== null) return cached
+  } catch {
+    // Redis down — fall through to API
+  }
+
   try {
     const res = await fetch(`${USDA_BASE}/food/${fdcId}?api_key=${getApiKey()}`, {
       next: { revalidate: 86400 },
     })
     if (!res.ok) return null
     const data = await res.json()
-    return mapFood(data)
+    const food = mapFood(data)
+
+    // Store in Upstash (non-blocking)
+    cacheSet(cacheKey, food, CACHE_TTL).catch(() => {})
+
+    return food
   } catch {
     return null
   }

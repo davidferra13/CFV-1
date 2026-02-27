@@ -2,7 +2,19 @@
 // https://api-ninjas.com/api/salestax
 // 100,000 requests/month free, no credit card
 
+import { cacheGet, cacheSet } from '@/lib/cache/upstash'
+
 const API_NINJAS_BASE = 'https://api.api-ninjas.com/v1'
+const UPSTASH_TTL = 30 * 24 * 60 * 60 // 30 days — tax rates change rarely
+
+// ─── In-Memory Cache ─────────────────────────────────────────────────────────
+// Same zip = same rate. Tax rates change very rarely.
+// Next.js fetch cache (7 days) handles cross-request caching.
+// This Map handles within-process deduplication (multiple invoices, same zip, same request batch).
+
+type CachedRate = { result: SalesTaxResult; expiresAt: number }
+const rateCache = new Map<string, CachedRate>()
+const CACHE_TTL_MS = 1000 * 60 * 60 * 24 // 24 hours in-memory
 
 export interface SalesTaxResult {
   zip_code: string
@@ -34,20 +46,40 @@ function getApiKey(): string {
 
 /**
  * Get sales tax rate for a US ZIP code.
+ * Uses a three-layer cache: in-memory Map (24h) + Upstash Redis (30 days) + Next.js fetch cache (7 days).
  */
 export async function getSalesTaxRate(zipCode: string): Promise<SalesTaxResult | null> {
+  // Layer 1: in-memory cache
+  const memCached = rateCache.get(zipCode)
+  if (memCached && memCached.expiresAt > Date.now()) {
+    return memCached.result
+  }
+
+  // Layer 2: Upstash Redis cache (30 days)
+  const upstashKey = `tax:${zipCode}`
   try {
+    const redisCached = await cacheGet<SalesTaxResult>(upstashKey)
+    if (redisCached !== null) {
+      // Backfill in-memory cache
+      rateCache.set(zipCode, { result: redisCached, expiresAt: Date.now() + CACHE_TTL_MS })
+      return redisCached
+    }
+  } catch {
+    // Redis down — fall through to API
+  }
+
+  try {
+    // Layer 3: Next.js fetch cache (7 days) + external API
     const res = await fetch(`${API_NINJAS_BASE}/salestax?zip_code=${zipCode}`, {
       headers: { 'X-Api-Key': getApiKey() },
-      next: { revalidate: 86400 * 7 }, // cache 7 days — tax rates change slowly
+      next: { revalidate: 86400 * 7 },
     })
     if (!res.ok) return null
     const data = await res.json()
-    // API returns an array, take the first result
     const result = Array.isArray(data) ? data[0] : data
     if (!result) return null
 
-    return {
+    const parsed: SalesTaxResult = {
       zip_code: result.zip_code ?? zipCode,
       federal_rate: parseFloat(result.federal_rate) || 0,
       state_rate: parseFloat(result.state_rate) || 0,
@@ -56,6 +88,12 @@ export async function getSalesTaxRate(zipCode: string): Promise<SalesTaxResult |
       combined_rate: parseFloat(result.combined_rate) || 0,
       state: result.state ?? '',
     }
+
+    // Store in both caches
+    rateCache.set(zipCode, { result: parsed, expiresAt: Date.now() + CACHE_TTL_MS })
+    cacheSet(upstashKey, parsed, UPSTASH_TTL).catch(() => {})
+
+    return parsed
   } catch {
     return null
   }

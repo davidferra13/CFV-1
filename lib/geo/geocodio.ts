@@ -2,7 +2,10 @@
 // https://www.geocod.io/
 // 2,500 requests/day free, no credit card
 
+import { cacheGet, cacheSet } from '@/lib/cache/upstash'
+
 const GEOCODIO_BASE = 'https://api.geocod.io/v1.7'
+const CACHE_TTL = 7 * 24 * 60 * 60 // 7 days — addresses don't move
 
 export interface GeocodioResult {
   formatted_address: string
@@ -37,19 +40,37 @@ function getApiKey(): string {
 /**
  * Forward geocode — address string to lat/lng.
  * Great for converting event addresses to coordinates.
+ * Cached in Upstash Redis for 7 days.
  */
 export async function geocodeAddress(address: string): Promise<GeocodioResult | null> {
+  const cacheKey = `geocodio:fwd:${address.toLowerCase().trim()}`
+
+  // Check Upstash cache first
+  try {
+    const cached = await cacheGet<GeocodioResult>(cacheKey)
+    if (cached !== null) return cached
+  } catch {
+    // Redis down — fall through to API
+  }
+
   try {
     const params = new URLSearchParams({
       q: address,
       api_key: getApiKey(),
     })
     const res = await fetch(`${GEOCODIO_BASE}/geocode?${params}`, {
-      next: { revalidate: 86400 }, // cache 24h — addresses don't move
+      next: { revalidate: 86400 },
     })
     if (!res.ok) return null
     const data: GeocodeResponse = await res.json()
-    return data.results?.[0] ?? null
+    const result = data.results?.[0] ?? null
+
+    // Store in Upstash (non-blocking — don't await in critical path)
+    if (result) {
+      cacheSet(cacheKey, result, CACHE_TTL).catch(() => {})
+    }
+
+    return result
   } catch {
     return null
   }
@@ -57,8 +78,18 @@ export async function geocodeAddress(address: string): Promise<GeocodioResult | 
 
 /**
  * Reverse geocode — lat/lng to address.
+ * Cached in Upstash Redis for 7 days.
  */
 export async function reverseGeocode(lat: number, lng: number): Promise<GeocodioResult | null> {
+  const cacheKey = `geocodio:rev:${lat.toFixed(6)},${lng.toFixed(6)}`
+
+  try {
+    const cached = await cacheGet<GeocodioResult>(cacheKey)
+    if (cached !== null) return cached
+  } catch {
+    // Redis down — fall through to API
+  }
+
   try {
     const params = new URLSearchParams({
       q: `${lat},${lng}`,
@@ -69,7 +100,13 @@ export async function reverseGeocode(lat: number, lng: number): Promise<Geocodio
     })
     if (!res.ok) return null
     const data: GeocodeResponse = await res.json()
-    return data.results?.[0] ?? null
+    const result = data.results?.[0] ?? null
+
+    if (result) {
+      cacheSet(cacheKey, result, CACHE_TTL).catch(() => {})
+    }
+
+    return result
   } catch {
     return null
   }

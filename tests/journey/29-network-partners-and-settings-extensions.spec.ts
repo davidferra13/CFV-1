@@ -341,7 +341,9 @@ test.describe('Remaining Chef Route Literals (#516-519)', () => {
     await assertPageHasContent(page)
   })
 
-  test('station clipboard route is reachable from stations list (#519)', async ({ page }) => {
+  test('/stations/[id]/clipboard route is reachable from stations list (#519)', async ({
+    page,
+  }) => {
     await page.goto('/stations')
     await page.waitForLoadState('networkidle')
 
@@ -357,6 +359,58 @@ test.describe('Remaining Chef Route Literals (#516-519)', () => {
     if (!stationId) return
 
     await page.goto(`/stations/${stationId}/clipboard`)
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+})
+
+test.describe('Remaining Dynamic Chef Route Literals (#520-522)', () => {
+  test('/stations/[id]/clipboard/print route is reachable from stations list (#520)', async ({
+    page,
+  }) => {
+    await page.goto('/stations')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const stationLink = page.locator('a[href^="/stations/"]').first()
+    if ((await stationLink.count()) === 0) return
+
+    const href = await stationLink.getAttribute('href')
+    if (!href) return
+
+    const stationId = href.split('/')[2]
+    if (!stationId) return
+
+    await page.goto(`/stations/${stationId}/clipboard/print`)
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+
+  test('/inbox/triage/[threadId] route is reachable from inbox triage (#521)', async ({ page }) => {
+    await page.goto('/inbox/triage')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const triageLink = page.locator('a[href^="/inbox/triage/"]').first()
+    if ((await triageLink.count()) === 0) return
+
+    await triageLink.click()
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+
+  test('/wix-submissions/[id] route is reachable from inbox links (#522)', async ({ page }) => {
+    await page.goto('/inbox')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const wixLink = page.locator('a[href^="/wix-submissions/"]').first()
+    if ((await wixLink.count()) === 0) return
+
+    await wixLink.click()
     await page.waitForLoadState('networkidle')
     await assertPageHasContent(page)
   })
