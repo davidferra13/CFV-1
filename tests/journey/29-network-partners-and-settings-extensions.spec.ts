@@ -577,3 +577,85 @@ test.describe('Remaining Dynamic Detail Routes (#533-537)', () => {
     await assertPageHasContent(page)
   })
 })
+
+test.describe('Final Dynamic Route Closure (#538-541)', () => {
+  test('inbox triage thread detail route is reachable via direct path (#538)', async ({ page }) => {
+    await page.goto('/inbox/triage')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const triageLink = page.locator('a[href^="/inbox/triage/"]').first()
+    if ((await triageLink.count()) === 0) return
+
+    const href = await triageLink.getAttribute('href')
+    if (!href) return
+
+    const threadId = href.split('/')[3]
+    if (!threadId) return
+
+    await page.goto(`/inbox/triage/${threadId}`)
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+
+  test('settings journal detail route is reachable via direct path (#539)', async ({ page }) => {
+    await page.goto('/settings/journal')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const journalLink = page.locator('a[href^="/settings/journal/"]').first()
+    if ((await journalLink.count()) === 0) return
+
+    const href = await journalLink.getAttribute('href')
+    if (!href) return
+
+    const journalId = href.split('/')[3]
+    if (!journalId) return
+
+    await page.goto(`/settings/journal/${journalId}`)
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+
+  test('settings repertoire detail route is reachable via direct path (#540)', async ({ page }) => {
+    await page.goto('/settings/repertoire')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const repertoireLink = page.locator('a[href^="/settings/repertoire/"]').first()
+    if ((await repertoireLink.count()) === 0) return
+
+    const href = await repertoireLink.getAttribute('href')
+    if (!href) return
+
+    const repertoireId = href.split('/')[3]
+    if (!repertoireId) return
+
+    await page.goto(`/settings/repertoire/${repertoireId}`)
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+
+  test('wix submission detail route is reachable via direct path (#541)', async ({ page }) => {
+    await page.goto('/inbox')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const wixLink = page.locator('a[href^="/wix-submissions/"]').first()
+    if ((await wixLink.count()) === 0) return
+
+    const href = await wixLink.getAttribute('href')
+    if (!href) return
+
+    const submissionId = href.split('/')[2]
+    if (!submissionId) return
+
+    await page.goto(`/wix-submissions/${submissionId}`)
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+})
