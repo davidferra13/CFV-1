@@ -475,3 +475,105 @@ test.describe('Additional Static and Calls Coverage (#528-532)', () => {
     await assertPageHasContent(page)
   })
 })
+
+test.describe('Remaining Dynamic Detail Routes (#533-537)', () => {
+  test('goal history route is reachable via direct detail path (#533)', async ({ page }) => {
+    await page.goto('/goals')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const goalLink = page.locator('a[href^="/goals/"]').first()
+    if ((await goalLink.count()) === 0) return
+
+    const href = await goalLink.getAttribute('href')
+    if (!href) return
+
+    const goalId = href.split('/')[2]
+    if (!goalId) return
+
+    await page.goto(`/goals/${goalId}/history`)
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+
+  test('network channel detail route is reachable via direct path (#534)', async ({ page }) => {
+    await page.goto('/network')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const channelLink = page.locator('a[href^="/network/channels/"]').first()
+    if ((await channelLink.count()) === 0) return
+
+    const href = await channelLink.getAttribute('href')
+    if (!href) return
+
+    const slug = href.split('/')[3]
+    if (!slug) return
+
+    await page.goto(`/network/channels/${slug}`)
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+
+  test('partner edit route is reachable via direct path (#535)', async ({ page }) => {
+    await page.goto('/partners')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const partnerLink = page.locator('a[href^="/partners/"]').first()
+    if ((await partnerLink.count()) === 0) return
+
+    const href = await partnerLink.getAttribute('href')
+    if (!href) return
+
+    const partnerId = href.split('/')[2]
+    if (!partnerId) return
+
+    await page.goto(`/partners/${partnerId}/edit`)
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+
+  test('partner report route is reachable via direct path (#536)', async ({ page }) => {
+    await page.goto('/partners')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const partnerLink = page.locator('a[href^="/partners/"]').first()
+    if ((await partnerLink.count()) === 0) return
+
+    const href = await partnerLink.getAttribute('href')
+    if (!href) return
+
+    const partnerId = href.split('/')[2]
+    if (!partnerId) return
+
+    await page.goto(`/partners/${partnerId}/report`)
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+
+  test('social post detail route is reachable via direct path (#537)', async ({ page }) => {
+    await page.goto('/social/planner')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const postLink = page.locator('a[href^="/social/posts/"]').first()
+    if ((await postLink.count()) === 0) return
+
+    const href = await postLink.getAttribute('href')
+    if (!href) return
+
+    const postId = href.split('/')[3]
+    if (!postId) return
+
+    await page.goto(`/social/posts/${postId}`)
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+})
