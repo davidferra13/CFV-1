@@ -23,6 +23,9 @@ function SignUpForm() {
   const router = useRouter()
   const searchParams = useSearchParams() ?? new URLSearchParams()
   const token = searchParams.get('token')
+  const referralParam = searchParams.get('ref')?.trim().toLowerCase() || ''
+  const isBetaReferral = referralParam === 'beta'
+  const prefillEmail = searchParams.get('email')?.trim().toLowerCase() || ''
 
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
@@ -33,7 +36,7 @@ function SignUpForm() {
   const [invitationName, setInvitationName] = useState<string | null>(null)
 
   const [chefFormData, setChefFormData] = useState<ChefSignupInput>({
-    email: '',
+    email: prefillEmail,
     password: '',
     business_name: '',
     phone: '',
@@ -74,13 +77,26 @@ function SignUpForm() {
     }
   }, [token])
 
+  // Preserve beta invite context by pre-filling email when provided via query params.
+  useEffect(() => {
+    if (!token && prefillEmail) {
+      setChefFormData((prev) => ({
+        ...prev,
+        email: prev.email || prefillEmail,
+      }))
+    }
+  }, [token, prefillEmail])
+
   const handleChefSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setLoading(true)
 
     try {
-      await signUpChef(chefFormData)
+      await signUpChef({
+        ...chefFormData,
+        signup_ref: isBetaReferral ? 'beta' : undefined,
+      })
       router.push('/auth/signin?redirect=/onboarding')
     } catch (err) {
       const error = err as Error
@@ -110,7 +126,9 @@ function SignUpForm() {
     setError(null)
     setGoogleLoading(true)
     try {
-      await signInWithGoogle()
+      await signInWithGoogle(
+        isBetaReferral ? '/auth/role-selection?ref=beta' : '/auth/role-selection'
+      )
     } catch (err) {
       const error = err as Error
       setError(error.message)
@@ -219,6 +237,11 @@ function SignUpForm() {
 
             <CardContent className="space-y-4">
               {error && <Alert variant="error">{error}</Alert>}
+              {isBetaReferral && (
+                <Alert variant="info">
+                  This signup is linked to your beta invitation and will be tracked automatically.
+                </Alert>
+              )}
 
               <Input
                 type="email"
@@ -228,6 +251,7 @@ function SignUpForm() {
                 required
                 autoComplete="email"
                 autoFocus
+                helperText={prefillEmail ? 'Pre-filled from your beta invite link' : undefined}
               />
 
               <Input

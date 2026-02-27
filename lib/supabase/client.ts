@@ -15,12 +15,16 @@ export function createClient() {
  * Sign in with Google OAuth via Supabase.
  * Must be called from a client component — triggers a full-page redirect.
  */
-export async function signInWithGoogle() {
+export async function signInWithGoogle(nextPath?: string) {
   const supabase = createClient()
+  const callbackUrl = new URL('/auth/callback', window.location.origin)
+  if (nextPath) {
+    callbackUrl.searchParams.set('next', nextPath)
+  }
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/auth/callback`,
+      redirectTo: callbackUrl.toString(),
     },
   })
   if (error) {

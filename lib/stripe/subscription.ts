@@ -70,12 +70,13 @@ export async function createStripeCustomer(
 }
 
 /**
- * Start a 14-day trial for a newly signed-up chef.
+ * Start a trial for a newly signed-up chef.
  * Called non-blocking from signUpChef().
  */
-export async function startTrial(chefId: string): Promise<void> {
+export async function startTrial(chefId: string, days = 14): Promise<void> {
+  const trialDays = Number.isFinite(days) ? Math.max(1, Math.floor(days)) : 14
   const trialEndsAt = new Date()
-  trialEndsAt.setDate(trialEndsAt.getDate() + 14)
+  trialEndsAt.setDate(trialEndsAt.getDate() + trialDays)
 
   const supabase = createServerClient({ admin: true })
   const { error } = await supabase

@@ -2,7 +2,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { isRedirectError } from 'next/dist/client/components/redirect'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,8 @@ import { assignRole } from '@/lib/auth/actions'
 
 export default function RoleSelectionPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const signupRef = searchParams?.get('ref')?.trim().toLowerCase() || undefined
   const [loading, setLoading] = useState<'chef' | 'client' | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -18,7 +20,7 @@ export default function RoleSelectionPage() {
     setLoading(role)
     setError(null)
     try {
-      await assignRole(role)
+      await assignRole(role, { signup_ref: signupRef })
       // On success, the server action will redirect, but we'll refresh the client-side state
       // and push to a default dashboard in case the redirect doesn't fire for any reason.
       const destination = role === 'chef' ? '/dashboard' : '/my-events'

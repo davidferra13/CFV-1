@@ -12,12 +12,16 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { getInvitationByToken, markInvitationUsed } from '@/lib/auth/invitations'
 import { checkRateLimit } from '@/lib/rateLimit'
+import { markBetaSignupOnboardedByEmail } from '@/lib/beta/actions'
+import { sendEmail } from '@/lib/email/send'
+import { BetaAccountReadyEmail } from '@/lib/email/templates/beta-account-ready'
 
 const ChefSignupSchema = z.object({
   email: z.string().email('Valid email required'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   business_name: z.string().optional(),
   phone: z.string().optional(),
+  signup_ref: z.string().optional(),
 })
 
 const ClientSignupSchema = z.object({
@@ -46,19 +50,73 @@ export type ChefSignupInput = z.infer<typeof ChefSignupSchema>
 export type ClientSignupInput = z.infer<typeof ClientSignupSchema>
 export type SignInInput = z.infer<typeof SignInSchema>
 
+const DEFAULT_TRIAL_DAYS = 14
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+const parsedBetaTrialDays = Number.parseInt(process.env.BETA_TRIAL_DAYS || '', 10)
+const BETA_TRIAL_DAYS =
+  Number.isFinite(parsedBetaTrialDays) && parsedBetaTrialDays > 0
+    ? parsedBetaTrialDays
+    : DEFAULT_TRIAL_DAYS
+
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase()
+}
+
+function isBetaRef(signupRef?: string): boolean {
+  return signupRef?.trim().toLowerCase() === 'beta'
+}
+
+function resolveTrialDays(isBetaSignup: boolean): number {
+  return isBetaSignup ? BETA_TRIAL_DAYS : DEFAULT_TRIAL_DAYS
+}
+
+async function syncBetaOnboarding(
+  email: string,
+  name: string,
+  signupRef?: string
+): Promise<boolean> {
+  try {
+    return await markBetaSignupOnboardedByEmail({
+      email,
+      name,
+      source: isBetaRef(signupRef) ? 'beta_invite_link' : undefined,
+    })
+  } catch (error) {
+    log.auth.warn('Beta signup sync failed (non-blocking)', { error, context: { email } })
+    return false
+  }
+}
+
+async function sendBetaActivationEmail(email: string, name: string): Promise<void> {
+  try {
+    await sendEmail({
+      to: email,
+      subject: 'Your ChefFlow beta account is ready',
+      react: BetaAccountReadyEmail({
+        name,
+        signInUrl: `${SITE_URL}/auth/signin?redirect=/onboarding`,
+      }),
+    })
+  } catch (error) {
+    log.auth.warn('Beta activation email failed (non-blocking)', { error, context: { email } })
+  }
+}
+
 /**
  * Chef signup - Creates chef account with tenant
  */
 export async function signUpChef(input: ChefSignupInput) {
   const validated = ChefSignupSchema.parse(input)
-  await checkRateLimit(validated.email)
+  const email = normalizeEmail(validated.email)
+  await checkRateLimit(email)
 
   // Use service role for creating user and tenant atomically
   const supabase = createServerClient({ admin: true })
 
   // Create auth user
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-    email: validated.email,
+    email,
     password: validated.password,
     email_confirm: true,
   })
@@ -70,13 +128,13 @@ export async function signUpChef(input: ChefSignupInput) {
 
   try {
     // Create chef record (default business name to email prefix if not provided)
-    const businessName = validated.business_name?.trim() || validated.email.split('@')[0]
+    const businessName = validated.business_name?.trim() || email.split('@')[0]
     const { data: chef, error: chefError } = await supabase
       .from('chefs')
       .insert({
         auth_user_id: authData.user.id,
         business_name: businessName,
-        email: validated.email,
+        email,
         phone: validated.phone,
       })
       .select()
@@ -118,13 +176,20 @@ export async function signUpChef(input: ChefSignupInput) {
       throw new Error('Failed to initialize chef preferences')
     }
 
+    const isBetaSignup = await syncBetaOnboarding(email, businessName, validated.signup_ref)
+    const trialDays = resolveTrialDays(isBetaSignup)
+
     // Start 14-day trial and create Stripe customer — non-blocking
     try {
       const { createStripeCustomer, startTrial } = await import('@/lib/stripe/subscription')
-      await createStripeCustomer(chef.id, validated.email, businessName)
-      await startTrial(chef.id)
+      await createStripeCustomer(chef.id, email, businessName)
+      await startTrial(chef.id, trialDays)
     } catch (err) {
       log.auth.warn('Stripe customer/trial init failed (non-blocking)', { error: err })
+    }
+
+    if (isBetaSignup) {
+      await sendBetaActivationEmail(email, businessName)
     }
 
     return { success: true, userId: authData.user.id }
@@ -457,7 +522,7 @@ export async function deleteAccount(password: string, reason?: string) {
  * Assigns a role to a newly authenticated user (e.g., after OAuth signup).
  * Creates the corresponding chef or client profile.
  */
-export async function assignRole(role: 'chef' | 'client') {
+export async function assignRole(role: 'chef' | 'client', context?: { signup_ref?: string }) {
   const supabase = createServerClient()
   const {
     data: { user },
@@ -492,13 +557,14 @@ export async function assignRole(role: 'chef' | 'client') {
   // 2. Create profile and assign role
   try {
     if (role === 'chef') {
-      const businessName = user.user_metadata?.full_name || user.email!.split('@')[0]
+      const email = normalizeEmail(user.email!)
+      const businessName = user.user_metadata?.full_name || email.split('@')[0]
       const { data: chef, error: chefError } = await adminSupabase
         .from('chefs')
         .insert({
           auth_user_id: user.id,
           business_name: businessName,
-          email: user.email!,
+          email,
         })
         .select('id')
         .single()
@@ -516,6 +582,23 @@ export async function assignRole(role: 'chef' | 'client') {
         tenant_id: chef.id,
       })
       if (prefError) throw prefError
+
+      const isBetaSignup = await syncBetaOnboarding(email, businessName, context?.signup_ref)
+      const trialDays = resolveTrialDays(isBetaSignup)
+
+      try {
+        const { createStripeCustomer, startTrial } = await import('@/lib/stripe/subscription')
+        await createStripeCustomer(chef.id, email, businessName)
+        await startTrial(chef.id, trialDays)
+      } catch (err) {
+        log.auth.warn('Stripe customer/trial init failed after role assignment (non-blocking)', {
+          error: err,
+        })
+      }
+
+      if (isBetaSignup) {
+        await sendBetaActivationEmail(email, businessName)
+      }
     } else if (role === 'client') {
       const fullName = user.user_metadata?.full_name || 'New Client'
       const { data: client, error: clientError } = await adminSupabase

@@ -17,6 +17,12 @@ export interface BetaSignupInput {
   website?: string // honeypot
 }
 
+type BetaOnboardingLinkInput = {
+  email: string
+  name?: string
+  source?: string
+}
+
 /** Maximum beta capacity. Change this to increase the cap. */
 export const BETA_CAPACITY = 25
 
@@ -144,6 +150,88 @@ export async function submitBetaSignup(
   } catch (err) {
     console.error('[beta-signup] Unexpected error:', err)
     return { success: false, error: 'Something went wrong. Please try again.' }
+  }
+}
+
+/**
+ * Mark a beta signup as onboarded when the person actually creates an account.
+ * Returns true when the email is tied to beta (existing row or source-tagged ref).
+ */
+export async function markBetaSignupOnboardedByEmail(
+  input: BetaOnboardingLinkInput
+): Promise<boolean> {
+  const email = input.email?.trim().toLowerCase()
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return false
+  }
+
+  const source = input.source?.trim() || null
+  const nowIso = new Date().toISOString()
+  const supabase = createAdminClient()
+
+  try {
+    const { data: existing, error: existingError } = await supabase
+      .from('beta_signups')
+      .select('id, referral_source, onboarded_at')
+      .eq('email', email)
+      .maybeSingle()
+
+    if (existingError) {
+      console.error('[beta-signup] Onboarded lookup failed:', existingError)
+      return false
+    }
+
+    if (existing) {
+      const updates: {
+        status: 'onboarded'
+        onboarded_at?: string
+        referral_source?: string
+      } = {
+        status: 'onboarded',
+      }
+
+      if (!existing.onboarded_at) {
+        updates.onboarded_at = nowIso
+      }
+      if (!existing.referral_source && source) {
+        updates.referral_source = source
+      }
+
+      const { error: updateError } = await supabase
+        .from('beta_signups')
+        .update(updates)
+        .eq('id', existing.id)
+
+      if (updateError) {
+        console.error('[beta-signup] Onboarded update failed:', updateError)
+        return false
+      }
+
+      return true
+    }
+
+    // If no prior beta record exists, only create one when explicit beta ref is present.
+    if (!source) return false
+
+    const inferredName = input.name?.trim() || email.split('@')[0] || 'Beta Chef'
+    const { error: insertError } = await supabase.from('beta_signups').insert({
+      name: inferredName,
+      email,
+      referral_source: source,
+      status: 'onboarded',
+      created_at: nowIso,
+      onboarded_at: nowIso,
+    })
+
+    if (insertError) {
+      console.error('[beta-signup] Onboarded insert failed:', insertError)
+      return false
+    }
+
+    return true
+  } catch (err) {
+    console.error('[beta-signup] Onboarded sync failed:', err)
+    return false
   }
 }
 
