@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { EventPhoto } from '@/lib/events/photo-actions'
+import { getOptimizedGalleryImage } from '@/lib/images/cloudinary'
 
 type Props = {
   photos: EventPhoto[]
@@ -62,7 +63,7 @@ export function ClientEventPhotoGallery({ photos }: Props) {
               >
                 {photo.signedUrl ? (
                   <Image
-                    src={photo.signedUrl}
+                    src={getOptimizedGalleryImage(photo.signedUrl, 400, 400)}
                     alt={photo.caption ?? photo.filename_original ?? 'Dinner photo'}
                     fill
                     sizes="(max-width: 640px) 50vw, 33vw"
@@ -138,7 +139,7 @@ export function ClientEventPhotoGallery({ photos }: Props) {
               <div className="relative w-full max-h-[80vh]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={photos[lightboxIndex].signedUrl}
+                  src={getOptimizedGalleryImage(photos[lightboxIndex].signedUrl, 1200)}
                   alt={
                     photos[lightboxIndex].caption ??
                     photos[lightboxIndex].filename_original ??

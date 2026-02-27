@@ -246,6 +246,14 @@ export async function createInquiry(input: CreateInquiryInput) {
     console.error('[createInquiry] Remy reactive enqueue failed (non-blocking):', err)
   }
 
+  // Push notification — new inquiry (non-blocking)
+  try {
+    const { notifyNewInquiry } = await import('@/lib/notifications/onesignal')
+    await notifyNewInquiry(user.id, validated.client_name, validated.confirmed_date || 'date TBD')
+  } catch (err) {
+    console.error('[createInquiry] Push notification failed (non-blocking):', err)
+  }
+
   return { success: true, inquiry }
 }
 

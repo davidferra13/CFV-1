@@ -205,5 +205,17 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     console.error('[submitPublicInquiry] Remy reactive enqueue failed (non-blocking):', err)
   }
 
+  // 8. Push notification — new inquiry from website (non-blocking)
+  try {
+    const { getChefAuthUserId } = await import('@/lib/notifications/actions')
+    const chefUserId = await getChefAuthUserId(tenantId)
+    if (chefUserId) {
+      const { notifyNewInquiry } = await import('@/lib/notifications/onesignal')
+      await notifyNewInquiry(chefUserId, validated.full_name, validated.event_date || 'date TBD')
+    }
+  } catch (err) {
+    console.error('[submitPublicInquiry] Push notification failed (non-blocking):', err)
+  }
+
   return { success: true, inquiryCreated: true, eventCreated: true }
 }
