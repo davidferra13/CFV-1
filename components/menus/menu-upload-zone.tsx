@@ -125,9 +125,15 @@ export function MenuUploadZone({ onFilesProcessed, onPastedText }: MenuUploadZon
     [onFilesProcessed]
   )
 
-  const processAll = useCallback(() => {
+  const processAll = useCallback(async () => {
     const pending = files.filter((f) => f.status === 'pending')
-    pending.forEach(processFile)
+    const CONCURRENCY = 3
+
+    // Process files in batches to avoid overwhelming the server
+    for (let i = 0; i < pending.length; i += CONCURRENCY) {
+      const batch = pending.slice(i, i + CONCURRENCY)
+      await Promise.all(batch.map(processFile))
+    }
   }, [files, processFile])
 
   const removeFile = useCallback((id: string) => {

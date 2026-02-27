@@ -2,12 +2,14 @@
 // Accepts FormData (file upload) or JSON (pasted text)
 
 import { NextRequest, NextResponse } from 'next/server'
+import { createHash } from 'crypto'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import {
   createUploadJob,
   processUploadJob,
   processFromPastedText,
+  checkDuplicateUpload,
 } from '@/lib/menus/upload-actions'
 
 const MENU_UPLOADS_BUCKET = 'menu-uploads'
@@ -51,13 +53,34 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Read file into buffer early — needed for hash and processing
+    const arrayBuffer = await file.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
+
+    // Compute SHA-256 hash for duplicate detection
+    const fileHash = createHash('sha256').update(buffer).digest('hex')
+
+    // Check for duplicate upload
+    const duplicate = await checkDuplicateUpload(fileHash)
+    if (duplicate) {
+      return NextResponse.json(
+        {
+          error: `This file was already uploaded on ${new Date(duplicate.created_at).toLocaleDateString()} ("${duplicate.file_name}"). Status: ${duplicate.status}.`,
+          duplicate: true,
+          existingJobId: duplicate.id,
+        },
+        { status: 409 }
+      )
+    }
+
     const fileName = file.name
     const fileExt = fileName.split('.').pop()?.toLowerCase() || 'bin'
 
-    // Create the upload job record
+    // Create the upload job record with file hash
     const job = await createUploadJob({
       file_name: fileName,
       file_type: fileExt,
+      file_hash: fileHash,
       event_date: (formData.get('eventDate') as string) || undefined,
       event_type: (formData.get('eventType') as string) || undefined,
       client_name: (formData.get('clientName') as string) || undefined,
@@ -86,10 +109,6 @@ export async function POST(request: NextRequest) {
         .eq('id', job.id)
         .eq('tenant_id', tenantId)
     }
-
-    // Read file into buffer for processing
-    const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
 
     // Process the file (extract text → parse → save)
     await processUploadJob(job.id, buffer, fileName)

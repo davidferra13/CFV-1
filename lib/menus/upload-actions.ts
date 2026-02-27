@@ -20,6 +20,7 @@ import { canonicalizeDishName } from './dish-index-constants'
 const CreateUploadJobSchema = z.object({
   file_name: z.string().min(1),
   file_type: z.string().min(1),
+  file_hash: z.string().optional(),
   event_date: z.string().optional(),
   event_type: z.string().optional(),
   client_name: z.string().optional(),
@@ -58,6 +59,7 @@ export async function createUploadJob(input: z.infer<typeof CreateUploadJobSchem
       tenant_id: tenantId,
       file_name: parsed.file_name,
       file_type: parsed.file_type,
+      file_hash: parsed.file_hash || null,
       status: 'uploaded',
       event_date: parsed.event_date || null,
       event_type: parsed.event_type || null,

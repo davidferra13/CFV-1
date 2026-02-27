@@ -56,7 +56,7 @@ export async function indexDishesFromMenu(menuId: string, tenantId: string, user
   // Get all dishes from this menu
   const { data: dishes, error: dishesError } = await supabase
     .from('dishes')
-    .select('id, course_name, name, description, dietary_tags')
+    .select('id, course_name, description, dietary_tags')
     .eq('menu_id', menuId)
     .eq('tenant_id', tenantId)
     .order('course_number', { ascending: true })
@@ -69,8 +69,8 @@ export async function indexDishesFromMenu(menuId: string, tenantId: string, user
   let indexedCount = 0
 
   for (const dish of dishes) {
-    // Use course_name as the course, or fall back to a default
-    const dishName = dish.name || dish.course_name || 'Unnamed Dish'
+    // course_name IS the dish name in the dishes table (e.g. "Pan-Seared Scallops")
+    const dishName = dish.course_name || 'Unnamed Dish'
     const course = normalizeCourseForIndex(dish.course_name)
     const canonical = canonicalizeDishName(dishName)
 

@@ -12,7 +12,6 @@ import {
   DISH_COURSE_LABELS,
   ROTATION_STATUSES,
   ROTATION_STATUS_LABELS,
-  type DishCourse,
 } from '@/lib/menus/dish-index-constants'
 
 interface DishIndexStatsData {
