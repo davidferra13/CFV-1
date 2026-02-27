@@ -7,6 +7,7 @@
 import { requireChef, requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { compressImageBuffer } from '@/lib/images/resmush'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -140,11 +141,38 @@ export async function uploadEventPhoto(
   const ext = MIME_TO_EXT[file.type]
   const storagePath = `${user.tenantId}/${eventId}/${photoId}.${ext}`
 
+  // Attempt image compression via reSmush.it (non-blocking — fallback to original)
+  let uploadBody: File | Blob = file
+  let uploadContentType = file.type
+  let uploadSize = file.size
+  try {
+    const fileBuffer = Buffer.from(await file.arrayBuffer())
+    const compressed = await compressImageBuffer(fileBuffer, file.name)
+    if (compressed.success && compressed.compressedUrl) {
+      const compressedRes = await fetch(compressed.compressedUrl)
+      if (compressedRes.ok) {
+        const compressedBuf = await compressedRes.arrayBuffer()
+        uploadBody = new Blob([compressedBuf], { type: file.type })
+        uploadSize = compressedBuf.byteLength
+        console.log(
+          `[uploadEventPhoto] Compressed ${file.name}: ${compressed.originalSize} → ${compressed.compressedSize} (${compressed.savedPercent}% saved)`
+        )
+      }
+    }
+  } catch (compressionErr) {
+    console.warn(
+      '[uploadEventPhoto] Compression failed (non-blocking), using original:',
+      compressionErr
+    )
+  }
+
   // Upload to Supabase Storage
-  const { error: uploadError } = await supabase.storage.from(BUCKET).upload(storagePath, file, {
-    contentType: file.type,
-    upsert: false,
-  })
+  const { error: uploadError } = await supabase.storage
+    .from(BUCKET)
+    .upload(storagePath, uploadBody, {
+      contentType: uploadContentType,
+      upsert: false,
+    })
 
   if (uploadError) {
     console.error('[uploadEventPhoto] Storage upload failed:', uploadError)
@@ -173,8 +201,8 @@ export async function uploadEventPhoto(
       event_id: eventId,
       storage_path: storagePath,
       filename_original: file.name,
-      content_type: file.type,
-      size_bytes: file.size,
+      content_type: uploadContentType,
+      size_bytes: uploadSize,
       caption,
       display_order: displayOrder,
       uploaded_by: user.id,

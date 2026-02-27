@@ -10,6 +10,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import crypto from 'crypto'
+import { shortenUrl } from '@/lib/links/url-shortener'
 
 // ============================================================
 // SCHEMAS
@@ -174,7 +175,15 @@ export async function createEventShare(eventId: string) {
     .single()
 
   if (existingShare) {
-    const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL}/share/${existingShare.token}`
+    const fullShareUrl = `${process.env.NEXT_PUBLIC_APP_URL}/share/${existingShare.token}`
+    // Shorten URL (non-blocking — fall back to full URL if shortening fails)
+    let shareUrl = fullShareUrl
+    try {
+      const shortened = await shortenUrl(fullShareUrl)
+      if (shortened) shareUrl = shortened
+    } catch {
+      // Non-blocking: use the full URL
+    }
     return { success: true, share: existingShare, shareUrl }
   }
 
@@ -197,7 +206,15 @@ export async function createEventShare(eventId: string) {
     throw new Error('Failed to create share link')
   }
 
-  const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL}/share/${token}`
+  const fullShareUrl = `${process.env.NEXT_PUBLIC_APP_URL}/share/${token}`
+  // Shorten URL (non-blocking — fall back to full URL if shortening fails)
+  let shareUrl = fullShareUrl
+  try {
+    const shortened = await shortenUrl(fullShareUrl)
+    if (shortened) shareUrl = shortened
+  } catch {
+    // Non-blocking: use the full URL
+  }
 
   revalidatePath(`/my-events/${eventId}`)
   return { success: true, share, shareUrl }

@@ -113,6 +113,7 @@ import { getEventMessagesForChef } from '@/lib/guest-messages/actions'
 import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
 import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
 import { getQrCodeUrl } from '@/lib/qr/qr-code'
+import { shortenUrl } from '@/lib/links/url-shortener'
 
 async function getEventFinancialSummary(eventId: string) {
   const supabase = createServerClient()
@@ -314,6 +315,19 @@ export default async function EventDetailPage({
       : Promise.resolve(null),
   ])
   const activeShare = (guestShares as any[]).find((s) => s.is_active) || null
+  // Pre-compute shortened share URL for QR codes and templates (non-blocking)
+  const fullShareUrl = activeShare
+    ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'}/share/${activeShare.token}`
+    : null
+  let shortShareUrl = fullShareUrl
+  if (fullShareUrl) {
+    try {
+      const shortened = await shortenUrl(fullShareUrl)
+      if (shortened) shortShareUrl = shortened
+    } catch {
+      // Non-blocking: use the full URL
+    }
+  }
 
   // Fetch operational panel data — wrapped in catch so the page works before migrations are applied
   const [
@@ -705,42 +719,37 @@ export default async function EventDetailPage({
         )}
 
         {/* Share QR Code — only when an active event share link exists */}
-        {activeShare &&
-          (() => {
-            const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'}/share/${activeShare.token}`
-            const shareQrSrc = getQrCodeUrl(shareUrl, 150)
-            return (
-              <Card className="p-6">
-                <h2 className="text-xl font-semibold mb-2">Share QR</h2>
-                <p className="text-sm text-stone-500 mb-4">
-                  Guests scan this code to view event details, RSVP, and more.
-                </p>
-                <div className="flex items-center gap-5">
-                  <div className="flex-shrink-0">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={shareQrSrc}
-                      alt="Event share QR code"
-                      width={150}
-                      height={150}
-                      className="rounded-lg border border-stone-700 shadow-sm"
-                    />
-                  </div>
-                  <div className="flex-1 space-y-2">
-                    <p className="text-xs text-stone-400 break-all">{shareUrl}</p>
-                    <a
-                      href={shareUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-block text-xs text-brand-600 hover:underline"
-                    >
-                      Open share page ↗
-                    </a>
-                  </div>
-                </div>
-              </Card>
-            )
-          })()}
+        {activeShare && shortShareUrl && (
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-2">Share QR</h2>
+            <p className="text-sm text-stone-500 mb-4">
+              Guests scan this code to view event details, RSVP, and more.
+            </p>
+            <div className="flex items-center gap-5">
+              <div className="flex-shrink-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={getQrCodeUrl(shortShareUrl, 150)}
+                  alt="Event share QR code"
+                  width={150}
+                  height={150}
+                  className="rounded-lg border border-stone-700 shadow-sm"
+                />
+              </div>
+              <div className="flex-1 space-y-2">
+                <p className="text-xs text-stone-400 break-all">{shortShareUrl}</p>
+                <a
+                  href={fullShareUrl!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block text-xs text-brand-600 hover:underline"
+                >
+                  Open share page ↗
+                </a>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Service Contract */}
         <ContractSection eventId={event.id} eventStatus={event.status} />
@@ -759,9 +768,9 @@ export default async function EventDetailPage({
               originalGuestCount={event.guest_count}
               visibility={(activeShare?.visibility_settings as any) || null}
             />
-            {activeShare && (
+            {activeShare && shortShareUrl && (
               <HostMessageTemplate
-                shareUrl={`${process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'}/share/${activeShare.token}`}
+                shareUrl={shortShareUrl}
                 occasion={event.occasion}
                 eventDate={event.event_date}
                 chefName={chefDisplayName}
@@ -774,11 +783,7 @@ export default async function EventDetailPage({
                 <RSVPTrackerPanel
                   guests={guestList as any[]}
                   totalExpected={event.guest_count}
-                  shareUrl={
-                    activeShare
-                      ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'}/share/${activeShare.token}`
-                      : null
-                  }
+                  shareUrl={shortShareUrl}
                   occasion={event.occasion}
                 />
                 <PhotoConsentSummary guests={guestList as any[]} />

@@ -15,6 +15,7 @@ import {
   NETWORK_FEATURE_KEYS,
   type NetworkFeatureKey,
 } from '@/lib/network/features'
+import { compressImageBuffer } from '@/lib/images/resmush'
 
 const CHEF_PROFILE_IMAGES_BUCKET = 'chef-profile-images'
 const MAX_PROFILE_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -1109,8 +1110,30 @@ export async function uploadChefProfileImage(
   const ext = PROFILE_IMAGE_MIME_TO_EXT[file.type] || 'jpg'
   const storagePath = `${user.entityId}/${Date.now()}-${crypto.randomUUID()}.${ext}`
 
+  // Attempt image compression via reSmush.it (non-blocking — fallback to original)
+  let uploadBody: File | Blob = file
+  try {
+    const fileBuffer = Buffer.from(await file.arrayBuffer())
+    const compressed = await compressImageBuffer(fileBuffer, file.name)
+    if (compressed.success && compressed.compressedUrl) {
+      const compressedRes = await fetch(compressed.compressedUrl)
+      if (compressedRes.ok) {
+        const compressedBuf = await compressedRes.arrayBuffer()
+        uploadBody = new Blob([compressedBuf], { type: file.type })
+        console.log(
+          `[uploadChefProfileImage] Compressed ${file.name}: ${compressed.originalSize} → ${compressed.compressedSize} (${compressed.savedPercent}% saved)`
+        )
+      }
+    }
+  } catch (compressionErr) {
+    console.warn(
+      '[uploadChefProfileImage] Compression failed (non-blocking), using original:',
+      compressionErr
+    )
+  }
+
   const uploadFile = async () =>
-    supabase.storage.from(CHEF_PROFILE_IMAGES_BUCKET).upload(storagePath, file, {
+    supabase.storage.from(CHEF_PROFILE_IMAGES_BUCKET).upload(storagePath, uploadBody, {
       contentType: file.type,
       upsert: false,
     })
