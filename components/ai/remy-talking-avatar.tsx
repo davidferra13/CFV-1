@@ -93,7 +93,7 @@ export function RemyTalkingAvatar({
   return (
     <div
       className={[
-        'relative flex-shrink-0 rounded-full overflow-hidden bg-stone-200',
+        'relative flex-shrink-0 rounded-full overflow-hidden',
         isSpeaking ? 'ring-2 ring-brand-400/50 ring-offset-1 ring-offset-stone-900' : '',
         className,
       ]
