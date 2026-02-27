@@ -97,3 +97,9 @@ test.describe('Culinary Subsystems - Menus and Recipes (#377-378)', () => {
     await assertPageHasContent(page)
   })
 })
+
+test.describe('Culinary Subsystems - Additional Coverage (#506)', () => {
+  test('my-kitchen route loads (#506)', async ({ page }) => {
+    await assertPageLoads(page, '/culinary/my-kitchen')
+  })
+})

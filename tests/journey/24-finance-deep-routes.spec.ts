@@ -127,3 +127,17 @@ test.describe('Finance Deep Routes - Payroll and Tax Extensions (#481-485)', () 
     await assertPageHasContent(page)
   })
 })
+
+test.describe('Finance Deep Routes - Remaining Static Coverage (#507-509)', () => {
+  test('payroll 941 route loads (#507)', async ({ page }) => {
+    await assertPageLoads(page, '/finance/payroll/941')
+  })
+
+  test('retainers new route loads (#508)', async ({ page }) => {
+    await assertPageLoads(page, '/finance/retainers/new')
+  })
+
+  test('retainers list route loads (#509)', async ({ page }) => {
+    await assertPageLoads(page, '/finance/retainers')
+  })
+})

@@ -261,3 +261,9 @@ test.describe('Additional Settings Deep Routes (#501-503)', () => {
     await assertPageLoads(page, '/settings/professional/momentum')
   })
 })
+
+test.describe('Additional Settings Deep Routes (#510)', () => {
+  test('settings professional skills route loads (#510)', async ({ page }) => {
+    await assertPageLoads(page, '/settings/professional/skills')
+  })
+})
