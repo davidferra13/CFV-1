@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: '/', label: 'Home' },
   { href: '/chefs', label: 'Find a Chef' },
   { href: '/pricing', label: 'Pricing' },
+  { href: '/blog', label: 'Blog' },
   { href: '/contact', label: 'Contact' },
 ]
 

@@ -70,6 +70,21 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  // Google Search Console & Bing Webmaster verification
+  // Set these env vars when you verify ownership in each console
+  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ||
+  process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION
+    ? {
+        verification: {
+          ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+            ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+            : {}),
+          ...(process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION
+            ? { other: { 'msvalidate.01': process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION } }
+            : {}),
+        },
+      }
+    : {}),
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://cheflowhq.com'),
 }
 

@@ -16,6 +16,8 @@ export default function robots(): MetadataRoute.Robots {
           '/privacy',
           '/terms',
           '/partner-signup',
+          '/blog',
+          '/blog/',
         ],
         disallow: [
           '/api/',

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { AppLogo } from '@/components/branding/app-logo'
+import { NewsletterSignup } from '@/components/marketing/newsletter-signup'
 
 const FOOTER_LINKS = {
   product: [
@@ -9,6 +10,7 @@ const FOOTER_LINKS = {
     { href: '/contact', label: 'Contact' },
   ],
   resources: [
+    { href: '/blog', label: 'Blog' },
     { href: '/partner-signup', label: 'Become a Partner' },
     { href: '/auth/signup', label: 'Start Free Trial' },
   ],
@@ -71,8 +73,12 @@ export function PublicFooter() {
         </div>
 
         <div>
-          <p className="text-sm font-semibold text-stone-100">Legal</p>
-          <ul className="mt-4 space-y-2">
+          <p className="text-sm font-semibold text-stone-100">Stay Updated</p>
+          <p className="mt-4 mb-3 text-sm text-stone-400">Tips &amp; guides for private chefs.</p>
+          <NewsletterSignup />
+
+          <p className="mt-6 text-sm font-semibold text-stone-100">Legal</p>
+          <ul className="mt-3 space-y-2">
             {FOOTER_LINKS.legal.map((link) => (
               <li key={link.href}>
                 <Link

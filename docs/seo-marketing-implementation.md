@@ -131,25 +131,92 @@ Fixed 6 files with stale `chefflow.app` fallback → `cheflowhq.com`:
 
 ---
 
+## Phase 2 — Implemented 2026-02-27
+
+### 9. Dynamic OG Images for Chef Profiles
+
+**File:** `app/(public)/chef/[slug]/opengraph-image.tsx`
+
+- Each public chef profile now generates a custom 1200x630 social preview image
+- Shows: chef photo (or initials), name, tagline/bio, cuisine tags, "Book on ChefFlow" branding
+- Dark theme with brand gradient accents
+- Falls back to generic image if chef not found
+- **Impact:** When a chef shares their ChefFlow profile on social media, it shows their face and name — not the generic ChefFlow image
+
+### 10. Blog Infrastructure
+
+**Files created:**
+
+- `app/(public)/blog/layout.tsx` — Blog layout with metadata + breadcrumb JSON-LD
+- `app/(public)/blog/page.tsx` — Blog index (lists all posts with tags, reading time, dates)
+- `app/(public)/blog/[slug]/page.tsx` — Individual post page with BlogPosting JSON-LD, breadcrumbs, CTA
+- `lib/blog/posts.ts` — Static post registry (no database needed, ISR-compatible)
+- `components/blog/blog-markdown.tsx` — Lightweight markdown-to-HTML renderer (no heavy deps)
+- Blog typography styles added to `app/globals.css`
+
+**Seed posts (2 published):**
+
+1. "How to Price a Private Dinner Party (Without Undercharging)" — pricing, food cost, labor
+2. "5 Client Management Mistakes Private Chefs Make" — response time, follow-ups, communication
+
+**SEO integration:**
+
+- Blog added to sitemap (index + individual posts)
+- Blog added to robots.txt allow list
+- Blog link added to public header nav + footer Resources column
+- Each post has: BlogPosting JSON-LD, OpenGraph article metadata, canonical URL, breadcrumbs
+
+### 11. Chef Referral/Invite Component
+
+**File:** `components/marketing/invite-chef-card.tsx`
+
+- "Invite a Chef" card with shareable referral link
+- Copy-to-clipboard + native Web Share API (mobile share sheet)
+- Tracks referring chef via `?ref=slug` parameter
+- Can be placed on dashboard, settings, or anywhere in the chef app
+
+### 12. Newsletter Signup
+
+**Files:**
+
+- `components/marketing/newsletter-signup.tsx` — Compact email form for footer
+- `lib/marketing/newsletter-actions.ts` — Server action (upsert to `newsletter_subscribers` table)
+- `supabase/migrations/20260327000001_newsletter_subscribers.sql` — Simple email table with RLS
+
+**Integration:**
+
+- Newsletter signup embedded in public footer "Stay Updated" section
+- Success/error states, email validation, loading state
+- Idempotent — re-subscribing same email just updates timestamp
+
+### 13. Google Search Console & Bing Webmaster Verification
+
+**File:** `app/layout.tsx`
+
+- Infrastructure ready: set `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` in `.env.local` to auto-inject Google meta tag
+- Also supports Bing: set `NEXT_PUBLIC_BING_SITE_VERIFICATION`
+- **Next step:** Go to Google Search Console, verify ownership, submit sitemap URL (`https://cheflowhq.com/sitemap.xml`)
+
+---
+
 ## What's NOT Implemented Yet (Future Work)
 
 ### High Priority
 
-1. **Google Search Console** — Submit sitemap, verify ownership (requires DNS/meta tag verification)
-2. **Blog/content pages** — Long-tail keyword content ("how to price a private dinner", "private chef business tips")
-3. **Dynamic OG images for chef profiles** — Include chef photo in social share preview
-4. **Comparison landing pages** — "ChefFlow vs spreadsheets", "ChefFlow vs HoneyBook"
+1. **Google Search Console setup** — Verify ownership in console, submit sitemap (infra is ready)
+2. **More blog content** — Comparison pages ("ChefFlow vs spreadsheets"), "how to grow a personal chef business"
+3. **Dynamic OG images for blog posts** — Currently uses default ChefFlow image
 
 ### Medium Priority
 
-5. **SaaS directory listings** — G2, Capterra, Product Hunt, AlternativeTo
-6. **Culinary school partnerships** — Free tier for students
-7. **Referral program** — In-app "Invite a chef" with tracking
-8. **Social media profiles** — Instagram, TikTok, LinkedIn, YouTube (add to Organization schema's `sameAs` array and footer)
+4. **SaaS directory listings** — G2, Capterra, Product Hunt, AlternativeTo
+5. **Culinary school partnerships** — Free tier for students
+6. **Social media profiles** — Instagram, TikTok, LinkedIn, YouTube (add to Organization schema's `sameAs` array and footer)
+7. **Place InviteChefCard on dashboard** — Component exists, needs to be wired into dashboard layout
 
 ### Lower Priority
 
-9. **Guest posting / backlink strategy**
-10. **HARO / Connectively responses**
-11. **Newsletter signup** — Chef tips, soft-sell ChefFlow
-12. **Podcast** — Interview private chefs
+8. **Guest posting / backlink strategy**
+9. **HARO / Connectively responses**
+10. **Podcast** — Interview private chefs
+11. **Newsletter email sending** — Currently collects emails; need to set up an email service (Resend, Mailchimp) to actually send newsletters

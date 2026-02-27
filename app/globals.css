@@ -938,3 +938,176 @@ html {
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
+
+/* ============================================
+   REMY ANIMATION SYSTEM
+   ============================================ */
+
+/* Reduced motion — disables all Remy animations */
+@media (prefers-reduced-motion: reduce) {
+  .remy-animate,
+  .animate-remy-breathe,
+  .animate-remy-hat-wobble,
+  .animate-mascot-wiggle,
+  .animate-mascot-hop,
+  .animate-mascot-bob {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Broken image fallback — CSS-only Remy silhouette */
+.remy-fallback {
+  position: relative;
+  background: #e8a878;
+  border-radius: 50% 50% 48% 48%;
+}
+.remy-fallback::before {
+  content: '';
+  position: absolute;
+  top: -30%;
+  left: 20%;
+  width: 60%;
+  height: 50%;
+  background: #f5f0e8;
+  border-radius: 40% 40% 45% 45%;
+}
+.remy-fallback::after {
+  content: '';
+  position: absolute;
+  top: 35%;
+  left: 30%;
+  width: 40%;
+  height: 15%;
+  background:
+    radial-gradient(circle at 30% 50%, #44302a 18%, transparent 20%),
+    radial-gradient(circle at 70% 50%, #44302a 18%, transparent 20%);
+}
+
+/* ============================================
+   BLOG TYPOGRAPHY
+   ============================================ */
+.blog-content h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #fafaf9;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.blog-content h3 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #e7e5e4;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.blog-content p {
+  color: #a8a29e;
+  line-height: 1.75;
+  margin-bottom: 1.25rem;
+}
+
+.blog-content strong {
+  color: #e7e5e4;
+  font-weight: 600;
+}
+
+.blog-content em {
+  color: #d6d3d1;
+}
+
+.blog-content ul,
+.blog-content ol {
+  margin: 1rem 0 1.5rem 1.5rem;
+  color: #a8a29e;
+}
+
+.blog-content li {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.blog-content ul li {
+  list-style-type: disc;
+}
+
+.blog-content ol li {
+  list-style-type: decimal;
+}
+
+.blog-link {
+  color: #e88f47;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s;
+}
+
+.blog-link:hover {
+  color: #eda86b;
+}
+
+.blog-code-block {
+  background: #1c1917;
+  border: 1px solid #44403c;
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.blog-code-block code {
+  color: #d6d3d1;
+  font-family: 'Fira Code', 'JetBrains Mono', monospace;
+}
+
+.blog-inline-code {
+  background: #292524;
+  color: #e88f47;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-family: 'Fira Code', 'JetBrains Mono', monospace;
+}
+
+.blog-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9rem;
+}
+
+.blog-table th {
+  background: #292524;
+  color: #e7e5e4;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 2px solid #44403c;
+}
+
+.blog-table td {
+  color: #a8a29e;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #44403c;
+}
+
+.blog-table tr:hover td {
+  background: #1c1917;
+}
+
+.blog-content hr {
+  border: none;
+  border-top: 1px solid #44403c;
+  margin: 2.5rem 0;
+}
+
+.blog-image {
+  max-width: 100%;
+  border-radius: 0.5rem;
+  margin: 1.5rem 0;
+}
