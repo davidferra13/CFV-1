@@ -16,6 +16,7 @@ import { DraftRestorePrompt } from '@/components/ui/draft-restore-prompt'
 import { UnsavedChangesDialog } from '@/components/ui/unsaved-changes-dialog'
 import { createQuote, getQuoteById, updateQuote, type CreateQuoteInput } from '@/lib/quotes/actions'
 import { parseCurrencyToCents, formatCurrency } from '@/lib/utils/currency'
+import { CurrencyConversionHint } from '@/components/currency/currency-conversion-hint'
 import {
   computePricing,
   formatCentsAsDollars,
@@ -890,6 +891,10 @@ export function QuoteForm({
                     </p>
                   )
                 })()}
+              {/* Currency conversion for international clients */}
+              {totalAmount && parseFloat(totalAmount) > 0 && (
+                <CurrencyConversionHint amountCents={Math.round(parseFloat(totalAmount) * 100)} />
+              )}
             </div>
           </div>
 

@@ -17,6 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { updateIngredient } from '@/lib/recipes/actions'
+import { ProductLookupPanel } from '@/components/recipes/product-lookup-panel'
 
 const CATEGORY_OPTIONS = [
   { value: '', label: 'All Categories' },
@@ -64,6 +65,7 @@ export function IngredientsClient({ ingredients }: Props) {
   const [editPrice, setEditPrice] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showProductLookup, setShowProductLookup] = useState(false)
 
   const currentCategory = searchParams.get('category') || ''
 
@@ -126,12 +128,20 @@ export function IngredientsClient({ ingredients }: Props) {
             {ingredients.length} ingredient{ingredients.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <Link href="/recipes">
-          <Button variant="ghost">Back to Recipes</Button>
-        </Link>
+        <div className="flex gap-2">
+          <Button variant="ghost" onClick={() => setShowProductLookup((prev) => !prev)}>
+            {showProductLookup ? 'Hide Product Lookup' : 'Search Product'}
+          </Button>
+          <Link href="/recipes">
+            <Button variant="ghost">Back to Recipes</Button>
+          </Link>
+        </div>
       </div>
 
       {error && <Alert variant="error">{error}</Alert>}
+
+      {/* Product Lookup Panel (Open Food Facts) */}
+      {showProductLookup && <ProductLookupPanel defaultQuery={search} />}
 
       {/* Search + Filter */}
       <div className="flex flex-wrap gap-3 items-center">

@@ -324,3 +324,104 @@ test.describe('Remy Drawer — Available on All Pages', () => {
     })
   }
 })
+
+// Remy Companion Redesign
+
+test.describe('Remy Companion - Persistent Mascot Redesign (#542-546)', () => {
+  test('mascot remains visible when drawer is open (#542)', async ({ page }) => {
+    await page.goto(JOURNEY_ROUTES.dashboard)
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    await page.evaluate(() => localStorage.removeItem('remy-minimized'))
+
+    const mascotButton = page
+      .getByRole('button', { name: /toggle remy chat|chat with remy|restore remy/i })
+      .first()
+    await expect(mascotButton).toBeVisible()
+
+    await openRemyDrawer(page)
+    await expect(page.locator('[data-remy-input]')).toBeVisible()
+    await expect(mascotButton).toBeVisible()
+  })
+
+  test('mascot can be minimized from hover control (#543)', async ({ page }) => {
+    await page.goto(JOURNEY_ROUTES.dashboard)
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    await page.evaluate(() => localStorage.removeItem('remy-minimized'))
+
+    const mascotButton = page
+      .getByRole('button', { name: /toggle remy chat|chat with remy/i })
+      .first()
+    await expect(mascotButton).toBeVisible()
+    await mascotButton.hover()
+
+    const minimizeButton = page.getByRole('button', { name: /minimize remy/i }).first()
+    await expect(minimizeButton).toBeVisible()
+    await minimizeButton.click()
+
+    await expect(page.getByRole('button', { name: /restore remy/i }).first()).toBeVisible()
+  })
+
+  test('minimized mascot state persists across reload (#544)', async ({ page }) => {
+    await page.goto(JOURNEY_ROUTES.dashboard)
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    await page.evaluate(() => localStorage.removeItem('remy-minimized'))
+
+    const mascotButton = page
+      .getByRole('button', { name: /toggle remy chat|chat with remy/i })
+      .first()
+    await mascotButton.hover()
+    await page
+      .getByRole('button', { name: /minimize remy/i })
+      .first()
+      .click()
+
+    await page.reload()
+    await page.waitForLoadState('networkidle')
+
+    await expect(page.getByRole('button', { name: /restore remy/i }).first()).toBeVisible()
+  })
+
+  test('restore control returns mascot to normal state (#545)', async ({ page }) => {
+    await page.goto(JOURNEY_ROUTES.dashboard)
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    await page.evaluate(() => localStorage.setItem('remy-minimized', 'true'))
+    await page.reload()
+    await page.waitForLoadState('networkidle')
+
+    const restoreButton = page.getByRole('button', { name: /restore remy/i }).first()
+    await expect(restoreButton).toBeVisible()
+    await restoreButton.click()
+
+    await expect(page.getByRole('button', { name: /toggle remy chat/i }).first()).toBeVisible()
+  })
+
+  test('mascot click toggles drawer open and closed (#546)', async ({ page }) => {
+    await page.goto(JOURNEY_ROUTES.dashboard)
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    await page.evaluate(() => localStorage.removeItem('remy-minimized'))
+
+    const mascotButton = page.getByRole('button', { name: /toggle remy chat/i }).first()
+    await expect(mascotButton).toBeVisible()
+
+    await mascotButton.click()
+    await expect(page.locator('[data-remy-input]')).toBeVisible()
+
+    await mascotButton.click()
+    await expect(page.locator('[data-remy-input]')).toBeHidden()
+  })
+})

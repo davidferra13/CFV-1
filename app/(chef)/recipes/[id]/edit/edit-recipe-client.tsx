@@ -14,6 +14,7 @@ import {
   removeIngredientFromRecipe,
   updateRecipeIngredient,
 } from '@/lib/recipes/actions'
+import { ProductLookupPanel } from '@/components/recipes/product-lookup-panel'
 
 const RECIPE_CATEGORIES = [
   'sauce',
@@ -100,6 +101,10 @@ export function EditRecipeClient({ recipe }: Props) {
 
   // Existing ingredient modifications
   const [modifiedIngredients, setModifiedIngredients] = useState<Set<string>>(new Set())
+
+  // Product lookup state
+  const [showProductLookup, setShowProductLookup] = useState(false)
+  const [detectedAllergens, setDetectedAllergens] = useState<string[]>([])
 
   const updateExisting = (id: string, field: string, value: unknown) => {
     setExistingIngredients((prev) =>
@@ -335,12 +340,55 @@ export function EditRecipeClient({ recipe }: Props) {
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Ingredients</CardTitle>
-            <Button size="sm" variant="secondary" onClick={addNewRow}>
-              Add Ingredient
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setShowProductLookup((prev) => !prev)}
+              >
+                {showProductLookup ? 'Hide Product Lookup' : 'Search Product'}
+              </Button>
+              <Button size="sm" variant="secondary" onClick={addNewRow}>
+                Add Ingredient
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
+          {/* Product Lookup Panel (Open Food Facts) */}
+          {showProductLookup && (
+            <div className="mb-4">
+              <ProductLookupPanel
+                defaultQuery={
+                  newIngredients.length > 0 ? newIngredients[newIngredients.length - 1].name : ''
+                }
+                onAllergensFound={(allergens) => setDetectedAllergens(allergens)}
+              />
+            </div>
+          )}
+
+          {/* Allergen warning */}
+          {detectedAllergens.length > 0 && (
+            <div className="mb-4 bg-orange-950/50 border border-orange-900 rounded-lg px-4 py-3">
+              <div className="flex items-start gap-2">
+                <span className="text-orange-500 text-lg leading-none mt-0.5">!</span>
+                <div>
+                  <p className="text-sm font-medium text-orange-400">
+                    Allergens detected in product
+                  </p>
+                  <p className="text-xs text-orange-600 mt-0.5">{detectedAllergens.join(', ')}</p>
+                  <button
+                    type="button"
+                    onClick={() => setDetectedAllergens([])}
+                    className="text-xs text-stone-500 hover:text-stone-300 mt-1"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="space-y-3">
             {/* Column headers */}
             {(existingIngredients.length > 0 || newIngredients.length > 0) && (

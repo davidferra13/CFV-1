@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StoreAutocomplete } from '@/components/ui/store-autocomplete'
+import { detectMyLocation } from '@/lib/geo/geo-actions'
 
 function createCustomGoal(): RevenueGoalCustom {
   return {
@@ -36,6 +37,8 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
   const [homeCity, setHomeCity] = useState(preferences.home_city ?? '')
   const [homeState, setHomeState] = useState(preferences.home_state ?? '')
   const [homeZip, setHomeZip] = useState(preferences.home_zip ?? '')
+  const [detectingLocation, setDetectingLocation] = useState(false)
+  const [detectError, setDetectError] = useState<string | null>(null)
   const [stores, setStores] = useState<DefaultStore[]>(preferences.default_stores ?? [])
 
   const [bufferMinutes, setBufferMinutes] = useState(preferences.default_buffer_minutes)
@@ -62,6 +65,25 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
   const [customGoals, setCustomGoals] = useState<RevenueGoalCustom[]>(
     preferences.revenue_goal_custom ?? []
   )
+
+  const handleDetectLocation = async () => {
+    setDetectingLocation(true)
+    setDetectError(null)
+    try {
+      const location = await detectMyLocation()
+      if (!location) {
+        setDetectError('Could not detect location. You may be on a local network or VPN.')
+        return
+      }
+      setHomeCity(location.city)
+      setHomeState(location.regionName)
+      setHomeZip(location.zip)
+    } catch {
+      setDetectError('Location detection failed. Please enter manually.')
+    } finally {
+      setDetectingLocation(false)
+    }
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -143,9 +165,25 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
     <form onSubmit={handleSubmit} className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Home Base</CardTitle>
+          <div className="flex items-center justify-between gap-3">
+            <CardTitle>Home Base</CardTitle>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={handleDetectLocation}
+              disabled={detectingLocation}
+            >
+              {detectingLocation ? 'Detecting...' : 'Detect My Location'}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          {detectError && (
+            <p className="text-xs text-amber-600 bg-amber-950 border border-amber-800 rounded px-2 py-1">
+              {detectError}
+            </p>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-stone-300 mb-1">City</label>

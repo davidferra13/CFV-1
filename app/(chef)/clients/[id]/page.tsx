@@ -63,6 +63,7 @@ import { ClientPreferencePanel } from '@/components/ai/client-preference-panel'
 import { SentimentBadge } from '@/components/ai/sentiment-badge'
 import { NDAPanel } from '@/components/protection/nda-panel'
 import { DemographicsEditor } from '@/components/clients/demographics-editor'
+import { ClientCountryPanel } from '@/components/clients/client-country-panel'
 import { PetManager } from '@/components/clients/pet-manager'
 import { SecurityAccessPanel } from '@/components/clients/security-access-panel'
 import { ServiceDefaultsPanel } from '@/components/clients/service-defaults-panel'
@@ -657,6 +658,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           family_notes: (client as any).family_notes ?? null,
         }}
       />
+
+      {/* Country Details — currency, timezone, languages for international clients */}
+      <ClientCountryPanel />
 
       {/* Pets */}
       <PetManager

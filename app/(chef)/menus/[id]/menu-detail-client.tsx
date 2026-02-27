@@ -30,6 +30,7 @@ import { format } from 'date-fns'
 import Link from 'next/link'
 import { PrepTimelineView } from '@/components/menus/prep-timeline-view'
 import { MenuGeneratorUI } from '@/components/menus/menuGeneratorUI'
+import { CocktailBrowserPanel } from '@/components/menus/cocktail-browser-panel'
 
 type RecipeInfo = {
   id: string
@@ -707,6 +708,9 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
               )}
             </CardContent>
           </Card>
+
+          {/* Cocktail Browser — draft/shared menus only */}
+          {(menu.status === 'draft' || menu.status === 'shared') && <CocktailBrowserPanel />}
 
           {/* Linked Event */}
           {event && (

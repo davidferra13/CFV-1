@@ -22,6 +22,7 @@ import {
   type PreviousMenu,
 } from '@/lib/menus/editor-actions'
 import { sendMenuForApproval } from '@/lib/events/menu-approval-actions'
+import { CocktailBrowserPanel } from '@/components/menus/cocktail-browser-panel'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -770,12 +771,21 @@ function ContextSidebar({
   pricePerPerson,
   onPriceChange,
   locked,
+  onCocktailSelect,
 }: {
   event: EditorEvent | null
   previousMenus: PreviousMenu[]
   pricePerPerson: string
   onPriceChange: (v: string) => void
   locked: boolean
+  onCocktailSelect?: (cocktail: {
+    name: string
+    glass: string
+    ingredients: string
+    instructions: string
+    thumbnail: string
+    alcoholic: boolean
+  }) => void
 }) {
   const season = event ? getSeason(event.event_date) : null
   const [sending, startSend] = useTransition()
@@ -879,6 +889,9 @@ function ContextSidebar({
           <p className="text-xs text-stone-500 leading-relaxed">{season.ingredients}</p>
         </div>
       )}
+
+      {/* Cocktail Browser panel */}
+      {!locked && <CocktailBrowserPanel onSelectCocktail={onCocktailSelect} />}
 
       {/* Pricing panel */}
       <div className="bg-stone-900 rounded-xl border border-stone-700 p-4 shadow-sm">
@@ -1033,6 +1046,43 @@ export function MenuDocEditor({
   const handleCourseAdded = (dish: EditorDish) => {
     setDishes((prev) => [...prev, dish])
   }
+
+  // ─── Cocktail pairing ──────────────────────────────────────────────────────
+
+  const handleCocktailSelect = useCallback(
+    (cocktail: {
+      name: string
+      glass: string
+      ingredients: string
+      instructions: string
+      thumbnail: string
+      alcoholic: boolean
+    }) => {
+      // Add a new "Drinks" course with the cocktail as the dish
+      const courseNum = dishes.length > 0 ? Math.max(...dishes.map((d) => d.course_number)) + 1 : 1
+      const addCocktailCourse = async () => {
+        try {
+          const dish = await addEditorCourse(initialMenu.id, {
+            course_name: 'Drinks',
+            course_number: courseNum,
+          })
+          // Fill in the dish details with cocktail info
+          const updates: Partial<EditorDish> = {
+            name: cocktail.name,
+            description: `${cocktail.glass}${cocktail.alcoholic ? '' : ' (Non-alcoholic)'}. ${cocktail.ingredients}`,
+            beverage_pairing: cocktail.name,
+            beverage_pairing_notes: `Served in ${cocktail.glass}. ${cocktail.instructions}`,
+          }
+          await updateDishEditorContent(dish.id, updates)
+          setDishes((prev) => [...prev, { ...dish, ...updates }])
+        } catch (err) {
+          console.error('[non-blocking] Failed to add cocktail course', err)
+        }
+      }
+      addCocktailCourse()
+    },
+    [initialMenu.id, dishes]
+  )
 
   // ─── Course reordering ───────────────────────────────────────────────────────
 
@@ -1320,6 +1370,7 @@ export function MenuDocEditor({
             pricePerPerson={pricePerPerson}
             onPriceChange={handlePricePerPerson}
             locked={locked}
+            onCocktailSelect={handleCocktailSelect}
           />
         </div>
       </div>
