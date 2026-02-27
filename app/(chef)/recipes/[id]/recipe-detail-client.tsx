@@ -518,6 +518,14 @@ export function RecipeDetailClient({ recipe }: Props) {
                 <dd className="text-stone-100 mt-1">{recipe.times_cooked}</dd>
               </div>
             )}
+            {(recipe as any).last_cooked_at && (
+              <div>
+                <dt className="text-sm font-medium text-stone-500">Last Cooked</dt>
+                <dd className="text-stone-100 mt-1">
+                  {format(new Date((recipe as any).last_cooked_at), 'PPp')}
+                </dd>
+              </div>
+            )}
           </div>
 
           {(recipe as any).equipment && (recipe as any).equipment.length > 0 && (

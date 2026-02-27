@@ -83,6 +83,7 @@ export async function logProduction(input: LogProductionInput) {
     .eq('tenant_id', user.tenantId!)
 
   revalidatePath(`/recipes/${validated.recipe_id}`)
+  revalidatePath('/recipes/production-log')
   return { success: true, entry }
 }
 
@@ -173,6 +174,7 @@ export async function deleteProductionEntry(entryId: string) {
   }
 
   revalidatePath(`/recipes/${(entry as any).recipe_id}`)
+  revalidatePath('/recipes/production-log')
   return { success: true }
 }
 
