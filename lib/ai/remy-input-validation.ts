@@ -78,11 +78,25 @@ export function validateHistory(raw: unknown, maxMessages = MAX_HISTORY_LENGTH):
 
 // ─── Request Body Validation ──────────────────────────────────────────────────
 
+interface RecentPageEntry {
+  path: string
+  label: string
+  at: string
+}
+
+interface RecentActionEntry {
+  action: string
+  entity: string
+  at: string
+}
+
 interface ValidatedRemyBody {
   message: string
   history: HistoryMessage[]
   currentPage?: string
   tenantId?: string
+  recentPages?: RecentPageEntry[]
+  recentActions?: RecentActionEntry[]
 }
 
 /**
@@ -105,7 +119,84 @@ export function validateRemyRequestBody(raw: unknown): ValidatedRemyBody | null 
     typeof body.currentPage === 'string' ? body.currentPage.slice(0, 500) : undefined
   const tenantId = typeof body.tenantId === 'string' ? body.tenantId.slice(0, 100) : undefined
 
-  return { message, history, currentPage, tenantId }
+  // Validate navigation trail (max 10 entries)
+  const recentPages = validateRecentPages(body.recentPages)
+
+  // Validate recent actions (max 10 entries)
+  const recentActions = validateRecentActions(body.recentActions)
+
+  return { message, history, currentPage, tenantId, recentPages, recentActions }
+}
+
+function validateRecentPages(raw: unknown): RecentPageEntry[] | undefined {
+  if (!Array.isArray(raw)) return undefined
+  const safe: RecentPageEntry[] = []
+  for (const entry of raw.slice(-10)) {
+    if (!entry || typeof entry !== 'object') continue
+    if (typeof entry.path !== 'string' || typeof entry.label !== 'string') continue
+    safe.push({
+      path: entry.path.slice(0, 200),
+      label: entry.label.slice(0, 100),
+      at: typeof entry.at === 'string' ? entry.at.slice(0, 30) : '',
+    })
+  }
+  return safe.length > 0 ? safe : undefined
+}
+
+function validateRecentActions(raw: unknown): RecentActionEntry[] | undefined {
+  if (!Array.isArray(raw)) return undefined
+  const safe: RecentActionEntry[] = []
+  for (const entry of raw.slice(-10)) {
+    if (!entry || typeof entry !== 'object') continue
+    if (typeof entry.action !== 'string' || typeof entry.entity !== 'string') continue
+    safe.push({
+      action: entry.action.slice(0, 100),
+      entity: entry.entity.slice(0, 200),
+      at: typeof entry.at === 'string' ? entry.at.slice(0, 30) : '',
+    })
+  }
+  return safe.length > 0 ? safe : undefined
+}
+
+// ─── Recipe Generation Block (HARD RULE — AI NEVER GENERATES RECIPES) ────────
+
+/**
+ * Patterns that indicate the user is asking AI to generate, create, or suggest a recipe.
+ * AI can ONLY search the chef's existing recipe book — never fabricate, generate, or pull
+ * recipes from anywhere. This check runs before any LLM call.
+ */
+const RECIPE_GENERATION_PATTERNS = [
+  // Direct creation requests
+  /\b(create|make|write|draft|generate|come up with|give me|suggest)\s+(a\s+|me\s+)?(new\s+)?recipe\b/i,
+  // "recipe for X" (asking AI to produce a recipe)
+  /\brecipe\s+for\s+(?!search|lookup|find)/i,
+  // "how to cook/make X" (recipe generation by another name)
+  /\bhow\s+(to|do\s+(you|i))\s+(cook|make|prepare|bake|roast|grill|saut[eé]|braise|fry|smoke|poach)\b/i,
+  // "what should I cook/make"
+  /\bwhat\s+should\s+I\s+(cook|make|prepare|bake)\b/i,
+  // "add a recipe" (not "add ingredient" which is also blocked separately)
+  /\badd\s+(a\s+|new\s+)?recipe\b/i,
+  // "generate meal" / "suggest meal" / "meal plan" / "meal idea"
+  /\b(generate|suggest|create|give me)\s+(a\s+)?(meal|dish|dinner|lunch|breakfast|menu item)\b/i,
+]
+
+/** The refusal message when recipe generation is detected */
+export const RECIPE_GENERATION_REFUSAL =
+  "I can't create, suggest, or generate recipes — that's your creative domain as the chef! " +
+  "I can search through your existing recipe book if you'd like. " +
+  'To add a new recipe, head to Recipes → New Recipe.'
+
+/**
+ * Check if a message is asking AI to generate a recipe.
+ * Returns the refusal message if blocked, or null if the message is fine.
+ */
+export function checkRecipeGenerationBlock(message: string): string | null {
+  for (const pattern of RECIPE_GENERATION_PATTERNS) {
+    if (pattern.test(message)) {
+      return RECIPE_GENERATION_REFUSAL
+    }
+  }
+  return null
 }
 
 // ─── Prompt Injection Sanitization ────────────────────────────────────────────

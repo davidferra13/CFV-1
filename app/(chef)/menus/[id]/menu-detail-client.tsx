@@ -26,6 +26,7 @@ import {
 import { useUndoStack } from '@/lib/undo/use-undo-stack'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 import type { ConfirmPolicyInput } from '@/lib/confirm/confirm-policy'
+import { trackAction } from '@/lib/ai/remy-activity-tracker'
 import { format } from 'date-fns'
 import Link from 'next/link'
 import { PrepTimelineView } from '@/components/menus/prep-timeline-view'
@@ -164,6 +165,7 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
         name,
         description: description || undefined,
       })
+      trackAction('Updated menu', name)
 
       router.refresh()
       setIsEditing(false)
@@ -178,6 +180,7 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
     setLoading(true)
     try {
       const result = await duplicateMenu(menu.id)
+      trackAction('Duplicated menu', menu.name)
       router.push(`/menus/${result.menu.id}`)
     } catch (err) {
       setMutationError(err)
@@ -201,6 +204,7 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
     setLoading(true)
     try {
       await deleteMenu(menu.id)
+      trackAction('Deleted menu', menu.name)
       undoStack.push(menu.id, menu.id)
       showUndoToast(
         'Menu deleted. You can undo this for the next 20 seconds.',
@@ -226,6 +230,7 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
     try {
       const nextStatus = menu.status === 'archived' ? 'draft' : 'archived'
       await transitionMenu(menu.id, nextStatus, 'Updated from back-of-house menu screen')
+      trackAction(nextStatus === 'archived' ? 'Archived menu' : 'Unarchived menu', menu.name)
       router.refresh()
     } catch (err) {
       setMutationError(err)

@@ -16,6 +16,7 @@ import { createExpense, type CreateExpenseInput } from '@/lib/expenses/actions'
 import { ExpenseCategorizeSuggest } from '@/components/ai/expense-categorize-suggest'
 import { EXPENSE_CATEGORY_GROUPS } from '@/lib/constants/expense-categories'
 import { parseCurrencyToCents } from '@/lib/utils/currency'
+import { trackAction } from '@/lib/ai/remy-activity-tracker'
 import { format } from 'date-fns'
 
 type EventOption = {
@@ -213,6 +214,7 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
       }
 
       await createExpense(input)
+      trackAction('Created expense', `$${amount} at ${vendorName || 'vendor'} — ${category}`)
       router.push('/expenses')
     } catch (err: any) {
       setError(err.message || 'Failed to create expense')
@@ -277,6 +279,11 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
         })
       }
 
+      const totalCents = businessTotal + personalTotal
+      trackAction(
+        'Created expense from receipt',
+        `$${(totalCents / 100).toFixed(2)} at ${vendorName || extraction?.storeName || 'store'} — ${lineItems.length} items`
+      )
       router.push('/expenses')
     } catch (err: any) {
       setError(err.message || 'Failed to save expense')

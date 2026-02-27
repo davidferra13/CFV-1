@@ -18,6 +18,7 @@ import { EventKanbanCardOverlay } from './event-kanban-card'
 import { transitionEvent } from '@/lib/events/transitions'
 import type { EventStatus } from '@/lib/events/transitions'
 import { Badge } from '@/components/ui/badge'
+import { trackAction } from '@/lib/ai/remy-activity-tracker'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -159,6 +160,10 @@ export function EventKanbanBoard({ events: initialEvents }: EventKanbanBoardProp
           metadata: { source: 'kanban_drag' },
         })
 
+        trackAction(
+          `Moved event to ${STATUS_LABELS[targetStatus] ?? targetStatus}`,
+          `${draggedEvent.occasion} (${draggedEvent.client_name})`
+        )
         toast.success(
           `"${draggedEvent.occasion}" moved to ${STATUS_LABELS[targetStatus] ?? targetStatus}`
         )

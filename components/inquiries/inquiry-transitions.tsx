@@ -20,6 +20,7 @@ import { showUndoToast } from '@/components/ui/undo-toast'
 import { useUndoStack } from '@/lib/undo/use-undo-stack'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 import { confirmPolicy, type ConfirmPolicyInput } from '@/lib/confirm/confirm-policy'
+import { trackAction } from '@/lib/ai/remy-activity-tracker'
 
 type InquiryStatus =
   | 'new'
@@ -84,6 +85,7 @@ export function InquiryTransitions({
     try {
       const result = await transitionInquiry(inquiry.id, newStatus)
       if (result.success) {
+        trackAction(`Moved inquiry to ${newStatus}`, inquiry.id)
         router.refresh()
       }
     } catch (err) {
@@ -101,6 +103,7 @@ export function InquiryTransitions({
     try {
       const result = await convertInquiryToEvent(inquiry.id)
       if (result.success && result.event) {
+        trackAction('Converted inquiry to event', inquiry.id)
         router.push(`/events/${result.event.id}`)
       }
     } catch (err) {
@@ -117,6 +120,7 @@ export function InquiryTransitions({
     try {
       const result = await releaseToMarketplace(inquiry.id)
       if (result.success) {
+        trackAction('Released inquiry to marketplace', inquiry.id)
         router.push('/inquiries')
       }
     } catch (err) {
@@ -133,6 +137,7 @@ export function InquiryTransitions({
     try {
       const result = await deleteInquiry(inquiry.id)
       if (result.success) {
+        trackAction('Deleted inquiry', inquiry.id)
         undoStack.push(inquiry.id, inquiry.id)
         showUndoToast(
           'Inquiry deleted. You can undo this for the next 20 seconds.',

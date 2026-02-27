@@ -13,6 +13,7 @@ import { Alert } from '@/components/ui/alert'
 import { Card } from '@/components/ui/card'
 import { parseEventFromText, type ParsedEventDraft } from '@/lib/events/parse-event-from-text'
 import { createEvent, type CreateEventInput } from '@/lib/events/actions'
+import { trackAction } from '@/lib/ai/remy-activity-tracker'
 
 type Client = {
   id: string
@@ -147,6 +148,10 @@ export function EventNLForm({ clients }: Props) {
 
       const result = await createEvent(input)
       if (result.success && result.event) {
+        trackAction(
+          'Created event',
+          `${occasion || 'Untitled'} — ${guestCount} guests on ${eventDate}`
+        )
         router.push(`/events/${result.event.id}`)
       } else {
         throw new Error('Failed to create event')

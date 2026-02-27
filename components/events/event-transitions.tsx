@@ -17,6 +17,7 @@ import {
   cancelEvent,
 } from '@/lib/events/transitions'
 import type { ReadinessResult, GateResult } from '@/lib/events/readiness'
+import { trackAction } from '@/lib/ai/remy-activity-tracker'
 
 type EventStatus =
   | 'draft'
@@ -99,7 +100,11 @@ export function EventTransitions({
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const [cancellationReason, setCancellationReason] = useState('')
 
-  const handleTransition = async (action: () => Promise<any>, redirectTo?: string) => {
+  const handleTransition = async (
+    action: () => Promise<any>,
+    redirectTo?: string,
+    actionLabel?: string
+  ) => {
     setLoading(true)
     setError(null)
 
@@ -107,6 +112,7 @@ export function EventTransitions({
       const result = await action()
 
       if (result.success) {
+        if (actionLabel) trackAction(actionLabel, event.id)
         if (redirectTo) {
           router.push(redirectTo)
         } else {
@@ -129,7 +135,11 @@ export function EventTransitions({
       return
     }
 
-    await handleTransition(() => cancelEvent(event.id, cancellationReason))
+    await handleTransition(
+      () => cancelEvent(event.id, cancellationReason),
+      undefined,
+      'Cancelled event'
+    )
     setShowCancelDialog(false)
     setCancellationReason('')
   }
@@ -205,7 +215,13 @@ export function EventTransitions({
         <div className="flex flex-wrap gap-2">
           {event.status === 'draft' && (
             <Button
-              onClick={() => handleTransition(() => proposeEvent(event.id))}
+              onClick={() =>
+                handleTransition(
+                  () => proposeEvent(event.id),
+                  undefined,
+                  'Proposed event to client'
+                )
+              }
               loading={loading}
               disabled={loading || isHardBlocked}
               title={isHardBlocked ? 'Resolve required items above before proposing' : undefined}
@@ -216,7 +232,9 @@ export function EventTransitions({
 
           {event.status === 'paid' && (
             <Button
-              onClick={() => handleTransition(() => confirmEvent(event.id))}
+              onClick={() =>
+                handleTransition(() => confirmEvent(event.id), undefined, 'Confirmed event')
+              }
               loading={loading}
               disabled={loading || isHardBlocked}
               title={isHardBlocked ? 'Resolve required items above before confirming' : undefined}
@@ -227,7 +245,9 @@ export function EventTransitions({
 
           {event.status === 'confirmed' && (
             <Button
-              onClick={() => handleTransition(() => startEvent(event.id))}
+              onClick={() =>
+                handleTransition(() => startEvent(event.id), undefined, 'Started event')
+              }
               loading={loading}
               disabled={loading || isHardBlocked}
               title={isHardBlocked ? 'Resolve required items above before starting' : undefined}
@@ -239,7 +259,11 @@ export function EventTransitions({
           {event.status === 'in_progress' && (
             <Button
               onClick={() =>
-                handleTransition(() => completeEvent(event.id), `/events/${event.id}/close-out`)
+                handleTransition(
+                  () => completeEvent(event.id),
+                  `/events/${event.id}/close-out`,
+                  'Completed event'
+                )
               }
               loading={loading}
               disabled={loading || isHardBlocked}

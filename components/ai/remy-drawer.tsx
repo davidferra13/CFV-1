@@ -89,6 +89,7 @@ import type {
   RemyTaskResult,
   NavigationSuggestion,
 } from '@/lib/ai/remy-types'
+import { trackPageVisit, getSessionActivity } from '@/lib/ai/remy-activity-tracker'
 import {
   REMY_WELCOME_MESSAGE,
   NEW_USER_STARTERS,
@@ -420,6 +421,11 @@ export function RemyDrawer() {
 
   // Context-aware starters
   const starters = useMemo(() => getStartersForPage(pathname ?? '/dashboard'), [pathname])
+
+  // Track navigation for Remy's awareness of what the chef has been doing
+  useEffect(() => {
+    if (pathname) trackPageVisit(pathname)
+  }, [pathname])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -1080,6 +1086,7 @@ export function RemyDrawer() {
         // won't let a stuck request run forever. Cancel button is always available.
         timeoutId = setTimeout(() => controller.abort(), 120_000)
 
+        const activity = getSessionActivity()
         const response = await fetch('/api/remy/stream', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1087,6 +1094,8 @@ export function RemyDrawer() {
             message,
             history: messages.slice(-30),
             currentPage: pathname,
+            recentPages: activity.recentPages,
+            recentActions: activity.recentActions,
           }),
           signal: controller.signal,
         })

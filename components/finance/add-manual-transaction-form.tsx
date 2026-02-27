@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { addManualTransaction } from '@/lib/finance/bank-feed-actions'
+import { trackAction } from '@/lib/ai/remy-activity-tracker'
 
 const EXPENSE_CATEGORIES = [
   'groceries',
@@ -50,6 +51,7 @@ export function AddManualTransactionForm() {
           category: form.category,
           date: form.date,
         })
+        trackAction('Added transaction', `$${form.amount} — ${form.description.trim()}`)
         setForm({
           description: '',
           amount: '',

@@ -20,6 +20,7 @@ import { NutritionPanel } from '@/components/recipes/nutrition-panel'
 import { AllergenBadgePanel } from '@/components/recipes/allergen-badge-panel'
 import { SubRecipeSearchModal } from '@/components/recipes/sub-recipe-search-modal'
 import { DishPhotoUpload } from '@/components/dishes/dish-photo-upload'
+import { trackAction } from '@/lib/ai/remy-activity-tracker'
 import { format } from 'date-fns'
 
 const CATEGORY_COLORS: Record<string, 'default' | 'success' | 'warning' | 'info' | 'error'> = {
@@ -86,6 +87,7 @@ export function RecipeDetailClient({ recipe }: Props) {
     setLoading(true)
     try {
       await deleteRecipe(recipe.id)
+      trackAction('Deleted recipe', recipe.name)
       router.push('/recipes')
     } catch (err: any) {
       setError(err.message || 'Failed to delete recipe')
@@ -129,6 +131,7 @@ export function RecipeDetailClient({ recipe }: Props) {
         })
       }
 
+      trackAction('Duplicated recipe', `${recipe.name} → ${recipe.name} (copy)`)
       router.push(`/recipes/${result.recipe.id}`)
     } catch (err: any) {
       setError(err.message || 'Failed to duplicate recipe')

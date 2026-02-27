@@ -30,6 +30,7 @@ import {
   validateRemyRequestBody,
   validateHistory,
   sanitizeErrorForClient,
+  checkRecipeGenerationBlock,
 } from '@/lib/ai/remy-input-validation'
 import { isRemyBlocked, isRemyAdmin, logRemyAbuse } from '@/lib/ai/remy-abuse-actions'
 import { acquireInteractiveLock, releaseInteractiveLock, isSlotBusy } from '@/lib/ai/queue'
@@ -121,7 +122,9 @@ function buildRemySystemPrompt(
   memories: RemyMemory[] = [],
   culinaryProfile?: string,
   favoriteChefs?: string,
-  archetypeId?: string | null
+  archetypeId?: string | null,
+  recentPages?: Array<{ path: string; label: string; at: string }>,
+  recentActions?: Array<{ action: string; entity: string; at: string }>
 ): string {
   const parts: string[] = []
 
@@ -150,6 +153,21 @@ function buildRemySystemPrompt(
     )
   }
 
+  // Current timestamp — so Remy knows the time, day, and date
+  const now = new Date()
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  const timeStr = now.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
+  const dateStr = now.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
+  parts.push(`\nCURRENT TIME: ${timeStr} on ${dayNames[now.getDay()]}, ${dateStr}`)
+
   parts.push(`\nBUSINESS CONTEXT:
 - Business: ${context.businessName ?? 'Your business'}${context.tagline ? ` — "${context.tagline}"` : ''}
 - Clients: ${context.clientCount} total
@@ -163,6 +181,42 @@ ${context.upcomingEvents.map((e) => `- ${e.occasion ?? 'Event'} on ${e.date ?? '
 
   if (context.recentClients && context.recentClients.length > 0) {
     parts.push(`\nRECENT CLIENTS: ${context.recentClients.map((c) => c.name).join(', ')}`)
+  }
+
+  // Daily plan — what's on the chef's plate today
+  if (context.dailyPlan && context.dailyPlan.totalItems > 0) {
+    const dp = context.dailyPlan
+    parts.push(`\nTODAY'S DAILY PLAN (${dp.totalItems} items, ~${dp.estimatedMinutes} min):
+- Quick Admin: ${dp.adminItems} items
+- Event Prep: ${dp.prepItems} items
+- Creative Time: ${dp.creativeItems} items
+- Relationship: ${dp.relationshipItems} items
+The chef can see the full structured view at /daily.`)
+  }
+
+  // Email digest — proactive communication awareness
+  if (context.emailDigest && context.emailDigest.totalSinceYesterday > 0) {
+    const d = context.emailDigest
+    const emailLines: string[] = [
+      `\nEMAIL INBOX (last 24 hours):`,
+      `- ${d.totalSinceYesterday} emails received${d.inquiryCount > 0 ? `, ${d.inquiryCount} new inquir${d.inquiryCount === 1 ? 'y' : 'ies'}` : ''}${d.threadReplyCount > 0 ? `, ${d.threadReplyCount} client repl${d.threadReplyCount === 1 ? 'y' : 'ies'}` : ''}`,
+    ]
+    if (d.recentEmails.length > 0) {
+      emailLines.push('Recent:')
+      for (const e of d.recentEmails) {
+        const cls =
+          e.classification === 'inquiry'
+            ? ' [NEW INQUIRY]'
+            : e.classification === 'existing_thread'
+              ? ' [CLIENT REPLY]'
+              : ''
+        emailLines.push(`- From: ${e.from} — "${e.subject}"${cls}`)
+      }
+    }
+    emailLines.push(
+      'You can search, read, or summarize emails. Draft replies are always drafts — never auto-sent.'
+    )
+    parts.push(emailLines.join('\n'))
   }
 
   // Calendar & Availability
@@ -247,6 +301,36 @@ ${context.upcomingCalls.map((c) => `- ${c.clientName} at ${new Date(c.scheduledA
 ${context.recentArtifacts.map((a) => `- ${a.type.replace(/_/g, ' ')}: ${a.title} (${new Date(a.createdAt).toLocaleDateString()})`).join('\n')}`)
   }
 
+  // Navigation trail — what pages the chef visited this session
+  if (recentPages && recentPages.length > 0) {
+    const trail = recentPages.map((p) => {
+      const time = new Date(p.at).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      })
+      return `- ${time}: ${p.label} (${p.path})`
+    })
+    parts.push(`\nSESSION NAVIGATION (where the chef has been this session, oldest→newest):
+${trail.join('\n')}
+This shows the chef's workflow — what they've been looking at and in what order. Use it to understand their current focus.`)
+  }
+
+  // Recent mutations — what the chef just did in the app
+  if (recentActions && recentActions.length > 0) {
+    const actions = recentActions.map((a) => {
+      const time = new Date(a.at).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      })
+      return `- ${time}: ${a.action} — ${a.entity}`
+    })
+    parts.push(`\nRECENT ACTIONS (what the chef just did in the app):
+${actions.join('\n')}
+These are real actions the chef just took. Reference them when relevant — e.g. "I see you just created that event, want me to draft a confirmation?"`)
+  }
+
   if (context.currentPage) {
     parts.push(
       `\nThe chef is currently on the ${context.currentPage} page. Consider this when making suggestions.`
@@ -274,7 +358,7 @@ The chef mentioned these by name. Use this data to answer their question accurat
 
   parts.push(`\nGROUNDING RULE (CRITICAL):
 You may ONLY reference data that appears in the sections above. You have access to:
-ALWAYS AVAILABLE: Business context, upcoming events, recent clients, calendar & availability (blocked dates, calendar entries, waitlist), year-to-date stats (revenue, expenses, top clients), staff roster, equipment inventory, active goals, todo list, upcoming calls, document counts, recent Remy artifacts, and memories.
+ALWAYS AVAILABLE: Current time/date, business context, upcoming events, recent clients, today's daily plan (admin/prep/creative/relationship items), email inbox digest (last 24h), session navigation trail (pages visited this session), recent actions (mutations the chef just performed), calendar & availability (blocked dates, calendar entries, waitlist), year-to-date stats (revenue, expenses, top clients), staff roster, equipment inventory, active goals, todo list, upcoming calls, document counts, recent Remy artifacts, and memories.
 ON EVENT PAGES: Ledger entries (payments), expenses, staff assignments, temp logs, quotes, status history, menu approval, grocery quotes, and after-action reviews.
 ON CLIENT PAGES: Full event history, client notes, and client reviews.
 ON INQUIRY PAGES: Full message thread.
@@ -846,7 +930,7 @@ export async function POST(req: NextRequest) {
         { headers: sseHeaders() }
       )
     }
-    const { message, currentPage } = validated
+    const { message, currentPage, recentPages, recentActions } = validated
     const history = validateHistory(rawBody.history, 10) as RemyMessage[]
 
     // ─── GUARDRAILS ──────────────────────────────────────────────
@@ -885,6 +969,14 @@ export async function POST(req: NextRequest) {
           headers: sseHeaders(),
         })
       }
+    }
+
+    // ─── RECIPE GENERATION BLOCK (hard rule — AI never generates recipes) ───
+    const recipeBlock = checkRecipeGenerationBlock(message)
+    if (recipeBlock) {
+      return new Response(encodeSSE({ type: 'error', data: recipeBlock }), {
+        headers: sseHeaders(),
+      })
     }
 
     // ─── PI TEST (admin only) ──────────────────────────────────────
@@ -1189,7 +1281,9 @@ export async function POST(req: NextRequest) {
         memories,
         culinaryProfile,
         favoriteChefsList,
-        archetypeId
+        archetypeId,
+        recentPages,
+        recentActions
       )
       const historyStr = formatConversationHistory(history)
       const mixedUserMessage = `${historyStr}Chef: ${questionInput}`
@@ -1352,7 +1446,9 @@ export async function POST(req: NextRequest) {
       memories,
       culinaryProfile,
       favoriteChefsList,
-      archetypeId
+      archetypeId,
+      recentPages,
+      recentActions
     )
     const historyStr = formatConversationHistory(history)
     const userMessage = `${historyStr}Chef: ${message}`

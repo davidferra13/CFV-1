@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { updateClientPersonalInfo } from '@/lib/clients/milestones'
+import { trackAction } from '@/lib/ai/remy-activity-tracker'
 
 export function PersonalInfoEditor({
   clientId,
@@ -35,6 +36,7 @@ export function PersonalInfoEditor({
         partner_preferred_name: partnerPreferredName || null,
         family_notes: familyNotes || null,
       })
+      trackAction('Updated client details', preferredName || 'client')
       setEditing(false)
     } catch (e) {
       console.error(e)
