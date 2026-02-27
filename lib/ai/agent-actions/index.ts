@@ -6,7 +6,8 @@ import { registerAgentActions } from '@/lib/ai/agent-registry'
 import { clientAgentActions } from './client-actions'
 import { eventAgentActions } from './event-actions'
 import { inquiryAgentActions } from './inquiry-actions'
-import { recipeAgentActions } from './recipe-actions'
+// recipe-actions: REMOVED — AI must never generate recipes. Recipe write actions
+// are now permanently restricted in restricted-actions.ts. See CLAUDE.md § pattern #0.
 import { menuAgentActions } from './menu-actions'
 import { quoteAgentActions } from './quote-actions'
 import { operationsAgentActions } from './operations-actions'
@@ -34,7 +35,7 @@ export function ensureAgentActionsRegistered(): void {
   registerAgentActions(clientAgentActions)
   registerAgentActions(eventAgentActions)
   registerAgentActions(inquiryAgentActions)
-  registerAgentActions(recipeAgentActions)
+  // recipeAgentActions removed — recipe write actions are in restrictedAgentActions
   registerAgentActions(menuAgentActions)
   registerAgentActions(quoteAgentActions)
   registerAgentActions(operationsAgentActions)

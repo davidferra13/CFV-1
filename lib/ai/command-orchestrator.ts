@@ -367,8 +367,21 @@ async function executeSchedulingNextAvailable(inputs: Record<string, unknown>) {
 
 // ─── Web Task Executors ─────────────────────────────────────────────────────────
 
+/** Block web searches that are trying to find/generate recipes */
+const WEB_RECIPE_BLOCK_PATTERN =
+  /\b(recipe|how\s+to\s+(cook|make|prepare|bake|roast|grill|braise|fry)|meal\s+(plan|idea|prep)|what\s+to\s+(cook|make))\b/i
+
 async function executeWebSearch(inputs: Record<string, unknown>) {
   const query = String(inputs.query ?? '')
+  if (WEB_RECIPE_BLOCK_PATTERN.test(query)) {
+    return {
+      query,
+      results: [],
+      blocked: true,
+      message:
+        "Web recipe searches are not allowed — recipes are the chef's creative domain. Use recipe.search to look through your existing recipe book instead.",
+    }
+  }
   const limit = Number(inputs.limit) || 5
   const results = await searchWeb(query, limit)
   return { query, results }

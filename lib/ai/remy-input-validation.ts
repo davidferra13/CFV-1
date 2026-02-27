@@ -90,6 +90,12 @@ interface RecentActionEntry {
   at: string
 }
 
+interface RecentErrorEntry {
+  message: string
+  context: string
+  at: string
+}
+
 interface ValidatedRemyBody {
   message: string
   history: HistoryMessage[]
@@ -97,6 +103,9 @@ interface ValidatedRemyBody {
   tenantId?: string
   recentPages?: RecentPageEntry[]
   recentActions?: RecentActionEntry[]
+  recentErrors?: RecentErrorEntry[]
+  sessionMinutes?: number
+  activeForm?: string
 }
 
 /**
@@ -125,7 +134,29 @@ export function validateRemyRequestBody(raw: unknown): ValidatedRemyBody | null 
   // Validate recent actions (max 10 entries)
   const recentActions = validateRecentActions(body.recentActions)
 
-  return { message, history, currentPage, tenantId, recentPages, recentActions }
+  // Validate recent errors (max 5 entries)
+  const recentErrors = validateRecentErrors(body.recentErrors)
+
+  // Session duration (capped at 24 hours)
+  const sessionMinutes =
+    typeof body.sessionMinutes === 'number' && body.sessionMinutes >= 0
+      ? Math.min(Math.round(body.sessionMinutes), 1440)
+      : undefined
+
+  // Active form (what the chef is currently working on)
+  const activeForm = typeof body.activeForm === 'string' ? body.activeForm.slice(0, 200) : undefined
+
+  return {
+    message,
+    history,
+    currentPage,
+    tenantId,
+    recentPages,
+    recentActions,
+    recentErrors,
+    sessionMinutes,
+    activeForm,
+  }
 }
 
 function validateRecentPages(raw: unknown): RecentPageEntry[] | undefined {
@@ -152,6 +183,21 @@ function validateRecentActions(raw: unknown): RecentActionEntry[] | undefined {
     safe.push({
       action: entry.action.slice(0, 100),
       entity: entry.entity.slice(0, 200),
+      at: typeof entry.at === 'string' ? entry.at.slice(0, 30) : '',
+    })
+  }
+  return safe.length > 0 ? safe : undefined
+}
+
+function validateRecentErrors(raw: unknown): RecentErrorEntry[] | undefined {
+  if (!Array.isArray(raw)) return undefined
+  const safe: RecentErrorEntry[] = []
+  for (const entry of raw.slice(-5)) {
+    if (!entry || typeof entry !== 'object') continue
+    if (typeof entry.message !== 'string' || typeof entry.context !== 'string') continue
+    safe.push({
+      message: entry.message.slice(0, 200),
+      context: entry.context.slice(0, 100),
       at: typeof entry.at === 'string' ? entry.at.slice(0, 30) : '',
     })
   }

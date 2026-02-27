@@ -415,7 +415,31 @@ Only run `npx tsc --noEmit --skipLibCheck` or `npx next build --no-lint` if:
 
 These are the patterns Claude will get wrong without explicit rules.
 
-### 0. Formula > AI — Always (HIGHEST PRIORITY PATTERN)
+### 0. AI Must NEVER Generate Recipes (ABSOLUTE — NO EXCEPTIONS)
+
+**AI (Remy, Ollama, any LLM) must never create, generate, fabricate, hallucinate, draft, suggest, or pull recipes from anywhere.** Not from the internet, not from its training data, not as a suggestion, not as a draft, not with chef approval, not in any tier, not ever.
+
+AI has **zero role** in telling a chef what to cook or how to cook it. Recipes are the chef's creative work and intellectual property.
+
+**The ONLY thing AI can do with recipes:**
+
+- **Search the chef's own recipe book** (`recipe.search`) — read-only lookup of recipes the chef already entered manually. That's it.
+
+**Everything else is banned:**
+
+- Generate or fabricate a recipe from scratch
+- Pull or suggest recipes from the internet or training data
+- Create recipe instructions, methods, or ingredient lists
+- Draft recipe content for chef review
+- Add or modify ingredients via AI
+- Suggest "what to make" or "what to cook"
+- Auto-fill recipe fields from natural language descriptions
+
+`agent.create_recipe`, `agent.update_recipe`, and `agent.add_ingredient` are **permanently restricted** in `lib/ai/agent-actions/restricted-actions.ts`. The input validation layer (`lib/ai/remy-input-validation.ts`) also blocks recipe generation intent before it reaches the LLM.
+
+**Recipes are entered manually on the recipe form. Period.**
+
+### 0b. Formula > AI — Always (HIGHEST PRIORITY PATTERN)
 
 **If deterministic code (math, logic, database queries, conditional checks) can produce the correct result, ALWAYS use it over AI.** AI (Remy/Ollama) is the fallback, never the default.
 

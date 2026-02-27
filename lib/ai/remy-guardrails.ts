@@ -274,6 +274,17 @@ const INJECTION_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
     pattern: /<\/?system>|<\/?instruction>|<\/?prompt>/i,
     label: 'tag_injection',
   },
+  // Bracket-style tag injection (bypasses angle-bracket detection)
+  {
+    pattern:
+      /\[SYSTEM\]|\[INSTRUCTION\]|\[PROMPT\]|\[\[system\]\]|\[\[instruction\]\]|\[\[prompt\]\]/i,
+    label: 'bracket_tag_injection',
+  },
+  // Delimiter injection (triple backtick + role name)
+  {
+    pattern: /```\s*(system|instruction|prompt|admin|root|developer)/i,
+    label: 'delimiter_injection',
+  },
 ]
 
 function detectPromptInjection(message: string): string | null {

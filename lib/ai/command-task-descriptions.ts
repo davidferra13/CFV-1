@@ -123,7 +123,8 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     type: 'recipe.search',
     tier: 1,
     name: 'Search Recipes',
-    description: 'Search for recipes by name or keyword.',
+    description:
+      "Search the chef's existing recipe book by name or keyword. Returns only recipes the chef has manually saved. NEVER generates, fabricates, or suggests new recipes.",
     inputSchema: '{ "query": "string — recipe name or keyword to search for" }',
   },
   {
@@ -149,7 +150,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Web Search',
     description:
-      'Search the internet for information. Use this for food trends, recipes online, supplier info, industry news, competitor research, catering ideas, or any question that needs current web data.',
+      'Search the internet for public information. Use this for food trends, supplier info, industry news, competitor research, or any question that needs current web data. NEVER use this to search for recipes — AI does not generate, suggest, or retrieve recipes from anywhere.',
     inputSchema:
       '{ "query": "string — search query", "limit": "number — optional, max results, defaults to 5" }',
   },

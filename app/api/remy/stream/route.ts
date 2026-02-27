@@ -124,7 +124,10 @@ function buildRemySystemPrompt(
   favoriteChefs?: string,
   archetypeId?: string | null,
   recentPages?: Array<{ path: string; label: string; at: string }>,
-  recentActions?: Array<{ action: string; entity: string; at: string }>
+  recentActions?: Array<{ action: string; entity: string; at: string }>,
+  recentErrors?: Array<{ message: string; context: string; at: string }>,
+  sessionMinutes?: number,
+  activeForm?: string
 ): string {
   const parts: string[] = []
 
@@ -329,6 +332,41 @@ This shows the chef's workflow — what they've been looking at and in what orde
     parts.push(`\nRECENT ACTIONS (what the chef just did in the app):
 ${actions.join('\n')}
 These are real actions the chef just took. Reference them when relevant — e.g. "I see you just created that event, want me to draft a confirmation?"`)
+  }
+
+  // Recent errors — help the chef if they hit problems
+  if (recentErrors && recentErrors.length > 0) {
+    const errs = recentErrors.map((e) => {
+      const time = new Date(e.at).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      })
+      return `- ${time}: "${e.message}" (while: ${e.context})`
+    })
+    parts.push(`\nRECENT ERRORS (the chef hit these problems):
+${errs.join('\n')}
+If the chef seems frustrated or asks about something failing, these errors are context. Proactively acknowledge if relevant — "I saw that didn't work earlier — let's figure it out."`)
+  }
+
+  // Session duration — how long the chef has been working
+  if (sessionMinutes && sessionMinutes > 0) {
+    const hours = Math.floor(sessionMinutes / 60)
+    const mins = sessionMinutes % 60
+    const duration = hours > 0 ? `${hours}h ${mins}m` : `${mins} minutes`
+    parts.push(`\nSESSION DURATION: The chef has been active for ${duration} this session.`)
+    if (sessionMinutes > 120) {
+      parts.push(
+        `That's a long session — they're grinding. Be efficient and sharp, don't waste their time.`
+      )
+    }
+  }
+
+  // Active form — what the chef is currently working on
+  if (activeForm) {
+    parts.push(
+      `\nCURRENTLY WORKING ON: The chef is in the middle of "${activeForm}". If they ask a question, it's probably related to this. Keep answers contextual.`
+    )
   }
 
   if (context.currentPage) {
@@ -930,7 +968,15 @@ export async function POST(req: NextRequest) {
         { headers: sseHeaders() }
       )
     }
-    const { message, currentPage, recentPages, recentActions } = validated
+    const {
+      message,
+      currentPage,
+      recentPages,
+      recentActions,
+      recentErrors,
+      sessionMinutes,
+      activeForm,
+    } = validated
     const history = validateHistory(rawBody.history, 10) as RemyMessage[]
 
     // ─── GUARDRAILS ──────────────────────────────────────────────
@@ -974,9 +1020,10 @@ export async function POST(req: NextRequest) {
     // ─── RECIPE GENERATION BLOCK (hard rule — AI never generates recipes) ───
     const recipeBlock = checkRecipeGenerationBlock(message)
     if (recipeBlock) {
-      return new Response(encodeSSE({ type: 'error', data: recipeBlock }), {
-        headers: sseHeaders(),
-      })
+      // Return as a friendly Remy chat response, not an error
+      const body =
+        encodeSSE({ type: 'token', data: recipeBlock }) + encodeSSE({ type: 'done', data: null })
+      return new Response(body, { headers: sseHeaders() })
     }
 
     // ─── PI TEST (admin only) ──────────────────────────────────────
