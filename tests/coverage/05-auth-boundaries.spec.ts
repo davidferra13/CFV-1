@@ -195,3 +195,13 @@ base.describe('Auth Boundaries - Unauthenticated Staff Routes', () => {
     })
   }
 })
+
+base.test('unauthenticated -> /partner/locations/[id] redirects to sign-in', async ({ page }) => {
+  await page.goto(`${BASE_URL}/partner/locations/test-location-id`, {
+    waitUntil: 'domcontentloaded',
+  })
+  const url = page.url()
+  expect(url, '/partner/locations/[id] should reject unauthenticated users').toMatch(
+    /auth\/signin|unauthorized/
+  )
+})

@@ -287,3 +287,23 @@ test.describe('Public - Additional Public Pages', () => {
     expect(response?.status() ?? 0).toBeLessThan(500)
   })
 })
+
+test.describe('Public - Additional Shortlink and Demo Routes', () => {
+  test('/demo - demo page loads', async ({ page }) => {
+    await assertPageLoads(page, '/demo')
+  })
+
+  test('/g/[code] - invalid short code handled gracefully', async ({ page }) => {
+    const response = await page.goto('/g/not-a-real-short-code', {
+      waitUntil: 'domcontentloaded',
+    })
+    expect(response?.status() ?? 0).toBeLessThan(500)
+  })
+
+  test('/share/[token]/recap - invalid recap token handled gracefully', async ({ page }) => {
+    const response = await page.goto('/share/not-a-real-token/recap', {
+      waitUntil: 'domcontentloaded',
+    })
+    expect(response?.status() ?? 0).toBeLessThan(500)
+  })
+})
