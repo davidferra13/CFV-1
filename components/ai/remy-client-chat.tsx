@@ -190,6 +190,7 @@ export function RemyClientChat() {
           <RemyTalkingAvatar
             viseme={lipSync.currentViseme}
             isSpeaking={lipSync.isSpeaking}
+            emotion={lipSync.currentEmotion}
             size="sm"
           />
           <div>

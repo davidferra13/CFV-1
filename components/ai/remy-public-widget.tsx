@@ -156,6 +156,7 @@ export function RemyPublicWidget({ tenantId, chefName }: RemyPublicWidgetProps) 
           <RemyTalkingAvatar
             viseme={lipSync.currentViseme}
             isSpeaking={lipSync.isSpeaking}
+            emotion={lipSync.currentEmotion}
             size="sm"
           />
           <div>
