@@ -127,6 +127,8 @@ Tracking your actual costs on every event is the only way to know if your pricin
 ---
 
 *Have a pricing question? [Contact us](/contact) — we're happy to help.*
+
+**Related reading:** [How to Start a Private Chef Business](/blog/how-to-start-a-private-chef-business) | [Private Chef Contract Guide](/blog/private-chef-contract-template-guide)
 `,
   },
   {
@@ -188,6 +190,8 @@ Professional client management isn't extra work — it's the foundation of a sus
 ---
 
 *[ChefFlow](/) handles client management, event tracking, proposals, and follow-ups in one system — so nothing falls through the cracks. [Start free](/auth/signup).*
+
+**Related reading:** [How to Price a Private Dinner Party](/blog/how-to-price-a-private-dinner-party) | [Private Chef Contract Guide](/blog/private-chef-contract-template-guide)
 `,
   },
   {
@@ -292,6 +296,8 @@ But it's still a *business*. Treat it like one from day one, and you'll be years
 ---
 
 *Ready to run your private chef business like a pro? [Start your free ChefFlow trial](/auth/signup) — events, clients, menus, and payments in one calm workspace.*
+
+**Related reading:** [How to Price a Private Dinner Party](/blog/how-to-price-a-private-dinner-party) | [Client Management Mistakes to Avoid](/blog/private-chef-client-management-guide) | [Build a Meal Prep Business](/blog/meal-prep-business-guide-private-chef)
 `,
   },
   {
@@ -428,6 +434,8 @@ Managing proposals, tracking deposits, and following up on balances across dozen
 ---
 
 *Want to level up your client communication? [Try ChefFlow free](/auth/signup) — professional proposals, payment tracking, and client management for private chefs.*
+
+**Related reading:** [How to Price a Private Dinner Party](/blog/how-to-price-a-private-dinner-party) | [How to Start a Private Chef Business](/blog/how-to-start-a-private-chef-business)
 `,
   },
   {
@@ -560,6 +568,8 @@ The difference between a profitable meal prep business and a breakeven one is **
 ---
 
 *Ready to build your meal prep business? [Start your free ChefFlow trial](/auth/signup) — manage clients, track costs, and grow your recurring revenue.*
+
+**Related reading:** [How to Price a Private Dinner Party](/blog/how-to-price-a-private-dinner-party) | [How to Start a Private Chef Business](/blog/how-to-start-a-private-chef-business) | [Private Chef Contract Guide](/blog/private-chef-contract-template-guide)
 `,
   },
 ]

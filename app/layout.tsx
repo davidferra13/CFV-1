@@ -85,6 +85,11 @@ export const metadata: Metadata = {
         },
       }
     : {}),
+  alternates: {
+    types: {
+      'application/rss+xml': '/feed.xml',
+    },
+  },
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://cheflowhq.com'),
 }
 

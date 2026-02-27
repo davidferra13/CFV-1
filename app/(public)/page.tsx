@@ -28,6 +28,10 @@ export const metadata: Metadata = {
     'food costing software',
     'private chef app',
     'catering business software',
+    'meal prep business software',
+    'private chef contract management',
+    'chef scheduling software',
+    'personal chef booking system',
   ],
   openGraph: {
     title: 'ChefFlow | Private Chef Business Software',
@@ -87,8 +91,9 @@ export default function Home() {
             Designed by Someone Who Gets It
           </p>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-stone-300 md:text-lg">
-            Private dinners, grazing tables, catering — whatever your craft, manage every inquiry,
-            event, menu, and payment from one calm workspace.
+            Private dinners, grazing tables, meal prep, catering — whatever your craft, manage every
+            inquiry, event, menu, recipe, and payment from one calm workspace. The all-in-one
+            private chef software for solo operators and growing teams.
           </p>
           <div className="mt-8 flex w-full max-w-md flex-col gap-3 sm:flex-row">
             <Link

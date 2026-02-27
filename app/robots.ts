@@ -18,6 +18,7 @@ export default function robots(): MetadataRoute.Robots {
           '/partner-signup',
           '/blog',
           '/blog/',
+          '/feed.xml',
         ],
         disallow: [
           '/api/',
