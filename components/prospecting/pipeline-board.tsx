@@ -3,7 +3,6 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { updatePipelineStage } from '@/lib/prospecting/pipeline-actions'
 import type { Prospect } from '@/lib/prospecting/types'
 import type { PipelineStage } from '@/lib/prospecting/constants'
@@ -12,14 +11,25 @@ import {
   PIPELINE_STAGE_LABELS,
   PIPELINE_STAGE_COLORS,
 } from '@/lib/prospecting/constants'
-import { Building2, User, GripVertical, Phone, Mail, Loader2 } from 'lucide-react'
+import {
+  Building2,
+  User,
+  GripVertical,
+  Phone,
+  Mail,
+  Loader2,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface PipelineBoardProps {
   initialStages: Record<PipelineStage, Prospect[]>
+  revenueByStage?: Record<PipelineStage, { count: number; totalRevenue: number }>
 }
 
-export function PipelineBoard({ initialStages }: PipelineBoardProps) {
+export function PipelineBoard({ initialStages, revenueByStage }: PipelineBoardProps) {
   const [stages, setStages] = useState(initialStages)
   const [draggedProspect, setDraggedProspect] = useState<Prospect | null>(null)
   const [dragOverStage, setDragOverStage] = useState<PipelineStage | null>(null)
@@ -89,11 +99,30 @@ export function PipelineBoard({ initialStages }: PipelineBoardProps) {
     .flat()
     .filter((p) => !['converted', 'lost'].includes(p.pipeline_stage || 'new')).length
 
+  // Total pipeline revenue (active stages only)
+  const totalPipelineRevenue = revenueByStage
+    ? Object.entries(revenueByStage)
+        .filter(([stage]) => !['converted', 'lost'].includes(stage))
+        .reduce((sum, [, data]) => sum + data.totalRevenue, 0)
+    : 0
+
+  function formatCurrency(amount: number): string {
+    if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`
+    if (amount >= 1_000) return `$${(amount / 1_000).toFixed(0)}K`
+    return `$${amount.toFixed(0)}`
+  }
+
   return (
     <div className="space-y-4">
       {/* Summary bar */}
       <div className="flex items-center gap-4 text-sm text-stone-400">
         <span>{totalActive} active prospects in pipeline</span>
+        {totalPipelineRevenue > 0 && (
+          <span className="flex items-center gap-1 text-green-400 font-medium">
+            <DollarSign className="h-3 w-3" />
+            {formatCurrency(totalPipelineRevenue)} potential revenue
+          </span>
+        )}
         {isPending && (
           <span className="flex items-center gap-1 text-brand-500">
             <Loader2 className="h-3 w-3 animate-spin" /> Updating...
@@ -103,51 +132,64 @@ export function PipelineBoard({ initialStages }: PipelineBoardProps) {
 
       {/* Kanban columns */}
       <div className="flex gap-3 overflow-x-auto pb-4" style={{ minHeight: '60vh' }}>
-        {activeStages.map((stage) => (
-          <div
-            key={stage}
-            className={`flex-shrink-0 w-72 rounded-lg border ${
-              dragOverStage === stage
-                ? 'border-brand-500 bg-brand-950/30'
-                : 'border-stone-700 bg-stone-900/50'
-            } transition-colors`}
-            onDragOver={(e) => handleDragOver(e, stage)}
-            onDragLeave={handleDragLeave}
-            onDrop={() => handleDrop(stage)}
-          >
-            {/* Column header */}
-            <div className="p-3 border-b border-stone-800">
-              <div className="flex items-center justify-between">
-                <span
-                  className={`rounded-full px-2.5 py-1 text-xs font-semibold border ${PIPELINE_STAGE_COLORS[stage]}`}
-                >
-                  {PIPELINE_STAGE_LABELS[stage]}
-                </span>
-                <span className="text-xs text-stone-500">{stages[stage].length}</span>
+        {activeStages.map((stage) => {
+          const stageRevenue = revenueByStage?.[stage]?.totalRevenue ?? 0
+
+          return (
+            <div
+              key={stage}
+              className={`flex-shrink-0 w-72 rounded-lg border ${
+                dragOverStage === stage
+                  ? 'border-brand-500 bg-brand-950/30'
+                  : 'border-stone-700 bg-stone-900/50'
+              } transition-colors`}
+              onDragOver={(e) => handleDragOver(e, stage)}
+              onDragLeave={handleDragLeave}
+              onDrop={() => handleDrop(stage)}
+            >
+              {/* Column header */}
+              <div className="p-3 border-b border-stone-800">
+                <div className="flex items-center justify-between">
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-xs font-semibold border ${PIPELINE_STAGE_COLORS[stage]}`}
+                  >
+                    {PIPELINE_STAGE_LABELS[stage]}
+                  </span>
+                  <span className="text-xs text-stone-500">{stages[stage].length}</span>
+                </div>
+                {stageRevenue > 0 && (
+                  <div className="mt-1.5 flex items-center gap-1 text-[10px] text-green-500">
+                    <DollarSign className="h-2.5 w-2.5" />
+                    {formatCurrency(stageRevenue)}
+                  </div>
+                )}
+              </div>
+
+              {/* Cards */}
+              <div className="p-2 space-y-2 max-h-[65vh] overflow-y-auto">
+                {stages[stage].length === 0 && (
+                  <p className="text-xs text-stone-600 text-center py-8">Drop prospects here</p>
+                )}
+                {stages[stage].map((prospect) => (
+                  <PipelineCard
+                    key={prospect.id}
+                    prospect={prospect}
+                    onDragStart={() => handleDragStart(prospect)}
+                  />
+                ))}
               </div>
             </div>
-
-            {/* Cards */}
-            <div className="p-2 space-y-2 max-h-[65vh] overflow-y-auto">
-              {stages[stage].length === 0 && (
-                <p className="text-xs text-stone-600 text-center py-8">Drop prospects here</p>
-              )}
-              {stages[stage].map((prospect) => (
-                <PipelineCard
-                  key={prospect.id}
-                  prospect={prospect}
-                  onDragStart={() => handleDragStart(prospect)}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
 }
 
 function PipelineCard({ prospect, onDragStart }: { prospect: Prospect; onDragStart: () => void }) {
+  const scoreDelta =
+    prospect.previous_lead_score != null ? prospect.lead_score - prospect.previous_lead_score : null
+
   return (
     <Card
       className="p-3 cursor-grab active:cursor-grabbing hover:border-stone-600 transition-colors"
@@ -174,9 +216,9 @@ function PipelineCard({ prospect, onDragStart }: { prospect: Prospect; onDragSta
           )}
 
           <div className="flex items-center gap-2 mt-2">
-            {/* Lead score */}
+            {/* Lead score with trend arrow */}
             <span
-              className={`inline-block min-w-[1.5rem] text-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+              className={`inline-flex items-center gap-0.5 min-w-[1.5rem] text-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
                 prospect.lead_score >= 70
                   ? 'bg-green-950 text-green-400'
                   : prospect.lead_score >= 40
@@ -185,6 +227,12 @@ function PipelineCard({ prospect, onDragStart }: { prospect: Prospect; onDragSta
               }`}
             >
               {prospect.lead_score}
+              {scoreDelta != null && scoreDelta > 0 && (
+                <TrendingUp className="h-2.5 w-2.5 text-green-400" />
+              )}
+              {scoreDelta != null && scoreDelta < 0 && (
+                <TrendingDown className="h-2.5 w-2.5 text-red-400" />
+              )}
             </span>
 
             {/* Location */}

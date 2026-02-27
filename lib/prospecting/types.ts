@@ -46,6 +46,7 @@ export interface Prospect {
   tags: string[]
   priority: string
   lead_score: number
+  previous_lead_score: number | null
   verified: boolean
   draft_email: string | null
   news_intel: string | null

@@ -1,7 +1,7 @@
-# Prospect Scrub System — V2 + V2.1 + V2.2 + V2.3 Overhaul
+# Prospect Scrub System — V2 + V2.1 + V2.2 + V2.3 + V2.4 Overhaul
 
 **Date:** 2026-02-27
-**Status:** Complete (all four waves)
+**Status:** Complete (all five waves)
 
 ## Summary
 
@@ -10,6 +10,8 @@ Complete overhaul of the AI prospect scrubbing pipeline in four waves:
 - **V2 (Wave 1):** 10 improvements across reliability, intelligence quality, UX, and safety
 - **V2.1 (Wave 2):** 5 deep intelligence features — multi-page crawling, news intel, cold email drafts, staleness tracking, batch refresh
 - **V2.2 (Wave 3):** 4 aggressive lead generation features — seasonal scoring, event signal detection, competitor intelligence, lookalike prospecting
+- **V2.3 (Wave 4):** 6 outreach pipeline features — Kanban board, follow-up sequences, AI call scripts, CSV import, geographic clustering, outreach activity log
+- **V2.4 (Wave 4.1):** 7 quality-of-life improvements — fuzzy CSV dedup, lead score trending, Kanban revenue totals, smart call queue, CSV export, auto pipeline rules, prospect merge
 
 ## V2 — Wave 1: Foundation
 
@@ -170,3 +172,39 @@ Phase 4: Draft Email       → AI cold outreach email per prospect
 | **Standard**         | "Scrub Prospects" button on /prospecting/scrub    | Free-form query → Ollama generates → verify → enrich → strategize → email           |
 | **Competitor Intel** | "Competitor Intel" tab on /prospecting/scrub      | Region input → find competing chefs → scrape testimonials → extract venues → enrich |
 | **Lookalike**        | "Find Lookalikes" button on prospect dossier page | Source prospect → Ollama finds similar orgs → verify → dedup → enrich               |
+
+## V2.4 — Wave 4.1: Quality-of-Life Improvements
+
+| Feature                   | What It Does                                                                                                                                                                                                                                                 |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Fuzzy CSV Dedup**       | CSV import now uses Levenshtein distance (85% similarity) instead of exact name match. Catches "Cape Cod YC" vs "Cape Cod Yacht Club" as duplicates. Also deduplicates within the same batch. Shared `fuzzy-match.ts` utility extracted from scrub pipeline. |
+| **Lead Score Trending**   | New `previous_lead_score` column snapshots the last known score. Kanban cards and dossier show trending arrows (↑/↓) with delta values when score changes after re-enrichment.                                                                               |
+| **Kanban Revenue Totals** | Each pipeline column shows estimated revenue (sum of `avg_event_budget × annual_events_estimate`). Pipeline summary bar shows total active pipeline revenue. Helps prioritize high-value stages.                                                             |
+| **Smart Call Queue**      | Call queue now factors in pipeline stage: hot leads (responded/meeting_set) get priority slot #2 after follow-ups. New leads sorted by lead score (highest first). Cold re-engage slot for prospects not contacted in 7+ days.                               |
+| **Export to CSV**         | "Export CSV" button on main prospecting page. Downloads all prospects with 23 columns. Proper CSV escaping for commas/quotes in data. Date-stamped filename.                                                                                                 |
+| **Auto Pipeline Rules**   | "Auto-Clean" button on pipeline page runs two rules: (1) Contacted prospects with no outreach for 14+ days → Lost, (2) Follow-ups overdue by 7+ days → priority bumped to High. Both log their changes.                                                      |
+| **Prospect Merge**        | Dossier page detects fuzzy name duplicates and shows merge suggestions. One-click merge: fills empty fields from duplicate, combines arrays (tags, luxury indicators), sums call counts, transfers outreach log + notes, deletes duplicate.                  |
+
+## Files Created (Wave 4.1)
+
+| File                                                           | Purpose                                                                   |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `lib/prospecting/fuzzy-match.ts`                               | Shared fuzzy matching utility (normalizeName, isSimilarName, levenshtein) |
+| `components/prospecting/auto-pipeline-rules-button.tsx`        | Auto-Clean button for pipeline page                                       |
+| `components/prospecting/export-csv-button.tsx`                 | Export CSV download button                                                |
+| `components/prospecting/prospect-merge-panel.tsx`              | Duplicate detection + one-click merge panel                               |
+| `supabase/migrations/20260327000010_prospect_improvements.sql` | Migration: previous_lead_score column                                     |
+
+## Files Modified (Wave 4.1)
+
+| File                                             | Changes                                                                                                                                          |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `lib/prospecting/pipeline-actions.ts`            | Fuzzy CSV dedup, exportProspectsToCSV, getPipelineRevenueByStage, runAutoPipelineRules, mergeProspects, findSimilarProspects, snapshotLeadScores |
+| `lib/prospecting/scrub-actions.ts`               | Extracted fuzzy functions to shared `fuzzy-match.ts`, now imports from there                                                                     |
+| `lib/prospecting/queue-actions.ts`               | Smart call queue: hot pipeline leads, lead-score ordering, 7-day cold re-engage                                                                  |
+| `lib/prospecting/types.ts`                       | Added `previous_lead_score` field to Prospect interface                                                                                          |
+| `components/prospecting/pipeline-board.tsx`      | Revenue totals per column, score trend arrows on cards                                                                                           |
+| `app/(chef)/prospecting/pipeline/page.tsx`       | Fetches revenue data, renders Auto-Clean button                                                                                                  |
+| `app/(chef)/prospecting/page.tsx`                | Added Export CSV button                                                                                                                          |
+| `app/(chef)/prospecting/[id]/page.tsx`           | Fetches similar prospects for merge panel                                                                                                        |
+| `app/(chef)/prospecting/[id]/dossier-client.tsx` | Lead score trend arrows + delta display, merge panel                                                                                             |

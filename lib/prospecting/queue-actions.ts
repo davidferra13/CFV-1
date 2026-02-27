@@ -24,78 +24,91 @@ export async function buildDailyQueue(
   const user = await requireChef()
   const supabase = createServerClient()
 
-  // Priority: follow-ups due first, then new/queued, then least recently called
+  // Smart queue priority:
+  //   1. Follow-ups that are due (overdue first)
+  //   2. Pipeline "responded" / "meeting_set" prospects (hot leads — no recent outreach)
+  //   3. New/queued prospects (highest lead score first)
+  //   4. Called/contacted prospects with no recent outreach (cold re-engage)
   const prospects: Prospect[] = []
+  const seenIds = new Set<string>()
+
+  function addUnique(items: Prospect[]) {
+    for (const p of items) {
+      if (!seenIds.has(p.id)) {
+        prospects.push(p)
+        seenIds.add(p.id)
+      }
+    }
+  }
+
+  function applyFilters(query: ReturnType<typeof supabase.from>) {
+    let q = query
+    if (filters?.category) q = q.eq('category', filters.category)
+    if (filters?.region) q = q.ilike('region', `%${filters.region}%`)
+    if (filters?.priority) q = q.eq('priority', filters.priority)
+    return q
+  }
 
   // 1. Follow-ups that are due
-  let followUpQuery = supabase
-    .from('prospects')
-    .select('*')
-    .eq('chef_id', user.tenantId!)
-    .eq('status', 'follow_up')
-    .lte('next_follow_up_at', new Date().toISOString())
-    .order('next_follow_up_at', { ascending: true })
-    .limit(count)
-
-  if (filters?.category) followUpQuery = followUpQuery.eq('category', filters.category)
-  if (filters?.region) followUpQuery = followUpQuery.ilike('region', `%${filters.region}%`)
-  if (filters?.priority) followUpQuery = followUpQuery.eq('priority', filters.priority)
-
-  const { data: followUps } = await followUpQuery
-  if (followUps) prospects.push(...(followUps as Prospect[]))
-
-  // 2. Fill remaining slots with new/queued prospects
-  const remaining = count - prospects.length
-  if (remaining > 0) {
-    const seenIds = new Set(prospects.map((p) => p.id))
-
-    let newQuery = supabase
+  const { data: followUps } = await applyFilters(
+    supabase
       .from('prospects')
       .select('*')
       .eq('chef_id', user.tenantId!)
-      .in('status', ['new', 'queued'])
-      .order('priority', { ascending: true }) // high first
-      .order('created_at', { ascending: true }) // oldest first
-      .limit(remaining)
+      .eq('status', 'follow_up')
+      .lte('next_follow_up_at', new Date().toISOString())
+      .order('next_follow_up_at', { ascending: true })
+      .limit(count)
+  )
+  if (followUps) addUnique(followUps as Prospect[])
 
-    if (filters?.category) newQuery = newQuery.eq('category', filters.category)
-    if (filters?.region) newQuery = newQuery.ilike('region', `%${filters.region}%`)
-    if (filters?.priority) newQuery = newQuery.eq('priority', filters.priority)
-
-    const { data: newProspects } = await newQuery
-    if (newProspects) {
-      for (const p of newProspects as Prospect[]) {
-        if (!seenIds.has(p.id)) {
-          prospects.push(p)
-          seenIds.add(p.id)
-        }
-      }
-    }
-
-    // 3. If still not enough, add called prospects (least recently called)
-    const remaining2 = count - prospects.length
-    if (remaining2 > 0) {
-      let calledQuery = supabase
+  // 2. Hot pipeline prospects (responded/meeting_set) — they showed interest, keep momentum
+  if (prospects.length < count) {
+    const { data: hotPipeline } = await applyFilters(
+      supabase
         .from('prospects')
         .select('*')
         .eq('chef_id', user.tenantId!)
-        .eq('status', 'called')
+        .in('pipeline_stage', ['responded', 'meeting_set'])
+        .not('status', 'in', '("converted","dead","not_interested")')
+        .order('lead_score', { ascending: false })
+        .limit(count - prospects.length)
+    )
+    if (hotPipeline) addUnique(hotPipeline as Prospect[])
+  }
+
+  // 3. Fill remaining slots with new/queued prospects (highest lead score first)
+  if (prospects.length < count) {
+    const { data: newProspects } = await applyFilters(
+      supabase
+        .from('prospects')
+        .select('*')
+        .eq('chef_id', user.tenantId!)
+        .in('status', ['new', 'queued'])
+        .order('lead_score', { ascending: false })
+        .order('priority', { ascending: true })
+        .order('created_at', { ascending: true })
+        .limit(count - prospects.length)
+    )
+    if (newProspects) addUnique(newProspects as Prospect[])
+  }
+
+  // 4. Cold re-engage: called/contacted prospects not reached in 7+ days
+  if (prospects.length < count) {
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+    const { data: calledProspects } = await applyFilters(
+      supabase
+        .from('prospects')
+        .select('*')
+        .eq('chef_id', user.tenantId!)
+        .in('status', ['called'])
+        .lt('last_called_at', sevenDaysAgo.toISOString())
         .order('last_called_at', { ascending: true, nullsFirst: true })
-        .limit(remaining2)
-
-      if (filters?.category) calledQuery = calledQuery.eq('category', filters.category)
-      if (filters?.region) calledQuery = calledQuery.ilike('region', `%${filters.region}%`)
-
-      const { data: calledProspects } = await calledQuery
-      if (calledProspects) {
-        for (const p of calledProspects as Prospect[]) {
-          if (!seenIds.has(p.id)) {
-            prospects.push(p)
-            seenIds.add(p.id)
-          }
-        }
-      }
-    }
+        .limit(count - prospects.length)
+    )
+    if (calledProspects) addUnique(calledProspects as Prospect[])
   }
 
   // Mark all queued prospects as 'queued'

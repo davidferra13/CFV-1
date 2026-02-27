@@ -49,6 +49,8 @@ import {
   CalendarClock,
   PhoneCall,
   MailPlus,
+  TrendingUp,
+  TrendingDown,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
@@ -57,12 +59,14 @@ import { LookalikeButton } from '@/components/prospecting/lookalike-button'
 import { FollowUpSequenceButton } from '@/components/prospecting/follow-up-sequence-button'
 import { AICallScriptButton } from '@/components/prospecting/ai-call-script-button'
 import { OutreachLogPanel } from '@/components/prospecting/outreach-log-panel'
+import { ProspectMergePanel } from '@/components/prospecting/prospect-merge-panel'
 
 interface DossierProps {
   prospect: Prospect
   notes: ProspectNote[]
   script: CallScript | null
   outreachLog: OutreachLogEntry[]
+  similarProspects: Prospect[]
 }
 
 export function ProspectDossierClient({
@@ -70,6 +74,7 @@ export function ProspectDossierClient({
   notes: initialNotes,
   script,
   outreachLog,
+  similarProspects,
 }: DossierProps) {
   const router = useRouter()
   const [prospect, setProspect] = useState(initialProspect)
@@ -194,19 +199,38 @@ export function ProspectDossierClient({
                 <AlertCircle className="h-3 w-3" /> Unverified
               </span>
             )}
-            {prospect.lead_score > 0 && (
-              <span
-                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                  prospect.lead_score >= 70
-                    ? 'bg-green-950 text-green-400 border border-green-800'
-                    : prospect.lead_score >= 40
-                      ? 'bg-amber-950 text-amber-400 border border-amber-800'
-                      : 'bg-stone-800 text-stone-400 border border-stone-700'
-                }`}
-              >
-                Score: {prospect.lead_score}
-              </span>
-            )}
+            {prospect.lead_score > 0 &&
+              (() => {
+                const delta =
+                  prospect.previous_lead_score != null
+                    ? prospect.lead_score - prospect.previous_lead_score
+                    : null
+                return (
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                      prospect.lead_score >= 70
+                        ? 'bg-green-950 text-green-400 border border-green-800'
+                        : prospect.lead_score >= 40
+                          ? 'bg-amber-950 text-amber-400 border border-amber-800'
+                          : 'bg-stone-800 text-stone-400 border border-stone-700'
+                    }`}
+                  >
+                    Score: {prospect.lead_score}
+                    {delta != null && delta > 0 && (
+                      <TrendingUp className="h-3 w-3 text-green-400" />
+                    )}
+                    {delta != null && delta < 0 && (
+                      <TrendingDown className="h-3 w-3 text-red-400" />
+                    )}
+                    {delta != null && delta !== 0 && (
+                      <span className={delta > 0 ? 'text-green-400' : 'text-red-400'}>
+                        {delta > 0 ? '+' : ''}
+                        {delta}
+                      </span>
+                    )}
+                  </span>
+                )
+              })()}
             {/* Pipeline stage badge */}
             {prospect.pipeline_stage && (
               <span
@@ -772,6 +796,9 @@ export function ProspectDossierClient({
 
           {/* Outreach Activity Log (Wave 4) */}
           <OutreachLogPanel prospectId={prospect.id} log={outreachLog} />
+
+          {/* Duplicate Detection & Merge (Wave 4.1) */}
+          <ProspectMergePanel prospect={prospect} duplicates={similarProspects} />
 
           {/* Intelligence Panel */}
           <Card>

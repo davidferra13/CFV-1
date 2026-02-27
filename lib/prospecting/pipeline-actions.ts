@@ -17,6 +17,7 @@ import {
   buildAICallScriptPrompt,
 } from './scrub-prompt'
 import { computeLeadScore } from './lead-scoring'
+import { isSimilarName } from './fuzzy-match'
 import type { Prospect, OutreachLogEntry, GeoCluster, FollowUpSequence } from './types'
 import type { PipelineStage } from './constants'
 
@@ -462,19 +463,25 @@ export async function importProspectsFromCSV(csvText: string) {
   if (rows.length === 0) throw new Error('No valid rows found in CSV')
   if (rows.length > 500) throw new Error('CSV too large — max 500 prospects per import')
 
+  // Fetch all existing prospect names for fuzzy dedup (one query, not N queries)
+  const { data: existingProspects } = await supabase
+    .from('prospects')
+    .select('id, name')
+    .eq('chef_id', user.tenantId!)
+
+  const existingNames = (existingProspects ?? []).map((p) => p.name as string)
+
   let imported = 0
   let skipped = 0
+  const importedNames: string[] = [] // track names added in this batch too
 
   for (const row of rows) {
-    // Simple dedup: check if name already exists for this chef
-    const { data: existing } = await supabase
-      .from('prospects')
-      .select('id')
-      .eq('chef_id', user.tenantId!)
-      .ilike('name', row.name)
-      .limit(1)
+    // Fuzzy dedup: check against existing DB records AND this batch
+    const isDuplicate =
+      existingNames.some((existing) => isSimilarName(row.name, existing)) ||
+      importedNames.some((added) => isSimilarName(row.name, added))
 
-    if (existing && existing.length > 0) {
+    if (isDuplicate) {
       skipped++
       continue
     }
@@ -501,8 +508,12 @@ export async function importProspectsFromCSV(csvText: string) {
       pipeline_stage: 'new',
     })
 
-    if (!error) imported++
-    else skipped++
+    if (!error) {
+      imported++
+      importedNames.push(row.name)
+    } else {
+      skipped++
+    }
   }
 
   revalidatePath('/prospecting')
@@ -642,4 +653,390 @@ export async function batchGeocode() {
 
   revalidatePath('/prospecting')
   return { success: true as const, geocoded, total: data.length }
+}
+
+// ── Export to CSV ────────────────────────────────────────────────────────────
+
+export async function exportProspectsToCSV(filters?: {
+  status?: string
+  pipelineStage?: string
+  region?: string
+}): Promise<string> {
+  await requireAdmin()
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  let query = supabase
+    .from('prospects')
+    .select('*')
+    .eq('chef_id', user.tenantId!)
+    .order('lead_score', { ascending: false })
+
+  if (filters?.status) query = query.eq('status', filters.status)
+  if (filters?.pipelineStage) query = query.eq('pipeline_stage', filters.pipelineStage)
+  if (filters?.region) query = query.ilike('region', `%${filters.region}%`)
+
+  const { data, error } = await query
+  if (error || !data || data.length === 0) return ''
+
+  const headers = [
+    'name',
+    'prospect_type',
+    'category',
+    'pipeline_stage',
+    'lead_score',
+    'status',
+    'phone',
+    'email',
+    'website',
+    'contact_person',
+    'contact_title',
+    'address',
+    'city',
+    'state',
+    'zip',
+    'region',
+    'description',
+    'avg_event_budget',
+    'annual_events_estimate',
+    'last_called_at',
+    'call_count',
+    'last_outcome',
+    'created_at',
+  ]
+
+  const escapeCSV = (val: unknown): string => {
+    const str = String(val ?? '')
+    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+      return `"${str.replace(/"/g, '""')}"`
+    }
+    return str
+  }
+
+  const rows = data.map((p) =>
+    headers.map((h) => escapeCSV((p as Record<string, unknown>)[h])).join(',')
+  )
+
+  return [headers.join(','), ...rows].join('\n')
+}
+
+// ── Pipeline Revenue Per Stage ──────────────────────────────────────────────
+
+export async function getPipelineRevenueByStage(): Promise<
+  Record<PipelineStage, { count: number; totalRevenue: number }>
+> {
+  await requireAdmin()
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data, error } = await supabase
+    .from('prospects')
+    .select('pipeline_stage, avg_event_budget, annual_events_estimate')
+    .eq('chef_id', user.tenantId!)
+
+  if (error || !data) {
+    return {
+      new: { count: 0, totalRevenue: 0 },
+      researched: { count: 0, totalRevenue: 0 },
+      contacted: { count: 0, totalRevenue: 0 },
+      responded: { count: 0, totalRevenue: 0 },
+      meeting_set: { count: 0, totalRevenue: 0 },
+      converted: { count: 0, totalRevenue: 0 },
+      lost: { count: 0, totalRevenue: 0 },
+    }
+  }
+
+  const result: Record<string, { count: number; totalRevenue: number }> = {
+    new: { count: 0, totalRevenue: 0 },
+    researched: { count: 0, totalRevenue: 0 },
+    contacted: { count: 0, totalRevenue: 0 },
+    responded: { count: 0, totalRevenue: 0 },
+    meeting_set: { count: 0, totalRevenue: 0 },
+    converted: { count: 0, totalRevenue: 0 },
+    lost: { count: 0, totalRevenue: 0 },
+  }
+
+  for (const p of data) {
+    const stage = (p.pipeline_stage || 'new') as string
+    if (!(stage in result)) continue
+
+    result[stage].count++
+
+    // Parse budget string like "$5,000" or "5000" into a number
+    const budgetStr = (p.avg_event_budget ?? '').replace(/[$,\s]/g, '')
+    const budget = parseFloat(budgetStr) || 0
+    const eventsStr = (p.annual_events_estimate ?? '').replace(/[^\d]/g, '')
+    const events = parseInt(eventsStr, 10) || 1
+
+    result[stage].totalRevenue += budget * events
+  }
+
+  return result as Record<PipelineStage, { count: number; totalRevenue: number }>
+}
+
+// ── Auto Pipeline Rules (stale prospect handling) ───────────────────────────
+
+export async function runAutoPipelineRules(): Promise<{
+  staleToLost: number
+  followUpBumped: number
+}> {
+  await requireAdmin()
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  let staleToLost = 0
+  let followUpBumped = 0
+
+  // Rule 1: Prospects in "contacted" stage with no outreach activity for 14+ days → "lost"
+  const fourteenDaysAgo = new Date()
+  fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14)
+
+  const { data: staleContacted } = await supabase
+    .from('prospects')
+    .select('id, pipeline_stage')
+    .eq('chef_id', user.tenantId!)
+    .eq('pipeline_stage', 'contacted')
+    .lt('updated_at', fourteenDaysAgo.toISOString())
+
+  if (staleContacted && staleContacted.length > 0) {
+    // Check each for recent outreach before marking lost
+    for (const prospect of staleContacted) {
+      const { data: recentOutreach } = await supabase
+        .from('prospect_outreach_log')
+        .select('id')
+        .eq('prospect_id', prospect.id)
+        .eq('chef_id', user.tenantId!)
+        .gte('created_at', fourteenDaysAgo.toISOString())
+        .limit(1)
+
+      if (!recentOutreach || recentOutreach.length === 0) {
+        await supabase
+          .from('prospects')
+          .update({ pipeline_stage: 'lost' })
+          .eq('id', prospect.id)
+          .eq('chef_id', user.tenantId!)
+
+        // Log the auto-change
+        await supabase.from('prospect_outreach_log').insert({
+          prospect_id: prospect.id,
+          chef_id: user.tenantId!,
+          outreach_type: 'note',
+          notes: 'Auto-moved to Lost — no outreach activity for 14+ days',
+        })
+
+        staleToLost++
+      }
+    }
+  }
+
+  // Rule 2: Prospects with overdue follow-ups (7+ days past due) → bump priority
+  const sevenDaysAgo = new Date()
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+  const { data: overdueFollowUps } = await supabase
+    .from('prospects')
+    .select('id')
+    .eq('chef_id', user.tenantId!)
+    .eq('status', 'follow_up')
+    .lt('next_follow_up_at', sevenDaysAgo.toISOString())
+    .neq('priority', 'high')
+
+  if (overdueFollowUps && overdueFollowUps.length > 0) {
+    const overdueIds = overdueFollowUps.map((p) => p.id)
+    await supabase
+      .from('prospects')
+      .update({ priority: 'high' })
+      .in('id', overdueIds)
+      .eq('chef_id', user.tenantId!)
+    followUpBumped = overdueIds.length
+  }
+
+  revalidatePath('/prospecting')
+  revalidatePath('/prospecting/pipeline')
+
+  return { staleToLost, followUpBumped }
+}
+
+// ── Prospect Merge ──────────────────────────────────────────────────────────
+
+export async function mergeProspects(keepId: string, mergeId: string): Promise<{ success: true }> {
+  await requireAdmin()
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  // Fetch both prospects
+  const [keepResult, mergeResult] = await Promise.all([
+    supabase.from('prospects').select('*').eq('id', keepId).eq('chef_id', user.tenantId!).single(),
+    supabase.from('prospects').select('*').eq('id', mergeId).eq('chef_id', user.tenantId!).single(),
+  ])
+
+  if (keepResult.error || !keepResult.data) throw new Error('Primary prospect not found')
+  if (mergeResult.error || !mergeResult.data) throw new Error('Merge prospect not found')
+
+  const keep = keepResult.data as Record<string, unknown>
+  const merge = mergeResult.data as Record<string, unknown>
+
+  // Fields to fill in from merge if keep is null/empty
+  const fillableFields = [
+    'phone',
+    'email',
+    'website',
+    'address',
+    'city',
+    'state',
+    'zip',
+    'region',
+    'contact_person',
+    'contact_title',
+    'contact_direct_phone',
+    'contact_direct_email',
+    'gatekeeper_name',
+    'gatekeeper_notes',
+    'best_time_to_call',
+    'description',
+    'avg_event_budget',
+    'annual_events_estimate',
+    'membership_size',
+    'seasonal_notes',
+    'competitors_present',
+    'approach_strategy',
+    'talking_points',
+    'draft_email',
+    'news_intel',
+    'event_signals',
+    'ai_call_script',
+  ]
+
+  const updates: Record<string, unknown> = {}
+  for (const field of fillableFields) {
+    if (!keep[field] && merge[field]) {
+      updates[field] = merge[field]
+    }
+  }
+
+  // Merge arrays: tags, luxury_indicators, event_types_hosted, enrichment_sources
+  const arrayFields = ['tags', 'luxury_indicators', 'event_types_hosted', 'enrichment_sources']
+  for (const field of arrayFields) {
+    const keepArr = (keep[field] as string[]) ?? []
+    const mergeArr = (merge[field] as string[]) ?? []
+    const combined = [...new Set([...keepArr, ...mergeArr])]
+    if (combined.length > keepArr.length) {
+      updates[field] = combined
+    }
+  }
+
+  // Keep the higher lead score
+  if ((merge.lead_score as number) > (keep.lead_score as number)) {
+    updates.lead_score = merge.lead_score
+  }
+
+  // Keep the higher call count (sum)
+  updates.call_count = ((keep.call_count as number) ?? 0) + ((merge.call_count as number) ?? 0)
+
+  // Merge social profiles
+  const keepSocials = (keep.social_profiles as Record<string, string>) ?? {}
+  const mergeSocials = (merge.social_profiles as Record<string, string>) ?? {}
+  const combinedSocials = { ...mergeSocials, ...keepSocials } // keep's values win
+  if (Object.keys(combinedSocials).length > Object.keys(keepSocials).length) {
+    updates.social_profiles = combinedSocials
+  }
+
+  // Merge follow_up_sequence if keep doesn't have one
+  if (!keep.follow_up_sequence && merge.follow_up_sequence) {
+    updates.follow_up_sequence = merge.follow_up_sequence
+  }
+
+  // Apply updates to the kept prospect
+  if (Object.keys(updates).length > 0) {
+    await supabase.from('prospects').update(updates).eq('id', keepId).eq('chef_id', user.tenantId!)
+  }
+
+  // Move outreach log entries from merge to keep
+  await supabase
+    .from('prospect_outreach_log')
+    .update({ prospect_id: keepId })
+    .eq('prospect_id', mergeId)
+    .eq('chef_id', user.tenantId!)
+
+  // Move notes from merge to keep
+  await supabase
+    .from('prospect_notes')
+    .update({ prospect_id: keepId })
+    .eq('prospect_id', mergeId)
+    .eq('chef_id', user.tenantId!)
+
+  // Add merge note
+  await supabase.from('prospect_notes').insert({
+    prospect_id: keepId,
+    chef_id: user.tenantId!,
+    note_type: 'general',
+    content: `Merged with "${merge.name}" — data combined, duplicate removed.`,
+  })
+
+  // Delete the merged prospect
+  await supabase.from('prospects').delete().eq('id', mergeId).eq('chef_id', user.tenantId!)
+
+  revalidatePath('/prospecting')
+  revalidatePath(`/prospecting/${keepId}`)
+
+  return { success: true as const }
+}
+
+// ── Lead Score Snapshot (for trending) ───────────────────────────────────────
+
+export async function snapshotLeadScores(): Promise<{ updated: number }> {
+  await requireAdmin()
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data, error } = await supabase
+    .from('prospects')
+    .select('id, lead_score, previous_lead_score')
+    .eq('chef_id', user.tenantId!)
+
+  if (error || !data) return { updated: 0 }
+
+  let updated = 0
+  for (const p of data) {
+    // Only snapshot if score has changed
+    if (p.lead_score !== p.previous_lead_score) {
+      await supabase
+        .from('prospects')
+        .update({ previous_lead_score: p.lead_score })
+        .eq('id', p.id)
+        .eq('chef_id', user.tenantId!)
+      updated++
+    }
+  }
+
+  return { updated }
+}
+
+// ── Find Similar Prospects (for merge suggestions) ──────────────────────────
+
+export async function findSimilarProspects(prospectId: string): Promise<Prospect[]> {
+  await requireAdmin()
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data: prospect } = await supabase
+    .from('prospects')
+    .select('name, city, region')
+    .eq('id', prospectId)
+    .eq('chef_id', user.tenantId!)
+    .single()
+
+  if (!prospect) return []
+
+  // Fetch all other prospects to check for fuzzy name matches
+  const { data: allProspects } = await supabase
+    .from('prospects')
+    .select('*')
+    .eq('chef_id', user.tenantId!)
+    .neq('id', prospectId)
+    .limit(500)
+
+  if (!allProspects) return []
+
+  return (allProspects as Prospect[]).filter((p) => isSimilarName(p.name, prospect.name))
 }
