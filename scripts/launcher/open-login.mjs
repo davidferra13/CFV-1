@@ -101,6 +101,7 @@ async function main() {
 
   // In incognito, we need to use the first context Playwright creates
   const context = browser.contexts()[0] || await browser.newContext()
+
   const page = await context.newPage()
 
   try {

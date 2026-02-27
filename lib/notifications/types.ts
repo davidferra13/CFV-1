@@ -117,6 +117,11 @@ export type NotificationAction =
   | 'new_chat_message_to_client'
   | 'dispute_funds_withdrawn'
   | 'refund_processed_to_client'
+  // Raffle
+  | 'raffle_entry_earned'
+  | 'raffle_winner'
+  | 'raffle_new_round'
+  | 'raffle_drawn_chef'
 
 export type Notification = {
   id: string
@@ -261,6 +266,12 @@ export const NOTIFICATION_CONFIG: Record<
   new_chat_message_to_client: { category: 'chat', icon: 'MessageCircle', toastByDefault: false },
   dispute_funds_withdrawn: { category: 'payment', icon: 'ShieldAlert', toastByDefault: true },
   refund_processed_to_client: { category: 'payment', icon: 'RotateCcw', toastByDefault: true },
+
+  // Raffle
+  raffle_entry_earned: { category: 'loyalty', icon: 'Ticket', toastByDefault: false },
+  raffle_winner: { category: 'loyalty', icon: 'Trophy', toastByDefault: true },
+  raffle_new_round: { category: 'loyalty', icon: 'Gift', toastByDefault: true },
+  raffle_drawn_chef: { category: 'loyalty', icon: 'Trophy', toastByDefault: true },
 }
 
 // Category display names for preferences UI

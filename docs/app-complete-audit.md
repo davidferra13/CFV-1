@@ -1135,22 +1135,24 @@ Data privacy management. Comprehensive data export, privacy controls display, an
 
 ### Monthly Raffle (Chef Admin)
 
-| Route                  | Content                                                                                                                                                                                         |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/loyalty/raffle`      | Raffle hub: active round card (prize, entries, participants), "Create Raffle" button, past rounds list with status badges                                                                       |
-| `/loyalty/raffle/[id]` | Round detail: stats (total entries, participants, avg entries/player), leaderboard with real client names (links to profiles), draw receipt for completed rounds, cancel/mark-delivered actions |
+| Route                  | Content                                                                                                                                                                     |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/loyalty/raffle`      | Raffle hub: active round card with all prize categories (🎲/🏆/🔥), "Create Raffle" button with optional bonus prizes, past rounds with multi-winner results                |
+| `/loyalty/raffle/[id]` | Round detail: stats cards, per-category winner cards (real names, score/count, per-category "Mark Delivered" buttons), leaderboard with winner badges (🎲/🏆/🔥), draw seed |
 
-**Create raffle form** (inline on hub page) — prize description textarea, auto-detected month start/end, creates new active round.
+**Create raffle form** (inline on hub page) — main prize textarea (required) + collapsible "Bonus prizes" section with optional Top Scorer and Most Dedicated prize fields. Auto-detected month start/end.
+
+**Three winner categories:** 🎲 Random Draw (luck, required), 🏆 Top Scorer (highest score, optional), 🔥 Most Dedicated (most days played, optional). Each has separate delivery tracking.
 
 ### Monthly Raffle (Client — My Rewards Page)
 
-**Raffle section** on `/my-rewards` — card with this month's prize, entry count, total entries, anonymous food emoji alias, "Play Snake to Earn an Entry" button (or "Play Again" if entry already earned today). Anonymous leaderboard (top 10 with food emoji aliases, "You" highlighted). Draw receipt card for completed rounds with expandable cryptographic seed.
+**Raffle section** on `/my-rewards` — card showing all active prize categories, entry count, total entries, anonymous food emoji alias, "Play Snake to Earn an Entry" button (or "Play Again" if entry already earned today). Anonymous leaderboard (top 10 with food emoji aliases, "You" highlighted, footnote mentions bonus prizes when active). Multi-winner draw receipt for completed rounds showing per-category results.
 
 **Game modal** — adapted Chef Snake in a full-screen modal overlay. Score > 0 earns 1 raffle entry per day (unlimited replays to improve leaderboard score). Touch (swipe) + keyboard (arrows/WASD) controls.
 
 ### Raffle Cron Job
 
-**`/api/scheduled/raffle-draw`** — Vercel cron (1st of each month, 00:05 UTC). Finds active rounds with expired `month_end`, draws winners using cryptographic randomness (`crypto.randomBytes`). Draw receipt with seed, total entries, participant count, winner alias.
+**`/api/scheduled/raffle-draw`** — Vercel cron (1st of each month, 00:05 UTC). Finds active rounds with expired `month_end`, draws all 3 winner categories per round. Random draw uses `crypto.randomBytes`; top scorer and most dedicated are deterministic. Grouped notifications per client if same person wins multiple categories.
 
 ---
 

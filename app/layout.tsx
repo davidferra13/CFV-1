@@ -5,6 +5,7 @@ import { PresenceBeacon } from '@/components/admin/presence-beacon'
 import { SwRegister } from '@/components/pwa/sw-register'
 import { HolidayOverlay } from '@/components/ui/holiday-overlay'
 import { PostHogProvider } from '@/components/analytics/posthog-provider'
+import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import './globals.css'
 
 const inter = Inter({
@@ -97,6 +98,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${dmSerif.variable}`} suppressHydrationWarning>
       <body className="font-sans">
+        <TestAccountBanner />
         <PostHogProvider>{children}</PostHogProvider>
         <CookieConsent />
         <PresenceBeacon />

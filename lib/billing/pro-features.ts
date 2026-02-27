@@ -157,6 +157,14 @@ export const PRO_FEATURES: ProFeature[] = [
     category: 'calendar',
   },
 
+  // Raffle
+  {
+    slug: 'raffle',
+    label: 'Monthly Raffle',
+    description: 'Monthly prize drawings with game-based entries and anonymous leaderboard',
+    category: 'loyalty',
+  },
+
   // Commerce
   {
     slug: 'commerce',
