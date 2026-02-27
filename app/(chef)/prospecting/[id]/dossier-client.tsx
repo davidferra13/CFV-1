@@ -11,17 +11,19 @@ import {
   deleteProspect,
   addProspectNote,
 } from '@/lib/prospecting/actions'
-import type { Prospect, ProspectNote } from '@/lib/prospecting/types'
+import type { Prospect, ProspectNote, OutreachLogEntry } from '@/lib/prospecting/types'
 import { logProspectCall, convertProspectToInquiry } from '@/lib/prospecting/queue-actions'
 import type { CallScript } from '@/lib/prospecting/types'
 import {
   PROSPECT_CATEGORY_LABELS,
   PROSPECT_STATUS_LABELS,
   PROSPECT_STATUS_COLORS,
+  PIPELINE_STAGE_LABELS,
+  PIPELINE_STAGE_COLORS,
   CALL_OUTCOMES,
   NOTE_TYPES,
 } from '@/lib/prospecting/constants'
-import type { ProspectCategory, ProspectStatus } from '@/lib/prospecting/constants'
+import type { ProspectCategory, ProspectStatus, PipelineStage } from '@/lib/prospecting/constants'
 import {
   ArrowLeft,
   Building2,
@@ -45,22 +47,29 @@ import {
   MailOpen,
   Copy,
   CalendarClock,
+  PhoneCall,
+  MailPlus,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { ReEnrichButton } from '@/components/prospecting/re-enrich-button'
 import { LookalikeButton } from '@/components/prospecting/lookalike-button'
+import { FollowUpSequenceButton } from '@/components/prospecting/follow-up-sequence-button'
+import { AICallScriptButton } from '@/components/prospecting/ai-call-script-button'
+import { OutreachLogPanel } from '@/components/prospecting/outreach-log-panel'
 
 interface DossierProps {
   prospect: Prospect
   notes: ProspectNote[]
   script: CallScript | null
+  outreachLog: OutreachLogEntry[]
 }
 
 export function ProspectDossierClient({
   prospect: initialProspect,
   notes: initialNotes,
   script,
+  outreachLog,
 }: DossierProps) {
   const router = useRouter()
   const [prospect, setProspect] = useState(initialProspect)
@@ -196,6 +205,18 @@ export function ProspectDossierClient({
                 }`}
               >
                 Score: {prospect.lead_score}
+              </span>
+            )}
+            {/* Pipeline stage badge */}
+            {prospect.pipeline_stage && (
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold border ${
+                  PIPELINE_STAGE_COLORS[prospect.pipeline_stage as PipelineStage] ||
+                  'bg-stone-800 text-stone-400 border-stone-700'
+                }`}
+              >
+                {PIPELINE_STAGE_LABELS[prospect.pipeline_stage as PipelineStage] ||
+                  prospect.pipeline_stage}
               </span>
             )}
           </div>
@@ -672,6 +693,85 @@ export function ProspectDossierClient({
               </CardContent>
             </Card>
           )}
+
+          {/* AI Call Script (Wave 4) */}
+          {prospect.ai_call_script ? (
+            <Card className="border-green-800 bg-green-950/20">
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <PhoneCall className="h-4 w-4 text-green-400" />
+                    AI Call Script
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => navigator.clipboard.writeText(prospect.ai_call_script ?? '')}
+                    className="flex items-center gap-1 text-xs text-stone-500 hover:text-stone-300"
+                  >
+                    <Copy className="h-3 w-3" />
+                    Copy
+                  </button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <pre className="text-sm text-stone-200 whitespace-pre-wrap font-sans">
+                  {prospect.ai_call_script}
+                </pre>
+              </CardContent>
+            </Card>
+          ) : (
+            <AICallScriptButton prospectId={prospect.id} />
+          )}
+
+          {/* Follow-Up Email Sequence (Wave 4) */}
+          {prospect.follow_up_sequence?.emails ? (
+            <Card className="border-indigo-800 bg-indigo-950/20">
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <MailPlus className="h-4 w-4 text-indigo-400" />
+                  Follow-Up Email Sequence ({prospect.follow_up_sequence.emails.length} emails)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {prospect.follow_up_sequence.emails.map((email) => (
+                  <div key={email.sequence} className="rounded-lg bg-stone-800 p-3 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-indigo-400">
+                        Email {email.sequence} — Day {email.send_after_days}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigator.clipboard.writeText(
+                            `Subject: ${email.subject}\n\n${email.body}`
+                          )
+                        }
+                        className="flex items-center gap-1 text-[10px] text-stone-500 hover:text-stone-300"
+                      >
+                        <Copy className="h-2.5 w-2.5" />
+                        Copy
+                      </button>
+                    </div>
+                    <p className="text-xs text-stone-400 font-medium">Subject: {email.subject}</p>
+                    <pre className="text-xs text-stone-300 whitespace-pre-wrap font-sans mt-1">
+                      {email.body}
+                    </pre>
+                  </div>
+                ))}
+                <p className="text-xs text-stone-500 italic">
+                  AI-drafted sequence — review and personalize each email before sending.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <FollowUpSequenceButton
+              prospectId={prospect.id}
+              hasDraftEmail={!!prospect.draft_email}
+            />
+          )}
+
+          {/* Outreach Activity Log (Wave 4) */}
+          <OutreachLogPanel prospectId={prospect.id} log={outreachLog} />
 
           {/* Intelligence Panel */}
           <Card>

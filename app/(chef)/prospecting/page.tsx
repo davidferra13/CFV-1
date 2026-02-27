@@ -19,6 +19,9 @@ import {
   BookOpen,
   ArrowRight,
   FileText,
+  Kanban,
+  MapPin,
+  Upload,
 } from 'lucide-react'
 
 export const metadata: Metadata = { title: 'Prospecting - ChefFlow' }
@@ -51,17 +54,35 @@ export default async function ProspectingPage({
             AI-powered lead scrubbing and outbound prospecting database
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Link href="/prospecting/scrub">
             <Button className="flex items-center gap-2">
               <Zap className="h-4 w-4" />
               AI Scrub
             </Button>
           </Link>
+          <Link href="/prospecting/pipeline">
+            <Button variant="secondary" className="flex items-center gap-2">
+              <Kanban className="h-4 w-4" />
+              Pipeline
+            </Button>
+          </Link>
           <Link href="/prospecting/queue">
             <Button variant="secondary" className="flex items-center gap-2">
               <Phone className="h-4 w-4" />
               Call Queue
+            </Button>
+          </Link>
+          <Link href="/prospecting/clusters">
+            <Button variant="secondary" className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              Clusters
+            </Button>
+          </Link>
+          <Link href="/prospecting/import">
+            <Button variant="secondary" className="flex items-center gap-2">
+              <Upload className="h-4 w-4" />
+              Import CSV
             </Button>
           </Link>
         </div>

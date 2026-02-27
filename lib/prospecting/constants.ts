@@ -115,6 +115,58 @@ export const CALL_OUTCOMES = [
   { value: 'dead', label: 'Dead Lead', nextStatus: 'dead' as ProspectStatus },
 ] as const
 
+// ── Pipeline Stages (Wave 4 — outreach funnel) ─────────────────────────────
+
+export const PIPELINE_STAGES = [
+  'new',
+  'researched',
+  'contacted',
+  'responded',
+  'meeting_set',
+  'converted',
+  'lost',
+] as const
+export type PipelineStage = (typeof PIPELINE_STAGES)[number]
+
+export const PIPELINE_STAGE_LABELS: Record<PipelineStage, string> = {
+  new: 'New',
+  researched: 'Researched',
+  contacted: 'Contacted',
+  responded: 'Responded',
+  meeting_set: 'Meeting Set',
+  converted: 'Converted',
+  lost: 'Lost',
+}
+
+export const PIPELINE_STAGE_COLORS: Record<PipelineStage, string> = {
+  new: 'bg-blue-950 text-blue-400 border-blue-800',
+  researched: 'bg-indigo-950 text-indigo-400 border-indigo-800',
+  contacted: 'bg-amber-950 text-amber-400 border-amber-800',
+  responded: 'bg-cyan-950 text-cyan-400 border-cyan-800',
+  meeting_set: 'bg-purple-950 text-purple-400 border-purple-800',
+  converted: 'bg-green-950 text-green-400 border-green-800',
+  lost: 'bg-stone-800 text-stone-400 border-stone-700',
+}
+
+export const OUTREACH_TYPES = [
+  'email',
+  'call',
+  'follow_up_email',
+  'response_received',
+  'meeting_scheduled',
+  'note',
+] as const
+export type OutreachType = (typeof OUTREACH_TYPES)[number]
+
+export const OUTREACH_TYPE_LABELS: Record<OutreachType, string> = {
+  email: 'Email Sent',
+  call: 'Call Made',
+  follow_up_email: 'Follow-Up Email',
+  response_received: 'Response Received',
+  meeting_scheduled: 'Meeting Scheduled',
+  note: 'Note',
+}
+
 export const SCRUB_PRESETS = [
   {
     label: 'Luxury Venues & Clubs',

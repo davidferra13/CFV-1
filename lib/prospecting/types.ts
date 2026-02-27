@@ -54,8 +54,58 @@ export interface Prospect {
   event_signals: string | null
   scrub_type: 'standard' | 'competitor' | 'lookalike'
   lookalike_source_id: string | null
+  pipeline_stage:
+    | 'new'
+    | 'researched'
+    | 'contacted'
+    | 'responded'
+    | 'meeting_set'
+    | 'converted'
+    | 'lost'
+  follow_up_sequence: FollowUpSequence | null
+  ai_call_script: string | null
+  latitude: number | null
+  longitude: number | null
   created_at: string
   updated_at: string
+}
+
+export interface FollowUpEmail {
+  sequence: number
+  subject: string
+  body: string
+  send_after_days: number
+}
+
+export interface FollowUpSequence {
+  emails: FollowUpEmail[]
+}
+
+export interface OutreachLogEntry {
+  id: string
+  prospect_id: string
+  chef_id: string
+  outreach_type:
+    | 'email'
+    | 'call'
+    | 'follow_up_email'
+    | 'response_received'
+    | 'meeting_scheduled'
+    | 'note'
+  sequence_number: number | null
+  subject: string | null
+  body: string | null
+  outcome: string | null
+  notes: string | null
+  created_at: string
+}
+
+export interface GeoCluster {
+  center_lat: number
+  center_lng: number
+  region: string
+  prospects: Prospect[]
+  count: number
 }
 
 export interface ProspectNote {

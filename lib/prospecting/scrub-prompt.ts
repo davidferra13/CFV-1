@@ -250,3 +250,129 @@ export function buildLookalikePrompt(sourceProspect: {
     lines.filter(Boolean).join('\n')
   )
 }
+
+// ── Follow-Up Email Sequence Prompt (Wave 4) ───────────────────────────────
+// Generates a 3-email cadence: initial, value-add, final check-in.
+
+export const FOLLOW_UP_SEQUENCE_SYSTEM_PROMPT = `You are a sales email strategist for a private chef. Given a prospect profile and the initial cold outreach email, write a 3-email follow-up sequence.
+
+RULES:
+- Email 1 (Day 0): This is the initial outreach email — already written. You are writing emails 2 and 3.
+- Email 2 (Day 5): A value-add follow-up. Don't repeat the pitch. Instead, offer something of value — a seasonal menu preview, a success story from a similar client, a relevant industry insight. Reference the first email naturally ("I reached out last week about...").
+- Email 3 (Day 12): A brief, friendly final check-in. Short (under 75 words). Creates gentle urgency without being pushy. Gives them an easy out ("If this isn't the right time, no worries at all").
+- All emails should feel like they're from the same person — consistent tone, no corporate buzzwords
+- No [Your Name] or [Chef Name] placeholders — end with natural sign-offs
+- Each email should be shorter than the previous one
+- Reference specific details about the prospect to maintain the personalized feel
+
+Return ONLY valid JSON:
+{
+  "emails": [
+    { "sequence": 2, "subject": "Subject line for follow-up", "body": "Email body", "send_after_days": 5 },
+    { "sequence": 3, "subject": "Subject line for final check-in", "body": "Email body", "send_after_days": 12 }
+  ]
+}`
+
+export function buildFollowUpSequencePrompt(prospect: {
+  name: string
+  category: string
+  prospectType: string
+  description?: string | null
+  city?: string | null
+  state?: string | null
+  contactPerson?: string | null
+  draftEmail?: string | null
+  talkingPoints?: string | null
+  newsIntel?: string | null
+}): string {
+  const lines = [
+    `Prospect: ${prospect.name}`,
+    `Type: ${prospect.prospectType}`,
+    `Category: ${prospect.category}`,
+    prospect.description ? `About: ${prospect.description}` : '',
+    prospect.city ? `Location: ${prospect.city}, ${prospect.state}` : '',
+    prospect.contactPerson ? `Decision maker: ${prospect.contactPerson}` : '',
+    prospect.talkingPoints ? `Key talking points: ${prospect.talkingPoints}` : '',
+    prospect.newsIntel ? `Recent news: ${prospect.newsIntel}` : '',
+    prospect.draftEmail ? `Initial outreach email already sent:\n${prospect.draftEmail}` : '',
+  ]
+  return 'Write follow-up emails 2 and 3 for this prospect:\n\n' + lines.filter(Boolean).join('\n')
+}
+
+// ── AI Call Script Prompt (Wave 4) ─────────────────────────────────────────
+// Generates a personalized phone call script for a specific prospect.
+
+export const AI_CALL_SCRIPT_SYSTEM_PROMPT = `You are a sales call coach for a private chef. Given a prospect profile with all gathered intelligence, write a personalized cold call script.
+
+STRUCTURE:
+1. **Opening Hook** (10 seconds): A specific, personalized opener that grabs attention. Mention something about THEM — their recent event, their venue's reputation, a news article. NOT "Hi, I'm a chef."
+2. **Quick Value Prop** (15 seconds): One sentence explaining what you do and why it matters to THEM specifically. Connect your service to their specific needs.
+3. **The Ask** (10 seconds): Propose a specific, low-commitment next step. "Would you be open to a 10-minute call this week to see if there's a fit?" or "Could I send over a seasonal menu for your review?"
+4. **Objection Handlers** (3 common ones):
+   - "We already have a caterer" → Response
+   - "We're not interested" → Response
+   - "Send me some info" → Response (turn this into a meeting)
+5. **Voicemail Script** (20 seconds): What to say if you get voicemail — shorter, with a clear callback reason.
+
+RULES:
+- Use natural, conversational language — not robotic scripts
+- Include specific details about the prospect throughout
+- Keep the main script under 200 words (not counting objection handlers)
+- The voicemail script should be under 50 words
+
+Return ONLY valid JSON:
+{
+  "opening": "The opening hook text",
+  "valueProp": "The value proposition",
+  "theAsk": "The specific ask/next step",
+  "objectionHandlers": [
+    { "objection": "We already have a caterer", "response": "..." },
+    { "objection": "Not interested right now", "response": "..." },
+    { "objection": "Send me some info", "response": "..." }
+  ],
+  "voicemailScript": "The voicemail script"
+}`
+
+export function buildAICallScriptPrompt(prospect: {
+  name: string
+  category: string
+  prospectType: string
+  description?: string | null
+  city?: string | null
+  state?: string | null
+  contactPerson?: string | null
+  contactTitle?: string | null
+  eventTypesHosted?: string[] | null
+  avgEventBudget?: string | null
+  luxuryIndicators?: string[] | null
+  talkingPoints?: string | null
+  approachStrategy?: string | null
+  newsIntel?: string | null
+  competitorsPresent?: string | null
+}): string {
+  const lines = [
+    `Prospect: ${prospect.name}`,
+    `Type: ${prospect.prospectType}`,
+    `Category: ${prospect.category}`,
+    prospect.description ? `About: ${prospect.description}` : '',
+    prospect.city ? `Location: ${prospect.city}, ${prospect.state}` : '',
+    prospect.contactPerson
+      ? `Decision maker: ${prospect.contactPerson}${prospect.contactTitle ? ` (${prospect.contactTitle})` : ''}`
+      : '',
+    prospect.eventTypesHosted?.length
+      ? `Events they host: ${prospect.eventTypesHosted.join(', ')}`
+      : '',
+    prospect.avgEventBudget ? `Budget: ${prospect.avgEventBudget}` : '',
+    prospect.luxuryIndicators?.length
+      ? `Luxury signals: ${prospect.luxuryIndicators.join(', ')}`
+      : '',
+    prospect.talkingPoints ? `Talking points: ${prospect.talkingPoints}` : '',
+    prospect.approachStrategy ? `Approach strategy: ${prospect.approachStrategy}` : '',
+    prospect.newsIntel ? `Recent news: ${prospect.newsIntel}` : '',
+    prospect.competitorsPresent ? `Current caterer: ${prospect.competitorsPresent}` : '',
+  ]
+  return (
+    'Write a personalized cold call script for this prospect:\n\n' +
+    lines.filter(Boolean).join('\n')
+  )
+}

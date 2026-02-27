@@ -1,11 +1,11 @@
-# Prospect Scrub System — V2 + V2.1 + V2.2 Overhaul
+# Prospect Scrub System — V2 + V2.1 + V2.2 + V2.3 Overhaul
 
 **Date:** 2026-02-27
-**Status:** Complete (all three waves)
+**Status:** Complete (all four waves)
 
 ## Summary
 
-Complete overhaul of the AI prospect scrubbing pipeline in three waves:
+Complete overhaul of the AI prospect scrubbing pipeline in four waves:
 
 - **V2 (Wave 1):** 10 improvements across reliability, intelligence quality, UX, and safety
 - **V2.1 (Wave 2):** 5 deep intelligence features — multi-page crawling, news intel, cold email drafts, staleness tracking, batch refresh
@@ -124,6 +124,44 @@ Phase 4: Draft Email       → AI cold outreach email per prospect
 - Competitor intel: Searches for competing chefs → scrapes their sites → AI extracts venue names → full enrichment pipeline
 - Lookalike: Uses source prospect's attributes as input → AI generates similar orgs → reality check → dedup → enrich
 - All data stays local (Ollama). Web searches access only public information.
+
+## V2.3 — Wave 4: Outreach Pipeline & Advanced Lead Generation
+
+| Feature                        | What It Does                                                                                                                                                                                                                                                                          |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Outreach Pipeline (Kanban)** | Drag-and-drop Kanban board at `/prospecting/pipeline`. 7 stages: New → Researched → Contacted → Responded → Meeting Set → Converted → Lost. Drag a prospect card between columns to advance it through the funnel. Auto-syncs with existing status field for backwards compatibility. |
+| **Follow-Up Sequence**         | "Generate Follow-Up Sequence" button on dossier page. AI writes 2 follow-up emails (Day 5 value-add + Day 12 final check-in) that build on the initial cold outreach. Each email gets shorter, maintains personalization, and references the previous email naturally.                |
+| **AI Call Script**             | "Generate AI Call Script" button on dossier page. AI writes a personalized phone script with 5 sections: Opening Hook (10s), Value Prop (15s), The Ask (10s), 3 Objection Handlers, and a Voicemail Script (20s). Uses all gathered intelligence for specificity.                     |
+| **CSV Import**                 | `/prospecting/import` page. Upload or paste CSV to bulk-import prospects. Auto-maps common column names (name, phone, email, city, etc.). Deduplicated against existing prospects. Up to 500 per import. Imported prospects can then be enriched via batch re-enrich.                 |
+| **Geographic Clustering**      | `/prospecting/clusters` page. Groups all active prospects by region. Shows score ranges, contact indicators, and prospect counts per region. "Plan a [Region] outreach day" hint for route-based selling. Geocode button adds lat/lng from addresses via Nominatim (free API).        |
+| **Outreach Activity Log**      | Per-prospect timeline on dossier page. Log emails sent, calls made, follow-up emails, responses received, meetings scheduled, and notes. Auto-advances pipeline stage when you log outreach (email/call → Contacted, response → Responded, meeting → Meeting Set).                    |
+
+## Files Created (Wave 4)
+
+| File                                                                      | Purpose                                                                                    |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `lib/prospecting/pipeline-actions.ts`                                     | Pipeline, outreach log, follow-up, call script, CSV import, geoclustering                  |
+| `components/prospecting/pipeline-board.tsx`                               | Kanban drag-and-drop board                                                                 |
+| `components/prospecting/csv-import-form.tsx`                              | CSV upload/paste form with preview                                                         |
+| `components/prospecting/geo-cluster-view.tsx`                             | Geographic cluster accordion view                                                          |
+| `components/prospecting/follow-up-sequence-button.tsx`                    | Generate follow-up email sequence button                                                   |
+| `components/prospecting/ai-call-script-button.tsx`                        | Generate AI call script button                                                             |
+| `components/prospecting/outreach-log-panel.tsx`                           | Outreach activity log timeline + add form                                                  |
+| `app/(chef)/prospecting/pipeline/page.tsx`                                | Pipeline Kanban page                                                                       |
+| `app/(chef)/prospecting/import/page.tsx`                                  | CSV import page                                                                            |
+| `app/(chef)/prospecting/clusters/page.tsx`                                | Geographic clusters page                                                                   |
+| `supabase/migrations/20260327000008_prospect_wave4_outreach_pipeline.sql` | Migration: pipeline_stage, follow_up_sequence, ai_call_script, lat/lng, outreach_log table |
+
+## Files Modified (Wave 4)
+
+| File                                             | Changes                                                                                                                                       |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lib/prospecting/types.ts`                       | Added `pipeline_stage`, `follow_up_sequence`, `ai_call_script`, `latitude`, `longitude`, `FollowUpSequence`, `OutreachLogEntry`, `GeoCluster` |
+| `lib/prospecting/constants.ts`                   | Added `PIPELINE_STAGES`, `PIPELINE_STAGE_LABELS`, `PIPELINE_STAGE_COLORS`, `OUTREACH_TYPES`, `OUTREACH_TYPE_LABELS`                           |
+| `lib/prospecting/scrub-prompt.ts`                | Added follow-up sequence prompt and AI call script prompt                                                                                     |
+| `app/(chef)/prospecting/page.tsx`                | Added Pipeline, Clusters, Import CSV navigation buttons                                                                                       |
+| `app/(chef)/prospecting/[id]/page.tsx`           | Fetches outreach log, passes to dossier client                                                                                                |
+| `app/(chef)/prospecting/[id]/dossier-client.tsx` | Pipeline stage badge, AI call script card, follow-up sequence card, outreach log panel                                                        |
 
 ## Three Scrub Modes
 
