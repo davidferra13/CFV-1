@@ -58,6 +58,11 @@ const nextConfig = {
         hostname: 'luefkpakzvxcsqroxyhz.supabase.co',
         pathname: '/storage/v1/object/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/dcyqefyzi/**',
+      },
     ],
   },
   async headers() {
