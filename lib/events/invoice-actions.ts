@@ -10,6 +10,7 @@ import { requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { format } from 'date-fns'
+import { calculateSalesTax } from '@/lib/tax/api-ninjas'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -62,6 +63,17 @@ export type InvoiceData = {
   tipAmountCents: number
   balanceDueCents: number
   isPaidInFull: boolean
+  // Sales tax (computed from event zip code via API Ninjas)
+  salesTax: {
+    taxRate: number // combined rate as decimal (e.g. 0.0825)
+    taxAmountCents: number // tax on the quoted price
+    breakdown: {
+      state: number
+      county: number
+      city: number
+    }
+    zipCode: string
+  } | null // null = tax lookup failed or no zip code — treat as $0 tax
 }
 
 // ─── generateInvoiceNumber ────────────────────────────────────────────────────
@@ -138,7 +150,7 @@ export async function getInvoiceData(eventId: string): Promise<InvoiceData | nul
       quoted_price_cents, deposit_amount_cents, payment_status,
       tip_amount_cents, pricing_model,
       invoice_number, invoice_issued_at,
-      location_city, location_state,
+      location_city, location_state, location_zip,
       client:clients(id, full_name, email)
     `
     )
@@ -166,7 +178,10 @@ export async function getInvoiceData(eventId: string): Promise<InvoiceData | nul
     .eq('tenant_id', user.tenantId!)
     .order('created_at', { ascending: true })
 
-  return buildInvoiceData(event, chef, ledgerEntries ?? [])
+  // Sales tax lookup — non-blocking, defaults to null on failure
+  const taxCalc = await lookupSalesTax(event.quoted_price_cents ?? 0, event.location_zip ?? null)
+
+  return buildInvoiceData(event, chef, ledgerEntries ?? [], taxCalc)
 }
 
 // ─── getInvoiceDataForClient ──────────────────────────────────────────────────
@@ -187,7 +202,7 @@ export async function getInvoiceDataForClient(eventId: string): Promise<InvoiceD
       quoted_price_cents, deposit_amount_cents, payment_status,
       tip_amount_cents, pricing_model,
       invoice_number, invoice_issued_at,
-      location_city, location_state,
+      location_city, location_state, location_zip,
       client:clients(id, full_name, email)
     `
     )
@@ -214,7 +229,10 @@ export async function getInvoiceDataForClient(eventId: string): Promise<InvoiceD
     .eq('client_id', user.entityId!)
     .order('created_at', { ascending: true })
 
-  return buildInvoiceData(event, chef, ledgerEntries ?? [])
+  // Sales tax lookup — non-blocking, defaults to null on failure
+  const taxCalc = await lookupSalesTax(event.quoted_price_cents ?? 0, event.location_zip ?? null)
+
+  return buildInvoiceData(event, chef, ledgerEntries ?? [], taxCalc)
 }
 
 // ─── buildInvoiceData ─────────────────────────────────────────────────────────
@@ -234,6 +252,7 @@ type RawEvent = {
   invoice_issued_at: string | null
   location_city: string | null
   location_state: string | null
+  location_zip: string | null
   client: unknown
   tenant_id?: string
 }
@@ -256,7 +275,50 @@ type RawLedgerEntry = {
   is_refund: boolean
 }
 
-function buildInvoiceData(event: RawEvent, chef: RawChef, entries: RawLedgerEntry[]): InvoiceData {
+// ─── lookupSalesTax ──────────────────────────────────────────────────────────
+
+type SalesTaxInfo = {
+  taxRate: number
+  taxAmountCents: number
+  breakdown: { state: number; county: number; city: number }
+  zipCode: string
+}
+
+/**
+ * Non-blocking sales tax lookup.
+ * If the API is down, the key is missing, or the zip is empty, returns null.
+ * The caller treats null as $0 tax — the invoice is still valid without it.
+ */
+async function lookupSalesTax(
+  subtotalCents: number,
+  zipCode: string | null
+): Promise<SalesTaxInfo | null> {
+  if (!zipCode || subtotalCents <= 0) return null
+
+  try {
+    const calc = await calculateSalesTax(subtotalCents, zipCode)
+    if (!calc) return null
+
+    return {
+      taxRate: calc.taxRate,
+      taxAmountCents: calc.taxAmountCents,
+      breakdown: calc.breakdown,
+      zipCode,
+    }
+  } catch (err) {
+    console.error('[non-blocking] Sales tax lookup failed', err)
+    return null
+  }
+}
+
+// ─── buildInvoiceData ─────────────────────────────────────────────────────────
+
+function buildInvoiceData(
+  event: RawEvent,
+  chef: RawChef,
+  entries: RawLedgerEntry[],
+  salesTax: SalesTaxInfo | null = null
+): InvoiceData {
   const clientData = event.client as { id: string; full_name: string; email: string } | null
 
   const paymentEntries: InvoicePaymentEntry[] = entries.map((e) => {
@@ -285,11 +347,16 @@ function buildInvoiceData(event: RawEvent, chef: RawChef, entries: RawLedgerEntr
     .reduce((sum, e) => sum + Math.abs(e.amount_cents), 0)
 
   const quotedPriceCents = event.quoted_price_cents ?? 0
+  const taxAmountCents = salesTax?.taxAmountCents ?? 0
   const servicePaid = entries
     .filter((e) => !e.is_refund && e.entry_type !== 'tip')
     .reduce((sum, e) => sum + e.amount_cents, 0)
 
-  const balanceDueCents = Math.max(0, quotedPriceCents - servicePaid + totalRefundedCents)
+  // Balance due includes tax: (service + tax) - paid + refunded
+  const balanceDueCents = Math.max(
+    0,
+    quotedPriceCents + taxAmountCents - servicePaid + totalRefundedCents
+  )
 
   return {
     invoiceNumber: event.invoice_number,
@@ -327,5 +394,6 @@ function buildInvoiceData(event: RawEvent, chef: RawChef, entries: RawLedgerEntr
     tipAmountCents: event.tip_amount_cents,
     balanceDueCents,
     isPaidInFull: balanceDueCents === 0 && quotedPriceCents > 0,
+    salesTax,
   }
 }

@@ -4,6 +4,7 @@
 // Renders the 6 invoice sections: header, chef info, client info, line item, payment history, balance.
 
 import type { InvoiceData } from '@/lib/events/invoice-actions'
+import { formatTaxRate } from '@/lib/tax/api-ninjas'
 
 function formatCents(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -47,6 +48,7 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
     tipAmountCents,
     balanceDueCents,
     isPaidInFull,
+    salesTax,
   } = invoice
 
   const locationStr = [event.locationCity, event.locationState].filter(Boolean).join(', ')
@@ -138,6 +140,23 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
                     </td>
                   </tr>
                 )}
+                {salesTax && salesTax.taxAmountCents > 0 && (
+                  <tr className="border-b border-stone-800">
+                    <td className="px-4 py-3">
+                      <p className="text-stone-400 text-sm">
+                        Sales Tax ({formatTaxRate(salesTax.taxRate)})
+                      </p>
+                      {salesTax.zipCode && (
+                        <p className="text-xs text-stone-500 mt-0.5">
+                          Based on ZIP {salesTax.zipCode}
+                        </p>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-right text-stone-400 text-sm">
+                      {formatCents(salesTax.taxAmountCents)}
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -214,6 +233,12 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
               <div className="flex justify-between text-sm text-stone-400">
                 <span>Service total</span>
                 <span>{formatCents(quotedPriceCents)}</span>
+              </div>
+            )}
+            {salesTax && salesTax.taxAmountCents > 0 && (
+              <div className="flex justify-between text-sm text-stone-400">
+                <span>Sales tax ({formatTaxRate(salesTax.taxRate)})</span>
+                <span>{formatCents(salesTax.taxAmountCents)}</span>
               </div>
             )}
             {totalPaidCents > 0 && (

@@ -6,6 +6,7 @@
 import { PDFLayout, MARGIN_X, CONTENT_WIDTH } from './pdf-layout'
 import { format } from 'date-fns'
 import type { InvoiceData } from '@/lib/events/invoice-actions'
+import { formatTaxRate } from '@/lib/tax/api-ninjas'
 
 // ─── Format helpers ───────────────────────────────────────────────────────────
 
@@ -47,6 +48,7 @@ export function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
     invoiceNumber,
     invoiceIssuedAt,
     pricePerPersonCents,
+    salesTax,
   } = data
 
   // ── HEADER ────────────────────────────────────────────────────────────────
@@ -119,6 +121,14 @@ export function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
     pdf.keyValue('  Deposit required', formatCents(depositAmountCents), 9)
   }
 
+  if (salesTax && salesTax.taxAmountCents > 0) {
+    pdf.keyValue(
+      `Sales Tax (${formatTaxRate(salesTax.taxRate)})`,
+      formatCents(salesTax.taxAmountCents),
+      9
+    )
+  }
+
   if (tipAmountCents > 0) {
     pdf.keyValue('Gratuity', formatCents(tipAmountCents), 9)
   }
@@ -167,6 +177,13 @@ export function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
 
   if (quotedPriceCents) {
     pdf.keyValue('Service Total', formatCents(quotedPriceCents), 9)
+  }
+  if (salesTax && salesTax.taxAmountCents > 0) {
+    pdf.keyValue(
+      `Sales Tax (${formatTaxRate(salesTax.taxRate)})`,
+      formatCents(salesTax.taxAmountCents),
+      9
+    )
   }
   if (totalPaidCents > 0) {
     pdf.keyValue('Total Paid', formatCents(totalPaidCents), 9)
