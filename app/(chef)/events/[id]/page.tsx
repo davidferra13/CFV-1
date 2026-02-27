@@ -317,7 +317,7 @@ export default async function EventDetailPage({
   const activeShare = (guestShares as any[]).find((s) => s.is_active) || null
   // Pre-compute shortened share URL for QR codes and templates (non-blocking)
   const fullShareUrl = activeShare
-    ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'}/share/${activeShare.token}`
+    ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/share/${activeShare.token}`
     : null
   let shortShareUrl = fullShareUrl
   if (fullShareUrl) {
@@ -803,7 +803,7 @@ export default async function EventDetailPage({
                 </p>
               </div>
               <a
-                href={`${process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'}/share/${activeShare.token}/recap`}
+                href={`${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/share/${activeShare.token}/recap`}
                 target="_blank"
                 rel="noopener noreferrer"
               >

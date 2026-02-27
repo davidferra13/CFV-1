@@ -18,12 +18,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getPublicChefProfile(params.slug)
   if (!data) return { title: 'Chef Not Found' }
 
-  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'
-  const title = `${data.chef.display_name} — Private Chef`
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+  const title = `${data.chef.display_name} — Private Chef | Book Now`
   const description =
     data.chef.tagline ||
     data.chef.bio ||
-    `Book ${data.chef.display_name} for your next private dining experience`
+    `Book ${data.chef.display_name} for your next private dining experience. View menus, reviews, and availability on ChefFlow.`
   const profileUrl = `${BASE_URL}/chef/${params.slug}`
   const imageUrl = (data.chef as any).profile_image_url as string | undefined
 
@@ -43,6 +43,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       ...(imageUrl ? { images: [imageUrl] } : {}),
+    },
+    alternates: {
+      canonical: profileUrl,
     },
   }
 }
@@ -100,7 +103,7 @@ export default async function ChefProfilePage({ params }: Props) {
       : Promise.resolve([]),
   ])
 
-  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
   const primaryColor = chef.portal_primary_color || '#1c1917'
   const backgroundColor = chef.portal_background_color || '#fafaf9'
   const backgroundImageUrl = chef.portal_background_image_url

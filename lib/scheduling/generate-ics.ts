@@ -40,7 +40,7 @@ export function generateICS(
     'PRODID:-//ChefFlow//V1//EN',
     'METHOD:REQUEST',
     'BEGIN:VEVENT',
-    `UID:${event.id}@chefflow.app`,
+    `UID:${event.id}@cheflowhq.com`,
     `DTSTAMP:${now}`,
     `DTSTART:${start}`,
     `DTEND:${end}`,

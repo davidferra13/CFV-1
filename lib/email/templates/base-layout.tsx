@@ -1,13 +1,25 @@
-// Base Email Layout — Shared wrapper for all CheFlow emails
+// Base Email Layout — Shared wrapper for all ChefFlow emails
 // Clean, professional design with chef branding
 
-import { Body, Container, Head, Hr, Html, Preview, Section, Text } from '@react-email/components'
+import {
+  Body,
+  Container,
+  Head,
+  Hr,
+  Html,
+  Link,
+  Preview,
+  Section,
+  Text,
+} from '@react-email/components'
 import * as React from 'react'
 
 type BaseLayoutProps = {
   preview: string
   children: React.ReactNode
 }
+
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export function BaseLayout({ preview, children }: BaseLayoutProps) {
   return (
@@ -17,12 +29,18 @@ export function BaseLayout({ preview, children }: BaseLayoutProps) {
       <Body style={main}>
         <Container style={container}>
           <Section style={header}>
-            <Text style={logo}>CheFlow</Text>
+            <Text style={logo}>ChefFlow</Text>
           </Section>
           <Section style={content}>{children}</Section>
           <Hr style={hr} />
           <Section style={footer}>
-            <Text style={footerText}>Sent via CheFlow — Private chef management made simple.</Text>
+            <Text style={footerText}>
+              Powered by{' '}
+              <Link href={SITE_URL} style={footerLink}>
+                ChefFlow
+              </Link>{' '}
+              — the business OS for private chefs.
+            </Text>
           </Section>
         </Container>
       </Body>
@@ -75,4 +93,10 @@ const footerText = {
   color: '#9ca3af',
   fontSize: '12px',
   margin: '0',
+}
+
+const footerLink = {
+  color: '#e88f47',
+  textDecoration: 'none',
+  fontWeight: '600' as const,
 }

@@ -304,6 +304,18 @@ export default async function SharePage({ params }: { params: { token: string } 
             Create a free account
           </a>
         </div>
+
+        {/* Powered by ChefFlow */}
+        <div className="text-center py-4">
+          <a
+            href="https://cheflowhq.com"
+            target="_blank"
+            rel="noopener"
+            className="text-xs text-stone-500 hover:text-brand-400 transition-colors"
+          >
+            Powered by <span className="font-semibold">ChefFlow</span>
+          </a>
+        </div>
       </div>
     </div>
   )

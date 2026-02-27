@@ -16,7 +16,7 @@ export function GuestCodePanel({ eventId, guestCode, guestLeadCount }: Props) {
   const baseUrl =
     typeof window !== 'undefined'
       ? window.location.origin
-      : process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'
+      : process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
   const landingUrl = `${baseUrl}/g/${guestCode}`
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(landingUrl)}`
 

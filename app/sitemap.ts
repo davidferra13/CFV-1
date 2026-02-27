@@ -1,24 +1,36 @@
 import type { MetadataRoute } from 'next'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 // Static public routes that are always indexable
 const STATIC_ROUTES: MetadataRoute.Sitemap = [
   {
     url: BASE_URL,
     lastModified: new Date(),
-    changeFrequency: 'monthly',
+    changeFrequency: 'weekly',
     priority: 1.0,
   },
   {
     url: `${BASE_URL}/pricing`,
     lastModified: new Date(),
     changeFrequency: 'monthly',
+    priority: 0.9,
+  },
+  {
+    url: `${BASE_URL}/chefs`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly',
     priority: 0.8,
   },
   {
     url: `${BASE_URL}/contact`,
+    lastModified: new Date(),
+    changeFrequency: 'yearly',
+    priority: 0.6,
+  },
+  {
+    url: `${BASE_URL}/partner-signup`,
     lastModified: new Date(),
     changeFrequency: 'yearly',
     priority: 0.5,
@@ -39,8 +51,9 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
-    // Fetch all chefs who have public profiles enabled and a slug
     const supabase = createAdminClient()
+
+    // Fetch all chefs who have public profiles enabled and a slug
     const { data: chefs } = await supabase
       .from('chefs')
       .select('slug, updated_at')
@@ -54,7 +67,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     }))
 
-    return [...STATIC_ROUTES, ...chefRoutes]
+    // Gift card pages for each public chef
+    const giftCardRoutes: MetadataRoute.Sitemap = (chefs ?? []).map((chef) => ({
+      url: `${BASE_URL}/chef/${chef.slug}/gift-cards`,
+      lastModified: chef.updated_at ? new Date(chef.updated_at) : new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    }))
+
+    // Inquiry pages for each public chef
+    const inquiryRoutes: MetadataRoute.Sitemap = (chefs ?? []).map((chef) => ({
+      url: `${BASE_URL}/chef/${chef.slug}/inquire`,
+      lastModified: chef.updated_at ? new Date(chef.updated_at) : new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    }))
+
+    return [...STATIC_ROUTES, ...chefRoutes, ...giftCardRoutes, ...inquiryRoutes]
   } catch {
     // If DB is unavailable, return static routes only — don't break the build
     return STATIC_ROUTES

@@ -3,15 +3,34 @@ import Link from 'next/link'
 import { CalendarDays, CreditCard, UsersRound } from 'lucide-react'
 import { WorkflowSteps } from '@/components/public/workflow-steps'
 import { HowItWorksSection } from '@/components/public/how-it-works-section'
+import {
+  OrganizationJsonLd,
+  WebSiteJsonLd,
+  SoftwareApplicationJsonLd,
+} from '@/components/seo/json-ld'
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
-  title: 'ChefFlow | Ops for Artists',
+  title: 'ChefFlow | Private Chef Business Software — Ops for Artists',
   description:
-    'The business operating system built by a chef, for chefs. Events, clients, menus, and payments — finally in one calm workspace.',
+    'The business operating system built by a chef, for chefs. Manage events, clients, menus, quotes, payments, and kitchen ops from one calm workspace. 14-day free trial.',
+  keywords: [
+    'private chef software',
+    'personal chef business management',
+    'catering management tool',
+    'chef business operating system',
+    'private chef event management',
+    'catering quote software',
+    'chef client management',
+    'private dinner party planning',
+    'chef invoicing software',
+    'food costing software',
+    'private chef app',
+    'catering business software',
+  ],
   openGraph: {
-    title: 'ChefFlow | Ops for Artists',
+    title: 'ChefFlow | Private Chef Business Software',
     description:
       'The business operating system built by a chef, for chefs. Events, clients, menus, and payments — finally in one calm workspace.',
     url: BASE_URL,
@@ -22,7 +41,10 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'ChefFlow | Ops for Artists',
     description:
-      'The business operating system built by a chef, for chefs. Events, clients, menus, and payments — finally in one calm workspace.',
+      'The business OS built by a chef, for chefs. Events, clients, menus, and payments in one workspace. Free trial.',
+  },
+  alternates: {
+    canonical: BASE_URL,
   },
 }
 
@@ -50,6 +72,10 @@ const FEATURES = [
 export default function Home() {
   return (
     <main>
+      {/* Structured data for Google rich results */}
+      <OrganizationJsonLd />
+      <WebSiteJsonLd />
+      <SoftwareApplicationJsonLd />
       <section className="relative overflow-hidden border-b border-stone-700/50">
         <div className="pointer-events-none absolute left-1/2 top-0 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-brand-700/20 blur-[60px]" />
         <div className="pointer-events-none absolute -right-10 top-10 h-[250px] w-[250px] rounded-full bg-brand-800/25 blur-[50px]" />

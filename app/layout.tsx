@@ -28,8 +28,12 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'ChefFlow',
-  description: 'Ops for Artists - Private chef business operating system',
+  title: {
+    default: 'ChefFlow — Private Chef Business Software',
+    template: '%s | ChefFlow',
+  },
+  description:
+    'Ops for Artists — The business operating system built by a chef, for chefs. Manage events, clients, menus, and payments from one calm workspace.',
   manifest: '/manifest.json',
   icons: {
     icon: [
@@ -44,10 +48,29 @@ export const metadata: Metadata = {
     title: 'ChefFlow',
   },
   openGraph: {
-    title: 'ChefFlow',
-    description: 'Ops for Artists - Private chef business operating system',
+    title: 'ChefFlow — Private Chef Business Software',
+    description: 'Ops for Artists — The business operating system built by a chef, for chefs.',
+    siteName: 'ChefFlow',
+    type: 'website',
+    locale: 'en_US',
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ChefFlow — Private Chef Business Software',
+    description: 'Ops for Artists — The business OS built by a chef, for chefs.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://cheflowhq.com'),
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

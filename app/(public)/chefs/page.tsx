@@ -12,15 +12,27 @@ import { ChefHero } from './_components/chef-hero'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
-  title: 'Hire a Private Chef | ChefFlow',
+  title: 'Hire a Private Chef Near You | ChefFlow Chef Directory',
   description:
-    'Book an unforgettable private dining experience. Browse curated private chefs and start your inquiry in seconds.',
+    'Book an unforgettable private dining experience. Browse curated private chefs, view their menus and reviews, and start your inquiry in seconds.',
+  keywords: [
+    'hire private chef',
+    'private chef near me',
+    'personal chef for hire',
+    'private dinner party chef',
+    'book a private chef',
+    'private chef directory',
+    'catering chef',
+  ],
   openGraph: {
     title: 'Hire a Private Chef | ChefFlow',
     description:
       'Book an unforgettable private dining experience. Browse curated private chefs and start your inquiry in seconds.',
     url: `${APP_URL}/chefs`,
     type: 'website',
+  },
+  alternates: {
+    canonical: `${APP_URL}/chefs`,
   },
 }
 

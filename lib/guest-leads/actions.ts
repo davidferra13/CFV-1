@@ -359,7 +359,7 @@ export async function draftGuestOutreachEmail(eventId: string) {
     : 'recently'
 
   const profileUrl = chef.booking_slug
-    ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'}/chef/${chef.booking_slug}`
+    ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/chef/${chef.booking_slug}`
     : null
 
   const draft = [

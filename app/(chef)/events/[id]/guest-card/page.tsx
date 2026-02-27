@@ -31,7 +31,7 @@ export default async function GuestCardPage({ params }: Props) {
 
   if (!guestCode) notFound()
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
   const landingUrl = `${baseUrl}/g/${guestCode}`
 
   return (
