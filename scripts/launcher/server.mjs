@@ -249,7 +249,9 @@ async function httpCheck(url, timeout = 4000) {
 }
 
 async function sshExec(cmd, timeout = 15000) {
-  return execAsync(`ssh -o ConnectTimeout=5 pi "${cmd}"`, {
+  // Source NVM so pm2/node/npm are in PATH for non-interactive SSH
+  const wrappedCmd = `source ~/.nvm/nvm.sh 2>/dev/null; ${cmd}`
+  return execAsync(`ssh -o ConnectTimeout=5 pi "${wrappedCmd}"`, {
     cwd: PROJECT_ROOT,
     timeout,
   })
@@ -274,10 +276,13 @@ async function findPidOnPort(port) {
 
 async function checkDevServer() {
   const check = await httpCheck(`http://localhost:${CONFIG.devPort}`)
+  // Dev server is "online" if it responds at all (even 500 = app bug, not server down)
+  const responding = check.status > 0
   return {
-    online: check.ok,
+    online: responding,
     latency: check.latency,
     port: CONFIG.devPort,
+    status: check.status,
     managedByUs: devServerProcess !== null,
   }
 }
@@ -579,8 +584,12 @@ async function ollamaAction(target, action) {
         log('ollama', 'Ollama PC stopped', 'success')
       }
     } else {
-      const cmd = action === 'start' ? 'sudo systemctl start ollama' : 'sudo systemctl stop ollama'
-      await sshExec(cmd)
+      if (action === 'start') {
+        // Unmask first in case it was masked, then start
+        await sshExec('sudo systemctl unmask ollama 2>/dev/null; sudo systemctl start ollama')
+      } else {
+        await sshExec('sudo systemctl stop ollama')
+      }
       log('ollama', `${label} ${action === 'start' ? 'started' : 'stopped'}`, 'success')
     }
     return { ok: true }
