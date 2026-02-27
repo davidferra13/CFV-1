@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useTransition, useMemo } from 'react'
-import { updateBetaSignupStatus, exportBetaSignupsCsv } from '@/lib/beta/actions'
-import { Download, Copy, Check, Search } from 'lucide-react'
+import { updateBetaSignupStatus, exportBetaSignupsCsv, deleteBetaSignup } from '@/lib/beta/actions'
+import { Download, Copy, Check, Search, Trash2 } from 'lucide-react'
 
 interface BetaSignup {
   id: string
@@ -87,12 +87,29 @@ function CopyInviteLinkButton({ email }: { email: string }) {
 }
 
 // ── Individual Row ──
-function SignupRow({ signup }: { signup: BetaSignup }) {
+function SignupRow({ signup, onDelete }: { signup: BetaSignup; onDelete: (id: string) => void }) {
   const [status, setStatus] = useState(signup.status)
   const [notes, setNotes] = useState(signup.notes || '')
   const [editingNotes, setEditingNotes] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState('')
+
+  function handleDelete() {
+    if (!confirm(`Remove ${signup.name} (${signup.email}) from the beta list?`)) return
+    setError('')
+    startTransition(async () => {
+      try {
+        const result = await deleteBetaSignup(signup.id)
+        if (result.success) {
+          onDelete(signup.id)
+        } else {
+          setError(result.error || 'Failed to delete')
+        }
+      } catch {
+        setError('Failed to delete')
+      }
+    })
+  }
 
   function handleStatusChange(newStatus: string) {
     const previousStatus = status
@@ -188,6 +205,7 @@ function SignupRow({ signup }: { signup: BetaSignup }) {
               autoFocus
             />
             <button
+              type="button"
               onClick={handleNotesSave}
               disabled={isPending}
               className="text-xs text-brand-400 hover:text-brand-300 whitespace-nowrap disabled:opacity-50"
@@ -197,6 +215,7 @@ function SignupRow({ signup }: { signup: BetaSignup }) {
           </div>
         ) : (
           <button
+            type="button"
             onClick={() => setEditingNotes(true)}
             className="text-xs text-slate-500 hover:text-slate-300 truncate max-w-[120px] block text-left"
             title={notes || 'Add notes'}
@@ -204,6 +223,17 @@ function SignupRow({ signup }: { signup: BetaSignup }) {
             {notes || 'Add notes...'}
           </button>
         )}
+      </td>
+      <td className="px-4 py-3">
+        <button
+          type="button"
+          onClick={handleDelete}
+          disabled={isPending}
+          title="Remove signup"
+          className="p-1 rounded hover:bg-red-900/50 transition-colors disabled:opacity-50"
+        >
+          <Trash2 size={14} className="text-slate-500 hover:text-red-400" />
+        </button>
       </td>
     </tr>
   )
@@ -214,9 +244,14 @@ export function BetaSignupsTable({ signups }: { signups: BetaSignup[] }) {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [exporting, setExporting] = useState(false)
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set())
+
+  function handleDelete(id: string) {
+    setDeletedIds((prev) => new Set(prev).add(id))
+  }
 
   const filtered = useMemo(() => {
-    let list = signups
+    let list = signups.filter((s) => !deletedIds.has(s.id))
 
     // Status filter
     if (statusFilter !== 'all') {
@@ -237,7 +272,7 @@ export function BetaSignupsTable({ signups }: { signups: BetaSignup[] }) {
     }
 
     return list
-  }, [signups, search, statusFilter])
+  }, [signups, search, statusFilter, deletedIds])
 
   async function handleExportCsv() {
     setExporting(true)
@@ -338,11 +373,14 @@ export function BetaSignupsTable({ signups }: { signups: BetaSignup[] }) {
                 <th className="px-4 py-3 font-medium text-slate-300">Source</th>
                 <th className="px-4 py-3 font-medium text-slate-300">Status</th>
                 <th className="px-4 py-3 font-medium text-slate-300">Notes</th>
+                <th className="px-4 py-3 font-medium text-slate-300 w-12">
+                  <span className="sr-only">Actions</span>
+                </th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((signup) => (
-                <SignupRow key={signup.id} signup={signup} />
+                <SignupRow key={signup.id} signup={signup} onDelete={handleDelete} />
               ))}
             </tbody>
           </table>

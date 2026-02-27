@@ -2,6 +2,9 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { headers } from 'next/headers'
+import { sendEmail } from '@/lib/email/send'
+import { BetaWelcomeEmail } from '@/lib/email/templates/beta-welcome'
+import { BetaSignupAdminEmail } from '@/lib/email/templates/beta-signup-admin'
 
 export interface BetaSignupInput {
   name: string
@@ -13,6 +16,12 @@ export interface BetaSignupInput {
   referralSource?: string
   website?: string // honeypot
 }
+
+/** Maximum beta capacity. Change this to increase the cap. */
+export const BETA_CAPACITY = 25
+
+// Admin email for signup notifications
+const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || 'info@cheflowhq.com'
 
 // ── In-memory IP rate limiting (same pattern as embed inquiry) ──
 const ipBuckets = new Map<string, { count: number; windowStart: number }>()
@@ -27,7 +36,6 @@ function checkRateLimit(ip: string): boolean {
     return true
   }
   bucket.count++
-  // Periodic cleanup every 50 requests
   if (bucket.count % 50 === 0) {
     for (const [key, b] of ipBuckets) {
       if (now - b.windowStart > RATE_LIMIT_WINDOW_MS * 2) ipBuckets.delete(key)
@@ -39,6 +47,7 @@ function checkRateLimit(ip: string): boolean {
 /**
  * Submit a beta signup from the public /beta form.
  * Idempotent by email — re-submitting updates the existing record.
+ * Sends welcome email to user + notification to admin (non-blocking).
  */
 export async function submitBetaSignup(
   input: BetaSignupInput
@@ -69,6 +78,15 @@ export async function submitBetaSignup(
   try {
     const supabase = createAdminClient()
 
+    // Check if this email already exists (for deciding whether to send emails)
+    const { data: existing } = await supabase
+      .from('beta_signups')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle()
+
+    const isNewSignup = !existing
+
     const { error } = await supabase.from('beta_signups').upsert(
       {
         name,
@@ -86,6 +104,40 @@ export async function submitBetaSignup(
     if (error) {
       console.error('[beta-signup] Insert failed:', error)
       return { success: false, error: 'Something went wrong. Please try again.' }
+    }
+
+    // Non-blocking side effects — only for new signups (not re-submissions)
+    if (isNewSignup) {
+      // 1. Welcome email to the person who signed up
+      try {
+        await sendEmail({
+          to: email,
+          subject: "You're on the list — ChefFlow Beta",
+          react: BetaWelcomeEmail({ name }),
+        })
+      } catch (err) {
+        console.error('[beta-signup] Welcome email failed:', err)
+      }
+
+      // 2. Notification to admin
+      try {
+        const totalSignups = await getBetaSignupCount()
+        await sendEmail({
+          to: ADMIN_EMAIL,
+          subject: `New beta signup: ${name}`,
+          react: BetaSignupAdminEmail({
+            name,
+            email,
+            businessName: input.businessName?.trim() || null,
+            cuisineType: input.cuisineType?.trim() || null,
+            yearsInBusiness: input.yearsInBusiness?.trim() || null,
+            referralSource: input.referralSource?.trim() || null,
+            totalSignups,
+          }),
+        })
+      } catch (err) {
+        console.error('[beta-signup] Admin notification failed:', err)
+      }
     }
 
     return { success: true }
@@ -147,6 +199,22 @@ export async function updateBetaSignupStatus(
 }
 
 /**
+ * Delete a beta signup (admin action).
+ */
+export async function deleteBetaSignup(id: string): Promise<{ success: boolean; error?: string }> {
+  const supabase = createAdminClient()
+
+  const { error } = await supabase.from('beta_signups').delete().eq('id', id)
+
+  if (error) {
+    console.error('[beta-signup] Delete failed:', error)
+    return { success: false, error: 'Failed to delete signup.' }
+  }
+
+  return { success: true }
+}
+
+/**
  * Get the total count of beta signups (for social proof on public page).
  */
 export async function getBetaSignupCount(): Promise<number> {
@@ -194,7 +262,6 @@ export async function exportBetaSignupsCsv(): Promise<string> {
 
   const escape = (val: string | null) => {
     if (!val) return ''
-    // Wrap in quotes and escape inner quotes
     if (val.includes(',') || val.includes('"') || val.includes('\n')) {
       return `"${val.replace(/"/g, '""')}"`
     }

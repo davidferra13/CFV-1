@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { BetaSignupForm } from '@/components/beta/beta-signup-form'
-import { getBetaSignupCount } from '@/lib/beta/actions'
+import { getBetaSignupCount, BETA_CAPACITY } from '@/lib/beta/actions'
 
 export const metadata: Metadata = {
   title: 'Join the Beta | ChefFlow',
@@ -31,9 +31,25 @@ export default async function BetaSignupPage() {
           to run as well as their kitchen. Spots are limited.
         </p>
         {signupCount > 0 && (
-          <p className="mt-3 text-sm text-brand-400 font-medium">
-            {signupCount} {signupCount === 1 ? 'chef has' : 'chefs have'} already joined.
-          </p>
+          <div className="mt-4 space-y-2">
+            <p className="text-sm text-brand-400 font-medium">
+              {signupCount} of {BETA_CAPACITY} spots filled
+            </p>
+            <div className="mx-auto max-w-xs h-2 rounded-full bg-stone-700 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-600 transition-all duration-500"
+                style={{ width: `${Math.min((signupCount / BETA_CAPACITY) * 100, 100)}%` }}
+              />
+            </div>
+            {signupCount >= BETA_CAPACITY * 0.8 && signupCount < BETA_CAPACITY && (
+              <p className="text-xs text-amber-400">
+                Only {BETA_CAPACITY - signupCount} spots remaining
+              </p>
+            )}
+            {signupCount >= BETA_CAPACITY && (
+              <p className="text-xs text-red-400">Waitlist only — all spots are filled</p>
+            )}
+          </div>
         )}
       </div>
 
