@@ -36,6 +36,8 @@ import {
   ShieldAlert,
   Star,
   ShieldCheck,
+  ShoppingCart,
+  Store,
   Target,
   Truck,
   TrendingUp,
@@ -45,6 +47,7 @@ import {
   Palette,
   Upload,
   Warehouse,
+  HeartHandshake,
 } from 'lucide-react'
 
 type NavItem = { href: string; label: string; icon: LucideIcon }
@@ -86,6 +89,9 @@ export const standaloneTop: NavItem[] = [
   { href: '/activity', label: 'Activity', icon: Activity },
   { href: '/goals', label: 'Goals', icon: Target },
   { href: '/prospecting', label: 'Prospecting', icon: Crosshair },
+  { href: '/charity', label: 'Charity Hub', icon: HeartHandshake },
+  { href: '/commerce', label: 'Commerce', icon: Store },
+  { href: '/commerce/register', label: 'POS Register', icon: ShoppingCart },
 ]
 
 // ─── NAV GROUPS ─────────────────────────────────────────────────
@@ -333,6 +339,42 @@ export const navGroups: NavGroup[] = [
           { href: '/reviews', label: 'Reviews' },
           { href: '/import', label: 'Smart Import' },
         ],
+      },
+    ],
+  },
+
+  // ─── COMMERCE (POS & sales) ───
+  {
+    id: 'commerce',
+    label: 'Commerce',
+    icon: Store,
+    module: 'commerce',
+    items: [
+      {
+        href: '/commerce',
+        label: 'Commerce Hub',
+        icon: Store,
+      },
+      {
+        href: '/commerce/register',
+        label: 'POS Register',
+        icon: ShoppingCart,
+      },
+      {
+        href: '/commerce/products',
+        label: 'Products',
+        icon: Package,
+        children: [{ href: '/commerce/products/new', label: 'New Product' }],
+      },
+      {
+        href: '/commerce/orders',
+        label: 'Order Queue',
+        icon: ClipboardCheck,
+      },
+      {
+        href: '/commerce/sales',
+        label: 'Sales History',
+        icon: DollarSign,
       },
     ],
   },
@@ -921,6 +963,30 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
     context: 'Settings',
   },
   { href: '/settings/embed', label: 'Embed Widget', icon: Settings, context: 'Settings' },
+  {
+    href: '/settings/calendar-sync',
+    label: 'Calendar Sync (iCal)',
+    icon: Settings,
+    context: 'Settings',
+  },
+  {
+    href: '/settings/payment-methods',
+    label: 'Digital Wallets',
+    icon: Settings,
+    context: 'Settings',
+  },
+  {
+    href: '/settings/zapier',
+    label: 'Zapier & Webhooks',
+    icon: Settings,
+    context: 'Settings',
+  },
+  {
+    href: '/settings/yelp',
+    label: 'Yelp Reviews',
+    icon: Settings,
+    context: 'Settings',
+  },
 ]
 
 function pushPrimaryShortcut(

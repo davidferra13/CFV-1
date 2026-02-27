@@ -148,3 +148,47 @@ export const PRODUCT_CATEGORY_LABELS: Record<ProductCategory, string> = {
 
 export const SCHEDULE_STATUSES = ['pending', 'paid', 'overdue', 'waived'] as const
 export type ScheduleStatus = (typeof SCHEDULE_STATUSES)[number]
+
+// ─── Register Session Status ─────────────────────────────────────
+
+export const REGISTER_SESSION_STATUSES = ['open', 'suspended', 'closed'] as const
+export type RegisterSessionStatus = (typeof REGISTER_SESSION_STATUSES)[number]
+
+export const REGISTER_SESSION_STATUS_LABELS: Record<RegisterSessionStatus, string> = {
+  open: 'Open',
+  suspended: 'Suspended',
+  closed: 'Closed',
+}
+
+export const REGISTER_SESSION_STATUS_COLORS: Record<RegisterSessionStatus, string> = {
+  open: 'success',
+  suspended: 'warning',
+  closed: 'default',
+}
+
+// ─── Order Queue Status ──────────────────────────────────────────
+
+export const ORDER_QUEUE_STATUSES = [
+  'received',
+  'preparing',
+  'ready',
+  'picked_up',
+  'cancelled',
+] as const
+export type OrderQueueStatus = (typeof ORDER_QUEUE_STATUSES)[number]
+
+export const ORDER_QUEUE_STATUS_LABELS: Record<OrderQueueStatus, string> = {
+  received: 'Received',
+  preparing: 'Preparing',
+  ready: 'Ready',
+  picked_up: 'Picked Up',
+  cancelled: 'Cancelled',
+}
+
+export const ORDER_QUEUE_STATUS_COLORS: Record<OrderQueueStatus, string> = {
+  received: 'info',
+  preparing: 'warning',
+  ready: 'success',
+  picked_up: 'default',
+  cancelled: 'error',
+}
