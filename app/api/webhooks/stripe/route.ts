@@ -658,6 +658,26 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
         remyErr
       )
     }
+
+    // Push notification — payment received (non-blocking)
+    try {
+      const { getChefAuthUserId } = await import('@/lib/notifications/actions')
+      const chefUserId = await getChefAuthUserId(tenant_id)
+      if (chefUserId) {
+        const amountFormatted = `$${(paymentIntent.amount / 100).toFixed(2)}`
+        // Fetch client name for the push notification message
+        const { data: pushClientData } = await supabaseAdmin
+          .from('clients')
+          .select('full_name')
+          .eq('id', client_id)
+          .single()
+        const clientName = pushClientData?.full_name || 'Client'
+        const { notifyPaymentReceived } = await import('@/lib/notifications/onesignal')
+        await notifyPaymentReceived(chefUserId, amountFormatted, clientName)
+      }
+    } catch (pushErr) {
+      console.error('[handlePaymentSucceeded] Push notification failed (non-blocking):', pushErr)
+    }
   } catch (transitionError) {
     // Log but don't throw - ledger entry is what matters
     console.error('[handlePaymentSucceeded] Transition failed:', transitionError)
