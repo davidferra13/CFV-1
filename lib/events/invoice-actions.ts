@@ -106,7 +106,7 @@ export async function generateInvoiceNumber(tenantId: string): Promise<string> {
  * Idempotent — does nothing if invoice_number is already set.
  */
 export async function assignInvoiceNumber(eventId: string) {
-  const supabase = createServerClient()
+  const supabase = createServerClient({ admin: true })
 
   // Check if already assigned
   const { data: event } = await supabase
@@ -130,6 +130,7 @@ export async function assignInvoiceNumber(eventId: string) {
 
   revalidatePath(`/events/${eventId}`)
   revalidatePath(`/events/${eventId}/invoice`)
+  revalidatePath(`/my-events/${eventId}`)
 }
 
 // ─── getInvoiceData (chef) ────────────────────────────────────────────────────

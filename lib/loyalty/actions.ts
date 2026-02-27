@@ -460,6 +460,37 @@ export async function awardEventPoints(eventId: string) {
     console.error('[awardEventPoints] Client update error:', updateError)
   }
 
+  // Non-blocking: notify client of points earned
+  try {
+    const { createClientNotification } = await import('@/lib/notifications/client-actions')
+    await createClientNotification({
+      tenantId: user.tenantId!,
+      clientId: event.client_id,
+      category: 'loyalty',
+      action: 'points_awarded',
+      title: `You earned ${totalPoints} loyalty points!`,
+      body: `Your new balance is ${newPointsBalance} points`,
+      actionUrl: '/my-rewards',
+      eventId,
+    })
+
+    // If tier changed, send a second notification
+    if (newTier !== oldTier) {
+      await createClientNotification({
+        tenantId: user.tenantId!,
+        clientId: event.client_id,
+        category: 'loyalty',
+        action: 'tier_upgraded',
+        title: `You reached ${newTier} tier!`,
+        body: `Congratulations! You've been upgraded to ${newTier}`,
+        actionUrl: '/my-rewards',
+        eventId,
+      })
+    }
+  } catch (err) {
+    console.error('[awardEventPoints] Client notification failed (non-blocking):', err)
+  }
+
   // Mark event as awarded
   await supabase
     .from('events')

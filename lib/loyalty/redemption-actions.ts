@@ -255,6 +255,40 @@ export async function redeemIncentiveCode(
   revalidatePath(`/my-events/${eventId}`)
   revalidatePath('/my-rewards')
 
+  // Non-blocking: notify chef of gift card redemption
+  try {
+    const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
+    // Get the event's tenant_id
+    const supabaseAdmin = createServerClient({ admin: true })
+    const { data: eventData } = await supabaseAdmin
+      .from('events')
+      .select('tenant_id')
+      .eq('id', eventId)
+      .single()
+
+    if (eventData?.tenant_id) {
+      const chefUserId = await getChefAuthUserId(eventData.tenant_id)
+      if (chefUserId) {
+        const appliedFormatted = (appliedAmountCents / 100).toFixed(2)
+        await createNotification({
+          tenantId: eventData.tenant_id,
+          recipientId: chefUserId,
+          category: 'loyalty',
+          action: 'gift_card_redeemed',
+          title: 'Gift card redeemed',
+          body: `$${appliedFormatted} applied to an event`,
+          actionUrl: `/events/${eventId}`,
+          eventId,
+        })
+      }
+    }
+  } catch (err) {
+    console.error('[redeemIncentiveCode] Chef notification failed (non-blocking):', err)
+  }
+
+  revalidatePath(`/events/${eventId}`)
+  revalidatePath('/loyalty')
+
   return {
     success: true,
     appliedAmountCents,

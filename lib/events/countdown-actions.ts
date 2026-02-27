@@ -121,6 +121,7 @@ export async function toggleCountdown(
   }
 
   revalidatePath(`/events/${validated.eventId}`)
+  revalidatePath(`/my-events/${validated.eventId}`)
   revalidatePath('/dashboard')
 
   return { success: true }

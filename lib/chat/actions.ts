@@ -540,6 +540,16 @@ export async function sendChatMessage(input: z.infer<typeof SendMessageSchema>) 
     }
   }
 
+  // Notify client when chef sends a message (non-blocking)
+  if (user.role === 'chef' && user.tenantId) {
+    notifyClientOfChefMessage(
+      validated.conversation_id,
+      message.id,
+      validated.body ?? 'Sent a message',
+      user.tenantId
+    ).catch((err) => console.error('[sendChatMessage] Client notification failed:', err))
+  }
+
   return { success: true as const, message: message as ChatMessage }
 }
 
@@ -636,6 +646,26 @@ export async function sendImageMessage(conversationId: string, formData: FormDat
     .update({ last_read_at: new Date().toISOString() })
     .eq('conversation_id', conversationId)
     .eq('auth_user_id', user.id)
+
+  // Notify chef when client sends an image (non-blocking)
+  if (user.role === 'client') {
+    notifyChefOfClientMessage(
+      conversationId,
+      message.id,
+      caption || 'Sent an image',
+      user.tenantId
+    ).catch((err) => console.error('[sendImageMessage] Chef notification failed:', err))
+  }
+
+  // Notify client when chef sends an image (non-blocking)
+  if (user.role === 'chef' && user.tenantId) {
+    notifyClientOfChefMessage(
+      conversationId,
+      message.id,
+      caption || 'Sent an image',
+      user.tenantId
+    ).catch((err) => console.error('[sendImageMessage] Client notification failed:', err))
+  }
 
   return { success: true as const, message: message as ChatMessage }
 }
@@ -749,6 +779,26 @@ export async function sendFileMessage(conversationId: string, formData: FormData
     processMessageInsights(message.id, conversationId).catch((err) =>
       console.error('[sendFileMessage] Insight processing failed:', err)
     )
+  }
+
+  // Notify chef when client sends a file (non-blocking)
+  if (user.role === 'client') {
+    notifyChefOfClientMessage(
+      conversationId,
+      message.id,
+      caption || `Sent a ${isImage ? 'image' : 'file'}`,
+      user.tenantId
+    ).catch((err) => console.error('[sendFileMessage] Chef notification failed:', err))
+  }
+
+  // Notify client when chef sends a file (non-blocking)
+  if (user.role === 'chef' && user.tenantId) {
+    notifyClientOfChefMessage(
+      conversationId,
+      message.id,
+      caption || `Sent a ${isImage ? 'image' : 'file'}`,
+      user.tenantId
+    ).catch((err) => console.error('[sendFileMessage] Client notification failed:', err))
   }
 
   return { success: true as const, message: message as ChatMessage }
@@ -1121,4 +1171,53 @@ async function notifyChefOfClientMessage(
       })
     }
   }
+}
+
+// ─── Internal: Client notification for chef messages ─────────────────────────
+
+/**
+ * Fires after a chef sends a message. Looks up the client participant,
+ * creates an in-app notification for them.
+ */
+async function notifyClientOfChefMessage(
+  conversationId: string,
+  messageId: string,
+  messageBody: string,
+  tenantId: string
+): Promise<void> {
+  const { createServerClient } = await import('@/lib/supabase/server')
+  const supabase = createServerClient({ admin: true })
+
+  // Find the client participant in this conversation
+  const { data: participants } = await supabase
+    .from('conversation_participants')
+    .select('auth_user_id, role')
+    .eq('conversation_id', conversationId)
+    .neq('role', 'chef')
+    .limit(1)
+
+  if (!participants?.[0]) return
+
+  const clientAuthId = participants[0].auth_user_id
+
+  // Get client entity ID
+  const { data: clientRole } = await supabase
+    .from('user_roles')
+    .select('entity_id')
+    .eq('auth_user_id', clientAuthId)
+    .eq('role', 'client')
+    .single()
+
+  if (!clientRole?.entity_id) return
+
+  const { createClientNotification } = await import('@/lib/notifications/client-actions')
+  await createClientNotification({
+    tenantId,
+    clientId: clientRole.entity_id,
+    category: 'chat',
+    action: 'new_chat_message_to_client',
+    title: 'New message from your chef',
+    body: messageBody.length > 100 ? messageBody.slice(0, 100) + '…' : messageBody,
+    actionUrl: '/my-chat',
+  })
 }

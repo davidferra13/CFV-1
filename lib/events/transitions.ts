@@ -186,6 +186,9 @@ export async function transitionEvent({
 
   revalidatePath(`/events/${eventId}`)
   revalidatePath(`/my-events/${eventId}`)
+  revalidatePath('/events')
+  revalidatePath('/my-events')
+  revalidatePath('/dashboard')
 
   // Post system message to linked chat conversation (non-blocking)
   try {
@@ -199,7 +202,7 @@ export async function transitionEvent({
   try {
     const notifyChef =
       (toStatus === 'accepted' && fromStatus === 'proposed') ||
-      (toStatus === 'paid' && fromStatus === 'accepted') ||
+      (toStatus === 'paid' && (fromStatus === 'accepted' || fromStatus === 'draft')) ||
       (toStatus === 'cancelled' && !systemTransition && user?.role === 'client')
 
     if (notifyChef) {
@@ -250,7 +253,11 @@ export async function transitionEvent({
   try {
     const notifyClient =
       (toStatus === 'proposed' && fromStatus === 'draft') ||
-      (toStatus === 'confirmed' && fromStatus === 'paid')
+      (toStatus === 'confirmed' && fromStatus === 'paid') ||
+      toStatus === 'paid' ||
+      (toStatus === 'in_progress' && fromStatus === 'confirmed') ||
+      (toStatus === 'completed' && fromStatus === 'in_progress') ||
+      (toStatus === 'cancelled' && user?.role !== 'client')
 
     if (notifyClient && event.client_id) {
       const { createClientNotification } = await import('@/lib/notifications/client-actions')
@@ -277,6 +284,58 @@ export async function transitionEvent({
           action: 'event_confirmed_to_client',
           title: 'Event confirmed',
           body: `"${eventTitle}" is confirmed — everything is set`,
+          actionUrl: `/my-events/${eventId}`,
+          eventId,
+        })
+      }
+
+      if (toStatus === 'paid') {
+        await createClientNotification({
+          tenantId: event.tenant_id,
+          clientId: event.client_id,
+          category: 'payment',
+          action: 'event_paid_to_client',
+          title: 'Payment confirmed',
+          body: `Payment for "${eventTitle}" has been confirmed`,
+          actionUrl: `/my-events/${eventId}`,
+          eventId,
+        })
+      }
+
+      if (toStatus === 'in_progress') {
+        await createClientNotification({
+          tenantId: event.tenant_id,
+          clientId: event.client_id,
+          category: 'event',
+          action: 'event_in_progress_to_client',
+          title: 'Your chef is on the way',
+          body: `"${eventTitle}" is underway`,
+          actionUrl: `/my-events/${eventId}`,
+          eventId,
+        })
+      }
+
+      if (toStatus === 'completed') {
+        await createClientNotification({
+          tenantId: event.tenant_id,
+          clientId: event.client_id,
+          category: 'event',
+          action: 'event_completed_to_client',
+          title: 'Event completed',
+          body: `"${eventTitle}" is complete — thank you!`,
+          actionUrl: `/my-events/${eventId}`,
+          eventId,
+        })
+      }
+
+      if (toStatus === 'cancelled') {
+        await createClientNotification({
+          tenantId: event.tenant_id,
+          clientId: event.client_id,
+          category: 'event',
+          action: 'event_cancelled_to_client',
+          title: 'Event cancelled',
+          body: `"${eventTitle}" has been cancelled`,
           actionUrl: `/my-events/${eventId}`,
           eventId,
         })
@@ -465,6 +524,18 @@ export async function transitionEvent({
           occasion,
           eventDate: event.event_date,
           cancelledBy: user?.role === 'chef' ? chefName : 'the client',
+          reason: (metadata.reason as string) || null,
+        })
+      }
+
+      // Also email the chef when a client cancels
+      if (toStatus === 'cancelled' && user?.role === 'client' && chef.email) {
+        await sendEventCancelledEmail({
+          recipientEmail: chef.email,
+          recipientName: chef.business_name || 'Chef',
+          occasion,
+          eventDate: event.event_date,
+          cancelledBy: client.full_name || 'the client',
           reason: (metadata.reason as string) || null,
         })
       }

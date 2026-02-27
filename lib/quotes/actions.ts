@@ -596,6 +596,10 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
   revalidatePath('/quotes')
   revalidatePath(`/quotes/${id}`)
 
+  // Client-side cache invalidation
+  revalidatePath('/my-quotes')
+  revalidatePath(`/my-quotes/${id}`)
+
   // Log chef activity (non-blocking)
   try {
     const { logChefActivity } = await import('@/lib/activity/log-chef')

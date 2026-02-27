@@ -223,6 +223,7 @@ export async function uploadEventPhoto(
     .createSignedUrl(storagePath, SIGNED_URL_EXPIRY_SECONDS)
 
   revalidatePath(`/events/${eventId}`)
+  revalidatePath(`/my-events/${eventId}`)
 
   // Notify client that photos are ready (non-blocking)
   // In-app notification fires on every upload; email only on the first photo.
@@ -385,6 +386,7 @@ export async function deleteEventPhoto(
   }
 
   revalidatePath(`/events/${photo.event_id}`)
+  revalidatePath(`/my-events/${photo.event_id}`)
 
   return { success: true }
 }
@@ -417,6 +419,7 @@ export async function updatePhotoCaption(
   }
 
   revalidatePath(`/events/${photo.event_id}`)
+  revalidatePath(`/my-events/${photo.event_id}`)
   return { success: true }
 }
 
@@ -464,5 +467,6 @@ export async function reorderEventPhotos(
   }
 
   revalidatePath(`/events/${eventId}`)
+  revalidatePath(`/my-events/${eventId}`)
   return { success: true }
 }

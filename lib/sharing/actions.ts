@@ -11,6 +11,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import crypto from 'crypto'
 import { shortenUrl } from '@/lib/links/url-shortener'
+import { createNotification, getChefAuthUserId } from '@/lib/notifications/actions'
 
 // ============================================================
 // SCHEMAS
@@ -773,6 +774,53 @@ export async function submitRSVP(input: SubmitRSVPInput) {
     throw new Error('Failed to submit RSVP')
   }
 
+  // Non-blocking: notify chef of new RSVP
+  try {
+    const chefAuthId = await getChefAuthUserId(share.tenant_id)
+    if (chefAuthId) {
+      const hasAllergies =
+        (validated.allergies?.length ?? 0) > 0 || (validated.plus_one_allergies?.length ?? 0) > 0
+      const hasDietary =
+        (validated.dietary_restrictions?.length ?? 0) > 0 ||
+        (validated.plus_one_dietary?.length ?? 0) > 0
+
+      await createNotification({
+        tenantId: share.tenant_id,
+        recipientId: chefAuthId,
+        category: 'client',
+        action: 'guest_rsvp_received',
+        title: `${validated.full_name} RSVPed: ${validated.rsvp_status}`,
+        body:
+          hasAllergies || hasDietary
+            ? `Dietary info included — review before finalizing menu`
+            : undefined,
+        eventId: share.event_id,
+      })
+
+      // Food safety: alert chef about allergies specifically
+      if (hasAllergies) {
+        const allergyList = [
+          ...(validated.allergies || []),
+          ...(validated.plus_one_allergies || []),
+        ].join(', ')
+        await createNotification({
+          tenantId: share.tenant_id,
+          recipientId: chefAuthId,
+          category: 'client',
+          action: 'guest_dietary_alert',
+          title: `Allergy alert: ${validated.full_name}`,
+          body: allergyList,
+          eventId: share.event_id,
+        })
+      }
+    }
+  } catch (err) {
+    console.error('[submitRSVP] Non-blocking notification failed:', err)
+  }
+
+  revalidatePath(`/events/${share.event_id}`)
+  revalidatePath(`/my-events/${share.event_id}`)
+
   return {
     success: true,
     alreadyExists: false,
@@ -818,6 +866,10 @@ export async function updateRSVP(input: UpdateRSVPInput) {
     console.error('[updateRSVP] Error:', error)
     throw new Error('Failed to update RSVP')
   }
+
+  // Cache invalidation — both portals read guest data
+  revalidatePath(`/events/${guest.event_id}`)
+  revalidatePath(`/my-events/${guest.event_id}`)
 
   return { success: true, guest }
 }
@@ -1065,6 +1117,30 @@ export async function saveGuestEventPortalRSVP(input: SaveGuestPortalRSVPInput) 
   if (profileError) {
     throw new Error('Failed to save guest profile.')
   }
+
+  // Non-blocking: notify chef of dietary info from guest portal
+  try {
+    const hasDietaryNotes = !!validated.dietary_notes?.trim()
+    if (hasDietaryNotes) {
+      const chefAuthId = await getChefAuthUserId(event.tenant_id)
+      if (chefAuthId) {
+        await createNotification({
+          tenantId: event.tenant_id,
+          recipientId: chefAuthId,
+          category: 'client',
+          action: 'guest_dietary_alert',
+          title: `Dietary update from ${validated.full_name}`,
+          body: validated.dietary_notes!.trim(),
+          eventId: validated.eventId,
+        })
+      }
+    }
+  } catch (err) {
+    console.error('[saveGuestEventPortalRSVP] Non-blocking notification failed:', err)
+  }
+
+  revalidatePath(`/events/${validated.eventId}`)
+  revalidatePath(`/my-events/${validated.eventId}`)
 
   return {
     success: true,

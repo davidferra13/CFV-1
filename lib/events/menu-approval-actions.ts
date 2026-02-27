@@ -12,6 +12,9 @@ import { sendEmail } from '@/lib/email/send'
 import { MenuApprovalRequestEmail } from '@/lib/email/templates/menu-approval-request'
 import React from 'react'
 import { format } from 'date-fns'
+import { createNotification, getChefAuthUserId, getChefProfile } from '@/lib/notifications/actions'
+import { createClientNotification } from '@/lib/notifications/client-actions'
+import { sendMenuApprovedChefEmail, sendMenuRevisionChefEmail } from '@/lib/email/notifications'
 
 // ============================================
 // SCHEMAS
@@ -116,6 +119,24 @@ export async function sendMenuForApproval(eventId: string) {
   }
 
   revalidatePath(`/events/${eventId}`)
+  revalidatePath(`/my-events/${eventId}`)
+
+  // Non-blocking: notify client in-app
+  try {
+    await createClientNotification({
+      tenantId: user.tenantId!,
+      clientId: client.id,
+      category: 'event',
+      action: 'event_proposed_to_client',
+      title: 'Menu ready for your review',
+      body: `Review and approve the menu for ${event.occasion ?? 'your event'}`,
+      actionUrl: `/my-events/${eventId}/approve-menu?req=${request.id}`,
+      eventId,
+    })
+  } catch (err) {
+    console.error('[sendMenuForApproval] Non-blocking client notification failed:', err)
+  }
+
   return { success: true, requestId: request.id }
 }
 
@@ -186,6 +207,46 @@ export async function approveMenu(requestId: string) {
     .eq('id', request.event_id)
 
   revalidatePath(`/my-events/${request.event_id}`)
+  revalidatePath(`/events/${request.event_id}`)
+
+  // Non-blocking: notify chef + email
+  try {
+    const chefAuthId = await getChefAuthUserId(request.chef_id)
+    if (chefAuthId) {
+      await createNotification({
+        tenantId: request.chef_id,
+        recipientId: chefAuthId,
+        category: 'event',
+        action: 'menu_approved',
+        title: 'Menu approved',
+        body: 'Your client approved the menu',
+        eventId: request.event_id,
+      })
+    }
+
+    // Get event details for email
+    const supabaseAdmin = createServerClient()
+    const { data: eventData } = await supabaseAdmin
+      .from('events')
+      .select('occasion, event_date, clients(full_name)')
+      .eq('id', request.event_id)
+      .single()
+
+    const chef = await getChefProfile(request.chef_id)
+    if (chef?.email && eventData) {
+      await sendMenuApprovedChefEmail({
+        chefEmail: chef.email,
+        chefName: chef.name,
+        clientName: (eventData as any).clients?.full_name ?? 'Your client',
+        occasion: eventData.occasion ?? 'your event',
+        eventDate: eventData.event_date ?? 'TBD',
+        eventId: request.event_id,
+      })
+    }
+  } catch (err) {
+    console.error('[approveMenu] Non-blocking chef notification failed:', err)
+  }
+
   return { success: true }
 }
 
@@ -199,7 +260,7 @@ export async function requestMenuRevision(input: RequestRevisionInput) {
 
   const { data: request } = await supabase
     .from('menu_approval_requests')
-    .select('id, event_id, status')
+    .select('id, event_id, status, chef_id')
     .eq('id', validated.request_id)
     .eq('client_id', user.entityId)
     .single()
@@ -228,6 +289,46 @@ export async function requestMenuRevision(input: RequestRevisionInput) {
     .eq('id', request.event_id)
 
   revalidatePath(`/my-events/${request.event_id}`)
+  revalidatePath(`/events/${request.event_id}`)
+
+  // Non-blocking: notify chef + email
+  try {
+    const chefAuthId = await getChefAuthUserId(request.chef_id)
+    if (chefAuthId) {
+      await createNotification({
+        tenantId: request.chef_id,
+        recipientId: chefAuthId,
+        category: 'event',
+        action: 'menu_revision_requested',
+        title: 'Menu revision requested',
+        body: validated.notes,
+        eventId: request.event_id,
+      })
+    }
+
+    const supabaseAdmin = createServerClient()
+    const { data: eventData } = await supabaseAdmin
+      .from('events')
+      .select('occasion, event_date, clients(full_name)')
+      .eq('id', request.event_id)
+      .single()
+
+    const chef = await getChefProfile(request.chef_id)
+    if (chef?.email && eventData) {
+      await sendMenuRevisionChefEmail({
+        chefEmail: chef.email,
+        chefName: chef.name,
+        clientName: (eventData as any).clients?.full_name ?? 'Your client',
+        occasion: eventData.occasion ?? 'your event',
+        eventDate: eventData.event_date ?? 'TBD',
+        revisionNotes: validated.notes,
+        eventId: request.event_id,
+      })
+    }
+  } catch (err) {
+    console.error('[requestMenuRevision] Non-blocking chef notification failed:', err)
+  }
+
   return { success: true }
 }
 

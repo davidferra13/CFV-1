@@ -568,7 +568,7 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
   // Get current status
   const { data: inquiry } = await (supabase
     .from('inquiries')
-    .select('status, deleted_at')
+    .select('status, deleted_at, client_id')
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)
     .single() as any)
@@ -645,6 +645,57 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
   } catch (err) {
     console.error('[transitionInquiry] Automation evaluation failed (non-blocking):', err)
   }
+
+  // Non-blocking: notify client of inquiry status change
+  try {
+    if (inquiry.client_id) {
+      const { createClientNotification } = await import('@/lib/notifications/client-actions')
+
+      const statusNotifications: Record<
+        string,
+        { action: string; title: string; body: string; actionUrl: string }
+      > = {
+        quoted: {
+          action: 'inquiry_quoted_to_client',
+          title: 'Your quote is ready',
+          body: 'A quote has been prepared for your inquiry',
+          actionUrl: '/my-quotes',
+        },
+        declined: {
+          action: 'inquiry_declined_to_client',
+          title: 'Inquiry update',
+          body: 'Your inquiry status has been updated',
+          actionUrl: '/my-inquiries',
+        },
+        expired: {
+          action: 'inquiry_expired_to_client',
+          title: 'Inquiry expired',
+          body: 'Your inquiry has expired — reach out to rebook',
+          actionUrl: '/my-inquiries',
+        },
+      }
+
+      const notif = statusNotifications[newStatus]
+      if (notif) {
+        await createClientNotification({
+          tenantId: user.tenantId!,
+          clientId: inquiry.client_id,
+          category: newStatus === 'quoted' ? 'quote' : 'inquiry',
+          action: notif.action as any,
+          title: notif.title,
+          body: notif.body,
+          actionUrl: notif.actionUrl,
+          inquiryId: id,
+        })
+      }
+    }
+  } catch (err) {
+    console.error('[transitionInquiry] Client notification failed (non-blocking):', err)
+  }
+
+  // Client-side cache invalidation
+  revalidatePath('/my-inquiries')
+  revalidatePath(`/my-inquiries/${id}`)
 
   return { success: true, inquiry: updated }
 }
@@ -778,6 +829,30 @@ export async function convertInquiryToEvent(inquiryId: string) {
   revalidatePath('/inquiries')
   revalidatePath(`/inquiries/${inquiryId}`)
   revalidatePath('/events')
+  revalidatePath('/my-inquiries')
+  revalidatePath(`/my-inquiries/${inquiryId}`)
+  revalidatePath('/my-events')
+
+  // Non-blocking: notify client their inquiry became an event
+  try {
+    if (inquiry.client_id) {
+      const { createClientNotification } = await import('@/lib/notifications/client-actions')
+      await createClientNotification({
+        tenantId: user.tenantId!,
+        clientId: inquiry.client_id,
+        category: 'event',
+        action: 'inquiry_converted_to_client',
+        title: 'Your event is being set up',
+        body: `Your inquiry for "${inquiry.confirmed_occasion || 'your event'}" is now an event`,
+        actionUrl: `/my-events/${event.id}`,
+        eventId: event.id,
+        inquiryId,
+      })
+    }
+  } catch (err) {
+    console.error('[convertInquiryToEvent] Client notification failed (non-blocking):', err)
+  }
+
   return { success: true, event }
 }
 
@@ -917,7 +992,7 @@ export async function declineInquiry(id: string, reason?: string) {
 
   const { data: inquiry } = await (supabase
     .from('inquiries')
-    .select('status, deleted_at')
+    .select('status, deleted_at, client_id')
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)
     .single() as any)
@@ -964,6 +1039,28 @@ export async function declineInquiry(id: string, reason?: string) {
   } catch {
     /* non-blocking */
   }
+
+  // Non-blocking: notify client
+  try {
+    if (inquiry.client_id) {
+      const { createClientNotification } = await import('@/lib/notifications/client-actions')
+      await createClientNotification({
+        tenantId: user.tenantId!,
+        clientId: inquiry.client_id,
+        category: 'inquiry',
+        action: 'inquiry_declined_to_client',
+        title: 'Inquiry update',
+        body: 'Your inquiry status has been updated',
+        actionUrl: '/my-inquiries',
+        inquiryId: id,
+      })
+    }
+  } catch (err) {
+    console.error('[declineInquiry] Client notification failed (non-blocking):', err)
+  }
+
+  revalidatePath('/my-inquiries')
+  revalidatePath(`/my-inquiries/${id}`)
 
   return { success: true }
 }

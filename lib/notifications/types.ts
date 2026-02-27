@@ -95,6 +95,28 @@ export type NotificationAction =
   | 'order_status'
   | 'low_stock'
   | 'guest_comp'
+  // Cross-boundary gap closure
+  | 'menu_approved'
+  | 'menu_revision_requested'
+  | 'contract_signed'
+  | 'contract_voided'
+  | 'inquiry_quoted_to_client'
+  | 'inquiry_converted_to_client'
+  | 'inquiry_declined_to_client'
+  | 'inquiry_expired_to_client'
+  | 'event_cancelled_to_client'
+  | 'event_completed_to_client'
+  | 'event_in_progress_to_client'
+  | 'event_paid_to_client'
+  | 'points_awarded'
+  | 'tier_upgraded'
+  | 'guest_rsvp_received'
+  | 'guest_dietary_alert'
+  | 'client_allergy_changed'
+  | 'gift_card_redeemed'
+  | 'new_chat_message_to_client'
+  | 'dispute_funds_withdrawn'
+  | 'refund_processed_to_client'
 
 export type Notification = {
   id: string
@@ -216,6 +238,29 @@ export const NOTIFICATION_CONFIG: Record<
   order_status: { category: 'ops', icon: 'Package', toastByDefault: true },
   low_stock: { category: 'ops', icon: 'AlertTriangle', toastByDefault: true },
   guest_comp: { category: 'ops', icon: 'Gift', toastByDefault: true },
+
+  // Cross-boundary gap closure
+  menu_approved: { category: 'event', icon: 'CheckCircle', toastByDefault: true },
+  menu_revision_requested: { category: 'event', icon: 'Edit', toastByDefault: true },
+  contract_signed: { category: 'event', icon: 'FileCheck', toastByDefault: true },
+  contract_voided: { category: 'event', icon: 'FileX', toastByDefault: true },
+  inquiry_quoted_to_client: { category: 'inquiry', icon: 'FileText', toastByDefault: true },
+  inquiry_converted_to_client: { category: 'event', icon: 'CalendarPlus', toastByDefault: true },
+  inquiry_declined_to_client: { category: 'inquiry', icon: 'XCircle', toastByDefault: true },
+  inquiry_expired_to_client: { category: 'inquiry', icon: 'Clock', toastByDefault: false },
+  event_cancelled_to_client: { category: 'event', icon: 'XCircle', toastByDefault: true },
+  event_completed_to_client: { category: 'event', icon: 'PartyPopper', toastByDefault: true },
+  event_in_progress_to_client: { category: 'event', icon: 'ChefHat', toastByDefault: true },
+  event_paid_to_client: { category: 'payment', icon: 'CreditCard', toastByDefault: true },
+  points_awarded: { category: 'loyalty', icon: 'Star', toastByDefault: true },
+  tier_upgraded: { category: 'loyalty', icon: 'Trophy', toastByDefault: true },
+  guest_rsvp_received: { category: 'client', icon: 'UserCheck', toastByDefault: true },
+  guest_dietary_alert: { category: 'client', icon: 'AlertTriangle', toastByDefault: true },
+  client_allergy_changed: { category: 'client', icon: 'AlertTriangle', toastByDefault: true },
+  gift_card_redeemed: { category: 'loyalty', icon: 'Gift', toastByDefault: true },
+  new_chat_message_to_client: { category: 'chat', icon: 'MessageCircle', toastByDefault: false },
+  dispute_funds_withdrawn: { category: 'payment', icon: 'ShieldAlert', toastByDefault: true },
+  refund_processed_to_client: { category: 'payment', icon: 'RotateCcw', toastByDefault: true },
 }
 
 // Category display names for preferences UI

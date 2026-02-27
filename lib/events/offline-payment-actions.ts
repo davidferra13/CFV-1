@@ -7,6 +7,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { transitionEvent } from '@/lib/events/transitions'
+import { revalidatePath } from 'next/cache'
 import type { PaymentMethod, LedgerEntryType } from '@/lib/ledger/append'
 
 export type RecordOfflinePaymentInput = {
@@ -213,6 +214,11 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
   } catch (pushErr) {
     console.error('[recordOfflinePayment] Push notification failed (non-blocking):', pushErr)
   }
+
+  revalidatePath(`/events/${eventId}`)
+  revalidatePath(`/my-events/${eventId}`)
+  revalidatePath('/events')
+  revalidatePath('/my-events')
 
   return { success: true, entryId: ledgerEntry?.id }
 }

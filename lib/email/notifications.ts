@@ -47,6 +47,9 @@ import { ReviewSubmittedChefEmail } from './templates/review-submitted-chef'
 import { PostEventThankYouEmail } from './templates/post-event-thank-you'
 import { PostEventReviewRequestEmail } from './templates/post-event-review-request'
 import { PostEventReferralAskEmail } from './templates/post-event-referral-ask'
+import { ContractSignedChefEmail } from './templates/contract-signed-chef'
+import { MenuApprovedChefEmail } from './templates/menu-approved-chef'
+import { MenuRevisionChefEmail } from './templates/menu-revision-chef'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -1181,6 +1184,77 @@ export async function sendPostEventReferralAskEmail(params: {
       chefName: params.chefName,
       occasion: params.occasion,
       bookingUrl: params.bookingUrl,
+    }),
+  })
+}
+
+// ─── Contract Signed — Chef Notification ────────────────────────────────────
+
+export async function sendContractSignedChefEmail(params: {
+  chefEmail: string
+  chefName: string
+  clientName: string
+  occasion: string
+  eventDate: string
+  eventId: string
+}) {
+  await sendEmail({
+    to: params.chefEmail,
+    subject: `Contract signed — ${params.occasion}`,
+    react: createElement(ContractSignedChefEmail, {
+      chefName: params.chefName,
+      clientName: params.clientName,
+      occasion: params.occasion,
+      eventDate: params.eventDate ? formatDate(params.eventDate) : 'TBD',
+      eventUrl: `${APP_URL}/events/${params.eventId}`,
+    }),
+  })
+}
+
+// ─── Menu Approved — Chef Notification ──────────────────────────────────────
+
+export async function sendMenuApprovedChefEmail(params: {
+  chefEmail: string
+  chefName: string
+  clientName: string
+  occasion: string
+  eventDate: string
+  eventId: string
+}) {
+  await sendEmail({
+    to: params.chefEmail,
+    subject: `Menu approved — ${params.occasion}`,
+    react: createElement(MenuApprovedChefEmail, {
+      chefName: params.chefName,
+      clientName: params.clientName,
+      occasion: params.occasion,
+      eventDate: params.eventDate ? formatDate(params.eventDate) : 'TBD',
+      eventUrl: `${APP_URL}/events/${params.eventId}`,
+    }),
+  })
+}
+
+// ─── Menu Revision Requested — Chef Notification ────────────────────────────
+
+export async function sendMenuRevisionChefEmail(params: {
+  chefEmail: string
+  chefName: string
+  clientName: string
+  occasion: string
+  eventDate: string
+  revisionNotes: string
+  eventId: string
+}) {
+  await sendEmail({
+    to: params.chefEmail,
+    subject: `Menu revision requested — ${params.occasion}`,
+    react: createElement(MenuRevisionChefEmail, {
+      chefName: params.chefName,
+      clientName: params.clientName,
+      occasion: params.occasion,
+      eventDate: params.eventDate ? formatDate(params.eventDate) : 'TBD',
+      revisionNotes: params.revisionNotes,
+      eventUrl: `${APP_URL}/events/${params.eventId}`,
     }),
   })
 }
