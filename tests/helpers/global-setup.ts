@@ -17,7 +17,7 @@ dotenv.config({ path: '.env.local' })
 
 const BASE_URL = 'http://localhost:3100'
 
-async function loginAndSaveState(
+async function loginAndSaveStateOnce(
   browser: ReturnType<typeof chromium.launch> extends Promise<infer T> ? T : never,
   email: string,
   password: string,
@@ -60,6 +60,33 @@ async function loginAndSaveState(
     )
   } finally {
     await context.close()
+  }
+}
+
+/** Retry wrapper — handles ECONNRESET / timeout when dev server is under load */
+async function loginAndSaveState(
+  browser: ReturnType<typeof chromium.launch> extends Promise<infer T> ? T : never,
+  email: string,
+  password: string,
+  expectedUrlPattern: RegExp,
+  outputPath: string,
+  label: string,
+  maxRetries = 3
+) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await loginAndSaveStateOnce(browser, email, password, expectedUrlPattern, outputPath, label)
+      return
+    } catch (err) {
+      const msg = String(err)
+      const isRetryable =
+        msg.includes('ECONNRESET') || msg.includes('Timeout') || msg.includes('timeout')
+      if (!isRetryable || attempt === maxRetries) throw err
+      console.log(
+        `[globalSetup] ${label} attempt ${attempt}/${maxRetries} failed (retryable). Waiting 5s...`
+      )
+      await new Promise((r) => setTimeout(r, 5_000))
+    }
   }
 }
 

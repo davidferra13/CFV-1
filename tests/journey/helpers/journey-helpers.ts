@@ -202,11 +202,15 @@ export const JOURNEY_ROUTES = {
 } as const
 
 /**
- * Open the Remy drawer via keyboard shortcut.
+ * Open the Remy drawer via the mascot button click.
+ * Ctrl+K conflicts with the global search palette, so we click the mascot instead.
  * Waits for the drawer to become visible.
  */
 export async function openRemyDrawer(page: Page): Promise<void> {
-  await page.keyboard.press('Control+k')
+  // Click the Remy mascot button (bottom-right corner)
+  const mascot = page.getByRole('button', { name: /toggle remy/i })
+  await expect(mascot).toBeVisible({ timeout: 10_000 })
+  await mascot.click()
   // Wait for the drawer to appear
   const drawer = page
     .locator('[role="dialog"]')

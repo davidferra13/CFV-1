@@ -180,6 +180,29 @@ test.describe('Error Handling — API Endpoints', () => {
     expect(resp.status()).toBeLessThan(500)
     await unauthRequest.dispose()
   })
+
+  test('Daily report cron endpoint without auth returns 401', async ({ page }) => {
+    const resp = await page.request.get('/api/scheduled/daily-report')
+    expect(resp.status()).toBe(401)
+  })
+
+  test('Daily report cron endpoint with wrong bearer returns 401', async ({ page }) => {
+    const resp = await page.request.get('/api/scheduled/daily-report', {
+      headers: {
+        Authorization: 'Bearer not-the-real-cron-secret',
+      },
+    })
+    expect(resp.status()).toBe(401)
+  })
+
+  test('Daily report cron endpoint with malformed auth header returns 401', async ({ page }) => {
+    const resp = await page.request.get('/api/scheduled/daily-report', {
+      headers: {
+        Authorization: 'Token invalid',
+      },
+    })
+    expect(resp.status()).toBe(401)
+  })
 })
 
 // ─── JS Error Resilience ───────────────────────────────────────────────────────

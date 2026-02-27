@@ -145,6 +145,7 @@ async function upsertChef(admin, authUserId: string, suffix: string): Promise<st
     show_website_on_public_profile: false,
     preferred_inquiry_destination: 'both',
     onboarding_completed_at: new Date().toISOString(),
+    subscription_status: 'grandfathered',
   }
 
   const { data: existing } = await admin
