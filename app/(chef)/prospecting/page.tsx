@@ -9,6 +9,7 @@ import { getProspects, getProspectStats } from '@/lib/prospecting/actions'
 import { ProspectTable } from '@/components/prospecting/prospect-table'
 import { BatchReEnrichButton } from '@/components/prospecting/batch-re-enrich-button'
 import { ExportCSVButton } from '@/components/prospecting/export-csv-button'
+import { FollowUpReminderButton } from '@/components/prospecting/follow-up-reminder-button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -274,6 +275,7 @@ export default async function ProspectingPage({
         <div className="flex items-center gap-3">
           <BatchReEnrichButton />
           <ExportCSVButton />
+          <FollowUpReminderButton />
         </div>
       )}
 

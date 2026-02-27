@@ -11,7 +11,12 @@ import {
   deleteProspect,
   addProspectNote,
 } from '@/lib/prospecting/actions'
-import type { Prospect, ProspectNote, OutreachLogEntry } from '@/lib/prospecting/types'
+import type {
+  Prospect,
+  ProspectNote,
+  OutreachLogEntry,
+  StageHistoryEntry,
+} from '@/lib/prospecting/types'
 import { logProspectCall, convertProspectToInquiry } from '@/lib/prospecting/queue-actions'
 import type { CallScript } from '@/lib/prospecting/types'
 import {
@@ -60,6 +65,9 @@ import { FollowUpSequenceButton } from '@/components/prospecting/follow-up-seque
 import { AICallScriptButton } from '@/components/prospecting/ai-call-script-button'
 import { OutreachLogPanel } from '@/components/prospecting/outreach-log-panel'
 import { ProspectMergePanel } from '@/components/prospecting/prospect-merge-panel'
+import { SendEmailPanel } from '@/components/prospecting/send-email-panel'
+import { ProspectTagEditor } from '@/components/prospecting/prospect-tag-editor'
+import { StageHistoryPanel } from '@/components/prospecting/stage-history-panel'
 
 interface DossierProps {
   prospect: Prospect
@@ -67,6 +75,7 @@ interface DossierProps {
   script: CallScript | null
   outreachLog: OutreachLogEntry[]
   similarProspects: Prospect[]
+  stageHistory: StageHistoryEntry[]
 }
 
 export function ProspectDossierClient({
@@ -75,6 +84,7 @@ export function ProspectDossierClient({
   script,
   outreachLog,
   similarProspects,
+  stageHistory,
 }: DossierProps) {
   const router = useRouter()
   const [prospect, setProspect] = useState(initialProspect)
@@ -547,6 +557,14 @@ export function ProspectDossierClient({
             </CardContent>
           </Card>
 
+          {/* Send Email Panel */}
+          <SendEmailPanel
+            prospectId={prospect.id}
+            prospectName={prospect.name}
+            recipientEmail={prospect.contact_direct_email || prospect.email}
+            draftEmail={prospect.draft_email}
+          />
+
           {/* Approach Strategy */}
           {prospect.approach_strategy && (
             <Card className="border-blue-200 bg-blue-950/30">
@@ -800,6 +818,9 @@ export function ProspectDossierClient({
           {/* Duplicate Detection & Merge (Wave 4.1) */}
           <ProspectMergePanel prospect={prospect} duplicates={similarProspects} />
 
+          {/* Pipeline Stage History (Wave 4.2) */}
+          <StageHistoryPanel history={stageHistory} />
+
           {/* Intelligence Panel */}
           <Card>
             <CardHeader>
@@ -877,21 +898,7 @@ export function ProspectDossierClient({
                   </div>
                 </div>
               )}
-              {prospect.tags.length > 0 && (
-                <div>
-                  <span className="text-xs font-medium text-stone-500">Tags</span>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {prospect.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full bg-brand-950 border border-brand-700 px-2 py-0.5 text-xs text-brand-400"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <ProspectTagEditor prospectId={prospect.id} initialTags={prospect.tags} />
             </CardContent>
           </Card>
 

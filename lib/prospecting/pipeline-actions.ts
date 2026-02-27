@@ -18,7 +18,13 @@ import {
 } from './scrub-prompt'
 import { computeLeadScore } from './lead-scoring'
 import { isSimilarName } from './fuzzy-match'
-import type { Prospect, OutreachLogEntry, GeoCluster, FollowUpSequence } from './types'
+import type {
+  Prospect,
+  OutreachLogEntry,
+  GeoCluster,
+  FollowUpSequence,
+  StageHistoryEntry,
+} from './types'
 import type { PipelineStage } from './constants'
 
 // ── Pipeline Stage Management ────────────────────────────────────────────────
@@ -31,6 +37,16 @@ export async function updatePipelineStage(
   await requireAdmin()
   const user = await requireChef()
   const supabase = createServerClient()
+
+  // Fetch current stage for history tracking
+  const { data: current } = await supabase
+    .from('prospects')
+    .select('pipeline_stage')
+    .eq('id', prospectId)
+    .eq('chef_id', user.tenantId!)
+    .single()
+
+  const fromStage = current?.pipeline_stage ?? null
 
   const updates: Record<string, unknown> = { pipeline_stage: stage }
 
@@ -53,6 +69,19 @@ export async function updatePipelineStage(
     .eq('chef_id', user.tenantId!)
 
   if (error) throw new Error('Failed to update pipeline stage')
+
+  // Record stage history (non-blocking)
+  try {
+    await supabase.from('prospect_stage_history').insert({
+      prospect_id: prospectId,
+      chef_id: user.tenantId!,
+      from_stage: fromStage,
+      to_stage: stage,
+      notes: notes || null,
+    })
+  } catch (err) {
+    console.error('[updatePipelineStage] Stage history insert failed (non-blocking):', err)
+  }
 
   // Log the stage change
   await supabase.from('prospect_outreach_log').insert({
@@ -1039,4 +1068,256 @@ export async function findSimilarProspects(prospectId: string): Promise<Prospect
   if (!allProspects) return []
 
   return (allProspects as Prospect[]).filter((p) => isSimilarName(p.name, prospect.name))
+}
+
+// ── Send Prospect Email (via Gmail API) ──────────────────────────────────────
+
+export async function sendProspectEmail(prospectId: string, subject: string, body: string) {
+  await requireAdmin()
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data: prospect, error: fetchError } = await supabase
+    .from('prospects')
+    .select('*')
+    .eq('id', prospectId)
+    .eq('chef_id', user.tenantId!)
+    .single()
+
+  if (fetchError || !prospect) throw new Error('Prospect not found')
+
+  const recipientEmail = prospect.contact_direct_email || prospect.email
+  if (!recipientEmail) throw new Error('No email address for this prospect')
+
+  // Get Gmail access token
+  const { getGoogleAccessToken } = await import('@/lib/google/auth')
+  const accessToken = await getGoogleAccessToken(user.entityId!)
+
+  // Send the email
+  const { sendEmail } = await import('@/lib/gmail/client')
+  const gmailResult = await sendEmail(accessToken, {
+    to: recipientEmail,
+    subject,
+    body,
+  })
+
+  // Log the outreach
+  await supabase.from('prospect_outreach_log').insert({
+    prospect_id: prospectId,
+    chef_id: user.tenantId!,
+    outreach_type: 'email',
+    subject,
+    body,
+    notes: `Sent via Gmail to ${recipientEmail}`,
+  })
+
+  // Auto-advance pipeline if still in early stages
+  if (prospect.pipeline_stage === 'new' || prospect.pipeline_stage === 'researched') {
+    await supabase
+      .from('prospects')
+      .update({ pipeline_stage: 'contacted' })
+      .eq('id', prospectId)
+      .eq('chef_id', user.tenantId!)
+
+    // Record stage history (non-blocking)
+    try {
+      await supabase.from('prospect_stage_history').insert({
+        prospect_id: prospectId,
+        chef_id: user.tenantId!,
+        from_stage: prospect.pipeline_stage,
+        to_stage: 'contacted',
+        notes: 'Auto-advanced after email send',
+      })
+    } catch (err) {
+      console.error('[sendProspectEmail] Stage history failed (non-blocking):', err)
+    }
+  }
+
+  // Log activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'prospect_emailed',
+      domain: 'prospecting',
+      entityType: 'prospect',
+      entityId: prospectId,
+      summary: `Emailed ${prospect.name}: ${subject}`,
+      context: { gmail_message_id: gmailResult.messageId },
+    })
+  } catch (err) {
+    console.error('[sendProspectEmail] Activity log failed (non-blocking):', err)
+  }
+
+  revalidatePath(`/prospecting/${prospectId}`)
+  revalidatePath('/prospecting/pipeline')
+
+  return { success: true as const, messageId: gmailResult.messageId }
+}
+
+// ── Prospect Tag Management ──────────────────────────────────────────────────
+
+export async function updateProspectTags(prospectId: string, tags: string[]) {
+  await requireAdmin()
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { error } = await supabase
+    .from('prospects')
+    .update({ tags })
+    .eq('id', prospectId)
+    .eq('chef_id', user.tenantId!)
+
+  if (error) throw new Error('Failed to update tags')
+
+  revalidatePath(`/prospecting/${prospectId}`)
+  revalidatePath('/prospecting')
+
+  return { success: true as const }
+}
+
+// ── Stage History ────────────────────────────────────────────────────────────
+
+export async function getStageHistory(prospectId: string): Promise<StageHistoryEntry[]> {
+  await requireAdmin()
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data, error } = await supabase
+    .from('prospect_stage_history')
+    .select('*')
+    .eq('prospect_id', prospectId)
+    .eq('chef_id', user.tenantId!)
+    .order('changed_at', { ascending: false })
+
+  if (error) return []
+  return (data ?? []) as StageHistoryEntry[]
+}
+
+// ── Bulk Prospect Operations ─────────────────────────────────────────────────
+
+export async function bulkUpdateProspects(
+  prospectIds: string[],
+  updates: {
+    status?: string
+    pipeline_stage?: string
+    priority?: string
+    tags?: string[]
+  }
+) {
+  await requireAdmin()
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  if (prospectIds.length === 0) throw new Error('No prospects selected')
+  if (prospectIds.length > 100) throw new Error('Max 100 prospects per batch')
+
+  const updatePayload: Record<string, unknown> = {}
+  if (updates.status) updatePayload.status = updates.status
+  if (updates.pipeline_stage) updatePayload.pipeline_stage = updates.pipeline_stage
+  if (updates.priority) updatePayload.priority = updates.priority
+  if (updates.tags) updatePayload.tags = updates.tags
+
+  if (Object.keys(updatePayload).length === 0) throw new Error('No updates specified')
+
+  const { error } = await supabase
+    .from('prospects')
+    .update(updatePayload)
+    .in('id', prospectIds)
+    .eq('chef_id', user.tenantId!)
+
+  if (error) throw new Error('Bulk update failed')
+
+  // Record stage history for pipeline stage changes
+  if (updates.pipeline_stage) {
+    try {
+      const historyRows = prospectIds.map((id) => ({
+        prospect_id: id,
+        chef_id: user.tenantId!,
+        from_stage: null,
+        to_stage: updates.pipeline_stage!,
+        notes: 'Bulk update',
+      }))
+      await supabase.from('prospect_stage_history').insert(historyRows)
+    } catch (err) {
+      console.error('[bulkUpdateProspects] Stage history failed (non-blocking):', err)
+    }
+  }
+
+  revalidatePath('/prospecting')
+  revalidatePath('/prospecting/pipeline')
+
+  return { success: true as const, updated: prospectIds.length }
+}
+
+export async function bulkDeleteProspects(prospectIds: string[]) {
+  await requireAdmin()
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  if (prospectIds.length === 0) throw new Error('No prospects selected')
+  if (prospectIds.length > 100) throw new Error('Max 100 prospects per batch')
+
+  const { error } = await supabase
+    .from('prospects')
+    .delete()
+    .in('id', prospectIds)
+    .eq('chef_id', user.tenantId!)
+
+  if (error) throw new Error('Bulk delete failed')
+
+  revalidatePath('/prospecting')
+  revalidatePath('/prospecting/pipeline')
+
+  return { success: true as const, deleted: prospectIds.length }
+}
+
+// ── Follow-Up Reminder → Chef Todo ──────────────────────────────────────────
+
+export async function createFollowUpReminders(): Promise<{ created: number }> {
+  await requireAdmin()
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  // Find prospects with follow-ups due today or overdue
+  const now = new Date().toISOString()
+  const { data: dueProspects, error } = await supabase
+    .from('prospects')
+    .select('id, name, next_follow_up_at')
+    .eq('chef_id', user.tenantId!)
+    .eq('status', 'follow_up')
+    .lte('next_follow_up_at', now)
+    .order('next_follow_up_at', { ascending: true })
+    .limit(50)
+
+  if (error || !dueProspects || dueProspects.length === 0) return { created: 0 }
+
+  // Check which prospects already have a pending todo (avoid duplicates)
+  const { data: existingTodos } = await supabase
+    .from('chef_todos')
+    .select('text')
+    .eq('chef_id', user.tenantId!)
+    .eq('completed', false)
+    .ilike('text', '%follow up%prospect%')
+
+  const existingTexts = new Set((existingTodos ?? []).map((t) => t.text.toLowerCase()))
+
+  let created = 0
+  for (const p of dueProspects) {
+    const todoText = `Follow up with prospect: ${p.name}`
+    if (existingTexts.has(todoText.toLowerCase())) continue
+
+    const { error: insertError } = await supabase.from('chef_todos').insert({
+      chef_id: user.tenantId!,
+      text: todoText,
+      completed: false,
+      sort_order: 0,
+      created_by: user.id,
+    })
+
+    if (!insertError) created++
+  }
+
+  return { created }
 }

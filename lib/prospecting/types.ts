@@ -149,3 +149,13 @@ export interface CallScript {
   created_at: string
   updated_at: string
 }
+
+export interface StageHistoryEntry {
+  id: string
+  prospect_id: string
+  chef_id: string
+  from_stage: string | null
+  to_stage: string
+  changed_at: string
+  notes: string | null
+}
