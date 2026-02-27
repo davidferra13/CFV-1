@@ -333,3 +333,81 @@ test.describe('Recipes and Menus - New Assistant Panels (#547-551)', () => {
     await expect(page.getByPlaceholder(/spirit or ingredient/i).first()).toBeVisible()
   })
 })
+
+// Menu translation panel (new)
+
+test.describe('Menus - Translation Panel (#552-555)', () => {
+  test('menu detail exposes Translate Menu control when dishes exist (#552)', async ({
+    page,
+    seedIds,
+  }) => {
+    await page.goto(`/menus/${seedIds.menuId}`)
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const translateButton = page.getByRole('button', { name: /translate menu/i }).first()
+    await expect(translateButton).toBeVisible()
+  })
+
+  test('Translate Menu opens translation panel with language selector (#553)', async ({
+    page,
+    seedIds,
+  }) => {
+    await page.goto(`/menus/${seedIds.menuId}`)
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    await page
+      .getByRole('button', { name: /translate menu/i })
+      .first()
+      .click()
+
+    await expect(page.getByRole('button', { name: /hide translation/i }).first()).toBeVisible()
+    await expect(page.getByRole('combobox').first()).toBeVisible()
+    await expect(page.getByRole('button', { name: /^translate$/i }).first()).toBeVisible()
+  })
+
+  test('Translate action remains disabled until language is selected (#554)', async ({
+    page,
+    seedIds,
+  }) => {
+    await page.goto(`/menus/${seedIds.menuId}`)
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    await page
+      .getByRole('button', { name: /translate menu/i })
+      .first()
+      .click()
+
+    const translateAction = page.getByRole('button', { name: /^translate$/i }).first()
+    await expect(translateAction).toBeDisabled()
+
+    const languageSelect = page.getByRole('combobox').first()
+    await languageSelect.selectOption('es')
+    await expect(translateAction).toBeEnabled()
+  })
+
+  test('Hide Translation collapses the translation panel (#555)', async ({ page, seedIds }) => {
+    await page.goto(`/menus/${seedIds.menuId}`)
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    await page
+      .getByRole('button', { name: /translate menu/i })
+      .first()
+      .click()
+    await expect(page.getByRole('button', { name: /hide translation/i }).first()).toBeVisible()
+
+    await page
+      .getByRole('button', { name: /hide translation/i })
+      .first()
+      .click()
+    await expect(page.getByRole('button', { name: /translate menu/i }).first()).toBeVisible()
+    await expect(page.getByRole('combobox').first()).toBeHidden()
+  })
+})
