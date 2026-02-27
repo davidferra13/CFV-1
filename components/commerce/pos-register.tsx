@@ -26,8 +26,11 @@ import {
   recordCashPaidOut,
 } from '@/lib/commerce/cash-drawer-actions'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+import { Download } from 'lucide-react'
 import { PRODUCT_CATEGORY_LABELS } from '@/lib/commerce/constants'
 import type { ProductCategory } from '@/lib/commerce/constants'
+import { generateReceipt } from '@/lib/commerce/receipt-actions'
 import { formatCurrency, parseCurrencyToCents } from '@/lib/utils/currency'
 
 type Product = {
@@ -50,6 +53,7 @@ type CartItem = {
 type Props = {
   products: Product[]
   registerSession: any | null
+  defaultTaxZip?: string
 }
 
 type DrawerSummary = {
@@ -67,13 +71,14 @@ type DrawerSummary = {
 
 const CART_STORAGE_KEY = 'chefflow_pos_cart_v1'
 
-export function PosRegister({ products, registerSession }: Props) {
+export function PosRegister({ products, registerSession, defaultTaxZip }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [cart, setCart] = useState<CartItem[]>([])
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
   const [lastSale, setLastSale] = useState<{
+    saleId: string
     saleNumber: string
     totalCents: number
     changeDueCents: number
@@ -245,7 +250,7 @@ export function PosRegister({ products, registerSession }: Props) {
       paymentMethod === 'cash' ? parseCurrencyToCents(cashTendered || '0') : totalDueCents
 
     if (paymentMethod === 'cash' && amountTenderedCents < totalDueCents) {
-      alert('Amount tendered must be at least the total due')
+      toast.error('Amount tendered must be at least the total due')
       return
     }
 
@@ -264,13 +269,16 @@ export function PosRegister({ products, registerSession }: Props) {
           paymentMethod,
           amountTenderedCents,
           tipCents,
+          taxZipCode: defaultTaxZip,
         })
 
         setLastSale({
+          saleId: result.saleId,
           saleNumber: result.saleNumber,
           totalCents: result.totalCents,
           changeDueCents: result.changeDueCents,
         })
+        toast.success(`Sale ${result.saleNumber} completed`)
         setCart([])
         setTipInput('0.00')
         setCashTendered('')
@@ -278,7 +286,7 @@ export function PosRegister({ products, registerSession }: Props) {
         await refreshDrawerData()
         router.refresh()
       } catch (err) {
-        alert(err instanceof Error ? err.message : 'Checkout failed')
+        toast.error(err instanceof Error ? err.message : 'Checkout failed')
       }
     })
   }
@@ -292,7 +300,7 @@ export function PosRegister({ products, registerSession }: Props) {
         setOpeningCash('')
         router.refresh()
       } catch (err) {
-        alert(err instanceof Error ? err.message : 'Failed to open register')
+        toast.error(err instanceof Error ? err.message : 'Failed to open register')
       }
     })
   }
@@ -307,7 +315,7 @@ export function PosRegister({ products, registerSession }: Props) {
         setClosingCash('')
         router.refresh()
       } catch (err) {
-        alert(err instanceof Error ? err.message : 'Failed to close register')
+        toast.error(err instanceof Error ? err.message : 'Failed to close register')
       }
     })
   }
@@ -317,7 +325,7 @@ export function PosRegister({ products, registerSession }: Props) {
     const amountCents = parseCurrencyToCents(drawerAmount || '0')
 
     if (amountCents <= 0 && drawerAction !== 'adjustment') {
-      alert('Enter a positive amount')
+      toast.error('Enter a positive amount')
       return
     }
 
@@ -349,7 +357,7 @@ export function PosRegister({ products, registerSession }: Props) {
         await refreshDrawerData()
         router.refresh()
       } catch (err) {
-        alert(err instanceof Error ? err.message : 'Failed to record drawer movement')
+        toast.error(err instanceof Error ? err.message : 'Failed to record drawer movement')
       }
     })
   }
@@ -523,9 +531,37 @@ export function PosRegister({ products, registerSession }: Props) {
                   ` · Change due: ${formatCurrency(lastSale.changeDueCents)}`}
               </p>
             </div>
-            <Button variant="ghost" onClick={() => setLastSale(null)}>
-              <X className="w-4 h-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  startTransition(async () => {
+                    try {
+                      const { pdf, filename } = await generateReceipt(lastSale.saleId)
+                      const binary = atob(pdf)
+                      const bytes = new Uint8Array(binary.length)
+                      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+                      const blob = new Blob([bytes], { type: 'application/pdf' })
+                      const url = URL.createObjectURL(blob)
+                      const link = document.createElement('a')
+                      link.href = url
+                      link.download = filename
+                      link.click()
+                      URL.revokeObjectURL(url)
+                    } catch (err) {
+                      toast.error('Failed to download receipt')
+                    }
+                  })
+                }}
+                disabled={isPending}
+              >
+                <Download className="w-4 h-4 mr-1" />
+                Receipt
+              </Button>
+              <Button variant="ghost" onClick={() => setLastSale(null)}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}

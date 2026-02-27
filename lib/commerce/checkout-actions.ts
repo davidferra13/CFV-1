@@ -195,6 +195,21 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
     }
   }
 
+  // 7. Inventory deduction (non-blocking — if it fails, the sale still succeeds)
+  try {
+    const { executeSaleDeduction } = await import('./inventory-bridge')
+    await executeSaleDeduction(sale.id)
+  } catch (err) {
+    console.error('[non-blocking] Inventory deduction failed:', err)
+  }
+
+  try {
+    const { deductProductStock } = await import('./inventory-bridge')
+    await deductProductStock(sale.id)
+  } catch (err) {
+    console.error('[non-blocking] Product stock deduction failed:', err)
+  }
+
   // Compute change due for cash payments
   const changeDueCents =
     input.paymentMethod === 'cash'

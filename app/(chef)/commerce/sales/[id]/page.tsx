@@ -17,6 +17,7 @@ import {
   SALE_CHANNEL_LABELS,
 } from '@/lib/commerce/constants'
 import type { SaleStatus, SaleChannel } from '@/lib/commerce/constants'
+import { SaleDetailActions } from '@/components/commerce/sale-detail-actions'
 
 export const metadata: Metadata = { title: 'Sale Detail — ChefFlow' }
 
@@ -60,6 +61,19 @@ export default async function SaleDetailPage({ params }: { params: Promise<{ id:
           </Button>
         </Link>
       </div>
+
+      {/* Actions */}
+      <SaleDetailActions
+        saleId={id}
+        saleStatus={status}
+        totalCents={s.total_cents ?? 0}
+        payments={payments.map((p: any) => ({
+          id: p.id,
+          amount_cents: p.amount_cents ?? 0,
+          tip_cents: p.tip_cents ?? 0,
+          status: p.status,
+        }))}
+      />
 
       {/* Sale Items */}
       <Card>

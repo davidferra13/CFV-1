@@ -12,16 +12,22 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { SALE_CHANNEL_LABELS } from '@/lib/commerce/constants'
 import type { SaleChannel } from '@/lib/commerce/constants'
+import { ReportsDatePicker } from '@/components/commerce/reports-page-client'
 
 export const metadata: Metadata = { title: 'Commerce Reports — ChefFlow' }
 
-export default async function CommerceReportsPage() {
+export default async function CommerceReportsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string; to?: string }>
+}) {
   await requireChef()
   await requirePro('commerce')
 
-  // Default to last 7 days
-  const to = new Date().toISOString().split('T')[0]
-  const from = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const params = await searchParams
+  const to = params.to || new Date().toISOString().split('T')[0]
+  const from =
+    params.from || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
   const [dailyReport, productReport, channelReport, { sessions }] = await Promise.all([
     getDailySalesReport(from, to),
@@ -37,7 +43,9 @@ export default async function CommerceReportsPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <h1 className="text-3xl font-bold text-stone-100">Commerce Reports</h1>
-      <p className="text-stone-400 text-sm">Last 7 days overview</p>
+
+      {/* Date picker + export */}
+      <ReportsDatePicker defaultFrom={from} defaultTo={to} />
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -74,7 +82,7 @@ export default async function CommerceReportsPage() {
         </CardHeader>
         <CardContent>
           {dailyReport.length === 0 ? (
-            <p className="text-stone-500 text-sm">No sales in the last 7 days</p>
+            <p className="text-stone-500 text-sm">No sales in this period</p>
           ) : (
             <div className="space-y-2">
               {dailyReport.map((day) => (
