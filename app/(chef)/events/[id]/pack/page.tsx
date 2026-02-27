@@ -6,19 +6,44 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
+import { createServerClient } from '@/lib/supabase/server'
 import { fetchPackingListData } from '@/lib/documents/generate-packing-list'
 import { getPackingStatus } from '@/lib/packing/actions'
+import { getEventWeather, type EventWeather } from '@/lib/weather/open-meteo'
 import { PackingListClient } from '@/components/events/packing-list-client'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { format, parseISO } from 'date-fns'
 
-export default async function PackPage({ params }: { params: { id: string } }) {
-  await requireChef()
+/**
+ * Fetch weather for the event — non-blocking, returns null on any failure.
+ * Coordinates come from the events table (location_lat, location_lng).
+ */
+async function fetchEventWeather(eventId: string, tenantId: string): Promise<EventWeather | null> {
+  try {
+    const supabase = createServerClient()
+    const { data } = await supabase
+      .from('events')
+      .select('location_lat, location_lng, event_date')
+      .eq('id', eventId)
+      .eq('tenant_id', tenantId)
+      .single()
 
-  const [packingData, packingStatus] = await Promise.all([
+    if (!data?.location_lat || !data?.location_lng || !data?.event_date) return null
+
+    return await getEventWeather(data.location_lat, data.location_lng, data.event_date)
+  } catch {
+    return null
+  }
+}
+
+export default async function PackPage({ params }: { params: { id: string } }) {
+  const user = await requireChef()
+
+  const [packingData, packingStatus, weather] = await Promise.all([
     fetchPackingListData(params.id),
     getPackingStatus(params.id),
+    fetchEventWeather(params.id, user.tenantId!),
   ])
 
   if (!packingData) {
@@ -97,6 +122,7 @@ export default async function PackPage({ params }: { params: { id: string } }) {
         eventId={params.id}
         packingData={packingData}
         alreadyPacked={packingStatus.carPacked}
+        weather={weather}
       />
     </div>
   )

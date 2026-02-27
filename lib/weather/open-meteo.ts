@@ -48,6 +48,49 @@ function toDateStr(date: Date): string {
   return date.toISOString().slice(0, 10)
 }
 
+/**
+ * Compact weather summary for inline dashboard display.
+ * Just emoji + temp range + optional precipitation warning.
+ */
+export interface InlineWeather {
+  emoji: string
+  tempMinF: number
+  tempMaxF: number
+  precipitationMm: number
+  description: string
+}
+
+/**
+ * Batch-fetch weather for multiple events by their coordinates and dates.
+ * Returns a map of eventId → InlineWeather. Skips events with no coords or API errors.
+ * All fetches run in parallel for performance.
+ */
+export async function getWeatherForEvents(
+  events: Array<{ id: string; lat: number; lng: number; eventDate: string }>
+): Promise<Record<string, InlineWeather>> {
+  const results: Record<string, InlineWeather> = {}
+
+  const promises = events.map(async (ev) => {
+    try {
+      const weather = await getEventWeather(ev.lat, ev.lng, ev.eventDate)
+      if (weather) {
+        results[ev.id] = {
+          emoji: weather.emoji,
+          tempMinF: weather.tempMinF,
+          tempMaxF: weather.tempMaxF,
+          precipitationMm: weather.precipitationMm,
+          description: weather.description,
+        }
+      }
+    } catch {
+      // Non-blocking — skip this event's weather silently
+    }
+  })
+
+  await Promise.all(promises)
+  return results
+}
+
 export async function getEventWeather(
   lat: number,
   lng: number,

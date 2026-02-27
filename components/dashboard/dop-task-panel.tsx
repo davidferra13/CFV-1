@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DOPTaskCheckbox } from '@/components/scheduling/dop-task-checkbox'
 import type { DOPTaskDigest, DigestTask } from '@/lib/scheduling/task-digest'
+import type { InlineWeather } from '@/lib/weather/open-meteo'
 import { ArrowRight, ClipboardList } from 'lucide-react'
 
 // ============================================
@@ -57,9 +58,10 @@ function formatDeadlineTime(deadline: string): string {
 
 type Props = {
   digest: DOPTaskDigest
+  weatherByEventId?: Record<string, InlineWeather>
 }
 
-export function DOPTaskPanel({ digest }: Props) {
+export function DOPTaskPanel({ digest, weatherByEventId }: Props) {
   // All caught up state
   if (digest.totalIncomplete === 0) {
     return (
@@ -135,12 +137,38 @@ export function DOPTaskPanel({ digest }: Props) {
                     {first.eventOccasion ?? 'Private Event'} — {first.clientName}
                   </p>
                   <p
-                    className={`text-xs mt-0.5 ${hasOverdue ? 'text-red-500 font-medium' : 'text-stone-400'}`}
+                    className={`text-xs mt-0.5 flex items-center gap-1.5 flex-wrap ${hasOverdue ? 'text-red-500 font-medium' : 'text-stone-400'}`}
                   >
-                    {displayDate}
-                    {hasOverdue
-                      ? ` · ${tasks.filter((t) => t.isOverdue).length} task${tasks.filter((t) => t.isOverdue).length !== 1 ? 's' : ''} overdue`
-                      : ` · ${tasks.length} task${tasks.length !== 1 ? 's' : ''} pending`}
+                    <span>
+                      {displayDate}
+                      {hasOverdue
+                        ? ` · ${tasks.filter((t) => t.isOverdue).length} task${tasks.filter((t) => t.isOverdue).length !== 1 ? 's' : ''} overdue`
+                        : ` · ${tasks.length} task${tasks.length !== 1 ? 's' : ''} pending`}
+                    </span>
+                    {/* Inline weather indicator */}
+                    {weatherByEventId?.[eventId] &&
+                      (() => {
+                        const w = weatherByEventId[eventId]
+                        return (
+                          <span
+                            className="inline-flex items-center gap-0.5 text-sky-400 font-normal"
+                            title={w.description}
+                          >
+                            <span>{w.emoji}</span>
+                            <span>
+                              {w.tempMinF}–{w.tempMaxF}°F
+                            </span>
+                            {w.precipitationMm > 0.5 && (
+                              <span
+                                className="text-amber-400"
+                                title={`${(w.precipitationMm / 25.4).toFixed(1)}" precipitation expected`}
+                              >
+                                rain
+                              </span>
+                            )}
+                          </span>
+                        )
+                      })()}
                   </p>
                 </div>
                 <ArrowRight className="h-3.5 w-3.5 text-stone-300 group-hover:text-brand-500 shrink-0 ml-2" />

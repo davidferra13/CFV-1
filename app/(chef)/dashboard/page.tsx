@@ -112,6 +112,8 @@ import {
 import { ResponseTimeWidget } from '@/components/dashboard/response-time-widget'
 import { getStaleInquiries, type PendingFollowUp } from '@/lib/inquiries/follow-up-actions'
 import { PendingFollowUpsWidget } from '@/components/inquiries/pending-follow-ups-widget'
+import { getWeatherForEvents, type InlineWeather } from '@/lib/weather/open-meteo'
+import { createServerClient } from '@/lib/supabase/server'
 
 // ============================================
 // Safe wrapper — logs failures, returns fallback
@@ -496,6 +498,45 @@ export default async function ChefDashboard() {
     safe('pendingFollowUps', () => getStaleInquiries(3), emptyPendingFollowUps),
   ])
 
+  // ============================================
+  // WEATHER — fetch for today's event + DOP task events
+  // ============================================
+  const weatherByEventId = await safe<Record<string, InlineWeather>>(
+    'weather',
+    async () => {
+      // Collect event IDs that need weather
+      const eventIds = new Set<string>()
+      if (todaysSchedule) eventIds.add(todaysSchedule.event.id)
+      for (const task of dopTaskDigest.tasks) eventIds.add(task.eventId)
+
+      if (eventIds.size === 0) return {}
+
+      // Fetch coordinates for these events from the database
+      const supabase = createServerClient()
+      const { data: eventCoords } = await supabase
+        .from('events')
+        .select('id, event_date, location_lat, location_lng')
+        .in('id', Array.from(eventIds))
+
+      if (!eventCoords || eventCoords.length === 0) return {}
+
+      // Filter to events that have coordinates
+      const withCoords = eventCoords
+        .filter((e: any) => e.location_lat != null && e.location_lng != null)
+        .map((e: any) => ({
+          id: e.id,
+          lat: e.location_lat as number,
+          lng: e.location_lng as number,
+          eventDate: e.event_date,
+        }))
+
+      if (withCoords.length === 0) return {}
+
+      return getWeatherForEvents(withCoords)
+    },
+    {}
+  )
+
   const activeInquiryCount =
     inquiryStats.new +
     inquiryStats.awaiting_client +
@@ -834,6 +875,25 @@ export default async function ChefDashboard() {
                   {todaysSchedule.event.guest_count} guests
                   {todaysSchedule.event.location_city &&
                     ` \u2014 ${todaysSchedule.event.location_city}`}
+                  {/* Inline weather indicator */}
+                  {weatherByEventId[todaysSchedule.event.id] &&
+                    (() => {
+                      const w = weatherByEventId[todaysSchedule.event.id]
+                      return (
+                        <span
+                          className="ml-2 inline-flex items-center gap-1 text-sky-400"
+                          title={w.description}
+                        >
+                          <span>{w.emoji}</span>
+                          <span>
+                            {w.tempMinF}–{w.tempMaxF}°F
+                          </span>
+                          {w.precipitationMm > 0.5 && (
+                            <span className="text-amber-400 ml-0.5">💧</span>
+                          )}
+                        </span>
+                      )
+                    })()}
                 </div>
                 {todaysSchedule.dop.isCompressed && (
                   <div className="bg-amber-950 border border-amber-200 rounded-lg p-2 mb-4">
@@ -961,7 +1021,7 @@ export default async function ChefDashboard() {
       {/* ============================================ */}
       {(dopTaskDigest.totalIncomplete > 0 || dopTaskDigest.overdueCount > 0) && (
         <section>
-          <DOPTaskPanel digest={dopTaskDigest} />
+          <DOPTaskPanel digest={dopTaskDigest} weatherByEventId={weatherByEventId} />
         </section>
       )}
 

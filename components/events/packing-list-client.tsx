@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { markCarPacked, resetPackingStatus, togglePackingConfirmation } from '@/lib/packing/actions'
 import type { PackingListData } from '@/lib/documents/generate-packing-list'
+import type { EventWeather } from '@/lib/weather/open-meteo'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -19,6 +20,83 @@ type PackingListClientProps = {
   eventId: string
   packingData: PackingListData
   alreadyPacked: boolean
+  weather?: EventWeather | null
+}
+
+// ─── Weather Suggestion Logic (deterministic — Formula > AI) ─────────────────
+
+type WeatherSuggestion = {
+  label: string
+  items: string[]
+  severity: 'warning' | 'info'
+}
+
+function getWeatherSuggestions(weather: EventWeather): WeatherSuggestion[] {
+  const suggestions: WeatherSuggestion[] = []
+
+  // Rain/storms: weatherCode 51-99 covers drizzle, rain, snow, showers, thunderstorms
+  if (weather.weatherCode >= 51 && weather.weatherCode <= 99) {
+    suggestions.push({
+      label: 'Rain / Storm Gear',
+      items: [
+        'Tarps or canopy cover',
+        'Waterproof bags for equipment',
+        'Umbrella',
+        'Non-slip mats',
+        'Extra towels',
+      ],
+      severity: 'warning',
+    })
+  }
+
+  // Hot weather
+  if (weather.tempMaxF > 90) {
+    suggestions.push({
+      label: 'Heat Precautions',
+      items: [
+        'Extra ice and cooler bags',
+        'Portable fan',
+        'Sunscreen',
+        'Extra water (personal + cooking)',
+        'Insulated food covers',
+      ],
+      severity: 'warning',
+    })
+  }
+
+  // Cold weather
+  if (weather.tempMinF < 40) {
+    suggestions.push({
+      label: 'Cold Weather Gear',
+      items: [
+        'Hand warmers',
+        'Insulated food containers',
+        'Thermal bags',
+        'Hot beverage supplies (thermos, tea, coffee)',
+        'Extra sterno fuel (if buffet)',
+      ],
+      severity: 'warning',
+    })
+  }
+
+  // Snow specifically (weatherCode 71-77, 85-86)
+  if (
+    (weather.weatherCode >= 71 && weather.weatherCode <= 77) ||
+    (weather.weatherCode >= 85 && weather.weatherCode <= 86)
+  ) {
+    suggestions.push({
+      label: 'Snow Conditions',
+      items: [
+        'Allow extra travel time',
+        'Non-slip footwear',
+        'Ice scraper for windshield',
+        'Road salt or kitty litter (traction)',
+      ],
+      severity: 'warning',
+    })
+  }
+
+  return suggestions
 }
 
 // ─── Item Row ─────────────────────────────────────────────────────────────────
@@ -137,7 +215,12 @@ function Section({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function PackingListClient({ eventId, packingData, alreadyPacked }: PackingListClientProps) {
+export function PackingListClient({
+  eventId,
+  packingData,
+  alreadyPacked,
+  weather,
+}: PackingListClientProps) {
   const storageKey = `packing-${eventId}`
 
   const {
@@ -287,8 +370,69 @@ export function PackingListClient({ eventId, packingData, alreadyPacked }: Packi
 
   // ─── Render ─────────────────────────────────────────────────────────────────
 
+  // ─── Weather Suggestions (deterministic) ────────────────────────────────────
+
+  const weatherSuggestions = weather ? getWeatherSuggestions(weather) : []
+  const precipIn = weather ? (weather.precipitationMm / 25.4).toFixed(2) : '0'
+  const hasPrecip = weather ? weather.precipitationMm > 0.1 : false
+
   return (
     <div className="space-y-4">
+      {/* Weather banner — shown only when weather data is available */}
+      {weather && (
+        <Card className="p-4 border-sky-800 bg-sky-950/50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl" role="img" aria-label={weather.description}>
+                {weather.emoji}
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-sky-100">{weather.description}</p>
+                <p className="text-xs text-sky-300">
+                  {weather.tempMinF}° – {weather.tempMaxF}°F
+                  {hasPrecip && <span className="ml-2">· {precipIn}&quot; precip</span>}
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] text-sky-400 uppercase tracking-wide">
+                {weather.isHistorical ? 'Actual' : 'Forecast'}
+              </p>
+              <p className="text-[10px] text-sky-500">Open-Meteo</p>
+            </div>
+          </div>
+
+          {/* Weather-triggered packing suggestions */}
+          {weatherSuggestions.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-sky-800/50 space-y-2">
+              <p className="text-xs font-semibold text-amber-400 uppercase tracking-wide">
+                Weather Alert — Pack These
+              </p>
+              {weatherSuggestions.map((suggestion) => (
+                <div key={suggestion.label}>
+                  <p className="text-xs font-medium text-stone-200">{suggestion.label}</p>
+                  <ul className="mt-1 space-y-0.5">
+                    {suggestion.items.map((item) => (
+                      <li key={item} className="text-xs text-stone-400 flex items-start gap-1.5">
+                        <span className="text-amber-500 mt-0.5 flex-shrink-0">•</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Clear/mild — no alerts needed */}
+          {weatherSuggestions.length === 0 && (
+            <p className="mt-2 text-xs text-sky-400">
+              Great weather — standard packing should be fine.
+            </p>
+          )}
+        </Card>
+      )}
+
       {/* Overall progress bar */}
       <div className="bg-stone-900 border border-stone-700 rounded-lg px-4 py-3">
         <div className="flex items-center justify-between mb-2">
