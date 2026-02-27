@@ -91,6 +91,8 @@ export async function getPlatformOverviewStats(): Promise<PlatformOverviewStats>
   const supabase = createAdminClient()
   const monthStart = startOfCurrentMonth()
 
+  // Fetch counts (head:true = no rows returned, just count) and ledger sums
+  // Ledger queries use .limit(10000) as a safety cap for admin stats
   const [
     chefsAll,
     clientsAll,
@@ -104,7 +106,7 @@ export async function getPlatformOverviewStats(): Promise<PlatformOverviewStats>
     supabase.from('chefs').select('id', { count: 'exact', head: true }),
     supabase.from('clients').select('id', { count: 'exact', head: true }),
     supabase.from('events').select('id', { count: 'exact', head: true }),
-    supabase.from('ledger_entries').select('amount_cents').eq('entry_type', 'payment'),
+    supabase.from('ledger_entries').select('amount_cents').eq('entry_type', 'payment').limit(10000),
     supabase
       .from('chefs')
       .select('id', { count: 'exact', head: true })
@@ -121,7 +123,8 @@ export async function getPlatformOverviewStats(): Promise<PlatformOverviewStats>
       .from('ledger_entries')
       .select('amount_cents')
       .eq('entry_type', 'payment')
-      .gte('created_at', monthStart),
+      .gte('created_at', monthStart)
+      .limit(10000),
   ])
 
   const totalGMV = (ledgerAll.data ?? []).reduce((s, e) => s + (e.amount_cents ?? 0), 0)
@@ -156,13 +159,14 @@ export async function getPlatformChefList(): Promise<PlatformChefRow[]> {
   const chefIds = chefs.map((c) => c.id)
 
   const [eventsRes, clientsRes, ledgerRes] = await Promise.all([
-    supabase.from('events').select('tenant_id').in('tenant_id', chefIds),
-    supabase.from('clients').select('tenant_id').in('tenant_id', chefIds),
+    supabase.from('events').select('tenant_id').in('tenant_id', chefIds).limit(5000),
+    supabase.from('clients').select('tenant_id').in('tenant_id', chefIds).limit(5000),
     supabase
       .from('ledger_entries')
       .select('tenant_id, amount_cents')
       .eq('entry_type', 'payment')
-      .in('tenant_id', chefIds),
+      .in('tenant_id', chefIds)
+      .limit(10000),
   ])
 
   const eventCountMap: Record<string, number> = {}
@@ -213,27 +217,34 @@ export async function getPlatformClientList(): Promise<PlatformClientRow[]> {
 
   const clientIds = clients.map((c) => c.id)
 
-  const { data: events } = await supabase
-    .from('events')
-    .select('client_id')
-    .in('client_id', clientIds)
-
-  const eventCountMap: Record<string, number> = {}
-  ;(events ?? []).forEach((e) => {
-    if (e.client_id) eventCountMap[e.client_id] = (eventCountMap[e.client_id] ?? 0) + 1
-  })
-
+  // Single events query — used for both count and event-to-client mapping
   const { data: allClientEvents } = await supabase
     .from('events')
     .select('id, client_id')
     .in('client_id', clientIds)
+    .limit(5000)
 
-  const eventToClient = Object.fromEntries((allClientEvents ?? []).map((e) => [e.id, e.client_id]))
+  const eventCountMap: Record<string, number> = {}
+  const eventToClient: Record<string, string> = {}
+  const eventIds: string[] = []
+  ;(allClientEvents ?? []).forEach((e) => {
+    if (e.client_id) {
+      eventCountMap[e.client_id] = (eventCountMap[e.client_id] ?? 0) + 1
+      eventToClient[e.id] = e.client_id
+      eventIds.push(e.id)
+    }
+  })
 
-  const { data: ledger } = await supabase
-    .from('ledger_entries')
-    .select('event_id, amount_cents')
-    .eq('entry_type', 'payment')
+  // Scope ledger query to only these clients' events (not all ledger entries)
+  const { data: ledger } =
+    eventIds.length > 0
+      ? await supabase
+          .from('ledger_entries')
+          .select('event_id, amount_cents')
+          .eq('entry_type', 'payment')
+          .in('event_id', eventIds)
+          .limit(10000)
+      : { data: [] as { event_id: string | null; amount_cents: number | null }[] }
 
   const ltvMap: Record<string, number> = {}
   ;(ledger ?? []).forEach((l) => {
@@ -328,6 +339,7 @@ export async function getPlatformRevenueByMonth(): Promise<RevenueDataPoint[]> {
     .select('amount_cents, created_at')
     .eq('entry_type', 'payment')
     .gte('created_at', twelveMonthsAgo.toISOString())
+    .limit(10000)
 
   const monthMap: Record<string, number> = {}
   ;(ledger ?? []).forEach((l) => {
@@ -345,21 +357,24 @@ export async function getPlatformFinancialOverview() {
   const monthStart = startOfCurrentMonth()
 
   const [allPayments, monthPayments, allExpenses, monthExpenses] = await Promise.all([
-    supabase.from('ledger_entries').select('amount_cents').eq('entry_type', 'payment'),
+    supabase.from('ledger_entries').select('amount_cents').eq('entry_type', 'payment').limit(10000),
     supabase
       .from('ledger_entries')
       .select('amount_cents')
       .eq('entry_type', 'payment')
-      .gte('created_at', monthStart),
-    supabase
-      .from('ledger_entries')
-      .select('amount_cents')
-      .eq('entry_type', 'expense' as never),
+      .gte('created_at', monthStart)
+      .limit(10000),
     supabase
       .from('ledger_entries')
       .select('amount_cents')
       .eq('entry_type', 'expense' as never)
-      .gte('created_at', monthStart),
+      .limit(10000),
+    supabase
+      .from('ledger_entries')
+      .select('amount_cents')
+      .eq('entry_type', 'expense' as never)
+      .gte('created_at', monthStart)
+      .limit(10000),
   ])
 
   const sum = (rows: { amount_cents: number | null }[] | null) =>
