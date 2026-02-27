@@ -1545,6 +1545,11 @@ body {
         <span class="nav-icon">&#x1F4D6;</span>
         <span class="nav-label">Ref</span>
       </a>
+      <a class="nav-item" data-section="expenses" title="Project Expenses">
+        <span class="nav-dot online" id="nd-expenses"></span>
+        <span class="nav-icon">&#x1F4B0;</span>
+        <span class="nav-label">Costs</span>
+      </a>
     </nav>
 
     <!-- Content -->
@@ -3284,6 +3289,85 @@ body {
         <!-- Footer -->
         <div style="text-align:center;padding:12px;">
           <div style="font-size:11px;color:var(--text-muted);">Press <code style="background:var(--bg-secondary);padding:2px 6px;border-radius:4px;font-size:11px;">\</code> to jump to this panel &bull; Last updated Feb 2026</div>
+        </div>
+      </div>
+
+      <!-- ─── Project Expenses Panel ─── -->
+      <div class="panel" id="panel-expenses">
+        <div class="panel-header">
+          <h2 class="panel-title">Project Expenses</h2>
+          <span class="status-badge online" style="background:var(--brand-dim);color:var(--brand);border:1px solid rgba(232,143,71,0.25);">
+            <span class="dot online" style="background:var(--brand);"></span>
+            <span id="expenses-total-badge">Loading...</span>
+          </span>
+        </div>
+
+        <!-- ── Summary Cards ── -->
+        <div id="expenses-summary" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:24px;">
+          <div style="background:linear-gradient(135deg,rgba(232,143,71,0.15),rgba(232,143,71,0.05));border:1px solid rgba(232,143,71,0.3);border-radius:10px;padding:16px;">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Total Invested</div>
+            <div id="exp-total" style="font-size:28px;font-weight:700;color:var(--brand-bright);font-family:monospace;margin-top:4px;">$0</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Monthly Burn</div>
+            <div id="exp-monthly" style="font-size:28px;font-weight:700;color:var(--success);font-family:monospace;margin-top:4px;">$0</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Hardware</div>
+            <div id="exp-hardware" style="font-size:28px;font-weight:700;color:var(--info);font-family:monospace;margin-top:4px;">$0</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Agent Costs</div>
+            <div id="exp-agents" style="font-size:28px;font-weight:700;color:var(--warning);font-family:monospace;margin-top:4px;">$0</div>
+          </div>
+        </div>
+
+        <!-- ── Breakdown by Category ── -->
+        <div id="expenses-breakdown" style="margin-bottom:24px;">
+          <div style="color:var(--text-muted);text-align:center;padding:40px;">Loading expenses...</div>
+        </div>
+
+        <!-- ── Add Expense Form ── -->
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:24px;">
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">Add New Expense</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">Name</label>
+              <input id="exp-add-name" type="text" placeholder="e.g. Claude Code API" style="width:100%;padding:8px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:13px;outline:none;" />
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">Category</label>
+              <select id="exp-add-category" style="width:100%;padding:8px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:13px;outline:none;">
+                <option value="ai-agents">AI Agent Costs</option>
+                <option value="hardware">Hardware</option>
+                <option value="cloud-services">Cloud Services</option>
+                <option value="domain">Domain</option>
+                <option value="apis">APIs</option>
+                <option value="software">Software</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">Total Spent ($)</label>
+              <input id="exp-add-amount" type="number" step="0.01" min="0" placeholder="0.00" style="width:100%;padding:8px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:13px;outline:none;" />
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">Monthly Rate ($)</label>
+              <input id="exp-add-monthly" type="number" step="0.01" min="0" placeholder="0.00" style="width:100%;padding:8px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:13px;outline:none;" />
+            </div>
+            <div style="grid-column:1/-1;">
+              <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">Notes</label>
+              <input id="exp-add-notes" type="text" placeholder="Optional notes" style="width:100%;padding:8px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:13px;outline:none;" />
+            </div>
+            <div style="grid-column:1/-1;text-align:right;">
+              <button type="button" onclick="addExpense()" style="padding:8px 20px;background:var(--brand);color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">Add Expense</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align:center;padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);">Press <code style="background:var(--bg-secondary);padding:2px 6px;border-radius:4px;font-size:11px;">`</code> to jump to this panel &bull; Data: docs/project-expenses.json</div>
         </div>
       </div>
 
@@ -5662,6 +5746,125 @@ async function loadInfra() {
   }
 }
 
+// ── Project Expenses Panel ────────────────────────────────────────
+
+let expensesData = null
+
+async function loadExpenses() {
+  try {
+    const res = await fetch(`${API}/api/expenses`)
+    const data = await res.json()
+    expensesData = data
+    renderExpenses(data)
+  } catch (err) {
+    const el = document.getElementById('expenses-breakdown')
+    if (el) el.innerHTML = `<div style="color:#f87171;text-align:center;padding:40px;">Failed to load expenses: ${escapeHtml(err.message)}</div>`
+  }
+}
+
+function renderExpenses(data) {
+  const { categories, entries } = data
+
+  // Compute totals
+  let totalSpent = 0
+  let monthlyBurn = 0
+  let hardwareTotal = 0
+  let agentTotal = 0
+  const byCat = {}
+
+  for (const entry of entries) {
+    totalSpent += entry.totalSpent || 0
+    monthlyBurn += entry.monthlyRate || 0
+    if (entry.category === 'hardware') hardwareTotal += entry.totalSpent || 0
+    if (entry.category === 'ai-agents') agentTotal += entry.totalSpent || 0
+    if (!byCat[entry.category]) byCat[entry.category] = []
+    byCat[entry.category].push(entry)
+  }
+
+  // Update summary cards
+  const fmt = (n) => n < 1 && n > 0 ? '$' + n.toFixed(2) : '$' + n.toLocaleString('en-US', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 })
+  document.getElementById('exp-total').textContent = fmt(totalSpent)
+  document.getElementById('exp-monthly').textContent = fmt(monthlyBurn) + '/mo'
+  document.getElementById('exp-hardware').textContent = fmt(hardwareTotal)
+  document.getElementById('exp-agents').textContent = fmt(agentTotal)
+  document.getElementById('expenses-total-badge').textContent = fmt(totalSpent) + ' total'
+
+  // Render category breakdown
+  const el = document.getElementById('expenses-breakdown')
+  let html = ''
+
+  for (const [catKey, catMeta] of Object.entries(categories)) {
+    const items = byCat[catKey] || []
+    if (items.length === 0) continue
+    const catTotal = items.reduce((s, e) => s + (e.totalSpent || 0), 0)
+    const catMonthly = items.reduce((s, e) => s + (e.monthlyRate || 0), 0)
+
+    html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-size:14px;font-weight:600;color:var(--text-primary);">${catMeta.icon} ${escapeHtml(catMeta.label)}</div>
+        <div style="font-size:13px;font-family:monospace;color:var(--brand-bright);">${fmt(catTotal)}${catMonthly > 0 ? ' <span style="color:var(--text-muted);font-size:11px;">+ ' + fmt(catMonthly) + '/mo</span>' : ''}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0;">`
+
+    for (const item of items) {
+      const isFree = item.totalSpent === 0 && item.monthlyRate === 0
+      const costText = isFree ? '<span style="color:var(--success);">Free</span>'
+        : (item.totalSpent > 0 ? fmt(item.totalSpent) : '') + (item.monthlyRate > 0 ? (item.totalSpent > 0 ? ' + ' : '') + fmt(item.monthlyRate) + '/mo' : '')
+
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--border);">
+        <div>
+          <div style="font-size:13px;color:var(--text-primary);">${escapeHtml(item.name)}</div>
+          ${item.notes ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${escapeHtml(item.notes)}</div>` : ''}
+        </div>
+        <div style="font-size:13px;font-family:monospace;white-space:nowrap;margin-left:16px;">${costText}</div>
+      </div>`
+    }
+
+    html += `</div></div>`
+  }
+
+  // Free tier summary
+  const freeCount = entries.filter(e => e.totalSpent === 0 && e.monthlyRate === 0).length
+  const paidCount = entries.length - freeCount
+  html += `<div style="text-align:center;padding:16px;font-size:12px;color:var(--text-muted);">
+    ${entries.length} items tracked &bull; ${freeCount} free tier &bull; ${paidCount} paid &bull; Updated ${data.lastUpdated || 'unknown'}
+  </div>`
+
+  el.innerHTML = html
+}
+
+async function addExpense() {
+  const name = document.getElementById('exp-add-name').value.trim()
+  const category = document.getElementById('exp-add-category').value
+  const totalSpent = parseFloat(document.getElementById('exp-add-amount').value) || 0
+  const monthlyRate = parseFloat(document.getElementById('exp-add-monthly').value) || 0
+  const notes = document.getElementById('exp-add-notes').value.trim()
+
+  if (!name) { showToast('Name is required'); return }
+
+  try {
+    const res = await fetch(`${API}/api/expenses`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, category, totalSpent, monthlyRate, notes })
+    })
+    if (!res.ok) {
+      const err = await res.json()
+      showToast(err.error || 'Failed to add expense')
+      return
+    }
+    // Clear form
+    document.getElementById('exp-add-name').value = ''
+    document.getElementById('exp-add-amount').value = ''
+    document.getElementById('exp-add-monthly').value = ''
+    document.getElementById('exp-add-notes').value = ''
+    showToast('Expense added')
+    loadExpenses()
+  } catch (err) {
+    showToast('Error: ' + err.message)
+  }
+}
+
 // ── Toast Notifications ──────────────────────────────────────────
 
 function showToast(msg, duration = 3000) {
@@ -5900,6 +6103,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '-') switchSection('blueprint')
   if (e.key === '=') switchSection('observe')
   if (e.key === '\\') switchSection('sysref')
+  if (e.key === '`') switchSection('expenses')
 })
 
 function switchSection(section) {
@@ -5911,6 +6115,7 @@ function switchSection(section) {
   if (section === 'feedback') loadFeedback()
   if (section === 'infra') loadInfra()
   if (section === 'observe') observeConnect()
+  if (section === 'expenses') loadExpenses()
 }
 
 // ── Observe Panel (Live Feed) ─────────────────────────────────────

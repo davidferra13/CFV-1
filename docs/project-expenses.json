@@ -1,0 +1,320 @@
+{
+  "lastUpdated": "2026-02-26",
+  "categories": {
+    "ai-agents": { "label": "AI Agent Costs", "icon": "🤖" },
+    "hardware": { "label": "Hardware", "icon": "🖥️" },
+    "cloud-services": { "label": "Cloud Services & Hosting", "icon": "☁️" },
+    "domain": { "label": "Domain & Registration", "icon": "🌐" },
+    "apis": { "label": "APIs & Third-Party Services", "icon": "🔌" },
+    "software": { "label": "Software & Subscriptions", "icon": "📦" },
+    "other": { "label": "Other", "icon": "📋" }
+  },
+  "entries": [
+    {
+      "id": "exp_001",
+      "category": "ai-agents",
+      "name": "Claude Code (Anthropic API)",
+      "totalSpent": 50,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "Usage-based billing. Under $50 total through Feb 2026. Update from console.anthropic.com/billing."
+    },
+    {
+      "id": "exp_010",
+      "category": "hardware",
+      "name": "AMD Ryzen 9 7900X (CPU)",
+      "totalSpent": 300,
+      "monthlyRate": 0,
+      "date": "2026-01-01",
+      "notes": "Estimate — 12c/24t @ 4.7GHz. Shared use (not ChefFlow-exclusive)."
+    },
+    {
+      "id": "exp_011",
+      "category": "hardware",
+      "name": "128 GB DDR5 RAM (4x 32GB Micron)",
+      "totalSpent": 350,
+      "monthlyRate": 0,
+      "date": "2026-01-01",
+      "notes": "Estimate — 5600MHz rated, running 3600MHz. Shared use."
+    },
+    {
+      "id": "exp_012",
+      "category": "hardware",
+      "name": "NVIDIA RTX 3050 6GB (GPU)",
+      "totalSpent": 220,
+      "monthlyRate": 0,
+      "date": "2026-01-01",
+      "notes": "Estimate — 6GB VRAM, CUDA 12.6. Used for local LLM inference. Shared use."
+    },
+    {
+      "id": "exp_013",
+      "category": "hardware",
+      "name": "ASUS TUF GAMING B850-PLUS WIFI (Motherboard)",
+      "totalSpent": 200,
+      "monthlyRate": 0,
+      "date": "2026-01-01",
+      "notes": "Estimate. Shared use."
+    },
+    {
+      "id": "exp_014",
+      "category": "hardware",
+      "name": "Storage (990 PRO 2TB + 1TB + SU800 512GB + Toshiba 1TB)",
+      "totalSpent": 300,
+      "monthlyRate": 0,
+      "date": "2026-01-01",
+      "notes": "Estimate for all drives combined. Shared use."
+    },
+    {
+      "id": "exp_015",
+      "category": "hardware",
+      "name": "Raspberry Pi 5 (8GB)",
+      "totalSpent": 80,
+      "monthlyRate": 0,
+      "date": "2026-01-01",
+      "notes": "Dedicated beta server — always on. ChefFlow-exclusive."
+    },
+    {
+      "id": "exp_016",
+      "category": "hardware",
+      "name": "Pi microSD Card (128GB)",
+      "totalSpent": 15,
+      "monthlyRate": 0,
+      "date": "2026-01-01",
+      "notes": "ChefFlow-exclusive."
+    },
+    {
+      "id": "exp_017",
+      "category": "hardware",
+      "name": "Pi Power Supply & Peripherals",
+      "totalSpent": 20,
+      "monthlyRate": 0,
+      "date": "2026-01-01",
+      "notes": "Estimate — power adapter, case, cables. ChefFlow-exclusive."
+    },
+    {
+      "id": "exp_018",
+      "category": "hardware",
+      "name": "Pi Electricity (24/7 operation)",
+      "totalSpent": 1,
+      "monthlyRate": 0.5,
+      "date": "2026-02-26",
+      "notes": "~5 watts continuous. Pennies per month. Update periodically."
+    },
+    {
+      "id": "exp_020",
+      "category": "cloud-services",
+      "name": "Vercel (Hobby Tier)",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "Free tier — production hosting at app.cheflowhq.com. Will need Pro ($20/mo) at scale."
+    },
+    {
+      "id": "exp_021",
+      "category": "cloud-services",
+      "name": "Supabase (Free Tier)",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "Free tier — 500MB DB, 1GB storage, 50K auth MAU. Will need Pro ($25/mo) at scale."
+    },
+    {
+      "id": "exp_022",
+      "category": "cloud-services",
+      "name": "Cloudflare (Free Plan)",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "DNS, DDoS protection, Tunnel to Pi. Free forever for current usage."
+    },
+    {
+      "id": "exp_023",
+      "category": "cloud-services",
+      "name": "GitHub (Free Tier)",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "Source control, CI trigger. Includes Copilot (used as research bot)."
+    },
+    {
+      "id": "exp_024",
+      "category": "cloud-services",
+      "name": "Resend (Free Tier)",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "3,000 emails/month free. Transactional email (quotes, invoices, confirmations)."
+    },
+    {
+      "id": "exp_025",
+      "category": "cloud-services",
+      "name": "Sentry (Free Tier)",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "5,000 errors/month free. Error tracking in production."
+    },
+    {
+      "id": "exp_026",
+      "category": "cloud-services",
+      "name": "PostHog (Free Tier)",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "1M events/month free. Product analytics."
+    },
+    {
+      "id": "exp_027",
+      "category": "cloud-services",
+      "name": "Upstash Redis (Free Tier)",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "10K commands/day free. Rate limiting + sales tax caching."
+    },
+    {
+      "id": "exp_028",
+      "category": "cloud-services",
+      "name": "OneSignal (Free Tier)",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "Unlimited web push notifications free. PWA push notifications."
+    },
+    {
+      "id": "exp_029",
+      "category": "cloud-services",
+      "name": "Cloudinary (Free Tier)",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "25 credits/month free. Image CDN."
+    },
+    {
+      "id": "exp_030",
+      "category": "domain",
+      "name": "cheflowhq.com (Cloudflare Registrar)",
+      "totalSpent": 6.5,
+      "monthlyRate": 0.54,
+      "date": "2026-02-26",
+      "notes": "~$6.50/year via Cloudflare Registrar. Renews annually."
+    },
+    {
+      "id": "exp_040",
+      "category": "apis",
+      "name": "Spoonacular API",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "150 req/day free. Ingredient pricing for grocery quotes + wine pairing. Paid: ~$29/mo."
+    },
+    {
+      "id": "exp_041",
+      "category": "apis",
+      "name": "Kroger API",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "Free developer API. Real shelf prices at Kroger-family stores."
+    },
+    {
+      "id": "exp_042",
+      "category": "apis",
+      "name": "USDA FoodData Central",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "1,000 req/hour free. Authoritative nutrition data (380K+ foods)."
+    },
+    {
+      "id": "exp_043",
+      "category": "apis",
+      "name": "Geocodio",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "2,500 req/day free. Address geocoding."
+    },
+    {
+      "id": "exp_044",
+      "category": "apis",
+      "name": "API Ninjas (Sales Tax)",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "100K req/month free. Sales tax rates by ZIP code."
+    },
+    {
+      "id": "exp_045",
+      "category": "apis",
+      "name": "Unsplash API",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "50 req/hour demo, 5K/hour production. Stock food photography."
+    },
+    {
+      "id": "exp_046",
+      "category": "apis",
+      "name": "Pexels API",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "200 req/hour free. Backup stock photos."
+    },
+    {
+      "id": "exp_047",
+      "category": "apis",
+      "name": "Mapbox",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "50K map loads/month free. Maps and location display."
+    },
+    {
+      "id": "exp_048",
+      "category": "apis",
+      "name": "Google Gemini (Smart Import AI)",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "Free tier with limited RPM/RPD. Recipe parsing, contingency plans, social captions."
+    },
+    {
+      "id": "exp_049",
+      "category": "apis",
+      "name": "Open-Meteo / Nager.Date / Frankfurter / IP-API",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "All free, no API key needed. Weather, holidays, currency, timezone detection."
+    },
+    {
+      "id": "exp_060",
+      "category": "software",
+      "name": "Ollama (Local LLM Runtime)",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "Free, open source. Runs qwen3:4b, qwen3-coder:30b, qwen3:30b locally."
+    },
+    {
+      "id": "exp_061",
+      "category": "software",
+      "name": "NordVPN (NordLynx)",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "Personal subscription — not a ChefFlow cost. Running on dev PC."
+    },
+    {
+      "id": "exp_062",
+      "category": "software",
+      "name": "Next.js / React / Tailwind / TypeScript / Playwright",
+      "totalSpent": 0,
+      "monthlyRate": 0,
+      "date": "2026-02-26",
+      "notes": "All free, open source. Core application stack."
+    }
+  ]
+}

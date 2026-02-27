@@ -13,7 +13,7 @@
 
 import { createServer } from 'node:http'
 import { exec, spawn } from 'node:child_process'
-import { readFile, appendFile, stat } from 'node:fs/promises'
+import { readFile, writeFile, appendFile, stat } from 'node:fs/promises'
 import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -2034,6 +2034,58 @@ async function handleRequest(req, res) {
     const lines = parseInt(url.searchParams.get('lines') || '100', 10)
     const logLines = await readPersistentLog(lines)
     return json(res, { lines: logLines })
+  }
+
+  // ── Expenses endpoint ────────────────────────────────────────────
+  const EXPENSES_FILE = join(PROJECT_ROOT, 'docs', 'project-expenses.json')
+
+  if (path === '/api/expenses' && method === 'GET') {
+    try {
+      const raw = await readFile(EXPENSES_FILE, 'utf-8')
+      return json(res, JSON.parse(raw))
+    } catch (err) {
+      return json(res, { error: 'Failed to read expenses file: ' + err.message }, 500)
+    }
+  }
+
+  if (path === '/api/expenses' && method === 'POST') {
+    const body = await parseBody(req)
+    const { name, category, totalSpent, monthlyRate, notes } = body
+
+    if (!name || typeof name !== 'string') {
+      return json(res, { error: 'Name is required' }, 400)
+    }
+
+    try {
+      const raw = await readFile(EXPENSES_FILE, 'utf-8')
+      const data = JSON.parse(raw)
+
+      // Generate next ID
+      const maxId = data.entries.reduce((max, e) => {
+        const num = parseInt(e.id.replace('exp_', ''), 10) || 0
+        return num > max ? num : max
+      }, 0)
+      const newId = `exp_${String(maxId + 1).padStart(3, '0')}`
+
+      const entry = {
+        id: newId,
+        category: category || 'other',
+        name,
+        totalSpent: parseFloat(totalSpent) || 0,
+        monthlyRate: parseFloat(monthlyRate) || 0,
+        date: new Date().toISOString().slice(0, 10),
+        notes: notes || '',
+      }
+
+      data.entries.push(entry)
+      data.lastUpdated = new Date().toISOString().slice(0, 10)
+
+      await writeFile(EXPENSES_FILE, JSON.stringify(data, null, 2) + '\n')
+      log('expenses', `Added expense: ${name} ($${entry.totalSpent})`, 'info')
+      return json(res, { ok: true, entry })
+    } catch (err) {
+      return json(res, { error: 'Failed to save expense: ' + err.message }, 500)
+    }
   }
 
   // ── Chat endpoint (streaming) ──────────────────────────────────
