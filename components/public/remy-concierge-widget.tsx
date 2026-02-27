@@ -7,8 +7,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { X, Send, Loader2, Minus, Maximize2, Minimize2 } from 'lucide-react'
 import { RemyMascotButton } from '@/components/ai/remy-mascot-button'
-import { RemyTalkingAvatar } from '@/components/ai/remy-talking-avatar'
-import { useRemyLipSync } from '@/lib/ai/use-remy-lip-sync'
+import { RemyAvatar } from '@/components/ai/remy-avatar'
 import { getStarterPainPoints } from '@/lib/ai/chefflow-feature-map'
 
 const DEFAULT_WIDTH = 380
@@ -35,7 +34,6 @@ export function RemyConciergeWidget() {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const abortRef = useRef<AbortController | null>(null)
   const widgetRef = useRef<HTMLDivElement>(null)
-  const lipSync = useRemyLipSync()
   const resizingRef = useRef<{
     edge: string
     startX: number
@@ -103,7 +101,6 @@ export function RemyConciergeWidget() {
       setMessages((prev) => [...prev, userMsg, remyMsg])
       if (!text) setInput('')
       setIsStreaming(true)
-      lipSync.reset()
 
       const history = messages.slice(-6).map((m) => ({
         role: m.role === 'user' ? 'user' : 'assistant',
@@ -140,7 +137,6 @@ export function RemyConciergeWidget() {
             try {
               const event = JSON.parse(line.slice(6))
               if (event.type === 'token') {
-                lipSync.feedText(event.data as string)
                 setMessages((prev) => {
                   const updated = [...prev]
                   const last = updated[updated.length - 1]
@@ -158,17 +154,15 @@ export function RemyConciergeWidget() {
           }
         }
       } catch (err: any) {
-        lipSync.reset()
         if (err?.name !== 'AbortError') {
           setError("Couldn't reach Remy — try again in a moment.")
         }
       } finally {
-        lipSync.stopSpeaking()
         setIsStreaming(false)
         abortRef.current = null
       }
     },
-    [input, isStreaming, messages, lipSync]
+    [input, isStreaming, messages]
   )
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -344,12 +338,7 @@ export function RemyConciergeWidget() {
         {/* Header */}
         <div className="flex items-center justify-between bg-brand-600 px-4 py-3.5">
           <div className="flex items-center gap-3">
-            <RemyTalkingAvatar
-              viseme={lipSync.currentViseme}
-              isSpeaking={lipSync.isSpeaking}
-              emotion={lipSync.currentEmotion}
-              size="sm"
-            />
+            <RemyAvatar size="sm" />
             <div>
               <div className="text-sm font-semibold text-white">Remy</div>
               <div className="flex items-center gap-1.5 text-xs text-white/70">
@@ -393,12 +382,7 @@ export function RemyConciergeWidget() {
             <div className="space-y-4">
               {/* Welcome message — looks like a chat bubble from Remy */}
               <div className="flex items-start gap-2">
-                <RemyTalkingAvatar
-                  viseme={lipSync.currentViseme}
-                  isSpeaking={false}
-                  size="sm"
-                  className="!w-7 !h-7"
-                />
+                <RemyAvatar size="sm" className="!w-7 !h-7" />
                 <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-stone-900 px-4 py-3 text-sm leading-relaxed text-stone-300 shadow-sm">
                   Hey! I&apos;m Remy, your ChefFlow concierge. 👋
                   <br />
@@ -429,14 +413,7 @@ export function RemyConciergeWidget() {
               key={msg.id}
               className={`mb-3 flex ${msg.role === 'user' ? 'justify-end' : 'items-start gap-2'}`}
             >
-              {msg.role === 'remy' && (
-                <RemyTalkingAvatar
-                  viseme={lipSync.currentViseme}
-                  isSpeaking={lipSync.isSpeaking && msg.id === messages[messages.length - 1]?.id}
-                  size="sm"
-                  className="!w-7 !h-7"
-                />
-              )}
+              {msg.role === 'remy' && <RemyAvatar size="sm" className="!w-7 !h-7" />}
               <div
                 className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
                   msg.role === 'user'

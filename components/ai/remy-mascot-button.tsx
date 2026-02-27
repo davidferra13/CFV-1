@@ -2,10 +2,6 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
-import { RemyAnimatedMascot } from '@/components/ai/remy-animated-mascot'
-import type { BodyState } from '@/lib/ai/remy-body-state'
-import type { EyeState } from '@/lib/ai/remy-eye-blink'
-import type { Viseme, RemyEmotion } from '@/lib/ai/remy-visemes'
 
 const SPEECH_HOVER_DELAY_MS = 500
 
@@ -187,14 +183,13 @@ export function RemyMascotButton({
               style={hatPeekStyle}
             />
           ) : (
-            // Full animated mascot — 3-layer compositing
-            <RemyAnimatedMascot
-              bodyState={effectiveBodyState}
-              eyeState={eyeStateProp}
-              viseme={viseme ?? 'rest'}
-              isSpeaking={speakingProp}
-              emotion={emotion}
-              onAnimComplete={handleAnimComplete}
+            // Static mascot image
+            <Image
+              src="/images/remy/remy-aha.png"
+              alt="Remy"
+              fill
+              sizes="(max-width: 640px) 60px, (max-width: 1024px) 80px, 100px"
+              className="object-contain object-bottom pointer-events-none select-none"
             />
           )}
 
