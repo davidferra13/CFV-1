@@ -1,5 +1,6 @@
 // Chef Chat View — Individual conversation with a client
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { redirect } from 'next/navigation'
 import {
@@ -14,11 +15,19 @@ import { ChatView } from '@/components/chat/chat-view'
 import { ChatSidebar } from '@/components/chat/chat-sidebar'
 import { createServerClient } from '@/lib/supabase/server'
 
-export default async function ChefChatViewPage({
+export async function generateMetadata({
   params,
 }: {
   params: Promise<{ id: string }>
-}) {
+}): Promise<Metadata> {
+  const { id } = await params
+  const conversation = await getConversation(id)
+  return {
+    title: conversation?.title ? `Chat: ${conversation.title} — ChefFlow` : 'Chat — ChefFlow',
+  }
+}
+
+export default async function ChefChatViewPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireChef()
   const { id: conversationId } = await params
 

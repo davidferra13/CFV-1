@@ -38,7 +38,7 @@ function ProgressBar({ current, total }: { current: number; total: number }) {
       </div>
       <div className="w-full bg-stone-800 rounded-full h-2">
         <div
-          className={`bg-stone-800 h-2 rounded-full transition-all duration-300 ${
+          className={`bg-brand-500 h-2 rounded-full transition-all duration-300 ${
             current === 0
               ? 'w-1/5'
               : current === 1
@@ -70,12 +70,14 @@ function StarRating({
   return (
     <div className="mb-6">
       <p className="text-sm font-medium text-stone-300 mb-3">{label}</p>
-      <div className="flex gap-2">
+      <div className="flex gap-2" role="group" aria-label={label}>
         {[1, 2, 3, 4, 5].map((n) => (
           <button
             key={n}
             type="button"
             onClick={() => onChange(n)}
+            aria-label={`Rate ${n} out of 5: ${labels[n]}`}
+            aria-pressed={value >= n ? 'true' : 'false'}
             className={`w-11 h-11 rounded-full text-sm font-semibold border-2 transition-colors ${
               value >= n
                 ? 'bg-stone-800 border-stone-800 text-white'

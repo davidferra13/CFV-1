@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 
 export function PrintButton() {
   return (
-    <Button variant="ghost" size="sm" onClick={() => window.print()}>
+    <Button variant="ghost" size="sm" onClick={() => window.print()} aria-label="Print page">
       Print
     </Button>
   )

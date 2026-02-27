@@ -30,6 +30,16 @@ export function ChangePasswordForm() {
       return
     }
 
+    if (!/[A-Z]/.test(newPassword)) {
+      setError('Password must include at least one uppercase letter')
+      return
+    }
+
+    if (!/[0-9]/.test(newPassword)) {
+      setError('Password must include at least one number')
+      return
+    }
+
     if (newPassword !== confirmPassword) {
       setError('New passwords do not match')
       return
@@ -75,7 +85,7 @@ export function ChangePasswordForm() {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required
-            helperText="Minimum 8 characters"
+            helperText="Minimum 8 characters, 1 uppercase, 1 number"
             autoComplete="new-password"
           />
 

@@ -59,6 +59,7 @@ export function FileAARButton() {
               <h3 className="text-lg font-semibold text-stone-100">File Event Review</h3>
               <button
                 onClick={handleClose}
+                aria-label="Close modal"
                 className="text-stone-400 hover:text-stone-400 text-xl leading-none"
               >
                 &times;

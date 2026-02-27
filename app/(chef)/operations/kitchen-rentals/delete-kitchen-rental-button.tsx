@@ -2,11 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { deleteKitchenRental } from '@/lib/kitchen-rentals/actions'
 
 export function DeleteKitchenRentalButton({ id }: { id: string }) {
-  const router  = useRouter()
+  const router = useRouter()
   const [busy, setBusy] = useState(false)
 
   async function handleDelete() {
@@ -14,9 +15,10 @@ export function DeleteKitchenRentalButton({ id }: { id: string }) {
     setBusy(true)
     try {
       await deleteKitchenRental(id)
+      toast.success('Kitchen rental deleted')
       router.refresh()
     } catch {
-      alert('Failed to delete rental.')
+      toast.error('Failed to delete rental')
     } finally {
       setBusy(false)
     }
