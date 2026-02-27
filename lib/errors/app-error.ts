@@ -115,6 +115,24 @@ export class UnknownAppError extends AppError {
       traceId: init.traceId,
       metadata: init.metadata,
     })
+
+    // Auto-report unknown errors to Sentry (non-blocking, fire-and-forget)
+    // This is the single hook that covers all server actions that throw UnknownAppError.
+    // Dynamic import avoids circular deps and keeps the module optional.
+    try {
+      import('../monitoring/sentry-reporter')
+        .then(({ reportAppError }) => {
+          reportAppError(this, {
+            category: 'unknown',
+            action: init.metadata?.action as string | undefined,
+          })
+        })
+        .catch(() => {
+          // Swallow — module resolution failure is not critical
+        })
+    } catch {
+      // Swallow — reporting must never affect error handling
+    }
   }
 }
 

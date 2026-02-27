@@ -2,10 +2,33 @@
 'use client'
 
 import { useEffect } from 'react'
-import * as Sentry from '@sentry/nextjs'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+/**
+ * Report an error to Sentry via the lightweight API route.
+ * Non-blocking — failures are silently swallowed.
+ */
+function reportToSentry(error: Error & { digest?: string }) {
+  try {
+    fetch('/api/monitoring/report-error', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+        digest: error.digest,
+        tags: { boundary: 'global' },
+      }),
+    }).catch(() => {
+      // Swallow — reporting must never affect the user
+    })
+  } catch {
+    // Swallow
+  }
+}
 
 export default function Error({
   error,
@@ -15,9 +38,7 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
-    Sentry.captureException(error, {
-      tags: { boundary: 'global', digest: error.digest },
-    })
+    reportToSentry(error)
     console.error('Error boundary caught:', error)
   }, [error])
 
