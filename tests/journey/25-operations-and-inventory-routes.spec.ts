@@ -98,3 +98,39 @@ test.describe('Inventory Routes - Purchasing and Costing (#406-410)', () => {
     await assertPageHasContent(page)
   })
 })
+
+test.describe('Inventory Routes - Dynamic Detail Coverage (#491-493)', () => {
+  test('inventory audit detail route is reachable from audits list (#491)', async ({ page }) => {
+    await page.goto('/inventory/audits')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const auditLink = page.locator('a[href^="/inventory/audits/"]').first()
+    if ((await auditLink.count()) === 0) return
+
+    await auditLink.click()
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+
+  test('purchase-order detail route is reachable from purchase-orders list (#492)', async ({
+    page,
+  }) => {
+    await page.goto('/inventory/purchase-orders')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const purchaseOrderLink = page.locator('a[href^="/inventory/purchase-orders/"]').first()
+    if ((await purchaseOrderLink.count()) === 0) return
+
+    await purchaseOrderLink.click()
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+
+  test('stations orders print route loads (#493)', async ({ page }) => {
+    await assertPageLoads(page, '/stations/orders/print')
+  })
+})

@@ -98,3 +98,23 @@ test.describe('Growth Routes - Proposals and Reputation (#421-426)', () => {
     await assertPageHasContent(page)
   })
 })
+
+test.describe('Growth Routes - Marketing Detail Coverage (#494-495)', () => {
+  test('new push-dinner campaign route loads (#494)', async ({ page }) => {
+    await assertPageLoads(page, '/marketing/push-dinners/new')
+  })
+
+  test('marketing detail route is reachable from marketing list (#495)', async ({ page }) => {
+    await page.goto('/marketing')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const marketingDetailLink = page.locator('a[href^="/marketing/"]').first()
+    if ((await marketingDetailLink.count()) === 0) return
+
+    await marketingDetailLink.click()
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+})
