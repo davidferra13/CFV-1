@@ -1133,6 +1133,25 @@ Data privacy management. Comprehensive data export, privacy controls display, an
 
 **`/loyalty/rewards/new`** — Create reward form: name, description, points required, reward type (Free Course/Fixed Discount/Percent Discount/Free Dinner/Upgrade), conditional discount amount input. Submit creates reward.
 
+### Monthly Raffle (Chef Admin)
+
+| Route                  | Content                                                                                                                                                                                         |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/loyalty/raffle`      | Raffle hub: active round card (prize, entries, participants), "Create Raffle" button, past rounds list with status badges                                                                       |
+| `/loyalty/raffle/[id]` | Round detail: stats (total entries, participants, avg entries/player), leaderboard with real client names (links to profiles), draw receipt for completed rounds, cancel/mark-delivered actions |
+
+**Create raffle form** (inline on hub page) — prize description textarea, auto-detected month start/end, creates new active round.
+
+### Monthly Raffle (Client — My Rewards Page)
+
+**Raffle section** on `/my-rewards` — card with this month's prize, entry count, total entries, anonymous food emoji alias, "Play Snake to Earn an Entry" button (or "Play Again" if entry already earned today). Anonymous leaderboard (top 10 with food emoji aliases, "You" highlighted). Draw receipt card for completed rounds with expandable cryptographic seed.
+
+**Game modal** — adapted Chef Snake in a full-screen modal overlay. Score > 0 earns 1 raffle entry per day (unlimited replays to improve leaderboard score). Touch (swipe) + keyboard (arrows/WASD) controls.
+
+### Raffle Cron Job
+
+**`/api/scheduled/raffle-draw`** — Vercel cron (1st of each month, 00:05 UTC). Finds active rounds with expired `month_end`, draws winners using cryptographic randomness (`crypto.randomBytes`). Draw receipt with seed, total entries, participant count, winner alias.
+
 ---
 
 ## 19. SAFETY & PROTECTION
@@ -1383,3 +1402,42 @@ The Remy drawer (`components/ai/remy-drawer.tsx`) has 5 views accessible via ico
 | Nav item     | Icon   | Route         |
 | ------------ | ------ | ------------- |
 | Beta Signups | Rocket | `/admin/beta` |
+
+---
+
+## 23. Mission Control (Desktop Launcher)
+
+Local Node.js dashboard running on port 41937. Launched by `scripts/launcher/server.mjs` + `scripts/launcher/index.html`. Not part of the Next.js app — standalone tooling for the developer.
+
+### Navigation (Left Sidebar)
+
+| Nav item  | Icon   | Keyboard shortcut | Section   |
+| --------- | ------ | ----------------- | --------- |
+| Dashboard | Grid   | `1`               | dashboard |
+| Build     | Box    | `2`               | build     |
+| Git       | Git    | `3`               | git       |
+| Tests     | Lab    | `4`               | tests     |
+| AI        | Brain  | `5`               | ai        |
+| Logins    | Key    | `Tab`             | logins    |
+| Infra     | Server | `0`               | infra     |
+
+### Logins Panel
+
+Quick-launch buttons that open Chrome incognito windows pre-signed-in as each test role. Uses Playwright (`scripts/launcher/open-login.mjs`) to automate sign-in via `/api/e2e/auth`.
+
+| Button          | Role    | Portal destination   | Description                        |
+| --------------- | ------- | -------------------- | ---------------------------------- |
+| Open as Chef    | chef    | `/dashboard`         | Primary test chef account          |
+| Open as Client  | client  | `/my-events`         | Test client with linked event      |
+| Open as Staff   | staff   | `/staff-dashboard`   | Sous chef with kiosk PIN 1234      |
+| Open as Partner | partner | `/partner/dashboard` | Referral partner (Airbnb host)     |
+| Open as Admin   | admin   | `/admin`             | Platform admin                     |
+| Open as Chef B  | chef-b  | `/dashboard`         | Second chef for multi-tenant tests |
+
+**How it works:** Each button POSTs to Mission Control `/api/login-as` which spawns `open-login.mjs` detached. The script launches system Chrome in incognito mode, authenticates via the E2E auth endpoint, navigates to the portal, and keeps the browser open. Multiple roles can be open simultaneously (each in its own incognito window).
+
+**Requirements:** Dev server running on port 3100, Playwright installed (`npx playwright install chromium`), test accounts seeded (`npm run seed:e2e`).
+
+### Infra Panel
+
+Quick Links, API service cards (9 services), Port Map table, Pi Health (live RAM/uptime/services via SSH).
