@@ -9,8 +9,6 @@ interface ChatInputBarProps {
   onAttach: () => void // Opens file/image upload UI
   onTyping: (isTyping: boolean) => void
   disabled?: boolean
-  /** @deprecated Use onAttach instead */
-  onSendImage?: () => void
 }
 
 export function ChatInputBar({
@@ -18,9 +16,7 @@ export function ChatInputBar({
   onAttach,
   onTyping,
   disabled = false,
-  onSendImage,
 }: ChatInputBarProps) {
-  const handleAttach = onAttach || onSendImage || (() => {})
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -81,7 +77,7 @@ export function ChatInputBar({
       <div className="flex items-end gap-2">
         {/* Attachment button */}
         <button
-          onClick={handleAttach}
+          onClick={onAttach}
           disabled={disabled || sending}
           className="flex-shrink-0 p-2 text-stone-400 hover:text-stone-400 disabled:opacity-50 transition-colors"
           title="Attach file"

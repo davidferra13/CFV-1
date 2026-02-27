@@ -53,7 +53,7 @@ export default async function GuestLandingPage({ params }: Props) {
 
           <h1 className="text-3xl md:text-4xl font-bold text-stone-100">{data.chefName}</h1>
 
-          {data.tagline && <p className="text-lg text-stone-400 mt-2">{data.tagline}</p>}
+          {data.tagline && <p className="text-lg text-stone-300 mt-2">{data.tagline}</p>}
 
           <p className="text-stone-500 mt-4 max-w-md mx-auto leading-relaxed">
             Enjoyed tonight? Leave your info and I'll reach out about cooking for you.
@@ -74,7 +74,7 @@ export default async function GuestLandingPage({ params }: Props) {
 
       {/* Footer */}
       <footer className="py-6 px-6 text-center">
-        <p className="text-xs text-stone-400">Powered by ChefFlow</p>
+        <p className="text-xs text-stone-300">Powered by ChefFlow</p>
       </footer>
     </div>
   )

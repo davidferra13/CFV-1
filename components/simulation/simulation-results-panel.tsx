@@ -85,7 +85,7 @@ export function SimulationResultsPanel({ run, results }: Props) {
                   <div className="flex items-center gap-3">
                     <span
                       className={`h-2.5 w-2.5 rounded-full shrink-0 ${
-                        pct >= 80 ? 'bg-emerald-9500' : pct >= 60 ? 'bg-amber-400' : 'bg-red-9500'
+                        pct >= 80 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-400' : 'bg-red-500'
                       }`}
                     />
                     <CardTitle className="text-sm font-medium">
@@ -96,13 +96,13 @@ export function SimulationResultsPanel({ run, results }: Props) {
                     <span className="text-sm font-semibold text-stone-300">
                       {passed}/{total} passed ({pct}%)
                     </span>
-                    <span className="text-xs text-stone-400">{isExpanded ? '▲' : '▼'}</span>
+                    <span className="text-xs text-stone-300">{isExpanded ? '▲' : '▼'}</span>
                   </div>
                 </div>
                 {/* Progress bar */}
                 <div className="mt-2 h-1.5 w-full rounded-full bg-stone-700 overflow-hidden">
                   <div
-                    className={`h-full rounded-full ${pct >= 80 ? 'bg-emerald-9500' : pct >= 60 ? 'bg-amber-400' : 'bg-red-9500'}`}
+                    className={`h-full rounded-full ${pct >= 80 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-400' : 'bg-red-500'}`}
                     style={{ width: `${pct}%` }}
                   />
                 </div>
@@ -128,15 +128,15 @@ export function SimulationResultsPanel({ run, results }: Props) {
                             <span className="text-xs font-medium text-red-700">
                               Score: {r.score}/100
                             </span>
-                            <span className="text-xs text-stone-400">{r.durationMs}ms</span>
+                            <span className="text-xs text-stone-300">{r.durationMs}ms</span>
                           </div>
-                          <div className="text-xs text-stone-400 font-medium">Scenario:</div>
+                          <div className="text-xs text-stone-300 font-medium">Scenario:</div>
                           <pre className="text-xs text-stone-300 bg-stone-900 rounded border border-stone-700 p-2 overflow-x-auto whitespace-pre-wrap max-h-24">
                             {r.scenarioId ?? 'No scenario text'}
                           </pre>
                           {r.failures.length > 0 && (
                             <div>
-                              <div className="text-xs text-stone-400 font-medium mb-1">
+                              <div className="text-xs text-stone-300 font-medium mb-1">
                                 Issues found:
                               </div>
                               <ul className="space-y-0.5">

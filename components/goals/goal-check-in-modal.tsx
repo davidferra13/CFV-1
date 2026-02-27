@@ -58,7 +58,7 @@ export function GoalCheckInModal({ goal, currentValue, onClose }: GoalCheckInMod
           </div>
           <button
             onClick={onClose}
-            className="rounded-full p-1.5 text-stone-400 hover:text-stone-400 hover:bg-stone-700 transition-colors"
+            className="rounded-full p-1.5 text-stone-300 hover:text-stone-300 hover:bg-stone-700 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -96,7 +96,7 @@ export function GoalCheckInModal({ goal, currentValue, onClose }: GoalCheckInMod
             autoFocus
             className="w-full rounded-md border border-stone-600 px-3 py-2 text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
           />
-          <p className="text-xs text-stone-400 mt-1">
+          <p className="text-xs text-stone-300 mt-1">
             This adds to your running total for this period.
           </p>
         </div>
@@ -104,7 +104,7 @@ export function GoalCheckInModal({ goal, currentValue, onClose }: GoalCheckInMod
         {/* Optional notes */}
         <div>
           <label className="block text-sm font-medium text-stone-300 mb-1">
-            Notes <span className="text-stone-400 font-normal">(optional)</span>
+            Notes <span className="text-stone-300 font-normal">(optional)</span>
           </label>
           <textarea
             value={notes}

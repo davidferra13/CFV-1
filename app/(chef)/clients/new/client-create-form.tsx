@@ -44,7 +44,7 @@ function Section({
         <div className="flex items-center gap-2">
           <span className="font-medium text-stone-200">{title}</span>
           {badge && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-stone-700 text-stone-400">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-stone-700 text-stone-300">
               {badge}
             </span>
           )}
@@ -59,7 +59,7 @@ function Section({
         </svg>
       </button>
       {description && !open && (
-        <p className="px-4 py-1.5 text-xs text-stone-400 bg-stone-800 border-t border-stone-800">
+        <p className="px-4 py-1.5 text-xs text-stone-300 bg-stone-800 border-t border-stone-800">
           {description}
         </p>
       )}
@@ -634,8 +634,8 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
           onClick={() => setMode('quick')}
           className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors ${
             mode === 'quick'
-              ? 'bg-brand-9500 text-white'
-              : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
+              ? 'bg-brand-500 text-white'
+              : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
           }`}
         >
           Quick Add
@@ -645,13 +645,13 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
           onClick={() => setMode('full')}
           className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors ${
             mode === 'full'
-              ? 'bg-brand-9500 text-white'
-              : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
+              ? 'bg-brand-500 text-white'
+              : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
           }`}
         >
           Full Profile
         </button>
-        <span className="text-xs text-stone-400 ml-2">
+        <span className="text-xs text-stone-300 ml-2">
           {mode === 'quick'
             ? 'Get them in the system fast — fill in details later'
             : 'The complete client dossier — every field you could ever need'}

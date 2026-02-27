@@ -460,9 +460,7 @@ export default function AnimationsTestPage() {
         </p>
         {active && (
           <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-full text-sm font-medium text-slate-700">
-            <span
-              className={`w-2 h-2 rounded-full ${playing ? 'bg-green-9500' : 'bg-slate-400'}`}
-            />
+            <span className={`w-2 h-2 rounded-full ${playing ? 'bg-green-500' : 'bg-slate-400'}`} />
             {playing ? 'Playing:' : 'Last played:'} {active.emoji} {active.label}
           </div>
         )}

@@ -127,7 +127,7 @@ function ItemRow({
       {/* Large checkbox — easy to tap on mobile */}
       <div
         className={`flex-shrink-0 w-7 h-7 rounded border-2 flex items-center justify-center mt-0.5 ${
-          checked ? 'bg-green-9500 border-green-500' : 'border-stone-400 bg-stone-900'
+          checked ? 'bg-green-500 border-green-500' : 'border-stone-400 bg-stone-900'
         }`}
       >
         {checked && (
@@ -144,11 +144,11 @@ function ItemRow({
       </div>
       <div className="flex-1 min-w-0">
         <span
-          className={`text-sm font-medium ${checked ? 'line-through text-stone-400' : 'text-stone-100'}`}
+          className={`text-sm font-medium ${checked ? 'line-through text-stone-300' : 'text-stone-100'}`}
         >
           {label}
         </span>
-        {sublabel && <span className="block text-xs text-stone-400 mt-0.5">{sublabel}</span>}
+        {sublabel && <span className="block text-xs text-stone-300 mt-0.5">{sublabel}</span>}
       </div>
     </button>
   )
@@ -186,7 +186,7 @@ function Section({
           className={`text-xs font-medium px-2 py-0.5 rounded-full ${
             checkedCount === items.length
               ? 'bg-green-900 text-green-700'
-              : 'bg-stone-800 text-stone-400'
+              : 'bg-stone-800 text-stone-300'
           }`}
         >
           {checkedCount} / {items.length}
@@ -413,7 +413,7 @@ export function PackingListClient({
                   <p className="text-xs font-medium text-stone-200">{suggestion.label}</p>
                   <ul className="mt-1 space-y-0.5">
                     {suggestion.items.map((item) => (
-                      <li key={item} className="text-xs text-stone-400 flex items-start gap-1.5">
+                      <li key={item} className="text-xs text-stone-300 flex items-start gap-1.5">
                         <span className="text-amber-500 mt-0.5 flex-shrink-0">•</span>
                         {item}
                       </li>
@@ -445,7 +445,7 @@ export function PackingListClient({
         </div>
         <div className="w-full bg-stone-800 rounded-full h-2">
           <div
-            className="bg-green-9500 h-2 rounded-full transition-all duration-300"
+            className="bg-green-500 h-2 rounded-full transition-all duration-300"
             style={{ width: totalItems > 0 ? `${(checkedCount / totalItems) * 100}%` : '0%' }}
           />
         </div>
@@ -545,7 +545,7 @@ export function PackingListClient({
         <button
           type="button"
           onClick={handleReset}
-          className="w-full text-xs text-stone-400 hover:text-stone-400 py-2"
+          className="w-full text-xs text-stone-300 hover:text-stone-300 py-2"
         >
           Reset checklist
         </button>

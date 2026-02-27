@@ -2,10 +2,11 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
-import { RemyTalkingAvatar } from '@/components/ai/remy-talking-avatar'
+import { RemyAnimatedMascot } from '@/components/ai/remy-animated-mascot'
+import type { BodyState } from '@/lib/ai/remy-body-state'
+import type { EyeState } from '@/lib/ai/remy-eye-blink'
 import type { Viseme, RemyEmotion } from '@/lib/ai/remy-visemes'
 
-const SLEEP_TIMEOUT_MS = 60_000
 const SPEECH_HOVER_DELAY_MS = 500
 
 const GREETINGS = ['Need help?', 'Ask me anything!', 'Hey there!', "I'm here if you need me!"]
@@ -16,11 +17,13 @@ interface RemyMascotButtonProps {
   className?: string
   /** Show green online ping dot */
   showOnlineDot?: boolean
-  /** Mascot animation state */
-  state?: 'idle' | 'thinking' | 'success' | 'nudge' | 'sleeping'
+  /** Body animation state from the state machine */
+  bodyState?: BodyState
+  /** Eye state from the auto-blink engine */
+  eyeState?: EyeState
   /** Accessible label */
   ariaLabel?: string
-  /** Current lip-sync viseme — when provided, shows talking avatar overlay */
+  /** Current lip-sync viseme */
   viseme?: Viseme
   /** Whether Remy is currently speaking (lip-sync active) */
   isSpeaking?: boolean
@@ -30,76 +33,72 @@ interface RemyMascotButtonProps {
   minimized?: boolean
   /** Callback to toggle minimized state */
   onToggleMinimize?: () => void
+  /** Called when a non-looping body animation completes */
+  onAnimComplete?: () => void
+
+  // Legacy compat — mapped internally
+  state?: 'idle' | 'thinking' | 'success' | 'nudge' | 'sleeping'
+}
+
+/** Map legacy state prop to BodyState */
+function legacyToBodyState(s?: string): BodyState {
+  switch (s) {
+    case 'thinking':
+      return 'thinking'
+    case 'success':
+      return 'celebrating'
+    case 'nudge':
+      return 'nudge'
+    case 'sleeping':
+      return 'sleeping'
+    default:
+      return 'idle'
+  }
 }
 
 export function RemyMascotButton({
   onClick,
   className,
   showOnlineDot = false,
-  state: externalState,
+  bodyState: bodyStateProp,
+  eyeState: eyeStateProp = 'open',
+  state: legacyState,
   ariaLabel = 'Chat with Remy',
   viseme,
   isSpeaking: speakingProp = false,
   emotion = 'neutral',
   minimized = false,
   onToggleMinimize,
+  onAnimComplete,
 }: RemyMascotButtonProps) {
-  // Internal sleep state — overridden by external state if provided
-  const [isSleeping, setIsSleeping] = useState(false)
   const [showSpeechBubble, setShowSpeechBubble] = useState(false)
   const [greeting, setGreeting] = useState(GREETINGS[0])
   const [isHovered, setIsHovered] = useState(false)
 
   const hasShownBubble = useRef(false)
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const lastInteraction = useRef(Date.now())
-  const sleepCheckInterval = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // Determine effective state
-  const effectiveState = externalState ?? (isSleeping ? 'sleeping' : 'idle')
+  // Resolve body state: new prop > legacy prop > default
+  const effectiveBodyState = bodyStateProp ?? legacyToBodyState(legacyState)
 
-  // --- Sleep mode: track page interaction ---
-  const resetSleepTimer = useCallback(() => {
-    lastInteraction.current = Date.now()
-    if (isSleeping) setIsSleeping(false)
-  }, [isSleeping])
-
-  useEffect(() => {
-    const events = ['mousemove', 'scroll', 'click', 'keydown', 'touchstart'] as const
-    events.forEach((e) => window.addEventListener(e, resetSleepTimer, { passive: true }))
-
-    sleepCheckInterval.current = setInterval(() => {
-      if (Date.now() - lastInteraction.current > SLEEP_TIMEOUT_MS) {
-        setIsSleeping(true)
-      }
-    }, 5_000) // Check every 5s
-
-    return () => {
-      events.forEach((e) => window.removeEventListener(e, resetSleepTimer))
-      if (sleepCheckInterval.current) clearInterval(sleepCheckInterval.current)
-    }
-  }, [resetSleepTimer])
+  // Whether Remy should show the hat-only asset (minimized or sleeping)
+  const showHat = minimized || effectiveBodyState === 'sleeping'
 
   // --- Hover speech bubble ---
   const handleMouseEnter = useCallback(() => {
     setIsHovered(true)
 
-    // Wake from sleep on hover
-    if (isSleeping) {
-      setIsSleeping(false)
-      lastInteraction.current = Date.now()
-      return // Don't show speech bubble on wake-up hover
-    }
-
     // Only show speech bubble once per session
     if (hasShownBubble.current) return
+
+    if (effectiveBodyState === 'sleeping') return
 
     hoverTimer.current = setTimeout(() => {
       setGreeting(GREETINGS[Math.floor(Math.random() * GREETINGS.length)])
       setShowSpeechBubble(true)
       hasShownBubble.current = true
     }, SPEECH_HOVER_DELAY_MS)
-  }, [isSleeping])
+  }, [effectiveBodyState])
 
   const handleMouseLeave = useCallback(() => {
     setIsHovered(false)
@@ -117,25 +116,20 @@ export function RemyMascotButton({
     }
   }, [])
 
-  // Whether Remy should show the hat-only asset (minimized or sleeping)
-  const showHat = minimized || effectiveState === 'sleeping'
+  // Handle animation complete
+  const handleAnimComplete = useCallback(() => {
+    onAnimComplete?.()
+  }, [onAnimComplete])
 
-  // --- Animation class based on state ---
-  // Remy is glued to the bottom of the browser — the mascot image is cut
-  // horizontally to sit flush with the browser edge. No vertical movement allowed.
-  // When minimized/sleeping, we crossfade to the hat-only image instead of translating.
-  const animationClass = (() => {
-    if (showHat) return 'translate-y-[50%] transition-transform duration-500 ease-in-out'
-    switch (effectiveState) {
-      case 'nudge':
-        return 'animate-mascot-wiggle' // horizontal wiggle only, no vertical
-      case 'success':
-      case 'thinking':
-      case 'idle':
-      default:
-        return '' // No animation — stay flush with browser bottom
-    }
-  })()
+  // Minimized / sleeping animation
+  const minimizedClass = showHat
+    ? 'translate-y-[50%] transition-transform duration-500 ease-in-out'
+    : ''
+
+  const hatPeekStyle = {
+    transform: 'translateY(-10%)',
+    transformOrigin: 'top center',
+  } as const
 
   return (
     <div
@@ -172,56 +166,36 @@ export function RemyMascotButton({
         type="button"
       >
         {/* Thinking bubble */}
-        {!minimized && effectiveState === 'thinking' && <ThinkingBubble />}
+        {!minimized && effectiveBodyState === 'thinking' && <ThinkingBubble />}
 
         {/* Speech bubble (hover, once per session) */}
         {!minimized &&
           showSpeechBubble &&
-          effectiveState !== 'thinking' &&
-          effectiveState !== 'sleeping' && <SpeechBubble text={greeting} />}
+          effectiveBodyState !== 'thinking' &&
+          effectiveBodyState !== 'sleeping' && <SpeechBubble text={greeting} />}
 
-        {/* Mascot image with state-driven animation */}
-        <div className={['relative w-full h-full', animationClass].join(' ')}>
-          {/* Idle mascot — the default visible state */}
-          <Image
-            src="/images/remy-idle.png"
-            alt="Remy the ChefFlow assistant"
-            fill
-            sizes="(max-width: 640px) 60px, (max-width: 1024px) 80px, 100px"
-            className={[
-              'object-contain object-bottom pointer-events-none select-none transition-opacity duration-300',
-              showHat || speakingProp ? 'opacity-0' : 'opacity-100',
-            ].join(' ')}
-            priority
-          />
-
-          {/* Hat-only image — visible when minimized or sleeping */}
-          <Image
-            src="/images/remy-hat.png"
-            alt="Remy's chef hat"
-            fill
-            sizes="(max-width: 640px) 60px, (max-width: 1024px) 80px, 100px"
-            className={[
-              'object-contain object-bottom pointer-events-none select-none transition-opacity duration-300',
-              showHat && !speakingProp ? 'opacity-100' : 'opacity-0',
-            ].join(' ')}
-          />
-
-          {/* Talking avatar overlay — visible when speaking */}
-          {viseme && (
-            <div
-              className={[
-                'absolute inset-0 flex items-center justify-center transition-opacity duration-300',
-                speakingProp ? 'opacity-100' : 'opacity-0',
-              ].join(' ')}
-            >
-              <RemyTalkingAvatar
-                viseme={viseme}
-                isSpeaking={speakingProp}
-                emotion={emotion}
-                size="lg"
-              />
-            </div>
+        {/* Mascot with state-driven animation */}
+        <div className={['relative w-full h-full', minimizedClass].join(' ')}>
+          {showHat ? (
+            // Hat-only peek when minimized or sleeping
+            <Image
+              src="/images/remy/remy-hat.png"
+              alt="Remy's chef hat"
+              fill
+              sizes="(max-width: 640px) 60px, (max-width: 1024px) 80px, 100px"
+              className="object-contain object-bottom pointer-events-none select-none"
+              style={hatPeekStyle}
+            />
+          ) : (
+            // Full animated mascot — 3-layer compositing
+            <RemyAnimatedMascot
+              bodyState={effectiveBodyState}
+              eyeState={eyeStateProp}
+              viseme={viseme ?? 'rest'}
+              isSpeaking={speakingProp}
+              emotion={emotion}
+              onAnimComplete={handleAnimComplete}
+            />
           )}
 
           {/* Online dot */}

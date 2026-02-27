@@ -46,13 +46,13 @@ test.describe('Remy Assets — Loading', () => {
   })
 
   test('remy-idle.png loads without 404', async ({ page }) => {
-    const resp = await page.request.get(`${BASE_URL}/images/remy-idle.png`)
+    const resp = await page.request.get(`${BASE_URL}/images/remy/remy-idle.png`)
     expect(resp.status()).toBe(200)
     expect(resp.headers()['content-type']).toContain('image/png')
   })
 
   test('remy-hat.png loads without 404', async ({ page }) => {
-    const resp = await page.request.get(`${BASE_URL}/images/remy-hat.png`)
+    const resp = await page.request.get(`${BASE_URL}/images/remy/remy-hat.png`)
     expect(resp.status()).toBe(200)
     expect(resp.headers()['content-type']).toContain('image/png')
   })

@@ -31,7 +31,7 @@ export function LossAnalysisChart({ data }: { data: Array<{ reason: string; coun
             </div>
             <div className="h-2 bg-stone-800 rounded-full overflow-hidden">
               <div
-                className="h-full bg-brand-9500 rounded-full transition-all"
+                className="h-full bg-brand-500 rounded-full transition-all"
                 style={{ width: `${barWidth}%` }}
               />
             </div>

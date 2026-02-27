@@ -126,7 +126,7 @@ export function SimulateClient({ summary, recentRuns, latestRun, latestResults }
                     </div>
                     <div className="flex-1 h-2 rounded-full bg-stone-700 overflow-hidden">
                       <div
-                        className={`h-full rounded-full ${pct >= 80 ? 'bg-emerald-9500' : pct >= 60 ? 'bg-amber-400' : 'bg-red-9500'}`}
+                        className={`h-full rounded-full ${pct >= 80 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-400' : 'bg-red-500'}`}
                         style={{ width: `${pct}%` }}
                       />
                     </div>

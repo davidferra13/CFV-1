@@ -40,13 +40,13 @@ export function SentimentBadge({ clientId }: { clientId: string }) {
     }
   }
 
-  if (loading) return <Loader2 className="w-3 h-3 animate-spin text-stone-400" />
+  if (loading) return <Loader2 className="w-3 h-3 animate-spin text-stone-300" />
 
   if (!analysis) {
     return (
       <button
         onClick={run}
-        className="text-[11px] text-stone-400 hover:text-brand-600 flex items-center gap-1"
+        className="text-[11px] text-stone-300 hover:text-brand-600 flex items-center gap-1"
       >
         <MessageSquare className="w-3 h-3" />
         Analyze sentiment
@@ -70,14 +70,14 @@ export function SentimentBadge({ clientId }: { clientId: string }) {
         <MessageSquare className="w-3 h-3" />
         {SENTIMENT_LABELS[analysis.overallSentiment]}
         <TrendIcon className="w-3 h-3" />
-        {analysis.riskFlag && <span className="w-1.5 h-1.5 bg-red-9500 rounded-full" />}
+        {analysis.riskFlag && <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />}
       </button>
 
       {showDetail && (
         <div className="absolute top-6 left-0 z-20 w-72 bg-stone-900 border border-stone-700 rounded-lg shadow-lg p-3 text-xs space-y-2">
           <div className="flex items-center justify-between">
             <span className="font-medium">Client Sentiment</span>
-            <button onClick={() => setShowDetail(false)} className="text-stone-400">
+            <button onClick={() => setShowDetail(false)} className="text-stone-300">
               ✕
             </button>
           </div>
@@ -102,7 +102,7 @@ export function SentimentBadge({ clientId }: { clientId: string }) {
             <div>Trend: {analysis.trend}</div>
           </div>
 
-          <div className="text-stone-400 text-[10px]">
+          <div className="text-stone-300 text-[10px]">
             {analysis.messageSentiments.length} messages analyzed · Confidence:{' '}
             {analysis.confidence}
           </div>

@@ -75,7 +75,7 @@ export function EventReminderEmail({
         </tbody>
       </table>
       <Text style={muted}>
-        If anything changes, please let your chef know through CheFlow as soon as possible.
+        If anything changes, please let your chef know through ChefFlow as soon as possible.
       </Text>
     </BaseLayout>
   )

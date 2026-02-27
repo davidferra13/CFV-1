@@ -20,9 +20,9 @@ interface ConversionFunnelProps {
 
 const STAGE_COLORS: Record<string, string> = {
   Inquiry: 'bg-stone-8000',
-  Quote: 'bg-blue-9500',
-  Booking: 'bg-brand-9500',
-  Completed: 'bg-emerald-9500',
+  Quote: 'bg-blue-500',
+  Booking: 'bg-brand-500',
+  Completed: 'bg-emerald-500',
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -64,7 +64,7 @@ export function ConversionFunnel({ funnel }: ConversionFunnelProps) {
         </CardHeader>
         <CardContent>
           {funnel.length === 0 ? (
-            <p className="text-sm text-stone-400 italic text-center py-8">
+            <p className="text-sm text-stone-300 italic text-center py-8">
               No funnel data available yet.
             </p>
           ) : (
@@ -171,11 +171,11 @@ export function ConversionFunnel({ funnel }: ConversionFunnelProps) {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-stone-700">
-                    <th className="text-left py-2 px-3 font-medium text-stone-400">Stage</th>
-                    <th className="text-right py-2 px-3 font-medium text-stone-400">Count</th>
-                    <th className="text-right py-2 px-3 font-medium text-stone-400">% of Total</th>
-                    <th className="text-right py-2 px-3 font-medium text-stone-400">Drop-off</th>
-                    <th className="text-right py-2 px-3 font-medium text-stone-400">
+                    <th className="text-left py-2 px-3 font-medium text-stone-300">Stage</th>
+                    <th className="text-right py-2 px-3 font-medium text-stone-300">Count</th>
+                    <th className="text-right py-2 px-3 font-medium text-stone-300">% of Total</th>
+                    <th className="text-right py-2 px-3 font-medium text-stone-300">Drop-off</th>
+                    <th className="text-right py-2 px-3 font-medium text-stone-300">
                       Stage Conversion
                     </th>
                   </tr>
@@ -204,7 +204,7 @@ export function ConversionFunnel({ funnel }: ConversionFunnelProps) {
                         </td>
                         <td className="py-2 px-3 text-right">
                           {index === 0 ? (
-                            <span className="text-stone-400">--</span>
+                            <span className="text-stone-300">--</span>
                           ) : (
                             <span
                               className={`font-medium ${

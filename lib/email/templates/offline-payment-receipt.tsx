@@ -73,7 +73,7 @@ export function OfflinePaymentReceiptEmail({
 
       <Text style={muted}>
         If you have any questions about your payment or upcoming event, reach out to {chefName}{' '}
-        directly through the CheFlow portal.
+        directly through the ChefFlow portal.
       </Text>
     </BaseLayout>
   )

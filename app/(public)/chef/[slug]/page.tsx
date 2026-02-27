@@ -168,7 +168,7 @@ export default async function ChefProfilePage({ params }: Props) {
           <h1 className="text-4xl md:text-5xl font-bold text-stone-100">{chef.display_name}</h1>
 
           {chef.tagline && (
-            <p className="text-lg md:text-xl text-stone-400 mt-3 max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl text-stone-300 mt-3 max-w-2xl mx-auto">
               {chef.tagline}
             </p>
           )}
@@ -185,7 +185,7 @@ export default async function ChefProfilePage({ params }: Props) {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-stone-100">Where I Cook</h2>
-              <p className="text-stone-400 mt-3 max-w-xl mx-auto">
+              <p className="text-stone-300 mt-3 max-w-xl mx-auto">
                 Book one of these amazing venues and enjoy a private dining experience with a
                 personal chef
               </p>
@@ -202,7 +202,7 @@ export default async function ChefProfilePage({ params }: Props) {
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-10">
               <h2 className="text-3xl font-bold text-stone-100">Reviews & Testimonials</h2>
-              <p className="text-stone-400 mt-3 max-w-xl mx-auto">
+              <p className="text-stone-300 mt-3 max-w-xl mx-auto">
                 What clients and guests are saying about {chef.display_name}
               </p>
             </div>
@@ -218,7 +218,7 @@ export default async function ChefProfilePage({ params }: Props) {
           <div className="max-w-2xl mx-auto">
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold text-stone-100">Available Dates</h2>
-              <p className="text-stone-400 mt-2 text-sm">
+              <p className="text-stone-300 mt-2 text-sm">
                 {chef.display_name} is actively seeking bookings for these dates.
               </p>
             </div>
@@ -241,7 +241,7 @@ export default async function ChefProfilePage({ params }: Props) {
                     <div>
                       <p className="font-semibold text-stone-100">{dateLabel}</p>
                       {signal.public_note && (
-                        <p className="text-sm text-stone-400 mt-0.5">{signal.public_note}</p>
+                        <p className="text-sm text-stone-300 mt-0.5">{signal.public_note}</p>
                       )}
                     </div>
                     <a
@@ -263,7 +263,7 @@ export default async function ChefProfilePage({ params }: Props) {
       <section className="py-16 px-6 bg-stone-900/75">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-2xl font-bold text-stone-100">Ready to Book?</h2>
-          <p className="text-stone-400 mt-3">
+          <p className="text-stone-300 mt-3">
             {partners.length > 0
               ? `Choose a venue above and hire ${chef.display_name} for an unforgettable dining experience, or submit a custom inquiry below.`
               : `Tell us about your event and ${chef.display_name} will be in touch.`}

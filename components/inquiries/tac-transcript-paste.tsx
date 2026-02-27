@@ -165,7 +165,7 @@ export function TacTranscriptPaste({
           </div>
           <button
             type="button"
-            className="text-stone-400 hover:text-stone-400 text-xl leading-none"
+            className="text-stone-300 hover:text-stone-300 text-xl leading-none"
             onClick={onClose}
           >
             &times;
@@ -176,17 +176,17 @@ export function TacTranscriptPaste({
           {!preview ? (
             <>
               <textarea
-                className="w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-200 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
+                className="w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-200 placeholder:text-stone-300 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
                 rows={12}
                 placeholder="Paste the full TakeAChef conversation here..."
                 value={rawText}
                 onChange={(e) => setRawText(e.target.value)}
               />
-              <p className="text-xs text-stone-400">
+              <p className="text-xs text-stone-300">
                 We'll try to split this into individual messages. If we can't detect message
                 boundaries, the whole text will be saved as a single note.
               </p>
-              <p className="text-xs text-stone-400">
+              <p className="text-xs text-stone-300">
                 Messages will appear in the Communication Log on this inquiry's page — same place as
                 emails and notes. You can always add more later.
               </p>
@@ -214,7 +214,7 @@ export function TacTranscriptPaste({
                     <div
                       className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
                         msg.direction === 'outbound'
-                          ? 'bg-brand-9500/10 text-stone-200'
+                          ? 'bg-brand-500/10 text-stone-200'
                           : 'bg-stone-800 text-stone-200'
                       }`}
                     >
@@ -225,7 +225,7 @@ export function TacTranscriptPaste({
                       )}
                       <p className="whitespace-pre-wrap">{msg.body}</p>
                       {msg.sentAt && (
-                        <p className="text-xs text-stone-400 mt-1">
+                        <p className="text-xs text-stone-300 mt-1">
                           {new Date(msg.sentAt).toLocaleDateString()}
                         </p>
                       )}

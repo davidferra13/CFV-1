@@ -561,7 +561,7 @@ export function ChefSidebar({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-3 custom-scrollbar">
+      <nav className="flex-1 overflow-y-auto pt-3 pb-6 mb-28 custom-scrollbar">
         {/* ── COLLAPSED / RAIL MODE ── */}
         {collapsed ? (
           <div className="flex flex-col items-center gap-1 px-1">
@@ -625,6 +625,7 @@ export function ChefSidebar({
             <Link
               href="/network"
               title="Community"
+              aria-label="Community"
               className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
                 pathname.startsWith('/network')
                   ? 'text-indigo-400'
@@ -673,6 +674,7 @@ export function ChefSidebar({
                 window.location.href = '/'
               }}
               title="Sign Out"
+              aria-label="Sign Out"
               className="flex items-center justify-center w-10 h-10 rounded-lg text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors"
             >
               <LogOut className="w-[18px] h-[18px]" />

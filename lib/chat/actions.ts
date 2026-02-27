@@ -895,10 +895,6 @@ export async function getChatAttachmentUrl(messageId: string): Promise<string | 
 
   return signedUrlData.signedUrl
 }
-
-/** @deprecated Use getChatAttachmentUrl instead */
-const getChatImageUrl = getChatAttachmentUrl
-
 // ============================================
 // CLIENT-INITIATED CONVERSATIONS
 // ============================================

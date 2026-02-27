@@ -76,7 +76,7 @@ function DeleteButton({
   return (
     <div className="flex items-center justify-between rounded-lg border border-stone-700 bg-stone-900 p-3">
       <div className="flex items-center gap-3">
-        <Icon className="h-4 w-4 text-stone-400" />
+        <Icon className="h-4 w-4 text-stone-300" />
         <div>
           <p className="text-sm font-medium text-stone-100">{label}</p>
           <p className="text-xs text-stone-500">
@@ -95,7 +95,7 @@ function DeleteButton({
           disabled={state === 'deleting' || count === 0}
           className={`inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
             state === 'confirming'
-              ? 'bg-red-9500 text-white hover:bg-red-600'
+              ? 'bg-red-500 text-white hover:bg-red-600'
               : 'border border-red-200 text-red-600 hover:bg-red-950'
           } disabled:opacity-30 disabled:cursor-not-allowed`}
         >
@@ -317,8 +317,8 @@ export function DataControls({
               nuclearState === 'confirming'
                 ? 'bg-red-600 text-white hover:bg-red-700'
                 : nuclearState === 'done'
-                  ? 'bg-emerald-9500 text-white'
-                  : 'bg-red-9500 text-white hover:bg-red-600'
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-red-500 text-white hover:bg-red-600'
             } disabled:opacity-30 disabled:cursor-not-allowed`}
           >
             {nuclearState === 'deleting' ? (

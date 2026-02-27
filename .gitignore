@@ -78,6 +78,16 @@ pw-run.txt
 runbuild.bat
 scripts/parse-pw-results.*
 
+# Launch/test output
+launch-chef-*.txt
+launch-chef-*.json
+
+# TSC debug output
+tsc-output.txt
+
+# Env backup files
+*.bak
+
 # Stray system/home files
 HOME-*.xml
 
@@ -138,3 +148,4 @@ null
 
 # Incident reports (local failure logs, machine-specific, no PII)
 /data/incidents/
+.next-dev/

@@ -26,21 +26,21 @@ const TAGS: {
     label: 'Hot',
     tooltip: 'Likely to book — strong interest, good fit',
     color: 'text-red-500 border-red-200 hover:bg-red-950',
-    activeColor: 'bg-red-9500 text-white border-red-500',
+    activeColor: 'bg-red-500 text-white border-red-500',
   },
   {
     value: 'warm',
     label: 'Warm',
     tooltip: 'Might book — interested but undecided',
     color: 'text-amber-500 border-amber-200 hover:bg-amber-950',
-    activeColor: 'bg-amber-9500 text-white border-amber-500',
+    activeColor: 'bg-amber-500 text-white border-amber-500',
   },
   {
     value: 'cold',
     label: 'Cold',
     tooltip: "Probably won't book — shopping around or poor fit",
     color: 'text-blue-500 border-blue-200 hover:bg-blue-950',
-    activeColor: 'bg-blue-9500 text-white border-blue-500',
+    activeColor: 'bg-blue-500 text-white border-blue-500',
   },
 ]
 
@@ -66,7 +66,7 @@ export function LikelihoodToggle({ inquiryId, currentLikelihood }: LikelihoodTog
 
   return (
     <div className="flex items-center gap-1">
-      <span className="text-[10px] text-stone-400 mr-0.5">Your gut feel:</span>
+      <span className="text-[10px] text-stone-300 mr-0.5">Your gut feel:</span>
       {TAGS.map((tag) => {
         const isActive = optimistic === tag.value
         return (

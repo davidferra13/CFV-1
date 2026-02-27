@@ -37,14 +37,14 @@ export function SocialMonthCell({ month, year, posts }: Props) {
       <div className="bg-stone-900 rounded-xl border border-stone-700 p-4 hover:border-brand-600 hover:shadow-sm transition-all cursor-pointer">
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm font-semibold text-stone-200">{MONTH_NAMES[month - 1]}</span>
-          <span className="text-xs text-stone-400">{total} posts</span>
+          <span className="text-xs text-stone-300">{total} posts</span>
         </div>
 
         {/* Progress bar */}
         <div className="w-full h-1.5 bg-stone-800 rounded-full overflow-hidden mb-3">
           {total > 0 && (
             <div
-              className="h-full bg-emerald-9500 rounded-full transition-all"
+              className="h-full bg-emerald-500 rounded-full transition-all"
               style={{ width: `${readyPct}%` }}
             />
           )}
@@ -79,7 +79,7 @@ export function SocialMonthCell({ month, year, posts }: Props) {
           )}
         </div>
 
-        {total === 0 && <p className="text-xs text-stone-400 italic">No posts planned</p>}
+        {total === 0 && <p className="text-xs text-stone-300 italic">No posts planned</p>}
       </div>
     </Link>
   )

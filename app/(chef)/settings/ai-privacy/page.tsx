@@ -119,7 +119,7 @@ export default function AiPrivacyPage() {
           >
             <div
               className={`h-2 w-2 rounded-full ${
-                prefs.remy_enabled ? 'bg-emerald-9500' : 'bg-stone-400'
+                prefs.remy_enabled ? 'bg-emerald-500' : 'bg-stone-400'
               }`}
             />
             {prefs.remy_enabled ? 'Remy Active' : 'Remy Off'}
@@ -140,7 +140,7 @@ export default function AiPrivacyPage() {
           <Server className="h-5 w-5 text-brand-500" />
           <h2 className="text-lg font-semibold text-stone-100">How it works</h2>
         </div>
-        <div className="text-sm text-stone-400 space-y-3 leading-relaxed">
+        <div className="text-sm text-stone-300 space-y-3 leading-relaxed">
           <p>
             Remy runs on ChefFlow&apos;s private AI infrastructure — not OpenAI, not Google, not any
             third-party cloud AI service. When you talk to Remy, your conversation is processed on
@@ -160,7 +160,7 @@ export default function AiPrivacyPage() {
           <Eye className="h-5 w-5 text-brand-500" />
           <h2 className="text-lg font-semibold text-stone-100">What we can see</h2>
         </div>
-        <div className="text-sm text-stone-400 space-y-3 leading-relaxed">
+        <div className="text-sm text-stone-300 space-y-3 leading-relaxed">
           <p>
             We can see that you used Remy — how often, which features, whether errors occurred. We
             cannot see what you talked about.
@@ -176,7 +176,7 @@ export default function AiPrivacyPage() {
         {metrics && metrics.totalMessages > 0 && (
           <div className="rounded-lg bg-stone-800 border border-stone-700 p-4 space-y-2">
             <div className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4 text-stone-400" />
+              <BarChart3 className="h-4 w-4 text-stone-300" />
               <p className="text-xs font-medium text-stone-300">
                 What we know about your Remy usage (this is all of it):
               </p>
@@ -206,7 +206,7 @@ export default function AiPrivacyPage() {
                 <p className="text-xs text-stone-500">Since</p>
               </div>
             </div>
-            <p className="text-xs text-stone-400 italic">
+            <p className="text-xs text-stone-300 italic">
               Counts only. No conversation content. No client names. No recipes.
             </p>
           </div>
@@ -219,7 +219,7 @@ export default function AiPrivacyPage() {
           <Headphones className="h-5 w-5 text-brand-500" />
           <h2 className="text-lg font-semibold text-stone-100">If you need help</h2>
         </div>
-        <div className="text-sm text-stone-400 space-y-3 leading-relaxed">
+        <div className="text-sm text-stone-300 space-y-3 leading-relaxed">
           <p>
             If Remy isn&apos;t working right and you want to share a conversation with our support
             team, you can do that from inside any conversation. Tap &ldquo;Send to Support&rdquo;
@@ -235,7 +235,7 @@ export default function AiPrivacyPage() {
           <ExternalLink className="h-5 w-5 text-amber-600" />
           <h2 className="text-lg font-semibold text-stone-100">Other services we use</h2>
         </div>
-        <div className="text-sm text-stone-400 space-y-3 leading-relaxed">
+        <div className="text-sm text-stone-300 space-y-3 leading-relaxed">
           <p>
             Some ChefFlow features use external APIs for things like grocery pricing, nutrition
             data, and store availability. These services receive only the specific item-level data

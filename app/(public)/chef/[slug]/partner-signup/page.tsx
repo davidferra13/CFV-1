@@ -38,7 +38,7 @@ export default async function PartnerSignupPage({ params }: Props) {
         <div className="max-w-2xl mx-auto space-y-6">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-stone-100">Create Partner Profile</h1>
-            <p className="text-stone-400 mt-2">
+            <p className="text-stone-300 mt-2">
               Submit your profile to be listed as a referral partner for {data.chef.display_name}.
             </p>
           </div>

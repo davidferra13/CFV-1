@@ -50,7 +50,7 @@ export function PostEventReferralAskEmail({
       <Text style={muted}>
         Thank you for being a wonderful guest.
         <br />
-        {chefName} via CheFlow
+        {chefName} via ChefFlow
       </Text>
     </BaseLayout>
   )

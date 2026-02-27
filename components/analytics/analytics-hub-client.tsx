@@ -174,7 +174,7 @@ function StatCard({
     <div className="bg-stone-900 rounded-lg border border-stone-700 p-4">
       <p className="text-xs text-stone-500 uppercase tracking-wide mb-1">{label}</p>
       <p className={`text-2xl font-bold ${color}`}>{value}</p>
-      {sub && <p className="text-xs text-stone-400 mt-1">{sub}</p>}
+      {sub && <p className="text-xs text-stone-300 mt-1">{sub}</p>}
     </div>
   )
 }
@@ -340,7 +340,7 @@ function RevenueTab({ p }: { p: AnalyticsHubProps }) {
       <Card className="p-6">
         <h3 className="font-semibold text-stone-200 mb-4">Revenue by Event Type</h3>
         {p.revenueByEventType.length === 0 ? (
-          <p className="text-stone-400 text-sm">No completed events yet</p>
+          <p className="text-stone-300 text-sm">No completed events yet</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -538,12 +538,9 @@ function PipelineTab({ p }: { p: AnalyticsHubProps }) {
               },
             ].map((row) => (
               <div key={row.label} className="flex items-center gap-3">
-                <span className="text-sm text-stone-400 w-24">{row.label}</span>
+                <span className="text-sm text-stone-300 w-24">{row.label}</span>
                 <div className="flex-1 bg-stone-800 rounded-full h-2">
-                  <div
-                    className="bg-amber-9500 h-2 rounded-full"
-                    style={{ width: `${row.pct}%` }}
-                  />
+                  <div className="bg-amber-500 h-2 rounded-full" style={{ width: `${row.pct}%` }} />
                 </div>
                 <span className="text-sm font-medium w-12 text-right">{row.pct}%</span>
               </div>
@@ -587,7 +584,7 @@ function PipelineTab({ p }: { p: AnalyticsHubProps }) {
           <div className="space-y-2">
             {p.declineReasons.reasons.map((r) => (
               <div key={r.reason} className="flex items-center gap-3">
-                <span className="text-sm text-stone-400 w-40 capitalize">
+                <span className="text-sm text-stone-300 w-40 capitalize">
                   {r.reason.replace(/_/g, ' ')}
                 </span>
                 <div className="flex-1 bg-stone-800 rounded-full h-2">
@@ -655,7 +652,7 @@ function ClientsTab({ p }: { p: AnalyticsHubProps }) {
       <Card className="p-6">
         <h3 className="font-semibold text-stone-200 mb-4">Revenue Concentration (Top 5 Clients)</h3>
         {p.revenueConcentration.top5Clients.length === 0 ? (
-          <p className="text-stone-400 text-sm">No data yet</p>
+          <p className="text-stone-300 text-sm">No data yet</p>
         ) : (
           <div className="space-y-3">
             <p className="text-sm text-stone-500">
@@ -667,16 +664,16 @@ function ClientsTab({ p }: { p: AnalyticsHubProps }) {
             </p>
             {p.revenueConcentration.top5Clients.map((c, i) => (
               <div key={c.clientId} className="flex items-center gap-3">
-                <span className="text-xs text-stone-400 w-4">#{i + 1}</span>
+                <span className="text-xs text-stone-300 w-4">#{i + 1}</span>
                 <span className="text-sm font-medium w-36 truncate">{c.name}</span>
                 <div className="flex-1 bg-stone-800 rounded-full h-2">
                   <div
-                    className="bg-amber-9500 h-2 rounded-full"
+                    className="bg-amber-500 h-2 rounded-full"
                     style={{ width: `${c.sharePercent}%` }}
                   />
                 </div>
                 <span className="text-sm font-medium w-20 text-right">{fmt$(c.revenueCents)}</span>
-                <span className="text-xs text-stone-400 w-10 text-right">{c.sharePercent}%</span>
+                <span className="text-xs text-stone-300 w-10 text-right">{c.sharePercent}%</span>
               </div>
             ))}
           </div>
@@ -752,7 +749,7 @@ function MarketingTab({ p }: { p: AnalyticsHubProps }) {
         <Card className="p-6">
           <h3 className="font-semibold text-stone-200 mb-4">Marketing Spend by Channel</h3>
           {p.marketingSpend.length === 0 ? (
-            <p className="text-stone-400 text-sm">
+            <p className="text-stone-300 text-sm">
               No marketing spend logged yet.{' '}
               <a href="/analytics/marketing/spend" className="text-amber-600 hover:underline">
                 Add spend
@@ -785,13 +782,13 @@ function MarketingTab({ p }: { p: AnalyticsHubProps }) {
           <h3 className="font-semibold text-stone-200 mb-4">Review Performance</h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-stone-400">Average Rating</span>
+              <span className="text-sm text-stone-300">Average Rating</span>
               <span className="font-bold text-amber-600">
                 {p.reviewStats.avgRating > 0 ? `${p.reviewStats.avgRating} ★` : 'N/A'}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-stone-400">Review Rate</span>
+              <span className="text-sm text-stone-300">Review Rate</span>
               <Badge variant={p.reviewStats.reviewRate >= 30 ? 'success' : 'warning'}>
                 {p.reviewStats.reviewRate}%
               </Badge>
@@ -801,7 +798,7 @@ function MarketingTab({ p }: { p: AnalyticsHubProps }) {
                 <span className="text-xs w-4">{d.stars}★</span>
                 <div className="flex-1 bg-stone-800 rounded-full h-1.5">
                   <div
-                    className="bg-amber-9500 h-1.5 rounded-full"
+                    className="bg-amber-500 h-1.5 rounded-full"
                     style={{ width: `${d.percent}%` }}
                   />
                 </div>
@@ -889,9 +886,9 @@ function SocialTab({ p }: { p: AnalyticsHubProps }) {
               </LineChart>
             </ResponsiveContainer>
           ) : instagram?.isConnected ? (
-            <p className="text-stone-400 text-sm">Syncing data... check back shortly.</p>
+            <p className="text-stone-300 text-sm">Syncing data... check back shortly.</p>
           ) : (
-            <p className="text-stone-400 text-sm">
+            <p className="text-stone-300 text-sm">
               Connect Instagram to track follower growth and engagement.
             </p>
           )}
@@ -915,7 +912,7 @@ function SocialTab({ p }: { p: AnalyticsHubProps }) {
               <div className="flex gap-6">
                 <div>
                   <p className="text-3xl font-bold text-stone-100">{p.googleReviews.avgRating} ★</p>
-                  <p className="text-xs text-stone-400">
+                  <p className="text-xs text-stone-300">
                     {p.googleReviews.totalReviews} reviews total
                   </p>
                 </div>
@@ -923,7 +920,7 @@ function SocialTab({ p }: { p: AnalyticsHubProps }) {
                   <p className="text-lg font-semibold text-emerald-600">
                     +{p.googleReviews.newReviewsLast7d}
                   </p>
-                  <p className="text-xs text-stone-400">new last 7 days</p>
+                  <p className="text-xs text-stone-300">new last 7 days</p>
                 </div>
               </div>
               {Object.entries(p.googleReviews.ratingDistribution)
@@ -933,7 +930,7 @@ function SocialTab({ p }: { p: AnalyticsHubProps }) {
                     <span className="text-xs w-4">{stars}★</span>
                     <div className="flex-1 bg-stone-800 rounded-full h-1.5">
                       <div
-                        className="bg-amber-9500 h-1.5 rounded-full"
+                        className="bg-amber-500 h-1.5 rounded-full"
                         style={{
                           width:
                             p.googleReviews!.totalReviews > 0
@@ -947,7 +944,7 @@ function SocialTab({ p }: { p: AnalyticsHubProps }) {
                 ))}
             </div>
           ) : (
-            <p className="text-stone-400 text-sm">
+            <p className="text-stone-300 text-sm">
               Connect Google Business to sync your reviews automatically.
             </p>
           )}
@@ -1013,7 +1010,7 @@ function CulinaryTab({ p }: { p: AnalyticsHubProps }) {
         <Card className="p-6">
           <h3 className="font-semibold text-stone-200 mb-4">Top Recipes by Usage</h3>
           {p.recipeUsage.topRecipes.length === 0 ? (
-            <p className="text-stone-400 text-sm">No recipes cooked yet</p>
+            <p className="text-stone-300 text-sm">No recipes cooked yet</p>
           ) : (
             <div className="space-y-2">
               {p.recipeUsage.topRecipes.slice(0, 8).map((r) => (
@@ -1028,17 +1025,17 @@ function CulinaryTab({ p }: { p: AnalyticsHubProps }) {
         <Card className="p-6">
           <h3 className="font-semibold text-stone-200 mb-4">Most Common Dietary Restrictions</h3>
           {p.culinaryOps.dietaryRestrictionFrequency.length === 0 ? (
-            <p className="text-stone-400 text-sm">No dietary data yet</p>
+            <p className="text-stone-300 text-sm">No dietary data yet</p>
           ) : (
             <div className="space-y-2">
               {p.culinaryOps.dietaryRestrictionFrequency.slice(0, 8).map((r) => (
                 <div key={r.restriction} className="flex items-center gap-3">
-                  <span className="text-sm text-stone-400 w-32 capitalize">
+                  <span className="text-sm text-stone-300 w-32 capitalize">
                     {r.restriction.replace(/_/g, ' ')}
                   </span>
                   <div className="flex-1 bg-stone-800 rounded-full h-2">
                     <div
-                      className="bg-amber-9500 h-2 rounded-full"
+                      className="bg-amber-500 h-2 rounded-full"
                       style={{ width: `${r.percent}%` }}
                     />
                   </div>
@@ -1099,7 +1096,7 @@ function BenchmarksTab() {
         <p className="text-xs text-stone-500 mb-3">
           The following statistics require external data unavailable to ChefFlow:
         </p>
-        <ul className="text-xs text-stone-400 space-y-1 list-disc list-inside">
+        <ul className="text-xs text-stone-300 space-y-1 list-disc list-inside">
           <li>Market share % / TAM penetration — requires industry research</li>
           <li>Share of voice — requires social listening tools</li>
           <li>Virality coefficient — not applicable to service businesses</li>

@@ -57,7 +57,7 @@ export function RemyGate({ children }: { children: React.ReactNode }) {
 
       <div className="rounded-xl border border-stone-700 bg-stone-800 p-4 space-y-3 text-left">
         <p className="text-sm font-medium text-stone-100">Quick setup covers:</p>
-        <ul className="text-sm text-stone-400 space-y-1.5">
+        <ul className="text-sm text-stone-300 space-y-1.5">
           <li className="flex items-center gap-2">
             <Bot className="h-3.5 w-3.5 text-brand-500 shrink-0" />
             What Remy can help you with
@@ -79,7 +79,7 @@ export function RemyGate({ children }: { children: React.ReactNode }) {
 
       <Link
         href="/settings/ai-privacy"
-        className="inline-flex items-center gap-2 rounded-xl bg-brand-9500 px-6 py-3
+        className="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-6 py-3
                    text-sm font-semibold text-white hover:bg-brand-600
                    shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 transition-all"
       >
@@ -87,7 +87,7 @@ export function RemyGate({ children }: { children: React.ReactNode }) {
         <ArrowRight className="h-4 w-4" />
       </Link>
 
-      <p className="text-xs text-stone-400">Takes about 2 minutes.</p>
+      <p className="text-xs text-stone-300">Takes about 2 minutes.</p>
     </div>
   )
 }

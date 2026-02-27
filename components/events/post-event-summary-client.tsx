@@ -3,6 +3,7 @@
 // Post-Event Summary — shows proposed menu, expense breakdown, timeline
 // Gives clients full transparency on what happened at their event.
 
+import { toast } from 'sonner'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format, parseISO } from 'date-fns'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -71,9 +72,9 @@ function ShareButton({ shareText }: { shareText: string }) {
     } else {
       try {
         await navigator.clipboard.writeText(shareText)
-        alert('Copied!')
+        toast.success('Copied to clipboard')
       } catch {
-        /* no-op */
+        toast.error('Failed to copy')
       }
     }
   }
@@ -130,7 +131,7 @@ export function PostEventSummaryClient({
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-stone-100 mb-1">Event Summary</h1>
-            <p className="text-stone-400 text-sm">
+            <p className="text-stone-300 text-sm">
               {occasion} · {format(new Date(event.event_date), 'MMMM d, yyyy')}
               {event.guest_count ? ` · ${event.guest_count} guests` : ''}
             </p>
@@ -189,7 +190,7 @@ export function PostEventSummaryClient({
         <Card className="mb-4">
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
-              <FileText className="w-4 h-4 text-stone-400" />
+              <FileText className="w-4 h-4 text-stone-300" />
               <CardTitle className="text-base">Menu Served</CardTitle>
             </div>
           </CardHeader>
@@ -203,7 +204,7 @@ export function PostEventSummaryClient({
                   </Badge>
                 )}
                 {menu.description && (
-                  <p className="text-sm text-stone-400 mt-1.5 leading-relaxed">
+                  <p className="text-sm text-stone-300 mt-1.5 leading-relaxed">
                     {menu.description}
                   </p>
                 )}
@@ -230,7 +231,7 @@ export function PostEventSummaryClient({
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Receipt className="w-4 h-4 text-stone-400" />
+                <Receipt className="w-4 h-4 text-stone-300" />
                 <CardTitle className="text-base">Payment History</CardTitle>
               </div>
               <Link
@@ -268,7 +269,7 @@ export function PostEventSummaryClient({
         <Card className="mb-4">
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-stone-400" />
+              <Clock className="w-4 h-4 text-stone-300" />
               <CardTitle className="text-base">Event Timeline</CardTitle>
             </div>
           </CardHeader>
@@ -276,9 +277,9 @@ export function PostEventSummaryClient({
             <div className="space-y-2">
               {timeline.map((item, i) => (
                 <div key={i} className="flex items-center gap-3 text-sm">
-                  <div className="w-2 h-2 rounded-full bg-emerald-9500 flex-shrink-0" />
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
                   <span className="font-medium text-stone-300">{item.label}</span>
-                  <span className="text-stone-400 text-xs ml-auto">
+                  <span className="text-stone-300 text-xs ml-auto">
                     {format(parseISO(item.at), 'MMM d, h:mm a')}
                   </span>
                 </div>

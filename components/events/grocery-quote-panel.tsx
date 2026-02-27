@@ -45,12 +45,12 @@ function BudgetBar({
 
   const pct = Math.round((averageCents / ceilingCents) * 100)
   const overBudget = averageCents > ceilingCents
-  const barColor = overBudget ? 'bg-red-9500' : pct > 85 ? 'bg-amber-400' : 'bg-emerald-9500'
+  const barColor = overBudget ? 'bg-red-500' : pct > 85 ? 'bg-amber-400' : 'bg-emerald-500'
 
   return (
     <div className="space-y-1.5">
       <div className="flex justify-between text-sm">
-        <span className="text-stone-400">
+        <span className="text-stone-300">
           Estimated vs budget ({formatCurrency(ceilingCents)} food cost ceiling)
         </span>
         <span className={`font-semibold ${overBudget ? 'text-red-600' : 'text-emerald-700'}`}>
@@ -64,7 +64,7 @@ function BudgetBar({
           style={{ width: `${Math.min(pct, 100)}%` }}
         />
       </div>
-      <p className="text-xs text-stone-400">Quoted: {formatCurrency(quotedCents)} total revenue</p>
+      <p className="text-xs text-stone-300">Quoted: {formatCurrency(quotedCents)} total revenue</p>
     </div>
   )
 }
@@ -126,7 +126,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
               {hasQuote ? 'Price Quote Results' : 'Ready to Price This Event'}
             </h2>
             {quote?.createdAt && (
-              <p className="text-xs text-stone-400 mt-0.5">
+              <p className="text-xs text-stone-300 mt-0.5">
                 {quote.isFromCache ? 'Cached' : 'Generated'}{' '}
                 {format(new Date(quote.createdAt), "MMM d 'at' h:mm a")} · {quote.ingredientCount}{' '}
                 ingredients
@@ -167,7 +167,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
             <div className="h-4 bg-stone-800 rounded animate-pulse" />
             <div className="h-4 bg-stone-800 rounded animate-pulse w-4/5" />
             <div className="h-4 bg-stone-800 rounded animate-pulse w-3/5" />
-            <p className="text-xs text-stone-400 mt-3">
+            <p className="text-xs text-stone-300 mt-3">
               Checking USDA NE data, Spoonacular, and Kroger for each ingredient — this may take
               10–30s...
             </p>
@@ -209,8 +209,8 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-stone-700">
-                    <th className="text-left py-2 pr-4 font-medium text-stone-400">Ingredient</th>
-                    <th className="text-left py-2 pr-4 font-medium text-stone-400 whitespace-nowrap">
+                    <th className="text-left py-2 pr-4 font-medium text-stone-300">Ingredient</th>
+                    <th className="text-left py-2 pr-4 font-medium text-stone-300 whitespace-nowrap">
                       Qty
                     </th>
                     <th className="text-right py-2 pr-4 font-medium text-blue-700 whitespace-nowrap">
@@ -244,7 +244,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                       <td className="py-2 pr-4 text-stone-100">
                         {item.ingredientName}
                         {item.isOptional && (
-                          <span className="ml-1.5 text-xs text-stone-400">(optional)</span>
+                          <span className="ml-1.5 text-xs text-stone-300">(optional)</span>
                         )}
                         {item.hasNoApiData && (
                           <span className="ml-1.5 text-xs text-amber-600 font-medium">
@@ -311,18 +311,18 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
             </div>
 
             {/* Source legend */}
-            <div className="mt-4 flex flex-wrap gap-4 text-xs text-stone-400 border-t border-stone-800 pt-4">
+            <div className="mt-4 flex flex-wrap gap-4 text-xs text-stone-300 border-t border-stone-800 pt-4">
               <span>
                 <span className="font-medium text-blue-700">USDA (NE)</span> — USDA Northeast Urban
                 average retail prices. Already NE-regional, no API key needed.
               </span>
               <span>
-                <span className="font-medium text-stone-400">Spoonacular / Kroger</span> — US
+                <span className="font-medium text-stone-300">Spoonacular / Kroger</span> — US
                 national averages. A Northeast regional multiplier is applied before averaging.
               </span>
               <span>
                 <span
-                  className={`font-medium ${mealMeConfigured ? 'text-emerald-700' : 'text-stone-400'}`}
+                  className={`font-medium ${mealMeConfigured ? 'text-emerald-700' : 'text-stone-300'}`}
                 >
                   Local Stores (MealMe)
                 </span>{' '}
@@ -331,7 +331,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                   : '— not configured. Add MEALME_API_KEY to see prices from your actual NE stores.'}
               </span>
               <span>
-                <span className="font-medium text-stone-400">Avg Estimate</span> — NE-calibrated
+                <span className="font-medium text-stone-300">Avg Estimate</span> — NE-calibrated
                 average of all sources. Falls back to Recipe Book if no data found.
               </span>
             </div>
@@ -378,7 +378,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                   </div>
                 )}
               </div>
-              <p className="text-xs text-stone-400">
+              <p className="text-xs text-stone-300">
                 Within 10% = good estimate.
                 {quote.accuracyDeltaPct !== null && Math.abs(quote.accuracyDeltaPct) >= 10
                   ? ' Consistent drift in the same direction means the regional multipliers need tuning.'
@@ -428,7 +428,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
               </p>
             )}
 
-            <p className="mt-4 text-xs text-stone-400">
+            <p className="mt-4 text-xs text-stone-300">
               "Save to Recipe Book" updates the <em>last_price_cents</em> field on each ingredient,
               improving future food cost projections. The chef should verify the price is reasonable
               before saving.

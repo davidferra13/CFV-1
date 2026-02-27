@@ -351,7 +351,7 @@ export function CalendarView({
             <span className="font-medium text-stone-100">{arg.event.title}</span>
             <span className="text-stone-500 ml-2 text-sm">{props.clientName}</span>
             {props.guestCount > 0 && (
-              <span className="text-stone-400 ml-2 text-sm">{props.guestCount} guests</span>
+              <span className="text-stone-300 ml-2 text-sm">{props.guestCount} guests</span>
             )}
           </div>
         </div>
@@ -408,7 +408,7 @@ export function CalendarView({
             <div className="flex items-center border border-stone-700 rounded-lg overflow-hidden">
               <button
                 onClick={goPrev}
-                className="px-2.5 py-1.5 hover:bg-stone-700 transition-colors text-stone-400"
+                className="px-2.5 py-1.5 hover:bg-stone-700 transition-colors text-stone-300"
                 aria-label="Previous"
               >
                 <svg
@@ -423,7 +423,7 @@ export function CalendarView({
               </button>
               <button
                 onClick={goNext}
-                className="px-2.5 py-1.5 hover:bg-stone-700 transition-colors text-stone-400 border-l border-stone-700"
+                className="px-2.5 py-1.5 hover:bg-stone-700 transition-colors text-stone-300 border-l border-stone-700"
                 aria-label="Next"
               >
                 <svg
@@ -453,8 +453,8 @@ export function CalendarView({
                 onClick={() => changeView(view)}
                 className={`px-3 py-1.5 text-sm font-medium transition-colors border-r border-stone-700 last:border-r-0 ${
                   currentView === view
-                    ? 'bg-brand-9500 text-white'
-                    : 'text-stone-400 hover:bg-stone-700'
+                    ? 'bg-brand-500 text-white'
+                    : 'text-stone-300 hover:bg-stone-700'
                 }`}
               >
                 {label}
@@ -505,7 +505,7 @@ export function CalendarView({
               ].map(([key, label]) => (
                 <div key={key} className="flex items-center justify-between">
                   <span>{label}</span>
-                  <kbd className="px-1.5 py-0.5 bg-stone-800 rounded text-[10px] font-mono font-medium text-stone-400">
+                  <kbd className="px-1.5 py-0.5 bg-stone-800 rounded text-[10px] font-mono font-medium text-stone-300">
                     {key}
                   </kbd>
                 </div>
@@ -531,12 +531,12 @@ export function CalendarView({
                         </div>
                       </div>
                       {viewSeason.sensory_anchor && (
-                        <div className="text-xs text-stone-400 italic mt-1">
+                        <div className="text-xs text-stone-300 italic mt-1">
                           The Vibe: {viewSeason.sensory_anchor}
                         </div>
                       )}
                       {viewSeason.micro_windows && viewSeason.micro_windows.length > 0 && (
-                        <div className="text-xs text-stone-400 mt-1">
+                        <div className="text-xs text-stone-300 mt-1">
                           Peak Ingredients:{' '}
                           {viewSeason.micro_windows
                             .map((m) => m.ingredient)
@@ -545,7 +545,7 @@ export function CalendarView({
                         </div>
                       )}
                       {viewSeason.proven_wins && viewSeason.proven_wins.length > 0 && (
-                        <div className="text-xs text-stone-400 mt-1">
+                        <div className="text-xs text-stone-300 mt-1">
                           Go-To Dishes:{' '}
                           {viewSeason.proven_wins
                             .map((p) => p.dish_name)
@@ -554,7 +554,7 @@ export function CalendarView({
                         </div>
                       )}
                     </div>
-                    <div className="text-xs text-stone-400">Time Machine</div>
+                    <div className="text-xs text-stone-300">Time Machine</div>
                   </div>
                 </div>
               )}
@@ -714,13 +714,13 @@ export function CalendarView({
         </span>
         <span className="mx-2 border-l border-stone-700" />
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-green-9500" /> Ready
+          <span className="w-2.5 h-2.5 rounded-full bg-green-500" /> Ready
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-yellow-9500" /> Partial
+          <span className="w-2.5 h-2.5 rounded-full bg-yellow-500" /> Partial
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-red-9500" /> Not Started
+          <span className="w-2.5 h-2.5 rounded-full bg-red-500" /> Not Started
         </span>
         <span className="mx-2 border-l border-stone-700" />
         <span className="flex items-center gap-1.5">

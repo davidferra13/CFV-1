@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -180,7 +181,7 @@ export function FinancialsClient({
       window.URL.revokeObjectURL(url)
     } catch (err) {
       console.error('Export failed:', err)
-      alert('Failed to export CSV')
+      toast.error('Failed to export CSV')
     } finally {
       setExporting(false)
     }
@@ -203,7 +204,7 @@ export function FinancialsClient({
       window.URL.revokeObjectURL(url)
     } catch (err) {
       console.error('Export failed:', err)
-      alert('Failed to export all events CSV')
+      toast.error('Failed to export all events CSV')
     } finally {
       setExportingAll(false)
     }
@@ -214,7 +215,7 @@ export function FinancialsClient({
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Financials</h1>
-          <p className="text-stone-400 mt-1">View your financial performance and ledger</p>
+          <p className="text-stone-300 mt-1">View your financial performance and ledger</p>
         </div>
         <Button onClick={handleExportAllEvents} disabled={exportingAll} variant="secondary">
           {exportingAll ? 'Exporting...' : 'Export All Events'}
@@ -320,9 +321,9 @@ export function FinancialsClient({
                   <div
                     className={`h-2 rounded-full ${
                       monthlySummary.revenueProgressPercent >= 100
-                        ? 'bg-green-9500'
+                        ? 'bg-green-500'
                         : monthlySummary.revenueProgressPercent >= 50
-                          ? 'bg-brand-9500'
+                          ? 'bg-brand-500'
                           : 'bg-stone-400'
                     }`}
                     style={{ width: `${Math.min(monthlySummary.revenueProgressPercent, 100)}%` }}
@@ -339,7 +340,7 @@ export function FinancialsClient({
               </CardHeader>
               <CardContent className="space-y-4">
                 {!revenueGoal.enabled ? (
-                  <p className="text-sm text-stone-400">
+                  <p className="text-sm text-stone-300">
                     Revenue goals are currently off. Enable them in Settings to receive booking and
                     calendar suggestions.
                   </p>
@@ -376,7 +377,7 @@ export function FinancialsClient({
 
                     <div className="w-full bg-stone-700 rounded-full h-2">
                       <div
-                        className={`h-2 rounded-full ${revenueGoal.monthly.progressPercent >= 100 ? 'bg-green-9500' : 'bg-brand-9500'}`}
+                        className={`h-2 rounded-full ${revenueGoal.monthly.progressPercent >= 100 ? 'bg-green-500' : 'bg-brand-500'}`}
                         style={{
                           width: `${Math.min(100, Math.max(0, revenueGoal.monthly.progressPercent))}%`,
                         }}
@@ -384,7 +385,7 @@ export function FinancialsClient({
                     </div>
 
                     {revenueGoal.openDatesThisMonth.length > 0 && (
-                      <p className="text-sm text-stone-400">
+                      <p className="text-sm text-stone-300">
                         Open dates this month:{' '}
                         {revenueGoal.openDatesThisMonth.slice(0, 6).join(', ')}
                         {revenueGoal.openDatesThisMonth.length > 6 ? ', ...' : ''}
@@ -397,7 +398,7 @@ export function FinancialsClient({
                         {revenueGoal.recommendations.slice(0, 3).map((rec) => (
                           <div key={rec.id} className="rounded-md border border-stone-700 p-3">
                             <p className="text-sm font-semibold text-stone-100">{rec.title}</p>
-                            <p className="text-sm text-stone-400 mt-1">{rec.description}</p>
+                            <p className="text-sm text-stone-300 mt-1">{rec.description}</p>
                             <Link
                               href={rec.href}
                               className="text-sm text-brand-600 hover:text-brand-400 mt-2 inline-block"
@@ -462,7 +463,7 @@ export function FinancialsClient({
                           <td className="px-4 py-3 text-sm text-stone-100">
                             {format(new Date(evt.eventDate), 'MMM d')}
                           </td>
-                          <td className="px-4 py-3 text-sm text-stone-400">{evt.clientName}</td>
+                          <td className="px-4 py-3 text-sm text-stone-300">{evt.clientName}</td>
                           <td className="px-4 py-3 text-sm text-right text-emerald-600 font-medium">
                             {formatCurrency(evt.revenueCents)}
                           </td>
@@ -482,7 +483,7 @@ export function FinancialsClient({
                                   ? 'text-yellow-600'
                                   : evt.profitMargin > 0
                                     ? 'text-red-600'
-                                    : 'text-stone-400'
+                                    : 'text-stone-300'
                             }`}
                           >
                             {evt.expensesCents > 0 ? `${Math.round(evt.profitMargin)}%` : '-'}
@@ -524,19 +525,19 @@ export function FinancialsClient({
                     <p className="text-xl font-bold text-emerald-600">
                       {formatCurrency(completedIncomeCents)}
                     </p>
-                    <p className="text-xs text-stone-400">From completed events</p>
+                    <p className="text-xs text-stone-300">From completed events</p>
                   </div>
                   <div>
                     <p className="text-sm text-stone-500">Expected (Upcoming)</p>
                     <p className="text-xl font-bold text-amber-600">
                       {formatCurrency(expectedPendingCents)}
                     </p>
-                    <p className="text-xs text-stone-400">From planned events</p>
+                    <p className="text-xs text-stone-300">From planned events</p>
                   </div>
                   <div>
                     <p className="text-sm text-stone-500">Promotional Appearances</p>
-                    <p className="text-xl font-bold text-stone-400">{promoEntries.length}</p>
-                    <p className="text-xs text-stone-400">No direct revenue</p>
+                    <p className="text-xl font-bold text-stone-300">{promoEntries.length}</p>
+                    <p className="text-xs text-stone-300">No direct revenue</p>
                   </div>
                 </div>
 
@@ -571,16 +572,16 @@ export function FinancialsClient({
                           <td className="px-3 py-2 text-sm text-stone-100 whitespace-nowrap">
                             {format(new Date(entry.start_date), 'MMM d, yyyy')}
                           </td>
-                          <td className="px-3 py-2 text-sm text-stone-400 whitespace-nowrap">
+                          <td className="px-3 py-2 text-sm text-stone-300 whitespace-nowrap">
                             {CALENDAR_ENTRY_TYPE_LABELS[entry.entry_type] ?? entry.entry_type}
                           </td>
                           <td className="px-3 py-2 text-sm text-stone-100">{entry.title}</td>
-                          <td className="px-3 py-2 text-sm text-right text-stone-400">
+                          <td className="px-3 py-2 text-sm text-right text-stone-300">
                             {entry.revenue_type === 'income' &&
                             entry.expected_revenue_cents != null ? (
                               formatCurrency(entry.expected_revenue_cents)
                             ) : (
-                              <span className="text-stone-400">—</span>
+                              <span className="text-stone-300">—</span>
                             )}
                           </td>
                           <td className="px-3 py-2 text-sm text-right font-medium">
@@ -589,7 +590,7 @@ export function FinancialsClient({
                                 {formatCurrency(entry.actual_revenue_cents)}
                               </span>
                             ) : (
-                              <span className="text-stone-400">—</span>
+                              <span className="text-stone-300">—</span>
                             )}
                           </td>
                           <td className="px-3 py-2 text-sm">
@@ -738,10 +739,10 @@ export function FinancialsClient({
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-stone-100">
                         {formatCurrency(entry.balance)}
                       </td>
-                      <td className="px-4 py-3 text-sm text-stone-400">
+                      <td className="px-4 py-3 text-sm text-stone-300">
                         {entry.description}
                         {entry.transaction_reference && (
-                          <div className="text-xs text-stone-400 mt-1">
+                          <div className="text-xs text-stone-300 mt-1">
                             Ref: {entry.transaction_reference.substring(0, 20)}...
                           </div>
                         )}

@@ -52,7 +52,7 @@ export default function PricingPage() {
           <h1 className="text-4xl md:text-5xl font-bold text-stone-100 mb-4">
             One plan. Everything included.
           </h1>
-          <p className="text-lg md:text-xl text-stone-400">No hidden fees. Cancel anytime.</p>
+          <p className="text-lg md:text-xl text-stone-300">No hidden fees. Cancel anytime.</p>
         </div>
       </section>
 
@@ -64,9 +64,9 @@ export default function PricingPage() {
               <CardTitle className="text-2xl mb-4">Everything You Need</CardTitle>
               <div className="mb-2">
                 <span className="text-5xl font-bold text-stone-100">$29</span>
-                <span className="text-stone-400 text-lg">/month</span>
+                <span className="text-stone-300 text-lg">/month</span>
               </div>
-              <p className="text-sm text-stone-400">14-day free trial included</p>
+              <p className="text-sm text-stone-300">14-day free trial included</p>
             </CardHeader>
             <CardContent className="space-y-4">
               <ul className="space-y-3 mb-8">
@@ -210,7 +210,7 @@ export default function PricingPage() {
             <h2 className="text-3xl font-bold text-stone-100 mb-4">
               Stop juggling. Start cooking.
             </h2>
-            <p className="text-lg text-stone-400 mb-8">
+            <p className="text-lg text-stone-300 mb-8">
               14 days free. No credit card. Cancel anytime.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -267,7 +267,7 @@ export default function PricingPage() {
                   </button>
                   {openFaq === index && (
                     <div className="px-6 pb-4">
-                      <p className="text-stone-400">{faq.answer}</p>
+                      <p className="text-stone-300">{faq.answer}</p>
                     </div>
                   )}
                 </Card>

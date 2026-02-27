@@ -239,14 +239,14 @@ export function ClientPresenceMonitor({
           <h2 className="text-sm font-semibold text-stone-300">Active Clients</h2>
           {onlineNow.length > 0 && (
             <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
-              <span className="w-2 h-2 rounded-full bg-emerald-9500 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               {onlineNow.length} online now
             </span>
           )}
         </div>
 
         {clients.length === 0 ? (
-          <div className="px-4 py-8 text-center text-stone-400 text-sm">
+          <div className="px-4 py-8 text-center text-stone-300 text-sm">
             No clients active in the last hour. Activity will appear here as clients browse the
             portal.
           </div>
@@ -272,7 +272,7 @@ export function ClientPresenceMonitor({
             {recentlyActive.length > 0 && (
               <div>
                 <div className="px-4 py-2 bg-stone-800 border-b border-stone-800">
-                  <p className="text-[11px] font-semibold text-stone-400 uppercase tracking-wide">
+                  <p className="text-[11px] font-semibold text-stone-300 uppercase tracking-wide">
                     Recently Active (last hour)
                   </p>
                 </div>
@@ -291,13 +291,13 @@ export function ClientPresenceMonitor({
       <div className="border border-stone-700 rounded-lg overflow-hidden">
         <div className="px-4 py-3 bg-stone-800 border-b border-stone-700">
           <h2 className="text-sm font-semibold text-stone-300">Live Activity Stream</h2>
-          <p className="text-xs text-stone-400 mt-0.5">
+          <p className="text-xs text-stone-300 mt-0.5">
             All client portal actions in the past 24 hours
           </p>
         </div>
 
         {stream.length === 0 ? (
-          <div className="px-4 py-8 text-center text-stone-400 text-sm">
+          <div className="px-4 py-8 text-center text-stone-300 text-sm">
             No client activity in the past 24 hours.
           </div>
         ) : (
@@ -340,7 +340,7 @@ function ClientPresenceRow({
           {client.client_name.charAt(0).toUpperCase()}
         </span>
         {isOnline && (
-          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-9500 border-2 border-white" />
+          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white" />
         )}
       </div>
 
@@ -353,17 +353,17 @@ function ClientPresenceRow({
           )}
         </div>
         <p
-          className={`text-xs truncate mt-0.5 ${isHighIntent ? 'text-amber-600 font-medium' : 'text-stone-400'}`}
+          className={`text-xs truncate mt-0.5 ${isHighIntent ? 'text-amber-600 font-medium' : 'text-stone-300'}`}
         >
           {getLabel(client.event_type)}
           {client.entity_title && (
-            <span className="text-stone-400 font-normal"> — {client.entity_title}</span>
+            <span className="text-stone-300 font-normal"> — {client.entity_title}</span>
           )}
         </p>
       </div>
 
       {/* Time */}
-      <span className="text-xs text-stone-400 shrink-0">{formatTimeAgo(client.last_activity)}</span>
+      <span className="text-xs text-stone-300 shrink-0">{formatTimeAgo(client.last_activity)}</span>
     </Link>
   )
 }
@@ -385,11 +385,11 @@ function StreamRow({ item }: { item: StreamItem }) {
       <div className="flex-1 min-w-0">
         <p className="text-sm text-stone-300 truncate">
           <span className="font-medium">{clientName}</span>
-          <span className="text-stone-400"> — </span>
+          <span className="text-stone-300"> — </span>
           {label}
         </p>
       </div>
-      <span className="text-xs text-stone-400 shrink-0">{formatTimeAgo(event.created_at)}</span>
+      <span className="text-xs text-stone-300 shrink-0">{formatTimeAgo(event.created_at)}</span>
     </div>
   )
 

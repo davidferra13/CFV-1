@@ -52,7 +52,7 @@ export function PostEventThankYouEmail({
       <Text style={muted}>
         With gratitude,
         <br />
-        {chefName} via CheFlow
+        {chefName} via ChefFlow
       </Text>
     </BaseLayout>
   )

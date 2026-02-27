@@ -30,7 +30,7 @@ export function EventCancelledEmail({
       </Text>
       {reason && <Text style={paragraph}>Reason: {reason}</Text>}
       <Text style={muted}>
-        If you have any questions about refunds or rescheduling, please reach out through CheFlow.
+        If you have any questions about refunds or rescheduling, please reach out through ChefFlow.
       </Text>
     </BaseLayout>
   )

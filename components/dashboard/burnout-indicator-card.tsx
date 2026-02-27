@@ -18,7 +18,7 @@ const LEVEL_CONFIG: Record<
 > = {
   low: {
     label: 'Sustainable',
-    dotClass: 'bg-green-9500',
+    dotClass: 'bg-green-500',
     borderClass: 'border-green-200',
     bgClass: 'bg-green-950/60',
     textClass: 'text-green-800',
@@ -32,7 +32,7 @@ const LEVEL_CONFIG: Record<
   },
   high: {
     label: 'High Load',
-    dotClass: 'bg-red-9500',
+    dotClass: 'bg-red-500',
     borderClass: 'border-red-200',
     bgClass: 'bg-red-950/60',
     textClass: 'text-red-800',
@@ -59,7 +59,7 @@ export function BurnoutIndicatorCard({ level, suggestion }: Props) {
 
       <p className="text-sm text-stone-700 leading-snug">{suggestion}</p>
 
-      <p className="mt-2 text-xs text-stone-400 italic">Private — only you see this</p>
+      <p className="mt-2 text-xs text-stone-300 italic">Private — only you see this</p>
     </div>
   )
 }

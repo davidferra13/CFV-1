@@ -82,7 +82,7 @@ function IngredientStatusRow({
         <div
           className={`flex-shrink-0 mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center ${
             ingredient.status === 'sourced'
-              ? 'bg-green-9500 border-green-500'
+              ? 'bg-green-500 border-green-500'
               : ingredient.status === 'unavailable'
                 ? 'bg-red-200 border-red-300'
                 : 'border-stone-600'
@@ -102,11 +102,11 @@ function IngredientStatusRow({
         </div>
         <div>
           <p
-            className={`text-sm font-medium ${ingredient.status === 'sourced' ? 'line-through text-stone-400' : 'text-stone-200'}`}
+            className={`text-sm font-medium ${ingredient.status === 'sourced' ? 'line-through text-stone-300' : 'text-stone-200'}`}
           >
             {ingredient.ingredient_name ?? 'Ingredient'}
           </p>
-          <div className="flex gap-2 text-xs text-stone-400 mt-0.5">
+          <div className="flex gap-2 text-xs text-stone-300 mt-0.5">
             {ingredient.quantity && (
               <span>
                 {ingredient.quantity} {ingredient.unit ?? ''}
@@ -203,7 +203,7 @@ function LegCard({
 
             {/* Origin → Destination summary */}
             {(leg.origin_label || leg.destination_label) && (
-              <p className="text-xs text-stone-400 mt-0.5">
+              <p className="text-xs text-stone-300 mt-0.5">
                 {leg.origin_label || 'Origin'}
                 {' → '}
                 {leg.destination_label || 'Destination'}
@@ -212,7 +212,7 @@ function LegCard({
           </div>
         </div>
 
-        <span className="text-stone-400 text-sm ml-2">{expanded ? '▲' : '▼'}</span>
+        <span className="text-stone-300 text-sm ml-2">{expanded ? '▲' : '▼'}</span>
       </button>
 
       {/* Expanded body */}
@@ -235,7 +235,7 @@ function LegCard({
                       {leg.origin_label || 'Origin'}
                     </p>
                     {leg.origin_address && (
-                      <p className="text-xs text-stone-400">{leg.origin_address}</p>
+                      <p className="text-xs text-stone-300">{leg.origin_address}</p>
                     )}
                   </div>
                 </div>
@@ -245,17 +245,17 @@ function LegCard({
                   <div key={i} className="flex items-start gap-2 ml-2.5">
                     <div className="flex flex-col items-center">
                       <div className="w-px h-3 bg-stone-300" />
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-stone-800 text-stone-400 text-xs font-bold flex items-center justify-center">
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-stone-800 text-stone-300 text-xs font-bold flex items-center justify-center">
                         {i + 1}
                       </span>
                     </div>
                     <div className="ml-1">
                       <p className="text-sm font-medium text-stone-200">{stop.name}</p>
-                      {stop.address && <p className="text-xs text-stone-400">{stop.address}</p>}
+                      {stop.address && <p className="text-xs text-stone-300">{stop.address}</p>}
                       {stop.purpose && (
                         <p className="text-xs text-brand-600 italic">{stop.purpose}</p>
                       )}
-                      <div className="flex gap-2 text-xs text-stone-400 mt-0.5">
+                      <div className="flex gap-2 text-xs text-stone-300 mt-0.5">
                         {stop.estimated_minutes > 0 && (
                           <span>{formatMinutes(stop.estimated_minutes)} on-site</span>
                         )}
@@ -279,7 +279,7 @@ function LegCard({
                         {leg.destination_label || 'Destination'}
                       </p>
                       {leg.destination_address && (
-                        <p className="text-xs text-stone-400">{leg.destination_address}</p>
+                        <p className="text-xs text-stone-300">{leg.destination_address}</p>
                       )}
                     </div>
                   </div>
@@ -581,7 +581,7 @@ export function TravelPlanClient({
       {/* Cancelled legs */}
       {cancelledLegs.length > 0 && (
         <details>
-          <summary className="cursor-pointer text-sm font-medium text-stone-400 hover:text-stone-400">
+          <summary className="cursor-pointer text-sm font-medium text-stone-300 hover:text-stone-300">
             {cancelledLegs.length} cancelled trip{cancelledLegs.length !== 1 ? 's' : ''}
           </summary>
           <div className="mt-3 space-y-3">
@@ -599,7 +599,7 @@ export function TravelPlanClient({
         </details>
       )}
 
-      {isPending && <p className="text-xs text-stone-400 text-center">Saving…</p>}
+      {isPending && <p className="text-xs text-stone-300 text-center">Saving…</p>}
     </div>
   )
 }

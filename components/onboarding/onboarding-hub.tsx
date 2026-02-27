@@ -82,7 +82,7 @@ export function OnboardingHub({ progress }: { progress: OnboardingProgress }) {
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Set Up Your Business</h1>
-          <p className="text-stone-400 mt-2">
+          <p className="text-stone-300 mt-2">
             Migrate your existing clients, recipes, and loyalty program so ChefFlow knows your
             business from day one.
           </p>
@@ -90,7 +90,7 @@ export function OnboardingHub({ progress }: { progress: OnboardingProgress }) {
 
         {/* Progress bar */}
         <div>
-          <div className="flex justify-between text-sm text-stone-400 mb-2">
+          <div className="flex justify-between text-sm text-stone-300 mb-2">
             <span>
               {progress.completedPhases} of {progress.totalPhases} phases complete
             </span>
@@ -98,7 +98,7 @@ export function OnboardingHub({ progress }: { progress: OnboardingProgress }) {
           </div>
           <div className="h-2 bg-stone-700 rounded-full overflow-hidden">
             <div
-              className="h-2 bg-amber-9500 rounded-full transition-all duration-500"
+              className="h-2 bg-amber-500 rounded-full transition-all duration-500"
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -128,11 +128,11 @@ export function OnboardingHub({ progress }: { progress: OnboardingProgress }) {
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-3 text-base font-semibold">
                     <div className={`p-2 rounded-lg ${isDone ? 'bg-green-900' : 'bg-stone-800'}`}>
-                      <Icon className={`h-4 w-4 ${isDone ? 'text-green-600' : 'text-stone-400'}`} />
+                      <Icon className={`h-4 w-4 ${isDone ? 'text-green-600' : 'text-stone-300'}`} />
                     </div>
                     <span className="flex-1">{phase.label}</span>
                     {phase.optional && (
-                      <span className="text-xs font-normal text-stone-400">Optional</span>
+                      <span className="text-xs font-normal text-stone-300">Optional</span>
                     )}
                     {isDone ? (
                       <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0" />
@@ -143,7 +143,7 @@ export function OnboardingHub({ progress }: { progress: OnboardingProgress }) {
                 </CardHeader>
                 <CardContent className="flex items-end justify-between gap-4">
                   <div className="space-y-1">
-                    <p className="text-sm text-stone-400">{phase.description}</p>
+                    <p className="text-sm text-stone-300">{phase.description}</p>
                     {isDone && (
                       <p className="text-sm font-medium text-green-700">
                         ✓ {phase.doneSummary(progress)}

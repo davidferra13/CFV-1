@@ -52,7 +52,7 @@ export function BudgetTracker({ eventId, guardrail }: BudgetTrackerProps) {
   const isOver = status === 'over'
   const isNear = status === 'near'
 
-  const barColor = isOver ? 'bg-red-9500' : isNear ? 'bg-yellow-9500' : 'bg-green-9500'
+  const barColor = isOver ? 'bg-red-500' : isNear ? 'bg-yellow-500' : 'bg-green-500'
 
   const statusLabel = isOver ? 'OVER BUDGET' : isNear ? 'NEAR LIMIT' : 'ON TRACK'
   const statusColor = isOver ? 'text-red-700' : isNear ? 'text-yellow-700' : 'text-green-700'

@@ -108,13 +108,13 @@ function Panel({
   const [open, setOpen] = useState(defaultOpen)
 
   const accentClasses: Record<string, string> = {
-    brand: 'border-brand-500/30 bg-brand-9500/5',
-    green: 'border-green-500/30 bg-green-9500/5',
-    blue: 'border-blue-500/30 bg-blue-9500/5',
-    purple: 'border-purple-500/30 bg-purple-9500/5',
-    rose: 'border-rose-500/30 bg-rose-9500/5',
-    amber: 'border-amber-500/30 bg-amber-9500/5',
-    indigo: 'border-indigo-500/30 bg-indigo-9500/5',
+    brand: 'border-brand-500/30 bg-brand-500/5',
+    green: 'border-green-500/30 bg-green-500/5',
+    blue: 'border-blue-500/30 bg-blue-500/5',
+    purple: 'border-purple-500/30 bg-purple-500/5',
+    rose: 'border-rose-500/30 bg-rose-500/5',
+    amber: 'border-amber-500/30 bg-amber-500/5',
+    indigo: 'border-indigo-500/30 bg-indigo-500/5',
   }
 
   const iconAccent: Record<string, string> = {
@@ -190,7 +190,7 @@ function RecipeCard({ recipe }: { recipe: MuseData['recipes']['forgotten'][0] })
   return (
     <Link
       href={`/recipes/${recipe.id}`}
-      className="flex items-center gap-3 rounded-lg border bg-card p-3 transition-colors hover:border-brand-500/50 hover:bg-brand-9500/5"
+      className="flex items-center gap-3 rounded-lg border bg-card p-3 transition-colors hover:border-brand-500/50 hover:bg-brand-500/5"
     >
       <span className="text-2xl">{CATEGORY_EMOJI[recipe.category] || '\u{1F37D}\uFE0F'}</span>
       <div className="min-w-0 flex-1">
@@ -225,7 +225,7 @@ function MicroWindowCard({ mw }: { mw: MuseData['seasonal']['active_micro_window
   return (
     <div
       className={`rounded-lg border p-3 ${
-        isUrgent ? 'border-amber-500/50 bg-amber-9500/10' : 'bg-card'
+        isUrgent ? 'border-amber-500/50 bg-amber-500/10' : 'bg-card'
       }`}
     >
       <div className="flex items-center gap-2">
@@ -313,11 +313,11 @@ export default function MenuMusePage() {
           </Link>
           <h1 className="text-3xl font-bold">Menu Muse</h1>
         </div>
-        <div className="mt-12 rounded-xl border border-red-500/30 bg-red-9500/5 p-6 text-center">
+        <div className="mt-12 rounded-xl border border-red-500/30 bg-red-500/5 p-6 text-center">
           <p className="text-red-600">{error || 'Something went wrong'}</p>
           <button
             onClick={loadData}
-            className="mt-3 rounded-lg bg-brand-9500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600"
+            className="mt-3 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600"
           >
             Try again
           </button>
@@ -357,13 +357,13 @@ export default function MenuMusePage() {
 
       {/* Event context banner */}
       {data.clientContext && (
-        <div className="mb-6 rounded-xl border border-brand-500/30 bg-brand-9500/5 p-4">
+        <div className="mb-6 rounded-xl border border-brand-500/30 bg-brand-500/5 p-4">
           <div className="flex flex-wrap items-center gap-3 text-sm">
             <span className="font-semibold text-brand-600">
               Building for: {data.clientContext.client_name}
             </span>
             {data.clientContext.event_occasion && (
-              <span className="rounded-full bg-brand-9500/10 px-3 py-0.5 text-brand-600">
+              <span className="rounded-full bg-brand-500/10 px-3 py-0.5 text-brand-600">
                 {data.clientContext.event_occasion}
               </span>
             )}
@@ -418,7 +418,7 @@ export default function MenuMusePage() {
                       onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
                       className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
                         selectedCategory === cat
-                          ? 'bg-brand-9500 text-white'
+                          ? 'bg-brand-500 text-white'
                           : 'bg-muted text-muted-foreground hover:text-foreground'
                       }`}
                     >
@@ -456,7 +456,7 @@ export default function MenuMusePage() {
           onShuffle={() => setProduceSeed((s) => s + 1)}
         >
           {data.seasonal.sensory_anchor && (
-            <p className="mb-3 rounded-lg bg-green-9500/10 px-3 py-2 text-sm italic text-green-700 dark:text-green-400">
+            <p className="mb-3 rounded-lg bg-green-500/10 px-3 py-2 text-sm italic text-green-700 dark:text-green-400">
               &ldquo;{data.seasonal.sensory_anchor}&rdquo;
             </p>
           )}
@@ -553,7 +553,7 @@ export default function MenuMusePage() {
                         href={chef.website_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="ml-3 flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium text-brand-500 hover:bg-brand-9500/5 transition-colors"
+                        className="ml-3 flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium text-brand-500 hover:bg-brand-500/5 transition-colors"
                       >
                         Visit <ExternalLink className="h-3 w-3" />
                       </a>
@@ -571,7 +571,7 @@ export default function MenuMusePage() {
             <div className="space-y-4">
               {/* Safety: allergies first */}
               {data.clientContext.allergies.length > 0 && (
-                <div className="rounded-lg border border-red-500/30 bg-red-9500/5 p-3">
+                <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-3">
                   <h3 className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-red-600">
                     <AlertTriangle className="h-4 w-4" /> Allergies
                   </h3>
@@ -579,7 +579,7 @@ export default function MenuMusePage() {
                     {data.clientContext.allergies.map((a, i) => (
                       <span
                         key={i}
-                        className="rounded-full bg-red-9500/10 px-2.5 py-0.5 text-xs font-medium text-red-700"
+                        className="rounded-full bg-red-500/10 px-2.5 py-0.5 text-xs font-medium text-red-700"
                       >
                         {a}
                       </span>
@@ -596,7 +596,7 @@ export default function MenuMusePage() {
                     {data.clientContext.dietary_restrictions.map((d, i) => (
                       <span
                         key={i}
-                        className="rounded-full bg-amber-9500/10 px-2.5 py-0.5 text-xs font-medium text-amber-700"
+                        className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-700"
                       >
                         {d}
                       </span>
@@ -613,7 +613,7 @@ export default function MenuMusePage() {
                     {data.clientContext.favorite_dishes.map((d, i) => (
                       <span
                         key={i}
-                        className="rounded-full bg-green-9500/10 px-2.5 py-0.5 text-xs font-medium text-green-700"
+                        className="rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-medium text-green-700"
                       >
                         {d}
                       </span>
@@ -629,7 +629,7 @@ export default function MenuMusePage() {
                     {data.clientContext.favorite_cuisines.map((c, i) => (
                       <span
                         key={i}
-                        className="rounded-full bg-blue-9500/10 px-2.5 py-0.5 text-xs font-medium text-blue-700"
+                        className="rounded-full bg-blue-500/10 px-2.5 py-0.5 text-xs font-medium text-blue-700"
                       >
                         {c}
                       </span>
@@ -761,7 +761,7 @@ export default function MenuMusePage() {
                     {data.ideas.dishesToExplore.map((dish, i) => (
                       <span
                         key={i}
-                        className="rounded-full bg-amber-9500/10 px-3 py-1 text-sm font-medium text-amber-700 dark:text-amber-400"
+                        className="rounded-full bg-amber-500/10 px-3 py-1 text-sm font-medium text-amber-700 dark:text-amber-400"
                       >
                         {dish}
                       </span>

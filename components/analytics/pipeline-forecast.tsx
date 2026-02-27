@@ -76,7 +76,7 @@ export function PipelineForecast({ pipeline }: PipelineForecastProps) {
               <p className="text-lg font-semibold text-stone-300">
                 ${(totalRawCents / 100).toFixed(2)}
               </p>
-              <p className="text-xs text-stone-400">
+              <p className="text-xs text-stone-300">
                 {totalCount} event{totalCount !== 1 ? 's' : ''}
               </p>
             </div>
@@ -133,7 +133,7 @@ export function PipelineForecast({ pipeline }: PipelineForecastProps) {
         </CardHeader>
         <CardContent>
           {pipeline.length === 0 ? (
-            <p className="text-sm text-stone-400 italic text-center py-8">
+            <p className="text-sm text-stone-300 italic text-center py-8">
               No events in the pipeline.
             </p>
           ) : (
@@ -159,7 +159,7 @@ export function PipelineForecast({ pipeline }: PipelineForecastProps) {
                       {/* Progress bar showing weighted vs raw */}
                       <div className="mt-2 h-2 bg-stone-800 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-brand-9500 rounded-full transition-all"
+                          className="h-full bg-brand-500 rounded-full transition-all"
                           style={{
                             width: `${totalRawCents > 0 ? (stage.weightedCents / totalRawCents) * 100 : 0}%`,
                           }}

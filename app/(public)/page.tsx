@@ -86,7 +86,7 @@ export default function Home() {
           <p className="mt-4 rounded-full border border-brand-700 bg-stone-900 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
             Designed by Someone Who Gets It
           </p>
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-stone-400 md:text-lg">
+          <p className="mt-6 max-w-2xl text-base leading-relaxed text-stone-300 md:text-lg">
             Private dinners, grazing tables, catering — whatever your craft, manage every inquiry,
             event, menu, and payment from one calm workspace.
           </p>
@@ -120,7 +120,7 @@ export default function Home() {
                   <Icon className="h-5 w-5" />
                 </div>
                 <h2 className="text-xl font-semibold text-stone-100">{feature.title}</h2>
-                <p className="mt-2 text-sm leading-relaxed text-stone-400">{feature.description}</p>
+                <p className="mt-2 text-sm leading-relaxed text-stone-300">{feature.description}</p>
               </article>
             )
           })}
@@ -133,7 +133,7 @@ export default function Home() {
             <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
               From inquiry to payout in one flow.
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-400">
+            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-300">
               Keep the full client lifecycle in one system, with less back-and-forth and no
               fragmented spreadsheets.
             </p>
@@ -149,7 +149,7 @@ export default function Home() {
             <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
               Questions? Ask Remy.
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-400">
+            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-300">
               Tell him what&apos;s eating your time and he&apos;ll show you how ChefFlow handles it.
             </p>
             <p className="mt-6 text-sm font-medium text-brand-400">Try the chat in the corner →</p>
@@ -164,7 +164,7 @@ export default function Home() {
         <h2 className="relative text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
           Ready to run your business, not chase it.
         </h2>
-        <p className="relative mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-400">
+        <p className="relative mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-300">
           14-day free trial. No credit card required.
         </p>
         <Link

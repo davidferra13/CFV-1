@@ -59,7 +59,7 @@ export default async function RecapPage({ params }: { params: { token: string } 
             {eventData.occasion || 'Private Dinner'}
           </h1>
           {eventData.eventDate && (
-            <p className="text-lg text-stone-400">
+            <p className="text-lg text-stone-300">
               {format(new Date(eventData.eventDate), 'EEEE, MMMM do, yyyy')}
             </p>
           )}
@@ -78,7 +78,7 @@ export default async function RecapPage({ params }: { params: { token: string } 
                   <div key={menu.id} className="text-center">
                     <h3 className="font-medium text-stone-100">{menu.name}</h3>
                     {menu.description && (
-                      <p className="text-stone-400 text-sm mt-1">{menu.description}</p>
+                      <p className="text-stone-300 text-sm mt-1">{menu.description}</p>
                     )}
                   </div>
                 ))}
@@ -136,7 +136,7 @@ export default async function RecapPage({ params }: { params: { token: string } 
         {/* Chef CTA */}
         {eventData.chefProfileUrl && (
           <div className="text-center py-8 border-t border-stone-700">
-            <p className="text-stone-400 mb-4">Want to host your own private dining experience?</p>
+            <p className="text-stone-300 mb-4">Want to host your own private dining experience?</p>
             <a
               href={eventData.chefProfileUrl}
               className="inline-block px-6 py-3 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 transition"
@@ -148,7 +148,7 @@ export default async function RecapPage({ params }: { params: { token: string } 
 
         {/* Footer */}
         <div className="text-center py-4">
-          <p className="text-xs text-stone-400">Powered by ChefFlow</p>
+          <p className="text-xs text-stone-300">Powered by ChefFlow</p>
         </div>
       </div>
     </div>

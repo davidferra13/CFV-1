@@ -141,7 +141,7 @@ export function YearViewClient({ summary, year, currentYear }: Props) {
           </Link>
           <Link
             href="/calendar/week"
-            className="px-3 py-1.5 text-sm bg-amber-9500 text-white rounded-lg hover:bg-amber-600"
+            className="px-3 py-1.5 text-sm bg-amber-500 text-white rounded-lg hover:bg-amber-600"
           >
             Week Planner
           </Link>

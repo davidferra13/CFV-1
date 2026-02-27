@@ -23,10 +23,10 @@ const SEVERITY_COLORS: Record<Severity, string> = {
 }
 
 const SEVERITY_DOT: Record<Severity, string> = {
-  critical: 'bg-red-9500',
-  error: 'bg-orange-9500',
-  warning: 'bg-yellow-9500',
-  info: 'bg-blue-9500',
+  critical: 'bg-red-500',
+  error: 'bg-orange-500',
+  warning: 'bg-yellow-500',
+  info: 'bg-blue-500',
 }
 
 const SYSTEM_LABELS: Record<string, string> = {
@@ -225,13 +225,13 @@ export function IncidentsDashboard({ data }: { data: IncidentDashboardData }) {
                   </span>
 
                   {/* Date/time */}
-                  <span className="text-xs text-stone-400 flex-shrink-0 tabular-nums">
+                  <span className="text-xs text-stone-300 flex-shrink-0 tabular-nums">
                     {incident.date} {timeDisplay}
                   </span>
 
                   {/* Expand arrow */}
                   <svg
-                    className={`w-4 h-4 text-stone-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                    className={`w-4 h-4 text-stone-300 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"

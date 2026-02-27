@@ -5,6 +5,7 @@
 // Responsive: horizontal scrollable on desktop, vertical on mobile.
 // Supports action CTAs on active steps and social sharing on milestone steps.
 
+import { toast } from 'sonner'
 import { Check, Share2 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 import Link from 'next/link'
@@ -23,9 +24,9 @@ function ShareButton({ shareText, label }: { shareText: string; label: string })
       // Fallback: copy to clipboard
       try {
         await navigator.clipboard.writeText(shareText)
-        alert('Copied to clipboard!')
+        toast.success('Copied to clipboard')
       } catch {
-        // Ignore clipboard errors
+        toast.error('Failed to copy')
       }
     }
   }

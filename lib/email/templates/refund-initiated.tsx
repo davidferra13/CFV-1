@@ -70,7 +70,7 @@ export function RefundInitiatedEmail({
       )}
 
       <Text style={muted}>
-        If you have questions about this refund, please reach out to {chefName} through the CheFlow
+        If you have questions about this refund, please reach out to {chefName} through the ChefFlow
         portal.
       </Text>
     </BaseLayout>

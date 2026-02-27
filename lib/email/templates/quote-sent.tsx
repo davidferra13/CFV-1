@@ -59,7 +59,7 @@ export function QuoteSentEmail({
         View Quote
       </Button>
       <Text style={muted}>
-        Log in to your CheFlow account to review the full details and accept or discuss the quote.
+        Log in to your ChefFlow account to review the full details and accept or discuss the quote.
       </Text>
     </BaseLayout>
   )

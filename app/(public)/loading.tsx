@@ -9,7 +9,7 @@ export default function PublicLoading() {
         </div>
 
         {/* Loading Text */}
-        <p className="text-stone-400 text-sm">Loading...</p>
+        <p className="text-stone-300 text-sm">Loading...</p>
       </div>
     </div>
   )

@@ -132,6 +132,13 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                   backgroundRepeat: 'no-repeat',
                 }}
               >
+                {/* Skip navigation link for keyboard/screen reader users */}
+                <a
+                  href=”#main-content”
+                  className=”sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-brand-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg”
+                >
+                  Skip to main content
+                </a>
                 {/* Platform announcement banner â€” shown when admin sets one */}
                 {announcement && (
                   <PlatformAnnouncementBanner text={announcement.text} type={announcement.type} />

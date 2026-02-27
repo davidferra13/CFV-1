@@ -120,13 +120,13 @@ function FactItem({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="flex items-center gap-1.5 text-stone-400">
+      <div className="flex items-center gap-1.5 text-stone-300">
         <span className="shrink-0">{icon}</span>
         <span className="text-[10px] font-semibold uppercase tracking-wider">{label}</span>
       </div>
       <p
         className={`text-sm font-medium leading-snug ${
-          empty ? 'text-stone-400 italic' : 'text-stone-100'
+          empty ? 'text-stone-300 italic' : 'text-stone-100'
         }`}
       >
         {value}
@@ -176,7 +176,7 @@ export function InquirySummary({ data, variant }: Props) {
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-3 mt-2 text-xs text-stone-400 flex-wrap">
+              <div className="flex items-center gap-3 mt-2 text-xs text-stone-300 flex-wrap">
                 <span>
                   Received{' '}
                   {formatDistanceToNow(new Date(data.first_contact_at), { addSuffix: true })}
@@ -198,7 +198,7 @@ export function InquirySummary({ data, variant }: Props) {
 
       {/* ── Key facts grid ───────────────────────────────────────── */}
       <Card className="p-6">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-400 mb-5">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-300 mb-5">
           Event Details
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
@@ -237,7 +237,7 @@ export function InquirySummary({ data, variant }: Props) {
 
       {/* ── Progress / status timeline ───────────────────────────── */}
       <Card className="p-6">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-400 mb-5">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-300 mb-5">
           {terminal ? 'Status History' : 'Progress'}
         </p>
 
@@ -245,7 +245,7 @@ export function InquirySummary({ data, variant }: Props) {
           // Declined / expired — vertical list of actual transitions
           <div className="space-y-3">
             {data.transitions.length === 0 ? (
-              <p className="text-sm text-stone-400">No status history available.</p>
+              <p className="text-sm text-stone-300">No status history available.</p>
             ) : (
               data.transitions.map((t, i) => (
                 <div key={t.id} className="flex items-start gap-3">
@@ -259,7 +259,7 @@ export function InquirySummary({ data, variant }: Props) {
                     <p className="text-sm font-medium text-stone-200 capitalize">
                       {t.to_status.replace(/_/g, ' ')}
                     </p>
-                    <p className="text-xs text-stone-400 mt-0.5">
+                    <p className="text-xs text-stone-300 mt-0.5">
                       {format(new Date(t.transitioned_at), 'MMM d, yyyy')}
                     </p>
                     {t.reason && <p className="text-xs text-stone-500 mt-0.5">{t.reason}</p>}
@@ -286,7 +286,7 @@ export function InquirySummary({ data, variant }: Props) {
                       {i > 0 && (
                         <div
                           className={`flex-1 h-0.5 transition-colors ${
-                            reached ? 'bg-brand-9500' : 'bg-stone-700'
+                            reached ? 'bg-brand-500' : 'bg-stone-700'
                           }`}
                         />
                       )}
@@ -295,14 +295,14 @@ export function InquirySummary({ data, variant }: Props) {
                           isCurrent
                             ? 'bg-brand-600 border-brand-600 ring-2 ring-brand-100'
                             : reached
-                              ? 'bg-brand-9500 border-brand-500'
+                              ? 'bg-brand-500 border-brand-500'
                               : 'bg-stone-900 border-stone-600'
                         }`}
                       />
                       {!isLast && (
                         <div
                           className={`flex-1 h-0.5 transition-colors ${
-                            lineAfterFilled ? 'bg-brand-9500' : 'bg-stone-700'
+                            lineAfterFilled ? 'bg-brand-500' : 'bg-stone-700'
                           }`}
                         />
                       )}
@@ -313,8 +313,8 @@ export function InquirySummary({ data, variant }: Props) {
                         isCurrent
                           ? 'text-brand-400 font-semibold'
                           : reached
-                            ? 'text-stone-400 font-medium'
-                            : 'text-stone-400'
+                            ? 'text-stone-300 font-medium'
+                            : 'text-stone-300'
                       }`}
                     >
                       {step.label}
@@ -330,7 +330,7 @@ export function InquirySummary({ data, variant }: Props) {
       {/* ── Preferences ──────────────────────────────────────────── */}
       {hasPreferences && (
         <Card className="p-6">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-400 mb-4">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-300 mb-4">
             Preferences
           </p>
           <div className="space-y-4">
@@ -368,7 +368,7 @@ export function InquirySummary({ data, variant }: Props) {
       {/* ── Linked quotes ─────────────────────────────────────────── */}
       {data.quotes.length > 0 && (
         <Card className="p-6">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-400 mb-4">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-300 mb-4">
             Quotes
           </p>
           <div className="space-y-2">
@@ -388,7 +388,7 @@ export function InquirySummary({ data, variant }: Props) {
                   <span className="text-sm font-semibold text-stone-100">
                     {formatCurrency(quote.total_quoted_cents)}
                   </span>
-                  <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-stone-400 transition-colors" />
+                  <ChevronRight className="w-4 h-4 text-stone-300 group-hover:text-stone-300 transition-colors" />
                 </div>
               </Link>
             ))}
@@ -400,8 +400,8 @@ export function InquirySummary({ data, variant }: Props) {
       {data.source_message && (
         <Card className="p-6">
           <div className="flex items-center gap-1.5 mb-3">
-            <MessageSquare className="w-3.5 h-3.5 text-stone-400" />
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-400">
+            <MessageSquare className="w-3.5 h-3.5 text-stone-300" />
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-300">
               Original Message
             </p>
           </div>

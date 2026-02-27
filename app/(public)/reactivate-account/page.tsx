@@ -3,7 +3,7 @@
 
 import { ReactivateAccountClient } from './reactivate-client'
 
-export const metadata = { title: 'Reactivate Account - ChefFlow' }
+export const metadata = { title: 'Reactivate Account — ChefFlow' }
 
 export default function ReactivateAccountPage() {
   return (
@@ -11,7 +11,7 @@ export default function ReactivateAccountPage() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-stone-100">Reactivate Your Account</h1>
-          <p className="text-stone-400 mt-2">
+          <p className="text-stone-300 mt-2">
             Cancel your deletion request and restore access to your ChefFlow account.
           </p>
         </div>

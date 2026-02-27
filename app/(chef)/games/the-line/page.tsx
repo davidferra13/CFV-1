@@ -1462,7 +1462,7 @@ export default function TheLineGame() {
           <div className="mx-auto max-w-xs space-y-3">
             <button
               onClick={() => startGame()}
-              className="w-full rounded-xl bg-brand-9500 px-6 py-4 text-lg font-bold text-white transition-all hover:bg-brand-600 hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full rounded-xl bg-brand-500 px-6 py-4 text-lg font-bold text-white transition-all hover:bg-brand-600 hover:scale-[1.02] active:scale-[0.98]"
             >
               🔥 Rush Mode
             </button>

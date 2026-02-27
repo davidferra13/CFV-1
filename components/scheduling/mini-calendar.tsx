@@ -155,7 +155,7 @@ export function MiniCalendar({
         {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((d) => (
           <div
             key={d}
-            className="text-center text-[10px] font-semibold text-stone-400 uppercase py-1"
+            className="text-center text-[10px] font-semibold text-stone-300 uppercase py-1"
           >
             {d}
           </div>
@@ -178,7 +178,7 @@ export function MiniCalendar({
                 transition-all
                 ${!day.isCurrentMonth ? 'text-stone-300' : 'text-stone-300'}
                 ${isToday && !isSelected ? 'text-brand-600 font-bold' : ''}
-                ${isSelected ? 'bg-brand-9500 text-white font-bold' : 'hover:bg-stone-700'}
+                ${isSelected ? 'bg-brand-500 text-white font-bold' : 'hover:bg-stone-700'}
               `}
             >
               {day.dayNum}

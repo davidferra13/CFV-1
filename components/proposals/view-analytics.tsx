@@ -32,17 +32,17 @@ export function ViewAnalytics({ data, quoteName }: Props) {
         <Card>
           <CardContent className="py-3">
             <div className="flex items-center gap-2 mb-1">
-              <Eye className="h-4 w-4 text-stone-400" />
+              <Eye className="h-4 w-4 text-stone-300" />
               <p className="text-xs text-stone-500">Total Views</p>
             </div>
             <p className="text-2xl font-semibold text-stone-100">{data.totalViews}</p>
-            <p className="text-xs text-stone-400">{data.uniqueViews} unique</p>
+            <p className="text-xs text-stone-300">{data.uniqueViews} unique</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-3">
             <div className="flex items-center gap-2 mb-1">
-              <Clock className="h-4 w-4 text-stone-400" />
+              <Clock className="h-4 w-4 text-stone-300" />
               <p className="text-xs text-stone-500">Avg. Time on Page</p>
             </div>
             <p className="text-2xl font-semibold text-stone-100">
@@ -53,7 +53,7 @@ export function ViewAnalytics({ data, quoteName }: Props) {
         <Card>
           <CardContent className="py-3">
             <div className="flex items-center gap-2 mb-1">
-              <MousePointer className="h-4 w-4 text-stone-400" />
+              <MousePointer className="h-4 w-4 text-stone-300" />
               <p className="text-xs text-stone-500">Sections Viewed</p>
             </div>
             <p className="text-2xl font-semibold text-stone-100">
@@ -81,7 +81,7 @@ export function ViewAnalytics({ data, quoteName }: Props) {
                   </div>
                   <div className="w-full bg-stone-800 rounded-full h-2">
                     <div
-                      className="bg-brand-9500 h-2 rounded-full transition-all"
+                      className="bg-brand-500 h-2 rounded-full transition-all"
                       style={{ width: `${pct}%` }}
                     />
                   </div>

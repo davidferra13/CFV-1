@@ -178,7 +178,7 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
           <h2 className="text-lg font-semibold text-stone-100">New Calendar Entry</h2>
           <button
             onClick={onClose}
-            className="text-stone-400 hover:text-stone-400 text-xl leading-none"
+            className="text-stone-300 hover:text-stone-300 text-xl leading-none"
           >
             &times;
           </button>
@@ -191,7 +191,7 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
             <div className="space-y-3">
               {ENTRY_TYPE_GROUPS.map((group) => (
                 <div key={group.label}>
-                  <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-1.5">
+                  <p className="text-xs font-semibold text-stone-300 uppercase tracking-wider mb-1.5">
                     {group.label}
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -207,7 +207,7 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
                             'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-all',
                             active
                               ? 'border-transparent text-white shadow-sm'
-                              : 'border-stone-700 text-stone-400 bg-stone-800 hover:bg-stone-700',
+                              : 'border-stone-700 text-stone-300 bg-stone-800 hover:bg-stone-700',
                           ].join(' ')}
                           style={active ? { backgroundColor: color } : {}}
                         >

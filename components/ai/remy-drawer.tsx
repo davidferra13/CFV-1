@@ -251,7 +251,7 @@ const markdownComponents = {
     <h3 className="text-sm font-semibold mb-1">{children}</h3>
   ),
   blockquote: ({ children }: { children?: React.ReactNode }) => (
-    <blockquote className="border-l-2 border-brand-400 pl-2 italic text-stone-400 dark:text-stone-400 my-1">
+    <blockquote className="border-l-2 border-brand-400 pl-2 italic text-stone-300 dark:text-stone-300 my-1">
       {children}
     </blockquote>
   ),
@@ -1458,6 +1458,7 @@ export function RemyDrawer() {
                     onClick={() => setSoundEnabled((prev) => !prev)}
                     className="text-white/80 hover:text-white transition-colors p-1"
                     title={soundEnabled ? 'Mute notifications' : 'Enable notifications'}
+                    aria-label={soundEnabled ? 'Mute notifications' : 'Enable notifications'}
                   >
                     {soundEnabled ? (
                       <Volume2 className="h-4 w-4" />
@@ -1469,6 +1470,7 @@ export function RemyDrawer() {
                     onClick={() => setShowVoiceSettings((prev) => !prev)}
                     className={`transition-colors p-1 ${showVoiceSettings ? 'text-white' : 'text-white/80 hover:text-white'}`}
                     title="Voice settings"
+                    aria-label="Voice settings"
                   >
                     <Settings2 className="h-4 w-4" />
                   </button>
@@ -1478,6 +1480,7 @@ export function RemyDrawer() {
                         onClick={handleExport}
                         className="text-white/80 hover:text-white transition-colors p-1"
                         title="Export conversation"
+                        aria-label="Export conversation"
                       >
                         <Download className="h-4 w-4" />
                       </button>
@@ -1485,6 +1488,7 @@ export function RemyDrawer() {
                         onClick={handleSendToSupport}
                         className="text-white/80 hover:text-white transition-colors p-1"
                         title="Send to Support"
+                        aria-label="Send to Support"
                       >
                         <Headphones className="h-4 w-4" />
                       </button>
@@ -1494,6 +1498,7 @@ export function RemyDrawer() {
                     onClick={handleNewConversation}
                     className="text-white/80 hover:text-white transition-colors p-1"
                     title="New conversation"
+                    aria-label="New conversation"
                   >
                     <Plus className="h-4.5 w-4.5" />
                   </button>
@@ -1546,7 +1551,7 @@ export function RemyDrawer() {
           {showVoiceSettings && (
             <div className="border-b border-stone-700 dark:border-stone-700 bg-stone-800 dark:bg-stone-800/50 px-4 py-3 space-y-3 max-h-[320px] overflow-y-auto">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide">
+                <span className="text-xs font-semibold text-stone-500 dark:text-stone-300 uppercase tracking-wide">
                   Voice Settings
                 </span>
                 <button
@@ -1562,7 +1567,7 @@ export function RemyDrawer() {
 
               {/* Voice selector */}
               <div>
-                <label className="block text-xs font-medium text-stone-400 dark:text-stone-300 mb-1">
+                <label className="block text-xs font-medium text-stone-300 dark:text-stone-300 mb-1">
                   Voice
                 </label>
                 <div className="flex gap-1.5">
@@ -1605,10 +1610,10 @@ export function RemyDrawer() {
               {/* Speed slider */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-medium text-stone-400 dark:text-stone-300">
+                  <label className="text-xs font-medium text-stone-300 dark:text-stone-300">
                     Speed
                   </label>
-                  <span className="text-xs text-stone-400 tabular-nums">
+                  <span className="text-xs text-stone-300 tabular-nums">
                     {voiceSettings.rate.toFixed(1)}x
                   </span>
                 </div>
@@ -1622,7 +1627,7 @@ export function RemyDrawer() {
                   title="Speech speed"
                   className="w-full h-1.5 bg-stone-700 dark:bg-stone-600 rounded-full appearance-none cursor-pointer accent-brand-600"
                 />
-                <div className="flex justify-between text-[10px] text-stone-400 mt-0.5">
+                <div className="flex justify-between text-[10px] text-stone-300 mt-0.5">
                   <span>Slow</span>
                   <span>Normal</span>
                   <span>Fast</span>
@@ -1632,10 +1637,10 @@ export function RemyDrawer() {
               {/* Pitch slider */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-medium text-stone-400 dark:text-stone-300">
+                  <label className="text-xs font-medium text-stone-300 dark:text-stone-300">
                     Pitch
                   </label>
-                  <span className="text-xs text-stone-400 tabular-nums">
+                  <span className="text-xs text-stone-300 tabular-nums">
                     {voiceSettings.pitch.toFixed(1)}
                   </span>
                 </div>
@@ -1649,7 +1654,7 @@ export function RemyDrawer() {
                   title="Speech pitch"
                   className="w-full h-1.5 bg-stone-700 dark:bg-stone-600 rounded-full appearance-none cursor-pointer accent-brand-600"
                 />
-                <div className="flex justify-between text-[10px] text-stone-400 mt-0.5">
+                <div className="flex justify-between text-[10px] text-stone-300 mt-0.5">
                   <span>Lower</span>
                   <span>Normal</span>
                   <span>Higher</span>
@@ -1659,10 +1664,10 @@ export function RemyDrawer() {
               {/* Volume slider */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-medium text-stone-400 dark:text-stone-300">
+                  <label className="text-xs font-medium text-stone-300 dark:text-stone-300">
                     Volume
                   </label>
-                  <span className="text-xs text-stone-400 tabular-nums">
+                  <span className="text-xs text-stone-300 tabular-nums">
                     {Math.round(voiceSettings.volume * 100)}%
                   </span>
                 </div>
@@ -1676,7 +1681,7 @@ export function RemyDrawer() {
                   title="Speech volume"
                   className="w-full h-1.5 bg-stone-700 dark:bg-stone-600 rounded-full appearance-none cursor-pointer accent-brand-600"
                 />
-                <div className="flex justify-between text-[10px] text-stone-400 mt-0.5">
+                <div className="flex justify-between text-[10px] text-stone-300 mt-0.5">
                   <span>Quiet</span>
                   <span>Full</span>
                 </div>
@@ -1767,7 +1772,7 @@ export function RemyDrawer() {
                         companion. I can check your schedule, look up clients, draft messages,
                         crunch numbers, <strong>search the web</strong> — whatever you need.
                       </p>
-                      <p className="text-xs text-stone-400 mt-2 flex items-center gap-1">
+                      <p className="text-xs text-stone-300 mt-2 flex items-center gap-1">
                         <Globe className="h-3 w-3" />
                         Web search enabled. Conversations stay in your browser. Press{' '}
                         <kbd className="bg-stone-700 dark:bg-stone-700 rounded px-1 py-0.5 text-[10px] font-mono">
@@ -1921,7 +1926,7 @@ export function RemyDrawer() {
                             }
                             return Array.from(grouped.entries()).map(([category, items]) => (
                               <div key={category} className="mb-2">
-                                <p className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide mb-1 px-1">
+                                <p className="text-xs font-semibold text-stone-500 dark:text-stone-300 uppercase tracking-wide mb-1 px-1">
                                   {category.replace(/_/g, ' ')}
                                 </p>
                                 {items.map((item) => (
@@ -2050,6 +2055,7 @@ export function RemyDrawer() {
                         }
                       }}
                       placeholder="Ask Remy anything..."
+                      aria-label="Message Remy"
                       className="w-full resize-none rounded-lg border border-stone-600 dark:border-stone-600 px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-stone-800 dark:text-stone-100 min-h-[40px] max-h-32"
                       rows={1}
                     />
@@ -2057,6 +2063,7 @@ export function RemyDrawer() {
                       onClick={() => fileInputRef.current?.click()}
                       className="absolute right-2 bottom-2 text-stone-400 hover:text-stone-400 dark:hover:text-stone-300 transition-colors"
                       title="Attach file (.txt, .md, .csv, .json, images)"
+                      aria-label="Attach file"
                     >
                       <Paperclip className="h-4 w-4" />
                     </button>
@@ -2086,7 +2093,7 @@ export function RemyDrawer() {
                 </div>
                 <div className="flex items-center justify-between mt-1.5">
                   <div className="space-y-0.5">
-                    <p className="text-xs text-stone-400 flex items-center gap-1">
+                    <p className="text-xs text-stone-300 flex items-center gap-1">
                       <Globe className="h-3 w-3" />
                       Remy can make mistakes. Please double-check important info.
                     </p>

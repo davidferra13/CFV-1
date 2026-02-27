@@ -69,7 +69,7 @@ export function EventConfirmedEmail({
       </Button>
       <Text style={muted}>
         If any details change, your chef will reach out. You can also message them directly through
-        CheFlow at any time.
+        ChefFlow at any time.
       </Text>
     </BaseLayout>
   )

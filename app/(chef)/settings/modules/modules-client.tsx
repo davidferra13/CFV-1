@@ -116,7 +116,7 @@ export function ModulesClient({ enabledModules: initial, tier, isGrandfathered }
                     onClick={() => toggle(mod.slug)}
                     disabled={isPending}
                     className={`relative shrink-0 w-10 h-6 rounded-full transition-colors disabled:opacity-50 ${
-                      isOn ? 'bg-brand-9500' : 'bg-stone-300 dark:bg-stone-600'
+                      isOn ? 'bg-brand-500' : 'bg-stone-300 dark:bg-stone-600'
                     }`}
                     aria-label={`Toggle ${mod.label}`}
                   >

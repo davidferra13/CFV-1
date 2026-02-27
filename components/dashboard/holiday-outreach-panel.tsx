@@ -126,7 +126,7 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
         {/* Urgency dot */}
         <div className="mt-1 flex-shrink-0">
           {isUrgent ? (
-            <span className="flex h-2.5 w-2.5 rounded-full bg-red-9500 ring-2 ring-red-800" />
+            <span className="flex h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-red-800" />
           ) : (
             <span className="flex h-2.5 w-2.5 rounded-full bg-amber-400" />
           )}
@@ -201,7 +201,7 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
                   type="button"
                   title="Close promo code form"
                   onClick={() => setShowPromoForm(false)}
-                  className="text-stone-400 hover:text-stone-400"
+                  className="text-stone-300 hover:text-stone-300"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -360,7 +360,7 @@ function ClientOutreachRow({ client, holidayName, outreachHook }: ClientOutreach
       <div className="flex items-center justify-between">
         <div>
           <span className="text-sm font-medium text-stone-200">{client.clientName}</span>
-          <span className="ml-2 text-xs text-stone-400">
+          <span className="ml-2 text-xs text-stone-300">
             booked{' '}
             {new Date(client.lastEventDate).toLocaleDateString('en-US', {
               month: 'short',

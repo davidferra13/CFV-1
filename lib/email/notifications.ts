@@ -104,7 +104,7 @@ export async function sendClientInvitationEmail(params: {
 }) {
   await sendEmail({
     to: params.clientEmail,
-    subject: `${params.chefName} invited you to CheFlow`,
+    subject: `${params.chefName} invited you to ChefFlow`,
     react: createElement(ClientInvitationEmail, {
       clientName: params.clientName,
       chefName: params.chefName,

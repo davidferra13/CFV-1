@@ -39,7 +39,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
             </h1>
             <QuoteStatusBadge status={quote.status as any} />
           </div>
-          <p className="text-stone-400 mt-1">
+          <p className="text-stone-300 mt-1">
             {quote.client?.full_name || 'Unknown Client'}
             {quote.client?.email && ` - ${quote.client.email}`}
           </p>
@@ -118,7 +118,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
                     {quote.deposit_percentage && ` (${quote.deposit_percentage}%)`}
                   </span>
                 ) : (
-                  <span className="text-stone-400">No deposit required</span>
+                  <span className="text-stone-300">No deposit required</span>
                 )}
               </dd>
             </div>
@@ -135,7 +135,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
                     )}
                   </span>
                 ) : (
-                  <span className="text-stone-400">No expiration set</span>
+                  <span className="text-stone-300">No expiration set</span>
                 )}
               </dd>
             </div>
@@ -176,7 +176,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
               <Link href={`/inquiries/${quote.inquiry.id}`}>
                 <div className="border rounded-lg p-3 hover:bg-stone-800 transition-colors">
                   <p className="text-sm font-medium text-stone-100">Inquiry</p>
-                  <p className="text-sm text-stone-400">
+                  <p className="text-sm text-stone-300">
                     {quote.inquiry.confirmed_occasion || 'Untitled'} - {quote.inquiry.status}
                   </p>
                 </div>
@@ -186,7 +186,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
               <Link href={`/events/${quote.event.id}`}>
                 <div className="border rounded-lg p-3 hover:bg-stone-800 transition-colors">
                   <p className="text-sm font-medium text-stone-100">Event</p>
-                  <p className="text-sm text-stone-400">
+                  <p className="text-sm text-stone-300">
                     {quote.event.occasion || 'Untitled'}
                     {quote.event.event_date &&
                       ` - ${format(new Date(quote.event.event_date), 'MMM d, yyyy')}`}
@@ -208,7 +208,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Pricing Notes</h2>
           <p className="text-sm text-stone-300 whitespace-pre-wrap">{quote.pricing_notes}</p>
-          <p className="text-xs text-stone-400 mt-2">Visible to client when quote is sent</p>
+          <p className="text-xs text-stone-300 mt-2">Visible to client when quote is sent</p>
         </Card>
       )}
 
@@ -216,7 +216,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Internal Notes</h2>
           <p className="text-sm text-stone-300 whitespace-pre-wrap">{quote.internal_notes}</p>
-          <p className="text-xs text-stone-400 mt-2">Chef eyes only - not visible to client</p>
+          <p className="text-xs text-stone-300 mt-2">Chef eyes only - not visible to client</p>
         </Card>
       )}
 
@@ -235,7 +235,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
           <div className="space-y-3">
             {quote.transitions.map((transition) => (
               <div key={transition.id} className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-brand-9500" />
+                <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-brand-500" />
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     {transition.from_status && (
@@ -243,7 +243,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
                         <span className="text-sm font-medium text-stone-100 capitalize">
                           {(transition.from_status as string).replace('_', ' ')}
                         </span>
-                        <span className="text-stone-400">&rarr;</span>
+                        <span className="text-stone-300">&rarr;</span>
                       </>
                     )}
                     <span className="text-sm font-medium text-stone-100 capitalize">
@@ -263,7 +263,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
       {/* Metadata */}
       <Card className="p-6">
         <h2 className="text-lg font-semibold mb-3 text-stone-500">Metadata</h2>
-        <dl className="grid grid-cols-2 gap-3 text-xs text-stone-400">
+        <dl className="grid grid-cols-2 gap-3 text-xs text-stone-300">
           <div>
             <dt className="font-medium">Created</dt>
             <dd>{format(new Date(quote.created_at), "MMM d, yyyy 'at' h:mm a")}</dd>

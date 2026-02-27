@@ -51,7 +51,7 @@ function ItemRow({
     return (
       <div className="px-3 py-2">
         <p className="text-sm text-stone-300">{item.label}</p>
-        {item.sublabel && <p className="text-xs text-stone-400 mt-0.5">{item.sublabel}</p>}
+        {item.sublabel && <p className="text-xs text-stone-300 mt-0.5">{item.sublabel}</p>}
       </div>
     )
   }
@@ -63,7 +63,7 @@ function ItemRow({
         ? 'bg-amber-950 border-amber-300'
         : 'bg-stone-900 border-stone-700 hover:bg-stone-800'
 
-  const textClass = state === 2 ? 'line-through text-stone-400' : 'text-stone-100'
+  const textClass = state === 2 ? 'line-through text-stone-300' : 'text-stone-100'
 
   return (
     <button
@@ -75,7 +75,7 @@ function ItemRow({
       <div
         className={`flex-shrink-0 w-7 h-7 rounded border-2 flex items-center justify-center mt-0.5 ${
           state === 2
-            ? 'bg-green-9500 border-green-500'
+            ? 'bg-green-500 border-green-500'
             : state === 1
               ? 'border-amber-400 bg-amber-950'
               : 'border-stone-400 bg-stone-900'
@@ -98,7 +98,7 @@ function ItemRow({
       <div className="flex-1 min-w-0">
         <span className={`text-sm font-medium ${textClass}`}>{item.label}</span>
         {item.sublabel && (
-          <span className="block text-xs text-stone-400 mt-0.5">{item.sublabel}</span>
+          <span className="block text-xs text-stone-300 mt-0.5">{item.sublabel}</span>
         )}
       </div>
     </button>
@@ -140,7 +140,7 @@ function Section({
                 ? 'bg-green-900 text-green-700'
                 : anyInProgress
                   ? 'bg-amber-900 text-amber-700'
-                  : 'bg-stone-800 text-stone-400'
+                  : 'bg-stone-800 text-stone-300'
             }`}
           >
             {doneCount} / {checkable.length}
@@ -249,7 +249,7 @@ export function InteractiveDocClient({ eventId, docType, spec }: InteractiveDocC
           </div>
           <div className="w-full bg-stone-800 rounded-full h-2">
             <div
-              className="bg-green-9500 h-2 rounded-full transition-all duration-300"
+              className="bg-green-500 h-2 rounded-full transition-all duration-300"
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -276,7 +276,7 @@ export function InteractiveDocClient({ eventId, docType, spec }: InteractiveDocC
               Working on
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-5 h-5 rounded bg-green-9500 border-2 border-green-500 inline-flex items-center justify-center">
+              <span className="w-5 h-5 rounded bg-green-500 border-2 border-green-500 inline-flex items-center justify-center">
                 <svg
                   className="w-3 h-3 text-white"
                   fill="none"
@@ -294,14 +294,14 @@ export function InteractiveDocClient({ eventId, docType, spec }: InteractiveDocC
           <button
             type="button"
             onClick={handleReset}
-            className="w-full text-xs text-stone-400 hover:text-stone-400 py-2"
+            className="w-full text-xs text-stone-300 hover:text-stone-300 py-2"
           >
             Reset checklist
           </button>
         </div>
       ) : (
         /* Reference-only docs: no checkboxes — show a clear note instead */
-        <p className="pt-2 text-xs text-stone-400 text-center">
+        <p className="pt-2 text-xs text-stone-300 text-center">
           Reference view — tap Open PDF ↗ to print.
         </p>
       )}

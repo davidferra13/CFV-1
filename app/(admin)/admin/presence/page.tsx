@@ -27,7 +27,7 @@ export default async function AdminPresencePage() {
         </div>
         {/* Live indicator */}
         <div className="ml-auto flex items-center gap-2 text-xs text-green-600 font-medium">
-          <span className="w-2 h-2 rounded-full bg-green-9500 animate-pulse" />
+          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
           LIVE
         </div>
       </div>

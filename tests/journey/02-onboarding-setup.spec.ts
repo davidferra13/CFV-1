@@ -12,19 +12,25 @@ import { assertPageLoads, assertNoPageErrors, JOURNEY_ROUTES } from './helpers/j
 // ─── Onboarding Hub ─────────────────────────────────────────────────────────────
 
 test.describe('Onboarding — Hub & Wizard (#1-2)', () => {
-  test('onboarding hub page loads', async ({ page }) => {
-    await assertPageLoads(page, JOURNEY_ROUTES.onboarding)
+  test('onboarding page loads or redirects to dashboard', async ({ page }) => {
+    await page.goto(JOURNEY_ROUTES.onboarding, { waitUntil: 'domcontentloaded', timeout: 60_000 })
+    await page.waitForTimeout(2_000)
+    // Chef with completed onboarding will redirect to /dashboard — both outcomes are valid
+    const url = page.url()
+    expect(url).toMatch(/\/(onboarding|dashboard)/)
   })
 
-  test('onboarding hub has no JS errors', async ({ page }) => {
-    await assertNoPageErrors(page, JOURNEY_ROUTES.onboarding)
+  test('onboarding or dashboard has no JS errors', async ({ page }) => {
+    const errors: string[] = []
+    page.on('pageerror', (err) => errors.push(err.message))
+    await page.goto(JOURNEY_ROUTES.onboarding, { waitUntil: 'domcontentloaded', timeout: 60_000 })
+    await page.waitForTimeout(3_000)
+    expect(errors).toHaveLength(0)
   })
 
-  test('onboarding hub shows phase steps or checklist', async ({ page }) => {
-    await page.goto(JOURNEY_ROUTES.onboarding)
-    await page.waitForLoadState('domcontentloaded')
-
-    // Should show onboarding phases or a redirect to the wizard
+  test('onboarding or dashboard shows content', async ({ page }) => {
+    await page.goto(JOURNEY_ROUTES.onboarding, { waitUntil: 'domcontentloaded', timeout: 60_000 })
+    await page.waitForTimeout(2_000)
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(50)
   })

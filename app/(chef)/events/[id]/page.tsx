@@ -95,7 +95,7 @@ import { ContingencyAIPanel } from '@/components/ai/contingency-ai-panel'
 import { CarryForwardMatchPanel } from '@/components/ai/carry-forward-match-panel'
 import { GroceryConsolidationPanel } from '@/components/ai/grocery-consolidation-panel'
 import { MenuNutritionalPanel } from '@/components/ai/menu-nutritional-panel'
-import { TempLogAnomalyPanel } from '@/components/ai/temp-log-anomaly-panel'
+import { TempSafetyPanel } from '@/components/ai/temp-safety-panel'
 import { PricingIntelligencePanel } from '@/components/ai/pricing-intelligence-panel'
 import { ContractGeneratorPanel } from '@/components/ai/contract-generator-panel'
 import { AARGeneratorPanel } from '@/components/ai/aar-generator-panel'
@@ -397,10 +397,10 @@ export default async function EventDetailPage({
             </h1>
             <EventStatusBadge status={event.status} />
           </div>
-          <p className="text-stone-400 mt-1">
+          <p className="text-stone-300 mt-1">
             {format(new Date(event.event_date), "EEEE, MMMM d, yyyy 'at' h:mm a")}
             {(event as any).event_timezone && (
-              <span className="ml-2 text-xs text-stone-400 font-normal">
+              <span className="ml-2 text-xs text-stone-300 font-normal">
                 {(event as any).event_timezone.replace('America/', '').replace('_', ' ')}
               </span>
             )}
@@ -527,12 +527,12 @@ export default async function EventDetailPage({
               {(event as any).car_packed ? (
                 <p className="text-sm text-emerald-700 font-medium">Car packed</p>
               ) : packingConfirmedCount > 0 ? (
-                <p className="text-sm text-stone-400">
+                <p className="text-sm text-stone-300">
                   {packingConfirmedCount} item{packingConfirmedCount !== 1 ? 's' : ''} confirmed
                   packed
                 </p>
               ) : (
-                <p className="text-sm text-stone-400">Not started — open checklist to begin</p>
+                <p className="text-sm text-stone-300">Not started — open checklist to begin</p>
               )}
             </div>
             {(event as any).car_packed && (
@@ -602,7 +602,7 @@ export default async function EventDetailPage({
                     </a>
                     {/* Travel distance/time from chef's home */}
                     {travelInfo && (
-                      <p className="text-xs text-stone-400">
+                      <p className="text-xs text-stone-300">
                         {travelInfo.distanceMiles} miles &middot; ~{travelInfo.durationMinutes} min
                         drive from home
                       </p>
@@ -633,7 +633,7 @@ export default async function EventDetailPage({
                         {' '}
                         → {(event as any).partner_location.name}
                         {(event as any).partner_location.city && (
-                          <span className="text-stone-400">
+                          <span className="text-stone-300">
                             {' '}
                             (
                             {[
@@ -737,7 +737,7 @@ export default async function EventDetailPage({
                 />
               </div>
               <div className="flex-1 space-y-2">
-                <p className="text-xs text-stone-400 break-all">{shortShareUrl}</p>
+                <p className="text-xs text-stone-300 break-all">{shortShareUrl}</p>
                 <a
                   href={fullShareUrl!}
                   target="_blank"
@@ -842,7 +842,7 @@ export default async function EventDetailPage({
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Communication</h2>
           {event.inquiry_id && messages.some((m) => m.inquiry_id) && (
-            <p className="text-xs text-stone-400 mb-3">
+            <p className="text-xs text-stone-300 mb-3">
               Includes messages from the original inquiry.
             </p>
           )}
@@ -1181,7 +1181,7 @@ export default async function EventDetailPage({
               </div>
               {profitSummary.perGuest && (
                 <div className="mt-3 pt-3 border-t border-stone-800 flex flex-wrap gap-4 text-sm text-stone-500">
-                  <span className="font-medium text-stone-400">
+                  <span className="font-medium text-stone-300">
                     Per guest ({profitSummary.perGuest.guestCount} guests):
                   </span>
                   <span>{formatCurrency(profitSummary.perGuest.revenuePerGuestCents)} revenue</span>
@@ -1299,9 +1299,9 @@ export default async function EventDetailPage({
           </Card>
         )}
 
-        {/* AI Temperature Log Anomaly Detection */}
+        {/* AI Temperature Safety Analysis */}
         {['in_progress', 'completed'].includes(event.status) && (
-          <TempLogAnomalyPanel eventId={event.id} />
+          <TempSafetyPanel eventId={event.id} />
         )}
 
         {/* Shopping Substitutions — available for any non-draft event */}
@@ -1624,7 +1624,7 @@ export default async function EventDetailPage({
             <div className="space-y-3">
               {transitions.map((transition) => (
                 <div key={transition.id} className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-brand-9500" />
+                  <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-brand-500" />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       {transition.from_status && (
@@ -1632,7 +1632,7 @@ export default async function EventDetailPage({
                           <span className="text-sm font-medium text-stone-100 capitalize">
                             {transition.from_status}
                           </span>
-                          <span className="text-stone-400">&rarr;</span>
+                          <span className="text-stone-300">&rarr;</span>
                         </>
                       )}
                       <span className="text-sm font-medium text-stone-100 capitalize">
@@ -1645,7 +1645,7 @@ export default async function EventDetailPage({
                     {transition.metadata &&
                       typeof transition.metadata === 'object' &&
                       'reason' in (transition.metadata as Record<string, unknown>) && (
-                        <p className="text-sm text-stone-400 mt-1">
+                        <p className="text-sm text-stone-300 mt-1">
                           Reason: {String((transition.metadata as Record<string, unknown>).reason)}
                         </p>
                       )}

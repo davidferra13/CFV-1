@@ -642,7 +642,7 @@ export function EventForm({
         <div className="flex items-center gap-1.5">
           <div
             className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-              step === 1 ? 'bg-brand-600 text-white' : 'bg-green-9500 text-white'
+              step === 1 ? 'bg-brand-600 text-white' : 'bg-green-500 text-white'
             }`}
           >
             {step === 1 ? '1' : '✓'}
@@ -663,7 +663,7 @@ export function EventForm({
             2
           </div>
           <span
-            className={`text-sm font-medium ${step === 2 ? 'text-stone-100' : 'text-stone-400'}`}
+            className={`text-sm font-medium ${step === 2 ? 'text-stone-100' : 'text-stone-300'}`}
           >
             Pricing &amp; Notes
           </span>
@@ -899,7 +899,7 @@ export function EventForm({
                   </p>
                   <button
                     type="button"
-                    className="text-sm text-stone-400 hover:text-stone-400 underline"
+                    className="text-sm text-stone-300 hover:text-stone-300 underline"
                     onClick={() => {
                       setDepositAmount('')
                       setDepositSource('none')
@@ -923,7 +923,7 @@ export function EventForm({
             {partners.length > 0 && (
               <div className="border border-stone-700 rounded-lg p-4 space-y-1">
                 <p className="text-sm font-medium text-stone-300 mb-2">
-                  Partner Venue <span className="text-stone-400 font-normal">(optional)</span>
+                  Partner Venue <span className="text-stone-300 font-normal">(optional)</span>
                 </p>
                 <PartnerSelect
                   partners={partners}

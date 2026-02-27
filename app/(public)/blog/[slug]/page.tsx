@@ -138,7 +138,7 @@ export default function BlogPostPage({ params }: Props) {
             <h2 className="text-2xl font-bold text-stone-100 mb-2">
               Ready to streamline your business?
             </h2>
-            <p className="text-stone-400 mb-6">
+            <p className="text-stone-300 mb-6">
               ChefFlow manages events, clients, menus, and payments — so you can focus on cooking.
             </p>
             <Link

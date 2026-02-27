@@ -12,7 +12,7 @@ import { ChefHero } from './_components/chef-hero'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
-  title: 'Hire a Private Chef Near You | ChefFlow Chef Directory',
+  title: 'Hire a Private Chef Near You — ChefFlow Chef Directory',
   description:
     'Book an unforgettable private dining experience. Browse curated private chefs, view their menus and reviews, and start your inquiry in seconds.',
   keywords: [
@@ -62,7 +62,7 @@ function PartnerPill({ partner }: { partner: DirectoryPartner }) {
       ) : (
         <div className="flex h-8 w-8 items-center justify-center rounded-md bg-stone-700 flex-shrink-0">
           <svg
-            className="h-4 w-4 text-stone-400"
+            className="h-4 w-4 text-stone-300"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -84,7 +84,7 @@ function PartnerPill({ partner }: { partner: DirectoryPartner }) {
       )}
       <div className="min-w-0 flex-1">
         <p className="text-xs font-semibold text-stone-200 truncate">{partner.name}</p>
-        {cityState && <p className="text-[11px] text-stone-400 truncate">{cityState}</p>}
+        {cityState && <p className="text-[11px] text-stone-300 truncate">{cityState}</p>}
       </div>
       <span className="flex-shrink-0 rounded-full bg-stone-700/70 px-2 py-0.5 text-[10px] font-medium text-stone-500">
         {PARTNER_TYPE_LABELS[partner.partner_type] || 'Partner'}
@@ -141,13 +141,13 @@ function ChefTile({ chef }: { chef: DirectoryChef }) {
       <div className="flex flex-1 flex-col p-5">
         {/* Bio */}
         {chef.bio && (
-          <p className="text-sm leading-relaxed text-stone-400 line-clamp-2">{chef.bio}</p>
+          <p className="text-sm leading-relaxed text-stone-300 line-clamp-2">{chef.bio}</p>
         )}
 
         {/* Partner venues */}
         {hasPartners && (
           <div className="mt-4">
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-stone-400">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-stone-300">
               Where I Cook
             </p>
             <div className="space-y-1.5">
@@ -155,7 +155,7 @@ function ChefTile({ chef }: { chef: DirectoryChef }) {
                 <PartnerPill key={partner.id} partner={partner} />
               ))}
               {extraCount > 0 && (
-                <p className="text-center text-[11px] text-stone-400">
+                <p className="text-center text-[11px] text-stone-300">
                   + {extraCount} more venue{extraCount !== 1 ? 's' : ''}
                 </p>
               )}
@@ -176,7 +176,7 @@ function ChefTile({ chef }: { chef: DirectoryChef }) {
           </Link>
           <Link
             href={`/chef/${chef.slug}`}
-            className="rounded-xl border border-stone-700 px-4 py-3 text-center text-sm font-medium text-stone-400 transition-colors hover:bg-stone-800 hover:text-stone-100 hover:border-stone-600"
+            className="rounded-xl border border-stone-700 px-4 py-3 text-center text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800 hover:text-stone-100 hover:border-stone-600"
           >
             Profile
           </Link>

@@ -19,7 +19,7 @@ export function ReactivateAccountClient() {
     return (
       <Card>
         <CardContent className="py-8 text-center">
-          <p className="text-stone-400">
+          <p className="text-stone-300">
             No reactivation token found. Please use the link from your deletion confirmation email.
           </p>
         </CardContent>
@@ -34,7 +34,7 @@ export function ReactivateAccountClient() {
           <CheckCircle2 className="h-12 w-12 text-emerald-500 mx-auto" />
           <div>
             <p className="text-lg font-medium text-stone-100">Account Reactivated</p>
-            <p className="text-stone-400 mt-1">
+            <p className="text-stone-300 mt-1">
               Your account has been restored. You can now sign in again.
             </p>
           </div>
@@ -66,7 +66,7 @@ export function ReactivateAccountClient() {
       <CardContent className="space-y-4">
         {error && <Alert variant="error">{error}</Alert>}
 
-        <p className="text-sm text-stone-400">
+        <p className="text-sm text-stone-300">
           Your account is scheduled for deletion. Click below to cancel the deletion and restore
           full access to your account.
         </p>

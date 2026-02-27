@@ -189,7 +189,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               />
             )}
           </div>
-          <p className="text-stone-400 mt-1">{client.email}</p>
+          <p className="text-stone-300 mt-1">{client.email}</p>
           {/* Tags */}
           <div className="mt-2">
             <ClientTags clientId={client.id} initialTags={clientTags} suggestedTags={allUsedTags} />
@@ -260,10 +260,10 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               <div
                 className={`h-full rounded-full transition-all ${
                   completeness.score >= 60
-                    ? 'bg-emerald-9500'
+                    ? 'bg-emerald-500'
                     : completeness.score >= 35
-                      ? 'bg-amber-9500'
-                      : 'bg-red-9500'
+                      ? 'bg-amber-500'
+                      : 'bg-red-500'
                 } ${
                   completeness.score >= 90
                     ? 'w-full'
@@ -399,8 +399,8 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                       : profitabilityHistory.trend === 'declining'
                         ? 'bg-red-900 text-red-700'
                         : profitabilityHistory.trend === 'stable'
-                          ? 'bg-stone-800 text-stone-400'
-                          : 'bg-stone-800 text-stone-400'
+                          ? 'bg-stone-800 text-stone-300'
+                          : 'bg-stone-800 text-stone-300'
                   }`}
                 >
                   {profitabilityHistory.trend === 'improving'
@@ -448,7 +448,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               </div>
               {profitabilityHistory.events.length >= 3 && (
                 <div className="mt-4 pt-3 border-t border-stone-800">
-                  <p className="text-xs text-stone-400 mb-2">
+                  <p className="text-xs text-stone-300 mb-2">
                     Per-event margins ({profitabilityHistory.eventCount} events)
                   </p>
                   <div className="flex gap-1 items-end h-8">
@@ -577,14 +577,14 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           {loyaltyProfile.nextTierName && loyaltyProfile.pointsToNextTier > 0 && (
             <div className="mb-6 p-3 rounded-lg bg-stone-800">
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-stone-400">Progress to {loyaltyProfile.nextTierName}</span>
+                <span className="text-stone-300">Progress to {loyaltyProfile.nextTierName}</span>
                 <span className="font-medium text-stone-100">
                   {loyaltyProfile.pointsToNextTier} pts to go
                 </span>
               </div>
               <div className="w-full bg-stone-700 rounded-full h-2">
                 <div
-                  className="bg-brand-9500 h-2 rounded-full transition-all"
+                  className="bg-brand-500 h-2 rounded-full transition-all"
                   style={{
                     width: `${Math.min(100, Math.max(5, (loyaltyProfile.lifetimePointsEarned / (loyaltyProfile.lifetimePointsEarned + loyaltyProfile.pointsToNextTier)) * 100))}%`,
                   }}
@@ -633,7 +633,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               <div className="space-y-1">
                 {loyaltyProfile.transactionHistory.slice(0, 5).map((tx) => (
                   <div key={tx.id} className="flex items-center justify-between text-sm py-1">
-                    <span className="text-stone-400">{tx.description}</span>
+                    <span className="text-stone-300">{tx.description}</span>
                     <span
                       className={`font-medium ${tx.points > 0 ? 'text-emerald-600' : 'text-red-600'}`}
                     >
@@ -828,7 +828,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               {avgRating !== null && (
                 <div className="flex items-center gap-1.5">
                   <span className="text-2xl font-bold text-stone-100">{avgRating}</span>
-                  <span className="text-stone-400">/5</span>
+                  <span className="text-stone-300">/5</span>
                   <span className="text-xs text-stone-500 ml-1">
                     ({clientReviews.length} {clientReviews.length === 1 ? 'review' : 'reviews'})
                   </span>
@@ -854,7 +854,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                         </span>
                       ))}
                     </div>
-                    <span className="text-xs text-stone-400">
+                    <span className="text-xs text-stone-300">
                       {review.event?.occasion || 'Event'} ·{' '}
                       {review.event?.event_date
                         ? format(new Date(review.event.event_date), 'MMM d, yyyy')
@@ -868,10 +868,10 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                     </p>
                   )}
                   {review.feedback_text && (
-                    <p className="text-sm text-stone-400 mt-1">{review.feedback_text}</p>
+                    <p className="text-sm text-stone-300 mt-1">{review.feedback_text}</p>
                   )}
                   {review.what_could_improve && (
-                    <p className="text-sm text-stone-400 mt-1">
+                    <p className="text-sm text-stone-300 mt-1">
                       <span className="font-medium text-amber-700">Improve: </span>
                       {review.what_could_improve}
                     </p>

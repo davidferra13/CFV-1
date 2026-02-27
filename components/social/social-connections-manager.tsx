@@ -23,7 +23,7 @@ const PLATFORMS: PlatformMeta[] = [
     id: 'instagram',
     label: 'Instagram',
     description: 'Feed posts, Reels, and carousels via Meta Content Publishing API.',
-    bgClass: 'bg-pink-9500',
+    bgClass: 'bg-pink-500',
     textClass: 'text-pink-700',
     docsUrl: 'https://developers.facebook.com/docs/instagram-api/content-publishing',
     requirement: 'Requires a Business or Creator Instagram account linked to a Facebook Page.',
@@ -78,7 +78,7 @@ const PLATFORMS: PlatformMeta[] = [
     id: 'youtube_shorts',
     label: 'YouTube Shorts',
     description: 'Vertical videos under 60 seconds via YouTube Data API.',
-    bgClass: 'bg-red-9500',
+    bgClass: 'bg-red-500',
     textClass: 'text-red-700',
     docsUrl: 'https://developers.google.com/youtube/v3/guides/uploading_a_video',
     requirement: 'Requires a Google account with a YouTube channel. Vertical video ≤ 60s.',
@@ -252,7 +252,7 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
                   href={platform.docsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-xs text-stone-400 hover:text-stone-400 transition-colors flex-shrink-0"
+                  className="flex items-center gap-1 text-xs text-stone-300 hover:text-stone-300 transition-colors flex-shrink-0"
                   aria-label={`${platform.label} API documentation`}
                 >
                   Docs

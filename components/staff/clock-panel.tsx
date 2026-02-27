@@ -173,7 +173,7 @@ export function ClockPanel({ entries: initialEntries, staffMembers, eventId }: C
               <span className="text-sm font-medium text-stone-300">Select staff member</span>
               <button
                 onClick={() => setShowStaffPicker(false)}
-                className="text-stone-400 hover:text-stone-400"
+                className="text-stone-300 hover:text-stone-300"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -207,7 +207,7 @@ export function ClockPanel({ entries: initialEntries, staffMembers, eventId }: C
                 className="flex items-center justify-between p-3 bg-emerald-950 border border-emerald-200 rounded-lg"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-emerald-9500 animate-pulse" />
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   <div>
                     <div className="text-sm font-medium text-stone-100">{getStaffName(entry)}</div>
                     <div className="text-xs text-stone-500">
@@ -265,7 +265,7 @@ export function ClockPanel({ entries: initialEntries, staffMembers, eventId }: C
                 <div className="flex items-center gap-2">
                   {'gpsLat' in entry && (entry as any).gpsLat != null && (
                     <span title="GPS location recorded">
-                      <MapPin className="h-3.5 w-3.5 text-stone-400" />
+                      <MapPin className="h-3.5 w-3.5 text-stone-300" />
                     </span>
                   )}
                   {entry.totalMinutes != null && (
@@ -282,7 +282,7 @@ export function ClockPanel({ entries: initialEntries, staffMembers, eventId }: C
           <div className="text-center py-8">
             <Clock className="h-8 w-8 text-stone-300 mx-auto mb-2" />
             <p className="text-sm text-stone-500">No clock entries yet.</p>
-            <p className="text-xs text-stone-400 mt-1">
+            <p className="text-xs text-stone-300 mt-1">
               Clock in staff members to track their hours.
             </p>
           </div>

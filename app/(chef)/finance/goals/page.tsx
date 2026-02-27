@@ -20,11 +20,11 @@ function ProgressBar({ percent }: { percent: number }) {
   const clamped = Math.min(100, Math.max(0, percent))
   const color =
     clamped >= 100
-      ? 'bg-green-9500'
+      ? 'bg-green-500'
       : clamped >= 70
-        ? 'bg-brand-9500'
+        ? 'bg-brand-500'
         : clamped >= 40
-          ? 'bg-yellow-9500'
+          ? 'bg-yellow-500'
           : 'bg-red-400'
 
   return (
@@ -123,7 +123,7 @@ export default async function FinanceGoalsPage() {
 
           <ProgressBar percent={annualProgressPercent} />
 
-          <div className="flex gap-6 text-sm text-stone-400 pt-1">
+          <div className="flex gap-6 text-sm text-stone-300 pt-1">
             <span>
               <span className="font-medium">
                 {formatCurrency(Math.max(0, annualTargetCents - annualBookedCents))}
@@ -160,7 +160,7 @@ export default async function FinanceGoalsPage() {
           </div>
           <ProgressBar percent={snapshot.monthly.progressPercent} />
           {snapshot.dinnersNeededThisMonth > 0 && (
-            <p className="text-sm text-stone-400">
+            <p className="text-sm text-stone-300">
               Need <span className="font-medium">{snapshot.dinnersNeededThisMonth}</span> more{' '}
               {snapshot.dinnersNeededThisMonth === 1 ? 'booking' : 'bookings'} this month to hit
               target.
@@ -261,7 +261,7 @@ export default async function FinanceGoalsPage() {
                   <div
                     className={`mt-0.5 h-2 w-2 rounded-full flex-shrink-0 ${
                       rec.severity === 'high'
-                        ? 'bg-red-9500'
+                        ? 'bg-red-500'
                         : rec.severity === 'normal'
                           ? 'bg-yellow-400'
                           : 'bg-stone-400'
@@ -286,7 +286,7 @@ export default async function FinanceGoalsPage() {
         </div>
       )}
 
-      <p className="text-xs text-stone-400 text-right">
+      <p className="text-xs text-stone-300 text-right">
         Snapshot computed at{' '}
         {new Date(snapshot.computedAt).toLocaleTimeString('en-US', {
           hour: 'numeric',

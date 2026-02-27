@@ -21,15 +21,15 @@ function TierLegend() {
   return (
     <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-stone-500">
       <span className="flex items-center gap-1.5">
-        <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-9500" />
+        <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500" />
         Auto (instant)
       </span>
       <span className="flex items-center gap-1.5">
-        <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-9500" />
+        <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-500" />
         Draft — needs your approval
       </span>
       <span className="flex items-center gap-1.5">
-        <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-9500" />
+        <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-500" />
         Held — needs clarification
       </span>
     </div>
@@ -111,7 +111,7 @@ export function CommandCenterClient() {
       {/* Input form */}
       <form onSubmit={handleSubmit} className="space-y-3">
         <div className="relative">
-          <Bot className="absolute top-4 left-4 w-5 h-5 text-stone-400 pointer-events-none" />
+          <Bot className="absolute top-4 left-4 w-5 h-5 text-stone-300 pointer-events-none" />
           <textarea
             ref={textareaRef}
             value={input}
@@ -125,7 +125,7 @@ export function CommandCenterClient() {
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="absolute bottom-3.5 right-3.5 rounded-lg bg-brand-9500 hover:bg-brand-600 disabled:bg-stone-700 disabled:cursor-not-allowed p-2 transition-colors"
+            className="absolute bottom-3.5 right-3.5 rounded-lg bg-brand-500 hover:bg-brand-600 disabled:bg-stone-700 disabled:cursor-not-allowed p-2 transition-colors"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 text-white animate-spin" />
@@ -134,7 +134,7 @@ export function CommandCenterClient() {
             )}
           </button>
         </div>
-        <p className="text-xs text-stone-400">
+        <p className="text-xs text-stone-300">
           Press Enter to run &middot; Shift+Enter for new line
         </p>
       </form>
@@ -149,7 +149,7 @@ export function CommandCenterClient() {
                 type="button"
                 key={prompt}
                 onClick={() => handleQuickPrompt(prompt)}
-                className="flex items-center gap-2 rounded-lg border border-stone-700 bg-stone-900 hover:border-brand-600 hover:bg-brand-950/50 px-3 py-2.5 text-left text-sm text-stone-400 hover:text-brand-400 transition-all"
+                className="flex items-center gap-2 rounded-lg border border-stone-700 bg-stone-900 hover:border-brand-600 hover:bg-brand-950/50 px-3 py-2.5 text-left text-sm text-stone-300 hover:text-brand-400 transition-all"
               >
                 <Zap className="w-3.5 h-3.5 text-brand-500 shrink-0" />
                 {prompt}

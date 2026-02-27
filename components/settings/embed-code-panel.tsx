@@ -109,7 +109,7 @@ export function EmbedCodePanel({ chefId }: Props) {
       {/* ── Widget Configuration ── */}
       <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-5">
         <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
-          <Palette className="h-5 w-5 text-stone-400" />
+          <Palette className="h-5 w-5 text-stone-300" />
           Customize Your Widget
         </h2>
 
@@ -242,12 +242,12 @@ export function EmbedCodePanel({ chefId }: Props) {
       <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
-            <Code2 className="h-5 w-5 text-stone-400" />
+            <Code2 className="h-5 w-5 text-stone-300" />
             Your Embed Code
           </h2>
           <button
             onClick={() => handleCopy(embedCode)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-9500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
           >
             {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
             {copied ? 'Copied!' : 'Copy Code'}
@@ -289,7 +289,7 @@ export function EmbedCodePanel({ chefId }: Props) {
       {/* ── Preview ── */}
       <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-4">
         <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
-          <Globe className="h-5 w-5 text-stone-400" />
+          <Globe className="h-5 w-5 text-stone-300" />
           Live Preview
         </h2>
         <div
@@ -544,7 +544,7 @@ function PlatformGuide({
         className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-stone-800 transition-colors"
       >
         <span className="font-medium text-sm text-stone-100">{name}</span>
-        <span className="text-stone-400 text-lg">{isOpen ? '−' : '+'}</span>
+        <span className="text-stone-300 text-lg">{isOpen ? '−' : '+'}</span>
       </button>
       {isOpen && (
         <div className="px-4 pb-4 border-t border-stone-800">
@@ -564,7 +564,7 @@ function PlatformGuide({
               <h4 className="text-xs font-semibold text-stone-500 uppercase tracking-wide mt-4 mb-2">
                 Tips
               </h4>
-              <ul className="text-sm text-stone-400 space-y-1.5 list-disc list-inside">
+              <ul className="text-sm text-stone-300 space-y-1.5 list-disc list-inside">
                 {tips.map((tip, i) => (
                   <li key={i} className="leading-relaxed">
                     {tip}

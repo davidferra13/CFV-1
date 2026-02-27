@@ -112,7 +112,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
         </div>
         <div>
           <h2 className="text-2xl font-bold text-stone-100">Recipe Book is up to date</h2>
-          <p className="text-stone-400 mt-2">
+          <p className="text-stone-300 mt-2">
             {doneCount > 0
               ? `You just captured ${doneCount} recipe${doneCount !== 1 ? 's' : ''}. Your future self will thank you.`
               : 'Nothing left to record — all dishes have recipes.'}
@@ -142,7 +142,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
         </div>
         <div className="h-2 bg-stone-700 rounded-full overflow-hidden">
           <div
-            className="h-full bg-brand-9500 rounded-full transition-all duration-300"
+            className="h-full bg-brand-500 rounded-full transition-all duration-300"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
@@ -183,7 +183,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
                   </Link>
                 </div>
               </div>
-              <div className="flex items-center gap-1 text-xs text-stone-400 shrink-0">
+              <div className="flex items-center gap-1 text-xs text-stone-300 shrink-0">
                 <BookOpen className="h-3.5 w-3.5" />
                 <span>{remaining} left</span>
               </div>
@@ -206,7 +206,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
                 autoFocus
               />
               {aiConfigured && (
-                <p className="text-xs text-stone-400 mt-1">
+                <p className="text-xs text-stone-300 mt-1">
                   Your description will be parsed into a structured recipe — review it on the recipe
                   page after saving.
                 </p>
@@ -243,21 +243,21 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
       {/* Queue preview — next 3 items */}
       {queue.length > 1 && (
         <div className="space-y-1">
-          <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide">Up next</p>
+          <p className="text-xs font-semibold text-stone-300 uppercase tracking-wide">Up next</p>
           {queue.slice(1, 4).map((item, i) => (
             <div
               key={`${item.componentId}-${i}`}
               className="flex items-center gap-2 px-3 py-2 bg-stone-800 rounded-lg text-sm text-stone-500"
             >
               <span className="font-medium text-stone-300">{item.componentName}</span>
-              <span className="text-stone-400">·</span>
+              <span className="text-stone-300">·</span>
               <span>{item.eventOccasion || 'Event'}</span>
-              <span className="text-stone-400">·</span>
+              <span className="text-stone-300">·</span>
               <span>{format(new Date(item.eventDate + 'T12:00:00'), 'MMM d')}</span>
             </div>
           ))}
           {queue.length > 4 && (
-            <p className="text-xs text-stone-400 px-3">+ {queue.length - 4} more</p>
+            <p className="text-xs text-stone-300 px-3">+ {queue.length - 4} more</p>
           )}
         </div>
       )}

@@ -48,7 +48,7 @@ export default async function NotificationsPage() {
           <Bell className="h-5 w-5 text-amber-600" />
           <h1 className="text-2xl font-bold text-stone-100">Notifications</h1>
           {unread.length > 0 && (
-            <span className="bg-amber-9500 text-white text-xs font-bold rounded-full px-2 py-0.5">
+            <span className="bg-amber-500 text-white text-xs font-bold rounded-full px-2 py-0.5">
               {unread.length}
             </span>
           )}
@@ -119,7 +119,7 @@ export default async function NotificationsPage() {
                 </div>
 
                 {!notif.is_read && (
-                  <div className="w-2 h-2 rounded-full bg-amber-9500 flex-shrink-0 mt-2" />
+                  <div className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0 mt-2" />
                 )}
               </div>
             )

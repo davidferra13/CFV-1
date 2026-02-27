@@ -201,7 +201,7 @@ export function ImportPlatformReview() {
               <h3 className="text-lg font-semibold text-stone-100">Import Platform Review</h3>
               <button
                 onClick={handleClose}
-                className="text-stone-400 hover:text-stone-400 text-xl leading-none"
+                className="text-stone-300 hover:text-stone-300 text-xl leading-none"
               >
                 &times;
               </button>
@@ -245,7 +245,7 @@ export function ImportPlatformReview() {
                     onChange={(e) => setReviewerName(e.target.value)}
                     required
                   />
-                  <p className="text-xs text-stone-400 mt-1">
+                  <p className="text-xs text-stone-300 mt-1">
                     The person&apos;s name as shown on the platform
                   </p>
                 </div>
@@ -294,7 +294,7 @@ export function ImportPlatformReview() {
                     <button
                       type="button"
                       onClick={() => setRating(null)}
-                      className="text-xs text-stone-400 hover:text-stone-400 ml-2"
+                      className="text-xs text-stone-300 hover:text-stone-300 ml-2"
                     >
                       Clear
                     </button>
@@ -314,7 +314,7 @@ export function ImportPlatformReview() {
                     value={sourceUrl}
                     onChange={(e) => setSourceUrl(e.target.value)}
                   />
-                  <p className="text-xs text-stone-400 mt-1">
+                  <p className="text-xs text-stone-300 mt-1">
                     Direct link to the review if available
                   </p>
                 </div>

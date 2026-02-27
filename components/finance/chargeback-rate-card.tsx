@@ -12,7 +12,7 @@ export function ChargebackRateCard({ rate }: ChargebackRateCardProps) {
     return (
       <Card>
         <CardContent className="pt-4">
-          <p className="text-sm text-stone-400">No payment data available.</p>
+          <p className="text-sm text-stone-300">No payment data available.</p>
         </CardContent>
       </Card>
     )
@@ -22,17 +22,17 @@ export function ChargebackRateCard({ rate }: ChargebackRateCardProps) {
     green: {
       bg: 'bg-emerald-950 border-emerald-200',
       labelColor: 'text-emerald-700',
-      dot: 'bg-emerald-9500',
+      dot: 'bg-emerald-500',
     },
     amber: {
       bg: 'bg-amber-950 border-amber-200',
       labelColor: 'text-amber-700',
-      dot: 'bg-amber-9500',
+      dot: 'bg-amber-500',
     },
     red: {
       bg: 'bg-red-950 border-red-200',
       labelColor: 'text-red-700',
-      dot: 'bg-red-9500',
+      dot: 'bg-red-500',
     },
   }
 

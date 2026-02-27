@@ -45,7 +45,7 @@ export function CampaignEmail({
         <Container style={container}>
           {/* Header */}
           <Section style={header}>
-            <Text style={logo}>CheFlow</Text>
+            <Text style={logo}>ChefFlow</Text>
           </Section>
 
           {/* Body */}
@@ -62,7 +62,7 @@ export function CampaignEmail({
           {/* Footer */}
           <Section style={footer}>
             <Text style={footerText}>
-              This message was sent by <strong>{chefName}</strong> via CheFlow.
+              This message was sent by <strong>{chefName}</strong> via ChefFlow.
             </Text>
             <Text style={footerText}>
               <Link href={unsubscribeUrl} style={unsubLink}>

@@ -72,7 +72,7 @@ function LoadingState({ onCancel }: { onCancel: () => void }) {
         {[0, 1, 2].map((i) => (
           <div
             key={i}
-            className="h-2 w-2 rounded-full bg-brand-9500 animate-pulse"
+            className="h-2 w-2 rounded-full bg-brand-500 animate-pulse"
             style={{ animationDelay: `${i * 200}ms` }}
           />
         ))}
@@ -307,7 +307,7 @@ export default function TriviaGame() {
                 onClick={() => setGameMode('culinary')}
                 className={`rounded-lg border p-3 text-left transition-colors ${
                   gameMode === 'culinary'
-                    ? 'border-brand-500 bg-brand-9500/10'
+                    ? 'border-brand-500 bg-brand-500/10'
                     : 'border-border hover:border-brand-500/50'
                 }`}
               >
@@ -320,7 +320,7 @@ export default function TriviaGame() {
                 onClick={() => setGameMode('internal')}
                 className={`rounded-lg border p-3 text-left transition-colors ${
                   gameMode === 'internal'
-                    ? 'border-brand-500 bg-brand-9500/10'
+                    ? 'border-brand-500 bg-brand-500/10'
                     : 'border-border hover:border-brand-500/50'
                 }`}
               >
@@ -346,7 +346,7 @@ export default function TriviaGame() {
                     }}
                     className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
                       topic === t
-                        ? 'border-brand-500 bg-brand-9500/10 text-brand-500'
+                        ? 'border-brand-500 bg-brand-500/10 text-brand-500'
                         : 'border-border hover:border-brand-500/50'
                     }`}
                   >
@@ -380,7 +380,7 @@ export default function TriviaGame() {
                     onClick={() => setInternalFocus(opt.value)}
                     className={`w-full rounded-lg border p-3 text-left transition-colors ${
                       internalFocus === opt.value
-                        ? 'border-brand-500 bg-brand-9500/10'
+                        ? 'border-brand-500 bg-brand-500/10'
                         : 'border-border hover:border-brand-500/50'
                     }`}
                   >
@@ -402,7 +402,7 @@ export default function TriviaGame() {
                   onClick={() => setDifficulty(d)}
                   className={`flex-1 rounded-lg border px-4 py-2 text-sm font-medium capitalize transition-colors ${
                     difficulty === d
-                      ? 'border-brand-500 bg-brand-9500/10 text-brand-500'
+                      ? 'border-brand-500 bg-brand-500/10 text-brand-500'
                       : 'border-border hover:border-brand-500/50'
                   }`}
                 >
@@ -428,7 +428,7 @@ export default function TriviaGame() {
               title={timerEnabled ? 'Disable timer' : 'Enable timer'}
               aria-label={timerEnabled ? 'Disable timer' : 'Enable timer'}
               className={`relative h-6 w-11 rounded-full transition-colors ${
-                timerEnabled ? 'bg-brand-9500' : 'bg-muted'
+                timerEnabled ? 'bg-brand-500' : 'bg-muted'
               }`}
             >
               <span
@@ -443,7 +443,7 @@ export default function TriviaGame() {
           <button
             onClick={startGame}
             disabled={gameMode === 'culinary' && !topic && !customTopic.trim()}
-            className="w-full rounded-lg bg-brand-9500 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full rounded-lg bg-brand-500 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Let&apos;s Go!
           </button>
@@ -484,7 +484,7 @@ export default function TriviaGame() {
             </span>
             <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
               <div
-                className="h-full rounded-full bg-brand-9500 transition-all"
+                className="h-full rounded-full bg-brand-500 transition-all"
                 style={{ width: `${((currentQ + 1) / questions.length) * 100}%` }}
               />
             </div>
@@ -521,7 +521,7 @@ export default function TriviaGame() {
                 else if (i === selected) bg = 'border-red-500 bg-red-500/10 text-red-700'
                 else bg = 'border-border opacity-50'
               } else if (selected === i) {
-                bg = 'border-brand-500 bg-brand-9500/10'
+                bg = 'border-brand-500 bg-brand-500/10'
               }
               return (
                 <button
@@ -542,7 +542,7 @@ export default function TriviaGame() {
           {/* Fun fact + source + next */}
           {showAnswer && (
             <div className="space-y-3">
-              <div className="rounded-lg bg-brand-9500/5 border border-brand-500/20 p-3 text-sm">
+              <div className="rounded-lg bg-brand-500/5 border border-brand-500/20 p-3 text-sm">
                 <span className="font-medium">💡 Fun fact:</span> {q.funFact}
               </div>
               {/* Source citation */}
@@ -568,7 +568,7 @@ export default function TriviaGame() {
               </div>
               <button
                 onClick={nextQuestion}
-                className="w-full rounded-lg bg-brand-9500 py-2.5 text-sm font-bold text-white hover:bg-brand-600"
+                className="w-full rounded-lg bg-brand-500 py-2.5 text-sm font-bold text-white hover:bg-brand-600"
               >
                 {currentQ + 1 >= questions.length ? 'See Results' : 'Next Question'}
               </button>
@@ -681,7 +681,7 @@ export default function TriviaGame() {
           <div className="flex gap-3 justify-center pt-2 pb-4">
             <button
               onClick={startGame}
-              className="rounded-lg bg-brand-9500 px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-600"
+              className="rounded-lg bg-brand-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-600"
             >
               Play Again
             </button>

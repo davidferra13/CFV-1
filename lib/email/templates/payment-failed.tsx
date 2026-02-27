@@ -33,7 +33,7 @@ export function PaymentFailedEmail({
         Retry Payment
       </Button>
       <Text style={muted}>
-        If you continue to have trouble, please reach out to your chef through CheFlow.
+        If you continue to have trouble, please reach out to your chef through ChefFlow.
       </Text>
     </BaseLayout>
   )

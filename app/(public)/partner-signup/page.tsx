@@ -19,7 +19,7 @@ export default async function PartnerSignupPage({ searchParams }: Props) {
         <section className="container mx-auto px-4 py-16">
           <div className="max-w-xl mx-auto text-center space-y-6">
             <h1 className="text-3xl font-bold text-stone-100">Partner Sign Up</h1>
-            <p className="text-stone-400">
+            <p className="text-stone-300">
               Use your chef&apos;s public partner link, or add their profile slug to continue.
             </p>
 
@@ -78,7 +78,7 @@ export default async function PartnerSignupPage({ searchParams }: Props) {
         <div className="max-w-2xl mx-auto space-y-6">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-stone-100">Create Partner Profile</h1>
-            <p className="text-stone-400 mt-2">
+            <p className="text-stone-300 mt-2">
               Submit your profile to be listed as a referral partner for {data.chef.display_name}.
             </p>
             <p className="text-sm mt-3">

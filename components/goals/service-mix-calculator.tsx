@@ -135,7 +135,7 @@ export function ServiceMixCalculator({
         <>
           {/* Auto-suggest + instruction */}
           <div className="flex items-center justify-between gap-3 flex-wrap">
-            <p className="text-sm text-stone-400">
+            <p className="text-sm text-stone-300">
               Set quantities below to plan your path to{' '}
               <strong>{formatDollars(goal.targetValue)}</strong>.
             </p>
@@ -178,7 +178,7 @@ export function ServiceMixCalculator({
                       <button
                         onClick={() => setQty(st.id, -1)}
                         disabled={qty === 0}
-                        className="rounded-full w-7 h-7 flex items-center justify-center border border-stone-600 text-stone-400 hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        className="rounded-full w-7 h-7 flex items-center justify-center border border-stone-600 text-stone-300 hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                         aria-label={`Decrease ${st.name}`}
                       >
                         <Minus className="h-3.5 w-3.5" />
@@ -188,7 +188,7 @@ export function ServiceMixCalculator({
                       </span>
                       <button
                         onClick={() => setQty(st.id, 1)}
-                        className="rounded-full w-7 h-7 flex items-center justify-center border border-stone-600 text-stone-400 hover:bg-stone-700 transition-colors"
+                        className="rounded-full w-7 h-7 flex items-center justify-center border border-stone-600 text-stone-300 hover:bg-stone-700 transition-colors"
                         aria-label={`Increase ${st.name}`}
                       >
                         <Plus className="h-3.5 w-3.5" />
@@ -203,7 +203,7 @@ export function ServiceMixCalculator({
                         {qty > 0 ? formatDollars(lineRevenue) : '—'}
                       </p>
                       {qty > 1 && (
-                        <p className="text-xs text-stone-400">
+                        <p className="text-xs text-stone-300">
                           {qty} × {formatDollars(st.effectivePriceCents)}
                         </p>
                       )}
@@ -213,7 +213,7 @@ export function ServiceMixCalculator({
                   {/* Client matches (lazy-loaded when qty > 0) */}
                   {qty > 0 &&
                     (isLoading ? (
-                      <p className="mt-2 text-xs text-stone-400">Loading client suggestions…</p>
+                      <p className="mt-2 text-xs text-stone-300">Loading client suggestions…</p>
                     ) : (
                       <ServiceSlotClientMatchList
                         matches={clientMatches[st.id] ?? []}
@@ -241,7 +241,7 @@ export function ServiceMixCalculator({
                 >
                   {formatDollars(plan.totalPlannedCents)}
                 </p>
-                <p className="text-xs text-stone-400 mt-0.5">
+                <p className="text-xs text-stone-300 mt-0.5">
                   + {formatDollars(alreadyBookedCents)} already booked ={' '}
                   <strong>{formatDollars(plan.totalPlannedCents + alreadyBookedCents)}</strong>{' '}
                   total
@@ -282,26 +282,26 @@ export function ServiceMixCalculator({
 
             {/* Progress bar */}
             <div>
-              <div className="flex justify-between text-xs text-stone-400 mb-1">
+              <div className="flex justify-between text-xs text-stone-300 mb-1">
                 <span>0</span>
                 <span>{formatDollars(plan.gapCents)} gap</span>
               </div>
               <div className="h-2.5 rounded-full bg-stone-700 overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-300 ${
-                    goalMet ? 'bg-emerald-9500' : 'bg-brand-9500'
+                    goalMet ? 'bg-emerald-500' : 'bg-brand-500'
                   }`}
                   style={{ width: `${goalPercent}%` }}
                 />
               </div>
-              <p className="text-xs text-stone-400 mt-1 text-right">
+              <p className="text-xs text-stone-300 mt-1 text-right">
                 {goalPercent}% of gap covered by plan
               </p>
             </div>
 
             {/* Hint when nothing is planned yet */}
             {plan.totalPlannedCents === 0 && (
-              <p className="text-sm text-stone-400 text-center pt-1">
+              <p className="text-sm text-stone-300 text-center pt-1">
                 Use the + buttons above or click{' '}
                 <button
                   onClick={handleAutoSuggest}
@@ -336,7 +336,7 @@ export function ServiceMixCalculator({
                   {plan.items.map((item) => (
                     <tr key={item.serviceType.id}>
                       <td className="px-3 py-2 text-stone-200">{item.serviceType.name}</td>
-                      <td className="px-3 py-2 text-center text-stone-400">{item.quantity}</td>
+                      <td className="px-3 py-2 text-center text-stone-300">{item.quantity}</td>
                       <td className="px-3 py-2 text-right font-medium text-stone-100">
                         {formatDollars(item.lineRevenueCents)}
                       </td>

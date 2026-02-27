@@ -126,7 +126,7 @@ export default async function SharePage({ params }: { params: { token: string } 
                     .join(', ')}
                 </div>
                 {eventData.location.notes && (
-                  <p className="text-sm text-stone-400 mt-1">{eventData.location.notes}</p>
+                  <p className="text-sm text-stone-300 mt-1">{eventData.location.notes}</p>
                 )}
               </div>
             )}
@@ -153,7 +153,7 @@ export default async function SharePage({ params }: { params: { token: string } 
                   <div key={menu.id}>
                     <h4 className="font-semibold text-stone-100">{menu.name}</h4>
                     {menu.description && (
-                      <p className="text-stone-400 text-sm mt-1">{menu.description}</p>
+                      <p className="text-stone-300 text-sm mt-1">{menu.description}</p>
                     )}
                     {menu.service_style && (
                       <span className="inline-block mt-1 text-xs text-stone-500 capitalize">

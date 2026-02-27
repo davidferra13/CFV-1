@@ -17,7 +17,7 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 const STATUS_BADGE_COLORS: Record<string, string> = {
-  draft: 'bg-stone-800 text-stone-400',
+  draft: 'bg-stone-800 text-stone-300',
   proposed: 'bg-blue-900 text-blue-700',
   accepted: 'bg-yellow-900 text-yellow-700',
   paid: 'bg-emerald-900 text-emerald-700',
@@ -27,9 +27,9 @@ const STATUS_BADGE_COLORS: Record<string, string> = {
 }
 
 const PREP_DOT: Record<string, string> = {
-  ready: 'bg-green-9500',
-  partial: 'bg-yellow-9500',
-  not_started: 'bg-red-9500',
+  ready: 'bg-green-500',
+  partial: 'bg-yellow-500',
+  not_started: 'bg-red-500',
 }
 
 interface AgendaDay {
@@ -99,7 +99,7 @@ export function AgendaView({
       <div className="bg-stone-900 rounded-xl border border-stone-700 shadow-sm p-12 text-center">
         <div className="w-16 h-16 rounded-full bg-stone-800 flex items-center justify-center mx-auto mb-4">
           <svg
-            className="w-8 h-8 text-stone-400"
+            className="w-8 h-8 text-stone-300"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -165,13 +165,13 @@ export function AgendaView({
                 >
                   {/* Date column */}
                   <div className="flex-shrink-0 w-14 text-center pt-0.5">
-                    <div className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider">
+                    <div className="text-[10px] font-semibold text-stone-300 uppercase tracking-wider">
                       {day.dayOfWeek.slice(0, 3)}
                     </div>
                     <div
                       className={`text-xl font-bold leading-tight ${
                         day.isToday
-                          ? 'text-white bg-brand-9500 rounded-full w-9 h-9 flex items-center justify-center mx-auto'
+                          ? 'text-white bg-brand-500 rounded-full w-9 h-9 flex items-center justify-center mx-auto'
                           : 'text-stone-100'
                       }`}
                     >
@@ -226,7 +226,7 @@ export function AgendaView({
                             </div>
                             <span
                               className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0 ${
-                                STATUS_BADGE_COLORS[props.status] || 'bg-stone-800 text-stone-400'
+                                STATUS_BADGE_COLORS[props.status] || 'bg-stone-800 text-stone-300'
                               }`}
                             >
                               {STATUS_LABELS[props.status] || props.status}

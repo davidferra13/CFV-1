@@ -6,7 +6,7 @@ import { getGiftCardPurchaseBySession } from '@/lib/loyalty/gift-card-purchase-a
 import Link from 'next/link'
 import type { Metadata } from 'next'
 
-export const metadata: Metadata = { title: 'Gift Card Sent!' }
+export const metadata: Metadata = { title: 'Gift Card Sent — ChefFlow' }
 
 export default async function GiftCardSuccessPage({
   params,
@@ -37,7 +37,7 @@ export default async function GiftCardSuccessPage({
 
         {purchase ? (
           <div className="space-y-2">
-            <p className="text-stone-400">
+            <p className="text-stone-300">
               A <strong>${((purchase.amount_cents as number) / 100).toFixed(2)} gift card</strong>{' '}
               has been sent to <strong>{purchase.recipient_email as string}</strong>.
             </p>
@@ -58,7 +58,7 @@ export default async function GiftCardSuccessPage({
             )}
           </div>
         ) : (
-          <p className="text-stone-400">
+          <p className="text-stone-300">
             Your gift card has been sent. The recipient will receive an email with their code
             shortly.
           </p>

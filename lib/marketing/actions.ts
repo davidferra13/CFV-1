@@ -384,7 +384,7 @@ export async function sendCampaignNow(campaignId: string) {
 
       const resend = getResendClient()
       const { data: sendData, error: sendError } = await resend.emails.send({
-        from: `${chefName} via CheFlow <${FROM_EMAIL}>`,
+        from: `${chefName} via ChefFlow <${FROM_EMAIL}>`,
         to: client.email,
         subject: renderedSubject,
         react: React.createElement(CampaignEmail, {

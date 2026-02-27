@@ -22,7 +22,7 @@ export default async function PublicAvailabilityPage({
         <div className="max-w-md text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-stone-800">
             <svg
-              className="h-7 w-7 text-stone-400"
+              className="h-7 w-7 text-stone-300"
               fill="none"
               viewBox="0 0 24 24"
               strokeWidth={1.5}
@@ -39,7 +39,7 @@ export default async function PublicAvailabilityPage({
           <p className="text-sm text-stone-500 mt-2">
             This availability link is invalid or has been revoked.
           </p>
-          <p className="text-xs text-stone-400 mt-4">
+          <p className="text-xs text-stone-300 mt-4">
             Please contact your chef directly for an updated link.
           </p>
         </div>
@@ -53,7 +53,7 @@ export default async function PublicAvailabilityPage({
         <div className="max-w-md text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-stone-800">
             <svg
-              className="h-7 w-7 text-stone-400"
+              className="h-7 w-7 text-stone-300"
               fill="none"
               viewBox="0 0 24 24"
               strokeWidth={1.5}
@@ -124,7 +124,7 @@ export default async function PublicAvailabilityPage({
 
           <div className="grid grid-cols-7 gap-1 text-center text-xs">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
-              <div key={d} className="font-medium text-stone-400 py-1">
+              <div key={d} className="font-medium text-stone-300 py-1">
                 {d}
               </div>
             ))}
@@ -148,7 +148,7 @@ export default async function PublicAvailabilityPage({
         </CardContent>
       </Card>
 
-      <p className="text-center text-xs text-stone-400">
+      <p className="text-center text-xs text-stone-300">
         Contact {chefName} directly to book an available date.
       </p>
     </div>

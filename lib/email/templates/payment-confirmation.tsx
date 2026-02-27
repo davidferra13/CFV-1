@@ -56,7 +56,7 @@ export function PaymentConfirmationEmail({
       </table>
       <Text style={muted}>
         Your chef will be in touch to confirm the remaining details. If you have questions, reach
-        out to your chef directly through CheFlow.
+        out to your chef directly through ChefFlow.
       </Text>
     </BaseLayout>
   )

@@ -58,9 +58,9 @@ export function QueueCard({ prospect, script, onCallLogged }: QueueCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             {prospect.prospect_type === 'individual' ? (
-              <User className="h-4 w-4 text-stone-400 flex-shrink-0" />
+              <User className="h-4 w-4 text-stone-300 flex-shrink-0" />
             ) : (
-              <Building2 className="h-4 w-4 text-stone-400 flex-shrink-0" />
+              <Building2 className="h-4 w-4 text-stone-300 flex-shrink-0" />
             )}
             <Link
               href={`/prospecting/${prospect.id}`}
@@ -103,7 +103,7 @@ export function QueueCard({ prospect, script, onCallLogged }: QueueCardProps) {
           {prospect.phone && (
             <a
               href={`tel:${prospect.phone}`}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-9500 text-white rounded-lg text-sm font-medium hover:bg-brand-600 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-500 text-white rounded-lg text-sm font-medium hover:bg-brand-600 transition-colors"
               onClick={(e) => e.stopPropagation()}
             >
               <Phone className="h-3.5 w-3.5" />
@@ -111,9 +111,9 @@ export function QueueCard({ prospect, script, onCallLogged }: QueueCardProps) {
             </a>
           )}
           {expanded ? (
-            <ChevronUp className="h-4 w-4 text-stone-400" />
+            <ChevronUp className="h-4 w-4 text-stone-300" />
           ) : (
-            <ChevronDown className="h-4 w-4 text-stone-400" />
+            <ChevronDown className="h-4 w-4 text-stone-300" />
           )}
         </div>
       </div>
@@ -218,7 +218,7 @@ export function QueueCard({ prospect, script, onCallLogged }: QueueCardProps) {
 
           {/* Follow-up days selector (shows when relevant) */}
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-stone-400">Follow up in</span>
+            <span className="text-stone-300">Follow up in</span>
             <select
               value={followUpDays}
               onChange={(e) => setFollowUpDays(Number(e.target.value))}

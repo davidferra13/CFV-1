@@ -55,12 +55,12 @@ export function DemandHeatmap({ data: heatmapData }: DemandHeatmapProps) {
     const ratio = count / maxCount
     if (ratio >= 0.9) return 'bg-brand-700 text-white'
     if (ratio >= 0.75) return 'bg-brand-600 text-white'
-    if (ratio >= 0.6) return 'bg-brand-9500 text-white'
+    if (ratio >= 0.6) return 'bg-brand-500 text-white'
     if (ratio >= 0.45) return 'bg-brand-400 text-white'
     if (ratio >= 0.3) return 'bg-brand-800 text-stone-100'
     if (ratio >= 0.15) return 'bg-brand-800 text-stone-100'
     if (ratio > 0) return 'bg-brand-900 text-stone-300'
-    return 'bg-stone-800 text-stone-400'
+    return 'bg-stone-800 text-stone-300'
   }
 
   function getDataPoint(year: number, month: number): DemandDataPoint | undefined {
@@ -121,7 +121,7 @@ export function DemandHeatmap({ data: heatmapData }: DemandHeatmapProps) {
         </CardHeader>
         <CardContent>
           {data.length === 0 ? (
-            <p className="text-sm text-stone-400 italic text-center py-8">
+            <p className="text-sm text-stone-300 italic text-center py-8">
               No demand data available yet.
             </p>
           ) : (
@@ -146,7 +146,7 @@ export function DemandHeatmap({ data: heatmapData }: DemandHeatmapProps) {
                     className="grid gap-1"
                     style={{ gridTemplateColumns: 'auto repeat(12, 1fr)' }}
                   >
-                    <div className="text-xs text-stone-400 text-right pr-2 self-center w-10">
+                    <div className="text-xs text-stone-300 text-right pr-2 self-center w-10">
                       Pred
                     </div>
                     {MONTH_LABELS.map((_, monthIdx) => {
@@ -169,7 +169,7 @@ export function DemandHeatmap({ data: heatmapData }: DemandHeatmapProps) {
                     className="grid gap-1"
                     style={{ gridTemplateColumns: 'auto repeat(12, 1fr)' }}
                   >
-                    <div className="text-xs text-stone-400 text-right pr-2 self-center w-10">
+                    <div className="text-xs text-stone-300 text-right pr-2 self-center w-10">
                       Actual
                     </div>
                     {MONTH_LABELS.map((_, monthIdx) => {
@@ -197,7 +197,7 @@ export function DemandHeatmap({ data: heatmapData }: DemandHeatmapProps) {
                   <div className="w-6 h-4 rounded-sm bg-brand-800" />
                   <div className="w-6 h-4 rounded-sm bg-brand-800" />
                   <div className="w-6 h-4 rounded-sm bg-brand-400" />
-                  <div className="w-6 h-4 rounded-sm bg-brand-9500" />
+                  <div className="w-6 h-4 rounded-sm bg-brand-500" />
                   <div className="w-6 h-4 rounded-sm bg-brand-600" />
                   <div className="w-6 h-4 rounded-sm bg-brand-700" />
                 </div>

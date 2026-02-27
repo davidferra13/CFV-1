@@ -38,7 +38,7 @@ export function PhotoConsentSummary({ guests }: { guests: Guest[] }) {
       {/* Progress bar */}
       <div className="w-full bg-stone-700 rounded-full h-2 mb-3">
         <div
-          className={`h-2 rounded-full transition-all ${allConsented ? 'bg-emerald-9500' : 'bg-brand-9500'}`}
+          className={`h-2 rounded-full transition-all ${allConsented ? 'bg-emerald-500' : 'bg-brand-500'}`}
           style={{ width: `${percentage}%` }}
         />
       </div>
@@ -49,7 +49,7 @@ export function PhotoConsentSummary({ guests }: { guests: Guest[] }) {
         </p>
       ) : (
         <div className="space-y-2">
-          <p className="text-sm text-stone-400">
+          <p className="text-sm text-stone-300">
             {notConsented.length} guest{notConsented.length !== 1 ? 's' : ''} ha
             {notConsented.length !== 1 ? 've' : 's'}n't consented to photo sharing. Be mindful when
             posting event photos.

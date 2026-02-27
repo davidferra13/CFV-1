@@ -1,5 +1,5 @@
 // Client Invitation Email
-// Sent when a chef invites a client to join CheFlow
+// Sent when a chef invites a client to join ChefFlow
 
 import { Button, Text } from '@react-email/components'
 import * as React from 'react'
@@ -19,11 +19,11 @@ export function ClientInvitationEmail({
   expiresInDays,
 }: ClientInvitationProps) {
   return (
-    <BaseLayout preview={`${chefName} invited you to CheFlow`}>
+    <BaseLayout preview={`${chefName} invited you to ChefFlow`}>
       <Text style={heading}>You&apos;re invited!</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>
-        <strong>{chefName}</strong> has invited you to join CheFlow — where you can view event
+        <strong>{chefName}</strong> has invited you to join ChefFlow — where you can view event
         details, review quotes, make payments, and communicate directly with your chef.
       </Text>
       <Button style={button} href={invitationUrl}>

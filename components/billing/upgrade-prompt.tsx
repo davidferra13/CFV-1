@@ -22,7 +22,7 @@ export function UpgradePrompt({ label, description }: Props) {
       </p>
       <Link
         href="/settings/billing"
-        className="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-lg bg-brand-9500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
+        className="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
       >
         <Sparkles size={14} />
         Upgrade to Pro

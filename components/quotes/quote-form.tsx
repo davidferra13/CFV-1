@@ -561,7 +561,7 @@ export function QuoteForm({
             <span className="text-sm font-semibold text-stone-100">Price Calculator</span>
             <span className="text-xs text-stone-500">Auto-fill from your rate sheet</span>
           </div>
-          <span className="text-stone-400 text-sm">{calcOpen ? '▲' : '▼'}</span>
+          <span className="text-stone-300 text-sm">{calcOpen ? '▲' : '▼'}</span>
         </button>
 
         {calcOpen && (
@@ -570,7 +570,7 @@ export function QuoteForm({
               <div>
                 <label
                   htmlFor="calc-service-type"
-                  className="text-xs font-medium text-stone-400 block mb-1"
+                  className="text-xs font-medium text-stone-300 block mb-1"
                 >
                   Service Type
                 </label>
@@ -593,7 +593,7 @@ export function QuoteForm({
                 <div>
                   <label
                     htmlFor="calc-course-count"
-                    className="text-xs font-medium text-stone-400 block mb-1"
+                    className="text-xs font-medium text-stone-300 block mb-1"
                   >
                     Courses
                   </label>
@@ -616,7 +616,7 @@ export function QuoteForm({
               <div>
                 <label
                   htmlFor="calc-event-date"
-                  className="text-xs font-medium text-stone-400 block mb-1"
+                  className="text-xs font-medium text-stone-300 block mb-1"
                 >
                   Event Date
                 </label>
@@ -632,7 +632,7 @@ export function QuoteForm({
               <div>
                 <label
                   htmlFor="calc-distance"
-                  className="text-xs font-medium text-stone-400 block mb-1"
+                  className="text-xs font-medium text-stone-300 block mb-1"
                 >
                   Distance (miles)
                 </label>
@@ -669,7 +669,7 @@ export function QuoteForm({
                   uses that count.
                 </p>
               ) : (
-                <p className="text-xs text-stone-400">
+                <p className="text-xs text-stone-300">
                   Calculating for {guestCount} guest{parseInt(guestCount) !== 1 ? 's' : ''} (from
                   guest count above)
                 </p>
@@ -698,7 +698,7 @@ export function QuoteForm({
                     <div className="space-y-1 text-sm">
                       {calcResult.serviceFeeCents > 0 && (
                         <div className="flex justify-between">
-                          <span className="text-stone-400">Service fee</span>
+                          <span className="text-stone-300">Service fee</span>
                           <span className="font-medium">
                             {formatCentsAsDollars(calcResult.serviceFeeCents)}
                           </span>
@@ -706,7 +706,7 @@ export function QuoteForm({
                       )}
                       {calcResult.weekendPremiumCents > 0 && (
                         <div className="flex justify-between">
-                          <span className="text-stone-400">Weekend premium</span>
+                          <span className="text-stone-300">Weekend premium</span>
                           <span className="font-medium">
                             +{formatCentsAsDollars(calcResult.weekendPremiumCents)}
                           </span>
@@ -714,7 +714,7 @@ export function QuoteForm({
                       )}
                       {calcResult.holidayPremiumCents > 0 && (
                         <div className="flex justify-between">
-                          <span className="text-stone-400">{calcResult.holidayName} premium</span>
+                          <span className="text-stone-300">{calcResult.holidayName} premium</span>
                           <span className="font-medium">
                             +{formatCentsAsDollars(calcResult.holidayPremiumCents)}
                           </span>
@@ -722,7 +722,7 @@ export function QuoteForm({
                       )}
                       {calcResult.nearHolidayPremiumCents > 0 && (
                         <div className="flex justify-between">
-                          <span className="text-stone-400">
+                          <span className="text-stone-300">
                             Near-holiday ({calcResult.nearHolidayName})
                           </span>
                           <span className="font-medium">
@@ -732,7 +732,7 @@ export function QuoteForm({
                       )}
                       {calcResult.travelFeeCents > 0 && (
                         <div className="flex justify-between">
-                          <span className="text-stone-400">Travel</span>
+                          <span className="text-stone-300">Travel</span>
                           <span className="font-medium">
                             +{formatCentsAsDollars(calcResult.travelFeeCents)}
                           </span>
@@ -776,7 +776,7 @@ export function QuoteForm({
 
           {/* Inquiry context banner */}
           {prefilledInquiryId && (prefilledOccasion || prefilledEventDate) && (
-            <div className="rounded-lg bg-stone-800 border border-stone-700 px-4 py-3 text-sm text-stone-400">
+            <div className="rounded-lg bg-stone-800 border border-stone-700 px-4 py-3 text-sm text-stone-300">
               <span className="font-medium text-stone-100">From inquiry: </span>
               {prefilledOccasion && <span>{prefilledOccasion}</span>}
               {prefilledOccasion && prefilledEventDate && <span> · </span>}

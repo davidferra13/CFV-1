@@ -24,12 +24,12 @@ export function RetraceTimeline({
   loadingMore,
 }: RetraceTimelineProps) {
   if (loading) {
-    return <div className="text-xs text-stone-400 px-1 py-4">Loading retrace timeline...</div>
+    return <div className="text-xs text-stone-300 px-1 py-4">Loading retrace timeline...</div>
   }
 
   if (sessions.length === 0) {
     return (
-      <div className="text-center py-8 text-stone-400 text-sm">
+      <div className="text-center py-8 text-stone-300 text-sm">
         No navigation history yet. Your steps will appear here as you use ChefFlow.
       </div>
     )
@@ -47,7 +47,7 @@ export function RetraceTimeline({
             type="button"
             onClick={onLoadMore}
             disabled={loadingMore}
-            className="text-xs font-medium border border-stone-700 rounded-md px-3 py-1.5 text-stone-400 bg-stone-900 hover:bg-stone-800 disabled:opacity-50"
+            className="text-xs font-medium border border-stone-700 rounded-md px-3 py-1.5 text-stone-300 bg-stone-900 hover:bg-stone-800 disabled:opacity-50"
           >
             {loadingMore ? 'Loading...' : 'Load older sessions'}
           </button>
@@ -100,8 +100,8 @@ function SessionCard({ session }: { session: BreadcrumbSession }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-stone-300">{dateLabel}</span>
-            <span className="text-xs text-stone-400">{timeLabel}</span>
-            <span className="text-[10px] text-stone-400">· {durationLabel}</span>
+            <span className="text-xs text-stone-300">{timeLabel}</span>
+            <span className="text-[10px] text-stone-300">· {durationLabel}</span>
             {interactions.length > 0 && (
               <span className="text-[10px] bg-stone-800 text-stone-500 px-1.5 py-0.5 rounded-full">
                 +{interactions.length} action{interactions.length === 1 ? '' : 's'}
@@ -111,7 +111,7 @@ function SessionCard({ session }: { session: BreadcrumbSession }) {
           <p className="text-xs text-stone-500 mt-0.5 truncate">{session.summary}</p>
         </div>
         <svg
-          className={`w-4 h-4 text-stone-400 transition-transform ${expanded ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 text-stone-300 transition-transform ${expanded ? 'rotate-180' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -165,7 +165,7 @@ function BreadcrumbRow({
   const isPageView = crumb.breadcrumb_type === 'page_view'
 
   const dotColor = isFirst
-    ? 'bg-brand-9500'
+    ? 'bg-brand-500'
     : isLast
       ? 'bg-stone-400'
       : isPageView
@@ -181,7 +181,7 @@ function BreadcrumbRow({
 
       {/* Content */}
       <div className="flex-1 min-w-0 flex items-center gap-2">
-        <span className="text-[10px] text-stone-400 font-medium flex-shrink-0 w-7">
+        <span className="text-[10px] text-stone-300 font-medium flex-shrink-0 w-7">
           {config.icon}
         </span>
         <span
@@ -196,7 +196,7 @@ function BreadcrumbRow({
       </div>
 
       {/* Timestamp */}
-      <span className="text-[10px] text-stone-400 flex-shrink-0 tabular-nums">{time}</span>
+      <span className="text-[10px] text-stone-300 flex-shrink-0 tabular-nums">{time}</span>
     </div>
   )
 

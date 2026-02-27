@@ -645,7 +645,7 @@ export default function TermsPage() {
               $100.00), whichever is greater.
             </p>
           </div>
-          <p className="mt-4 leading-relaxed text-sm text-stone-400">
+          <p className="mt-4 leading-relaxed text-sm text-stone-300">
             The cap above does not apply to: ChefFlow&apos;s gross negligence or willful misconduct;
             death or personal injury directly caused by ChefFlow&apos;s negligence; fraudulent
             misrepresentation by ChefFlow; or any liability that cannot be limited by applicable law
@@ -693,7 +693,7 @@ export default function TermsPage() {
             <li>Client&apos;s provision of false allergen or event information</li>
           </ul>
 
-          <p className="leading-relaxed text-sm text-stone-400">
+          <p className="leading-relaxed text-sm text-stone-300">
             <strong>Mutual carve-out:</strong> Neither party is required to indemnify the other for
             claims caused by the indemnified party&apos;s own gross negligence, willful misconduct,
             or fraudulent acts.
@@ -867,7 +867,7 @@ export default function TermsPage() {
                 ].map(([provider, purpose]) => (
                   <tr key={provider}>
                     <td className="py-2 pr-4 font-medium text-stone-200">{provider}</td>
-                    <td className="py-2 text-stone-400">{purpose}</td>
+                    <td className="py-2 text-stone-300">{purpose}</td>
                   </tr>
                 ))}
               </tbody>
@@ -1085,7 +1085,7 @@ export default function TermsPage() {
       </div>
 
       <div className="mt-12 border-t border-stone-700 pt-8">
-        <Link href="/" className="text-sm font-medium text-stone-400 hover:text-stone-100">
+        <Link href="/" className="text-sm font-medium text-stone-300 hover:text-stone-100">
           &larr; Back to Home
         </Link>
       </div>

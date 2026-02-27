@@ -98,7 +98,7 @@ export default function CulinaryProfilePage() {
         </div>
         <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
           <div
-            className="h-full bg-brand-9500 rounded-full transition-all duration-500"
+            className="h-full bg-brand-500 rounded-full transition-all duration-500"
             style={{ width: `${(answeredCount / totalCount) * 100}%` }}
           />
         </div>
@@ -130,7 +130,7 @@ export default function CulinaryProfilePage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="inline-flex items-center gap-2 rounded-lg bg-brand-9500 px-6 py-2.5
+          className="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-6 py-2.5
                      text-sm font-medium text-white hover:bg-brand-600
                      disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >

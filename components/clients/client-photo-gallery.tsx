@@ -106,8 +106,8 @@ export function ClientPhotoGallery({
             onClick={() => setFilter(cat.value)}
             className={`px-3 py-1 text-xs rounded-full whitespace-nowrap transition-colors ${
               filter === cat.value
-                ? 'bg-brand-9500 text-white'
-                : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
+                ? 'bg-brand-500 text-white'
+                : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
             }`}
           >
             {cat.label}
@@ -160,7 +160,7 @@ export function ClientPhotoGallery({
 
       {/* Photo grid */}
       {filtered.length === 0 ? (
-        <div className="px-4 py-8 text-center text-stone-400 text-sm">
+        <div className="px-4 py-8 text-center text-stone-300 text-sm">
           {photos.length === 0
             ? 'No photos yet. Upload photos of the client, their kitchen, house, dining area, or parking.'
             : `No ${filter} photos.`}

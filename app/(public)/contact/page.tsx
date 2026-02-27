@@ -101,7 +101,7 @@ export default function ContactPage() {
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-stone-100 mb-4">Talk to us</h1>
-          <p className="text-lg md:text-xl text-stone-400">We respond within 1 business day.</p>
+          <p className="text-lg md:text-xl text-stone-300">We respond within 1 business day.</p>
         </div>
       </section>
 
@@ -194,7 +194,7 @@ export default function ContactPage() {
                       variant="primary"
                       size="lg"
                       loading={isSubmitting}
-                      className="w-full bg-brand-9500 hover:bg-brand-600 focus-visible:ring-brand-600"
+                      className="w-full bg-brand-500 hover:bg-brand-600 focus-visible:ring-brand-600"
                     >
                       {isSubmitting ? 'Sending...' : 'Send Message'}
                     </Button>
@@ -258,7 +258,7 @@ export default function ContactPage() {
                       </div>
                       <div>
                         <h4 className="font-semibold text-stone-100 mb-1">Response Time</h4>
-                        <p className="text-stone-400 text-sm">
+                        <p className="text-stone-300 text-sm">
                           We typically respond within 24 hours during business days
                         </p>
                       </div>
@@ -284,7 +284,7 @@ export default function ContactPage() {
                       </div>
                       <div>
                         <h4 className="font-semibold text-stone-100 mb-1">Support Hours</h4>
-                        <p className="text-stone-400 text-sm">
+                        <p className="text-stone-300 text-sm">
                           Monday - Friday
                           <br />
                           9:00 AM - 5:00 PM PST

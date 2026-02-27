@@ -160,7 +160,7 @@ export function LivePresencePanel({ tenantId, initialClients }: LivePresencePane
           <h3 className="text-sm font-semibold text-stone-300">Client Activity</h3>
           <span className="w-2 h-2 rounded-full bg-stone-300" />
         </div>
-        <p className="text-xs text-stone-400">No clients active in the last 30 minutes</p>
+        <p className="text-xs text-stone-300">No clients active in the last 30 minutes</p>
       </div>
     )
   }
@@ -172,7 +172,7 @@ export function LivePresencePanel({ tenantId, initialClients }: LivePresencePane
         <div className="flex items-center gap-3">
           {onlineNow.length > 0 && (
             <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
-              <span className="w-2 h-2 rounded-full bg-emerald-9500 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               {onlineNow.length} online now
             </span>
           )}
@@ -194,7 +194,7 @@ export function LivePresencePanel({ tenantId, initialClients }: LivePresencePane
         {/* Recently Active */}
         {recentlyActive.length > 0 && onlineNow.length > 0 && (
           <div className="pt-1 mt-1 border-t border-stone-800">
-            <p className="text-[10px] text-stone-400 px-2 py-1">Recently Active</p>
+            <p className="text-[10px] text-stone-300 px-2 py-1">Recently Active</p>
           </div>
         )}
         {recentlyActive.map((client) => (
@@ -227,25 +227,25 @@ function ClientRow({ client, isOnline }: { client: ActiveClient; isOnline: boole
             {client.client_name.charAt(0).toUpperCase()}
           </span>
           {isOnline && (
-            <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-9500 border border-white" />
+            <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 border border-white" />
           )}
         </div>
 
         <div className="min-w-0">
           <span
-            className={`font-medium block truncate ${isOnline ? 'text-stone-200' : 'text-stone-400'}`}
+            className={`font-medium block truncate ${isOnline ? 'text-stone-200' : 'text-stone-300'}`}
           >
             {client.client_name}
           </span>
           <span
-            className={`block truncate ${isHighIntent ? 'text-amber-600 font-medium' : 'text-stone-400'}`}
+            className={`block truncate ${isHighIntent ? 'text-amber-600 font-medium' : 'text-stone-300'}`}
           >
             {getLabel(client.event_type)}
           </span>
         </div>
       </div>
 
-      <span className="text-stone-400 shrink-0 ml-2">{formatTimeAgo(client.last_activity)}</span>
+      <span className="text-stone-300 shrink-0 ml-2">{formatTimeAgo(client.last_activity)}</span>
     </Link>
   )
 }

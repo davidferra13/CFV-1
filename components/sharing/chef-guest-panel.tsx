@@ -125,7 +125,7 @@ export function ChefGuestPanel({
             <div className="h-full flex">
               {summary.attending_count > 0 && (
                 <div
-                  className="bg-emerald-9500 h-full"
+                  className="bg-emerald-500 h-full"
                   style={{ width: `${(summary.attending_count / summary.total_guests) * 100}%` }}
                 />
               )}
@@ -166,7 +166,7 @@ export function ChefGuestPanel({
 
           {/* Effective vs estimated */}
           {originalGuestCount && (
-            <div className="mt-2 px-3 py-2 bg-stone-800 rounded-lg text-xs text-stone-400">
+            <div className="mt-2 px-3 py-2 bg-stone-800 rounded-lg text-xs text-stone-300">
               Effective headcount:{' '}
               <span className="font-semibold text-stone-100">{effectiveAttending}</span>
               {summary.plus_one_count > 0 && (
@@ -225,7 +225,7 @@ export function ChefGuestPanel({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-stone-100">{guest.full_name}</span>
-                    {guest.plus_one && <span className="text-xs text-stone-400">(+1)</span>}
+                    {guest.plus_one && <span className="text-xs text-stone-300">(+1)</span>}
                   </div>
                   <Badge
                     variant={
@@ -277,7 +277,7 @@ export function ChefGuestPanel({
         <div>
           <h4 className="text-sm font-medium text-stone-300 mb-2">
             Guest Page Visibility
-            {saving && <span className="text-xs text-stone-400 ml-2">Saving...</span>}
+            {saving && <span className="text-xs text-stone-300 ml-2">Saving...</span>}
           </h4>
           <p className="text-xs text-stone-500 mb-3">
             Control what guests can see on the shared event page.

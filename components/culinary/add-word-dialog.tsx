@@ -44,7 +44,7 @@ export function AddWordDialog({ onAdded }: AddWordDialogProps) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-9500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
       >
         <span className="text-lg leading-none">+</span>
         Add Word
@@ -117,7 +117,7 @@ export function AddWordDialog({ onAdded }: AddWordDialogProps) {
           <button
             type="submit"
             disabled={isPending}
-            className="px-4 py-2 rounded-md bg-brand-9500 text-white text-sm font-medium hover:bg-brand-600 transition-colors disabled:opacity-50"
+            className="px-4 py-2 rounded-md bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors disabled:opacity-50"
           >
             {isPending ? 'Adding...' : 'Add to My Board'}
           </button>

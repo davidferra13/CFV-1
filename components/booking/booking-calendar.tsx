@@ -48,7 +48,9 @@ export function BookingCalendar({ chefSlug, onSelectDate, selectedDate }: Props)
           setAvailability(data.availability)
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        if (!cancelled) setAvailability({})
+      })
       .finally(() => {
         if (!cancelled) setLoading(false)
       })

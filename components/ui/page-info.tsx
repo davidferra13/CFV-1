@@ -216,11 +216,11 @@ function SchematicOverlay({ entry, onClose }: { entry: PageInfoEntry; onClose: (
 
       {/* Page title banner */}
       <div className="fixed top-4 left-4 z-50 bg-stone-900 dark:bg-stone-900 text-white dark:text-stone-100 rounded-xl px-4 py-2.5 shadow-lg max-w-xs">
-        <p className="text-xs font-medium uppercase tracking-wider text-stone-400 dark:text-stone-500">
+        <p className="text-xs font-medium uppercase tracking-wider text-stone-300 dark:text-stone-500">
           Page Guide
         </p>
         <p className="text-sm font-semibold mt-0.5">{entry.title}</p>
-        <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5">{entry.description}</p>
+        <p className="text-xs text-stone-300 dark:text-stone-500 mt-0.5">{entry.description}</p>
       </div>
 
       {/* SVG connector lines */}
@@ -260,10 +260,10 @@ function SchematicOverlay({ entry, onClose }: { entry: PageInfoEntry; onClose: (
               }}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-brand-9500 flex-shrink-0" />
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-500 flex-shrink-0" />
                 <span className="text-xs font-semibold truncate">{r.annotation.label}</span>
               </div>
-              <p className="text-xs text-stone-400 dark:text-stone-500 leading-relaxed">
+              <p className="text-xs text-stone-300 dark:text-stone-500 leading-relaxed">
                 {r.annotation.description}
               </p>
             </div>
@@ -332,14 +332,14 @@ function FallbackSummary({
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-stone-800 dark:border-stone-800">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wider text-stone-400">Page Guide</p>
+          <p className="text-xs font-medium uppercase tracking-wider text-stone-300">Page Guide</p>
           <h3 className="text-sm font-semibold text-stone-100 dark:text-stone-100 mt-0.5">
             {entry.title}
           </h3>
         </div>
         <button
           onClick={onClose}
-          className="w-7 h-7 rounded-full flex items-center justify-center text-stone-400 hover:text-stone-400 hover:bg-stone-700 dark:hover:bg-stone-800 transition-colors"
+          className="w-7 h-7 rounded-full flex items-center justify-center text-stone-300 hover:text-stone-300 hover:bg-stone-700 dark:hover:bg-stone-800 transition-colors"
           aria-label="Close"
         >
           <X className="h-4 w-4" />
@@ -348,7 +348,7 @@ function FallbackSummary({
 
       {/* Description */}
       <div className="px-4 py-3">
-        <p className="text-sm text-stone-400 dark:text-stone-400 leading-relaxed">
+        <p className="text-sm text-stone-300 dark:text-stone-300 leading-relaxed">
           {entry.description}
         </p>
       </div>
@@ -356,14 +356,14 @@ function FallbackSummary({
       {/* Features list */}
       {entry.features.length > 0 && (
         <div className="px-4 pb-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-stone-400 mb-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-stone-300 mb-2">
             Features
           </p>
           <ul className="space-y-1.5">
             {entry.features.map((f, i) => (
               <li
                 key={i}
-                className="text-sm text-stone-400 dark:text-stone-400 flex items-start gap-2"
+                className="text-sm text-stone-300 dark:text-stone-300 flex items-start gap-2"
               >
                 <span className="text-brand-500 mt-0.5 flex-shrink-0">&#8226;</span>
                 {f}
@@ -406,7 +406,7 @@ export function PageInfoButton() {
         className={`fixed bottom-[5.5rem] left-4 lg:bottom-4 lg:left-4 z-50 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-150 ${
           isOpen
             ? 'bg-stone-900 text-white shadow-lg dark:bg-stone-900 dark:text-stone-100'
-            : 'bg-stone-900 dark:bg-stone-800 text-stone-500 dark:text-stone-400 hover:text-stone-300 dark:hover:text-stone-200 hover:bg-stone-800 dark:hover:bg-stone-700 border border-stone-700 dark:border-stone-700 shadow-md'
+            : 'bg-stone-900 dark:bg-stone-800 text-stone-500 dark:text-stone-300 hover:text-stone-300 dark:hover:text-stone-200 hover:bg-stone-800 dark:hover:bg-stone-700 border border-stone-700 dark:border-stone-700 shadow-md'
         }`}
         aria-label="Page info"
         title="What does this page do?"

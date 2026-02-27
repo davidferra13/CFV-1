@@ -152,7 +152,7 @@ export function GiftCardPurchaseForm({ tenantId, chefSlug, chefName }: Props) {
           placeholder="Add a personal note to your gift..."
           className="w-full px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
         />
-        <p className="text-xs text-stone-400 mt-1">{message.length}/500</p>
+        <p className="text-xs text-stone-300 mt-1">{message.length}/500</p>
       </div>
 
       {/* Buyer email */}

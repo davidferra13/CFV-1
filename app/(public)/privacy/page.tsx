@@ -238,7 +238,7 @@ export default function PrivacyPage() {
       </div>
 
       <div className="mt-12 border-t border-stone-700 pt-8">
-        <Link href="/" className="text-sm font-medium text-stone-400 hover:text-stone-100">
+        <Link href="/" className="text-sm font-medium text-stone-300 hover:text-stone-100">
           &larr; Back to Home
         </Link>
       </div>

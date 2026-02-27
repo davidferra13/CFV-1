@@ -35,7 +35,7 @@ export default async function GiftCardStorePage({ params }: Props) {
             />
           )}
           <h1 className="text-3xl font-bold text-stone-100">Gift a Private Chef Experience</h1>
-          <p className="text-stone-400 mt-2">
+          <p className="text-stone-300 mt-2">
             Send someone a gift card redeemable for {chef.display_name}&apos;s services.
           </p>
           <a

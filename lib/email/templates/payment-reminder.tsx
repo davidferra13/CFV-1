@@ -101,7 +101,7 @@ export function PaymentReminderEmail({
 
       <Text style={muted}>
         If you have already arranged payment with {chefName} directly (cash, Venmo, etc.), you can
-        ignore this reminder. Questions? Reach out through the CheFlow portal.
+        ignore this reminder. Questions? Reach out through the ChefFlow portal.
       </Text>
     </BaseLayout>
   )

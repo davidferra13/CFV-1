@@ -96,7 +96,7 @@ export function AnnouncementForm({ currentText, currentType }: Props) {
         <button
           onClick={handleSet}
           disabled={isPending}
-          className="px-4 py-2 bg-amber-9500 text-white text-sm font-medium rounded-lg hover:bg-amber-600 disabled:opacity-50 transition-colors"
+          className="px-4 py-2 bg-amber-500 text-white text-sm font-medium rounded-lg hover:bg-amber-600 disabled:opacity-50 transition-colors"
         >
           {isPending ? 'Saving…' : 'Set Announcement'}
         </button>

@@ -15,8 +15,8 @@ const DAY_STYLES: Record<DayType, string> = {
 }
 
 const PREP_DOT: Record<string, string> = {
-  ready: 'bg-green-9500',
-  partial: 'bg-amber-9500',
+  ready: 'bg-green-500',
+  partial: 'bg-amber-500',
   not_started: 'bg-stone-300',
 }
 
@@ -60,7 +60,7 @@ export function WeekStrip({ schedule }: { schedule: WeekSchedule }) {
                 key={day.date}
                 className={`rounded-lg p-2 text-center min-h-[88px] flex flex-col ${DAY_STYLES[day.dayType]} ${isToday ? 'ring-2 ring-brand-500 ring-offset-1' : ''}`}
               >
-                <div className="text-[11px] font-medium text-stone-400 uppercase tracking-wide">
+                <div className="text-[11px] font-medium text-stone-300 uppercase tracking-wide">
                   {day.dayOfWeek.slice(0, 3)}
                 </div>
                 <div
@@ -80,7 +80,7 @@ export function WeekStrip({ schedule }: { schedule: WeekSchedule }) {
                         {event.clientName.split(' ')[0]}
                       </span>
                     </div>
-                    <div className="text-[10px] text-stone-400">
+                    <div className="text-[10px] text-stone-300">
                       {event.guestCount}g &middot; {event.serveTime}
                     </div>
                     {extraEvents > 0 && (
@@ -110,12 +110,12 @@ export function WeekStrip({ schedule }: { schedule: WeekSchedule }) {
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-4 mt-3 text-[10px] text-stone-400">
+        <div className="flex items-center gap-4 mt-3 text-[10px] text-stone-300">
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-green-9500" /> Ready
+            <span className="w-2 h-2 rounded-full bg-green-500" /> Ready
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-amber-9500" /> Partial
+            <span className="w-2 h-2 rounded-full bg-amber-500" /> Partial
           </span>
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-stone-300" /> Not started

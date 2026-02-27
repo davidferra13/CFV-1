@@ -31,9 +31,9 @@ const STATUS_COLORS: Record<StatusLevel, string> = {
 }
 
 const STATUS_DOT: Record<StatusLevel, string> = {
-  ok: 'bg-emerald-9500',
-  warning: 'bg-amber-9500 animate-pulse',
-  error: 'bg-red-9500 animate-pulse',
+  ok: 'bg-emerald-500',
+  warning: 'bg-amber-500 animate-pulse',
+  error: 'bg-red-500 animate-pulse',
   unknown: 'bg-stone-400',
 }
 
@@ -249,7 +249,7 @@ export default async function SystemHealthPage() {
         ))}
       </div>
 
-      <p className="text-xs text-stone-400 text-center">
+      <p className="text-xs text-stone-300 text-center">
         Status refreshes on each page load. Hard-refresh to re-check all connections.
       </p>
     </div>

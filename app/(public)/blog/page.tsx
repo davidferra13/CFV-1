@@ -7,7 +7,7 @@ export default function BlogIndexPage() {
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-bold text-stone-100 mb-4">The ChefFlow Blog</h1>
-          <p className="text-lg text-stone-400 mb-12">
+          <p className="text-lg text-stone-300 mb-12">
             Tips, guides, and insights for private chefs — pricing, client management, and growing
             your business.
           </p>
@@ -33,7 +33,7 @@ export default function BlogIndexPage() {
                     {post.title}
                   </h2>
                 </Link>
-                <p className="text-stone-400 text-sm leading-relaxed mb-4">{post.description}</p>
+                <p className="text-stone-300 text-sm leading-relaxed mb-4">{post.description}</p>
                 <div className="flex items-center justify-between text-xs text-stone-500">
                   <span>{post.author}</span>
                   <div className="flex items-center gap-3">

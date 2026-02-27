@@ -26,7 +26,7 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 const STATUS_BADGE_COLORS: Record<string, string> = {
-  draft: 'bg-stone-800 text-stone-400',
+  draft: 'bg-stone-800 text-stone-300',
   proposed: 'bg-blue-900 text-blue-700',
   accepted: 'bg-yellow-900 text-yellow-700',
   paid: 'bg-emerald-900 text-emerald-700',
@@ -129,7 +129,7 @@ export function EventDetailPopover({
           </div>
           <button
             onClick={onClose}
-            className="text-stone-400 hover:text-stone-400 p-1 -mr-1 rounded-lg hover:bg-stone-700 transition-colors flex-shrink-0"
+            className="text-stone-300 hover:text-stone-300 p-1 -mr-1 rounded-lg hover:bg-stone-700 transition-colors flex-shrink-0"
             aria-label="Close"
           >
             <svg
@@ -150,7 +150,7 @@ export function EventDetailPopover({
         {/* Badges */}
         <div className="flex items-center gap-2 flex-wrap">
           <span
-            className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_BADGE_COLORS[props.status] || 'bg-stone-800 text-stone-400'}`}
+            className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_BADGE_COLORS[props.status] || 'bg-stone-800 text-stone-300'}`}
           >
             {STATUS_LABELS[props.status] || props.status}
           </span>
@@ -174,7 +174,7 @@ export function EventDetailPopover({
         {/* Date & Time */}
         <div className="flex items-start gap-3 text-sm">
           <svg
-            className="w-4 h-4 text-stone-400 mt-0.5 flex-shrink-0"
+            className="w-4 h-4 text-stone-300 mt-0.5 flex-shrink-0"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -201,7 +201,7 @@ export function EventDetailPopover({
         {props.locationAddress && (
           <div className="flex items-start gap-3 text-sm">
             <svg
-              className="w-4 h-4 text-stone-400 mt-0.5 flex-shrink-0"
+              className="w-4 h-4 text-stone-300 mt-0.5 flex-shrink-0"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -229,7 +229,7 @@ export function EventDetailPopover({
         {props.guestCount > 0 && (
           <div className="flex items-start gap-3 text-sm">
             <svg
-              className="w-4 h-4 text-stone-400 mt-0.5 flex-shrink-0"
+              className="w-4 h-4 text-stone-300 mt-0.5 flex-shrink-0"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -259,7 +259,7 @@ export function EventDetailPopover({
           <>
             <Link
               href={`/events/${props.eventId}`}
-              className="flex-1 text-center text-sm font-medium px-3 py-2 rounded-lg bg-brand-9500 text-white hover:bg-brand-600 transition-colors"
+              className="flex-1 text-center text-sm font-medium px-3 py-2 rounded-lg bg-brand-500 text-white hover:bg-brand-600 transition-colors"
             >
               View Event
             </Link>

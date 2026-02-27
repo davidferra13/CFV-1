@@ -114,6 +114,7 @@ import { getStaleInquiries, type PendingFollowUp } from '@/lib/inquiries/follow-
 import { PendingFollowUpsWidget } from '@/components/inquiries/pending-follow-ups-widget'
 import { getWeatherForEvents, type InlineWeather } from '@/lib/weather/open-meteo'
 import { createServerClient } from '@/lib/supabase/server'
+import { InviteChefCard } from '@/components/marketing/invite-chef-card'
 
 // ============================================
 // Safe wrapper — logs failures, returns fallback
@@ -489,6 +490,7 @@ export default async function ChefDashboard() {
     dailyPlanStats,
     responseTimeSummary,
     pendingFollowUps,
+    chefProfile,
   ] = await Promise.all([
     safe('onboardingProgress', getOnboardingProgress, emptyOnboardingProgress),
     safe('nextBestActions', () => getNextBestActions(5), emptyNextBestActions),
@@ -496,6 +498,15 @@ export default async function ChefDashboard() {
     safe('dailyPlanStats', getDailyPlanStats, null),
     safe('responseTimeSummary', getResponseTimeSummary, emptyResponseTimeSummary),
     safe('pendingFollowUps', () => getStaleInquiries(3), emptyPendingFollowUps),
+    safe('chefProfile', async () => {
+      const supabase = await createServerClient()
+      const { data } = await supabase
+        .from('chefs')
+        .select('slug, display_name')
+        .eq('id', user.entityId)
+        .single()
+      return data as { slug: string | null; display_name: string | null } | null
+    }, null),
   ])
 
   // ============================================
@@ -587,7 +598,7 @@ export default async function ChefDashboard() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-display text-stone-100">Dashboard</h1>
-          <p className="text-sm text-stone-400 mt-0.5">
+          <p className="text-sm text-stone-300 mt-0.5">
             Good {timeOfDay}
             {firstName ? `, ${firstName}` : ''}.
           </p>
@@ -870,7 +881,7 @@ export default async function ChefDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="mb-2 text-sm text-stone-400">
+                <div className="mb-2 text-sm text-stone-300">
                   {todaysSchedule.event.client?.full_name} &mdash;{' '}
                   {todaysSchedule.event.guest_count} guests
                   {todaysSchedule.event.location_city &&
@@ -1188,7 +1199,7 @@ export default async function ChefDashboard() {
                     {(monthRevenue.currentMonthRevenueCents > 0 ||
                       monthRevenue.previousMonthRevenueCents > 0) && (
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-stone-400">
+                        <span className="text-sm text-stone-300">
                           {currentMonthName}:{' '}
                           {formatCurrency(monthRevenue.currentMonthRevenueCents)}
                         </span>
@@ -1300,7 +1311,7 @@ export default async function ChefDashboard() {
                   <p className="text-sm text-stone-500 mt-1">revenue minus expenses</p>
                   {monthRevenue.currentMonthRevenueCents > 0 && (
                     <div className="mt-3 pt-3 border-t border-stone-800 space-y-1">
-                      <span className="text-sm text-stone-400">
+                      <span className="text-sm text-stone-300">
                         {monthRevenue.currentMonthRevenueCents > 0
                           ? `${Math.round((monthRevenue.currentMonthProfitCents / monthRevenue.currentMonthRevenueCents) * 100)}% margin`
                           : 'No revenue yet'}
@@ -1337,7 +1348,7 @@ export default async function ChefDashboard() {
                       ` \u00B7 ${eventCounts.totalGuestsThisMonth} guests`}
                   </p>
                   <div className="mt-3 pt-3 border-t border-stone-800 space-y-1">
-                    <div className="flex gap-3 text-sm text-stone-400">
+                    <div className="flex gap-3 text-sm text-stone-300">
                       {eventCounts.upcomingThisMonth > 0 && (
                         <span>{eventCounts.upcomingThisMonth} upcoming</span>
                       )}
@@ -1380,7 +1391,7 @@ export default async function ChefDashboard() {
                   <div className="text-3xl font-bold text-stone-100">{activeInquiryCount}</div>
                   <p className="text-sm text-stone-500 mt-1">active in pipeline</p>
                   <div className="mt-3 pt-3 border-t border-stone-800 space-y-1">
-                    <div className="flex gap-3 text-sm text-stone-400">
+                    <div className="flex gap-3 text-sm text-stone-300">
                       {inquiryStats.new > 0 && <span>{inquiryStats.new} new</span>}
                       {inquiryStats.quoted > 0 && <span>{inquiryStats.quoted} quoted</span>}
                       {inquiryStats.awaiting_client > 0 && (
@@ -1488,7 +1499,7 @@ export default async function ChefDashboard() {
                         </Link>
                       ))}
                     </div>
-                    <p className="text-xs text-stone-400 mt-3">
+                    <p className="text-xs text-stone-300 mt-3">
                       {dormantClients.length} client{dormantClients.length !== 1 ? 's' : ''}{' '}
                       haven&apos;t booked in 90+ days
                     </p>
@@ -1572,7 +1583,7 @@ export default async function ChefDashboard() {
                   <p className="text-sm text-stone-500 mt-1">business expenses</p>
                   {monthExpenses.totalCents > monthExpenses.businessCents && (
                     <div className="mt-3 pt-3 border-t border-stone-800">
-                      <span className="text-sm text-stone-400">
+                      <span className="text-sm text-stone-300">
                         {formatCurrency(monthExpenses.totalCents)} total (incl. personal)
                       </span>
                     </div>
@@ -1662,7 +1673,7 @@ export default async function ChefDashboard() {
                           {foodCostTrend.months.map((m) => (
                             <div
                               key={m.month}
-                              className="flex-1 text-center text-[10px] text-stone-400 leading-none"
+                              className="flex-1 text-center text-[10px] text-stone-300 leading-none"
                             >
                               {m.label.split(' ')[0]}
                             </div>
@@ -1682,7 +1693,7 @@ export default async function ChefDashboard() {
                             >
                               {foodCostTrend.overallAvgFoodCostPercent}%
                             </span>
-                            <span className="ml-2 text-xs text-stone-400">
+                            <span className="ml-2 text-xs text-stone-300">
                               {foodCostTrend.overallAvgFoodCostPercent < 30
                                 ? '✓ on target'
                                 : foodCostTrend.overallAvgFoodCostPercent < 40
@@ -1724,7 +1735,7 @@ export default async function ChefDashboard() {
                           seasonality.upcomingQuiet.monthsAway <= 3 && (
                             <div className="mb-3 flex items-center gap-2 rounded-md bg-stone-800 border border-stone-700 px-3 py-2">
                               <TrendingDown className="h-3.5 w-3.5 text-stone-500 shrink-0" />
-                              <p className="text-xs text-stone-400">
+                              <p className="text-xs text-stone-300">
                                 Quiet period coming in{' '}
                                 {seasonality.upcomingQuiet.monthsAway === 1
                                   ? 'next month'
@@ -1757,7 +1768,7 @@ export default async function ChefDashboard() {
                             const isPeak = seasonality.peakMonths.includes(m.month)
                             const isQuiet = seasonality.quietMonths.includes(m.month)
                             const barColor = isPeak
-                              ? 'bg-brand-9500'
+                              ? 'bg-brand-500'
                               : isQuiet
                                 ? 'bg-stone-700'
                                 : 'bg-brand-800'
@@ -1780,7 +1791,7 @@ export default async function ChefDashboard() {
                           {seasonality.months.map((m) => (
                             <div
                               key={m.month}
-                              className="flex-1 text-center text-[9px] text-stone-400 leading-none"
+                              className="flex-1 text-center text-[9px] text-stone-300 leading-none"
                             >
                               {m.shortName}
                             </div>
@@ -1818,7 +1829,7 @@ export default async function ChefDashboard() {
                           {seasonality.quietMonths.length > 0 && (
                             <span>
                               Quiet:{' '}
-                              <span className="text-stone-400 font-medium">
+                              <span className="text-stone-300 font-medium">
                                 {seasonality.quietMonths
                                   .sort((a, b) => a - b)
                                   .map(
@@ -1842,7 +1853,7 @@ export default async function ChefDashboard() {
                               </span>
                             </span>
                           )}
-                          <span className="text-stone-400">
+                          <span className="text-stone-300">
                             {seasonality.totalEventsAnalyzed} events · {seasonality.yearsOfData}yr
                             {seasonality.yearsOfData !== 1 ? 's' : ''} data
                           </span>
@@ -1991,6 +2002,3 @@ export default async function ChefDashboard() {
 
       {/* AI Business Insights — revenue patterns, profitability, seasonal trends */}
       <BusinessInsightsPanel />
-    </div>
-  )
-}

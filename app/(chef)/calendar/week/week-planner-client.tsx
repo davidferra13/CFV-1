@@ -540,7 +540,7 @@ export function WeekPlannerClient({
             <div key={day.date} className="flex flex-col gap-1.5 min-w-0">
               {/* Day header */}
               <div
-                className={`text-center py-1.5 rounded-lg text-xs font-semibold ${isToday ? 'bg-amber-9500 text-white' : 'bg-gray-100 text-gray-600'}`}
+                className={`text-center py-1.5 rounded-lg text-xs font-semibold ${isToday ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600'}`}
               >
                 <div>{format(parseISO(day.date), 'EEE')}</div>
                 <div className={`text-xs ${isToday ? 'text-amber-100' : 'text-gray-400'}`}>

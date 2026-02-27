@@ -47,7 +47,7 @@ function TaskRow({ task, eventId, manualCompletionKeys }: TaskRowProps) {
               ? 'bg-green-900 text-emerald-600'
               : task.isOverdue
                 ? 'bg-red-900 text-red-600'
-                : 'bg-stone-800 text-stone-400'
+                : 'bg-stone-800 text-stone-300'
           }`}
         >
           {isComplete ? '\u2713' : task.isOverdue ? '!' : '\u00B7'}
@@ -200,7 +200,7 @@ export function DOPView({ schedule, eventId, manualCompletionKeys }: DOPViewProp
           <div className={`bg-brand-600 h-2 rounded-full transition-all ${progressWidthClass}`} />
         </div>
         {manualCount > 0 && (
-          <p className="text-xs text-stone-400 mt-1">{manualCount} manually confirmed</p>
+          <p className="text-xs text-stone-300 mt-1">{manualCount} manually confirmed</p>
         )}
       </div>
 
@@ -249,12 +249,12 @@ export function DOPProgressBar({ completed, total }: { completed: number; total:
       <div className="flex-1 bg-stone-700 rounded-full h-2">
         <div
           className={`h-2 rounded-full transition-all ${
-            percent === 100 ? 'bg-green-9500' : percent >= 50 ? 'bg-brand-9500' : 'bg-amber-9500'
+            percent === 100 ? 'bg-green-500' : percent >= 50 ? 'bg-brand-500' : 'bg-amber-500'
           }`}
           style={{ width: `${percent}%` }}
         />
       </div>
-      <span className="text-sm text-stone-400 whitespace-nowrap">
+      <span className="text-sm text-stone-300 whitespace-nowrap">
         {completed}/{total} tasks
       </span>
     </div>

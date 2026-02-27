@@ -159,7 +159,7 @@ function PortalFailure({ portal }: { portal: PortalPayload }) {
       }}
     >
       <h1 className="text-2xl font-semibold text-stone-100">{title}</h1>
-      <p className="mt-3 text-sm text-stone-400">{message}</p>
+      <p className="mt-3 text-sm text-stone-300">{message}</p>
     </div>
   )
 }
@@ -293,7 +293,7 @@ function GuestPortalForm({
           )}
           .
         </p>
-        <p className="mt-2 text-sm text-stone-400">
+        <p className="mt-2 text-sm text-stone-300">
           You can update your response until {format(new Date(savedSummary.editCutoff), 'PPP p')}.
         </p>
         <div className="mt-6 flex flex-col sm:flex-row gap-3">
@@ -348,7 +348,7 @@ function GuestPortalForm({
               {portal.event.location.state} {portal.event.location.zip}
             </p>
             {portal.event.location.notes && (
-              <p className="mt-1 text-stone-400">{portal.event.location.notes}</p>
+              <p className="mt-1 text-stone-300">{portal.event.location.notes}</p>
             )}
           </div>
           {portal.event.hostMessage && (
@@ -393,7 +393,7 @@ function GuestPortalForm({
                 className="flex items-center justify-between rounded-lg px-3 py-2 bg-[#0e1412]"
               >
                 <span>{guest.full_name}</span>
-                <span className="text-stone-400">{guest.rsvp_status}</span>
+                <span className="text-stone-300">{guest.rsvp_status}</span>
               </div>
             ))}
           </div>
@@ -414,7 +414,7 @@ function GuestPortalForm({
               <div key={menu.id} className="rounded-lg p-3 bg-[#0e1412]">
                 <p className="text-stone-100 font-medium">{menu.name}</p>
                 {menu.description && (
-                  <p className="mt-1 text-sm text-stone-400">{menu.description}</p>
+                  <p className="mt-1 text-sm text-stone-300">{menu.description}</p>
                 )}
               </div>
             ))}
@@ -629,7 +629,7 @@ function GuestPortalForm({
                 )}
               </div>
 
-              <p className="text-xs text-stone-400">
+              <p className="text-xs text-stone-300">
                 You may update your response until {cutoffLabel}.
               </p>
 
@@ -825,7 +825,7 @@ function GuestPortalForm({
       >
         <h2 className="text-xl font-semibold text-stone-100">Final Confirmation</h2>
         {!portal.lifecycle.canEdit && (
-          <p className="mt-3 text-sm text-stone-400">
+          <p className="mt-3 text-sm text-stone-300">
             Editing has closed for this event.
             {portal.lifecycle.archiveMode && ' This portal is now archival and read-only.'}
           </p>

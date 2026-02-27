@@ -74,7 +74,7 @@ export function OnboardingChecklistWidget({ progress }: Props) {
         {/* Progress bar */}
         <div className="w-full bg-stone-700 rounded-full h-1.5 mt-2">
           <div
-            className="bg-brand-9500 h-1.5 rounded-full transition-all"
+            className="bg-brand-500 h-1.5 rounded-full transition-all"
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -98,11 +98,11 @@ export function OnboardingChecklistWidget({ progress }: Props) {
                   )}
                   <div className="flex-1 min-w-0">
                     <p
-                      className={`text-xs font-medium ${done ? 'text-stone-400 line-through' : 'text-stone-200'}`}
+                      className={`text-xs font-medium ${done ? 'text-stone-300 line-through' : 'text-stone-200'}`}
                     >
                       {step.label}
                     </p>
-                    {!done && <p className="text-[11px] text-stone-400 mt-0.5">{step.detail}</p>}
+                    {!done && <p className="text-[11px] text-stone-300 mt-0.5">{step.detail}</p>}
                   </div>
                   {!done && <ArrowRight className="h-3.5 w-3.5 text-brand-400 shrink-0 mt-0.5" />}
                 </Link>
