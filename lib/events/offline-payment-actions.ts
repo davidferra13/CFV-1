@@ -79,6 +79,23 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
   // Auth is validated above via requireChef + tenant check.
   const supabaseAdmin = createServerClient({ admin: true })
 
+  // Generate a deterministic idempotency key to prevent duplicate ledger entries
+  // on double-submit (same event + amount + method + date = same payment)
+  const offlineTxRef = `offline_${eventId}_${amountCents}_${paymentMethod}_${paidAt}`
+
+  // Check for existing entry with same reference (dedup guard)
+  const { data: existingEntry } = await supabaseAdmin
+    .from('ledger_entries')
+    .select('id')
+    .eq('transaction_reference', offlineTxRef)
+    .limit(1)
+
+  if (existingEntry && existingEntry.length > 0) {
+    // Already recorded — return idempotently instead of creating a duplicate
+    revalidatePath(`/events/${eventId}`)
+    return { success: true, entryId: existingEntry[0].id, deduplicated: true }
+  }
+
   const { data: ledgerEntry, error: ledgerError } = await supabaseAdmin
     .from('ledger_entries')
     .insert({
@@ -89,7 +106,7 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
       payment_method: paymentMethod,
       description: `Offline ${entryType} recorded by chef — ${paymentMethod}`,
       event_id: eventId,
-      transaction_reference: null, // No Stripe ID for offline payments
+      transaction_reference: offlineTxRef,
       internal_notes:
         notes ||
         `Recorded by ${user.email} on ${new Date().toISOString()}. Payment date: ${paidAt}`,

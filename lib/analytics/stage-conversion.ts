@@ -82,9 +82,9 @@ export async function getStageConversionData(): Promise<StageConversionData> {
 
   const [inquiriesRes, eventsRes] = await Promise.all([
     // Count per status for ALL inquiries (including terminal states)
-    supabase.from('inquiries').select('status').eq('tenant_id', user.tenantId!),
+    supabase.from('inquiries').select('status').eq('tenant_id', user.tenantId!).limit(10000),
 
-    supabase.from('events').select('status').eq('tenant_id', user.tenantId!),
+    supabase.from('events').select('status').eq('tenant_id', user.tenantId!).limit(10000),
   ])
 
   // Build count maps

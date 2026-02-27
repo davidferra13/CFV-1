@@ -305,8 +305,16 @@ export async function getPlatformGrowthStats(): Promise<GrowthDataPoint[]> {
   twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12)
 
   const [chefsData, clientsData] = await Promise.all([
-    supabase.from('chefs').select('created_at').gte('created_at', twelveMonthsAgo.toISOString()),
-    supabase.from('clients').select('created_at').gte('created_at', twelveMonthsAgo.toISOString()),
+    supabase
+      .from('chefs')
+      .select('created_at')
+      .gte('created_at', twelveMonthsAgo.toISOString())
+      .limit(10000),
+    supabase
+      .from('clients')
+      .select('created_at')
+      .gte('created_at', twelveMonthsAgo.toISOString())
+      .limit(50000),
   ])
 
   const monthMap: Record<string, { newChefs: number; newClients: number }> = {}
@@ -515,8 +523,8 @@ export async function getAllChefFlags(): Promise<{
   const supabase = createAdminClient()
 
   const [chefsResult, flagsResult] = await Promise.all([
-    supabase.from('chefs').select('id, business_name').order('business_name'),
-    supabase.from('chef_feature_flags').select('chef_id, flag_name, enabled'),
+    supabase.from('chefs').select('id, business_name').order('business_name').limit(10000),
+    supabase.from('chef_feature_flags').select('chef_id, flag_name, enabled').limit(50000),
   ])
 
   const flagsByChef: Record<string, Record<string, boolean>> = {}

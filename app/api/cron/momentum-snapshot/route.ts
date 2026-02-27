@@ -19,7 +19,7 @@ export async function GET(request: Request) {
       .split('T')[0]
     const oneYearAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
-    const { data: chefs } = await supabaseAdmin.from('chefs').select('id')
+    const { data: chefs } = await supabaseAdmin.from('chefs').select('id').limit(10000)
     if (!chefs || chefs.length === 0) {
       return NextResponse.json({ message: 'No chefs' })
     }

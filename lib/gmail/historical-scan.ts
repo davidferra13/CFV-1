@@ -113,7 +113,11 @@ export async function runHistoricalScanBatch(
   }
 
   // ── Load known client emails for richer classification context ─────────────
-  const { data: clients } = await supabase.from('clients').select('email').eq('tenant_id', tenantId)
+  const { data: clients } = await supabase
+    .from('clients')
+    .select('email')
+    .eq('tenant_id', tenantId)
+    .limit(10000)
 
   const knownClientEmails = (clients ?? [])
     .map((c: { email: string | null }) => c.email)

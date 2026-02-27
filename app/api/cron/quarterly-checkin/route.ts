@@ -14,7 +14,7 @@ export async function GET(request: Request) {
 
   try {
     const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
-    const { data: chefs } = await supabaseAdmin.from('chefs').select('id')
+    const { data: chefs } = await supabaseAdmin.from('chefs').select('id').limit(10000)
 
     if (!chefs || chefs.length === 0) {
       return NextResponse.json({ message: 'No chefs' })

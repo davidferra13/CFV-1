@@ -189,12 +189,18 @@ export async function approveMenu(requestId: string) {
 
   const now = new Date().toISOString()
 
-  // Update the request
-  await supabase
+  // Update the request (optimistic lock: only update if still 'sent')
+  const { data: updatedRequest, error: updateError } = await supabase
     .from('menu_approval_requests')
     .update({ status: 'approved', responded_at: now })
     .eq('id', requestId)
     .eq('client_id', user.entityId)
+    .eq('status', 'sent')
+    .select('id')
+
+  if (updateError || !updatedRequest || updatedRequest.length === 0) {
+    throw new Error('This request has already been responded to')
+  }
 
   // Update the event
   await supabase
@@ -270,7 +276,8 @@ export async function requestMenuRevision(input: RequestRevisionInput) {
 
   const now = new Date().toISOString()
 
-  await supabase
+  // Optimistic lock: only update if still 'sent'
+  const { data: updatedRevision, error: revisionError } = await supabase
     .from('menu_approval_requests')
     .update({
       status: 'revision_requested',
@@ -279,6 +286,12 @@ export async function requestMenuRevision(input: RequestRevisionInput) {
     })
     .eq('id', validated.request_id)
     .eq('client_id', user.entityId)
+    .eq('status', 'sent')
+    .select('id')
+
+  if (revisionError || !updatedRevision || updatedRevision.length === 0) {
+    throw new Error('This request has already been responded to')
+  }
 
   await supabase
     .from('events')

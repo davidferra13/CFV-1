@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     // Find clients whose last event was more than 90 days ago (tier-based thresholds)
     const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
 
-    const { data: chefs } = await supabaseAdmin.from('chefs').select('id')
+    const { data: chefs } = await supabaseAdmin.from('chefs').select('id').limit(10000)
 
     if (!chefs || chefs.length === 0) {
       return NextResponse.json({ message: 'No chefs' })
@@ -30,6 +30,7 @@ export async function GET(request: Request) {
         .from('clients')
         .select('id, display_name')
         .eq('tenant_id', chef.id)
+        .limit(10000)
 
       if (!clients || clients.length === 0) continue
 

@@ -145,7 +145,7 @@ export async function getMessages(filters?: {
   if (filters?.dateFrom) query = query.gte('sent_at', filters.dateFrom)
   if (filters?.dateTo) query = query.lte('sent_at', filters.dateTo)
 
-  const { data: messages, error } = await query.order('sent_at', { ascending: false })
+  const { data: messages, error } = await query.order('sent_at', { ascending: false }).limit(5000)
 
   if (error) {
     console.error('[getMessages] Error:', error)
@@ -179,6 +179,7 @@ export async function getMessageThread(
       .eq('tenant_id', user.tenantId!)
       .eq('client_id', entityId)
       .order('sent_at', { ascending: true })
+      .limit(5000)
 
     if (error) {
       console.error('[getMessageThread] Error:', error)
@@ -200,7 +201,7 @@ export async function getMessageThread(
     query = query.eq(filterColumn, entityId)
   }
 
-  const { data: messages, error } = await query.order('sent_at', { ascending: true })
+  const { data: messages, error } = await query.order('sent_at', { ascending: true }).limit(5000)
 
   if (error) {
     console.error('[getMessageThread] Error:', error)

@@ -20,7 +20,7 @@ async function handleCopilot(request: NextRequest): Promise<NextResponse> {
   }
 
   const supabase: any = createServerClient({ admin: true })
-  const { data: chefs, error } = await supabase.from('chefs').select('id')
+  const { data: chefs, error } = await supabase.from('chefs').select('id').limit(10000)
 
   if (error) {
     return NextResponse.json({ error: 'Failed to fetch tenants' }, { status: 500 })

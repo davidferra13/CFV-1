@@ -439,7 +439,8 @@ export async function signContract(input: SignContractInput) {
     throw new Error('Contract is not ready for signing')
   }
 
-  const { error } = await supabase
+  // Optimistic lock: only update if status is still 'sent' or 'viewed'
+  const { data: updatedContract, error } = await supabase
     .from('event_contracts')
     .update({
       status: 'signed',
@@ -450,10 +451,16 @@ export async function signContract(input: SignContractInput) {
     })
     .eq('id', validated.contract_id)
     .eq('client_id', user.entityId)
+    .in('status', ['sent', 'viewed'])
+    .select('id')
 
   if (error) {
     console.error('[signContract] Error:', error)
     throw new Error('Failed to sign contract')
+  }
+
+  if (!updatedContract || updatedContract.length === 0) {
+    throw new Error('Contract has already been signed or voided')
   }
 
   revalidatePath(`/my-events/${contract.event_id}`)

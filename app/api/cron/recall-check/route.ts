@@ -36,7 +36,10 @@ export async function GET(request: NextRequest) {
     }
 
     // 2. Get all tenants with active recipe ingredients
-    const { data: tenants, error: tenantError } = await supabase.from('chefs').select('id')
+    const { data: tenants, error: tenantError } = await supabase
+      .from('chefs')
+      .select('id')
+      .limit(10000)
 
     if (tenantError || !tenants) {
       return NextResponse.json({ error: 'Failed to fetch tenants' }, { status: 500 })
@@ -49,6 +52,7 @@ export async function GET(request: NextRequest) {
           .from('ingredients')
           .select('name')
           .eq('tenant_id', tenant.id)
+          .limit(10000)
 
         if (!ingredients || ingredients.length === 0) continue
 

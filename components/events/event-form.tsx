@@ -355,13 +355,15 @@ export function EventForm({
       throw new ValidationError('Deposit cannot exceed total amount')
     }
 
-    const eventDateObj = new Date(eventDate)
-    if (eventDateObj < new Date()) {
+    // Validate date is in the future (compare date strings to avoid timezone shift)
+    const todayStr = new Date().toISOString().split('T')[0]
+    if (eventDate < todayStr) {
       throw new ValidationError('Event date must be in the future')
     }
 
     return {
-      event_date: eventDateObj.toISOString(),
+      // Keep as YYYY-MM-DD string — toISOString() shifts dates by timezone offset
+      event_date: eventDate,
       serve_time: serveTime,
       guest_count: guestCountNum,
       location_address: locationAddress,
@@ -561,15 +563,17 @@ export function EventForm({
         throw new ValidationError('Deposit cannot exceed total amount')
       }
 
-      const eventDateObj = new Date(eventDate)
-      if (eventDateObj < new Date()) {
+      // Validate date is in the future (compare date strings to avoid timezone shift)
+      const todayStr2 = new Date().toISOString().split('T')[0]
+      if (eventDate < todayStr2) {
         throw new ValidationError('Event date must be in the future')
       }
 
       if (mode === 'create') {
         const input: CreateEventInput & { idempotency_key?: string } = {
           client_id: clientId,
-          event_date: eventDateObj.toISOString(),
+          // Keep as YYYY-MM-DD string — toISOString() shifts dates by timezone offset
+          event_date: eventDate,
           serve_time: serveTime,
           guest_count: guestCountNum,
           location_address: locationAddress,

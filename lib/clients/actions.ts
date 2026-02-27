@@ -514,7 +514,7 @@ export async function getClients() {
     if (withSoftDeleteFilter) {
       query = query.is('deleted_at' as any, null)
     }
-    return query.order('created_at', { ascending: false })
+    return query.order('created_at', { ascending: false }).limit(5000)
   }
 
   let response = await runQuery(true)
