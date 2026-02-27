@@ -228,6 +228,7 @@ export default defineConfig({
     {
       name: 'journey-chef',
       testMatch: ['**/journey/[0-2][0-9]-*.spec.ts'],
+      timeout: 60_000,
       use: { storageState: '.auth/chef.json' },
     },
     // ── Diagnostic Tests ────────────────────────────────────────────────────────

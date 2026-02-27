@@ -29,7 +29,7 @@ test.describe('Communication Routes - Inbox Triage (#427-431)', () => {
 
   test('inbox triage route has content (#430)', async ({ page }) => {
     await page.goto('/inbox/triage')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -56,7 +56,7 @@ test.describe('Communication Routes - Inquiry Variants (#432-435)', () => {
 
   test('new inquiries route has input controls (#435)', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.inquiriesNew)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -80,7 +80,7 @@ test.describe('Communication Routes - Notifications and Activity (#436-440)', ()
 
   test('chat route has content (#439)', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.chat)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -89,7 +89,7 @@ test.describe('Communication Routes - Notifications and Activity (#436-440)', ()
 
   test('activity route has content (#440)', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.activity)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -100,7 +100,7 @@ test.describe('Communication Routes - Notifications and Activity (#436-440)', ()
 test.describe('Communication Routes - Dynamic Thread and Call Coverage (#496-498)', () => {
   test('call detail route is reachable from calls list (#496)', async ({ page }) => {
     await page.goto('/calls')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -108,32 +108,32 @@ test.describe('Communication Routes - Dynamic Thread and Call Coverage (#496-498
     if ((await callLink.count()) === 0) return
 
     await callLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 
   test('call edit route is reachable from call detail when available (#497)', async ({ page }) => {
     await page.goto('/calls')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
     const callLink = page.locator('a[href^="/calls/"]').first()
     if ((await callLink.count()) === 0) return
     await callLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     const editLink = page.locator('a[href$="/edit"]').first()
     if ((await editLink.count()) === 0) return
 
     await editLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 
   test('inbox triage thread route is reachable from triage list (#498)', async ({ page }) => {
     await page.goto('/inbox/triage')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -141,7 +141,7 @@ test.describe('Communication Routes - Dynamic Thread and Call Coverage (#496-498
     if ((await triageThreadLink.count()) === 0) return
 
     await triageThreadLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 })

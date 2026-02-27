@@ -29,7 +29,7 @@ test.describe('Edge Cases — Disputes (#307)', () => {
 
   test('event financial page shows event-level financials', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.completed}/financial`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 })
@@ -39,7 +39,7 @@ test.describe('Edge Cases — Disputes (#307)', () => {
 test.describe('Edge Cases — Double Booking (#308)', () => {
   test('calendar shows all events for conflict detection', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.calendar)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -48,7 +48,7 @@ test.describe('Edge Cases — Double Booking (#308)', () => {
 
   test('week view shows daily events for overlap detection', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.calendarWeek)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -61,7 +61,7 @@ test.describe('Edge Cases — Double Booking (#308)', () => {
 test.describe('Edge Cases — Refunds (#309)', () => {
   test('refunds page loads', async ({ page }) => {
     await page.goto('/finance/payments/refunds')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 })
@@ -71,13 +71,13 @@ test.describe('Edge Cases — Refunds (#309)', () => {
 test.describe('Edge Cases — Rescheduling (#310)', () => {
   test('event edit page accessible for rescheduling', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.draft}/edit`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('event edit page has date fields', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.draft}/edit`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -108,7 +108,7 @@ test.describe('Edge Cases — Expense Catch-Up (#312)', () => {
 
   test('expenses page shows existing expenses', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.expenses)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -122,7 +122,7 @@ test.describe('Edge Cases — Allergic Reaction (#313)', () => {
   test('food safety incident response accessible', async ({ page }) => {
     // Crisis response plan page
     await page.goto('/settings/protection/crisis')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
@@ -140,14 +140,14 @@ test.describe('Edge Cases — Allergic Reaction (#313)', () => {
 test.describe('Edge Cases — Menu Changes (#314)', () => {
   test('menu editor accessible for last-minute changes', async ({ page, seedIds }) => {
     await page.goto(`/menus/${seedIds.menuId}/editor`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('event detail shows menu approval status', async ({ page, seedIds }) => {
     // MenuApprovalStatus is a component on the event detail page, not a standalone route
     await page.goto(`/events/${seedIds.eventIds.confirmed}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 })
@@ -209,7 +209,7 @@ test.describe('Edge Cases — Grandfather Crunch (#327-335)', () => {
 
   test('event creation form has essential fields (#327)', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.eventsNew)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -224,7 +224,7 @@ test.describe('Edge Cases — Grandfather Crunch (#327-335)', () => {
 
   test('import hub has multiple import modes (#331)', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.import)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 

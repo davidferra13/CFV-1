@@ -55,7 +55,7 @@ test.describe('Inventory Routes - Core (#400-405)', () => {
 
   test('inventory locations page has content (#404)', async ({ page }) => {
     await page.goto('/inventory/locations')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -64,7 +64,7 @@ test.describe('Inventory Routes - Core (#400-405)', () => {
 
   test('inventory transactions page has content (#405)', async ({ page }) => {
     await page.goto('/inventory/transactions')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -91,7 +91,7 @@ test.describe('Inventory Routes - Purchasing and Costing (#406-410)', () => {
 
   test('staff meals inventory page has content (#410)', async ({ page }) => {
     await page.goto('/inventory/staff-meals')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -102,7 +102,7 @@ test.describe('Inventory Routes - Purchasing and Costing (#406-410)', () => {
 test.describe('Inventory Routes - Dynamic Detail Coverage (#491-493)', () => {
   test('inventory audit detail route is reachable from audits list (#491)', async ({ page }) => {
     await page.goto('/inventory/audits')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -110,7 +110,7 @@ test.describe('Inventory Routes - Dynamic Detail Coverage (#491-493)', () => {
     if ((await auditLink.count()) === 0) return
 
     await auditLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 
@@ -118,7 +118,7 @@ test.describe('Inventory Routes - Dynamic Detail Coverage (#491-493)', () => {
     page,
   }) => {
     await page.goto('/inventory/purchase-orders')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -126,7 +126,7 @@ test.describe('Inventory Routes - Dynamic Detail Coverage (#491-493)', () => {
     if ((await purchaseOrderLink.count()) === 0) return
 
     await purchaseOrderLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 

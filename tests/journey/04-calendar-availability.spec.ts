@@ -39,7 +39,7 @@ test.describe('Calendar — Views (#52-53)', () => {
 
   test('month view shows calendar grid or month labels', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.calendar)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -58,7 +58,7 @@ test.describe('Calendar — Views (#52-53)', () => {
 
   test('week view shows day columns or time slots', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.calendarWeek)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -71,7 +71,7 @@ test.describe('Calendar — Views (#52-53)', () => {
 test.describe('Calendar — Availability (#52)', () => {
   test('calendar shows existing events (seed data)', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.calendar)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -89,7 +89,7 @@ test.describe('Calendar — Availability (#52)', () => {
 test.describe('Calendar — Time Blocking (#54-55)', () => {
   test('week view allows interaction (clicking dates)', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.calendarWeek)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -101,7 +101,7 @@ test.describe('Calendar — Time Blocking (#54-55)', () => {
 
   test('calendar navigation works (next/prev month)', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.calendar)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -118,7 +118,7 @@ test.describe('Calendar — Time Blocking (#54-55)', () => {
 test.describe('Calendar — Protected Time (#55)', () => {
   test('week planner shows time slots', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.calendarWeek)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -139,7 +139,7 @@ test.describe('Calendar — Waitlist', () => {
 test.describe('Calendar — Seasonal Planning (#316-320)', () => {
   test('year view shows full year for seasonal overview', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.calendarYear)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -152,7 +152,7 @@ test.describe('Calendar — Seasonal Planning (#316-320)', () => {
 
   test('events upcoming page shows future bookings', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.eventsUpcoming)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -161,7 +161,7 @@ test.describe('Calendar — Seasonal Planning (#316-320)', () => {
 
   test('events confirmed page shows confirmed events', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.eventsConfirmed)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 

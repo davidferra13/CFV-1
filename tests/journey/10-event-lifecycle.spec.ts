@@ -60,7 +60,7 @@ test.describe('Events — Creation (#147)', () => {
 
   test('new event form has required fields', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.eventsNew)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -75,7 +75,7 @@ test.describe('Events — Creation (#147)', () => {
 test.describe('Events — Draft Detail (#148)', () => {
   test('draft event detail page loads', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.draft}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -88,7 +88,7 @@ test.describe('Events — Draft Detail (#148)', () => {
 
   test('draft event shows status indicator', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.draft}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -102,7 +102,7 @@ test.describe('Events — Draft Detail (#148)', () => {
 test.describe('Events — Proposed (#149)', () => {
   test('proposed event detail page loads', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.proposed}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -115,7 +115,7 @@ test.describe('Events — Proposed (#149)', () => {
 test.describe('Events — Paid (#151)', () => {
   test('paid event detail page loads', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.paid}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -128,7 +128,7 @@ test.describe('Events — Paid (#151)', () => {
 test.describe('Events — Confirmed (#152)', () => {
   test('confirmed event detail page loads', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.confirmed}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -141,7 +141,7 @@ test.describe('Events — Confirmed (#152)', () => {
 test.describe('Events — Completed (#153)', () => {
   test('completed event detail page loads', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.completed}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -154,31 +154,31 @@ test.describe('Events — Completed (#153)', () => {
 test.describe('Events — Sub-Pages (#157-160)', () => {
   test('event edit page loads', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.draft}/edit`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('event schedule page loads', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.confirmed}/schedule`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('event DOP (day of operations) mobile page loads', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.confirmed}/dop/mobile`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('event financial page loads', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.completed}/financial`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('event grocery quote page loads', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.confirmed}/grocery-quote`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 })
@@ -188,19 +188,19 @@ test.describe('Events — Sub-Pages (#157-160)', () => {
 test.describe('Events — Close-Out (#164-165)', () => {
   test('event AAR page loads', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.completed}/aar`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('event debrief page loads', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.completed}/debrief`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('event close-out page loads', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.completed}/close-out`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
@@ -231,7 +231,7 @@ test.describe('Events — Caterer Flows (#166-171)', () => {
   test('event detail shows staff panel section', async ({ page, seedIds }) => {
     // EventStaffPanel is a component rendered on the event detail page, not a standalone route
     await page.goto(`/events/${seedIds.eventIds.confirmed}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
     await assertPageHasContent(page)
   })
@@ -258,7 +258,7 @@ test.describe('Events — Bakery Flows (#175-177)', () => {
 test.describe('Events — Readiness Gates (#156)', () => {
   test('event detail shows transition buttons or readiness info', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.paid}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -274,7 +274,7 @@ test.describe('Events — Menu Approval (#163)', () => {
   test('event detail shows menu approval status', async ({ page, seedIds }) => {
     // MenuApprovalStatus is a component on the event detail page, not a standalone route
     await page.goto(`/events/${seedIds.eventIds.confirmed}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
     await assertPageHasContent(page)
   })
@@ -286,7 +286,7 @@ test.describe('Events — Temp Logs', () => {
   test('event detail shows temp log panel', async ({ page, seedIds }) => {
     // TempLogPanel is a component on the event detail page, not a standalone route
     await page.goto(`/events/${seedIds.eventIds.confirmed}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
     await assertPageHasContent(page)
   })
@@ -298,7 +298,7 @@ test.describe('Events — Contingency', () => {
   test('event detail shows contingency panel', async ({ page, seedIds }) => {
     // ContingencyPanel is a component on the event detail page, not a standalone route
     await page.goto(`/events/${seedIds.eventIds.confirmed}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
     await assertPageHasContent(page)
   })

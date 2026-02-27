@@ -28,7 +28,7 @@ test.describe('Communication — Inbox (#178-179)', () => {
 
   test('inbox shows message list or empty state', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.inbox)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -57,7 +57,7 @@ test.describe('Communication — Templates (#180-181)', () => {
 
   test('templates page shows template list or empty state', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.settingsTemplates)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -86,13 +86,13 @@ test.describe('Communication — Client Hub', () => {
 
   test('client communication notes subpage loads', async ({ page }) => {
     await page.goto('/clients/communication/notes')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('client communication follow-ups subpage loads', async ({ page }) => {
     await page.goto('/clients/communication/follow-ups')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 })
@@ -102,7 +102,7 @@ test.describe('Communication — Client Hub', () => {
 test.describe('Communication — Private Chef (#189-190)', () => {
   test('client detail accessible for post-dinner recap context', async ({ page, seedIds }) => {
     await page.goto(`/clients/${seedIds.clientId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -131,7 +131,7 @@ test.describe('Communication — Meal Prep (#193-194)', () => {
 test.describe('Communication — Bakery (#195-196)', () => {
   test('events page accessible for order confirmation context', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.events)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -152,7 +152,7 @@ test.describe('Communication — Activity Feed', () => {
 
   test('activity page shows feed content or empty state', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.activity)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 

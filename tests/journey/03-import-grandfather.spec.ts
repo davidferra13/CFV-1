@@ -22,7 +22,7 @@ test.describe('Import — Hub Page (#11-12)', () => {
 
   test('import hub shows import options', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.import)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -32,7 +32,7 @@ test.describe('Import — Hub Page (#11-12)', () => {
 
   test('import hub has clickable import modes (#13)', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.import)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -48,7 +48,7 @@ test.describe('Import — Hub Page (#11-12)', () => {
 test.describe('Import — CSV Upload (#12)', () => {
   test('import page has file upload capability', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.import)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -66,7 +66,7 @@ test.describe('Import — CSV Upload (#12)', () => {
 test.describe('Import — Brain Dump (#13, #20)', () => {
   test('import page has text input area for brain dump', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.import)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -87,7 +87,7 @@ test.describe('Import — Brain Dump (#13, #20)', () => {
 test.describe('Import — Past Events (#14-16)', () => {
   test('import page references past events capability', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.import)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -106,7 +106,7 @@ test.describe('Import — Recipe Paste (#17)', () => {
 
   test('recipe form has ingredient input', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.recipesNew)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -121,7 +121,7 @@ test.describe('Import — Recipe Paste (#17)', () => {
 test.describe('Import — TakeAChef Sync (#18)', () => {
   test('import page has TakeAChef option or external import', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.import)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -144,7 +144,7 @@ test.describe('Import — Receipt Upload (#19)', () => {
 
   test('expense form has file attachment option', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.expensesNew)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -169,7 +169,7 @@ test.describe('Import — Client Data (#21)', () => {
 
   test('client form has name and email fields', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.clientsNew)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 

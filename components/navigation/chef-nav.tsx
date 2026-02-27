@@ -15,7 +15,17 @@ import { OllamaStatusBadge } from '@/components/dashboard/ollama-status-badge'
 import { ActivityDot } from '@/components/activity/activity-dot'
 import { AppLogo } from '@/components/branding/app-logo'
 
-import { LogOut, Menu, X, ChevronLeft, ChevronRight, ChevronDown, Leaf, Bot } from 'lucide-react'
+import {
+  LogOut,
+  Menu,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  Leaf,
+  Bot,
+  Rss,
+} from 'lucide-react'
 // Navigation items are centrally defined in `components/navigation/nav-config.tsx`
 
 // ─── Sidebar Context ────────────────────────────────
@@ -611,6 +621,26 @@ export function ChefSidebar({
 
             <div className="w-6 border-t border-stone-800 my-1.5" />
 
+            {/* Community — rail icon */}
+            <Link
+              href="/network"
+              title="Community"
+              className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
+                pathname.startsWith('/network')
+                  ? 'text-indigo-400'
+                  : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
+              }`}
+              style={
+                pathname.startsWith('/network')
+                  ? { background: 'rgba(79, 70, 229, 0.08)' }
+                  : undefined
+              }
+            >
+              <Rss className="w-[18px] h-[18px]" />
+            </Link>
+
+            <div className="w-6 border-t border-stone-800 my-1.5" />
+
             {/* Settings */}
             {standaloneBottom.map((item) => {
               const Icon = item.icon
@@ -731,6 +761,43 @@ export function ChefSidebar({
                 <div className="border-t border-stone-800 my-2" />
               </>
             )}
+
+            {/* Community / Chef Network — always visible */}
+            <div className="flex items-center gap-2 px-3 py-1">
+              <div className="flex-1 border-t border-indigo-800/30" />
+              <span className="text-[9px] font-semibold uppercase tracking-widest text-indigo-400">
+                Community
+              </span>
+              <div className="flex-1 border-t border-indigo-800/30" />
+            </div>
+            {[
+              { href: '/network', label: 'Community Hub' },
+              { href: '/network?tab=feed', label: 'Feed' },
+              { href: '/network?tab=channels', label: 'Channels' },
+              { href: '/network?tab=discover', label: 'Discover Chefs' },
+              { href: '/network?tab=connections', label: 'Connections' },
+              { href: '/network/saved', label: 'Saved Posts' },
+              { href: '/network/notifications', label: 'Notifications' },
+            ].map((item) => {
+              const active = isItemActive(pathname, item.href)
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                    active ? 'text-indigo-400' : 'text-stone-500 hover:text-stone-300'
+                  }`}
+                  style={active ? { background: 'rgba(79, 70, 229, 0.08)' } : undefined}
+                >
+                  <Rss
+                    className="w-[18px] h-[18px] flex-shrink-0"
+                    style={{ color: active ? '#818cf8' : 'rgba(99, 102, 241, 0.5)' }}
+                  />
+                  {item.label}
+                </Link>
+              )
+            })}
+            <div className="border-t border-stone-800 my-2" />
 
             {/* Settings */}
             {standaloneBottom.map((item) => {
@@ -1221,6 +1288,44 @@ export function ChefMobileNav({
                   <div className="border-t border-stone-800 my-2" />
                 </>
               )}
+
+              {/* Community / Chef Network — mobile */}
+              <div className="flex items-center gap-2 px-3 py-1">
+                <div className="flex-1 border-t border-indigo-800/30" />
+                <span className="text-[9px] font-semibold uppercase tracking-widest text-indigo-400">
+                  Community
+                </span>
+                <div className="flex-1 border-t border-indigo-800/30" />
+              </div>
+              {[
+                { href: '/network', label: 'Community Hub' },
+                { href: '/network?tab=feed', label: 'Feed' },
+                { href: '/network?tab=channels', label: 'Channels' },
+                { href: '/network?tab=discover', label: 'Discover Chefs' },
+                { href: '/network?tab=connections', label: 'Connections' },
+                { href: '/network/saved', label: 'Saved Posts' },
+                { href: '/network/notifications', label: 'Notifications' },
+              ].map((item) => {
+                const active = isItemActive(pathname, item.href)
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={closeMenu}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      active
+                        ? 'text-indigo-400 bg-indigo-950/50'
+                        : 'text-stone-500 hover:bg-stone-800'
+                    }`}
+                  >
+                    <Rss
+                      className={`w-[18px] h-[18px] ${active ? 'text-indigo-400' : 'text-indigo-500/40'}`}
+                    />
+                    {item.label}
+                  </Link>
+                )
+              })}
+              <div className="border-t border-stone-800 my-2" />
 
               {/* Settings */}
               {standaloneBottom.map((item) => {

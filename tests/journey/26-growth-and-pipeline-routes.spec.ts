@@ -55,7 +55,7 @@ test.describe('Growth Routes - Prospecting (#416-420)', () => {
 
   test('prospecting queue route has content (#420)', async ({ page }) => {
     await page.goto('/prospecting/queue')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -82,7 +82,7 @@ test.describe('Growth Routes - Proposals and Reputation (#421-426)', () => {
 
   test('reviews route has content (#425)', async ({ page }) => {
     await page.goto('/reviews')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -91,7 +91,7 @@ test.describe('Growth Routes - Proposals and Reputation (#421-426)', () => {
 
   test('reputation mentions route has content (#426)', async ({ page }) => {
     await page.goto('/reputation/mentions')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -106,7 +106,7 @@ test.describe('Growth Routes - Marketing Detail Coverage (#494-495)', () => {
 
   test('marketing detail route is reachable from marketing list (#495)', async ({ page }) => {
     await page.goto('/marketing')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -114,7 +114,7 @@ test.describe('Growth Routes - Marketing Detail Coverage (#494-495)', () => {
     if ((await marketingDetailLink.count()) === 0) return
 
     await marketingDetailLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 })
@@ -122,7 +122,7 @@ test.describe('Growth Routes - Marketing Detail Coverage (#494-495)', () => {
 test.describe('Growth Routes - Prospecting Dynamic Coverage (#499)', () => {
   test('prospecting detail route is reachable from queue list (#499)', async ({ page }) => {
     await page.goto('/prospecting/queue')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -130,7 +130,7 @@ test.describe('Growth Routes - Prospecting Dynamic Coverage (#499)', () => {
     if ((await prospectLink.count()) === 0) return
 
     await prospectLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 })

@@ -31,7 +31,7 @@ test.describe('Finance — Overview (#131-133)', () => {
 
   test('financials shows revenue or summary content', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.financials)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -56,7 +56,7 @@ test.describe('Finance — Expenses (#134)', () => {
 
   test('new expense form has amount and description fields', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.expensesNew)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -80,19 +80,19 @@ test.describe('Finance — Invoices (#136)', () => {
 
   test('invoices sent page loads', async ({ page }) => {
     await page.goto('/finance/invoices/sent')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('invoices paid page loads', async ({ page }) => {
     await page.goto('/finance/invoices/paid')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('invoices overdue page loads', async ({ page }) => {
     await page.goto('/finance/invoices/overdue')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 })
@@ -106,13 +106,13 @@ test.describe('Finance — Payments (#135)', () => {
 
   test('deposits page loads', async ({ page }) => {
     await page.goto('/finance/payments/deposits')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('refunds page loads', async ({ page }) => {
     await page.goto('/finance/payments/refunds')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 })
@@ -130,7 +130,7 @@ test.describe('Finance — Ledger (#140)', () => {
 
   test('transaction log page loads', async ({ page }) => {
     await page.goto('/finance/ledger/transaction-log')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 })
@@ -152,31 +152,31 @@ test.describe('Finance — Profitability (#137-138)', () => {
 
   test('profit by event report loads', async ({ page }) => {
     await page.goto('/finance/reporting/profit-by-event')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('expense by category report loads', async ({ page }) => {
     await page.goto('/finance/reporting/expense-by-category')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('revenue by month report loads', async ({ page }) => {
     await page.goto('/finance/reporting/revenue-by-month')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('revenue by client report loads', async ({ page }) => {
     await page.goto('/finance/reporting/revenue-by-client')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('YTD summary report loads', async ({ page }) => {
     await page.goto('/finance/reporting/year-to-date-summary')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 })
@@ -190,13 +190,13 @@ test.describe('Finance — Tax Center (#139)', () => {
 
   test('tax summary report loads', async ({ page }) => {
     await page.goto('/finance/reporting/tax-summary')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('quarterly estimates page loads', async ({ page }) => {
     await page.goto('/finance/tax/quarterly')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 })
@@ -206,7 +206,7 @@ test.describe('Finance — Tax Center (#139)', () => {
 test.describe('Finance — Mileage & Tips (#141-142)', () => {
   test('expense form can capture tips and mileage', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.expensesNew)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -246,7 +246,7 @@ test.describe('Finance — Payouts (#145)', () => {
 
   test('Stripe payouts page loads', async ({ page }) => {
     await page.goto('/finance/payouts/stripe-payouts')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 })

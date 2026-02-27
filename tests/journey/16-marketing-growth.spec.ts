@@ -27,7 +27,7 @@ test.describe('Marketing — Hub (#255-256)', () => {
 
   test('marketing page shows content', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.marketing)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -44,7 +44,7 @@ test.describe('Marketing — Push Dinners (#256-258)', () => {
 
   test('push dinners page has content', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.marketingPushDinners)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -93,7 +93,7 @@ test.describe('Marketing — Testimonials (#259-260)', () => {
 
   test('testimonials page shows content', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.testimonials)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -110,7 +110,7 @@ test.describe('Marketing — Embed Widget (#265)', () => {
 
   test('embed settings shows embed code area', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.settingsEmbed)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 

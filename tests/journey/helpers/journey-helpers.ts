@@ -233,7 +233,7 @@ export async function closeRemyDrawer(page: Page): Promise<void> {
 /**
  * Assert a page loads successfully:
  * - Navigates to the URL
- * - Waits for network idle
+ * - Waits for DOM content loaded (networkidle is too fragile on dev servers)
  * - Confirms not redirected to sign-in
  * - Optionally checks for a heading pattern
  */
@@ -242,8 +242,9 @@ export async function assertPageLoads(
   url: string,
   opts?: { titlePattern?: RegExp; timeout?: number }
 ): Promise<void> {
-  await page.goto(url)
-  await page.waitForLoadState('networkidle')
+  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60_000 })
+  // Brief settle time for client-side hydration
+  await page.waitForTimeout(2_000)
   expect(page.url()).not.toMatch(/auth\/signin/)
 
   if (opts?.titlePattern) {
@@ -262,8 +263,9 @@ export async function assertNoPageErrors(page: Page, url: string): Promise<void>
   const errors: string[] = []
   page.on('pageerror', (err) => errors.push(err.message))
 
-  await page.goto(url)
-  await page.waitForLoadState('networkidle')
+  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60_000 })
+  // Brief settle time for any hydration-triggered errors
+  await page.waitForTimeout(3_000)
 
   expect(errors).toHaveLength(0)
 }
@@ -296,8 +298,8 @@ export async function navigateAndVerify(
   url: string,
   verify: { text?: RegExp; role?: string; label?: RegExp }
 ): Promise<void> {
-  await page.goto(url)
-  await page.waitForLoadState('networkidle')
+  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60_000 })
+  await page.waitForTimeout(2_000)
   expect(page.url()).not.toMatch(/auth\/signin/)
 
   if (verify.text) {

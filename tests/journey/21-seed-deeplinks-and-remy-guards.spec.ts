@@ -19,7 +19,7 @@ import {
 test.describe('Journey Extension - Seeded Pipeline Deep Links (#336-340)', () => {
   test('inquiry detail loads for awaiting-chef record (#336)', async ({ page, seedIds }) => {
     await page.goto(`/inquiries/${seedIds.inquiryIds.awaitingChef}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
@@ -28,7 +28,7 @@ test.describe('Journey Extension - Seeded Pipeline Deep Links (#336-340)', () =>
     seedIds,
   }) => {
     await page.goto(`/inquiries/${seedIds.inquiryIds.awaitingClient}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -37,19 +37,19 @@ test.describe('Journey Extension - Seeded Pipeline Deep Links (#336-340)', () =>
 
   test('draft quote detail page loads (#338)', async ({ page, seedIds }) => {
     await page.goto(`/quotes/${seedIds.quoteIds.draft}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('sent quote edit page loads (#339)', async ({ page, seedIds }) => {
     await page.goto(`/quotes/${seedIds.quoteIds.sent}/edit`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('accepted quote detail has form controls or content (#340)', async ({ page, seedIds }) => {
     await page.goto(`/quotes/${seedIds.quoteIds.accepted}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -66,19 +66,19 @@ test.describe('Journey Extension - Seeded Pipeline Deep Links (#336-340)', () =>
 test.describe('Journey Extension - Seeded Client Segments (#341-344)', () => {
   test('primary seeded client page loads (#341)', async ({ page, seedIds }) => {
     await page.goto(`/clients/${seedIds.clientIds.primary}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('secondary seeded client page loads (#342)', async ({ page, seedIds }) => {
     await page.goto(`/clients/${seedIds.clientIds.secondary}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('dormant seeded client page has content (#343)', async ({ page, seedIds }) => {
     await page.goto(`/clients/${seedIds.clientIds.dormant}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -87,7 +87,7 @@ test.describe('Journey Extension - Seeded Client Segments (#341-344)', () => {
 
   test('standard seeded client page has editable controls (#344)', async ({ page, seedIds }) => {
     await page.goto(`/clients/${seedIds.clientIds.standard}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -100,13 +100,13 @@ test.describe('Journey Extension - Seeded Client Segments (#341-344)', () => {
 test.describe('Journey Extension - Event and Finance Regression Baseline (#345-348)', () => {
   test('confirmed event invoice page loads (#345)', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.confirmed}/invoice`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('confirmed event receipts page has content (#346)', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.confirmed}/receipts`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -125,7 +125,7 @@ test.describe('Journey Extension - Event and Finance Regression Baseline (#345-3
 test.describe('Journey Extension - Remy Drawer Guardrails (#349-350)', () => {
   test('Remy drawer opens on inquiry detail and accepts text (#349)', async ({ page, seedIds }) => {
     await page.goto(`/inquiries/${seedIds.inquiryIds.awaitingChef}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -138,7 +138,7 @@ test.describe('Journey Extension - Remy Drawer Guardrails (#349-350)', () => {
 
   test('Remy drawer opens on quote detail and accepts text (#350)', async ({ page, seedIds }) => {
     await page.goto(`/quotes/${seedIds.quoteIds.draft}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 

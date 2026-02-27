@@ -27,7 +27,7 @@ test.describe('Safety — Compliance Hub (#232-233)', () => {
 
   test('compliance page shows content', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.settingsCompliance)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -44,7 +44,7 @@ test.describe('Safety — HACCP Plan (#232)', () => {
 
   test('HACCP page has content', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.settingsComplianceHaccp)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -74,13 +74,13 @@ test.describe('Safety — Certifications (#233, #239)', () => {
 test.describe('Safety — Temperature Logs (#234-235)', () => {
   test('event detail page loads (contains temp log panel)', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.confirmed}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('event detail page has content including temp log', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.confirmed}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -93,7 +93,7 @@ test.describe('Safety — Temperature Logs (#234-235)', () => {
 test.describe('Safety — Cross-Contamination (#236)', () => {
   test('menu detail accessible for allergen review', async ({ page, seedIds }) => {
     await page.goto(`/menus/${seedIds.menuId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -106,7 +106,7 @@ test.describe('Safety — Cross-Contamination (#236)', () => {
 test.describe('Safety — Allergens (#237)', () => {
   test('recipe detail shows ingredient allergen info', async ({ page, seedIds }) => {
     await page.goto(`/recipes/${seedIds.recipeId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -124,7 +124,7 @@ test.describe('Safety — Allergens (#237)', () => {
 test.describe('Safety — Caterer (#240-241)', () => {
   test('event detail shows contingency panel (outdoor safety)', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.confirmed}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
     await assertPageHasContent(page)
   })
@@ -155,25 +155,25 @@ test.describe('Safety — Food Truck (#245-246)', () => {
 test.describe('Safety — Emergency & Crisis', () => {
   test('emergency contacts page loads', async ({ page }) => {
     await page.goto('/settings/emergency')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('crisis response plan page loads', async ({ page }) => {
     await page.goto('/settings/protection/crisis')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('business continuity plan page loads', async ({ page }) => {
     await page.goto('/settings/protection/continuity')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('NDA & photo permissions page loads', async ({ page }) => {
     await page.goto('/settings/protection/nda')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 })

@@ -27,7 +27,7 @@ test.describe('Recipes — Library (#108-109)', () => {
 
   test('recipes page shows recipe list or empty state', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.recipes)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -36,7 +36,7 @@ test.describe('Recipes — Library (#108-109)', () => {
 
   test('recipes page has search functionality', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.recipes)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -58,7 +58,7 @@ test.describe('Recipes — Create (#109)', () => {
 
   test('new recipe form has ingredient and instruction fields', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.recipesNew)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -73,7 +73,7 @@ test.describe('Recipes — Create (#109)', () => {
 test.describe('Recipes — Detail & Scaling (#108, #110-111)', () => {
   test('recipe detail page loads (seeded recipe)', async ({ page, seedIds }) => {
     await page.goto(`/recipes/${seedIds.recipeId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -86,7 +86,7 @@ test.describe('Recipes — Detail & Scaling (#108, #110-111)', () => {
 
   test('recipe detail shows ingredients and instructions', async ({ page, seedIds }) => {
     await page.goto(`/recipes/${seedIds.recipeId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -96,7 +96,7 @@ test.describe('Recipes — Detail & Scaling (#108, #110-111)', () => {
 
   test('recipe edit page loads', async ({ page, seedIds }) => {
     await page.goto(`/recipes/${seedIds.recipeId}/edit`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 })
@@ -122,7 +122,7 @@ test.describe('Recipes — Components (#117)', () => {
 
   test('components page has content', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.culinaryComponents)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -151,7 +151,7 @@ test.describe('Menus — Building (#112-113)', () => {
 
   test('menus page shows menu list or empty state', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.menus)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -160,7 +160,7 @@ test.describe('Menus — Building (#112-113)', () => {
 
   test('menu detail page loads (seeded menu)', async ({ page, seedIds }) => {
     await page.goto(`/menus/${seedIds.menuId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -169,7 +169,7 @@ test.describe('Menus — Building (#112-113)', () => {
 
   test('menu editor page loads', async ({ page, seedIds }) => {
     await page.goto(`/menus/${seedIds.menuId}/editor`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 })
@@ -191,7 +191,7 @@ test.describe('Recipes — Prep Workspace (#119-121)', () => {
 
   test('prep page has content', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.culinaryPrep)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -204,7 +204,7 @@ test.describe('Recipes — Prep Workspace (#119-121)', () => {
 test.describe('Recipes — Private Chef Menu Building (#119-121)', () => {
   test('can access menu detail for tasting menu creation', async ({ page, seedIds }) => {
     await page.goto(`/menus/${seedIds.menuId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 })
@@ -214,7 +214,7 @@ test.describe('Recipes — Private Chef Menu Building (#119-121)', () => {
 test.describe('Recipes — Caterer Scaling (#122-124)', () => {
   test('recipe detail supports viewing/scaling (portion calc)', async ({ page, seedIds }) => {
     await page.goto(`/recipes/${seedIds.recipeId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -228,7 +228,7 @@ test.describe('Recipes — Caterer Scaling (#122-124)', () => {
 test.describe('Recipes — Meal Prep Batch (#125-127)', () => {
   test('recipes page allows browsing by cost', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.recipes)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -241,7 +241,7 @@ test.describe('Recipes — Meal Prep Batch (#125-127)', () => {
 test.describe('Recipes — Bakery Costing (#128-130)', () => {
   test('culinary costing page supports multi-component cost analysis', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.culinaryCosting)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -254,7 +254,7 @@ test.describe('Recipes — Bakery Costing (#128-130)', () => {
 test.describe('Recipes and Menus - New Assistant Panels (#547-551)', () => {
   test('recipe edit shows Product Lookup toggle button (#547)', async ({ page, seedIds }) => {
     await page.goto(`/recipes/${seedIds.recipeId}/edit`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -266,7 +266,7 @@ test.describe('Recipes and Menus - New Assistant Panels (#547-551)', () => {
     seedIds,
   }) => {
     await page.goto(`/recipes/${seedIds.recipeId}/edit`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -288,7 +288,7 @@ test.describe('Recipes and Menus - New Assistant Panels (#547-551)', () => {
 
   test('Product Lookup panel can be hidden after opening (#549)', async ({ page, seedIds }) => {
     await page.goto(`/recipes/${seedIds.recipeId}/edit`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -307,7 +307,7 @@ test.describe('Recipes and Menus - New Assistant Panels (#547-551)', () => {
 
   test('menu editor shows Cocktail Browser panel (#550)', async ({ page, seedIds }) => {
     await page.goto(`/menus/${seedIds.menuId}/editor`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -321,7 +321,7 @@ test.describe('Recipes and Menus - New Assistant Panels (#547-551)', () => {
     seedIds,
   }) => {
     await page.goto(`/menus/${seedIds.menuId}/editor`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -342,7 +342,7 @@ test.describe('Menus - Translation Panel (#552-555)', () => {
     seedIds,
   }) => {
     await page.goto(`/menus/${seedIds.menuId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -355,7 +355,7 @@ test.describe('Menus - Translation Panel (#552-555)', () => {
     seedIds,
   }) => {
     await page.goto(`/menus/${seedIds.menuId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -374,7 +374,7 @@ test.describe('Menus - Translation Panel (#552-555)', () => {
     seedIds,
   }) => {
     await page.goto(`/menus/${seedIds.menuId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -393,7 +393,7 @@ test.describe('Menus - Translation Panel (#552-555)', () => {
 
   test('Hide Translation collapses the translation panel (#555)', async ({ page, seedIds }) => {
     await page.goto(`/menus/${seedIds.menuId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 

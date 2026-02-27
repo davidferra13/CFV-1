@@ -25,7 +25,7 @@ test.describe('Archetype: Private Chef (#22-26)', () => {
 
   test('profile has editable culinary fields', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.settingsMyProfile)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -188,7 +188,7 @@ test.describe('Archetype Setup — Event Creation (#64-80)', () => {
 test.describe('Archetype Setup — Module Toggles (#25)', () => {
   test('settings modules page shows all available modules', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.settingsModules)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 

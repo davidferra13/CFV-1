@@ -29,7 +29,7 @@ test.describe('Culinary Subsystems - Hub and Prep (#365-368)', () => {
 
   test('prep shopping page has content (#368)', async ({ page }) => {
     await page.goto('/culinary/prep/shopping')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -52,7 +52,7 @@ test.describe('Culinary Subsystems - Components (#369-372)', () => {
 
   test('ferments component page has content (#372)', async ({ page }) => {
     await page.goto('/culinary/components/ferments')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -75,7 +75,7 @@ test.describe('Culinary Subsystems - Costing and Ingredients (#373-376)', () => 
 
   test('ingredient vendor notes route has content (#376)', async ({ page }) => {
     await page.goto('/culinary/ingredients/vendor-notes')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -90,7 +90,7 @@ test.describe('Culinary Subsystems - Menus and Recipes (#377-378)', () => {
 
   test('culinary recipe tags route has content (#378)', async ({ page }) => {
     await page.goto('/culinary/recipes/tags')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 

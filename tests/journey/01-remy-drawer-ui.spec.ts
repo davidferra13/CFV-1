@@ -15,7 +15,7 @@ import { openRemyDrawer, closeRemyDrawer, JOURNEY_ROUTES } from './helpers/journ
 test.describe('Remy Drawer — Open & Close', () => {
   test('opens Remy drawer with Ctrl+K (#286)', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     const input = page.locator('[data-remy-input]')
@@ -24,7 +24,7 @@ test.describe('Remy Drawer — Open & Close', () => {
 
   test('closes Remy drawer with Escape', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
     await closeRemyDrawer(page)
 
@@ -34,7 +34,7 @@ test.describe('Remy Drawer — Open & Close', () => {
 
   test('opens Remy drawer via mascot button click', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     // Find and click the mascot/floating button
     const mascotBtn = page
@@ -52,7 +52,7 @@ test.describe('Remy Drawer — Open & Close', () => {
 
   test('drawer has close button', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     const closeBtn = page
@@ -68,7 +68,7 @@ test.describe('Remy Drawer — Open & Close', () => {
 test.describe('Remy Drawer — Input Field', () => {
   test('input field accepts text', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     const input = page.locator('[data-remy-input]')
@@ -78,7 +78,7 @@ test.describe('Remy Drawer — Input Field', () => {
 
   test('input field has placeholder text', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     const input = page.locator('[data-remy-input]')
@@ -89,7 +89,7 @@ test.describe('Remy Drawer — Input Field', () => {
 
   test('input field has character limit indicator', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     const input = page.locator('[data-remy-input]')
@@ -107,7 +107,7 @@ test.describe('Remy Drawer — Input Field', () => {
 
   test('input field enforces max length of 2000', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     const input = page.locator('[data-remy-input]')
@@ -124,7 +124,7 @@ test.describe('Remy Drawer — Input Field', () => {
 test.describe('Remy Drawer — Quick Prompts', () => {
   test('shows quick prompt starters on dashboard', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     // Quick prompts are context-aware buttons
@@ -138,7 +138,7 @@ test.describe('Remy Drawer — Quick Prompts', () => {
 
   test('shows context-aware prompts on events page', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.events)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     // Just verify the drawer opened successfully on this page
@@ -148,7 +148,7 @@ test.describe('Remy Drawer — Quick Prompts', () => {
 
   test('shows context-aware prompts on clients page', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.clients)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     const input = page.locator('[data-remy-input]')
@@ -157,7 +157,7 @@ test.describe('Remy Drawer — Quick Prompts', () => {
 
   test('shows context-aware prompts on financials page', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.financials)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     const input = page.locator('[data-remy-input]')
@@ -166,7 +166,7 @@ test.describe('Remy Drawer — Quick Prompts', () => {
 
   test('shows context-aware prompts on recipes page', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.recipes)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     const input = page.locator('[data-remy-input]')
@@ -179,7 +179,7 @@ test.describe('Remy Drawer — Quick Prompts', () => {
 test.describe('Remy Drawer — Collapse & Resize', () => {
   test('drawer has collapse button', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     const collapseBtn = page
@@ -193,7 +193,7 @@ test.describe('Remy Drawer — Collapse & Resize', () => {
 
   test('drawer has resize handle', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     // Resize handle is on the left edge of the drawer
@@ -211,7 +211,7 @@ test.describe('Remy Drawer — Collapse & Resize', () => {
 test.describe('Remy Drawer — Voice & File Buttons', () => {
   test('voice input button is visible (if browser supports it)', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     // Voice button may or may not be present depending on browser support
@@ -227,7 +227,7 @@ test.describe('Remy Drawer — Voice & File Buttons', () => {
 
   test('file attachment button exists', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     // Paperclip icon for file attachment
@@ -247,7 +247,7 @@ test.describe('Remy Drawer — Voice & File Buttons', () => {
 test.describe('Remy Drawer — Settings Panel', () => {
   test('settings button exists in drawer header', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     // Settings gear icon
@@ -261,7 +261,7 @@ test.describe('Remy Drawer — Settings Panel', () => {
 
   test('sound toggle button exists', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     // Volume icon for sound toggle
@@ -281,7 +281,7 @@ test.describe('Remy Drawer — Settings Panel', () => {
 test.describe('Remy Drawer — View Tabs', () => {
   test('drawer has multiple view tabs', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     // View tabs: Chat, List, Search, Activity, Templates
@@ -312,7 +312,7 @@ test.describe('Remy Drawer — Available on All Pages', () => {
   for (const p of pagesToTest) {
     test(`Remy drawer opens on ${p.name} page`, async ({ page }) => {
       await page.goto(p.url)
-      await page.waitForLoadState('networkidle')
+      await page.waitForLoadState('domcontentloaded')
 
       // Skip if redirected to auth
       if (page.url().includes('auth/signin')) return
@@ -330,7 +330,7 @@ test.describe('Remy Drawer — Available on All Pages', () => {
 test.describe('Remy Companion - Persistent Mascot Redesign (#542-546)', () => {
   test('mascot remains visible when drawer is open (#542)', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -348,7 +348,7 @@ test.describe('Remy Companion - Persistent Mascot Redesign (#542-546)', () => {
 
   test('mascot can be minimized from hover control (#543)', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -369,7 +369,7 @@ test.describe('Remy Companion - Persistent Mascot Redesign (#542-546)', () => {
 
   test('minimized mascot state persists across reload (#544)', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -385,20 +385,20 @@ test.describe('Remy Companion - Persistent Mascot Redesign (#542-546)', () => {
       .click()
 
     await page.reload()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     await expect(page.getByRole('button', { name: /restore remy/i }).first()).toBeVisible()
   })
 
   test('restore control returns mascot to normal state (#545)', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
     await page.evaluate(() => localStorage.setItem('remy-minimized', 'true'))
     await page.reload()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     const restoreButton = page.getByRole('button', { name: /restore remy/i }).first()
     await expect(restoreButton).toBeVisible()
@@ -409,7 +409,7 @@ test.describe('Remy Companion - Persistent Mascot Redesign (#542-546)', () => {
 
   test('mascot click toggles drawer open and closed (#546)', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 

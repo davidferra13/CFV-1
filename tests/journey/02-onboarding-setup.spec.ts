@@ -22,7 +22,7 @@ test.describe('Onboarding — Hub & Wizard (#1-2)', () => {
 
   test('onboarding hub shows phase steps or checklist', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.onboarding)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     // Should show onboarding phases or a redirect to the wizard
     const bodyText = await page.locator('body').innerText()
@@ -40,7 +40,7 @@ test.describe('Onboarding — Profile Setup (#2)', () => {
 
   test('profile page has name/business fields', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.settingsMyProfile)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -62,7 +62,7 @@ test.describe('Onboarding — Archetype Selection (#3)', () => {
 
   test('modules page shows toggleable modules', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.settingsModules)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -90,7 +90,7 @@ test.describe('Onboarding — Pricing & Service Defaults (#6-7)', () => {
 
   test('profile page has editable fields', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.settingsMyProfile)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -110,7 +110,7 @@ test.describe('Onboarding — Module Toggles (#5, #9)', () => {
 
   test('can view free vs Pro module distinction', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.settingsModules)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -129,21 +129,17 @@ test.describe('Onboarding — Calendar Setup (#10)', () => {
 
   test('calendar shows grid or month view', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.calendar)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
-    const calendarEl = page
-      .locator('table, [role="grid"], .calendar, [class*="calendar"]')
+    // Check for month heading (e.g., "February 2026")
+    const monthHeading = page
+      .getByRole('heading', {
+        name: /january|february|march|april|may|june|july|august|september|october|november|december/i,
+      })
       .first()
-      .or(
-        page
-          .getByText(
-            /january|february|march|april|may|june|july|august|september|october|november|december/i
-          )
-          .first()
-      )
-    await expect(calendarEl).toBeVisible({ timeout: 10_000 })
+    await expect(monthHeading).toBeVisible({ timeout: 10_000 })
   })
 
   test('integrations page loads (Google Calendar sync)', async ({ page }) => {
@@ -164,7 +160,7 @@ test.describe('Onboarding — Dashboard Post-Setup (#1)', () => {
 
   test('dashboard shows content widgets', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -174,7 +170,7 @@ test.describe('Onboarding — Dashboard Post-Setup (#1)', () => {
 
   test('dashboard may show onboarding checklist', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 

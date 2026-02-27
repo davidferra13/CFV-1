@@ -32,7 +32,6 @@ import {
   PieChart,
   Presentation,
   RefreshCw,
-  Rss,
   Settings,
   ShieldAlert,
   Star,
@@ -665,24 +664,6 @@ export const navGroups: NavGroup[] = [
           { href: '/social/connections', label: 'Platform Connections' },
           { href: '/social/settings', label: 'Queue Settings' },
         ],
-      },
-      {
-        href: '/network',
-        label: 'Community',
-        icon: Rss,
-        children: [
-          { href: '/network?tab=feed', label: 'Feed' },
-          { href: '/network?tab=channels', label: 'Channels' },
-          { href: '/network?tab=discover', label: 'Discover Chefs' },
-          { href: '/network?tab=connections', label: 'Connections' },
-          { href: '/network/saved', label: 'Saved Posts' },
-          { href: '/network/notifications', label: 'Notifications' },
-        ],
-      },
-      {
-        href: '/community/templates',
-        label: 'Community Templates',
-        icon: FileText,
       },
       {
         href: '/reputation/mentions',

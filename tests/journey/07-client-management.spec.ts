@@ -27,7 +27,7 @@ test.describe('Clients — Directory (#81-82)', () => {
 
   test('clients page shows client list or empty state', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.clients)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -52,7 +52,7 @@ test.describe('Clients — Directory (#81-82)', () => {
 test.describe('Clients — Search (#82)', () => {
   test('clients page has a search input', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.clients)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -73,7 +73,7 @@ test.describe('Clients — Search (#82)', () => {
 test.describe('Clients — Detail Page (#82-85)', () => {
   test('client detail page loads (seeded client)', async ({ page, seedIds }) => {
     await page.goto(`/clients/${seedIds.clientId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -86,7 +86,7 @@ test.describe('Clients — Detail Page (#82-85)', () => {
 
   test('client detail shows profile information', async ({ page, seedIds }) => {
     await page.goto(`/clients/${seedIds.clientId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -105,7 +105,7 @@ test.describe('Clients — Dietary & Allergy (#83-84)', () => {
 
   test('client detail has dietary/allergy section', async ({ page, seedIds }) => {
     await page.goto(`/clients/${seedIds.clientId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -127,7 +127,7 @@ test.describe('Clients — Invitations (#92-93)', () => {
 
   test('new client form has invite fields', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.clientsNew)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -166,7 +166,7 @@ test.describe('Clients — Revenue Analytics (#89)', () => {
 test.describe('Clients — Private Chef Flows (#94-97)', () => {
   test('client detail has household/kitchen profile area', async ({ page, seedIds }) => {
     await page.goto(`/clients/${seedIds.clientId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -179,7 +179,7 @@ test.describe('Clients — Private Chef Flows (#94-97)', () => {
 test.describe('Clients — Caterer Flows (#98-100)', () => {
   test('events page shows guest counts', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.events)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -192,7 +192,7 @@ test.describe('Clients — Caterer Flows (#98-100)', () => {
 test.describe('Clients — Meal Prep Flows (#101-103)', () => {
   test('clients page shows recurring meal prep clients', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.clients)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -213,7 +213,7 @@ test.describe('Clients — Restaurant Flows (#104-105)', () => {
 test.describe('Clients — Bakery Flows (#106-107)', () => {
   test('events page accessible for order management', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.events)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 

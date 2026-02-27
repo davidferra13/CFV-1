@@ -47,7 +47,7 @@ test.describe('Finance Deep Routes - Invoice States (#383-386)', () => {
 
   test('refunded invoices route has content (#386)', async ({ page }) => {
     await page.goto('/finance/invoices/refunded')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -70,7 +70,7 @@ test.describe('Finance Deep Routes - Payments and Payouts (#387-390)', () => {
 
   test('payout reconciliation route has content (#390)', async ({ page }) => {
     await page.goto('/finance/payouts/reconciliation')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -93,7 +93,7 @@ test.describe('Finance Deep Routes - Planning and Tax (#391-394)', () => {
 
   test('year-end route has content (#394)', async ({ page }) => {
     await page.goto('/finance/year-end')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -120,7 +120,7 @@ test.describe('Finance Deep Routes - Payroll and Tax Extensions (#481-485)', () 
 
   test('tax 1099-NEC route has content (#485)', async ({ page }) => {
     await page.goto('/finance/tax/1099-nec')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -145,7 +145,7 @@ test.describe('Finance Deep Routes - Remaining Static Coverage (#507-509)', () =
 test.describe('Finance Deep Routes - Dynamic Detail Coverage (#512)', () => {
   test('expense detail route is reachable from expenses list (#512)', async ({ page }) => {
     await page.goto('/expenses')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -153,7 +153,7 @@ test.describe('Finance Deep Routes - Dynamic Detail Coverage (#512)', () => {
     if ((await expenseLink.count()) === 0) return
 
     await expenseLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 })

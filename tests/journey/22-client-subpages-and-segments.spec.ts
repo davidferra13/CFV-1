@@ -29,7 +29,7 @@ test.describe('Client Deep Links - Preferences (#351-354)', () => {
 
   test('favorite dishes preferences page has content (#354)', async ({ page }) => {
     await page.goto('/clients/preferences/favorite-dishes')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -56,7 +56,7 @@ test.describe('Client Deep Links - History and Insights (#355-359)', () => {
 
   test('top clients insights page has content (#359)', async ({ page }) => {
     await page.goto('/clients/insights/top-clients')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -75,7 +75,7 @@ test.describe('Client Deep Links - Segmentation (#360-362)', () => {
 
   test('duplicates page has content (#362)', async ({ page }) => {
     await page.goto('/clients/duplicates')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -86,7 +86,7 @@ test.describe('Client Deep Links - Segmentation (#360-362)', () => {
 test.describe('Client Deep Links - Recurring Service with Seed IDs (#363-364)', () => {
   test('primary client recurring service page loads (#363)', async ({ page, seedIds }) => {
     await page.goto(`/clients/${seedIds.clientIds.primary}/recurring`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
@@ -95,7 +95,7 @@ test.describe('Client Deep Links - Recurring Service with Seed IDs (#363-364)', 
     seedIds,
   }) => {
     await page.goto(`/clients/${seedIds.clientIds.secondary}/recurring`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 

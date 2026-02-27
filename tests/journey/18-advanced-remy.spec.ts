@@ -22,7 +22,7 @@ import {
 test.describe('Advanced Remy — Memory (#286-288)', () => {
   test('Remy drawer opens and accepts memory-related input', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     const input = page.locator('[data-remy-input]')
@@ -36,7 +36,7 @@ test.describe('Advanced Remy — Memory (#286-288)', () => {
 
   test('Remy drawer accepts "show memories" input', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     const input = page.locator('[data-remy-input]')
@@ -64,7 +64,7 @@ test.describe('Advanced Remy — Personality (#289-290)', () => {
 
   test('Remy drawer settings accessible from drawer', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     // Look for settings/gear icon in drawer header
@@ -83,7 +83,7 @@ test.describe('Advanced Remy — Personality (#289-290)', () => {
 test.describe('Advanced Remy — Capabilities (#291)', () => {
   test('commands page shows Remy capabilities', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.commands)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -96,7 +96,7 @@ test.describe('Advanced Remy — Capabilities (#291)', () => {
 test.describe('Advanced Remy — Action Log (#292)', () => {
   test('Remy drawer has view tabs including action log', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await openRemyDrawer(page)
 
     // View tabs include Activity/Action Log tab
@@ -116,7 +116,7 @@ test.describe('Advanced Remy — Action Log (#292)', () => {
 test.describe('Advanced Remy — Nudges (#293-295)', () => {
   test('dashboard shows priority queue or next actions', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.dashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -129,7 +129,7 @@ test.describe('Advanced Remy — Nudges (#293-295)', () => {
 
   test('queue page shows prioritized items or empty state', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.queue)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -150,7 +150,7 @@ test.describe('Advanced Remy — Privacy Settings', () => {
 
   test('AI privacy page shows privacy controls', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.settingsAiPrivacy)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 

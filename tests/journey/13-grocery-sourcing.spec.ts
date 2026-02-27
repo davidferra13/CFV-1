@@ -19,13 +19,13 @@ import {
 test.describe('Grocery — Event Grocery Quote (#225-226)', () => {
   test('event grocery quote page loads', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.confirmed}/grocery-quote`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('grocery quote page has content', async ({ page, seedIds }) => {
     await page.goto(`/events/${seedIds.eventIds.confirmed}/grocery-quote`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -82,7 +82,7 @@ test.describe('Grocery — Food Cost (#228)', () => {
 
   test('food cost page has content', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.foodCost)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -99,7 +99,7 @@ test.describe('Grocery — Receipt Parsing (#230)', () => {
 
   test('expense form has receipt upload capability', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.expensesNew)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 

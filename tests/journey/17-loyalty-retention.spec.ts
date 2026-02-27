@@ -27,7 +27,7 @@ test.describe('Loyalty — Hub (#280)', () => {
 
   test('loyalty page shows content or empty state', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.loyalty)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -44,7 +44,7 @@ test.describe('Loyalty — Settings (#280, #282)', () => {
 
   test('loyalty settings has configuration options', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.loyaltySettings)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -57,7 +57,7 @@ test.describe('Loyalty — Settings (#280, #282)', () => {
 test.describe('Loyalty — Points & Tiers (#281-282)', () => {
   test('loyalty page shows point/tier structure', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.loyalty)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -66,7 +66,7 @@ test.describe('Loyalty — Points & Tiers (#281-282)', () => {
 
   test('new reward tier page loads', async ({ page }) => {
     await page.goto('/loyalty/rewards/new')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 })
@@ -76,7 +76,7 @@ test.describe('Loyalty — Points & Tiers (#281-282)', () => {
 test.describe('Loyalty — Vouchers (#283)', () => {
   test('loyalty page accessible for voucher creation', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.loyalty)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -107,7 +107,7 @@ test.describe('Loyalty — Onboarding (#285)', () => {
 
   test('onboarding loyalty has setup options', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.onboardingLoyalty)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 

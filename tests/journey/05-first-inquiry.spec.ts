@@ -26,7 +26,7 @@ test.describe('First Inquiry — Inquiry List (#57)', () => {
 
   test('inquiries page shows inquiry list or empty state', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.inquiries)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -35,7 +35,7 @@ test.describe('First Inquiry — Inquiry List (#57)', () => {
 
   test('inquiries page has a create/new inquiry button', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.inquiries)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -59,7 +59,7 @@ test.describe('First Inquiry — New Inquiry Form (#56-57)', () => {
 
   test('new inquiry form has input fields', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.inquiriesNew)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -74,13 +74,13 @@ test.describe('First Inquiry — New Inquiry Form (#56-57)', () => {
 test.describe('First Inquiry — Pipeline Views (#57)', () => {
   test('awaiting response view loads', async ({ page }) => {
     await page.goto('/inquiries/awaiting-response')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('awaiting client reply view loads', async ({ page }) => {
     await page.goto('/inquiries/awaiting-client-reply')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
@@ -134,7 +134,7 @@ test.describe('First Inquiry — Embed Widget (#62-63)', () => {
 
   test('embed settings shows embed code or instructions', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.settingsEmbed)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 

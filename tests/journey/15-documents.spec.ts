@@ -27,7 +27,7 @@ test.describe('Documents — Hub (#247-248)', () => {
 
   test('import hub shows document options', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.import)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -56,7 +56,7 @@ test.describe('Documents — Contracts (#251)', () => {
 
   test('contract templates page has content', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.settingsContracts)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -97,7 +97,7 @@ test.describe('Documents — Help Center', () => {
 
   test('help page shows content', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.help)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 

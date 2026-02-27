@@ -45,7 +45,7 @@ test.describe('Cannabis Routes - Foundation (#441-448)', () => {
 
   test('cannabis RSVPs route has content (#448)', async ({ page }) => {
     await page.goto('/cannabis/rsvps')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -76,7 +76,7 @@ test.describe('Safety Routes - Incident Operations (#449-454)', () => {
 
   test('cannabis unlock route has content (#454)', async ({ page }) => {
     await page.goto('/cannabis/unlock')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -98,7 +98,7 @@ test.describe('Additional Specialty Routes (#476-480)', () => {
     seedIds,
   }) => {
     await page.goto(`/cannabis/events/${seedIds.eventIds.confirmed}/control-packet`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
@@ -108,7 +108,7 @@ test.describe('Additional Specialty Routes (#476-480)', () => {
 
   test('portfolio-removal protection route has content (#480)', async ({ page }) => {
     await page.goto('/settings/protection/portfolio-removal')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -123,7 +123,7 @@ test.describe('Additional Cannabis Namespace Routes (#504-505)', () => {
 
   test('chef cannabis RSVPs route has content (#505)', async ({ page }) => {
     await page.goto('/chef/cannabis/rsvps')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -134,7 +134,7 @@ test.describe('Additional Cannabis Namespace Routes (#504-505)', () => {
 test.describe('Safety Dynamic Detail Coverage (#511)', () => {
   test('safety incident detail route is reachable from incidents list (#511)', async ({ page }) => {
     await page.goto('/safety/incidents')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -142,7 +142,7 @@ test.describe('Safety Dynamic Detail Coverage (#511)', () => {
     if ((await incidentLink.count()) === 0) return
 
     await incidentLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 })

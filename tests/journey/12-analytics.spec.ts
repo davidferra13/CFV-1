@@ -27,7 +27,7 @@ test.describe('Analytics — Hub (#197-199)', () => {
 
   test('analytics shows content or empty state', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.analytics)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -56,13 +56,13 @@ test.describe('Analytics — Revenue Trends (#200, #202)', () => {
 
   test('revenue by month report loads', async ({ page }) => {
     await page.goto('/finance/reporting/revenue-by-month')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('revenue by event report loads', async ({ page }) => {
     await page.goto('/finance/reporting/revenue-by-event')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 })
@@ -84,7 +84,7 @@ test.describe('Analytics — Client LTV (#204)', () => {
 
   test('client LTV page has content', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.analyticsClientLtv)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -141,13 +141,13 @@ test.describe('Analytics — Goals', () => {
 test.describe('Analytics — Private Chef (#207-209)', () => {
   test('revenue by event shows per-dinner data', async ({ page }) => {
     await page.goto('/finance/reporting/revenue-by-event')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('profit by event shows profitability per dinner', async ({ page }) => {
     await page.goto('/finance/reporting/profit-by-event')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 })
@@ -157,7 +157,7 @@ test.describe('Analytics — Private Chef (#207-209)', () => {
 test.describe('Analytics — Caterer (#210-212)', () => {
   test('analytics page shows event type comparison data', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.analytics)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -182,7 +182,7 @@ test.describe('Analytics — Meal Prep (#213-215)', () => {
 test.describe('Analytics — Restaurant (#216-218)', () => {
   test('food cost revenue page loads', async ({ page }) => {
     await page.goto('/food-cost/revenue')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 })
@@ -192,7 +192,7 @@ test.describe('Analytics — Restaurant (#216-218)', () => {
 test.describe('Analytics — Food Truck (#219-221)', () => {
   test('analytics page accessible for location comparison', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.analytics)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -205,7 +205,7 @@ test.describe('Analytics — Food Truck (#219-221)', () => {
 test.describe('Analytics — Bakery (#222-224)', () => {
   test('expense by category shows ingredient cost breakdown', async ({ page }) => {
     await page.goto('/finance/reporting/expense-by-category')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 })

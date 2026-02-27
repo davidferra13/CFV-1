@@ -27,7 +27,7 @@ test.describe('Settings — Hub (#296)', () => {
 
   test('settings page shows settings categories', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.settings)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -48,7 +48,7 @@ test.describe('Settings — Navigation (#296-297)', () => {
 
   test('navigation settings has toggleable items', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.settingsNavigation)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -65,7 +65,7 @@ test.describe('Settings — Module Toggles (#297-298)', () => {
 
   test('modules page has toggle switches', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.settingsModules)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -99,7 +99,7 @@ test.describe('Settings — Integrations (#300)', () => {
 
   test('integrations page shows available integrations', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.settingsIntegrations)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -120,7 +120,7 @@ test.describe('Settings — Stripe (#301)', () => {
 test.describe('Settings — Data Export (#303)', () => {
   test('GDPR settings page loads', async ({ page }) => {
     await page.goto('/settings/compliance/gdpr')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 })
@@ -142,7 +142,7 @@ test.describe('Settings — Embed (#305-306)', () => {
 
   test('embed settings has configuration options', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.settingsEmbed)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -167,7 +167,7 @@ test.describe('Settings — Dashboard Widgets', () => {
 
   test('dashboard settings has widget options', async ({ page }) => {
     await page.goto(JOURNEY_ROUTES.settingsDashboard)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 

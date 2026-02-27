@@ -33,7 +33,7 @@ test.describe('Network and Community Routes (#455-459)', () => {
 
   test('network saved route has content (#459)', async ({ page }) => {
     await page.goto('/network/saved')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -64,7 +64,7 @@ test.describe('Partners and Guests Routes (#460-465)', () => {
 
   test('guest reservations route has content (#465)', async ({ page }) => {
     await page.goto('/guests/reservations')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -91,7 +91,7 @@ test.describe('Settings Extension Routes (#466-470)', () => {
 
   test('settings health route has content (#470)', async ({ page }) => {
     await page.goto('/settings/health')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -102,7 +102,7 @@ test.describe('Settings Extension Routes (#466-470)', () => {
 test.describe('Additional Uncovered Routes (#471-475)', () => {
   test('network profile route loads with seeded chef id (#471)', async ({ page, seedIds }) => {
     await page.goto(`/network/${seedIds.chefId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
@@ -119,13 +119,13 @@ test.describe('Additional Uncovered Routes (#471-475)', () => {
     seedIds,
   }) => {
     await page.goto(`/events/${seedIds.eventIds.confirmed}/guest-card`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toMatch(/auth\/signin/)
   })
 
   test('help article route loads from first help link when present (#475)', async ({ page }) => {
     await page.goto('/help')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -134,7 +134,7 @@ test.describe('Additional Uncovered Routes (#471-475)', () => {
     if (!hasHelpLink) return
 
     await firstHelpLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 })
@@ -142,7 +142,7 @@ test.describe('Additional Uncovered Routes (#471-475)', () => {
 test.describe('Additional Dynamic Route Coverage (#486-490)', () => {
   test('goal history route is reachable from goals list (#486)', async ({ page }) => {
     await page.goto('/goals')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -154,13 +154,13 @@ test.describe('Additional Dynamic Route Coverage (#486-490)', () => {
     if (!hasHistoryLink) return
 
     await historyLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 
   test('staff detail route is reachable from staff list (#487)', async ({ page }) => {
     await page.goto('/staff')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -169,13 +169,13 @@ test.describe('Additional Dynamic Route Coverage (#486-490)', () => {
     if (!hasStaffLink) return
 
     await staffLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 
   test('station detail route is reachable from stations list (#488)', async ({ page }) => {
     await page.goto('/stations')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -184,20 +184,20 @@ test.describe('Additional Dynamic Route Coverage (#486-490)', () => {
     if (!hasStationLink) return
 
     await stationLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 
   test('station clipboard route is reachable from station detail (#489)', async ({ page }) => {
     await page.goto('/stations')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
     const stationLink = page.locator('a[href^="/stations/"]').first()
     if ((await stationLink.count()) === 0) return
     await stationLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     const clipboardLink = page
       .locator('a[href*="/clipboard"]')
@@ -206,13 +206,13 @@ test.describe('Additional Dynamic Route Coverage (#486-490)', () => {
     if ((await clipboardLink.count()) === 0) return
 
     await clipboardLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 
   test('vendor detail route is reachable from vendors list (#490)', async ({ page }) => {
     await page.goto('/vendors')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -220,7 +220,7 @@ test.describe('Additional Dynamic Route Coverage (#486-490)', () => {
     if ((await vendorLink.count()) === 0) return
 
     await vendorLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 })
@@ -228,7 +228,7 @@ test.describe('Additional Dynamic Route Coverage (#486-490)', () => {
 test.describe('Partner Dynamic Coverage (#500)', () => {
   test('partner detail/edit routes are reachable from partners list (#500)', async ({ page }) => {
     await page.goto('/partners')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -236,14 +236,14 @@ test.describe('Partner Dynamic Coverage (#500)', () => {
     if ((await partnerLink.count()) === 0) return
 
     await partnerLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
 
     const editLink = page.locator('a[href$="/edit"]').first()
     if ((await editLink.count()) === 0) return
 
     await editLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 })
@@ -271,7 +271,7 @@ test.describe('Additional Settings Deep Routes (#510)', () => {
 test.describe('Additional Dynamic Coverage (#513-515)', () => {
   test('guest detail route is reachable from guest list (#513)', async ({ page }) => {
     await page.goto('/guests')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -279,7 +279,7 @@ test.describe('Additional Dynamic Coverage (#513-515)', () => {
     if ((await guestLink.count()) === 0) return
 
     await guestLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 
@@ -287,7 +287,7 @@ test.describe('Additional Dynamic Coverage (#513-515)', () => {
     page,
   }) => {
     await page.goto('/stations')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -295,19 +295,19 @@ test.describe('Additional Dynamic Coverage (#513-515)', () => {
     if ((await stationLink.count()) === 0) return
 
     await stationLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     const printLink = page.locator('a[href*="/clipboard/print"]').first()
     if ((await printLink.count()) === 0) return
 
     await printLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 
   test('network channel route is reachable from network page (#515)', async ({ page }) => {
     await page.goto('/network')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -315,7 +315,7 @@ test.describe('Additional Dynamic Coverage (#513-515)', () => {
     if ((await channelLink.count()) === 0) return
 
     await channelLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 })
@@ -334,7 +334,7 @@ test.describe('Remaining Chef Route Literals (#516-519)', () => {
     seedIds,
   }) => {
     await page.goto(`/settings/journey/${seedIds.eventIds.draft}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -345,7 +345,7 @@ test.describe('Remaining Chef Route Literals (#516-519)', () => {
     page,
   }) => {
     await page.goto('/stations')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -359,7 +359,7 @@ test.describe('Remaining Chef Route Literals (#516-519)', () => {
     if (!stationId) return
 
     await page.goto(`/stations/${stationId}/clipboard`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 })
@@ -369,7 +369,7 @@ test.describe('Remaining Dynamic Chef Route Literals (#520-522)', () => {
     page,
   }) => {
     await page.goto('/stations')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -383,13 +383,13 @@ test.describe('Remaining Dynamic Chef Route Literals (#520-522)', () => {
     if (!stationId) return
 
     await page.goto(`/stations/${stationId}/clipboard/print`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 
   test('/inbox/triage/[threadId] route is reachable from inbox triage (#521)', async ({ page }) => {
     await page.goto('/inbox/triage')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -397,13 +397,13 @@ test.describe('Remaining Dynamic Chef Route Literals (#520-522)', () => {
     if ((await triageLink.count()) === 0) return
 
     await triageLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 
   test('/wix-submissions/[id] route is reachable from inbox links (#522)', async ({ page }) => {
     await page.goto('/inbox')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -411,7 +411,7 @@ test.describe('Remaining Dynamic Chef Route Literals (#520-522)', () => {
     if ((await wixLink.count()) === 0) return
 
     await wixLink.click()
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 })
@@ -457,7 +457,7 @@ test.describe('Additional Static and Calls Coverage (#528-532)', () => {
 
   test('call edit route is reachable from calls list (#532)', async ({ page }) => {
     await page.goto('/calls')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -471,7 +471,7 @@ test.describe('Additional Static and Calls Coverage (#528-532)', () => {
     if (!callId) return
 
     await page.goto(`/calls/${callId}/edit`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 })
@@ -479,7 +479,7 @@ test.describe('Additional Static and Calls Coverage (#528-532)', () => {
 test.describe('Remaining Dynamic Detail Routes (#533-537)', () => {
   test('goal history route is reachable via direct detail path (#533)', async ({ page }) => {
     await page.goto('/goals')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -493,13 +493,13 @@ test.describe('Remaining Dynamic Detail Routes (#533-537)', () => {
     if (!goalId) return
 
     await page.goto(`/goals/${goalId}/history`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 
   test('network channel detail route is reachable via direct path (#534)', async ({ page }) => {
     await page.goto('/network')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -513,13 +513,13 @@ test.describe('Remaining Dynamic Detail Routes (#533-537)', () => {
     if (!slug) return
 
     await page.goto(`/network/channels/${slug}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 
   test('partner edit route is reachable via direct path (#535)', async ({ page }) => {
     await page.goto('/partners')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -533,13 +533,13 @@ test.describe('Remaining Dynamic Detail Routes (#533-537)', () => {
     if (!partnerId) return
 
     await page.goto(`/partners/${partnerId}/edit`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 
   test('partner report route is reachable via direct path (#536)', async ({ page }) => {
     await page.goto('/partners')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -553,13 +553,13 @@ test.describe('Remaining Dynamic Detail Routes (#533-537)', () => {
     if (!partnerId) return
 
     await page.goto(`/partners/${partnerId}/report`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 
   test('social post detail route is reachable via direct path (#537)', async ({ page }) => {
     await page.goto('/social/planner')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -573,7 +573,7 @@ test.describe('Remaining Dynamic Detail Routes (#533-537)', () => {
     if (!postId) return
 
     await page.goto(`/social/posts/${postId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 })
@@ -581,7 +581,7 @@ test.describe('Remaining Dynamic Detail Routes (#533-537)', () => {
 test.describe('Final Dynamic Route Closure (#538-541)', () => {
   test('inbox triage thread detail route is reachable via direct path (#538)', async ({ page }) => {
     await page.goto('/inbox/triage')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -595,13 +595,13 @@ test.describe('Final Dynamic Route Closure (#538-541)', () => {
     if (!threadId) return
 
     await page.goto(`/inbox/triage/${threadId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 
   test('settings journal detail route is reachable via direct path (#539)', async ({ page }) => {
     await page.goto('/settings/journal')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -615,13 +615,13 @@ test.describe('Final Dynamic Route Closure (#538-541)', () => {
     if (!journalId) return
 
     await page.goto(`/settings/journal/${journalId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 
   test('settings repertoire detail route is reachable via direct path (#540)', async ({ page }) => {
     await page.goto('/settings/repertoire')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -635,13 +635,13 @@ test.describe('Final Dynamic Route Closure (#538-541)', () => {
     if (!repertoireId) return
 
     await page.goto(`/settings/repertoire/${repertoireId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 
   test('wix submission detail route is reachable via direct path (#541)', async ({ page }) => {
     await page.goto('/inbox')
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
@@ -655,7 +655,7 @@ test.describe('Final Dynamic Route Closure (#538-541)', () => {
     if (!submissionId) return
 
     await page.goto(`/wix-submissions/${submissionId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })
 })
