@@ -206,3 +206,41 @@ test.describe('Public - Additional Auth Routes', () => {
     await assertPageLoads(page, '/auth/role-selection')
   })
 })
+
+test.describe('Public - Additional Tokenized Routes', () => {
+  test('/auth/verify-email - verify email page loads', async ({ page }) => {
+    await assertPageLoads(page, '/auth/verify-email')
+  })
+
+  test('/availability/[token] - invalid availability token handled gracefully', async ({
+    page,
+  }) => {
+    const response = await page.goto('/availability/not-a-real-token', {
+      waitUntil: 'domcontentloaded',
+    })
+    expect(response?.status() ?? 0).toBeLessThan(500)
+  })
+
+  test('/book/campaign/[token] - invalid campaign token handled gracefully', async ({ page }) => {
+    const response = await page.goto('/book/campaign/not-a-real-campaign-token', {
+      waitUntil: 'domcontentloaded',
+    })
+    expect(response?.status() ?? 0).toBeLessThan(500)
+  })
+
+  test('/cannabis-invite/[token] - invalid invite token handled gracefully', async ({ page }) => {
+    const response = await page.goto('/cannabis-invite/not-a-real-invite-token', {
+      waitUntil: 'domcontentloaded',
+    })
+    expect(response?.status() ?? 0).toBeLessThan(500)
+  })
+
+  test('/partner-report/[token] - invalid partner report token handled gracefully', async ({
+    page,
+  }) => {
+    const response = await page.goto('/partner-report/not-a-real-partner-report-token', {
+      waitUntil: 'domcontentloaded',
+    })
+    expect(response?.status() ?? 0).toBeLessThan(500)
+  })
+})
