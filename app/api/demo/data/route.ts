@@ -34,6 +34,11 @@ import {
 } from '@/lib/demo/seed-helpers'
 
 export async function POST(req: NextRequest) {
+  if (process.env.NODE_ENV === 'production') {
+    return new NextResponse('Forbidden — demo endpoints are not available in production', {
+      status: 403,
+    })
+  }
   if (process.env.DEMO_MODE_ENABLED !== 'true') {
     return new NextResponse('Forbidden — DEMO_MODE_ENABLED is not set', { status: 403 })
   }

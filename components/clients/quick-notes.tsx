@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useOptimistic, useTransition } from 'react'
+import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { Pin, PinOff, Trash2, Edit3, Plus, StickyNote } from 'lucide-react'
 import {
   addClientNote,
@@ -32,13 +33,18 @@ export function QuickNotes({ clientId, initialNotes }: QuickNotesProps) {
 
   const handleAdd = async (data: { note_text: string; category: NoteCategory }) => {
     startTransition(async () => {
-      const result = await addClientNote({
-        client_id: clientId,
-        note_text: data.note_text,
-        category: data.category,
-      })
-      setNotes((prev) => [result.note, ...prev])
-      setShowForm(false)
+      try {
+        const result = await addClientNote({
+          client_id: clientId,
+          note_text: data.note_text,
+          category: data.category,
+        })
+        setNotes((prev) => [result.note, ...prev])
+        setShowForm(false)
+      } catch (err) {
+        console.error('[quick-notes] Failed to add note', err)
+        toast.error('Failed to add note')
+      }
     })
   }
 
@@ -47,30 +53,47 @@ export function QuickNotes({ clientId, initialNotes }: QuickNotesProps) {
     data: { note_text?: string; category?: NoteCategory }
   ) => {
     startTransition(async () => {
-      const result = await updateClientNote(noteId, data)
-      setNotes((prev) => prev.map((n) => (n.id === noteId ? result.note : n)))
-      setEditingId(null)
+      try {
+        const result = await updateClientNote(noteId, data)
+        setNotes((prev) => prev.map((n) => (n.id === noteId ? result.note : n)))
+        setEditingId(null)
+      } catch (err) {
+        console.error('[quick-notes] Failed to update note', err)
+        toast.error('Failed to update note')
+      }
     })
   }
 
   const handleDelete = async (noteId: string) => {
+    const prevNotes = notes
     startTransition(async () => {
-      await deleteClientNote(noteId)
-      setNotes((prev) => prev.filter((n) => n.id !== noteId))
+      try {
+        await deleteClientNote(noteId)
+        setNotes((prev) => prev.filter((n) => n.id !== noteId))
+      } catch (err) {
+        console.error('[quick-notes] Failed to delete note', err)
+        setNotes(prevNotes)
+        toast.error('Failed to delete note')
+      }
     })
   }
 
   const handleTogglePin = async (noteId: string) => {
     startTransition(async () => {
-      const result = await toggleNotePin(noteId)
-      setNotes((prev) => {
-        const updated = prev.map((n) => (n.id === noteId ? { ...n, pinned: result.pinned } : n))
-        // Re-sort: pinned first, then by created_at desc
-        return updated.sort((a, b) => {
-          if (a.pinned !== b.pinned) return a.pinned ? -1 : 1
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      try {
+        const result = await toggleNotePin(noteId)
+        setNotes((prev) => {
+          const updated = prev.map((n) => (n.id === noteId ? { ...n, pinned: result.pinned } : n))
+          // Re-sort: pinned first, then by created_at desc
+          return updated.sort((a, b) => {
+            if (a.pinned !== b.pinned) return a.pinned ? -1 : 1
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          })
         })
-      })
+      } catch (err) {
+        console.error('[quick-notes] Failed to toggle pin', err)
+        toast.error('Failed to update pin')
+      }
     })
   }
 

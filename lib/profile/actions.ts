@@ -7,7 +7,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 
 const SlugSchema = z
@@ -190,6 +190,7 @@ export async function updateChefSlug(slug: string) {
   }
 
   revalidatePath('/settings/profile')
+  revalidateTag(`chef-layout-${user.entityId}`)
   return { success: true, slug: validated }
 }
 
@@ -209,6 +210,7 @@ export async function updateChefTagline(tagline: string) {
   }
 
   revalidatePath('/settings/profile')
+  revalidateTag(`chef-layout-${user.entityId}`)
   return { success: true }
 }
 
@@ -259,6 +261,7 @@ export async function updateChefPortalTheme(input: z.infer<typeof UpdateChefPort
   revalidatePath('/settings/public-profile')
   revalidatePath('/settings')
   revalidatePath('/dashboard')
+  revalidateTag(`chef-layout-${user.entityId}`)
   if (currentChef?.slug) {
     revalidatePath(`/chef/${currentChef.slug}`)
     revalidatePath(`/chef/${currentChef.slug}/inquire`)
@@ -342,6 +345,7 @@ export async function uploadChefPortalBackgroundImage(
   revalidatePath('/settings/public-profile')
   revalidatePath('/settings')
   revalidatePath('/dashboard')
+  revalidateTag(`chef-layout-${user.entityId}`)
   if (currentChef?.slug) {
     revalidatePath(`/chef/${currentChef.slug}`)
     revalidatePath(`/chef/${currentChef.slug}/inquire`)

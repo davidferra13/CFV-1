@@ -3,6 +3,7 @@
 // Payment Plan Panel — shows installments for an event with add/mark-paid controls.
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { format } from 'date-fns'
 import {
   addInstallment,
@@ -29,28 +30,44 @@ export function PaymentPlanPanel({ eventId, initialInstallments, quotedPriceCent
   const remaining = totalPlanned - totalPaid
 
   async function handleMarkPaid(installment: PaymentPlanInstallment) {
-    await markInstallmentPaid(installment.id, eventId)
-    setInstallments((prev) =>
-      prev.map((i) => (i.id === installment.id ? { ...i, paidAt: new Date().toISOString() } : i))
-    )
+    try {
+      await markInstallmentPaid(installment.id, eventId)
+      setInstallments((prev) =>
+        prev.map((i) => (i.id === installment.id ? { ...i, paidAt: new Date().toISOString() } : i))
+      )
+    } catch (err) {
+      console.error('[payment-plan] Failed to mark installment paid', err)
+      toast.error('Failed to mark installment as paid')
+    }
   }
 
   async function handleDelete(id: string) {
-    await deleteInstallment(id, eventId)
-    setInstallments((prev) => prev.filter((i) => i.id !== id))
+    const prevInstallments = installments
+    try {
+      await deleteInstallment(id, eventId)
+      setInstallments((prev) => prev.filter((i) => i.id !== id))
+    } catch (err) {
+      console.error('[payment-plan] Failed to delete installment', err)
+      setInstallments(prevInstallments)
+      toast.error('Failed to delete installment')
+    }
   }
 
   async function handleAdd(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setSubmitting(true)
-    const fd = new FormData(e.currentTarget)
-    fd.set('eventId', eventId)
-    await addInstallment(fd)
-    // Optimistic: reload via revalidation handled server-side
-    setSubmitting(false)
-    setIsAdding(false)
-    // Reset form is handled by the key prop below
-    window.location.reload()
+    try {
+      const fd = new FormData(e.currentTarget)
+      fd.set('eventId', eventId)
+      await addInstallment(fd)
+      setIsAdding(false)
+      window.location.reload()
+    } catch (err) {
+      console.error('[payment-plan] Failed to add installment', err)
+      toast.error('Failed to add installment')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (

@@ -7,7 +7,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import type {
   ChefPreferences,
@@ -385,6 +385,7 @@ export async function updateChefPreferences(input: UpdatePreferencesInput) {
   revalidatePath('/settings')
   revalidatePath('/settings/navigation')
   revalidatePath('/dashboard')
+  revalidateTag(`chef-layout-${user.entityId}`)
   return { success: true }
 }
 

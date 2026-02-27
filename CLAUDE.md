@@ -164,6 +164,100 @@ These rules exist because this is a **live production app with real client data*
 
 ---
 
+## ZERO HALLUCINATION RULE (MANDATORY — READ THIS)
+
+**The app must never display information that isn't true.** Every piece of data a user sees must be real, current, and verified — or explicitly marked as unavailable. Silent lies are worse than visible errors.
+
+This rule exists because a February 2026 audit found 25+ places where the app displayed fake, stale, or unverified information to users as if it were real. **This must never happen again.**
+
+### The Three Laws
+
+**Law 1: Never show success without confirmation.**
+
+Every UI update that assumes a server action succeeded MUST have error handling and rollback. No exceptions.
+
+```tsx
+// CORRECT — rollback on failure
+const previous = items
+setItems(optimisticUpdate)
+startTransition(async () => {
+  try {
+    await serverAction(...)
+  } catch (err) {
+    setItems(previous) // rollback
+    toast.error('Failed to save')
+  }
+})
+
+// WRONG — assumes success, never checks
+setItems(optimisticUpdate)
+startTransition(async () => {
+  await serverAction(...) // no try/catch, no rollback
+})
+```
+
+**This applies to every `startTransition`, every optimistic update, every client-side state change that calls a server action.** If the server can fail, the UI must handle it.
+
+**Law 2: Never hide failure as zero.**
+
+If data fails to load, show an error state — never substitute zeros, empty arrays, or default values that look like real data.
+
+```tsx
+// CORRECT — user sees that data failed to load
+if (fetchFailed) return <DataError message="Could not load revenue data" />
+
+// WRONG — user sees $0.00 and thinks they have no revenue
+if (fetchFailed) return { totalRevenueCents: 0, totalExpenseCents: 0 }
+```
+
+A chef seeing "$0.00 revenue" when the database is unreachable will make wrong business decisions. A chef seeing "Could not load data" will refresh the page. **Visible errors are always better than invisible lies.**
+
+**Law 3: Never render a non-functional feature as functional.**
+
+If a button doesn't work, a route isn't implemented, or a feature isn't finished — it must be visibly gated, not silently broken.
+
+| Situation                   | Correct                                        | Wrong                                       |
+| --------------------------- | ---------------------------------------------- | ------------------------------------------- |
+| Backend not built yet       | Hide the button or show "Coming soon" badge    | Render a clickable button that does nothing |
+| Action returns fake success | Don't ship it                                  | `return { success: true }` on a no-op       |
+| Data source doesn't exist   | Show "N/A" or "Not available"                  | Show `$0.00` or `0`                         |
+| Feature is a placeholder    | Remove from nav/UI or gate behind feature flag | Leave a live route with "coming soon" text  |
+
+### What Agents Must Do (Enforcement)
+
+**When writing new code:**
+
+1. Every `startTransition` or optimistic update MUST have a `try/catch` with rollback and user-visible error feedback (toast, inline error, etc.)
+2. Every data fetch MUST distinguish between "no data exists" (show empty state) and "fetch failed" (show error state) — these are NOT the same thing
+3. Every button MUST do what it says. If the backend isn't ready, don't render the button. If you must render it, disable it with a tooltip explaining why
+4. Every displayed number MUST come from a real data source. Never hardcode financial figures, counts, or metrics. Extract prices/rates to a single shared constant at minimum
+5. Demo/sample data MUST be visually distinguished from real data everywhere it appears — badges, labels, or filtered out of production views entirely
+
+**When reviewing existing code:**
+
+If you encounter any of these patterns during normal work, **flag them to the developer immediately:**
+
+- A `startTransition` without `try/catch`
+- A catch block that returns zero/default values without any UI indicator
+- A button with an empty `onClick` or a `// placeholder` comment
+- A `return { success: true }` on a function that doesn't actually do anything
+- A hardcoded number displayed as if it came from the database
+- Demo/sample records with no visual distinction from real data
+
+### Placeholders vs. Hallucinations — Both Require Action
+
+**Hallucination:** The app displays something that is **actively false** — fake success, wrong numbers, fabricated data shown as real. **These must be fixed immediately.**
+
+**Placeholder:** A feature stub, "coming soon" text, a no-op button, or a hardcoded value awaiting real data. **These are not lies, but they must be reported to the developer** so they can decide to ship, hide, or finish them. Never leave a placeholder in the app without the developer knowing it's there.
+
+When you find either during normal work, add it to your session report. Don't wait to be asked.
+
+### Why This Exists
+
+A private chef platform handles real money, real clients, real dietary restrictions (allergies can be life-threatening), and real business decisions. When the dashboard says "$0 revenue," a chef might think their business is failing. When a notification toggle says "on" but was never saved, a chef misses a $5,000 booking. When a dietary note appears saved but wasn't persisted, someone could have an allergic reaction. **Every lie the UI tells has real consequences.** Zero tolerance.
+
+---
+
 ## SELF-MAINTAINING DOCUMENT (READ THIS FIRST)
 
 This document must stay current. Claude is responsible for keeping it updated — the developer should never have to ask.

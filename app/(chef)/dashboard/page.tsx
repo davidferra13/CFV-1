@@ -117,14 +117,17 @@ import { createServerClient } from '@/lib/supabase/server'
 import { InviteChefCard } from '@/components/marketing/invite-chef-card'
 
 // ============================================
-// Safe wrapper — logs failures, returns fallback
+// Safe wrapper — logs failures, returns fallback, tracks which fetches failed
 // ============================================
+
+const dashboardFetchFailures: string[] = []
 
 async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<T> {
   try {
     return await fn()
   } catch (err) {
     console.error(`[Dashboard] ${label} failed:`, err)
+    dashboardFetchFailures.push(label)
     return fallback
   }
 }
@@ -594,6 +597,10 @@ export default async function ChefDashboard() {
     menuNotes: suggestion.menuNotes,
   }))
 
+  const fetchFailures = [...dashboardFetchFailures]
+  // Clear for next render
+  dashboardFetchFailures.length = 0
+
   return (
     <div className="flex flex-col gap-8">
       {/* ============================================ */}
@@ -624,6 +631,19 @@ export default async function ChefDashboard() {
           </Link>
         </div>
       </div>
+
+      {/* Data fetch failure warning */}
+      {fetchFailures.length > 0 && (
+        <div className="rounded-lg border border-amber-800 bg-amber-950 px-4 py-3">
+          <p className="text-sm font-medium text-amber-200">
+            Some dashboard data couldn&apos;t be loaded
+          </p>
+          <p className="text-xs text-amber-400 mt-1">
+            {fetchFailures.length} data {fetchFailures.length === 1 ? 'source' : 'sources'} failed
+            to load. The affected sections may show incomplete information. Try refreshing the page.
+          </p>
+        </div>
+      )}
 
       {/* ============================================ */}
       {/* DAILY OPS BANNER                              */}

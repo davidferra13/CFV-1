@@ -4,6 +4,7 @@
 // Mounted on /settings/notifications. Uses optimistic UI â€” saves on toggle.
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { usePushSubscription } from '@/components/notifications/use-push-subscription'
 import {
   upsertCategoryPreference,
@@ -155,9 +156,18 @@ export function NotificationSettingsForm({
     }))
 
     startTransition(async () => {
-      await upsertCategoryPreference(category, {
-        [`${channel}_enabled`]: value,
-      })
+      try {
+        await upsertCategoryPreference(category, {
+          [`${channel}_enabled`]: value,
+        })
+      } catch (err) {
+        console.error('[notification-settings] Failed to save preference', err)
+        setChannels((prev) => ({
+          ...prev,
+          [category]: { ...prev[category], [channel]: !value },
+        }))
+        toast.error('Failed to save notification preference')
+      }
     })
   }
 

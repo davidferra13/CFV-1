@@ -2,7 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 
 const CHEF_LOGOS_BUCKET = 'chef-logos'
@@ -184,6 +184,7 @@ export async function updateChefFullProfile(input: UpdateChefFullProfileInput) {
   revalidatePath('/settings/my-profile')
   revalidatePath('/settings/public-profile')
   revalidatePath('/settings/profile')
+  revalidateTag(`chef-layout-${user.entityId}`)
 
   return { success: true as const }
 }

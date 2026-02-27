@@ -9,6 +9,7 @@ import { useState, useTransition } from 'react'
 import Image from 'next/image'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 import type { ReceiptPhoto, ReceiptLineItemRecord } from '@/lib/receipts/actions'
 import { updateLineItem, approveReceiptSummary, processReceiptOCR } from '@/lib/receipts/actions'
 import { format } from 'date-fns'
@@ -132,6 +133,8 @@ function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
     .reduce((sum, li) => sum + (li.priceCents ?? 0), 0)
 
   const handleLineItemUpdate = (id: string, field: string, value: string | number | null) => {
+    const prevItems = lineItems
+
     // Optimistic update
     setLineItems((prev) =>
       prev.map((li) =>
@@ -148,13 +151,19 @@ function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
       )
     )
     startTransition(async () => {
-      await updateLineItem({
-        lineItemId: id,
-        ...(field === 'expenseTag' ? { expenseTag: value as any } : {}),
-        ...(field === 'ingredientCategory' ? { ingredientCategory: value as string | null } : {}),
-        ...(field === 'description' ? { description: value as string } : {}),
-        ...(field === 'priceCents' ? { priceCents: value as number | null } : {}),
-      })
+      try {
+        await updateLineItem({
+          lineItemId: id,
+          ...(field === 'expenseTag' ? { expenseTag: value as any } : {}),
+          ...(field === 'ingredientCategory' ? { ingredientCategory: value as string | null } : {}),
+          ...(field === 'description' ? { description: value as string } : {}),
+          ...(field === 'priceCents' ? { priceCents: value as number | null } : {}),
+        })
+      } catch (err) {
+        console.error('[receipt-summary] Failed to update line item', err)
+        setLineItems(prevItems)
+        toast.error('Failed to save line item change')
+      }
     })
   }
 

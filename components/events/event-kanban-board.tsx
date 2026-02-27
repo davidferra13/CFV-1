@@ -1,7 +1,7 @@
 // Event Kanban Board — drag-drop board with FSM-validated column transitions
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import {
   DndContext,
   DragEndEvent,
@@ -82,6 +82,11 @@ interface EventKanbanBoardProps {
 export function EventKanbanBoard({ events: initialEvents }: EventKanbanBoardProps) {
   const [events, setEvents] = useState<KanbanEvent[]>(initialEvents)
   const [activeId, setActiveId] = useState<string | null>(null)
+
+  // Re-sync local state when server data changes (revalidation, navigation)
+  useEffect(() => {
+    setEvents(initialEvents)
+  }, [initialEvents])
   const [isPending, startTransition] = useTransition()
 
   const sensors = useSensors(
