@@ -648,7 +648,7 @@
 
 - **`/recipes`** — Recipe book with search, category filter, sort, seasonal banner. Per card links to detail.
 - **`/recipes/new`** — Smart Import (AI parse from text) or Manual Entry (all fields + dynamic ingredient rows).
-- **`/recipes/[id]`** — Detail with ingredients, scaling calculator, method, cost summary, event history. Duplicate/Share/Delete buttons.
+- **`/recipes/[id]`** — Detail with ingredients, scaling calculator, nutrition panel (on-demand USDA data — per-serving macros + ingredient breakdown), method, cost summary, event history. Duplicate/Share/Delete buttons.
 - **`/recipes/[id]/edit`** — Full edit form (ingredient names locked, new ingredients highlighted).
 - **`/recipes/ingredients`** — Ingredient library with inline edit per row (name, category, unit, price).
 - **`/recipes/sprint`** — Queue-based recipe capture: paste description → AI parse → save → next. Progress bar + skip/done.

@@ -16,6 +16,7 @@ import {
 } from '@/lib/recipes/actions'
 import { shareRecipe, getConnectedChefsForCollaboration } from '@/lib/collaboration/actions'
 import { RecipeScalingCalculator } from '@/components/recipes/recipe-scaling-calculator'
+import { NutritionPanel } from '@/components/recipes/nutrition-panel'
 import { SubRecipeSearchModal } from '@/components/recipes/sub-recipe-search-modal'
 import { DishPhotoUpload } from '@/components/dishes/dish-photo-upload'
 import { format } from 'date-fns'
@@ -329,6 +330,9 @@ export function RecipeDetailClient({ recipe }: Props) {
 
       {/* Scaling Calculator */}
       <RecipeScalingCalculator recipe={recipe} />
+
+      {/* Nutrition (on-demand — fetches USDA data when chef clicks) */}
+      <NutritionPanel recipeId={recipe.id} ingredientCount={recipe.ingredients.length} />
 
       {/* Method */}
       {recipe.method && (
