@@ -2,7 +2,9 @@
 // 1. Seeds remote test data (idempotent — safe to run on every test run)
 // 2. Logs in as test chef → saves .auth/chef.json
 // 3. Logs in as test client → saves .auth/client.json
-// 4. Writes .auth/seed-ids.json (read by fixtures.ts in every test)
+// 4. Logs in as test staff → saves .auth/staff.json
+// 5. Logs in as test partner → saves .auth/partner.json
+// 6. Writes .auth/seed-ids.json (read by fixtures.ts in every test)
 //
 // Auth strategy: posts to /api/e2e/auth (guarded by SUPABASE_E2E_ALLOW_REMOTE=true).
 // This bypasses the in-memory rate limiter in the signIn server action, which would
@@ -23,7 +25,8 @@ async function loginAndSaveStateOnce(
   password: string,
   expectedUrlPattern: RegExp,
   outputPath: string,
-  label: string
+  label: string,
+  navigateTo = '/'
 ) {
   const context = await browser.newContext()
   const page = await context.newPage()
@@ -39,10 +42,11 @@ async function loginAndSaveStateOnce(
       throw new Error(`E2E auth endpoint returned ${resp.status()}: ${body}`)
     }
 
-    // Cookies are now in the browser context. Navigate to / so middleware resolves
-    // the role and redirects to the appropriate portal (/dashboard or /my-events).
+    // Cookies are now in the browser context. Navigate to the portal entry point
+    // so middleware/layout resolves the role. Default: / (middleware redirects by role).
+    // Some roles (e.g. partner) need a direct URL since middleware doesn't route them.
     // Generous timeout for dev server on-demand page compilation.
-    await page.goto(`${BASE_URL}/`, { timeout: 90_000 })
+    await page.goto(`${BASE_URL}${navigateTo}`, { timeout: 90_000 })
     await page.waitForURL(expectedUrlPattern, { timeout: 60_000 })
     await context.addCookies([
       {
@@ -71,11 +75,20 @@ async function loginAndSaveState(
   expectedUrlPattern: RegExp,
   outputPath: string,
   label: string,
-  maxRetries = 3
+  maxRetries = 3,
+  navigateTo = '/'
 ) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      await loginAndSaveStateOnce(browser, email, password, expectedUrlPattern, outputPath, label)
+      await loginAndSaveStateOnce(
+        browser,
+        email,
+        password,
+        expectedUrlPattern,
+        outputPath,
+        label,
+        navigateTo
+      )
       return
     } catch (err) {
       const msg = String(err)
@@ -129,6 +142,26 @@ export default async function globalSetup() {
     /\/dashboard/,
     '.auth/chef-b.json',
     'Chef B'
+  )
+
+  await loginAndSaveState(
+    browser,
+    seedResult.staffEmail,
+    seedResult.staffPassword,
+    /\/staff-dashboard/,
+    '.auth/staff.json',
+    'Staff'
+  )
+
+  await loginAndSaveState(
+    browser,
+    seedResult.partnerEmail,
+    seedResult.partnerPassword,
+    /\/partner\/dashboard/,
+    '.auth/partner.json',
+    'Partner',
+    3,
+    '/partner/dashboard'
   )
 
   // Admin auth — only runs if ADMIN_E2E_EMAIL and ADMIN_E2E_PASSWORD are set.

@@ -48,6 +48,18 @@ export type SeedResult = {
   chefBPassword: string
   chefBEventId: string
   chefBClientId: string
+  // Staff — test staff member with portal login + kiosk PIN
+  staffId: string
+  staffAuthId: string
+  staffEmail: string
+  staffPassword: string
+  staffKioskPin: string // raw PIN (e.g. '1234'), hashed in DB
+  // Partner — test referral partner with portal login
+  partnerId: string
+  partnerAuthId: string
+  partnerEmail: string
+  partnerPassword: string
+  partnerLocationId: string
 }
 
 function assertRemoteTestAllowed(url: string) {
@@ -699,6 +711,155 @@ async function ensureRecipe(admin, chefId: string, chefAuthId: string): Promise<
   return inserted.id as string
 }
 
+// ─── Staff ───────────────────────────────────────────────────────────────────
+
+async function upsertStaffMember(admin, chefId: string, suffix: string): Promise<string> {
+  const staffName = 'TEST - E2E Staff Member'
+  const { data: existing } = await admin
+    .from('staff_members')
+    .select('id')
+    .eq('chef_id', chefId)
+    .eq('name', staffName)
+    .maybeSingle()
+
+  if (existing?.id) return existing.id as string
+
+  const { data: inserted, error } = await admin
+    .from('staff_members')
+    .insert({
+      chef_id: chefId,
+      name: staffName,
+      role: 'sous_chef',
+      phone: '617-555-9020',
+      email: `e2e.staff.${suffix}@chefflow.test`,
+      hourly_rate_cents: 2500,
+      status: 'active',
+      notes: 'Automated E2E test staff member. Safe to ignore.',
+    })
+    .select('id')
+    .single()
+
+  if (error || !inserted)
+    throw new Error(`[e2e-seed] Failed to insert staff member: ${error?.message}`)
+  return inserted.id as string
+}
+
+async function ensureStaffRole(admin, authUserId: string, staffId: string) {
+  // user_roles has unique constraint on auth_user_id — use upsert
+  const { error } = await admin
+    .from('user_roles')
+    .upsert(
+      { auth_user_id: authUserId, role: 'staff', entity_id: staffId },
+      { onConflict: 'auth_user_id' }
+    )
+  if (error) throw new Error(`[e2e-seed] Failed to upsert staff role: ${error.message}`)
+}
+
+async function setStaffKioskPin(admin, staffId: string, rawPin: string) {
+  // Hash the PIN the same way the app does (SHA-256)
+  const { createHash } = await import('crypto')
+  const pinHash = createHash('sha256').update(rawPin).digest('hex')
+
+  const { error } = await admin
+    .from('staff_members')
+    .update({ kiosk_pin: pinHash })
+    .eq('id', staffId)
+
+  if (error) {
+    console.warn(`[e2e-seed] Warning: Could not set staff kiosk PIN: ${error.message}`)
+  }
+}
+
+// ─── Partner ─────────────────────────────────────────────────────────────────
+
+async function upsertPartner(admin, chefId: string, suffix: string): Promise<string> {
+  const partnerName = 'TEST - E2E Airbnb Host'
+  const { data: existing } = await admin
+    .from('referral_partners')
+    .select('id')
+    .eq('tenant_id', chefId)
+    .eq('name', partnerName)
+    .maybeSingle()
+
+  if (existing?.id) return existing.id as string
+
+  const { data: inserted, error } = await admin
+    .from('referral_partners')
+    .insert({
+      tenant_id: chefId,
+      name: partnerName,
+      partner_type: 'airbnb_host',
+      status: 'active',
+      contact_name: 'E2E Partner Contact',
+      email: `e2e.partner.${suffix}@chefflow.test`,
+      phone: '617-555-9030',
+      description: 'Automated E2E test partner. Safe to ignore.',
+      is_showcase_visible: false,
+    })
+    .select('id')
+    .single()
+
+  if (error || !inserted) throw new Error(`[e2e-seed] Failed to insert partner: ${error?.message}`)
+  return inserted.id as string
+}
+
+async function upsertPartnerLocation(admin, chefId: string, partnerId: string): Promise<string> {
+  const locationName = 'TEST - E2E Beach House'
+  const { data: existing } = await admin
+    .from('partner_locations')
+    .select('id')
+    .eq('partner_id', partnerId)
+    .eq('name', locationName)
+    .maybeSingle()
+
+  if (existing?.id) return existing.id as string
+
+  const { data: inserted, error } = await admin
+    .from('partner_locations')
+    .insert({
+      tenant_id: chefId,
+      partner_id: partnerId,
+      name: locationName,
+      address: '42 Ocean Drive',
+      city: 'Cape Cod',
+      state: 'MA',
+      zip: '02601',
+      description: 'Automated E2E test location. Beachfront property.',
+      max_guest_count: 12,
+      is_active: true,
+    })
+    .select('id')
+    .single()
+
+  if (error || !inserted)
+    throw new Error(`[e2e-seed] Failed to insert partner location: ${error?.message}`)
+  return inserted.id as string
+}
+
+async function ensurePartnerAuth(admin, partnerId: string, authUserId: string) {
+  // Link the auth user to the partner record (mimics invite claim flow)
+  const { error } = await admin
+    .from('referral_partners')
+    .update({
+      auth_user_id: authUserId,
+      claimed_at: new Date().toISOString(),
+      invite_token: null,
+    })
+    .eq('id', partnerId)
+
+  if (error) throw new Error(`[e2e-seed] Failed to link partner auth: ${error.message}`)
+}
+
+async function ensurePartnerRole(admin, authUserId: string, partnerId: string) {
+  const { error } = await admin
+    .from('user_roles')
+    .upsert(
+      { auth_user_id: authUserId, role: 'partner', entity_id: partnerId },
+      { onConflict: 'auth_user_id' }
+    )
+  if (error) throw new Error(`[e2e-seed] Failed to upsert partner role: ${error.message}`)
+}
+
 // ─── Main Export ──────────────────────────────────────────────────────────────
 
 export async function seedE2EData(): Promise<SeedResult> {
@@ -918,6 +1079,34 @@ export async function seedE2EData(): Promise<SeedResult> {
     15
   )
 
+  // 12. Staff — test staff member with portal login + kiosk PIN
+  const staffEmail = `e2e.staff.${suffix}@chefflow.test`
+  const staffPassword = 'E2eStaffTest!2026'
+  const staffKioskPin = '1234'
+  const staffAuth = await ensureAuthUser(admin, {
+    email: staffEmail,
+    password: staffPassword,
+    metadata: { role: 'staff', e2e: true, suffix },
+  })
+  const staffId = await upsertStaffMember(admin, chefId, suffix)
+  await ensureStaffRole(admin, staffAuth.id, staffId)
+  await setStaffKioskPin(admin, staffId, staffKioskPin)
+  // Update the email on the staff_members row to match the auth user
+  await admin.from('staff_members').update({ email: staffEmail }).eq('id', staffId)
+
+  // 13. Partner — test referral partner with portal login
+  const partnerEmail = `e2e.partner.${suffix}@chefflow.test`
+  const partnerPassword = 'E2ePartnerTest!2026'
+  const partnerAuth = await ensureAuthUser(admin, {
+    email: partnerEmail,
+    password: partnerPassword,
+    metadata: { role: 'partner', e2e: true, suffix },
+  })
+  const partnerId = await upsertPartner(admin, chefId, suffix)
+  const partnerLocationId = await upsertPartnerLocation(admin, chefId, partnerId)
+  await ensurePartnerAuth(admin, partnerId, partnerAuth.id)
+  await ensurePartnerRole(admin, partnerAuth.id, partnerId)
+
   const result: SeedResult = {
     chefId,
     chefAuthId: chefAuth.id,
@@ -950,10 +1139,20 @@ export async function seedE2EData(): Promise<SeedResult> {
     chefBPassword: 'E2eChefTest!2026',
     chefBEventId,
     chefBClientId,
+    staffId,
+    staffAuthId: staffAuth.id,
+    staffEmail,
+    staffPassword,
+    staffKioskPin,
+    partnerId,
+    partnerAuthId: partnerAuth.id,
+    partnerEmail,
+    partnerPassword,
+    partnerLocationId,
   }
 
   console.log(
-    `[e2e-seed] Complete — chef: ${result.chefEmail}, chefB: ${result.chefBEmail}, client: ${result.clientEmail}`
+    `[e2e-seed] Complete — chef: ${result.chefEmail}, client: ${result.clientEmail}, staff: ${result.staffEmail}, partner: ${result.partnerEmail}`
   )
   return result
 }

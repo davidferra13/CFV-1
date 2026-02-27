@@ -210,6 +210,9 @@ export async function middleware(request: NextRequest) {
     if (landingRole === 'staff') {
       return redirectWithCookies(new URL('/staff-dashboard', request.url), response)
     }
+    if (landingRole === 'partner') {
+      return redirectWithCookies(new URL('/partner/dashboard', request.url), response)
+    }
     return redirectWithCookies(new URL('/dashboard', request.url), response)
   }
 
