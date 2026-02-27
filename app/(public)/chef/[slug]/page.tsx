@@ -10,6 +10,7 @@ import { PartnerShowcase } from '@/components/public/partner-showcase'
 import { ReviewShowcase } from '@/components/public/review-showcase'
 import { getPublicAvailabilitySignals } from '@/lib/calendar/entry-actions'
 import { RemyPublicWidget } from '@/components/ai/remy-public-widget'
+import { getOptimizedImageUrl, getOptimizedAvatar } from '@/lib/images/cloudinary'
 
 type Props = { params: { slug: string } }
 
@@ -103,13 +104,16 @@ export default async function ChefProfilePage({ params }: Props) {
   const primaryColor = chef.portal_primary_color || '#1c1917'
   const backgroundColor = chef.portal_background_color || '#fafaf9'
   const backgroundImageUrl = chef.portal_background_image_url
+  const optimizedBgUrl = backgroundImageUrl
+    ? getOptimizedImageUrl(backgroundImageUrl, { width: 1920, quality: 'auto', format: 'auto' })
+    : null
   const hasWebsiteLink = Boolean(chef.website_url && chef.show_website_on_public_profile)
   const preferWebsite = chef.preferred_inquiry_destination === 'website_only'
   const preferChefFlow = chef.preferred_inquiry_destination === 'chefflow_only'
-  const pageBackgroundStyle = backgroundImageUrl
+  const pageBackgroundStyle = optimizedBgUrl
     ? {
         backgroundColor,
-        backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.92)), url(${backgroundImageUrl})`,
+        backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.92)), url(${optimizedBgUrl})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed' as const,
@@ -132,7 +136,11 @@ export default async function ChefProfilePage({ params }: Props) {
             <div className="flex justify-center mb-6">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={(chef as any).logo_url}
+                src={getOptimizedImageUrl((chef as any).logo_url, {
+                  width: 440,
+                  height: 128,
+                  fit: 'fit',
+                })}
                 alt={`${chef.display_name} logo`}
                 className="max-h-16 max-w-[220px] object-contain"
               />
@@ -142,7 +150,7 @@ export default async function ChefProfilePage({ params }: Props) {
           {chef.profile_image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={chef.profile_image_url}
+              src={getOptimizedAvatar(chef.profile_image_url, 224)}
               alt={chef.display_name}
               className="w-28 h-28 rounded-full object-cover mx-auto mb-6 ring-4 ring-white shadow-lg"
             />

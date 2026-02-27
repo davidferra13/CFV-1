@@ -157,3 +157,33 @@ export async function notifyQuoteReady(
     url: `/events/${eventId}`,
   })
 }
+
+/**
+ * Notify chef that an event has been confirmed.
+ */
+export async function notifyEventConfirmed(
+  chefUserId: string,
+  eventName: string,
+  eventId: string
+): Promise<boolean> {
+  return sendPushToUser(chefUserId, {
+    title: 'Event Confirmed',
+    message: `${eventName} is now confirmed!`,
+    url: `/events/${eventId}`,
+  })
+}
+
+/**
+ * Notify chef that an event has been marked complete.
+ */
+export async function notifyEventCompleted(
+  chefUserId: string,
+  eventName: string,
+  eventId: string
+): Promise<boolean> {
+  return sendPushToUser(chefUserId, {
+    title: 'Event Complete',
+    message: `${eventName} marked complete`,
+    url: `/events/${eventId}`,
+  })
+}

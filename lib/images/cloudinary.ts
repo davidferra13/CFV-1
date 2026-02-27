@@ -108,6 +108,95 @@ export function getBlurPlaceholder(publicId: string): string {
   })
 }
 
+// ─── Fetch-based optimization (no upload needed) ─────────────────────────────
+// Pass any public image URL through Cloudinary's CDN for on-the-fly optimization.
+// The image is fetched from the original source, optimized, and served via CDN.
+// If the cloud name env var is missing, the original URL is returned as-is (non-breaking).
+
+interface FetchOptimizeOptions {
+  width?: number
+  height?: number
+  fit?: ImageFit
+  format?: ImageFormat
+  quality?: number | 'auto'
+  gravity?: 'face' | 'center' | 'auto'
+}
+
+/**
+ * Optimize any external image URL via Cloudinary's fetch delivery type.
+ * No upload required — Cloudinary fetches the image from the original URL,
+ * applies transformations, and serves it through its CDN.
+ *
+ * Falls back to the original URL if:
+ * - The cloud name env var is not set
+ * - The input URL is empty/falsy
+ * - The URL is a blob: or data: URL (local browser URLs)
+ *
+ * @param originalUrl - Any publicly accessible image URL (e.g. Supabase Storage signed URL)
+ * @param options - Transformation options (width, height, format, quality, etc.)
+ * @returns Cloudinary-optimized URL, or the original URL as fallback
+ */
+export function getOptimizedImageUrl(
+  originalUrl: string,
+  options: FetchOptimizeOptions = {}
+): string {
+  if (!originalUrl) return originalUrl
+
+  // Don't try to optimize blob: or data: URLs
+  if (originalUrl.startsWith('blob:') || originalUrl.startsWith('data:')) {
+    return originalUrl
+  }
+
+  // Graceful fallback if env var not configured
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+  if (!cloudName) return originalUrl
+
+  const transforms: string[] = []
+
+  // Default to auto format and quality for best optimization
+  const format = options.format ?? 'auto'
+  const quality = options.quality ?? 'auto'
+
+  transforms.push(`f_${format}`)
+  transforms.push(`q_${quality}`)
+
+  if (options.width) transforms.push(`w_${options.width}`)
+  if (options.height) transforms.push(`h_${options.height}`)
+  if (options.fit) transforms.push(`c_${options.fit}`)
+  if (options.gravity) transforms.push(`g_${options.gravity}`)
+
+  const transformStr = transforms.join(',')
+
+  return `https://res.cloudinary.com/${cloudName}/image/fetch/${transformStr}/${originalUrl}`
+}
+
+/**
+ * Shorthand: optimize a profile photo / avatar via Cloudinary fetch.
+ * Applies face-detection gravity and circular-crop-friendly sizing.
+ */
+export function getOptimizedAvatar(originalUrl: string, size = 200): string {
+  return getOptimizedImageUrl(originalUrl, {
+    width: size,
+    height: size,
+    fit: 'thumb',
+    gravity: 'face',
+  })
+}
+
+/**
+ * Shorthand: optimize a gallery/hero image via Cloudinary fetch.
+ */
+export function getOptimizedGalleryImage(
+  originalUrl: string,
+  width = 800,
+  height?: number
+): string {
+  return getOptimizedImageUrl(originalUrl, {
+    width,
+    ...(height ? { height, fit: 'fill' as ImageFit } : {}),
+  })
+}
+
 /**
  * Upload an image to Cloudinary via unsigned upload.
  * Requires an unsigned upload preset configured in Cloudinary dashboard.

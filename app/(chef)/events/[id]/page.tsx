@@ -44,7 +44,8 @@ import { getEventPhotosForChef } from '@/lib/events/photo-actions'
 import { EventPhotoGallery } from '@/components/events/event-photo-gallery'
 import { getCancellationRefundRecommendation } from '@/lib/cancellation/refund-actions'
 import { RecordPaymentPanel, ProcessRefundPanel } from '@/components/events/payment-actions-panel'
-import { LocationMap } from '@/components/ui/location-map'
+import { getEventMapUrl, geocode, getDirections } from '@/lib/maps/mapbox'
+import { getChefPreferences } from '@/lib/chef/actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import { createServerClient } from '@/lib/supabase/server'
@@ -151,6 +152,37 @@ async function getEventMenusForCheck(eventId: string): Promise<string | false> {
   return menus && menus.length > 0 ? menus[0].id : false
 }
 
+/**
+ * Get driving distance/time from chef's home to event venue.
+ * Geocodes chef home address on the fly, then calls Mapbox Directions API.
+ * Returns null if either location is missing or geocoding fails.
+ */
+async function getChefToVenueTravel(
+  eventLat: number,
+  eventLng: number
+): Promise<{ distanceMiles: number; durationMinutes: number } | null> {
+  try {
+    const prefs = await getChefPreferences()
+    const homeAddr = [prefs.home_address, prefs.home_city, prefs.home_state, prefs.home_zip]
+      .filter(Boolean)
+      .join(', ')
+    if (!homeAddr) return null
+
+    const homeCoords = await geocode(homeAddr)
+    if (!homeCoords) return null
+
+    const directions = await getDirections(homeCoords.lng, homeCoords.lat, eventLng, eventLat)
+    if (!directions) return null
+
+    return {
+      distanceMiles: directions.distanceMiles,
+      durationMinutes: directions.durationMinutes,
+    }
+  } catch {
+    return null
+  }
+}
+
 export default async function EventDetailPage({
   params,
   searchParams,
@@ -251,7 +283,7 @@ export default async function EventDetailPage({
       ? await getTakeAChefConversionData(params.id).catch(() => null)
       : null
 
-  // Fetch guest RSVP data, event photos, and carry-forward inventory
+  // Fetch guest RSVP data, event photos, carry-forward inventory, and travel info
   const [
     guestShares,
     guestList,
@@ -263,6 +295,7 @@ export default async function EventDetailPage({
     eventTips,
     guestLeadCount,
     guestWallMessages,
+    travelInfo,
   ] = await Promise.all([
     getEventShares(params.id),
     getEventGuests(params.id),
@@ -276,6 +309,9 @@ export default async function EventDetailPage({
     getEventTips(params.id).catch(() => []),
     getEventGuestLeadCount(params.id).catch(() => 0),
     getEventMessagesForChef(params.id).catch(() => []),
+    (event as any).location_lat && (event as any).location_lng
+      ? getChefToVenueTravel((event as any).location_lat, (event as any).location_lng)
+      : Promise.resolve(null),
   ])
   const activeShare = (guestShares as any[]).find((s) => s.is_active) || null
 
@@ -533,11 +569,30 @@ export default async function EventDetailPage({
                 </dd>
                 {(event as any).location_lat && (event as any).location_lng ? (
                   <div className="mt-2 space-y-2">
-                    <LocationMap
-                      lat={(event as any).location_lat}
-                      lng={(event as any).location_lng}
-                      className="h-48"
-                    />
+                    {/* Mapbox static map — clickable to open Google Maps directions */}
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${(event as any).location_lat},${(event as any).location_lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={getEventMapUrl(
+                          (event as any).location_lng,
+                          (event as any).location_lat
+                        )}
+                        alt="Event location map"
+                        className="w-full h-[200px] object-cover rounded-lg border border-stone-700"
+                      />
+                    </a>
+                    {/* Travel distance/time from chef's home */}
+                    {travelInfo && (
+                      <p className="text-xs text-stone-400">
+                        {travelInfo.distanceMiles} miles &middot; ~{travelInfo.durationMinutes} min
+                        drive from home
+                      </p>
+                    )}
                     {/* Open-Meteo weather forecast for the event date */}
                     <WeatherPanel
                       lat={(event as any).location_lat}
