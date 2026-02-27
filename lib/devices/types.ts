@@ -89,10 +89,6 @@ export interface DeviceWithOnlineStatus extends Device {
   active_staff_name?: string | null
 }
 
-export interface KioskConfigExtended extends KioskConfig {
-  success_display_seconds: number
-}
-
 /** Computed from last_seen_at */
 export function getOnlineStatus(lastSeenAt: string | null): 'online' | 'stale' | 'offline' {
   if (!lastSeenAt) return 'offline'
