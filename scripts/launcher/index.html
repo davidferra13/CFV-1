@@ -1559,6 +1559,11 @@ body {
         <span class="nav-icon">&#x1F4B0;</span>
         <span class="nav-label">Costs</span>
       </a>
+      <a class="nav-item" data-section="logins" title="Test Logins">
+        <span class="nav-dot online" id="nd-logins"></span>
+        <span class="nav-icon">&#x1F511;</span>
+        <span class="nav-label">Logins</span>
+      </a>
     </nav>
 
     <!-- Content -->
@@ -3377,6 +3382,108 @@ body {
         <!-- Footer -->
         <div style="text-align:center;padding:12px;">
           <div style="font-size:11px;color:var(--text-muted);">Press <code style="background:var(--bg-secondary);padding:2px 6px;border-radius:4px;font-size:11px;">`</code> to jump to this panel &bull; Data: docs/project-expenses.json</div>
+        </div>
+      </div>
+
+      <!-- ─── Logins Panel ─── -->
+      <div class="panel" id="panel-logins">
+        <div class="panel-header">
+          <h2 class="panel-title">Test Logins</h2>
+          <span class="status-badge online" style="background:var(--brand-dim);color:var(--brand);border:1px solid rgba(232,143,71,0.25);">
+            <span class="dot online" style="background:var(--brand);"></span>
+            6 Accounts
+          </span>
+        </div>
+
+        <p style="color:var(--text-secondary);font-size:13px;margin-bottom:20px;line-height:1.5;">
+          Each button opens <strong>Chrome incognito</strong> signed into that role. Multiple windows can be open at once.
+          Dev server must be running on port 3100.
+        </p>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:24px;">
+
+          <!-- Chef -->
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:24px;">&#x1F468;&#x200D;&#x1F373;</span>
+              <div>
+                <div style="font-weight:600;color:var(--text-primary);">Chef</div>
+                <div style="font-size:11px;color:var(--text-muted);">Full chef dashboard &amp; ops</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);font-family:monospace;background:var(--bg-secondary);padding:6px 10px;border-radius:6px;">e2e.chef.*.test</div>
+            <button class="btn btn-primary" onclick="loginAs('chef')" id="btn-login-chef" style="margin-top:4px;">Open as Chef</button>
+          </div>
+
+          <!-- Client -->
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:24px;">&#x1F464;</span>
+              <div>
+                <div style="font-weight:600;color:var(--text-primary);">Client</div>
+                <div style="font-size:11px;color:var(--text-muted);">Client portal — /my-events</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);font-family:monospace;background:var(--bg-secondary);padding:6px 10px;border-radius:6px;">e2e.client.*.test</div>
+            <button class="btn btn-primary" onclick="loginAs('client')" id="btn-login-client" style="margin-top:4px;">Open as Client</button>
+          </div>
+
+          <!-- Staff -->
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:24px;">&#x1F9D1;&#x200D;&#x1F373;</span>
+              <div>
+                <div style="font-weight:600;color:var(--text-primary);">Staff</div>
+                <div style="font-size:11px;color:var(--text-muted);">Staff portal — tasks, station, schedule</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);font-family:monospace;background:var(--bg-secondary);padding:6px 10px;border-radius:6px;">e2e.staff.*.test &bull; PIN: 1234</div>
+            <button class="btn btn-primary" onclick="loginAs('staff')" id="btn-login-staff" style="margin-top:4px;">Open as Staff</button>
+          </div>
+
+          <!-- Partner -->
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:24px;">&#x1F91D;</span>
+              <div>
+                <div style="font-weight:600;color:var(--text-primary);">Partner</div>
+                <div style="font-size:11px;color:var(--text-muted);">Partner portal — locations, events</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);font-family:monospace;background:var(--bg-secondary);padding:6px 10px;border-radius:6px;">e2e.partner.*.test</div>
+            <button class="btn btn-primary" onclick="loginAs('partner')" id="btn-login-partner" style="margin-top:4px;">Open as Partner</button>
+          </div>
+
+          <!-- Admin -->
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:24px;">&#x1F6E1;&#xFE0F;</span>
+              <div>
+                <div style="font-weight:600;color:var(--text-primary);">Admin</div>
+                <div style="font-size:11px;color:var(--text-muted);">Chef + admin panel access</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);font-family:monospace;background:var(--bg-secondary);padding:6px 10px;border-radius:6px;">agent@chefflow.test</div>
+            <button class="btn btn-primary" onclick="loginAs('admin')" id="btn-login-admin" style="margin-top:4px;">Open as Admin</button>
+          </div>
+
+          <!-- Chef B -->
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:24px;">&#x1F468;&#x200D;&#x1F373;</span>
+              <div>
+                <div style="font-weight:600;color:var(--text-primary);">Chef B</div>
+                <div style="font-size:11px;color:var(--text-muted);">Isolated tenant — multi-tenant tests</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);font-family:monospace;background:var(--bg-secondary);padding:6px 10px;border-radius:6px;">e2e.chef-b.*.test</div>
+            <button class="btn btn-primary" onclick="loginAs('chef-b')" id="btn-login-chef-b" style="margin-top:4px;">Open as Chef B</button>
+          </div>
+
+        </div>
+
+        <div style="text-align:center;padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);">Press <code style="background:var(--bg-secondary);padding:2px 6px;border-radius:4px;font-size:11px;">Tab</code> to jump to this panel &bull; Seed: <code style="background:var(--bg-secondary);padding:2px 6px;border-radius:4px;font-size:11px;">npm run seed:e2e</code></div>
         </div>
       </div>
 
@@ -6138,6 +6245,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '=') switchSection('observe')
   if (e.key === '\\') switchSection('sysref')
   if (e.key === '`') switchSection('expenses')
+  if (e.key === 'Tab') { e.preventDefault(); switchSection('logins') }
 })
 
 function switchSection(section) {
@@ -6150,6 +6258,29 @@ function switchSection(section) {
   if (section === 'infra') loadInfra()
   if (section === 'observe') observeConnect()
   if (section === 'expenses') loadExpenses()
+}
+
+// ── Login Launcher ────────────────────────────────────────────────
+
+async function loginAs(role) {
+  const btn = document.getElementById(`btn-login-${role}`)
+  if (btn) { btn.disabled = true; btn.textContent = 'Launching...' }
+  try {
+    const res = await fetch(`${API}/api/login-as`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role }),
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'Failed')
+    appendLog(`[login] Chrome incognito opening as ${role}...`, 'info')
+  } catch (err) {
+    appendLog(`[login] Failed to launch ${role}: ${err.message}`, 'error')
+  } finally {
+    if (btn) {
+      setTimeout(() => { btn.disabled = false; btn.textContent = `Open as ${role.charAt(0).toUpperCase() + role.slice(1).replace('-b', ' B')}` }, 2000)
+    }
+  }
 }
 
 // ── Observe Panel (Live Feed) ─────────────────────────────────────

@@ -2207,6 +2207,24 @@ async function handleRequest(req, res) {
     return
   }
 
+  // ── Login launcher (opens Chrome incognito as a test role) ───────
+  if (path === '/api/login-as' && method === 'POST') {
+    const body = await parseBody(req)
+    const role = body.role
+    const validRoles = ['chef', 'client', 'staff', 'partner', 'admin', 'chef-b']
+    if (!role || !validRoles.includes(role)) {
+      return json(res, { error: `Invalid role. Valid: ${validRoles.join(', ')}` }, 400)
+    }
+    log('login', `Opening Chrome incognito as ${role}...`, 'info')
+    const child = spawn('node', [join(__dirname, 'open-login.mjs'), role], {
+      cwd: PROJECT_ROOT,
+      stdio: 'ignore',
+      detached: true,
+    })
+    child.unref()
+    return json(res, { ok: true, role, message: `Launching Chrome as ${role}...` })
+  }
+
   // 404
   res.writeHead(404)
   res.end('Not found')
