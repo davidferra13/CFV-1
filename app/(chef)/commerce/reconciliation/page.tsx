@@ -44,93 +44,100 @@ export default async function ReconciliationPage() {
             const openFlags = flags.filter((f: any) => f.status === 'open')
 
             return (
-              <Card key={report.id}>
-                <CardContent className="py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div>
-                        <span className="text-stone-200 font-medium text-lg">
-                          {new Date(report.report_date + 'T12:00:00').toLocaleDateString('en-US', {
-                            weekday: 'short',
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })}
-                        </span>
-                        <div className="flex items-center gap-3 mt-1 text-sm text-stone-400">
-                          <span>{report.total_sales_count} sales</span>
-                          <span>&middot;</span>
-                          <span>
-                            Revenue: ${((report.net_revenue_cents ?? 0) / 100).toFixed(2)}
+              <Link key={report.id} href={`/commerce/reconciliation/${report.id}`}>
+                <Card className="hover:border-stone-600 transition-colors cursor-pointer">
+                  <CardContent className="py-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div>
+                          <span className="text-stone-200 font-medium text-lg">
+                            {new Date(report.report_date + 'T12:00:00').toLocaleDateString(
+                              'en-US',
+                              {
+                                weekday: 'short',
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                              }
+                            )}
                           </span>
-                          {(report.cash_variance_cents ?? 0) !== 0 && (
-                            <>
-                              <span>&middot;</span>
-                              <span
-                                className={
-                                  Math.abs(report.cash_variance_cents) > 100 ? 'text-amber-400' : ''
-                                }
-                              >
-                                Cash variance: $
-                                {((report.cash_variance_cents ?? 0) / 100).toFixed(2)}
-                              </span>
-                            </>
-                          )}
+                          <div className="flex items-center gap-3 mt-1 text-sm text-stone-400">
+                            <span>{report.total_sales_count} sales</span>
+                            <span>&middot;</span>
+                            <span>
+                              Revenue: ${((report.net_revenue_cents ?? 0) / 100).toFixed(2)}
+                            </span>
+                            {(report.cash_variance_cents ?? 0) !== 0 && (
+                              <>
+                                <span>&middot;</span>
+                                <span
+                                  className={
+                                    Math.abs(report.cash_variance_cents) > 100
+                                      ? 'text-amber-400'
+                                      : ''
+                                  }
+                                >
+                                  Cash variance: $
+                                  {((report.cash_variance_cents ?? 0) / 100).toFixed(2)}
+                                </span>
+                              </>
+                            )}
+                          </div>
                         </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        {openFlags.length > 0 && (
+                          <Badge variant="warning">
+                            {openFlags.length} flag{openFlags.length !== 1 ? 's' : ''}
+                          </Badge>
+                        )}
+                        {report.reviewed ? (
+                          <Badge variant="success">Reviewed</Badge>
+                        ) : (
+                          <Badge variant="default">Pending Review</Badge>
+                        )}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      {openFlags.length > 0 && (
-                        <Badge variant="warning">
-                          {openFlags.length} flag{openFlags.length !== 1 ? 's' : ''}
-                        </Badge>
+                    {/* Payment method breakdown */}
+                    <div className="flex gap-6 mt-3 text-xs text-stone-500">
+                      <span>Cash: ${((report.cash_total_cents ?? 0) / 100).toFixed(2)}</span>
+                      <span>Card: ${((report.card_total_cents ?? 0) / 100).toFixed(2)}</span>
+                      {(report.other_total_cents ?? 0) > 0 && (
+                        <span>Other: ${((report.other_total_cents ?? 0) / 100).toFixed(2)}</span>
                       )}
-                      {report.reviewed ? (
-                        <Badge variant="success">Reviewed</Badge>
-                      ) : (
-                        <Badge variant="default">Pending Review</Badge>
+                      <span>Tax: ${((report.total_tax_cents ?? 0) / 100).toFixed(2)}</span>
+                      <span>Tips: ${((report.total_tips_cents ?? 0) / 100).toFixed(2)}</span>
+                      {(report.total_refunds_cents ?? 0) > 0 && (
+                        <span className="text-red-400">
+                          Refunds: -${((report.total_refunds_cents ?? 0) / 100).toFixed(2)}
+                        </span>
                       )}
                     </div>
-                  </div>
 
-                  {/* Payment method breakdown */}
-                  <div className="flex gap-6 mt-3 text-xs text-stone-500">
-                    <span>Cash: ${((report.cash_total_cents ?? 0) / 100).toFixed(2)}</span>
-                    <span>Card: ${((report.card_total_cents ?? 0) / 100).toFixed(2)}</span>
-                    {(report.other_total_cents ?? 0) > 0 && (
-                      <span>Other: ${((report.other_total_cents ?? 0) / 100).toFixed(2)}</span>
+                    {/* Open flags */}
+                    {openFlags.length > 0 && (
+                      <div className="mt-3 space-y-1">
+                        {openFlags.map((flag: any, idx: number) => (
+                          <div
+                            key={idx}
+                            className={`text-xs px-2 py-1 rounded ${
+                              flag.severity === 'error'
+                                ? 'bg-red-500/10 text-red-400'
+                                : flag.severity === 'warning'
+                                  ? 'bg-amber-500/10 text-amber-400'
+                                  : 'bg-blue-500/10 text-blue-400'
+                            }`}
+                          >
+                            {flag.message}
+                          </div>
+                        ))}
+                      </div>
                     )}
-                    <span>Tax: ${((report.total_tax_cents ?? 0) / 100).toFixed(2)}</span>
-                    <span>Tips: ${((report.total_tips_cents ?? 0) / 100).toFixed(2)}</span>
-                    {(report.total_refunds_cents ?? 0) > 0 && (
-                      <span className="text-red-400">
-                        Refunds: -${((report.total_refunds_cents ?? 0) / 100).toFixed(2)}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Open flags */}
-                  {openFlags.length > 0 && (
-                    <div className="mt-3 space-y-1">
-                      {openFlags.map((flag: any, idx: number) => (
-                        <div
-                          key={idx}
-                          className={`text-xs px-2 py-1 rounded ${
-                            flag.severity === 'error'
-                              ? 'bg-red-500/10 text-red-400'
-                              : flag.severity === 'warning'
-                                ? 'bg-amber-500/10 text-amber-400'
-                                : 'bg-blue-500/10 text-blue-400'
-                          }`}
-                        >
-                          {flag.message}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </Link>
             )
           })}
         </div>

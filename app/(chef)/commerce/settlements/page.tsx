@@ -5,6 +5,7 @@ import { requirePro } from '@/lib/billing/require-pro'
 import { listSettlements, getSettlementSummary } from '@/lib/commerce/settlement-actions'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import Link from 'next/link'
 
 export const metadata: Metadata = { title: 'Settlements — ChefFlow' }
 
@@ -81,44 +82,46 @@ export default async function SettlementsPage() {
                     : 'warning'
 
             return (
-              <Card key={s.id}>
-                <CardContent className="py-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-stone-200 font-medium">
-                          ${((s.payout_amount_cents ?? 0) / 100).toFixed(2)}
-                        </span>
-                        <Badge variant={statusColor as any}>{s.payout_status}</Badge>
+              <Link key={s.id} href={`/commerce/settlements/${s.id}`}>
+                <Card className="hover:border-stone-600 transition-colors cursor-pointer">
+                  <CardContent className="py-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-stone-200 font-medium">
+                            ${((s.payout_amount_cents ?? 0) / 100).toFixed(2)}
+                          </span>
+                          <Badge variant={statusColor as any}>{s.payout_status}</Badge>
+                        </div>
+                        <div className="flex items-center gap-3 mt-1 text-xs text-stone-500">
+                          <span>
+                            {s.payment_count} payment{s.payment_count !== 1 ? 's' : ''}
+                          </span>
+                          {s.payout_arrival_date && (
+                            <>
+                              <span>&middot;</span>
+                              <span>
+                                Arrives:{' '}
+                                {new Date(s.payout_arrival_date + 'T12:00:00').toLocaleDateString()}
+                              </span>
+                            </>
+                          )}
+                          <span>&middot;</span>
+                          <span>{new Date(s.created_at).toLocaleDateString()}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3 mt-1 text-xs text-stone-500">
-                        <span>
-                          {s.payment_count} payment{s.payment_count !== 1 ? 's' : ''}
-                        </span>
-                        {s.payout_arrival_date && (
-                          <>
-                            <span>&middot;</span>
-                            <span>
-                              Arrives:{' '}
-                              {new Date(s.payout_arrival_date + 'T12:00:00').toLocaleDateString()}
-                            </span>
-                          </>
-                        )}
-                        <span>&middot;</span>
-                        <span>{new Date(s.created_at).toLocaleDateString()}</span>
-                      </div>
-                    </div>
 
-                    <div className="text-right text-xs text-stone-500">
-                      <div>Gross: ${((s.gross_amount_cents ?? 0) / 100).toFixed(2)}</div>
-                      <div>Fees: -${((s.fee_amount_cents ?? 0) / 100).toFixed(2)}</div>
-                      <div className="text-stone-200 font-medium">
-                        Net: ${((s.net_amount_cents ?? 0) / 100).toFixed(2)}
+                      <div className="text-right text-xs text-stone-500">
+                        <div>Gross: ${((s.gross_amount_cents ?? 0) / 100).toFixed(2)}</div>
+                        <div>Fees: -${((s.fee_amount_cents ?? 0) / 100).toFixed(2)}</div>
+                        <div className="text-stone-200 font-medium">
+                          Net: ${((s.net_amount_cents ?? 0) / 100).toFixed(2)}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </Link>
             )
           })}
         </div>

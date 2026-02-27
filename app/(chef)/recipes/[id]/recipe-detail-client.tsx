@@ -15,6 +15,7 @@ import {
   addSubRecipe,
   removeSubRecipe,
 } from '@/lib/recipes/actions'
+import { snapshotProductFromRecipe } from '@/lib/commerce/product-actions'
 import { shareRecipe, getConnectedChefsForCollaboration } from '@/lib/collaboration/actions'
 import { RecipeScalingCalculator } from '@/components/recipes/recipe-scaling-calculator'
 import { NutritionPanel } from '@/components/recipes/nutrition-panel'
@@ -253,6 +254,34 @@ export function RecipeDetailClient({ recipe }: Props) {
             disabled={loading}
           >
             Share
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={async () => {
+              const priceStr = window.prompt('Set a sale price for this product ($):')
+              if (!priceStr) return
+              const price = parseFloat(priceStr)
+              if (isNaN(price) || price <= 0) {
+                setError('Invalid price')
+                return
+              }
+              setLoading(true)
+              try {
+                await snapshotProductFromRecipe({
+                  recipeId: recipe.id,
+                  priceCents: Math.round(price * 100),
+                  category: recipe.category ?? undefined,
+                })
+                router.push('/commerce/products')
+              } catch (err) {
+                setError(err instanceof Error ? err.message : 'Failed to create product')
+              } finally {
+                setLoading(false)
+              }
+            }}
+            disabled={loading}
+          >
+            Create Product
           </Button>
           <Button variant="danger" onClick={handleDelete} disabled={loading}>
             Delete

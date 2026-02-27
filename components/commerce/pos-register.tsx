@@ -17,6 +17,7 @@ import {
   Wallet,
 } from 'lucide-react'
 import { counterCheckout } from '@/lib/commerce/checkout-actions'
+import { createOrderQueueEntry } from '@/lib/commerce/order-queue-actions'
 import { openRegister, closeRegister } from '@/lib/commerce/register-actions'
 import {
   getCashDrawerSummary,
@@ -43,6 +44,9 @@ type Product = {
   modifiers: any[]
   tax_class: string
   cost_cents: number | null
+  track_inventory: boolean | null
+  available_qty: number | null
+  low_stock_threshold: number | null
 }
 
 type CartItem = {
@@ -95,6 +99,10 @@ export function PosRegister({ products, registerSession, defaultTaxZip }: Props)
   // Tip + cash tender
   const [tipInput, setTipInput] = useState('0.00')
   const [cashTendered, setCashTendered] = useState('')
+
+  // Modifier popup state
+  const [modifierProduct, setModifierProduct] = useState<Product | null>(null)
+  const [modifierSelections, setModifierSelections] = useState<Record<string, string>>({})
 
   // Drawer state
   const [drawerSummary, setDrawerSummary] = useState<DrawerSummary | null>(null)
@@ -209,6 +217,16 @@ export function PosRegister({ products, registerSession, defaultTaxZip }: Props)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [registerSession?.id])
 
+  function handleProductTap(product: Product) {
+    // If product has modifiers, show the modifier popup
+    if (product.modifiers && product.modifiers.length > 0) {
+      setModifierProduct(product)
+      setModifierSelections({})
+      return
+    }
+    addToCart(product)
+  }
+
   function addToCart(product: Product) {
     setCart((prev) => {
       const existing = prev.find((i) => i.product.id === product.id)
@@ -219,6 +237,13 @@ export function PosRegister({ products, registerSession, defaultTaxZip }: Props)
       }
       return [...prev, { product, quantity: 1 }]
     })
+  }
+
+  function handleAddWithModifiers() {
+    if (!modifierProduct) return
+    addToCart(modifierProduct)
+    setModifierProduct(null)
+    setModifierSelections({})
   }
 
   function updateQuantity(productId: string, delta: number) {
@@ -279,6 +304,14 @@ export function PosRegister({ products, registerSession, defaultTaxZip }: Props)
           changeDueCents: result.changeDueCents,
         })
         toast.success(`Sale ${result.saleNumber} completed`)
+
+        // Create order queue entry (non-blocking)
+        try {
+          await createOrderQueueEntry({ saleId: result.saleId })
+        } catch {
+          // Non-blocking — order queue is optional
+        }
+
         setCart([])
         setTipInput('0.00')
         setCashTendered('')
@@ -615,36 +648,68 @@ export function PosRegister({ products, registerSession, defaultTaxZip }: Props)
             </Card>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {filteredProducts.map((product: Product) => (
-                <button
-                  key={product.id}
-                  onClick={() => addToCart(product)}
-                  className="bg-stone-900 border border-stone-800 rounded-lg text-left hover:border-brand-600 hover:bg-stone-800 transition-all active:scale-95 overflow-hidden"
-                >
-                  {product.image_url ? (
-                    <img
-                      src={product.image_url}
-                      alt={product.name}
-                      className="h-24 w-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : null}
-                  <div className="p-3">
-                    <p className="text-stone-200 font-medium text-sm line-clamp-2">
-                      {product.name}
-                    </p>
-                    <p className="text-brand-500 font-bold mt-1">
-                      {formatCurrency(product.price_cents)}
-                    </p>
-                    {product.category && (
-                      <p className="text-stone-500 text-xs mt-1">
-                        {PRODUCT_CATEGORY_LABELS[product.category as ProductCategory] ??
-                          product.category}
+              {filteredProducts.map((product: Product) => {
+                const isLowStock =
+                  product.track_inventory &&
+                  product.available_qty !== null &&
+                  product.low_stock_threshold !== null &&
+                  product.available_qty <= product.low_stock_threshold
+                const isOutOfStock =
+                  product.track_inventory &&
+                  product.available_qty !== null &&
+                  product.available_qty <= 0
+
+                return (
+                  <button
+                    key={product.id}
+                    onClick={() => handleProductTap(product)}
+                    disabled={isOutOfStock}
+                    className={`bg-stone-900 border border-stone-800 rounded-lg text-left transition-all active:scale-95 overflow-hidden ${
+                      isOutOfStock
+                        ? 'opacity-50 cursor-not-allowed'
+                        : 'hover:border-brand-600 hover:bg-stone-800'
+                    }`}
+                  >
+                    {product.image_url ? (
+                      <img
+                        src={product.image_url}
+                        alt={product.name}
+                        className="h-24 w-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : null}
+                    <div className="p-3">
+                      <p className="text-stone-200 font-medium text-sm line-clamp-2">
+                        {product.name}
                       </p>
-                    )}
-                  </div>
-                </button>
-              ))}
+                      <div className="flex items-center justify-between mt-1">
+                        <p className="text-brand-500 font-bold">
+                          {formatCurrency(product.price_cents)}
+                        </p>
+                        {product.track_inventory && product.available_qty !== null && (
+                          <span
+                            className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                              isOutOfStock
+                                ? 'bg-red-500/20 text-red-400'
+                                : isLowStock
+                                  ? 'bg-amber-500/20 text-amber-400'
+                                  : 'bg-stone-800 text-stone-400'
+                            }`}
+                          >
+                            {isOutOfStock ? 'Out' : product.available_qty}
+                          </span>
+                        )}
+                      </div>
+                      {product.category && (
+                        <p className="text-stone-500 text-xs mt-1">
+                          {PRODUCT_CATEGORY_LABELS[product.category as ProductCategory] ??
+                            product.category}
+                        </p>
+                      )}
+                    </div>
+                  </button>
+                )
+              })}
             </div>
           )}
         </div>
@@ -764,6 +829,69 @@ export function PosRegister({ products, registerSession, defaultTaxZip }: Props)
           </Card>
         </div>
       </div>
+
+      {/* Modifier selection popup */}
+      {modifierProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <Card className="w-full max-w-md mx-4">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">{modifierProduct.name}</CardTitle>
+                <button
+                  type="button"
+                  title="Close"
+                  onClick={() => setModifierProduct(null)}
+                  className="text-stone-400 hover:text-stone-200"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <p className="text-brand-500 font-bold">
+                {formatCurrency(modifierProduct.price_cents)}
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {(modifierProduct.modifiers ?? []).map((mod: any, idx: number) => (
+                <div key={idx}>
+                  <label className="text-stone-300 text-sm font-medium block mb-2">
+                    {mod.name}
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(mod.options ?? []).map((opt: any) => {
+                      const isSelected = modifierSelections[mod.name] === opt.label
+                      return (
+                        <button
+                          key={opt.label}
+                          type="button"
+                          onClick={() =>
+                            setModifierSelections((prev) => ({ ...prev, [mod.name]: opt.label }))
+                          }
+                          className={`px-3 py-2 rounded-md text-sm text-left transition-colors ${
+                            isSelected
+                              ? 'bg-brand-600 text-white border border-brand-500'
+                              : 'bg-stone-800 text-stone-300 border border-stone-700 hover:border-stone-500'
+                          }`}
+                        >
+                          <span>{opt.label}</span>
+                          {opt.price_delta_cents !== 0 && (
+                            <span className="text-xs ml-1 opacity-70">
+                              {opt.price_delta_cents > 0 ? '+' : ''}
+                              {formatCurrency(opt.price_delta_cents)}
+                            </span>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+              <Button variant="primary" className="w-full" onClick={handleAddWithModifiers}>
+                Add to Cart
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {drawerMovements.length > 0 && (
         <Card>

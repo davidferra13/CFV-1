@@ -390,6 +390,12 @@ export const navGroups: NavGroup[] = [
         href: '/commerce/reports',
         label: 'Reports',
         icon: PieChart,
+        children: [{ href: '/commerce/reports/shifts', label: 'Shift Reports' }],
+      },
+      {
+        href: '/commerce/schedules',
+        label: 'Payment Schedules',
+        icon: CalendarDays,
       },
     ],
   },

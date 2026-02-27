@@ -195,7 +195,28 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
     }
   }
 
-  // 7. Inventory deduction (non-blocking — if it fails, the sale still succeeds)
+  // 7. Tax computation (non-blocking — if it fails, sale succeeds with $0 tax)
+  let finalTotalCents = totalCents
+  if (input.taxZipCode) {
+    try {
+      const { applySaleTax } = await import('./tax-actions')
+      const taxResult = await applySaleTax(sale.id)
+      if (taxResult) {
+        finalTotalCents = subtotalCents + taxResult.totalTaxCents
+
+        // Update payment amount to reflect tax
+        await supabase
+          .from('commerce_payments')
+          .update({ amount_cents: finalTotalCents } as any)
+          .eq('id', payment.id)
+          .eq('tenant_id', user.tenantId!)
+      }
+    } catch (err) {
+      console.error('[non-blocking] Tax computation failed:', err)
+    }
+  }
+
+  // 8. Inventory deduction (non-blocking — if it fails, the sale still succeeds)
   try {
     const { executeSaleDeduction } = await import('./inventory-bridge')
     await executeSaleDeduction(sale.id)
@@ -213,7 +234,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
   // Compute change due for cash payments
   const changeDueCents =
     input.paymentMethod === 'cash'
-      ? Math.max(0, input.amountTenderedCents - (totalCents + tipCents))
+      ? Math.max(0, input.amountTenderedCents - (finalTotalCents + tipCents))
       : 0
 
   revalidatePath('/commerce')
@@ -222,7 +243,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
     saleId: sale.id,
     saleNumber: (sale as any).sale_number,
     paymentId: payment.id,
-    totalCents: totalCents + tipCents,
+    totalCents: finalTotalCents + tipCents,
     changeDueCents,
   }
 }

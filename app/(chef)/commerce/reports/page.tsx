@@ -11,6 +11,8 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { SALE_CHANNEL_LABELS } from '@/lib/commerce/constants'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 import type { SaleChannel } from '@/lib/commerce/constants'
 import { ReportsDatePicker } from '@/components/commerce/reports-page-client'
 
@@ -200,7 +202,12 @@ export default async function CommerceReportsPage({
       {/* Recent shifts */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Shifts</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Recent Shifts</CardTitle>
+            <Link href="/commerce/reports/shifts">
+              <Button variant="ghost">View All</Button>
+            </Link>
+          </div>
         </CardHeader>
         <CardContent>
           {sessions.length === 0 ? (

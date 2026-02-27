@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { ChevronRight, Clock } from 'lucide-react'
 import { updateOrderStatus } from '@/lib/commerce/order-queue-actions'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { ORDER_QUEUE_STATUS_LABELS, ORDER_QUEUE_STATUS_COLORS } from '@/lib/commerce/constants'
 import type { OrderQueueStatus } from '@/lib/commerce/constants'
 
@@ -39,7 +40,7 @@ export function OrderQueueBoard({ orders }: Props) {
         await updateOrderStatus(orderId, next)
         router.refresh()
       } catch (err) {
-        alert(err instanceof Error ? err.message : 'Failed to update order')
+        toast.error(err instanceof Error ? err.message : 'Failed to update order')
       }
     })
   }

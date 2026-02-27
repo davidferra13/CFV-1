@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { Download, XCircle, RotateCcw } from 'lucide-react'
+import { Download, XCircle, RotateCcw, DollarSign } from 'lucide-react'
 import { voidSale } from '@/lib/commerce/sale-actions'
 import { createRefund } from '@/lib/commerce/refund-actions'
+import { recordPayment } from '@/lib/commerce/payment-actions'
 import { generateReceipt } from '@/lib/commerce/receipt-actions'
 import { parseCurrencyToCents } from '@/lib/utils/currency'
 import type { SaleStatus } from '@/lib/commerce/constants'
@@ -36,7 +37,14 @@ export function SaleDetailActions({ saleId, saleStatus, totalCents, payments }: 
   const [showVoidConfirm, setShowVoidConfirm] = useState(false)
   const [voidReason, setVoidReason] = useState('')
 
+  // Manual payment form
+  const [showPayment, setShowPayment] = useState(false)
+  const [paymentAmount, setPaymentAmount] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState<string>('cash')
+  const [paymentNotes, setPaymentNotes] = useState('')
+
   const isTerminal = TERMINAL_SALE_STATUSES.includes(saleStatus)
+  const canRecordPayment = ['draft', 'pending_payment', 'authorized'].includes(saleStatus)
   const canVoid = !isTerminal && saleStatus !== 'settled'
   const canRefund =
     !isTerminal &&
@@ -115,6 +123,34 @@ export function SaleDetailActions({ saleId, saleStatus, totalCents, payments }: 
     })
   }
 
+  function handleRecordPayment() {
+    const amountCents = parseCurrencyToCents(paymentAmount || '0')
+    if (amountCents <= 0) {
+      toast.error('Enter a payment amount')
+      return
+    }
+
+    startTransition(async () => {
+      try {
+        await recordPayment({
+          saleId,
+          amountCents,
+          paymentMethod: paymentMethod as any,
+          idempotencyKey: `manual_${saleId}_${Date.now()}`,
+          notes: paymentNotes.trim() || undefined,
+        })
+        toast.success('Payment recorded')
+        setShowPayment(false)
+        setPaymentAmount('')
+        setPaymentMethod('cash')
+        setPaymentNotes('')
+        router.refresh()
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Failed to record payment')
+      }
+    })
+  }
+
   return (
     <div className="space-y-3">
       {/* Action buttons */}
@@ -123,6 +159,22 @@ export function SaleDetailActions({ saleId, saleStatus, totalCents, payments }: 
           <Download className="w-4 h-4 mr-2" />
           Receipt
         </Button>
+
+        {canRecordPayment && (
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setShowPayment(!showPayment)
+              setShowRefund(false)
+              setShowVoidConfirm(false)
+            }}
+            disabled={isPending}
+            className="text-emerald-400 hover:text-emerald-300"
+          >
+            <DollarSign className="w-4 h-4 mr-2" />
+            Record Payment
+          </Button>
+        )}
 
         {canRefund && (
           <Button
@@ -177,6 +229,65 @@ export function SaleDetailActions({ saleId, saleStatus, totalCents, payments }: 
                 {isPending ? 'Voiding...' : 'Confirm Void'}
               </Button>
               <Button variant="ghost" onClick={() => setShowVoidConfirm(false)}>
+                Cancel
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Manual payment form */}
+      {showPayment && (
+        <Card>
+          <CardContent className="p-4 space-y-3">
+            <h3 className="text-stone-200 font-medium">Record Payment</h3>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="text-stone-400 text-sm block mb-1">Amount ($)</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={paymentAmount}
+                  onChange={(e) => setPaymentAmount(e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+              <div>
+                <label className="text-stone-400 text-sm block mb-1">Method</label>
+                <select
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="w-full rounded-md border border-stone-700 bg-stone-900 text-stone-200 px-3 py-2 text-sm"
+                >
+                  <option value="cash">Cash</option>
+                  <option value="check">Check</option>
+                  <option value="card">Card</option>
+                  <option value="bank_transfer">Bank Transfer</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-stone-400 text-sm block mb-1">Notes</label>
+                <Input
+                  value={paymentNotes}
+                  onChange={(e) => setPaymentNotes(e.target.value)}
+                  placeholder="Optional"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="primary" onClick={handleRecordPayment} disabled={isPending}>
+                {isPending ? 'Recording...' : 'Record Payment'}
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setShowPayment(false)
+                  setPaymentAmount('')
+                  setPaymentNotes('')
+                }}
+              >
                 Cancel
               </Button>
             </div>
