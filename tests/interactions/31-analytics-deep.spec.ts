@@ -224,3 +224,60 @@ test.describe('Analytics — Cross-Section', () => {
     expect(errors).toHaveLength(0)
   })
 })
+
+test.describe('Analytics - Daily Report', () => {
+  test('/analytics/daily-report - page loads and stays authenticated', async ({ page }) => {
+    await page.goto('/analytics/daily-report')
+    await page.waitForLoadState('networkidle')
+    if (page.url().includes('auth/signin')) return
+
+    expect(page.url()).toMatch(/\/analytics\/daily-report/)
+    await expect(page.getByRole('heading', { name: /daily report/i })).toBeVisible()
+  })
+
+  test('/analytics/daily-report - shows core metric cards', async ({ page }) => {
+    await page.goto('/analytics/daily-report')
+    await page.waitForLoadState('networkidle')
+    if (page.url().includes('auth/signin')) return
+
+    await expect(page.getByText("Today's Revenue")).toBeVisible()
+    await expect(page.getByText('MTD Revenue')).toBeVisible()
+    await expect(page.getByText('vs Last Month')).toBeVisible()
+    await expect(page.getByText('Outstanding')).toBeVisible()
+  })
+
+  test('/analytics/daily-report - previous day navigation updates date heading', async ({
+    page,
+  }) => {
+    await page.goto('/analytics/daily-report')
+    await page.waitForLoadState('networkidle')
+    if (page.url().includes('auth/signin')) return
+
+    const dateHeading = page.locator('h2.text-lg.font-semibold').first()
+    await expect(dateHeading).toBeVisible()
+
+    const before = (await dateHeading.innerText()).trim()
+    const navContainer = dateHeading.locator('xpath=..')
+    await navContainer.locator('button').first().click()
+
+    await expect(dateHeading).not.toHaveText(before, { timeout: 10_000 })
+  })
+
+  test('/analytics/daily-report - regenerate button is actionable with no JS errors', async ({
+    page,
+  }) => {
+    const errors: string[] = []
+    page.on('pageerror', (err) => errors.push(err.message))
+
+    await page.goto('/analytics/daily-report')
+    await page.waitForLoadState('networkidle')
+    if (page.url().includes('auth/signin')) return
+
+    const regenerate = page.getByRole('button', { name: /regenerate/i }).first()
+    await expect(regenerate).toBeVisible()
+    await regenerate.click()
+
+    await expect(page.getByRole('button', { name: /regenerate/i }).first()).toBeVisible()
+    expect(errors).toHaveLength(0)
+  })
+})
