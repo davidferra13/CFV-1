@@ -44,6 +44,9 @@ import { QuoteExpiredClientEmail } from './templates/quote-expired-client'
 import { EventStartingEmail } from './templates/event-starting'
 import { InstantBookingClientEmail } from './templates/instant-booking-client'
 import { ReviewSubmittedChefEmail } from './templates/review-submitted-chef'
+import { PostEventThankYouEmail } from './templates/post-event-thank-you'
+import { PostEventReviewRequestEmail } from './templates/post-event-review-request'
+import { PostEventReferralAskEmail } from './templates/post-event-referral-ask'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -1111,6 +1114,73 @@ export async function sendReviewSubmittedChefEmail(params: {
       rating: params.rating,
       reviewExcerpt: params.reviewExcerpt,
       reviewUrl: `${APP_URL}/reviews/${params.reviewId}`,
+    }),
+  })
+}
+
+// ─── Post-Event Thank You (3 days after completion) ─────────────────────────
+
+export async function sendPostEventThankYouEmail(params: {
+  clientEmail: string
+  clientName: string
+  chefName: string
+  occasion: string
+  eventDate: string
+  bookAgainUrl: string
+}) {
+  await sendEmail({
+    to: params.clientEmail,
+    subject: `${params.chefName} wanted to say thank you`,
+    react: createElement(PostEventThankYouEmail, {
+      clientName: params.clientName,
+      chefName: params.chefName,
+      occasion: params.occasion,
+      eventDate: formatDate(params.eventDate),
+      bookAgainUrl: params.bookAgainUrl,
+    }),
+  })
+}
+
+// ─── Post-Event Review Request (7 days after completion) ────────────────────
+
+export async function sendPostEventReviewRequestEmail(params: {
+  clientEmail: string
+  clientName: string
+  chefName: string
+  occasion: string
+  eventDate: string
+  reviewUrl: string
+}) {
+  await sendEmail({
+    to: params.clientEmail,
+    subject: `Your feedback means the world to ${params.chefName}`,
+    react: createElement(PostEventReviewRequestEmail, {
+      clientName: params.clientName,
+      chefName: params.chefName,
+      occasion: params.occasion,
+      eventDate: formatDate(params.eventDate),
+      reviewUrl: params.reviewUrl,
+    }),
+  })
+}
+
+// ─── Post-Event Referral Ask (14 days after completion) ─────────────────────
+
+export async function sendPostEventReferralAskEmail(params: {
+  clientEmail: string
+  clientName: string
+  chefName: string
+  occasion: string
+  bookingUrl: string
+}) {
+  await sendEmail({
+    to: params.clientEmail,
+    subject: `Know someone who'd love a private chef experience?`,
+    react: createElement(PostEventReferralAskEmail, {
+      clientName: params.clientName,
+      chefName: params.chefName,
+      occasion: params.occasion,
+      bookingUrl: params.bookingUrl,
     }),
   })
 }

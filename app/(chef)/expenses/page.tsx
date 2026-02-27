@@ -101,6 +101,9 @@ export default async function ExpensesPage({
                     : undefined,
             }}
           />
+          <Link href="/expenses/new?mode=scan">
+            <Button variant="secondary">Scan Receipt</Button>
+          </Link>
           <Link href="/expenses/new">
             <Button>Add Expense</Button>
           </Link>

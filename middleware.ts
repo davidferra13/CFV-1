@@ -104,7 +104,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/api/ai/monitor') ||
     pathname.startsWith('/api/embed') ||
     pathname.startsWith('/api/demo') ||
-    pathname.startsWith('/api/monitoring')
+    pathname.startsWith('/api/monitoring') ||
+    pathname.startsWith('/api/inngest')
   ) {
     return NextResponse.next()
   }

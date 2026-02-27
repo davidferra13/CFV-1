@@ -627,6 +627,27 @@ export async function transitionEvent({
     }
   }
 
+  // Enqueue Inngest post-event follow-up sequence (non-blocking)
+  // Sends thank-you (3d), review request (7d), and referral ask (14d) emails.
+  if (toStatus === 'completed' && fromStatus === 'in_progress') {
+    try {
+      const { inngest } = await import('@/lib/jobs/inngest-client')
+      await inngest.send({
+        name: 'chefflow/event.completed',
+        data: {
+          eventId,
+          tenantId: event.tenant_id,
+          clientId: event.client_id,
+          occasion: event.occasion || 'your event',
+          eventDate: event.event_date,
+          completedAt: new Date().toISOString(),
+        },
+      })
+    } catch (err) {
+      log.events.warn('Inngest post-event enqueue failed (non-blocking)', { error: err })
+    }
+  }
+
   return {
     success: true,
     fromStatus,
