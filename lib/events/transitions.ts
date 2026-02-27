@@ -648,6 +648,21 @@ export async function transitionEvent({
     }
   }
 
+  // Zapier/Make webhook dispatch (non-blocking)
+  try {
+    const { dispatchWebhookEvent } = await import('@/lib/integrations/zapier/zapier-webhooks')
+    await dispatchWebhookEvent(event.tenant_id, 'event.status_changed', {
+      event_id: eventId,
+      from_status: fromStatus,
+      to_status: toStatus,
+      occasion: event.occasion ?? null,
+      client_id: event.client_id,
+      event_date: event.event_date,
+    })
+  } catch (err) {
+    log.events.warn('Zapier dispatch failed (non-blocking)', { error: err })
+  }
+
   return {
     success: true,
     fromStatus,

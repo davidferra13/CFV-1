@@ -100,27 +100,50 @@ export async function createPaymentCheckoutUrl(
     }
   }
 
-  const session = await breakers.stripe.execute(() =>
-    stripe.checkout.sessions.create({
-      mode: 'payment',
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            unit_amount: amountCents,
-            product_data: {
-              name: `${event.occasion || 'Private Chef Event'} — ${paymentType === 'deposit' ? 'Deposit' : 'Payment'}`,
-            },
+  // Check chef's Apple Pay / Google Pay preferences
+  const { data: chefPrefs } = await supabase
+    .from('chefs')
+    .select('apple_pay_enabled, google_pay_enabled')
+    .eq('id', tenantId)
+    .single()
+
+  // Build payment method config based on chef preferences.
+  // If both wallets are enabled (or no prefs row), use automatic_payment_methods (Stripe default).
+  // Otherwise, explicitly list allowed methods to exclude disabled wallets.
+  const applePayOn = chefPrefs?.apple_pay_enabled !== false
+  const googlePayOn = chefPrefs?.google_pay_enabled !== false
+
+  const checkoutParams: Record<string, unknown> = {
+    mode: 'payment',
+    line_items: [
+      {
+        price_data: {
+          currency: 'usd',
+          unit_amount: amountCents,
+          product_data: {
+            name: `${event.occasion || 'Private Chef Event'} — ${paymentType === 'deposit' ? 'Deposit' : 'Payment'}`,
           },
-          quantity: 1,
         },
-      ],
-      payment_intent_data: paymentIntentData as any,
-      success_url: `${appUrl}/my-events/${eventId}?payment=success`,
-      cancel_url: `${appUrl}/my-events/${eventId}?payment=cancelled`,
-      customer_email: (event.client as { email: string | null })?.email || undefined,
-      expires_at: Math.floor(Date.now() / 1000) + 72 * 3600, // 72 hours
-    })
+        quantity: 1,
+      },
+    ],
+    payment_intent_data: paymentIntentData as any,
+    success_url: `${appUrl}/my-events/${eventId}?payment=success`,
+    cancel_url: `${appUrl}/my-events/${eventId}?payment=cancelled`,
+    customer_email: (event.client as { email: string | null })?.email || undefined,
+    expires_at: Math.floor(Date.now() / 1000) + 72 * 3600, // 72 hours
+  }
+
+  if (!applePayOn || !googlePayOn) {
+    // Explicit list: always include card; conditionally add wallets
+    const types: string[] = ['card']
+    if (applePayOn) types.push('apple_pay')
+    if (googlePayOn) types.push('google_pay')
+    checkoutParams.payment_method_types = types
+  }
+
+  const session = await breakers.stripe.execute(() =>
+    stripe.checkout.sessions.create(checkoutParams as any)
   )
 
   return session.url

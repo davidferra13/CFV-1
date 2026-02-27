@@ -1,6 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import type { IntegrationEventSummary } from '@/lib/integrations/core/types'
+import { IntegrationConnectButtons } from './integration-connect-buttons'
+
+type ConnectionStatus = {
+  connected: boolean
+  status?: string
+  accountName?: string | null
+  connectedAt?: string | null
+  lastError?: string | null
+}
 
 type ProviderOverviewItem = {
   provider: string
@@ -25,6 +34,9 @@ type ProviderOverviewItem = {
   lastEventStatus: string | null
   lastEventAt: string | null
 }
+
+const OAUTH_PROVIDERS = ['quickbooks', 'docusign', 'square'] as const
+type OAuthProvider = (typeof OAUTH_PROVIDERS)[number]
 
 function statusVariant(status: string | null) {
   if (status === 'connected' || status === 'completed') return 'success' as const
@@ -60,9 +72,11 @@ const CATEGORY_ORDER: ProviderOverviewItem['category'][] = [
 export function IntegrationCenter({
   overview,
   recentEvents,
+  oauthStatuses,
 }: {
   overview: ProviderOverviewItem[]
   recentEvents: IntegrationEventSummary[]
+  oauthStatuses?: Record<OAuthProvider, ConnectionStatus>
 }) {
   return (
     <div className="space-y-6">
@@ -105,14 +119,27 @@ export function IntegrationCenter({
                     )}
                   </div>
 
-                  <div className="shrink-0 text-right">
-                    <p className="text-xs text-stone-500">
-                      Connections: {provider.connectionCount}
-                    </p>
-                    {provider.lastEventStatus && (
-                      <Badge variant={statusVariant(provider.lastEventStatus)} className="mt-1">
-                        {provider.lastEventStatus}
-                      </Badge>
+                  <div className="shrink-0 flex flex-col items-end gap-2">
+                    {oauthStatuses &&
+                      OAUTH_PROVIDERS.includes(provider.provider as OAuthProvider) && (
+                        <IntegrationConnectButtons
+                          provider={provider.provider as OAuthProvider}
+                          initialStatus={oauthStatuses[provider.provider as OAuthProvider]}
+                        />
+                      )}
+                    {!(
+                      oauthStatuses && OAUTH_PROVIDERS.includes(provider.provider as OAuthProvider)
+                    ) && (
+                      <>
+                        <p className="text-xs text-stone-500">
+                          Connections: {provider.connectionCount}
+                        </p>
+                        {provider.lastEventStatus && (
+                          <Badge variant={statusVariant(provider.lastEventStatus)} className="mt-1">
+                            {provider.lastEventStatus}
+                          </Badge>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>

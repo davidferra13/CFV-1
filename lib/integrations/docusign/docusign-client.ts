@@ -2,9 +2,11 @@
 
 import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/require-chef'
+import { encryptOAuthToken, decryptOAuthToken } from '@/lib/integrations/core/token-crypto'
 
 // DocuSign OAuth 2.0 + eSignature REST API client.
 // Uses integration_connections table for token storage.
+// Tokens encrypted at rest via AES-256-GCM (see token-crypto.ts).
 
 const DS_AUTH_URL = 'https://account-d.docusign.com/oauth/auth' // demo; prod: account.docusign.com
 const DS_TOKEN_URL = 'https://account-d.docusign.com/oauth/token'
@@ -113,8 +115,8 @@ export async function exchangeDocuSignCode(code: string, tenantId: string): Prom
       status: 'connected',
       external_account_id: defaultAccount.account_id,
       external_account_name: defaultAccount.account_name,
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
+      access_token: encryptOAuthToken(tokens.access_token),
+      refresh_token: encryptOAuthToken(tokens.refresh_token),
       token_expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
       config: {
         account_id: defaultAccount.account_id,
@@ -145,10 +147,11 @@ async function refreshDocuSignToken(tenantId: string): Promise<string> {
   if (conn.token_expires_at) {
     const expiresAt = new Date(conn.token_expires_at).getTime()
     if (Date.now() < expiresAt - 5 * 60 * 1000) {
-      return conn.access_token
+      return decryptOAuthToken(conn.access_token)
     }
   }
 
+  const decryptedRefreshToken = decryptOAuthToken(conn.refresh_token)
   const basicAuth = Buffer.from(`${getClientId()}:${getClientSecret()}`).toString('base64')
 
   const response = await fetch(DS_TOKEN_URL, {
@@ -159,7 +162,7 @@ async function refreshDocuSignToken(tenantId: string): Promise<string> {
     },
     body: new URLSearchParams({
       grant_type: 'refresh_token',
-      refresh_token: conn.refresh_token,
+      refresh_token: decryptedRefreshToken,
     }),
   })
 
@@ -181,8 +184,8 @@ async function refreshDocuSignToken(tenantId: string): Promise<string> {
   await supabase
     .from('integration_connections')
     .update({
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
+      access_token: encryptOAuthToken(tokens.access_token),
+      refresh_token: encryptOAuthToken(tokens.refresh_token),
       token_expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
       error_count: 0,
       last_error: null,
@@ -190,7 +193,7 @@ async function refreshDocuSignToken(tenantId: string): Promise<string> {
     .eq('tenant_id', tenantId)
     .eq('provider', 'docusign')
 
-  return tokens.access_token
+  return tokens.access_token // Return plaintext for immediate use
 }
 
 export async function sendContractForSignature(

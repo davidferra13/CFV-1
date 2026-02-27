@@ -7,6 +7,7 @@ import {
   getRecentIntegrationEvents,
 } from '@/lib/integrations/core/query-actions'
 import { IntegrationCenter } from '@/components/settings/integration-center'
+import { getOAuthConnectionStatuses } from '@/lib/integrations/core/connection-status-actions'
 import { TakeAChefSetup } from '@/components/integrations/take-a-chef-setup'
 import { getTakeAChefStats } from '@/lib/gmail/take-a-chef-stats'
 import { createServerClient } from '@/lib/supabase/server'
@@ -16,7 +17,7 @@ export const metadata: Metadata = { title: 'Integrations - ChefFlow' }
 export default async function IntegrationsSettingsPage() {
   const user = await requireChef()
 
-  const [overview, recentEvents, tacStats, gmailConn] = await Promise.all([
+  const [overview, recentEvents, tacStats, gmailConn, oauthStatuses] = await Promise.all([
     getIntegrationProviderOverview(),
     getRecentIntegrationEvents(30),
     getTakeAChefStats().catch(() => ({
@@ -32,6 +33,7 @@ export default async function IntegrationsSettingsPage() {
       .eq('chef_id', user.entityId)
       .maybeSingle()
       .then((r) => r.data),
+    getOAuthConnectionStatuses(),
   ])
 
   return (
@@ -58,7 +60,11 @@ export default async function IntegrationsSettingsPage() {
         tacLeadCount={tacStats.totalAllTime}
       />
 
-      <IntegrationCenter overview={overview} recentEvents={recentEvents} />
+      <IntegrationCenter
+        overview={overview}
+        recentEvents={recentEvents}
+        oauthStatuses={oauthStatuses}
+      />
     </div>
   )
 }

@@ -2,9 +2,11 @@
 
 import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/require-chef'
+import { encryptOAuthToken, decryptOAuthToken } from '@/lib/integrations/core/token-crypto'
 
 // QuickBooks Online OAuth 2.0 + REST API client.
 // Uses integration_connections table for token storage.
+// Tokens encrypted at rest via AES-256-GCM (see token-crypto.ts).
 
 const QB_AUTH_URL = 'https://appcenter.intuit.com/connect/oauth2'
 const QB_TOKEN_URL = 'https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer'
@@ -93,7 +95,7 @@ export async function exchangeQuickBooksCode(
 
   const supabase = createServerClient({ admin: true })
 
-  // Upsert connection
+  // Upsert connection (tokens encrypted at rest)
   await supabase.from('integration_connections').upsert(
     {
       id: crypto.randomUUID(),
@@ -104,8 +106,8 @@ export async function exchangeQuickBooksCode(
       status: 'connected',
       external_account_id: realmId,
       external_account_name: `QuickBooks Company ${realmId}`,
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
+      access_token: encryptOAuthToken(tokens.access_token),
+      refresh_token: encryptOAuthToken(tokens.refresh_token),
       token_expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
       config: { realm_id: realmId },
       connected_at: new Date().toISOString(),
@@ -133,10 +135,11 @@ async function refreshQuickBooksToken(tenantId: string): Promise<string> {
   if (conn.token_expires_at) {
     const expiresAt = new Date(conn.token_expires_at).getTime()
     if (Date.now() < expiresAt - 5 * 60 * 1000) {
-      return conn.access_token
+      return decryptOAuthToken(conn.access_token)
     }
   }
 
+  const decryptedRefreshToken = decryptOAuthToken(conn.refresh_token)
   const basicAuth = Buffer.from(`${getClientId()}:${getClientSecret()}`).toString('base64')
 
   const response = await fetch(QB_TOKEN_URL, {
@@ -148,7 +151,7 @@ async function refreshQuickBooksToken(tenantId: string): Promise<string> {
     },
     body: new URLSearchParams({
       grant_type: 'refresh_token',
-      refresh_token: conn.refresh_token,
+      refresh_token: decryptedRefreshToken,
     }),
   })
 
@@ -172,8 +175,8 @@ async function refreshQuickBooksToken(tenantId: string): Promise<string> {
   await supabase
     .from('integration_connections')
     .update({
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
+      access_token: encryptOAuthToken(tokens.access_token),
+      refresh_token: encryptOAuthToken(tokens.refresh_token),
       token_expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
       error_count: 0,
       last_error: null,
@@ -181,7 +184,7 @@ async function refreshQuickBooksToken(tenantId: string): Promise<string> {
     .eq('tenant_id', tenantId)
     .eq('provider', 'quickbooks')
 
-  return tokens.access_token
+  return tokens.access_token // Return plaintext for immediate use
 }
 
 async function qbApiCall(

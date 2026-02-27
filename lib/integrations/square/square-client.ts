@@ -2,10 +2,12 @@
 
 import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/require-chef'
+import { encryptOAuthToken, decryptOAuthToken } from '@/lib/integrations/core/token-crypto'
 
 // Square OAuth 2.0 + Payments API client.
 // For in-person payment processing at events via Square Terminal/Reader.
 // Uses integration_connections table for token storage.
+// Tokens encrypted at rest via AES-256-GCM (see token-crypto.ts).
 
 const SQ_AUTH_URL = 'https://connect.squareup.com/oauth2/authorize'
 const SQ_TOKEN_URL = 'https://connect.squareup.com/oauth2/token'
@@ -127,8 +129,8 @@ export async function exchangeSquareCode(code: string, tenantId: string): Promis
       status: 'connected',
       external_account_id: tokens.merchant_id,
       external_account_name: merchantName,
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
+      access_token: encryptOAuthToken(tokens.access_token),
+      refresh_token: encryptOAuthToken(tokens.refresh_token),
       token_expires_at: tokens.expires_at,
       config: { merchant_id: tokens.merchant_id },
       connected_at: new Date().toISOString(),
@@ -154,9 +156,11 @@ async function refreshSquareToken(tenantId: string): Promise<string> {
   if (conn.token_expires_at) {
     const expiresAt = new Date(conn.token_expires_at).getTime()
     if (Date.now() < expiresAt - 24 * 60 * 60 * 1000) {
-      return conn.access_token
+      return decryptOAuthToken(conn.access_token)
     }
   }
+
+  const decryptedRefreshToken = decryptOAuthToken(conn.refresh_token)
 
   const response = await fetch(getTokenUrl(), {
     method: 'POST',
@@ -167,7 +171,7 @@ async function refreshSquareToken(tenantId: string): Promise<string> {
     body: JSON.stringify({
       client_id: getClientId(),
       client_secret: getClientSecret(),
-      refresh_token: conn.refresh_token,
+      refresh_token: decryptedRefreshToken,
       grant_type: 'refresh_token',
     }),
   })
@@ -190,8 +194,8 @@ async function refreshSquareToken(tenantId: string): Promise<string> {
   await supabase
     .from('integration_connections')
     .update({
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
+      access_token: encryptOAuthToken(tokens.access_token),
+      refresh_token: encryptOAuthToken(tokens.refresh_token),
       token_expires_at: tokens.expires_at,
       error_count: 0,
       last_error: null,
@@ -199,7 +203,7 @@ async function refreshSquareToken(tenantId: string): Promise<string> {
     .eq('tenant_id', tenantId)
     .eq('provider', 'square')
 
-  return tokens.access_token
+  return tokens.access_token // Return plaintext for immediate use
 }
 
 // Create a payment link for in-person or online collection
@@ -311,7 +315,7 @@ export async function disconnectSquare() {
         },
         body: JSON.stringify({
           client_id: getClientId(),
-          access_token: conn.access_token,
+          access_token: decryptOAuthToken(conn.access_token),
         }),
       })
     } catch {

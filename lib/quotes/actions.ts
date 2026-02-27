@@ -619,6 +619,27 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     console.error('[transitionQuote] Activity log failed (non-blocking):', err)
   }
 
+  // Zapier/Make webhook dispatch (non-blocking)
+  try {
+    const { dispatchWebhookEvent } = await import('@/lib/integrations/zapier/zapier-webhooks')
+    const zapierEvent =
+      newStatus === 'sent'
+        ? ('quote.sent' as const)
+        : newStatus === 'accepted'
+          ? ('quote.accepted' as const)
+          : null
+    if (zapierEvent) {
+      await dispatchWebhookEvent(user.tenantId!, zapierEvent, {
+        quote_id: id,
+        status: newStatus,
+        total_quoted_cents: updated.total_quoted_cents,
+        client_id: updated.client_id,
+      })
+    }
+  } catch (err) {
+    console.error('[transitionQuote] Zapier dispatch failed (non-blocking):', err)
+  }
+
   return { success: true, quote: updated }
 }
 
