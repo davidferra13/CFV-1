@@ -4,12 +4,14 @@
 // Contingency Suggestion Engine
 // AI generates "if X goes wrong, do Y" contingency plans based on event specifics.
 // Extends the existing ContingencyPanel (which only allows manual entry).
-// Routed to Gemini (creative problem-solving, not PII).
+// Routed to local Ollama — event data (location, dietary restrictions, allergies) is private.
 // Output is DRAFT ONLY — chef picks which ones to save to the ContingencyPanel.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { GoogleGenAI } from '@google/genai'
+import { z } from 'zod'
+import { parseWithOllama } from './parse-ollama'
+import { OllamaOfflineError } from './ollama-errors'
 
 export interface ContingencyPlan {
   scenarioType: string // maps to existing SCENARIO_LABELS if possible
@@ -26,11 +28,19 @@ export interface ContingencyAIResult {
   generatedAt: string
 }
 
-const getClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
-  return new GoogleGenAI({ apiKey })
-}
+const ContingencyPlanSchema = z.object({
+  scenarioType: z.string(),
+  scenarioLabel: z.string(),
+  riskLevel: z.enum(['critical', 'high', 'medium']),
+  mitigationNotes: z.string(),
+  preventionTip: z.string(),
+  timeImpact: z.string(),
+})
+
+const ContingencyAIResultSchema = z.object({
+  plans: z.array(ContingencyPlanSchema),
+  topRisk: z.string(),
+})
 
 export async function generateContingencyPlans(eventId: string): Promise<ContingencyAIResult> {
   const user = await requireChef()
@@ -62,22 +72,10 @@ export async function generateContingencyPlans(eventId: string): Promise<Conting
     ...((event.allergies as string[]) ?? []),
   ].filter(Boolean)
 
-  const prompt = `You are a risk management consultant for a private chef business.
+  const systemPrompt = `You are a risk management consultant for a private chef business.
 Generate 4–6 specific, realistic contingency plans for this event.
 Focus on the most likely failure points given the event specifics.
 Each plan should be actionable — the chef should be able to execute it mid-service without calling anyone.
-
-Event:
-  Occasion: ${event.occasion ?? 'Private Event'}
-  Guests: ${guestCount}${isLargeEvent ? ' (large event — scaling risk higher)' : ''}
-  Location: ${event.location_address ?? 'Unknown venue'}
-  Service style: ${event.service_style ?? 'plated'}
-  Serve time: ${event.serve_time ?? 'TBD'}
-  Allergens/restrictions: ${allergens.join(', ') || 'None noted'}
-  Special requests: ${event.special_requests ?? 'None'}
-
-Menu complexity (${menu.length} dishes):
-${menu.map((m) => `  - [${m.course_type ?? 'Course'}] ${m.name}`).join('\n') || '  - Not yet assigned'}
 
 Common private chef risks to assess:
   equipment_failure, ingredient_shortage, timing_overrun, dietary_violation,
@@ -98,21 +96,30 @@ Return JSON: {
 
 Return ONLY valid JSON.`
 
+  const userContent = `Event:
+  Occasion: ${event.occasion ?? 'Private Event'}
+  Guests: ${guestCount}${isLargeEvent ? ' (large event — scaling risk higher)' : ''}
+  Location: ${event.location_address ?? 'Unknown venue'}
+  Service style: ${event.service_style ?? 'plated'}
+  Serve time: ${event.serve_time ?? 'TBD'}
+  Allergens/restrictions: ${allergens.join(', ') || 'None noted'}
+  Special requests: ${event.special_requests ?? 'None'}
+
+Menu complexity (${menu.length} dishes):
+${menu.map((m) => `  - [${m.course_type ?? 'Course'}] ${m.name}`).join('\n') || '  - Not yet assigned'}`
+
   try {
-    const ai = getClient()
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-      config: { temperature: 0.6, responseMimeType: 'application/json' },
+    const parsed = await parseWithOllama(systemPrompt, userContent, ContingencyAIResultSchema, {
+      modelTier: 'standard',
+      timeoutMs: 60_000,
     })
-    const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
     return {
       plans: parsed.plans ?? [],
       topRisk: parsed.topRisk ?? '',
       generatedAt: new Date().toISOString(),
     }
   } catch (err) {
+    if (err instanceof OllamaOfflineError) throw err
     console.error('[contingency-ai] Failed:', err)
     throw new Error('Could not generate contingency plans. Please try again.')
   }

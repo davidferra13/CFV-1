@@ -3,12 +3,15 @@
 
 // Equipment Depreciation Plain-Language Explainer
 // AI explains each piece of equipment's depreciation schedule in chef-friendly language.
-// Routed to Gemini (tax education, not PII).
+// Routed to local Ollama (tax education, stays private).
 // Output is INFORMATIONAL ONLY — always recommends consulting a CPA.
+// Falls back to formula result if Ollama is offline (no data leak, just less pretty text).
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { GoogleGenAI } from '@google/genai'
+import { parseWithOllama } from './parse-ollama'
+import { OllamaOfflineError } from './ollama-errors'
+import { z } from 'zod'
 import { calculateDepreciationFormula } from '@/lib/formulas/depreciation'
 
 export interface EquipmentExplanation {
@@ -32,11 +35,24 @@ export interface EquipmentDepreciationReport {
   generatedAt: string
 }
 
-const getClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
-  return new GoogleGenAI({ apiKey })
-}
+const EquipmentExplanationSchema = z.object({
+  itemName: z.string(),
+  purchasePriceDollars: z.number(),
+  purchaseDate: z.string(),
+  depreciationMethod: z.string(),
+  annualDeductionDollars: z.number(),
+  yearInSchedule: z.number(),
+  remainingValueDollars: z.number(),
+  fullyDepreciatedDate: z.string(),
+  plainEnglishExplanation: z.string(),
+  bonusDepreciationNote: z.string().nullable(),
+})
+
+const EquipmentReportSchema = z.object({
+  items: z.array(EquipmentExplanationSchema),
+  totalAnnualDeductionDollars: z.number(),
+  currentYearSummary: z.string(),
+})
 
 export async function explainEquipmentDepreciation(): Promise<EquipmentDepreciationReport> {
   const user = await requireChef()
@@ -73,12 +89,8 @@ export async function explainEquipmentDepreciation(): Promise<EquipmentDepreciat
     method: e.depreciation_method ?? 'straight_line',
   }))
 
-  const prompt = `You are a CPA explaining equipment depreciation to a private chef in plain English.
+  const systemPrompt = `You are a CPA explaining equipment depreciation to a private chef in plain English.
 Explain each item's depreciation schedule without jargon.
-Current year: ${currentYear}
-
-Equipment items:
-${equipmentList.map((e) => `- ${e.name}: $${e.priceDollars.toFixed(2)}, purchased ${e.purchaseDate}, depreciation: ${e.depreciationYears}-year ${e.method}`).join('\n')}
 
 For each item, calculate and explain:
 1. Annual deduction (straight-line = cost / years; other methods as appropriate)
@@ -88,38 +100,24 @@ For each item, calculate and explain:
 5. Plain-English explanation the chef can understand
 6. Note if Section 179 immediate expensing or bonus depreciation might apply
 
-Return JSON: {
-  "items": [{
-    "itemName": "...",
-    "purchasePriceDollars": number,
-    "purchaseDate": "...",
-    "depreciationMethod": "...",
-    "annualDeductionDollars": number,
-    "yearInSchedule": number,
-    "remainingValueDollars": number,
-    "fullyDepreciatedDate": "YYYY",
-    "plainEnglishExplanation": "e.g. 'Your KitchenAid is in year 3 of a 5-year schedule...'",
-    "bonusDepreciationNote": "...or null"
-  }],
-  "totalAnnualDeductionDollars": number,
-  "currentYearSummary": "2-3 sentence summary for ${currentYear}"
-}
+Return JSON with keys: items (array of objects with itemName, purchasePriceDollars, purchaseDate, depreciationMethod, annualDeductionDollars, yearInSchedule, remainingValueDollars, fullyDepreciatedDate, plainEnglishExplanation, bonusDepreciationNote), totalAnnualDeductionDollars (number), currentYearSummary (string).`
 
-Return ONLY valid JSON.`
+  const userContent = `Current year: ${currentYear}
+
+Equipment items:
+${equipmentList.map((e) => `- ${e.name}: $${e.priceDollars.toFixed(2)}, purchased ${e.purchaseDate}, depreciation: ${e.depreciationYears}-year ${e.method}`).join('\n')}`
 
   // Formula: straight-line depreciation — always runs first (pure math, always correct)
   const formulaResult = calculateDepreciationFormula(equipment, currentYear)
 
-  // Try AI enhancement (Gemini) for richer plain-English explanations
+  // Try AI enhancement (Ollama) for richer plain-English explanations
+  // If Ollama is offline → fall back to formulaResult (no data leak, just less pretty text)
   try {
-    const ai = getClient()
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-      config: { temperature: 0.2, responseMimeType: 'application/json' },
+    const parsed = await parseWithOllama(systemPrompt, userContent, EquipmentReportSchema, {
+      modelTier: 'standard',
+      timeoutMs: 60_000,
     })
-    const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
+
     return {
       ...parsed,
       disclaimer:
@@ -127,7 +125,7 @@ Return ONLY valid JSON.`
       generatedAt: new Date().toISOString(),
     }
   } catch (err) {
-    // AI failed — formula result is the reliable floor
+    // AI failed (offline, timeout, or other) — formula result is the reliable floor
     console.warn('[equipment-depreciation-explainer] AI unavailable, using formula result:', err)
     return formulaResult
   }

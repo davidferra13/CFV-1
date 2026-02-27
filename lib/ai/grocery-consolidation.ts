@@ -4,12 +4,14 @@
 // Grocery List Consolidation + Substitution
 // Takes all recipe ingredients for an event, consolidates duplicates,
 // groups by store section, and suggests substitutions for dietary restrictions.
-// Routed to Gemini (culinary knowledge, not PII).
+// Routed to local Ollama (culinary knowledge, stays private).
 // Output is DRAFT ONLY — chef reviews before adding to grocery quote.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { GoogleGenAI } from '@google/genai'
+import { parseWithOllama } from './parse-ollama'
+import { OllamaOfflineError } from './ollama-errors'
+import { z } from 'zod'
 
 export interface ConsolidatedIngredient {
   name: string
@@ -29,11 +31,21 @@ export interface GroceryConsolidationResult {
   generatedAt: string
 }
 
-const getClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
-  return new GoogleGenAI({ apiKey })
-}
+const ConsolidatedIngredientSchema = z.object({
+  name: z.string(),
+  totalQuantity: z.string(),
+  unit: z.string(),
+  storeSection: z.string(),
+  usedIn: z.array(z.string()),
+  substitution: z.string().nullable(),
+  substitutionReason: z.string().nullable(),
+})
+
+const GroceryResultSchema = z.object({
+  ingredients: z.array(ConsolidatedIngredientSchema),
+  dietaryFlags: z.array(z.string()),
+  shoppingNotes: z.string(),
+})
 
 export async function consolidateGroceryList(eventId: string): Promise<GroceryConsolidationResult> {
   const user = await requireChef()
@@ -108,14 +120,8 @@ export async function consolidateGroceryList(eventId: string): Promise<GroceryCo
     ...((event.allergies as string[]) ?? []),
   ].filter(Boolean)
 
-  const prompt = `You are a professional chef's grocery planning assistant.
-Consolidate this ingredient list, combine duplicate ingredients, group by store section, and flag any items that conflict with dietary restrictions.
-
-Guest count: ${guestCount}
-Dietary restrictions/allergies: ${restrictions.join(', ') || 'None'}
-
-All ingredients (scaled for ${guestCount} guests):
-${allIngredients.map((i) => `- [${i.recipeName}] ${i.quantity} ${i.unit} ${i.ingredientName}`).join('\n')}
+  const systemPrompt = `You are a professional chef's grocery planning assistant.
+Consolidate ingredient lists, combine duplicate ingredients, group by store section, and flag any items that conflict with dietary restrictions.
 
 Tasks:
 1. CONSOLIDATE: Combine the same ingredient across recipes (e.g., "2 tbsp butter" + "1/4 cup butter" = "1/4 cup + 2 tbsp butter")
@@ -124,31 +130,19 @@ Tasks:
 4. SUBSTITUTE: Suggest safe substitutions for flagged items (only when a clearly better alternative exists)
 5. NOTES: One or two shopping trip notes (e.g., "buy proteins last, check use-by dates")
 
-Return JSON: {
-  "ingredients": [{
-    "name": "...",
-    "totalQuantity": "consolidated quantity string",
-    "unit": "...",
-    "storeSection": "Produce|Proteins|Dairy|Pantry|Bakery|Alcohol|Supplies",
-    "usedIn": ["recipe name", ...],
-    "substitution": "...or null",
-    "substitutionReason": "...or null"
-  }],
-  "dietaryFlags": ["item name: issue description"],
-  "shoppingNotes": "..."
-}
+Return JSON with keys: ingredients (array of objects with name, totalQuantity, unit, storeSection, usedIn, substitution, substitutionReason), dietaryFlags (array of strings), shoppingNotes (string).`
 
-Return ONLY valid JSON.`
+  const userContent = `Guest count: ${guestCount}
+Dietary restrictions/allergies: ${restrictions.join(', ') || 'None'}
+
+All ingredients (scaled for ${guestCount} guests):
+${allIngredients.map((i) => `- [${i.recipeName}] ${i.quantity} ${i.unit} ${i.ingredientName}`).join('\n')}`
 
   try {
-    const ai = getClient()
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-      config: { temperature: 0.3, responseMimeType: 'application/json' },
+    const parsed = await parseWithOllama(systemPrompt, userContent, GroceryResultSchema, {
+      modelTier: 'standard',
+      timeoutMs: 60_000,
     })
-    const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
 
     const ingredients: ConsolidatedIngredient[] = parsed.ingredients ?? []
 
@@ -167,6 +161,7 @@ Return ONLY valid JSON.`
       generatedAt: new Date().toISOString(),
     }
   } catch (err) {
+    if (err instanceof OllamaOfflineError) throw err
     console.error('[grocery-consolidation] Failed:', err)
     throw new Error('Could not consolidate grocery list. Please try again.')
   }

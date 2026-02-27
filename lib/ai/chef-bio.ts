@@ -3,12 +3,14 @@
 
 // Chef Bio / Tagline Refresh
 // AI suggests updated bio copy and tagline based on recent events, specialties, milestones.
-// Routed to Gemini (marketing copy, not PII).
+// Routed to local Ollama (marketing copy, stays private).
 // Output is DRAFT ONLY — chef reviews and edits before publishing.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { GoogleGenAI } from '@google/genai'
+import { parseWithOllama } from './parse-ollama'
+import { OllamaOfflineError } from './ollama-errors'
+import { z } from 'zod'
 
 export interface ChefBioDraft {
   shortBio: string // 2–3 sentences, for social profiles
@@ -19,11 +21,13 @@ export interface ChefBioDraft {
   generatedAt: string
 }
 
-const getClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
-  return new GoogleGenAI({ apiKey })
-}
+const ChefBioDraftSchema = z.object({
+  shortBio: z.string(),
+  longBio: z.string(),
+  tagline: z.string(),
+  linkedInHeadline: z.string(),
+  alternativeTaglines: z.array(z.string()),
+})
 
 export async function generateChefBioDraft(): Promise<ChefBioDraft> {
   const user = await requireChef()
@@ -67,13 +71,15 @@ export async function generateChefBioDraft(): Promise<ChefBioDraft> {
     ...new Set(recipes.flatMap((r) => (r.dietary_tags as string[] | null) ?? [])),
   ]
 
-  const prompt = `You are a brand copywriter specializing in personal chef businesses.
-Write fresh bio copy and a tagline for this chef.
+  const systemPrompt = `You are a brand copywriter specializing in personal chef businesses.
+Write fresh bio copy and a tagline for a chef.
 Write in third person for long bio, first person for short bio.
 Focus on what makes this chef distinctive — their cuisine style, client experience, event types.
-Be specific, warm, and confidence-inspiring. Avoid clichés like "passionate" and "farm-to-table".
+Be specific, warm, and confidence-inspiring. Avoid cliches like "passionate" and "farm-to-table".
 
-Chef Details:
+Return JSON with keys: shortBio (2-3 sentence first-person bio for social profiles), longBio (4-6 sentence third-person bio for website), tagline (primary tagline under 10 words), linkedInHeadline (LinkedIn-style professional headline), alternativeTaglines (array of 2 alternative taglines).`
+
+  const userContent = `Chef Details:
   Name: ${chef?.full_name ?? 'Chef'}
   Business: ${chef?.business_name ?? ''}
   Current tagline: ${chef?.tagline ?? 'None set'}
@@ -89,29 +95,18 @@ Recent Event History:
 
 Recipe Portfolio (${recipes.length} recipes):
   Categories: ${categories.join(', ') || 'Various'}
-  Dietary expertise: ${dietaryTags.join(', ') || 'Not specified'}
-
-Return JSON: {
-  "shortBio": "2-3 sentence first-person bio for social profiles",
-  "longBio": "4-6 sentence third-person bio for website",
-  "tagline": "primary tagline under 10 words",
-  "linkedInHeadline": "LinkedIn-style professional headline",
-  "alternativeTaglines": ["alternative 1", "alternative 2"]
-}
-
-Return ONLY valid JSON.`
+  Dietary expertise: ${dietaryTags.join(', ') || 'Not specified'}`
 
   try {
-    const ai = getClient()
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-      config: { temperature: 0.75, responseMimeType: 'application/json' },
+    const parsed = await parseWithOllama(systemPrompt, userContent, ChefBioDraftSchema, {
+      modelTier: 'complex',
+      timeoutMs: 60_000,
+      maxTokens: 1024,
     })
-    const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
+
     return { ...parsed, generatedAt: new Date().toISOString() }
   } catch (err) {
+    if (err instanceof OllamaOfflineError) throw err
     console.error('[chef-bio] Failed:', err)
     throw new Error('Could not generate bio. Please try again.')
   }

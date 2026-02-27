@@ -1,6 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -39,6 +40,7 @@ export type UpdatePolicyInput = z.infer<typeof UpdatePolicySchema>
  */
 export async function addPolicy(input: AddPolicyInput) {
   const chef = await requireChef()
+  await requirePro('protection')
   const tenantId = chef.tenantId!
   const validated = PolicySchema.parse(input)
 
@@ -61,6 +63,7 @@ export async function addPolicy(input: AddPolicyInput) {
  */
 export async function updatePolicy(id: string, input: UpdatePolicyInput) {
   const chef = await requireChef()
+  await requirePro('protection')
   const tenantId = chef.tenantId!
   const validated = UpdatePolicySchema.parse(input)
 
@@ -95,6 +98,7 @@ export async function updatePolicy(id: string, input: UpdatePolicyInput) {
  */
 export async function deletePolicy(id: string) {
   const chef = await requireChef()
+  await requirePro('protection')
   const tenantId = chef.tenantId!
 
   const supabase = createServerClient()
@@ -125,6 +129,7 @@ export async function deletePolicy(id: string) {
  */
 export async function getPolicies() {
   const chef = await requireChef()
+  await requirePro('protection')
   const tenantId = chef.tenantId!
 
   const supabase = createServerClient()
@@ -146,6 +151,7 @@ export async function getPolicies() {
  */
 export async function getExpiringPolicies(daysAhead: number) {
   const chef = await requireChef()
+  await requirePro('protection')
   const tenantId = chef.tenantId!
 
   const supabase = createServerClient()
@@ -173,6 +179,7 @@ export async function getExpiringPolicies(daysAhead: number) {
  */
 export async function getCoverageGapReport() {
   const chef = await requireChef()
+  await requirePro('protection')
   const tenantId = chef.tenantId!
 
   const supabase = createServerClient()

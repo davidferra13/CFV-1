@@ -5,6 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
@@ -67,6 +68,7 @@ export async function getClientRetentionRate(
   endDate?: string
 ): Promise<ClientRetentionResult> {
   const user = await requireChef()
+  await requirePro('custom-reports')
   const supabase = createServerClient()
 
   const parsed = DateRangeSchema.parse({ startDate, endDate })
@@ -132,6 +134,7 @@ export async function getRevenueBySource(
   endDate?: string
 ): Promise<RevenueBySourceResult> {
   const user = await requireChef()
+  await requirePro('custom-reports')
   const supabase = createServerClient()
 
   const parsed = DateRangeSchema.parse({ startDate, endDate })

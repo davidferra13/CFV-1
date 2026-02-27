@@ -6,6 +6,7 @@
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { loadRemyContext } from '@/lib/ai/remy-context'
@@ -475,6 +476,7 @@ export async function sendRemyMessage(
   currentPage?: string
 ): Promise<RemyResponse> {
   const user = await requireChef()
+  await requirePro('remy')
 
   // ─── GUARDRAILS (before any LLM call) ──────────────────────────
   // Admins bypass ALL guardrails — they can do whatever they want

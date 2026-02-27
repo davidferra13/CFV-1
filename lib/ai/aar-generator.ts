@@ -4,12 +4,14 @@
 // AAR (After-Action Report) Generator
 // AI drafts the full AAR narrative from event data.
 // Extends lib/events/debrief-actions.ts which has only partial AI.
-// Routed to Gemini (quality-critical post-event analysis).
+// Routed to LOCAL Ollama (complex tier) — private data never leaves the machine.
 // Output is DRAFT ONLY — chef edits and confirms before the AAR is finalized.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { GoogleGenAI } from '@google/genai'
+import { z } from 'zod'
+import { parseWithOllama } from './parse-ollama'
+import { OllamaOfflineError } from './ollama-errors'
 
 export interface AARDraft {
   executiveSummary: string // 2–3 sentence high-level summary
@@ -23,11 +25,16 @@ export interface AARDraft {
   generatedAt: string
 }
 
-const getClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
-  return new GoogleGenAI({ apiKey })
-}
+const AARDraftAISchema = z.object({
+  executiveSummary: z.string(),
+  whatWentWell: z.array(z.string()),
+  whatCouldImprove: z.array(z.string()),
+  keyLearnings: z.array(z.string()),
+  clientExperienceNotes: z.string(),
+  financialReflection: z.string(),
+  nextTimeList: z.array(z.string()),
+  fullNarrative: z.string(),
+})
 
 export async function generateAARDraft(eventId: string): Promise<AARDraft> {
   const user = await requireChef()
@@ -84,12 +91,24 @@ export async function generateAARDraft(eventId: string): Promise<AARDraft> {
   const grossProfit = totalRevenue - totalExpenses
   const marginPct = totalRevenue > 0 ? Math.round((grossProfit / totalRevenue) * 100) : 0
 
-  const prompt = `You are a private chef writing your own after-action report for a recently completed event.
+  const systemPrompt = `You are a private chef writing your own after-action report for a recently completed event.
 Write in first person, honest and reflective. This is for the chef's own records — be candid.
 Base your analysis entirely on the data provided. Do not invent details not evidenced.
 For areas with no data, note "Not recorded" rather than guessing.
 
-EVENT SUMMARY:
+Return JSON with these keys:
+  "executiveSummary": 2-3 sentence high-level summary
+  "whatWentWell": array of specific wins
+  "whatCouldImprove": array of specific areas for improvement
+  "keyLearnings": array of actionable takeaways for future events
+  "clientExperienceNotes": how the client experience felt from available signals
+  "financialReflection": profit vs expectation notes
+  "nextTimeList": array of "Next time I'll..." items
+  "fullNarrative": complete AAR as 3-4 paragraph prose
+
+Return ONLY valid JSON.`
+
+  const userContent = `EVENT SUMMARY:
   Occasion: ${event.occasion ?? 'Private Event'}
   Client: ${(client as any)?.full_name ?? 'Unknown'}
   Date: ${event.event_date ?? 'Unknown'}
@@ -114,32 +133,16 @@ EXISTING NOTES:
   Chef notes: ${existingDebrief?.chef_notes ?? event.notes ?? 'None'}
   Client feedback: ${existingDebrief?.client_feedback ?? 'Not yet collected'}
   Rating: ${existingDebrief?.rating ?? 'Not rated'}
-  Special requests fulfilled: ${event.special_requests ?? 'None noted'}
-
-Return JSON: {
-  "executiveSummary": "...",
-  "whatWentWell": ["specific bullet", ...],
-  "whatCouldImprove": ["specific bullet", ...],
-  "keyLearnings": ["actionable takeaway", ...],
-  "clientExperienceNotes": "...",
-  "financialReflection": "...",
-  "nextTimeList": ["Next time I'll...", ...],
-  "fullNarrative": "complete AAR as 3-4 paragraph prose"
-}
-
-Return ONLY valid JSON.`
+  Special requests fulfilled: ${event.special_requests ?? 'None noted'}`
 
   try {
-    const ai = getClient()
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-      config: { temperature: 0.5, responseMimeType: 'application/json' },
+    const parsed = await parseWithOllama(systemPrompt, userContent, AARDraftAISchema, {
+      modelTier: 'complex',
+      timeoutMs: 90_000,
     })
-    const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
     return { ...parsed, generatedAt: new Date().toISOString() }
   } catch (err) {
+    if (err instanceof OllamaOfflineError) throw err
     console.error('[aar-generator] Failed:', err)
     throw new Error('Could not generate AAR. Please try again.')
   }
