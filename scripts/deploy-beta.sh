@@ -81,7 +81,9 @@ ssh $SSH_OPTS "$REMOTE" << 'BUILD'
   # Install dependencies
   # Pi microSD can hit ENOTEMPTY — sudo rm is the only reliable cleanup
   sudo rm -rf node_modules 2>/dev/null || true
-  npm ci --production=false 2>&1 | tail -5
+  # npm ci may exit non-zero due to ENOTEMPTY race conditions on microSD.
+  # The build will fail if any critical dep is actually missing, so don't abort here.
+  npm ci --production=false 2>&1 | tail -5 || true
   echo "  Dependencies installed"
 
   # Build with 6GB heap — app has grown past 4GB (OOMs at 4096 as of 2026-02-26)
