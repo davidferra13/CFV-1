@@ -198,5 +198,21 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
     console.error('[recordOfflinePayment] Activity log failed (non-blocking):', activityErr)
   }
 
+  // ── 7. Push notification — payment received (non-blocking) ──────────────
+  try {
+    const { notifyPaymentReceived } = await import('@/lib/notifications/onesignal')
+    const amountFormatted = `$${(amountCents / 100).toFixed(2)}`
+    // Fetch client name for the push message
+    const { data: pushClient } = await supabaseAdmin
+      .from('clients')
+      .select('full_name')
+      .eq('id', event.client_id)
+      .single()
+    const clientName = pushClient?.full_name || 'Client'
+    await notifyPaymentReceived(user.id, amountFormatted, clientName)
+  } catch (pushErr) {
+    console.error('[recordOfflinePayment] Push notification failed (non-blocking):', pushErr)
+  }
+
   return { success: true, entryId: ledgerEntry?.id }
 }
