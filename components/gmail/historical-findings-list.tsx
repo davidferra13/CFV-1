@@ -13,6 +13,7 @@ import {
   dismissAllFindings,
 } from '@/lib/gmail/historical-scan-actions'
 import type { HistoricalFinding } from '@/lib/gmail/historical-scan-actions'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 
 type Tab = 'pending' | 'imported' | 'dismissed'
 
@@ -271,15 +272,14 @@ function FindingCard({
 function BatchDismissButton({ onDone }: { onDone: () => void }) {
   const [isPending, startTransition] = useTransition()
   const [dismissed, setDismissed] = useState<number | null>(null)
+  const [showDismissConfirm, setShowDismissConfirm] = useState(false)
 
   function handleDismissAll() {
-    if (
-      !confirm(
-        'Dismiss all pending findings? This cannot be undone. You can still find these emails directly in Gmail.'
-      )
-    )
-      return
+    setShowDismissConfirm(true)
+  }
 
+  function handleConfirmedDismissAll() {
+    setShowDismissConfirm(false)
     startTransition(async () => {
       const result = await dismissAllFindings({})
       setDismissed(result.count)
@@ -296,13 +296,25 @@ function BatchDismissButton({ onDone }: { onDone: () => void }) {
   }
 
   return (
-    <button
-      onClick={handleDismissAll}
-      disabled={isPending}
-      className="text-xs text-stone-400 hover:text-stone-400 disabled:opacity-50 transition-colors"
-    >
-      {isPending ? 'Dismissing…' : 'Dismiss all'}
-    </button>
+    <>
+      <button
+        onClick={handleDismissAll}
+        disabled={isPending}
+        className="text-xs text-stone-400 hover:text-stone-400 disabled:opacity-50 transition-colors"
+      >
+        {isPending ? 'Dismissing…' : 'Dismiss all'}
+      </button>
+      <ConfirmModal
+        open={showDismissConfirm}
+        title="Dismiss all pending findings?"
+        description="This cannot be undone. You can still find these emails directly in Gmail."
+        confirmLabel="Dismiss All"
+        variant="danger"
+        loading={isPending}
+        onConfirm={handleConfirmedDismissAll}
+        onCancel={() => setShowDismissConfirm(false)}
+      />
+    </>
   )
 }
 

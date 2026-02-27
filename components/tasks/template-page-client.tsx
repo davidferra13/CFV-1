@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { TaskTemplateForm } from './task-template-form'
 import {
   deleteTemplate,
@@ -140,16 +141,19 @@ function TemplateCard({ template, staff }: { template: TaskTemplate; staff: Staf
   const [showGenerate, setShowGenerate] = useState(false)
   const [showEdit, setShowEdit] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const badgeVariant = CATEGORY_BADGE_VARIANT[template.category] ?? 'default'
   const categoryLabel = TEMPLATE_CATEGORIES[template.category] ?? template.category
   const totalMinutes = template.items.reduce((sum, item) => sum + (item.estimated_minutes ?? 0), 0)
 
-  async function handleDelete() {
+  function handleDelete() {
     if (deleting) return
-    const confirmed = window.confirm(`Delete template "${template.name}"? This cannot be undone.`)
-    if (!confirmed) return
+    setShowDeleteConfirm(true)
+  }
 
+  async function handleConfirmedDelete() {
+    setShowDeleteConfirm(false)
     setDeleting(true)
     try {
       await deleteTemplate(template.id)
@@ -254,6 +258,17 @@ function TemplateCard({ template, staff }: { template: TaskTemplate; staff: Staf
             <TaskTemplateForm template={template} onDone={() => setShowEdit(false)} />
           </div>
         )}
+
+        <ConfirmModal
+          open={showDeleteConfirm}
+          title={`Delete template "${template.name}"?`}
+          description="This cannot be undone."
+          confirmLabel="Delete"
+          variant="danger"
+          loading={deleting}
+          onConfirm={handleConfirmedDelete}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
       </CardContent>
     </Card>
   )

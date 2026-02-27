@@ -10,6 +10,7 @@ import {
 import type { ChefJourneyEntry, ChefJourneyEntryType } from '@/lib/journey/types'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { LocationMap } from '@/components/ui/location-map'
@@ -114,6 +115,7 @@ export function JourneyEntryPanel({
   const [showForm, setShowForm] = useState(initialEntries.length === 0)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [deletingEntry, setDeletingEntry] = useState<ChefJourneyEntry | null>(null)
 
   const counts = useMemo(() => {
     const map = new Map<ChefJourneyEntryType, number>()
@@ -207,8 +209,13 @@ export function JourneyEntryPanel({
   }
 
   const handleDelete = (entry: ChefJourneyEntry) => {
-    const confirmed = window.confirm(`Delete entry "${entry.title}"?`)
-    if (!confirmed) return
+    setDeletingEntry(entry)
+  }
+
+  const handleConfirmDelete = () => {
+    if (!deletingEntry) return
+    const entry = deletingEntry
+    setDeletingEntry(null)
 
     setError(null)
     startTransition(async () => {
@@ -621,6 +628,17 @@ export function JourneyEntryPanel({
             ))}
         </div>
       )}
+
+      <ConfirmModal
+        open={!!deletingEntry}
+        title={`Delete entry "${deletingEntry?.title}"?`}
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        loading={isPending}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeletingEntry(null)}
+      />
     </div>
   )
 }

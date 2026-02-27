@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { awardBonusPoints, redeemReward, type LoyaltyReward } from '@/lib/loyalty/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 
 export function AwardBonusForm({ clientId }: { clientId: string }) {
   const [open, setOpen] = useState(false)
@@ -73,10 +74,14 @@ export function RedeemRewardButton({
   reward: LoyaltyReward
 }) {
   const [loading, setLoading] = useState(false)
+  const [showRedeemConfirm, setShowRedeemConfirm] = useState(false)
 
-  async function handleRedeem() {
-    if (!confirm(`Redeem "${reward.name}" for ${reward.points_required} points?`)) return
+  function handleRedeem() {
+    setShowRedeemConfirm(true)
+  }
 
+  async function handleConfirmedRedeem() {
+    setShowRedeemConfirm(false)
     setLoading(true)
     try {
       await redeemReward(clientId, reward.id)
@@ -88,8 +93,20 @@ export function RedeemRewardButton({
   }
 
   return (
-    <Button variant="secondary" size="sm" onClick={handleRedeem} disabled={loading}>
-      {loading ? 'Redeeming...' : 'Redeem'}
-    </Button>
+    <>
+      <Button variant="secondary" size="sm" onClick={handleRedeem} disabled={loading}>
+        {loading ? 'Redeeming...' : 'Redeem'}
+      </Button>
+      <ConfirmModal
+        open={showRedeemConfirm}
+        title={`Redeem "${reward.name}"?`}
+        description={`This will deduct ${reward.points_required} points from the client's balance.`}
+        confirmLabel="Redeem"
+        variant="primary"
+        loading={loading}
+        onConfirm={handleConfirmedRedeem}
+        onCancel={() => setShowRedeemConfirm(false)}
+      />
+    </>
   )
 }

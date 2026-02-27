@@ -19,6 +19,7 @@ import {
 } from '@/lib/goals/service-mix-actions'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 
 interface ServiceTypeManagerProps {
   serviceTypes: ServiceType[]
@@ -63,6 +64,7 @@ export function ServiceTypeManager({
   const [formError, setFormError] = useState<string | null>(null)
   const [savePending, startSave] = useTransition()
   const [deletePending, startDelete] = useTransition()
+  const [deletingService, setDeletingService] = useState<{ id: string; name: string } | null>(null)
 
   function openAddForm() {
     setEditingId(null)
@@ -146,12 +148,13 @@ export function ServiceTypeManager({
   }
 
   function handleDelete(id: string, name: string) {
-    if (
-      !confirm(
-        `Remove "${name}"? This only affects future planning — it won't change past event data.`
-      )
-    )
-      return
+    setDeletingService({ id, name })
+  }
+
+  function handleConfirmDelete() {
+    if (!deletingService) return
+    const { id } = deletingService
+    setDeletingService(null)
     startDelete(async () => {
       await deleteServiceType(id)
       onChanged()
@@ -403,6 +406,17 @@ export function ServiceTypeManager({
           </button>
         )}
       </div>
+
+      <ConfirmModal
+        open={!!deletingService}
+        title={`Remove "${deletingService?.name}"?`}
+        description="This only affects future planning — it won't change past event data."
+        confirmLabel="Remove"
+        variant="danger"
+        loading={deletePending}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeletingService(null)}
+      />
     </div>
   )
 }

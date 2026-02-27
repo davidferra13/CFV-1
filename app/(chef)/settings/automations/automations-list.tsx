@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { RuleBuilder } from '@/components/automations/rule-builder'
 import { BuiltInSettings } from '@/components/automations/built-in-settings'
 import { ExecutionLog } from '@/components/automations/execution-log'
@@ -31,6 +32,8 @@ export function AutomationsList({ rules, executions, settings }: AutomationsList
   const [editingRule, setEditingRule] = useState<AutomationRule | null>(null)
   const [toggling, setToggling] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
   const handleToggle = async (ruleId: string, currentActive: boolean) => {
     setToggling(ruleId)
@@ -44,11 +47,17 @@ export function AutomationsList({ rules, executions, settings }: AutomationsList
     }
   }
 
-  const handleDelete = async (ruleId: string) => {
-    if (!confirm('Delete this automation rule? This cannot be undone.')) return
-    setDeleting(ruleId)
+  const handleDelete = (ruleId: string) => {
+    setDeleteTargetId(ruleId)
+    setShowDeleteConfirm(true)
+  }
+
+  const handleConfirmedDelete = async () => {
+    if (!deleteTargetId) return
+    setShowDeleteConfirm(false)
+    setDeleting(deleteTargetId)
     try {
-      await deleteAutomationRule(ruleId)
+      await deleteAutomationRule(deleteTargetId)
       router.refresh()
     } catch (err) {
       console.error('Delete failed:', err)
@@ -179,6 +188,17 @@ export function AutomationsList({ rules, executions, settings }: AutomationsList
           ))}
         </CardContent>
       </Card>
+
+      <ConfirmModal
+        open={showDeleteConfirm}
+        title="Delete this automation rule?"
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        loading={deleting !== null}
+        onConfirm={handleConfirmedDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
 
       {/* ── Execution Log ─────────────────────────────────────────────────── */}
       <Card>

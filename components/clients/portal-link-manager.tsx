@@ -6,6 +6,7 @@
 import { useState } from 'react'
 import { generateClientPortalToken, revokeClientPortalToken } from '@/lib/client-portal/actions'
 import { Link2, RefreshCw, Trash2, Copy, Check } from 'lucide-react'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 
 interface Props {
   clientId: string
@@ -18,6 +19,7 @@ export function PortalLinkManager({ clientId, initialToken, initialCreatedAt }: 
   const [createdAt, setCreatedAt] = useState(initialCreatedAt)
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [showRevokeConfirm, setShowRevokeConfirm] = useState(false)
 
   const portalUrl = token
     ? `${typeof window !== 'undefined' ? window.location.origin : ''}/client/${token}`
@@ -35,12 +37,11 @@ export function PortalLinkManager({ clientId, initialToken, initialCreatedAt }: 
   }
 
   async function handleRevoke() {
-    if (
-      !confirm(
-        'Revoke this portal link? The client will no longer be able to access their portal with the current link.'
-      )
-    )
-      return
+    setShowRevokeConfirm(true)
+  }
+
+  async function handleConfirmedRevoke() {
+    setShowRevokeConfirm(false)
     setLoading(true)
     try {
       await revokeClientPortalToken(clientId)
@@ -115,6 +116,16 @@ export function PortalLinkManager({ clientId, initialToken, initialCreatedAt }: 
           <Trash2 className="h-3.5 w-3.5" />
         </button>
       </div>
+      <ConfirmModal
+        open={showRevokeConfirm}
+        title="Revoke portal link?"
+        description="The client will no longer be able to access their portal with the current link."
+        confirmLabel="Revoke"
+        variant="danger"
+        loading={loading}
+        onConfirm={handleConfirmedRevoke}
+        onCancel={() => setShowRevokeConfirm(false)}
+      />
     </div>
   )
 }

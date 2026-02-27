@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { createEmergencyContact, deleteEmergencyContact } from '@/lib/contingency/actions'
 
 type Contact = {
@@ -21,6 +22,8 @@ export function EmergencyContactsClient({ initialContacts }: { initialContacts: 
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
+  const [removeTargetId, setRemoveTargetId] = useState<string | null>(null)
   const [form, setForm] = useState({
     name: '',
     relationship: '',
@@ -56,10 +59,16 @@ export function EmergencyContactsClient({ initialContacts }: { initialContacts: 
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm('Remove this emergency contact?')) return
+  function handleDelete(id: string) {
+    setRemoveTargetId(id)
+    setShowRemoveConfirm(true)
+  }
+
+  async function handleConfirmedDelete() {
+    if (!removeTargetId) return
+    setShowRemoveConfirm(false)
     try {
-      await deleteEmergencyContact(id)
+      await deleteEmergencyContact(removeTargetId)
       router.refresh()
     } catch {
       /* silent */
@@ -167,6 +176,16 @@ export function EmergencyContactsClient({ initialContacts }: { initialContacts: 
           </CardContent>
         </Card>
       )}
+
+      <ConfirmModal
+        open={showRemoveConfirm}
+        title="Remove this emergency contact?"
+        description="This emergency contact will be permanently removed."
+        confirmLabel="Remove"
+        variant="danger"
+        onConfirm={handleConfirmedDelete}
+        onCancel={() => setShowRemoveConfirm(false)}
+      />
     </div>
   )
 }

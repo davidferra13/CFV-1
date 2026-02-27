@@ -13,6 +13,7 @@ import type {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 
@@ -110,6 +111,7 @@ export function JourneyHub({ journeys, insights }: JourneyHubProps) {
   const [showCreate, setShowCreate] = useState(journeys.length === 0)
   const [draft, setDraft] = useState<JourneyDraft>(EMPTY_DRAFT)
   const [error, setError] = useState<string | null>(null)
+  const [deletingJourney, setDeletingJourney] = useState<ChefJourneyWithStats | null>(null)
 
   const filteredJourneys = useMemo(() => {
     if (statusFilter === 'all') return journeys
@@ -150,10 +152,13 @@ export function JourneyHub({ journeys, insights }: JourneyHubProps) {
   }
 
   const handleDelete = (journey: ChefJourneyWithStats) => {
-    const confirmed = window.confirm(
-      `Delete "${journey.title}" and all of its entries? This cannot be undone.`
-    )
-    if (!confirmed) return
+    setDeletingJourney(journey)
+  }
+
+  const handleConfirmDelete = () => {
+    if (!deletingJourney) return
+    const journey = deletingJourney
+    setDeletingJourney(null)
 
     startTransition(async () => {
       try {
@@ -562,6 +567,17 @@ export function JourneyHub({ journeys, insights }: JourneyHubProps) {
           </div>
         </CardContent>
       </Card>
+
+      <ConfirmModal
+        open={!!deletingJourney}
+        title={`Delete "${deletingJourney?.title}"?`}
+        description="This will delete the journal and all of its entries. This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        loading={isPending}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeletingJourney(null)}
+      />
     </div>
   )
 }

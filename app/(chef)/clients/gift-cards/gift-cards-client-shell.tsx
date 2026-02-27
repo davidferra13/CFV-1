@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { IssueIncentiveForm } from '@/components/incentives/issue-incentive-form'
 import { SendIncentiveForm } from '@/components/incentives/send-incentive-form'
 import { deactivateIncentive } from '@/lib/loyalty/voucher-actions'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { toast } from 'sonner'
 
 type Client = { id: string; full_name: string | null }
@@ -75,10 +76,15 @@ function IssueButton({ clients }: { clients: Client[] }) {
 function RowActions({ incentive }: { incentive: Incentive }) {
   const [sendOpen, setSendOpen] = useState(false)
   const [deactivating, setDeactivating] = useState(false)
+  const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false)
   const router = useRouter()
 
-  async function handleDeactivate() {
-    if (!confirm(`Deactivate code ${incentive.code}? It will no longer be redeemable.`)) return
+  function handleDeactivate() {
+    setShowDeactivateConfirm(true)
+  }
+
+  async function handleConfirmedDeactivate() {
+    setShowDeactivateConfirm(false)
     setDeactivating(true)
     try {
       await deactivateIncentive(incentive.id)
@@ -112,6 +118,17 @@ function RowActions({ incentive }: { incentive: Incentive }) {
         )}
         {!incentive.is_active && <span className="text-xs text-stone-300">Inactive</span>}
       </div>
+
+      <ConfirmModal
+        open={showDeactivateConfirm}
+        title={`Deactivate code ${incentive.code}?`}
+        description="It will no longer be redeemable."
+        confirmLabel="Deactivate"
+        variant="danger"
+        loading={deactivating}
+        onConfirm={handleConfirmedDeactivate}
+        onCancel={() => setShowDeactivateConfirm(false)}
+      />
 
       {/* Send modal */}
       {sendOpen && (

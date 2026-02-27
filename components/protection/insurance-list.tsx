@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Shield, Plus, Trash2, Pencil } from 'lucide-react'
 import { deletePolicy } from '@/lib/protection/insurance-actions'
 import { InsurancePolicyForm } from './insurance-policy-form'
@@ -62,14 +63,24 @@ export function InsuranceList({ policies }: InsuranceListProps) {
   const [localPolicies, setLocalPolicies] = useState<Policy[]>(policies)
   const [isPending, startTransition] = useTransition()
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
 
   function handleDelete(id: string) {
-    if (!confirm('Remove this insurance policy?')) return
-    setDeletingId(id)
+    setPendingDeleteId(id)
+    setShowDeleteConfirm(true)
+  }
+
+  function handleConfirmedDelete() {
+    if (!pendingDeleteId) return
+    setShowDeleteConfirm(false)
+    setDeletingId(pendingDeleteId)
+    const idToDelete = pendingDeleteId
+    setPendingDeleteId(null)
     startTransition(async () => {
       try {
-        await deletePolicy(id)
-        setLocalPolicies((prev) => prev.filter((p) => p.id !== id))
+        await deletePolicy(idToDelete)
+        setLocalPolicies((prev) => prev.filter((p) => p.id !== idToDelete))
       } catch (err) {
         console.error('[InsuranceList] delete failed', err)
       } finally {
@@ -191,6 +202,20 @@ export function InsuranceList({ policies }: InsuranceListProps) {
           )}
         </Card>
       ))}
+
+      <ConfirmModal
+        open={showDeleteConfirm}
+        title="Remove this insurance policy?"
+        description="This cannot be undone."
+        confirmLabel="Remove"
+        variant="danger"
+        loading={deletingId !== null}
+        onConfirm={handleConfirmedDelete}
+        onCancel={() => {
+          setShowDeleteConfirm(false)
+          setPendingDeleteId(null)
+        }}
+      />
     </div>
   )
 }

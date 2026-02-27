@@ -10,6 +10,7 @@ import {
 import type { ChefJourneyEntry, ChefJourneyRecipeLink } from '@/lib/journey/types'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { formatDisplayDate } from './helpers'
@@ -87,6 +88,7 @@ export function JourneyRecipeLinksPanel({
   const [showForm, setShowForm] = useState(initialRecipeLinks.length === 0)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [deletingLink, setDeletingLink] = useState<ChefJourneyRecipeLink | null>(null)
 
   const entryOptions = useMemo(
     () =>
@@ -187,8 +189,13 @@ export function JourneyRecipeLinksPanel({
   }
 
   const handleDelete = (link: ChefJourneyRecipeLink) => {
-    const confirmed = window.confirm('Delete this recipe progression record?')
-    if (!confirmed) return
+    setDeletingLink(link)
+  }
+
+  const handleConfirmDelete = () => {
+    if (!deletingLink) return
+    const link = deletingLink
+    setDeletingLink(null)
 
     setError(null)
     startTransition(async () => {
@@ -433,6 +440,17 @@ export function JourneyRecipeLinksPanel({
           ))
         )}
       </div>
+
+      <ConfirmModal
+        open={!!deletingLink}
+        title="Delete recipe progression record?"
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        loading={isPending}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeletingLink(null)}
+      />
     </div>
   )
 }

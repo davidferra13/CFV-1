@@ -3,6 +3,7 @@
 // Admin Cannabis Client — interactive management panel
 
 import { useState } from 'react'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import {
   approveInvite,
   rejectInvite,
@@ -52,6 +53,8 @@ interface Props {
 export function AdminCannabisClient({ users, pendingInvites, allInvites }: Props) {
   const [tab, setTab] = useState<'queue' | 'users' | 'grant' | 'history'>('queue')
   const [loading, setLoading] = useState<string | null>(null)
+  const [showRevokeConfirm, setShowRevokeConfirm] = useState(false)
+  const [revokeTargetId, setRevokeTargetId] = useState<string | null>(null)
   const [localPending, setLocalPending] = useState(pendingInvites)
   const [localUsers, setLocalUsers] = useState(users)
   const [grantEmail, setGrantEmail] = useState('')
@@ -83,13 +86,19 @@ export function AdminCannabisClient({ users, pendingInvites, allInvites }: Props
     }
   }
 
-  async function handleRevoke(authUserId: string) {
-    if (!confirm('Revoke cannabis tier access for this user?')) return
-    setLoading(authUserId)
+  function handleRevoke(authUserId: string) {
+    setRevokeTargetId(authUserId)
+    setShowRevokeConfirm(true)
+  }
+
+  async function handleConfirmedRevoke() {
+    if (!revokeTargetId) return
+    setShowRevokeConfirm(false)
+    setLoading(revokeTargetId)
     try {
-      await revokeCannabisTier(authUserId)
+      await revokeCannabisTier(revokeTargetId)
       setLocalUsers((prev) =>
-        prev.map((u) => (u.auth_user_id === authUserId ? { ...u, status: 'suspended' } : u))
+        prev.map((u) => (u.auth_user_id === revokeTargetId ? { ...u, status: 'suspended' } : u))
       )
     } catch (err: any) {
       alert(err.message)
@@ -336,6 +345,16 @@ export function AdminCannabisClient({ users, pendingInvites, allInvites }: Props
           )}
         </div>
       )}
+      <ConfirmModal
+        open={showRevokeConfirm}
+        title="Revoke cannabis tier access?"
+        description="Revoke cannabis tier access for this user?"
+        confirmLabel="Revoke"
+        variant="danger"
+        loading={loading !== null}
+        onConfirm={handleConfirmedRevoke}
+        onCancel={() => setShowRevokeConfirm(false)}
+      />
     </div>
   )
 }

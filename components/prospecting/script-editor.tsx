@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   createCallScript,
@@ -26,6 +27,7 @@ export function ScriptEditor({ script, onSaved }: ScriptEditorProps) {
   const [isDefault, setIsDefault] = useState(script?.is_default ?? false)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   function handleSave() {
     if (!name.trim() || !scriptBody.trim()) {
@@ -61,8 +63,12 @@ export function ScriptEditor({ script, onSaved }: ScriptEditorProps) {
 
   function handleDelete() {
     if (!script) return
-    if (!confirm('Delete this script? This cannot be undone.')) return
+    setShowDeleteConfirm(true)
+  }
 
+  function handleConfirmedDelete() {
+    if (!script) return
+    setShowDeleteConfirm(false)
     startTransition(async () => {
       try {
         await deleteCallScript(script.id)
@@ -164,6 +170,17 @@ export function ScriptEditor({ script, onSaved }: ScriptEditorProps) {
             </Button>
           )}
         </div>
+
+        <ConfirmModal
+          open={showDeleteConfirm}
+          title="Delete this script?"
+          description="This cannot be undone."
+          confirmLabel="Delete"
+          variant="danger"
+          loading={isPending}
+          onConfirm={handleConfirmedDelete}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
       </CardContent>
     </Card>
   )

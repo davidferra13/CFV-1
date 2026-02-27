@@ -16,6 +16,7 @@ import {
   uploadDishPhoto,
   removeDishPhoto,
 } from '@/lib/dishes/photo-actions'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 
 // ─── Camera icon (inline — no external icon dependency) ──────────────────────
 
@@ -70,6 +71,7 @@ export function DishPhotoUpload({
   const [photoUrl, setPhotoUrl] = useState<string | null>(currentPhotoUrl)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -98,7 +100,11 @@ export function DishPhotoUpload({
   }
 
   const handleRemove = () => {
-    if (!confirm('Remove this photo?')) return
+    setShowRemoveConfirm(true)
+  }
+
+  const handleConfirmedRemove = () => {
+    setShowRemoveConfirm(false)
     setError(null)
 
     startTransition(async () => {
@@ -209,6 +215,16 @@ export function DishPhotoUpload({
           )}
         </div>
         {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
+        <ConfirmModal
+          open={showRemoveConfirm}
+          title="Remove this photo?"
+          description="This cannot be undone."
+          confirmLabel="Remove"
+          variant="danger"
+          loading={isPending}
+          onConfirm={handleConfirmedRemove}
+          onCancel={() => setShowRemoveConfirm(false)}
+        />
       </div>
     )
   }

@@ -7,6 +7,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -36,6 +37,7 @@ export function GoogleCalendarConnect({ connection }: GoogleCalendarConnectProps
   const [connecting, setConnecting] = useState(false)
   const [disconnecting, setDisconnecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false)
 
   const handleConnect = async () => {
     setConnecting(true)
@@ -49,8 +51,12 @@ export function GoogleCalendarConnect({ connection }: GoogleCalendarConnectProps
     }
   }
 
-  const handleDisconnect = async () => {
-    if (!confirm('Disconnect Google Calendar? Events will no longer sync automatically.')) return
+  const handleDisconnect = () => {
+    setShowDisconnectConfirm(true)
+  }
+
+  const handleConfirmedDisconnect = async () => {
+    setShowDisconnectConfirm(false)
     setDisconnecting(true)
     setError(null)
     try {
@@ -126,6 +132,17 @@ export function GoogleCalendarConnect({ connection }: GoogleCalendarConnectProps
             </div>
           </>
         )}
+
+        <ConfirmModal
+          open={showDisconnectConfirm}
+          title="Disconnect Google Calendar?"
+          description="Events will no longer sync automatically. You can reconnect later."
+          confirmLabel="Disconnect"
+          variant="danger"
+          loading={disconnecting}
+          onConfirm={handleConfirmedDisconnect}
+          onCancel={() => setShowDisconnectConfirm(false)}
+        />
       </CardContent>
     </Card>
   )

@@ -3,14 +3,20 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { deleteCampaignTemplate } from '@/lib/marketing/actions'
 
 export function TemplateActionsClient({ templateId }: { templateId: string }) {
-  const router  = useRouter()
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
-  async function handleDelete() {
-    if (!confirm('Delete this template? This cannot be undone.')) return
+  function handleDelete() {
+    setShowDeleteConfirm(true)
+  }
+
+  async function handleConfirmedDelete() {
+    setShowDeleteConfirm(false)
     setLoading(true)
     try {
       await deleteCampaignTemplate(templateId)
@@ -23,14 +29,26 @@ export function TemplateActionsClient({ templateId }: { templateId: string }) {
   }
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={handleDelete}
-      disabled={loading}
-      className="shrink-0 text-stone-400 hover:text-red-600"
-    >
-      {loading ? '…' : 'Delete'}
-    </Button>
+    <>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={handleDelete}
+        disabled={loading}
+        className="shrink-0 text-stone-400 hover:text-red-600"
+      >
+        {loading ? '…' : 'Delete'}
+      </Button>
+      <ConfirmModal
+        open={showDeleteConfirm}
+        title="Delete this template?"
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        loading={loading}
+        onConfirm={handleConfirmedDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
+    </>
   )
 }

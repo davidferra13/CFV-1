@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import {
   createVendor,
   deleteVendor,
@@ -35,6 +36,8 @@ export function VendorDirectoryClient({ initialVendors }: { initialVendors: Vend
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const [form, setForm] = useState<{
     name: string
     vendor_type: string
@@ -84,10 +87,16 @@ export function VendorDirectoryClient({ initialVendors }: { initialVendors: Vend
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm('Delete this vendor?')) return
+  function handleDelete(id: string) {
+    setDeleteTargetId(id)
+    setShowDeleteConfirm(true)
+  }
+
+  async function handleConfirmedDelete() {
+    if (!deleteTargetId) return
+    setShowDeleteConfirm(false)
     try {
-      await deleteVendor(id)
+      await deleteVendor(deleteTargetId)
       router.refresh()
     } catch {
       /* silent */
@@ -245,6 +254,16 @@ export function VendorDirectoryClient({ initialVendors }: { initialVendors: Vend
           </CardContent>
         </Card>
       )}
+
+      <ConfirmModal
+        open={showDeleteConfirm}
+        title="Delete this vendor?"
+        description="This vendor will be permanently removed."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={handleConfirmedDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </div>
   )
 }

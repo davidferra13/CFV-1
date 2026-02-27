@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import {
   addVendorItem,
   updateVendorItem,
@@ -33,6 +34,7 @@ export function VendorPriceList({ vendorId, items }: VendorPriceListProps) {
   const [showAdd, setShowAdd] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [deleteItemId, setDeleteItemId] = useState<string | null>(null)
 
   // New item form state
   const [newName, setNewName] = useState('')
@@ -58,8 +60,10 @@ export function VendorPriceList({ vendorId, items }: VendorPriceListProps) {
     }
   }
 
-  const handleDelete = async (itemId: string) => {
-    if (!confirm('Remove this item from the price list?')) return
+  const handleDelete = async () => {
+    if (!deleteItemId) return
+    const itemId = deleteItemId
+    setDeleteItemId(null)
     setLoading(true)
     try {
       await deleteVendorItem(itemId)
@@ -233,7 +237,7 @@ export function VendorPriceList({ vendorId, items }: VendorPriceListProps) {
                         variant="ghost"
                         size="sm"
                         className="text-red-400 hover:text-red-300"
-                        onClick={() => handleDelete(item.id)}
+                        onClick={() => setDeleteItemId(item.id)}
                       >
                         Remove
                       </Button>
@@ -245,6 +249,17 @@ export function VendorPriceList({ vendorId, items }: VendorPriceListProps) {
           </div>
         )}
       </CardContent>
+
+      <ConfirmModal
+        open={deleteItemId !== null}
+        title="Remove this item?"
+        description="This item will be removed from the price list."
+        confirmLabel="Remove"
+        variant="danger"
+        loading={loading}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteItemId(null)}
+      />
     </Card>
   )
 }

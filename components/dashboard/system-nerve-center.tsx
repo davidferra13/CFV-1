@@ -17,6 +17,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import type {
   ServiceHealthResult,
   ServiceStatus,
@@ -68,6 +69,8 @@ export default function SystemNerveCenter() {
   const [expanded, setExpanded] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({})
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [showDangerousConfirm, setShowDangerousConfirm] = useState(false)
+  const [pendingFixAction, setPendingFixAction] = useState<FixAction | null>(null)
 
   // ── Fetch health ──────────────────────────────────────────────────────
 
@@ -157,15 +160,21 @@ export default function SystemNerveCenter() {
 
   const handleFix = async (action: FixAction) => {
     if (action.dangerous) {
-      if (
-        !window.confirm(
-          `${action.description}\n\nThis action may disrupt the beta server. Continue?`
-        )
-      ) {
-        return
-      }
+      setPendingFixAction(action)
+      setShowDangerousConfirm(true)
+      return
     }
+    await executeFix(action)
+  }
 
+  const handleConfirmedFix = async () => {
+    if (!pendingFixAction) return
+    setShowDangerousConfirm(false)
+    await executeFix(pendingFixAction)
+    setPendingFixAction(null)
+  }
+
+  const executeFix = async (action: FixAction) => {
     setActionLoading((prev) => ({ ...prev, [action.id]: true }))
     try {
       const res = await fetch('/api/system/heal', {
@@ -425,6 +434,20 @@ export default function SystemNerveCenter() {
           </div>
         ))}
       </div>
+
+      <ConfirmModal
+        open={showDangerousConfirm}
+        title={pendingFixAction?.label ?? 'Confirm action'}
+        description={`${pendingFixAction?.description ?? ''}\n\nThis action may disrupt the beta server. Continue?`}
+        confirmLabel="Continue"
+        variant="danger"
+        loading={pendingFixAction ? !!actionLoading[pendingFixAction.id] : false}
+        onConfirm={handleConfirmedFix}
+        onCancel={() => {
+          setShowDangerousConfirm(false)
+          setPendingFixAction(null)
+        }}
+      />
 
       {/* Footer */}
       {sweep && (

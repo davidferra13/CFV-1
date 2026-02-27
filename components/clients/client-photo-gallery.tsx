@@ -10,6 +10,7 @@ import {
 import type { ClientPhoto } from '@/lib/clients/photo-actions'
 import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 
 const CATEGORIES = [
   { value: 'all', label: 'All' },
@@ -39,6 +40,8 @@ export function ClientPhotoGallery({
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [editingCaption, setEditingCaption] = useState<string | null>(null)
   const [captionText, setCaptionText] = useState('')
+  const [deletePhotoId, setDeletePhotoId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const filtered = filter === 'all' ? photos : photos.filter((p) => p.category === filter)
@@ -68,13 +71,20 @@ export function ClientPhotoGallery({
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
-  async function handleDelete(photoId: string) {
-    if (!confirm('Delete this photo?')) return
-    const result = await deleteClientPhoto(photoId)
+  function handleDelete(photoId: string) {
+    setDeletePhotoId(photoId)
+  }
+
+  async function handleConfirmedDelete() {
+    if (!deletePhotoId) return
+    setDeleting(true)
+    const result = await deleteClientPhoto(deletePhotoId)
     if (result.success) {
-      setPhotos((prev) => prev.filter((p) => p.id !== photoId))
+      setPhotos((prev) => prev.filter((p) => p.id !== deletePhotoId))
       if (lightboxIndex !== null) setLightboxIndex(null)
     }
+    setDeleting(false)
+    setDeletePhotoId(null)
   }
 
   async function handleSaveCaption(photoId: string) {
@@ -213,6 +223,17 @@ export function ClientPhotoGallery({
           ))}
         </div>
       )}
+
+      <ConfirmModal
+        open={deletePhotoId !== null}
+        title="Delete this photo?"
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        loading={deleting}
+        onConfirm={handleConfirmedDelete}
+        onCancel={() => setDeletePhotoId(null)}
+      />
 
       {/* Lightbox */}
       {lightboxIndex !== null && filtered[lightboxIndex] && (

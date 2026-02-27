@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { Select } from '@/components/ui/select'
@@ -40,6 +41,8 @@ export function MenuTemplateSettings({ templates }: Props) {
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
   const [form, setForm] = useState({
     id: '',
     slug: '',
@@ -138,17 +141,24 @@ export function MenuTemplateSettings({ templates }: Props) {
     }
   }
 
-  async function onDelete(templateId: string) {
-    if (!confirm('Delete this template?')) return
+  function onDelete(templateId: string) {
+    setPendingDeleteId(templateId)
+    setShowDeleteConfirm(true)
+  }
+
+  async function handleConfirmedDelete() {
+    if (!pendingDeleteId) return
+    setShowDeleteConfirm(false)
     setSaving(true)
     setError(null)
     try {
-      await deleteFrontOfHouseTemplate(templateId)
+      await deleteFrontOfHouseTemplate(pendingDeleteId)
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete template')
     } finally {
       setSaving(false)
+      setPendingDeleteId(null)
     }
   }
 
@@ -302,6 +312,20 @@ export function MenuTemplateSettings({ templates }: Props) {
           ))}
         </div>
       </Card>
+
+      <ConfirmModal
+        open={showDeleteConfirm}
+        title="Delete this template?"
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        loading={saving}
+        onConfirm={handleConfirmedDelete}
+        onCancel={() => {
+          setShowDeleteConfirm(false)
+          setPendingDeleteId(null)
+        }}
+      />
     </div>
   )
 }

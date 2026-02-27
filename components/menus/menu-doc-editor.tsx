@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { DishPhotoUpload } from '@/components/dishes/dish-photo-upload'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import {
   updateMenuMeta,
   updateDishEditorContent,
@@ -238,6 +239,7 @@ function CourseBlock({
   const [showTagPicker, setShowTagPicker] = useState(false)
   const [showAllergenPicker, setShowAllergenPicker] = useState(false)
   const [deleting, startDelete] = useTransition()
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [photoUrl, setPhotoUrl] = useState<string | null>(dish.photo_url)
 
   const saveField = (field: string, data: Partial<EditorDish>) => {
@@ -262,7 +264,11 @@ function CourseBlock({
   }
 
   const handleDelete = () => {
-    if (!confirm(`Remove "${courseName}" course? This cannot be undone.`)) return
+    setShowDeleteConfirm(true)
+  }
+
+  const handleConfirmedDelete = () => {
+    setShowDeleteConfirm(false)
     startDelete(async () => {
       await deleteEditorCourse(dish.id, menuId)
       onDelete(dish.id)
@@ -649,6 +655,17 @@ function CourseBlock({
           </div>
         )
       )}
+
+      <ConfirmModal
+        open={showDeleteConfirm}
+        title={`Remove "${courseName}" course?`}
+        description="This cannot be undone."
+        confirmLabel="Remove"
+        variant="danger"
+        loading={deleting}
+        onConfirm={handleConfirmedDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </div>
   )
 }

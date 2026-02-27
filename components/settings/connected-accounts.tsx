@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -29,6 +30,7 @@ export function ConnectedAccounts({
   const [syncing, setSyncing] = useState(false)
   const [disconnecting, setDisconnecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false)
   const [syncResult, setSyncResult] = useState<{
     processed: number
     inquiriesCreated: number
@@ -68,8 +70,12 @@ export function ConnectedAccounts({
     }
   }
 
-  const handleDisconnect = async () => {
-    if (!confirm('Disconnect Gmail? This will stop syncing your inbox.')) return
+  const handleDisconnect = () => {
+    setShowDisconnectConfirm(true)
+  }
+
+  const handleConfirmedDisconnect = async () => {
+    setShowDisconnectConfirm(false)
     setDisconnecting(true)
     setError(null)
     try {
@@ -231,6 +237,17 @@ export function ConnectedAccounts({
             <HistoricalScanSection initialStatus={historicalScanStatus ?? null} />
           </>
         )}
+
+        <ConfirmModal
+          open={showDisconnectConfirm}
+          title="Disconnect Gmail?"
+          description="This will stop syncing your inbox. You can reconnect later."
+          confirmLabel="Disconnect"
+          variant="danger"
+          loading={disconnecting}
+          onConfirm={handleConfirmedDisconnect}
+          onCancel={() => setShowDisconnectConfirm(false)}
+        />
       </CardContent>
     </Card>
   )

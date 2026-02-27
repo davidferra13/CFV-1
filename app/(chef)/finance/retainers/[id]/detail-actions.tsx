@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import {
   activateRetainer,
   pauseRetainer,
@@ -20,8 +21,13 @@ export function RetainerDetailActions({ retainerId, status }: RetainerDetailActi
   const router = useRouter()
   const [loading, setLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
 
   async function handleAction(action: string) {
+    if (action === 'cancel') {
+      setShowCancelConfirm(true)
+      return
+    }
     setError(null)
     setLoading(action)
     try {
@@ -35,21 +41,24 @@ export function RetainerDetailActions({ retainerId, status }: RetainerDetailActi
         case 'resume':
           await resumeRetainer(retainerId)
           break
-        case 'cancel':
-          if (
-            !window.confirm(
-              'Are you sure you want to cancel this retainer? All pending periods will be voided.'
-            )
-          ) {
-            setLoading(null)
-            return
-          }
-          await cancelRetainer(retainerId)
-          break
         case 'complete':
           await completeRetainer(retainerId)
           break
       }
+      router.refresh()
+    } catch (err: any) {
+      setError(err.message || 'Action failed')
+    } finally {
+      setLoading(null)
+    }
+  }
+
+  async function handleConfirmedCancel() {
+    setShowCancelConfirm(false)
+    setError(null)
+    setLoading('cancel')
+    try {
+      await cancelRetainer(retainerId)
       router.refresh()
     } catch (err: any) {
       setError(err.message || 'Action failed')
@@ -128,6 +137,17 @@ export function RetainerDetailActions({ retainerId, status }: RetainerDetailActi
           Cancel Retainer
         </Button>
       </div>
+
+      <ConfirmModal
+        open={showCancelConfirm}
+        title="Cancel this retainer?"
+        description="Are you sure you want to cancel this retainer? All pending periods will be voided."
+        confirmLabel="Cancel Retainer"
+        variant="danger"
+        loading={loading === 'cancel'}
+        onConfirm={handleConfirmedCancel}
+        onCancel={() => setShowCancelConfirm(false)}
+      />
     </div>
   )
 }

@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card'
 import { LocationForm } from '@/components/partners/location-form'
 import { deletePartnerLocation } from '@/lib/partners/actions'
 import { MapPin, ExternalLink, Users, Inbox, CalendarCheck } from 'lucide-react'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 
 type Location = {
   id: string
@@ -49,17 +50,18 @@ export function PartnerDetailClient({
   const router = useRouter()
   const [showAddLocation, setShowAddLocation] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deleteLocationId, setDeleteLocationId] = useState<string | null>(null)
 
-  async function handleDeleteLocation(id: string) {
-    if (
-      !confirm(
-        'Remove this location? If it has linked inquiries or events, it will be deactivated instead.'
-      )
-    )
-      return
-    setDeletingId(id)
+  function handleDeleteLocation(id: string) {
+    setDeleteLocationId(id)
+  }
+
+  async function handleConfirmedDeleteLocation() {
+    if (!deleteLocationId) return
+    setDeleteLocationId(null)
+    setDeletingId(deleteLocationId)
     try {
-      await deletePartnerLocation(id)
+      await deletePartnerLocation(deleteLocationId)
       router.refresh()
     } catch {
       alert('Failed to remove location')
@@ -211,6 +213,17 @@ export function PartnerDetailClient({
           + Add Location
         </Button>
       )}
+
+      <ConfirmModal
+        open={deleteLocationId !== null}
+        title="Remove this location?"
+        description="If it has linked inquiries or events, it will be deactivated instead."
+        confirmLabel="Remove"
+        variant="danger"
+        loading={deletingId !== null}
+        onConfirm={handleConfirmedDeleteLocation}
+        onCancel={() => setDeleteLocationId(null)}
+      />
     </div>
   )
 }

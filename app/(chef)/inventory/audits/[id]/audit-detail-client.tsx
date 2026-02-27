@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { updateAuditItem, finalizeAudit } from '@/lib/inventory/audit-actions'
 
 const STATUS_COLORS: Record<string, 'default' | 'success' | 'warning' | 'error' | 'info'> = {
@@ -22,6 +23,7 @@ type Props = { audit: any }
 export function AuditDetailClient({ audit }: Props) {
   const [isPending, startTransition] = useTransition()
   const [counts, setCounts] = useState<Record<string, string>>({})
+  const [showFinalizeConfirm, setShowFinalizeConfirm] = useState(false)
 
   const items = audit.items || []
   const isFinalized = audit.status === 'finalized'
@@ -42,8 +44,11 @@ export function AuditDetailClient({ audit }: Props) {
   }
 
   function handleFinalize() {
-    if (!confirm('Finalize this audit? This will post adjustment transactions for all variances.'))
-      return
+    setShowFinalizeConfirm(true)
+  }
+
+  function handleConfirmedFinalize() {
+    setShowFinalizeConfirm(false)
     startTransition(async () => {
       try {
         await finalizeAudit(audit.id)
@@ -179,6 +184,17 @@ export function AuditDetailClient({ audit }: Props) {
           </Button>
         </div>
       )}
+
+      <ConfirmModal
+        open={showFinalizeConfirm}
+        title="Finalize this audit?"
+        description="This will post adjustment transactions for all variances."
+        confirmLabel="Finalize"
+        variant="primary"
+        loading={isPending}
+        onConfirm={handleConfirmedFinalize}
+        onCancel={() => setShowFinalizeConfirm(false)}
+      />
     </div>
   )
 }

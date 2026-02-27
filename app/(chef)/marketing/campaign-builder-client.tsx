@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import {
   createCampaign,
   getChannelSplit,
@@ -30,6 +31,7 @@ export function CampaignBuilderClient() {
   const [templates, setTemplates] = useState<any[]>([])
   const [loadingTemplates, setLoadingTemplates] = useState(false)
   const [showSchedule, setShowSchedule] = useState(false)
+  const [showSendConfirm, setShowSendConfirm] = useState(false)
 
   const [form, setForm] = useState({
     name: '',
@@ -102,10 +104,14 @@ export function CampaignBuilderClient() {
     }
   }
 
-  async function handleSend() {
+  function handleSend() {
     if (!campaignId) return
-    const emailCount = channelSplit?.email.length ?? 0
-    if (!confirm(`Send to ${emailCount} clients by email now?`)) return
+    setShowSendConfirm(true)
+  }
+
+  async function handleConfirmedSend() {
+    if (!campaignId) return
+    setShowSendConfirm(false)
     setSaving(true)
     setError(null)
     try {
@@ -275,6 +281,17 @@ export function CampaignBuilderClient() {
             Non-email clients require manual outreach — their preferred channels are shown above.
           </p>
         ) : null}
+
+        <ConfirmModal
+          open={showSendConfirm}
+          title="Send campaign now?"
+          description={`Send to ${channelSplit?.email.length ?? 0} clients by email now?`}
+          confirmLabel="Send"
+          variant="primary"
+          loading={saving}
+          onConfirm={handleConfirmedSend}
+          onCancel={() => setShowSendConfirm(false)}
+        />
       </div>
     )
   }

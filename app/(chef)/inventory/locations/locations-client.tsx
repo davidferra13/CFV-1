@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import {
   createStorageLocation,
   deleteStorageLocation,
@@ -39,6 +40,8 @@ export function LocationsClient({ initialLocations, initialStock }: Props) {
   const [locations, setLocations] = useState(initialLocations)
   const [showForm, setShowForm] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false)
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
   // Form state
   const [name, setName] = useState('')
@@ -87,10 +90,16 @@ export function LocationsClient({ initialLocations, initialStock }: Props) {
   }
 
   function handleDelete(id: string) {
-    if (!confirm('Deactivate this storage location?')) return
+    setDeleteTargetId(id)
+    setShowDeactivateConfirm(true)
+  }
+
+  function handleConfirmedDelete() {
+    if (!deleteTargetId) return
+    setShowDeactivateConfirm(false)
     startTransition(async () => {
       try {
-        await deleteStorageLocation(id)
+        await deleteStorageLocation(deleteTargetId)
         window.location.reload()
       } catch (err) {
         console.error('Failed to delete location', err)
@@ -197,6 +206,17 @@ export function LocationsClient({ initialLocations, initialStock }: Props) {
           ))
         )}
       </div>
+
+      <ConfirmModal
+        open={showDeactivateConfirm}
+        title="Deactivate this storage location?"
+        description="This storage location will be deactivated."
+        confirmLabel="Deactivate"
+        variant="danger"
+        loading={isPending}
+        onConfirm={handleConfirmedDelete}
+        onCancel={() => setShowDeactivateConfirm(false)}
+      />
     </div>
   )
 }

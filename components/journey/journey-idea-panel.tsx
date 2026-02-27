@@ -15,6 +15,7 @@ import type {
 } from '@/lib/journey/types'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { formatDisplayDate } from './helpers'
@@ -117,6 +118,7 @@ export function JourneyIdeaPanel({
   const [showForm, setShowForm] = useState(initialIdeas.length === 0)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [deletingIdea, setDeletingIdea] = useState<ChefJourneyIdea | null>(null)
 
   const adoptedCount = useMemo(
     () => ideas.filter((idea) => idea.status === 'adopted').length,
@@ -204,8 +206,13 @@ export function JourneyIdeaPanel({
   }
 
   const handleDelete = (idea: ChefJourneyIdea) => {
-    const confirmed = window.confirm(`Delete idea "${idea.title}"?`)
-    if (!confirmed) return
+    setDeletingIdea(idea)
+  }
+
+  const handleConfirmDelete = () => {
+    if (!deletingIdea) return
+    const idea = deletingIdea
+    setDeletingIdea(null)
 
     setError(null)
     startTransition(async () => {
@@ -480,6 +487,17 @@ export function JourneyIdeaPanel({
           ))
         )}
       </div>
+
+      <ConfirmModal
+        open={!!deletingIdea}
+        title={`Delete idea "${deletingIdea?.title}"?`}
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        loading={isPending}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeletingIdea(null)}
+      />
     </div>
   )
 }

@@ -8,6 +8,7 @@ import { useState, useTransition } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import {
   markLegComplete,
   markLegInProgress,
@@ -146,6 +147,7 @@ function LegCard({
   onIngredientStatusChange: (ingredientId: string, status: TravelIngredientStatus) => void
 }) {
   const [expanded, setExpanded] = useState(leg.status !== 'completed' && leg.status !== 'cancelled')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const hasStops = leg.stops.length > 0
   const hasIngredients = leg.ingredients.length > 0
@@ -353,20 +355,25 @@ function LegCard({
                 Cancel trip
               </Button>
             )}
-            <Button
-              size="sm"
-              variant="danger"
-              onClick={() => {
-                if (confirm('Delete this travel leg? This cannot be undone.')) {
-                  onDelete(leg.id)
-                }
-              }}
-            >
+            <Button size="sm" variant="danger" onClick={() => setShowDeleteConfirm(true)}>
               Delete
             </Button>
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        open={showDeleteConfirm}
+        title="Delete this travel leg?"
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={() => {
+          setShowDeleteConfirm(false)
+          onDelete(leg.id)
+        }}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </Card>
   )
 }

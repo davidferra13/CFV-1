@@ -10,6 +10,7 @@ import {
 } from '@/lib/ai/remy-local-storage'
 import type { LocalProject, LocalTemplate } from '@/lib/ai/remy-types'
 import { BookTemplate, Plus, Play, Edit3, Trash2, X } from 'lucide-react'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 
 interface RemyTemplatesViewProps {
   onRunTemplate: (prompt: string, projectId?: string | null) => void
@@ -24,6 +25,8 @@ export function RemyTemplatesView({ onRunTemplate }: RemyTemplatesViewProps) {
   const [formPrompt, setFormPrompt] = useState('')
   const [formProjectId, setFormProjectId] = useState<string | null>(null)
   const [formIcon, setFormIcon] = useState('⚡')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
   const loadData = useCallback(async () => {
     const [tmpls, projs] = await Promise.all([getTemplates(), getProjects()])
@@ -72,9 +75,15 @@ export function RemyTemplatesView({ onRunTemplate }: RemyTemplatesViewProps) {
     loadData()
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this template?')) return
-    await deleteTemplate(id)
+  const handleDelete = (id: string) => {
+    setDeleteTargetId(id)
+    setShowDeleteConfirm(true)
+  }
+
+  const handleConfirmedDelete = async () => {
+    if (!deleteTargetId) return
+    setShowDeleteConfirm(false)
+    await deleteTemplate(deleteTargetId)
     loadData()
   }
 
@@ -213,6 +222,16 @@ export function RemyTemplatesView({ onRunTemplate }: RemyTemplatesViewProps) {
           </div>
         ))}
       </div>
+
+      <ConfirmModal
+        open={showDeleteConfirm}
+        title="Delete this template?"
+        description="This template will be permanently removed."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={handleConfirmedDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </div>
   )
 }

@@ -27,6 +27,7 @@ import {
 } from '@/lib/social/chef-social-actions'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 
 // ── Reaction config ──────────────────────────────────────────
 export const REACTIONS: Array<{ type: ReactionType; emoji: string; label: string }> = [
@@ -401,6 +402,8 @@ export function SocialPostCard({
   const [savesCount, setSavesCount] = useState(post.saves_count)
   const [showMenu, setShowMenu] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [, startTransition] = useTransition()
 
   const authorName = post.author.display_name ?? post.author.business_name
@@ -429,11 +432,16 @@ export function SocialPostCard({
   }
 
   function handleDelete() {
-    if (!confirm('Delete this post?')) return
-    startTransition(async () => {
-      await deleteSocialPost(post.id)
-      onDelete?.(post.id)
-    })
+    setShowMenu(false)
+    setShowDeleteConfirm(true)
+  }
+
+  async function handleConfirmedDelete() {
+    setShowDeleteConfirm(false)
+    setDeleting(true)
+    await deleteSocialPost(post.id)
+    setDeleting(false)
+    onDelete?.(post.id)
   }
 
   return (
@@ -606,6 +614,17 @@ export function SocialPostCard({
           <span>{copied ? 'Copied!' : 'Share'}</span>
         </button>
       </div>
+
+      <ConfirmModal
+        open={showDeleteConfirm}
+        title="Delete this post?"
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        loading={deleting}
+        onConfirm={handleConfirmedDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </article>
   )
 }

@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import {
   submitPO,
   cancelPO,
@@ -35,6 +36,7 @@ type Props = {
 export function PODetailClient({ po }: Props) {
   const [isPending, startTransition] = useTransition()
   const [showAddItem, setShowAddItem] = useState(false)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [itemName, setItemName] = useState('')
   const [itemQty, setItemQty] = useState('')
   const [itemUnit, setItemUnit] = useState('')
@@ -55,7 +57,11 @@ export function PODetailClient({ po }: Props) {
   }
 
   function handleCancelPO() {
-    if (!confirm('Cancel this purchase order?')) return
+    setShowCancelConfirm(true)
+  }
+
+  function handleConfirmedCancelPO() {
+    setShowCancelConfirm(false)
     startTransition(async () => {
       try {
         await cancelPO(po.id)
@@ -276,6 +282,17 @@ export function PODetailClient({ po }: Props) {
           </div>
         )}
       </Card>
+
+      <ConfirmModal
+        open={showCancelConfirm}
+        title="Cancel this purchase order?"
+        description="This purchase order will be cancelled."
+        confirmLabel="Cancel PO"
+        variant="danger"
+        loading={isPending}
+        onConfirm={handleConfirmedCancelPO}
+        onCancel={() => setShowCancelConfirm(false)}
+      />
     </div>
   )
 }

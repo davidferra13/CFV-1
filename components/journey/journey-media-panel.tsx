@@ -11,6 +11,7 @@ import {
 import type { ChefJournalMediaType, ChefJourneyEntry, ChefJourneyMedia } from '@/lib/journey/types'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { LocationMap } from '@/components/ui/location-map'
@@ -122,6 +123,7 @@ export function JourneyMediaPanel({
   const [showForm, setShowForm] = useState(initialMedia.length === 0)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [deletingMedia, setDeletingMedia] = useState<ChefJourneyMedia | null>(null)
 
   useEffect(() => {
     if (!selectedPhotoFile) {
@@ -238,8 +240,13 @@ export function JourneyMediaPanel({
   }
 
   const handleDelete = (item: ChefJourneyMedia) => {
-    const confirmed = window.confirm('Delete this media item from the journal?')
-    if (!confirmed) return
+    setDeletingMedia(item)
+  }
+
+  const handleConfirmDelete = () => {
+    if (!deletingMedia) return
+    const item = deletingMedia
+    setDeletingMedia(null)
 
     setError(null)
     startTransition(async () => {
@@ -563,6 +570,17 @@ export function JourneyMediaPanel({
           ))
         )}
       </div>
+
+      <ConfirmModal
+        open={!!deletingMedia}
+        title="Delete this media item?"
+        description="This will remove the media item from the journal. This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        loading={isPending}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeletingMedia(null)}
+      />
     </div>
   )
 }

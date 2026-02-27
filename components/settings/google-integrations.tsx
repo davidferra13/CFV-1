@@ -4,6 +4,7 @@
 import { useState, useEffect, type ReactNode } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -35,6 +36,7 @@ function ServiceCard({
   children?: ReactNode
 }) {
   const [loading, setLoading] = useState(false)
+  const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false)
 
   const handleConnect = async () => {
     setLoading(true)
@@ -47,8 +49,12 @@ function ServiceCard({
     }
   }
 
-  const handleDisconnect = async () => {
-    if (!confirm(`Disconnect ${title}?`)) return
+  const handleDisconnect = () => {
+    setShowDisconnectConfirm(true)
+  }
+
+  const handleConfirmedDisconnect = async () => {
+    setShowDisconnectConfirm(false)
     setLoading(true)
     try {
       await onDisconnect()
@@ -93,6 +99,17 @@ function ServiceCard({
             {children}
           </>
         )}
+
+        <ConfirmModal
+          open={showDisconnectConfirm}
+          title={`Disconnect ${title}?`}
+          description="This will stop syncing. You can reconnect later."
+          confirmLabel="Disconnect"
+          variant="danger"
+          loading={loading}
+          onConfirm={handleConfirmedDisconnect}
+          onCancel={() => setShowDisconnectConfirm(false)}
+        />
       </CardContent>
     </Card>
   )

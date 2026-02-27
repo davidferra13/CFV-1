@@ -11,6 +11,7 @@ import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import {
   autoSuggestEventBlocks,
   bulkCreatePrepBlocks,
@@ -343,6 +344,7 @@ export function WeekPlannerClient({
   const [addFormDay, setAddFormDay] = useState<string | null>(null)
   const [toggling, setToggling] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [deleteBlockId, setDeleteBlockId] = useState<string | null>(null)
 
   function go(offset: number) {
     router.push(`/calendar/week?offset=${offset}`)
@@ -371,8 +373,14 @@ export function WeekPlannerClient({
     startTransition(() => router.refresh())
   }
 
-  async function removeBlock(id: string) {
-    if (!confirm('Delete this prep block?')) return
+  function removeBlock(id: string) {
+    setDeleteBlockId(id)
+  }
+
+  async function handleConfirmDeleteBlock() {
+    if (!deleteBlockId) return
+    const id = deleteBlockId
+    setDeleteBlockId(null)
     setDeleting(id)
     await deletePrepBlock(id)
     setDeleting(null)
@@ -665,6 +673,17 @@ export function WeekPlannerClient({
           </div>
         ))}
       </div>
+
+      <ConfirmModal
+        open={deleteBlockId !== null}
+        title="Delete this prep block?"
+        description="This prep block will be permanently removed."
+        confirmLabel="Delete"
+        variant="danger"
+        loading={deleting !== null}
+        onConfirm={handleConfirmDeleteBlock}
+        onCancel={() => setDeleteBlockId(null)}
+      />
     </>
   )
 }

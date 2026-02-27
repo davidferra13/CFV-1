@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { cancelInvitation } from '@/lib/clients/actions'
 import { format, differenceInDays } from 'date-fns'
 import { useRouter } from 'next/navigation'
@@ -24,15 +25,20 @@ interface PendingInvitationsTableProps {
 export function PendingInvitationsTable({ invitations }: PendingInvitationsTableProps) {
   const router = useRouter()
   const [cancelling, setCancelling] = useState<string | null>(null)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [cancelTargetId, setCancelTargetId] = useState<string | null>(null)
 
-  async function handleCancelInvitation(invitationId: string) {
-    if (!confirm('Are you sure you want to cancel this invitation?')) {
-      return
-    }
+  function handleCancelInvitation(invitationId: string) {
+    setCancelTargetId(invitationId)
+    setShowCancelConfirm(true)
+  }
 
-    setCancelling(invitationId)
+  async function handleConfirmedCancel() {
+    if (!cancelTargetId) return
+    setShowCancelConfirm(false)
+    setCancelling(cancelTargetId)
     try {
-      await cancelInvitation(invitationId)
+      await cancelInvitation(cancelTargetId)
       router.refresh()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to cancel invitation')
@@ -106,6 +112,17 @@ export function PendingInvitationsTable({ invitations }: PendingInvitationsTable
           })}
         </TableBody>
       </Table>
+
+      <ConfirmModal
+        open={showCancelConfirm}
+        title="Cancel this invitation?"
+        description="Are you sure you want to cancel this invitation?"
+        confirmLabel="Cancel Invitation"
+        variant="danger"
+        loading={cancelling !== null}
+        onConfirm={handleConfirmedCancel}
+        onCancel={() => setShowCancelConfirm(false)}
+      />
     </div>
   )
 }

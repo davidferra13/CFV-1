@@ -12,6 +12,7 @@ import {
 } from '@/lib/loyalty/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 
 const REWARD_TYPES = [
   { value: 'free_course', label: 'Free Course' },
@@ -25,6 +26,7 @@ export function RewardActions({ reward }: { reward: LoyaltyReward }) {
   const [mode, setMode] = useState<'idle' | 'editing'>('idle')
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
 
   // Edit form state — pre-populated from current reward
   const [name, setName] = useState(reward.name)
@@ -39,7 +41,11 @@ export function RewardActions({ reward }: { reward: LoyaltyReward }) {
   )
 
   function handleDeactivate() {
-    if (!confirm(`Remove "${reward.name}"? Clients will no longer be able to redeem it.`)) return
+    setShowRemoveConfirm(true)
+  }
+
+  function handleConfirmedDeactivate() {
+    setShowRemoveConfirm(false)
     startTransition(async () => {
       try {
         await deactivateReward(reward.id)
@@ -115,6 +121,16 @@ export function RewardActions({ reward }: { reward: LoyaltyReward }) {
         >
           {isPending ? 'Removing...' : 'Remove'}
         </Button>
+        <ConfirmModal
+          open={showRemoveConfirm}
+          title={`Remove "${reward.name}"?`}
+          description="Clients will no longer be able to redeem it."
+          confirmLabel="Remove"
+          variant="danger"
+          loading={isPending}
+          onConfirm={handleConfirmedDeactivate}
+          onCancel={() => setShowRemoveConfirm(false)}
+        />
       </div>
     )
   }

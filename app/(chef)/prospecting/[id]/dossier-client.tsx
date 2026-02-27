@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import {
   updateProspect,
   updateProspectStatus,
@@ -57,6 +58,8 @@ export function ProspectDossierClient({
   const [prospect, setProspect] = useState(initialProspect)
   const [notes, setNotes] = useState(initialNotes)
   const [isPending, startTransition] = useTransition()
+  const [showConvertConfirm, setShowConvertConfirm] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   // Call logging state
   const [showCallLog, setShowCallLog] = useState(false)
@@ -108,12 +111,11 @@ export function ProspectDossierClient({
   }
 
   function handleConvert() {
-    if (
-      !confirm(
-        'Convert this prospect to an inquiry? This will create a new inquiry linked to this prospect.'
-      )
-    )
-      return
+    setShowConvertConfirm(true)
+  }
+
+  function handleConfirmedConvert() {
+    setShowConvertConfirm(false)
     startTransition(async () => {
       const result = await convertProspectToInquiry(prospect.id)
       setProspect((prev) => ({
@@ -127,7 +129,11 @@ export function ProspectDossierClient({
   }
 
   function handleDelete() {
-    if (!confirm('Delete this prospect permanently? This cannot be undone.')) return
+    setShowDeleteConfirm(true)
+  }
+
+  function handleConfirmedDelete() {
+    setShowDeleteConfirm(false)
     startTransition(async () => {
       await deleteProspect(prospect.id)
       router.push('/prospecting')
@@ -181,6 +187,28 @@ export function ProspectDossierClient({
           </Button>
         </div>
       </div>
+
+      <ConfirmModal
+        open={showConvertConfirm}
+        title="Convert this prospect to an inquiry?"
+        description="This will create a new inquiry linked to this prospect."
+        confirmLabel="Convert"
+        variant="primary"
+        loading={isPending}
+        onConfirm={handleConfirmedConvert}
+        onCancel={() => setShowConvertConfirm(false)}
+      />
+
+      <ConfirmModal
+        open={showDeleteConfirm}
+        title="Delete this prospect permanently?"
+        description="This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        loading={isPending}
+        onConfirm={handleConfirmedDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Left column — Contact & Gatekeeper Intel */}

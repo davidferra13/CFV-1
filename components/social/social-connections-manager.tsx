@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { ExternalLink, CheckCircle2, AlertCircle, RefreshCw, Unlink } from 'lucide-react'
 import type { SocialConnectionStatus } from '@/lib/social/oauth-actions'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 
 // ── Static platform metadata ───────────────────────────────────────────────────
 
@@ -98,13 +99,16 @@ type Props = {
 export function SocialConnectionsManager({ connections, justConnected }: Props) {
   const connMap = new Map(connections.map((c) => [c.platform, c]))
   const [disconnecting, setDisconnecting] = useState<string | null>(null)
+  const [disconnectTarget, setDisconnectTarget] = useState<string | null>(null)
 
-  async function handleDisconnect(platform: string) {
-    if (
-      !confirm(`Disconnect ${platform}? ChefFlow will no longer be able to post to this account.`)
-    ) {
-      return
-    }
+  function handleDisconnect(platform: string) {
+    setDisconnectTarget(platform)
+  }
+
+  async function handleConfirmedDisconnect() {
+    if (!disconnectTarget) return
+    const platform = disconnectTarget
+    setDisconnectTarget(null)
     setDisconnecting(platform)
     try {
       const res = await fetch(`/api/integrations/social/disconnect/${platform}`, {
@@ -263,6 +267,17 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
           )
         })}
       </div>
+
+      <ConfirmModal
+        open={disconnectTarget !== null}
+        title={`Disconnect ${disconnectTarget ?? ''}?`}
+        description="ChefFlow will no longer be able to post to this account."
+        confirmLabel="Disconnect"
+        variant="danger"
+        loading={disconnecting !== null}
+        onConfirm={handleConfirmedDisconnect}
+        onCancel={() => setDisconnectTarget(null)}
+      />
     </div>
   )
 }

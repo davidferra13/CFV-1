@@ -5,6 +5,7 @@
 
 import { useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 
 export interface BulkAction {
   label: string
@@ -30,6 +31,7 @@ export function BulkSelectTable<T extends { id: string }>({
 }: BulkSelectTableProps<T>) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [running, setRunning] = useState(false)
+  const [pendingAction, setPendingAction] = useState<BulkAction | null>(null)
 
   const allSelected = items.length > 0 && selectedIds.size === items.length
   const someSelected = selectedIds.size > 0 && selectedIds.size < items.length
@@ -54,12 +56,8 @@ export function BulkSelectTable<T extends { id: string }>({
     })
   }, [])
 
-  const handleAction = useCallback(
+  const runAction = useCallback(
     async (action: BulkAction) => {
-      if (action.confirmMessage) {
-        const ok = window.confirm(action.confirmMessage)
-        if (!ok) return
-      }
       setRunning(true)
       try {
         await action.onClick(Array.from(selectedIds))
@@ -70,6 +68,24 @@ export function BulkSelectTable<T extends { id: string }>({
     },
     [selectedIds]
   )
+
+  const handleAction = useCallback(
+    (action: BulkAction) => {
+      if (action.confirmMessage) {
+        setPendingAction(action)
+        return
+      }
+      runAction(action)
+    },
+    [runAction]
+  )
+
+  const handleConfirmedAction = useCallback(() => {
+    if (!pendingAction) return
+    const action = pendingAction
+    setPendingAction(null)
+    runAction(action)
+  }, [pendingAction, runAction])
 
   if (items.length === 0 && emptyState) {
     return <>{emptyState}</>
@@ -152,6 +168,17 @@ export function BulkSelectTable<T extends { id: string }>({
           </Button>
         </div>
       )}
+
+      <ConfirmModal
+        open={pendingAction !== null}
+        title="Are you sure?"
+        description={pendingAction?.confirmMessage}
+        confirmLabel={pendingAction?.label ?? 'Confirm'}
+        variant={pendingAction?.variant === 'danger' ? 'danger' : 'primary'}
+        loading={running}
+        onConfirm={handleConfirmedAction}
+        onCancel={() => setPendingAction(null)}
+      />
     </div>
   )
 }

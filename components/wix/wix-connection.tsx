@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import {
   setupWixConnection,
   disconnectWix,
@@ -30,6 +31,8 @@ export function WixConnection({ connection, recentSubmissions }: WixConnectionPr
   const [error, setError] = useState<string | null>(null)
   const [webhookUrl, setWebhookUrl] = useState(connection.webhookUrl)
   const [copied, setCopied] = useState(false)
+  const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false)
+  const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false)
 
   const handleSetup = async () => {
     setConnecting(true)
@@ -47,12 +50,7 @@ export function WixConnection({ connection, recentSubmissions }: WixConnectionPr
   }
 
   const handleDisconnect = async () => {
-    if (
-      !confirm(
-        'Disconnect Wix? New form submissions will no longer create inquiries automatically.'
-      )
-    )
-      return
+    setShowDisconnectConfirm(false)
     setDisconnecting(true)
     setError(null)
     try {
@@ -68,8 +66,7 @@ export function WixConnection({ connection, recentSubmissions }: WixConnectionPr
   }
 
   const handleRegenerate = async () => {
-    if (!confirm('Regenerate webhook secret? You will need to update the URL in Wix Automations.'))
-      return
+    setShowRegenerateConfirm(false)
     setRegenerating(true)
     setError(null)
     try {
@@ -153,7 +150,7 @@ export function WixConnection({ connection, recentSubmissions }: WixConnectionPr
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={handleDisconnect}
+                onClick={() => setShowDisconnectConfirm(true)}
                 loading={disconnecting}
               >
                 Disconnect
@@ -176,7 +173,7 @@ export function WixConnection({ connection, recentSubmissions }: WixConnectionPr
               </div>
               <div className="mt-2 flex justify-end">
                 <button
-                  onClick={handleRegenerate}
+                  onClick={() => setShowRegenerateConfirm(true)}
                   disabled={regenerating}
                   className="text-xs text-stone-400 hover:text-stone-400 underline"
                 >
@@ -245,6 +242,28 @@ export function WixConnection({ connection, recentSubmissions }: WixConnectionPr
           </>
         )}
       </CardContent>
+
+      <ConfirmModal
+        open={showDisconnectConfirm}
+        title="Disconnect Wix?"
+        description="New form submissions will no longer create inquiries automatically."
+        confirmLabel="Disconnect"
+        variant="danger"
+        loading={disconnecting}
+        onConfirm={handleDisconnect}
+        onCancel={() => setShowDisconnectConfirm(false)}
+      />
+
+      <ConfirmModal
+        open={showRegenerateConfirm}
+        title="Regenerate webhook secret?"
+        description="You will need to update the URL in Wix Automations."
+        confirmLabel="Regenerate"
+        variant="danger"
+        loading={regenerating}
+        onConfirm={handleRegenerate}
+        onCancel={() => setShowRegenerateConfirm(false)}
+      />
     </Card>
   )
 }

@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { ChevronDown, ChevronUp, Archive, Plus } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import type { GoalView } from '@/lib/goals/types'
 import { formatGoalValue, formatGapLabel, formatPeriod, isRevenueGoal } from '@/lib/goals/engine'
 import { archiveGoal } from '@/lib/goals/actions'
@@ -30,13 +31,18 @@ export function GoalCard({ view, onCheckIn }: GoalCardProps) {
   const { goal, progress, enrichment, pricingScenarios, clientSuggestions, recentCheckIns } = view
   const [expanded, setExpanded] = useState(true)
   const [archivePending, startArchive] = useTransition()
+  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false)
 
   const revenue = isRevenueGoal(goal.goalType)
   const manual = goal.trackingMethod === 'manual_count'
   const onTrack = progress.progressPercent >= 100
 
   function handleArchive() {
-    if (!confirm(`Archive "${goal.label}"? This will remove it from your dashboard.`)) return
+    setShowArchiveConfirm(true)
+  }
+
+  function handleConfirmArchive() {
+    setShowArchiveConfirm(false)
     startArchive(async () => {
       await archiveGoal(goal.id)
     })
@@ -235,6 +241,17 @@ export function GoalCard({ view, onCheckIn }: GoalCardProps) {
           )}
         </div>
       </CardContent>
+
+      <ConfirmModal
+        open={showArchiveConfirm}
+        title={`Archive "${goal.label}"?`}
+        description="This will remove it from your dashboard."
+        confirmLabel="Archive"
+        variant="primary"
+        loading={archivePending}
+        onConfirm={handleConfirmArchive}
+        onCancel={() => setShowArchiveConfirm(false)}
+      />
     </Card>
   )
 }

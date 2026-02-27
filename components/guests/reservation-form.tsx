@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -29,6 +30,7 @@ export function ReservationForm({ guestId, reservations }: ReservationFormProps)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const [cancellingResId, setCancellingResId] = useState<string | null>(null)
 
   const [resDate, setResDate] = useState(new Date().toISOString().slice(0, 10))
   const [resTime, setResTime] = useState('')
@@ -62,8 +64,14 @@ export function ReservationForm({ guestId, reservations }: ReservationFormProps)
     }
   }
 
-  const handleCancel = async (resId: string) => {
-    if (!confirm('Cancel this reservation?')) return
+  const handleCancel = (resId: string) => {
+    setCancellingResId(resId)
+  }
+
+  const handleConfirmCancel = async () => {
+    if (!cancellingResId) return
+    const resId = cancellingResId
+    setCancellingResId(null)
     setLoading(true)
     try {
       await cancelReservation(resId)
@@ -186,6 +194,16 @@ export function ReservationForm({ guestId, reservations }: ReservationFormProps)
             ))}
           </div>
         )}
+        <ConfirmModal
+          open={!!cancellingResId}
+          title="Cancel this reservation?"
+          description="The reservation will be marked as cancelled."
+          confirmLabel="Cancel Reservation"
+          variant="danger"
+          loading={loading}
+          onConfirm={handleConfirmCancel}
+          onCancel={() => setCancellingResId(null)}
+        />
       </CardContent>
     </Card>
   )
