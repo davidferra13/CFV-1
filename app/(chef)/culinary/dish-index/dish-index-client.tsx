@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useTransition } from 'react'
+import { useState, useCallback, useTransition, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -42,6 +42,15 @@ export function DishIndexClient({ initialDishes, totalCount, stats }: DishIndexC
   const [recipeFilter, setRecipeFilter] = useState<string>('')
   const [sortBy, setSortBy] = useState<string>('times_served')
   const [isPending, startTransition] = useTransition()
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const PAGE_SIZE = 50
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
+    }
+  }, [])
 
   const applyFilters = useCallback(
     (overrides?: Record<string, unknown>) => {
@@ -68,7 +77,7 @@ export function DishIndexClient({ initialDishes, totalCount, stats }: DishIndexC
           | 'last_served'
           | 'created_at',
         sort_dir: 'desc' as const,
-        limit: 50,
+        limit: PAGE_SIZE,
       }
 
       startTransition(async () => {
@@ -79,6 +88,37 @@ export function DishIndexClient({ initialDishes, totalCount, stats }: DishIndexC
     },
     [search, courseFilter, rotationFilter, recipeFilter, sortBy]
   )
+
+  const debouncedSearch = useCallback(
+    (value: string) => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
+      searchTimerRef.current = setTimeout(() => {
+        applyFilters({ search: value })
+      }, 300)
+    },
+    [applyFilters]
+  )
+
+  const loadMore = useCallback(() => {
+    startTransition(async () => {
+      const filters = {
+        search,
+        course: courseFilter,
+        rotation_status: rotationFilter,
+        has_recipe: recipeFilter === 'yes' ? true : recipeFilter === 'no' ? false : undefined,
+        sort_by: sortBy as 'name' | 'times_served' | 'last_served' | 'created_at',
+        sort_dir: 'desc' as const,
+        limit: PAGE_SIZE,
+        offset: dishes.length,
+      }
+      const result = await getDishIndex(filters)
+      setDishes((prev) => [
+        ...prev,
+        ...(result.dishes as unknown as Array<Record<string, unknown>>),
+      ])
+      setTotal(result.total)
+    })
+  }, [search, courseFilter, rotationFilter, recipeFilter, sortBy, dishes.length])
 
   const handleDishAdded = useCallback(() => {
     applyFilters()
@@ -140,7 +180,7 @@ export function DishIndexClient({ initialDishes, totalCount, stats }: DishIndexC
             value={search}
             onChange={(e) => {
               setSearch(e.target.value)
-              applyFilters({ search: e.target.value })
+              debouncedSearch(e.target.value)
             }}
             placeholder="Search dishes..."
             className="flex-1 min-w-[200px] bg-stone-900 border border-stone-700 rounded-lg px-3 py-1.5 text-sm text-stone-200 focus:outline-none focus:ring-1 focus:ring-brand-500/50"
@@ -222,11 +262,20 @@ export function DishIndexClient({ initialDishes, totalCount, stats }: DishIndexC
             </Link>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {dishes.map((dish: Record<string, unknown>) => (
-              <DishIndexCard key={dish.id as string} dish={dish as DishIndexCardProps['dish']} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {dishes.map((dish: Record<string, unknown>) => (
+                <DishIndexCard key={dish.id as string} dish={dish as DishIndexCardProps['dish']} />
+              ))}
+            </div>
+            {dishes.length < total && (
+              <div className="flex justify-center pt-2">
+                <Button variant="secondary" onClick={loadMore} disabled={isPending}>
+                  {isPending ? 'Loading...' : `Load More (${dishes.length} of ${total})`}
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
