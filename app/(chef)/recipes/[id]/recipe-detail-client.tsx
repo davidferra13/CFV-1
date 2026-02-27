@@ -17,6 +17,7 @@ import {
 import { shareRecipe, getConnectedChefsForCollaboration } from '@/lib/collaboration/actions'
 import { RecipeScalingCalculator } from '@/components/recipes/recipe-scaling-calculator'
 import { NutritionPanel } from '@/components/recipes/nutrition-panel'
+import { AllergenBadgePanel } from '@/components/recipes/allergen-badge-panel'
 import { SubRecipeSearchModal } from '@/components/recipes/sub-recipe-search-modal'
 import { DishPhotoUpload } from '@/components/dishes/dish-photo-upload'
 import { format } from 'date-fns'
@@ -333,6 +334,9 @@ export function RecipeDetailClient({ recipe }: Props) {
 
       {/* Nutrition (on-demand — fetches USDA data when chef clicks) */}
       <NutritionPanel recipeId={recipe.id} ingredientCount={recipe.ingredients.length} />
+
+      {/* Allergen Detection (on-demand — uses Edamam API when chef clicks) */}
+      <AllergenBadgePanel recipeId={recipe.id} ingredientCount={recipe.ingredients.length} />
 
       {/* Method */}
       {recipe.method && (
