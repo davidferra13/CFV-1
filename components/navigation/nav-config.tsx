@@ -376,6 +376,16 @@ export const navGroups: NavGroup[] = [
         label: 'Sales History',
         icon: DollarSign,
       },
+      {
+        href: '/commerce/reconciliation',
+        label: 'Reconciliation',
+        icon: BarChart3,
+      },
+      {
+        href: '/commerce/settlements',
+        label: 'Settlements',
+        icon: Landmark,
+      },
     ],
   },
 
@@ -547,6 +557,11 @@ export const navGroups: NavGroup[] = [
         children: [{ href: '/inventory/purchase-orders/new', label: 'New PO' }],
       },
       {
+        href: '/inventory/procurement',
+        label: 'Procurement Hub',
+        icon: Truck,
+      },
+      {
         href: '/inventory/counts',
         label: 'Inventory Counts',
         icon: ClipboardCheck,
@@ -664,6 +679,7 @@ export const navGroups: NavGroup[] = [
           { href: '/finance/reporting/revenue-by-event', label: 'Revenue by Event' },
           { href: '/finance/reporting/expense-by-category', label: 'Expense by Category' },
           { href: '/finance/reporting/profit-by-event', label: 'Profit by Event' },
+          { href: '/finance/reporting/profit-loss', label: 'Profit & Loss' },
           { href: '/finance/reporting/year-to-date-summary', label: 'Year-to-Date Summary' },
         ],
       },

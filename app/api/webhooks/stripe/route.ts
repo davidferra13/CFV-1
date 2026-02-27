@@ -72,7 +72,9 @@ export async function POST(req: Request) {
     event.type === 'application_fee.refunded' ||
     event.type === 'customer.subscription.created' ||
     event.type === 'customer.subscription.updated' ||
-    event.type === 'customer.subscription.deleted'
+    event.type === 'customer.subscription.deleted' ||
+    event.type === 'payout.paid' ||
+    event.type === 'payout.failed'
 
   if (!isNonLedgerEvent) {
     const { data: existingEntry } = await supabase
@@ -94,9 +96,17 @@ export async function POST(req: Request) {
         await handleGiftCardPurchaseCompleted(event, supabase)
         break
 
-      case 'payment_intent.succeeded':
-        await handlePaymentSucceeded(event)
+      case 'payment_intent.succeeded': {
+        // Route: Commerce payments (sale_id in metadata) go through commerce_payments table.
+        // Event payments (event_id in metadata) use the existing ledger-first path.
+        const pi = event.data.object as Stripe.PaymentIntent
+        if (pi.metadata?.sale_id) {
+          await handleCommercePaymentSucceeded(event)
+        } else {
+          await handlePaymentSucceeded(event)
+        }
         break
+      }
 
       case 'payment_intent.payment_failed':
         await handlePaymentFailed(event)
@@ -144,6 +154,11 @@ export async function POST(req: Request) {
         await handleSubscriptionDeleted(event.data.object as Stripe.Subscription)
         break
       }
+
+      case 'payout.paid':
+      case 'payout.failed':
+        await handlePayoutEvent(event)
+        break
 
       default:
         console.log('[Stripe Webhook] Unhandled event type:', event.type)
@@ -1171,5 +1186,161 @@ async function handleApplicationFeeRefunded(event: Stripe.Event) {
       'cents for tenant:',
       tenantId
     )
+  }
+}
+
+/**
+ * Handle Commerce Engine payment succeeded.
+ * Routes through commerce_payments table instead of direct ledger append.
+ * The DB trigger `commerce_payment_to_ledger` auto-creates the ledger entry.
+ */
+async function handleCommercePaymentSucceeded(event: Stripe.Event) {
+  const paymentIntent = event.data.object as Stripe.PaymentIntent
+  const { sale_id, tenant_id } = paymentIntent.metadata
+
+  if (!sale_id || !tenant_id) {
+    console.error('[handleCommercePaymentSucceeded] Missing sale_id or tenant_id metadata')
+    return
+  }
+
+  console.log('[handleCommercePaymentSucceeded] Processing commerce payment for sale:', sale_id)
+
+  const supabase = createServerClient({ admin: true })
+
+  // Verify the sale exists and belongs to the tenant
+  const { data: sale } = await supabase
+    .from('sales')
+    .select('id, client_id, event_id')
+    .eq('id', sale_id)
+    .eq('tenant_id', tenant_id)
+    .single()
+
+  if (!sale) {
+    console.error('[handleCommercePaymentSucceeded] Sale not found or tenant mismatch:', sale_id)
+    return
+  }
+
+  // Build idempotency key from Stripe event ID
+  const idempotencyKey = `stripe_${event.id}`
+  const txnRef = `commerce_${paymentIntent.id}`
+
+  // Insert into commerce_payments — DB trigger handles ledger entry
+  const { error: insertErr } = await supabase.from('commerce_payments').insert({
+    tenant_id,
+    sale_id,
+    event_id: (sale as any).event_id ?? null,
+    client_id: (sale as any).client_id ?? null,
+    amount_cents: paymentIntent.amount,
+    tip_cents: 0,
+    payment_method: 'card',
+    status: 'captured',
+    processor_type: 'stripe',
+    processor_reference_id: paymentIntent.id,
+    stripe_payment_intent_id: paymentIntent.id,
+    stripe_charge_id:
+      typeof paymentIntent.latest_charge === 'string' ? paymentIntent.latest_charge : null,
+    idempotency_key: idempotencyKey,
+    transaction_reference: txnRef,
+    captured_at: new Date().toISOString(),
+    created_by: null,
+  } as any)
+
+  if (insertErr) {
+    // Idempotency: duplicate key is fine
+    if (insertErr.code === '23505') {
+      console.log(
+        '[handleCommercePaymentSucceeded] Duplicate payment (idempotent):',
+        idempotencyKey
+      )
+      return
+    }
+    console.error('[handleCommercePaymentSucceeded] Failed to insert payment:', insertErr.message)
+    throw insertErr
+  }
+
+  // Update sale status
+  const { data: payments } = await supabase
+    .from('commerce_payments')
+    .select('amount_cents, status')
+    .eq('sale_id', sale_id)
+    .eq('tenant_id', tenant_id)
+
+  const totalPaid = ((payments ?? []) as any[])
+    .filter((p) => ['captured', 'settled'].includes(p.status))
+    .reduce((sum, p) => sum + p.amount_cents, 0)
+
+  const { data: saleData } = await supabase
+    .from('sales')
+    .select('total_cents, status')
+    .eq('id', sale_id)
+    .single()
+
+  if (saleData) {
+    const { computeSaleStatus } = await import('@/lib/commerce/sale-fsm')
+    const newStatus = computeSaleStatus({
+      currentStatus: (saleData as any).status,
+      totalCents: (saleData as any).total_cents,
+      totalPaidCents: totalPaid,
+      totalRefundedCents: 0,
+    })
+
+    if (newStatus !== (saleData as any).status) {
+      await supabase
+        .from('sales')
+        .update({ status: newStatus } as any)
+        .eq('id', sale_id)
+        .eq('tenant_id', tenant_id)
+    }
+  }
+
+  console.log('[handleCommercePaymentSucceeded] Commerce payment recorded for sale:', sale_id)
+}
+
+/**
+ * Handle Stripe payout events.
+ * Maps the payout to commerce payments via Inngest background job.
+ */
+async function handlePayoutEvent(event: Stripe.Event) {
+  const payout = event.data.object as Stripe.Payout
+  console.log('[handlePayoutEvent]', event.type, 'payout:', payout.id)
+
+  // Find the tenant by their connected account
+  // Payout events include the connected account in event.account
+  const connectedAccountId = (event as any).account
+  if (!connectedAccountId) {
+    console.log('[handlePayoutEvent] No connected account on payout event, skipping')
+    return
+  }
+
+  const supabase = createServerClient({ admin: true })
+  const { data: chef } = await supabase
+    .from('chefs')
+    .select('id')
+    .eq('stripe_account_id', connectedAccountId)
+    .single()
+
+  if (!chef) {
+    console.log('[handlePayoutEvent] No chef found for account:', connectedAccountId)
+    return
+  }
+
+  // Dispatch Inngest job to map the settlement
+  try {
+    const { inngest } = await import('@/lib/jobs/inngest-client')
+    await inngest.send({
+      name: 'chefflow/commerce.map-settlement',
+      data: {
+        tenantId: chef.id,
+        stripePayoutId: payout.id,
+        payoutAmountCents: payout.amount,
+        payoutStatus: event.type === 'payout.paid' ? 'paid' : 'failed',
+        arrivalDate: payout.arrival_date
+          ? new Date(payout.arrival_date * 1000).toISOString().split('T')[0]
+          : undefined,
+      },
+    })
+    console.log('[handlePayoutEvent] Settlement mapping job dispatched for payout:', payout.id)
+  } catch (err) {
+    console.error('[handlePayoutEvent] Failed to dispatch settlement mapping job:', err)
   }
 }

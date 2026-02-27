@@ -9,8 +9,20 @@ import {
   postEventReviewRequest,
   postEventReferralAsk,
 } from '@/lib/jobs/post-event-jobs'
+import {
+  commerceDayCloseout,
+  commercePaymentReconciliation,
+  commerceSettlementMapping,
+} from '@/lib/jobs/commerce-jobs'
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
-  functions: [postEventThankYou, postEventReviewRequest, postEventReferralAsk],
+  functions: [
+    postEventThankYou,
+    postEventReviewRequest,
+    postEventReferralAsk,
+    commerceDayCloseout,
+    commercePaymentReconciliation,
+    commerceSettlementMapping,
+  ],
 })

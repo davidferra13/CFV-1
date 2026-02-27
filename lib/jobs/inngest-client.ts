@@ -30,4 +30,25 @@ export type InngestEvents = {
       completedAt: string
     }
   }
+  'chefflow/commerce.day-closeout': {
+    data: {
+      tenantId: string
+      reportDate: string // YYYY-MM-DD
+    }
+  }
+  'chefflow/commerce.reconcile-payments': {
+    data: {
+      tenantId: string
+      reportDate: string // YYYY-MM-DD
+    }
+  }
+  'chefflow/commerce.map-settlement': {
+    data: {
+      tenantId: string
+      stripePayoutId: string
+      payoutAmountCents: number
+      payoutStatus: string
+      arrivalDate?: string // YYYY-MM-DD
+    }
+  }
 }
