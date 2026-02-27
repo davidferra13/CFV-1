@@ -5,6 +5,7 @@ import {
   getOutreachLog,
   findSimilarProspects,
   getStageHistory,
+  checkGmailConnected,
 } from '@/lib/prospecting/pipeline-actions'
 import { notFound } from 'next/navigation'
 import { ProspectDossierClient } from './dossier-client'
@@ -17,13 +18,15 @@ export default async function ProspectDossierPage({ params }: Props) {
   await requireAdmin()
   const { id } = await params
 
-  const [prospect, notes, outreachLog, similarProspects, stageHistory] = await Promise.all([
-    getProspect(id),
-    getProspectNotes(id),
-    getOutreachLog(id),
-    findSimilarProspects(id),
-    getStageHistory(id),
-  ])
+  const [prospect, notes, outreachLog, similarProspects, stageHistory, gmailConnected] =
+    await Promise.all([
+      getProspect(id),
+      getProspectNotes(id),
+      getOutreachLog(id),
+      findSimilarProspects(id),
+      getStageHistory(id),
+      checkGmailConnected(),
+    ])
 
   if (!prospect) notFound()
 
@@ -44,6 +47,7 @@ export default async function ProspectDossierPage({ params }: Props) {
         outreachLog={outreachLog}
         similarProspects={similarProspects}
         stageHistory={stageHistory}
+        gmailConnected={gmailConnected}
       />
     </div>
   )

@@ -4,14 +4,16 @@ import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { sendProspectEmail } from '@/lib/prospecting/pipeline-actions'
-import { Loader2, Send, CheckCircle, Mail } from 'lucide-react'
+import { Loader2, Send, CheckCircle, Mail, AlertCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 interface SendEmailPanelProps {
   prospectId: string
   prospectName: string
   recipientEmail: string | null
   draftEmail?: string | null
+  gmailConnected?: boolean
 }
 
 export function SendEmailPanel({
@@ -19,6 +21,7 @@ export function SendEmailPanel({
   prospectName,
   recipientEmail,
   draftEmail,
+  gmailConnected = false,
 }: SendEmailPanelProps) {
   const [isPending, startTransition] = useTransition()
   const [showForm, setShowForm] = useState(false)
@@ -28,6 +31,25 @@ export function SendEmailPanel({
   const router = useRouter()
 
   if (!recipientEmail) return null
+
+  // Gmail not connected — show guidance instead of Send button
+  if (!gmailConnected) {
+    return (
+      <div className="flex items-center gap-2 text-xs text-stone-500">
+        <AlertCircle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
+        <span>
+          Connect Gmail in{' '}
+          <Link
+            href="/settings/integrations"
+            className="text-brand-500 hover:text-brand-400 underline"
+          >
+            Settings &rarr; Integrations
+          </Link>{' '}
+          to send emails directly.
+        </span>
+      </div>
+    )
+  }
 
   function handleSend() {
     if (!subject.trim() || !body.trim()) return

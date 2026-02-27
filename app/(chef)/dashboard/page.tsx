@@ -115,6 +115,10 @@ import { PendingFollowUpsWidget } from '@/components/inquiries/pending-follow-up
 import { getWeatherForEvents, type InlineWeather } from '@/lib/weather/open-meteo'
 import { createServerClient } from '@/lib/supabase/server'
 import { InviteChefCard } from '@/components/marketing/invite-chef-card'
+import { ProspectingWidget } from '@/components/dashboard/prospecting-widget'
+import { getProspectStats } from '@/lib/prospecting/actions'
+import { getHotPipelineCount } from '@/lib/prospecting/pipeline-actions'
+import type { ProspectStats } from '@/lib/prospecting/types'
 
 // ============================================
 // Safe wrapper — logs failures, returns fallback, tracks which fetches failed
@@ -268,6 +272,16 @@ const emptyResponseTimeSummary: ResponseTimeSummary = {
   avgResponseTimeHours: null,
 }
 const emptyPendingFollowUps: PendingFollowUp[] = []
+const emptyProspectStats: ProspectStats = {
+  total: 0,
+  new: 0,
+  queued: 0,
+  called: 0,
+  follow_up: 0,
+  converted: 0,
+  dead: 0,
+  not_interested: 0,
+}
 
 const emptyOnboardingProgress: OnboardingProgress = {
   profile: false,
@@ -494,6 +508,8 @@ export default async function ChefDashboard() {
     responseTimeSummary,
     pendingFollowUps,
     chefProfile,
+    prospectStats,
+    hotPipelineCount,
   ] = await Promise.all([
     safe('onboardingProgress', getOnboardingProgress, emptyOnboardingProgress),
     safe('nextBestActions', () => getNextBestActions(5), emptyNextBestActions),
@@ -514,6 +530,8 @@ export default async function ChefDashboard() {
       },
       null
     ),
+    safe('prospectStats', getProspectStats, emptyProspectStats),
+    safe('hotPipelineCount', getHotPipelineCount, 0),
   ])
 
   // ============================================
@@ -1449,6 +1467,9 @@ export default async function ChefDashboard() {
                   </CardContent>
                 </Card>
               )}
+
+              {/* Prospecting Pipeline */}
+              <ProspectingWidget stats={prospectStats} hotPipelineCount={hotPipelineCount} />
 
               {/* Pipeline Forecast */}
               <PipelineForecastWidget forecast={pipelineForecast} />

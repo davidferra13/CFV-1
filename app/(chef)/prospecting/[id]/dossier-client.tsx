@@ -76,6 +76,7 @@ interface DossierProps {
   outreachLog: OutreachLogEntry[]
   similarProspects: Prospect[]
   stageHistory: StageHistoryEntry[]
+  gmailConnected: boolean
 }
 
 export function ProspectDossierClient({
@@ -85,6 +86,7 @@ export function ProspectDossierClient({
   outreachLog,
   similarProspects,
   stageHistory,
+  gmailConnected,
 }: DossierProps) {
   const router = useRouter()
   const [prospect, setProspect] = useState(initialProspect)
@@ -563,6 +565,7 @@ export function ProspectDossierClient({
             prospectName={prospect.name}
             recipientEmail={prospect.contact_direct_email || prospect.email}
             draftEmail={prospect.draft_email}
+            gmailConnected={gmailConnected}
           />
 
           {/* Approach Strategy */}

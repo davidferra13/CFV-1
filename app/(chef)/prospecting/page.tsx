@@ -6,10 +6,13 @@ import Link from 'next/link'
 import { requireAdmin } from '@/lib/auth/admin'
 import { requireChef } from '@/lib/auth/get-user'
 import { getProspects, getProspectStats } from '@/lib/prospecting/actions'
+import { getConversionFunnelStats } from '@/lib/prospecting/pipeline-actions'
 import { ProspectTable } from '@/components/prospecting/prospect-table'
 import { BatchReEnrichButton } from '@/components/prospecting/batch-re-enrich-button'
 import { ExportCSVButton } from '@/components/prospecting/export-csv-button'
 import { FollowUpReminderButton } from '@/components/prospecting/follow-up-reminder-button'
+import { AddProspectButton } from '@/components/prospecting/add-prospect-modal'
+import { ConversionFunnelPanel } from '@/components/prospecting/conversion-funnel-panel'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -37,7 +40,7 @@ export default async function ProspectingPage({
   await requireChef()
 
   const params = await searchParams
-  const [prospects, stats] = await Promise.all([
+  const [prospects, stats, funnelData] = await Promise.all([
     getProspects({
       status: params.status || undefined,
       category: params.category || undefined,
@@ -45,6 +48,7 @@ export default async function ProspectingPage({
       region: params.region || undefined,
     }),
     getProspectStats(),
+    getConversionFunnelStats(),
   ])
 
   return (
@@ -87,6 +91,7 @@ export default async function ProspectingPage({
               Import CSV
             </Button>
           </Link>
+          <AddProspectButton />
         </div>
       </div>
 
@@ -113,6 +118,14 @@ export default async function ProspectingPage({
           icon={<CheckCircle className="h-5 w-5 text-green-400" />}
         />
       </div>
+
+      {/* Conversion Funnel */}
+      {funnelData.totalProspects > 0 && (
+        <ConversionFunnelPanel
+          stages={funnelData.stages}
+          totalProspects={funnelData.totalProspects}
+        />
+      )}
 
       {/* Filter bar */}
       <Card>

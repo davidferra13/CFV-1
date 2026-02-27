@@ -1321,3 +1321,132 @@ export async function createFollowUpReminders(): Promise<{ created: number }> {
 
   return { created }
 }
+
+// ── Conversion Funnel Stats ────────────────────────────────────────────────
+
+interface FunnelStage {
+  stage: string
+  count: number
+  avgDaysInStage: number | null
+}
+
+export async function getConversionFunnelStats(): Promise<{
+  stages: FunnelStage[]
+  totalProspects: number
+}> {
+  await requireAdmin()
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  // Count prospects per pipeline stage
+  const { data: prospects, error } = await supabase
+    .from('prospects')
+    .select('pipeline_stage')
+    .eq('chef_id', user.tenantId!)
+
+  if (error || !prospects) return { stages: [], totalProspects: 0 }
+
+  const stageCounts = new Map<string, number>()
+  for (const p of prospects) {
+    const stage = p.pipeline_stage || 'new'
+    stageCounts.set(stage, (stageCounts.get(stage) || 0) + 1)
+  }
+
+  // Calculate avg days in stage from stage history
+  const { data: history } = await supabase
+    .from('prospect_stage_history')
+    .select('from_stage, to_stage, changed_at')
+    .eq('chef_id', user.tenantId!)
+    .order('changed_at', { ascending: true })
+
+  const stageDurations = new Map<string, number[]>()
+  if (history && history.length > 0) {
+    // Group transitions by prospect — track time from entry to exit per stage
+    const entryTimes = new Map<string, Map<string, string>>()
+    for (const h of history) {
+      const key = h.from_stage || '__initial'
+      // Record when a prospect entered 'to_stage'
+      if (!entryTimes.has(h.to_stage)) entryTimes.set(h.to_stage, new Map())
+    }
+
+    // Simpler approach: for each transition, calculate from_stage duration
+    // by looking at pairs of transitions
+    for (let i = 0; i < history.length - 1; i++) {
+      for (let j = i + 1; j < history.length; j++) {
+        if (history[j].from_stage === history[i].to_stage) {
+          const entryDate = new Date(history[i].changed_at)
+          const exitDate = new Date(history[j].changed_at)
+          const days = Math.round(
+            (exitDate.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24)
+          )
+          if (days >= 0 && days < 365) {
+            const stage = history[i].to_stage
+            if (!stageDurations.has(stage)) stageDurations.set(stage, [])
+            stageDurations.get(stage)!.push(days)
+          }
+          break
+        }
+      }
+    }
+  }
+
+  // Build ordered funnel
+  const stageOrder = [
+    'new',
+    'researched',
+    'contacted',
+    'responded',
+    'meeting_set',
+    'converted',
+    'lost',
+  ]
+  const stages: FunnelStage[] = stageOrder
+    .filter((s) => stageCounts.has(s))
+    .map((stage) => {
+      const durations = stageDurations.get(stage) || []
+      const avgDays =
+        durations.length > 0
+          ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
+          : null
+      return {
+        stage,
+        count: stageCounts.get(stage)!,
+        avgDaysInStage: avgDays,
+      }
+    })
+
+  return { stages, totalProspects: prospects.length }
+}
+
+// ── Hot Pipeline Count (responded + meeting_set) ───────────────────────────
+
+export async function getHotPipelineCount(): Promise<number> {
+  await requireAdmin()
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { count, error } = await supabase
+    .from('prospects')
+    .select('id', { count: 'exact', head: true })
+    .eq('chef_id', user.tenantId!)
+    .in('pipeline_stage', ['responded', 'meeting_set'])
+
+  if (error) return 0
+  return count ?? 0
+}
+
+// ── Check Gmail Connection ─────────────────────────────────────────────────
+
+export async function checkGmailConnected(): Promise<boolean> {
+  await requireAdmin()
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data } = await supabase
+    .from('google_connections')
+    .select('gmail_connected')
+    .eq('chef_id', user.entityId!)
+    .maybeSingle()
+
+  return data?.gmail_connected ?? false
+}
