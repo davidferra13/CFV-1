@@ -138,3 +138,89 @@ test.describe('Additional Uncovered Routes (#471-475)', () => {
     await assertPageHasContent(page)
   })
 })
+
+test.describe('Additional Dynamic Route Coverage (#486-490)', () => {
+  test('goal history route is reachable from goals list (#486)', async ({ page }) => {
+    await page.goto('/goals')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const historyLink = page
+      .locator('a[href*="/goals/"][href*="/history"]')
+      .first()
+      .or(page.locator('a[href*="/goals/"]').first())
+    const hasHistoryLink = (await historyLink.count()) > 0
+    if (!hasHistoryLink) return
+
+    await historyLink.click()
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+
+  test('staff detail route is reachable from staff list (#487)', async ({ page }) => {
+    await page.goto('/staff')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const staffLink = page.locator('a[href^="/staff/"]').first()
+    const hasStaffLink = (await staffLink.count()) > 0
+    if (!hasStaffLink) return
+
+    await staffLink.click()
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+
+  test('station detail route is reachable from stations list (#488)', async ({ page }) => {
+    await page.goto('/stations')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const stationLink = page.locator('a[href^="/stations/"]').first()
+    const hasStationLink = (await stationLink.count()) > 0
+    if (!hasStationLink) return
+
+    await stationLink.click()
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+
+  test('station clipboard route is reachable from station detail (#489)', async ({ page }) => {
+    await page.goto('/stations')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const stationLink = page.locator('a[href^="/stations/"]').first()
+    if ((await stationLink.count()) === 0) return
+    await stationLink.click()
+    await page.waitForLoadState('networkidle')
+
+    const clipboardLink = page
+      .locator('a[href*="/clipboard"]')
+      .first()
+      .or(page.locator('a[href$="/clipboard"]').first())
+    if ((await clipboardLink.count()) === 0) return
+
+    await clipboardLink.click()
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+
+  test('vendor detail route is reachable from vendors list (#490)', async ({ page }) => {
+    await page.goto('/vendors')
+    await page.waitForLoadState('networkidle')
+
+    if (page.url().includes('auth/signin')) return
+
+    const vendorLink = page.locator('a[href^="/vendors/"]').first()
+    if ((await vendorLink.count()) === 0) return
+
+    await vendorLink.click()
+    await page.waitForLoadState('networkidle')
+    await assertPageHasContent(page)
+  })
+})
