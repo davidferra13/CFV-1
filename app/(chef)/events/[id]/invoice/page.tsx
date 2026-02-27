@@ -28,7 +28,7 @@ export default async function ChefInvoicePage({ params }: { params: { id: string
         </Link>
         <div className="flex items-center gap-2">
           <a
-            href={`/api/documents/invoice/${params.id}`}
+            href={`/api/documents/invoice-pdf/${params.id}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center rounded-lg border border-stone-600 px-3 py-1.5 text-sm font-medium text-stone-300 hover:bg-stone-800"
