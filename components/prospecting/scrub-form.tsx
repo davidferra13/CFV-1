@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect, useRef, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { scrubProspects } from '@/lib/prospecting/scrub-actions'
+import { scrubProspects, getScrubSessionProgress } from '@/lib/prospecting/scrub-actions'
 import { SCRUB_PRESETS } from '@/lib/prospecting/constants'
 import { Loader2, Search, Zap } from 'lucide-react'
 
@@ -16,25 +16,71 @@ export function ScrubForm() {
     duplicatesSkipped?: number
     enriched?: number
     error?: string
+    sessionId?: string
   } | null>(null)
+  const [progressMessage, setProgressMessage] = useState<string | null>(null)
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // Clean up polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current)
+    }
+  }, [])
+
+  const startPolling = useCallback((sessionId: string) => {
+    if (pollRef.current) clearInterval(pollRef.current)
+
+    pollRef.current = setInterval(async () => {
+      try {
+        const progress = await getScrubSessionProgress(sessionId)
+        if (progress?.progress_message) {
+          setProgressMessage(progress.progress_message)
+        }
+        // Stop polling when done
+        if (progress?.status === 'completed' || progress?.status === 'failed') {
+          if (pollRef.current) clearInterval(pollRef.current)
+          pollRef.current = null
+        }
+      } catch {
+        // Ignore polling errors — the main action will handle real failures
+      }
+    }, 3000)
+  }, [])
 
   function handleScrub() {
     if (!query.trim() || isPending) return
     setResult(null)
+    setProgressMessage('Starting scrub...')
     startTransition(async () => {
       try {
         const res = await scrubProspects(query)
+        // Start polling for live progress updates
+        if (res.sessionId) {
+          startPolling(res.sessionId)
+        }
         setResult({
           success: true,
           totalGenerated: res.totalGenerated,
           duplicatesSkipped: res.duplicatesSkipped,
           enriched: res.enriched,
+          sessionId: res.sessionId,
         })
+        setProgressMessage(null)
+        if (pollRef.current) {
+          clearInterval(pollRef.current)
+          pollRef.current = null
+        }
       } catch (err) {
         setResult({
           success: false,
           error: err instanceof Error ? err.message : 'Scrub failed',
         })
+        setProgressMessage(null)
+        if (pollRef.current) {
+          clearInterval(pollRef.current)
+          pollRef.current = null
+        }
       }
     })
   }
@@ -74,6 +120,7 @@ export function ScrubForm() {
           <span className="text-xs text-stone-500 self-center mr-1">Quick presets:</span>
           {SCRUB_PRESETS.map((preset) => (
             <button
+              type="button"
               key={preset.label}
               onClick={() => applyPreset(preset.query)}
               className="px-3 py-1 text-xs rounded-full border border-stone-700 text-stone-400 hover:bg-stone-800 hover:border-stone-600 transition-colors"
@@ -102,12 +149,15 @@ export function ScrubForm() {
               </>
             )}
           </Button>
-          {isPending && (
-            <span className="text-sm text-stone-500">
-              This may take 1-2 minutes — AI is researching and enriching each prospect...
-            </span>
-          )}
         </div>
+
+        {/* Live progress bar */}
+        {isPending && progressMessage && (
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-stone-800 border border-stone-700">
+            <Loader2 className="h-4 w-4 animate-spin text-brand-500 flex-shrink-0" />
+            <span className="text-sm text-stone-300">{progressMessage}</span>
+          </div>
+        )}
 
         {result && (
           <div
@@ -136,32 +186,46 @@ export function ScrubForm() {
         {/* How It Works — always visible */}
         <div className="rounded-lg bg-stone-800 border border-stone-700 p-4 space-y-3">
           <h4 className="text-sm font-medium text-stone-300">How AI Scrub Works</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-stone-400">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3 text-xs text-stone-400">
             <div className="space-y-1">
-              <p className="font-medium text-stone-200">Phase 1: Generate</p>
+              <p className="font-medium text-stone-200">1. Generate</p>
               <p>
-                Ollama (local AI) generates a list of real businesses or individuals matching your
-                query. Up to 10 prospects per scrub.
+                Ollama generates up to 10 businesses or individuals matching your query, then
+                web-searches each to verify they exist.
               </p>
             </div>
             <div className="space-y-1">
-              <p className="font-medium text-stone-200">Phase 2: Enrich</p>
+              <p className="font-medium text-stone-200">2. Deep Enrich</p>
               <p>
-                For the top 5, the system searches the public web for their actual website, phone
-                number, email, and social profiles.
+                Crawls the prospect's website — homepage, contact page, events page, about page —
+                extracting phone, email, and social profiles.
               </p>
             </div>
             <div className="space-y-1">
-              <p className="font-medium text-stone-200">Phase 3: Strategize</p>
+              <p className="font-medium text-stone-200">3. News Intel</p>
               <p>
-                AI writes personalized talking points and an approach strategy for each prospect so
-                you sound prepared when you call.
+                Searches for recent news, press, awards, and event announcements about each prospect
+                to identify the best time to call.
+              </p>
+            </div>
+            <div className="space-y-1">
+              <p className="font-medium text-stone-200">4. Strategize</p>
+              <p>
+                AI writes personalized talking points and approach strategies using all gathered
+                intelligence including news and web data.
+              </p>
+            </div>
+            <div className="space-y-1">
+              <p className="font-medium text-stone-200">5. Draft Email</p>
+              <p>
+                AI drafts a personalized cold outreach email for each prospect. Review and edit
+                before sending.
               </p>
             </div>
           </div>
           <p className="text-xs text-stone-500">
-            Duplicates are automatically skipped. All data comes from public sources. Ollama must be
-            running.
+            Fuzzy dedup prevents near-matches. Lead scores computed automatically. Stale prospects
+            can be batch-refreshed. Ollama must be running.
           </p>
         </div>
       </CardContent>

@@ -68,6 +68,7 @@ export function buildApproachUserPrompt(prospect: {
   competitorsPresent?: string | null
   luxuryIndicators?: string[] | null
   enrichedDetails?: string | null
+  newsIntel?: string | null
 }): string {
   const lines = [
     `Prospect: ${prospect.name}`,
@@ -82,6 +83,64 @@ export function buildApproachUserPrompt(prospect: {
       ? `Luxury signals: ${prospect.luxuryIndicators.join(', ')}`
       : '',
     prospect.enrichedDetails ? `Additional web research:\n${prospect.enrichedDetails}` : '',
+    prospect.newsIntel ? `Recent news/press:\n${prospect.newsIntel}` : '',
   ]
   return lines.filter(Boolean).join('\n')
+}
+
+// ── Cold Outreach Email Prompt ──────────────────────────────────────────────
+
+export const COLD_EMAIL_SYSTEM_PROMPT = `You are a cold outreach email writer for a private chef. You write personalized, warm-but-professional first-contact emails that:
+
+1. Open with something SPECIFIC about the prospect — a recent event they hosted, their venue's reputation, a news article, their social media presence — anything that proves you did your homework
+2. Briefly introduce the private chef service (1-2 sentences max — not a pitch deck)
+3. Propose a specific, low-commitment next step (15-min call, send a sample menu, attend their next event as a tasting)
+4. Keep it under 150 words — busy people don't read long cold emails
+5. Sound human. No corporate buzzwords, no "I hope this email finds you well," no "synergy"
+
+The tone should be: confident but not arrogant, friendly but not casual, specific but not creepy.
+
+Return ONLY valid JSON: { "subject": "Email subject line", "body": "Full email body" }
+Do NOT include [Your Name] or [Chef Name] placeholders — end the email naturally with just a sign-off like "Best," or "Cheers," on its own line.`
+
+export function buildColdEmailPrompt(prospect: {
+  name: string
+  category: string
+  prospectType: string
+  description?: string | null
+  city?: string | null
+  state?: string | null
+  contactPerson?: string | null
+  contactTitle?: string | null
+  eventTypesHosted?: string[] | null
+  luxuryIndicators?: string[] | null
+  talkingPoints?: string | null
+  approachStrategy?: string | null
+  newsIntel?: string | null
+  enrichedDetails?: string | null
+}): string {
+  const lines = [
+    `Prospect: ${prospect.name}`,
+    `Type: ${prospect.prospectType}`,
+    `Category: ${prospect.category}`,
+    prospect.description ? `About: ${prospect.description}` : '',
+    prospect.city ? `Location: ${prospect.city}, ${prospect.state}` : '',
+    prospect.contactPerson
+      ? `Decision maker: ${prospect.contactPerson}${prospect.contactTitle ? ` (${prospect.contactTitle})` : ''}`
+      : '',
+    prospect.eventTypesHosted?.length
+      ? `Events they host: ${prospect.eventTypesHosted.join(', ')}`
+      : '',
+    prospect.luxuryIndicators?.length
+      ? `Luxury signals: ${prospect.luxuryIndicators.join(', ')}`
+      : '',
+    prospect.talkingPoints ? `Key talking points: ${prospect.talkingPoints}` : '',
+    prospect.approachStrategy ? `Approach strategy: ${prospect.approachStrategy}` : '',
+    prospect.newsIntel ? `Recent news: ${prospect.newsIntel}` : '',
+    prospect.enrichedDetails ? `Web research:\n${prospect.enrichedDetails}` : '',
+  ]
+  return (
+    'Write a personalized cold outreach email for this prospect:\n\n' +
+    lines.filter(Boolean).join('\n')
+  )
 }

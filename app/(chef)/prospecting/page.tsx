@@ -7,6 +7,7 @@ import { requireAdmin } from '@/lib/auth/admin'
 import { requireChef } from '@/lib/auth/get-user'
 import { getProspects, getProspectStats } from '@/lib/prospecting/actions'
 import { ProspectTable } from '@/components/prospecting/prospect-table'
+import { BatchReEnrichButton } from '@/components/prospecting/batch-re-enrich-button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -244,6 +245,13 @@ export default async function ProspectingPage({
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Batch Actions */}
+      {stats.total > 0 && (
+        <div className="flex items-center gap-3">
+          <BatchReEnrichButton />
+        </div>
       )}
 
       {/* Prospect Table */}

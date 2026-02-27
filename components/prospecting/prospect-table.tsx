@@ -28,6 +28,7 @@ export function ProspectTable({ prospects }: ProspectTableProps) {
         <thead>
           <tr className="border-b border-stone-700 text-left text-stone-500">
             <th className="py-3 px-3 font-medium">Prospect</th>
+            <th className="py-3 px-3 font-medium">Score</th>
             <th className="py-3 px-3 font-medium">Category</th>
             <th className="py-3 px-3 font-medium">Location</th>
             <th className="py-3 px-3 font-medium">Contact</th>
@@ -57,6 +58,19 @@ export function ProspectTable({ prospects }: ProspectTableProps) {
                 {p.description && (
                   <p className="text-xs text-stone-400 mt-0.5 line-clamp-1">{p.description}</p>
                 )}
+              </td>
+              <td className="py-3 px-3">
+                <span
+                  className={`inline-block min-w-[2rem] text-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                    p.lead_score >= 70
+                      ? 'bg-green-950 text-green-400'
+                      : p.lead_score >= 40
+                        ? 'bg-amber-950 text-amber-400'
+                        : 'bg-stone-800 text-stone-500'
+                  }`}
+                >
+                  {p.lead_score}
+                </span>
               </td>
               <td className="py-3 px-3">
                 <span className="text-xs text-stone-400">

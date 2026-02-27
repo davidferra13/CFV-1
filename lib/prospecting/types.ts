@@ -45,6 +45,12 @@ export interface Prospect {
   notes: string | null
   tags: string[]
   priority: string
+  lead_score: number
+  verified: boolean
+  draft_email: string | null
+  news_intel: string | null
+  last_enriched_at: string | null
+  enrichment_sources: string[] | null
   created_at: string
   updated_at: string
 }

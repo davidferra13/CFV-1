@@ -39,9 +39,16 @@ import {
   Loader2,
   Trash2,
   ArrowRightLeft,
+  CheckCircle2,
+  AlertCircle,
+  Newspaper,
+  MailOpen,
+  Copy,
+  CalendarClock,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
+import { ReEnrichButton } from '@/components/prospecting/re-enrich-button'
 
 interface DossierProps {
   prospect: Prospect
@@ -168,13 +175,33 @@ export function ProspectDossierClient({
             <Badge variant="default">{categoryLabel}</Badge>
             {prospect.priority === 'high' && <Badge variant="warning">High Priority</Badge>}
             {prospect.priority === 'low' && <Badge variant="info">Low Priority</Badge>}
-            {prospect.source === 'web_enriched' && (
-              <span className="text-xs text-green-600 font-medium">Web-Verified</span>
+            {prospect.verified ? (
+              <span className="inline-flex items-center gap-1 text-xs text-green-600 font-medium">
+                <CheckCircle2 className="h-3 w-3" /> Verified
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-xs text-stone-500">
+                <AlertCircle className="h-3 w-3" /> Unverified
+              </span>
+            )}
+            {prospect.lead_score > 0 && (
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                  prospect.lead_score >= 70
+                    ? 'bg-green-950 text-green-400 border border-green-800'
+                    : prospect.lead_score >= 40
+                      ? 'bg-amber-950 text-amber-400 border border-amber-800'
+                      : 'bg-stone-800 text-stone-400 border border-stone-700'
+                }`}
+              >
+                Score: {prospect.lead_score}
+              </span>
             )}
           </div>
         </div>
 
         <div className="flex items-center gap-2">
+          <ReEnrichButton prospectId={prospect.id} />
           {prospect.status !== 'converted' && (
             <Button variant="secondary" size="sm" onClick={handleConvert} disabled={isPending}>
               <ArrowRightLeft className="h-4 w-4 mr-1" />
@@ -505,6 +532,86 @@ export function ProspectDossierClient({
                 </p>
               </CardContent>
             </Card>
+          )}
+
+          {/* Draft Cold Email */}
+          {prospect.draft_email && (
+            <Card className="border-purple-800 bg-purple-950/20">
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <MailOpen className="h-4 w-4 text-purple-400" />
+                    Draft Outreach Email
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(prospect.draft_email ?? '')
+                    }}
+                    className="flex items-center gap-1 text-xs text-stone-500 hover:text-stone-300"
+                  >
+                    <Copy className="h-3 w-3" />
+                    Copy
+                  </button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <pre className="text-sm text-stone-200 whitespace-pre-wrap font-sans">
+                  {prospect.draft_email}
+                </pre>
+                <p className="text-xs text-stone-500 mt-3 italic">
+                  AI-drafted — review and personalize before sending.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* News Intelligence */}
+          {prospect.news_intel && (
+            <Card className="border-cyan-800 bg-cyan-950/20">
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Newspaper className="h-4 w-4 text-cyan-400" />
+                  Recent News & Press
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-stone-200 whitespace-pre-wrap">{prospect.news_intel}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Staleness / Enrichment Age */}
+          {prospect.last_enriched_at && (
+            <div className="flex items-center gap-2 text-xs text-stone-500">
+              <CalendarClock className="h-3.5 w-3.5" />
+              Last enriched: {format(new Date(prospect.last_enriched_at), 'MMM d, yyyy h:mm a')}
+              {(() => {
+                const daysSince = Math.floor(
+                  (Date.now() - new Date(prospect.last_enriched_at!).getTime()) /
+                    (1000 * 60 * 60 * 24)
+                )
+                if (daysSince > 30)
+                  return (
+                    <span className="text-red-400 font-medium ml-1">
+                      ({daysSince} days ago — stale)
+                    </span>
+                  )
+                if (daysSince > 14)
+                  return (
+                    <span className="text-amber-400 font-medium ml-1">
+                      ({daysSince} days ago — aging)
+                    </span>
+                  )
+                return <span className="text-green-400 ml-1">({daysSince} days ago — fresh)</span>
+              })()}
+            </div>
+          )}
+          {!prospect.last_enriched_at && (
+            <div className="flex items-center gap-2 text-xs text-amber-500">
+              <CalendarClock className="h-3.5 w-3.5" />
+              Never enriched — click Re-Enrich to gather web intelligence
+            </div>
           )}
 
           {/* Call Script */}
