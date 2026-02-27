@@ -11,6 +11,7 @@ import {
   getCharityFinancials,
   getCharityMisc,
 } from '@/lib/charity/actions'
+import { getCharityHoursSummary } from '@/lib/charity/hours-actions'
 import { CHARITY_KEYWORDS } from '@/lib/charity/charity-keywords'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -59,11 +60,18 @@ function formatDate(dateStr: string | null): string {
 export default async function CharityHubPage() {
   await requireChef()
 
-  const [events, menus, financials, misc] = await Promise.all([
+  const [events, menus, financials, misc, hoursSummary] = await Promise.all([
     getCharityEvents().catch(() => []),
     getCharityMenus().catch(() => []),
     getCharityFinancials().catch(() => []),
     getCharityMisc().catch(() => []),
+    getCharityHoursSummary().catch(() => ({
+      totalHours: 0,
+      totalEntries: 0,
+      uniqueOrgs: 0,
+      verified501cOrgs: 0,
+      hoursByOrg: [],
+    })),
   ])
 
   const totalCount = events.length + menus.length + financials.length + misc.length
@@ -87,8 +95,8 @@ export default async function CharityHubPage() {
       </div>
 
       {/* Summary cards */}
-      {totalCount > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {(totalCount > 0 || hoursSummary.totalHours > 0) && (
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Card className="p-4 text-center">
             <p className="text-2xl font-bold text-stone-100">{events.length}</p>
             <p className="text-xs text-stone-500 mt-1">Events</p>
@@ -105,6 +113,12 @@ export default async function CharityHubPage() {
             <p className="text-2xl font-bold text-stone-100">{misc.length}</p>
             <p className="text-xs text-stone-500 mt-1">Misc Mentions</p>
           </Card>
+          <Link href="/charity/hours" className="block">
+            <Card className="p-4 text-center hover:bg-stone-800/50 transition-colors h-full">
+              <p className="text-2xl font-bold text-stone-100">{hoursSummary.totalHours}</p>
+              <p className="text-xs text-stone-500 mt-1">Volunteer Hours</p>
+            </Card>
+          </Link>
         </div>
       )}
 

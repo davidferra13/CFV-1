@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { NonprofitBadge } from './nonprofit-badge'
 import { deleteCharityHours } from '@/lib/charity/hours-actions'
 import type { CharityHourEntry } from '@/lib/charity/hours-types'
-import { Trash2, Pencil } from 'lucide-react'
+import { Trash2, Pencil, Download } from 'lucide-react'
 import { toast } from 'sonner'
 
 function formatDate(dateStr: string): string {
@@ -48,6 +48,36 @@ export function CharityHoursList({
     })
   }
 
+  function handleExportCsv() {
+    const header = 'Date,Organization,Address,EIN,501(c) Verified,Hours,Notes'
+    const rows = entries.map((e) => {
+      const esc = (s: string | null) => {
+        if (!s) return ''
+        // Escape double quotes and wrap in quotes if contains comma/quote/newline
+        const escaped = s.replace(/"/g, '""')
+        return /[,"\n\r]/.test(s) ? `"${escaped}"` : escaped
+      }
+      return [
+        e.serviceDate,
+        esc(e.organizationName),
+        esc(e.organizationAddress),
+        e.ein ?? '',
+        e.isVerified501c ? 'Yes' : 'No',
+        e.hours,
+        esc(e.notes),
+      ].join(',')
+    })
+    const csv = [header, ...rows].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `charity-hours-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+    toast.success('CSV exported')
+  }
+
   if (entries.length === 0) {
     return (
       <Card className="p-10 text-center">
@@ -61,8 +91,17 @@ export function CharityHoursList({
 
   return (
     <Card className="overflow-hidden">
-      <div className="px-5 py-4 border-b border-stone-800">
+      <div className="px-5 py-4 border-b border-stone-800 flex items-center justify-between">
         <h2 className="text-sm font-medium text-stone-300">Your Logged Hours ({entries.length})</h2>
+        <button
+          type="button"
+          onClick={handleExportCsv}
+          className="inline-flex items-center gap-1.5 text-xs text-stone-500 hover:text-stone-300 transition-colors"
+          title="Export to CSV"
+        >
+          <Download className="w-3.5 h-3.5" />
+          Export CSV
+        </button>
       </div>
       <div className="divide-y divide-stone-800">
         {entries.map((entry) => (

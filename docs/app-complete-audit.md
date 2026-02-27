@@ -906,7 +906,7 @@ Protected time reminder (purple callout). Completion celebration when all done.
 
 **Route:** `/charity` — Read-only aggregation page surfacing all charity-related entities across the system.
 
-**Header:** Title "Charity Hub" + subtitle. Summary stat cards (Events, Menus, Financial Entries, Misc Mentions counts).
+**Header:** Title "Charity Hub" + subtitle + "Log Charity Hours" button. Summary stat cards (Events, Menus, Financial Entries, Misc Mentions, Volunteer Hours — clickable, links to `/charity/hours`).
 
 **Empty state:** Shown when no charity-related items found. Lists example keywords.
 
@@ -950,9 +950,12 @@ Protected time reminder (purple callout). Completion celebration when all done.
 - "Load more" pagination
 - Data source: ProPublica Nonprofit Explorer API (1.8M IRS-registered nonprofits)
 
+**Year filter:** Dropdown to filter logged hours by year (appears when entries span multiple years). Options: "All time" + each year with entries.
+
 **Your Logged Hours (Card):**
 
 - Table of logged entries: date, organization name + 501(c) badge, address, hours, notes
+- "Export CSV" button in header → downloads all displayed entries as CSV
 - Edit button → switches form to edit mode
 - Delete button → confirmation dialog → `deleteCharityHours()` server action
 - Empty state when no hours logged
