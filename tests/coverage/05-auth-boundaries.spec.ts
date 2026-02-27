@@ -175,3 +175,23 @@ base.describe('Auth Boundaries - Unauthenticated Partner Routes', () => {
     })
   }
 })
+
+base.describe('Auth Boundaries - Unauthenticated Staff Routes', () => {
+  const staffRoutes = [
+    '/staff-dashboard',
+    '/staff-recipes',
+    '/staff-schedule',
+    '/staff-station',
+    '/staff-tasks',
+  ]
+
+  for (const route of staffRoutes) {
+    base.test(`unauthenticated -> ${route} redirects to sign-in`, async ({ page }) => {
+      await page.goto(`${BASE_URL}${route}`, { waitUntil: 'domcontentloaded' })
+      const url = page.url()
+      expect(url, `${route} should reject unauthenticated users`).toMatch(
+        /auth\/signin|unauthorized/
+      )
+    })
+  }
+})
