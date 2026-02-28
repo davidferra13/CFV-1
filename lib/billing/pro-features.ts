@@ -172,6 +172,13 @@ export const PRO_FEATURES: ProFeature[] = [
     description: 'POS register, counter sales, product catalog, order-ahead, payment processing',
     category: 'commerce',
   },
+  {
+    slug: 'social-hub',
+    label: 'Social Event Hub',
+    description:
+      'Group chat, visual themes, collaborative event planning, guest profiles, polls, pinned notes',
+    category: 'clients',
+  },
 ]
 
 /** Set of all Pro feature slugs — used for quick lookup. */

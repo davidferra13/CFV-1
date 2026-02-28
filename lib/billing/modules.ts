@@ -107,6 +107,14 @@ export const MODULES: ModuleDefinition[] = [
     alwaysVisible: false,
     navGroupId: 'commerce',
   },
+  {
+    slug: 'social-hub',
+    label: 'Social Event Hub',
+    description: 'Group chat, themes, guest profiles, collaborative event planning, and polls',
+    tier: 'pro',
+    defaultEnabled: false,
+    alwaysVisible: false,
+  },
 ]
 
 /** Default enabled modules for new signups. */
