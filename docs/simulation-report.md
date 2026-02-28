@@ -1,39 +1,39 @@
 # ChefFlow AI Simulation Report
 
-_Auto-generated — last run: 2026-02-28T02:42:58.820Z_
-_Run ID: b2b46aae-07c7-4a1d-a893-f54c17297b7b_
+_Auto-generated — last run: 2026-02-28T18:49:23.217Z_
+_Run ID: a9bdfbe8-b5ef-4e37-9c88-df78bb220c94_
 
 ---
 
 ## Summary
 
-The system's overall pass rate remains at 50%, with inquiry_parse, correspondence, and quote_draft still failing. All previously failing modules have returned to 0% pass rate, indicating no recent improvements. The core issue lies in over-generous LLM outputs and insufficient grounding in prompts.
+The system's overall pass rate remains low at 50%. The inquiry_parse, correspondence, and quote_draft modules are consistently failing. There has been no improvement in performance since the last run. The client_parse, allergen_risk, and menu_suggestions modules are now passing consistently.
 
 ## Failures & Root Causes
 
 **inquiry_parse**
-The module is hallucinating client names and guest counts. It's extracting values when none exist, likely due to insufficient constraints in the prompt. The LLM is generating plausible-sounding but incorrect data, possibly because the system prompt doesn't explicitly require "undefined" when no data is present.
+The module fails to extract client name and guest count from inquiries. It's not reliably parsing structured information from natural language inputs. The module likely lacks sufficient examples or explicit rules for identifying these key data points.
 
 **correspondence**
-The module fails to generate subject lines or body content with client-specific details. It's producing generic or empty responses, suggesting the prompt doesn't clearly require specific client information in both subject and body. The LLM is defaulting to generic templates instead of using provided client data.
+The module generates emails that are either too formal or lack personalization for the expected lifecycle stage. It also fails to incorporate client-specific details or reference previous interactions. The module appears to lack clear guidance on tone matching and personalization requirements.
 
 **quote_draft**
-The module is producing unrealistic pricing. It's calculating prices that exceed expected ranges by large margins. This indicates the prompt doesn't properly constrain the pricing logic or provide clear boundaries for per-person rates and total calculations.
+The module produces quotes with unrealistic pricing. It's not properly constraining total price and per-person rates to expected ranges. The pricing logic appears to be generating values outside the defined bounds without proper validation.
 
 ## Prompt Fix Recommendations
 
 **inquiry_parse**
-Add explicit instruction: "If no client name is mentioned, return undefined. If no guest count is mentioned, return undefined. Never hallucinate names or numbers." Add a rule: "When in doubt, return undefined for any field that is not explicitly stated in the input."
+Add explicit extraction rules for client name and guest count. Include examples showing expected vs. incorrect parsing. Require the model to output "Client name: [name]" and "Guest count: [number]" in its response format.
 
 **correspondence**
-Add explicit instruction: "Subject line must contain the client's name. Body must include specific details about the client's occasion and guest count." Add rule: "If client name, occasion, or guest count are not mentioned in the input, do not generate generic placeholders. Return an error or indicate missing information."
+Specify tone requirements for each lifecycle stage. Include examples of appropriate personalization and client history references. Require the model to include at least one client-specific detail and match the expected tone level.
 
 **quote_draft**
-Add explicit instruction: "Calculate total price using the formula: (per-person rate) × (guest count) + (grocery cost) + (travel cost). Per-person rate must be between $85-$175. Total must be within $0-$10,000. If input doesn't specify guest count, assume 10 guests." Add rule: "Reject any calculation that exceeds the specified price ranges or uses unrealistic assumptions."
+Define clear pricing constraints in the prompt. Specify maximum per-person rates and total price ranges. Require the model to validate that outputs fall within acceptable bounds before finalizing the quote.
 
 ## What's Working Well
 
-client_parse, allergen_risk, and menu_suggestions are all passing consistently. These modules have stable performance and show no signs of regression. The recent improvement in quote_draft from 0% to 33% pass rate indicates the fix for pricing constraints is working, though it still needs refinement.
+The client_parse, allergen_risk, and menu_suggestions modules are consistently passing. These modules have shown stable performance and appear to be well-defined. The recent improvement in these modules suggests the fixes applied in earlier runs have been effective.
 
 ---
 
