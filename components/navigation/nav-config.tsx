@@ -50,7 +50,7 @@ import {
   HeartHandshake,
 } from 'lucide-react'
 
-type NavItem = { href: string; label: string; icon: LucideIcon }
+type NavItem = { href: string; label: string; icon: LucideIcon; adminOnly?: boolean }
 type NavSubItem = {
   href: string
   label: string
@@ -60,6 +60,7 @@ type NavSubItem = {
 type NavCollapsibleItem = NavItem & {
   children?: NavSubItem[]
   visibility?: 'secondary' | 'advanced'
+  adminOnly?: boolean
 }
 type NavGroup = {
   id: string
@@ -88,7 +89,7 @@ export const standaloneTop: NavItem[] = [
   { href: '/stations', label: 'Stations', icon: ClipboardCheck },
   { href: '/activity', label: 'Activity', icon: Activity },
   { href: '/goals', label: 'Goals', icon: Target },
-  { href: '/prospecting', label: 'Prospecting', icon: Crosshair },
+  { href: '/prospecting', label: 'Prospecting', icon: Crosshair, adminOnly: true },
   { href: '/charity', label: 'Charity Hub', icon: HeartHandshake },
   { href: '/commerce', label: 'Commerce', icon: Store },
   { href: '/commerce/register', label: 'POS Register', icon: ShoppingCart },
@@ -176,6 +177,7 @@ export const navGroups: NavGroup[] = [
         href: '/prospecting',
         label: 'Prospecting',
         icon: Crosshair,
+        adminOnly: true,
         children: [
           { href: '/prospecting/scrub', label: 'AI Scrub' },
           { href: '/prospecting/queue', label: 'Call Queue' },

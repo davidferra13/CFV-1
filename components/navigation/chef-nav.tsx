@@ -600,17 +600,28 @@ export function ChefSidebar({
 
   // Filter nav groups by enabled modules (progressive disclosure)
   // Admins always see every group — they're the developer, not a gated user
+  // Also strip adminOnly items (e.g. prospecting) for non-admin users
   const enabledSet = useMemo(
     () => (enabledModules ? new Set(enabledModules) : null),
     [enabledModules]
   )
+  const accessibleGroups = useMemo(
+    () =>
+      isAdmin
+        ? navGroups
+        : navGroups.map((group) => ({
+            ...group,
+            items: group.items.filter((item) => !item.adminOnly),
+          })),
+    [isAdmin]
+  )
   const groupEntries = useMemo(
     () =>
-      navGroups.map((group) => ({
+      accessibleGroups.map((group) => ({
         group,
         isLocked: Boolean(!isAdmin && enabledSet && group.module && !enabledSet.has(group.module)),
       })),
-    [enabledSet, isAdmin]
+    [accessibleGroups, enabledSet, isAdmin]
   )
   const filteredGroupEntries = useMemo(
     () =>
@@ -624,9 +635,10 @@ export function ChefSidebar({
   )
   const filteredPrimaryItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
-    if (!q) return primaryItems
-    return primaryItems.filter((item) => item.label.toLowerCase().includes(q))
-  }, [navFilter, primaryItems])
+    const items = isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)
+    if (!q) return items
+    return items.filter((item) => item.label.toLowerCase().includes(q))
+  }, [navFilter, primaryItems, isAdmin])
   const filteredQuickCreateItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
     if (!q) return QUICK_CREATE_ITEMS
@@ -1520,17 +1532,28 @@ export function ChefMobileNav({
 
   // Filter nav groups by enabled modules (progressive disclosure)
   // Admins always see every group — they're the developer, not a gated user
+  // Also strip adminOnly items (e.g. prospecting) for non-admin users
   const enabledSet = useMemo(
     () => (enabledModules ? new Set(enabledModules) : null),
     [enabledModules]
   )
+  const accessibleGroups = useMemo(
+    () =>
+      isAdmin
+        ? navGroups
+        : navGroups.map((group) => ({
+            ...group,
+            items: group.items.filter((item) => !item.adminOnly),
+          })),
+    [isAdmin]
+  )
   const groupEntries = useMemo(
     () =>
-      navGroups.map((group) => ({
+      accessibleGroups.map((group) => ({
         group,
         isLocked: Boolean(!isAdmin && enabledSet && group.module && !enabledSet.has(group.module)),
       })),
-    [enabledSet, isAdmin]
+    [accessibleGroups, enabledSet, isAdmin]
   )
   const filteredGroupEntries = useMemo(
     () =>
@@ -1544,9 +1567,10 @@ export function ChefMobileNav({
   )
   const filteredPrimaryItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
-    if (!q) return primaryItems
-    return primaryItems.filter((item) => item.label.toLowerCase().includes(q))
-  }, [navFilter, primaryItems])
+    const items = isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)
+    if (!q) return items
+    return items.filter((item) => item.label.toLowerCase().includes(q))
+  }, [navFilter, primaryItems, isAdmin])
   const filteredQuickCreateItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
     if (!q) return QUICK_CREATE_ITEMS

@@ -575,6 +575,15 @@ A formula returns the same correct answer every single time, instantly, for free
 
 **This applies retroactively.** If any existing feature uses Remy/Ollama for something a formula could handle, swap it out. AI stays where it genuinely earns its place: understanding natural language, generating draft text, interpreting unstructured input. Everywhere else, math and logic win.
 
+### 0c. Prospecting Is Admin-Only (PERMANENT)
+
+**Prospecting is exclusively an admin feature. It must NEVER appear in a non-admin user's portal — no nav links, no sidebar items, no dashboard widgets, no shortcuts. Ever.**
+
+- **Nav config:** All prospecting nav items in `nav-config.tsx` have `adminOnly: true`. The sidebar (`chef-nav.tsx`) filters these out for non-admin users.
+- **Dashboard:** The `ProspectingWidget` on the dashboard is gated behind `isAdmin()`.
+- **Pages:** All `/prospecting/*` pages already have `requireAdmin()` — if a non-admin somehow navigates there, they get redirected.
+- **If you add any new prospecting-related UI** (link, button, widget, shortcut), it MUST be gated behind `isAdmin` / `adminOnly`. No exceptions.
+
 ### 1. Non-Blocking Side Effects
 
 Notifications, emails, activity logs, calendar syncs, and automations are **non-blocking** — if they fail, the main operation still succeeds.
@@ -738,6 +747,7 @@ The boundary below is **final**. Do not move files back to Gemini or add new Gem
 | Embed form component | `components/embed/embed-inquiry-form.tsx`                                        |
 | Embed settings page  | `app/(chef)/settings/embed/page.tsx`                                             |
 | App audit (living)   | `docs/app-complete-audit.md` **(update when UI changes)**                        |
+| Remy reference       | `docs/remy-complete-reference.md` **(read this instead of re-scanning Remy)**    |
 | Agent registry       | `docs/agent-registry.md`                                                         |
 | Kilo agent rules     | `KILO.md`                                                                        |
 | Kilo workflow        | `docs/kilo-workflow.md`                                                          |

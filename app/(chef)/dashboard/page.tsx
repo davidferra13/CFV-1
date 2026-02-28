@@ -5,6 +5,7 @@
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
+import { isAdmin } from '@/lib/auth/admin'
 import { getPriorityQueue } from '@/lib/queue/actions'
 import { getChefPreferences } from '@/lib/chef/actions'
 import { DEFAULT_PREFERENCES, type DashboardWidgetId } from '@/lib/scheduling/types'
@@ -510,6 +511,7 @@ export default async function ChefDashboard() {
     chefProfile,
     prospectStats,
     hotPipelineCount,
+    userIsAdmin,
   ] = await Promise.all([
     safe('onboardingProgress', getOnboardingProgress, emptyOnboardingProgress),
     safe('nextBestActions', () => getNextBestActions(5), emptyNextBestActions),
@@ -532,6 +534,7 @@ export default async function ChefDashboard() {
     ),
     safe('prospectStats', getProspectStats, emptyProspectStats),
     safe('hotPipelineCount', getHotPipelineCount, 0),
+    isAdmin(),
   ])
 
   // ============================================
@@ -1468,8 +1471,10 @@ export default async function ChefDashboard() {
                 </Card>
               )}
 
-              {/* Prospecting Pipeline */}
-              <ProspectingWidget stats={prospectStats} hotPipelineCount={hotPipelineCount} />
+              {/* Prospecting Pipeline — admin only */}
+              {userIsAdmin && (
+                <ProspectingWidget stats={prospectStats} hotPipelineCount={hotPipelineCount} />
+              )}
 
               {/* Pipeline Forecast */}
               <PipelineForecastWidget forecast={pipelineForecast} />
