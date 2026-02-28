@@ -38,7 +38,15 @@ export function ThreadDetailClient({
   detail: ThreadDetail
   threadId: string
 }) {
-  const { thread, events, linked_inquiry, linked_event, suggestions, primaryEventId } = detail
+  const {
+    thread,
+    events,
+    systemEvents,
+    linked_inquiry,
+    linked_event,
+    suggestions,
+    primaryEventId,
+  } = detail
   const [isPending, startTransition] = useTransition()
   const [replyContent, setReplyContent] = useState('')
   const [replyDirection, setReplyDirection] = useState<'inbound' | 'outbound'>('outbound')
@@ -172,45 +180,91 @@ export function ThreadDetailClient({
         </div>
       </div>
 
-      {/* Message Timeline */}
+      {/* Unified Timeline — messages + system events interleaved */}
       <div className="space-y-3">
-        {events.length === 0 ? (
+        {events.length === 0 && (systemEvents ?? []).length === 0 ? (
           <div className="rounded-lg border border-stone-700 bg-stone-800 px-4 py-8 text-center text-sm text-stone-500">
             No messages in this thread yet.
           </div>
         ) : (
-          events.map((event) => {
-            const isOutbound = event.direction === 'outbound'
-            return (
-              <div
-                key={event.id}
-                className={`flex ${isOutbound ? 'justify-end' : 'justify-start'}`}
-              >
+          (() => {
+            // Build a unified timeline of messages and system events
+            type TimelineEntry =
+              | { kind: 'message'; ts: number; event: (typeof events)[0] }
+              | { kind: 'system'; ts: number; sysEvent: NonNullable<typeof systemEvents>[0] }
+
+            const timeline: TimelineEntry[] = []
+            for (const event of events) {
+              timeline.push({ kind: 'message', ts: new Date(event.timestamp).getTime(), event })
+            }
+            for (const se of systemEvents ?? []) {
+              timeline.push({ kind: 'system', ts: new Date(se.timestamp).getTime(), sysEvent: se })
+            }
+            timeline.sort((a, b) => a.ts - b.ts)
+
+            return timeline.map((entry) => {
+              if (entry.kind === 'system') {
+                const se = entry.sysEvent
+                const colorClass =
+                  se.type === 'inquiry_transition'
+                    ? 'border-violet-700/40 text-violet-400'
+                    : se.type === 'event_transition'
+                      ? 'border-blue-700/40 text-blue-400'
+                      : 'border-stone-700/40 text-stone-500'
+                return (
+                  <div key={se.id} className="flex justify-center">
+                    <div
+                      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs ${colorClass}`}
+                    >
+                      <span>{se.label}</span>
+                      {se.detail && (
+                        <>
+                          <span className="text-stone-600">·</span>
+                          <span className="text-stone-500">{se.detail}</span>
+                        </>
+                      )}
+                      <span className="text-stone-600">·</span>
+                      <span className="text-stone-600">{formatWhen(se.timestamp)}</span>
+                    </div>
+                  </div>
+                )
+              }
+
+              const event = entry.event
+              const isOutbound = event.direction === 'outbound'
+              return (
                 <div
-                  className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-sm ${isOutbound ? 'bg-indigo-600 text-white rounded-br-sm' : 'bg-stone-800 text-stone-100 rounded-bl-sm'}`}
+                  key={event.id}
+                  className={`flex ${isOutbound ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`mb-1 flex items-center gap-2 text-xs ${isOutbound ? 'text-indigo-200' : 'text-stone-500'}`}
+                    className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-sm ${isOutbound ? 'bg-indigo-600 text-white rounded-br-sm' : 'bg-stone-800 text-stone-100 rounded-bl-sm'}`}
                   >
-                    <span>{event.sender_identity}</span>
-                    <span>·</span>
-                    <SourceBadge source={event.source} size="sm" />
-                    <span>·</span>
-                    <span>{formatWhen(event.timestamp)}</span>
-                    {event.linked_entity_type && (
-                      <>
-                        <span>·</span>
-                        <span className={isOutbound ? 'text-indigo-300' : 'text-stone-400'}>
-                          linked to {event.linked_entity_type}
-                        </span>
-                      </>
-                    )}
+                    <div
+                      className={`mb-1 flex items-center gap-2 text-xs ${isOutbound ? 'text-indigo-200' : 'text-stone-500'}`}
+                    >
+                      <span>{event.sender_identity}</span>
+                      <span>·</span>
+                      <SourceBadge source={event.source} size="sm" />
+                      <span>·</span>
+                      <span>{formatWhen(event.timestamp)}</span>
+                      {event.linked_entity_type && (
+                        <>
+                          <span>·</span>
+                          <span className={isOutbound ? 'text-indigo-300' : 'text-stone-400'}>
+                            linked to {event.linked_entity_type}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                      {event.raw_content}
+                    </p>
                   </div>
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed">{event.raw_content}</p>
                 </div>
-              </div>
-            )
-          })
+              )
+            })
+          })()
         )}
         <div ref={bottomRef} />
       </div>

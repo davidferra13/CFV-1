@@ -21,11 +21,30 @@ function mapSourceToInquiryChannel(source: string) {
     case 'website_form':
       return 'website'
     case 'sms':
+    case 'whatsapp':
       return 'text'
     case 'instagram':
       return 'instagram'
+    case 'facebook':
+      return 'facebook'
     case 'takeachef':
       return 'take_a_chef'
+    case 'yhangry':
+      return 'yhangry'
+    case 'theknot':
+      return 'theknot'
+    case 'thumbtack':
+      return 'thumbtack'
+    case 'bark':
+      return 'bark'
+    case 'cozymeal':
+      return 'cozymeal'
+    case 'google_business':
+      return 'google_business'
+    case 'gigsalad':
+      return 'gigsalad'
+    case 'phone':
+      return 'phone'
     default:
       return 'other'
   }
@@ -995,6 +1014,96 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
   // The most recent event ID — used for Create Inquiry action
   const primaryEventId = eventIds.length > 0 ? eventIds[eventIds.length - 1] : null
 
+  // Fetch system events for the timeline
+  const systemEvents: TimelineSystemEvent[] = []
+
+  // 1. Communication action log entries for this thread
+  const { data: actionLogs } = await supabase
+    .from('communication_action_log' as any)
+    .select('id, action, source, created_at, new_state')
+    .eq('tenant_id', user.tenantId!)
+    .eq('thread_id', threadId)
+    .order('created_at', { ascending: true })
+
+  const ACTION_LABELS: Record<string, string> = {
+    communication_event_ingested: 'Message received',
+    communication_classified: 'Auto-classified',
+    follow_up_timer_created: 'Follow-up timer set',
+    follow_up_timer_completed_on_outbound: 'Follow-up cleared (you replied)',
+    link_to_inquiry: 'Linked to inquiry',
+    attach_to_event: 'Attached to event',
+    create_inquiry_from_communication: 'Inquiry created',
+    communication_resolved: 'Marked done',
+    communication_reopened: 'Reopened',
+    thread_snoozed: 'Snoozed',
+    thread_unsnoozed: 'Unsnoozed',
+    thread_star_toggled: 'Star toggled',
+    internal_note_added: 'Note added',
+    suggested_links_generated: 'Suggested links found',
+    message_logged_to_thread: 'Message logged',
+    bulk_unassign: 'Unassigned',
+  }
+
+  for (const log of actionLogs ?? []) {
+    // Skip ingested/classified — these are implicit from the messages themselves
+    if (
+      log.action === 'communication_event_ingested' ||
+      log.action === 'communication_classified'
+    ) {
+      continue
+    }
+    systemEvents.push({
+      id: `action-${log.id}`,
+      type: 'action',
+      timestamp: log.created_at,
+      label: ACTION_LABELS[log.action] ?? log.action.replace(/_/g, ' '),
+      detail:
+        log.action === 'follow_up_timer_created' && log.new_state?.due_at
+          ? `Due: ${new Date(log.new_state.due_at as string).toLocaleString()}`
+          : null,
+    })
+  }
+
+  // 2. Inquiry state transitions if thread is linked to an inquiry
+  if (linked_inquiry) {
+    const { data: inquiryTransitions } = await supabase
+      .from('inquiry_state_transitions' as any)
+      .select('id, from_status, to_status, transitioned_at, reason')
+      .eq('tenant_id', user.tenantId!)
+      .eq('inquiry_id', linked_inquiry.id)
+      .order('transitioned_at', { ascending: true })
+
+    for (const t of inquiryTransitions ?? []) {
+      systemEvents.push({
+        id: `inq-tr-${t.id}`,
+        type: 'inquiry_transition',
+        timestamp: t.transitioned_at,
+        label: `Inquiry: ${t.from_status ?? 'new'} → ${t.to_status}`,
+        detail: t.reason || null,
+      })
+    }
+  }
+
+  // 3. Event state transitions if thread is linked to an event
+  if (linked_event) {
+    const { data: eventTransitions } = await supabase
+      .from('event_state_transitions' as any)
+      .select('id, from_status, to_status, transitioned_at, reason')
+      .eq('tenant_id', user.tenantId!)
+      .eq('event_id', linked_event.id)
+      .order('transitioned_at', { ascending: true })
+
+    for (const t of eventTransitions ?? []) {
+      systemEvents.push({
+        id: `evt-tr-${t.id}`,
+        type: 'event_transition',
+        timestamp: t.transitioned_at,
+        label: `Event: ${t.from_status ?? 'new'} → ${t.to_status}`,
+        detail: t.reason || null,
+      })
+    }
+  }
+
   return {
     thread: {
       id: thread.id,
@@ -1007,6 +1116,7 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
       client_email,
     },
     events: events ?? [],
+    systemEvents,
     linked_inquiry,
     linked_event,
     suggestions: enrichedSuggestions,
