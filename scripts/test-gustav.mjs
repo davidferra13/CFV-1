@@ -52,9 +52,10 @@ async function main() {
           model: 'qwen3:4b',
           messages: [
             { role: 'system', content: GUSTAV_SYSTEM },
-            { role: 'user', content: '/no_think ' + test.message },
+            { role: 'user', content: test.message },
           ],
           stream: false,
+          think: false,
           options: { num_predict: 500 },
         }),
       });
