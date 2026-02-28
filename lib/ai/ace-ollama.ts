@@ -4,7 +4,7 @@
 
 'use server'
 
-import { Ollama } from 'ollama'
+import { Ollama, type ChatResponse } from 'ollama'
 import { isOllamaEnabled, getOllamaConfig, getOllamaModel } from './providers'
 import { OllamaOfflineError } from './ollama-errors'
 
@@ -61,7 +61,7 @@ async function generateText(
         },
         keep_alive: '5m',
         think: false,
-      } as any),
+      } as any) as Promise<ChatResponse>,
       DEFAULT_TIMEOUT_MS,
       'ace-draft'
     )

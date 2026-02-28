@@ -47,7 +47,7 @@ export async function scoreInquiry(inquiryId: string): Promise<LeadScore> {
       .from('inquiries')
       .select('status')
       .eq('tenant_id', user.tenantId!)
-      .in('status', ['converted', 'declined', 'expired']),
+      .in('status', ['confirmed', 'declined', 'expired']),
   ])
 
   const inquiry = inquiryResult.data
@@ -55,7 +55,7 @@ export async function scoreInquiry(inquiryId: string): Promise<LeadScore> {
 
   const historical = historicalResult.data ?? []
   const totalHistorical = historical.length
-  const converted = historical.filter((i: { status: string }) => i.status === 'converted').length
+  const converted = historical.filter((i: { status: string }) => i.status === 'confirmed').length
   const historicalRate = totalHistorical > 0 ? Math.round((converted / totalHistorical) * 100) : 0
 
   const event = Array.isArray(inquiry.events) ? inquiry.events[0] : inquiry.events

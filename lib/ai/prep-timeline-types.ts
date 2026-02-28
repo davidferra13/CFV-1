@@ -17,4 +17,5 @@ export interface PrepTimeline {
   steps: PrepStep[]
   totalPrepHours: number
   summary: string
+  _aiSource?: string
 }

@@ -132,6 +132,7 @@ export async function importTakeAChefBooking(
         occasion: parsed.confirmed_occasion || 'Private Dining',
         quoted_price_cents: parsed.confirmed_budget_cents ?? null,
         special_requests: parsed.notes || null,
+        serve_time: 'TBD',
       })
       .select('id')
       .single()

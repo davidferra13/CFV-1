@@ -115,7 +115,7 @@ ${menuItems
         : []
       : []
     return `- [${m.course_type ?? 'Course'}] ${m.name}${m.description ? ': ' + m.description : ''}
-  Ingredients: ${ingredients.map((i) => `${i.quantity ?? ''} ${i.unit ?? ''} ${i.ingredient_name}`).join(', ') || 'Not listed'}
+  Ingredients: ${ingredients.map((i: { quantity: number | null; unit: string | null; ingredient_name: string }) => `${i.quantity ?? ''} ${i.unit ?? ''} ${i.ingredient_name}`).join(', ') || 'Not listed'}
   Allergen tags: ${m.allergen_tags ? m.allergen_tags.join(', ') : 'None noted'}`
   })
   .join('\n\n')}

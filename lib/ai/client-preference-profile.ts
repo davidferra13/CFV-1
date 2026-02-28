@@ -98,7 +98,7 @@ Recent Messages (last ${messages.length}):
 ${
   messages
     .slice(0, 15)
-    .map((m) => `[${m.direction === 'in' ? 'Client' : 'Chef'}]: ${m.body.slice(0, 100)}`)
+    .map((m) => `[${m.direction === 'inbound' ? 'Client' : 'Chef'}]: ${m.body.slice(0, 100)}`)
     .join('\n') || '- No messages'
 }
 
