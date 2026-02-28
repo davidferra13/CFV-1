@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { BackupChefForm } from './backup-chef-form'
+import { toast } from 'sonner'
 
 type Contact = {
   id: string
@@ -69,7 +70,15 @@ export function BackupChefList({ contacts }: { contacts: Contact[] }) {
                 variant="ghost"
                 size="sm"
                 disabled={isPending}
-                onClick={() => startTransition(() => deactivateBackupContact(contact.id))}
+                onClick={() =>
+                  startTransition(async () => {
+                    try {
+                      await deactivateBackupContact(contact.id)
+                    } catch (err) {
+                      toast.error('Failed to remove backup chef')
+                    }
+                  })
+                }
               >
                 Remove
               </Button>

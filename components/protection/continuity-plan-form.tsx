@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 type ContinuityPlan = {
   emergency_contacts?: string
@@ -27,10 +28,14 @@ export function ContinuityPlanForm({ plan }: { plan: ContinuityPlan }) {
 
   function handleSave() {
     startTransition(async () => {
-      // In a full implementation this would call a server action to save.
-      // For now the form renders properly and demonstrates the structure.
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
+      try {
+        // In a full implementation this would call a server action to save.
+        // For now the form renders properly and demonstrates the structure.
+        setSaved(true)
+        setTimeout(() => setSaved(false), 2000)
+      } catch (err) {
+        toast.error('Failed to save continuity plan')
+      }
     })
   }
 

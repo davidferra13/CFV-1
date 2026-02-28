@@ -5,6 +5,7 @@ import { addAgreement } from '@/lib/staff/contractor-agreement-actions'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 type Agreement = {
   id: string
@@ -40,15 +41,19 @@ export function ContractorAgreementPanel({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     startTransition(async () => {
-      await addAgreement({
-        staff_member_id: staffMemberId,
-        effective_date: effectiveDate,
-        scope_of_work: scope || undefined,
-        rate_cents: rate ? Math.round(parseFloat(rate) * 100) : undefined,
-        has_ip_clause: ipClause,
-        has_confidentiality_clause: confClause,
-      })
-      setShowForm(false)
+      try {
+        await addAgreement({
+          staff_member_id: staffMemberId,
+          effective_date: effectiveDate,
+          scope_of_work: scope || undefined,
+          rate_cents: rate ? Math.round(parseFloat(rate) * 100) : undefined,
+          has_ip_clause: ipClause,
+          has_confidentiality_clause: confClause,
+        })
+        setShowForm(false)
+      } catch (err) {
+        toast.error('Failed to save service agreement')
+      }
     })
   }
 

@@ -5,6 +5,7 @@ import { AlertTriangle, CheckCircle, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { dismissRecall } from '@/lib/safety/recall-actions'
+import { toast } from 'sonner'
 
 type RecallAlert = {
   id: string
@@ -25,8 +26,12 @@ export function RecallAlerts({ alerts }: Props) {
 
   function handleDismiss(id: string) {
     startTransition(async () => {
-      await dismissRecall(id)
-      setDismissed((prev) => new Set([...prev, id]))
+      try {
+        await dismissRecall(id)
+        setDismissed((prev) => new Set([...prev, id]))
+      } catch (err) {
+        toast.error('Failed to dismiss recall alert')
+      }
     })
   }
 

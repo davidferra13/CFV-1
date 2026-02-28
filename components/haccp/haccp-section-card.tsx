@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 import { toggleHACCPSection, updateHACCPSectionNotes } from '@/lib/haccp/actions'
+import { toast } from 'sonner'
 import type { SectionOverride } from '@/lib/haccp/types'
 
 type Props = {
@@ -32,14 +33,22 @@ export function HACCPSectionCard({
 
   function handleToggle(checked: boolean) {
     startTransition(async () => {
-      await toggleHACCPSection(sectionId, checked)
+      try {
+        await toggleHACCPSection(sectionId, checked)
+      } catch (err) {
+        toast.error('Failed to toggle HACCP section')
+      }
     })
   }
 
   function handleSaveNotes() {
     startTransition(async () => {
-      await updateHACCPSectionNotes(sectionId, notes)
-      setShowNotes(false)
+      try {
+        await updateHACCPSectionNotes(sectionId, notes)
+        setShowNotes(false)
+      } catch (err) {
+        toast.error('Failed to save HACCP section notes')
+      }
     })
   }
 

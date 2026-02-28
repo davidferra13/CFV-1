@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { addBackupContact } from '@/lib/safety/backup-chef-actions'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 export function BackupChefForm({ onClose }: { onClose: () => void }) {
   const [isPending, startTransition] = useTransition()
@@ -18,17 +19,23 @@ export function BackupChefForm({ onClose }: { onClose: () => void }) {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     startTransition(async () => {
-      await addBackupContact({
-        name,
-        is_active: true,
-        phone: phone || undefined,
-        email: email || undefined,
-        relationship: relationship || undefined,
-        specialties: specialties ? specialties.split(',').map((s: string) => s.trim()) : undefined,
-        max_guest_count: maxGuests ? parseInt(maxGuests) : undefined,
-        availability_notes: notes || undefined,
-      })
-      onClose()
+      try {
+        await addBackupContact({
+          name,
+          is_active: true,
+          phone: phone || undefined,
+          email: email || undefined,
+          relationship: relationship || undefined,
+          specialties: specialties
+            ? specialties.split(',').map((s: string) => s.trim())
+            : undefined,
+          max_guest_count: maxGuests ? parseInt(maxGuests) : undefined,
+          availability_notes: notes || undefined,
+        })
+        onClose()
+      } catch (err) {
+        toast.error('Failed to add backup chef')
+      }
     })
   }
 

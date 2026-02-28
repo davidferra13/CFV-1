@@ -15,6 +15,7 @@ import {
   DEPRECIATION_METHOD_LABELS,
 } from '@/lib/equipment/depreciation-constants'
 import { CheckCircle, Settings, Wrench } from 'lucide-react'
+import { toast } from 'sonner'
 
 type Props = {
   equipment: EquipmentWithDepreciation[]
@@ -53,22 +54,30 @@ export function DepreciationSchedulePanel({ equipment, taxYear }: Props) {
   function handleSaveMethod() {
     if (!editingId) return
     startTransition(async () => {
-      await setDepreciationMethod({
-        equipmentItemId: editingId,
-        depreciationMethod: editForm.depreciationMethod,
-        usefulLifeYears:
-          editForm.depreciationMethod === 'straight_line' ? editForm.usefulLifeYears : null,
-        salvageValueCents: editForm.salvageValueCents,
-        taxYearPlacedInService: editForm.taxYearPlacedInService,
-      })
-      setEditingId(null)
+      try {
+        await setDepreciationMethod({
+          equipmentItemId: editingId,
+          depreciationMethod: editForm.depreciationMethod,
+          usefulLifeYears:
+            editForm.depreciationMethod === 'straight_line' ? editForm.usefulLifeYears : null,
+          salvageValueCents: editForm.salvageValueCents,
+          taxYearPlacedInService: editForm.taxYearPlacedInService,
+        })
+        setEditingId(null)
+      } catch (err) {
+        toast.error('Failed to save depreciation method')
+      }
     })
   }
 
   function handleMarkClaimed(scheduleId: string) {
     startTransition(async () => {
-      await markDepreciationClaimed(scheduleId)
-      setClaimedIds((prev) => new Set([...prev, scheduleId]))
+      try {
+        await markDepreciationClaimed(scheduleId)
+        setClaimedIds((prev) => new Set([...prev, scheduleId]))
+      } catch (err) {
+        toast.error('Failed to mark depreciation as claimed')
+      }
     })
   }
 

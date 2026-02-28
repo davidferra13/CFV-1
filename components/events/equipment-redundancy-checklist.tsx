@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { Plus, Save, Wrench } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -47,9 +48,13 @@ export function EquipmentRedundancyChecklist({ eventId, items: initialItems }: P
   function handleSave() {
     const validItems = items.filter((i) => i.name.trim())
     startTransition(async () => {
-      await saveEquipmentChecklist(eventId, validItems)
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
+      try {
+        await saveEquipmentChecklist(eventId, validItems)
+        setSaved(true)
+        setTimeout(() => setSaved(false), 2000)
+      } catch (err) {
+        toast.error('Failed to save equipment checklist')
+      }
     })
   }
 

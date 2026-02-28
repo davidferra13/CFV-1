@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { HACCPSectionCard } from './haccp-section-card'
 import { markHACCPReviewed, resetHACCPPlan } from '@/lib/haccp/actions'
+import { toast } from 'sonner'
 import type {
   HACCPPlanData,
   CriticalControlPoint,
@@ -168,14 +169,22 @@ export function HACCPPlanView({ planData, lastReviewedAt }: Props) {
 
   function handleMarkReviewed() {
     startTransition(async () => {
-      await markHACCPReviewed()
+      try {
+        await markHACCPReviewed()
+      } catch (err) {
+        toast.error('Failed to mark HACCP plan as reviewed')
+      }
     })
   }
 
   function handleReset() {
     setShowResetConfirm(false)
     startTransition(async () => {
-      await resetHACCPPlan()
+      try {
+        await resetHACCPPlan()
+      } catch (err) {
+        toast.error('Failed to reset HACCP plan')
+      }
     })
   }
 

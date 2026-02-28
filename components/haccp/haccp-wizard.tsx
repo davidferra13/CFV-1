@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { toggleHACCPSection, updateHACCPSectionNotes, markHACCPReviewed } from '@/lib/haccp/actions'
+import { toast } from 'sonner'
 import type { HACCPPlanData } from '@/lib/haccp/types'
 
 type Props = {
@@ -91,21 +92,33 @@ export function HACCPWizard({ planData }: Props) {
 
   function handleToggle(sectionId: string, enabled: boolean) {
     startTransition(async () => {
-      await toggleHACCPSection(sectionId, enabled)
+      try {
+        await toggleHACCPSection(sectionId, enabled)
+      } catch (err) {
+        toast.error('Failed to toggle HACCP section')
+      }
     })
   }
 
   function handleSaveNotes(sectionId: string) {
     if (!notes.trim()) return
     startTransition(async () => {
-      await updateHACCPSectionNotes(sectionId, notes)
-      setNotes('')
+      try {
+        await updateHACCPSectionNotes(sectionId, notes)
+        setNotes('')
+      } catch (err) {
+        toast.error('Failed to save HACCP notes')
+      }
     })
   }
 
   function handleComplete() {
     startTransition(async () => {
-      await markHACCPReviewed()
+      try {
+        await markHACCPReviewed()
+      } catch (err) {
+        toast.error('Failed to complete HACCP review')
+      }
     })
   }
 

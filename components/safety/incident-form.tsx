@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createIncident } from '@/lib/safety/incident-actions'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 const INCIDENT_TYPES = [
   { value: 'food_safety', label: 'Food Safety' },
@@ -29,16 +30,20 @@ export function IncidentForm({ eventId, onSuccess }: { eventId?: string; onSucce
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     startTransition(async () => {
-      await createIncident({
-        incident_date: new Date(incidentDate).toISOString(),
-        incident_type: incidentType,
-        description,
-        parties_involved: partiesInvolved || undefined,
-        immediate_action: immediateAction || undefined,
-        event_id: eventId,
-      })
-      onSuccess?.()
-      router.push('/safety/incidents')
+      try {
+        await createIncident({
+          incident_date: new Date(incidentDate).toISOString(),
+          incident_type: incidentType,
+          description,
+          parties_involved: partiesInvolved || undefined,
+          immediate_action: immediateAction || undefined,
+          event_id: eventId,
+        })
+        onSuccess?.()
+        router.push('/safety/incidents')
+      } catch (err) {
+        toast.error('Failed to report incident')
+      }
     })
   }
 

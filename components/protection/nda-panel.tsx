@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ChevronDown, ChevronUp, Shield } from 'lucide-react'
+import { toast } from 'sonner'
 
 type NDAData = {
   nda_active: boolean
@@ -37,20 +38,24 @@ export function NDAPanel({ clientId, initial }: { clientId: string; initial: NDA
 
   function handleSave() {
     startTransition(async () => {
-      await updateNDA(clientId, {
-        nda_active: ndaActive,
-        nda_coverage: coverage || undefined,
-        nda_effective_date: effectiveDate || undefined,
-        nda_expiry_date: expiryDate || undefined,
-        nda_document_url: documentUrl || undefined,
-        photo_permission:
-          (photoPermission as
-            | 'none'
-            | 'portfolio_only'
-            | 'public_with_approval'
-            | 'public_freely') || undefined,
-      })
-      setEditing(false)
+      try {
+        await updateNDA(clientId, {
+          nda_active: ndaActive,
+          nda_coverage: coverage || undefined,
+          nda_effective_date: effectiveDate || undefined,
+          nda_expiry_date: expiryDate || undefined,
+          nda_document_url: documentUrl || undefined,
+          photo_permission:
+            (photoPermission as
+              | 'none'
+              | 'portfolio_only'
+              | 'public_with_approval'
+              | 'public_freely') || undefined,
+        })
+        setEditing(false)
+      } catch (err) {
+        toast.error('Failed to save NDA settings')
+      }
     })
   }
 

@@ -5,6 +5,7 @@ import { CheckCircle, Circle, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toggleSafetyItem, completeSafetyChecklist } from '@/lib/events/safety-checklist-actions'
+import { toast } from 'sonner'
 
 type SafetyItem = {
   key: string
@@ -44,13 +45,21 @@ export function PreServiceSafetyChecklist({ eventId, checklist }: Props) {
   function handleToggle(itemKey: string) {
     if (isChecklistComplete) return
     startTransition(async () => {
-      await toggleSafetyItem(checklist!.id, itemKey)
+      try {
+        await toggleSafetyItem(checklist!.id, itemKey)
+      } catch (err) {
+        toast.error('Failed to toggle safety item')
+      }
     })
   }
 
   function handleComplete() {
     startTransition(async () => {
-      await completeSafetyChecklist(checklist!.id)
+      try {
+        await completeSafetyChecklist(checklist!.id)
+      } catch (err) {
+        toast.error('Failed to complete safety checklist')
+      }
     })
   }
 

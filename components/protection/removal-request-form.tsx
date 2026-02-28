@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { createRemovalRequest } from '@/lib/protection/removal-request-actions'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 export function RemovalRequestForm({
   clients,
@@ -19,11 +20,15 @@ export function RemovalRequestForm({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     startTransition(async () => {
-      await createRemovalRequest({
-        client_id: clientId || undefined,
-        reason: reason || undefined,
-      })
-      onClose()
+      try {
+        await createRemovalRequest({
+          client_id: clientId || undefined,
+          reason: reason || undefined,
+        })
+        onClose()
+      } catch (err) {
+        toast.error('Failed to create removal request')
+      }
     })
   }
 

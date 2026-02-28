@@ -9,6 +9,7 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 type FollowUpStep = { id: string; label: string; completed: boolean; completed_at: string | null }
 
@@ -32,21 +33,35 @@ export function IncidentResolutionTracker({ incident }: { incident: IncidentData
     : []
 
   function handleToggleStep(stepId: string) {
-    startTransition(() => toggleFollowUpStep(incident.id, stepId))
+    startTransition(async () => {
+      try {
+        await toggleFollowUpStep(incident.id, stepId)
+      } catch (err) {
+        toast.error('Failed to toggle follow-up step')
+      }
+    })
   }
 
   function handleAddStep() {
     if (!newStep.trim()) return
     startTransition(async () => {
-      await addFollowUpStep(incident.id, newStep.trim())
-      setNewStep('')
+      try {
+        await addFollowUpStep(incident.id, newStep.trim())
+        setNewStep('')
+      } catch (err) {
+        toast.error('Failed to add follow-up step')
+      }
     })
   }
 
   function handleStatusChange(status: string) {
-    startTransition(() =>
-      updateResolutionStatus(incident.id, status as 'open' | 'in_progress' | 'resolved')
-    )
+    startTransition(async () => {
+      try {
+        await updateResolutionStatus(incident.id, status as 'open' | 'in_progress' | 'resolved')
+      } catch (err) {
+        toast.error('Failed to update resolution status')
+      }
+    })
   }
 
   return (

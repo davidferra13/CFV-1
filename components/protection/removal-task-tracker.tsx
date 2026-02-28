@@ -5,6 +5,7 @@ import { toggleRemovalTask, completeRemovalRequest } from '@/lib/protection/remo
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 type Task = { id: string; label: string; completed: boolean; completed_at?: string }
 
@@ -23,13 +24,21 @@ export function RemovalTaskTracker({ request }: { request: RemovalRequest }) {
 
   function handleToggle(taskId: string, completed: boolean) {
     startTransition(async () => {
-      await toggleRemovalTask(request.id, taskId)
+      try {
+        await toggleRemovalTask(request.id, taskId)
+      } catch (err) {
+        toast.error('Failed to toggle removal task')
+      }
     })
   }
 
   function handleComplete() {
     startTransition(async () => {
-      await completeRemovalRequest(request.id)
+      try {
+        await completeRemovalRequest(request.id)
+      } catch (err) {
+        toast.error('Failed to complete removal request')
+      }
     })
   }
 

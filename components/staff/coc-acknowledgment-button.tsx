@@ -4,6 +4,7 @@ import { useTransition } from 'react'
 import { acknowledgeCOC } from '@/lib/staff/coc-actions'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 export function COCAcknowledgmentButton({
   assignmentId,
@@ -27,7 +28,15 @@ export function COCAcknowledgmentButton({
         variant="secondary"
         size="sm"
         disabled={isPending}
-        onClick={() => startTransition(() => acknowledgeCOC(assignmentId))}
+        onClick={() =>
+          startTransition(async () => {
+            try {
+              await acknowledgeCOC(assignmentId)
+            } catch (err) {
+              toast.error('Failed to confirm code of conduct')
+            }
+          })
+        }
       >
         {isPending ? 'Confirming...' : 'Confirm'}
       </Button>

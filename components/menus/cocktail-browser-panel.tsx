@@ -14,6 +14,7 @@ import type { Cocktail } from '@/lib/cocktails/cocktail-db'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { toast } from 'sonner'
 
 interface CocktailBrowserPanelProps {
   /** Called when the chef wants to add a cocktail to the menu as a drink pairing */
@@ -125,22 +126,34 @@ export function CocktailBrowserPanel({ onSelectCocktail }: CocktailBrowserPanelP
 
     if (mode === 'ingredient') {
       startTransition(async () => {
-        const items = await searchCocktailsByIngredientAction(query.trim())
-        setIngredientResults(items)
+        try {
+          const items = await searchCocktailsByIngredientAction(query.trim())
+          setIngredientResults(items)
+        } catch (err) {
+          toast.error('Failed to search cocktails by ingredient')
+        }
       })
     } else {
       startTransition(async () => {
-        const cocktails = await searchCocktailsAction(query.trim())
-        setResults(cocktails)
+        try {
+          const cocktails = await searchCocktailsAction(query.trim())
+          setResults(cocktails)
+        } catch (err) {
+          toast.error('Failed to search cocktails')
+        }
       })
     }
   }
 
   const handleSelectFromIngredient = (id: string) => {
     startTransition(async () => {
-      const cocktail = await getCocktailByIdAction(id)
-      if (cocktail) {
-        setSelected(cocktail)
+      try {
+        const cocktail = await getCocktailByIdAction(id)
+        if (cocktail) {
+          setSelected(cocktail)
+        }
+      } catch (err) {
+        toast.error('Failed to load cocktail details')
       }
     })
   }
