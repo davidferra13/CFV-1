@@ -4058,7 +4058,8 @@ document.querySelectorAll('.nav-item').forEach(item => {
     // Lazy-load heavy panel data on first open.
     if (section === 'home') loadPromptQueue()
     if (section === 'log') loadHistory()
-    if (section === 'timeline') loadProjectTimeline()
+    if (section === 'timeline') { loadProjectTimeline(); startTimelineAutoRefresh() }
+    else { stopTimelineAutoRefresh() }
     if (section === 'feedback') loadFeedback()
     if (section === 'infra') loadInfra()
     if (section === 'observe') observeConnect()
@@ -5944,6 +5945,7 @@ async function megaCommit() {
     if (data.ok) {
       addLog('success', 'git', data.message || 'Committed')
       setMegaState('mega-commit', 'success')
+      if (timelineLoaded) setTimeout(() => loadProjectTimeline(true), 2000)
     } else {
       addLog('error', 'git', data.error || 'Commit failed')
       setMegaState('mega-commit', 'idle')
@@ -5978,6 +5980,10 @@ async function megaAction(endpoint) {
     if (data.ok) {
       addLog('success', endpoint.split('/')[0], data.message || `${endpoint} complete`)
       if (btnId) setMegaState(btnId, 'success')
+      // Auto-refresh timeline after git operations
+      if ((endpoint === 'git/push' || endpoint === 'git/commit') && timelineLoaded) {
+        setTimeout(() => loadProjectTimeline(true), 2000)
+      }
     } else {
       addLog('error', endpoint.split('/')[0], data.error || `${endpoint} failed`)
       if (btnId) setMegaState(btnId, 'idle')
@@ -6117,6 +6123,8 @@ function renderHistory(commits) {
 let timelineLoaded = false
 let timelineLinearEvents = []
 let timelineFiltersBound = false
+let timelineAutoRefreshTimer = null
+const TIMELINE_AUTO_REFRESH_MS = 120_000 // 2 minutes
 
 function formatTimelineHours(hours) {
   const n = Number(hours)
@@ -6409,41 +6417,76 @@ function hydrateTimelineFilterOptions(events) {
   if (sources.includes(prevSource)) sourceSelect.value = prevSource
 }
 
+const TIMELINE_LEDGER_PAGE_SIZE = 200
+let timelineLedgerShown = 0
+let timelineLedgerFiltered = []
+
+function renderTimelineLedgerRow(event) {
+  const ts = Number(event.timestamp || 0)
+  const typeLabel = titleizeTimelineToken(event.type)
+  const sourceLabel = String(event.source || 'unknown')
+  const dateLabel = Number.isFinite(ts) && ts > 0 ? formatTimelineDateTime(ts) : '--'
+  const title = shortTimelineText(event.title || '(untitled event)', 260)
+  const details = shortTimelineText(event.details || '', 320)
+  const metaParts = []
+  if (event.hash) metaParts.push(`#${event.hash}`)
+  if (event.branch) metaParts.push(event.branch)
+  if (event.path) metaParts.push(event.path)
+  const meta = metaParts.length ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${escapeHtml(metaParts.join(' • '))}</div>` : ''
+  return `
+    <div class="commit-item" style="display:grid;grid-template-columns:minmax(170px,1fr) minmax(130px,0.7fr) minmax(150px,1fr) minmax(300px,2fr);gap:10px;align-items:start;">
+      <div style="font-size:11px;color:var(--text-muted);">${escapeHtml(dateLabel)}</div>
+      <div style="font-size:11px;color:var(--text-secondary);font-weight:600;">${escapeHtml(typeLabel)}</div>
+      <div style="font-size:11px;color:var(--text-muted);">${escapeHtml(sourceLabel)}</div>
+      <div>
+        <div class="commit-msg" style="font-size:12px;font-weight:600;">${escapeHtml(title)}</div>
+        ${details ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${escapeHtml(details)}</div>` : ''}
+        ${meta}
+      </div>
+    </div>
+  `
+}
+
+function timelineLedgerLoadMore() {
+  const el = document.getElementById('timeline-ledger-list')
+  if (!el) return
+  const next = timelineLedgerFiltered.slice(timelineLedgerShown, timelineLedgerShown + TIMELINE_LEDGER_PAGE_SIZE)
+  if (!next.length) return
+  // Remove existing "load more" button before appending
+  const existing = el.querySelector('.timeline-load-more')
+  if (existing) existing.remove()
+  const frag = document.createDocumentFragment()
+  const wrapper = document.createElement('div')
+  wrapper.innerHTML = next.map(renderTimelineLedgerRow).join('')
+  while (wrapper.firstChild) frag.appendChild(wrapper.firstChild)
+  timelineLedgerShown += next.length
+  // Add "load more" button if there are remaining events
+  const remaining = timelineLedgerFiltered.length - timelineLedgerShown
+  if (remaining > 0) {
+    const btn = document.createElement('div')
+    btn.className = 'timeline-load-more'
+    btn.style.cssText = 'text-align:center;padding:12px 0;'
+    btn.innerHTML = `<button class="btn btn-ghost" onclick="timelineLedgerLoadMore()" style="font-size:12px;">Show ${Math.min(remaining, TIMELINE_LEDGER_PAGE_SIZE)} more (${remaining.toLocaleString()} remaining)</button>`
+    frag.appendChild(btn)
+  }
+  el.appendChild(frag)
+}
+
 function renderTimelineLedger(events) {
   const el = document.getElementById('timeline-ledger-list')
   if (!el) return
 
   if (!events.length) {
     el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:10px 0;">No events match the current filters.</div>'
+    timelineLedgerFiltered = []
+    timelineLedgerShown = 0
     return
   }
 
-  el.innerHTML = events.map((event) => {
-    const ts = Number(event.timestamp || 0)
-    const typeLabel = titleizeTimelineToken(event.type)
-    const sourceLabel = String(event.source || 'unknown')
-    const dateLabel = Number.isFinite(ts) && ts > 0 ? formatTimelineDateTime(ts) : '--'
-    const title = shortTimelineText(event.title || '(untitled event)', 260)
-    const details = shortTimelineText(event.details || '', 320)
-    const metaParts = []
-    if (event.hash) metaParts.push(`#${event.hash}`)
-    if (event.branch) metaParts.push(event.branch)
-    if (event.path) metaParts.push(event.path)
-    const meta = metaParts.length ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${escapeHtml(metaParts.join(' • '))}</div>` : ''
-
-    return `
-      <div class="commit-item" style="display:grid;grid-template-columns:minmax(170px,1fr) minmax(130px,0.7fr) minmax(150px,1fr) minmax(300px,2fr);gap:10px;align-items:start;">
-        <div style="font-size:11px;color:var(--text-muted);">${escapeHtml(dateLabel)}</div>
-        <div style="font-size:11px;color:var(--text-secondary);font-weight:600;">${escapeHtml(typeLabel)}</div>
-        <div style="font-size:11px;color:var(--text-muted);">${escapeHtml(sourceLabel)}</div>
-        <div>
-          <div class="commit-msg" style="font-size:12px;font-weight:600;">${escapeHtml(title)}</div>
-          ${details ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${escapeHtml(details)}</div>` : ''}
-          ${meta}
-        </div>
-      </div>
-    `
-  }).join('')
+  timelineLedgerFiltered = events
+  timelineLedgerShown = 0
+  el.innerHTML = ''
+  timelineLedgerLoadMore()
 }
 
 function applyTimelineFilters() {
@@ -6793,6 +6836,23 @@ async function loadProjectTimeline(force = false) {
     renderTimelineLifeEvents([])
     renderTimelineDays([])
     renderTimelineCommits([])
+  }
+}
+
+function startTimelineAutoRefresh() {
+  stopTimelineAutoRefresh()
+  timelineAutoRefreshTimer = setInterval(() => {
+    if (currentSection === 'timeline') {
+      loadProjectTimeline(true)
+      addLog('info', 'system', 'Timeline auto-refreshed')
+    }
+  }, TIMELINE_AUTO_REFRESH_MS)
+}
+
+function stopTimelineAutoRefresh() {
+  if (timelineAutoRefreshTimer) {
+    clearInterval(timelineAutoRefreshTimer)
+    timelineAutoRefreshTimer = null
   }
 }
 
@@ -7412,7 +7472,8 @@ function switchSection(section) {
   // Lazy-load data for heavy panels
   if (section === 'home') loadPromptQueue()
   if (section === 'log') loadHistory()
-  if (section === 'timeline') loadProjectTimeline()
+  if (section === 'timeline') { loadProjectTimeline(); startTimelineAutoRefresh() }
+  else { stopTimelineAutoRefresh() }
   if (section === 'feedback') loadFeedback()
   if (section === 'infra') loadInfra()
   if (section === 'observe') observeConnect()

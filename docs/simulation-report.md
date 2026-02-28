@@ -1,73 +1,39 @@
 # ChefFlow AI Simulation Report
 
-_Auto-generated — last run: 2026-02-27T19:04:52.183Z_
-_Run ID: 30e05b31-10ca-42d8-8a2d-afbe2c522e6b_
+_Auto-generated — last run: 2026-02-28T02:42:58.820Z_
+_Run ID: b2b46aae-07c7-4a1d-a893-f54c17297b7b_
 
 ---
 
 ## Summary
 
-The system is still struggling with core parsing and validation tasks. Three modules remain completely failing: inquiry_parse, client_parse, and correspondence. The quote_draft module is also failing due to incorrect pricing logic. The allergen_risk and menu_suggestions modules are now stable and passing consistently.
+The system's overall pass rate remains at 50%, with inquiry_parse, correspondence, and quote_draft still failing. All previously failing modules have returned to 0% pass rate, indicating no recent improvements. The core issue lies in over-generous LLM outputs and insufficient grounding in prompts.
 
 ## Failures & Root Causes
 
-### inquiry_parse
+**inquiry_parse**
+The module is hallucinating client names and guest counts. It's extracting values when none exist, likely due to insufficient constraints in the prompt. The LLM is generating plausible-sounding but incorrect data, possibly because the system prompt doesn't explicitly require "undefined" when no data is present.
 
-The module fails to extract basic client information from inquiry notes. It's not reliably identifying client names or guest counts, even when these are clearly stated in the input. The module appears to be missing explicit instructions to prioritize structured data extraction over hallucination.
+**correspondence**
+The module fails to generate subject lines or body content with client-specific details. It's producing generic or empty responses, suggesting the prompt doesn't clearly require specific client information in both subject and body. The LLM is defaulting to generic templates instead of using provided client data.
 
-### client_parse
-
-The parser is making incorrect assumptions about contact details and dietary information. It's incorrectly identifying phone numbers without explicit labeling and is adding empty allergies arrays when the original note only mentions dietary restrictions. The module lacks clear boundaries on what information it should extract versus what it should ignore.
-
-### correspondence
-
-The module fails to generate properly structured correspondence with required elements. It's not including subject lines or client-specific content in the body, suggesting it's not properly following the prompt's requirements for content structure and personalization.
-
-### quote_draft
-
-The pricing module produces unrealistic values that exceed expected ranges. It's not properly applying the pricing formula or respecting the maximum price thresholds defined in the system. The module lacks validation logic to ensure outputs fall within acceptable ranges.
+**quote_draft**
+The module is producing unrealistic pricing. It's calculating prices that exceed expected ranges by large margins. This indicates the prompt doesn't properly constrain the pricing logic or provide clear boundaries for per-person rates and total calculations.
 
 ## Prompt Fix Recommendations
 
-### inquiry_parse
+**inquiry_parse**
+Add explicit instruction: "If no client name is mentioned, return undefined. If no guest count is mentioned, return undefined. Never hallucinate names or numbers." Add a rule: "When in doubt, return undefined for any field that is not explicitly stated in the input."
 
-Add explicit extraction rules:
+**correspondence**
+Add explicit instruction: "Subject line must contain the client's name. Body must include specific details about the client's occasion and guest count." Add rule: "If client name, occasion, or guest count are not mentioned in the input, do not generate generic placeholders. Return an error or indicate missing information."
 
-- "Extract client name only if clearly stated as a person's name (e.g., 'Sarah Johnson')"
-- "Extract guest count only if explicitly mentioned as a number of people"
-- "If client name or guest count cannot be clearly identified, return undefined for that field"
-- "Do not infer or hallucinate missing information"
-
-### client_parse
-
-Add explicit exclusion rules:
-
-- "Only extract phone numbers if explicitly labeled as such in the original note"
-- "Do not add allergies unless explicitly mentioned as allergies in the original note"
-- "If dietary restrictions are mentioned but not specific allergies, return allergies: []"
-- "Do not assume contact details are phone numbers unless explicitly labeled"
-
-### correspondence
-
-Add explicit structure requirements:
-
-- "Generate subject line with client name and occasion"
-- "Include client name in body text"
-- "Include specific details about the event or request"
-- "Do not use generic or empty body content"
-
-### quote_draft
-
-Add explicit pricing validation:
-
-- "Apply the formula: $85/$125/$175 per person based on party size"
-- "Calculate total price with 30% grocery cost, $150 travel, 50% deposit"
-- "Ensure per-person rate does not exceed $500"
-- "Ensure total price does not exceed $10,000"
+**quote_draft**
+Add explicit instruction: "Calculate total price using the formula: (per-person rate) × (guest count) + (grocery cost) + (travel cost). Per-person rate must be between $85-$175. Total must be within $0-$10,000. If input doesn't specify guest count, assume 10 guests." Add rule: "Reject any calculation that exceeds the specified price ranges or uses unrealistic assumptions."
 
 ## What's Working Well
 
-The allergen_risk and menu_suggestions modules are consistently passing. These modules have stabilized after previous fixes and are reliably processing their respective inputs. The system's ability to handle complex dietary and menu logic has improved significantly since the initial run.
+client_parse, allergen_risk, and menu_suggestions are all passing consistently. These modules have stable performance and show no signs of regression. The recent improvement in quote_draft from 0% to 33% pass rate indicates the fix for pricing constraints is working, though it still needs refinement.
 
 ---
 
