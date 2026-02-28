@@ -38,12 +38,12 @@ export async function createPaymentIntent(eventId: string) {
     .single()
 
   if (error || !event) {
-    throw new Error('Event not found')
+    return { success: false as const, error: 'Event not found' }
   }
 
   // Verify event is in correct status for payment
   if (event.status !== 'accepted') {
-    throw new Error('Event is not ready for payment')
+    return { success: false as const, error: 'Event is not ready for payment' }
   }
 
   // Determine amount from financial summary
@@ -149,11 +149,15 @@ export async function getEventPaymentStatus(eventId: string) {
   }
 
   // Fetch financial summary from view
-  const { data: summary } = await supabase
+  const { data: summary, error: summaryError } = await supabase
     .from('event_financial_summary')
     .select('*')
     .eq('event_id', eventId)
     .single()
+
+  if (summaryError) {
+    return { success: false as const, error: 'Could not load financial data' }
+  }
 
   const paymentStatus = summary?.payment_status ?? 'unpaid'
 

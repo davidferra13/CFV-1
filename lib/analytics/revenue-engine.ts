@@ -101,28 +101,34 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
   const supabase = createServerClient()
 
   // Events in range
-  const { data: events } = await supabase
+  const { data: events, error: eventsErr } = await supabase
     .from('events')
     .select('id, status, quoted_price_cents, guest_count, event_date')
     .eq('tenant_id', chef.tenantId!)
     .gte('event_date', range.start)
     .lte('event_date', range.end)
 
+  if (eventsErr) throw new Error(`Failed to load events: ${eventsErr.message}`)
+
   // Ledger entries for revenue
-  const { data: ledger } = await supabase
+  const { data: ledger, error: ledgerErr } = await supabase
     .from('ledger_entries')
     .select('id, entry_type, amount_cents')
     .eq('tenant_id', chef.tenantId!)
     .gte('created_at', range.start)
     .lte('created_at', range.end)
 
+  if (ledgerErr) throw new Error(`Failed to load ledger: ${ledgerErr.message}`)
+
   // Inquiries in range
-  const { data: inquiries } = await supabase
+  const { data: inquiries, error: inqErr } = await supabase
     .from('inquiries')
     .select('id, status, converted_to_event_id')
     .eq('tenant_id', chef.tenantId!)
     .gte('created_at', range.start)
     .lte('created_at', range.end)
+
+  if (inqErr) throw new Error(`Failed to load inquiries: ${inqErr.message}`)
 
   const allEvents = events || []
   const allLedger = ledger || []
