@@ -1,39 +1,39 @@
 # ChefFlow AI Simulation Report
 
-_Auto-generated — last run: 2026-02-28T18:49:23.217Z_
-_Run ID: a9bdfbe8-b5ef-4e37-9c88-df78bb220c94_
+_Auto-generated — last run: 2026-02-28T20:50:59.661Z_
+_Run ID: 9340bab2-510c-456c-9143-08e4124cc0ae_
 
 ---
 
 ## Summary
 
-The system's overall pass rate remains low at 50%. The inquiry_parse, correspondence, and quote_draft modules are consistently failing. There has been no improvement in performance since the last run. The client_parse, allergen_risk, and menu_suggestions modules are now passing consistently.
+The system's pass rate remains low at 50%, with inquiry_parse, correspondence, and quote_draft failing consistently. All previously failing modules are still failing. No modules have shown improvement since the last run.
 
 ## Failures & Root Causes
 
 **inquiry_parse**
-The module fails to extract client name and guest count from inquiries. It's not reliably parsing structured information from natural language inputs. The module likely lacks sufficient examples or explicit rules for identifying these key data points.
+The module fails to extract client name and guest count from inquiries. It hallucinates or ignores required fields. The system expects these values but receives undefined, indicating the parsing logic does not properly identify or extract these critical data points from natural language input.
 
 **correspondence**
-The module generates emails that are either too formal or lack personalization for the expected lifecycle stage. It also fails to incorporate client-specific details or reference previous interactions. The module appears to lack clear guidance on tone matching and personalization requirements.
+The module produces generic or empty correspondence messages. It fails to include required client-specific details in the body and often omits the subject line entirely. The system requires specific client information in both subject and body, but the module does not enforce or extract this information reliably.
 
 **quote_draft**
-The module produces quotes with unrealistic pricing. It's not properly constraining total price and per-person rates to expected ranges. The pricing logic appears to be generating values outside the defined bounds without proper validation.
+The module generates quotes with prices that exceed defined limits. It produces unrealistic per-person rates and total amounts that are outside the expected ranges. The pricing logic does not properly constrain outputs to match the established formula ($85/$125/$175 per person, 30% grocery, $150 travel, 50% deposit).
 
 ## Prompt Fix Recommendations
 
 **inquiry_parse**
-Add explicit extraction rules for client name and guest count. Include examples showing expected vs. incorrect parsing. Require the model to output "Client name: [name]" and "Guest count: [number]" in its response format.
+Add explicit rules requiring extraction of client name and guest count. Include examples of common inquiry formats and their expected extractions. Specify that undefined values should trigger a failure response. Add validation steps to verify required fields are present and non-empty.
 
 **correspondence**
-Specify tone requirements for each lifecycle stage. Include examples of appropriate personalization and client history references. Require the model to include at least one client-specific detail and match the expected tone level.
+Require the system prompt to explicitly state that subject line and body must contain client-specific information. Add examples of complete correspondence with proper client details. Include validation that checks for presence of required fields before generating output.
 
 **quote_draft**
-Define clear pricing constraints in the prompt. Specify maximum per-person rates and total price ranges. Require the model to validate that outputs fall within acceptable bounds before finalizing the quote.
+Replace the pricing formula with explicit constraints that prevent outputs exceeding $500 per person or $10,000 total. Add validation rules that check all calculated values against these limits. Include examples of valid quote outputs that match the expected pricing structure.
 
 ## What's Working Well
 
-The client_parse, allergen_risk, and menu_suggestions modules are consistently passing. These modules have shown stable performance and appear to be well-defined. The recent improvement in these modules suggests the fixes applied in earlier runs have been effective.
+client_parse, allergen_risk, and menu_suggestions modules are passing consistently. These modules have shown stable performance and do not require immediate attention. The system's ability to parse client information and assess allergen risks remains reliable.
 
 ---
 
