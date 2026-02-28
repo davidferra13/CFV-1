@@ -12,6 +12,7 @@ interface Guest {
   full_name: string
   email: string | null
   rsvp_status: string
+  attendance_queue_status?: string | null
   dietary_restrictions: string[] | null
   allergies: string[] | null
   notes: string | null
@@ -24,6 +25,7 @@ interface RSVPSummary {
   declined_count: number
   maybe_count: number
   pending_count: number
+  waitlisted_count?: number
   plus_one_count: number
   all_dietary_restrictions: string[] | null
   all_allergies: string[] | null
@@ -145,7 +147,7 @@ export function ChefGuestPanel({
           </div>
 
           {/* Counts */}
-          <div className="grid grid-cols-4 gap-2 text-center text-xs">
+          <div className="grid grid-cols-5 gap-2 text-center text-xs">
             <div>
               <span className="font-bold text-emerald-700">{summary.attending_count}</span>
               <span className="text-stone-500 ml-1">Attending</span>
@@ -161,6 +163,10 @@ export function ChefGuestPanel({
             <div>
               <span className="font-bold text-stone-300">{summary.pending_count}</span>
               <span className="text-stone-500 ml-1">Pending</span>
+            </div>
+            <div>
+              <span className="font-bold text-blue-300">{summary.waitlisted_count ?? 0}</span>
+              <span className="text-stone-500 ml-1">Waitlisted</span>
             </div>
           </div>
 
@@ -229,16 +235,20 @@ export function ChefGuestPanel({
                   </div>
                   <Badge
                     variant={
-                      guest.rsvp_status === 'attending'
-                        ? 'success'
-                        : guest.rsvp_status === 'declined'
-                          ? 'error'
-                          : guest.rsvp_status === 'maybe'
-                            ? 'warning'
-                            : 'default'
+                      guest.attendance_queue_status === 'waitlisted'
+                        ? 'info'
+                        : guest.rsvp_status === 'attending'
+                          ? 'success'
+                          : guest.rsvp_status === 'declined'
+                            ? 'error'
+                            : guest.rsvp_status === 'maybe'
+                              ? 'warning'
+                              : 'default'
                     }
                   >
-                    {guest.rsvp_status}
+                    {guest.attendance_queue_status === 'waitlisted'
+                      ? 'waitlisted'
+                      : guest.rsvp_status}
                   </Badge>
                 </div>
                 {/* Individual dietary/allergy info */}

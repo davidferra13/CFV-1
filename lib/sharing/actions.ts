@@ -12,6 +12,15 @@ import { z } from 'zod'
 import crypto from 'crypto'
 import { shortenUrl } from '@/lib/links/url-shortener'
 import { createNotification, getChefAuthUserId } from '@/lib/notifications/actions'
+import { verifyTurnstileToken } from '@/lib/security/turnstile'
+import { checkRateLimit } from '@/lib/rateLimit'
+import {
+  buildStructuredDietaryItems,
+  evaluateCapacityDecision,
+  getReminderOffsetKeys,
+  isCriticalRsvpChange,
+  type StructuredDietaryItem,
+} from '@/lib/sharing/policy'
 
 // ============================================================
 // SCHEMAS
@@ -24,12 +33,24 @@ const SubmitRSVPSchema = z.object({
   rsvp_status: z.enum(['attending', 'declined', 'maybe']),
   dietary_restrictions: z.array(z.string()).optional(),
   allergies: z.array(z.string()).optional(),
+  dietary_items: z
+    .array(
+      z.object({
+        subject: z.enum(['guest', 'plus_one']),
+        item_type: z.enum(['dietary', 'allergy']),
+        label: z.string().min(1),
+        severity: z.enum(['preference', 'intolerance', 'anaphylaxis']),
+        notes: z.string().optional(),
+      })
+    )
+    .optional(),
   notes: z.string().optional(),
   plus_one: z.boolean().optional(),
   photo_consent: z.boolean().optional(),
   plus_one_name: z.string().optional(),
   plus_one_allergies: z.array(z.string()).optional(),
   plus_one_dietary: z.array(z.string()).optional(),
+  captcha_token: z.string().max(4096).optional().or(z.literal('')),
 })
 
 const UpdateRSVPSchema = z.object({
@@ -38,12 +59,24 @@ const UpdateRSVPSchema = z.object({
   rsvp_status: z.enum(['attending', 'declined', 'maybe']).optional(),
   dietary_restrictions: z.array(z.string()).optional(),
   allergies: z.array(z.string()).optional(),
+  dietary_items: z
+    .array(
+      z.object({
+        subject: z.enum(['guest', 'plus_one']),
+        item_type: z.enum(['dietary', 'allergy']),
+        label: z.string().min(1),
+        severity: z.enum(['preference', 'intolerance', 'anaphylaxis']),
+        notes: z.string().optional(),
+      })
+    )
+    .optional(),
   notes: z.string().optional(),
   plus_one: z.boolean().optional(),
   photo_consent: z.boolean().optional(),
   plus_one_name: z.string().optional(),
   plus_one_allergies: z.array(z.string()).optional(),
   plus_one_dietary: z.array(z.string()).optional(),
+  captcha_token: z.string().max(4096).optional().or(z.literal('')),
 })
 
 const VisibilitySettingsSchema = z.object({
@@ -68,6 +101,9 @@ const CreateViewerInviteForEventSchema = z.object({
   invited_name: z.string().max(120).optional(),
   invited_email: z.string().email().optional().or(z.literal('')),
   note: z.string().max(500).optional(),
+  single_use: z.boolean().optional(),
+  allow_join_request: z.boolean().optional(),
+  allow_book_own: z.boolean().optional(),
 })
 
 const CreateViewerInviteFromGuestSchema = z.object({
@@ -76,6 +112,7 @@ const CreateViewerInviteFromGuestSchema = z.object({
   invited_name: z.string().max(120).optional(),
   invited_email: z.string().email().optional().or(z.literal('')),
   note: z.string().max(500).optional(),
+  single_use: z.boolean().optional(),
 })
 
 const CreateGuestInviteFromGuestSchema = z.object({
@@ -92,6 +129,55 @@ const ViewerIntentSchema = z.object({
   email: z.string().email(),
   intent: z.enum(['join_event', 'book_own']),
   note: z.string().max(500).optional(),
+  captcha_token: z.string().max(4096).optional().or(z.literal('')),
+})
+
+const ResolveJoinRequestSchema = z.object({
+  requestId: z.string().uuid(),
+  decision: z.enum(['approve', 'deny']),
+  resolution_note: z.string().max(500).optional(),
+})
+
+const UpdateEventShareAdvancedSettingsSchema = z.object({
+  eventShareId: z.string().uuid(),
+  require_join_approval: z.boolean().optional(),
+  rsvp_deadline_at: z.string().datetime().nullable().optional(),
+  reminders_enabled: z.boolean().optional(),
+  reminder_schedule: z.array(z.enum(['7d', '3d', '24h', 'deadline'])).optional(),
+  enforce_capacity: z.boolean().optional(),
+  waitlist_enabled: z.boolean().optional(),
+  max_capacity: z.number().int().positive().nullable().optional(),
+})
+
+const UpdateInvitePermissionsSchema = z.object({
+  inviteId: z.string().uuid(),
+  single_use: z.boolean().optional(),
+  allow_join_request: z.boolean().optional(),
+  allow_book_own: z.boolean().optional(),
+  expires_at: z.string().datetime().nullable().optional(),
+})
+
+const RevokeInviteSchema = z.object({
+  inviteId: z.string().uuid(),
+  reason: z.string().max(300).optional(),
+})
+
+const SendEventReminderSchema = z.object({
+  eventId: z.string().uuid(),
+  cadence: z.enum(['7d', '3d', '24h', 'deadline']),
+})
+
+const DraftGuestSegmentMessageSchema = z.object({
+  eventId: z.string().uuid(),
+  segment: z.enum(['pending', 'attending', 'waitlisted', 'allergies']),
+})
+
+const LogGuestSegmentMessageSchema = z.object({
+  eventId: z.string().uuid(),
+  segment: z.enum(['pending', 'attending', 'waitlisted', 'allergies']),
+  subject: z.string().min(1).max(200),
+  body: z.string().min(1).max(6000),
+  recipientCount: z.number().int().min(0),
 })
 
 const GuestPortalLookupSchema = z.object({
@@ -178,6 +264,154 @@ function deriveAttendingStatus(rsvpStatus: string) {
   if (rsvpStatus === 'attending') return 'yes'
   if (rsvpStatus === 'declined') return 'no'
   return null
+}
+
+async function enforcePublicActionRateLimit(key: string, max: number, windowMs: number) {
+  await checkRateLimit(`rsvp-public:${key}`, max, windowMs)
+}
+
+async function verifyCaptchaIfProvided(token?: string, ipHint?: string) {
+  if (!token) return
+  const result = await verifyTurnstileToken(token, ipHint)
+  if (!result.success) {
+    throw new Error(result.error || 'CAPTCHA verification failed')
+  }
+}
+
+async function trackInviteEvent(params: {
+  supabase: ReturnType<typeof createServerClient>
+  tenantId: string
+  eventId: string
+  inviteId?: string | null
+  eventType:
+    | 'viewed'
+    | 'join_requested'
+    | 'join_approved'
+    | 'join_denied'
+    | 'book_own_requested'
+    | 'guest_invited'
+    | 'revoked'
+  metadata?: Record<string, unknown>
+}) {
+  await ((params.supabase as any).from('event_share_invite_events').insert({
+    tenant_id: params.tenantId,
+    event_id: params.eventId,
+    invite_id: params.inviteId || null,
+    event_type: params.eventType,
+    metadata: params.metadata || null,
+  }) as any)
+}
+
+async function syncGuestDietaryItems(params: {
+  supabase: ReturnType<typeof createServerClient>
+  tenantId: string
+  eventId: string
+  guestId: string
+  items: StructuredDietaryItem[]
+}) {
+  await ((params.supabase as any)
+    .from('event_guest_dietary_items')
+    .delete()
+    .eq('guest_id', params.guestId) as any)
+
+  if (params.items.length === 0) return
+
+  const payload = params.items.map((item) => ({
+    tenant_id: params.tenantId,
+    event_id: params.eventId,
+    guest_id: params.guestId,
+    subject: item.subject,
+    item_type: item.item_type,
+    label: item.label,
+    severity: item.severity,
+    notes: item.notes || null,
+  }))
+
+  await ((params.supabase as any).from('event_guest_dietary_items').insert(payload) as any)
+}
+
+async function logRsvpAudit(params: {
+  supabase: ReturnType<typeof createServerClient>
+  tenantId: string
+  eventId: string
+  guestId: string
+  guestToken: string
+  action: string
+  beforeValues?: Record<string, unknown> | null
+  afterValues?: Record<string, unknown> | null
+  dietaryItems: StructuredDietaryItem[]
+  changedBy?: string
+}) {
+  const critical = isCriticalRsvpChange(
+    params.beforeValues || null,
+    params.afterValues || null,
+    params.dietaryItems
+  )
+  await ((params.supabase as any).from('event_guest_rsvp_audit').insert({
+    tenant_id: params.tenantId,
+    event_id: params.eventId,
+    guest_id: params.guestId,
+    guest_token: params.guestToken,
+    action: params.action,
+    before_values: params.beforeValues || null,
+    after_values: params.afterValues || null,
+    is_critical: critical.critical,
+    reason: critical.reason,
+    changed_by: params.changedBy || 'public_token',
+  }) as any)
+
+  if (critical.critical) {
+    try {
+      const chefAuthId = await getChefAuthUserId(params.tenantId)
+      if (chefAuthId) {
+        await createNotification({
+          tenantId: params.tenantId,
+          recipientId: chefAuthId,
+          category: 'client',
+          action: 'guest_dietary_alert',
+          title: 'Critical RSVP change detected',
+          body: critical.reason || 'Guest RSVP changed in a critical way.',
+          eventId: params.eventId,
+        })
+      }
+    } catch (err) {
+      console.error('[logRsvpAudit] Non-blocking notification failed:', err)
+    }
+  }
+}
+
+async function getCapacityDecision(params: {
+  supabase: ReturnType<typeof createServerClient>
+  shareId: string
+  shareEventId: string
+  enforceCapacity: boolean
+  waitlistEnabled: boolean
+  maxCapacity: number | null
+  fallbackCapacity: number | null
+  requestedAttending: boolean
+  excludeGuestId?: string | null
+}) {
+  const capacityLimit = params.maxCapacity || params.fallbackCapacity || null
+  let query = params.supabase
+    .from('event_guests')
+    .select('*', { count: 'exact', head: true })
+    .eq('event_share_id', params.shareId)
+    .eq('rsvp_status', 'attending')
+    .neq('attendance_queue_status', 'waitlisted')
+
+  if (params.excludeGuestId) {
+    query = query.neq('id', params.excludeGuestId)
+  }
+
+  const { count: currentAttending } = await query
+
+  return evaluateCapacityDecision({
+    currentAttending: currentAttending || 0,
+    capacityLimit,
+    enforceCapacity: params.enforceCapacity,
+    waitlistEnabled: params.waitlistEnabled,
+    requestedAttending: params.requestedAttending,
+  })
 }
 
 // ============================================================
@@ -365,7 +599,7 @@ export async function createViewerInviteForEvent(
     throw new Error('Event not found or access denied')
   }
 
-  let { data: share } = await supabase
+  const { data: shareData } = await supabase
     .from('event_shares')
     .select('id, token, expires_at')
     .eq('event_id', validated.eventId)
@@ -373,9 +607,15 @@ export async function createViewerInviteForEvent(
     .eq('is_active', true)
     .single()
 
+  let share = shareData as { id: string; token: string; expires_at: string | null } | null
   if (!share) {
     const created = await createEventShare(validated.eventId)
-    share = created.share
+    const createdShare = (created as any).share || {}
+    share = {
+      id: String(createdShare.id || ''),
+      token: String(createdShare.token || ''),
+      expires_at: (createdShare.expires_at as string | null) ?? null,
+    }
   }
 
   const viewerToken = crypto.randomBytes(32).toString('hex')
@@ -393,6 +633,9 @@ export async function createViewerInviteForEvent(
       invited_name: validated.invited_name || null,
       invited_email: validated.invited_email || null,
       note: validated.note || null,
+      single_use: !!validated.single_use,
+      allow_join_request: validated.allow_join_request ?? true,
+      allow_book_own: validated.allow_book_own ?? true,
       expires_at: expiresAt,
     })
     .select('id')
@@ -414,6 +657,65 @@ export async function createViewerInviteForEvent(
 
   revalidatePath(`/my-events/${validated.eventId}`)
   return { success: true, inviteId: invite.id as string, viewerToken, viewerUrl }
+}
+
+/**
+ * Update advanced RSVP controls for an event share.
+ */
+export async function updateEventShareAdvancedSettings(
+  input: z.infer<typeof UpdateEventShareAdvancedSettingsSchema>
+) {
+  const user = await requireClient()
+  const validated = UpdateEventShareAdvancedSettingsSchema.parse(input)
+  const supabase = createServerClient()
+
+  const { data: share } = await supabase
+    .from('event_shares')
+    .select('id, event_id')
+    .eq('id', validated.eventShareId)
+    .single()
+
+  if (!share) {
+    throw new Error('Share not found')
+  }
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('id')
+    .eq('id', share.event_id)
+    .eq('client_id', user.entityId)
+    .single()
+
+  if (!event) {
+    throw new Error('Access denied')
+  }
+
+  const payload: Record<string, unknown> = {}
+  if (validated.require_join_approval !== undefined)
+    payload.require_join_approval = validated.require_join_approval
+  if (validated.rsvp_deadline_at !== undefined)
+    payload.rsvp_deadline_at = validated.rsvp_deadline_at
+  if (validated.reminders_enabled !== undefined)
+    payload.reminders_enabled = validated.reminders_enabled
+  if (validated.reminder_schedule !== undefined)
+    payload.reminder_schedule = validated.reminder_schedule
+  if (validated.enforce_capacity !== undefined)
+    payload.enforce_capacity = validated.enforce_capacity
+  if (validated.waitlist_enabled !== undefined)
+    payload.waitlist_enabled = validated.waitlist_enabled
+  if (validated.max_capacity !== undefined) payload.max_capacity = validated.max_capacity
+
+  const { error } = await supabase
+    .from('event_shares')
+    .update(payload)
+    .eq('id', validated.eventShareId)
+  if (error) {
+    console.error('[updateEventShareAdvancedSettings] Error:', error)
+    throw new Error('Failed to update RSVP settings')
+  }
+
+  revalidatePath(`/my-events/${share.event_id}`)
+  return { success: true }
 }
 
 // ============================================================
@@ -457,6 +759,34 @@ export async function updateGuestVisibility(eventShareId: string, settings: Visi
 
   revalidatePath('/events')
   return { success: true }
+}
+
+async function getEventForUserAccess(
+  eventId: string,
+  user: Awaited<ReturnType<typeof getCurrentUser>>
+) {
+  if (!user) throw new Error('Authentication required')
+  const supabase = createServerClient()
+
+  if (user.role === 'chef') {
+    const { data: event } = await supabase
+      .from('events')
+      .select('id, tenant_id, client_id, guest_count, occasion, event_date')
+      .eq('id', eventId)
+      .eq('tenant_id', user.tenantId!)
+      .single()
+    if (!event) throw new Error('Event not found')
+    return event
+  }
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('id, tenant_id, client_id, guest_count, occasion, event_date')
+    .eq('id', eventId)
+    .eq('client_id', user.entityId)
+    .single()
+  if (!event) throw new Error('Event not found')
+  return event
 }
 
 /**
@@ -548,6 +878,7 @@ export async function getEventRSVPSummary(eventId: string) {
       declined_count: 0,
       maybe_count: 0,
       pending_count: 0,
+      waitlisted_count: 0,
       plus_one_count: 0,
       all_dietary_restrictions: [],
       all_allergies: [],
@@ -582,8 +913,508 @@ export async function getEventShares(eventId: string) {
   return shares || []
 }
 
+export async function getEventJoinRequests(eventId: string) {
+  const user = await getCurrentUser()
+  await getEventForUserAccess(eventId, user)
+
+  const supabase = createServerClient({ admin: true })
+  const { data, error } = await ((supabase as any)
+    .from('event_join_requests')
+    .select('*')
+    .eq('event_id', eventId)
+    .order('created_at', { ascending: false }) as any)
+
+  if (error) {
+    console.error('[getEventJoinRequests] Error:', error)
+    throw new Error('Failed to fetch join requests')
+  }
+
+  return data || []
+}
+
+export async function resolveEventJoinRequest(input: z.infer<typeof ResolveJoinRequestSchema>) {
+  const user = await requireClient()
+  const validated = ResolveJoinRequestSchema.parse(input)
+  const supabase = createServerClient({ admin: true })
+
+  const { data: request } = await ((supabase as any)
+    .from('event_join_requests')
+    .select('*')
+    .eq('id', validated.requestId)
+    .single() as any)
+
+  if (!request) throw new Error('Join request not found')
+  if (request.status !== 'pending') throw new Error('This join request has already been resolved')
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('id, tenant_id, client_id')
+    .eq('id', request.event_id)
+    .eq('client_id', user.entityId)
+    .single()
+
+  if (!event) throw new Error('Access denied')
+
+  if (validated.decision === 'deny') {
+    await ((supabase as any)
+      .from('event_join_requests')
+      .update({
+        status: 'denied',
+        resolved_at: new Date().toISOString(),
+        resolved_by_client_id: user.entityId,
+        resolution_note: validated.resolution_note || null,
+      })
+      .eq('id', request.id) as any)
+
+    await trackInviteEvent({
+      supabase,
+      tenantId: request.tenant_id,
+      eventId: request.event_id,
+      inviteId: request.invite_id || null,
+      eventType: 'join_denied',
+    })
+
+    revalidatePath(`/my-events/${request.event_id}`)
+    return { success: true, status: 'denied' as const }
+  }
+
+  const normalizedEmail = String(request.viewer_email).toLowerCase().trim()
+  const { data: existingGuest } = await supabase
+    .from('event_guests')
+    .select('id, guest_token')
+    .eq('event_share_id', request.event_share_id)
+    .eq('email', normalizedEmail)
+    .maybeSingle()
+
+  let guestId = existingGuest?.id || null
+  let guestToken = existingGuest?.guest_token || null
+
+  if (!existingGuest) {
+    guestToken = crypto.randomBytes(32).toString('hex')
+    const { data: createdGuest, error: guestError } = await supabase
+      .from('event_guests')
+      .insert({
+        tenant_id: request.tenant_id,
+        event_id: request.event_id,
+        event_share_id: request.event_share_id,
+        guest_token: guestToken,
+        full_name: request.viewer_name,
+        email: normalizedEmail,
+        rsvp_status: 'pending',
+        notes: request.note
+          ? `Approved join request: ${request.note}`
+          : 'Approved join request from viewer',
+      })
+      .select('id')
+      .single()
+
+    if (guestError || !createdGuest) {
+      throw new Error('Failed to create guest from join request')
+    }
+
+    guestId = createdGuest.id
+  }
+
+  await ((supabase as any)
+    .from('event_join_requests')
+    .update({
+      status: 'approved',
+      resolved_at: new Date().toISOString(),
+      resolved_by_client_id: user.entityId,
+      resolution_note: validated.resolution_note || null,
+      guest_id: guestId,
+    })
+    .eq('id', request.id) as any)
+
+  if (request.invite_id) {
+    await ((supabase as any)
+      .from('event_share_invites')
+      .update({
+        status: 'consumed',
+        consumed_at: new Date().toISOString(),
+        consumed_by_guest_id: guestId,
+      })
+      .eq('id', request.invite_id) as any)
+  }
+
+  await trackInviteEvent({
+    supabase,
+    tenantId: request.tenant_id,
+    eventId: request.event_id,
+    inviteId: request.invite_id || null,
+    eventType: 'join_approved',
+  })
+
+  revalidatePath(`/my-events/${request.event_id}`)
+  return {
+    success: true,
+    status: 'approved' as const,
+    guestToken,
+    guestPortalUrl: guestToken
+      ? `${process.env.NEXT_PUBLIC_APP_URL}/event/${request.event_id}/guest/${guestToken}`
+      : null,
+  }
+}
+
+export async function getEventShareInvites(eventId: string) {
+  const user = await getCurrentUser()
+  await getEventForUserAccess(eventId, user)
+
+  const supabase = createServerClient({ admin: true })
+  const { data, error } = await ((supabase as any)
+    .from('event_share_invites')
+    .select('*')
+    .eq('event_id', eventId)
+    .order('created_at', { ascending: false }) as any)
+
+  if (error) {
+    console.error('[getEventShareInvites] Error:', error)
+    throw new Error('Failed to fetch invites')
+  }
+  return data || []
+}
+
+export async function updateEventShareInvitePermissions(
+  input: z.infer<typeof UpdateInvitePermissionsSchema>
+) {
+  const user = await requireClient()
+  const validated = UpdateInvitePermissionsSchema.parse(input)
+  const supabase = createServerClient({ admin: true })
+
+  const { data: invite } = await ((supabase as any)
+    .from('event_share_invites')
+    .select('id, event_id')
+    .eq('id', validated.inviteId)
+    .single() as any)
+  if (!invite) throw new Error('Invite not found')
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('id')
+    .eq('id', invite.event_id)
+    .eq('client_id', user.entityId)
+    .single()
+  if (!event) throw new Error('Access denied')
+
+  const payload: Record<string, unknown> = {}
+  if (validated.single_use !== undefined) payload.single_use = validated.single_use
+  if (validated.allow_join_request !== undefined)
+    payload.allow_join_request = validated.allow_join_request
+  if (validated.allow_book_own !== undefined) payload.allow_book_own = validated.allow_book_own
+  if (validated.expires_at !== undefined) payload.expires_at = validated.expires_at
+
+  await ((supabase as any)
+    .from('event_share_invites')
+    .update(payload)
+    .eq('id', validated.inviteId) as any)
+
+  revalidatePath(`/my-events/${invite.event_id}`)
+  return { success: true }
+}
+
+export async function revokeEventShareInvite(input: z.infer<typeof RevokeInviteSchema>) {
+  const user = await requireClient()
+  const validated = RevokeInviteSchema.parse(input)
+  const supabase = createServerClient({ admin: true })
+
+  const { data: invite } = await ((supabase as any)
+    .from('event_share_invites')
+    .select('id, event_id, tenant_id')
+    .eq('id', validated.inviteId)
+    .single() as any)
+  if (!invite) throw new Error('Invite not found')
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('id')
+    .eq('id', invite.event_id)
+    .eq('client_id', user.entityId)
+    .single()
+  if (!event) throw new Error('Access denied')
+
+  await ((supabase as any)
+    .from('event_share_invites')
+    .update({
+      status: 'revoked',
+      revoked_reason: validated.reason || null,
+    })
+    .eq('id', validated.inviteId) as any)
+
+  await trackInviteEvent({
+    supabase,
+    tenantId: invite.tenant_id,
+    eventId: invite.event_id,
+    inviteId: invite.id,
+    eventType: 'revoked',
+    metadata: { reason: validated.reason || null },
+  })
+
+  revalidatePath(`/my-events/${invite.event_id}`)
+  return { success: true }
+}
+
+export async function getEventInviteAnalytics(eventId: string) {
+  const user = await getCurrentUser()
+  await getEventForUserAccess(eventId, user)
+  const supabase = createServerClient({ admin: true })
+
+  const [invitesRes, joinReqRes, eventsRes, leadsRes] = await Promise.all([
+    (supabase as any).from('event_share_invites').select('id, view_count').eq('event_id', eventId),
+    (supabase as any).from('event_join_requests').select('id, status').eq('event_id', eventId),
+    (supabase as any)
+      .from('event_share_invite_events')
+      .select('event_type')
+      .eq('event_id', eventId),
+    (supabase as any)
+      .from('guest_leads')
+      .select('id')
+      .eq('event_id', eventId)
+      .eq('source', 'viewer_invite'),
+  ])
+
+  const invites = invitesRes.data || []
+  const joinRequests = joinReqRes.data || []
+  const inviteEvents = eventsRes.data || []
+  const viewerLeads = leadsRes.data || []
+
+  return {
+    inviteCount: invites.length,
+    totalViews: invites.reduce((acc: number, row: any) => acc + Number(row.view_count || 0), 0),
+    viewedInvites: invites.filter((row: any) => Number(row.view_count || 0) > 0).length,
+    joinRequested: joinRequests.length,
+    joinApproved: joinRequests.filter((row: any) => row.status === 'approved').length,
+    joinDenied: joinRequests.filter((row: any) => row.status === 'denied').length,
+    bookOwnRequested:
+      inviteEvents.filter((row: any) => row.event_type === 'book_own_requested').length +
+      viewerLeads.length,
+    guestInvited: inviteEvents.filter((row: any) => row.event_type === 'guest_invited').length,
+  }
+}
+
+export async function sendEventRSVPReminders(input: z.infer<typeof SendEventReminderSchema>) {
+  const validated = SendEventReminderSchema.parse(input)
+  const user = await getCurrentUser()
+  const event = await getEventForUserAccess(validated.eventId, user)
+  const supabase = createServerClient({ admin: true })
+
+  const { data: shareData } = await (supabase as any)
+    .from('event_shares')
+    .select('id, tenant_id, reminders_enabled')
+    .eq('event_id', event.id)
+    .eq('is_active', true)
+    .single()
+  const share = shareData as any
+
+  if (!share) throw new Error('Active share not found for this event')
+  if (!share.reminders_enabled) throw new Error('Reminders are disabled for this event')
+
+  const { data: pendingGuestsData } = await (supabase as any)
+    .from('event_guests')
+    .select('id, full_name, email, attendance_queue_status, rsvp_status')
+    .eq('event_share_id', share.id)
+    .eq('rsvp_status', 'pending')
+    .not('email', 'is', null)
+
+  const recipients = ((pendingGuestsData as any[]) || []).filter((guest: any) => !!guest.email)
+  let inserted = 0
+  for (const guest of recipients) {
+    const reminderKey = `${validated.cadence}:${event.id}`
+    const { error } = await ((supabase as any).from('rsvp_reminder_log').insert({
+      tenant_id: share.tenant_id,
+      event_id: event.id,
+      guest_id: guest.id,
+      reminder_key: reminderKey,
+      delivery_channel: 'draft',
+      recipient_email: guest.email,
+      status: 'queued',
+    }) as any)
+    if (!error) inserted += 1
+  }
+
+  const subject = `Reminder: RSVP for ${event.occasion || 'your event'}`
+  const body = `Quick reminder to RSVP for ${event.occasion || 'this event'} on ${event.event_date}.`
+
+  return {
+    success: true,
+    cadence: validated.cadence,
+    recipientCount: recipients.length,
+    queuedCount: inserted,
+    subject,
+    body,
+  }
+}
+
+export async function runRSVPReminderSweep(eventId?: string) {
+  const user = await getCurrentUser()
+  if (!user || user.role !== 'chef') throw new Error('Chef access required')
+  const supabase = createServerClient({ admin: true })
+
+  let shareQuery = (supabase as any)
+    .from('event_shares')
+    .select(
+      'id, event_id, tenant_id, reminders_enabled, reminder_schedule, rsvp_deadline_at, is_active'
+    )
+    .eq('tenant_id', user.tenantId!)
+    .eq('is_active', true)
+    .eq('reminders_enabled', true)
+    .not('rsvp_deadline_at', 'is', null)
+
+  if (eventId) shareQuery = shareQuery.eq('event_id', eventId)
+  const { data: sharesData } = await shareQuery
+  const shares = (sharesData as any[]) || []
+
+  let queued = 0
+  const now = new Date()
+
+  for (const share of shares) {
+    const deadline = share.rsvp_deadline_at ? new Date(share.rsvp_deadline_at) : null
+    if (!deadline) continue
+
+    const msUntilDeadline = deadline.getTime() - now.getTime()
+    const schedule = getReminderOffsetKeys((share as any).reminder_schedule || [])
+    const dueKeys = schedule.filter((key) => {
+      const targetMs =
+        key === '7d'
+          ? 7 * 24 * 60 * 60 * 1000
+          : key === '3d'
+            ? 3 * 24 * 60 * 60 * 1000
+            : key === '24h'
+              ? 24 * 60 * 60 * 1000
+              : 0
+      const delta = Math.abs(msUntilDeadline - targetMs)
+      return delta <= 2 * 60 * 60 * 1000 // 2h window
+    })
+
+    if (dueKeys.length === 0) continue
+
+    const { data: pendingGuestsData } = await (supabase as any)
+      .from('event_guests')
+      .select('id, email, rsvp_status, attendance_queue_status')
+      .eq('event_share_id', share.id)
+      .eq('rsvp_status', 'pending')
+      .not('email', 'is', null)
+
+    for (const guest of (pendingGuestsData as any[]) || []) {
+      for (const cadence of dueKeys) {
+        const reminderKey = `${cadence}:${share.event_id}`
+        const { error } = await ((supabase as any).from('rsvp_reminder_log').insert({
+          tenant_id: share.tenant_id,
+          event_id: share.event_id,
+          guest_id: guest.id,
+          reminder_key: reminderKey,
+          delivery_channel: 'draft',
+          recipient_email: guest.email,
+          status: 'queued',
+        }) as any)
+        if (!error) queued += 1
+      }
+    }
+  }
+
+  return { success: true, queued }
+}
+
+export async function draftGuestSegmentMessage(
+  input: z.infer<typeof DraftGuestSegmentMessageSchema>
+) {
+  const validated = DraftGuestSegmentMessageSchema.parse(input)
+  const user = await getCurrentUser()
+  const event = await getEventForUserAccess(validated.eventId, user)
+  const supabase = createServerClient({ admin: true })
+
+  const { data: guests } = await supabase
+    .from('event_guests')
+    .select('id, full_name, email, rsvp_status, allergies, attendance_queue_status')
+    .eq('event_id', validated.eventId)
+    .not('email', 'is', null)
+
+  const rows = guests || []
+  const recipients = rows.filter((guest: any) => {
+    if (validated.segment === 'pending') {
+      return (
+        guest.rsvp_status === 'pending' &&
+        (guest.attendance_queue_status || 'none') !== 'waitlisted'
+      )
+    }
+    if (validated.segment === 'attending') return guest.rsvp_status === 'attending'
+    if (validated.segment === 'waitlisted')
+      return (guest.attendance_queue_status || 'none') === 'waitlisted'
+    return Array.isArray(guest.allergies) && guest.allergies.length > 0
+  })
+
+  const subjectMap: Record<(typeof validated)['segment'], string> = {
+    pending: `RSVP reminder for ${event.occasion || 'your event'}`,
+    attending: `Event update for ${event.occasion || 'your event'}`,
+    waitlisted: `Waitlist update for ${event.occasion || 'your event'}`,
+    allergies: `Dietary confirmation for ${event.occasion || 'your event'}`,
+  }
+
+  const bodyMap: Record<(typeof validated)['segment'], string> = {
+    pending: `Please confirm your RSVP for ${event.occasion || 'this event'} on ${event.event_date}.`,
+    attending: `Looking forward to hosting you at ${event.occasion || 'this event'} on ${event.event_date}.`,
+    waitlisted: `You are currently on the waitlist for ${event.occasion || 'this event'}. We will update you if a seat opens.`,
+    allergies: `Please reconfirm your allergy details for ${event.occasion || 'this event'} so we can prepare safely.`,
+  }
+
+  return {
+    segment: validated.segment,
+    subject: subjectMap[validated.segment],
+    body: bodyMap[validated.segment],
+    recipientCount: recipients.length,
+    recipients: recipients.map((guest: any) => ({
+      id: guest.id,
+      name: guest.full_name,
+      email: guest.email,
+    })),
+  }
+}
+
+export async function logGuestSegmentMessage(input: z.infer<typeof LogGuestSegmentMessageSchema>) {
+  const user = await getCurrentUser()
+  if (!user) throw new Error('Authentication required')
+  const validated = LogGuestSegmentMessageSchema.parse(input)
+  const event = await getEventForUserAccess(validated.eventId, user)
+  const supabase = createServerClient({ admin: true })
+
+  await ((supabase as any).from('guest_communication_logs').insert({
+    tenant_id: event.tenant_id,
+    event_id: validated.eventId,
+    segment: validated.segment,
+    subject: validated.subject,
+    body: validated.body,
+    recipient_count: validated.recipientCount,
+    created_by_auth_user: user.id,
+  }) as any)
+
+  return { success: true }
+}
+
+export async function getGuestCommunicationLogs(eventId: string) {
+  const user = await getCurrentUser()
+  await getEventForUserAccess(eventId, user)
+  const supabase = createServerClient({ admin: true })
+
+  const { data, error } = await ((supabase as any)
+    .from('guest_communication_logs')
+    .select('*')
+    .eq('event_id', eventId)
+    .order('created_at', { ascending: false }) as any)
+
+  if (error) {
+    console.error('[getGuestCommunicationLogs] Error:', error)
+    throw new Error('Failed to fetch communication logs')
+  }
+  return data || []
+}
+
 async function resolveViewerInviteContext(viewerToken: string) {
   const supabase = createServerClient({ admin: true })
+
+  await enforcePublicActionRateLimit(
+    `viewer-resolve:${viewerToken.slice(0, 12)}`,
+    80,
+    15 * 60 * 1000
+  )
 
   const { data: invite } = await (supabase
     .from('event_share_invites' as any)
@@ -596,11 +1427,16 @@ async function resolveViewerInviteContext(viewerToken: string) {
   if (invite.status !== 'active') return null
   if (invite.expires_at && new Date(invite.expires_at) < new Date()) return null
 
-  const { data: share } = await supabase
+  const { data: shareData } = await ((supabase as any)
     .from('event_shares')
-    .select('id, token, event_id, tenant_id, is_active, expires_at, visibility_settings')
+    .select(
+      `id, token, event_id, tenant_id, is_active, expires_at, visibility_settings,
+       require_join_approval, rsvp_deadline_at, reminders_enabled, reminder_schedule,
+       enforce_capacity, waitlist_enabled, max_capacity`
+    )
     .eq('id', invite.event_share_id)
-    .maybeSingle()
+    .maybeSingle() as any)
+  const share = shareData as any
 
   if (!share || !share.is_active) return null
   if (share.expires_at && new Date(share.expires_at) < new Date()) return null
@@ -628,6 +1464,11 @@ export async function createViewerInviteFromGuest(
 ) {
   const validated = CreateViewerInviteFromGuestSchema.parse(input)
   const supabase = createServerClient({ admin: true })
+  await enforcePublicActionRateLimit(
+    `guest-viewer-invite:${validated.guestToken.slice(0, 16)}`,
+    20,
+    60 * 60 * 1000
+  )
 
   const { data: share } = await supabase
     .from('event_shares')
@@ -679,6 +1520,7 @@ export async function createViewerInviteFromGuest(
       invited_name: validated.invited_name || null,
       invited_email: validated.invited_email || null,
       note: validated.note || null,
+      single_use: !!validated.single_use,
       expires_at: expiresAt,
     })
     .select('id')
@@ -688,6 +1530,15 @@ export async function createViewerInviteFromGuest(
     console.error('[createViewerInviteFromGuest] Error:', inviteError)
     throw new Error('Failed to create viewer invite')
   }
+
+  await trackInviteEvent({
+    supabase,
+    tenantId: share.tenant_id,
+    eventId: share.event_id,
+    inviteId: invite.id as string,
+    eventType: 'guest_invited',
+    metadata: { origin: 'guest', mode: 'viewer' },
+  })
 
   const fullViewerUrl = `${process.env.NEXT_PUBLIC_APP_URL}/view/${viewerToken}`
   let viewerUrl = fullViewerUrl
@@ -709,6 +1560,11 @@ export async function createGuestInviteFromGuest(
 ) {
   const validated = CreateGuestInviteFromGuestSchema.parse(input)
   const supabase = createServerClient({ admin: true })
+  await enforcePublicActionRateLimit(
+    `guest-guest-invite:${validated.guestToken.slice(0, 16)}`,
+    20,
+    60 * 60 * 1000
+  )
 
   const { data: share } = await supabase
     .from('event_shares')
@@ -801,6 +1657,14 @@ export async function createGuestInviteFromGuest(
     consumed_by_guest_id: guest.id,
   }) as any)
 
+  await trackInviteEvent({
+    supabase,
+    tenantId: share.tenant_id,
+    eventId: share.event_id,
+    eventType: 'guest_invited',
+    metadata: { origin: 'guest', mode: 'guest' },
+  })
+
   try {
     const chefAuthId = await getChefAuthUserId(share.tenant_id)
     if (chefAuthId) {
@@ -860,6 +1724,26 @@ export async function getViewerEventByToken(viewerToken: string) {
     menus = menuRows || []
   }
 
+  try {
+    await ((supabase as any)
+      .from('event_share_invites')
+      .update({
+        view_count: Number(invite.view_count || 0) + 1,
+        last_viewed_at: new Date().toISOString(),
+      })
+      .eq('id', invite.id) as any)
+
+    await trackInviteEvent({
+      supabase,
+      tenantId: share.tenant_id,
+      eventId: event.id,
+      inviteId: invite.id as string,
+      eventType: 'viewed',
+    })
+  } catch (err) {
+    console.error('[getViewerEventByToken] Non-blocking analytics write failed:', err)
+  }
+
   return {
     inviteId: invite.id as string,
     inviteToken: viewerToken,
@@ -884,6 +1768,15 @@ export async function getViewerEventByToken(viewerToken: string) {
     chefName: visibility.show_chef_name ? chef?.display_name || chef?.business_name : null,
     chefProfileUrl: chef?.booking_slug ? `/chef/${chef.booking_slug}` : null,
     menus,
+    permissions: {
+      allow_join_request: invite.allow_join_request ?? true,
+      allow_book_own: invite.allow_book_own ?? true,
+      single_use: invite.single_use ?? false,
+    },
+    settings: {
+      require_join_approval: share.require_join_approval ?? true,
+      rsvp_deadline_at: share.rsvp_deadline_at || null,
+    },
     dietaryInfo: visibility.show_dietary_info
       ? {
           restrictions: event.dietary_restrictions,
@@ -900,6 +1793,12 @@ export async function getViewerEventByToken(viewerToken: string) {
  */
 export async function submitViewerIntent(input: ViewerIntentInput) {
   const validated = ViewerIntentSchema.parse(input)
+  await verifyCaptchaIfProvided(validated.captcha_token || undefined)
+  await enforcePublicActionRateLimit(
+    `viewer-intent:${validated.viewerToken.slice(0, 16)}:${validated.email.toLowerCase().trim()}`,
+    10,
+    60 * 60 * 1000
+  )
   const context = await resolveViewerInviteContext(validated.viewerToken)
 
   if (!context) {
@@ -908,7 +1807,15 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
 
   const { invite, share, event, supabase } = context
 
+  if (invite.single_use && invite.status !== 'active') {
+    throw new Error('This invite link has already been used.')
+  }
+
   if (validated.intent === 'join_event') {
+    if (invite.allow_join_request === false) {
+      throw new Error('This invite does not allow event join requests.')
+    }
+
     const { data: existing } = await supabase
       .from('event_guests')
       .select('id, guest_token')
@@ -925,6 +1832,91 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
       }
     }
 
+    const normalizedEmail = validated.email.toLowerCase().trim()
+    if (share.require_join_approval) {
+      const { data: existingRequest } = await ((supabase as any)
+        .from('event_join_requests')
+        .select('id')
+        .eq('event_id', event.id)
+        .eq('viewer_email', normalizedEmail)
+        .eq('status', 'pending')
+        .maybeSingle() as any)
+
+      if (!existingRequest) {
+        const { error: requestError } = await ((supabase as any)
+          .from('event_join_requests')
+          .insert({
+            tenant_id: share.tenant_id,
+            event_id: event.id,
+            event_share_id: share.id,
+            invite_id: invite.id,
+            viewer_name: validated.full_name.trim(),
+            viewer_email: normalizedEmail,
+            note: validated.note?.trim() || null,
+            status: 'pending',
+          }) as any)
+
+        if (requestError) {
+          console.error('[submitViewerIntent] Join request insert error:', requestError)
+          throw new Error('Failed to submit join request')
+        }
+      }
+
+      await trackInviteEvent({
+        supabase,
+        tenantId: share.tenant_id,
+        eventId: event.id,
+        inviteId: invite.id as string,
+        eventType: 'join_requested',
+        metadata: { requiresApproval: true },
+      })
+
+      if (invite.single_use) {
+        await ((supabase as any)
+          .from('event_share_invites')
+          .update({
+            status: 'consumed',
+            consumed_at: new Date().toISOString(),
+          })
+          .eq('id', invite.id) as any)
+      }
+
+      try {
+        const chefAuthId = await getChefAuthUserId(share.tenant_id)
+        if (chefAuthId) {
+          await createNotification({
+            tenantId: share.tenant_id,
+            recipientId: chefAuthId,
+            category: 'client',
+            action: 'guest_rsvp_received',
+            title: `${validated.full_name} requested to join`,
+            body: 'A viewer requested host approval to join this dinner.',
+            eventId: event.id,
+          })
+        }
+      } catch (err) {
+        console.error('[submitViewerIntent] Non-blocking notification failed:', err)
+      }
+
+      return {
+        success: true,
+        mode: 'join_event' as const,
+        pendingApproval: true,
+      }
+    }
+
+    const capacity = await getCapacityDecision({
+      supabase,
+      shareId: share.id,
+      shareEventId: event.id,
+      enforceCapacity: !!share.enforce_capacity,
+      waitlistEnabled: !!share.waitlist_enabled,
+      maxCapacity: share.max_capacity || null,
+      fallbackCapacity: event.guest_count || null,
+      requestedAttending: false,
+    })
+    if (capacity.rejectReason) throw new Error(capacity.rejectReason)
+
     const guestToken = crypto.randomBytes(32).toString('hex')
     const { data: guest, error: guestError } = await supabase
       .from('event_guests')
@@ -934,7 +1926,7 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
         event_share_id: share.id,
         guest_token: guestToken,
         full_name: validated.full_name,
-        email: validated.email.toLowerCase().trim(),
+        email: normalizedEmail,
         rsvp_status: 'pending',
         notes: validated.note ? `Viewer join request: ${validated.note}` : 'Viewer join request',
       })
@@ -946,14 +1938,23 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
       throw new Error('Failed to submit join request')
     }
 
-    await (supabase
-      .from('event_share_invites' as any)
+    await ((supabase as any)
+      .from('event_share_invites')
       .update({
         status: 'consumed',
         consumed_at: new Date().toISOString(),
         consumed_by_guest_id: guest.id,
       })
       .eq('id', invite.id) as any)
+
+    await trackInviteEvent({
+      supabase,
+      tenantId: share.tenant_id,
+      eventId: event.id,
+      inviteId: invite.id as string,
+      eventType: 'join_approved',
+      metadata: { autoApproved: true },
+    })
 
     try {
       const chefAuthId = await getChefAuthUserId(share.tenant_id)
@@ -978,6 +1979,10 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
       alreadyExists: false,
       guestPortalUrl: `${process.env.NEXT_PUBLIC_APP_URL}/event/${event.id}/guest/${guestToken}`,
     }
+  }
+
+  if (invite.allow_book_own === false) {
+    throw new Error('This invite does not allow booking requests.')
   }
 
   const normalizedEmail = validated.email.toLowerCase().trim()
@@ -1010,6 +2015,7 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
       source: 'viewer_invite',
       source_invite_token: validated.viewerToken,
       source_event_share_id: share.id,
+      source_join_request_id: null,
     }) as any)
 
     if (leadError) {
@@ -1018,13 +2024,23 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
     }
   }
 
-  await (supabase
-    .from('event_share_invites' as any)
-    .update({
-      status: 'consumed',
-      consumed_at: new Date().toISOString(),
-    })
-    .eq('id', invite.id) as any)
+  if (invite.single_use) {
+    await ((supabase as any)
+      .from('event_share_invites')
+      .update({
+        status: 'consumed',
+        consumed_at: new Date().toISOString(),
+      })
+      .eq('id', invite.id) as any)
+  }
+
+  await trackInviteEvent({
+    supabase,
+    tenantId: share.tenant_id,
+    eventId: event.id,
+    inviteId: invite.id as string,
+    eventType: 'book_own_requested',
+  })
 
   try {
     const chefAuthId = await getChefAuthUserId(share.tenant_id)
@@ -1049,14 +2065,17 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
 async function loadGuestPortalContext(eventId: string, secureToken: string) {
   const supabase = createServerClient({ admin: true })
 
-  const { data: guest } = await supabase
+  const { data: guestData } = await ((supabase as any)
     .from('event_guests')
     .select(
-      'id, event_id, tenant_id, event_share_id, guest_token, full_name, email, rsvp_status, dietary_restrictions, notes, created_at, updated_at'
+      `id, event_id, tenant_id, event_share_id, guest_token, full_name, email, rsvp_status,
+       dietary_restrictions, allergies, notes, plus_one_allergies, plus_one_dietary,
+       attendance_queue_status, created_at, updated_at`
     )
     .eq('event_id', eventId)
     .eq('guest_token', secureToken)
-    .maybeSingle()
+    .maybeSingle() as any)
+  const guest = guestData as any
 
   if (!guest) {
     return null
@@ -1065,7 +2084,9 @@ async function loadGuestPortalContext(eventId: string, secureToken: string) {
   const { data: event } = await supabase
     .from('events')
     .select(
-      'id, tenant_id, client_id, event_date, serve_time, arrival_time, occasion, service_style, location_address, location_city, location_state, location_zip, location_notes, status, special_requests, cannabis_preference, menu_approval_status'
+      `id, tenant_id, client_id, event_date, serve_time, arrival_time, occasion, service_style,
+       location_address, location_city, location_state, location_zip, location_notes, status,
+       special_requests, cannabis_preference, menu_approval_status, guest_count`
     )
     .eq('id', eventId)
     .single()
@@ -1074,11 +2095,15 @@ async function loadGuestPortalContext(eventId: string, secureToken: string) {
     return null
   }
 
-  const { data: share } = await supabase
+  const { data: shareData } = await ((supabase as any)
     .from('event_shares')
-    .select('id, is_active, expires_at, visibility_settings')
+    .select(
+      `id, is_active, expires_at, visibility_settings, rsvp_deadline_at, enforce_capacity,
+       waitlist_enabled, max_capacity`
+    )
     .eq('id', guest.event_share_id)
-    .maybeSingle()
+    .maybeSingle() as any)
+  const share = shareData as any
 
   if (!share) {
     return null
@@ -1159,6 +2184,7 @@ async function loadGuestPortalContext(eventId: string, secureToken: string) {
  * Respects visibility settings -- only returns fields the chef has enabled.
  */
 export async function getEventShareByToken(token: string) {
+  await enforcePublicActionRateLimit(`share-token:${token.slice(0, 16)}`, 120, 15 * 60 * 1000)
   const supabase = createServerClient({ admin: true })
 
   // Fetch share by token
@@ -1274,6 +2300,12 @@ export async function getEventShareByToken(token: string) {
     specialRequests: visibility.show_special_requests ? event.special_requests : null,
     guestList,
     serviceStyle: event.service_style,
+    settings: {
+      rsvp_deadline_at: (share as any).rsvp_deadline_at || null,
+      enforce_capacity: (share as any).enforce_capacity || false,
+      waitlist_enabled: (share as any).waitlist_enabled ?? true,
+      max_capacity: (share as any).max_capacity || null,
+    },
   }
 }
 
@@ -1454,6 +2486,7 @@ export async function updateRSVP(input: UpdateRSVPInput) {
  * Get a guest's RSVP by their token (public -- no auth required).
  */
 export async function getGuestByToken(guestToken: string) {
+  await enforcePublicActionRateLimit(`guest-token:${guestToken.slice(0, 16)}`, 120, 15 * 60 * 1000)
   const supabase = createServerClient({ admin: true })
 
   const { data: guest, error } = await supabase
@@ -1570,6 +2603,11 @@ export async function getGuestEventPortal(eventId: string, secureToken: string) 
 
 export async function saveGuestEventPortalRSVP(input: SaveGuestPortalRSVPInput) {
   const validated = SaveGuestPortalRSVPSchema.parse(input)
+  await enforcePublicActionRateLimit(
+    `portal-rsvp:${validated.secureToken.slice(0, 16)}`,
+    20,
+    60 * 60 * 1000
+  )
   const context = await loadGuestPortalContext(validated.eventId, validated.secureToken)
 
   if (!context) {
@@ -1589,6 +2627,10 @@ export async function saveGuestEventPortalRSVP(input: SaveGuestPortalRSVPInput) 
 
   if (share.expires_at && new Date(share.expires_at) < now) {
     throw new Error('This guest link has expired.')
+  }
+
+  if (share.rsvp_deadline_at && new Date(share.rsvp_deadline_at) < now) {
+    throw new Error('RSVP updates are closed for this event.')
   }
 
   const editCutoff = parseEditCutoff(event.event_date, event.arrival_time, event.serve_time)
@@ -1634,21 +2676,53 @@ export async function saveGuestEventPortalRSVP(input: SaveGuestPortalRSVPInput) 
 
   const supabase = createServerClient({ admin: true })
 
-  const guestUpdatePayload: Record<string, unknown> = {
-    full_name: validated.full_name.trim(),
-    rsvp_status: validated.attending_status === 'yes' ? 'attending' : 'declined',
-    notes: validated.additional_note?.trim() || null,
-    dietary_restrictions: parseNotesToList(validated.dietary_notes),
+  const requestedAttending = validated.attending_status === 'yes'
+  const capacity = await getCapacityDecision({
+    supabase,
+    shareId: share.id,
+    shareEventId: validated.eventId,
+    enforceCapacity: !!share.enforce_capacity,
+    waitlistEnabled: !!share.waitlist_enabled,
+    maxCapacity: share.max_capacity || null,
+    fallbackCapacity: event.guest_count || null,
+    requestedAttending,
+    excludeGuestId: guest.id,
+  })
+
+  if (capacity.rejectReason) {
+    throw new Error(capacity.rejectReason)
   }
 
-  const { error: guestUpdateError } = await supabase
+  const shouldWaitlist = requestedAttending && capacity.shouldWaitlist
+  const guestUpdatePayload: Record<string, unknown> = {
+    full_name: validated.full_name.trim(),
+    rsvp_status: shouldWaitlist
+      ? 'pending'
+      : validated.attending_status === 'yes'
+        ? 'attending'
+        : 'declined',
+    notes: validated.additional_note?.trim() || null,
+    dietary_restrictions: parseNotesToList(validated.dietary_notes),
+    attendance_queue_status: shouldWaitlist ? 'waitlisted' : 'none',
+    waitlisted_at: shouldWaitlist ? new Date().toISOString() : null,
+    promoted_at:
+      !shouldWaitlist &&
+      requestedAttending &&
+      (guest.attendance_queue_status || 'none') === 'waitlisted'
+        ? new Date().toISOString()
+        : null,
+  }
+
+  const { data: updatedGuest, error: guestUpdateError } = await supabase
     .from('event_guests')
     .update(guestUpdatePayload)
     .eq('id', guest.id)
     .eq('event_id', validated.eventId)
     .eq('guest_token', validated.secureToken)
+    .select('*')
+    .single()
 
-  if (guestUpdateError) {
+  if (guestUpdateError || !updatedGuest) {
     throw new Error('Failed to save RSVP.')
   }
 
@@ -1694,6 +2768,33 @@ export async function saveGuestEventPortalRSVP(input: SaveGuestPortalRSVPInput) 
     throw new Error('Failed to save guest profile.')
   }
 
+  const dietaryItems = buildStructuredDietaryItems({
+    dietaryRestrictions: parseNotesToList(validated.dietary_notes),
+    allergies: (updatedGuest.allergies as string[] | null) || [],
+    plusOneDietary: (updatedGuest.plus_one_dietary as string[] | null) || [],
+    plusOneAllergies: (updatedGuest.plus_one_allergies as string[] | null) || [],
+  })
+
+  await syncGuestDietaryItems({
+    supabase,
+    tenantId: event.tenant_id,
+    eventId: validated.eventId,
+    guestId: updatedGuest.id,
+    items: dietaryItems,
+  })
+
+  await logRsvpAudit({
+    supabase,
+    tenantId: event.tenant_id,
+    eventId: validated.eventId,
+    guestId: updatedGuest.id,
+    guestToken: validated.secureToken,
+    action: 'portal_update',
+    beforeValues: guest as any,
+    afterValues: updatedGuest as any,
+    dietaryItems,
+  })
+
   // Non-blocking: notify chef of dietary info from guest portal
   try {
     const hasDietaryNotes = !!validated.dietary_notes?.trim()
@@ -1723,5 +2824,6 @@ export async function saveGuestEventPortalRSVP(input: SaveGuestPortalRSVPInput) 
     attending_status: validated.attending_status,
     cannabis_participation: profilePayload.cannabis_participation || 'undecided',
     editCutoff: editCutoff.toISOString(),
+    waitlisted: shouldWaitlist,
   }
 }

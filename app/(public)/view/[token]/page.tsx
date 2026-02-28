@@ -112,7 +112,12 @@ export default async function ViewerSharePage({ params }: { params: { token: str
           </CardContent>
         </Card>
 
-        <ViewerIntentForm viewerToken={params.token} />
+        <ViewerIntentForm
+          viewerToken={params.token}
+          allowJoinRequest={data.permissions.allow_join_request}
+          allowBookOwn={data.permissions.allow_book_own}
+          rsvpDeadlineAt={data.settings.rsvp_deadline_at}
+        />
 
         {data.chefProfileUrl && (
           <div className="text-center">

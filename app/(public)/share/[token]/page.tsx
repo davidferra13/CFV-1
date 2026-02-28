@@ -36,6 +36,9 @@ export default async function SharePage({ params }: { params: { token: string } 
       : eventData.status === 'completed'
         ? 'Completed'
         : 'Upcoming'
+  const rsvpClosed =
+    !!eventData.settings?.rsvp_deadline_at &&
+    new Date(eventData.settings.rsvp_deadline_at) < new Date()
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-stone-50 to-white">
@@ -248,7 +251,7 @@ export default async function SharePage({ params }: { params: { token: string } 
         )}
 
         {/* RSVP Form Card */}
-        {eventData.status !== 'completed' && (
+        {eventData.status !== 'completed' && !rsvpClosed && (
           <Card className="mb-8">
             <CardHeader>
               <CardTitle>{existingGuest ? 'Update Your RSVP' : 'RSVP'}</CardTitle>
@@ -259,8 +262,19 @@ export default async function SharePage({ params }: { params: { token: string } 
                 eventId={eventData.eventId}
                 chefProfileUrl={eventData.chefProfileUrl}
                 chefName={eventData.chefName}
-                existingGuest={existingGuest}
+                existingGuest={existingGuest as any}
               />
+            </CardContent>
+          </Card>
+        )}
+
+        {rsvpClosed && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>RSVP Closed</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-stone-400">The RSVP deadline has passed for this event.</p>
             </CardContent>
           </Card>
         )}

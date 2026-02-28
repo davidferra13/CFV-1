@@ -5,8 +5,18 @@ import { submitViewerIntent } from '@/lib/sharing/actions'
 
 type Intent = 'join_event' | 'book_own'
 
-export function ViewerIntentForm({ viewerToken }: { viewerToken: string }) {
-  const [intent, setIntent] = useState<Intent>('join_event')
+export function ViewerIntentForm({
+  viewerToken,
+  allowJoinRequest = true,
+  allowBookOwn = true,
+  rsvpDeadlineAt,
+}: {
+  viewerToken: string
+  allowJoinRequest?: boolean
+  allowBookOwn?: boolean
+  rsvpDeadlineAt?: string | null
+}) {
+  const [intent, setIntent] = useState<Intent>(allowJoinRequest ? 'join_event' : 'book_own')
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [note, setNote] = useState('')
@@ -16,6 +26,7 @@ export function ViewerIntentForm({ viewerToken }: { viewerToken: string }) {
     mode: Intent
     guestPortalUrl?: string
     alreadyExists?: boolean
+    pendingApproval?: boolean
   }>(null)
 
   async function onSubmit(e: React.FormEvent) {
@@ -36,6 +47,7 @@ export function ViewerIntentForm({ viewerToken }: { viewerToken: string }) {
         mode: response.mode,
         guestPortalUrl: (response as any).guestPortalUrl,
         alreadyExists: (response as any).alreadyExists,
+        pendingApproval: (response as any).pendingApproval,
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit')
@@ -51,9 +63,11 @@ export function ViewerIntentForm({ viewerToken }: { viewerToken: string }) {
           <>
             <h3 className="text-lg font-semibold text-stone-100">Request Received</h3>
             <p className="mt-2 text-sm text-stone-300">
-              {result.alreadyExists
-                ? 'You already have a guest profile for this event.'
-                : 'You were added as a pending guest. You can now complete your RSVP.'}
+              {result.pendingApproval
+                ? 'Your join request is pending host approval.'
+                : result.alreadyExists
+                  ? 'You already have a guest profile for this event.'
+                  : 'You were added as a pending guest. You can now complete your RSVP.'}
             </p>
             {result.guestPortalUrl && (
               <a
@@ -89,29 +103,45 @@ export function ViewerIntentForm({ viewerToken }: { viewerToken: string }) {
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          onClick={() => setIntent('join_event')}
-          className={`rounded-md px-3 py-2 text-sm font-medium transition ${
-            intent === 'join_event'
-              ? 'bg-brand-600 text-white'
-              : 'border border-stone-700 text-stone-300 hover:border-stone-600'
-          }`}
-        >
-          Join This Dinner
-        </button>
-        <button
-          type="button"
-          onClick={() => setIntent('book_own')}
-          className={`rounded-md px-3 py-2 text-sm font-medium transition ${
-            intent === 'book_own'
-              ? 'bg-brand-600 text-white'
-              : 'border border-stone-700 text-stone-300 hover:border-stone-600'
-          }`}
-        >
-          Book My Own
-        </button>
+        {allowJoinRequest && (
+          <button
+            type="button"
+            onClick={() => setIntent('join_event')}
+            className={`rounded-md px-3 py-2 text-sm font-medium transition ${
+              intent === 'join_event'
+                ? 'bg-brand-600 text-white'
+                : 'border border-stone-700 text-stone-300 hover:border-stone-600'
+            }`}
+          >
+            Join This Dinner
+          </button>
+        )}
+        {allowBookOwn && (
+          <button
+            type="button"
+            onClick={() => setIntent('book_own')}
+            className={`rounded-md px-3 py-2 text-sm font-medium transition ${
+              intent === 'book_own'
+                ? 'bg-brand-600 text-white'
+                : 'border border-stone-700 text-stone-300 hover:border-stone-600'
+            }`}
+          >
+            Book My Own
+          </button>
+        )}
       </div>
+
+      {!allowJoinRequest && !allowBookOwn && (
+        <p className="text-sm text-stone-400">
+          This invite is view-only and not accepting requests at this time.
+        </p>
+      )}
+
+      {intent === 'join_event' && rsvpDeadlineAt && (
+        <p className="text-xs text-stone-500">
+          RSVP deadline: {new Date(rsvpDeadlineAt).toLocaleString()}
+        </p>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <input

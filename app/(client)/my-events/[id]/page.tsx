@@ -3,7 +3,15 @@
 import { requireClient } from '@/lib/auth/get-user'
 import { getClientEventById } from '@/lib/events/client-actions'
 import { getClientReviewForEvent, getGoogleReviewUrlForTenant } from '@/lib/reviews/actions'
-import { getEventShares, getEventGuests, getEventRSVPSummary } from '@/lib/sharing/actions'
+import {
+  getEventInviteAnalytics,
+  getEventJoinRequests,
+  getEventRSVPSummary,
+  getEventShareInvites,
+  getEventShares,
+  getEventGuests,
+  getGuestCommunicationLogs,
+} from '@/lib/sharing/actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import { notFound, redirect } from 'next/navigation'
@@ -17,6 +25,7 @@ import { ClientFeedbackForm } from '@/components/reviews/client-feedback-form'
 import { SubmittedReview } from '@/components/reviews/submitted-review'
 import { ShareEventButton } from '@/components/sharing/share-event-button'
 import { ClientRSVPSummary } from '@/components/sharing/client-rsvp-summary'
+import { RSVPAdvancedPanel } from '@/components/sharing/rsvp-advanced-panel'
 import { MessageChefButton } from '@/components/chat/message-chef-button'
 import { getEventPhotosForClient } from '@/lib/events/photo-actions'
 import { ClientEventPhotoGallery } from '@/components/events/client-event-photo-gallery'
@@ -66,10 +75,22 @@ export default async function EventDetailPage({ params }: { params: { id: string
   const outstandingBalanceCents = financial?.outstandingBalanceCents ?? quotedPriceCents
 
   // Fetch sharing and RSVP data
-  const [shares, guests, rsvpSummary] = await Promise.all([
+  const [
+    shares,
+    guests,
+    rsvpSummary,
+    joinRequests,
+    shareInvites,
+    inviteAnalytics,
+    communicationLogs,
+  ] = await Promise.all([
     getEventShares(params.id),
     getEventGuests(params.id),
     getEventRSVPSummary(params.id),
+    getEventJoinRequests(params.id),
+    getEventShareInvites(params.id),
+    getEventInviteAnalytics(params.id),
+    getGuestCommunicationLogs(params.id),
   ])
   const activeShare = shares.find((s: any) => s.is_active) || null
 
@@ -431,6 +452,25 @@ export default async function EventDetailPage({ params }: { params: { id: string
           </CardHeader>
           <CardContent className="space-y-4">
             <ShareEventButton eventId={event.id} existingShare={activeShare} />
+            <RSVPAdvancedPanel
+              eventId={event.id}
+              shareId={activeShare?.id || null}
+              shareSettings={
+                activeShare
+                  ? {
+                      require_join_approval: (activeShare as any).require_join_approval ?? true,
+                      rsvp_deadline_at: (activeShare as any).rsvp_deadline_at ?? null,
+                      enforce_capacity: (activeShare as any).enforce_capacity ?? false,
+                      waitlist_enabled: (activeShare as any).waitlist_enabled ?? true,
+                      max_capacity: (activeShare as any).max_capacity ?? null,
+                    }
+                  : null
+              }
+              joinRequests={joinRequests as any[]}
+              invites={shareInvites as any[]}
+              analytics={inviteAnalytics as any}
+              communicationLogs={communicationLogs as any[]}
+            />
             {guests.length > 0 && (
               <div className="pt-4 border-t border-stone-800">
                 <h4 className="text-sm font-medium text-stone-300 mb-3">Guest Responses</h4>
@@ -442,6 +482,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
                     declined_count: rsvpSummary?.declined_count ?? 0,
                     maybe_count: rsvpSummary?.maybe_count ?? 0,
                     pending_count: rsvpSummary?.pending_count ?? 0,
+                    waitlisted_count: (rsvpSummary as any)?.waitlisted_count ?? 0,
                     plus_one_count: rsvpSummary?.plus_one_count ?? 0,
                   }}
                   originalGuestCount={event.guest_count}

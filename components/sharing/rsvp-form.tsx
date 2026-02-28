@@ -68,6 +68,7 @@ export function RSVPForm({
   const [photoConsent, setPhotoConsent] = useState(existingGuest?.photo_consent || false)
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [waitlisted, setWaitlisted] = useState(false)
   const [error, setError] = useState('')
   const [guestToken, setGuestToken] = useState(existingGuest?.guest_token || '')
   const [showDetails, setShowDetails] = useState(isEditing && hasExistingDetails)
@@ -135,6 +136,8 @@ export function RSVPForm({
           setLoading(false)
           return
         }
+
+        setWaitlisted(!!(result as any).waitlisted)
       }
 
       setSubmitted(true)
@@ -161,14 +164,20 @@ export function RSVPForm({
           </svg>
         </div>
         <h3 className="text-xl font-semibold text-stone-100 mb-2">
-          {rsvpStatus === 'attending'
-            ? 'See you there!'
-            : rsvpStatus === 'maybe'
-              ? 'Thanks for letting us know!'
-              : 'Thanks for responding'}
+          {waitlisted
+            ? "You're on the waitlist"
+            : rsvpStatus === 'attending'
+              ? 'See you there!'
+              : rsvpStatus === 'maybe'
+                ? 'Thanks for letting us know!'
+                : 'Thanks for responding'}
         </h3>
         <p className="text-stone-400 mb-6">
-          {isEditing ? 'Your RSVP has been updated.' : 'Your RSVP has been recorded.'}
+          {waitlisted
+            ? 'The event is currently at capacity. You have been added to the waitlist.'
+            : isEditing
+              ? 'Your RSVP has been updated.'
+              : 'Your RSVP has been recorded.'}
         </p>
         <button
           onClick={() => setSubmitted(false)}
