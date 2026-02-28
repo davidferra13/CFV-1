@@ -338,7 +338,338 @@
 
 ---
 
-## Recommended Build Order
+## Tier 4 — Backend-Ready, Zero UI (Fastest Wins)
+
+These features have **complete backend logic** but no UI pages. Building the frontend is straightforward since the data layer already works.
+
+### 11. Equipment Management Dashboard
+
+**Problem:** Chef owns knives, mixers, sous vide machines, chafing dishes. No way to see what they have, what needs maintenance, or what's depreciating.
+
+**What exists (100% backend, 0% UI):**
+
+- `lib/equipment/actions.ts` — full CRUD: create, update, deactivate equipment
+- `lib/equipment/depreciation-actions.ts` — straight-line, declining balance, units-of-production depreciation
+- `lib/equipment/depreciation-constants.ts` — method options
+- Maintenance interval scheduling (days-based) with `logMaintenance()` action
+- Monthly depreciation expense calculation
+- Equipment rental cost per event attribution
+
+**What to build:**
+
+- `app/(chef)/equipment/page.tsx` — equipment roster grid (name, category, purchase date, current value, next maintenance)
+- `app/(chef)/equipment/[id]/page.tsx` — detail page (depreciation schedule chart, maintenance history, event usage log)
+- Maintenance calendar: upcoming maintenance alerts in dashboard queue
+- "Equipment Cost per Event" column in event financial summary
+- Quick-add form for new equipment purchases
+
+**Database:** Already exists — just needs UI.
+
+---
+
+### 12. Contract & Document Library
+
+**Problem:** Chef generates contracts but has nowhere to manage them. No template library, no signing status, no archive.
+
+**What exists (backend only):**
+
+- `lib/contracts/actions.ts` — contract generation engine
+- `lib/contracts/advanced-contracts.ts` — specialized contract types
+- `lib/ai/contract-generator.ts` — AI-assisted contract drafting (Ollama)
+- Staff contractor agreements: `lib/staff/contractor-agreement-actions.ts`
+
+**What to build:**
+
+- `app/(chef)/documents/contracts/page.tsx` — contract library (filterable by status: draft, sent, signed, expired)
+- `app/(chef)/documents/contracts/templates/page.tsx` — reusable contract templates
+- Contract detail page: view generated contract, track sent/viewed/signed status
+- "Send for Signature" flow: email contract link to client → client views → e-signature capture
+- PDF export of signed contracts
+- Connect to client self-service portal (Feature 6) for client-side signing
+
+**Database changes (additive):**
+
+- `contracts` table (id, tenant_id, event_id, client_id, template_id, content text, status, sent_at, viewed_at, signed_at, signature_data jsonb)
+
+---
+
+## Tier 5 — Operational Excellence
+
+### 13. Staff Shift Scheduling
+
+**Problem:** Chef has 3-5 staff members. Assigning them to events is manual — check each person's availability, text them, hope they reply. No visual schedule.
+
+**What exists:**
+
+- Staff roster: `app/(chef)/staff/page.tsx` — name, role, hourly rate, status
+- Staff availability: `lib/staff/availability-actions.ts` — availability windows
+- Event staff panel: `components/events/event-staff-panel.tsx` — assign staff to events
+- Performance scoring: `lib/staff/performance-actions.ts`
+- Labor cost tracking: `lib/staff/labor-dashboard-actions.ts`
+
+**What to build:**
+
+- `app/(chef)/staff/schedule/page.tsx` — visual weekly schedule (Gantt-style or grid)
+  - Rows: staff members. Columns: days. Cells: assigned events with time blocks
+  - Drag-assign staff to events (reuse @dnd-kit)
+  - Color-code by role (sous chef = blue, server = green, etc.)
+  - Conflict detection: highlight when someone is double-booked
+- Availability overlay: grey out times when staff marked unavailable
+- "Who's free on [date]?" quick check — filters available staff for a given event date
+- Shift confirmation: send assignment notification → staff confirms/declines via app or text
+- Labor cost projection: show total labor cost for upcoming week based on assignments
+
+**Database changes (additive):**
+
+- `staff_shift_assignments` table (id, tenant_id, staff_id, event_id, shift_start, shift_end, status: assigned/confirmed/declined, confirmed_at)
+
+---
+
+### 14. Service-Time Operations Dashboard
+
+**Problem:** During an actual event service, chef needs a live view: what station is working on what, temps logged, items 86'd, timeline progress. Currently scattered across pages.
+
+**What exists:**
+
+- Station clipboard: `app/(chef)/stations/[id]/clipboard/` — per-station item tracking
+- Ops log: `app/(chef)/stations/ops-log/page.tsx` — append-only action log
+- KDS (Kitchen Display System): exists at event level (`app/(chef)/events/[id]/kds/`)
+- 86'd item tracking: `lib/stations/clipboard-actions.ts`
+- Temp logging: `components/events/temp-log-panel.tsx`
+- Prep timeline: event prep timeline exists
+
+**What to build:**
+
+- `app/(chef)/events/[id]/live/page.tsx` — unified service dashboard for an active event
+  - Station status cards (each station: current items, 86'd count, last update time)
+  - Temp log sidebar (last 5 readings, alerts if out of range)
+  - Timeline progress bar (prep → setup → service → breakdown → cleanup)
+  - Quick actions: log temp, 86 an item, mark station complete, log waste
+  - Auto-refresh every 30s (or Supabase Realtime subscription)
+- "Go Live" button on event detail page (appears when event is in `in_progress` status)
+- Mobile-optimized: designed for phone use during service
+
+---
+
+### 15. Automated Follow-Up Sequences
+
+**Problem:** After an event, chef should: send thank-you (day 1) → request review (day 3) → suggest rebooking (day 14). Currently manual.
+
+**What exists:**
+
+- Campaign sequences: `app/(chef)/marketing/sequences/` — sequence UI exists
+- Email infrastructure: `lib/email/` — send engine
+- Survey auto-send on event completion
+- Testimonial collection from surveys
+- Dormant client detection: `lib/clients/dormancy.ts`
+
+**What to build:**
+
+- Pre-built post-event sequence template:
+  1. Day 1: Thank-you email (personalized with event details)
+  2. Day 3: Review request (link to survey if not already sent, or Google review link)
+  3. Day 7: Photo gallery share (if photos attached to event)
+  4. Day 14: "Book your next event" with seasonal menu suggestions
+  5. Day 30: Check-in if no response
+- Sequence builder: visual timeline editor (drag to reorder, set delays, add/remove steps)
+- Conditional logic: skip step 2 if client already left a review, skip step 4 if they already rebooked
+- Per-client override: pause sequence for specific clients
+- Analytics: sequence completion rates, which step drives the most rebookings
+
+**Files to create:**
+
+- `lib/sequences/engine.ts` — sequence execution engine (cron-based or serverless function)
+- `lib/sequences/templates.ts` — pre-built sequence templates
+- `components/marketing/sequence-builder.tsx` — visual timeline editor
+
+---
+
+### 16. Analytics Drill-Down & Custom Date Ranges
+
+**Problem:** Analytics page has 40+ metrics but they're all fixed 12-month windows with no way to click through to underlying data.
+
+**What exists:**
+
+- 9-tab analytics hub: `app/(chef)/analytics/page.tsx`
+- 40+ metric queries across `lib/analytics/`
+- Client retention, churn, acquisition, pipeline, revenue, culinary, operations, marketing, social metrics
+
+**What to build:**
+
+- **Date range picker** at top of analytics page: preset ranges (This Month, Last Quarter, YTD, Last Year, Custom) + custom date picker
+- **Comparison mode**: toggle "Compare to previous period" — shows delta arrows and % change
+- **Click-through**: clicking any metric card opens a detail panel showing the underlying data rows
+  - Revenue per hour → list of events sorted by hourly rate with drill-down to event detail
+  - Client churn → list of churned clients with last booking date and reach-out button
+  - Ghost rate → list of ghosted inquiries with follow-up actions
+- **CSV export**: "Export" button on any metric or the entire dashboard
+- **Alerts**: set threshold on any metric (e.g., "Alert me if ghost rate exceeds 30%") — notification via existing system
+
+**Files to create:**
+
+- `components/analytics/date-range-picker.tsx` — period selector with presets
+- `components/analytics/metric-detail-panel.tsx` — slide-out panel showing underlying data
+- `lib/analytics/export.ts` — CSV generation for any metric dataset
+
+---
+
+## Tier 6 — Growth & Client Experience
+
+### 17. Public Chef Profile & SEO
+
+**Problem:** Chef has no public-facing profile on ChefFlow. Potential clients can't find or evaluate them without external tools.
+
+**What exists:**
+
+- Embeddable inquiry widget: `public/embed/chefflow-widget.js`
+- Testimonial collection system (approved testimonials ready for display)
+- Chef bio generation: `lib/ai/chef-bio.ts`
+- Review aggregation from external platforms
+- Partner showcase visibility toggle
+
+**What to build:**
+
+- `app/chef/[slug]/page.tsx` — public chef profile page (no auth required)
+  - Hero: name, photo, tagline, specialties, location
+  - Bio section (from AI-generated or manual bio)
+  - Testimonials carousel (approved testimonials)
+  - Photo gallery (from portfolio — Feature 10)
+  - Cuisine/event type badges
+  - Inquiry CTA button (links to embed form or direct inquiry)
+  - Structured data (JSON-LD) for Google rich results
+- `app/(chef)/settings/profile/public/page.tsx` — control what's visible on public profile
+- SEO: meta tags, OG image per chef, sitemap.xml inclusion
+- Vanity URL: `cheflowhq.com/chef/[slug]`
+
+**Database changes (additive):**
+
+- `chefs` table: add `public_slug text unique`, `public_profile_enabled boolean default false`, `public_bio text`, `public_photo_url text`
+
+---
+
+### 18. Client Communication Templates & Quick Replies
+
+**Problem:** Chef types similar messages repeatedly: booking confirmations, menu proposals, payment reminders, event-day logistics. No reusable templates.
+
+**What exists:**
+
+- Unified inbox: `app/(chef)/inbox/page.tsx`
+- Email send infrastructure: `lib/email/`
+- Client notes and follow-ups
+- AI draft capabilities (Remy can draft messages)
+
+**What to build:**
+
+- `app/(chef)/settings/templates/page.tsx` — manage reusable message templates
+  - Categories: Booking, Menu, Payment, Logistics, Follow-Up, Thank You
+  - Dynamic variables: `{{client_name}}`, `{{event_date}}`, `{{quoted_price}}`, `{{menu_name}}`
+  - Preview with real data before sending
+- Quick-reply picker in inbox: when composing a reply, dropdown of templates
+- "Save as Template" on any sent message
+- AI assist: "Personalize this template for [client]" using Remy
+
+**Files to create:**
+
+- `lib/templates/message-template-actions.ts` — CRUD for message templates
+- `components/inbox/template-picker.tsx` — dropdown in compose area
+- `app/(chef)/settings/templates/page.tsx` — template management page
+
+**Database changes (additive):**
+
+- `message_templates` table (id, tenant_id, name, category, subject, body, variables jsonb, usage_count, created_at)
+
+---
+
+### 19. Revenue Goal Tracking
+
+**Problem:** Chef sets annual/monthly revenue goals but has no way to track progress within ChefFlow. They use spreadsheets or gut feel.
+
+**What exists:**
+
+- Revenue data: `getTenantFinancialSummary()` — actual revenue from ledger
+- Pipeline forecast: `lib/pipeline/forecast.ts` — projected revenue from pipeline
+- Dashboard revenue widgets
+- Event financial summary views
+
+**What to build:**
+
+- `app/(chef)/settings/goals/page.tsx` — set monthly/quarterly/annual revenue goals
+- Dashboard widget: progress ring showing actual vs goal with projection line
+  - "You're at 67% of your March goal with 12 days remaining"
+  - "At current pace, you'll hit $X by month end" (extrapolation)
+  - Color coding: green (on track), amber (behind but recoverable), red (significantly behind)
+- Pipeline integration: show how much confirmed + proposed revenue could close the gap
+- Historical view: month-by-month goal attainment chart
+- Stretch goals: optional "stretch" target above base goal
+
+**Database changes (additive):**
+
+- `revenue_goals` table (id, tenant_id, period_type: monthly/quarterly/annual, period_start date, target_amount_cents, stretch_amount_cents, created_at)
+
+**Files to create:**
+
+- `lib/goals/actions.ts` — goal CRUD + progress computation
+- `components/dashboard/revenue-goal-widget.tsx` — progress ring for dashboard
+- `app/(chef)/settings/goals/page.tsx` — goal setting page
+
+---
+
+### 20. Inventory & Pantry Management
+
+**Problem:** Chef buys ingredients for events but doesn't track what's in stock. Buys duplicates, throws out expired items, can't plan across events.
+
+**What exists:**
+
+- Grocery quote system: `lib/grocery/pricing-actions.ts` — ingredient lists per event
+- Recipe ingredients: stored in recipes table
+- Vendor system: vendor + pricing data
+
+**What to build:**
+
+- `app/(chef)/pantry/page.tsx` — current pantry inventory
+  - Categories: proteins, produce, dairy, dry goods, spices, beverages
+  - Per item: name, quantity, unit, expiration date, location (fridge/freezer/pantry), cost
+  - Low stock alerts (configurable par levels per item)
+  - Expiration warnings (items expiring within 3 days highlighted)
+- Auto-deduct: when event moves to `in_progress`, deduct planned ingredients from pantry
+- Auto-suggest: when creating grocery list for an event, show "You already have X in stock"
+- Barcode scanning (mobile): scan product barcode to quick-add to pantry
+- Waste connection: when waste is logged at a station, deduct from pantry and track waste cost
+
+**Database changes (additive):**
+
+- `pantry_items` table (id, tenant_id, name, category, quantity, unit, par_level, expiration_date, location, cost_per_unit_cents, last_restocked_at)
+- `pantry_transactions` table (id, tenant_id, pantry_item_id, event_id, type: restock/deduct/waste/adjust, quantity, note, created_at)
+
+---
+
+## Recommended Build Order (Updated)
+
+| Priority | Feature                                  | Why                                          | Effort       |
+| -------- | ---------------------------------------- | -------------------------------------------- | ------------ |
+| 1        | **Recurring Events + Templates** (2 & 3) | Eliminates most repetitive daily work        | Medium       |
+| 2        | **Smart Auto-Fill** (4)                  | Quick win, no migration needed               | Small        |
+| 3        | **Equipment Dashboard** (11)             | Backend 100% done, just needs UI             | Small        |
+| 4        | **Contract Library** (12)                | Backend mostly done, needs UI + signing      | Small-Medium |
+| 5        | **Keyboard Power-User** (1)              | Desktop speed boost                          | Small        |
+| 6        | **Revenue Goal Tracking** (19)           | Business-critical visibility                 | Small        |
+| 7        | **Message Templates** (18)               | Reduces daily typing                         | Small        |
+| 8        | **Staff Shift Scheduling** (13)          | Operational efficiency for multi-staff chefs | Medium       |
+| 9        | **Automated Follow-Up Sequences** (15)   | Revenue recovery on autopilot                | Medium       |
+| 10       | **Cash Flow Forecast** (5)               | Financial planning                           | Medium       |
+| 11       | **Analytics Drill-Down** (16)            | Makes existing 40+ metrics actionable        | Medium       |
+| 12       | **Client Self-Service** (6)              | Scales the business                          | Large        |
+| 13       | **Public Chef Profile** (17)             | Client acquisition channel                   | Medium       |
+| 14       | **Service-Time Dashboard** (14)          | During-service operations                    | Medium       |
+| 15       | **Offline-First** (7)                    | Kitchen reliability                          | Large        |
+| 16       | **Scheduling Intelligence** (8)          | Proactive revenue                            | Medium       |
+| 17       | **Vendor Pricing** (9)                   | Cost optimization                            | Medium       |
+| 18       | **Photo Portfolio** (10)                 | Marketing + proposals                        | Medium       |
+| 19       | **Inventory/Pantry** (20)                | Waste reduction + planning                   | Large        |
+
+---
+
+## Notes
 
 | Priority | Feature                                  | Why First                                      |
 | -------- | ---------------------------------------- | ---------------------------------------------- |
