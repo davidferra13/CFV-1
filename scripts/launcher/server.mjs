@@ -25,6 +25,9 @@ const PROJECT_ROOT = join(__dirname, '..', '..')
 const PORT = 41937
 const PROJECT_TIMELINE_FILE = join(PROJECT_ROOT, 'docs', 'project-timeline.json')
 const PROJECT_EXPENSES_FILE = join(PROJECT_ROOT, 'docs', 'project-expenses.json')
+const UPTIME_HISTORY_FILE = join(PROJECT_ROOT, 'docs', 'uptime-history.json')
+const ROLLBACK_HISTORY_FILE = join(PROJECT_ROOT, 'docs', 'rollback-history.json')
+const BUNDLE_SIZE_FILE = join(PROJECT_ROOT, 'docs', 'bundle-size-history.json')
 
 // Load .env.local for Supabase credentials
 try {
@@ -92,6 +95,10 @@ function log(source, message, type = 'info') {
 let devServerProcess = null
 const runningJobs = new Map()
 
+// ── Error Buffer (for aggregation — must be before feedEvent) ─────
+const errorBuffer = []
+const ERROR_BUFFER_MAX = 500
+
 // ── Live Feed (Observe panel) ─────────────────────────────────────
 const liveFeedClients = new Set()
 const liveFeedBuffers = {
@@ -112,6 +119,11 @@ function feedEvent(source, message, level = 'info') {
   if (buf) {
     buf.push(entry)
     if (buf.length > MAX_FEED_BUFFER) buf.splice(0, 50)
+  }
+  // Track errors for aggregation
+  if (level === 'error' || level === 'warn') {
+    errorBuffer.push({ ts: Date.now(), source, message })
+    if (errorBuffer.length > ERROR_BUFFER_MAX) errorBuffer.splice(0, 100)
   }
   for (const client of liveFeedClients) {
     try {
@@ -562,8 +574,11 @@ async function rollbackBeta() {
     child.stdout.on('data', d => log('rollback', d.toString().trim()))
     child.stderr.on('data', d => log('rollback', d.toString().trim(), 'warn'))
     return new Promise(resolve => {
-      child.on('close', code => {
+      child.on('close', async code => {
         log('rollback', code === 0 ? 'Rollback complete!' : `Rollback failed (code ${code})`, code === 0 ? 'success' : 'error')
+        if (code === 0) {
+          await logRollback({ trigger: 'manual', result: 'success' })
+        }
         resolve({ ok: code === 0, message: code === 0 ? 'Rollback complete' : 'Rollback failed' })
       })
     })
@@ -2120,6 +2135,513 @@ async function listMigrations() {
   }
 }
 
+// ── Uptime History (poll every 60s, store 24h rolling) ───────────
+
+const uptimeHistory = { beta: [], prod: [], pi: [] }
+const UPTIME_MAX_ENTRIES = 1440 // 24h at 60s intervals
+
+async function loadUptimeHistory() {
+  try {
+    const raw = await readFile(UPTIME_HISTORY_FILE, 'utf-8')
+    const data = JSON.parse(raw)
+    if (data.beta) uptimeHistory.beta = data.beta
+    if (data.prod) uptimeHistory.prod = data.prod
+    if (data.pi) uptimeHistory.pi = data.pi
+  } catch { /* file doesn't exist yet */ }
+}
+
+async function saveUptimeHistory() {
+  try {
+    await writeFile(UPTIME_HISTORY_FILE, JSON.stringify(uptimeHistory) + '\n')
+  } catch { /* ignore write errors */ }
+}
+
+async function pollUptime() {
+  const ts = Date.now()
+  const [beta, prod] = await Promise.allSettled([
+    httpCheck(CONFIG.betaHealthUrl, 6000),
+    httpCheck(CONFIG.prodHealthUrl, 6000),
+  ])
+  const betaOk = beta.status === 'fulfilled' && beta.value.ok
+  const prodOk = prod.status === 'fulfilled' && prod.value.ok
+
+  let piOk = false
+  try {
+    await sshExec('echo ok', 5000)
+    piOk = true
+  } catch { /* pi unreachable */ }
+
+  uptimeHistory.beta.push({ ts, ok: betaOk })
+  uptimeHistory.prod.push({ ts, ok: prodOk })
+  uptimeHistory.pi.push({ ts, ok: piOk })
+
+  // Trim to 24h
+  for (const key of ['beta', 'prod', 'pi']) {
+    if (uptimeHistory[key].length > UPTIME_MAX_ENTRIES) {
+      uptimeHistory[key] = uptimeHistory[key].slice(-UPTIME_MAX_ENTRIES)
+    }
+  }
+
+  // Broadcast downtime notifications via SSE
+  if (!betaOk) feedEvent('system', 'ALERT: Beta server is DOWN', 'error')
+  if (!prodOk) feedEvent('system', 'ALERT: Production is DOWN', 'error')
+  if (!piOk) feedEvent('system', 'ALERT: Raspberry Pi is UNREACHABLE', 'error')
+
+  saveUptimeHistory().catch(() => {})
+}
+
+function computeUptimeStats(entries) {
+  if (!entries.length) return { percentage: 100, total: 0, up: 0, down: 0, downtimeWindows: [] }
+  const up = entries.filter(e => e.ok).length
+  const down = entries.length - up
+  const percentage = Number(((up / entries.length) * 100).toFixed(2))
+
+  // Find downtime windows
+  const windows = []
+  let windowStart = null
+  for (const entry of entries) {
+    if (!entry.ok && !windowStart) {
+      windowStart = entry.ts
+    } else if (entry.ok && windowStart) {
+      windows.push({ start: windowStart, end: entry.ts, duration: entry.ts - windowStart })
+      windowStart = null
+    }
+  }
+  if (windowStart) {
+    windows.push({ start: windowStart, end: Date.now(), duration: Date.now() - windowStart, ongoing: true })
+  }
+
+  return { percentage, total: entries.length, up, down, downtimeWindows: windows.slice(-10) }
+}
+
+function getUptimeReport() {
+  return {
+    ok: true,
+    beta: computeUptimeStats(uptimeHistory.beta),
+    prod: computeUptimeStats(uptimeHistory.prod),
+    pi: computeUptimeStats(uptimeHistory.pi),
+    message: `Beta: ${computeUptimeStats(uptimeHistory.beta).percentage}% | Prod: ${computeUptimeStats(uptimeHistory.prod).percentage}% | Pi: ${computeUptimeStats(uptimeHistory.pi).percentage}%`,
+  }
+}
+
+// ── Error Aggregation ────────────────────────────────────────────
+
+function getErrorAggregation() {
+  const oneHourAgo = Date.now() - 3600000
+  const recent = errorBuffer.filter(e => e.ts >= oneHourAgo)
+  const grouped = {}
+  for (const entry of recent) {
+    // Normalize error messages (strip timestamps, PIDs, etc.)
+    const key = entry.message.replace(/\d{4}-\d{2}-\d{2}T[\d:.]+Z?/g, '').replace(/pid \d+/g, 'pid X').trim().slice(0, 120)
+    if (!grouped[key]) grouped[key] = { message: entry.message, count: 0, lastSeen: 0, source: entry.source }
+    grouped[key].count++
+    if (entry.ts > grouped[key].lastSeen) grouped[key].lastSeen = entry.ts
+  }
+  const top5 = Object.values(grouped).sort((a, b) => b.count - a.count).slice(0, 5)
+  return {
+    ok: true,
+    totalErrors: recent.length,
+    top5,
+    timeWindow: '1 hour',
+    message: `${recent.length} errors in the last hour. Top: ${top5.length > 0 ? top5[0].message.slice(0, 60) : 'none'}`,
+  }
+}
+
+// ── Rollback History ─────────────────────────────────────────────
+
+async function logRollback(details) {
+  try {
+    let history = []
+    try {
+      const raw = await readFile(ROLLBACK_HISTORY_FILE, 'utf-8')
+      history = JSON.parse(raw)
+    } catch { /* file doesn't exist */ }
+    history.push({
+      timestamp: new Date().toISOString(),
+      ...details,
+    })
+    await writeFile(ROLLBACK_HISTORY_FILE, JSON.stringify(history, null, 2) + '\n')
+  } catch { /* ignore write errors */ }
+}
+
+async function getRollbackHistory() {
+  try {
+    const raw = await readFile(ROLLBACK_HISTORY_FILE, 'utf-8')
+    const history = JSON.parse(raw)
+    return { ok: true, entries: history, total: history.length }
+  } catch {
+    return { ok: true, entries: [], total: 0, message: 'No rollback history found' }
+  }
+}
+
+// ── Git Diff (for diff viewer) ───────────────────────────────────
+
+async function getGitDiff() {
+  try {
+    const [statResult, diffResult] = await Promise.all([
+      execAsync('git diff --stat', { cwd: PROJECT_ROOT, maxBuffer: 2 * 1024 * 1024 }),
+      execAsync('git diff --no-color', { cwd: PROJECT_ROOT, maxBuffer: 5 * 1024 * 1024 }),
+    ])
+    // Also get staged diff
+    const [stagedStatResult, stagedDiffResult] = await Promise.all([
+      execAsync('git diff --staged --stat', { cwd: PROJECT_ROOT, maxBuffer: 2 * 1024 * 1024 }),
+      execAsync('git diff --staged --no-color', { cwd: PROJECT_ROOT, maxBuffer: 5 * 1024 * 1024 }),
+    ])
+    return {
+      ok: true,
+      unstaged: {
+        stat: statResult.stdout.trim(),
+        diff: diffResult.stdout.slice(0, 50000), // Cap at 50KB
+      },
+      staged: {
+        stat: stagedStatResult.stdout.trim(),
+        diff: stagedDiffResult.stdout.slice(0, 50000),
+      },
+    }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+// ── npm Audit ────────────────────────────────────────────────────
+
+async function npmAudit() {
+  try {
+    const { stdout } = await execAsync('npm audit --json 2>/dev/null || true', {
+      cwd: PROJECT_ROOT,
+      timeout: 30000,
+      maxBuffer: 2 * 1024 * 1024,
+    })
+    const data = JSON.parse(stdout)
+    const meta = data.metadata || {}
+    return {
+      ok: true,
+      vulnerabilities: data.vulnerabilities ? Object.keys(data.vulnerabilities).length : 0,
+      severity: {
+        critical: meta.vulnerabilities?.critical || 0,
+        high: meta.vulnerabilities?.high || 0,
+        moderate: meta.vulnerabilities?.moderate || 0,
+        low: meta.vulnerabilities?.low || 0,
+        info: meta.vulnerabilities?.info || 0,
+      },
+      totalDeps: meta.dependencies || 0,
+      message: `${meta.vulnerabilities?.critical || 0} critical, ${meta.vulnerabilities?.high || 0} high, ${meta.vulnerabilities?.moderate || 0} moderate`,
+    }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+// ── Bundle Size Tracking ─────────────────────────────────────────
+
+async function captureBundleSize() {
+  try {
+    const buildManifest = join(PROJECT_ROOT, '.next', 'build-manifest.json')
+    const raw = await readFile(buildManifest, 'utf-8')
+    const manifest = JSON.parse(raw)
+    const routeCount = Object.keys(manifest.pages || {}).length
+
+    // Get total .next size
+    const { stdout } = await execAsync(
+      process.platform === 'win32'
+        ? 'powershell -Command "(Get-ChildItem .next -Recurse | Measure-Object -Property Length -Sum).Sum"'
+        : 'du -sb .next | cut -f1',
+      { cwd: PROJECT_ROOT, timeout: 15000 }
+    )
+    const totalBytes = parseInt(stdout.trim()) || 0
+
+    const entry = {
+      timestamp: new Date().toISOString(),
+      totalBytes,
+      totalMB: Number((totalBytes / 1024 / 1024).toFixed(1)),
+      routeCount,
+    }
+
+    // Append to history
+    let history = []
+    try {
+      const histRaw = await readFile(BUNDLE_SIZE_FILE, 'utf-8')
+      history = JSON.parse(histRaw)
+    } catch { /* file doesn't exist */ }
+    history.push(entry)
+    if (history.length > 100) history = history.slice(-100)
+    await writeFile(BUNDLE_SIZE_FILE, JSON.stringify(history, null, 2) + '\n')
+
+    return { ok: true, current: entry, history, message: `Bundle: ${entry.totalMB} MB, ${routeCount} routes` }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+async function getBundleSizeHistory() {
+  try {
+    const raw = await readFile(BUNDLE_SIZE_FILE, 'utf-8')
+    const history = JSON.parse(raw)
+    return { ok: true, history, total: history.length }
+  } catch {
+    return { ok: true, history: [], total: 0, message: 'No bundle size history — run a build first' }
+  }
+}
+
+// ── Environment Variable Comparison ──────────────────────────────
+
+async function compareEnvFiles() {
+  const files = {
+    dev: join(PROJECT_ROOT, '.env.local'),
+    beta: join(PROJECT_ROOT, '.env.local.beta'),
+  }
+  const envKeys = {}
+  for (const [env, filepath] of Object.entries(files)) {
+    try {
+      const content = await readFile(filepath, 'utf-8')
+      envKeys[env] = content.split('\n')
+        .map(l => l.trim())
+        .filter(l => l && !l.startsWith('#'))
+        .map(l => l.split('=')[0].trim())
+        .filter(Boolean)
+        .sort()
+    } catch {
+      envKeys[env] = null // file not found
+    }
+  }
+
+  // Find differences (keys only — never values)
+  const allKeys = new Set()
+  for (const keys of Object.values(envKeys)) {
+    if (keys) keys.forEach(k => allKeys.add(k))
+  }
+
+  const comparison = []
+  for (const key of Array.from(allKeys).sort()) {
+    const entry = { key }
+    for (const [env, keys] of Object.entries(envKeys)) {
+      entry[env] = keys ? keys.includes(key) : null
+    }
+    comparison.push(entry)
+  }
+
+  const missing = comparison.filter(c => Object.values(c).some(v => v === false))
+  return {
+    ok: true,
+    comparison,
+    missing,
+    environments: Object.keys(files),
+    message: `${missing.length} keys missing in at least one environment`,
+  }
+}
+
+// ── Scheduled DB Backups ─────────────────────────────────────────
+
+let scheduledBackupTimer = null
+
+async function scheduledDbBackup() {
+  const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+  const backupDir = join(PROJECT_ROOT, 'backups')
+  const filename = `backup-${timestamp}.sql`
+
+  try {
+    // Ensure backups directory exists
+    const { mkdir } = await import('node:fs/promises')
+    await mkdir(backupDir, { recursive: true })
+
+    log('backup', `Scheduled backup starting: ${filename}...`, 'info')
+    await execAsync(`npx supabase db dump --linked > "${join(backupDir, filename)}"`, {
+      cwd: PROJECT_ROOT,
+      timeout: 120000,
+    })
+    log('backup', `Scheduled backup saved: backups/${filename}`, 'success')
+
+    // Retention: keep last 7
+    const { readdir, unlink } = await import('node:fs/promises')
+    const files = (await readdir(backupDir)).filter(f => f.startsWith('backup-') && f.endsWith('.sql')).sort()
+    while (files.length > 7) {
+      const old = files.shift()
+      await unlink(join(backupDir, old))
+      log('backup', `Removed old backup: ${old}`, 'info')
+    }
+
+    return { ok: true, message: `Backup saved: backups/${filename}` }
+  } catch (err) {
+    log('backup', `Scheduled backup failed: ${err.message}`, 'error')
+    return { ok: false, error: err.message }
+  }
+}
+
+function startScheduledBackups() {
+  // Run daily at 3 AM
+  const now = new Date()
+  const next3am = new Date(now)
+  next3am.setHours(3, 0, 0, 0)
+  if (next3am <= now) next3am.setDate(next3am.getDate() + 1)
+  const msUntil3am = next3am - now
+
+  log('backup', `Scheduled daily backup — next run in ${Math.round(msUntil3am / 60000)} minutes (3:00 AM)`, 'info')
+
+  setTimeout(() => {
+    scheduledDbBackup()
+    // Then repeat every 24 hours
+    scheduledBackupTimer = setInterval(scheduledDbBackup, 24 * 60 * 60 * 1000)
+  }, msUntil3am)
+}
+
+// ── Migration SQL Reader ─────────────────────────────────────────
+
+async function readMigrationSql(filename) {
+  try {
+    const filepath = join(PROJECT_ROOT, 'supabase', 'migrations', filename)
+    const content = await readFile(filepath, 'utf-8')
+    return { ok: true, filename, sql: content.slice(0, 100000), size: content.length }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+// ── Supabase Connection Health ───────────────────────────────────
+
+async function checkSupabaseHealth() {
+  if (!CONFIG.supabaseUrl || !CONFIG.supabaseServiceKey) {
+    return { ok: false, error: 'Supabase credentials not configured' }
+  }
+  const start = Date.now()
+  try {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 5000)
+    const res = await fetch(`${CONFIG.supabaseUrl}/rest/v1/?limit=0`, {
+      headers: {
+        'apikey': CONFIG.supabaseServiceKey,
+        'Authorization': `Bearer ${CONFIG.supabaseServiceKey}`,
+      },
+      signal: controller.signal,
+    })
+    clearTimeout(timer)
+    const latency = Date.now() - start
+    return {
+      ok: res.ok,
+      status: res.status,
+      latency,
+      message: `Supabase: ${res.ok ? 'healthy' : 'error'} (${latency}ms)`,
+    }
+  } catch (err) {
+    return { ok: false, latency: Date.now() - start, error: err.message }
+  }
+}
+
+// ── SSL Certificate Check ────────────────────────────────────────
+
+async function checkSSLCerts() {
+  const domains = ['beta.cheflowhq.com', 'app.cheflowhq.com', 'cheflowhq.com']
+  const results = {}
+  for (const domain of domains) {
+    try {
+      const { stdout } = await execAsync(
+        `powershell -Command "[Net.ServicePointManager]::ServerCertificateValidationCallback = {$true}; $req = [Net.HttpWebRequest]::Create('https://${domain}'); $req.Timeout = 5000; try { $resp = $req.GetResponse(); $cert = $req.ServicePoint.Certificate; Write-Output ($cert.GetExpirationDateString()); $resp.Close() } catch { Write-Output 'ERROR' }"`,
+        { timeout: 10000 }
+      )
+      const expiry = stdout.trim()
+      if (expiry && expiry !== 'ERROR') {
+        const expiryDate = new Date(expiry)
+        const daysUntil = Math.floor((expiryDate - new Date()) / 86400000)
+        results[domain] = { valid: true, expires: expiryDate.toISOString().slice(0, 10), daysUntil }
+      } else {
+        results[domain] = { valid: false, error: 'Could not read cert' }
+      }
+    } catch {
+      results[domain] = { valid: false, error: 'Check failed' }
+    }
+  }
+  return { ok: true, certs: results }
+}
+
+// ── Stripe Webhook Health ────────────────────────────────────────
+
+async function checkStripeWebhookHealth() {
+  // Query the dev server's health/webhook endpoint if available
+  try {
+    const devOnline = await httpCheck(`http://localhost:${CONFIG.devPort}`)
+    if (!devOnline.ok) return { ok: false, error: 'Dev server offline — cannot check webhooks' }
+
+    // Check if stripe webhook events table exists in Supabase
+    const result = await supabaseQuery('stripe_webhook_events', {
+      select: 'id,event_type,created_at,status',
+      order: 'created_at.desc',
+      limit: 5,
+    })
+    if (result.ok) {
+      const events = result.data
+      const lastEvent = events[0]
+      return {
+        ok: true,
+        lastReceived: lastEvent?.created_at || 'never',
+        recentCount: events.length,
+        events: events.map(e => ({
+          type: e.event_type,
+          status: e.status,
+          received: e.created_at?.slice(0, 19) || '',
+        })),
+        message: lastEvent ? `Last webhook: ${lastEvent.event_type} at ${lastEvent.created_at?.slice(0, 19)}` : 'No webhooks recorded',
+      }
+    }
+    return { ok: true, message: 'Stripe webhook table not found — webhooks may not be configured', events: [] }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+// ── Email Delivery Health (Resend) ───────────────────────────────
+
+async function checkEmailHealth() {
+  const resendKey = process.env.RESEND_API_KEY
+  if (!resendKey) return { ok: false, error: 'RESEND_API_KEY not configured' }
+  try {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 5000)
+    const res = await fetch('https://api.resend.com/emails?limit=5', {
+      headers: { Authorization: `Bearer ${resendKey}` },
+      signal: controller.signal,
+    })
+    clearTimeout(timer)
+    if (!res.ok) return { ok: false, error: `Resend API returned ${res.status}` }
+    const data = await res.json()
+    const emails = data.data || []
+    return {
+      ok: true,
+      recentCount: emails.length,
+      lastSent: emails[0]?.created_at || 'never',
+      emails: emails.map(e => ({
+        to: e.to?.[0] || '',
+        subject: e.subject || '',
+        status: e.last_event || 'sent',
+        sent: e.created_at?.slice(0, 19) || '',
+      })),
+      message: emails.length > 0 ? `Last email: "${emails[0].subject}" (${emails[0].last_event || 'sent'})` : 'No recent emails',
+    }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+// ── API Rate Limit Monitoring ────────────────────────────────────
+
+function getApiRateLimitInfo() {
+  // Static info about API limits — actual usage tracking would require wrapping each API call
+  const services = [
+    { name: 'Spoonacular', envKey: 'SPOONACULAR_API_KEY', dailyLimit: 150, note: 'Free tier: 150 points/day' },
+    { name: 'Kroger', envKey: 'KROGER_CLIENT_ID', dailyLimit: 10000, note: 'Standard: 10K calls/day' },
+    { name: 'MealMe', envKey: 'MEALME_API_KEY', dailyLimit: 1000, note: 'Varies by plan' },
+    { name: 'Instacart', envKey: 'INSTACART_API_KEY', dailyLimit: null, note: 'Cart links only — no pricing API' },
+    { name: 'Resend', envKey: 'RESEND_API_KEY', dailyLimit: 100, note: 'Free tier: 100 emails/day, 3K/month' },
+    { name: 'Vercel', envKey: 'VERCEL_TOKEN', dailyLimit: null, note: 'Pro plan — no hard daily limit' },
+  ]
+  return {
+    ok: true,
+    services: services.map(s => ({
+      ...s,
+      configured: !!process.env[s.envKey],
+    })),
+    message: `${services.filter(s => process.env[s.envKey]).length}/${services.length} APIs configured`,
+  }
+}
+
 // ── Chat Tool Registry ───────────────────────────────────────────
 
 const TOOLS = {
@@ -2186,6 +2708,22 @@ const TOOLS = {
 
   // Remy Bridge
   'remy/ask':         { fn: (param) => askRemy(param),            desc: 'Ask Remy (business AI) a question — requires dev server running. Use remy/ask:your question here' },
+
+  // New: Monitoring & Health
+  'uptime/report':    { fn: getUptimeReport,                      desc: 'Get uptime report for beta, prod, and Pi (last 24h)' },
+  'errors/top':       { fn: getErrorAggregation,                  desc: 'Get top 5 errors in the last hour from all log sources' },
+  'rollback/history': { fn: getRollbackHistory,                   desc: 'Show rollback history — when and what was rolled back' },
+  'git/diff':         { fn: getGitDiff,                           desc: 'Show git diff — unstaged and staged changes with file stats' },
+  'audit/npm':        { fn: npmAudit,                             desc: 'Run npm audit and show vulnerability summary' },
+  'bundle/size':      { fn: getBundleSizeHistory,                 desc: 'Show bundle size history and trends' },
+  'bundle/capture':   { fn: captureBundleSize,                    desc: 'Capture current bundle size snapshot (requires a build first)' },
+  'env/compare':      { fn: compareEnvFiles,                      desc: 'Compare environment variable keys across dev/beta (keys only, never values)' },
+  'backup/now':       { fn: scheduledDbBackup,                    desc: 'Run a database backup right now (saves to backups/ with 7-day retention)' },
+  'supabase/health':  { fn: checkSupabaseHealth,                  desc: 'Check Supabase database connection health and latency' },
+  'ssl/check':        { fn: checkSSLCerts,                        desc: 'Check SSL certificate expiration for all domains' },
+  'stripe/health':    { fn: checkStripeWebhookHealth,             desc: 'Check Stripe webhook health — last received, recent events' },
+  'email/health':     { fn: checkEmailHealth,                     desc: 'Check email delivery health (Resend API) — recent sends, status' },
+  'api/limits':       { fn: getApiRateLimitInfo,                  desc: 'Show API rate limits and configuration status for all external services' },
 }
 
 async function getAvailableOllamaEndpoint() {
@@ -2813,6 +3351,74 @@ async function handleRequest(req, res) {
     return
   }
 
+  // ── New API routes (Mission Control V2) ─────────────────────────
+
+  if (path === '/api/uptime' && method === 'GET') {
+    return json(res, getUptimeReport())
+  }
+  if (path === '/api/errors/top' && method === 'GET') {
+    return json(res, getErrorAggregation())
+  }
+  if (path === '/api/rollback/history' && method === 'GET') {
+    return json(res, await getRollbackHistory())
+  }
+  if (path === '/api/git/diff' && method === 'GET') {
+    return json(res, await getGitDiff())
+  }
+  if (path === '/api/audit/npm' && method === 'GET') {
+    return json(res, await npmAudit())
+  }
+  if (path === '/api/bundle/size' && method === 'GET') {
+    return json(res, await getBundleSizeHistory())
+  }
+  if (path === '/api/bundle/capture' && method === 'POST') {
+    return json(res, await captureBundleSize())
+  }
+  if (path === '/api/env/compare' && method === 'GET') {
+    return json(res, await compareEnvFiles())
+  }
+  if (path === '/api/backup/now' && method === 'POST') {
+    return json(res, await scheduledDbBackup())
+  }
+  if (path === '/api/backup/status' && method === 'GET') {
+    // Check backups directory
+    try {
+      const { readdir } = await import('node:fs/promises')
+      const backupDir = join(PROJECT_ROOT, 'backups')
+      let files = []
+      try { files = (await readdir(backupDir)).filter(f => f.startsWith('backup-') && f.endsWith('.sql')).sort() } catch {}
+      return json(res, {
+        ok: true,
+        backups: files,
+        total: files.length,
+        scheduledTime: '3:00 AM daily',
+        retention: '7 days',
+        message: `${files.length} backups stored`,
+      })
+    } catch (err) {
+      return json(res, { ok: false, error: err.message })
+    }
+  }
+  if (path === '/api/supabase/health' && method === 'GET') {
+    return json(res, await checkSupabaseHealth())
+  }
+  if (path === '/api/ssl/check' && method === 'GET') {
+    return json(res, await checkSSLCerts())
+  }
+  if (path === '/api/stripe/health' && method === 'GET') {
+    return json(res, await checkStripeWebhookHealth())
+  }
+  if (path === '/api/email/health' && method === 'GET') {
+    return json(res, await checkEmailHealth())
+  }
+  if (path === '/api/api-limits' && method === 'GET') {
+    return json(res, getApiRateLimitInfo())
+  }
+  if (path.startsWith('/api/migration/sql/') && method === 'GET') {
+    const filename = decodeURIComponent(path.replace('/api/migration/sql/', ''))
+    return json(res, await readMigrationSql(filename))
+  }
+
   // ── Login launcher (opens Chrome incognito as a test role) ───────
   if (path === '/api/login-as' && method === 'POST') {
     const body = await parseBody(req)
@@ -2851,6 +3457,16 @@ server.listen(PORT, '127.0.0.1', () => {
   ╚═══════════════════════════════════════════════╝
   `)
   log('system', `Mission Control started on port ${PORT}`, 'success')
+
+  // Start uptime monitoring (poll every 60s)
+  loadUptimeHistory().then(() => {
+    pollUptime() // initial poll
+    setInterval(pollUptime, 60000)
+    log('system', 'Uptime monitoring started (60s interval)', 'info')
+  })
+
+  // Start scheduled DB backups (daily at 3 AM, keep 7)
+  startScheduledBackups()
 
   // Auto-open in browser
   const openCmd = process.platform === 'win32' ? 'start' : process.platform === 'darwin' ? 'open' : 'xdg-open'

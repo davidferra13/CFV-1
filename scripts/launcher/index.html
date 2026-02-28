@@ -2076,6 +2076,16 @@ body {
           <button class="btn btn-success" onclick="commitChanges()">&#x2714; Commit All</button>
         </div>
         <div class="divider"></div>
+        <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
+          <span>Changes (Diff)</span>
+          <button class="btn btn-ghost" onclick="loadGitDiff()" style="font-size:11px;padding:4px 10px;">Refresh Diff</button>
+        </h3>
+        <div id="git-diff-container" style="margin-bottom:24px;">
+          <div id="git-diff-stat" style="font-size:12px;color:var(--text-muted);margin-bottom:8px;font-family:monospace;white-space:pre-wrap;"></div>
+          <div id="git-diff-content" style="max-height:400px;overflow-y:auto;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:monospace;font-size:11px;white-space:pre-wrap;line-height:1.6;display:none;"></div>
+          <button id="git-diff-toggle" class="btn btn-ghost" style="margin-top:8px;font-size:11px;display:none;" onclick="toggleDiffContent()">Show full diff</button>
+        </div>
+        <div class="divider"></div>
         <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Recent Commits</h3>
         <div class="commit-list" id="git-commits"></div>
       </div>
@@ -2572,6 +2582,129 @@ body {
             <button class="btn btn-ghost" onclick="runAction('/api/ollama/pi/start','Starting Ollama on Pi...')">Start Ollama on Pi</button>
             <button class="btn btn-ghost" onclick="runAction('/api/ollama/pi/stop','Stopping Ollama on Pi...')">Stop Ollama on Pi</button>
             <button class="btn btn-ghost" onclick="runAction('/api/beta/restart','Restarting Beta...')">Restart Beta App</button>
+          </div>
+        </div>
+
+        <div class="divider" style="margin:24px 0;border-top:1px solid var(--border);"></div>
+
+        <!-- Uptime History (24h) -->
+        <div style="margin-bottom:24px;">
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Uptime (Last 24h)</h3>
+          <div id="uptime-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;">
+              <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Beta</div>
+              <div id="uptime-beta" style="font-size:24px;font-weight:700;color:var(--success);">--</div>
+              <div id="uptime-beta-detail" style="font-size:11px;color:var(--text-muted);margin-top:4px;">Loading...</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;">
+              <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Production</div>
+              <div id="uptime-prod" style="font-size:24px;font-weight:700;color:var(--success);">--</div>
+              <div id="uptime-prod-detail" style="font-size:11px;color:var(--text-muted);margin-top:4px;">Loading...</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;">
+              <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Pi</div>
+              <div id="uptime-pi" style="font-size:24px;font-weight:700;color:var(--success);">--</div>
+              <div id="uptime-pi-detail" style="font-size:11px;color:var(--text-muted);margin-top:4px;">Loading...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Supabase Health -->
+        <div style="margin-bottom:24px;">
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Database Health</h3>
+          <div id="supabase-health" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;display:flex;align-items:center;gap:16px;">
+            <span id="supabase-dot" style="width:12px;height:12px;border-radius:50%;background:var(--warning);flex-shrink:0;"></span>
+            <div style="flex:1;">
+              <div style="font-weight:600;font-size:14px;">Supabase</div>
+              <div id="supabase-latency" style="font-size:12px;color:var(--text-muted);">Checking...</div>
+            </div>
+            <div id="supabase-badge" style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--warning-dim);color:var(--warning);">Checking</div>
+          </div>
+        </div>
+
+        <!-- SSL Certificates -->
+        <div style="margin-bottom:24px;">
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">SSL Certificates</h3>
+          <div id="ssl-certs" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text-muted);font-size:13px;">Loading...</div>
+          </div>
+        </div>
+
+        <!-- Integration Health (Stripe, Email, Backups) -->
+        <div style="margin-bottom:24px;">
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Integration Health</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;">
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                <span style="font-size:16px;">&#x1F4B3;</span>
+                <span style="font-weight:600;font-size:14px;">Stripe Webhooks</span>
+              </div>
+              <div id="stripe-health" style="font-size:12px;color:var(--text-muted);">Loading...</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                <span style="font-size:16px;">&#x2709;&#xFE0F;</span>
+                <span style="font-weight:600;font-size:14px;">Email (Resend)</span>
+              </div>
+              <div id="email-health" style="font-size:12px;color:var(--text-muted);">Loading...</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                <span style="font-size:16px;">&#x1F4BE;</span>
+                <span style="font-weight:600;font-size:14px;">DB Backups</span>
+              </div>
+              <div id="backup-health" style="font-size:12px;color:var(--text-muted);">Loading...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- API Rate Limits -->
+        <div style="margin-bottom:24px;">
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">API Rate Limits</h3>
+          <div id="api-limits" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text-muted);font-size:13px;">Loading...</div>
+          </div>
+        </div>
+
+        <!-- Error Aggregation -->
+        <div style="margin-bottom:24px;">
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Errors (Last Hour)</h3>
+          <div id="error-aggregation" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;">
+            <div style="color:var(--text-muted);font-size:13px;">Loading...</div>
+          </div>
+        </div>
+
+        <!-- Env Var Comparison -->
+        <div style="margin-bottom:24px;">
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Environment Variables (Keys Only)</h3>
+          <div id="env-comparison" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+            <div style="padding:12px;color:var(--text-muted);font-size:13px;">Loading...</div>
+          </div>
+        </div>
+
+        <!-- npm Audit -->
+        <div style="margin-bottom:24px;">
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Dependency Health</h3>
+          <div id="npm-audit" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;">
+            <div style="color:var(--text-muted);font-size:13px;">
+              <button class="btn btn-ghost" onclick="loadNpmAudit()" style="font-size:12px;">Run npm audit</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bundle Size History -->
+        <div style="margin-bottom:24px;">
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Bundle Size</h3>
+          <div id="bundle-size" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;">
+            <div style="color:var(--text-muted);font-size:13px;">Loading...</div>
+          </div>
+        </div>
+
+        <!-- Rollback History -->
+        <div>
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Rollback History</h3>
+          <div id="rollback-history" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;">
+            <div style="color:var(--text-muted);font-size:13px;">Loading...</div>
           </div>
         </div>
       </div>
@@ -3710,6 +3843,10 @@ body {
             <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Agent Costs</div>
             <div id="exp-agents" style="font-size:28px;font-weight:700;color:var(--warning);font-family:monospace;margin-top:4px;">$0</div>
           </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Cloud Services</div>
+            <div id="exp-cloud" style="font-size:28px;font-weight:700;color:#818cf8;font-family:monospace;margin-top:4px;">$0</div>
+          </div>
         </div>
 
         <!-- ── Breakdown by Category ── -->
@@ -4430,6 +4567,15 @@ function connectSSE() {
       consoleEl.scrollTop = consoleEl.scrollHeight
       while (consoleEl.children.length > 200) {
         consoleEl.removeChild(consoleEl.firstChild)
+      }
+      // Desktop notifications for key events
+      if (window._notifyPatterns && data.message) {
+        for (const p of window._notifyPatterns) {
+          if (p.pattern.test(data.message)) {
+            notify('Mission Control: ' + p.title, data.message, p.tag)
+            break
+          }
+        }
       }
     } catch { /* ignore */ }
   }
@@ -6029,11 +6175,27 @@ async function loadMigrations() {
     const res = await fetch(`${API}/api/db/migrations`)
     const data = await res.json()
     if (data.ok) {
-      const last5 = data.migrations.slice(-5)
-      const summary = `${data.total} migrations | Latest: ${data.latestTimestamp}\n\nLast 5:\n` +
-        last5.map(m => `  ${m.file}`).join('\n')
+      const last10 = data.migrations.slice(-10)
       addLog('success', 'db', data.message)
-      alert(`Database Migrations\n\n${summary}`)
+      // Show a nice dialog with Show SQL buttons
+      const overlay = document.createElement('div')
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);'
+      overlay.onclick = (e) => { if (e.target === overlay) overlay.remove() }
+      overlay.innerHTML = `
+        <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:700px;width:90%;max-height:80vh;overflow-y:auto;">
+          <h2 style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:16px;">Database Migrations (${data.total})</h2>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Latest: ${data.latestTimestamp}</div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            ${last10.reverse().map(m => `
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;font-size:12px;">
+                <div style="font-family:monospace;color:var(--text-primary);word-break:break-all;">${escapeHtml(m.file)}</div>
+                <button class="btn btn-ghost" onclick="showMigrationSql('${escapeHtml(m.file)}')" style="font-size:11px;padding:3px 8px;white-space:nowrap;margin-left:8px;">Show SQL</button>
+              </div>`).join('')}
+          </div>
+          ${data.total > 10 ? `<div style="text-align:center;margin-top:8px;font-size:11px;color:var(--text-muted);">Showing last 10 of ${data.total}</div>` : ''}
+          <div style="text-align:center;margin-top:16px;"><button class="btn btn-ghost" onclick="this.closest('div[style*=fixed]').remove()">Close</button></div>
+        </div>`
+      document.body.appendChild(overlay)
       setMegaState('mega-migrations', 'success')
     } else {
       addLog('error', 'db', data.error || 'Failed to list migrations')
@@ -6042,6 +6204,27 @@ async function loadMigrations() {
   } catch (err) {
     addLog('error', 'db', `Failed: ${err.message}`)
     setMegaState('mega-migrations', 'idle')
+  }
+}
+
+async function showMigrationSql(filename) {
+  try {
+    const res = await fetch(`${API}/api/migration/sql/${encodeURIComponent(filename)}`)
+    const data = await res.json()
+    if (!data.ok) { alert('Error: ' + data.error); return }
+    const overlay = document.createElement('div')
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);'
+    overlay.onclick = (e) => { if (e.target === overlay) overlay.remove() }
+    overlay.innerHTML = `
+      <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:800px;width:90%;max-height:80vh;overflow-y:auto;">
+        <h3 style="font-size:14px;margin-bottom:12px;color:var(--brand);font-family:monospace;">${escapeHtml(filename)}</h3>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">${data.size} bytes</div>
+        <pre style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;font-size:12px;line-height:1.5;overflow-x:auto;max-height:60vh;color:var(--text-primary);white-space:pre-wrap;">${escapeHtml(data.sql)}</pre>
+        <div style="text-align:center;margin-top:12px;"><button class="btn btn-ghost" onclick="this.closest('div[style*=fixed]').remove()">Close</button></div>
+      </div>`
+    document.body.appendChild(overlay)
+  } catch (err) {
+    alert('Failed to load SQL: ' + err.message)
   }
 }
 
@@ -7088,6 +7271,375 @@ async function loadInfra() {
   }
 }
 
+// ── Extended Infra Loaders (V2 features) ─────────────────────────
+
+async function loadInfraExtended() {
+  // Load all new infra sections in parallel
+  Promise.all([
+    loadUptime(),
+    loadSupabaseHealth(),
+    loadSSLCerts(),
+    loadStripeHealth(),
+    loadEmailHealth(),
+    loadBackupStatus(),
+    loadApiLimits(),
+    loadErrorAggregation(),
+    loadEnvComparison(),
+    loadBundleSize(),
+    loadRollbackHistory(),
+  ]).catch(() => {})
+}
+
+async function loadUptime() {
+  try {
+    const res = await fetch(`${API}/api/uptime`)
+    const data = await res.json()
+    for (const key of ['beta', 'prod', 'pi']) {
+      const el = document.getElementById(`uptime-${key}`)
+      const detail = document.getElementById(`uptime-${key}-detail`)
+      if (!el) continue
+      const stats = data[key]
+      const pct = stats?.percentage ?? '--'
+      el.textContent = pct + '%'
+      el.style.color = pct >= 99.5 ? 'var(--success)' : pct >= 95 ? 'var(--warning)' : 'var(--error)'
+      if (detail) {
+        const windows = stats?.downtimeWindows || []
+        detail.textContent = windows.length > 0
+          ? `${windows.length} downtime window${windows.length > 1 ? 's' : ''} (last: ${Math.round((windows[windows.length-1]?.duration || 0) / 60000)}m)`
+          : stats?.total > 0 ? `${stats.total} checks, all up` : 'No data yet'
+      }
+    }
+  } catch { /* ignore */ }
+}
+
+async function loadSupabaseHealth() {
+  try {
+    const res = await fetch(`${API}/api/supabase/health`)
+    const data = await res.json()
+    const dot = document.getElementById('supabase-dot')
+    const latency = document.getElementById('supabase-latency')
+    const badge = document.getElementById('supabase-badge')
+    if (dot) dot.style.background = data.ok ? 'var(--success)' : 'var(--error)'
+    if (latency) latency.textContent = data.ok ? `${data.latency}ms latency` : (data.error || 'Error')
+    if (badge) {
+      badge.textContent = data.ok ? 'Healthy' : 'Error'
+      badge.style.background = data.ok ? 'var(--success-dim)' : 'var(--error-dim)'
+      badge.style.color = data.ok ? 'var(--success)' : 'var(--error)'
+    }
+  } catch { /* ignore */ }
+}
+
+async function loadSSLCerts() {
+  try {
+    const res = await fetch(`${API}/api/ssl/check`)
+    const data = await res.json()
+    const el = document.getElementById('ssl-certs')
+    if (!el) return
+    if (!data.certs || Object.keys(data.certs).length === 0) {
+      el.innerHTML = '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text-muted);font-size:13px;">No cert data available</div>'
+      return
+    }
+    el.innerHTML = Object.entries(data.certs).map(([domain, cert]) => `
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="font-weight:600;font-size:13px;">${escapeHtml(domain)}</div>
+        ${cert.valid
+          ? `<div style="font-size:12px;color:${cert.daysUntil > 30 ? 'var(--success)' : cert.daysUntil > 7 ? 'var(--warning)' : 'var(--error)'};margin-top:4px;">${cert.daysUntil} days until expiry</div>
+             <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Expires: ${cert.expires}</div>`
+          : `<div style="font-size:12px;color:var(--error);margin-top:4px;">${cert.error || 'Invalid'}</div>`
+        }
+      </div>`).join('')
+  } catch { /* ignore */ }
+}
+
+async function loadStripeHealth() {
+  try {
+    const res = await fetch(`${API}/api/stripe/health`)
+    const data = await res.json()
+    const el = document.getElementById('stripe-health')
+    if (!el) return
+    if (!data.ok) { el.textContent = data.error || 'Error'; return }
+    if (data.events && data.events.length > 0) {
+      el.innerHTML = data.events.map(e => `<div style="margin-bottom:4px;"><span style="color:var(--brand);font-weight:500;">${escapeHtml(e.type)}</span> <span style="color:var(--text-muted);">${e.received}</span></div>`).join('')
+    } else {
+      el.textContent = data.message || 'No recent webhooks'
+    }
+  } catch { /* ignore */ }
+}
+
+async function loadEmailHealth() {
+  try {
+    const res = await fetch(`${API}/api/email/health`)
+    const data = await res.json()
+    const el = document.getElementById('email-health')
+    if (!el) return
+    if (!data.ok) { el.textContent = data.error || 'Error'; return }
+    if (data.emails && data.emails.length > 0) {
+      el.innerHTML = data.emails.slice(0, 3).map(e => `<div style="margin-bottom:4px;"><span style="font-weight:500;">${escapeHtml(e.subject || 'No subject')}</span> <span style="color:${e.status === 'delivered' ? 'var(--success)' : 'var(--text-muted)'};">${e.status}</span></div>`).join('')
+    } else {
+      el.textContent = data.message || 'No recent emails'
+    }
+  } catch { /* ignore */ }
+}
+
+async function loadBackupStatus() {
+  try {
+    const res = await fetch(`${API}/api/backup/status`)
+    const data = await res.json()
+    const el = document.getElementById('backup-health')
+    if (!el) return
+    el.innerHTML = `
+      <div>${data.total || 0} backups stored</div>
+      <div style="color:var(--text-muted);margin-top:4px;">Schedule: ${data.scheduledTime || 'Daily 3 AM'} | Retention: ${data.retention || '7 days'}</div>
+      ${data.backups?.length > 0 ? `<div style="margin-top:4px;">Latest: ${escapeHtml(data.backups[data.backups.length - 1])}</div>` : ''}
+      <button class="btn btn-ghost" onclick="runAction('/api/backup/now','Running backup...')" style="margin-top:8px;font-size:11px;padding:4px 10px;">Backup Now</button>`
+  } catch { /* ignore */ }
+}
+
+async function loadApiLimits() {
+  try {
+    const res = await fetch(`${API}/api/api-limits`)
+    const data = await res.json()
+    const el = document.getElementById('api-limits')
+    if (!el || !data.services) return
+    el.innerHTML = data.services.map(s => `
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:${s.configured ? 'var(--success)' : 'var(--text-muted)'};flex-shrink:0;"></span>
+          <span style="font-weight:600;font-size:13px;">${escapeHtml(s.name)}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${s.configured ? (s.dailyLimit ? `${s.dailyLimit}/day limit` : 'No hard limit') : 'Not configured'}</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${escapeHtml(s.note)}</div>
+      </div>`).join('')
+  } catch { /* ignore */ }
+}
+
+async function loadErrorAggregation() {
+  try {
+    const res = await fetch(`${API}/api/errors/top`)
+    const data = await res.json()
+    const el = document.getElementById('error-aggregation')
+    if (!el) return
+    if (data.totalErrors === 0) {
+      el.innerHTML = '<div style="color:var(--success);font-size:13px;">No errors in the last hour</div>'
+      return
+    }
+    el.innerHTML = `
+      <div style="font-size:13px;color:var(--error);margin-bottom:8px;">${data.totalErrors} errors in the last hour</div>
+      ${(data.top5 || []).map((e, i) => `
+        <div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;${i === 0 ? '' : ''}">
+          <div style="display:flex;justify-content:space-between;">
+            <span style="color:var(--text-primary);font-family:monospace;word-break:break-all;">${escapeHtml(e.message.slice(0, 100))}</span>
+            <span style="color:var(--error);font-weight:600;white-space:nowrap;margin-left:8px;">${e.count}x</span>
+          </div>
+          <div style="color:var(--text-muted);font-size:11px;margin-top:2px;">Source: ${e.source} | Last: ${new Date(e.lastSeen).toLocaleTimeString()}</div>
+        </div>`).join('')}`
+  } catch { /* ignore */ }
+}
+
+async function loadEnvComparison() {
+  try {
+    const res = await fetch(`${API}/api/env/compare`)
+    const data = await res.json()
+    const el = document.getElementById('env-comparison')
+    if (!el) return
+    if (!data.comparison || data.comparison.length === 0) {
+      el.innerHTML = '<div style="padding:12px;color:var(--text-muted);font-size:13px;">No env files found</div>'
+      return
+    }
+    const envs = data.environments || ['dev', 'beta']
+    const missing = data.missing || []
+    el.innerHTML = `
+      ${missing.length > 0 ? `<div style="padding:8px 12px;background:var(--warning-dim);border-bottom:1px solid var(--border);font-size:12px;color:var(--warning);">${missing.length} key(s) missing in at least one environment</div>` : ''}
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="text-align:left;padding:8px 12px;color:var(--text-secondary);font-weight:500;">Key</th>
+            ${envs.map(e => `<th style="text-align:center;padding:8px 12px;color:var(--text-secondary);font-weight:500;">${e}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${missing.map(row => `
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:6px 12px;font-family:monospace;color:var(--text-primary);">${escapeHtml(row.key)}</td>
+              ${envs.map(e => `<td style="text-align:center;padding:6px 12px;">${row[e] === true ? '<span style="color:var(--success);">&#x2705;</span>' : row[e] === false ? '<span style="color:var(--error);">&#x274C;</span>' : '<span style="color:var(--text-muted);">N/A</span>'}</td>`).join('')}
+            </tr>`).join('')}
+        </tbody>
+      </table>
+      <div style="padding:8px 12px;font-size:11px;color:var(--text-muted);">${data.comparison.length} total keys across all environments. Only showing mismatches above.</div>`
+  } catch { /* ignore */ }
+}
+
+async function loadNpmAudit() {
+  const el = document.getElementById('npm-audit')
+  if (el) el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;">Running npm audit...</div>'
+  try {
+    const res = await fetch(`${API}/api/audit/npm`)
+    const data = await res.json()
+    if (!el) return
+    if (!data.ok) { el.innerHTML = `<div style="color:var(--error);">${escapeHtml(data.error)}</div>`; return }
+    const sev = data.severity || {}
+    el.innerHTML = `
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <div style="text-align:center;"><div style="font-size:24px;font-weight:700;color:${sev.critical > 0 ? 'var(--error)' : 'var(--success)'};">${sev.critical}</div><div style="font-size:10px;color:var(--text-muted);">Critical</div></div>
+        <div style="text-align:center;"><div style="font-size:24px;font-weight:700;color:${sev.high > 0 ? 'var(--error)' : 'var(--success)'};">${sev.high}</div><div style="font-size:10px;color:var(--text-muted);">High</div></div>
+        <div style="text-align:center;"><div style="font-size:24px;font-weight:700;color:${sev.moderate > 0 ? 'var(--warning)' : 'var(--success)'};">${sev.moderate}</div><div style="font-size:10px;color:var(--text-muted);">Moderate</div></div>
+        <div style="text-align:center;"><div style="font-size:24px;font-weight:700;color:var(--text-secondary);">${sev.low}</div><div style="font-size:10px;color:var(--text-muted);">Low</div></div>
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:var(--text-muted);">${data.totalDeps || 0} total dependencies</div>`
+  } catch (err) {
+    if (el) el.innerHTML = `<div style="color:var(--error);">${escapeHtml(err.message)}</div>`
+  }
+}
+
+async function loadBundleSize() {
+  try {
+    const res = await fetch(`${API}/api/bundle/size`)
+    const data = await res.json()
+    const el = document.getElementById('bundle-size')
+    if (!el) return
+    if (!data.history || data.history.length === 0) {
+      el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;">No bundle size data — run a build first, then click "Capture".</div><button class="btn btn-ghost" onclick="captureBundleSize()" style="margin-top:8px;font-size:11px;">Capture Bundle Size</button>'
+      return
+    }
+    const latest = data.history[data.history.length - 1]
+    const prev = data.history.length > 1 ? data.history[data.history.length - 2] : null
+    const delta = prev ? latest.totalMB - prev.totalMB : 0
+    el.innerHTML = `
+      <div style="display:flex;gap:16px;align-items:center;margin-bottom:8px;">
+        <div><span style="font-size:24px;font-weight:700;">${latest.totalMB} MB</span> <span style="font-size:12px;color:var(--text-muted);">(${latest.routeCount} routes)</span></div>
+        ${delta !== 0 ? `<span style="font-size:13px;color:${delta > 0 ? 'var(--error)' : 'var(--success)'};">${delta > 0 ? '+' : ''}${delta.toFixed(1)} MB</span>` : ''}
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);">Last captured: ${latest.timestamp?.slice(0, 10) || 'unknown'} | ${data.history.length} snapshots</div>
+      <button class="btn btn-ghost" onclick="captureBundleSize()" style="margin-top:8px;font-size:11px;">Capture Now</button>`
+  } catch { /* ignore */ }
+}
+
+async function captureBundleSize() {
+  const el = document.getElementById('bundle-size')
+  if (el) el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;">Capturing bundle size...</div>'
+  try {
+    await fetch(`${API}/api/bundle/capture`, { method: 'POST' })
+    await loadBundleSize()
+  } catch (err) {
+    if (el) el.innerHTML = `<div style="color:var(--error);">${escapeHtml(err.message)}</div>`
+  }
+}
+
+async function loadRollbackHistory() {
+  try {
+    const res = await fetch(`${API}/api/rollback/history`)
+    const data = await res.json()
+    const el = document.getElementById('rollback-history')
+    if (!el) return
+    if (!data.entries || data.entries.length === 0) {
+      el.innerHTML = '<div style="color:var(--text-muted);font-size:13px;">No rollbacks recorded</div>'
+      return
+    }
+    el.innerHTML = data.entries.slice(-10).reverse().map(e => `
+      <div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;">
+        <span style="color:var(--warning);">${e.timestamp?.slice(0, 19) || 'unknown'}</span>
+        <span style="color:var(--text-secondary);margin-left:8px;">${e.trigger || 'manual'} — ${e.result || 'success'}</span>
+      </div>`).join('')
+  } catch { /* ignore */ }
+}
+
+// ── Git Diff Viewer ──────────────────────────────────────────────
+
+async function loadGitDiff() {
+  try {
+    const res = await fetch(`${API}/api/git/diff`)
+    const data = await res.json()
+    const statEl = document.getElementById('git-diff-stat')
+    const contentEl = document.getElementById('git-diff-content')
+    const toggleEl = document.getElementById('git-diff-toggle')
+    if (!statEl) return
+
+    const allStat = [data.unstaged?.stat, data.staged?.stat].filter(Boolean).join('\n\nStaged:\n')
+    const allDiff = [data.unstaged?.diff, data.staged?.diff].filter(Boolean).join('\n')
+
+    if (!allStat && !allDiff) {
+      statEl.textContent = 'No changes'
+      if (contentEl) contentEl.style.display = 'none'
+      if (toggleEl) toggleEl.style.display = 'none'
+      return
+    }
+
+    statEl.textContent = allStat || 'No stat info'
+    if (contentEl && allDiff) {
+      // Syntax-highlight the diff
+      contentEl.innerHTML = allDiff.split('\n').map(line => {
+        if (line.startsWith('+') && !line.startsWith('+++')) return `<span style="color:#4ade80;">${escapeHtml(line)}</span>`
+        if (line.startsWith('-') && !line.startsWith('---')) return `<span style="color:#f87171;">${escapeHtml(line)}</span>`
+        if (line.startsWith('@@')) return `<span style="color:#60a5fa;">${escapeHtml(line)}</span>`
+        if (line.startsWith('diff ')) return `<span style="color:var(--brand);font-weight:600;">${escapeHtml(line)}</span>`
+        return escapeHtml(line)
+      }).join('\n')
+      if (toggleEl) toggleEl.style.display = 'inline-block'
+    }
+  } catch { /* ignore */ }
+}
+
+function toggleDiffContent() {
+  const el = document.getElementById('git-diff-content')
+  const btn = document.getElementById('git-diff-toggle')
+  if (!el) return
+  if (el.style.display === 'none') {
+    el.style.display = 'block'
+    if (btn) btn.textContent = 'Hide full diff'
+  } else {
+    el.style.display = 'none'
+    if (btn) btn.textContent = 'Show full diff'
+  }
+}
+
+// ── Desktop Notifications ────────────────────────────────────────
+
+let notificationsEnabled = false
+
+function initNotifications() {
+  if ('Notification' in window) {
+    if (Notification.permission === 'granted') {
+      notificationsEnabled = true
+    } else if (Notification.permission !== 'denied') {
+      Notification.requestPermission().then(perm => {
+        notificationsEnabled = perm === 'granted'
+      })
+    }
+  }
+}
+
+function notify(title, body, tag) {
+  if (!notificationsEnabled) return
+  try {
+    new Notification(title, { body, icon: '/favicon.ico', tag: tag || 'mc-' + Date.now(), silent: false })
+  } catch { /* ignore */ }
+}
+
+// Hook into SSE events for notifications
+function setupNotificationListeners() {
+  const originalOnMessage = eventSource?.onmessage
+  // We hook into the SSE stream that's already connected
+  // Check for deploy/build/error completions in the event log
+  const watchPatterns = [
+    { pattern: /Deploy completed successfully/i, title: 'Deploy Complete', tag: 'deploy' },
+    { pattern: /Deploy failed/i, title: 'Deploy Failed', tag: 'deploy-fail' },
+    { pattern: /Build passed/i, title: 'Build Passed', tag: 'build' },
+    { pattern: /Build failed/i, title: 'Build Failed', tag: 'build-fail' },
+    { pattern: /Type check passed/i, title: 'Type Check Passed', tag: 'tsc' },
+    { pattern: /Type check failed/i, title: 'Type Check Failed', tag: 'tsc-fail' },
+    { pattern: /Ship It complete/i, title: 'Ship It Complete', tag: 'ship' },
+    { pattern: /Feature close-out complete/i, title: 'Close-Out Complete', tag: 'closeout' },
+    { pattern: /ALERT: Beta server is DOWN/i, title: 'Beta is DOWN', tag: 'beta-down' },
+    { pattern: /ALERT: Production is DOWN/i, title: 'Production is DOWN', tag: 'prod-down' },
+    { pattern: /Scheduled backup saved/i, title: 'Backup Complete', tag: 'backup' },
+    { pattern: /Scheduled backup failed/i, title: 'Backup Failed', tag: 'backup-fail' },
+  ]
+  // Store the patterns globally so the SSE handler can use them
+  window._notifyPatterns = watchPatterns
+}
+
+initNotifications()
+
 // ── Project Expenses Panel ────────────────────────────────────────
 
 let expensesData = null
@@ -7112,6 +7664,7 @@ function renderExpenses(data) {
   let monthlyBurn = 0
   let hardwareTotal = 0
   let agentTotal = 0
+  let cloudTotal = 0
   const byCat = {}
 
   for (const entry of entries) {
@@ -7119,6 +7672,7 @@ function renderExpenses(data) {
     monthlyBurn += entry.monthlyRate || 0
     if (entry.category === 'hardware') hardwareTotal += entry.totalSpent || 0
     if (entry.category === 'ai-agents') agentTotal += entry.totalSpent || 0
+    if (entry.category === 'cloud-services') cloudTotal += (entry.totalSpent || 0) + (entry.monthlyRate || 0)
     if (!byCat[entry.category]) byCat[entry.category] = []
     byCat[entry.category].push(entry)
   }
@@ -7129,6 +7683,7 @@ function renderExpenses(data) {
   document.getElementById('exp-monthly').textContent = fmt(monthlyBurn) + '/mo'
   document.getElementById('exp-hardware').textContent = fmt(hardwareTotal)
   document.getElementById('exp-agents').textContent = fmt(agentTotal)
+  document.getElementById('exp-cloud').textContent = fmt(cloudTotal)
   document.getElementById('expenses-total-badge').textContent = fmt(totalSpent) + ' total'
 
   // Render category breakdown
@@ -7464,6 +8019,9 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '\\') switchSection('sysref')
   if (e.key === '`') switchSection('expenses')
   if (e.key === 'Tab') { e.preventDefault(); switchSection('logins') }
+  if (e.key === '?' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); toggleKeyboardHelp() }
+  if (e.key === 'k' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); toggleCommandPalette() }
+  if (e.key === 'Escape') { closeKeyboardHelp(); closeCommandPalette() }
 })
 
 function switchSection(section) {
@@ -7475,7 +8033,8 @@ function switchSection(section) {
   if (section === 'timeline') { loadProjectTimeline(); startTimelineAutoRefresh() }
   else { stopTimelineAutoRefresh() }
   if (section === 'feedback') loadFeedback()
-  if (section === 'infra') loadInfra()
+  if (section === 'infra') { loadInfra(); loadInfraExtended() }
+  if (section === 'git') loadGitDiff()
   if (section === 'observe') observeConnect()
   if (section === 'expenses') loadExpenses()
 }
@@ -7744,7 +8303,182 @@ connectSSE()
 loadPromptQueue() // Load prompt queue on startup since Home is default
 
 addLog('info', 'system', 'Mission Control connected')
-addLog('info', 'system', 'Keyboard shortcuts: 1-9 switch panels, [ opens Timeline, Ctrl+/ opens chat, = opens Observe')
+addLog('info', 'system', 'Keyboard shortcuts: 1-9 switch panels, [ Timeline, Ctrl+/ chat, = Observe, ? help, Ctrl+K command palette')
+setupNotificationListeners()
+loadInfraExtended()
+
+// ── Keyboard Shortcut Help Overlay ───────────────────────────────
+
+function toggleKeyboardHelp() {
+  let overlay = document.getElementById('keyboard-help-overlay')
+  if (overlay) { overlay.remove(); return }
+  overlay = document.createElement('div')
+  overlay.id = 'keyboard-help-overlay'
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove() }
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);'
+  overlay.innerHTML = `
+    <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:12px;padding:24px 32px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;">
+      <h2 style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--text-primary);margin-bottom:16px;">Keyboard Shortcuts</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;font-size:13px;">
+        ${[
+          ['1', 'Quick Actions (Home)'], ['2', 'Dev Server'], ['3', 'Beta Server'], ['4', 'Production'],
+          ['5', 'Ollama AI'], ['6', 'Git'], ['7', 'Build'], ['8', 'Project History'],
+          ['[', 'Project Timeline'], ['9', 'User Feedback'], ['0', 'Infrastructure'], ['-', 'Blueprint'],
+          ['=', 'Observe (Live Feed)'], ['\\\\', 'System Reference'], ['\`', 'Project Expenses'], ['Tab', 'Test Logins'],
+          ['Ctrl+/', 'Gustav AI Chat'], ['Ctrl+K', 'Command Palette'], ['?', 'This Help'],
+          ['Ctrl+N', 'New Chat (in Gustav)'], ['Ctrl+H', 'Chat History'], ['Ctrl+F', 'Search Chats'],
+        ].map(([key, desc]) => `
+          <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);">
+            <kbd style="background:var(--bg-card);border:1px solid var(--border-bright);border-radius:4px;padding:2px 8px;font-family:monospace;font-size:12px;color:var(--brand);min-width:40px;text-align:center;">${key}</kbd>
+            <span style="color:var(--text-secondary);">${desc}</span>
+          </div>`).join('')}
+      </div>
+      <div style="text-align:center;margin-top:16px;font-size:12px;color:var(--text-muted);">Press <kbd style="background:var(--bg-card);border:1px solid var(--border-bright);border-radius:3px;padding:1px 6px;font-family:monospace;font-size:11px;">Esc</kbd> or <kbd style="background:var(--bg-card);border:1px solid var(--border-bright);border-radius:3px;padding:1px 6px;font-family:monospace;font-size:11px;">?</kbd> to close</div>
+    </div>`
+  document.body.appendChild(overlay)
+}
+
+function closeKeyboardHelp() {
+  const overlay = document.getElementById('keyboard-help-overlay')
+  if (overlay) overlay.remove()
+}
+
+// ── Command Palette (Ctrl+K) ─────────────────────────────────────
+
+const paletteCommands = [
+  { label: 'Quick Actions (Home)', action: () => switchSection('home'), keys: '1', category: 'Navigate' },
+  { label: 'Dev Server', action: () => switchSection('dev'), keys: '2', category: 'Navigate' },
+  { label: 'Beta Server', action: () => switchSection('beta'), keys: '3', category: 'Navigate' },
+  { label: 'Production', action: () => switchSection('prod'), keys: '4', category: 'Navigate' },
+  { label: 'Ollama AI', action: () => switchSection('ollama'), keys: '5', category: 'Navigate' },
+  { label: 'Git', action: () => switchSection('git'), keys: '6', category: 'Navigate' },
+  { label: 'Build', action: () => switchSection('build'), keys: '7', category: 'Navigate' },
+  { label: 'Project History', action: () => switchSection('log'), keys: '8', category: 'Navigate' },
+  { label: 'Project Timeline', action: () => switchSection('timeline'), keys: '[', category: 'Navigate' },
+  { label: 'User Feedback', action: () => switchSection('feedback'), keys: '9', category: 'Navigate' },
+  { label: 'Infrastructure', action: () => switchSection('infra'), keys: '0', category: 'Navigate' },
+  { label: 'Observe (Live Feed)', action: () => switchSection('observe'), keys: '=', category: 'Navigate' },
+  { label: 'System Reference', action: () => switchSection('sysref'), keys: '\\', category: 'Navigate' },
+  { label: 'Project Expenses', action: () => switchSection('expenses'), keys: '`', category: 'Navigate' },
+  { label: 'Test Logins', action: () => switchSection('logins'), keys: 'Tab', category: 'Navigate' },
+  { label: 'Start Dev Server', action: () => runAction('/api/dev/start', 'Starting dev server...'), category: 'DevOps' },
+  { label: 'Stop Dev Server', action: () => runAction('/api/dev/stop', 'Stopping dev server...'), category: 'DevOps' },
+  { label: 'Deploy to Beta', action: () => runAction('/api/beta/deploy', 'Deploying to beta...'), category: 'DevOps' },
+  { label: 'Restart Beta', action: () => runAction('/api/beta/restart', 'Restarting beta...'), category: 'DevOps' },
+  { label: 'Rollback Beta', action: () => runAction('/api/beta/rollback', 'Rolling back beta...'), category: 'DevOps' },
+  { label: 'Push to GitHub', action: () => { action('git/push') }, category: 'Git' },
+  { label: 'Run Type Check', action: () => runAction('/api/build/typecheck', 'Running typecheck...'), category: 'Build' },
+  { label: 'Run Full Build', action: () => runAction('/api/build/full', 'Running full build...'), category: 'Build' },
+  { label: 'Clear Build Cache', action: () => runAction('/api/cache/clear', 'Clearing cache...'), category: 'Build' },
+  { label: 'Run npm install', action: () => runAction('/api/npm/install', 'Running npm install...'), category: 'Build' },
+  { label: 'Run npm audit', action: () => { switchSection('infra'); loadNpmAudit() }, category: 'Health' },
+  { label: 'Database Backup (Now)', action: () => runAction('/api/backup/now', 'Running backup...'), category: 'Database' },
+  { label: 'Regenerate DB Types', action: () => runAction('/api/db/gen-types', 'Generating types...'), category: 'Database' },
+  { label: 'Start Ollama (PC)', action: () => runAction('/api/ollama/pc/start', 'Starting Ollama PC...'), category: 'DevOps' },
+  { label: 'Stop Ollama (PC)', action: () => runAction('/api/ollama/pc/stop', 'Stopping Ollama PC...'), category: 'DevOps' },
+  { label: 'Open Gustav Chat', action: () => { document.getElementById('chat-drawer')?.classList.add('open'); chatOpen = true }, keys: 'Ctrl+/', category: 'AI' },
+  { label: 'Keyboard Shortcuts', action: () => toggleKeyboardHelp(), keys: '?', category: 'Help' },
+]
+
+let paletteOpen = false
+let paletteSelected = 0
+
+function toggleCommandPalette() {
+  let overlay = document.getElementById('command-palette-overlay')
+  if (overlay) { overlay.remove(); paletteOpen = false; return }
+  paletteOpen = true
+  paletteSelected = 0
+
+  overlay = document.createElement('div')
+  overlay.id = 'command-palette-overlay'
+  overlay.onclick = (e) => { if (e.target === overlay) { overlay.remove(); paletteOpen = false } }
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.6);display:flex;align-items:flex-start;justify-content:center;padding-top:15vh;backdrop-filter:blur(3px);'
+  overlay.innerHTML = `
+    <div style="background:var(--bg-secondary);border:1px solid var(--border-bright);border-radius:12px;width:520px;max-width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.5);overflow:hidden;">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);">
+        <input id="palette-input" type="text" placeholder="Type a command..." autofocus
+          style="width:100%;background:transparent;border:none;color:var(--text-primary);font-size:15px;outline:none;font-family:inherit;"
+          oninput="filterPalette(this.value)"
+          onkeydown="handlePaletteKey(event)" />
+      </div>
+      <div id="palette-results" style="max-height:320px;overflow-y:auto;padding:4px 0;"></div>
+    </div>`
+  document.body.appendChild(overlay)
+  filterPalette('')
+  setTimeout(() => document.getElementById('palette-input')?.focus(), 50)
+}
+
+function closeCommandPalette() {
+  const overlay = document.getElementById('command-palette-overlay')
+  if (overlay) { overlay.remove(); paletteOpen = false }
+}
+
+function filterPalette(query) {
+  const q = query.toLowerCase().trim()
+  const results = q
+    ? paletteCommands.filter(c => c.label.toLowerCase().includes(q) || (c.category || '').toLowerCase().includes(q))
+    : paletteCommands
+  paletteSelected = 0
+  renderPaletteResults(results)
+}
+
+function renderPaletteResults(results) {
+  const el = document.getElementById('palette-results')
+  if (!el) return
+  if (results.length === 0) {
+    el.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:13px;">No matching commands</div>'
+    return
+  }
+  el.innerHTML = results.map((cmd, i) => `
+    <div class="palette-item" data-index="${i}" onclick="executePaletteCommand(${i})" onmouseenter="paletteSelected=${i};highlightPaletteItem()"
+      style="padding:8px 16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;${i === paletteSelected ? 'background:var(--bg-active);' : ''}transition:background 0.1s;">
+      <div>
+        <span style="font-size:13px;color:var(--text-primary);">${escapeHtml(cmd.label)}</span>
+        <span style="font-size:11px;color:var(--text-muted);margin-left:8px;">${cmd.category || ''}</span>
+      </div>
+      ${cmd.keys ? `<kbd style="font-size:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:3px;padding:1px 6px;color:var(--text-muted);font-family:monospace;">${cmd.keys}</kbd>` : ''}
+    </div>`).join('')
+  window._paletteResults = results
+}
+
+function highlightPaletteItem() {
+  const items = document.querySelectorAll('.palette-item')
+  items.forEach((item, i) => {
+    item.style.background = i === paletteSelected ? 'var(--bg-active)' : ''
+  })
+}
+
+function handlePaletteKey(e) {
+  const items = document.querySelectorAll('.palette-item')
+  if (e.key === 'ArrowDown') { e.preventDefault(); paletteSelected = Math.min(paletteSelected + 1, items.length - 1); highlightPaletteItem() }
+  if (e.key === 'ArrowUp') { e.preventDefault(); paletteSelected = Math.max(paletteSelected - 1, 0); highlightPaletteItem() }
+  if (e.key === 'Enter') { e.preventDefault(); executePaletteCommand(paletteSelected) }
+  if (e.key === 'Escape') { closeCommandPalette() }
+}
+
+function executePaletteCommand(index) {
+  const results = window._paletteResults || paletteCommands
+  const cmd = results[index]
+  if (cmd) {
+    closeCommandPalette()
+    cmd.action()
+  }
+}
+
+// ── runAction helper (for palette and buttons) ───────────────────
+
+async function runAction(url, message) {
+  addLog('info', 'action', message || 'Running...')
+  try {
+    const res = await fetch(`${API}${url}`, { method: 'POST' })
+    const data = await res.json()
+    if (data.ok || data.message) addLog('info', 'action', data.message || 'Done')
+    else addLog('error', 'action', data.error || 'Failed')
+  } catch (err) {
+    addLog('error', 'action', 'Request failed: ' + err.message)
+  }
+}
+
 </script>
 </body>
 </html>
