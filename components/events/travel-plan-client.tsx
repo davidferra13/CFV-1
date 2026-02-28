@@ -5,6 +5,7 @@
 // Shows the full arc: specialty sourcing → grocery → service → return.
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -431,49 +432,67 @@ export function TravelPlanClient({
   }
 
   const handleDelete = (id: string) => {
+    const previousLegs = legs
     startTransition(async () => {
-      await deleteTravelLeg(id)
-      setLegs((prev) => prev.filter((l) => l.id !== id))
+      try {
+        await deleteTravelLeg(id)
+        setLegs((prev) => prev.filter((l) => l.id !== id))
+      } catch (err) {
+        setLegs(previousLegs)
+        toast.error('Failed to delete travel leg')
+      }
     })
   }
 
   const handleStatusChange = (id: string, status: string) => {
+    const previousLegs = legs
     startTransition(async () => {
-      if (status === 'completed') await markLegComplete(id)
-      else if (status === 'in_progress') await markLegInProgress(id)
-      else if (status === 'cancelled') await cancelTravelLeg(id)
+      try {
+        if (status === 'completed') await markLegComplete(id)
+        else if (status === 'in_progress') await markLegInProgress(id)
+        else if (status === 'cancelled') await cancelTravelLeg(id)
 
-      setLegs((prev) =>
-        prev.map((l) =>
-          l.id === id
-            ? {
-                ...l,
-                status: status as TravelLeg['status'],
-                completed_at: status === 'completed' ? new Date().toISOString() : l.completed_at,
-              }
-            : l
+        setLegs((prev) =>
+          prev.map((l) =>
+            l.id === id
+              ? {
+                  ...l,
+                  status: status as TravelLeg['status'],
+                  completed_at: status === 'completed' ? new Date().toISOString() : l.completed_at,
+                }
+              : l
+          )
         )
-      )
+      } catch (err) {
+        setLegs(previousLegs)
+        toast.error('Failed to update travel leg status')
+      }
     })
   }
 
   const handleIngredientStatusChange = (ingredientId: string, status: TravelIngredientStatus) => {
+    const previousLegs = legs
     startTransition(async () => {
-      await updateIngredientStatus(ingredientId, status)
-      setLegs((prev) =>
-        prev.map((leg) => ({
-          ...leg,
-          ingredients: leg.ingredients.map((ing) =>
-            ing.id === ingredientId
-              ? {
-                  ...ing,
-                  status,
-                  sourced_at: status === 'sourced' ? new Date().toISOString() : null,
-                }
-              : ing
-          ),
-        }))
-      )
+      try {
+        await updateIngredientStatus(ingredientId, status)
+        setLegs((prev) =>
+          prev.map((leg) => ({
+            ...leg,
+            ingredients: leg.ingredients.map((ing) =>
+              ing.id === ingredientId
+                ? {
+                    ...ing,
+                    status,
+                    sourced_at: status === 'sourced' ? new Date().toISOString() : null,
+                  }
+                : ing
+            ),
+          }))
+        )
+      } catch (err) {
+        setLegs(previousLegs)
+        toast.error('Failed to update ingredient status')
+      }
     })
   }
 

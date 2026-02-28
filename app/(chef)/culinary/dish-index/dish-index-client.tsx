@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useTransition, useRef, useEffect } from 'react'
+import { toast } from 'sonner'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -81,9 +82,13 @@ export function DishIndexClient({ initialDishes, totalCount, stats }: DishIndexC
       }
 
       startTransition(async () => {
-        const result = await getDishIndex(filters)
-        setDishes(result.dishes as unknown as Array<Record<string, unknown>>)
-        setTotal(result.total)
+        try {
+          const result = await getDishIndex(filters)
+          setDishes(result.dishes as unknown as Array<Record<string, unknown>>)
+          setTotal(result.total)
+        } catch (err) {
+          toast.error('Failed to load dishes')
+        }
       })
     },
     [search, courseFilter, rotationFilter, recipeFilter, sortBy]
@@ -101,22 +106,26 @@ export function DishIndexClient({ initialDishes, totalCount, stats }: DishIndexC
 
   const loadMore = useCallback(() => {
     startTransition(async () => {
-      const filters = {
-        search,
-        course: courseFilter,
-        rotation_status: rotationFilter,
-        has_recipe: recipeFilter === 'yes' ? true : recipeFilter === 'no' ? false : undefined,
-        sort_by: sortBy as 'name' | 'times_served' | 'last_served' | 'created_at',
-        sort_dir: 'desc' as const,
-        limit: PAGE_SIZE,
-        offset: dishes.length,
+      try {
+        const filters = {
+          search,
+          course: courseFilter,
+          rotation_status: rotationFilter,
+          has_recipe: recipeFilter === 'yes' ? true : recipeFilter === 'no' ? false : undefined,
+          sort_by: sortBy as 'name' | 'times_served' | 'last_served' | 'created_at',
+          sort_dir: 'desc' as const,
+          limit: PAGE_SIZE,
+          offset: dishes.length,
+        }
+        const result = await getDishIndex(filters)
+        setDishes((prev) => [
+          ...prev,
+          ...(result.dishes as unknown as Array<Record<string, unknown>>),
+        ])
+        setTotal(result.total)
+      } catch (err) {
+        toast.error('Failed to load more dishes')
       }
-      const result = await getDishIndex(filters)
-      setDishes((prev) => [
-        ...prev,
-        ...(result.dishes as unknown as Array<Record<string, unknown>>),
-      ])
-      setTotal(result.total)
     })
   }, [search, courseFilter, rotationFilter, recipeFilter, sortBy, dishes.length])
 

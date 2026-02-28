@@ -1,6 +1,7 @@
 'use client'
 
 import { useTransition } from 'react'
+import { toast } from 'sonner'
 import { AlertTriangle, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -22,7 +23,11 @@ export function ScopeDriftBanner({ eventId, driftResult, acknowledged }: Props) 
 
   function handleAcknowledge() {
     startTransition(async () => {
-      await acknowledgeScopeDrift(eventId)
+      try {
+        await acknowledgeScopeDrift(eventId)
+      } catch (err) {
+        toast.error('Failed to acknowledge scope drift')
+      }
     })
   }
 

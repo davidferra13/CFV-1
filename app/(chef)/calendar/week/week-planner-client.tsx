@@ -7,6 +7,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
 import { Card } from '@/components/ui/card'
@@ -352,25 +353,39 @@ export function WeekPlannerClient({
   }
 
   async function autoSchedule(eventId: string, eventName: string) {
-    const res = await autoSuggestEventBlocks(eventId)
-    if (!res.error && res.suggestions.length > 0)
-      setModal({ eventId, eventName, suggestions: res.suggestions })
+    try {
+      const res = await autoSuggestEventBlocks(eventId)
+      if (!res.error && res.suggestions.length > 0)
+        setModal({ eventId, eventName, suggestions: res.suggestions })
+    } catch (err) {
+      toast.error('Failed to generate schedule suggestions')
+    }
   }
 
   async function confirmSuggestions(confirmed: CreatePrepBlockInput[]) {
     setConfirmPending(true)
-    await bulkCreatePrepBlocks(confirmed)
-    setConfirmPending(false)
-    setModal(null)
-    startTransition(() => router.refresh())
+    try {
+      await bulkCreatePrepBlocks(confirmed)
+      setConfirmPending(false)
+      setModal(null)
+      startTransition(() => router.refresh())
+    } catch (err) {
+      setConfirmPending(false)
+      toast.error('Failed to save prep blocks')
+    }
   }
 
   async function toggleComplete(block: PrepBlock) {
     setToggling(block.id)
-    if (block.is_completed) await uncompletePrepBlock(block.id)
-    else await completePrepBlock(block.id)
-    setToggling(null)
-    startTransition(() => router.refresh())
+    try {
+      if (block.is_completed) await uncompletePrepBlock(block.id)
+      else await completePrepBlock(block.id)
+      setToggling(null)
+      startTransition(() => router.refresh())
+    } catch (err) {
+      setToggling(null)
+      toast.error('Failed to update prep block')
+    }
   }
 
   function removeBlock(id: string) {
@@ -382,9 +397,14 @@ export function WeekPlannerClient({
     const id = deleteBlockId
     setDeleteBlockId(null)
     setDeleting(id)
-    await deletePrepBlock(id)
-    setDeleting(null)
-    startTransition(() => router.refresh())
+    try {
+      await deletePrepBlock(id)
+      setDeleting(null)
+      startTransition(() => router.refresh())
+    } catch (err) {
+      setDeleting(null)
+      toast.error('Failed to delete prep block')
+    }
   }
 
   const blocksByDate = prepBlocks.reduce<Record<string, PrepBlock[]>>((acc, b) => {

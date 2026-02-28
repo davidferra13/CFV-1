@@ -5,6 +5,7 @@
 // Sections only appear when there are actual blanks to fill.
 
 import { useState, useTransition, useCallback } from 'react'
+import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -328,11 +329,16 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
   const [completeError, setCompleteError] = useState<string | null>(null)
   const handleComplete = () => {
     startTransition(async () => {
-      const result = await completeDebrief(eventId)
-      if (result.success) {
-        router.push(`/events/${eventId}`)
-      } else {
-        setCompleteError(result.error ?? 'Something went wrong')
+      try {
+        const result = await completeDebrief(eventId)
+        if (result.success) {
+          router.push(`/events/${eventId}`)
+        } else {
+          setCompleteError(result.error ?? 'Something went wrong')
+        }
+      } catch (err) {
+        setCompleteError('Failed to complete debrief')
+        toast.error('Failed to complete debrief')
       }
     })
   }

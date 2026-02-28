@@ -1,6 +1,7 @@
 'use client'
 
 import { useTransition } from 'react'
+import { toast } from 'sonner'
 import { AlertTriangle, CheckCircle, Circle, ShieldAlert } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { toggleCrossContaminationItem } from '@/lib/events/cross-contamination-actions'
@@ -40,7 +41,11 @@ export function CrossContaminationChecklist({ eventId, allergens, checklist }: P
   function handleToggle(itemKey: string) {
     if (!checklist) return
     startTransition(async () => {
-      await toggleCrossContaminationItem(checklist!.id, itemKey)
+      try {
+        await toggleCrossContaminationItem(checklist!.id, itemKey)
+      } catch (err) {
+        toast.error('Failed to update checklist item')
+      }
     })
   }
 

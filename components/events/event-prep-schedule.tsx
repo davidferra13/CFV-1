@@ -5,6 +5,7 @@
 // auto-suggest → confirm flow for scheduling prep activities.
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { format, parseISO } from 'date-fns'
 import { Card } from '@/components/ui/card'
@@ -495,28 +496,41 @@ export function EventPrepSchedule({ eventId, initialBlocks }: Props) {
 
   async function handleConfirmSuggestions(confirmed: CreatePrepBlockInput[]) {
     setConfirmPending(true)
-    const result = await bulkCreatePrepBlocks(confirmed)
-    setConfirmPending(false)
-    if (result.success) {
-      setSuggestions(null)
-      startTransition(() => router.refresh())
-    } else {
-      setSuggestError(result.error ?? 'Failed to save blocks.')
+    try {
+      const result = await bulkCreatePrepBlocks(confirmed)
+      setConfirmPending(false)
+      if (result.success) {
+        setSuggestions(null)
+        startTransition(() => router.refresh())
+      } else {
+        setSuggestError(result.error ?? 'Failed to save blocks.')
+      }
+    } catch (err) {
+      setConfirmPending(false)
+      toast.error('Failed to save prep blocks')
     }
   }
 
   async function handleToggleComplete(id: string, isCompleted: boolean) {
-    if (isCompleted) {
-      await uncompletePrepBlock(id)
-    } else {
-      await completePrepBlock(id)
+    try {
+      if (isCompleted) {
+        await uncompletePrepBlock(id)
+      } else {
+        await completePrepBlock(id)
+      }
+      startTransition(() => router.refresh())
+    } catch (err) {
+      toast.error('Failed to update prep block')
     }
-    startTransition(() => router.refresh())
   }
 
   async function handleDelete(id: string) {
-    await deletePrepBlock(id)
-    startTransition(() => router.refresh())
+    try {
+      await deletePrepBlock(id)
+      startTransition(() => router.refresh())
+    } catch (err) {
+      toast.error('Failed to delete prep block')
+    }
   }
 
   // Group blocks by date

@@ -9,6 +9,7 @@
 //     Shows a camera icon when empty; thumbnail with hover-replace overlay when filled.
 
 import { useRef, useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import Image from 'next/image'
 import {
   uploadRecipePhoto,
@@ -82,16 +83,21 @@ export function DishPhotoUpload({
     formData.append('photo', file)
 
     startTransition(async () => {
-      const result =
-        entityType === 'recipe'
-          ? await uploadRecipePhoto(entityId, formData)
-          : await uploadDishPhoto(entityId, formData)
+      try {
+        const result =
+          entityType === 'recipe'
+            ? await uploadRecipePhoto(entityId, formData)
+            : await uploadDishPhoto(entityId, formData)
 
-      if (result.success) {
-        setPhotoUrl(result.photoUrl)
-        onPhotoChange?.(result.photoUrl)
-      } else {
-        setError(result.error)
+        if (result.success) {
+          setPhotoUrl(result.photoUrl)
+          onPhotoChange?.(result.photoUrl)
+        } else {
+          setError(result.error)
+        }
+      } catch (err) {
+        setError('Failed to upload photo')
+        toast.error('Failed to upload photo')
       }
     })
 
@@ -108,16 +114,21 @@ export function DishPhotoUpload({
     setError(null)
 
     startTransition(async () => {
-      const result =
-        entityType === 'recipe'
-          ? await removeRecipePhoto(entityId)
-          : await removeDishPhoto(entityId)
+      try {
+        const result =
+          entityType === 'recipe'
+            ? await removeRecipePhoto(entityId)
+            : await removeDishPhoto(entityId)
 
-      if (result.success) {
-        setPhotoUrl(null)
-        onPhotoChange?.(null)
-      } else {
-        setError(result.error || 'Failed to remove photo')
+        if (result.success) {
+          setPhotoUrl(null)
+          onPhotoChange?.(null)
+        } else {
+          setError(result.error || 'Failed to remove photo')
+        }
+      } catch (err) {
+        setError('Failed to remove photo')
+        toast.error('Failed to remove photo')
       }
     })
   }

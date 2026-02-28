@@ -4,6 +4,7 @@
 // Extended with optional photo proof upload per modification record.
 
 import { useRef, useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -114,9 +115,13 @@ export function MenuModifications({
     const formData = new FormData()
     formData.set('photo', file)
     startTransition(async () => {
-      const result = await uploadModificationPhoto(targetModId, eventId, formData)
-      if (result.success) {
-        setSessionPhotoUrls((prev) => ({ ...prev, [targetModId]: result.signedUrl }))
+      try {
+        const result = await uploadModificationPhoto(targetModId, eventId, formData)
+        if (result.success) {
+          setSessionPhotoUrls((prev) => ({ ...prev, [targetModId]: result.signedUrl }))
+        }
+      } catch (err) {
+        toast.error('Failed to upload modification photo')
       }
       setUploadingPhotoFor(null)
     })

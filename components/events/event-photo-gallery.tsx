@@ -5,6 +5,7 @@
 // All mutations call server actions; state updates optimistically.
 
 import { useState, useRef, useCallback, useTransition, useEffect } from 'react'
+import { toast } from 'sonner'
 import Image from 'next/image'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -280,12 +281,17 @@ export function EventPhotoGallery({ eventId, initialPhotos }: Props) {
 
   function handleDelete(photoId: string) {
     startTransition(async () => {
-      const result = await deleteEventPhoto(photoId)
-      if (result.success) {
-        setPhotos((prev) => prev.filter((p) => p.id !== photoId))
-        setError(null)
-      } else {
-        setError(result.error ?? 'Failed to delete photo')
+      try {
+        const result = await deleteEventPhoto(photoId)
+        if (result.success) {
+          setPhotos((prev) => prev.filter((p) => p.id !== photoId))
+          setError(null)
+        } else {
+          setError(result.error ?? 'Failed to delete photo')
+        }
+      } catch (err) {
+        setError('Failed to delete photo')
+        toast.error('Failed to delete photo')
       }
     })
   }

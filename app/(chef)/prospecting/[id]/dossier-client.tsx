@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -112,35 +113,45 @@ export function ProspectDossierClient({
 
   function handleLogCall() {
     if (!callOutcome) return
+    const previousProspect = prospect
     startTransition(async () => {
-      const outcome = CALL_OUTCOMES.find((o) => o.value === callOutcome)
-      const result = await logProspectCall(
-        prospect.id,
-        callOutcome,
-        callNotes || undefined,
-        outcome?.nextStatus === 'follow_up' ? followUpDays : undefined
-      )
-      setProspect((prev) => ({
-        ...prev,
-        status: result.newStatus,
-        call_count: prev.call_count + 1,
-        last_called_at: new Date().toISOString(),
-        last_outcome: CALL_OUTCOMES.find((o) => o.value === callOutcome)?.label ?? callOutcome,
-      }))
-      setShowCallLog(false)
-      setCallOutcome('')
-      setCallNotes('')
-      router.refresh()
+      try {
+        const outcome = CALL_OUTCOMES.find((o) => o.value === callOutcome)
+        const result = await logProspectCall(
+          prospect.id,
+          callOutcome,
+          callNotes || undefined,
+          outcome?.nextStatus === 'follow_up' ? followUpDays : undefined
+        )
+        setProspect((prev) => ({
+          ...prev,
+          status: result.newStatus,
+          call_count: prev.call_count + 1,
+          last_called_at: new Date().toISOString(),
+          last_outcome: CALL_OUTCOMES.find((o) => o.value === callOutcome)?.label ?? callOutcome,
+        }))
+        setShowCallLog(false)
+        setCallOutcome('')
+        setCallNotes('')
+        router.refresh()
+      } catch (err) {
+        setProspect(previousProspect)
+        toast.error('Failed to log call outcome')
+      }
     })
   }
 
   function handleAddNote() {
     if (!newNote.trim()) return
     startTransition(async () => {
-      const result = await addProspectNote(prospect.id, newNote.trim(), noteType)
-      setNotes((prev) => [result.note, ...prev])
-      setNewNote('')
-      setNoteType('general')
+      try {
+        const result = await addProspectNote(prospect.id, newNote.trim(), noteType)
+        setNotes((prev) => [result.note, ...prev])
+        setNewNote('')
+        setNoteType('general')
+      } catch (err) {
+        toast.error('Failed to add note')
+      }
     })
   }
 
@@ -151,14 +162,18 @@ export function ProspectDossierClient({
   function handleConfirmedConvert() {
     setShowConvertConfirm(false)
     startTransition(async () => {
-      const result = await convertProspectToInquiry(prospect.id)
-      setProspect((prev) => ({
-        ...prev,
-        status: 'converted',
-        converted_to_inquiry_id: result.inquiryId,
-        converted_at: new Date().toISOString(),
-      }))
-      router.refresh()
+      try {
+        const result = await convertProspectToInquiry(prospect.id)
+        setProspect((prev) => ({
+          ...prev,
+          status: 'converted',
+          converted_to_inquiry_id: result.inquiryId,
+          converted_at: new Date().toISOString(),
+        }))
+        router.refresh()
+      } catch (err) {
+        toast.error('Failed to convert prospect to inquiry')
+      }
     })
   }
 
@@ -169,8 +184,12 @@ export function ProspectDossierClient({
   function handleConfirmedDelete() {
     setShowDeleteConfirm(false)
     startTransition(async () => {
-      await deleteProspect(prospect.id)
-      router.push('/prospecting')
+      try {
+        await deleteProspect(prospect.id)
+        router.push('/prospecting')
+      } catch (err) {
+        toast.error('Failed to delete prospect')
+      }
     })
   }
 

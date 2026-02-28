@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { Wine, Clock, Users, Bell, BellOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -53,27 +54,39 @@ export function AlcoholServiceLog({ eventId, log }: Props) {
     if (!guestsServed || isNaN(guests) || guests < 1) return
 
     startTransition(async () => {
-      await addAlcoholLogEntry(log!.id, {
-        drink_type: drinkType,
-        guests_served: guests,
-        notes: entryNotes.trim() || undefined,
-      })
-      setGuestsServed('')
-      setEntryNotes('')
+      try {
+        await addAlcoholLogEntry(log!.id, {
+          drink_type: drinkType,
+          guests_served: guests,
+          notes: entryNotes.trim() || undefined,
+        })
+        setGuestsServed('')
+        setEntryNotes('')
+      } catch (err) {
+        toast.error('Failed to add alcohol log entry')
+      }
     })
   }
 
   function handleSetLastCall() {
     startTransition(async () => {
-      await setLastCall(log!.id)
+      try {
+        await setLastCall(log!.id)
+      } catch (err) {
+        toast.error('Failed to set last call')
+      }
     })
   }
 
   function handleSaveNotes() {
     startTransition(async () => {
-      await updateLogNotes(log!.id, generalNotes)
-      setNotesSaved(true)
-      setTimeout(() => setNotesSaved(false), 2000)
+      try {
+        await updateLogNotes(log!.id, generalNotes)
+        setNotesSaved(true)
+        setTimeout(() => setNotesSaved(false), 2000)
+      } catch (err) {
+        toast.error('Failed to save notes')
+      }
     })
   }
 

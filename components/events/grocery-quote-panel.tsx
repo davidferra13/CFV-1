@@ -5,6 +5,7 @@
 // Allows chef to save discovered prices back to the Recipe Book.
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { runGroceryPriceQuote, type GroceryQuoteResult } from '@/lib/grocery/pricing-actions'
@@ -98,18 +99,22 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
     if (!quote) return
     setSaved(false)
     startTransition(async () => {
-      const updates = quote.items
-        .filter((item) => item.averageCents !== null && item.quantity > 0)
-        .map((item) => ({
-          ingredientId: item.ingredientId,
-          // Store price per unit (average ÷ quantity) so it's quantity-independent
-          pricePerUnitCents: Math.round((item.averageCents ?? 0) / item.quantity),
-        }))
+      try {
+        const updates = quote.items
+          .filter((item) => item.averageCents !== null && item.quantity > 0)
+          .map((item) => ({
+            ingredientId: item.ingredientId,
+            // Store price per unit (average ÷ quantity) so it's quantity-independent
+            pricePerUnitCents: Math.round((item.averageCents ?? 0) / item.quantity),
+          }))
 
-      if (updates.length === 0) return
+        if (updates.length === 0) return
 
-      await bulkUpdateIngredientPrices(updates)
-      setSaved(true)
+        await bulkUpdateIngredientPrices(updates)
+        setSaved(true)
+      } catch (err) {
+        toast.error('Failed to save prices to recipe book')
+      }
     })
   }
 

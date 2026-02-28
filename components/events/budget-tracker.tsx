@@ -5,6 +5,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -81,20 +82,29 @@ export function BudgetTracker({ eventId, guardrail }: BudgetTrackerProps) {
     }
     const cents = Math.round(dollars * 100)
     startTransition(async () => {
-      const result = await setEventFoodCostBudget(eventId, cents)
-      if (result.success) {
-        setEditing(false)
-        setError(null)
-      } else {
-        setError(result.error ?? 'Failed to save budget')
+      try {
+        const result = await setEventFoodCostBudget(eventId, cents)
+        if (result.success) {
+          setEditing(false)
+          setError(null)
+        } else {
+          setError(result.error ?? 'Failed to save budget')
+        }
+      } catch (err) {
+        setError('Failed to save budget')
+        toast.error('Failed to save budget')
       }
     })
   }
 
   function handleClearManual() {
     startTransition(async () => {
-      await setEventFoodCostBudget(eventId, null)
-      setEditing(false)
+      try {
+        await setEventFoodCostBudget(eventId, null)
+        setEditing(false)
+      } catch (err) {
+        toast.error('Failed to reset budget to formula')
+      }
     })
   }
 
