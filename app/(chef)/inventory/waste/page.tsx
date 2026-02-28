@@ -2,11 +2,23 @@
 // Dashboard with waste analytics by reason, trend over time, and a log form.
 
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getWasteDashboard, getWasteTrend } from '@/lib/inventory/waste-actions'
-import { WasteDashboard } from '@/components/inventory/waste-dashboard'
 import { WasteLogForm } from '@/components/inventory/waste-log-form'
+
+const WasteDashboard = dynamic(
+  () => import('@/components/inventory/waste-dashboard').then((m) => m.WasteDashboard),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[200px] items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+      </div>
+    ),
+  }
+)
 
 export const metadata: Metadata = { title: 'Waste Tracking - ChefFlow' }
 

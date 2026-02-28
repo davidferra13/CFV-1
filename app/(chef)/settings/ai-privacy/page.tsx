@@ -13,6 +13,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
+import dynamic from 'next/dynamic'
 import {
   Shield,
   Bot,
@@ -27,8 +28,22 @@ import {
 } from 'lucide-react'
 import { RemyOnboardingWizard } from '@/components/ai-privacy/remy-onboarding-wizard'
 import { DataFlowAnimated } from '@/components/ai-privacy/data-flow-animated'
-import { PrivacySchematicPlayer } from '@/components/ai-privacy/privacy-schematic-player'
 import { DataControls } from '@/components/ai-privacy/data-controls'
+
+const PrivacySchematicPlayer = dynamic(
+  () =>
+    import('@/components/ai-privacy/privacy-schematic-player').then(
+      (m) => m.PrivacySchematicPlayer
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[200px] items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+      </div>
+    ),
+  }
+)
 import { RemyArchetypeSelector } from '@/components/ai-privacy/remy-archetype-selector'
 import {
   getAiPreferences,

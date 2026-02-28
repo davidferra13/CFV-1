@@ -2,10 +2,22 @@
 // Compare current period against historical averages and industry targets
 
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getBenchmarkHistory } from '@/lib/analytics/benchmark-actions'
-import { BenchmarkDashboard } from '@/components/analytics/benchmark-dashboard'
+
+const BenchmarkDashboard = dynamic(
+  () => import('@/components/analytics/benchmark-dashboard').then((m) => m.BenchmarkDashboard),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[200px] items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+      </div>
+    ),
+  }
+)
 
 export const metadata: Metadata = { title: 'Benchmarks - ChefFlow' }
 

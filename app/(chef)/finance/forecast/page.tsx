@@ -1,8 +1,20 @@
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import { requireChef } from '@/lib/auth/get-user'
 import { getRevenueForecast } from '@/lib/analytics/revenue-forecast'
-import { ForecastChart } from '@/components/finance/forecast-chart'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+const ForecastChart = dynamic(
+  () => import('@/components/finance/forecast-chart').then((m) => m.ForecastChart),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[200px] items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+      </div>
+    ),
+  }
+)
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'

@@ -2,10 +2,22 @@
 // Projects future revenue based on active inquiries, quotes, and confirmed events
 
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getPipelineRevenueForecast } from '@/lib/analytics/pipeline-forecast-actions'
-import { PipelineForecast } from '@/components/analytics/pipeline-forecast'
+
+const PipelineForecast = dynamic(
+  () => import('@/components/analytics/pipeline-forecast').then((m) => m.PipelineForecast),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[200px] items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+      </div>
+    ),
+  }
+)
 
 export const metadata: Metadata = { title: 'Pipeline Forecast - ChefFlow' }
 

@@ -1,8 +1,20 @@
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getCashFlowForecast } from '@/lib/finance/cash-flow-actions'
-import { CashFlowChart } from '@/components/finance/cash-flow-chart'
+
+const CashFlowChart = dynamic(
+  () => import('@/components/finance/cash-flow-chart').then((m) => m.CashFlowChart),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[200px] items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+      </div>
+    ),
+  }
+)
 
 export const metadata: Metadata = { title: 'Cash Flow Forecast - ChefFlow' }
 

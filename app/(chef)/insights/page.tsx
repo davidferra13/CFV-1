@@ -20,7 +20,19 @@ import {
   getFinancialIntelligenceStats,
   getTakeAChefROI,
 } from '@/lib/analytics/insights-actions'
-import { InsightsClient } from '@/components/analytics/insights-client'
+import dynamic from 'next/dynamic'
+
+const InsightsClient = dynamic(
+  () => import('@/components/analytics/insights-client').then((m) => m.InsightsClient),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[200px] items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+      </div>
+    ),
+  }
+)
 
 export const metadata: Metadata = { title: 'Clientele Insights - ChefFlow' }
 

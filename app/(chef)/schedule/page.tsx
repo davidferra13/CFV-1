@@ -3,13 +3,25 @@
 // Seasonal sidebar shows active palette context (sensory anchor, micro-windows, energy reality).
 
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import { requireChef } from '@/lib/auth/get-user'
 import { getCalendarEvents } from '@/lib/scheduling/actions'
 
 export const metadata: Metadata = { title: 'Schedule - ChefFlow' }
 import { getActivePalette, getSeasonalPalettes } from '@/lib/seasonal/actions'
-import { CalendarView } from '@/components/scheduling/calendar-view'
 import { SeasonalSidebar } from '@/components/seasonal/seasonal-sidebar'
+
+const CalendarView = dynamic(
+  () => import('@/components/scheduling/calendar-view').then((m) => m.CalendarView),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[200px] items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+      </div>
+    ),
+  }
+)
 
 export default async function SchedulePage() {
   await requireChef()

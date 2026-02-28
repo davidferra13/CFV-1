@@ -3,10 +3,25 @@
 // which sources bring the most clients, highest-value events, and best conversion rates
 
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getReferralAnalytics } from '@/lib/analytics/referral-analytics'
-import { ReferralAnalyticsDashboard } from '@/components/analytics/referral-analytics-dashboard'
+
+const ReferralAnalyticsDashboard = dynamic(
+  () =>
+    import('@/components/analytics/referral-analytics-dashboard').then(
+      (m) => m.ReferralAnalyticsDashboard
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[200px] items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+      </div>
+    ),
+  }
+)
 
 export const metadata: Metadata = { title: 'Referral Sources - ChefFlow' }
 

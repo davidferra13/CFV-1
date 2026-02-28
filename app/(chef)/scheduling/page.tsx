@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getCalendarEvents } from '@/lib/scheduling/actions'
@@ -8,8 +9,19 @@ import {
   getSchedulingAvailability,
   listTimeBlocks,
 } from '@/lib/scheduling/time-blocks'
-import { CalendarView } from '@/components/scheduling/calendar-view'
 import { Button } from '@/components/ui/button'
+
+const CalendarView = dynamic(
+  () => import('@/components/scheduling/calendar-view').then((m) => m.CalendarView),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[200px] items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+      </div>
+    ),
+  }
+)
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export const metadata: Metadata = { title: 'Scheduling - ChefFlow' }

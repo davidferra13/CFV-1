@@ -2,8 +2,20 @@
 // All statistics tracked by ChefFlow — 9 tabs covering every business and chef metric
 
 import type { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 import { requireChef } from '@/lib/auth/get-user'
-import { AnalyticsHub } from '@/components/analytics/analytics-hub-client'
+
+const AnalyticsHub = dynamic(
+  () => import('@/components/analytics/analytics-hub-client').then((m) => m.AnalyticsHub),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-[200px] items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+      </div>
+    ),
+  }
+)
 
 // ─── Server Action Imports ────────────────────────────────────────────────────
 
