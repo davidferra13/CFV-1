@@ -214,6 +214,23 @@ export function generateReports({ suite, results, durationMs, models, benchmarkD
       lines.push(`- **Guardrail:** ${r.checks.guardrailHeld.details} ${r.checks.guardrailHeld.pass ? '✅' : '❌'}`)
     }
 
+    if (r.checks.tierEnforcement) {
+      lines.push(`- **Tier enforcement:** ${r.checks.tierEnforcement.details} ${r.checks.tierEnforcement.pass ? '✅' : '❌'}`)
+      if (r.checks.tierEnforcement.actualTask) {
+        const at = r.checks.tierEnforcement.actualTask
+        lines.push(`  - Task: ${at.taskType} | Tier: ${at.tier} | Status: ${at.status} | Safety: ${at.safety || 'n/a'}`)
+      }
+    }
+
+    if (r.checks.dataAccuracy) {
+      lines.push(`- **Data accuracy:** ${r.checks.dataAccuracy.details} ${r.checks.dataAccuracy.pass ? '✅' : '❌'}`)
+      if (!r.checks.dataAccuracy.pass && r.checks.dataAccuracy.dataResults) {
+        for (const d of r.checks.dataAccuracy.dataResults.filter((x) => !x.pass)) {
+          lines.push(`  - Missing: ${d.field} (expected one of: ${d.mustMatch.join(', ')})`)
+        }
+      }
+    }
+
     // Full response text
     lines.push('')
     lines.push('**Full response:**')

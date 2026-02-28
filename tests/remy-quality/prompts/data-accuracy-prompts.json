@@ -1,0 +1,503 @@
+{
+  "suite": "data-accuracy",
+  "description": "25 prompts verifying Remy returns correct data from the database — not fabricated, not stale, not rounded wrong. Tests financial amounts, client details, event counts, allergies, and recipe info against known seed data.",
+  "endpoint": "/api/remy/stream",
+  "authRole": "chef",
+  "prerequisites": "Demo data must be loaded (npm run demo:load). These prompts test against the demo fixtures in lib/demo/fixtures.ts.",
+  "defaults": {
+    "context": {
+      "currentPage": "/dashboard",
+      "recentPages": [{ "path": "/dashboard", "label": "Dashboard", "at": "2026-02-28T10:00:00Z" }],
+      "recentActions": [],
+      "recentErrors": [],
+      "sessionMinutes": 5,
+      "activeForm": null,
+      "history": []
+    },
+    "timing": {
+      "classificationMaxMs": 8000,
+      "firstTokenMaxMs": 20000,
+      "totalMaxMs": 120000
+    },
+    "minLength": 15,
+    "maxLength": 4000
+  },
+  "prompts": [
+    {
+      "id": "data-001",
+      "category": "client_allergies",
+      "prompt": "What allergies does Sarah Chen have?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.search", "client.details"],
+        "mustContain": ["pescatarian"],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "dietary_restriction",
+            "mustMatch": ["pescatarian"],
+            "notes": "Sarah Chen's dietary restriction from demo fixtures"
+          }
+        ],
+        "notes": "Sarah Chen is pescatarian in demo data. Response must reflect this accurately."
+      }
+    },
+    {
+      "id": "data-002",
+      "category": "client_allergies",
+      "prompt": "Does Emily Nakamura have any dietary restrictions?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.search", "client.details"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "dietary_restriction",
+            "mustMatch": ["gluten-free", "gluten free", "wheat", "barley"],
+            "notes": "Emily Nakamura is gluten-free (wheat/barley) in demo fixtures"
+          }
+        ],
+        "notes": "Emily Nakamura is gluten-free. Must not fabricate additional allergies."
+      }
+    },
+    {
+      "id": "data-003",
+      "category": "client_allergies",
+      "prompt": "What are the Park family's food allergies?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.search", "client.details"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "allergy",
+            "mustMatch": ["peanut"],
+            "notes": "David & Kim Park have peanut allergy in demo fixtures"
+          }
+        ],
+        "notes": "Parks have peanut allergy. Must return this correctly — allergy data is life-safety critical."
+      }
+    },
+    {
+      "id": "data-004",
+      "category": "client_allergies",
+      "prompt": "Check dietary needs for the Whitfield family",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.search", "client.details"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "allergy",
+            "mustMatch": ["shellfish"],
+            "notes": "James & Patricia Whitfield have shellfish allergy in demo fixtures"
+          }
+        ],
+        "notes": "Whitfields have shellfish allergy. Critical safety data."
+      }
+    },
+    {
+      "id": "data-005",
+      "category": "client_allergies",
+      "prompt": "Is Sofia Reyes allergic to anything?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.search", "client.details"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "allergy",
+            "mustMatch": ["dairy"],
+            "notes": "Sofia & Alejandro Reyes have dairy allergy in demo fixtures"
+          }
+        ],
+        "notes": "Reyes family has dairy allergy."
+      }
+    },
+    {
+      "id": "data-006",
+      "category": "client_details",
+      "prompt": "How many clients do I have?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "client_count",
+            "mustMatch": ["10", "ten"],
+            "notes": "Demo data has exactly 10 clients"
+          }
+        ],
+        "notes": "Demo fixtures seed exactly 10 clients. Response should reflect the actual count."
+      }
+    },
+    {
+      "id": "data-007",
+      "category": "client_details",
+      "prompt": "Tell me about Anika Patel",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.search", "client.details"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "dietary_restriction",
+            "mustMatch": ["vegetarian"],
+            "notes": "Anika Patel is vegetarian with tree nut allergy"
+          },
+          {
+            "field": "event_type",
+            "mustMatch": ["corporate", "team"],
+            "notes": "Anika Patel books corporate team dinners (15-25 guests)"
+          }
+        ],
+        "notes": "Anika Patel: vegetarian, tree nut allergy, corporate team dinners."
+      }
+    },
+    {
+      "id": "data-008",
+      "category": "client_details",
+      "prompt": "What's Dr. Marcus Washington's dietary preference?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.search", "client.details"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "dietary_restriction",
+            "mustMatch": ["keto"],
+            "notes": "Dr. Marcus Washington follows keto diet"
+          }
+        ],
+        "notes": "Dr. Washington is keto. Must not fabricate additional restrictions."
+      }
+    },
+    {
+      "id": "data-009",
+      "category": "client_details",
+      "prompt": "Is Claire Beaumont still an active client?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.search", "client.details"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "status",
+            "mustMatch": ["dormant", "inactive"],
+            "notes": "Claire Beaumont is dormant — had one event last year"
+          }
+        ],
+        "notes": "Claire Beaumont is dormant in demo data. Must not say she's active."
+      }
+    },
+    {
+      "id": "data-010",
+      "category": "client_details",
+      "prompt": "What's the Chen family's lifetime value?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.search", "client.details", "analytics.client_ltv"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "lifetime_value",
+            "mustMatch": ["4,200", "4200", "$4,200", "$4200"],
+            "notes": "Sarah & Michael Chen have $4,200 lifetime value in demo fixtures"
+          }
+        ],
+        "notes": "Chen LTV is $4,200. Must match exactly — not rounded or fabricated."
+      }
+    },
+    {
+      "id": "data-011",
+      "category": "event_details",
+      "prompt": "How many upcoming events do I have?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["event.list_upcoming"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should list actual events from database. Count depends on demo data state — at least several confirmed/paid/proposed/draft events should exist."
+      }
+    },
+    {
+      "id": "data-012",
+      "category": "event_details",
+      "prompt": "Tell me about the engagement party",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["event.details"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "client",
+            "mustMatch": ["reyes"],
+            "notes": "Engagement Party is for Sofia & Alejandro Reyes"
+          },
+          {
+            "field": "guest_count",
+            "mustMatch": ["16"],
+            "notes": "Engagement Party has 16 guests"
+          }
+        ],
+        "notes": "Reyes Engagement Party: 16 guests, buffet, Boston. Must match demo data."
+      }
+    },
+    {
+      "id": "data-013",
+      "category": "event_details",
+      "prompt": "What's the guest count for the Book Club Birthday Dinner?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["event.details"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "guest_count",
+            "mustMatch": ["10"],
+            "notes": "Book Club Birthday Dinner (Nakamura) has 10 guests"
+          }
+        ],
+        "notes": "Emily Nakamura's Book Club Birthday Dinner is for 10 guests, family-style."
+      }
+    },
+    {
+      "id": "data-014",
+      "category": "event_details",
+      "prompt": "How many guests for the Summer BBQ?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["event.details"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "guest_count",
+            "mustMatch": ["35"],
+            "notes": "Summer BBQ Bash (O'Brien) has 35 guests"
+          }
+        ],
+        "notes": "O'Brien Summer BBQ Bash: 35 guests, buffet, Wellesley."
+      }
+    },
+    {
+      "id": "data-015",
+      "category": "financial_accuracy",
+      "prompt": "How much did we charge for the Winter Dinner Party?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["event.details", "finance.summary"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "total_amount",
+            "mustMatch": ["2,400", "2400", "$2,400", "$2400", "1,500", "1500"],
+            "notes": "Chen Winter Dinner: deposit $500 + payment $1,500 + tip $400 = $2,400 total (or $1,500 payment without tip)"
+          }
+        ],
+        "notes": "Chen Winter Dinner Party financials. Response should show actual ledger amounts."
+      }
+    },
+    {
+      "id": "data-016",
+      "category": "financial_accuracy",
+      "prompt": "What deposit did the Reyes family pay?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["event.details", "finance.summary"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "deposit",
+            "mustMatch": ["875", "$875"],
+            "notes": "Reyes paid $875 deposit (from demo fixtures)"
+          }
+        ],
+        "notes": "Reyes engagement party deposit is $875. Must not fabricate a different amount."
+      }
+    },
+    {
+      "id": "data-017",
+      "category": "financial_accuracy",
+      "prompt": "How much did I spend on groceries for the Winter Dinner Party?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "grocery_expense",
+            "mustMatch": ["420", "$420"],
+            "notes": "Winter Dinner Party (Chen): Whole Foods groceries $420"
+          }
+        ],
+        "notes": "Chen event expense: $420 Whole Foods. Must reflect actual expense records."
+      }
+    },
+    {
+      "id": "data-018",
+      "category": "financial_accuracy",
+      "prompt": "How much was the Nakamura deposit?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.search", "event.details", "finance.summary"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "deposit",
+            "mustMatch": ["500", "$500"],
+            "notes": "Emily Nakamura's event deposit is $500"
+          }
+        ],
+        "notes": "Nakamura paid $500 deposit. Must match ledger exactly."
+      }
+    },
+    {
+      "id": "data-019",
+      "category": "recipe_accuracy",
+      "prompt": "How much does the Seared Scallops recipe cost?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["recipe.search"],
+        "mustContain": ["scallop"],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "recipe_cost",
+            "mustMatch": ["36", "$36"],
+            "notes": "Seared Dayboat Scallops cost $36 in demo fixtures"
+          }
+        ],
+        "notes": "Scallops recipe cost is $36. Must return from database, not fabricate."
+      }
+    },
+    {
+      "id": "data-020",
+      "category": "recipe_accuracy",
+      "prompt": "What's the cost of the Herb-Crusted Lamb Rack recipe?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["recipe.search"],
+        "mustContain": ["lamb"],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "recipe_cost",
+            "mustMatch": ["56", "$56"],
+            "notes": "Herb-Crusted Lamb Rack costs $56 in demo fixtures"
+          }
+        ],
+        "notes": "Lamb rack recipe cost is $56. Must match exactly."
+      }
+    },
+    {
+      "id": "data-021",
+      "category": "recipe_accuracy",
+      "prompt": "How much does the A5 Wagyu recipe cost in ingredients?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["recipe.search"],
+        "mustContain": ["wagyu"],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "ingredient_cost",
+            "mustMatch": ["120", "$120"],
+            "notes": "A5 Wagyu ingredient cost is $120 in demo fixtures"
+          }
+        ],
+        "notes": "Wagyu is the most expensive recipe at $120. Must not invent a different number."
+      }
+    },
+    {
+      "id": "data-022",
+      "category": "menu_accuracy",
+      "prompt": "What courses are on the New England Spring Tasting menu?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["menu.list", "recipe.search"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "dish_name",
+            "mustMatch": ["scallop", "lamb", "pea soup", "lemon olive oil cake"],
+            "notes": "NE Spring Tasting has: Chilled Pea Soup, Seared Scallops, Herb-Crusted Lamb Rack, Cheese Selection, Lemon Olive Oil Cake"
+          }
+        ],
+        "notes": "Must list actual dishes from the menu, not fabricate courses."
+      }
+    },
+    {
+      "id": "data-023",
+      "category": "menu_accuracy",
+      "prompt": "How many guests does the Vegan Plant-Forward Feast serve?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["menu.list"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "guest_count",
+            "mustMatch": ["10"],
+            "notes": "Vegan Plant-Forward Feast serves 10 guests"
+          }
+        ],
+        "notes": "Vegan menu is for 10 guests per demo fixtures."
+      }
+    },
+    {
+      "id": "data-024",
+      "category": "inquiry_accuracy",
+      "prompt": "What's the budget for the Reyes engagement inquiry?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["inquiry.details", "inquiry.list_open"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "budget",
+            "mustMatch": ["3,500", "3500", "$3,500", "$3500"],
+            "notes": "Reyes engagement inquiry budget is $3,500"
+          }
+        ],
+        "notes": "Reyes engagement inquiry budget is $3,500 for 16 guests."
+      }
+    },
+    {
+      "id": "data-025",
+      "category": "inquiry_accuracy",
+      "prompt": "Why was the Beaumont inquiry declined?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["inquiry.details", "client.search"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "dataChecks": [
+          {
+            "field": "budget",
+            "mustMatch": ["200", "$200"],
+            "notes": "Beaumont garden party inquiry was $200 — too low budget"
+          }
+        ],
+        "notes": "Claire Beaumont's garden party was declined — $200 budget was too low. Must reference actual decline reason from data."
+      }
+    }
+  ]
+}

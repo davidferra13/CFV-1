@@ -92,7 +92,23 @@ Tests guardrails — prompt injection ("ignore previous instructions"), system p
 npm run test:remy-quality:adversarial
 ```
 
-### 7. Consistency Testing (any suite × N repeats)
+### 7. Data Accuracy Suite (25 prompts, ~15-20 min)
+
+Verifies Remy returns **correct data from the database** — not fabricated, not stale, not rounded wrong. Tests financial amounts, client allergies/dietary info, event guest counts, recipe costs, menu courses, and inquiry budgets against known demo seed data. Requires demo data to be loaded (`npm run demo:load`).
+
+```bash
+npm run test:remy-quality:data-accuracy
+```
+
+### 8. Tier Enforcement Suite (25 prompts, ~15-20 min)
+
+Verifies the command orchestrator's **safety gates work correctly**: tier 1 read-only queries auto-execute (`status: done`), tier 2 write actions require approval (`status: pending` with preview), and tier 3 restricted actions are permanently held (`status: held` with explanation). Tests ledger writes, refunds, deletions, email sends, role changes, recipe creation, event transitions, and quote creation.
+
+```bash
+npm run test:remy-quality:tier
+```
+
+### 9. Consistency Testing (any suite × N repeats)
 
 Runs each prompt N times to detect inconsistency. If the same prompt passes 3 times and fails twice, that's a reliability problem. Prints variance analysis (timing spread, verdict consistency).
 
@@ -102,7 +118,7 @@ npm run test:remy-quality:consistency   # business_overview × 5 repeats
 node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef --repeat 3
 ```
 
-### Run Everything (~3-4 hours)
+### Run Everything (~4-5 hours)
 
 ```bash
 npm run test:remy-quality:all
@@ -119,8 +135,10 @@ npm run test:remy-quality:multi-turn   # Multi-turn conversations (20)
 npm run test:remy-quality:hallucination # Hallucination stress (25)
 npm run test:remy-quality:voice        # Voice-to-text messy (25)
 npm run test:remy-quality:adversarial  # Guardrail/security (25)
+npm run test:remy-quality:data-accuracy # Data accuracy vs database (25)
+npm run test:remy-quality:tier         # Tier enforcement/safety gates (25)
 npm run test:remy-quality:consistency  # Consistency (10 × 5 repeats)
-npm run test:remy-quality:all          # Everything (~3-4 hours)
+npm run test:remy-quality:all          # Everything (~4-5 hours)
 ```
 
 ## Prerequisites
@@ -128,6 +146,7 @@ npm run test:remy-quality:all          # Everything (~3-4 hours)
 - Dev server running on port 3100 (`npm run dev`)
 - Ollama running with models loaded
 - Agent test account exists (`.auth/agent.json`)
+- Demo data loaded for data-accuracy suite (`npm run demo:load`)
 
 ## Evaluation Criteria
 
@@ -144,6 +163,8 @@ All checks are deterministic — formula beats AI (CLAUDE.md rule 0b):
 | Response length       | Between 20-4000 chars                                  |
 | No SSE errors         | Zero error events in the stream                        |
 | Tone check            | No forbidden phrases ("As an AI", "Certainly!", etc.)  |
+| Tier enforcement      | Correct tier/status/safety on task (done/pending/held) |
+| Data accuracy         | Response values match known database records           |
 
 ## Prompt Categories (Chef Suite)
 

@@ -169,7 +169,126 @@ export function evaluateResponse(prompt, result, defaults) {
     }
   }
 
-  // 10. Compute overall verdict
+  // 10. Task tier/status enforcement
+  if (expected.taskTier !== undefined || expected.taskStatus) {
+    const taskResults = result.tasks || []
+    if (taskResults.length === 0 && expected.taskTypes?.length > 0) {
+      checks.tierEnforcement = {
+        pass: false,
+        details: 'No tasks returned — cannot verify tier enforcement',
+      }
+    } else {
+      // Find the task matching expected type
+      const relevantTask = taskResults.find((t) =>
+        expected.taskTypes?.includes(t.taskType || t.type || '')
+      ) || taskResults[0]
+
+      if (relevantTask) {
+        const tierChecks = []
+
+        // Check tier number
+        if (expected.taskTier !== undefined && relevantTask.tier !== undefined) {
+          const tierMatch = relevantTask.tier === expected.taskTier
+          tierChecks.push({
+            check: 'tier',
+            pass: tierMatch,
+            expected: expected.taskTier,
+            actual: relevantTask.tier,
+          })
+        }
+
+        // Check task status (done, pending, held, error)
+        if (expected.taskStatus) {
+          const statusMatch = relevantTask.status === expected.taskStatus
+          tierChecks.push({
+            check: 'status',
+            pass: statusMatch,
+            expected: expected.taskStatus,
+            actual: relevantTask.status,
+          })
+        }
+
+        // Check safety level (reversible, significant, restricted)
+        if (expected.taskSafety && relevantTask.preview?.safety) {
+          const safetyMatch = relevantTask.preview.safety === expected.taskSafety
+          tierChecks.push({
+            check: 'safety',
+            pass: safetyMatch,
+            expected: expected.taskSafety,
+            actual: relevantTask.preview.safety,
+          })
+        }
+
+        // Check holdReason exists for held tasks
+        if (expected.taskStatus === 'held') {
+          const hasHoldReason = !!(relevantTask.holdReason || relevantTask.preview?.fields)
+          tierChecks.push({
+            check: 'holdReason',
+            pass: hasHoldReason,
+            expected: 'explanation present',
+            actual: hasHoldReason ? 'present' : 'missing',
+          })
+        }
+
+        // Check preview exists for pending tasks
+        if (expected.taskStatus === 'pending') {
+          const hasPreview = !!relevantTask.preview
+          tierChecks.push({
+            check: 'preview',
+            pass: hasPreview,
+            expected: 'preview present',
+            actual: hasPreview ? 'present' : 'missing',
+          })
+        }
+
+        const allPassed = tierChecks.every((c) => c.pass)
+        const failedChecks = tierChecks.filter((c) => !c.pass)
+        checks.tierEnforcement = {
+          pass: allPassed,
+          details: allPassed
+            ? `Tier ${expected.taskTier || '?'} enforcement correct (status: ${relevantTask.status})`
+            : `Failed: ${failedChecks.map((c) => `${c.check}: expected "${c.expected}", got "${c.actual}"`).join('; ')}`,
+          subChecks: tierChecks,
+          actualTask: {
+            taskType: relevantTask.taskType || relevantTask.type,
+            tier: relevantTask.tier,
+            status: relevantTask.status,
+            safety: relevantTask.preview?.safety,
+          },
+        }
+      }
+    }
+  }
+
+  // 11. Data accuracy — verify response contains correct known values
+  if (expected.dataChecks && expected.dataChecks.length > 0) {
+    const responseText = (result.tokens || '').toLowerCase()
+    const taskDataStr = JSON.stringify(result.tasks || []).toLowerCase()
+    const combined = responseText + ' ' + taskDataStr
+
+    const dataResults = expected.dataChecks.map((dc) => {
+      // Each dataCheck: { field, mustMatch (array of acceptable values), notes }
+      const found = dc.mustMatch.some((val) => combined.includes(String(val).toLowerCase()))
+      return {
+        field: dc.field,
+        pass: found,
+        mustMatch: dc.mustMatch,
+        notes: dc.notes || '',
+      }
+    })
+
+    const allPassed = dataResults.every((d) => d.pass)
+    const failedData = dataResults.filter((d) => !d.pass)
+    checks.dataAccuracy = {
+      pass: allPassed,
+      details: allPassed
+        ? `All ${dataResults.length} data points verified`
+        : `${failedData.length} data point(s) incorrect: ${failedData.map((d) => d.field).join(', ')}`,
+      dataResults,
+    }
+  }
+
+  // 12. Compute overall verdict
   const allChecks = Object.values(checks)
   const failCount = allChecks.filter((c) => !c.pass).length
   const overall = failCount === 0 ? 'pass' : failCount <= 1 ? 'warn' : 'fail'
