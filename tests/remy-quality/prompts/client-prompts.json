@@ -1,0 +1,952 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "description": "100 real client-facing prompts for Remy quality benchmarking",
+    "endpoint": "/api/remy/client",
+    "model": "qwen3:30b (conversation)",
+    "categories": [
+      "booking_inquiries",
+      "dietary_allergies",
+      "menu_food",
+      "guest_count",
+      "pricing_payments",
+      "event_logistics",
+      "communication_status",
+      "post_event_rebooking"
+    ]
+  },
+  "defaults": {
+    "expected": {
+      "intent": "question",
+      "mustNotContain": [
+        "error",
+        "offline",
+        "undefined",
+        "null",
+        "NaN",
+        "stack trace",
+        "ECONNREFUSED"
+      ],
+      "mustNotDo": [
+        "reveal other clients data",
+        "show internal business metrics",
+        "expose chef financials",
+        "mention other clients by name"
+      ],
+      "timing": { "totalMaxMs": 120000 },
+      "minLength": 20,
+      "maxLength": 3000,
+      "forbiddenPhrases": [
+        "As an AI",
+        "I cannot",
+        "I'm just a language model",
+        "I don't have the ability",
+        "As a large language model",
+        "I'm an artificial intelligence"
+      ]
+    }
+  },
+  "prompts": [
+    {
+      "id": 1,
+      "category": "booking_inquiries",
+      "message": "I want to book a private chef for Saturday night",
+      "expected": {
+        "mustContain": ["book"],
+        "keywords": ["availability", "event", "date", "dinner"]
+      }
+    },
+    {
+      "id": 2,
+      "category": "booking_inquiries",
+      "message": "How much does a dinner for 10 cost?",
+      "expected": {
+        "mustContain": ["price", "cost", "quote"],
+        "keywords": ["guests", "menu", "pricing"]
+      }
+    },
+    {
+      "id": 3,
+      "category": "booking_inquiries",
+      "message": "Are you available next weekend?",
+      "expected": {
+        "mustContain": ["available", "availability", "schedule", "weekend", "book"],
+        "keywords": ["date", "calendar"]
+      }
+    },
+    {
+      "id": 4,
+      "category": "booking_inquiries",
+      "message": "I need a chef for my wedding reception, 85 guests",
+      "expected": {
+        "mustContain": ["wedding", "guest"],
+        "keywords": ["event", "reception", "menu", "booking"]
+      }
+    },
+    {
+      "id": 5,
+      "category": "booking_inquiries",
+      "message": "Can I book the same chef I had last time?",
+      "expected": {
+        "mustContain": ["chef", "book"],
+        "keywords": ["previous", "again", "event"]
+      }
+    },
+    {
+      "id": 6,
+      "category": "booking_inquiries",
+      "message": "I need to cancel my event on March 15",
+      "expected": {
+        "mustContain": ["cancel"],
+        "keywords": ["event", "policy", "refund"]
+      }
+    },
+    {
+      "id": 7,
+      "category": "booking_inquiries",
+      "message": "Can I reschedule my dinner to next Friday?",
+      "expected": {
+        "mustContain": ["reschedule", "date"],
+        "keywords": ["change", "Friday", "event"]
+      }
+    },
+    {
+      "id": 8,
+      "category": "booking_inquiries",
+      "message": "I want to change the date from the 10th to the 17th",
+      "expected": {
+        "mustContain": ["date", "change"],
+        "keywords": ["reschedule", "event"]
+      }
+    },
+    {
+      "id": 9,
+      "category": "booking_inquiries",
+      "message": "How far in advance do I need to book?",
+      "expected": {
+        "mustContain": ["advance", "book"],
+        "keywords": ["time", "notice", "availability"]
+      }
+    },
+    {
+      "id": 10,
+      "category": "booking_inquiries",
+      "message": "Do you do corporate lunches?",
+      "expected": {
+        "mustContain": ["corporate", "lunch"],
+        "keywords": ["event", "catering", "office"]
+      }
+    },
+    {
+      "id": 11,
+      "category": "booking_inquiries",
+      "message": "I want a chef for a weekend getaway — 3 dinners and 2 brunches",
+      "expected": {
+        "mustContain": ["dinner", "brunch"],
+        "keywords": ["weekend", "event", "multi"]
+      }
+    },
+    {
+      "id": 12,
+      "category": "booking_inquiries",
+      "message": "Can you come to my Airbnb in the mountains?",
+      "expected": {
+        "mustContain": ["location", "travel", "Airbnb"],
+        "keywords": ["venue", "kitchen", "travel"]
+      }
+    },
+    {
+      "id": 13,
+      "category": "booking_inquiries",
+      "message": "We need catering for an office party, about 30 people",
+      "expected": {
+        "mustContain": ["party", "catering"],
+        "keywords": ["office", "guests", "event"]
+      }
+    },
+    {
+      "id": 14,
+      "category": "booking_inquiries",
+      "message": "I'm thinking about booking but just want to ask some questions first",
+      "expected": {
+        "mustContain": ["question", "help"],
+        "keywords": ["happy", "assist", "booking"]
+      }
+    },
+    {
+      "id": 15,
+      "category": "booking_inquiries",
+      "message": "What's the difference between a tasting menu and a family-style dinner?",
+      "expected": {
+        "mustContain": ["tasting", "family"],
+        "keywords": ["menu", "style", "course", "difference"]
+      }
+    },
+    {
+      "id": 16,
+      "category": "dietary_allergies",
+      "message": "My daughter has a severe peanut allergy",
+      "expected": {
+        "mustContain": ["peanut", "allergy"],
+        "keywords": ["safety", "dietary", "note", "menu"],
+        "privacyCheck": true
+      }
+    },
+    {
+      "id": 17,
+      "category": "dietary_allergies",
+      "message": "Two of our guests are vegan",
+      "expected": {
+        "mustContain": ["vegan"],
+        "keywords": ["dietary", "menu", "accommodate", "plant"]
+      }
+    },
+    {
+      "id": 18,
+      "category": "dietary_allergies",
+      "message": "Everything needs to be gluten-free",
+      "expected": {
+        "mustContain": ["gluten"],
+        "keywords": ["free", "dietary", "menu"]
+      }
+    },
+    {
+      "id": 19,
+      "category": "dietary_allergies",
+      "message": "I'm lactose intolerant but can handle hard cheeses",
+      "expected": {
+        "mustContain": ["lactose"],
+        "keywords": ["dairy", "cheese", "intolerant", "dietary"]
+      }
+    },
+    {
+      "id": 20,
+      "category": "dietary_allergies",
+      "message": "One guest keeps strictly kosher",
+      "expected": {
+        "mustContain": ["kosher"],
+        "keywords": ["dietary", "restriction", "accommodate"]
+      }
+    },
+    {
+      "id": 21,
+      "category": "dietary_allergies",
+      "message": "We need halal meat options",
+      "expected": {
+        "mustContain": ["halal"],
+        "keywords": ["meat", "dietary", "accommodate"]
+      }
+    },
+    {
+      "id": 22,
+      "category": "dietary_allergies",
+      "message": "Someone has a shellfish allergy — not just preference, anaphylaxis",
+      "expected": {
+        "mustContain": ["shellfish", "allergy"],
+        "keywords": ["safety", "anaphylaxis", "serious", "dietary"]
+      }
+    },
+    {
+      "id": 23,
+      "category": "dietary_allergies",
+      "message": "Can you do keto for me and regular for everyone else?",
+      "expected": {
+        "mustContain": ["keto"],
+        "keywords": ["dietary", "menu", "accommodate", "separate"]
+      }
+    },
+    {
+      "id": 24,
+      "category": "dietary_allergies",
+      "message": "One guest is diabetic, low sugar please",
+      "expected": {
+        "mustContain": ["diabetic", "sugar"],
+        "keywords": ["dietary", "low", "accommodate"]
+      }
+    },
+    {
+      "id": 25,
+      "category": "dietary_allergies",
+      "message": "My son has celiac — cross contamination is a concern",
+      "expected": {
+        "mustContain": ["celiac"],
+        "keywords": ["cross", "contamination", "gluten", "safety"]
+      }
+    },
+    {
+      "id": 26,
+      "category": "dietary_allergies",
+      "message": "No nuts of any kind at the table",
+      "expected": {
+        "mustContain": ["nut"],
+        "keywords": ["allergy", "free", "safety"]
+      }
+    },
+    {
+      "id": 27,
+      "category": "dietary_allergies",
+      "message": "One person is pescatarian",
+      "expected": {
+        "mustContain": ["pescatarian"],
+        "keywords": ["fish", "seafood", "dietary"]
+      }
+    },
+    {
+      "id": 28,
+      "category": "dietary_allergies",
+      "message": "We're mostly vegetarian but two people eat meat",
+      "expected": {
+        "mustContain": ["vegetarian", "meat"],
+        "keywords": ["dietary", "menu", "accommodate"]
+      }
+    },
+    {
+      "id": 29,
+      "category": "dietary_allergies",
+      "message": "I'm pregnant — no raw fish, no soft cheese",
+      "expected": {
+        "mustContain": ["pregnant"],
+        "keywords": ["raw", "fish", "cheese", "safety"]
+      }
+    },
+    {
+      "id": 30,
+      "category": "dietary_allergies",
+      "message": "Can you handle multiple allergies at the same table? We're a complicated group",
+      "expected": {
+        "mustContain": ["allerg"],
+        "keywords": ["multiple", "accommodate", "dietary", "handle"]
+      }
+    },
+    {
+      "id": 31,
+      "category": "menu_food",
+      "message": "What's on the menu for our event?",
+      "expected": {
+        "mustContain": ["menu"],
+        "keywords": ["event", "course", "dish"]
+      }
+    },
+    {
+      "id": 32,
+      "category": "menu_food",
+      "message": "Can we add a pasta course?",
+      "expected": {
+        "mustContain": ["pasta"],
+        "keywords": ["course", "menu", "add"]
+      }
+    },
+    {
+      "id": 33,
+      "category": "menu_food",
+      "message": "I want to change the dessert to something chocolate",
+      "expected": {
+        "mustContain": ["dessert", "chocolate"],
+        "keywords": ["change", "menu"]
+      }
+    },
+    {
+      "id": 34,
+      "category": "menu_food",
+      "message": "Can we do a 7-course tasting menu?",
+      "expected": {
+        "mustContain": ["tasting", "course"],
+        "keywords": ["menu", "seven"]
+      }
+    },
+    {
+      "id": 35,
+      "category": "menu_food",
+      "message": "I want Mediterranean food",
+      "expected": {
+        "mustContain": ["Mediterranean"],
+        "keywords": ["cuisine", "food", "menu"]
+      }
+    },
+    {
+      "id": 36,
+      "category": "menu_food",
+      "message": "Can I see the menu options before I commit?",
+      "expected": {
+        "mustContain": ["menu"],
+        "keywords": ["options", "see", "review"]
+      }
+    },
+    {
+      "id": 37,
+      "category": "menu_food",
+      "message": "Can we add appetizers and cocktail hour bites?",
+      "expected": {
+        "mustContain": ["appetizer", "cocktail"],
+        "keywords": ["bites", "menu", "add"]
+      }
+    },
+    {
+      "id": 38,
+      "category": "menu_food",
+      "message": "Can we swap the fish for chicken on the main?",
+      "expected": {
+        "mustContain": ["swap", "fish", "chicken"],
+        "keywords": ["main", "change", "menu"]
+      }
+    },
+    {
+      "id": 39,
+      "category": "menu_food",
+      "message": "What wine would go with this menu?",
+      "expected": {
+        "mustContain": ["wine"],
+        "keywords": ["pairing", "menu", "recommend"]
+      }
+    },
+    {
+      "id": 40,
+      "category": "menu_food",
+      "message": "Can you do a BBQ-style cookout?",
+      "expected": {
+        "mustContain": ["BBQ"],
+        "keywords": ["cookout", "grill", "style"]
+      }
+    },
+    {
+      "id": 41,
+      "category": "menu_food",
+      "message": "I want comfort food — mac and cheese, short ribs, that kind of thing",
+      "expected": {
+        "mustContain": ["comfort"],
+        "keywords": ["mac", "cheese", "ribs", "food"]
+      }
+    },
+    {
+      "id": 42,
+      "category": "menu_food",
+      "message": "Can the chef do sushi?",
+      "expected": {
+        "mustContain": ["sushi"],
+        "keywords": ["chef", "Japanese", "fish"]
+      }
+    },
+    {
+      "id": 43,
+      "category": "menu_food",
+      "message": "We want an Italian-themed dinner",
+      "expected": {
+        "mustContain": ["Italian"],
+        "keywords": ["dinner", "theme", "cuisine"]
+      }
+    },
+    {
+      "id": 44,
+      "category": "menu_food",
+      "message": "Can you do a seafood boil on the patio?",
+      "expected": {
+        "mustContain": ["seafood"],
+        "keywords": ["boil", "patio", "outdoor"]
+      }
+    },
+    {
+      "id": 45,
+      "category": "menu_food",
+      "message": "I want farm-to-table — seasonal, local ingredients",
+      "expected": {
+        "mustContain": ["farm", "table"],
+        "keywords": ["seasonal", "local", "fresh"]
+      }
+    },
+    {
+      "id": 46,
+      "category": "menu_food",
+      "message": "Can the chef do Indian food? Like a proper curry spread",
+      "expected": {
+        "mustContain": ["Indian", "curry"],
+        "keywords": ["food", "cuisine", "spice"]
+      }
+    },
+    {
+      "id": 47,
+      "category": "menu_food",
+      "message": "We want French bistro style",
+      "expected": {
+        "mustContain": ["French"],
+        "keywords": ["bistro", "cuisine", "style"]
+      }
+    },
+    {
+      "id": 48,
+      "category": "menu_food",
+      "message": "Can we do a brunch instead of dinner?",
+      "expected": {
+        "mustContain": ["brunch"],
+        "keywords": ["instead", "dinner", "morning"]
+      }
+    },
+    {
+      "id": 49,
+      "category": "menu_food",
+      "message": "I want the exact same menu as last time",
+      "expected": {
+        "mustContain": ["menu", "same"],
+        "keywords": ["last", "previous", "repeat"]
+      }
+    },
+    {
+      "id": 50,
+      "category": "menu_food",
+      "message": "Can you do a dessert-only event? Like a pastry tasting?",
+      "expected": {
+        "mustContain": ["dessert", "pastry"],
+        "keywords": ["tasting", "event", "sweet"]
+      }
+    },
+    {
+      "id": 51,
+      "category": "guest_count",
+      "message": "I need to add 4 more people",
+      "expected": {
+        "mustContain": ["guest", "add"],
+        "keywords": ["count", "people", "update"]
+      }
+    },
+    {
+      "id": 52,
+      "category": "guest_count",
+      "message": "We're down to 8 instead of 12 — two couples dropped out",
+      "expected": {
+        "mustContain": ["guest"],
+        "keywords": ["count", "reduce", "update"]
+      }
+    },
+    {
+      "id": 53,
+      "category": "guest_count",
+      "message": "Actually make that 15, my in-laws are coming now",
+      "expected": {
+        "mustContain": ["guest", "15"],
+        "keywords": ["count", "update", "change"]
+      }
+    },
+    {
+      "id": 54,
+      "category": "guest_count",
+      "message": "One guest cancelled last minute",
+      "expected": {
+        "mustContain": ["guest", "cancel"],
+        "keywords": ["count", "update"]
+      }
+    },
+    {
+      "id": 55,
+      "category": "guest_count",
+      "message": "Three of the guests are kids under 10 — do you charge full price?",
+      "expected": {
+        "mustContain": ["kid", "price"],
+        "keywords": ["children", "charge", "full"]
+      }
+    },
+    {
+      "id": 56,
+      "category": "guest_count",
+      "message": "What's the maximum number of guests you can handle?",
+      "expected": {
+        "mustContain": ["maximum", "guest"],
+        "keywords": ["capacity", "handle", "limit"]
+      }
+    },
+    {
+      "id": 57,
+      "category": "guest_count",
+      "message": "Is there a minimum guest count?",
+      "expected": {
+        "mustContain": ["minimum", "guest"],
+        "keywords": ["count", "require"]
+      }
+    },
+    {
+      "id": 58,
+      "category": "pricing_payments",
+      "message": "How much will this cost total?",
+      "expected": {
+        "mustContain": ["cost", "total"],
+        "keywords": ["price", "quote", "amount"]
+      }
+    },
+    {
+      "id": 59,
+      "category": "pricing_payments",
+      "message": "Can I see my quote?",
+      "expected": {
+        "mustContain": ["quote"],
+        "keywords": ["see", "view", "pricing"]
+      }
+    },
+    {
+      "id": 60,
+      "category": "pricing_payments",
+      "message": "I want to pay the deposit now",
+      "expected": {
+        "mustContain": ["deposit", "pay"],
+        "keywords": ["payment", "secure"]
+      }
+    },
+    {
+      "id": 61,
+      "category": "pricing_payments",
+      "message": "When is my next payment due?",
+      "expected": {
+        "mustContain": ["payment", "due"],
+        "keywords": ["when", "schedule", "next"]
+      }
+    },
+    {
+      "id": 62,
+      "category": "pricing_payments",
+      "message": "Can I pay in installments instead of all at once?",
+      "expected": {
+        "mustContain": ["installment", "pay"],
+        "keywords": ["payment", "plan", "schedule"]
+      }
+    },
+    {
+      "id": 63,
+      "category": "pricing_payments",
+      "message": "I need a receipt for the deposit I paid",
+      "expected": {
+        "mustContain": ["receipt"],
+        "keywords": ["deposit", "payment", "record"]
+      }
+    },
+    {
+      "id": 64,
+      "category": "pricing_payments",
+      "message": "Can you send me an invoice?",
+      "expected": {
+        "mustContain": ["invoice"],
+        "keywords": ["send", "billing", "payment"]
+      }
+    },
+    {
+      "id": 65,
+      "category": "pricing_payments",
+      "message": "What's included in the price? Groceries too?",
+      "expected": {
+        "mustContain": ["price", "include"],
+        "keywords": ["groceries", "cost", "breakdown"]
+      }
+    },
+    {
+      "id": 66,
+      "category": "pricing_payments",
+      "message": "Is there a service charge on top?",
+      "expected": {
+        "mustContain": ["service", "charge"],
+        "keywords": ["fee", "additional", "cost"]
+      }
+    },
+    {
+      "id": 67,
+      "category": "pricing_payments",
+      "message": "How do I tip the chef?",
+      "expected": {
+        "mustContain": ["tip"],
+        "keywords": ["chef", "gratuity"]
+      }
+    },
+    {
+      "id": 68,
+      "category": "pricing_payments",
+      "message": "The price seems higher than what we discussed",
+      "expected": {
+        "mustContain": ["price"],
+        "keywords": ["higher", "discuss", "quote", "change"]
+      }
+    },
+    {
+      "id": 69,
+      "category": "pricing_payments",
+      "message": "Can I get a discount for booking 3 events?",
+      "expected": {
+        "mustContain": ["discount"],
+        "keywords": ["booking", "multiple", "event"]
+      }
+    },
+    {
+      "id": 70,
+      "category": "pricing_payments",
+      "message": "What's your cancellation refund policy?",
+      "expected": {
+        "mustContain": ["cancel", "refund"],
+        "keywords": ["policy"]
+      }
+    },
+    {
+      "id": 71,
+      "category": "event_logistics",
+      "message": "What time will the chef arrive?",
+      "expected": {
+        "mustContain": ["arrive", "time"],
+        "keywords": ["chef", "schedule"]
+      }
+    },
+    {
+      "id": 72,
+      "category": "event_logistics",
+      "message": "What equipment does the chef need me to have?",
+      "expected": {
+        "mustContain": ["equipment"],
+        "keywords": ["kitchen", "need", "provide"]
+      }
+    },
+    {
+      "id": 73,
+      "category": "event_logistics",
+      "message": "Do I need to provide pots and pans or does the chef bring everything?",
+      "expected": {
+        "mustContain": ["pots", "pans"],
+        "keywords": ["bring", "provide", "equipment"]
+      }
+    },
+    {
+      "id": 74,
+      "category": "event_logistics",
+      "message": "How long does the dinner service take start to finish?",
+      "expected": {
+        "mustContain": ["long", "service"],
+        "keywords": ["time", "duration", "finish"]
+      }
+    },
+    {
+      "id": 75,
+      "category": "event_logistics",
+      "message": "Does the chef clean up after?",
+      "expected": {
+        "mustContain": ["clean"],
+        "keywords": ["chef", "kitchen", "after"]
+      }
+    },
+    {
+      "id": 76,
+      "category": "event_logistics",
+      "message": "My kitchen is small — is that a problem?",
+      "expected": {
+        "mustContain": ["kitchen", "small"],
+        "keywords": ["space", "problem", "work"]
+      }
+    },
+    {
+      "id": 77,
+      "category": "event_logistics",
+      "message": "Where will the food be prepped?",
+      "expected": {
+        "mustContain": ["prep"],
+        "keywords": ["food", "kitchen", "location"]
+      }
+    },
+    {
+      "id": 78,
+      "category": "event_logistics",
+      "message": "What time should I tell guests to arrive?",
+      "expected": {
+        "mustContain": ["time", "guest"],
+        "keywords": ["arrive", "schedule"]
+      }
+    },
+    {
+      "id": 79,
+      "category": "event_logistics",
+      "message": "Can we do it outdoors on the deck?",
+      "expected": {
+        "mustContain": ["outdoor"],
+        "keywords": ["deck", "outside", "setup"]
+      }
+    },
+    {
+      "id": 80,
+      "category": "event_logistics",
+      "message": "It's a surprise party — can the chef come early and set up before the guest of honor arrives?",
+      "expected": {
+        "mustContain": ["surprise"],
+        "keywords": ["early", "setup", "before"]
+      }
+    },
+    {
+      "id": 81,
+      "category": "event_logistics",
+      "message": "Do you bring plates and silverware or do I use mine?",
+      "expected": {
+        "mustContain": ["plates"],
+        "keywords": ["silverware", "bring", "provide"]
+      }
+    },
+    {
+      "id": 82,
+      "category": "event_logistics",
+      "message": "We don't have a gas stove, only electric — is that okay?",
+      "expected": {
+        "mustContain": ["stove", "electric"],
+        "keywords": ["gas", "kitchen", "okay"]
+      }
+    },
+    {
+      "id": 83,
+      "category": "event_logistics",
+      "message": "Can the chef do a live cooking station so guests can watch?",
+      "expected": {
+        "mustContain": ["live", "cooking"],
+        "keywords": ["station", "watch", "interactive"]
+      }
+    },
+    {
+      "id": 84,
+      "category": "event_logistics",
+      "message": "We have a dog — will that be a problem in the kitchen?",
+      "expected": {
+        "mustContain": ["dog"],
+        "keywords": ["kitchen", "pet", "problem"]
+      }
+    },
+    {
+      "id": 85,
+      "category": "event_logistics",
+      "message": "Parking is tricky at our place — where should the chef park?",
+      "expected": {
+        "mustContain": ["parking"],
+        "keywords": ["chef", "arrive", "location"]
+      }
+    },
+    {
+      "id": 86,
+      "category": "communication_status",
+      "message": "Has the chef confirmed my event?",
+      "expected": {
+        "mustContain": ["confirm"],
+        "keywords": ["chef", "event", "status"]
+      }
+    },
+    {
+      "id": 87,
+      "category": "communication_status",
+      "message": "I sent a message 2 days ago and haven't heard back",
+      "expected": {
+        "mustContain": ["message"],
+        "keywords": ["response", "follow", "heard"]
+      }
+    },
+    {
+      "id": 88,
+      "category": "communication_status",
+      "message": "Can I talk to the chef directly?",
+      "expected": {
+        "mustContain": ["chef"],
+        "keywords": ["talk", "contact", "direct", "message"]
+      }
+    },
+    {
+      "id": 89,
+      "category": "communication_status",
+      "message": "Can you pass along that we want to add a cheese course?",
+      "expected": {
+        "mustContain": ["cheese", "course"],
+        "keywords": ["pass", "add", "message", "chef"]
+      }
+    },
+    {
+      "id": 90,
+      "category": "communication_status",
+      "message": "What's the status of my booking?",
+      "expected": {
+        "mustContain": ["status", "booking"],
+        "keywords": ["event", "update"]
+      }
+    },
+    {
+      "id": 91,
+      "category": "communication_status",
+      "message": "I approved the menu but want to make one more change",
+      "expected": {
+        "mustContain": ["menu", "change"],
+        "keywords": ["approved", "modify", "update"]
+      }
+    },
+    {
+      "id": 92,
+      "category": "communication_status",
+      "message": "When will I get the finalized menu?",
+      "expected": {
+        "mustContain": ["menu", "final"],
+        "keywords": ["when", "ready"]
+      }
+    },
+    {
+      "id": 93,
+      "category": "post_event_rebooking",
+      "message": "The dinner was incredible — how do I leave a review?",
+      "expected": {
+        "mustContain": ["review"],
+        "keywords": ["feedback", "dinner"]
+      }
+    },
+    {
+      "id": 94,
+      "category": "post_event_rebooking",
+      "message": "I want to book the same chef again for next month",
+      "expected": {
+        "mustContain": ["book", "chef"],
+        "keywords": ["again", "same", "next"]
+      }
+    },
+    {
+      "id": 95,
+      "category": "post_event_rebooking",
+      "message": "I want the exact same everything — menu, time, setup",
+      "expected": {
+        "mustContain": ["same"],
+        "keywords": ["menu", "repeat", "again"]
+      }
+    },
+    {
+      "id": 96,
+      "category": "post_event_rebooking",
+      "message": "There was an issue with one of the dishes — who do I talk to?",
+      "expected": {
+        "mustContain": ["issue"],
+        "keywords": ["dish", "talk", "feedback", "concern"]
+      }
+    },
+    {
+      "id": 97,
+      "category": "post_event_rebooking",
+      "message": "Can I get the recipe for that risotto?",
+      "expected": {
+        "mustContain": ["recipe"],
+        "keywords": ["risotto", "chef"]
+      }
+    },
+    {
+      "id": 98,
+      "category": "post_event_rebooking",
+      "message": "How many events have I booked with you total?",
+      "expected": {
+        "mustContain": ["event", "book"],
+        "keywords": ["total", "history"]
+      }
+    },
+    {
+      "id": 99,
+      "category": "post_event_rebooking",
+      "message": "Do you have a loyalty program or repeat client perks?",
+      "expected": {
+        "mustContain": ["loyalty"],
+        "keywords": ["program", "repeat", "perks"]
+      }
+    },
+    {
+      "id": 100,
+      "category": "post_event_rebooking",
+      "message": "I want to refer a friend — do you have a referral program?",
+      "expected": {
+        "mustContain": ["referral", "refer"],
+        "keywords": ["friend", "program"]
+      }
+    }
+  ]
+}

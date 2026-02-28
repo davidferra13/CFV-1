@@ -65,7 +65,11 @@
     "beta:named": "bash scripts/beta-serve.sh named",
     "beta:build": "next build --no-lint && next start -p 3100",
     "ollama": "node scripts/ollama-control.mjs",
-    "dashboard": "node --watch-path=scripts/launcher scripts/launcher/server.mjs"
+    "dashboard": "node --watch-path=scripts/launcher scripts/launcher/server.mjs",
+    "test:remy-quality": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef",
+    "test:remy-quality:quick": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef --category business_overview",
+    "test:remy-quality:single": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef --prompt",
+    "test:remy-quality:client": "node tests/remy-quality/harness/client-quality-runner.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
