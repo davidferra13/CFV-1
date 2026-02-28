@@ -1,6 +1,7 @@
 // Chef Events List Page
 // Displays all events in a filterable table or kanban board.
 // Toggle between views with ?view=list (default) and ?view=kanban.
+// List view supports bulk selection with archive + delete-drafts actions.
 
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
@@ -9,22 +10,12 @@ import { requireChef } from '@/lib/auth/get-user'
 
 export const metadata: Metadata = { title: 'Events - ChefFlow' }
 import { getEvents } from '@/lib/events/actions'
-import { EventStatusBadge } from '@/components/events/event-status-badge'
 import { EventsKanban } from '@/components/events/events-kanban'
+import { EventsBulkTable } from '@/components/events/events-bulk-table'
 import { Button } from '@/components/ui/button'
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from '@/components/ui/table'
 import { Card } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
 import { NoEventsIllustration } from '@/components/ui/branded-illustrations'
-import { formatCurrency } from '@/lib/utils/currency'
-import { format } from 'date-fns'
 import { EventsViewFilterBar } from '@/components/events/events-view-filter-bar'
 import { getWeatherForEvents } from '@/lib/weather/weather-actions'
 
@@ -84,69 +75,25 @@ async function EventsList({ status }: { status: EventStatus }) {
     )
   }
 
-  return (
-    <Card>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Occasion</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Client</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Quoted Price</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {events.map((event: any) => (
-            <TableRow key={event.id}>
-              <TableCell className="font-medium">
-                <Link
-                  href={`/events/${event.id}`}
-                  className="text-brand-600 hover:text-brand-300 hover:underline"
-                >
-                  {event.occasion || 'Untitled Event'}
-                </Link>
-              </TableCell>
-              <TableCell>
-                <span>{format(new Date(event.event_date), 'MMM d, yyyy')}</span>
-                {weatherById[event.id] && (
-                  <span
-                    className="ml-1.5 text-xs text-stone-400"
-                    title={`${weatherById[event.id].description} — ${weatherById[event.id].tempMinF}°–${weatherById[event.id].tempMaxF}°F`}
-                  >
-                    {weatherById[event.id].emoji} {weatherById[event.id].tempMinF}°–
-                    {weatherById[event.id].tempMaxF}°
-                  </span>
-                )}
-              </TableCell>
-              <TableCell>{event.client?.full_name || 'Unknown'}</TableCell>
-              <TableCell>
-                <EventStatusBadge status={event.status} />
-              </TableCell>
-              <TableCell>{formatCurrency(event.quoted_price_cents ?? 0)}</TableCell>
-              <TableCell>
-                <div className="flex gap-2">
-                  <Link href={`/events/${event.id}`}>
-                    <Button size="sm" variant="secondary">
-                      View
-                    </Button>
-                  </Link>
-                  {event.status === 'draft' && (
-                    <Link href={`/events/${event.id}/edit`}>
-                      <Button size="sm" variant="secondary">
-                        Edit
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </Card>
-  )
+  // Map events to the shape the bulk table expects, including weather data
+  const eventsWithWeather = events.map((event: any) => ({
+    id: event.id,
+    occasion: event.occasion,
+    event_date: event.event_date,
+    status: event.status,
+    quoted_price_cents: event.quoted_price_cents,
+    client: event.client ? { full_name: event.client.full_name } : null,
+    weather: weatherById[event.id]
+      ? {
+          emoji: weatherById[event.id].emoji,
+          description: weatherById[event.id].description,
+          tempMinF: weatherById[event.id].tempMinF,
+          tempMaxF: weatherById[event.id].tempMaxF,
+        }
+      : null,
+  }))
+
+  return <EventsBulkTable events={eventsWithWeather} />
 }
 
 async function EventsKanbanView() {

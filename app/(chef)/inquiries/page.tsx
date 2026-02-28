@@ -31,6 +31,10 @@ import type { InquiryUrgency } from '@/lib/analytics/response-time-actions'
 import type { CompletenessScore } from '@/lib/leads/completeness'
 import { InquiriesViewWrapper } from '@/components/inquiries/inquiries-view-wrapper'
 import { InquiriesFilterTabs } from '@/components/inquiries/inquiries-filter-tabs'
+import {
+  InquiriesBulkTable,
+  type SerializedInquiry,
+} from '@/components/inquiries/inquiries-bulk-table'
 import { AlertTriangle, Clock, TrendingUp, BarChart3 } from 'lucide-react'
 
 type InquiryFilter =
@@ -372,21 +376,23 @@ async function InquiryList({
     )
   }
 
-  // --- Flat list for filtered views ---
-  return (
-    <div className="space-y-2">
-      {inquiries.map((inquiry: any) => (
-        <InquiryRow
-          key={inquiry.id}
-          inquiry={inquiry}
-          scoreMap={scoreMap}
-          leadScoreMap={leadScoreMap}
-          urgencyMap={urgencyMap}
-          completenessMap={completenessMap}
-        />
-      ))}
-    </div>
-  )
+  // --- Table with bulk actions for filtered views ---
+  const serializedInquiries: SerializedInquiry[] = inquiries.map((inquiry: any) => ({
+    id: inquiry.id,
+    status: inquiry.status,
+    channel: inquiry.channel,
+    client_name: getDisplayName(inquiry),
+    confirmed_occasion: inquiry.confirmed_occasion ?? null,
+    confirmed_date: inquiry.confirmed_date ?? null,
+    confirmed_guest_count: inquiry.confirmed_guest_count ?? null,
+    confirmed_budget_cents: inquiry.confirmed_budget_cents ?? null,
+    updated_at: inquiry.updated_at,
+    created_at: inquiry.created_at,
+    next_action_required: inquiry.next_action_required ?? null,
+    chef_likelihood: (inquiry as any).chef_likelihood ?? null,
+  }))
+
+  return <InquiriesBulkTable inquiries={serializedInquiries} />
 }
 
 export default async function InquiriesPage({
