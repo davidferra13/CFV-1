@@ -5,9 +5,34 @@
 // Routed to Gemini (nutritional knowledge, not PII).
 // Output is ESTIMATE ONLY — clearly labeled as approximate, not medical advice.
 
+import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { GoogleGenAI } from '@google/genai'
+
+const CourseNutritionSchema = z.object({
+  courseName: z.string(),
+  dishName: z.string(),
+  servingSize: z.string(),
+  calories: z.number().nullable(),
+  proteinG: z.number().nullable(),
+  carbsG: z.number().nullable(),
+  fatG: z.number().nullable(),
+  fiberG: z.number().nullable(),
+  sodiumMg: z.number().nullable(),
+  keyAllergens: z.array(z.string()).default([]),
+  confidence: z.enum(['high', 'medium', 'low']),
+})
+
+const MenuNutritionalResponseSchema = z.object({
+  totalCaloriesPerGuest: z.number().nullable(),
+  totalProteinG: z.number().nullable(),
+  totalCarbsG: z.number().nullable(),
+  totalFatG: z.number().nullable(),
+  courses: z.array(CourseNutritionSchema),
+  highlights: z.array(z.string()).default([]),
+  dietarySuitability: z.array(z.string()).default([]),
+})
 
 export interface CourseNutrition {
   courseName: string
@@ -153,9 +178,14 @@ Return ONLY valid JSON.`
       config: { temperature: 0.2, responseMimeType: 'application/json' },
     })
     const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
+    const raw = JSON.parse(text)
+    const validated = MenuNutritionalResponseSchema.safeParse(raw)
+    if (!validated.success) {
+      console.error('[menu-nutritional] Zod validation failed:', validated.error.format())
+      throw new Error('Nutritional response did not match expected format. Please try again.')
+    }
     return {
-      ...parsed,
+      ...validated.data,
       disclaimer:
         'All nutritional values are AI estimates only. They should not be used for medical dietary planning. Consult a registered dietitian for precise nutritional information.',
       generatedAt: new Date().toISOString(),

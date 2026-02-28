@@ -32,10 +32,16 @@ const getGeminiClient = () => {
 // 1. GEMINI — CAMPAIGN CONCEPT COPY (no client PII)
 // ============================================================
 
+const CampaignConceptSchema = z.object({
+  hook: z.string(),
+  description: z.string(),
+  callToAction: z.string(),
+})
+
 export interface CampaignConceptDraft {
-  hook: string // 1-sentence attention-grabbing opener
-  description: string // 2-3 sentences describing the dinner
-  callToAction: string // e.g. "Reserve your seat before it fills up."
+  hook: string
+  description: string
+  callToAction: string
   generatedAt: string
 }
 
@@ -87,8 +93,13 @@ Return ONLY valid JSON: { "hook": "...", "description": "...", "callToAction": "
       config: { temperature: 0.75, responseMimeType: 'application/json' },
     })
     const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
-    return { ...parsed, generatedAt: new Date().toISOString() }
+    const raw = JSON.parse(text)
+    const validated = CampaignConceptSchema.safeParse(raw)
+    if (!validated.success) {
+      console.error('[campaign-concept] Zod validation failed:', validated.error.format())
+      throw new Error('Campaign concept response did not match expected format. Please try again.')
+    }
+    return { ...validated.data, generatedAt: new Date().toISOString() }
   } catch (err) {
     console.error('[campaign-concept] Gemini failed:', err)
     throw new Error('Could not draft dinner concept. Please try again.')

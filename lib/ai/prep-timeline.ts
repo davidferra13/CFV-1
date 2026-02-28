@@ -5,18 +5,37 @@
 // Routed to Gemini (creative scheduling, not PII).
 // Output is DRAFT ONLY — chef approves/edits before using.
 
+import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { GoogleGenAI } from '@google/genai'
 
+// ── Zod Schema ────────────────────────────────────────────────────────────
+
+const PrepTaskSchema = z.object({
+  time: z.string(),
+  task: z.string(),
+  duration: z.string(),
+  recipe: z.string(),
+  canParallelize: z.boolean(),
+  notes: z.string().nullable(),
+})
+
+const PrepTimelineResponseSchema = z.object({
+  tasks: z.array(PrepTaskSchema),
+  totalPrepHours: z.number(),
+  suggestedStartTime: z.string(),
+  criticalPath: z.array(z.string()),
+})
+
 // ── Types ─────────────────────────────────────────────────────────────────
 
 export interface PrepTask {
-  time: string // e.g. "9:00 AM"
-  task: string // e.g. "Make stock base, reduce by half"
-  duration: string // e.g. "45 min"
-  recipe: string // which menu item this is for
-  canParallelize: boolean // can another task run simultaneously
+  time: string
+  task: string
+  duration: string
+  recipe: string
+  canParallelize: boolean
   notes: string | null
 }
 
@@ -26,7 +45,7 @@ export interface PrepTimeline {
   tasks: PrepTask[]
   totalPrepHours: number
   suggestedStartTime: string
-  criticalPath: string[] // tasks that cannot be delayed
+  criticalPath: string[]
   generatedAt: string
 }
 
@@ -127,14 +146,16 @@ Return ONLY valid JSON.`
       config: { temperature: 0.3, responseMimeType: 'application/json' },
     })
     const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
+    const raw = JSON.parse(text)
+    const validated = PrepTimelineResponseSchema.safeParse(raw)
+    if (!validated.success) {
+      console.error('[prep-timeline] Zod validation failed:', validated.error.format())
+      throw new Error('Prep timeline response did not match expected format. Please try again.')
+    }
     return {
       eventDate: event.event_date ?? '',
       serviceTime: serveTime,
-      tasks: parsed.tasks ?? [],
-      totalPrepHours: parsed.totalPrepHours ?? 0,
-      suggestedStartTime: parsed.suggestedStartTime ?? 'TBD',
-      criticalPath: parsed.criticalPath ?? [],
+      ...validated.data,
       generatedAt: new Date().toISOString(),
     }
   } catch (err) {

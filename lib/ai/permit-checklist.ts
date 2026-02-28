@@ -5,9 +5,25 @@
 // Routed to Gemini (regulatory knowledge, not PII).
 // Output is INFORMATIONAL ONLY — chef verifies with local authority before acting.
 
+import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { GoogleGenAI } from '@google/genai'
+
+const PermitChecklistItemSchema = z.object({
+  step: z.number(),
+  task: z.string(),
+  leadTimeDays: z.number(),
+  notes: z.string().nullable(),
+  isRequired: z.boolean(),
+})
+
+const PermitChecklistResponseSchema = z.object({
+  totalLeadTimeDays: z.number(),
+  checklist: z.array(PermitChecklistItemSchema).min(1),
+  estimatedCostRange: z.string(),
+  keyContacts: z.string(),
+})
 
 export interface PermitChecklistItem {
   step: number
@@ -123,16 +139,21 @@ Return ONLY valid JSON.`
       config: { temperature: 0.3, responseMimeType: 'application/json' },
     })
     const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
+    const raw = JSON.parse(text)
+    const validated = PermitChecklistResponseSchema.safeParse(raw)
+    if (!validated.success) {
+      console.error('[permit-checklist] Zod validation failed:', validated.error.format())
+      throw new Error('Permit checklist response did not match expected format. Please try again.')
+    }
     return {
       permitType,
       jurisdiction,
       expiryDate,
       renewalStartDate,
-      totalLeadTimeDays: parsed.totalLeadTimeDays ?? 60,
-      checklist: parsed.checklist ?? [],
-      estimatedCostRange: parsed.estimatedCostRange ?? 'Varies — check with local health authority',
-      keyContacts: parsed.keyContacts ?? 'Contact your local county health department',
+      totalLeadTimeDays: validated.data.totalLeadTimeDays,
+      checklist: validated.data.checklist,
+      estimatedCostRange: validated.data.estimatedCostRange,
+      keyContacts: validated.data.keyContacts,
       disclaimer:
         'This checklist is AI-generated and may not reflect current local requirements. Always verify permit requirements directly with your local health authority before beginning the renewal process.',
       generatedAt: new Date().toISOString(),

@@ -113,17 +113,12 @@ INQUIRY fields:
 NOTE fields:
 - type (follow_up|dietary_update|scheduling|preference|action_item|general), content, related_client
 
-RESPOND WITH ONLY valid JSON (no markdown, no explanation):
-{
-  "parsed": {
-    "clients": [ ... ],
-    "events": [ ... ],
-    "inquiries": [ ... ],
-    "notes": [ ... ]
-  },
-  "confidence": "high|medium|low",
-  "warnings": ["string"]
-}`
+EXAMPLE:
+
+Input: "hey chef this is Lisa. so my mom's bday is march 22, wanting to do a nice dinner at her place in Wellesley. prob 8 people. she's lactose intolerant btw, and my aunt has a tree nut allergy. thinking maybe $150 a head? also my friend Dave might reach out to you for his wedding in september, I gave him your number"
+Output: { "parsed": { "clients": [{ "full_name": "Lisa", "dietary_restrictions": [], "allergies": [], "referral_source": null, "vibe_notes": null, "field_confidence": { "full_name": "confirmed" } }, { "full_name": "Lisa's mother", "dietary_restrictions": ["lactose intolerant"], "allergies": [], "field_confidence": { "full_name": "inferred", "dietary_restrictions": "confirmed" } }, { "full_name": "Dave", "referral_source": "referral", "referral_source_detail": "Referred by Lisa", "field_confidence": { "full_name": "confirmed" } }], "events": [{ "client_name": "Lisa", "event_date": "2026-03-22", "guest_count": 8, "occasion": "Birthday dinner (Lisa's mother)", "location": "Wellesley", "budget_cents": 120000, "dietary_restrictions": ["lactose intolerant", "tree nut allergy"], "service_style": null, "notes": "At mother's place" }], "inquiries": [{ "client_name": "Dave", "channel": "phone", "event_date": null, "guest_count": null, "occasion": "Wedding", "budget_range_min_cents": null, "budget_range_max_cents": null, "notes": "September wedding, referred by Lisa, may reach out" }], "notes": [{ "type": "action_item", "content": "Lisa's aunt has tree nut allergy — flag for menu planning", "related_client": "Lisa" }] }, "confidence": "high", "warnings": ["Lisa's mother's name not provided — stored as 'Lisa's mother'", "Dave's wedding details are sparse — he hasn't reached out yet"] }
+
+RESPOND WITH ONLY valid JSON (no markdown, no explanation).`
 
 // ============================================
 // PARSER FUNCTION

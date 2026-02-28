@@ -22,7 +22,7 @@ const InsightCardSchema = z.object({
 })
 
 const BusinessInsightsSchema = z.object({
-  insights: z.array(InsightCardSchema),
+  insights: z.array(InsightCardSchema).min(4).max(6),
   headline: z.string(), // single most important insight
   healthScore: z.number().min(0).max(100), // overall business health 0-100
   healthLabel: z.enum(['thriving', 'healthy', 'needs_attention', 'at_risk']),
@@ -110,15 +110,28 @@ export async function getBusinessInsights(): Promise<BusinessInsights> {
   })
   const peakMonth = Object.entries(monthCounts).sort((a, b) => b[1] - a[1])[0]
 
-  // Top clients by event count
-  const clientEventMap: Record<string, number> = {}
-  // (simplified — would need client_id join for real LTV)
-
   const systemPrompt = `You are a business intelligence analyst for a private chef business.
 Generate 4–6 specific, actionable insights from the business data.
 Be direct and honest — if something needs attention, say so clearly.
-Each insight should give the chef something specific they can act on this week.
+
+RULES FOR ACTIONS:
+- Every action must be something the chef can do THIS WEEK — not "someday" or "consider"
+- Be specific: "Re-engage the 3 clients who haven't booked in 90+ days — open your Clients page and sort by last event" not "Consider reaching out to past clients"
+- Reference app features when relevant: Clients tab, Inquiries page, Calendar, Financial dashboard
+- If the data shows a clear problem, say so plainly — don't soften it
+
 Health score: 80–100 = thriving, 60–79 = healthy, 40–59 = needs attention, 0–39 = at risk.
+Make sure healthLabel matches the score range.
+
+EXAMPLE INSIGHT CARD:
+{
+  "title": "Pipeline is drying up",
+  "insight": "You have only 2 active inquiries and your conversion rate is 40%. At this pace, you'll book 1 event from the current pipeline.",
+  "action": "Post on Instagram this week and reach out to your 5 most recent past clients with a seasonal menu idea. Check your Inquiries page for any you haven't responded to.",
+  "priority": "high",
+  "category": "growth"
+}
+
 Return valid JSON only.`
 
   const userContent = `
@@ -159,7 +172,9 @@ Return JSON: {
 }`
 
   try {
-    return await parseWithOllama(systemPrompt, userContent, BusinessInsightsSchema)
+    return await parseWithOllama(systemPrompt, userContent, BusinessInsightsSchema, {
+      modelTier: 'standard',
+    })
   } catch (err) {
     console.error('[business-insights] Failed:', err)
     throw new Error('Could not generate insights. Please try again.')

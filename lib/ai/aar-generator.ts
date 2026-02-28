@@ -26,12 +26,12 @@ export interface AARDraft {
 
 const AARDraftAISchema = z.object({
   executiveSummary: z.string(),
-  whatWentWell: z.array(z.string()),
-  whatCouldImprove: z.array(z.string()),
-  keyLearnings: z.array(z.string()),
+  whatWentWell: z.array(z.string()).min(1),
+  whatCouldImprove: z.array(z.string()).min(1),
+  keyLearnings: z.array(z.string()).min(1),
   clientExperienceNotes: z.string(),
   financialReflection: z.string(),
-  nextTimeList: z.array(z.string()),
+  nextTimeList: z.array(z.string()).min(1),
   fullNarrative: z.string(),
 })
 
@@ -146,6 +146,7 @@ EXISTING NOTES:
     const parsed = await parseWithOllama(systemPrompt, userContent, AARDraftAISchema, {
       modelTier: 'complex',
       timeoutMs: 90_000,
+      maxTokens: 2048,
     })
     return { ...parsed, generatedAt: new Date().toISOString() }
   } catch (err) {

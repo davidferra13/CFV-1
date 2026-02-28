@@ -1,8 +1,14 @@
 'use server'
 
+// Quote Draft Generator
+// PRIVACY: Sends dietary restrictions, budget, client event history — must stay local.
+// Output is DRAFT ONLY — chef reviews and adjusts before sending.
+
+import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { GoogleGenAI } from '@google/genai'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 
 export interface QuoteDraftResult {
   title: string
@@ -12,11 +18,43 @@ export interface QuoteDraftResult {
   notes: string
 }
 
-const getClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
-  return new GoogleGenAI({ apiKey })
+const LineItemSchema = z.object({
+  description: z.string(),
+  quantity: z.number().min(1),
+  unit_price_cents: z.number().min(0),
+})
+
+const QuoteDraftSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  lineItems: z.array(LineItemSchema).min(1),
+  notes: z.string(),
+})
+
+const SYSTEM_PROMPT = `You are a private chef drafting a professional quote for a client event.
+
+RULES:
+- All monetary amounts in CENTS (e.g. $150 = 15000)
+- Line items should include: chef services (per person), ingredients/groceries, and any relevant extras (travel, equipment rental, staff)
+- Price per person should align with the chef's historical average (provided in the data)
+- If a client budget is given, aim to meet it while keeping the quote realistic
+- Description should be 1-2 sentences capturing the event vision
+- Notes should include payment terms, what's included, and any caveats
+- Be specific in line item descriptions — "Private chef services for 8-guest Valentine's dinner" not "Chef services"
+
+EXAMPLE OUTPUT:
+{
+  "title": "Valentine's Dinner for 8",
+  "description": "An intimate multi-course Valentine's dinner featuring seasonal ingredients with wine pairing suggestions.",
+  "lineItems": [
+    { "description": "Private chef services — 4-course dinner (8 guests)", "quantity": 8, "unit_price_cents": 17500 },
+    { "description": "Premium ingredients & groceries", "quantity": 1, "unit_price_cents": 45000 },
+    { "description": "Tableware & presentation supplies", "quantity": 1, "unit_price_cents": 8500 }
+  ],
+  "notes": "Quote includes menu planning, shopping, preparation, cooking, plating, and kitchen cleanup. Dietary accommodations included at no extra charge. 50% deposit required to confirm booking, balance due day of event."
 }
+
+Return ONLY valid JSON matching this structure.`
 
 export async function generateQuoteDraft(inquiryId: string): Promise<QuoteDraftResult> {
   const user = await requireChef()
@@ -55,38 +93,28 @@ export async function generateQuoteDraft(inquiryId: string): Promise<QuoteDraftR
 
   const guestCount = inquiry.confirmed_guest_count || 8
 
-  const prompt = `Generate a professional quote for a private chef event:
+  const userContent = `Generate a professional quote for this private chef event.
 
 Event: ${inquiry.confirmed_occasion || 'Private Dinner'}
 Date: ${inquiry.confirmed_date || 'TBD'}
 Guests: ${guestCount}
 Budget: ${inquiry.confirmed_budget_cents ? '$' + (inquiry.confirmed_budget_cents / 100).toFixed(0) : 'Not specified'}
 Dietary restrictions: ${inquiry.confirmed_dietary_restrictions?.join(', ') || 'None'}
-Service expectations: ${inquiry.confirmed_service_expectations || 'None'}
-Chef avg per-person rate (from history): $${(avgPerGuest / 100).toFixed(0)}
-
-Return JSON: { "title": "Quote title", "description": "1-2 sentence event description", "lineItems": [{"description": "item", "quantity": number, "unit_price_cents": number}], "notes": "Terms/notes paragraph" }
-
-Line items should include: chef services (per person), ingredients/groceries, and any extras. All amounts in cents. Return ONLY valid JSON, no markdown.`
+Service expectations: ${inquiry.confirmed_service_expectations || 'Full service (menu planning through cleanup)'}
+Chef's average per-person rate (from history): $${(avgPerGuest / 100).toFixed(0)}`
 
   try {
-    const ai = getClient()
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-      config: {
-        temperature: 0.5,
-        responseMimeType: 'application/json',
-      },
+    const parsed = await parseWithOllama(SYSTEM_PROMPT, userContent, QuoteDraftSchema, {
+      modelTier: 'standard',
+      maxTokens: 1024,
     })
-    const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const draft = JSON.parse(text) as QuoteDraftResult
-    draft.totalCents = draft.lineItems.reduce(
+    const totalCents = parsed.lineItems.reduce(
       (sum, item) => sum + item.quantity * item.unit_price_cents,
       0
     )
-    return draft
+    return { ...parsed, totalCents }
   } catch (err) {
+    if (err instanceof OllamaOfflineError) throw err
     console.error('[quote-draft] Error:', err)
     throw new Error('Could not generate quote draft. Please try again.')
   }

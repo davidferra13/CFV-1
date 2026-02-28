@@ -62,8 +62,29 @@ export async function analyzeClientSentiment(clientId: string): Promise<Sentimen
 
   const systemPrompt = `You are a customer relationship analyst for a private chef business.
 Analyze the client's messages for sentiment and trend.
-Focus on: satisfaction signals, frustration, urgency, disappointment, enthusiasm.
-Risk flag: true only if there is a genuine dissatisfaction risk requiring chef attention.
+
+CALIBRATION GUIDE (private chef context):
+- "very_positive": Effusive praise, referrals, rebook requests. "That was the best meal we've ever had at home!" / "We already told three friends about you"
+- "positive": Happy, satisfied, normal warm communication. "Thanks so much, everything was great!" / "The kids loved the pasta"
+- "neutral": Logistical messages, simple confirmations. "Sounds good, see you Saturday" / "Can we move dinner to 7?"
+- "negative": Disappointment, complaints, unmet expectations. "The salmon was a bit overcooked" / "We were hoping for more variety" / "The timing felt rushed"
+- "very_negative": Anger, cancellation threats, refund requests. "We won't be booking again" / "This was not worth the price"
+
+TREND:
+- "improving": Most recent messages are warmer/more positive than earlier ones
+- "stable": Consistent tone throughout
+- "declining": Recent messages are cooler/more negative than earlier ones
+
+RISK FLAG — set true ONLY when:
+- Client expresses unresolved disappointment (not just a one-off comment they moved past)
+- Tone has been declining over multiple messages
+- Client mentions competing services, cancellation, or dissatisfaction with value
+- Do NOT flag risk for normal logistical requests, schedule changes, or dietary updates
+
+ACTION RECOMMENDATION (when risk flagged):
+- Suggest a specific chef action: a personal call, a complimentary add-on, addressing the specific concern mentioned
+- Not generic "reach out" — reference what the client actually said
+
 Return valid JSON only.`
 
   const userContent = `Client messages (chronological, client-sent only):
@@ -109,7 +130,14 @@ export async function quickMessageSentiment(
 ): Promise<z.infer<typeof QuickSentimentSchema>> {
   await requireChef()
 
-  const systemPrompt = `Classify this single message sentiment as: very_positive, positive, neutral, negative, or very_negative. Return JSON only.`
+  const systemPrompt = `Classify this single message sentiment as: very_positive, positive, neutral, negative, or very_negative.
+
+Examples:
+- "That was amazing, thank you!" → positive
+- "Can we do 6:30 instead of 7?" → neutral
+- "The chicken was dry and the sides were cold" → negative
+
+Return JSON only.`
   const userContent = `Message: "${messageBody.slice(0, 300)}"\nReturn: { "sentiment": "..." }`
 
   try {

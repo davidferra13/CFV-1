@@ -179,7 +179,10 @@ Return JSON: {
       }),
     // AI: enhanced briefing with personalized tone (when Ollama is online)
     async () => {
-      const aiResult = await parseWithOllama(systemPrompt, userContent, StaffBriefingSchema)
+      const aiResult = await parseWithOllama(systemPrompt, userContent, StaffBriefingSchema, {
+        modelTier: 'standard',
+        maxTokens: 2048,
+      })
       return { ...aiResult, generatedAt: new Date().toISOString() }
     }
   )

@@ -27,6 +27,11 @@ RULES:
 - Times are often not stated — mark as null if not mentioned.
 - Track field_confidence for key fields.
 
+EXAMPLE:
+
+Input: "Pan Seared Salmon with Lemon Butter\nSalmon filets, salt & pepper, splash of olive oil. Get a nice sear in a hot pan 3 min each side. Finish with butter, squeeze of lemon, handful of capers. Serves 2."
+Output: { "parsed": { "name": "Pan Seared Salmon with Lemon Butter", "category": "protein", "description": "Pan-seared salmon finished with lemon butter and capers", "method": "Season filets. Sear in hot oiled pan 3 min/side. Finish with butter, lemon juice, and capers.", "method_detailed": null, "ingredients": [ { "name": "salmon filet", "quantity": 2, "unit": "each", "preparation_notes": null, "is_optional": false, "estimated": false, "category": "protein", "allergen_flags": ["fish"] }, { "name": "olive oil", "quantity": 1, "unit": "tbsp", "preparation_notes": null, "is_optional": false, "estimated": true, "category": "oil", "allergen_flags": [] }, { "name": "unsalted butter", "quantity": 2, "unit": "tbsp", "preparation_notes": null, "is_optional": false, "estimated": true, "category": "dairy", "allergen_flags": ["dairy"] }, { "name": "lemon", "quantity": 0.5, "unit": "each", "preparation_notes": "juiced", "is_optional": false, "estimated": true, "category": "produce", "allergen_flags": [] }, { "name": "capers", "quantity": 1, "unit": "tbsp", "preparation_notes": null, "is_optional": false, "estimated": true, "category": "condiment", "allergen_flags": [] } ], "yield_quantity": 2, "yield_unit": "servings", "yield_description": "Serves 2", "prep_time_minutes": null, "cook_time_minutes": null, "total_time_minutes": null, "dietary_tags": [], "allergen_flags": ["fish", "dairy"], "adaptations": null, "notes": null, "field_confidence": { "name": "confirmed", "category": "inferred", "method": "confirmed", "ingredients": "inferred" } }, "confidence": "high", "warnings": ["Quantities estimated from informal descriptions ('splash', 'squeeze', 'handful')"] }
+
 RESPOND WITH ONLY valid JSON (no markdown, no explanation):
 {
   "parsed": {

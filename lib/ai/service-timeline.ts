@@ -5,17 +5,33 @@
 // Routed to Gemini (quality-critical creative scheduling — not PII).
 // Output is DRAFT ONLY — chef approves before printing or sharing with staff.
 
+import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { GoogleGenAI } from '@google/genai'
 
+// ── Zod Schema ────────────────────────────────────────────────────────────
+
+const TimelineEntrySchema = z.object({
+  time: z.string(),
+  duration: z.string(),
+  task: z.string(),
+  who: z.string(),
+  notes: z.string().nullable(),
+})
+
+const ServiceTimelineResponseSchema = z.object({
+  entries: z.array(TimelineEntrySchema),
+  printReady: z.string(),
+})
+
 // ── Types ─────────────────────────────────────────────────────────────────
 
 export interface TimelineEntry {
-  time: string // e.g. "5:30 PM"
-  duration: string // e.g. "30 min"
-  task: string // e.g. "Final mise en place, plate garnishes"
-  who: string // e.g. "Chef", "Staff", "Both"
+  time: string
+  duration: string
+  task: string
+  who: string
   notes: string | null
 }
 
@@ -23,7 +39,7 @@ export interface ServiceTimeline {
   eventOccasion: string
   serviceDate: string
   entries: TimelineEntry[]
-  printReady: string // plain text version for single-page print
+  printReady: string
   generatedAt: string
 }
 
@@ -122,12 +138,16 @@ Return ONLY valid JSON, no markdown.`
       config: { temperature: 0.4, responseMimeType: 'application/json' },
     })
     const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
+    const raw = JSON.parse(text)
+    const validated = ServiceTimelineResponseSchema.safeParse(raw)
+    if (!validated.success) {
+      console.error('[service-timeline] Zod validation failed:', validated.error.format())
+      throw new Error('Service timeline response did not match expected format. Please try again.')
+    }
     return {
       eventOccasion: event.occasion ?? 'Private Event',
       serviceDate: event.event_date ?? '',
-      entries: parsed.entries ?? [],
-      printReady: parsed.printReady ?? '',
+      ...validated.data,
       generatedAt: new Date().toISOString(),
     }
   } catch (err) {

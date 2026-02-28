@@ -64,26 +64,27 @@ CLIENT fields:
 RECIPE fields:
 - name, category (sauce|protein|starch|vegetable|fruit|dessert|bread|pasta|soup|salad|appetizer|condiment|beverage|other), description, method, method_detailed, ingredients [{name, quantity, unit, preparation_notes, is_optional, estimated, category, allergen_flags}], yield_quantity, yield_unit, yield_description, prep_time_minutes, cook_time_minutes, total_time_minutes, dietary_tags, allergen_flags, adaptations, notes, field_confidence
 
-RESPOND WITH ONLY valid JSON (no markdown, no explanation):
-{
-  "parsed": {
-    "clients": [ ... client objects ... ],
-    "recipes": [ ... recipe objects ... ],
-    "notes": [
-      {"type": "event_idea|site_note|business_note|scheduling|general", "content": "string", "suggestedAction": "string"}
-    ],
-    "unstructured": ["string - raw text of anything uncategorizable"]
-  },
-  "confidence": "high|medium|low",
-  "warnings": ["string"]
-}`
+EXAMPLE:
+
+Input: "Sarah Mitchell — nut allergy, husband Tom is vegan. They live in Newton, tip well, love Italian. Her chocolate lava cake: 4oz dark chocolate, 2 eggs, 1/4 cup sugar, 2 tbsp flour, pinch of salt. Bake 12 min at 425. Also need to follow up with the Hendersons about their July 4th party."
+Output: { "parsed": { "clients": [{ "full_name": "Sarah Mitchell", "allergies": ["nut allergy"], "dietary_restrictions": [], "partner_name": "Tom", "vibe_notes": "Tips well", "favorite_cuisines": ["Italian"], "addresses": [{ "label": "home", "city": "Newton" }], "household_members": [{ "name": "Tom", "relationship": "husband", "notes": "Vegan" }], "field_confidence": { "full_name": "confirmed", "allergies": "confirmed" } }], "recipes": [{ "name": "Chocolate Lava Cake", "category": "dessert", "description": "Individual chocolate lava cakes", "method": "Melt chocolate, combine with eggs, sugar, flour, salt. Bake 12 min at 425°F.", "ingredients": [{ "name": "dark chocolate", "quantity": 4, "unit": "oz", "category": "baking", "allergen_flags": [] }, { "name": "eggs", "quantity": 2, "unit": "each", "category": "dairy", "allergen_flags": ["eggs"] }, { "name": "sugar", "quantity": 0.25, "unit": "cup", "category": "baking", "allergen_flags": [] }, { "name": "flour", "quantity": 2, "unit": "tbsp", "category": "baking", "allergen_flags": ["gluten"] }, { "name": "salt", "quantity": 1, "unit": "pinch", "estimated": true, "category": "spice", "allergen_flags": [] }], "allergen_flags": ["eggs", "gluten"], "field_confidence": { "name": "confirmed", "ingredients": "confirmed" } }], "notes": [{ "type": "follow_up", "content": "Follow up with the Hendersons about their July 4th party", "suggestedAction": "Contact the Hendersons to confirm July 4th party details" }], "unstructured": [] }, "confidence": "high", "warnings": ["Sarah's chocolate lava cake attributed to her based on context — verify ownership"] }
+
+RESPOND WITH ONLY valid JSON (no markdown, no explanation).`
 
 /**
  * Parse a brain dump into categorized structured data
  */
 export async function parseBrainDump(rawText: string): Promise<ParseResult<BrainDumpResult>> {
   try {
-    const result = await parseWithOllama(BRAIN_DUMP_SYSTEM_PROMPT, rawText, BrainDumpResponseSchema)
+    const result = await parseWithOllama(
+      BRAIN_DUMP_SYSTEM_PROMPT,
+      rawText,
+      BrainDumpResponseSchema,
+      {
+        modelTier: 'complex',
+        maxTokens: 1536,
+      }
+    )
     return result
   } catch (error) {
     const clientFallback = parseClientsHeuristically(rawText, toFallbackWarning(error))

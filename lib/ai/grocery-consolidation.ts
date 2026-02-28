@@ -62,7 +62,7 @@ export async function consolidateGroceryList(eventId: string): Promise<GroceryCo
       .select(
         `
         name,
-        recipes(name, servings, recipe_ingredients(ingredient_id, quantity, unit))
+        recipes(name, servings, recipe_ingredients(quantity, unit, ingredients(name)))
       `
       )
       .eq('event_id', eventId) as Promise<{
@@ -71,7 +71,11 @@ export async function consolidateGroceryList(eventId: string): Promise<GroceryCo
         recipes: {
           name: string
           servings: number | null
-          recipe_ingredients: Array<{ ingredient_id: string; quantity: number; unit: string }>
+          recipe_ingredients: Array<{
+            quantity: number
+            unit: string
+            ingredients: { name: string } | null
+          }>
         } | null
       }> | null
     }>,
@@ -84,11 +88,9 @@ export async function consolidateGroceryList(eventId: string): Promise<GroceryCo
   const guestCount = event.guest_count ?? 10
 
   // Flatten all ingredients with recipe context
-  // Note: recipe_ingredients uses ingredient_id FK to ingredients table,
-  // not a direct ingredient_name column. We use ingredient_id as placeholder.
   const allIngredients: {
     recipeName: string
-    ingredientId: string
+    ingredientName: string
     quantity: string
     unit: string
     servings: number
@@ -104,7 +106,7 @@ export async function consolidateGroceryList(eventId: string): Promise<GroceryCo
     for (const ing of ingredients) {
       allIngredients.push({
         recipeName: item.name,
-        ingredientId: ing.ingredient_id,
+        ingredientName: ing.ingredients?.name ?? 'Unknown ingredient',
         quantity: ing.quantity ? String(Math.ceil(Number(ing.quantity) * scaleFactor)) : '',
         unit: ing.unit ?? '',
         servings: recipeServings,
@@ -143,7 +145,7 @@ Return JSON with keys: ingredients (array of objects with name, totalQuantity, u
 Dietary restrictions/allergies: ${restrictions.join(', ') || 'None'}
 
 All ingredients (scaled for ${guestCount} guests):
-${allIngredients.map((i) => `- [${i.recipeName}] ${i.quantity} ${i.unit} (ingredient: ${i.ingredientId})`).join('\n')}`
+${allIngredients.map((i) => `- [${i.recipeName}] ${i.quantity} ${i.unit} ${i.ingredientName}`).join('\n')}`
 
   try {
     const parsed = await parseWithOllama(systemPrompt, userContent, GroceryResultSchema, {

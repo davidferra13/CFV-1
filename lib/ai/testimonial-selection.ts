@@ -5,9 +5,25 @@
 // Routed to Gemini (curating public-intended content, quality judgment needed).
 // Output is SUGGESTION ONLY — chef decides which to publish.
 
+import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { GoogleGenAI } from '@google/genai'
+
+const TestimonialHighlightSchema = z.object({
+  clientNameInitial: z.string(),
+  eventType: z.string(),
+  quote: z.string(),
+  fullContext: z.string(),
+  why: z.string(),
+  bestPlatform: z.string(),
+  score: z.number().min(0).max(100),
+})
+
+const TestimonialResponseSchema = z.object({
+  topTestimonials: z.array(TestimonialHighlightSchema),
+  summary: z.string(),
+})
 
 export interface TestimonialHighlight {
   clientNameInitial: string // e.g. "S.M." — anonymized for portfolio
@@ -185,13 +201,18 @@ Return ONLY valid JSON.`
       config: { temperature: 0.4, responseMimeType: 'application/json' },
     })
     const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
-    const all: TestimonialHighlight[] = parsed.topTestimonials ?? []
+    const raw = JSON.parse(text)
+    const validated = TestimonialResponseSchema.safeParse(raw)
+    if (!validated.success) {
+      console.error('[testimonial-selection] Zod validation failed:', validated.error.format())
+      throw new Error('Testimonial response did not match expected format. Please try again.')
+    }
+    const all: TestimonialHighlight[] = validated.data.topTestimonials
     return {
       topTestimonials: all,
       portfolioReady: all.filter((t) => t.score >= 80),
       needsEditing: all.filter((t) => t.score >= 60 && t.score < 80),
-      summary: parsed.summary ?? '',
+      summary: validated.data.summary,
       generatedAt: new Date().toISOString(),
     }
   } catch (err) {

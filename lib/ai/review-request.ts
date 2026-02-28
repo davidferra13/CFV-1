@@ -6,15 +6,23 @@
 // Routed to Gemini (quality-critical client communication).
 // Output is DRAFT ONLY — chef must approve before sending.
 
+import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { GoogleGenAI } from '@google/genai'
 
+const ReviewRequestSchema = z.object({
+  subject: z.string(),
+  body: z.string(),
+  shortVersion: z.string(),
+  reviewPlatformSuggestion: z.string(),
+})
+
 export interface ReviewRequestDraft {
   subject: string
-  body: string // full message body
-  shortVersion: string // SMS/social version under 160 chars
-  reviewPlatformSuggestion: string // e.g. "Google", "Yelp", "Instagram"
+  body: string
+  shortVersion: string
+  reviewPlatformSuggestion: string
   generatedAt: string
 }
 
@@ -110,8 +118,13 @@ Return ONLY valid JSON.`
       config: { temperature: 0.7, responseMimeType: 'application/json' },
     })
     const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
-    return { ...parsed, generatedAt: new Date().toISOString() }
+    const raw = JSON.parse(text)
+    const validated = ReviewRequestSchema.safeParse(raw)
+    if (!validated.success) {
+      console.error('[review-request] Zod validation failed:', validated.error.format())
+      throw new Error('Review request response did not match expected format. Please try again.')
+    }
+    return { ...validated.data, generatedAt: new Date().toISOString() }
   } catch (err) {
     console.error('[review-request] Failed:', err)
     throw new Error('Could not draft review request. Please try again.')

@@ -5,11 +5,26 @@
 // Routed to Gemini (creative marketing copy, not PII).
 // Output is DRAFT ONLY — chef picks and edits before posting.
 
+import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { GoogleGenAI } from '@google/genai'
 
 export type CaptionTone = 'warm_personal' | 'elegant_professional' | 'playful_casual'
+
+const SocialCaptionSchema = z.object({
+  platform: z.enum(['instagram', 'facebook', 'twitter', 'linkedin']),
+  tone: z.string(),
+  caption: z.string(),
+  hashtags: z.array(z.string()).default([]),
+  characterCount: z.number(),
+})
+
+const SocialCaptionsResponseSchema = z.object({
+  captions: z.array(SocialCaptionSchema).min(3),
+  instagramFirst: z.string(),
+  shortVersion: z.string(),
+})
 
 export interface SocialCaption {
   platform: 'instagram' | 'facebook' | 'twitter' | 'linkedin'
@@ -21,8 +36,8 @@ export interface SocialCaption {
 
 export interface SocialCaptionsResult {
   captions: SocialCaption[]
-  instagramFirst: string // best caption for IG with hashtags
-  shortVersion: string // under 140 chars for Twitter/X
+  instagramFirst: string
+  shortVersion: string
   generatedAt: string
 }
 
@@ -122,8 +137,13 @@ Return ONLY valid JSON.`
       config: { temperature: 0.8, responseMimeType: 'application/json' },
     })
     const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
-    return { ...parsed, generatedAt: new Date().toISOString() }
+    const raw = JSON.parse(text)
+    const validated = SocialCaptionsResponseSchema.safeParse(raw)
+    if (!validated.success) {
+      console.error('[social-captions] Zod validation failed:', validated.error.format())
+      throw new Error('Social captions response did not match expected format. Please try again.')
+    }
+    return { ...validated.data, generatedAt: new Date().toISOString() } as SocialCaptionsResult
   } catch (err) {
     console.error('[social-captions] Failed:', err)
     throw new Error('Could not generate captions. Please try again.')
