@@ -280,6 +280,68 @@ body {
   border: 1px solid rgba(239,68,68,0.25);
 }
 
+/* ── Manual Panel ────────────────────────────────────────────── */
+#manual-content h1 { font-size: 22px; font-weight: 700; color: var(--brand); margin: 28px 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+#manual-content h2 { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 24px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+#manual-content h3 { font-size: 15px; font-weight: 700; color: var(--text-primary); margin: 18px 0 8px; }
+#manual-content h4 { font-size: 13px; font-weight: 700; color: var(--text-secondary); margin: 14px 0 6px; }
+#manual-content p { font-size: 13px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 10px; }
+#manual-content ul, #manual-content ol { font-size: 13px; color: var(--text-secondary); line-height: 1.7; padding-left: 24px; margin-bottom: 10px; }
+#manual-content li { margin-bottom: 3px; }
+#manual-content code { font-family: 'Fira Code', 'Consolas', monospace; font-size: 12px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; color: var(--brand); }
+#manual-content pre { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 14px; overflow-x: auto; margin-bottom: 14px; }
+#manual-content pre code { background: none; border: none; padding: 0; color: var(--text-primary); }
+#manual-content table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 14px; }
+#manual-content table th { text-align: left; padding: 8px 12px; color: var(--text-secondary); font-weight: 600; background: var(--bg-secondary); border-bottom: 2px solid var(--border); }
+#manual-content table td { padding: 7px 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); vertical-align: top; }
+#manual-content table tr:hover td { background: rgba(255,255,255,0.02); }
+#manual-content blockquote { border-left: 3px solid var(--brand); padding: 8px 16px; margin: 12px 0; background: rgba(232,143,71,0.06); border-radius: 0 8px 8px 0; color: var(--text-secondary); font-size: 13px; }
+#manual-content strong { color: var(--text-primary); }
+#manual-content a { color: var(--brand); text-decoration: none; }
+#manual-content a:hover { text-decoration: underline; }
+#manual-content hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+.manual-tab {
+  padding: 6px 14px;
+  border-radius: 6px 6px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: none;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.manual-tab:hover { color: var(--text-secondary); background: var(--bg-hover); }
+.manual-tab.active {
+  color: var(--brand);
+  background: var(--bg-card);
+  border-color: var(--border);
+  border-bottom-color: var(--bg-card);
+  position: relative;
+  top: 1px;
+}
+
+.manual-toc-item {
+  display: block;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s;
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  line-height: 1.4;
+}
+.manual-toc-item:hover { color: var(--text-secondary); background: var(--bg-hover); }
+.manual-toc-item.active { color: var(--brand); border-left-color: var(--brand); background: rgba(232,143,71,0.06); }
+.manual-toc-item.h3 { padding-left: 20px; font-size: 11px; }
+
+.manual-search-highlight { background: rgba(232,143,71,0.35); border-radius: 2px; padding: 0 1px; }
+
 /* ── Info Grid ────────────────────────────────────────────────── */
 .info-grid {
   display: grid;
@@ -1727,6 +1789,11 @@ body {
         <span class="nav-dot online" id="nd-logins"></span>
         <span class="nav-icon">&#x1F511;</span>
         <span class="nav-label">Logins</span>
+      </a>
+      <a class="nav-item" data-section="manual" title="App Manual">
+        <span class="nav-dot online" id="nd-manual"></span>
+        <span class="nav-icon">&#x1F4D5;</span>
+        <span class="nav-label">Manual</span>
       </a>
     </nav>
 
@@ -4254,6 +4321,54 @@ body {
 
         <div style="text-align:center;padding:12px;">
           <div style="font-size:11px;color:var(--text-muted);">Press <code style="background:var(--bg-secondary);padding:2px 6px;border-radius:4px;font-size:11px;">Tab</code> to jump to this panel &bull; Seed: <code style="background:var(--bg-secondary);padding:2px 6px;border-radius:4px;font-size:11px;">npm run seed:e2e</code></div>
+        </div>
+      </div>
+
+      <!-- ═══ Manual Panel (App Audit Viewer) ═══ -->
+      <div class="panel" id="panel-manual">
+        <div class="panel-header">
+          <h2 class="panel-title">Manual</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span id="manual-modified" style="font-size:11px;color:var(--text-muted);"></span>
+            <span class="status-badge online" style="background:var(--brand-dim);color:var(--brand);border:1px solid rgba(232,143,71,0.25);">
+              <span class="dot online" style="background:var(--brand);"></span>
+              <span id="manual-status">6 Documents</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Search bar -->
+        <div style="padding:0 24px;">
+          <input type="text" id="manual-search" placeholder="Search the manual... (routes, buttons, components, features)"
+            style="width:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text-primary);font-family:inherit;font-size:13px;outline:none;transition:border-color 200ms ease;"
+            onfocus="this.style.borderColor='var(--brand)'"
+            onblur="this.style.borderColor='var(--border)'"
+            oninput="searchManual(this.value)" />
+        </div>
+
+        <!-- Tab bar for switching between audit files -->
+        <div id="manual-tabs" style="display:flex;gap:4px;padding:12px 24px 0;overflow-x:auto;border-bottom:1px solid var(--border);">
+          <!-- Tabs rendered by JS -->
+        </div>
+
+        <!-- Two-column layout: TOC sidebar + content -->
+        <div style="display:flex;gap:0;flex:1;overflow:hidden;">
+          <!-- Table of Contents sidebar -->
+          <div id="manual-toc" style="width:220px;min-width:220px;overflow-y:auto;border-right:1px solid var(--border);padding:16px 12px;">
+            <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Contents</div>
+            <div id="manual-toc-list">
+              <!-- TOC items rendered by JS -->
+            </div>
+          </div>
+
+          <!-- Rendered markdown content -->
+          <div id="manual-content" style="flex:1;overflow-y:auto;padding:20px 24px;">
+            <div style="color:var(--text-muted);text-align:center;padding:60px 0;">
+              <span style="font-size:48px;">&#x1F4D5;</span>
+              <div style="margin-top:12px;font-size:14px;">Loading manual...</div>
+              <div style="margin-top:6px;font-size:12px;">Reading audit files from docs/</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -8400,6 +8515,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '\\') switchSection('sysref')
   if (e.key === '`') switchSection('expenses')
   if (e.key === 'Tab') { e.preventDefault(); switchSection('logins') }
+  if (e.key === ']') switchSection('manual')
   if (e.key === '?' && !e.ctrlKey && !e.metaKey) { e.preventDefault(); toggleKeyboardHelp() }
   if (e.key === 'k' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); toggleCommandPalette() }
   if (e.key === 'Escape') { closeKeyboardHelp(); closeCommandPalette() }
@@ -8418,6 +8534,203 @@ function switchSection(section) {
   if (section === 'git') loadGitDiff()
   if (section === 'observe') observeConnect()
   if (section === 'expenses') loadExpenses()
+  if (section === 'manual') loadManual()
+}
+
+// ── Manual Panel ─────────────────────────────────────────────────
+
+let manualData = null
+let manualLoaded = false
+let manualActiveTab = 'main'
+
+async function loadManual() {
+  if (manualLoaded) return
+  try {
+    const res = await fetch(`${API}/api/manual`)
+    const data = await res.json()
+    if (data.ok) {
+      manualData = data.files
+      manualLoaded = true
+      renderManualTabs()
+      renderManualDoc('main')
+      const totalLines = Object.values(manualData).reduce((sum, f) => sum + (f.lines || 0), 0)
+      setText('manual-status', `${totalLines.toLocaleString()} lines`)
+    }
+  } catch (err) {
+    console.error('Failed to load manual:', err)
+    const el = document.getElementById('manual-content')
+    if (el) el.innerHTML = '<div style="color:var(--error);text-align:center;padding:40px;">Failed to load manual. Is the server running?</div>'
+  }
+}
+
+function renderManualTabs() {
+  const tabsEl = document.getElementById('manual-tabs')
+  if (!tabsEl || !manualData) return
+  let html = ''
+  for (const [key, file] of Object.entries(manualData)) {
+    const active = key === manualActiveTab ? ' active' : ''
+    const sizeKb = Math.round(file.size / 1024)
+    html += `<button class="manual-tab${active}" onclick="renderManualDoc('${key}')" title="${escapeHtml(file.label)} (${sizeKb}KB, ${file.lines} lines)">${escapeHtml(file.label)}</button>`
+  }
+  tabsEl.innerHTML = html
+}
+
+function renderManualDoc(key) {
+  manualActiveTab = key
+  renderManualTabs()
+
+  const file = manualData[key]
+  if (!file || !file.content) {
+    const el = document.getElementById('manual-content')
+    if (el) el.innerHTML = `<div style="color:var(--error);text-align:center;padding:40px;">Document not found: ${escapeHtml(key)}</div>`
+    return
+  }
+
+  // Parse markdown to HTML using marked (already loaded via CDN)
+  const html = marked.parse(file.content, { breaks: true, gfm: true })
+
+  const contentEl = document.getElementById('manual-content')
+  if (!contentEl) return
+  contentEl.innerHTML = html
+  contentEl.scrollTop = 0
+
+  // Update last-modified display
+  const modEl = document.getElementById('manual-modified')
+  if (modEl) modEl.textContent = `${escapeHtml(file.label)} \u00b7 ${file.lines.toLocaleString()} lines`
+
+  // Clear search
+  const searchEl = document.getElementById('manual-search')
+  if (searchEl) searchEl.value = ''
+
+  buildManualToc(contentEl)
+}
+
+function buildManualToc(contentEl) {
+  const tocList = document.getElementById('manual-toc-list')
+  if (!tocList) return
+
+  const headings = contentEl.querySelectorAll('h1, h2, h3')
+  let html = ''
+  let idCounter = 0
+
+  headings.forEach(h => {
+    const id = `manual-h-${idCounter++}`
+    h.id = id
+    const level = h.tagName
+    const subClass = level === 'H3' ? ' h3' : ''
+    const text = h.textContent.replace(/^[\d.]+\s*/, '')
+    html += `<a class="manual-toc-item${subClass}" data-target="${id}" onclick="scrollManualTo('${id}')" title="${escapeHtml(h.textContent)}">${escapeHtml(text)}</a>`
+  })
+
+  tocList.innerHTML = html
+  setupManualScrollSpy(contentEl)
+}
+
+function scrollManualTo(id) {
+  const el = document.getElementById(id)
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    document.querySelectorAll('.manual-toc-item').forEach(t => t.classList.remove('active'))
+    const tocItem = document.querySelector(`.manual-toc-item[data-target="${id}"]`)
+    if (tocItem) tocItem.classList.add('active')
+  }
+}
+
+function setupManualScrollSpy(contentEl) {
+  const headings = contentEl.querySelectorAll('[id^="manual-h-"]')
+  if (!headings.length) return
+
+  contentEl.addEventListener('scroll', () => {
+    const scrollTop = contentEl.scrollTop
+    let activeId = null
+
+    headings.forEach(h => {
+      if (h.offsetTop - contentEl.offsetTop <= scrollTop + 80) {
+        activeId = h.id
+      }
+    })
+
+    if (activeId) {
+      document.querySelectorAll('.manual-toc-item').forEach(t => {
+        t.classList.toggle('active', t.dataset.target === activeId)
+      })
+    }
+  })
+}
+
+let manualSearchTimeout = null
+function searchManual(query) {
+  clearTimeout(manualSearchTimeout)
+  manualSearchTimeout = setTimeout(() => _doManualSearch(query), 200)
+}
+
+function _doManualSearch(query) {
+  const contentEl = document.getElementById('manual-content')
+  if (!contentEl || !manualData) return
+
+  // Clear previous highlights
+  contentEl.querySelectorAll('.manual-search-highlight').forEach(el => {
+    const text = document.createTextNode(el.textContent)
+    el.replaceWith(text)
+  })
+
+  if (!query || query.length < 2) {
+    const totalLines = Object.values(manualData).reduce((sum, f) => sum + (f.lines || 0), 0)
+    setText('manual-status', `${totalLines.toLocaleString()} lines`)
+    return
+  }
+
+  const walker = document.createTreeWalker(contentEl, NodeFilter.SHOW_TEXT, null)
+  const matches = []
+  const regex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')
+
+  while (walker.nextNode()) {
+    const node = walker.currentNode
+    if (regex.test(node.textContent)) {
+      matches.push(node)
+    }
+    regex.lastIndex = 0
+  }
+
+  let totalHighlights = 0
+  for (const node of matches) {
+    const frag = document.createDocumentFragment()
+    let lastIndex = 0
+    let match
+    regex.lastIndex = 0
+
+    while ((match = regex.exec(node.textContent)) !== null) {
+      if (match.index > lastIndex) {
+        frag.appendChild(document.createTextNode(node.textContent.slice(lastIndex, match.index)))
+      }
+      const span = document.createElement('span')
+      span.className = 'manual-search-highlight'
+      span.textContent = match[0]
+      frag.appendChild(span)
+      lastIndex = regex.lastIndex
+      totalHighlights++
+    }
+
+    if (lastIndex < node.textContent.length) {
+      frag.appendChild(document.createTextNode(node.textContent.slice(lastIndex)))
+    }
+
+    node.replaceWith(frag)
+  }
+
+  // Scroll to first match
+  const firstHighlight = contentEl.querySelector('.manual-search-highlight')
+  if (firstHighlight) {
+    firstHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+
+  setText('manual-status', totalHighlights > 0 ? `${totalHighlights} matches` : 'No matches')
+}
+
+async function reloadManual() {
+  manualLoaded = false
+  manualData = null
+  await loadManual()
 }
 
 // ── Login Launcher ────────────────────────────────────────────────
@@ -8705,7 +9018,7 @@ function toggleKeyboardHelp() {
           ['1', 'Quick Actions (Home)'], ['2', 'Dev Server'], ['3', 'Beta Server'], ['4', 'Production'],
           ['5', 'Ollama AI'], ['6', 'Git'], ['7', 'Build'], ['8', 'Project History'],
           ['[', 'Project Timeline'], ['9', 'User Feedback'], ['0', 'Infrastructure'], ['-', 'Blueprint'],
-          ['=', 'Observe (Live Feed)'], ['\\\\', 'System Reference'], ['\`', 'Project Expenses'], ['Tab', 'Test Logins'],
+          ['=', 'Observe (Live Feed)'], ['\\\\', 'System Reference'], ['\`', 'Project Expenses'], ['Tab', 'Test Logins'], [']', 'App Manual'],
           ['Ctrl+/', 'Gustav AI Chat'], ['Ctrl+K', 'Command Palette'], ['?', 'This Help'],
           ['Ctrl+N', 'New Chat (in Gustav)'], ['Ctrl+H', 'Chat History'], ['Ctrl+F', 'Search Chats'],
         ].map(([key, desc]) => `
@@ -8742,6 +9055,7 @@ const paletteCommands = [
   { label: 'System Reference', action: () => switchSection('sysref'), keys: '\\', category: 'Navigate' },
   { label: 'Project Expenses', action: () => switchSection('expenses'), keys: '`', category: 'Navigate' },
   { label: 'Test Logins', action: () => switchSection('logins'), keys: 'Tab', category: 'Navigate' },
+  { label: 'App Manual', action: () => switchSection('manual'), keys: ']', category: 'Navigate' },
   { label: 'Start Dev Server', action: () => runAction('/api/dev/start', 'Starting dev server...'), category: 'DevOps' },
   { label: 'Stop Dev Server', action: () => runAction('/api/dev/stop', 'Stopping dev server...'), category: 'DevOps' },
   { label: 'Deploy to Beta', action: () => runAction('/api/beta/deploy', 'Deploying to beta...'), category: 'DevOps' },

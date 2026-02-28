@@ -3500,6 +3500,29 @@ async function handleRequest(req, res) {
     return json(res, { ok: true, role, message: `Launching Chrome as ${role}...` })
   }
 
+  // ── Manual / App Audit docs ──────────────────────────────────────
+  if (path === '/api/manual' && method === 'GET') {
+    const DOCS_DIR = join(PROJECT_ROOT, 'docs')
+    const files = [
+      { key: 'main', label: 'Complete Audit', file: 'app-complete-audit.md' },
+      { key: 'calendar', label: 'Calendar', file: 'ui-audit-calendar.md' },
+      { key: 'settings', label: 'Settings', file: 'ui-audit-settings.md' },
+      { key: 'network', label: 'Network & Community', file: 'ui-audit-network-community.md' },
+      { key: 'marketing', label: 'Marketing & Social', file: 'ui-audit-marketing-social.md' },
+      { key: 'secondary', label: 'Secondary Pages', file: 'ui-audit-secondary-pages.md' },
+    ]
+    const results = {}
+    for (const f of files) {
+      try {
+        const content = await readFile(join(DOCS_DIR, f.file), 'utf-8')
+        results[f.key] = { label: f.label, content, size: content.length, lines: content.split('\n').length }
+      } catch (err) {
+        results[f.key] = { label: f.label, content: '', size: 0, lines: 0, error: err.message }
+      }
+    }
+    return json(res, { ok: true, files: results })
+  }
+
   // 404
   res.writeHead(404)
   res.end('Not found')
