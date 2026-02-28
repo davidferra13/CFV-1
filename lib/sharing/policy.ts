@@ -158,6 +158,38 @@ export function evaluateCapacityDecision(input: {
   }
 }
 
+export function resolveRsvpWriteState(input: {
+  requestedStatus: 'attending' | 'declined' | 'maybe'
+  shouldWaitlist: boolean
+  previousQueueStatus?: 'none' | 'waitlisted' | 'promoted' | null
+}) {
+  if (input.shouldWaitlist) {
+    return {
+      rsvp_status: 'pending' as const,
+      attendance_queue_status: 'waitlisted' as const,
+      waitlisted: true,
+      promoted: false,
+    }
+  }
+
+  if (input.requestedStatus === 'attending') {
+    const promoted = (input.previousQueueStatus || 'none') === 'waitlisted'
+    return {
+      rsvp_status: 'attending' as const,
+      attendance_queue_status: promoted ? ('promoted' as const) : ('none' as const),
+      waitlisted: false,
+      promoted,
+    }
+  }
+
+  return {
+    rsvp_status: input.requestedStatus,
+    attendance_queue_status: 'none' as const,
+    waitlisted: false,
+    promoted: false,
+  }
+}
+
 export function getReminderOffsetKeys(schedule?: string[] | null): string[] {
   const fallback = ['7d', '3d', '24h']
   const values = Array.isArray(schedule) && schedule.length > 0 ? schedule : fallback

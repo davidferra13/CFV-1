@@ -19,6 +19,7 @@ import {
   evaluateCapacityDecision,
   getReminderOffsetKeys,
   isCriticalRsvpChange,
+  resolveRsvpWriteState,
   type StructuredDietaryItem,
 } from '@/lib/sharing/policy'
 import { EventGuestRowSchema, EventShareSettingsRowSchema } from '@/lib/sharing/row-schemas'
@@ -2413,6 +2414,11 @@ export async function submitRSVP(input: SubmitRSVPInput) {
     throw new Error(capacity.rejectReason)
   }
   const shouldWaitlist = validated.rsvp_status === 'attending' && capacity.shouldWaitlist
+  const writeState = resolveRsvpWriteState({
+    requestedStatus: validated.rsvp_status,
+    shouldWaitlist,
+    previousQueueStatus: 'none',
+  })
 
   const guestToken = crypto.randomBytes(32).toString('hex')
   const nowIso = new Date().toISOString()
@@ -2426,7 +2432,7 @@ export async function submitRSVP(input: SubmitRSVPInput) {
       guest_token: guestToken,
       full_name: validated.full_name,
       email: normalizedEmail,
-      rsvp_status: shouldWaitlist ? 'pending' : validated.rsvp_status,
+      rsvp_status: writeState.rsvp_status,
       dietary_restrictions: validated.dietary_restrictions || [],
       allergies: validated.allergies || [],
       notes: validated.notes || null,
@@ -2435,9 +2441,9 @@ export async function submitRSVP(input: SubmitRSVPInput) {
       plus_one_name: validated.plus_one_name || null,
       plus_one_allergies: validated.plus_one_allergies || [],
       plus_one_dietary: validated.plus_one_dietary || [],
-      attendance_queue_status: shouldWaitlist ? 'waitlisted' : 'none',
-      waitlisted_at: shouldWaitlist ? nowIso : null,
-      promoted_at: null,
+      attendance_queue_status: writeState.attendance_queue_status,
+      waitlisted_at: writeState.waitlisted ? nowIso : null,
+      promoted_at: writeState.promoted ? nowIso : null,
     })
     .select()
     .single()
@@ -2471,10 +2477,10 @@ export async function submitRSVP(input: SubmitRSVPInput) {
     action: 'submit',
     beforeValues: null,
     afterValues: {
-      rsvp_status: shouldWaitlist ? 'pending' : validated.rsvp_status,
+      rsvp_status: writeState.rsvp_status,
       dietary_restrictions: validated.dietary_restrictions || [],
       allergies: validated.allergies || [],
-      attendance_queue_status: shouldWaitlist ? 'waitlisted' : 'none',
+      attendance_queue_status: writeState.attendance_queue_status,
     },
     dietaryItems,
   })
@@ -2531,7 +2537,7 @@ export async function submitRSVP(input: SubmitRSVPInput) {
     alreadyExists: false,
     guestToken,
     guestId: guestRow.id,
-    waitlisted: shouldWaitlist,
+    waitlisted: writeState.waitlisted,
   }
 }
 
@@ -2610,19 +2616,16 @@ export async function updateRSVP(input: UpdateRSVPInput) {
     }
 
     const shouldWaitlist = updateData.rsvp_status === 'attending' && capacity.shouldWaitlist
-    payload.rsvp_status = shouldWaitlist ? 'pending' : updateData.rsvp_status
-    payload.attendance_queue_status = shouldWaitlist
-      ? 'waitlisted'
-      : updateData.rsvp_status === 'attending'
-        ? 'promoted'
-        : 'none'
-    payload.waitlisted_at = shouldWaitlist ? new Date().toISOString() : null
-    payload.promoted_at =
-      !shouldWaitlist &&
-      updateData.rsvp_status === 'attending' &&
-      (existingGuest.attendance_queue_status || 'none') === 'waitlisted'
-        ? new Date().toISOString()
-        : null
+    const writeState = resolveRsvpWriteState({
+      requestedStatus: updateData.rsvp_status,
+      shouldWaitlist,
+      previousQueueStatus: existingGuest.attendance_queue_status || 'none',
+    })
+    const nowIso = new Date().toISOString()
+    payload.rsvp_status = writeState.rsvp_status
+    payload.attendance_queue_status = writeState.attendance_queue_status
+    payload.waitlisted_at = writeState.waitlisted ? nowIso : null
+    payload.promoted_at = writeState.promoted ? nowIso : null
   }
   if (updateData.dietary_restrictions !== undefined)
     payload.dietary_restrictions = updateData.dietary_restrictions

@@ -5,6 +5,7 @@ import {
   evaluateCapacityDecision,
   getReminderOffsetKeys,
   isCriticalRsvpChange,
+  resolveRsvpWriteState,
 } from '../../lib/sharing/policy.js'
 
 describe('sharing/policy - buildStructuredDietaryItems', () => {
@@ -90,5 +91,52 @@ describe('sharing/policy - getReminderOffsetKeys', () => {
   it('uses fallback schedule when empty', () => {
     const keys = getReminderOffsetKeys([])
     assert.deepEqual(keys, ['7d', '3d', '24h'])
+  })
+})
+
+describe('sharing/policy - resolveRsvpWriteState', () => {
+  it('marks attending as waitlisted when capacity gate says waitlist', () => {
+    const state = resolveRsvpWriteState({
+      requestedStatus: 'attending',
+      shouldWaitlist: true,
+      previousQueueStatus: 'none',
+    })
+
+    assert.deepEqual(state, {
+      rsvp_status: 'pending',
+      attendance_queue_status: 'waitlisted',
+      waitlisted: true,
+      promoted: false,
+    })
+  })
+
+  it('promotes previously waitlisted guest when attending is allowed', () => {
+    const state = resolveRsvpWriteState({
+      requestedStatus: 'attending',
+      shouldWaitlist: false,
+      previousQueueStatus: 'waitlisted',
+    })
+
+    assert.deepEqual(state, {
+      rsvp_status: 'attending',
+      attendance_queue_status: 'promoted',
+      waitlisted: false,
+      promoted: true,
+    })
+  })
+
+  it('clears queue state for non-attending responses', () => {
+    const state = resolveRsvpWriteState({
+      requestedStatus: 'declined',
+      shouldWaitlist: false,
+      previousQueueStatus: 'waitlisted',
+    })
+
+    assert.deepEqual(state, {
+      rsvp_status: 'declined',
+      attendance_queue_status: 'none',
+      waitlisted: false,
+      promoted: false,
+    })
   })
 })
