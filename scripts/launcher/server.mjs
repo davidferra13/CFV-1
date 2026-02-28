@@ -555,10 +555,18 @@ function deployBeta() {
       if (line.trim()) log('deploy', line.trim(), 'warn')
     })
   })
-  child.on('close', code => {
+  child.on('close', async code => {
     job.status = code === 0 ? 'success' : 'failed'
     log('deploy', code === 0 ? 'Deploy completed successfully!' : `Deploy failed (code ${code})`, code === 0 ? 'success' : 'error')
     runningJobs.delete('deploy')
+    if (code === 0) {
+      try {
+        const td = await readProjectTimelineData()
+        td.betaDeploys = (td.betaDeploys || 0) + 1
+        td.lastUpdated = new Date().toISOString().slice(0, 10)
+        await writeProjectTimelineData(td)
+      } catch {}
+    }
   })
 
   return { ok: true, message: 'Deploy started — watch the console' }
@@ -1569,6 +1577,7 @@ async function getProjectTimeline() {
         totalCommits: commits.length,
         totalPushes: pushCount,
         vercelDeploys: mainPushCount,
+        betaDeploys: timelineData.betaDeploys || 0,
         branchesCreated: branchCount,
       },
     }

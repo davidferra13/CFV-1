@@ -2206,7 +2206,7 @@ body {
         </div>
 
         <!-- Row 3: Git activity counters -->
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;">
           <div class="info-card" style="text-align:center;padding:14px 12px;">
             <div style="font-size:18px;margin-bottom:4px;">&#x1F4DD;</div>
             <div class="info-label">Total Commits</div>
@@ -2216,6 +2216,11 @@ body {
             <div style="font-size:18px;margin-bottom:4px;">&#x1F680;</div>
             <div class="info-label">Total Pushes</div>
             <div class="info-value" style="font-size:24px;" id="timeline-stat-pushes">--</div>
+          </div>
+          <div class="info-card" style="text-align:center;padding:14px 12px;">
+            <div style="font-size:18px;margin-bottom:4px;">&#x1F4E6;</div>
+            <div class="info-label">Beta Deploys</div>
+            <div class="info-value" style="font-size:24px;" id="timeline-stat-beta-deploys">--</div>
           </div>
           <div class="info-card" style="text-align:center;padding:14px 12px;">
             <div style="font-size:18px;margin-bottom:4px;">&#x25B2;</div>
@@ -7017,6 +7022,7 @@ function resetTimelineSummary() {
   // Git activity stats
   setText('timeline-stat-commits', '--')
   setText('timeline-stat-pushes', '--')
+  setText('timeline-stat-beta-deploys', '--')
   setText('timeline-stat-deploys', '--')
   const badgeEl = document.getElementById('timeline-progress-badges')
   const benchEl = document.getElementById('timeline-benchmarks')
@@ -7103,6 +7109,7 @@ function renderGitActivity(activity) {
   if (!activity) return
   if (activity.totalCommits != null) setText('timeline-stat-commits', activity.totalCommits.toLocaleString())
   if (activity.totalPushes != null) setText('timeline-stat-pushes', activity.totalPushes.toLocaleString())
+  if (activity.betaDeploys != null) setText('timeline-stat-beta-deploys', activity.betaDeploys.toLocaleString())
   if (activity.vercelDeploys != null) setText('timeline-stat-deploys', activity.vercelDeploys.toLocaleString())
 }
 
