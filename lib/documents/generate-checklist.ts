@@ -122,11 +122,15 @@ export function renderChecklist(pdf: PDFLayout, data: ChecklistData) {
 }
 
 /** Generate a standalone checklist PDF */
-export async function generateChecklist(eventId: string): Promise<Buffer> {
+export async function generateChecklist(
+  eventId: string,
+  generatedByName?: string
+): Promise<Buffer> {
   const data = await fetchChecklistData(eventId)
   if (!data) throw new Error('Cannot generate checklist: event not found')
 
   const pdf = new PDFLayout()
   renderChecklist(pdf, data)
+  if (generatedByName) pdf.generatedBy(generatedByName, 'Non-Negotiables')
   return pdf.toBuffer()
 }

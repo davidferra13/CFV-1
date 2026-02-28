@@ -261,11 +261,15 @@ export function renderTravelRoute(pdf: PDFLayout, data: TravelRouteData) {
 
 // ─── Entry Point ──────────────────────────────────────────────────────────────
 
-export async function generateTravelRoute(eventId: string): Promise<Buffer> {
+export async function generateTravelRoute(
+  eventId: string,
+  generatedByName?: string
+): Promise<Buffer> {
   const data = await fetchTravelRouteData(eventId)
   if (!data) throw new Error('Cannot generate travel route: event not found')
 
   const pdf = new PDFLayout()
   renderTravelRoute(pdf, data)
+  if (generatedByName) pdf.generatedBy(generatedByName, 'Travel Route')
   return pdf.toBuffer()
 }

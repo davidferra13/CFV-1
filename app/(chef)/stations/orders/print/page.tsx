@@ -8,6 +8,7 @@ import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { PrintableDocument } from '@/components/print/printable-document'
+import { getDocumentAttribution } from '@/lib/print/actions'
 
 export const metadata: Metadata = { title: 'Print Order Sheet — ChefFlow' }
 
@@ -20,6 +21,9 @@ export default async function PrintOrderSheetPage({
   const supabase: any = createServerClient()
   const printMode =
     searchParams.mode === 'thermal' ? ('thermal-80' as const) : ('standard' as const)
+
+  // Resolve attribution name (respects chef's print preferences)
+  const generatedBy = (await getDocumentAttribution()) ?? undefined
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -67,6 +71,7 @@ export default async function PrintOrderSheetPage({
       title="Order Sheet"
       subtitle={`Generated: ${dateLabel}`}
       footer={`ChefFlow Order Sheet — Printed ${new Date().toLocaleString()}\nBlank "Ordered" column for manual checkoff when calling vendors.`}
+      generatedBy={generatedBy}
       mode={printMode}
     >
       {/* Pending Order Requests */}

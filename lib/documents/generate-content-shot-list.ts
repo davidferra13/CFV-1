@@ -249,11 +249,15 @@ export function renderContentShotList(pdf: PDFLayout, data: ContentShotListData)
 
 // ─── Entry Point ──────────────────────────────────────────────────────────────
 
-export async function generateContentShotList(eventId: string): Promise<Buffer> {
+export async function generateContentShotList(
+  eventId: string,
+  generatedByName?: string
+): Promise<Buffer> {
   const data = await fetchContentShotListData(eventId)
   if (!data) throw new Error('Cannot generate content shot list: event not found')
 
   const pdf = new PDFLayout()
   renderContentShotList(pdf, data)
+  if (generatedByName) pdf.generatedBy(generatedByName, 'Content Shot List')
   return pdf.toBuffer()
 }

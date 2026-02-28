@@ -486,11 +486,15 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
 
 // ─── Entry Point ──────────────────────────────────────────────────────────────
 
-export async function generatePrepSheet(eventId: string): Promise<Buffer> {
+export async function generatePrepSheet(
+  eventId: string,
+  generatedByName?: string
+): Promise<Buffer> {
   const data = await fetchPrepSheetData(eventId)
   if (!data) throw new Error('Cannot generate prep sheet: missing event or menu data')
 
   const pdf = new PDFLayout()
   renderPrepSheet(pdf, data)
+  if (generatedByName) pdf.generatedBy(generatedByName, 'Prep Sheet')
   return pdf.toBuffer()
 }

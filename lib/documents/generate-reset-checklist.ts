@@ -306,11 +306,15 @@ export function renderResetChecklist(pdf: PDFLayout, data: ResetChecklistData) {
 
 // ─── Entry Point ──────────────────────────────────────────────────────────────
 
-export async function generateResetChecklist(eventId: string): Promise<Buffer> {
+export async function generateResetChecklist(
+  eventId: string,
+  generatedByName?: string
+): Promise<Buffer> {
   const data = await fetchResetChecklistData(eventId)
   if (!data) throw new Error('Cannot generate reset checklist: event not found')
 
   const pdf = new PDFLayout()
   renderResetChecklist(pdf, data)
+  if (generatedByName) pdf.generatedBy(generatedByName, 'Reset Checklist')
   return pdf.toBuffer()
 }

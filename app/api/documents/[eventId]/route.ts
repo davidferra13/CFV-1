@@ -5,26 +5,59 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { requireChef } from '@/lib/auth/get-user'
-import { generateGroceryList, fetchGroceryListData, renderGroceryList } from '@/lib/documents/generate-grocery-list'
+import { getDocumentAttribution } from '@/lib/print/actions'
+import {
+  generateGroceryList,
+  fetchGroceryListData,
+  renderGroceryList,
+} from '@/lib/documents/generate-grocery-list'
 import { generateTravelRoute } from '@/lib/documents/generate-travel-route'
-import { generatePrepSheet, fetchPrepSheetData, renderPrepSheet } from '@/lib/documents/generate-prep-sheet'
-import { generateExecutionSheet, fetchExecutionSheetData, renderExecutionSheet } from '@/lib/documents/generate-execution-sheet'
-import { generateChecklist, fetchChecklistData, renderChecklist } from '@/lib/documents/generate-checklist'
-import { generateFrontOfHouseMenu, fetchFrontOfHouseMenuData, renderFrontOfHouseMenu } from '@/lib/documents/generate-front-of-house-menu'
-import { generatePackingList, fetchPackingListData, renderPackingList } from '@/lib/documents/generate-packing-list'
-import { generateResetChecklist, fetchResetChecklistData, renderResetChecklist } from '@/lib/documents/generate-reset-checklist'
-import { generateEventSummary, fetchEventSummaryData, renderEventSummary } from '@/lib/documents/generate-event-summary'
+import {
+  generatePrepSheet,
+  fetchPrepSheetData,
+  renderPrepSheet,
+} from '@/lib/documents/generate-prep-sheet'
+import {
+  generateExecutionSheet,
+  fetchExecutionSheetData,
+  renderExecutionSheet,
+} from '@/lib/documents/generate-execution-sheet'
+import {
+  generateChecklist,
+  fetchChecklistData,
+  renderChecklist,
+} from '@/lib/documents/generate-checklist'
+import {
+  generateFrontOfHouseMenu,
+  fetchFrontOfHouseMenuData,
+  renderFrontOfHouseMenu,
+} from '@/lib/documents/generate-front-of-house-menu'
+import {
+  generatePackingList,
+  fetchPackingListData,
+  renderPackingList,
+} from '@/lib/documents/generate-packing-list'
+import {
+  generateResetChecklist,
+  fetchResetChecklistData,
+  renderResetChecklist,
+} from '@/lib/documents/generate-reset-checklist'
+import {
+  generateEventSummary,
+  fetchEventSummaryData,
+  renderEventSummary,
+} from '@/lib/documents/generate-event-summary'
 import { generateContentShotList } from '@/lib/documents/generate-content-shot-list'
 import { PDFLayout } from '@/lib/documents/pdf-layout'
 import { format } from 'date-fns'
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { eventId: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { eventId: string } }) {
   try {
     // Auth check — will throw if not a chef
     await requireChef()
+
+    // Resolve attribution name (respects chef's print preferences — undefined if disabled)
+    const generatedBy = (await getDocumentAttribution()) ?? undefined
 
     const { eventId } = params
     const type = request.nextUrl.searchParams.get('type') || 'all'
@@ -37,61 +70,61 @@ export async function GET(
 
     switch (type) {
       case 'summary': {
-        pdfBuffer = await generateEventSummary(eventId)
+        pdfBuffer = await generateEventSummary(eventId, generatedBy)
         filename = `event-summary-${dateSuffix}.pdf`
         break
       }
 
       case 'grocery': {
-        pdfBuffer = await generateGroceryList(eventId)
+        pdfBuffer = await generateGroceryList(eventId, generatedBy)
         filename = `grocery-list-${dateSuffix}.pdf`
         break
       }
 
       case 'foh': {
-        pdfBuffer = await generateFrontOfHouseMenu(eventId)
+        pdfBuffer = await generateFrontOfHouseMenu(eventId, generatedBy)
         filename = `front-of-house-menu-${dateSuffix}.pdf`
         break
       }
 
       case 'prep': {
-        pdfBuffer = await generatePrepSheet(eventId)
+        pdfBuffer = await generatePrepSheet(eventId, generatedBy)
         filename = `prep-sheet-${dateSuffix}.pdf`
         break
       }
 
       case 'execution': {
-        pdfBuffer = await generateExecutionSheet(eventId)
+        pdfBuffer = await generateExecutionSheet(eventId, generatedBy)
         filename = `execution-sheet-${dateSuffix}.pdf`
         break
       }
 
       case 'checklist': {
-        pdfBuffer = await generateChecklist(eventId)
+        pdfBuffer = await generateChecklist(eventId, generatedBy)
         filename = `checklist-${dateSuffix}.pdf`
         break
       }
 
       case 'packing': {
-        pdfBuffer = await generatePackingList(eventId)
+        pdfBuffer = await generatePackingList(eventId, generatedBy)
         filename = `packing-list-${dateSuffix}.pdf`
         break
       }
 
       case 'reset': {
-        pdfBuffer = await generateResetChecklist(eventId)
+        pdfBuffer = await generateResetChecklist(eventId, generatedBy)
         filename = `reset-checklist-${dateSuffix}.pdf`
         break
       }
 
       case 'travel': {
-        pdfBuffer = await generateTravelRoute(eventId)
+        pdfBuffer = await generateTravelRoute(eventId, generatedBy)
         filename = `travel-route-${dateSuffix}.pdf`
         break
       }
 
       case 'shots': {
-        pdfBuffer = await generateContentShotList(eventId)
+        pdfBuffer = await generateContentShotList(eventId, generatedBy)
         filename = `content-shot-list-${dateSuffix}.pdf`
         break
       }
@@ -109,6 +142,7 @@ export async function GET(
           pdf.title('EVENT SUMMARY')
           pdf.text('Event data not available.', 10, 'italic')
         }
+        if (generatedBy) pdf.generatedBy(generatedBy, 'Event Summary')
 
         // Page 2: Grocery List
         pdf.newPage()
@@ -119,6 +153,7 @@ export async function GET(
           pdf.title('GROCERY LIST')
           pdf.text('Menu data not available for this event.', 10, 'italic')
         }
+        if (generatedBy) pdf.generatedBy(generatedBy, 'Grocery List')
 
         // Page 3: Front-of-House Menu
         pdf.newPage()
@@ -129,6 +164,7 @@ export async function GET(
           pdf.title('FRONT-OF-HOUSE MENU')
           pdf.text('Menu data not available for this event.', 10, 'italic')
         }
+        if (generatedBy) pdf.generatedBy(generatedBy, 'FOH Menu')
 
         // Page 4: Prep Sheet
         pdf.newPage()
@@ -139,6 +175,7 @@ export async function GET(
           pdf.title('PREP SHEET')
           pdf.text('Menu data not available for this event.', 10, 'italic')
         }
+        if (generatedBy) pdf.generatedBy(generatedBy, 'Prep Sheet')
 
         // Page 5: Execution Sheet
         pdf.newPage()
@@ -149,6 +186,7 @@ export async function GET(
           pdf.title('EXECUTION SHEET')
           pdf.text('Menu data not available for this event.', 10, 'italic')
         }
+        if (generatedBy) pdf.generatedBy(generatedBy, 'Execution Sheet')
 
         // Page 6: Non-Negotiables Checklist
         pdf.newPage()
@@ -159,6 +197,7 @@ export async function GET(
           pdf.title('NON-NEGOTIABLES')
           pdf.text('Event data not available.', 10, 'italic')
         }
+        if (generatedBy) pdf.generatedBy(generatedBy, 'Non-Negotiables')
 
         // Page 7: Packing List
         pdf.newPage()
@@ -169,6 +208,7 @@ export async function GET(
           pdf.title('PACKING LIST')
           pdf.text('Event data not available.', 10, 'italic')
         }
+        if (generatedBy) pdf.generatedBy(generatedBy, 'Packing List')
 
         // Page 8: Post-Service Reset Checklist
         pdf.newPage()
@@ -179,6 +219,7 @@ export async function GET(
           pdf.title('POST-SERVICE RESET')
           pdf.text('Event data not available.', 10, 'italic')
         }
+        if (generatedBy) pdf.generatedBy(generatedBy, 'Reset Checklist')
 
         pdfBuffer = pdf.toBuffer()
         filename = `event-documents-${dateSuffix}.pdf`
@@ -187,7 +228,10 @@ export async function GET(
 
       default:
         return NextResponse.json(
-          { error: 'Invalid document type. Use: summary, grocery, foh, prep, execution, checklist, packing, reset, travel, shots, or all' },
+          {
+            error:
+              'Invalid document type. Use: summary, grocery, foh, prep, execution, checklist, packing, reset, travel, shots, or all',
+          },
           { status: 400 }
         )
     }

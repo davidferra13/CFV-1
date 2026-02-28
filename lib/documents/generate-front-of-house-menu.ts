@@ -233,12 +233,16 @@ export function renderFrontOfHouseMenu(pdf: PDFLayout, data: FrontOfHouseMenuDat
   pdf.footer('Please notify your chef immediately about allergy concerns before service.')
 }
 
-export async function generateFrontOfHouseMenu(eventId: string): Promise<Buffer> {
+export async function generateFrontOfHouseMenu(
+  eventId: string,
+  generatedByName?: string
+): Promise<Buffer> {
   const data = await fetchFrontOfHouseMenuData(eventId)
   if (!data) throw new Error('Cannot generate front-of-house menu: missing event or menu data')
 
   const pdf = new PDFLayout()
   renderFrontOfHouseMenu(pdf, data)
+  if (generatedByName) pdf.generatedBy(generatedByName, 'FOH Menu')
   return pdf.toBuffer()
 }
 

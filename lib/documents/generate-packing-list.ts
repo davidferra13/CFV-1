@@ -420,11 +420,15 @@ export function renderPackingList(pdf: PDFLayout, data: PackingListData) {
 
 // ─── Entry Point ──────────────────────────────────────────────────────────────
 
-export async function generatePackingList(eventId: string): Promise<Buffer> {
+export async function generatePackingList(
+  eventId: string,
+  generatedByName?: string
+): Promise<Buffer> {
   const data = await fetchPackingListData(eventId)
   if (!data) throw new Error('Cannot generate packing list: event not found')
 
   const pdf = new PDFLayout()
   renderPackingList(pdf, data)
+  if (generatedByName) pdf.generatedBy(generatedByName, 'Packing List')
   return pdf.toBuffer()
 }

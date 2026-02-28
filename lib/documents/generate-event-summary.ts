@@ -785,11 +785,15 @@ export function renderEventSummary(pdf: PDFLayout, data: EventSummaryData) {
 }
 
 // ─── Entry Point ──────────────────────────────────────────────────────────────
-export async function generateEventSummary(eventId: string): Promise<Buffer> {
+export async function generateEventSummary(
+  eventId: string,
+  generatedByName?: string
+): Promise<Buffer> {
   const data = await fetchEventSummaryData(eventId)
   if (!data) throw new Error('Cannot generate event summary: event not found')
 
   const pdf = new PDFLayout()
   renderEventSummary(pdf, data)
+  if (generatedByName) pdf.generatedBy(generatedByName, 'Event Summary')
   return pdf.toBuffer()
 }

@@ -22,6 +22,7 @@ import {
   Monitor,
   MessageCircle,
   Lock,
+  Printer,
   ChevronDown,
   type LucideIcon,
 } from 'lucide-react'
@@ -47,6 +48,7 @@ const iconMap: Record<string, LucideIcon> = {
   Monitor,
   MessageCircle,
   Lock,
+  Printer,
 }
 
 export function SettingsCategory({

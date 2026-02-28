@@ -418,11 +418,15 @@ export function renderExecutionSheet(pdf: PDFLayout, data: ExecutionSheetData) {
 }
 
 /** Generate a standalone execution sheet PDF */
-export async function generateExecutionSheet(eventId: string): Promise<Buffer> {
+export async function generateExecutionSheet(
+  eventId: string,
+  generatedByName?: string
+): Promise<Buffer> {
   const data = await fetchExecutionSheetData(eventId)
   if (!data) throw new Error('Cannot generate execution sheet: missing event or menu data')
 
   const pdf = new PDFLayout()
   renderExecutionSheet(pdf, data)
+  if (generatedByName) pdf.generatedBy(generatedByName, 'Execution Sheet')
   return pdf.toBuffer()
 }

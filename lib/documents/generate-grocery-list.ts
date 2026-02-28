@@ -542,11 +542,15 @@ export function renderGroceryList(pdf: PDFLayout, data: GroceryListData) {
 // ─── Generate ─────────────────────────────────────────────────────────────────
 
 /** Generate a standalone grocery list PDF */
-export async function generateGroceryList(eventId: string): Promise<Buffer> {
+export async function generateGroceryList(
+  eventId: string,
+  generatedByName?: string
+): Promise<Buffer> {
   const data = await fetchGroceryListData(eventId)
   if (!data) throw new Error('Cannot generate grocery list: missing event or menu data')
 
   const pdf = new PDFLayout()
   renderGroceryList(pdf, data)
+  if (generatedByName) pdf.generatedBy(generatedByName, 'Grocery List')
   return pdf.toBuffer()
 }
