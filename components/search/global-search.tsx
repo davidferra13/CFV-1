@@ -17,6 +17,15 @@ type DisplayItem = SearchResult & {
   pinned?: boolean
 }
 
+const QUICK_CREATE_ACTIONS = [
+  { label: 'New Event', href: '/events/new', icon: '+' },
+  { label: 'New Client', href: '/clients/new', icon: '+' },
+  { label: 'New Quote', href: '/quotes/new', icon: '+' },
+  { label: 'New Inquiry', href: '/inquiries/new', icon: '+' },
+  { label: 'New Expense', href: '/expenses/new', icon: '+' },
+  { label: 'New Recipe', href: '/recipes/new', icon: '+' },
+]
+
 export function GlobalSearch({ userId, tenantId }: { userId: string; tenantId: string }) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
@@ -108,6 +117,13 @@ export function GlobalSearch({ userId, tenantId }: { userId: string; tenantId: s
   const pinnedItems = useMemo(() => historyItems.filter((entry) => entry.pinned), [historyItems])
   const recentItems = useMemo(() => historyItems.filter((entry) => !entry.pinned), [historyItems])
   const flatSearchItems = useMemo(() => Object.values(grouped).flat(), [grouped])
+
+  const matchingQuickActions = useMemo(() => {
+    if (!query) return QUICK_CREATE_ACTIONS
+    const q = query.toLowerCase()
+    if (['new', 'create', 'add', '+'].some((kw) => q.includes(kw))) return QUICK_CREATE_ACTIONS
+    return QUICK_CREATE_ACTIONS.filter((a) => a.label.toLowerCase().includes(q))
+  }, [query])
 
   const displayItems = useMemo<DisplayItem[]>(
     () =>
@@ -237,9 +253,39 @@ export function GlobalSearch({ userId, tenantId }: { userId: string; tenantId: s
             </div>
           )}
 
-          {!loading && !isSearching && pinnedItems.length === 0 && recentItems.length === 0 && (
-            <div className="p-5 text-center text-stone-400 text-sm">No recent items yet.</div>
+          {!loading && matchingQuickActions.length > 0 && (!isSearching || query.length < 2) && (
+            <div className="mb-1">
+              <div className="px-3 py-1.5 text-xs font-bold text-stone-500 uppercase tracking-wide">
+                Quick Actions
+              </div>
+              {matchingQuickActions.map((action) => (
+                <div
+                  key={action.href}
+                  role="option"
+                  aria-selected="false"
+                  onClick={() => {
+                    setOpen(false)
+                    setQuery('')
+                    router.push(action.href)
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-stone-800 transition-colors text-left cursor-pointer"
+                >
+                  <span className="w-6 h-6 flex items-center justify-center rounded-md bg-brand-500/20 text-brand-400 text-xs font-bold">
+                    {action.icon}
+                  </span>
+                  <span className="text-sm text-stone-200">{action.label}</span>
+                </div>
+              ))}
+            </div>
           )}
+
+          {!loading &&
+            !isSearching &&
+            pinnedItems.length === 0 &&
+            recentItems.length === 0 &&
+            matchingQuickActions.length === 0 && (
+              <div className="p-5 text-center text-stone-400 text-sm">No recent items yet.</div>
+            )}
 
           {!loading && !isSearching && (pinnedItems.length > 0 || recentItems.length > 0) && (
             <>

@@ -14,6 +14,7 @@ import { OfflineNavIndicator } from '@/components/offline/offline-nav-indicator'
 import { OllamaStatusBadge } from '@/components/dashboard/ollama-status-badge'
 import { ActivityDot } from '@/components/activity/activity-dot'
 import { AppLogo } from '@/components/branding/app-logo'
+import { RecentPagesSection } from '@/components/navigation/recent-pages-section'
 
 import {
   LogOut,
@@ -993,6 +994,8 @@ export function ChefSidebar({
                 })}
               </div>
             </div>
+
+            <RecentPagesSection />
 
             <div className="border-t border-stone-800 my-2" />
 
