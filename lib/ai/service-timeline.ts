@@ -66,7 +66,6 @@ export async function generateServiceTimeline(eventId: string): Promise<ServiceT
       .from('event_menu_components')
       .select('name, course_type, description, prep_time_minutes, cook_time_minutes')
       .eq('event_id', eventId),
-    // @ts-expect-error event_staff_assignments not yet in generated types as event_staff
     supabase
       .from('event_staff_assignments')
       .select('role_override, staff_members(name, role)')
@@ -77,7 +76,7 @@ export async function generateServiceTimeline(eventId: string): Promise<ServiceT
   if (!event) throw new Error('Event not found')
 
   const menuItems = (menuResult.data ?? []) as MenuComponentRow[]
-  const staffRoster = (staffResult.data ?? []) as EventStaffRow[]
+  const staffRoster = staffResult.data ?? []
 
   const serveTime = event.serve_time ?? '7:00 PM'
   const arrivalTime = event.arrival_time ?? '4:00 PM'
