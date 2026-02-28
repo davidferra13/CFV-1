@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { RecurringRule } from './actions'
+import type { Database } from '@/types/database'
 
 // ============================================
 // GENERATE RECURRING TASKS
@@ -54,8 +55,8 @@ export async function generateRecurringTasks(date: string): Promise<number> {
     station_id: string | null
     due_date: string
     due_time: string | null
-    priority: string
-    status: string
+    priority: Database['public']['Enums']['task_priority']
+    status: Database['public']['Enums']['task_status']
     notes: string | null
     recurring_rule: RecurringRule | null
     template_id: string | null
@@ -69,7 +70,7 @@ export async function generateRecurringTasks(date: string): Promise<number> {
     if (rule.end_date && date > rule.end_date) continue
 
     // Don't generate for dates before the original task's due date
-    if (date <= task.due_date) continue
+    if (!task.due_date || date <= task.due_date) continue
 
     const matches = doesRuleMatchDate(rule, targetDayOfWeek, targetDayOfMonth)
     if (!matches) continue
@@ -82,8 +83,8 @@ export async function generateRecurringTasks(date: string): Promise<number> {
       station_id: task.station_id,
       due_date: date,
       due_time: task.due_time,
-      priority: task.priority,
-      status: 'pending',
+      priority: task.priority as Database['public']['Enums']['task_priority'],
+      status: 'pending' as const,
       notes: task.notes,
       recurring_rule: null, // Generated instances don't recur themselves
       template_id: task.template_id,

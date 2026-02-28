@@ -21,25 +21,14 @@ const TemplateItemSchema = z.object({
 const CreateTemplateSchema = z.object({
   name: z.string().min(1, 'Template name is required'),
   description: z.string().optional(),
-  category: z.enum([
-    'prep',
-    'service',
-    'cleanup',
-    'setup',
-    'admin',
-    'inventory',
-    'maintenance',
-    'other',
-  ]),
+  category: z.enum(['opening', 'closing', 'prep', 'cleaning', 'custom']),
   items: z.array(TemplateItemSchema).min(1, 'At least one item is required'),
 })
 
 const UpdateTemplateSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().nullable().optional(),
-  category: z
-    .enum(['prep', 'service', 'cleanup', 'setup', 'admin', 'inventory', 'maintenance', 'other'])
-    .optional(),
+  category: z.enum(['opening', 'closing', 'prep', 'cleaning', 'custom']).optional(),
   items: z.array(TemplateItemSchema).min(1).optional(),
 })
 

@@ -118,7 +118,7 @@ export async function getSurveyByToken(token: string): Promise<SurveyPublic | nu
       `
       id, token, submitted_at,
       event:events(occasion, event_date),
-      chef:chefs(display_name, business_name)
+      chef:chefs!event_surveys_chef_id_fkey(display_name, business_name)
     `
     )
     .eq('token', token)

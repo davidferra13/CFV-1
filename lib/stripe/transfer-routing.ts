@@ -83,7 +83,7 @@ export async function recordStripeTransfer(params: {
     net_transfer_cents: params.netTransferCents,
     status: params.status,
     is_deferred: params.isDeferred ?? false,
-    metadata: params.metadata ?? {},
+    metadata: (params.metadata ?? {}) as unknown as import('@/types/database').Json,
   })
 }
 

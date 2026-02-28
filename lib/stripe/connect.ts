@@ -88,7 +88,7 @@ export async function createConnectAccountLink(fromOnboarding = false): Promise<
     .eq('id', user.entityId)
     .single()
 
-  let accountId: string = chef?.stripe_account_id
+  let accountId: string = chef?.stripe_account_id ?? ''
 
   // Create Express account if not yet created
   if (!accountId) {

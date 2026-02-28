@@ -18,7 +18,7 @@ const LogWasteSchema = z.object({
   staff_member_id: z.string().uuid().nullable().optional(),
   quantity: z.number().min(0.01, 'Quantity must be positive'),
   unit: z.string().min(1, 'Unit required'),
-  reason: z.enum(['expired', 'over_production', 'dropped', 'contamination', 'quality', 'other']),
+  reason: z.enum(['expired', 'damaged', 'overproduced', 'dropped', 'other']),
   estimated_value_cents: z.number().int().min(0).nullable().optional(),
   notes: z.string().optional(),
 })
@@ -27,10 +27,9 @@ export type LogWasteInput = z.infer<typeof LogWasteSchema>
 
 const REASON_LABELS: Record<string, string> = {
   expired: 'Expired',
-  over_production: 'Over Production',
+  damaged: 'Damaged',
+  overproduced: 'Over Production',
   dropped: 'Dropped',
-  contamination: 'Contamination',
-  quality: 'Quality Issue',
   other: 'Other',
 }
 

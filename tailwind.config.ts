@@ -52,15 +52,6 @@ const config: Config = {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-3px)' },
         },
-        'mascot-wiggle': {
-          '0%, 100%': { transform: 'rotate(0deg)' },
-          '25%': { transform: 'rotate(-3deg)' },
-          '75%': { transform: 'rotate(3deg)' },
-        },
-        'mascot-hop': {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-8px)' },
-        },
         'thinking-dot': {
           '0%, 100%': { transform: 'translateY(0)', opacity: '0.4' },
           '50%': { transform: 'translateY(-4px)', opacity: '1' },

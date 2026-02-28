@@ -15,7 +15,7 @@ const AddVendorItemSchema = z.object({
   vendor_sku: z.string().optional(),
   vendor_item_name: z.string().min(1, 'Item name is required'),
   unit_price_cents: z.number().int().min(0),
-  unit_size: z.string().optional(),
+  unit_size: z.number().nullable().optional(),
   unit_measure: z.string().optional(),
   notes: z.string().optional(),
 })
@@ -42,7 +42,7 @@ export async function addVendorItem(input: AddVendorItemInput) {
       vendor_sku: data.vendor_sku || null,
       vendor_item_name: data.vendor_item_name,
       unit_price_cents: data.unit_price_cents,
-      unit_size: data.unit_size || null,
+      unit_size: data.unit_size ?? null,
       unit_measure: data.unit_measure || null,
       notes: data.notes || null,
       chef_id: user.tenantId!,

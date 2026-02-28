@@ -93,7 +93,9 @@ export async function getHomeOfficeDeduction(taxYear: number): Promise<HomeOffic
   const settings: HomeOfficeSettings | null = data
     ? {
         taxYear: data.tax_year,
-        homeDeductionMethod: data.home_deduction_method || 'simplified',
+        homeDeductionMethod: (data.home_deduction_method || 'simplified') as
+          | 'simplified'
+          | 'actual',
         homeOfficeSqft: data.home_office_sqft,
         homeTotalSqft: data.home_total_sqft,
         annualRentMortgageCents: data.annual_rent_mortgage_cents,

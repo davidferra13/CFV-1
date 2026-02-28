@@ -6,6 +6,20 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { z } from 'zod'
+import type { Database } from '@/types/database'
+
+type OpsLogAction = Database['public']['Enums']['ops_log_action']
+
+const OPS_LOG_ACTIONS: [OpsLogAction, ...OpsLogAction[]] = [
+  'check_in',
+  'check_out',
+  'prep_complete',
+  'stock_update',
+  'order_request',
+  'delivery_received',
+  'waste',
+  'eighty_six',
+]
 
 // ============================================
 // SCHEMAS
@@ -14,7 +28,7 @@ import { z } from 'zod'
 const AppendOpsLogSchema = z.object({
   station_id: z.string().uuid().nullable().optional(),
   staff_member_id: z.string().uuid().nullable().optional(),
-  action_type: z.string().min(1, 'Action type required'),
+  action_type: z.enum(OPS_LOG_ACTIONS),
   details: z.record(z.unknown()).default({}),
 })
 
@@ -90,7 +104,7 @@ export async function getOpsLog(filters?: OpsLogFilterInput) {
   }
 
   if (validated.action_type) {
-    query = query.eq('action_type', validated.action_type)
+    query = query.eq('action_type', validated.action_type as OpsLogAction)
   }
 
   if (validated.start_date) {
