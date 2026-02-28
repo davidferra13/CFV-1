@@ -2797,10 +2797,171 @@ body {
         </div>
 
         <!-- Rollback History -->
-        <div>
+        <div style="margin-bottom:24px;">
           <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Rollback History</h3>
           <div id="rollback-history" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;">
             <div style="color:var(--text-muted);font-size:13px;">Loading...</div>
+          </div>
+        </div>
+
+        <div class="divider" style="margin:24px 0;border-top:1px solid var(--border);"></div>
+
+        <!-- Hardware Upgrade Plan — Always-On AI Inference -->
+        <div>
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Hardware Upgrade Plan</h3>
+
+          <!-- Current State Warning -->
+          <div style="background:linear-gradient(135deg,rgba(239,68,68,0.12),rgba(239,68,68,0.04));border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:16px;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+              <span style="font-size:18px;">&#x26A0;&#xFE0F;</span>
+              <span style="font-size:14px;font-weight:700;color:var(--error);">Current Risk: PC = Single Point of Failure</span>
+            </div>
+            <div style="color:var(--text-secondary);font-size:12px;line-height:1.6;">All Ollama AI runs on your desktop PC. PC off = Remy dead, classification dead, all AI features throw OllamaOfflineError. Pi Ollama is permanently masked (8GB OOM). Need a dedicated always-on inference device.</div>
+          </div>
+
+          <!-- Current Models -->
+          <div style="margin-bottom:16px;">
+            <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Current Models (What It Must Run)</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+              <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                  <span style="width:8px;height:8px;border-radius:50%;background:var(--success);flex-shrink:0;"></span>
+                  <span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Fast</span>
+                </div>
+                <div style="font-size:14px;font-weight:600;font-family:monospace;">qwen3:4b</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">2.5 GB &middot; 40-60 tok/s</div>
+                <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Classification &middot; Triage</div>
+              </div>
+              <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                  <span style="width:8px;height:8px;border-radius:50%;background:var(--brand);flex-shrink:0;"></span>
+                  <span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Standard</span>
+                </div>
+                <div style="font-size:14px;font-weight:600;font-family:monospace;">qwen3-coder:30b</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">18 GB MoE &middot; 12-15 tok/s</div>
+                <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">JSON extraction &middot; 30+ files</div>
+              </div>
+              <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                  <span style="width:8px;height:8px;border-radius:50%;background:var(--info);flex-shrink:0;"></span>
+                  <span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">Complex</span>
+                </div>
+                <div style="font-size:14px;font-weight:600;font-family:monospace;">qwen3:30b</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">18 GB MoE &middot; 12-15 tok/s</div>
+                <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Prose &middot; Creative &middot; AARs</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:6px;text-align:center;">All 3 loaded = ~38.5 GB &middot; Minimum for standard tier = 20 GB+ GPU-accessible memory</div>
+          </div>
+
+          <!-- Options Grid -->
+          <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Upgrade Options</div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;">
+
+            <!-- Option 1: Z640 + 3090 -->
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;position:relative;">
+              <div style="position:absolute;top:10px;right:12px;">
+                <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--success-dim);color:var(--success);">BEST VALUE</span>
+              </div>
+              <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Option 1</div>
+              <div style="font-size:16px;font-weight:700;margin-bottom:2px;">HP Z640 + RTX 3090</div>
+              <div style="font-size:22px;font-weight:700;color:var(--success);margin-bottom:10px;">~$1,000</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;color:var(--text-secondary);">
+                <div>&#x2022; 24 GB VRAM</div>
+                <div>&#x2022; 936 GB/s bandwidth</div>
+                <div>&#x2022; ~45 tok/s (30B)</div>
+                <div>&#x2022; Upgradeable GPU</div>
+                <div>&#x2022; Enterprise 24/7</div>
+                <div>&#x2022; Replaces Pi</div>
+              </div>
+              <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text-muted);">
+                <strong style="color:var(--warning);">Tradeoffs:</strong> Loud fans &middot; Full tower &middot; ~150W idle
+              </div>
+              <div style="margin-top:8px;font-size:10px;color:var(--text-muted);">
+                <strong>Search:</strong> "HP Z640" "HP Z440" "Dell Precision T5810" on FB Marketplace<br>
+                <strong>Check:</strong> PSU 925W+ &middot; RAM 16GB+
+              </div>
+            </div>
+
+            <!-- Option 2: Mac Mini -->
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;position:relative;">
+              <div style="position:absolute;top:10px;right:12px;">
+                <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--brand-dim);color:var(--brand);">BALANCED</span>
+              </div>
+              <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Option 2</div>
+              <div style="font-size:16px;font-weight:700;margin-bottom:2px;">Mac Mini M4 Pro 48GB</div>
+              <div style="font-size:22px;font-weight:700;color:var(--brand);margin-bottom:10px;">~$1,600</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;color:var(--text-secondary);">
+                <div>&#x2022; 48 GB unified</div>
+                <div>&#x2022; 273 GB/s bandwidth</div>
+                <div>&#x2022; ~30 tok/s (30B)</div>
+                <div>&#x2022; Silent &amp; tiny</div>
+                <div>&#x2022; 15W idle</div>
+                <div>&#x2022; Replaces Pi</div>
+              </div>
+              <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text-muted);">
+                <strong style="color:var(--warning);">Tradeoffs:</strong> Not upgradeable &middot; Slower than GPU &middot; Apple lock-in
+              </div>
+            </div>
+
+            <!-- Option 3: Mac Studio -->
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;position:relative;">
+              <div style="position:absolute;top:10px;right:12px;">
+                <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--info-dim);color:var(--info);">ENDGAME</span>
+              </div>
+              <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Option 3</div>
+              <div style="font-size:16px;font-weight:700;margin-bottom:2px;">Mac Studio M4 Ultra 192GB</div>
+              <div style="font-size:22px;font-weight:700;color:var(--info);margin-bottom:10px;">~$7,000</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;color:var(--text-secondary);">
+                <div>&#x2022; 192 GB unified</div>
+                <div>&#x2022; 800 GB/s bandwidth</div>
+                <div>&#x2022; ~40 tok/s (30B)</div>
+                <div>&#x2022; Runs 70B+ dense</div>
+                <div>&#x2022; Silent &amp; compact</div>
+                <div>&#x2022; Future-proof</div>
+              </div>
+              <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text-muted);">
+                <strong style="color:var(--warning);">Tradeoffs:</strong> $7,000 &middot; Overkill for current models
+              </div>
+            </div>
+
+            <!-- Option 4: Custom Build -->
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;position:relative;">
+              <div style="position:absolute;top:10px;right:12px;">
+                <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--bg-secondary);color:var(--text-muted);">DIY</span>
+              </div>
+              <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Option 4</div>
+              <div style="font-size:16px;font-weight:700;margin-bottom:2px;">Custom Build + RTX 3090</div>
+              <div style="font-size:22px;font-weight:700;color:var(--text-secondary);margin-bottom:10px;">~$1,300</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;color:var(--text-secondary);">
+                <div>&#x2022; 24 GB VRAM</div>
+                <div>&#x2022; 936 GB/s bandwidth</div>
+                <div>&#x2022; ~45 tok/s (30B)</div>
+                <div>&#x2022; Fully custom</div>
+                <div>&#x2022; Upgradeable</div>
+                <div>&#x2022; New parts</div>
+              </div>
+              <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:10px;color:var(--text-muted);">
+                <strong style="color:var(--warning);">Tradeoffs:</strong> $300 more than Z640 for same result &middot; Loud &middot; Build time
+              </div>
+            </div>
+          </div>
+
+          <!-- Architecture After Upgrade -->
+          <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Architecture After Upgrade</div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;font-family:monospace;font-size:12px;line-height:1.8;color:var(--text-secondary);margin-bottom:16px;">
+            <div><span style="color:var(--text-muted);">PC (localhost:3100)</span> <span style="color:var(--text-muted);">&rarr;</span> Development only, AI optional</div>
+            <div><span style="color:var(--success);font-weight:600;">Inference Box (LAN:11434)</span> <span style="color:var(--text-muted);">&rarr;</span> <span style="color:var(--success);">PRIMARY Ollama &mdash; always on, all 3 tiers</span></div>
+            <div style="padding-left:24px;color:var(--text-muted);">&lfloor; Also runs: beta hosting (PM2 + Cloudflare Tunnel)</div>
+            <div><span style="color:var(--text-muted);">Vercel (app.cheflowhq.com)</span> <span style="color:var(--text-muted);">&rarr;</span> Production</div>
+            <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);color:var(--brand);">Config change: OLLAMA_BASE_URL=http://&lt;inference-box-ip&gt;:11434</div>
+          </div>
+
+          <!-- Full Doc Link -->
+          <div style="text-align:center;">
+            <a href="#" onclick="runAction('/api/file/docs/hardware-upgrade-plan.md','Opening hardware upgrade plan...');return false;" class="btn btn-ghost" style="font-size:12px;gap:6px;">
+              <span>&#x1F4C4;</span> Full Research: docs/hardware-upgrade-plan.md
+            </a>
           </div>
         </div>
       </div>
