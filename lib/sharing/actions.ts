@@ -541,6 +541,7 @@ export async function revokeEventShare(eventShareId: string) {
 export async function addGuestManually(input: z.infer<typeof AddGuestManuallySchema>) {
   const user = await requireClient()
   const validated = AddGuestManuallySchema.parse(input)
+  const normalizedEmail = validated.email ? validated.email.toLowerCase().trim() : null
   const supabase = createServerClient()
 
   // Verify client owns this event
@@ -580,7 +581,7 @@ export async function addGuestManually(input: z.infer<typeof AddGuestManuallySch
       event_share_id: share.id,
       guest_token: guestToken,
       full_name: validated.full_name,
-      email: validated.email || null,
+      email: normalizedEmail,
       rsvp_status: 'pending',
     })
     .select()
@@ -604,6 +605,9 @@ export async function createViewerInviteForEvent(
 ) {
   const user = await requireClient()
   const validated = CreateViewerInviteForEventSchema.parse(input)
+  const normalizedInvitedEmail = validated.invited_email
+    ? validated.invited_email.toLowerCase().trim()
+    : null
   const supabase = createServerClient()
 
   const { data: event } = await supabase
@@ -649,7 +653,7 @@ export async function createViewerInviteForEvent(
       token: viewerToken,
       audience_role: 'viewer',
       invited_name: validated.invited_name || null,
-      invited_email: validated.invited_email || null,
+      invited_email: normalizedInvitedEmail,
       note: validated.note || null,
       single_use: !!validated.single_use,
       allow_join_request: validated.allow_join_request ?? true,
@@ -1481,6 +1485,9 @@ export async function createViewerInviteFromGuest(
   input: z.infer<typeof CreateViewerInviteFromGuestSchema>
 ) {
   const validated = CreateViewerInviteFromGuestSchema.parse(input)
+  const normalizedInvitedEmail = validated.invited_email
+    ? validated.invited_email.toLowerCase().trim()
+    : null
   const supabase = createServerClient({ admin: true })
   await enforcePublicActionRateLimit(
     `guest-viewer-invite:${validated.guestToken.slice(0, 16)}`,
@@ -1536,7 +1543,7 @@ export async function createViewerInviteFromGuest(
       token: viewerToken,
       audience_role: 'viewer',
       invited_name: validated.invited_name || null,
-      invited_email: validated.invited_email || null,
+      invited_email: normalizedInvitedEmail,
       note: validated.note || null,
       single_use: !!validated.single_use,
       expires_at: expiresAt,
@@ -1577,6 +1584,7 @@ export async function createGuestInviteFromGuest(
   input: z.infer<typeof CreateGuestInviteFromGuestSchema>
 ) {
   const validated = CreateGuestInviteFromGuestSchema.parse(input)
+  const normalizedEmail = validated.email ? validated.email.toLowerCase().trim() : null
   const supabase = createServerClient({ admin: true })
   await enforcePublicActionRateLimit(
     `guest-guest-invite:${validated.guestToken.slice(0, 16)}`,
@@ -1609,12 +1617,12 @@ export async function createGuestInviteFromGuest(
     throw new Error('Only an invited guest can add another guest')
   }
 
-  if (validated.email) {
+  if (normalizedEmail) {
     const { data: existing } = await supabase
       .from('event_guests')
       .select('id, guest_token')
       .eq('event_share_id', share.id)
-      .eq('email', validated.email)
+      .ilike('email', normalizedEmail)
       .maybeSingle()
 
     if (existing) {
@@ -1636,7 +1644,7 @@ export async function createGuestInviteFromGuest(
       event_share_id: share.id,
       guest_token: guestToken,
       full_name: validated.full_name,
-      email: validated.email || null,
+      email: normalizedEmail,
       rsvp_status: 'pending',
       notes: validated.note
         ? `Guest invite request from ${invitingGuest.full_name}: ${validated.note}`
@@ -1668,7 +1676,7 @@ export async function createGuestInviteFromGuest(
     audience_role: 'guest',
     status: 'consumed',
     invited_name: validated.full_name,
-    invited_email: validated.email || null,
+    invited_email: normalizedEmail,
     note: validated.note || null,
     expires_at: expiresAt,
     consumed_at: new Date().toISOString(),
