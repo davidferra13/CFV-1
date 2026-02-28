@@ -7,6 +7,7 @@ import { Star, ArrowLeft } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { SourceBadge } from '@/components/communication/source-badge'
+import { Send, ArrowRight } from 'lucide-react'
 import {
   markCommunicationResolved,
   reopenCommunication,
@@ -14,6 +15,7 @@ import {
   toggleThreadStar,
   unsnoozeThread,
   logMessageToThread,
+  sendReplyViaChannel,
   linkCommunicationEventToInquiry,
   attachCommunicationEventToEvent,
   createInquiryFromCommunicationEvent,
@@ -50,6 +52,29 @@ export function ThreadDetailClient({
   const [isPending, startTransition] = useTransition()
   const [replyContent, setReplyContent] = useState('')
   const [replyDirection, setReplyDirection] = useState<'inbound' | 'outbound'>('outbound')
+  const [replyMode, setReplyMode] = useState<'log' | 'send'>('log')
+
+  // Determine if we can send via a channel
+  const primarySource = events[0]?.source ?? 'manual_log'
+  const canSendEmail =
+    !!thread.client_email &&
+    [
+      'email',
+      'takeachef',
+      'yhangry',
+      'theknot',
+      'thumbtack',
+      'bark',
+      'cozymeal',
+      'google_business',
+      'gigsalad',
+    ].includes(primarySource)
+  // Phone-based sources: check if sender_identity looks like a phone number
+  const firstInbound = events.find((e) => e.direction === 'inbound')
+  const senderPhone = firstInbound?.sender_identity?.match(/\+?\d[\d\s()-]{8,}/)?.[0] ?? null
+  const canSendSms = !!senderPhone && ['sms', 'phone'].includes(primarySource)
+  const canSendWhatsApp = !!senderPhone && primarySource === 'whatsapp'
+  const canSend = canSendEmail || canSendSms || canSendWhatsApp
   const router = useRouter()
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -75,15 +100,32 @@ export function ThreadDetailClient({
     if (!replyContent.trim()) return
     const content = replyContent
     const direction = replyDirection
-    runAction(async () => {
-      await logMessageToThread({
-        threadId,
-        senderIdentity: direction === 'outbound' ? 'Chef' : displayName,
-        content,
-        direction,
+
+    if (replyMode === 'send' && direction === 'outbound' && canSend) {
+      // Determine channel and recipient
+      const channel = canSendEmail ? 'email' : canSendWhatsApp ? 'whatsapp' : 'sms'
+      const recipientAddress = canSendEmail ? thread.client_email! : senderPhone!
+
+      runAction(async () => {
+        await sendReplyViaChannel({
+          threadId,
+          content,
+          channel,
+          recipientAddress,
+        })
+        setReplyContent('')
       })
-      setReplyContent('')
-    })
+    } else {
+      runAction(async () => {
+        await logMessageToThread({
+          threadId,
+          senderIdentity: direction === 'outbound' ? 'Chef' : displayName,
+          content,
+          direction,
+        })
+        setReplyContent('')
+      })
+    }
   }
 
   return (
@@ -322,32 +364,53 @@ export function ThreadDetailClient({
       )}
 
       {/* Reply Bar */}
-      <div className="sticky bottom-4 rounded-xl border border-stone-700 bg-stone-900 shadow-lg">
-        <div className="flex items-center gap-2 border-b border-stone-800 px-4 py-2">
-          <span className="text-xs text-stone-500">Log as:</span>
+      <div className="sticky bottom-0 sm:bottom-4 rounded-t-xl sm:rounded-xl border border-stone-700 bg-stone-900 shadow-lg">
+        <div className="flex items-center gap-2 border-b border-stone-800 px-3 sm:px-4 py-2 overflow-x-auto">
+          <span className="text-xs text-stone-500 flex-shrink-0">Log as:</span>
           <button
             type="button"
             onClick={() => setReplyDirection('outbound')}
-            className={`rounded-full px-3 py-1 text-xs font-medium ${replyDirection === 'outbound' ? 'bg-indigo-600 text-white' : 'bg-stone-800 text-stone-400'}`}
+            className={`flex-shrink-0 rounded-full px-3 py-1.5 sm:py-1 text-xs font-medium ${replyDirection === 'outbound' ? 'bg-indigo-600 text-white' : 'bg-stone-800 text-stone-400'}`}
           >
             Your Reply
           </button>
           <button
             type="button"
             onClick={() => setReplyDirection('inbound')}
-            className={`rounded-full px-3 py-1 text-xs font-medium ${replyDirection === 'inbound' ? 'bg-stone-700 text-white' : 'bg-stone-800 text-stone-400'}`}
+            className={`flex-shrink-0 rounded-full px-3 py-1.5 sm:py-1 text-xs font-medium ${replyDirection === 'inbound' ? 'bg-stone-700 text-white' : 'bg-stone-800 text-stone-400'}`}
           >
             Client Message
           </button>
+          {canSend && replyDirection === 'outbound' && (
+            <>
+              <span className="text-stone-700 mx-1">|</span>
+              <button
+                type="button"
+                onClick={() => setReplyMode(replyMode === 'log' ? 'send' : 'log')}
+                className={`flex-shrink-0 flex items-center gap-1 rounded-full px-3 py-1.5 sm:py-1 text-xs font-medium transition-colors ${
+                  replyMode === 'send'
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
+                }`}
+              >
+                <Send className="h-3 w-3" />
+                {replyMode === 'send' ? 'Send & Log' : 'Log Only'}
+              </button>
+            </>
+          )}
         </div>
-        <div className="flex items-end gap-3 p-3">
+        <div className="flex items-end gap-2 sm:gap-3 p-2 sm:p-3">
           <textarea
             value={replyContent}
             onChange={(e) => setReplyContent(e.target.value)}
             placeholder={
-              replyDirection === 'outbound' ? 'Log your reply...' : 'Log their message...'
+              replyDirection === 'outbound'
+                ? replyMode === 'send'
+                  ? `Send via ${canSendEmail ? 'email' : canSendWhatsApp ? 'WhatsApp' : 'SMS'}...`
+                  : 'Log your reply...'
+                : 'Log their message...'
             }
-            rows={3}
+            rows={2}
             className="flex-1 resize-none rounded-lg border border-stone-700 bg-stone-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -357,15 +420,35 @@ export function ThreadDetailClient({
           />
           <Button
             size="sm"
-            variant="primary"
+            variant={
+              replyMode === 'send' && replyDirection === 'outbound' ? 'primary' : 'secondary'
+            }
             disabled={isPending || !replyContent.trim()}
             onClick={handleSendReply}
           >
-            Log
+            {replyMode === 'send' && replyDirection === 'outbound' ? (
+              <span className="flex items-center gap-1">
+                <Send className="h-3.5 w-3.5" /> Send
+              </span>
+            ) : (
+              'Log'
+            )}
           </Button>
         </div>
-        <p className="pb-2 text-center text-xs text-stone-400">
-          ⌘↵ to log · This records the message in ChefFlow only
+        <p className="pb-2 text-center text-xs text-stone-500">
+          {replyMode === 'send' && replyDirection === 'outbound' ? (
+            <>
+              ⌘↵ to send · Delivers via{' '}
+              {canSendEmail
+                ? `email to ${thread.client_email}`
+                : canSendWhatsApp
+                  ? 'WhatsApp'
+                  : 'SMS'}{' '}
+              and logs to ChefFlow
+            </>
+          ) : (
+            <>⌘↵ to log · This records the message in ChefFlow only</>
+          )}
         </p>
       </div>
     </div>

@@ -523,6 +523,23 @@ export async function ingestCommunicationEvent(input: CommunicationEventInput) {
     actorId: input.actorId,
   })
 
+  // Send push notification for inbound messages (non-blocking)
+  if (input.direction === 'inbound') {
+    import('./push-notify')
+      .then(({ sendInboxPushNotification }) =>
+        sendInboxPushNotification(input.tenantId, {
+          title: `New message from ${input.senderIdentity.split('<')[0].trim() || 'Unknown'}`,
+          body:
+            input.rawContent.length > 100
+              ? input.rawContent.substring(0, 97) + '...'
+              : input.rawContent,
+          url: `/inbox/triage/${threadId}`,
+          tag: `inbox-${threadId}`,
+        })
+      )
+      .catch((err) => console.error('[push-notify] Failed:', err))
+  }
+
   return { id: event.id, threadId, deduped: false }
 }
 

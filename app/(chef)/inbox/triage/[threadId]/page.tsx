@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
-import { getThreadWithEvents } from '@/lib/communication/actions'
+import { getThreadWithEvents, markThreadRead } from '@/lib/communication/actions'
 import { ThreadDetailClient } from '@/components/communication/thread-detail-client'
 
 export const metadata: Metadata = { title: 'Thread — ChefFlow' }
@@ -13,6 +13,8 @@ export default async function ThreadDetailPage({ params }: { params: { threadId:
   let detail
   try {
     detail = await getThreadWithEvents(params.threadId)
+    // Mark thread as read when opened (non-blocking)
+    markThreadRead(params.threadId).catch(() => {})
   } catch {
     notFound()
   }

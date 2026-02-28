@@ -1180,3 +1180,196 @@ export async function logMessageToThread(input: {
   revalidatePath('/inbox')
   return { success: true }
 }
+
+// ─── Unread State ─────────────────────────────────────────────
+
+export async function getUnreadThreadCount(): Promise<number> {
+  const user = await requireChef()
+  const supabase: any = createServerClient({ admin: true })
+
+  // Get all active/snoozed threads
+  const { data: threads } = await supabase
+    .from('conversation_threads' as any)
+    .select('id, last_activity_at')
+    .eq('tenant_id', user.tenantId!)
+    .in('state', ['active', 'snoozed'])
+
+  if (!threads || threads.length === 0) return 0
+
+  const threadIds = threads.map((t: any) => t.id)
+
+  // Get read receipts
+  const { data: reads } = await supabase
+    .from('conversation_thread_reads' as any)
+    .select('thread_id, last_read_at')
+    .eq('tenant_id', user.tenantId!)
+    .in('thread_id', threadIds)
+
+  const readMap = new Map((reads || []).map((r: any) => [r.thread_id, r.last_read_at]))
+
+  let unread = 0
+  for (const thread of threads) {
+    const lastRead = readMap.get(thread.id)
+    if (!lastRead || new Date(thread.last_activity_at) > new Date(lastRead)) {
+      unread++
+    }
+  }
+
+  return unread
+}
+
+export async function markThreadRead(threadId: string) {
+  const user = await requireChef()
+  const supabase: any = createServerClient({ admin: true })
+
+  await supabase.from('conversation_thread_reads' as any).upsert(
+    {
+      tenant_id: user.tenantId!,
+      thread_id: threadId,
+      last_read_at: new Date().toISOString(),
+    },
+    { onConflict: 'tenant_id,thread_id' }
+  )
+}
+
+// ─── Raw Feed (unfiltered chronological view) ─────────────────
+
+export async function getRawCommunicationFeed(limit = 100): Promise<
+  Array<{
+    id: string
+    source: string
+    timestamp: string
+    sender_identity: string
+    raw_content: string
+    direction: 'inbound' | 'outbound'
+    thread_id: string
+    status: string
+    linked_entity_type: string | null
+  }>
+> {
+  const user = await requireChef()
+  const supabase: any = createServerClient({ admin: true })
+
+  const { data, error } = await supabase
+    .from('communication_events' as any)
+    .select(
+      'id, source, timestamp, sender_identity, raw_content, direction, thread_id, status, linked_entity_type'
+    )
+    .eq('tenant_id', user.tenantId!)
+    .order('timestamp', { ascending: false })
+    .limit(limit)
+
+  if (error) {
+    console.error('[getRawCommunicationFeed] Error:', error)
+    return []
+  }
+
+  return (data || []) as any[]
+}
+
+// ─── Send Reply via Channel ───────────────────────────────────
+
+export async function sendReplyViaChannel(input: {
+  threadId: string
+  content: string
+  channel: 'email' | 'sms' | 'whatsapp'
+  recipientAddress: string // email address, phone number, or whatsapp number
+}) {
+  const user = await requireChef()
+  const supabase: any = createServerClient({ admin: true })
+
+  const { threadId, content, channel, recipientAddress } = input
+
+  // Verify thread belongs to this chef
+  const { data: thread, error: threadErr } = await supabase
+    .from('conversation_threads' as any)
+    .select('id, client_id')
+    .eq('id', threadId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (threadErr || !thread) throw new Error('Thread not found')
+
+  const now = new Date().toISOString()
+
+  if (channel === 'email') {
+    // Send via Gmail API
+    const { getGoogleConnection, refreshAccessToken } = await import('@/lib/google/auth')
+    const { sendEmail } = await import('@/lib/gmail/client')
+
+    const conn = await getGoogleConnection()
+    if (!conn.gmail.connected || !conn.gmail.accessToken) {
+      throw new Error('Gmail is not connected. Connect Gmail in Settings to send emails.')
+    }
+
+    let token = conn.gmail.accessToken
+    // Refresh if expired
+    if (conn.gmail.tokenExpiresAt && new Date(conn.gmail.tokenExpiresAt) <= new Date()) {
+      const refreshed = await refreshAccessToken(conn.gmail.refreshToken!)
+      token = refreshed.accessToken
+    }
+
+    // Get thread context for email subject
+    const { data: lastInbound } = await supabase
+      .from('communication_events' as any)
+      .select('raw_content, sender_identity')
+      .eq('thread_id', threadId)
+      .eq('direction', 'inbound')
+      .order('timestamp', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    const subject = lastInbound
+      ? `Re: ${(lastInbound as any).sender_identity}`
+      : 'Message from your chef'
+
+    await sendEmail(token, {
+      to: recipientAddress,
+      subject,
+      body: content,
+    })
+  } else if (channel === 'sms') {
+    const { sendSMS } = await import('@/lib/sms/twilio-client')
+    await sendSMS(recipientAddress, content)
+  } else if (channel === 'whatsapp') {
+    const { sendWhatsApp } = await import('@/lib/sms/twilio-client')
+    await sendWhatsApp(recipientAddress, content)
+  }
+
+  // Log the sent message as an outbound event
+  await supabase.from('communication_events' as any).insert({
+    tenant_id: user.tenantId!,
+    thread_id: threadId,
+    source: channel === 'email' ? 'email' : channel,
+    timestamp: now,
+    sender_identity: 'Chef',
+    raw_content: content,
+    normalized_content: content.toLowerCase().replace(/\s+/g, ' ').trim(),
+    direction: 'outbound',
+  })
+
+  await supabase
+    .from('conversation_threads' as any)
+    .update({ last_activity_at: now })
+    .eq('id', threadId)
+
+  await logAction({
+    tenantId: user.tenantId!,
+    threadId,
+    actorId: user.id,
+    action: 'reply_sent_via_channel',
+    source: 'manual',
+    previousState: {},
+    newState: { channel, recipient: recipientAddress },
+  })
+
+  revalidatePath(`/inbox/triage/${threadId}`)
+  revalidatePath('/inbox')
+  return { success: true, channel }
+}
+
+// ─── Push Subscriptions ───────────────────────────────────────
+// Use lib/push/subscriptions.ts for push subscription CRUD.
+// savePushSubscription, removePushSubscription, getActiveSubscriptions,
+// deactivateSubscription, incrementSubscriptionFailureCount
+// are all exported from that module.

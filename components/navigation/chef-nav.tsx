@@ -15,6 +15,7 @@ import { OllamaStatusBadge } from '@/components/dashboard/ollama-status-badge'
 import { ActivityDot } from '@/components/activity/activity-dot'
 import { AppLogo } from '@/components/branding/app-logo'
 import { RecentPagesSection } from '@/components/navigation/recent-pages-section'
+import { InboxUnreadBadge } from '@/components/communication/inbox-unread-badge'
 
 import {
   LogOut,
@@ -823,13 +824,18 @@ export function ChefSidebar({
                   key={item.href}
                   href={item.href}
                   title={item.label}
-                  className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
+                  className={`relative flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
                     active
                       ? 'bg-brand-950 text-brand-600'
                       : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
                   }`}
                 >
                   <Icon className="w-[18px] h-[18px]" />
+                  {item.href === '/inbox' && (
+                    <span className="absolute -top-1 -right-1">
+                      <InboxUnreadBadge />
+                    </span>
+                  )}
                 </Link>
               )
             })}
@@ -948,6 +954,7 @@ export function ChefSidebar({
                         className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
                       />
                       {item.label}
+                      {item.href === '/inbox' && <InboxUnreadBadge />}
                     </Link>
                   )
                 })}
