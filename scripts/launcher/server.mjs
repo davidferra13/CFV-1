@@ -1545,6 +1545,19 @@ async function getProjectTimeline() {
 
     const life = buildLifeTimelineView(timelineData, summary)
 
+    // Count pushes from reflog events
+    const pushCount = reflogEvents.filter(e => e.type === 'push').length
+
+    // Count Vercel deploys (main branch pushes = production deploys)
+    const mainPushCount = reflogEvents.filter(e =>
+      e.type === 'push' && (e.branch === 'refs/remotes/origin/main' || e.branch === 'main')
+    ).length
+
+    // Count unique branches
+    const branchCount = new Set(
+      reflogEvents.filter(e => e.type === 'branch_created').map(e => e.branch)
+    ).size
+
     return {
       ok: true,
       summary,
@@ -1552,6 +1565,12 @@ async function getProjectTimeline() {
       days: days.slice(0, 180),
       life,
       linear,
+      gitActivity: {
+        totalCommits: commits.length,
+        totalPushes: pushCount,
+        vercelDeploys: mainPushCount,
+        branchesCreated: branchCount,
+      },
     }
   } catch (err) {
     return {

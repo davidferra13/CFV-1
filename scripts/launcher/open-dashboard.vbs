@@ -11,7 +11,7 @@ scriptDir = fso.GetParentFolderName(WScript.ScriptFullName)
 projectRoot = fso.GetParentFolderName(fso.GetParentFolderName(scriptDir))
 
 ' Start the server silently
-objShell.Run "cmd /c cd /d """ & projectRoot & """ && node scripts/launcher/server.mjs", 0, False
+objShell.Run "cmd /c cd /d """ & projectRoot & """ && node --watch scripts/launcher/server.mjs", 0, False
 
 ' Wait for server to be ready
 WScript.Sleep 2000

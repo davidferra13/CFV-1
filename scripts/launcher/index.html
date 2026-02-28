@@ -2165,7 +2165,6 @@ body {
             <div style="font-size:22px;margin-bottom:4px;">&#x1F525;</div>
             <div class="info-label">Times Restarted</div>
             <div class="info-value" style="font-size:28px;color:var(--warning);" id="timeline-restart-count">--</div>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;" id="timeline-restart-detail">--</div>
           </div>
           <div class="info-card" style="text-align:center;padding:16px 12px;">
             <div style="font-size:22px;margin-bottom:4px;">&#x1F3AF;</div>
@@ -2206,7 +2205,26 @@ body {
           </div>
         </div>
 
-        <!-- Row 3: Current version activity stats -->
+        <!-- Row 3: Git activity counters -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;">
+          <div class="info-card" style="text-align:center;padding:14px 12px;">
+            <div style="font-size:18px;margin-bottom:4px;">&#x1F4DD;</div>
+            <div class="info-label">Total Commits</div>
+            <div class="info-value" style="font-size:24px;" id="timeline-stat-commits">--</div>
+          </div>
+          <div class="info-card" style="text-align:center;padding:14px 12px;">
+            <div style="font-size:18px;margin-bottom:4px;">&#x1F680;</div>
+            <div class="info-label">Total Pushes</div>
+            <div class="info-value" style="font-size:24px;" id="timeline-stat-pushes">--</div>
+          </div>
+          <div class="info-card" style="text-align:center;padding:14px 12px;">
+            <div style="font-size:18px;margin-bottom:4px;">&#x25B2;</div>
+            <div class="info-label">Vercel Deploys</div>
+            <div class="info-value" style="font-size:24px;" id="timeline-stat-deploys">--</div>
+          </div>
+        </div>
+
+        <!-- Row 4: Current version activity stats -->
         <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Current Version (CFv1) Activity</h3>
         <div class="info-grid">
           <div class="info-card">
@@ -6988,7 +7006,6 @@ function resetTimelineSummary() {
   setText('timeline-idea-start', '--')
   setText('timeline-idea-ago', '--')
   setText('timeline-restart-count', '--')
-  setText('timeline-restart-detail', '--')
   setText('timeline-final-start', '--')
   setText('timeline-final-name', '--')
   setText('timeline-graveyard-files', '--')
@@ -6997,6 +7014,10 @@ function resetTimelineSummary() {
   setText('timeline-aistudio-count', '--')
   setText('timeline-idea-to-final', '--')
   setText('timeline-total-age', '--')
+  // Git activity stats
+  setText('timeline-stat-commits', '--')
+  setText('timeline-stat-pushes', '--')
+  setText('timeline-stat-deploys', '--')
   const badgeEl = document.getElementById('timeline-progress-badges')
   const benchEl = document.getElementById('timeline-benchmarks')
   if (badgeEl) badgeEl.innerHTML = ''
@@ -7046,12 +7067,6 @@ function renderProjectStats(stats) {
   // Restarts
   if (stats.totalRestarts != null) {
     setText('timeline-restart-count', String(stats.totalRestarts))
-    const parts = []
-    if (stats.restartSources?.billyBobVersions) parts.push(`${stats.restartSources.billyBobVersions} BillyBob`)
-    if (stats.restartSources?.aiStudioSubmissions) parts.push(`${stats.restartSources.aiStudioSubmissions} AI Studio`)
-    const otherFs = (stats.restartSources?.filesystemGraveyard || 0) - (stats.restartSources?.billyBobVersions || 0)
-    if (otherFs > 0) parts.push(`${otherFs} other archives`)
-    setText('timeline-restart-detail', parts.join(' + '))
   }
 
   // Final version
@@ -7082,6 +7097,13 @@ function renderProjectStats(stats) {
     const months = Math.floor(stats.daysFromIdeaToNow / 30)
     setText('timeline-total-age', months >= 12 ? `${(months / 12).toFixed(1)} years` : `${months} months`)
   }
+}
+
+function renderGitActivity(activity) {
+  if (!activity) return
+  if (activity.totalCommits != null) setText('timeline-stat-commits', activity.totalCommits.toLocaleString())
+  if (activity.totalPushes != null) setText('timeline-stat-pushes', activity.totalPushes.toLocaleString())
+  if (activity.vercelDeploys != null) setText('timeline-stat-deploys', activity.vercelDeploys.toLocaleString())
 }
 
 function renderTimelineLifeEvents(events) {
@@ -7136,6 +7158,7 @@ async function loadProjectTimeline(force = false) {
       setText('timeline-status', 'No commits yet')
       resetTimelineSummary()
       renderProjectStats(data.life?.projectStats || null)
+      renderGitActivity(data.gitActivity || null)
       renderTimelineLifeSummary(data.life || null)
       renderTimelineStatusAndBenchmarks(data)
       renderTimelineLifeEvents(data.life?.milestones || [])
@@ -7164,6 +7187,7 @@ async function loadProjectTimeline(force = false) {
       `Estimated from commit sessions (${s.sessions45m} at 45m gaps, ${s.sessions90m} at 90m gaps). Active-day average: ${s.commitsPerActiveDay} commits/day.`
     )
     renderProjectStats(data.life?.projectStats || null)
+    renderGitActivity(data.gitActivity || null)
     renderTimelineLifeSummary(data.life || null)
     renderTimelineStatusAndBenchmarks(data)
     renderTimelineLifeEvents(data.life?.milestones || [])

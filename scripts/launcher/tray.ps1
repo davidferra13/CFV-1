@@ -60,7 +60,7 @@ function Test-ServerRunning([int]$port) {
 
 function Start-DashboardServer {
     if (Test-ServerRunning $serverPort) { return }
-    Start-Process -FilePath "node" -ArgumentList "scripts/launcher/server.mjs" `
+    Start-Process -FilePath "node" -ArgumentList "--watch scripts/launcher/server.mjs" `
         -WorkingDirectory $projectRoot -WindowStyle Hidden
 }
 

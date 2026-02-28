@@ -25,7 +25,7 @@ On Error GoTo 0
 
 ' Start the server if it's not running
 If Not serverRunning Then
-    objShell.Run "cmd /c cd /d """ & projectRoot & """ && node scripts/launcher/server.mjs", 0, False
+    objShell.Run "cmd /c cd /d """ & projectRoot & """ && node --watch scripts/launcher/server.mjs", 0, False
     ' Wait for server to come up
     WScript.Sleep 2500
 End If
