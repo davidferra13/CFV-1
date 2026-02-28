@@ -713,43 +713,46 @@ The boundary below is **final**. Do not move files back to Gemini or add new Gem
 
 ## KEY FILE LOCATIONS
 
-| What                 | Where                                                                     |
-| -------------------- | ------------------------------------------------------------------------- |
-| Event FSM            | `lib/events/transitions.ts`                                               |
-| Ledger append        | `lib/ledger/append.ts`                                                    |
-| Ledger compute       | `lib/ledger/compute.ts`                                                   |
-| Chef dashboard       | `app/(chef)/dashboard/page.tsx`                                           |
-| Event form           | `components/events/event-form.tsx`                                        |
-| Event transitions UI | `components/events/event-transitions.tsx`                                 |
-| Schema Layer 1       | `supabase/migrations/20260215000001_layer_1_foundation.sql`               |
-| Schema Layer 2       | `supabase/migrations/20260215000002_layer_2_inquiry_messaging.sql`        |
-| Schema Layer 3       | `supabase/migrations/20260215000003_layer_3_events_quotes_financials.sql` |
-| Schema Layer 4       | `supabase/migrations/20260215000004_layer_4_menus_recipes_costing.sql`    |
-| Generated types      | `types/database.ts` (never edit manually)                                 |
-| Tier resolution      | `lib/billing/tier.ts`                                                     |
-| Pro feature registry | `lib/billing/pro-features.ts`                                             |
-| Module definitions   | `lib/billing/modules.ts`                                                  |
-| Pro enforcement      | `lib/billing/require-pro.ts`                                              |
-| Upgrade gate UI      | `components/billing/upgrade-gate.tsx`                                     |
-| Module toggle page   | `app/(chef)/settings/modules/page.tsx`                                    |
-| Embed widget script  | `public/embed/chefflow-widget.js`                                         |
-| Embed API route      | `app/api/embed/inquiry/route.ts`                                          |
-| Embed form page      | `app/embed/inquiry/[chefId]/page.tsx`                                     |
-| Embed form component | `components/embed/embed-inquiry-form.tsx`                                 |
-| Embed settings page  | `app/(chef)/settings/embed/page.tsx`                                      |
-| App audit (living)   | `docs/app-complete-audit.md` **(update when UI changes)**                 |
-| Agent registry       | `docs/agent-registry.md`                                                  |
-| Kilo agent rules     | `KILO.md`                                                                 |
-| Kilo workflow        | `docs/kilo-workflow.md`                                                   |
-| Copilot agent rules  | `COPILOT.md`                                                              |
-| Copilot workflow     | `docs/copilot-workflow.md`                                                |
-| Prompt queue         | `prompts/queue/` (Copilot writes here, Claude Code picks up)              |
-| Prompt template      | `prompts/template.md`                                                     |
-| Completed prompts    | `prompts/completed/`                                                      |
-| Beta server docs     | `docs/beta-server-setup.md`                                               |
-| Beta env config      | `.env.local.beta`                                                         |
-| Deploy to beta       | `scripts/deploy-beta.sh`                                                  |
-| Rollback beta        | `scripts/rollback-beta.sh`                                                |
+| What                 | Where                                                                            |
+| -------------------- | -------------------------------------------------------------------------------- |
+| Event FSM            | `lib/events/transitions.ts`                                                      |
+| Ledger append        | `lib/ledger/append.ts`                                                           |
+| Ledger compute       | `lib/ledger/compute.ts`                                                          |
+| Chef dashboard       | `app/(chef)/dashboard/page.tsx`                                                  |
+| Event form           | `components/events/event-form.tsx`                                               |
+| Event transitions UI | `components/events/event-transitions.tsx`                                        |
+| Schema Layer 1       | `supabase/migrations/20260215000001_layer_1_foundation.sql`                      |
+| Schema Layer 2       | `supabase/migrations/20260215000002_layer_2_inquiry_messaging.sql`               |
+| Schema Layer 3       | `supabase/migrations/20260215000003_layer_3_events_quotes_financials.sql`        |
+| Schema Layer 4       | `supabase/migrations/20260215000004_layer_4_menus_recipes_costing.sql`           |
+| Generated types      | `types/database.ts` (never edit manually)                                        |
+| Tier resolution      | `lib/billing/tier.ts`                                                            |
+| Pro feature registry | `lib/billing/pro-features.ts`                                                    |
+| Module definitions   | `lib/billing/modules.ts`                                                         |
+| Pro enforcement      | `lib/billing/require-pro.ts`                                                     |
+| Upgrade gate UI      | `components/billing/upgrade-gate.tsx`                                            |
+| Module toggle page   | `app/(chef)/settings/modules/page.tsx`                                           |
+| Embed widget script  | `public/embed/chefflow-widget.js`                                                |
+| Embed API route      | `app/api/embed/inquiry/route.ts`                                                 |
+| Embed form page      | `app/embed/inquiry/[chefId]/page.tsx`                                            |
+| Embed form component | `components/embed/embed-inquiry-form.tsx`                                        |
+| Embed settings page  | `app/(chef)/settings/embed/page.tsx`                                             |
+| App audit (living)   | `docs/app-complete-audit.md` **(update when UI changes)**                        |
+| Agent registry       | `docs/agent-registry.md`                                                         |
+| Kilo agent rules     | `KILO.md`                                                                        |
+| Kilo workflow        | `docs/kilo-workflow.md`                                                          |
+| Copilot agent rules  | `COPILOT.md`                                                                     |
+| Copilot workflow     | `docs/copilot-workflow.md`                                                       |
+| Prompt queue         | `prompts/queue/` (Copilot writes here, Claude Code picks up)                     |
+| Prompt template      | `prompts/template.md`                                                            |
+| Completed prompts    | `prompts/completed/`                                                             |
+| Beta server docs     | `docs/beta-server-setup.md`                                                      |
+| Beta env config      | `.env.local.beta`                                                                |
+| Deploy to beta       | `scripts/deploy-beta.sh`                                                         |
+| Rollback beta        | `scripts/rollback-beta.sh`                                                       |
+| MC Manual panel      | `scripts/launcher/index.html` (panel-manual, live codebase scanner)              |
+| MC Codebase scanner  | `scripts/launcher/server.mjs` (`scanCodebase()`, `GET /api/manual/scan`)         |
+| MC File watcher      | `scripts/launcher/server.mjs` (`initFileWatcher()`, `GET /api/activity/summary`) |
 
 ---
 
