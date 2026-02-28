@@ -25,6 +25,15 @@ import { isTakeAChefEmail, parseTakeAChefEmail } from './take-a-chef-parser'
 import type { TacParseResult } from './take-a-chef-parser'
 import { isYhangryEmail, parseYhangryEmail } from './yhangry-parser'
 import type { YhangryParseResult } from './yhangry-parser'
+import { isThumbtackEmail, parseThumbtackEmail } from './thumbtack-parser'
+import { isTheKnotEmail, parseTheKnotEmail } from './theknot-parser'
+import { isBarkEmail, parseBarkEmail } from './bark-parser'
+import { isCozymealEmail, parseCozymealEmail } from './cozymeal-parser'
+import { isGigSaladEmail, parseGigSaladEmail } from './gigsalad-parser'
+import {
+  isGoogleBusinessEmailWithSubject,
+  parseGoogleBusinessEmail,
+} from './google-business-parser'
 import { checkPlatformInquiryDuplicate, findPlatformInquiryByContext } from './platform-dedup'
 import type { SyncResult, ParsedEmail } from './types'
 import type { Json } from '@/types/database'
@@ -32,7 +41,19 @@ import type { Json } from '@/types/database'
 // ─── Known Platform Domains ───────────────────────────────────────────────
 // Platform emails may be auto-archived by Gmail filters, so we run a second
 // targeted query for these domains to ensure they're always captured.
-const PLATFORM_DOMAINS = ['privatechefmanager.com', 'takeachef.com', 'yhangry.com']
+const PLATFORM_DOMAINS = [
+  'privatechefmanager.com',
+  'takeachef.com',
+  'yhangry.com',
+  'thumbtack.com',
+  'theknot.com',
+  'weddingwire.com',
+  'weddingpro.com',
+  'theknotww.com',
+  'bark.com',
+  'cozymeal.com',
+  'gigsalad.com',
+]
 
 // ─── Main Sync Function ─────────────────────────────────────────────────────
 
@@ -236,6 +257,84 @@ async function processMessage(
 
   if (isYhangryEmail(email.from.email)) {
     await handleYhangryEmail(supabase, email, chefId, tenantId, result)
+    return
+  }
+
+  if (isThumbtackEmail(email.from.email)) {
+    await handleGenericPlatformEmail(
+      supabase,
+      email,
+      chefId,
+      tenantId,
+      result,
+      'thumbtack',
+      parseThumbtackEmail
+    )
+    return
+  }
+
+  if (isTheKnotEmail(email.from.email)) {
+    await handleGenericPlatformEmail(
+      supabase,
+      email,
+      chefId,
+      tenantId,
+      result,
+      'theknot',
+      parseTheKnotEmail
+    )
+    return
+  }
+
+  if (isBarkEmail(email.from.email)) {
+    await handleGenericPlatformEmail(
+      supabase,
+      email,
+      chefId,
+      tenantId,
+      result,
+      'bark',
+      parseBarkEmail
+    )
+    return
+  }
+
+  if (isCozymealEmail(email.from.email)) {
+    await handleGenericPlatformEmail(
+      supabase,
+      email,
+      chefId,
+      tenantId,
+      result,
+      'cozymeal',
+      parseCozymealEmail
+    )
+    return
+  }
+
+  if (isGigSaladEmail(email.from.email)) {
+    await handleGenericPlatformEmail(
+      supabase,
+      email,
+      chefId,
+      tenantId,
+      result,
+      'gigsalad',
+      parseGigSaladEmail
+    )
+    return
+  }
+
+  if (isGoogleBusinessEmailWithSubject(email.from.email, email.subject || '')) {
+    await handleGenericPlatformEmail(
+      supabase,
+      email,
+      chefId,
+      tenantId,
+      result,
+      'google_business',
+      parseGoogleBusinessEmail
+    )
     return
   }
 
@@ -1515,6 +1614,501 @@ async function handleYhangryBookingConfirmed(
     action_taken: inquiryId ? 'booking_confirmed' : 'unmatched_booking',
     inquiry_id: inquiryId,
     platform_email_type: 'yhangry_booking_confirmed',
+  })
+
+  result.messagesLogged++
+}
+
+// ─── Generic Platform Email Handler ─────────────────────────────────────────
+// Handles all new platform parsers (Thumbtack, TheKnot, Bark, Cozymeal,
+// GigSalad, Google Business) with a single function. Each parser returns a
+// common shape: { emailType, lead/inquiry/booking/message, parseWarnings }.
+// The handler routes by email type suffix (new_lead/new_inquiry/new_booking →
+// create inquiry, client_message → log + advance status, booking_confirmed →
+// confirm, everything else → skip as administrative).
+
+type PlatformChannel =
+  | 'thumbtack'
+  | 'theknot'
+  | 'bark'
+  | 'cozymeal'
+  | 'gigsalad'
+  | 'google_business'
+
+// Common parsed result shape — all parsers follow this pattern
+interface GenericParseResult {
+  emailType: string
+  rawSubject: string
+  rawBody: string
+  parseWarnings: string[]
+  // Each parser puts structured data under different keys (lead, inquiry, booking, message, review, etc.)
+  // We use index signature to access them generically
+  [key: string]: unknown
+}
+
+// Map platform channels to the inquiry_channel enum values in the DB
+const PLATFORM_TO_INQUIRY_CHANNEL: Record<PlatformChannel, string> = {
+  thumbtack: 'thumbtack',
+  theknot: 'theknot',
+  bark: 'bark',
+  cozymeal: 'cozymeal',
+  gigsalad: 'gigsalad',
+  google_business: 'google_business',
+}
+
+// Map platform channels to display names for notifications
+const PLATFORM_DISPLAY_NAMES: Record<PlatformChannel, string> = {
+  thumbtack: 'Thumbtack',
+  theknot: 'The Knot',
+  bark: 'Bark',
+  cozymeal: 'Cozymeal',
+  gigsalad: 'GigSalad',
+  google_business: 'Google Business',
+}
+
+// Email type suffixes that indicate a new lead/inquiry
+const NEW_LEAD_SUFFIXES = [
+  '_new_lead',
+  '_new_inquiry',
+  '_new_booking',
+  '_new_message', // GBP messages are potential inquiries
+  '_new_review', // GBP reviews — log but notify
+  '_quote_requested', // GigSalad quote requests = new leads
+]
+
+// Email type suffixes that indicate a client message on existing thread
+const CLIENT_MESSAGE_SUFFIXES = ['_client_message', '_lead_update']
+
+// Email type suffixes that indicate a booking confirmation
+const BOOKING_CONFIRMED_SUFFIXES = ['_booking_confirmed', '_booking']
+
+async function handleGenericPlatformEmail(
+  supabase: DbClient,
+  email: ParsedEmail,
+  chefId: string,
+  tenantId: string,
+  result: SyncResult,
+  platform: PlatformChannel,
+  parseFn: (email: ParsedEmail) => GenericParseResult
+) {
+  const parsed = parseFn(email)
+  const displayName = PLATFORM_DISPLAY_NAMES[platform]
+
+  if (parsed.parseWarnings.length > 0) {
+    console.warn(`[${displayName}] Parse warnings for ${email.messageId}:`, parsed.parseWarnings)
+  }
+
+  // Ingest into unified communication pipeline (non-blocking)
+  if (isCommTriageEnabled()) {
+    try {
+      const { ingestCommunicationEvent } = await import('@/lib/communication/pipeline')
+      await ingestCommunicationEvent({
+        tenantId,
+        source: platform === 'google_business' ? 'google_business' : platform,
+        externalId: email.messageId,
+        externalThreadKey: email.threadId,
+        timestamp: email.date ? new Date(email.date).toISOString() : new Date().toISOString(),
+        senderIdentity: `${email.from.name || email.from.email} <${email.from.email}>`,
+        rawContent: `${email.subject || ''}\n\n${email.body || ''}`.trim(),
+        direction: 'inbound',
+        ingestionSource: 'import',
+      })
+    } catch (intakeErr) {
+      console.error(`[${displayName}] Communication intake failed (non-fatal):`, intakeErr)
+    }
+  }
+
+  try {
+    const emailType = parsed.emailType
+
+    // Route by email type category
+    if (NEW_LEAD_SUFFIXES.some((s) => emailType.endsWith(s))) {
+      await handleGenericNewLead(supabase, email, parsed, chefId, tenantId, result, platform)
+    } else if (CLIENT_MESSAGE_SUFFIXES.some((s) => emailType.endsWith(s))) {
+      await handleGenericClientMessage(supabase, email, parsed, tenantId, result, platform)
+    } else if (BOOKING_CONFIRMED_SUFFIXES.some((s) => emailType.endsWith(s))) {
+      await handleGenericBookingConfirmed(supabase, email, parsed, tenantId, result, platform)
+    } else {
+      // Administrative, payment, etc. — log and skip
+      await logSyncEntry(supabase, tenantId, email, {
+        classification: 'marketing',
+        confidence: 'high',
+        action_taken: 'administrative_skipped',
+        platform_email_type: emailType,
+      })
+      result.skipped++
+    }
+  } catch (err) {
+    const error = err as Error
+    await logSyncEntry(supabase, tenantId, email, {
+      classification: 'inquiry',
+      confidence: 'high',
+      action_taken: 'error',
+      platform_email_type: parsed.emailType,
+      error: error.message,
+    })
+    result.errors.push(
+      `${displayName} ${parsed.emailType} for ${email.messageId}: ${error.message}`
+    )
+  }
+}
+
+// ─── Generic: New Lead / Inquiry ─────────────────────────────────────────────
+
+function extractLeadFields(parsed: GenericParseResult): {
+  clientName: string
+  eventDate: string | null
+  location: string | null
+  guestCount: number | null
+  occasion: string | null
+  budgetCents: number | null
+  dietaryRestrictions: string | null
+  ctaLink: string | null
+  externalId: string | null
+} {
+  // Each parser stores lead data under different keys — try all common ones
+  const data =
+    (parsed.lead as Record<string, unknown>) ||
+    (parsed.inquiry as Record<string, unknown>) ||
+    (parsed.booking as Record<string, unknown>) ||
+    (parsed.message as Record<string, unknown>) ||
+    (parsed.review as Record<string, unknown>) ||
+    {}
+
+  const clientName =
+    (data.clientName as string) ||
+    (data.senderName as string) ||
+    (data.reviewerName as string) ||
+    'Unknown'
+
+  // Guest count — try various field names
+  const guestCount =
+    (data.guestCount as number | null) ?? (data.guestCountNumber as number | null) ?? null
+
+  // Budget — try various patterns
+  let budgetCents =
+    (data.budgetMaxCents as number | null) ?? (data.totalCents as number | null) ?? null
+  if (!budgetCents && (data.pricePerPersonCents as number | null) && guestCount) {
+    budgetCents = (data.pricePerPersonCents as number) * guestCount
+  }
+
+  return {
+    clientName,
+    eventDate: (data.eventDate as string | null) ?? (data.weddingDate as string | null) ?? null,
+    location: (data.location as string | null) ?? null,
+    guestCount,
+    occasion:
+      (data.eventType as string | null) ??
+      (data.serviceType as string | null) ??
+      (data.occasion as string | null) ??
+      (data.projectDescription as string | null) ??
+      null,
+    budgetCents,
+    dietaryRestrictions: (data.dietaryRestrictions as string | null) ?? null,
+    ctaLink: (data.ctaLink as string | null) ?? (data.contactLink as string | null) ?? null,
+    externalId:
+      (data.ctaLink as string | null) ??
+      (data.contactLink as string | null) ??
+      (data.quoteId as string | null) ??
+      null,
+  }
+}
+
+async function handleGenericNewLead(
+  supabase: DbClient,
+  email: ParsedEmail,
+  parsed: GenericParseResult,
+  chefId: string,
+  tenantId: string,
+  result: SyncResult,
+  platform: PlatformChannel
+) {
+  const fields = extractLeadFields(parsed)
+  const displayName = PLATFORM_DISPLAY_NAMES[platform]
+  const channelValue = PLATFORM_TO_INQUIRY_CHANNEL[platform]
+
+  // Dedup check
+  const dedup = await checkPlatformInquiryDuplicate(supabase, tenantId, {
+    channel: channelValue,
+    externalId: fields.externalId || undefined,
+    clientName: fields.clientName,
+    eventDate: fields.eventDate,
+  })
+
+  if (dedup.isDuplicate) {
+    await logSyncEntry(supabase, tenantId, email, {
+      classification: 'inquiry',
+      confidence: 'high',
+      action_taken: 'duplicate_skipped',
+      platform_email_type: parsed.emailType,
+      inquiry_id: dedup.existingInquiryId,
+    })
+    result.skipped++
+    return
+  }
+
+  // Create client record
+  let clientId: string | null = null
+  try {
+    const clientResult = await createClientFromLead(tenantId, {
+      full_name: fields.clientName,
+      email: `${platform}-${Date.now()}@placeholder.cheflowhq.com`,
+      phone: null,
+      dietary_restrictions: fields.dietaryRestrictions
+        ? fields.dietaryRestrictions
+            .split(/[\n,]/)
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : null,
+      source: channelValue,
+    })
+    clientId = clientResult.id
+  } catch (clientErr) {
+    console.error(`[${displayName}] Client creation failed (non-fatal):`, clientErr)
+  }
+
+  // Build unknown_fields with all platform-specific data
+  const leadData =
+    (parsed.lead as Record<string, unknown>) ||
+    (parsed.inquiry as Record<string, unknown>) ||
+    (parsed.booking as Record<string, unknown>) ||
+    (parsed.message as Record<string, unknown>) ||
+    (parsed.review as Record<string, unknown>) ||
+    {}
+
+  const unknownFields: Record<string, unknown> = {
+    submission_source: `${platform}_gmail_auto`,
+    original_sender_name: fields.clientName,
+    ...leadData,
+  }
+
+  // Create the inquiry
+  const { data: newInquiry, error: inquiryError } = await supabase
+    .from('inquiries')
+    .insert({
+      tenant_id: tenantId,
+      channel: channelValue as any,
+      client_id: clientId,
+      first_contact_at: email.date ? new Date(email.date).toISOString() : new Date().toISOString(),
+      confirmed_date: fields.eventDate,
+      confirmed_guest_count: fields.guestCount,
+      confirmed_location: fields.location,
+      confirmed_occasion: fields.occasion,
+      confirmed_budget_cents: fields.budgetCents,
+      confirmed_dietary_restrictions: fields.dietaryRestrictions
+        ? fields.dietaryRestrictions
+            .split(/[\n,]/)
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : null,
+      source_message:
+        `${fields.occasion || displayName + ' inquiry'}\n\n--- Original ${displayName} email ---\n${email.body}`.trim(),
+      unknown_fields: unknownFields as unknown as Json,
+      external_platform: channelValue,
+      external_link: fields.ctaLink,
+      status: 'new',
+      next_action_required: `Review ${displayName} inquiry from ${fields.clientName}`,
+      next_action_by: 'chef',
+    })
+    .select('id')
+    .single()
+
+  if (inquiryError || !newInquiry) {
+    throw new Error(`Inquiry creation failed: ${inquiryError?.message}`)
+  }
+
+  // Log in sync log
+  await logSyncEntry(supabase, tenantId, email, {
+    classification: 'inquiry',
+    confidence: 'high',
+    action_taken: 'created_inquiry',
+    inquiry_id: newInquiry.id,
+    platform_email_type: parsed.emailType,
+  })
+
+  // Notify chef (non-blocking)
+  try {
+    const chefUserId = await getChefAuthUserId(tenantId)
+    if (chefUserId) {
+      await createNotification({
+        tenantId,
+        recipientId: chefUserId,
+        category: 'inquiry',
+        action: 'new_inquiry',
+        title: `New ${displayName} inquiry`,
+        body: `${fields.clientName} — ${fields.occasion || 'Event'} on ${fields.eventDate || 'TBD'} · ${fields.guestCount ? fields.guestCount + ' guests' : '? guests'}`,
+        actionUrl: `/inquiries/${newInquiry.id}`,
+        inquiryId: newInquiry.id,
+        clientId: clientId || undefined,
+      })
+    }
+  } catch (notifErr) {
+    console.error(`[${displayName}] Notification failed (non-fatal):`, notifErr)
+  }
+
+  // Log activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    await logChefActivity({
+      tenantId,
+      actorId: chefId,
+      action: 'inquiry_created',
+      domain: 'inquiry',
+      entityType: 'inquiry',
+      entityId: newInquiry.id,
+      summary: `${displayName} inquiry auto-captured: ${fields.clientName} on ${fields.eventDate || 'TBD'}`,
+      context: {
+        channel: channelValue,
+        client_name: fields.clientName,
+        event_date: fields.eventDate,
+        guest_count: fields.guestCount,
+        location: fields.location,
+        source: 'gmail_auto',
+      },
+      clientId: clientId || undefined,
+    })
+  } catch (actErr) {
+    console.error(`[${displayName}] Activity log failed (non-fatal):`, actErr)
+  }
+
+  result.inquiriesCreated++
+}
+
+// ─── Generic: Client Message ─────────────────────────────────────────────────
+
+async function handleGenericClientMessage(
+  supabase: DbClient,
+  email: ParsedEmail,
+  parsed: GenericParseResult,
+  tenantId: string,
+  result: SyncResult,
+  platform: PlatformChannel
+) {
+  const displayName = PLATFORM_DISPLAY_NAMES[platform]
+  const channelValue = PLATFORM_TO_INQUIRY_CHANNEL[platform]
+  const fields = extractLeadFields(parsed)
+
+  // Find existing inquiry by context
+  const inquiryId = await findPlatformInquiryByContext(supabase, tenantId, {
+    channel: channelValue,
+    clientName: fields.clientName !== 'Unknown' ? fields.clientName : null,
+    eventDate: fields.eventDate,
+    orderId: fields.externalId,
+  })
+
+  if (inquiryId) {
+    // Advance status to awaiting_chef (client has messaged — chef needs to respond)
+    const { data: inquiry } = await supabase
+      .from('inquiries')
+      .select('status, external_link')
+      .eq('id', inquiryId)
+      .eq('tenant_id', tenantId)
+      .single()
+
+    if (inquiry && ['new', 'awaiting_client'].includes(inquiry.status)) {
+      await supabase
+        .from('inquiries')
+        .update({
+          status: 'awaiting_chef',
+          next_action_required: `${fields.clientName !== 'Unknown' ? fields.clientName : 'Client'} messaged you on ${displayName} — respond to keep lead warm`,
+          next_action_by: 'chef',
+          external_link: fields.ctaLink || inquiry.external_link,
+        })
+        .eq('id', inquiryId)
+        .eq('tenant_id', tenantId)
+    }
+
+    // Notify chef
+    try {
+      const chefUserId = await getChefAuthUserId(tenantId)
+      if (chefUserId) {
+        await createNotification({
+          tenantId,
+          recipientId: chefUserId,
+          category: 'inquiry',
+          action: 'inquiry_reply',
+          title: `${displayName} client messaged you`,
+          body: `${fields.clientName !== 'Unknown' ? fields.clientName : 'A client'} sent a message about the ${fields.eventDate || ''} booking`,
+          actionUrl: `/inquiries/${inquiryId}`,
+          inquiryId,
+        })
+      }
+    } catch (notifErr) {
+      console.error(`[${displayName}] Message notification failed (non-fatal):`, notifErr)
+    }
+  }
+
+  await logSyncEntry(supabase, tenantId, email, {
+    classification: 'existing_thread',
+    confidence: 'high',
+    action_taken: inquiryId ? 'logged_message' : 'unmatched_message',
+    inquiry_id: inquiryId,
+    platform_email_type: parsed.emailType,
+  })
+
+  result.messagesLogged++
+}
+
+// ─── Generic: Booking Confirmed ──────────────────────────────────────────────
+
+async function handleGenericBookingConfirmed(
+  supabase: DbClient,
+  email: ParsedEmail,
+  parsed: GenericParseResult,
+  tenantId: string,
+  result: SyncResult,
+  platform: PlatformChannel
+) {
+  const displayName = PLATFORM_DISPLAY_NAMES[platform]
+  const channelValue = PLATFORM_TO_INQUIRY_CHANNEL[platform]
+  const fields = extractLeadFields(parsed)
+
+  // Find existing inquiry
+  const inquiryId = await findPlatformInquiryByContext(supabase, tenantId, {
+    channel: channelValue,
+    clientName: fields.clientName !== 'Unknown' ? fields.clientName : null,
+    eventDate: fields.eventDate,
+    orderId: fields.externalId,
+  })
+
+  if (inquiryId) {
+    await supabase
+      .from('inquiries')
+      .update({
+        status: 'confirmed',
+        confirmed_budget_cents: fields.budgetCents,
+        external_link: fields.ctaLink,
+        next_action_required: `${displayName} booking confirmed — prepare for event`,
+        next_action_by: 'chef',
+      })
+      .eq('id', inquiryId)
+      .eq('tenant_id', tenantId)
+
+    try {
+      const chefUserId = await getChefAuthUserId(tenantId)
+      if (chefUserId) {
+        await createNotification({
+          tenantId,
+          recipientId: chefUserId,
+          category: 'inquiry',
+          action: 'new_inquiry',
+          title: `${displayName} booking confirmed!`,
+          body: `${fields.clientName !== 'Unknown' ? fields.clientName : 'A client'} booked — ${fields.eventDate || 'date TBD'}`,
+          actionUrl: `/inquiries/${inquiryId}`,
+          inquiryId,
+        })
+      }
+    } catch (notifErr) {
+      console.error(`[${displayName}] Booking notification failed (non-fatal):`, notifErr)
+    }
+  }
+
+  await logSyncEntry(supabase, tenantId, email, {
+    classification: 'inquiry',
+    confidence: 'high',
+    action_taken: inquiryId ? 'booking_confirmed' : 'unmatched_booking',
+    inquiry_id: inquiryId,
+    platform_email_type: parsed.emailType,
   })
 
   result.messagesLogged++

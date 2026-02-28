@@ -9,6 +9,13 @@ import { z } from 'zod'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { isTakeAChefEmail } from './take-a-chef-parser'
+import { isYhangryEmail } from './yhangry-parser'
+import { isThumbtackEmail } from './thumbtack-parser'
+import { isTheKnotEmail } from './theknot-parser'
+import { isBarkEmail } from './bark-parser'
+import { isCozymealEmail } from './cozymeal-parser'
+import { isGigSaladEmail } from './gigsalad-parser'
+import { isGoogleBusinessEmail } from './google-business-parser'
 import type { EmailClassification } from './types'
 
 const EmailClassificationSchema = z.object({
@@ -52,21 +59,38 @@ RESPOND WITH ONLY valid JSON (no markdown, no explanation):
   }
 }`
 
+/**
+ * Check if an email is from any known platform with a dedicated parser.
+ * Returns the platform name if detected, null otherwise.
+ * Used to short-circuit Ollama classification — platform emails don't need AI.
+ */
+function detectPlatformEmail(fromAddress: string): string | null {
+  if (isTakeAChefEmail(fromAddress)) return 'TakeAChef/Private Chef Manager'
+  if (isYhangryEmail(fromAddress)) return 'Yhangry'
+  if (isThumbtackEmail(fromAddress)) return 'Thumbtack'
+  if (isTheKnotEmail(fromAddress)) return 'The Knot/WeddingWire'
+  if (isBarkEmail(fromAddress)) return 'Bark'
+  if (isCozymealEmail(fromAddress)) return 'Cozymeal'
+  if (isGigSaladEmail(fromAddress)) return 'GigSalad'
+  if (isGoogleBusinessEmail(fromAddress)) return 'Google Business'
+  return null
+}
+
 export async function classifyEmail(
   subject: string,
   body: string,
   fromAddress: string,
   knownClientEmails: string[]
 ): Promise<EmailClassification> {
-  // Short-circuit: TakeAChef / Private Chef Manager emails are handled by
-  // the dedicated TakeAChef parser pipeline — not by Ollama classification.
-  // We return a special classification that the sync pipeline checks for.
-  if (isTakeAChefEmail(fromAddress)) {
+  // Short-circuit: Platform emails are handled by dedicated parsers — not by
+  // Ollama classification. We return a high-confidence classification so the
+  // sync pipeline fast-paths to the dedicated parser.
+  const platformCheck = detectPlatformEmail(fromAddress)
+  if (platformCheck) {
     return {
-      category: 'inquiry', // The sync pipeline will override routing via isTakeAChefEmail check
+      category: 'inquiry',
       confidence: 'high',
-      reasoning:
-        'TakeAChef/Private Chef Manager email detected by sender domain — routed to dedicated parser',
+      reasoning: `${platformCheck} email detected by sender domain — routed to dedicated parser`,
       is_food_related: true,
     }
   }

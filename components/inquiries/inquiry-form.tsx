@@ -363,6 +363,12 @@ export function InquiryForm({
     { value: 'instagram', label: 'Instagram' },
     { value: 'take_a_chef', label: 'Take a Chef' },
     { value: 'yhangry', label: 'Yhangry' },
+    { value: 'thumbtack', label: 'Thumbtack' },
+    { value: 'theknot', label: 'The Knot / WeddingWire' },
+    { value: 'bark', label: 'Bark' },
+    { value: 'cozymeal', label: 'Cozymeal' },
+    { value: 'gigsalad', label: 'GigSalad' },
+    { value: 'google_business', label: 'Google Business' },
     { value: 'website', label: 'Website' },
     { value: 'other', label: 'Other' },
   ]
