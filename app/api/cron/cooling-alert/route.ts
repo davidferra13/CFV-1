@@ -13,58 +13,70 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Find clients whose last event was more than 90 days ago (tier-based thresholds)
-    const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+    const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split('T')[0]
+    const today = new Date().toISOString().split('T')[0]
 
-    const { data: chefs } = await supabaseAdmin.from('chefs').select('id').limit(10000)
+    // Single query: find clients whose most recent completed event is older than 90 days
+    // and who have no upcoming non-cancelled events
+    const { data: coolingClients, error } = await supabaseAdmin.rpc('get_cooling_clients', {
+      cutoff_date: ninetyDaysAgo,
+      today_date: today,
+    })
 
-    if (!chefs || chefs.length === 0) {
-      return NextResponse.json({ message: 'No chefs' })
-    }
+    // Fallback: if the RPC doesn't exist, use a simpler approach with 2 queries instead of N+1
+    if (error) {
+      // Get all client-chef pairs with their latest completed event date
+      const { data: latestEvents } = await supabaseAdmin
+        .from('events')
+        .select('tenant_id, client_id, event_date')
+        .eq('status', 'completed')
+        .lt('event_date', ninetyDaysAgo)
+        .order('event_date', { ascending: false })
 
-    let totalAlerts = 0
+      if (!latestEvents || latestEvents.length === 0) {
+        return NextResponse.json({ message: 'No cooling relationships detected' })
+      }
 
-    for (const chef of chefs) {
-      // Get all clients for this chef
-      const { data: clients } = await supabaseAdmin
-        .from('clients')
-        .select('id, display_name')
-        .eq('tenant_id', chef.id)
-        .limit(10000)
-
-      if (!clients || clients.length === 0) continue
-
-      for (const client of clients) {
-        // Find most recent completed event
-        const { data: lastEvent } = await supabaseAdmin
-          .from('events')
-          .select('event_date')
-          .eq('tenant_id', chef.id)
-          .eq('client_id', client.id)
-          .eq('status', 'completed')
-          .order('event_date', { ascending: false })
-          .limit(1)
-          .single()
-
-        if (!lastEvent) continue
-
-        // Check if cooling (no event in 90+ days and no upcoming events)
-        if (lastEvent.event_date < ninetyDaysAgo.split('T')[0]) {
-          const { count } = await supabaseAdmin
-            .from('events')
-            .select('id', { count: 'exact', head: true })
-            .eq('tenant_id', chef.id)
-            .eq('client_id', client.id)
-            .gte('event_date', new Date().toISOString().split('T')[0])
-            .not('status', 'eq', 'cancelled')
-
-          if (!count || count === 0) {
-            // Queue a notification (using notification_queue if exists, else log)
-            console.log(`[cooling-alert] Client ${client.id} cooling for chef ${chef.id}`)
-            totalAlerts++
-          }
+      // Deduplicate to latest event per tenant+client
+      const seen = new Set<string>()
+      const candidates: { tenant_id: string; client_id: string }[] = []
+      for (const e of latestEvents) {
+        const key = `${e.tenant_id}:${e.client_id}`
+        if (!seen.has(key)) {
+          seen.add(key)
+          candidates.push({ tenant_id: e.tenant_id, client_id: e.client_id })
         }
       }
+
+      // Check which candidates have NO upcoming events (batch query)
+      const { data: upcomingEvents } = await supabaseAdmin
+        .from('events')
+        .select('tenant_id, client_id')
+        .gte('event_date', today)
+        .not('status', 'eq', 'cancelled')
+
+      const upcomingSet = new Set(
+        (upcomingEvents || []).map((e) => `${e.tenant_id}:${e.client_id}`)
+      )
+
+      const coolingPairs = candidates.filter(
+        (c) => !upcomingSet.has(`${c.tenant_id}:${c.client_id}`)
+      )
+
+      for (const pair of coolingPairs) {
+        console.log(`[cooling-alert] Client ${pair.client_id} cooling for chef ${pair.tenant_id}`)
+      }
+
+      return NextResponse.json({
+        message: `Detected ${coolingPairs.length} cooling relationships`,
+      })
+    }
+
+    const totalAlerts = coolingClients?.length ?? 0
+    for (const row of coolingClients ?? []) {
+      console.log(`[cooling-alert] Client ${row.client_id} cooling for chef ${row.tenant_id}`)
     }
 
     return NextResponse.json({ message: `Detected ${totalAlerts} cooling relationships` })

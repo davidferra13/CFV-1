@@ -43,51 +43,59 @@ export async function GET(request: Request) {
 
           const data = await res.json()
           const items = data.items ?? []
+          if (items.length === 0) continue
 
-          for (const item of items) {
-            // Check if we already have this URL
-            const { data: existing } = await supabaseAdmin
-              .from('chef_brand_mentions')
-              .select('id')
-              .eq('tenant_id', chef.id)
-              .eq('source_url', item.link)
-              .limit(1)
+          // Batch check: get all existing URLs for this chef in one query
+          const itemUrls = items.map((i: { link: string }) => i.link)
+          const { data: existing } = await supabaseAdmin
+            .from('chef_brand_mentions')
+            .select('source_url')
+            .eq('tenant_id', chef.id)
+            .in('source_url', itemUrls)
 
-            if (existing && existing.length > 0) continue
+          const existingUrls = new Set((existing ?? []).map((e) => e.source_url))
 
-            // Simple sentiment heuristic
-            const text = `${item.title} ${item.snippet}`.toLowerCase()
-            const negWords = [
-              'complaint',
-              'terrible',
-              'worst',
-              'awful',
-              'disgusting',
-              'sick',
-              'food poisoning',
-            ]
-            const posWords = [
-              'amazing',
-              'excellent',
-              'best',
-              'wonderful',
-              'fantastic',
-              'incredible',
-              'love',
-            ]
-            const hasNeg = negWords.some((w) => text.includes(w))
-            const hasPos = posWords.some((w) => text.includes(w))
-            const sentiment = hasNeg ? 'negative' : hasPos ? 'positive' : 'neutral'
+          // Sentiment helpers
+          const negWords = [
+            'complaint',
+            'terrible',
+            'worst',
+            'awful',
+            'disgusting',
+            'sick',
+            'food poisoning',
+          ]
+          const posWords = [
+            'amazing',
+            'excellent',
+            'best',
+            'wonderful',
+            'fantastic',
+            'incredible',
+            'love',
+          ]
 
-            await supabaseAdmin.from('chef_brand_mentions').insert({
-              tenant_id: chef.id,
-              source: 'web',
-              title: item.title,
-              excerpt: item.snippet,
-              source_url: item.link,
-              sentiment,
+          // Batch insert new mentions
+          const newMentions = items
+            .filter((item: { link: string }) => !existingUrls.has(item.link))
+            .map((item: { title: string; snippet: string; link: string }) => {
+              const text = `${item.title} ${item.snippet}`.toLowerCase()
+              const hasNeg = negWords.some((w) => text.includes(w))
+              const hasPos = posWords.some((w) => text.includes(w))
+              const sentiment = hasNeg ? 'negative' : hasPos ? 'positive' : 'neutral'
+              return {
+                tenant_id: chef.id,
+                source: 'web',
+                title: item.title,
+                excerpt: item.snippet,
+                source_url: item.link,
+                sentiment,
+              }
             })
-            totalMentions++
+
+          if (newMentions.length > 0) {
+            await supabaseAdmin.from('chef_brand_mentions').insert(newMentions)
+            totalMentions += newMentions.length
           }
         } catch (err) {
           console.error(`[brand-monitor] Search failed for "${term}":`, err)
