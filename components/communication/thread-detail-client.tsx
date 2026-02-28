@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Star, ArrowLeft } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { SourceBadge } from '@/components/communication/source-badge'
 import {
   markCommunicationResolved,
   reopenCommunication,
@@ -19,12 +20,7 @@ import {
 } from '@/lib/communication/actions'
 import type { ThreadDetail } from '@/lib/communication/actions'
 
-function sourceLabel(source: string) {
-  if (source === 'website_form') return 'Website Form'
-  if (source === 'takeachef') return 'TakeAChef'
-  if (source === 'manual_log') return 'Manual Log'
-  return source.charAt(0).toUpperCase() + source.slice(1)
-}
+// sourceLabel replaced by SourceBadge component from source-badge.tsx
 
 function formatWhen(value: string) {
   return new Date(value).toLocaleString(undefined, {
@@ -198,7 +194,7 @@ export function ThreadDetailClient({
                   >
                     <span>{event.sender_identity}</span>
                     <span>·</span>
-                    <span>{sourceLabel(event.source)}</span>
+                    <SourceBadge source={event.source} size="sm" />
                     <span>·</span>
                     <span>{formatWhen(event.timestamp)}</span>
                     {event.linked_entity_type && (

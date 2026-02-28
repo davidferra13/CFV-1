@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ConfirmPolicyDialog } from '@/components/ui/confirm-policy-dialog'
+import { SourceBadge } from '@/components/communication/source-badge'
+import { getChannelMeta, channelLabel } from '@/lib/communication/channel-meta'
 import {
   addInternalNoteFromCommunication,
   attachCommunicationEventToEvent,
@@ -83,12 +85,7 @@ const QUICK_REPLIES = [
   },
 ]
 
-function sourceLabel(source: string) {
-  if (source === 'website_form') return 'Website Form'
-  if (source === 'takeachef') return 'Takeachef'
-  if (source === 'manual_log') return 'Manual Log'
-  return source.charAt(0).toUpperCase() + source.slice(1)
-}
+// sourceLabel replaced by channelLabel from channel-meta.ts
 
 function formatWhen(value: string) {
   const date = new Date(value)
@@ -301,6 +298,7 @@ export function CommunicationInboxClient({
           return (
             <button
               key={source}
+              title={`Filter by ${channelLabel(source)}`}
               onClick={() => {
                 setActiveSources((prev) => {
                   if (prev.includes(source)) {
@@ -309,9 +307,9 @@ export function CommunicationInboxClient({
                   return [...prev, source]
                 })
               }}
-              className={`px-2.5 py-1 rounded-full border text-xs ${active ? 'bg-stone-900 text-stone-200 border-stone-400' : 'bg-stone-800 text-stone-500 border-stone-700'}`}
+              className={`rounded-full border transition-opacity ${active ? 'border-stone-400 opacity-100' : 'border-stone-700 opacity-40'}`}
             >
-              {sourceLabel(source)}
+              <SourceBadge source={source} size="md" />
             </button>
           )
         })}
@@ -386,7 +384,11 @@ export function CommunicationInboxClient({
           const staleTheirTurn = isStaleTheirTurn(item)
 
           return (
-            <Card key={item.communication_event_id}>
+            <Card
+              key={item.communication_event_id}
+              className="overflow-hidden"
+              style={{ borderLeftWidth: 3, borderLeftColor: getChannelMeta(item.source).accentHex }}
+            >
               <CardHeader>
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-start gap-3">
@@ -423,7 +425,7 @@ export function CommunicationInboxClient({
                         </CardTitle>
                       </Link>
                       <div className="mt-1 flex items-center gap-2 text-xs text-stone-500">
-                        <span>{sourceLabel(item.source)}</span>
+                        <SourceBadge source={item.source} size="md" />
                         <span>{formatWhen(item.event_timestamp)}</span>
                         {item.tab === 'unlinked' && (
                           <Badge className="bg-blue-900 text-blue-800 ring-1 ring-inset ring-blue-300">

@@ -4,7 +4,7 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 function Bone({ className }: { className: string }) {
-  return <div className={`bg-stone-200 rounded animate-pulse ${className}`} />
+  return <div className={`bg-stone-700 rounded animate-pulse ${className}`} />
 }
 
 export default function ClientDetailLoading() {
@@ -46,7 +46,10 @@ export default function ClientDetailLoading() {
             </CardHeader>
             <CardContent className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center justify-between border-b pb-3 last:border-0 last:pb-0">
+                <div
+                  key={i}
+                  className="flex items-center justify-between border-b pb-3 last:border-0 last:pb-0"
+                >
                   <div className="space-y-1">
                     <Bone className="h-4 w-40" />
                     <Bone className="h-3 w-24" />

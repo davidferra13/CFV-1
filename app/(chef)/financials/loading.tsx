@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 function Bone({ className }: { className: string }) {
-  return <div className={`bg-stone-200 rounded animate-pulse ${className}`} />
+  return <div className={`bg-stone-700 rounded animate-pulse ${className}`} />
 }
 
 export default function FinancialsLoading() {
@@ -48,7 +48,7 @@ export default function FinancialsLoading() {
           <Bone className="h-5 w-44" />
         </CardHeader>
         <CardContent className="p-0">
-          <div className="divide-y divide-stone-100">
+          <div className="divide-y divide-stone-800">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="flex items-center justify-between px-6 py-3">
                 <div className="space-y-1 flex-1">

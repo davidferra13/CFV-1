@@ -143,6 +143,7 @@ async function getOrCreateThread(input: {
     resolvedClientId: input.resolvedClientId,
   })
 
+  // 1. Check for exact thread key match (same source + same thread)
   const { data: existing } = await supabase
     .from('conversation_threads' as any)
     .select('id, state')
@@ -162,6 +163,31 @@ async function getOrCreateThread(input: {
     return existing.id as string
   }
 
+  // 2. Cross-channel client matching: if client is resolved, check if they
+  //    already have an active thread from ANY source. Reuse it so the same
+  //    person contacting via email + TakeAChef + Instagram = one thread.
+  if (input.resolvedClientId) {
+    const { data: clientThread } = await supabase
+      .from('conversation_threads' as any)
+      .select('id, state')
+      .eq('tenant_id', input.tenantId)
+      .eq('client_id', input.resolvedClientId)
+      .in('state', ['active', 'snoozed'])
+      .order('last_activity_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (clientThread?.id) {
+      await supabase
+        .from('conversation_threads' as any)
+        .update({ last_activity_at: input.timestamp })
+        .eq('id', clientThread.id)
+
+      return clientThread.id as string
+    }
+  }
+
+  // 3. No existing thread found — create a new one
   const { data: created, error } = await supabase
     .from('conversation_threads' as any)
     .insert({

@@ -808,6 +808,14 @@ export async function upsertCommunicationClassificationRule(
   return { success: true }
 }
 
+export type TimelineSystemEvent = {
+  id: string
+  type: 'action' | 'inquiry_transition' | 'event_transition'
+  timestamp: string
+  label: string
+  detail: string | null
+}
+
 export type ThreadDetail = {
   thread: {
     id: string
@@ -830,6 +838,7 @@ export type ThreadDetail = {
     linked_entity_id: string | null
     status: string
   }>
+  systemEvents: TimelineSystemEvent[]
   linked_inquiry: { id: string; title: string } | null
   linked_event: { id: string; title: string } | null
   suggestions: Array<{
