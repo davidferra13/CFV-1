@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Instagram Sync: Pull latest stats and store a snapshot
 // Called POST with { chefId } from callback, or GET by chef from UI (manual sync)
 
@@ -6,8 +5,29 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+interface IGPost {
+  like_count: number
+  comments_count: number
+  permalink?: string
+}
+
+interface IGProfile {
+  followers_count?: number
+  follows_count?: number
+  media_count?: number
+}
+
+interface IGInsightValue {
+  value: number
+}
+
+interface IGInsightMetric {
+  name: string
+  values: IGInsightValue[]
+}
+
 async function syncInstagramStats(chefId: string): Promise<{ ok: boolean; error?: string }> {
-  const supabase: any = createAdminClient()
+  const supabase = createAdminClient()
 
   // Get stored token
   const { data: conn } = await supabase
@@ -30,54 +50,57 @@ async function syncInstagramStats(chefId: string): Promise<{ ok: boolean; error?
 
   if (!profileRes.ok) {
     const err = await profileRes.text()
+    // Increment error count — fetch current count first since RPC won't work inline
+    const { data: currentConn } = await supabase
+      .from('social_connected_accounts')
+      .select('error_count')
+      .eq('tenant_id', chefId)
+      .eq('platform', 'instagram')
+      .single()
     await supabase
       .from('social_connected_accounts')
       .update({
         last_error: err,
-        error_count: supabase.rpc('increment', { x: 1 }) as unknown as number,
+        error_count: (currentConn?.error_count ?? 0) + 1,
       })
       .eq('tenant_id', chefId)
       .eq('platform', 'instagram')
     return { ok: false, error: err }
   }
 
-  const profile = await profileRes.json()
+  const profile: IGProfile = await profileRes.json()
 
   // Fetch recent media for engagement calculation
   const mediaRes = await fetch(
     `https://graph.instagram.com/${igUserId}/media?fields=like_count,comments_count,permalink&limit=10&access_token=${token}`
   )
-  const mediaData = await mediaRes.json()
-  const posts = mediaData?.data ?? []
+  const mediaData: { data?: IGPost[] } = await mediaRes.json()
+  const posts: IGPost[] = mediaData?.data ?? []
 
-  const topPost = posts.sort(
-    (
-      a: { like_count: number; comments_count: number },
-      b: { like_count: number; comments_count: number }
-    ) => b.like_count + b.comments_count - (a.like_count + a.comments_count)
-  )[0]
+  const topPost = [...posts].sort(
+    (a, b) => b.like_count + b.comments_count - (a.like_count + a.comments_count)
+  )[0] as IGPost | undefined
 
   const totalEngagement = posts.reduce(
-    (s: number, p: { like_count?: number; comments_count?: number }) =>
-      s + (p.like_count ?? 0) + (p.comments_count ?? 0),
+    (s, p) => s + (p.like_count ?? 0) + (p.comments_count ?? 0),
     0
   )
   const avgEngagementRate =
-    posts.length > 0 && profile.followers_count > 0
-      ? Math.round((totalEngagement / posts.length / profile.followers_count) * 10000) / 10000
+    posts.length > 0 && (profile.followers_count ?? 0) > 0
+      ? Math.round((totalEngagement / posts.length / profile.followers_count!) * 10000) / 10000
       : null
 
   // Fetch insights (requires instagram_manage_insights)
-  let reach7d = null
-  let impressions7d = null
-  let profileViews7d = null
+  let reach7d: number | null = null
+  let impressions7d: number | null = null
+  let profileViews7d: number | null = null
 
   try {
     const insightRes = await fetch(
       `https://graph.instagram.com/${igUserId}/insights?metric=reach,impressions,profile_views&period=week&access_token=${token}`
     )
     if (insightRes.ok) {
-      const insightData = await insightRes.json()
+      const insightData: { data?: IGInsightMetric[] } = await insightRes.json()
       for (const metric of insightData?.data ?? []) {
         const val = metric?.values?.[metric.values.length - 1]?.value ?? null
         if (metric.name === 'reach') reach7d = val
@@ -123,20 +146,20 @@ async function syncInstagramStats(chefId: string): Promise<{ ok: boolean; error?
 }
 
 // POST: called internally (from callback or cron)
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest): Promise<NextResponse> {
   const internalKey = req.headers.get('x-internal-key')
   if (internalKey !== process.env.INTERNAL_API_KEY) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { chefId } = await req.json()
+  const { chefId } = (await req.json()) as { chefId: string }
   const result = await syncInstagramStats(chefId)
   return NextResponse.json(result)
 }
 
 // GET: called by chef from Settings > Integrations (manual sync)
-export async function GET() {
+export async function GET(): Promise<NextResponse> {
   const chef = await requireChef()
-  const result = await syncInstagramStats(chef.id)
+  const result = await syncInstagramStats(chef.entityId)
   return NextResponse.json(result)
 }

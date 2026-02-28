@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Scheduled Lifecycle Maintenance Cron Endpoint
 // GET /api/scheduled/lifecycle — invoked by Vercel Cron Job (Vercel sends GET)
 // POST /api/scheduled/lifecycle — invoked manually or by external schedulers
@@ -320,9 +319,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     const sevenDaysOutDate = sevenDaysOut.toISOString().split('T')[0]
     const todayDate = today.toISOString().split('T')[0]
 
-    // Cast to any: payment_reminder_*_sent_at columns are new (from migration 20260228000006)
-    // and types/database.ts doesn't reflect them yet. Will resolve after supabase gen types.
-    const { data: unpaidEvents } = (await supabase
+    const { data: unpaidEvents } = await supabase
       .from('events')
       .select(
         `
@@ -334,7 +331,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
       .eq('status', 'accepted')
       .in('payment_status', ['unpaid', 'deposit_paid'])
       .gte('event_date', todayDate)
-      .lte('event_date', sevenDaysOutDate)) as { data: any[] | null }
+      .lte('event_date', sevenDaysOutDate)
 
     const paymentReminderResults = { sent: 0, skipped: 0 }
 
@@ -343,7 +340,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
 
       for (const event of unpaidEvents) {
         try {
-          const client = event.client as {
+          const client = event.client as unknown as {
             id: string
             email: string
             full_name: string
@@ -383,14 +380,14 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
             .single()
 
           const amountDueCents =
-            financial?.outstanding_balance_cents ?? (event as any).quoted_price_cents ?? 0
-          const depositCents = (event as any).deposit_amount_cents ?? 0
+            financial?.outstanding_balance_cents ?? event.quoted_price_cents ?? 0
+          const depositCents = event.deposit_amount_cents ?? 0
 
           for (const threshold of reminderThresholds) {
             if (daysUntilEvent > threshold.days) continue
 
             // Check if this reminder was already sent
-            const alreadySent = (event as any)[threshold.column] !== null
+            const alreadySent = event[threshold.column] !== null
             if (alreadySent) continue
 
             // Send the reminder (use actual days, not just the threshold bucket)
@@ -478,8 +475,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     const todayDate5 = today5.toISOString().split('T')[0]
     const thirtyDaysOutDate5 = thirtyDaysOut5.toISOString().split('T')[0]
 
-    // Cast to any: new columns not yet in generated types
-    const { data: upcomingEvents5 } = (await supabase
+    const { data: upcomingEvents5 } = await supabase
       .from('events')
       .select(
         `
@@ -493,7 +489,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
       )
       .in('status', ['paid', 'confirmed', 'in_progress'])
       .gte('event_date', todayDate5)
-      .lte('event_date', thirtyDaysOutDate5)) as { data: any[] | null }
+      .lte('event_date', thirtyDaysOutDate5)
 
     if (upcomingEvents5 && upcomingEvents5.length > 0) {
       const {
@@ -507,7 +503,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
 
       for (const event of upcomingEvents5) {
         try {
-          const client = event.client as {
+          const client = event.client as unknown as {
             id: string
             email: string
             full_name: string
@@ -547,11 +543,11 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
           for (const threshold of reminderThresholds5) {
             if (daysUntilEvent5 > threshold.days) continue
 
-            const alreadySent = (event as any)[threshold.column] !== null
+            const alreadySent = event[threshold.column] !== null
             if (alreadySent) continue
 
             // Per-interval opt-out check
-            if (!(tenantSettings as any)[threshold.settingsKey]) continue
+            if (!tenantSettings[threshold.settingsKey]) continue
 
             // Send the appropriate email
             if (threshold.sendFn === 'sendEventReminder30dEmail') {
@@ -649,8 +645,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     const now6 = new Date()
     const fortyEightHoursOut6 = new Date(now6.getTime() + 48 * 60 * 60 * 1000)
 
-    // Cast to any: expiry_warning_sent_at column not yet in generated types
-    const { data: expiringQuotes } = (await supabase
+    const { data: expiringQuotes } = await supabase
       .from('quotes')
       .select(
         `
@@ -663,7 +658,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
       .not('valid_until', 'is', null)
       .gte('valid_until', now6.toISOString())
       .lte('valid_until', fortyEightHoursOut6.toISOString())
-      .is('expiry_warning_sent_at', null)) as { data: any[] | null }
+      .is('expiry_warning_sent_at', null)
 
     if (expiringQuotes && expiringQuotes.length > 0) {
       const { sendQuoteExpiringEmail } = await import('@/lib/email/notifications')
@@ -766,7 +761,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     const tenDaysAgo = new Date(now7.getTime() - 10 * 86_400_000).toISOString().split('T')[0]
     const threeDaysAgo = new Date(now7.getTime() - 3 * 86_400_000).toISOString().split('T')[0]
 
-    const { data: completedEvents } = (await supabase
+    const { data: completedEvents } = await supabase
       .from('events')
       .select(
         `
@@ -778,12 +773,12 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
       .eq('status', 'completed')
       .is('review_request_sent_at', null)
       .gte('event_date', tenDaysAgo)
-      .lte('event_date', threeDaysAgo)) as { data: any[] | null }
+      .lte('event_date', threeDaysAgo)
 
     if (completedEvents && completedEvents.length > 0) {
       for (const event of completedEvents) {
         try {
-          const client = event.client as {
+          const client = event.client as unknown as {
             id: string
             email: string
             full_name: string
@@ -812,7 +807,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
             .eq('id', event.tenant_id)
             .single()
 
-          const chefName = (chef as any)?.business_name || (chef as any)?.full_name || 'Your Chef'
+          const chefName = chef?.business_name || chef?.full_name || 'Your Chef'
           const firstName = client.full_name.split(' ')[0]
           const occasion = event.occasion || 'your dinner'
           const eventDateLabel = new Date(event.event_date).toLocaleDateString('en-US', {

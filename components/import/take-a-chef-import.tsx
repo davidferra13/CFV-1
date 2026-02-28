@@ -1,4 +1,3 @@
-// @ts-nocheck — dynamic AI-parsed state shapes; strict typing not enforced here
 'use client'
 
 // Take a Chef AI Import Component
@@ -11,7 +10,6 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
 import {
   importTakeAChefBooking,
   type TakeAChefImportResult,
@@ -20,31 +18,6 @@ import {
 // ─── Types ────────────────────────────────────────────────────────────────
 
 type Phase = 'input' | 'parsing' | 'review' | 'saving' | 'done'
-
-// ─── Helpers ──────────────────────────────────────────────────────────────
-
-function formatCents(cents: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(cents / 100)
-}
-
-function ConfidenceBadge({ confidence }: { confidence: string }) {
-  const colors: Record<string, string> = {
-    high: 'bg-green-900 text-green-800',
-    medium: 'bg-yellow-900 text-yellow-800',
-    low: 'bg-red-900 text-red-800',
-  }
-  return (
-    <span
-      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${colors[confidence] ?? colors.medium}`}
-    >
-      Confidence: {confidence}
-    </span>
-  )
-}
 
 // ─── Component ────────────────────────────────────────────────────────────
 

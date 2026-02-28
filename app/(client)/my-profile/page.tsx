@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Client Profile - Self-service profile editing
 
 import { requireClient } from '@/lib/auth/get-user'

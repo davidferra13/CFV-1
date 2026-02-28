@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Instagram OAuth: Step 2 — Handle callback, exchange code for token, store connection
 // Called by Instagram after user grants permissions
 
@@ -21,11 +20,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${redirectBase}?error=instagram_invalid_callback`)
   }
 
-  const supabase: any = createAdminClient()
+  const supabase = createAdminClient()
 
   // Validate state
   const { data: stateRow } = await supabase
-    .from('social_oauth_states' as any)
+    .from('social_oauth_states')
     .select('tenant_id, expires_at')
     .eq('state', state)
     .eq('platform', 'instagram')
@@ -38,10 +37,7 @@ export async function GET(req: NextRequest) {
   const chefId = stateRow.tenant_id
 
   // Delete used state
-  await supabase
-    .from('social_oauth_states' as any)
-    .delete()
-    .eq('state', state)
+  await supabase.from('social_oauth_states').delete().eq('state', state)
 
   // Exchange code for short-lived token
   const appId = process.env.INSTAGRAM_APP_ID!
@@ -64,21 +60,31 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${redirectBase}?error=instagram_token_failed`)
   }
 
-  const { access_token: shortToken, user_id: igUserId } = await tokenRes.json()
+  const {
+    access_token: shortToken,
+    user_id: igUserId,
+  }: { access_token: string; user_id: string | number } = await tokenRes.json()
 
   // Exchange for long-lived token (60 days)
   const longTokenRes = await fetch(
     `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${appSecret}&access_token=${shortToken}`
   )
 
-  const { access_token: longToken, expires_in } = await longTokenRes.json()
+  const { access_token: longToken, expires_in }: { access_token: string; expires_in?: number } =
+    await longTokenRes.json()
   const expiresAt = new Date(Date.now() + (expires_in ?? 5183944) * 1000).toISOString()
 
   // Get account info
   const profileRes = await fetch(
     `https://graph.instagram.com/me?fields=id,username,name,followers_count,media_count&access_token=${longToken}`
   )
-  const profile = await profileRes.json()
+  const profile: {
+    id?: string
+    username?: string
+    name?: string
+    followers_count?: number
+    media_count?: number
+  } = await profileRes.json()
 
   // Upsert connection
   await supabase.from('social_connected_accounts').upsert(
