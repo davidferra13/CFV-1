@@ -66,8 +66,7 @@ export async function generateAIStaffBriefing(eventId: string): Promise<AIStaffB
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    // @ts-expect-error event_menu_components not yet in generated types
-    supabase
+    (supabase as any)
       .from('event_menu_components')
       .select('name, course_type, description, allergen_tags')
       .eq('event_id', eventId)

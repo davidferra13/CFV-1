@@ -241,7 +241,8 @@ export async function runScenario(scenario: SimScenario): Promise<PipelineOutput
   }
 
   try {
-    const response = await ollama.chat({
+    // stream: false is passed via `as any` — Ollama returns ChatResponse, not an iterator
+    const response = (await ollama.chat({
       model: config.model,
       messages: [
         { role: 'system', content: prompts.system },
@@ -249,7 +250,7 @@ export async function runScenario(scenario: SimScenario): Promise<PipelineOutput
       ],
       format: 'json',
       think: false,
-    } as any)
+    } as any)) as unknown as { message: { content: string } }
 
     const rawText = response.message.content
     const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/)

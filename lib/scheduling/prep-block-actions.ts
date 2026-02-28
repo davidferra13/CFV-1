@@ -496,9 +496,8 @@ export async function autoPlacePrepBlocks(eventId: string): Promise<{
     // Map suggestions to CreatePrepBlockInput and persist
     const inputs: CreatePrepBlockInput[] = suggestions.map((s) => ({
       event_id: eventId,
-      block_date: s.block_date,
-      start_time: s.start_time ?? undefined,
-      end_time: s.end_time ?? undefined,
+      block_date: s.suggested_date,
+      start_time: s.suggested_start_time ?? undefined,
       block_type: s.block_type,
       title: s.title,
       notes: s.notes ?? undefined,

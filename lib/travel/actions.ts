@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import type {
   TravelLeg,
+  TravelLegType,
   TravelLegWithIngredients,
   TravelPlan,
   NearbyEvent,
@@ -127,12 +128,16 @@ export async function getTravelPlan(eventId: string): Promise<TravelPlan> {
     ingredientsByLeg.set(ing.leg_id, arr)
   }
 
-  const legsWithIngredients: TravelLegWithIngredients[] = (legs ?? []).map((leg) => ({
-    ...leg,
-    stops: (leg.stops as unknown as TravelLeg['stops']) ?? [],
-    linked_event_ids: leg.linked_event_ids ?? [],
-    ingredients: ingredientsByLeg.get(leg.id) ?? [],
-  }))
+  const legsWithIngredients: TravelLegWithIngredients[] = (legs ?? []).map(
+    (leg) =>
+      ({
+        ...leg,
+        leg_type: leg.leg_type as TravelLegType,
+        stops: (leg.stops as unknown as TravelLeg['stops']) ?? [],
+        linked_event_ids: leg.linked_event_ids ?? [],
+        ingredients: ingredientsByLeg.get(leg.id) ?? [],
+      }) as TravelLegWithIngredients
+  )
 
   return {
     eventId,
@@ -167,12 +172,16 @@ export async function getAllTravelLegs(options?: {
   const { data: legs, error } = await query
   if (error) throw new Error(`Failed to fetch travel legs: ${error.message}`)
 
-  return (legs ?? []).map((leg) => ({
-    ...leg,
-    stops: (leg.stops as unknown as TravelLeg['stops']) ?? [],
-    linked_event_ids: leg.linked_event_ids ?? [],
-    ingredients: [],
-  }))
+  return (legs ?? []).map(
+    (leg) =>
+      ({
+        ...leg,
+        leg_type: leg.leg_type as TravelLegType,
+        stops: (leg.stops as unknown as TravelLeg['stops']) ?? [],
+        linked_event_ids: leg.linked_event_ids ?? [],
+        ingredients: [],
+      }) as TravelLegWithIngredients
+  )
 }
 
 // ============================================================
@@ -207,7 +216,8 @@ export async function createTravelLeg(input: CreateTravelLegInput): Promise<Trav
       destination_type: input.destination_type ?? null,
       destination_address: input.destination_address ?? null,
       destination_label: input.destination_label ?? null,
-      stops: stops,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      stops: stops as any,
       total_drive_minutes: totalDriveMinutes,
       total_stop_minutes: totalStopMinutes || null,
       total_estimated_minutes: totalEstimatedMinutes,
@@ -221,9 +231,10 @@ export async function createTravelLeg(input: CreateTravelLegInput): Promise<Trav
 
   return {
     ...data!,
+    leg_type: data!.leg_type as TravelLegType,
     stops: (data!.stops as unknown as TravelLeg['stops']) ?? [],
     linked_event_ids: data!.linked_event_ids ?? [],
-  }
+  } as TravelLeg
 }
 
 // ============================================================
@@ -260,9 +271,10 @@ export async function updateTravelLeg(input: UpdateTravelLegInput): Promise<Trav
 
   return {
     ...data!,
+    leg_type: data!.leg_type as TravelLegType,
     stops: (data!.stops as unknown as TravelLeg['stops']) ?? [],
     linked_event_ids: data!.linked_event_ids ?? [],
-  }
+  } as TravelLeg
 }
 
 // ============================================================
@@ -608,7 +620,8 @@ export async function autoCreateServiceLegs(eventId: string): Promise<void> {
       destination_type: 'venue',
       destination_address: venueAddr || null,
       destination_label: clientName ? `${clientName}'s venue` : 'Service venue',
-      stops: [],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      stops: [] as any,
       total_drive_minutes: event.travel_time_minutes ?? null,
       total_stop_minutes: null,
       total_estimated_minutes: event.travel_time_minutes
@@ -635,7 +648,8 @@ export async function autoCreateServiceLegs(eventId: string): Promise<void> {
       destination_type: 'home',
       destination_address: homeAddr,
       destination_label: 'Home',
-      stops: [],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      stops: [] as any,
       total_drive_minutes: event.travel_time_minutes ?? null,
       total_stop_minutes: null,
       total_estimated_minutes: event.travel_time_minutes ?? null,

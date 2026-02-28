@@ -143,7 +143,8 @@ Do not recommend fixes for modules that are currently passing.`
   let reportContent: string
 
   try {
-    const response = await ollama.chat({
+    // stream: false is passed via `as any` — Ollama returns ChatResponse, not an iterator
+    const response = (await ollama.chat({
       model,
       messages: [
         { role: 'system', content: systemPrompt },
@@ -151,7 +152,7 @@ Do not recommend fixes for modules that are currently passing.`
       ],
       options: { temperature: 0.3 },
       think: false,
-    } as any)
+    } as any)) as unknown as { message: { content: string } }
 
     reportContent = response.message.content.trim()
   } catch (err) {

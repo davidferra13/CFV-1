@@ -52,8 +52,7 @@ export async function getMenuNutritionalSummary(eventId: string): Promise<MenuNu
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    // @ts-expect-error event_menu_components not yet in generated types
-    supabase
+    (supabase as any)
       .from('event_menu_components')
       .select(
         `

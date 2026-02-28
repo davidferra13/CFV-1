@@ -53,8 +53,7 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
 
   // Gather AAR client feedback and positive messages
   const [aarResult, messagesResult, surveysResult] = await Promise.all([
-    // @ts-expect-error aars table not yet in generated types
-    supabase
+    (supabase as any)
       .from('aars')
       .select(
         `
@@ -77,8 +76,7 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
       .eq('tenant_id', user.tenantId!)
       .eq('direction', 'inbound')
       .limit(50),
-    // @ts-expect-error client_surveys table not yet in generated types
-    supabase
+    (supabase as any)
       .from('client_surveys')
       .select(
         `

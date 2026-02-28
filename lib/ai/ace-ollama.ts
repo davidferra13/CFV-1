@@ -61,7 +61,7 @@ async function generateText(
         },
         keep_alive: '5m',
         think: false,
-      } as any) as Promise<ChatResponse>,
+      } as any) as unknown as Promise<ChatResponse>,
       DEFAULT_TIMEOUT_MS,
       'ace-draft'
     )

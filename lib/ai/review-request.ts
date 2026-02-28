@@ -53,8 +53,7 @@ export async function draftReviewRequest(eventId: string): Promise<ReviewRequest
   const firstName = clientName.split(' ')[0]
 
   // Get event highlights (menu)
-  // @ts-expect-error event_menu_components not yet in generated types
-  const menuResult = await supabase
+  const menuResult = await (supabase as any)
     .from('event_menu_components')
     .select('name, course_type')
     .eq('event_id', eventId)

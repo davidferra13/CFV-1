@@ -61,8 +61,7 @@ export async function generateServiceTimeline(eventId: string): Promise<ServiceT
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    // @ts-expect-error event_menu_components not yet in generated types
-    supabase
+    (supabase as any)
       .from('event_menu_components')
       .select('name, course_type, description, prep_time_minutes, cook_time_minutes')
       .eq('event_id', eventId),

@@ -187,7 +187,8 @@ export async function evaluateOutput(
   const prompt = buildEvaluatorPrompt(scenario, rawOutput)
 
   try {
-    const response = await ollama.chat({
+    // stream: false is passed via `as any` — Ollama returns ChatResponse, not an iterator
+    const response = (await ollama.chat({
       model: config.model,
       messages: [
         { role: 'system', content: prompt.system },
@@ -195,7 +196,7 @@ export async function evaluateOutput(
       ],
       format: 'json',
       think: false,
-    } as any)
+    } as any)) as unknown as { message: { content: string } }
 
     const rawText = response.message.content
     const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/)
