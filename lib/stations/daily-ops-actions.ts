@@ -69,7 +69,7 @@ export type DailyOpsData = {
 
 export async function getDailyOpsData(): Promise<DailyOpsData> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const today = new Date().toISOString().split('T')[0]
   const chefId = user.tenantId!
 

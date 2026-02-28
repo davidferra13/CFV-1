@@ -97,7 +97,7 @@ export async function issueAdminCredit(params: {
   }
 
   const admin = await requireAdmin()
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { error } = await supabase.from('ledger_entries').insert({
     tenant_id: chefId,

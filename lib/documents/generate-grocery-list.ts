@@ -93,7 +93,7 @@ const STOP_2_CATEGORIES = new Set(['alcohol'])
 
 export async function fetchGroceryListData(eventId: string): Promise<GroceryListData | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Event + client
   const { data: event } = await supabase

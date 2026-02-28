@@ -367,6 +367,7 @@ export function RaffleGameModal({ roundId, onClose, onEntryEarned }: Props) {
     }
 
     function draw() {
+      if (!ctx) return
       const state = stateRef.current
 
       const gradient = ctx.createLinearGradient(0, 0, SIZE, SIZE)

@@ -23,7 +23,7 @@ export type AddCompInput = z.infer<typeof AddCompSchema>
 
 export async function addComp(input: AddCompInput) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const data = AddCompSchema.parse(input)
 
   const { data: comp, error } = await supabase
@@ -49,7 +49,7 @@ export async function addComp(input: AddCompInput) {
 
 export async function redeemComp(compId: string, redeemedBy?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: comp, error } = await supabase
     .from('guest_comps')
@@ -75,7 +75,7 @@ export async function redeemComp(compId: string, redeemedBy?: string) {
 
 export async function listActiveComps(guestId?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let q = supabase
     .from('guest_comps')
@@ -100,7 +100,7 @@ export async function listActiveComps(guestId?: string) {
 
 export async function listAllComps(guestId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('guest_comps')

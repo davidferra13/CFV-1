@@ -173,7 +173,7 @@ export async function runHistoricalScanBatch(
 // ─── Process a Single Historical Message ─────────────────────────────────────
 
 async function processHistoricalMessage(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   accessToken: string,
   messageId: string,
   chefId: string,
@@ -280,7 +280,7 @@ async function processHistoricalMessage(
 // ─── Log Scan Entry in gmail_sync_log ─────────────────────────────────────────
 
 async function logScanEntry(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   messageId: string,
   email: {

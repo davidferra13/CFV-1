@@ -8,7 +8,7 @@ import { randomUUID } from 'crypto'
 export async function getOrCreateAlcoholLog(eventId: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: existing, error: fetchError } = await supabase
     .from('event_alcohol_logs')
@@ -49,7 +49,7 @@ export async function addAlcoholLogEntry(
 ) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: log, error: fetchError } = await supabase
     .from('event_alcohol_logs')
@@ -97,7 +97,7 @@ export async function addAlcoholLogEntry(
 export async function setLastCall(logId: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: log, error: fetchError } = await supabase
     .from('event_alcohol_logs')
@@ -129,7 +129,7 @@ export async function setLastCall(logId: string) {
 export async function updateLogNotes(logId: string, notes: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: log, error: fetchError } = await supabase
     .from('event_alcohol_logs')

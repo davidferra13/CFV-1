@@ -12,7 +12,7 @@ import { log } from '@/lib/logger'
  */
 export async function getEventFinancialSummary(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('event_financial_summary')
@@ -47,7 +47,7 @@ export async function getEventFinancialSummary(eventId: string) {
  */
 export async function getTenantFinancialSummary() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: entries, error } = await supabase
     .from('ledger_entries')
@@ -90,7 +90,7 @@ export async function getTenantFinancialSummary() {
  */
 export async function getYtdCarryForwardSavings() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const yearStart = `${new Date().getFullYear()}-01-01`
 
@@ -115,7 +115,7 @@ export async function getYtdCarryForwardSavings() {
  */
 export async function computeProfitAndLoss(year: number) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const startDate = `${year}-01-01`
   const endDate = `${year}-12-31`

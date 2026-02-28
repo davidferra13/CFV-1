@@ -92,7 +92,7 @@ Rules:
 export async function generateDailyDrafts(): Promise<GeneratedDraft[]> {
   try {
     const user = await requireChef()
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
     const todayStr = new Date().toISOString().split('T')[0]
 
     // Check for existing drafts today — don't regenerate
@@ -150,7 +150,7 @@ export async function generateDailyDrafts(): Promise<GeneratedDraft[]> {
  */
 export async function approveDraft(draftId: string): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('daily_plan_drafts')
@@ -171,7 +171,7 @@ export async function approveDraft(draftId: string): Promise<{ success: boolean 
  */
 export async function dismissDraft(draftId: string): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('daily_plan_drafts')

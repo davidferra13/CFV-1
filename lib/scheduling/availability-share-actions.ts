@@ -28,7 +28,7 @@ export async function generateShareToken(
   label?: string
 ): Promise<{ success: boolean; token?: string }> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Generate a 32-char hex token server-side using Node crypto
   const { randomBytes } = await import('crypto')
@@ -58,7 +58,7 @@ export async function generateShareToken(
 
 export async function revokeShareToken(id: string): Promise<{ success: boolean }> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('chef_availability_share_tokens' as any)
@@ -79,7 +79,7 @@ export async function revokeShareToken(id: string): Promise<{ success: boolean }
 
 export async function getShareTokens(): Promise<ShareToken[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_availability_share_tokens' as any)
@@ -117,7 +117,7 @@ export async function getSharedAvailability(token: string): Promise<{
   chefDisplayName?: string
 }> {
   // Use admin client to bypass RLS for token validation (public read)
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Validate token
   const { data: tokenRow, error: tokenError } = await supabase
@@ -165,7 +165,7 @@ export async function getSharedAvailability(token: string): Promise<{
 
   // Fetch protected blocks in the window
   const { data: protectedBlocks } = await supabase
-    .from('event_prep_blocks')
+    .from('event_prep_blocks' as any)
     .select('block_date')
     .eq('chef_id', tenantId)
     .in('block_type', ['protected_personal', 'rest'])

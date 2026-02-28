@@ -125,7 +125,7 @@ export type EventSummaryData = {
 // ─── Data Fetcher ─────────────────────────────────────────────────────────────
 export async function fetchEventSummaryData(eventId: string): Promise<EventSummaryData | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Core event + client
   const { data: event } = await supabase

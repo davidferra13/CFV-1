@@ -43,7 +43,7 @@ export type MarkReceivedInput = z.infer<typeof MarkReceivedSchema>
 export async function createOrderRequest(input: CreateOrderRequestInput) {
   const user = await requireChef()
   const validated = CreateOrderRequestSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('order_requests')
@@ -74,7 +74,7 @@ export async function createOrderRequest(input: CreateOrderRequestInput) {
  */
 export async function listPendingOrders() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('order_requests')
@@ -146,7 +146,7 @@ export async function listPendingOrders() {
  */
 export async function listStationOrders(stationId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('order_requests')
@@ -174,7 +174,7 @@ export async function listStationOrders(stationId: string) {
 export async function markOrderAsOrdered(ids: string[]) {
   const user = await requireChef()
   const validated = MarkOrderedSchema.parse({ ids })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('order_requests')
@@ -199,7 +199,7 @@ export async function markOrderAsOrdered(ids: string[]) {
 export async function markOrderAsReceived(ids: string[], fulfilledAt?: string) {
   const user = await requireChef()
   const validated = MarkReceivedSchema.parse({ ids, fulfilled_at: fulfilledAt })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('order_requests')
@@ -223,7 +223,7 @@ export async function markOrderAsReceived(ids: string[], fulfilledAt?: string) {
  */
 export async function getOrderHistory(startDate: string, endDate: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('order_requests')

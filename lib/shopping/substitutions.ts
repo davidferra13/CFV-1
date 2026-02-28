@@ -38,7 +38,7 @@ export type LogSubstitutionInput = z.infer<typeof LogSubstitutionSchema>
 export async function logSubstitution(input: LogSubstitutionInput) {
   const user = await requireChef()
   const validated = LogSubstitutionSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('shopping_substitutions')
@@ -63,7 +63,7 @@ export async function logSubstitution(input: LogSubstitutionInput) {
  */
 export async function getSubstitutions(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('shopping_substitutions')
@@ -85,7 +85,7 @@ export async function getSubstitutions(eventId: string) {
  */
 export async function deleteSubstitution(id: string, eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('shopping_substitutions')
@@ -108,7 +108,7 @@ export async function deleteSubstitution(id: string, eventId: string) {
  */
 export async function getSubstitutionHistory(ingredientName: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('shopping_substitutions')
@@ -136,7 +136,7 @@ export async function getSubstitutionHistory(ingredientName: string) {
  */
 export async function getCommonSubstitutions() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('shopping_substitutions')

@@ -26,7 +26,7 @@ export type OutstandingBalanceEvent = {
  */
 export async function getEventsWithOutstandingBalances(): Promise<OutstandingBalanceEvent[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('event_financial_summary')
@@ -70,7 +70,7 @@ export async function checkAndFirePaymentReminders(tenantId?: string): Promise<{
     recipientId = user.id
   }
 
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Look up chef's user ID if not already known (needed for notification recipient)
   if (!recipientId) {

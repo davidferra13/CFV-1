@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: '1099 Contractors - ChefFlow' }
 
 export default async function ContractorsPage() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const currentYear = new Date().getFullYear()
 
   const [summary, payments, staffResult] = await Promise.all([

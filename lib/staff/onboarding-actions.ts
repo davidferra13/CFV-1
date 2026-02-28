@@ -36,7 +36,7 @@ export async function getOrCreateOnboardingChecklist(
 ): Promise<OnboardingItem[]> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: existing, error: fetchError } = await supabase
     .from('staff_onboarding_items')
@@ -82,7 +82,7 @@ export async function updateOnboardingItem(
 ): Promise<void> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const completedAt = status === 'complete' ? new Date().toISOString() : null
 
@@ -110,7 +110,7 @@ export async function updateOnboardingItem(
 export async function getOnboardingStatus(staffMemberId: string): Promise<OnboardingStatusSummary> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('staff_onboarding_items')

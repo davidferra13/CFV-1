@@ -18,7 +18,7 @@ export interface MileageEntry {
 
 export async function getMileageLogs(eventId?: string): Promise<MileageEntry[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('mileage_logs' as any)
@@ -50,7 +50,7 @@ export async function getYtdMileageSummary(): Promise<{
   totalDeductionCents: number
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const year = new Date().getFullYear()
 
@@ -73,7 +73,7 @@ export async function getYtdMileageSummary(): Promise<{
 
 export async function addMileageEntry(formData: FormData): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const eventId = (formData.get('eventId') as string) || null
   const tripDate = formData.get('tripDate') as string
@@ -96,7 +96,7 @@ export async function addMileageEntry(formData: FormData): Promise<void> {
 
 export async function deleteMileageEntry(id: string, eventId?: string | null): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase
     .from('mileage_logs' as any)

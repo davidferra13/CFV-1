@@ -79,7 +79,7 @@ export type EditorContext = {
 
 export async function getEditorContext(menuId: string): Promise<EditorContext | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Menu with dishes
   const { data: menu, error: menuErr } = await supabase
@@ -235,7 +235,7 @@ export async function updateMenuMeta(
   }
 ) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('menus')
@@ -272,7 +272,7 @@ export async function updateDishEditorContent(
   }
 ) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('dishes')
@@ -300,7 +300,7 @@ export async function addEditorCourse(
   }
 ) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: dish, error } = (await supabase
     .from('dishes')
@@ -349,7 +349,7 @@ export async function addEditorCourse(
 
 export async function deleteEditorCourse(dishId: string, menuId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('dishes')
@@ -373,7 +373,7 @@ export async function reorderEditorCourse(
   direction: 'up' | 'down'
 ) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: dishes } = await supabase
     .from('dishes')

@@ -34,7 +34,7 @@ const CreateRuleSchema = z.object({
 export async function createAutomationRule(input: z.infer<typeof CreateRuleSchema>) {
   const user = await requireChef()
   const validated = CreateRuleSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('automation_rules' as any)
@@ -67,7 +67,7 @@ export async function updateAutomationRule(
   input: Partial<z.infer<typeof CreateRuleSchema>>
 ) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('automation_rules' as any)
@@ -90,7 +90,7 @@ export async function updateAutomationRule(
 
 export async function toggleAutomationRule(ruleId: string, isActive: boolean) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('automation_rules' as any)
@@ -110,7 +110,7 @@ export async function toggleAutomationRule(ruleId: string, isActive: boolean) {
 
 export async function deleteAutomationRule(ruleId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('automation_rules' as any)
@@ -130,7 +130,7 @@ export async function deleteAutomationRule(ruleId: string) {
 
 export async function getAutomationRules(): Promise<AutomationRule[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('automation_rules' as any)
@@ -151,7 +151,7 @@ export async function getAutomationRules(): Promise<AutomationRule[]> {
 
 export async function getTemplatesForAutomations(): Promise<{ id: string; name: string }[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('response_templates')
@@ -175,7 +175,7 @@ export async function getAutomationExecutions(options?: {
   limit?: number
 }): Promise<AutomationExecution[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('automation_executions' as any)

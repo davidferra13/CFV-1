@@ -38,7 +38,7 @@ export async function quickCaptureReceipt(
   formData: FormData
 ): Promise<QuickCaptureResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify the event belongs to this chef
   const { data: event } = await supabase

@@ -26,7 +26,7 @@ export interface ChefEventTypeLabel {
  */
 export async function getEventLabels(): Promise<ChefEventTypeLabel[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_event_type_labels' as any)
@@ -52,7 +52,7 @@ export async function upsertEventLabel(
   if (!customLabel.trim()) throw new Error('customLabel is required')
 
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // If the custom label is the same as the default, remove the override
   if (customLabel.trim() === defaultLabel.trim()) {
@@ -87,7 +87,7 @@ export async function upsertEventLabel(
  */
 export async function resetEventLabel(id: string): Promise<void> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('chef_event_type_labels' as any)

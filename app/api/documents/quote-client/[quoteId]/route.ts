@@ -13,7 +13,7 @@ async function fetchQuoteDataForClient(
   quoteId: string,
   entityId: string
 ): Promise<QuoteDocumentData | null> {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify client owns this quote
   const { data: quote } = await supabase

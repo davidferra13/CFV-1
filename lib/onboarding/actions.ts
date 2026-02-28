@@ -13,7 +13,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
  */
 export async function checkSlugAvailability(slug: string): Promise<boolean> {
   const user = await requireChef()
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data } = await supabase
     .from('chefs')

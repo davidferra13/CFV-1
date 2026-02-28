@@ -38,7 +38,7 @@ export type RequestRevisionInput = z.infer<typeof RequestRevisionSchema>
  */
 export async function sendMenuForApproval(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Load event + client + linked menus
   const { data: event, error: eventError } = await supabase
@@ -145,7 +145,7 @@ export async function sendMenuForApproval(eventId: string) {
  */
 export async function getMenuApprovalStatus(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')
@@ -175,7 +175,7 @@ export async function getMenuApprovalStatus(eventId: string) {
  */
 export async function approveMenu(requestId: string) {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: request } = await supabase
     .from('menu_approval_requests')
@@ -262,7 +262,7 @@ export async function approveMenu(requestId: string) {
 export async function requestMenuRevision(input: RequestRevisionInput) {
   const user = await requireClient()
   const validated = RequestRevisionSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: request } = await supabase
     .from('menu_approval_requests')
@@ -350,7 +350,7 @@ export async function requestMenuRevision(input: RequestRevisionInput) {
  */
 export async function getClientMenuApprovalRequest(requestId: string) {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = (await supabase
     .from('menu_approval_requests')

@@ -22,7 +22,7 @@ export async function buildDailyQueue(
 ): Promise<Prospect[]> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Smart queue priority:
   //   1. Follow-ups that are due (overdue first)
@@ -134,7 +134,7 @@ export async function logProspectCall(
 ) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get prospect data
   const { data: prospect, error: fetchError } = await supabase
@@ -226,7 +226,7 @@ export async function logProspectCall(
 export async function convertProspectToInquiry(prospectId: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: prospect, error: fetchError } = await supabase
     .from('prospects')

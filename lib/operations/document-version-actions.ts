@@ -68,7 +68,7 @@ function mapDocumentVersion(row: any): DocumentVersion {
 export async function saveDocumentVersion(input: SaveDocumentVersionInput) {
   const user = await requireChef()
   const validated = SaveDocumentVersionSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Find the current highest version number for this entity
   const { data: existing } = await supabase
@@ -119,7 +119,7 @@ export async function getDocumentVersions(
   entityId: string
 ): Promise<DocumentVersion[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('document_versions')
@@ -143,7 +143,7 @@ export async function getDocumentVersions(
  */
 export async function revertToVersion(versionId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch the version to revert to
   const { data: oldVersion, error: fetchError } = await supabase

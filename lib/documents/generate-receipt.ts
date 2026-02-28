@@ -51,7 +51,7 @@ function money(cents: number) {
 
 export async function fetchReceiptData(eventId: string): Promise<ReceiptData> {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')
@@ -216,7 +216,7 @@ import { requireChef } from '@/lib/auth/get-user'
  */
 export async function fetchReceiptDataForChef(eventId: string): Promise<ReceiptData> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')

@@ -18,7 +18,7 @@ const PlannedTaskSchema = z.object({
   taskType: z.string(),
   tier: z.union([z.literal(1), z.literal(2), z.literal(3)]),
   confidence: z.number().min(0).max(1),
-  inputs: z.record(z.unknown()),
+  inputs: z.record(z.string(), z.unknown()),
   dependsOn: z.array(z.string()).default([]),
   holdReason: z.string().optional(),
 })

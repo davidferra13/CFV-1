@@ -87,7 +87,7 @@ export async function createRecurringInvoice(
 ): Promise<RecurringInvoice> {
   const user = await requireChef()
   const parsed = CreateSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('recurring_invoices')
@@ -116,7 +116,7 @@ export async function updateRecurringInvoice(
 ): Promise<RecurringInvoice> {
   const user = await requireChef()
   const parsed = UpdateSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updates: Record<string, any> = {}
   if (parsed.frequency !== undefined) updates.frequency = parsed.frequency
@@ -142,7 +142,7 @@ export async function updateRecurringInvoice(
 
 export async function pauseRecurringInvoice(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('recurring_invoices')
@@ -156,7 +156,7 @@ export async function pauseRecurringInvoice(id: string): Promise<void> {
 
 export async function getRecurringInvoices(activeOnly = true): Promise<RecurringInvoice[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('recurring_invoices')
@@ -177,7 +177,7 @@ export async function processRecurringInvoices(): Promise<{
   errors: string[]
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const today = new Date().toISOString().split('T')[0]
 
   // Get all active recurring invoices due today or earlier

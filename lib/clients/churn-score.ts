@@ -13,7 +13,7 @@ export interface ChurnRisk {
 
 export async function getAtRiskClients(): Promise<ChurnRisk[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: clients } = await supabase
     .from('clients')

@@ -39,7 +39,7 @@ function calcChange(
 
 export async function getYoYData(): Promise<YoYData> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const now = new Date()
   const currentYear = now.getFullYear()

@@ -21,8 +21,10 @@ async function refreshGoogleToken(refreshToken: string): Promise<string | null> 
   return access_token ?? null
 }
 
-async function syncGoogleReviews(chefId: string): Promise<{ ok: boolean; error?: string; reviewsImported?: number }> {
-  const supabase = createAdminClient()
+async function syncGoogleReviews(
+  chefId: string
+): Promise<{ ok: boolean; error?: string; reviewsImported?: number }> {
+  const supabase: any = createAdminClient()
 
   // Get stored credentials
   const { data: cred } = await supabase
@@ -79,10 +81,9 @@ async function syncGoogleReviews(chefId: string): Promise<{ ok: boolean; error?:
   if (!source) return { ok: false, error: 'Could not create review source' }
 
   // Fetch locations from Google My Business API
-  const locRes = await fetch(
-    'https://mybusinessaccountmanagement.googleapis.com/v1/accounts',
-    { headers: { Authorization: `Bearer ${token}` } },
-  )
+  const locRes = await fetch('https://mybusinessaccountmanagement.googleapis.com/v1/accounts', {
+    headers: { Authorization: `Bearer ${token}` },
+  })
 
   if (!locRes.ok) return { ok: false, error: `GMB API error: ${locRes.status}` }
 
@@ -93,7 +94,7 @@ async function syncGoogleReviews(chefId: string): Promise<{ ok: boolean; error?:
   // Get reviews for first account/location
   const reviewsRes = await fetch(
     `https://mybusiness.googleapis.com/v4/${accountName}/locations/-/reviews?pageSize=50`,
-    { headers: { Authorization: `Bearer ${token}` } },
+    { headers: { Authorization: `Bearer ${token}` } }
   )
 
   if (!reviewsRes.ok) return { ok: false, error: `Reviews API error: ${reviewsRes.status}` }
@@ -104,13 +105,16 @@ async function syncGoogleReviews(chefId: string): Promise<{ ok: boolean; error?:
   let imported = 0
   for (const review of reviews) {
     const ratingMap: Record<string, number> = {
-      ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5,
+      ONE: 1,
+      TWO: 2,
+      THREE: 3,
+      FOUR: 4,
+      FIVE: 5,
     }
     const rating = ratingMap[review.starRating] ?? null
 
-    const { error } = await supabase
-      .from('external_reviews')
-      .upsert({
+    const { error } = await supabase.from('external_reviews').upsert(
+      {
         tenant_id: chefId,
         source_id: source.id,
         provider: 'google_places',
@@ -122,7 +126,9 @@ async function syncGoogleReviews(chefId: string): Promise<{ ok: boolean; error?:
         review_date: review.createTime?.slice(0, 10) ?? null,
         raw_payload: review,
         last_seen_at: new Date().toISOString(),
-      }, { onConflict: 'tenant_id,provider,source_review_id' })
+      },
+      { onConflict: 'tenant_id,provider,source_review_id' }
+    )
 
     if (!error) imported++
   }

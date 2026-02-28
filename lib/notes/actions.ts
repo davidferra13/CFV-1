@@ -56,7 +56,7 @@ const UpdateNoteSchema = z.object({
 export async function addClientNote(input: z.infer<typeof AddNoteSchema>) {
   const user = await requireChef()
   const validated = AddNoteSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('client_notes')
@@ -108,7 +108,7 @@ export async function addClientNote(input: z.infer<typeof AddNoteSchema>) {
 export async function updateClientNote(noteId: string, input: z.infer<typeof UpdateNoteSchema>) {
   const user = await requireChef()
   const validated = UpdateNoteSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('client_notes')
@@ -131,7 +131,7 @@ export async function updateClientNote(noteId: string, input: z.infer<typeof Upd
  */
 export async function deleteClientNote(noteId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('client_notes')
@@ -152,7 +152,7 @@ export async function deleteClientNote(noteId: string) {
  */
 export async function toggleNotePin(noteId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get current pin state
   const { data: existing, error: fetchError } = await supabase
@@ -193,7 +193,7 @@ export async function getClientNotes(
   }
 ): Promise<ClientNote[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('client_notes')

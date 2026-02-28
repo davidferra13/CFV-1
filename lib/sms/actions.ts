@@ -31,7 +31,7 @@ export async function sendSmsToClient(input: {
   eventId?: string
 }): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify client belongs to chef
   const { data: client } = await supabase
@@ -74,7 +74,7 @@ export async function sendWhatsAppToClient(input: {
   eventId?: string
 }): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify client belongs to chef
   const { data: client } = await supabase

@@ -18,7 +18,7 @@ import { revalidatePath } from 'next/cache'
 export async function getClientEvents(options?: { pastLimit?: number }) {
   const pastLimit = options?.pastLimit ?? 5
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events, error } = await supabase
     .from('events')
@@ -62,7 +62,7 @@ export async function getClientEvents(options?: { pastLimit?: number }) {
  */
 export async function getClientEventById(eventId: string) {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event with client data
   const { data: event, error } = await supabase
@@ -179,7 +179,7 @@ export async function cancelEventAsClient(eventId: string, reason: string) {
     throw new Error('Cancellation reason is required')
   }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')
@@ -222,7 +222,7 @@ export async function requestCancellationViaChat(eventId: string, reason: string
     throw new Error('Cancellation reason is required')
   }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')

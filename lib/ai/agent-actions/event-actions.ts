@@ -221,7 +221,7 @@ export const eventAgentActions: AgentActionDefinition[] = [
       const parsed = await parseEventUpdateFromNL(description)
 
       // Find the event by searching events
-      const supabase = createServerClient()
+      const supabase: any = createServerClient()
       const { data: events } = await supabase
         .from('events')
         .select('id, occasion, event_date, status, guest_count, client:clients(full_name)')
@@ -322,7 +322,7 @@ export const eventAgentActions: AgentActionDefinition[] = [
       const identifier = String(inputs.eventIdentifier ?? '').toLowerCase()
       const toStatus = String(inputs.toStatus ?? '')
 
-      const supabase = createServerClient()
+      const supabase: any = createServerClient()
       const { data: events } = await supabase
         .from('events')
         .select('id, occasion, event_date, status, client:clients(full_name)')

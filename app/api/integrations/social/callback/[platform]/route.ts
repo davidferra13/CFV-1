@@ -118,7 +118,7 @@ export async function GET(request: NextRequest, { params }: { params: { platform
     return failRedirect('Session expired — please try again')
   }
 
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Validate CSRF state
   const { data: stateRow } = await supabase

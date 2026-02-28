@@ -86,7 +86,7 @@ function inferEventType(occasion?: string | null, theme?: string | null): FrontO
 
 async function fetchMenuData(menuId: string): Promise<FrontOfHouseMenuData> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: menu, error: menuError } = await supabase
     .from('menus')
@@ -169,7 +169,7 @@ async function getTemplate(
   theme: string | null
 ): Promise<MenuTemplateDefinition> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const templatesTable = (supabase as any).from('menu_templates')
 
   if (templateId) {

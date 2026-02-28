@@ -24,7 +24,7 @@ interface Props {
 
 export default async function DopMobilePage({ params }: Props) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event basics for the header
   const { data: event } = await supabase

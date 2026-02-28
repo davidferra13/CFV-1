@@ -559,7 +559,7 @@ async function handlePiTest(): Promise<Response> {
   try {
     const chatStart = Date.now()
     const ollama = new Ollama({ host: piUrl })
-    const res = await ollama.chat({
+    const res = await (ollama.chat({
       model: piModel,
       messages: [
         { role: 'system', content: 'You are a helpful assistant. Respond in one sentence.' },
@@ -567,7 +567,7 @@ async function handlePiTest(): Promise<Response> {
       ],
       options: { num_predict: 64 },
       keep_alive: '5m',
-    })
+    }) as any)
     modelResponse = res.message?.content ?? '(no response)'
     chatMs = Date.now() - chatStart
   } catch (err) {
@@ -1378,7 +1378,7 @@ export async function POST(req: NextRequest) {
             // Try primary endpoint, failover if connection fails before any tokens
             try {
               const mixedOllama = new Ollama({ host: mixedEndpoint.host })
-              const response = await mixedOllama.chat({
+              const response: any = await mixedOllama.chat({
                 model: mixedEndpoint.model,
                 messages: [
                   { role: 'system', content: systemPrompt },
@@ -1418,7 +1418,7 @@ export async function POST(req: NextRequest) {
                 'chef'
               )
               const fallbackOllama = new Ollama({ host: fallback.host })
-              const response = await fallbackOllama.chat({
+              const response: any = await fallbackOllama.chat({
                 model: fallback.model,
                 messages: [
                   { role: 'system', content: systemPrompt },
@@ -1546,7 +1546,7 @@ export async function POST(req: NextRequest) {
           // Try primary endpoint, failover to secondary if connection fails
           try {
             const ollama = new Ollama({ host: endpoint.host })
-            const response = await ollama.chat({
+            const response: any = await ollama.chat({
               model: endpoint.model,
               messages: [
                 { role: 'system', content: systemPrompt },
@@ -1586,7 +1586,7 @@ export async function POST(req: NextRequest) {
               'chef'
             )
             const fallbackOllama = new Ollama({ host: fallback.host })
-            const response = await fallbackOllama.chat({
+            const response: any = await fallbackOllama.chat({
               model: fallback.model,
               messages: [
                 { role: 'system', content: systemPrompt },

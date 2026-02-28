@@ -45,7 +45,7 @@ export type CharityMiscItem = {
 
 export async function getCharityEvents(): Promise<CharityEvent[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const orFilter = buildCharityOrFilter([
     'occasion',
@@ -83,7 +83,7 @@ export async function getCharityEvents(): Promise<CharityEvent[]> {
 
 export async function getCharityMenus(): Promise<CharityMenu[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const orFilter = buildCharityOrFilter(['name', 'description', 'notes'])
 
@@ -114,7 +114,7 @@ export async function getCharityMenus(): Promise<CharityMenu[]> {
 
 export async function getCharityFinancials(): Promise<CharityLedgerEntry[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const orFilter = buildCharityOrFilter(['description', 'internal_notes'])
 
@@ -145,7 +145,7 @@ export async function getCharityFinancials(): Promise<CharityLedgerEntry[]> {
 
 export async function getCharityMisc(): Promise<CharityMiscItem[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // All queries are independent — run in parallel
   const [

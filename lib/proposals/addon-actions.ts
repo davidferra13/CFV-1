@@ -48,7 +48,7 @@ export async function createAddon(
 ): Promise<ProposalAddon> {
   const user = await requireChef()
   const parsed = CreateAddonSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('proposal_addons')
@@ -71,7 +71,7 @@ export async function createAddon(
 
 export async function listAddons(): Promise<ProposalAddon[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('proposal_addons')
@@ -90,7 +90,7 @@ export async function updateAddon(
 ): Promise<ProposalAddon> {
   const user = await requireChef()
   const parsed = UpdateAddonSchema.parse(updates)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Build update payload — only include provided fields
   const payload: Record<string, unknown> = {}
@@ -121,7 +121,7 @@ export async function updateAddon(
 
 export async function deleteAddon(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('proposal_addons')
@@ -140,7 +140,7 @@ export async function toggleAddonForQuote(
   enabled: boolean
 ): Promise<AddonToggleResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch the addon to get its price (with tenant check)
   const { data: addon, error } = await supabase

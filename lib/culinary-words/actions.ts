@@ -59,7 +59,7 @@ export type AddWordInput = z.infer<typeof AddWordSchema>
 /** Get all user-added words for the current chef */
 export async function getUserCulinaryWords(): Promise<UserCulinaryWord[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_culinary_words')
@@ -81,7 +81,7 @@ export async function addCulinaryWord(
 ): Promise<{ success: boolean; word: UserCulinaryWord }> {
   const validated = AddWordSchema.parse(input)
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: row, error } = await supabase
     .from('chef_culinary_words')
@@ -106,7 +106,7 @@ export async function addCulinaryWord(
 /** Remove a user-added word (own words only) */
 export async function removeCulinaryWord(id: string): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('chef_culinary_words')

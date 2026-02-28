@@ -3,7 +3,7 @@ import { extractBearerToken, validateDeviceToken } from '@/lib/devices/token'
 import { hasProAccess } from '@/lib/billing/tier'
 
 type DeviceAuthContext = {
-  supabase: ReturnType<typeof createAdminClient>
+  supabase: any
   device: NonNullable<Awaited<ReturnType<typeof validateDeviceToken>>>
 }
 
@@ -43,7 +43,7 @@ export async function authenticateOrderKioskRequest(request: Request): Promise<D
 }
 
 export async function assertStaffSession(input: {
-  supabase: ReturnType<typeof createAdminClient>
+  supabase: any
   deviceId: string
   requireStaffPin: boolean
   sessionId?: string
@@ -56,13 +56,13 @@ export async function assertStaffSession(input: {
     throw new KioskApiError('Active staff session is required', 401)
   }
 
-  const { data: session, error } = await input.supabase
-    .from('device_sessions')
+  const { data: session, error } = await (input.supabase
+    .from('device_sessions' as any)
     .select('id, staff_member_id, status')
     .eq('id', input.sessionId)
     .eq('device_id', input.deviceId)
     .eq('status', 'active')
-    .single()
+    .single() as any)
 
   if (error || !session) {
     throw new KioskApiError('Staff session not found or expired', 401)
@@ -71,18 +71,15 @@ export async function assertStaffSession(input: {
   return session
 }
 
-export async function getOpenRegisterSession(input: {
-  supabase: ReturnType<typeof createAdminClient>
-  tenantId: string
-}) {
-  const { data: session } = await input.supabase
-    .from('register_sessions')
+export async function getOpenRegisterSession(input: { supabase: any; tenantId: string }) {
+  const { data: session } = await (input.supabase
+    .from('register_sessions' as any)
     .select('id, status, opening_cash_cents')
     .eq('tenant_id', input.tenantId)
     .eq('status', 'open')
     .order('opened_at', { ascending: false })
     .limit(1)
-    .maybeSingle()
+    .maybeSingle() as any)
 
   if (!session) {
     throw new KioskApiError('No open register session. Open a register first.', 409)
@@ -92,15 +89,15 @@ export async function getOpenRegisterSession(input: {
 }
 
 export async function getDrawerSummary(input: {
-  supabase: ReturnType<typeof createAdminClient>
+  supabase: any
   tenantId: string
   registerSessionId: string
 }) {
-  const { data: movements } = await input.supabase
-    .from('cash_drawer_movements')
+  const { data: movements } = await (input.supabase
+    .from('cash_drawer_movements' as any)
     .select('movement_type, amount_cents')
     .eq('tenant_id', input.tenantId)
-    .eq('register_session_id', input.registerSessionId)
+    .eq('register_session_id', input.registerSessionId) as any)
 
   const rows = movements ?? []
   const movementNetCents = rows.reduce((sum: number, row: any) => sum + (row.amount_cents ?? 0), 0)
@@ -122,12 +119,12 @@ export async function getDrawerSummary(input: {
     if (row.movement_type === 'adjustment') breakdown.adjustmentCents += amount
   }
 
-  const { data: session } = await input.supabase
-    .from('register_sessions')
+  const { data: session } = await (input.supabase
+    .from('register_sessions' as any)
     .select('opening_cash_cents, status')
     .eq('id', input.registerSessionId)
     .eq('tenant_id', input.tenantId)
-    .single()
+    .single() as any)
 
   return {
     openingCashCents: (session as any)?.opening_cash_cents ?? 0,

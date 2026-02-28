@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     }
 
     const tokenHash = hashToken(token)
-    const supabase = createAdminClient()
+    const supabase: any = createAdminClient()
 
     const { data: device, error } = await supabase
       .from('devices')

@@ -8,7 +8,7 @@ import { revalidatePath } from 'next/cache'
 export async function saveYelpBusinessId(businessId: string, businessName: string) {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Upsert an integration_connection record for Yelp
   await supabase.from('integration_connections').upsert(
@@ -34,7 +34,7 @@ export async function saveYelpBusinessId(businessId: string, businessName: strin
 export async function removeYelpBusinessId() {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   await supabase
     .from('integration_connections')
@@ -49,7 +49,7 @@ export async function removeYelpBusinessId() {
 export async function getYelpConnection() {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data } = await supabase
     .from('integration_connections')
@@ -70,7 +70,7 @@ export async function getYelpConnection() {
 export async function getYelpReviewCount() {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { count } = await supabase
     .from('external_reviews')
@@ -90,7 +90,7 @@ export async function searchYelpBusinessAction(term: string, location?: string) 
 export async function syncYelpReviewsAction(businessId: string) {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
   const { fetchYelpReviews } = await import('@/lib/integrations/yelp/yelp-sync')
 
   const reviews = await fetchYelpReviews({ business_id: businessId })

@@ -88,7 +88,7 @@ export async function getEventFinancialSummaryFull(
   eventId: string
 ): Promise<EventFinancialSummaryData | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch base event data with financial fields
   const { data: event } = await supabase
@@ -273,7 +273,7 @@ export async function getEventFinancialSummaryFull(
  */
 export async function markFinancialClosed(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch the event date for streak calculation before closing
   const { data: eventRow } = await supabase
@@ -338,7 +338,7 @@ export async function recordTip({
     throw new Error('Tip amount must be a positive integer (cents)')
   }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')
@@ -429,7 +429,7 @@ export type CloseOutData = {
  */
 export async function getEventCloseOutData(eventId: string): Promise<CloseOutData | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event with client name
   const { data: event } = await supabase
@@ -579,7 +579,7 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
  */
 export async function updateMileage(eventId: string, mileageMiles: number) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (mileageMiles < 0) throw new Error('Mileage must be non-negative')
 

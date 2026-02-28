@@ -502,7 +502,7 @@ export const menuEditAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs, ctx) {
       const identifier = String(inputs.eventIdentifier ?? inputs.description ?? '').toLowerCase()
-      const supabase = createServerClient()
+      const supabase: any = createServerClient()
       const { data: events } = await supabase
         .from('events')
         .select('id, occasion, client:clients(full_name)')

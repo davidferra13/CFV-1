@@ -52,7 +52,7 @@ export type UpdateVendorInput = z.infer<typeof UpdateVendorSchema>
 
 export async function createVendor(input: VendorInput | CreateVendorInput) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: vendor, error } = await supabase
     .from('vendors')
@@ -82,7 +82,7 @@ export async function createVendor(input: VendorInput | CreateVendorInput) {
 
 export async function updateVendor(id: string, input: UpdateVendorInput) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const data = UpdateVendorSchema.parse(input)
 
   const updateData: Record<string, unknown> = {}
@@ -112,7 +112,7 @@ export async function updateVendor(id: string, input: UpdateVendorInput) {
 
 export async function deactivateVendor(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('vendors')
@@ -130,7 +130,7 @@ export async function deactivateVendor(id: string) {
 
 export async function listVendors(activeOnly = true) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let q = supabase
     .from('vendors')
@@ -154,7 +154,7 @@ export async function listVendors(activeOnly = true) {
 
 export async function getVendor(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: vendor, error } = await supabase
     .from('vendors')
@@ -181,7 +181,7 @@ export async function getVendor(id: string) {
 
 export async function deleteVendor(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('vendors')
@@ -199,7 +199,7 @@ export async function deleteVendor(id: string) {
 
 export async function setVendorPreferred(id: string, preferred: boolean) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('vendors')

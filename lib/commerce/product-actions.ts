@@ -42,13 +42,13 @@ export type UpdateProductInput = Partial<CreateProductInput> & { id: string }
 export async function createProduct(input: CreateProductInput) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!Number.isInteger(input.priceCents) || input.priceCents < 0) {
     throw new Error('Price must be a non-negative integer (cents)')
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('product_projections')
     .insert({
       tenant_id: user.tenantId!,
@@ -72,7 +72,7 @@ export async function createProduct(input: CreateProductInput) {
       menu_id: input.menuId ?? null,
     } as any)
     .select('id')
-    .single()
+    .single() as any)
 
   if (error) throw new Error(`Failed to create product: ${error.message}`)
 
@@ -85,7 +85,7 @@ export async function createProduct(input: CreateProductInput) {
 export async function updateProduct(input: UpdateProductInput) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updates: Record<string, any> = {}
   if (input.name !== undefined) updates.name = input.name
@@ -112,11 +112,11 @@ export async function updateProduct(input: UpdateProductInput) {
 
   if (Object.keys(updates).length === 0) return
 
-  const { error } = await supabase
+  const { error } = await (supabase
     .from('product_projections')
-    .update(updates)
+    .update(updates as any)
     .eq('id', input.id)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!) as any)
 
   if (error) throw new Error(`Failed to update product: ${error.message}`)
 
@@ -128,13 +128,13 @@ export async function updateProduct(input: UpdateProductInput) {
 export async function toggleProductActive(productId: string, isActive: boolean) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await (supabase
     .from('product_projections')
     .update({ is_active: isActive } as any)
     .eq('id', productId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!) as any)
 
   if (error) throw new Error(`Failed to toggle product: ${error.message}`)
 
@@ -152,14 +152,14 @@ export async function listProducts(filters?: {
 }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('product_projections')
     .select('*', { count: 'exact' })
     .eq('tenant_id', user.tenantId!)
     .order('sort_order', { ascending: true })
-    .order('name', { ascending: true })
+    .order('name', { ascending: true }) as any
 
   if (filters?.activeOnly !== false) {
     query = query.eq('is_active', true)
@@ -186,14 +186,14 @@ export async function listProducts(filters?: {
 export async function getProduct(productId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('product_projections')
     .select('*')
     .eq('id', productId)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
   if (error) throw new Error(`Product not found: ${error.message}`)
   return data
@@ -213,25 +213,25 @@ export async function snapshotProductFromRecipe(input: {
 }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch recipe details
-  const { data: recipe, error: recipeErr } = await supabase
+  const { data: recipe, error: recipeErr } = await (supabase
     .from('recipes')
     .select('id, name, category, allergen_flags, dietary_tags')
     .eq('id', input.recipeId)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
   if (recipeErr || !recipe) throw new Error('Recipe not found')
 
   // Fetch recipe cost from view (if available)
   let costCents: number | null = null
-  const { data: costData } = await supabase
+  const { data: costData } = await (supabase
     .from('recipe_cost_summary' as any)
     .select('total_cost_cents')
     .eq('recipe_id', input.recipeId)
-    .single()
+    .single() as any)
 
   if (costData) {
     costCents = (costData as any).total_cost_cents

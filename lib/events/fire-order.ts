@@ -100,7 +100,7 @@ const STATION_LABELS: Record<StationType, string> = {
 
 export async function getFireOrder(eventId: string): Promise<FireOrderResult> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event with menu
   const { data: event, error: eventErr } = await supabase
@@ -114,7 +114,7 @@ export async function getFireOrder(eventId: string): Promise<FireOrderResult> {
 
   // Fetch menu sections and items
   const { data: sections } = await supabase
-    .from('menu_sections')
+    .from('menu_sections' as any)
     .select('id, name, position, menu_items(id, name, position)')
     .eq('menu_id', event.menu_id)
     .order('position')

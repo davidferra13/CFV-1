@@ -7,7 +7,7 @@ export default async function TestimonialsPage() {
   const user = await requireChef()
 
   // Fetch testimonials and events in parallel
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const [testimonials, { data: events }] = await Promise.all([
     getTestimonials(),
     supabase

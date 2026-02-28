@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import type { ResumeItem } from './chef-types'
 
-type SupabaseClient = ReturnType<typeof createServerClient>
+type SupabaseClient = any
 
 type EventRow = {
   id: string
@@ -62,7 +62,7 @@ type NoteRow = {
 
 export async function getResumeItems(): Promise<ResumeItem[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const [events, menus, inquiries, quotes, recentNotes] = await Promise.all([

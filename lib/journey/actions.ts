@@ -263,23 +263,23 @@ export type UpdateChefJourneyMediaInput = z.input<typeof JourneyMediaUpdateSchem
 export type CreateChefJourneyRecipeLinkInput = z.input<typeof JourneyRecipeLinkSchema>
 export type UpdateChefJourneyRecipeLinkInput = z.input<typeof JourneyRecipeLinkUpdateSchema>
 
-function fromChefJourneys(supabase: ReturnType<typeof createServerClient>): any {
+function fromChefJourneys(supabase: any): any {
   return supabase.from('chef_journeys')
 }
 
-function fromChefJourneyEntries(supabase: ReturnType<typeof createServerClient>): any {
+function fromChefJourneyEntries(supabase: any): any {
   return supabase.from('chef_journey_entries')
 }
 
-function fromChefJourneyIdeas(supabase: ReturnType<typeof createServerClient>): any {
+function fromChefJourneyIdeas(supabase: any): any {
   return supabase.from('chef_journey_ideas')
 }
 
-function fromChefJournalMedia(supabase: ReturnType<typeof createServerClient>): any {
+function fromChefJournalMedia(supabase: any): any {
   return supabase.from('chef_journal_media')
 }
 
-function fromChefJournalRecipeLinks(supabase: ReturnType<typeof createServerClient>): any {
+function fromChefJournalRecipeLinks(supabase: any): any {
   return supabase.from('chef_journal_recipe_links')
 }
 
@@ -481,7 +481,7 @@ function todayDateString(): string {
 }
 
 async function ensureEntryBelongsToJourney(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   journeyId: string,
   entryId: string
@@ -499,7 +499,7 @@ async function ensureEntryBelongsToJourney(
 }
 
 async function ensureRecipeBelongsToTenant(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   recipeId: string
 ): Promise<void> {
@@ -516,7 +516,7 @@ async function ensureRecipeBelongsToTenant(
 }
 
 async function ensureJourneyBelongsToTenant(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   journeyId: string
 ): Promise<void> {
@@ -544,7 +544,7 @@ function extractChefJournalMediaPath(url: string | null | undefined): string | n
   return decodeURIComponent(encodedPath)
 }
 
-async function ensureChefJournalMediaBucket(supabase: ReturnType<typeof createServerClient>) {
+async function ensureChefJournalMediaBucket(supabase: any) {
   const { error: createError } = await supabase.storage.createBucket(CHEF_JOURNAL_MEDIA_BUCKET, {
     public: true,
     allowedMimeTypes: ALLOWED_JOURNAL_PHOTO_TYPES,
@@ -574,7 +574,7 @@ async function ensureChefJournalMediaBucket(supabase: ReturnType<typeof createSe
 }
 
 async function removeChefJournalMediaObject(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   mediaUrl: string | null | undefined
 ): Promise<void> {
   const storagePath = extractChefJournalMediaPath(mediaUrl)
@@ -593,7 +593,7 @@ export async function getChefJourneys(
   } = {}
 ): Promise<ChefJourneyWithStats[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const limit = Math.max(1, Math.min(250, options.limit ?? 100))
   let query = fromChefJourneys(supabase)
@@ -681,7 +681,7 @@ export async function getChefJourneys(
 
 export async function getChefJourneyById(journeyId: string): Promise<ChefJourney | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await fromChefJourneys(supabase)
     .select('*')
@@ -695,7 +695,7 @@ export async function getChefJourneyById(journeyId: string): Promise<ChefJourney
 
 export async function getChefJourneyEntries(journeyId: string): Promise<ChefJourneyEntry[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await fromChefJourneyEntries(supabase)
     .select('*')
@@ -714,7 +714,7 @@ export async function getChefJourneyEntries(journeyId: string): Promise<ChefJour
 
 export async function getChefJourneyIdeas(journeyId: string): Promise<ChefJourneyIdea[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await fromChefJourneyIdeas(supabase)
     .select('*')
@@ -733,7 +733,7 @@ export async function getChefJourneyIdeas(journeyId: string): Promise<ChefJourne
 
 export async function getChefJourneyMedia(journeyId: string): Promise<ChefJourneyMedia[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await fromChefJournalMedia(supabase)
     .select('*')
@@ -754,7 +754,7 @@ export async function getChefJourneyRecipeLinks(
   journeyId: string
 ): Promise<ChefJourneyRecipeLink[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await fromChefJournalRecipeLinks(supabase)
     .select('*, recipes(name)')
@@ -772,7 +772,7 @@ export async function getChefJourneyRecipeLinks(
 
 export async function getChefJourneyInsights(): Promise<ChefJourneyInsights> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [journeys, entries, ideas, media, recipeLinks] = await Promise.all([
     fromChefJourneys(supabase)
@@ -861,7 +861,7 @@ export async function createChefJourney(
   input: CreateChefJourneyInput
 ): Promise<{ success: true; journey: ChefJourney }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validated = JourneySchema.parse(input)
 
   const payload = {
@@ -919,7 +919,7 @@ export async function updateChefJourney(
   input: UpdateChefJourneyInput
 ): Promise<{ success: true; journey: ChefJourney }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validated = JourneySchema.parse(input)
 
   const updatePayload = {
@@ -980,7 +980,7 @@ export async function updateChefJourney(
 
 export async function deleteChefJourney(journeyId: string): Promise<{ success: true }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: existing } = await fromChefJourneys(supabase)
     .select('id, title')
@@ -1020,7 +1020,7 @@ export async function createChefJourneyEntry(
   input: CreateChefJourneyEntryInput
 ): Promise<{ success: true; entry: ChefJourneyEntry }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validated = JourneyEntrySchema.parse(input)
 
   const payload = {
@@ -1087,7 +1087,7 @@ export async function updateChefJourneyEntry(
   input: UpdateChefJourneyEntryInput
 ): Promise<{ success: true; entry: ChefJourneyEntry }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validated = JourneyEntryUpdateSchema.parse(input)
 
   const { data, error } = await fromChefJourneyEntries(supabase)
@@ -1147,7 +1147,7 @@ export async function updateChefJourneyEntry(
 
 export async function deleteChefJourneyEntry(entryId: string): Promise<{ success: true }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: existing } = await fromChefJourneyEntries(supabase)
     .select('id, journey_id, title')
@@ -1193,7 +1193,7 @@ export async function createChefJourneyIdea(
   input: CreateChefJourneyIdeaInput
 ): Promise<{ success: true; idea: ChefJourneyIdea }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validated = JourneyIdeaSchema.parse(input)
 
   const adoptedOn =
@@ -1259,7 +1259,7 @@ export async function updateChefJourneyIdea(
   input: UpdateChefJourneyIdeaInput
 ): Promise<{ success: true; idea: ChefJourneyIdea }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validated = JourneyIdeaUpdateSchema.parse(input)
 
   const adoptedOn =
@@ -1320,7 +1320,7 @@ export async function updateChefJourneyIdea(
 
 export async function deleteChefJourneyIdea(ideaId: string): Promise<{ success: true }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: existing } = await fromChefJourneyIdeas(supabase)
     .select('id, journey_id, title')
@@ -1418,7 +1418,7 @@ export async function createChefJourneyMedia(
   input: CreateChefJourneyMediaInput
 ): Promise<{ success: true; media: ChefJourneyMedia }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validated = JourneyMediaSchema.parse(input)
 
   if (validated.entry_id) {
@@ -1483,7 +1483,7 @@ export async function updateChefJourneyMedia(
   input: UpdateChefJourneyMediaInput
 ): Promise<{ success: true; media: ChefJourneyMedia }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validated = JourneyMediaUpdateSchema.parse(input)
 
   const { data: existingMedia, error: existingMediaError } = await fromChefJournalMedia(supabase)
@@ -1558,7 +1558,7 @@ export async function updateChefJourneyMedia(
 
 export async function deleteChefJourneyMedia(mediaId: string): Promise<{ success: true }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: existing } = await fromChefJournalMedia(supabase)
     .select('id, journey_id, media_type, media_url')
@@ -1611,7 +1611,7 @@ export async function createChefJourneyRecipeLink(
   input: CreateChefJourneyRecipeLinkInput
 ): Promise<{ success: true; recipeLink: ChefJourneyRecipeLink }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validated = JourneyRecipeLinkSchema.parse(input)
 
   await ensureRecipeBelongsToTenant(supabase, user.tenantId!, validated.recipe_id)
@@ -1676,7 +1676,7 @@ export async function updateChefJourneyRecipeLink(
   input: UpdateChefJourneyRecipeLinkInput
 ): Promise<{ success: true; recipeLink: ChefJourneyRecipeLink }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validated = JourneyRecipeLinkUpdateSchema.parse(input)
 
   const { data: existingRecipeLink, error: existingRecipeLinkError } =
@@ -1749,7 +1749,7 @@ export async function deleteChefJourneyRecipeLink(
   recipeLinkId: string
 ): Promise<{ success: true }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: existing } = await fromChefJournalRecipeLinks(supabase)
     .select('id, journey_id')

@@ -50,7 +50,7 @@ export async function computeBenchmarkSnapshot(): Promise<{
   snapshot: BenchmarkSnapshot
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const today = new Date().toISOString().split('T')[0]
 
   // 1. Average event value: mean total_amount_cents of completed events
@@ -201,7 +201,7 @@ export async function getBenchmarkHistory(months?: number): Promise<BenchmarkSna
   const monthCount = validated.months ?? 6
 
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const cutoffDate = new Date()
   cutoffDate.setMonth(cutoffDate.getMonth() - monthCount)
@@ -238,7 +238,7 @@ export async function getBenchmarkHistory(months?: number): Promise<BenchmarkSna
  */
 export async function getConversionFunnel(): Promise<ConversionFunnel> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const now = new Date()
   const periodStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`

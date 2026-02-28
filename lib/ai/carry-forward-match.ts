@@ -41,12 +41,12 @@ export async function matchCarryForwardToEvent(
   targetEventId: string
 ): Promise<CarryForwardMatchResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [leftovers, recipesResult] = await Promise.all([
     getAvailableCarryForwardItems(targetEventId),
     supabase
-      .from('event_menu_components')
+      .from('event_menu_components' as any)
       .select(
         `
         name,

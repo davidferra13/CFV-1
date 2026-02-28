@@ -16,7 +16,7 @@ import { ALL_MODULE_SLUGS, DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules
  */
 export async function getEnabledModules(): Promise<string[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('chef_preferences')
@@ -46,7 +46,7 @@ export async function updateEnabledModules(modules: string[]): Promise<void> {
     filtered.unshift('dashboard')
   }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { error } = await supabase
     .from('chef_preferences')
     .update({ enabled_modules: filtered } as any)

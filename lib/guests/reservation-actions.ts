@@ -29,7 +29,7 @@ export type UpdateReservationInput = z.infer<typeof UpdateReservationSchema>
 
 export async function createReservation(input: CreateReservationInput) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const data = CreateReservationSchema.parse(input)
 
   const { data: reservation, error } = await supabase
@@ -59,7 +59,7 @@ export async function createReservation(input: CreateReservationInput) {
 
 export async function updateReservation(id: string, input: UpdateReservationInput) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const data = UpdateReservationSchema.parse(input)
 
   const updateData: Record<string, unknown> = {}
@@ -87,7 +87,7 @@ export async function updateReservation(id: string, input: UpdateReservationInpu
 
 export async function cancelReservation(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: reservation, error } = await supabase
     .from('guest_reservations')
@@ -113,7 +113,7 @@ export async function cancelReservation(id: string) {
 
 export async function listReservations(date?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let q = supabase
     .from('guest_reservations')
@@ -138,7 +138,7 @@ export async function listReservations(date?: string) {
 
 export async function getReservation(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('guest_reservations')

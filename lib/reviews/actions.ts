@@ -35,7 +35,7 @@ export type SubmitReviewInput = z.infer<typeof SubmitReviewSchema>
 export async function submitClientReview(input: SubmitReviewInput) {
   const user = await requireClient()
   const validated = SubmitReviewSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify the event belongs to this client and is completed
   const { data: event, error: eventError } = await supabase
@@ -163,7 +163,7 @@ async function notifyChefOfReview(
  */
 export async function getClientReviewForEvent(eventId: string) {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('client_reviews')
@@ -181,7 +181,7 @@ export async function getClientReviewForEvent(eventId: string) {
  */
 export async function recordGoogleReviewClick(eventId: string) {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Update the review record
   const { error } = await supabase
@@ -210,7 +210,7 @@ export async function recordGoogleReviewClick(eventId: string) {
  */
 export async function getChefReviews() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('client_reviews')
@@ -237,7 +237,7 @@ export async function getChefReviews() {
  */
 export async function getChefReviewStats() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('client_reviews')
@@ -262,7 +262,7 @@ export async function getChefReviewStats() {
  */
 export async function getGoogleReviewUrl() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('chefs')
@@ -278,7 +278,7 @@ export async function getGoogleReviewUrl() {
  */
 export async function updateGoogleReviewUrl(url: string | null) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Basic validation - must be a Google URL or empty
   if (url && url.trim()) {
@@ -308,7 +308,7 @@ export async function updateGoogleReviewUrl(url: string | null) {
  */
 export async function getGoogleReviewUrlForTenant(tenantId: string) {
   await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('chefs')

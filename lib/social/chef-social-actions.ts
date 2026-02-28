@@ -148,7 +148,7 @@ export type FollowCounts = {
 // HELPERS
 // ============================================================
 
-function db(supabase: ReturnType<typeof createServerClient>) {
+function db(supabase: any) {
   return supabase as any
 }
 
@@ -163,7 +163,7 @@ function extractHashtags(content: string): string[] {
 }
 
 async function buildAuthorMap(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   chefIds: string[]
 ): Promise<Map<string, SocialPostAuthor>> {
   if (!chefIds.length) return new Map()
@@ -193,7 +193,7 @@ async function buildAuthorMap(
 }
 
 async function getMyReactionsForPosts(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   chefId: string,
   postIds: string[]
 ): Promise<Map<string, ReactionType>> {
@@ -212,7 +212,7 @@ async function getMyReactionsForPosts(
 }
 
 async function getMySavedPosts(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   chefId: string,
   postIds: string[]
 ): Promise<Set<string>> {
@@ -433,11 +433,7 @@ export async function getSocialFeed(input: {
 }
 
 // Shared hydration helper used by multiple feed functions
-async function hydratePostList(
-  supabase: ReturnType<typeof createServerClient>,
-  posts: any[],
-  chefId: string
-): Promise<SocialPost[]> {
+async function hydratePostList(supabase: any, posts: any[], chefId: string): Promise<SocialPost[]> {
   if (!posts.length) return []
 
   const postIds = posts.map((p) => p.id)

@@ -23,7 +23,7 @@ export interface ReportDataPoint {
 
 export async function runCustomReport(config: ReportConfig): Promise<ReportDataPoint[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const now = new Date()
   let fromDate: Date

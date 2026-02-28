@@ -27,7 +27,7 @@ export interface BookingScore {
 
 export async function getBookingScoreForInquiry(inquiryId: string): Promise<BookingScore | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: inquiry, error } = await supabase
     .from('inquiries')
@@ -156,7 +156,7 @@ export async function getBookingScoreForInquiry(inquiryId: string): Promise<Book
 
 export async function getBookingScoresForOpenInquiries(): Promise<BookingScore[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: inquiries } = await supabase
     .from('inquiries')

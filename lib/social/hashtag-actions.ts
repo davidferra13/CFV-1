@@ -18,7 +18,7 @@ export type SocialHashtagSet = {
 
 export async function getHashtagSets(): Promise<SocialHashtagSet[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('social_hashtag_sets')
@@ -40,7 +40,7 @@ export async function createHashtagSet(input: {
   pillar?: SocialPillar
 }): Promise<SocialHashtagSet> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('social_hashtag_sets')
@@ -63,7 +63,7 @@ export async function updateHashtagSet(
   input: Partial<{ set_name: string; hashtags: string[]; pillar: SocialPillar | null }>
 ): Promise<SocialHashtagSet> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updates: Record<string, unknown> = {}
   if (input.set_name !== undefined) updates.set_name = input.set_name.trim()
@@ -85,7 +85,7 @@ export async function updateHashtagSet(
 
 export async function deleteHashtagSet(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('social_hashtag_sets')

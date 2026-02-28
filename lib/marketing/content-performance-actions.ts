@@ -102,7 +102,7 @@ function computeEngagementScore(row: any): number {
 export async function recordContentPerformance(input: RecordContentPerformanceInput) {
   const user = await requireChef()
   const validated = RecordContentPerformanceSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('content_performance')
@@ -137,7 +137,7 @@ export async function getContentROI(
   endDate?: string
 ): Promise<ContentROISummary> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase.from('content_performance').select('*').eq('chef_id', user.tenantId!)
 
@@ -207,7 +207,7 @@ export async function getContentROI(
  */
 export async function getBestPerformingContent(limit = 10): Promise<RankedContent[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('content_performance')

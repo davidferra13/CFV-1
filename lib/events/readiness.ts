@@ -128,7 +128,7 @@ export async function evaluateReadinessForTransition(
   fromStatus: EventStatus,
   toStatus: EventStatus
 ): Promise<ReadinessResult> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const transitionKey = `${fromStatus}->${toStatus}`
   const requiredGates = TRANSITION_GATES[transitionKey] || []
@@ -167,7 +167,7 @@ export async function evaluateReadinessForTransition(
 
   // Fetch existing gate records for this event
   const { data: existingGates } = await supabase
-    .from('event_readiness_gates')
+    .from('event_readiness_gates' as any)
     .select('*')
     .eq('event_id', eventId)
     .in('gate', requiredGates)
@@ -484,7 +484,7 @@ async function checkMenuApprovalGate(
  */
 export async function getClientAllergyRecords(clientId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('client_allergy_records')
@@ -510,7 +510,7 @@ export async function confirmAllergyRecord(
   options?: { severity?: string; notes?: string }
 ) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updateData: Record<string, unknown> = {
     confirmed_by_chef: true,
@@ -539,7 +539,7 @@ export async function confirmAllergyRecord(
  */
 export async function dismissAllergyRecord(allergyRecordId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('client_allergy_records')
@@ -564,7 +564,7 @@ export async function addAllergyRecord(
   data: { allergen: string; severity: string; notes?: string }
 ) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('client_allergy_records').upsert(
     {
@@ -600,7 +600,7 @@ export async function markGatePassed(
   metadata?: Record<string, unknown>
 ) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify event belongs to tenant
   const { data: event } = await supabase
@@ -612,7 +612,7 @@ export async function markGatePassed(
 
   if (!event) throw new Error('Event not found')
 
-  const { error } = await supabase.from('event_readiness_gates').upsert(
+  const { error } = await supabase.from('event_readiness_gates' as any).upsert(
     {
       tenant_id: user.tenantId!,
       event_id: eventId,
@@ -639,7 +639,7 @@ export async function markGatePassed(
  */
 export async function overrideGate(eventId: string, gate: ReadinessGate, reason: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!reason || reason.trim().length < 5) {
     throw new Error('A reason of at least 5 characters is required to override a gate')
@@ -672,7 +672,7 @@ export async function overrideGate(eventId: string, gate: ReadinessGate, reason:
     }
   }
 
-  const { error } = await supabase.from('event_readiness_gates').upsert(
+  const { error } = await supabase.from('event_readiness_gates' as any).upsert(
     {
       tenant_id: user.tenantId!,
       event_id: eventId,
@@ -700,7 +700,7 @@ export async function overrideGate(eventId: string, gate: ReadinessGate, reason:
  */
 export async function getEventReadiness(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')
@@ -741,7 +741,7 @@ export async function checkMenuAllergyConflicts(eventId: string): Promise<{
   hasConflicts: boolean
   conflicts: Array<{ allergen: string; severity: string; menuItem?: string }>
 }> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Get event's client
   const { data: event } = await supabase
@@ -764,7 +764,7 @@ export async function checkMenuAllergyConflicts(eventId: string): Promise<{
 
   // Get event menu items (components attached to this event's menus)
   const { data: components } = await supabase
-    .from('menu_components')
+    .from('menu_components' as any)
     .select('name, ingredients')
     .eq('event_id', eventId)
 

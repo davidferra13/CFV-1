@@ -15,7 +15,7 @@ const SegmentSchema = z.object({
 
 export async function getSegments() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { data } = await supabase
     .from('client_segments' as any)
     .select('*')
@@ -26,7 +26,7 @@ export async function getSegments() {
 
 export async function createSegment(input: z.infer<typeof SegmentSchema>) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validated = SegmentSchema.parse(input)
   const { data, error } = await supabase
     .from('client_segments' as any)
@@ -40,7 +40,7 @@ export async function createSegment(input: z.infer<typeof SegmentSchema>) {
 
 export async function deleteSegment(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   await supabase
     .from('client_segments' as any)
     .delete()

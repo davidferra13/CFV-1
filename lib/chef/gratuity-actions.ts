@@ -23,7 +23,7 @@ export type GratuitySettings = {
 
 export async function getGratuitySettings(): Promise<GratuitySettings> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('chefs')
@@ -44,7 +44,7 @@ export async function updateGratuitySettings(
   const user = await requireChef()
   const validated = GratuitySettingsSchema.parse(input)
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('chefs')

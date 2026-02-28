@@ -23,7 +23,7 @@ export type AddTagInput = z.infer<typeof AddTagSchema>
 
 export async function addTag(guestId: string, tag: string, color?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const validated = AddTagSchema.parse({ guest_id: guestId, tag, color })
 
@@ -58,7 +58,7 @@ export async function addTag(guestId: string, tag: string, color?: string) {
 
 export async function removeTag(guestId: string, tag: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('guest_tags')
@@ -78,7 +78,7 @@ export async function removeTag(guestId: string, tag: string) {
 
 export async function listTags(guestId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('guest_tags')

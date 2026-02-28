@@ -149,7 +149,7 @@ export async function getEventGuestPhotos(shareToken: string) {
  */
 export async function getGuestPhotosForChef(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('guest_photos')
@@ -180,7 +180,7 @@ export async function getGuestPhotosForChef(eventId: string) {
  */
 export async function toggleGuestPhotoVisibility(photoId: string, visible: boolean) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('guest_photos')
@@ -199,7 +199,7 @@ export async function toggleGuestPhotoVisibility(photoId: string, visible: boole
  */
 export async function deleteGuestPhoto(photoId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get storage path first
   const { data: photo } = await supabase

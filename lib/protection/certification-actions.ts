@@ -44,7 +44,7 @@ export async function addCertification(input: AddCertificationInput) {
   const tenantId = chef.tenantId!
   const validated = CertificationSchema.parse(input)
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_certifications')
@@ -66,7 +66,7 @@ export async function updateCertification(id: string, input: UpdateCertification
   const tenantId = chef.tenantId!
   const validated = UpdateCertificationSchema.parse(input)
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify ownership
   const { data: existing } = await supabase
@@ -99,7 +99,7 @@ export async function deleteCertification(id: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify ownership
   const { data: existing } = await supabase
@@ -130,7 +130,7 @@ export async function getCertifications() {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_certifications')
@@ -151,7 +151,7 @@ export async function getExpiringCertifications(daysAhead: number) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const today = new Date()
   const cutoff = new Date(today)
@@ -178,7 +178,7 @@ export async function hasActiveCertification(certType: string): Promise<boolean>
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const today = new Date().toISOString().slice(0, 10)
 

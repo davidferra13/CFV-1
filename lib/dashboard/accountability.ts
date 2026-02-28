@@ -33,7 +33,7 @@ export type WeeklyAccountabilityStats = {
  */
 export async function getOverdueFollowUps(limit = 5): Promise<OverdueFollowUpEvent[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const cutoff = new Date()
   cutoff.setHours(cutoff.getHours() - 24)
@@ -73,7 +73,7 @@ export async function getOverdueFollowUps(limit = 5): Promise<OverdueFollowUpEve
  */
 export async function getWeeklyAccountabilityStats(): Promise<WeeklyAccountabilityStats> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const now = new Date()
   const weekStart = new Date(now)

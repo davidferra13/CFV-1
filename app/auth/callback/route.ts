@@ -22,7 +22,7 @@ export async function GET(request: Request) {
   const next = safeRedirectPath(searchParams.get('next'))
 
   if (code) {
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {

@@ -39,7 +39,7 @@ const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
 export async function loadRemyContext(currentPage?: string): Promise<RemyContext> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Tier 1: Always fresh (cheap count queries + chef profile + daily plan)
   const [chefProfile, counts, dailyPlan] = await Promise.all([
@@ -103,7 +103,7 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
 
 // ─── Tier 1: Chef Profile ───────────────────────────────────────────────────
 
-async function loadChefProfile(supabase: ReturnType<typeof createServerClient>, tenantId: string) {
+async function loadChefProfile(supabase: any, tenantId: string) {
   const { data } = await supabase
     .from('chefs')
     .select('business_name, tagline')
@@ -118,7 +118,7 @@ async function loadChefProfile(supabase: ReturnType<typeof createServerClient>, 
 
 // ─── Tier 1: Quick Counts ───────────────────────────────────────────────────
 
-async function loadQuickCounts(supabase: ReturnType<typeof createServerClient>, tenantId: string) {
+async function loadQuickCounts(supabase: any, tenantId: string) {
   const [clientsResult, eventsResult, inquiriesResult] = await Promise.all([
     supabase.from('clients').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
     supabase
@@ -143,10 +143,7 @@ async function loadQuickCounts(supabase: ReturnType<typeof createServerClient>, 
 
 // ─── Tier 2: Detailed Context (cached 5 min) ────────────────────────────────
 
-async function loadDetailedContext(
-  supabase: ReturnType<typeof createServerClient>,
-  tenantId: string
-) {
+async function loadDetailedContext(supabase: any, tenantId: string) {
   const now = new Date()
   const today = now.toISOString().split('T')[0]
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
@@ -494,7 +491,7 @@ async function loadDetailedContext(
 const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
 
 async function loadPageEntityContext(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   currentPage?: string
 ): Promise<PageEntityContext | undefined> {
@@ -524,7 +521,7 @@ async function loadPageEntityContext(
 }
 
 async function loadEventEntity(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   eventId: string
 ): Promise<PageEntityContext | undefined> {
@@ -600,7 +597,7 @@ async function loadEventEntity(
       .limit(5),
     // Event transitions (audit trail)
     supabase
-      .from('event_transitions')
+      .from('event_transitions' as any)
       .select('from_status, to_status, transitioned_at, reason')
       .eq('event_id', eventId)
       .eq('tenant_id', tenantId)
@@ -854,7 +851,7 @@ async function loadEventEntity(
 }
 
 async function loadClientEntity(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   clientId: string
 ): Promise<PageEntityContext | undefined> {
@@ -995,7 +992,7 @@ async function loadClientEntity(
 }
 
 async function loadRecipeEntity(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   recipeId: string
 ): Promise<PageEntityContext | undefined> {
@@ -1053,7 +1050,7 @@ async function loadRecipeEntity(
 }
 
 async function loadInquiryEntity(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   inquiryId: string
 ): Promise<PageEntityContext | undefined> {
@@ -1073,7 +1070,7 @@ async function loadInquiryEntity(
       .single(),
     // Message thread for this inquiry
     supabase
-      .from('inquiry_messages')
+      .from('inquiry_messages' as any)
       .select('channel, direction, status, subject, body, sent_at, created_at')
       .eq('inquiry_id', inquiryId)
       .eq('tenant_id', tenantId)
@@ -1147,7 +1144,7 @@ async function loadInquiryEntity(
 }
 
 async function loadMenuEntity(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   menuId: string
 ): Promise<PageEntityContext | undefined> {
@@ -1220,7 +1217,7 @@ export async function resolveMessageEntities(message: string): Promise<PageEntit
 
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Normalize message for matching
   const msgLower = message.toLowerCase()
@@ -1257,7 +1254,7 @@ export async function resolveMessageEntities(message: string): Promise<PageEntit
 }
 
 async function findMentionedClients(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   msgLower: string
 ): Promise<Array<{ id: string; full_name: string }>> {
@@ -1288,7 +1285,7 @@ async function findMentionedClients(
 }
 
 async function findMentionedEvents(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   msgLower: string
 ): Promise<Array<{ id: string }>> {
@@ -1344,7 +1341,7 @@ async function findMentionedEvents(
 }
 
 async function findMentionedRecipes(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   msgLower: string
 ): Promise<Array<{ id: string }>> {
@@ -1364,7 +1361,7 @@ async function findMentionedRecipes(
 }
 
 async function findMentionedInquiries(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   msgLower: string
 ): Promise<Array<{ id: string }>> {

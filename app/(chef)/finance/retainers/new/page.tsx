@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: 'New Retainer - ChefFlow' }
 
 export default async function NewRetainerPage() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch clients for dropdown
   const { data: clients } = await supabase

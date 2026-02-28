@@ -28,7 +28,7 @@ export async function getPricingSuggestion(params: {
   occasion?: string | null
 }): Promise<PricingSuggestion> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { pricingModel, guestCount, occasion } = params
   const guestMin = Math.max(1, Math.floor(guestCount * 0.8))

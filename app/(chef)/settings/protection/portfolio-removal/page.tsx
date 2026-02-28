@@ -4,7 +4,7 @@ import { RemovalRequestList } from '@/components/protection/removal-request-list
 
 export default async function PortfolioRemovalPage() {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { data } = await supabase
     .from('chef_portfolio_removal_requests')
     .select('*, clients(display_name)')

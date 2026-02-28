@@ -51,7 +51,7 @@ export type UpdateAutomationSettingsInput = z.infer<typeof UpdateSettingsSchema>
 
 export async function getAutomationSettings(): Promise<ChefAutomationSettings> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_automation_settings' as any)
@@ -83,7 +83,7 @@ export async function getAutomationSettings(): Promise<ChefAutomationSettings> {
 export async function updateAutomationSettings(input: UpdateAutomationSettingsInput) {
   const user = await requireChef()
   const validated = UpdateSettingsSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('chef_automation_settings' as any).upsert(
     {
@@ -113,7 +113,7 @@ export async function getDepositDefaults(): Promise<{
   amountCents: number
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('chef_automation_settings' as any)

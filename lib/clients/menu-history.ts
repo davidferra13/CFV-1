@@ -47,7 +47,7 @@ export type ClientMenuHistory = {
 
 export async function getClientMenuHistory(clientId: string): Promise<ClientMenuHistory> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const empty: ClientMenuHistory = {
     entries: [],

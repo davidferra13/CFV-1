@@ -9,7 +9,7 @@ import { requireChef } from '@/lib/auth/get-user'
  */
 export async function getGuestEmailList(filters?: { eventId?: string; rsvpStatus?: string }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('event_guests')
@@ -63,7 +63,7 @@ export async function getGuestEmailList(filters?: { eventId?: string; rsvpStatus
  */
 export async function draftPostEventEmail(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')
@@ -142,7 +142,7 @@ export async function draftPostEventEmail(eventId: string) {
  */
 export async function draftTestimonialRequest(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')

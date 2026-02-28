@@ -133,7 +133,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 export async function getDinnerTimeDistribution(): Promise<DinnerTimeSlot[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events, error } = await supabase
     .from('events')
@@ -167,7 +167,7 @@ export async function getDinnerTimeDistribution(): Promise<DinnerTimeSlot[]> {
 
 export async function getOccasionStats(): Promise<OccasionStat[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events, error } = await supabase
     .from('events')
@@ -209,7 +209,7 @@ export async function getOccasionStats(): Promise<OccasionStat[]> {
 
 export async function getServiceStyleDistribution(): Promise<ServiceStyleStat[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events, error } = await supabase
     .from('events')
@@ -240,7 +240,7 @@ export async function getServiceStyleDistribution(): Promise<ServiceStyleStat[]>
 
 export async function getGuestCountDistribution(): Promise<GuestCountBucket[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events, error } = await supabase
     .from('events')
@@ -281,7 +281,7 @@ export async function getGuestCountDistribution(): Promise<GuestCountBucket[]> {
 
 export async function getDietaryRestrictionFrequency(): Promise<DietaryFrequency[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [{ data: clientRows, error: clientErr }, { data: eventRows, error: eventErr }] =
     await Promise.all([
@@ -326,7 +326,7 @@ export async function getDietaryRestrictionFrequency(): Promise<DietaryFrequency
 
 export async function getMonthlyEventVolume(): Promise<MonthlyVolume[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events, error } = await supabase
     .from('events')
@@ -383,7 +383,7 @@ export async function getMonthlyEventVolume(): Promise<MonthlyVolume[]> {
 
 export async function getDayOfWeekDistribution(): Promise<DayOfWeekStat[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events, error } = await supabase
     .from('events')
@@ -414,7 +414,7 @@ export async function getDayOfWeekDistribution(): Promise<DayOfWeekStat[]> {
 
 export async function getMonthlyRevenueTrend(months = 18): Promise<RevenueTrendPoint[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const now = new Date()
   const from = startOfMonth(subMonths(now, months - 1)).toISOString()
@@ -454,7 +454,7 @@ export async function getMonthlyRevenueTrend(months = 18): Promise<RevenueTrendP
 
 export async function getClientAcquisitionStats(): Promise<ClientAcquisitionStats> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: clients, error } = await supabase
     .from('clients')
@@ -505,7 +505,7 @@ export async function getClientAcquisitionStats(): Promise<ClientAcquisitionStat
 
 export async function getRetentionStats(): Promise<RetentionStats> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: clients, error } = await supabase
     .from('clients')
@@ -570,7 +570,7 @@ export async function getRetentionStats(): Promise<RetentionStats> {
 
 export async function getClientLTVDistribution(): Promise<LTVBucket[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: clients, error } = await supabase
     .from('clients')
@@ -608,7 +608,7 @@ export async function getClientLTVDistribution(): Promise<LTVBucket[]> {
 
 export async function getPhaseTimeStats(): Promise<PhaseTimeStats> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events, error } = await supabase
     .from('events')
@@ -694,7 +694,7 @@ export async function getPhaseTimeStats(): Promise<PhaseTimeStats> {
 
 export async function getAARRatingTrends(months = 12): Promise<AARTrends> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const now = new Date()
   const from = startOfMonth(subMonths(now, months - 1)).toISOString()
@@ -754,7 +754,7 @@ export async function getAARRatingTrends(months = 12): Promise<AARTrends> {
 
 export async function getFinancialIntelligenceStats(): Promise<FinancialIntelligence> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events, error } = await supabase
     .from('events')
@@ -845,7 +845,7 @@ export type TakeAChefROI = {
 
 export async function getTakeAChefROI(): Promise<TakeAChefROI> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const empty: TakeAChefROI = {

@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   if (error) return NextResponse.redirect(`${redirectBase}?error=google_denied`)
   if (!code || !state) return NextResponse.redirect(`${redirectBase}?error=google_invalid_callback`)
 
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const db = supabase as any
 
   // Validate state
@@ -61,9 +61,8 @@ export async function GET(req: NextRequest) {
   const profile = await profileRes.json()
 
   // Upsert in social_platform_credentials (used by Google for reviews)
-  await supabase
-    .from('social_platform_credentials')
-    .upsert({
+  await supabase.from('social_platform_credentials').upsert(
+    {
       tenant_id: chefId,
       platform: 'google_business' as unknown as string,
       external_account_id: profile.id ?? 'unknown',
@@ -74,7 +73,9 @@ export async function GET(req: NextRequest) {
       token_expires_at: expiresAt,
       is_active: true,
       connected_at: new Date().toISOString(),
-    }, { onConflict: 'tenant_id,platform' })
+    },
+    { onConflict: 'tenant_id,platform' }
+  )
 
   // Trigger initial sync
   await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/social/google/sync`, {

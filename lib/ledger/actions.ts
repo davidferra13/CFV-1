@@ -18,7 +18,7 @@ export type LedgerEntryFilters = {
  */
 export async function getLedgerEntries(filters: LedgerEntryFilters = {}) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('ledger_entries')

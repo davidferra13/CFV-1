@@ -30,7 +30,7 @@ let _seeded = false
 export async function seedScheduledTasks(): Promise<{ seeded: number; skipped: number }> {
   if (_seeded) return { seeded: 0, skipped: 0 }
 
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const hasPi = !!process.env.OLLAMA_PI_URL
 
   // Get all active tenants

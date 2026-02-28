@@ -55,7 +55,7 @@ export async function signCannabisHostAgreement(
     return { status: 'duplicate', agreement: existingAgreement }
   }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const signedAt = new Date().toISOString()
   const immutableHash = createHash('sha256')
     .update(CANNABIS_HOST_AGREEMENT_TEXT_SNAPSHOT)

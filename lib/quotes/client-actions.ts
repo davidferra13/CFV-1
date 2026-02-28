@@ -15,7 +15,7 @@ import type { Database, Json } from '@/types/database'
 
 export async function getClientQuotes() {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: quotes, error } = await supabase
     .from('quotes')
@@ -43,7 +43,7 @@ export async function getClientQuotes() {
 
 export async function getClientQuoteById(quoteId: string) {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: quote, error } = await supabase
     .from('quotes')
@@ -77,7 +77,7 @@ export async function getClientQuoteById(quoteId: string) {
  */
 export async function acceptQuote(quoteId: string) {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch quote with full pricing data
   const { data: quote, error: fetchError } = await supabase
@@ -130,7 +130,7 @@ export async function acceptQuote(quoteId: string) {
   }
 
   // Downstream effects use admin client to bypass RLS
-  const adminSupabase = createAdminClient()
+  const adminSupabase: any = createAdminClient()
 
   // Backward compatibility: if UPDATE returned no row due missing client UPDATE policy,
   // complete the transition via admin client after ownership was already verified above.
@@ -215,7 +215,7 @@ export async function acceptQuote(quoteId: string) {
 
 export async function rejectQuote(quoteId: string, reason?: string) {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: quote, error: fetchError } = await supabase
     .from('quotes')
@@ -253,7 +253,7 @@ export async function rejectQuote(quoteId: string, reason?: string) {
   }
 
   if (!updatedByClient) {
-    const adminSupabase = createAdminClient()
+    const adminSupabase: any = createAdminClient()
     const { data: updatedByAdmin, error: adminUpdateError } = await adminSupabase
       .from('quotes')
       .update(updatePayload)
@@ -319,7 +319,7 @@ async function notifyChefOfQuoteAccepted(
   if (!chefUserId) return
 
   // Load client name
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const { data: client } = await supabase
     .from('clients')
     .select('full_name')
@@ -384,7 +384,7 @@ async function notifyChefOfQuoteRejected(
   if (!chefUserId) return
 
   // Load client name
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const { data: client } = await supabase
     .from('clients')
     .select('full_name')

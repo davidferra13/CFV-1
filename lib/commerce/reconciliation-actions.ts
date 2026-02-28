@@ -32,7 +32,7 @@ export type GenerateReportInput = {
 export async function generateDailyReconciliation(input: GenerateReportInput) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
   const { reportDate } = input
 
@@ -41,12 +41,12 @@ export async function generateDailyReconciliation(input: GenerateReportInput) {
   const dayEnd = `${reportDate}T23:59:59.999Z`
 
   // ─── 1. Sales totals ─────────────────────────────────────────
-  const { data: sales } = await supabase
+  const { data: sales } = await (supabase
     .from('sales')
     .select('id, subtotal_cents, tax_cents, total_cents, tip_cents, discount_cents, status')
     .eq('tenant_id', tenantId)
     .gte('created_at', dayStart)
-    .lte('created_at', dayEnd)
+    .lte('created_at', dayEnd) as any)
 
   const validSales = (sales ?? []).filter((s: any) => s.status !== 'voided' && s.status !== 'draft')
   const totalSalesCount = validSales.length
@@ -58,13 +58,13 @@ export async function generateDailyReconciliation(input: GenerateReportInput) {
   const totalTaxCents = validSales.reduce((sum: number, s: any) => sum + (s.tax_cents ?? 0), 0)
 
   // ─── 2. Payment method breakdown ─────────────────────────────
-  const { data: payments } = await supabase
+  const { data: payments } = await (supabase
     .from('commerce_payments')
     .select('amount_cents, payment_method, status')
     .eq('tenant_id', tenantId)
     .in('status', ['captured', 'settled'])
     .gte('created_at', dayStart)
-    .lte('created_at', dayEnd)
+    .lte('created_at', dayEnd) as any)
 
   let cashTotalCents = 0
   let cardTotalCents = 0
@@ -77,13 +77,13 @@ export async function generateDailyReconciliation(input: GenerateReportInput) {
   }
 
   // ─── 3. Refunds ──────────────────────────────────────────────
-  const { data: refunds } = await supabase
+  const { data: refunds } = await (supabase
     .from('commerce_refunds')
     .select('amount_cents, status')
     .eq('tenant_id', tenantId)
     .eq('status', 'processed')
     .gte('created_at', dayStart)
-    .lte('created_at', dayEnd)
+    .lte('created_at', dayEnd) as any)
 
   const totalRefundsCents = (refunds ?? []).reduce(
     (sum: number, r: any) => sum + (r.amount_cents ?? 0),
@@ -98,13 +98,13 @@ export async function generateDailyReconciliation(input: GenerateReportInput) {
   let expectedCashCents: number | null = null
   let cashVarianceCents: number | null = null
 
-  const { data: sessions } = await supabase
-    .from('register_sessions')
+  const { data: sessions } = await (supabase
+    .from('register_sessions' as any)
     .select('opening_cash_cents, closing_cash_cents, expected_cash_cents, cash_variance_cents')
     .eq('tenant_id', tenantId)
     .eq('status', 'closed')
     .gte('closed_at', dayStart)
-    .lte('closed_at', dayEnd)
+    .lte('closed_at', dayEnd) as any)
 
   if (sessions && sessions.length > 0) {
     openingCashCents = (sessions as any[]).reduce((sum, s) => sum + (s.opening_cash_cents ?? 0), 0)
@@ -120,12 +120,12 @@ export async function generateDailyReconciliation(input: GenerateReportInput) {
   }
 
   // ─── 5. Ledger cross-check ───────────────────────────────────
-  const { data: ledgerEntries } = await supabase
+  const { data: ledgerEntries } = await (supabase
     .from('ledger_entries')
     .select('amount_cents, entry_type, is_refund')
     .eq('tenant_id', tenantId)
     .gte('created_at', dayStart)
-    .lte('created_at', dayEnd)
+    .lte('created_at', dayEnd) as any)
 
   const ledgerTotalCents = (ledgerEntries ?? []).reduce((sum: number, e: any) => {
     if (e.is_refund) return sum - (e.amount_cents ?? 0)
@@ -170,8 +170,8 @@ export async function generateDailyReconciliation(input: GenerateReportInput) {
   }
 
   // ─── 7. Upsert the report ───────────────────────────────────
-  const { data: report, error } = await supabase
-    .from('daily_reconciliation_reports')
+  const { data: report, error } = await (supabase
+    .from('daily_reconciliation_reports' as any)
     .upsert(
       {
         tenant_id: tenantId,
@@ -199,7 +199,7 @@ export async function generateDailyReconciliation(input: GenerateReportInput) {
       { onConflict: 'tenant_id,report_date' }
     )
     .select('id')
-    .single()
+    .single() as any)
 
   if (error) throw new Error(`Failed to generate reconciliation report: ${error.message}`)
 
@@ -212,17 +212,17 @@ export async function generateDailyReconciliation(input: GenerateReportInput) {
 export async function listReconciliationReports(opts?: { limit?: number; offset?: number }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const limit = opts?.limit ?? 30
   const offset = opts?.offset ?? 0
 
-  const { data, error, count } = await supabase
-    .from('daily_reconciliation_reports')
+  const { data, error, count } = await (supabase
+    .from('daily_reconciliation_reports' as any)
     .select('*', { count: 'exact' })
     .eq('tenant_id', user.tenantId!)
     .order('report_date', { ascending: false })
-    .range(offset, offset + limit - 1)
+    .range(offset, offset + limit - 1) as any)
 
   if (error) throw new Error(`Failed to list reports: ${error.message}`)
   return { reports: data ?? [], total: count ?? 0 }
@@ -233,14 +233,14 @@ export async function listReconciliationReports(opts?: { limit?: number; offset?
 export async function getReconciliationReport(reportId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data, error } = await supabase
-    .from('daily_reconciliation_reports')
+  const { data, error } = await (supabase
+    .from('daily_reconciliation_reports' as any)
     .select('*')
     .eq('id', reportId)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
   if (error || !data) throw new Error('Report not found')
   return data
@@ -251,10 +251,10 @@ export async function getReconciliationReport(reportId: string) {
 export async function reviewReconciliationReport(reportId: string, notes?: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { error } = await supabase
-    .from('daily_reconciliation_reports')
+  const { error } = await (supabase
+    .from('daily_reconciliation_reports' as any)
     .update({
       reviewed: true,
       reviewed_by: user.id,
@@ -262,7 +262,7 @@ export async function reviewReconciliationReport(reportId: string, notes?: strin
       notes: notes ?? null,
     } as any)
     .eq('id', reportId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!) as any)
 
   if (error) throw new Error(`Failed to review report: ${error.message}`)
   revalidatePath('/commerce/reconciliation')
@@ -277,15 +277,15 @@ export async function resolveReconciliationFlag(
 ) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch current flags
-  const { data: report, error: fetchErr } = await supabase
-    .from('daily_reconciliation_reports')
+  const { data: report, error: fetchErr } = await (supabase
+    .from('daily_reconciliation_reports' as any)
     .select('flags')
     .eq('id', reportId)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
   if (fetchErr || !report) throw new Error('Report not found')
 
@@ -303,11 +303,11 @@ export async function resolveReconciliationFlag(
   flags[flagIndex].resolvedAt = new Date().toISOString()
   flags[flagIndex].resolvedBy = user.id
 
-  const { error } = await supabase
-    .from('daily_reconciliation_reports')
+  const { error } = await (supabase
+    .from('daily_reconciliation_reports' as any)
     .update({ flags: JSON.stringify(flags) } as any)
     .eq('id', reportId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!) as any)
 
   if (error) throw new Error(`Failed to resolve flag: ${error.message}`)
   revalidatePath('/commerce/reconciliation')

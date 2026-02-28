@@ -57,7 +57,7 @@ const TAX_CLASS_MULTIPLIERS: Record<TaxClass, number> = {
 export async function computeSaleLineTax(saleId: string): Promise<SaleTaxResult | null> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch sale with zip code
   const { data: sale, error: saleErr } = await supabase
@@ -125,7 +125,7 @@ export async function computeSaleLineTax(saleId: string): Promise<SaleTaxResult 
 export async function applySaleTax(saleId: string): Promise<SaleTaxResult | null> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const result = await computeSaleLineTax(saleId)
   if (!result) return null
@@ -169,7 +169,7 @@ export async function previewTax(
 // ─── Helper ───────────────────────────────────────────────────────
 
 async function getSaleSubtotal(saleId: string, tenantId: string): Promise<number> {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { data } = await supabase
     .from('sales')
     .select('subtotal_cents, discount_cents, tip_cents')

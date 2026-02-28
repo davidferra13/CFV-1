@@ -51,7 +51,7 @@ export async function createUploadJob(input: z.infer<typeof CreateUploadJobSchem
   const user = await requireChef()
   const tenantId = user.tenantId!
   const parsed = CreateUploadJobSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('menu_upload_jobs')
@@ -80,7 +80,7 @@ export async function createUploadJob(input: z.infer<typeof CreateUploadJobSchem
  */
 export async function getUploadJobs(statusFilter?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('menu_upload_jobs')
@@ -102,7 +102,7 @@ export async function getUploadJobs(statusFilter?: string) {
  */
 export async function getUploadJobById(jobId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('menu_upload_jobs')
@@ -122,7 +122,7 @@ export async function getUploadJobById(jobId: string) {
 export async function processUploadJob(jobId: string, fileBuffer: Buffer, fileName: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // 1. Mark as extracting
   await supabase
@@ -208,7 +208,7 @@ export async function processFromPastedText(
 ) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Create job record
   const { data: job, error: jobError } = await supabase
@@ -267,7 +267,7 @@ export async function processFromPastedText(
 export async function approveAndIndexDishes(input: z.infer<typeof ApproveDishesBatchSchema>) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const parsed = ApproveDishesBatchSchema.parse(input)
 
   // Get job metadata for appearance records
@@ -360,7 +360,7 @@ export async function approveAndIndexDishes(input: z.infer<typeof ApproveDishesB
  */
 export async function checkDuplicateUpload(fileHash: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('menu_upload_jobs')
@@ -378,7 +378,7 @@ export async function checkDuplicateUpload(fileHash: string) {
  */
 export async function deleteUploadJob(jobId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('menu_upload_jobs')

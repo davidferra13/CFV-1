@@ -7,7 +7,7 @@ export default async function PublicAvailabilityPage({
   params: Promise<{ token: string }>
 }) {
   const { token } = await params
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: shareToken } = await supabase
     .from('chef_availability_share_tokens')

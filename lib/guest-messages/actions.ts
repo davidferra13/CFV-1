@@ -130,7 +130,7 @@ export async function getEventMessages(shareToken: string) {
  */
 export async function getEventMessagesForChef(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('guest_messages')
@@ -152,7 +152,7 @@ export async function getEventMessagesForChef(eventId: string) {
  */
 export async function toggleMessageVisibility(messageId: string, visible: boolean) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('guest_messages')
@@ -171,7 +171,7 @@ export async function toggleMessageVisibility(messageId: string, visible: boolea
  */
 export async function toggleMessagePin(messageId: string, pinned: boolean) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('guest_messages')
@@ -190,7 +190,7 @@ export async function toggleMessagePin(messageId: string, pinned: boolean) {
  */
 export async function deleteGuestMessage(messageId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('guest_messages')
@@ -209,7 +209,7 @@ export async function deleteGuestMessage(messageId: string) {
  */
 export async function getExcitementWallStats(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('guest_messages')

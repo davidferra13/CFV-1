@@ -16,7 +16,7 @@ export default async function PrintClipboardPage({
   searchParams: { date?: string }
 }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const date = searchParams.date ?? new Date().toISOString().split('T')[0]
 

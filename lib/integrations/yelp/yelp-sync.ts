@@ -144,7 +144,7 @@ export async function syncYelpReviews(
   tenantId: string,
   config: Record<string, unknown>
 ) {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   try {
     const reviews = await fetchYelpReviews(config)

@@ -11,7 +11,7 @@ export type BreakEvenResult = {
 export async function getFixedExpenses(): Promise<number> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Sum expenses tagged as recurring/fixed in the current or last month
   const thirtyDaysAgo = new Date()

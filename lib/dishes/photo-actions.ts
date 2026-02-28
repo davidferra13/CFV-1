@@ -75,7 +75,7 @@ export async function uploadRecipePhoto(
   formData: FormData
 ): Promise<{ success: true; photoUrl: string } | { success: false; error: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: recipe } = await supabase
     .from('recipes')
@@ -135,7 +135,7 @@ export async function removeRecipePhoto(
   recipeId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: recipe } = await supabase
     .from('recipes')
@@ -176,7 +176,7 @@ export async function uploadDishPhoto(
   formData: FormData
 ): Promise<{ success: true; photoUrl: string } | { success: false; error: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: dish } = await supabase
     .from('dishes')
@@ -233,7 +233,7 @@ export async function removeDishPhoto(
   dishId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: dish } = await supabase
     .from('dishes')

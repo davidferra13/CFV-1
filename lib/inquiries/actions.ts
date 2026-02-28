@@ -103,7 +103,7 @@ export type UpdateInquiryInput = z.infer<typeof UpdateInquirySchema>
 export async function createInquiry(input: CreateInquiryInput) {
   const user = await requireChef()
   const validated = CreateInquirySchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Email validation (local-only — no external API call during form submission)
   if (validated.client_email) {
@@ -288,7 +288,7 @@ export async function getInquiries(filters?: {
   dateTo?: string
 }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const buildQuery = (withSoftDeleteFilter: boolean) => {
     let query = supabase
@@ -351,7 +351,7 @@ export async function getInquiries(filters?: {
  */
 export async function getInquiryById(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
     let query = supabase
@@ -402,7 +402,7 @@ export async function updateInquiry(id: string, input: UpdateInquiryInput) {
   const user = await requireChef()
   const validated = UpdateInquirySchema.parse(input)
   const { expected_updated_at, idempotency_key, ...validatedFields } = validated
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Separate unknown_fields data from DB columns
   const { client_name, client_email, client_phone, notes, ...dbFields } = validatedFields
@@ -563,7 +563,7 @@ export async function updateInquiry(id: string, input: UpdateInquiryInput) {
  */
 export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get current status
   const { data: inquiry } = await (supabase
@@ -711,7 +711,7 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
  */
 export async function convertInquiryToEvent(inquiryId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: inquiry } = await supabase
     .from('inquiries')
@@ -865,7 +865,7 @@ export async function convertInquiryToEvent(inquiryId: string) {
  */
 export async function getInquiryStats() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
     let query = supabase.from('inquiries').select('status').eq('tenant_id', user.tenantId!)
@@ -916,7 +916,7 @@ export async function getInquiryStats() {
  */
 export async function deleteInquiry(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: inquiry } = await (supabase
     .from('inquiries')
@@ -954,7 +954,7 @@ export async function deleteInquiry(id: string) {
 
 export async function restoreInquiry(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('inquiries')
@@ -988,7 +988,7 @@ export async function restoreInquiry(id: string) {
  */
 export async function declineInquiry(id: string, reason?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: inquiry } = await (supabase
     .from('inquiries')
@@ -1076,7 +1076,7 @@ export type LostReasonStat = { reason: string; count: number }
  */
 export async function getLostReasonStats(): Promise<LostReasonStat[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('inquiries')
@@ -1117,7 +1117,7 @@ export interface FirstContactInquiry {
  */
 export async function getInquiriesNeedingFirstContact(): Promise<FirstContactInquiry[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all new/awaiting_chef inquiries (active leads waiting for chef action)
   const { data: inquiries } = await supabase

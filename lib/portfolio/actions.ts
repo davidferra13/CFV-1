@@ -53,7 +53,7 @@ export async function addPortfolioItem(
 ): Promise<{ success: boolean; item: PortfolioItem }> {
   const validated = AddPortfolioItemSchema.parse(input)
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get current max display_order
   const { data: existing } = await supabase
@@ -100,7 +100,7 @@ export async function addPortfolioItem(
 export async function reorderPortfolio(itemIds: string[]): Promise<{ success: boolean }> {
   const validated = ReorderPortfolioSchema.parse({ itemIds })
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Update display_order for each item
   for (let i = 0; i < validated.itemIds.length; i++) {
@@ -128,7 +128,7 @@ export async function reorderPortfolio(itemIds: string[]): Promise<{ success: bo
 export async function removePortfolioItem(itemId: string): Promise<{ success: boolean }> {
   const validated = RemovePortfolioItemSchema.parse({ itemId })
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('portfolio_items')
@@ -152,7 +152,7 @@ export async function removePortfolioItem(itemId: string): Promise<{ success: bo
  */
 export async function getPortfolio(): Promise<PortfolioItem[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: items, error } = await supabase
     .from('portfolio_items')

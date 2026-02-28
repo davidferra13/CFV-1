@@ -15,7 +15,7 @@ export type ChefTodo = {
 
 export async function getTodos(): Promise<ChefTodo[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_todos')
@@ -43,7 +43,7 @@ export async function createTodo(
     return { success: false, error: 'Todo text must be 1–500 characters' }
   }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Append at the end of incomplete items
   const { data: last } = await supabase
@@ -80,7 +80,7 @@ export async function createTodo(
 
 export async function toggleTodo(id: string): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch current state scoped to this chef
   const { data: todo, error: fetchError } = await supabase
@@ -116,7 +116,7 @@ export async function toggleTodo(id: string): Promise<{ success: boolean; error?
 
 export async function deleteTodo(id: string): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('chef_todos')

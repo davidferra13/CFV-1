@@ -27,7 +27,7 @@ export type ImportClientInput = z.infer<typeof ImportClientSchema>
 
 export async function importClientDirect(input: ImportClientInput) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validated = ImportClientSchema.parse(input)
 
   const email = validated.email?.trim() || null
@@ -84,7 +84,7 @@ export async function importClientDirect(input: ImportClientInput) {
 // Lightweight client list for the loyalty seeding page
 export async function getImportedClients() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('clients')

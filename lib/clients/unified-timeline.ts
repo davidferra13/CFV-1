@@ -41,7 +41,7 @@ export async function getUnifiedClientTimeline(
   limit = 60
 ): Promise<UnifiedTimelineItem[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Parallel fetch from all sources

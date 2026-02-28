@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: 'Protection Hub — ChefFlow' }
 
 export default async function ProtectionHubPage() {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const tenantId = chef.tenantId!
 

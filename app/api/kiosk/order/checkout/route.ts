@@ -97,12 +97,12 @@ export async function POST(request: Request) {
 
     const productIds = [...new Set(parsed.items.map((item) => item.product_projection_id))]
 
-    const { data: products, error: productsError } = await supabase
-      .from('product_projections')
+    const { data: products, error: productsError } = await (supabase
+      .from('product_projections' as any)
       .select('id, name, price_cents, tax_class, cost_cents, modifiers, is_active')
       .eq('tenant_id', device.tenantId)
       .in('id', productIds)
-      .eq('is_active', true)
+      .eq('is_active', true) as any)
 
     if (productsError) {
       return NextResponse.json({ error: 'Failed to load products for checkout' }, { status: 500 })
@@ -154,8 +154,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Amount tendered is less than total due' }, { status: 400 })
     }
 
-    const { data: sale, error: saleError } = await supabase
-      .from('sales')
+    const { data: sale, error: saleError } = await (supabase
+      .from('sales' as any)
       .insert({
         tenant_id: device.tenantId,
         channel: 'counter',
@@ -171,7 +171,7 @@ export async function POST(request: Request) {
         created_by: null,
       } as any)
       .select('id, sale_number')
-      .single()
+      .single() as any)
 
     if (saleError || !sale) {
       return NextResponse.json(
@@ -180,8 +180,10 @@ export async function POST(request: Request) {
       )
     }
 
-    const saleItems = itemRows.map((row) => ({ ...row, sale_id: sale.id }))
-    const { error: itemInsertError } = await supabase.from('sale_items').insert(saleItems as any)
+    const saleItems = itemRows.map((row) => ({ ...row, sale_id: (sale as any).id }))
+    const { error: itemInsertError } = await (supabase as any)
+      .from('sale_items')
+      .insert(saleItems as any)
     if (itemInsertError) {
       return NextResponse.json(
         { error: `Failed to save cart items: ${itemInsertError.message}` },
@@ -189,7 +191,7 @@ export async function POST(request: Request) {
       )
     }
 
-    await supabase
+    await (supabase as any)
       .from('sales')
       .update({
         subtotal_cents: subtotalCents,
@@ -197,16 +199,16 @@ export async function POST(request: Request) {
         total_cents: totalCents,
         tip_cents: tipCents,
       } as any)
-      .eq('id', sale.id)
+      .eq('id', (sale as any).id)
       .eq('tenant_id', device.tenantId)
 
     const idempotencyKey = `kiosk_checkout_${device.deviceId}_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`
 
-    const { data: payment, error: paymentError } = await supabase
+    const { data: payment, error: paymentError } = await (supabase
       .from('commerce_payments')
       .insert({
         tenant_id: device.tenantId,
-        sale_id: sale.id,
+        sale_id: (sale as any).id,
         amount_cents: totalCents,
         tip_cents: tipCents,
         payment_method: parsed.payment_method,
@@ -219,7 +221,7 @@ export async function POST(request: Request) {
         notes: parsed.notes?.trim() || null,
       } as any)
       .select('id')
-      .single()
+      .single() as any)
 
     if (paymentError || !payment) {
       return NextResponse.json(
@@ -228,21 +230,21 @@ export async function POST(request: Request) {
       )
     }
 
-    await supabase
+    await (supabase as any)
       .from('sales')
       .update({ status: 'captured' } as any)
-      .eq('id', sale.id)
+      .eq('id', (sale as any).id)
       .eq('tenant_id', device.tenantId)
 
-    const { data: registerTotals } = await supabase
-      .from('register_sessions')
+    const { data: registerTotals } = await (supabase
+      .from('register_sessions' as any)
       .select('total_sales_count, total_revenue_cents, total_tips_cents')
       .eq('id', registerSession.id)
       .eq('tenant_id', device.tenantId)
-      .single()
+      .single() as any)
 
     if (registerTotals) {
-      await supabase
+      await (supabase as any)
         .from('register_sessions')
         .update({
           total_sales_count: (registerTotals as any).total_sales_count + 1,
@@ -254,13 +256,13 @@ export async function POST(request: Request) {
     }
 
     try {
-      await supabase.from('device_events').insert({
+      await (supabase as any).from('device_events').insert({
         device_id: device.deviceId,
         tenant_id: device.tenantId,
         staff_member_id: (staffSession as any)?.staff_member_id ?? null,
         type: 'submitted_order',
         payload: {
-          sale_id: sale.id,
+          sale_id: (sale as any).id,
           sale_number: (sale as any).sale_number,
           payment_method: parsed.payment_method,
           total_cents: totalChargedCents,
@@ -278,9 +280,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      sale_id: sale.id,
+      sale_id: (sale as any).id,
       sale_number: (sale as any).sale_number,
-      payment_id: payment.id,
+      payment_id: (payment as any).id,
       register_session_id: registerSession.id,
       total_cents: totalChargedCents,
       change_due_cents: changeDueCents,

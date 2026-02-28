@@ -17,7 +17,7 @@ export async function importDocument(
   sourceFilename?: string
 ) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_documents')

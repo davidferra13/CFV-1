@@ -66,7 +66,7 @@ function parseArrivalTime(serveTime: string | null): string | null {
 
 export async function generateStaffBriefing(eventId: string): Promise<StaffBriefingData | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event + client in one query
   const { data: event, error: eventError } = await supabase
@@ -112,7 +112,7 @@ export async function generateStaffBriefing(eventId: string): Promise<StaffBrief
 
   // Fetch active menu items for this event
   const { data: menuRows } = await supabase
-    .from('event_menu_items')
+    .from('event_menu_items' as any)
     .select('name, description, course')
     .eq('event_id', eventId)
     .eq('tenant_id', user.tenantId!)

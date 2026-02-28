@@ -47,7 +47,7 @@ const SPECIALTY_EQUIPMENT_TRIGGERS: Record<string, string[]> = {
 
 export async function fetchResetChecklistData(eventId: string): Promise<ResetChecklistData | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')

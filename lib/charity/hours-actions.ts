@@ -53,7 +53,7 @@ export async function logCharityHours(
 ): Promise<CharityHourEntry> {
   const user = await requireChef()
   const parsed = LogHoursSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('charity_hours' as any)
@@ -85,7 +85,7 @@ export async function updateCharityHours(
 ): Promise<CharityHourEntry> {
   const user = await requireChef()
   const parsed = UpdateHoursSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('charity_hours' as any)
@@ -117,7 +117,7 @@ export async function updateCharityHours(
 export async function deleteCharityHours(id: string): Promise<void> {
   const user = await requireChef()
   z.string().uuid().parse(id)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('charity_hours' as any)
@@ -138,7 +138,7 @@ export async function getCharityHours(filters?: {
   organizationName?: string
 }): Promise<CharityHourEntry[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('charity_hours' as any)
@@ -160,7 +160,7 @@ export async function getCharityHours(filters?: {
 /** Get recent organizations the chef has logged hours at (for autocomplete) */
 export async function getRecentCharityOrgs(): Promise<CharityOrganization[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('charity_hours' as any)

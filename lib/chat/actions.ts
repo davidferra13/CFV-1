@@ -107,7 +107,7 @@ const GetMessagesSchema = z.object({
 export async function createConversation(input: z.infer<typeof CreateConversationSchema>) {
   const user = await requireChef()
   const validated = CreateConversationSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify client belongs to this tenant
   const { data: client, error: clientError } = await supabase
@@ -188,7 +188,7 @@ export async function getOrCreateConversation(input: {
   event_id?: string
 }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const contextType = input.context_type || 'standalone'
 
   // Try to find existing conversation
@@ -227,7 +227,7 @@ export async function getOrCreateConversation(input: {
  */
 export async function getConversationInbox(): Promise<ConversationWithDetails[]> {
   const user = await requireAuth()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get conversations the user participates in
   const { data: participantRows, error: partError } = await supabase
@@ -355,7 +355,7 @@ export async function getConversationInbox(): Promise<ConversationWithDetails[]>
  */
 export async function getConversation(conversationId: string): Promise<Conversation | null> {
   const user = await requireAuth()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('conversations')
@@ -385,7 +385,7 @@ export async function getConversationParticipants(
   conversationId: string
 ): Promise<(ConversationParticipant & { name: string; email: string })[]> {
   const user = await requireAuth()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: participants, error } = await supabase
     .from('conversation_participants')
@@ -439,7 +439,7 @@ export async function getConversationParticipants(
 export async function sendChatMessage(input: z.infer<typeof SendMessageSchema>) {
   const user = await requireAuth()
   const validated = SendMessageSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify participation (RLS also enforces this)
   const { data: participant } = await supabase
@@ -558,7 +558,7 @@ export async function sendChatMessage(input: z.infer<typeof SendMessageSchema>) 
  */
 export async function sendImageMessage(conversationId: string, formData: FormData) {
   const user = await requireAuth()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify participation
   const { data: participant } = await supabase
@@ -676,7 +676,7 @@ export async function sendImageMessage(conversationId: string, formData: FormDat
  */
 export async function sendFileMessage(conversationId: string, formData: FormData) {
   const user = await requireAuth()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify participation
   const { data: participant } = await supabase
@@ -811,7 +811,7 @@ export async function sendFileMessage(conversationId: string, formData: FormData
 export async function getConversationMessages(input: z.infer<typeof GetMessagesSchema>) {
   const user = await requireAuth()
   const validated = GetMessagesSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch one extra to determine hasMore
   let query = supabase
@@ -852,7 +852,7 @@ export async function getConversationMessages(input: z.infer<typeof GetMessagesS
  */
 export async function markConversationRead(conversationId: string) {
   const user = await requireAuth()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('conversation_participants')
@@ -873,7 +873,7 @@ export async function markConversationRead(conversationId: string) {
  */
 export async function getUnreadCounts(): Promise<Record<string, number>> {
   const user = await requireAuth()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase.rpc('get_unread_counts', {
     p_user_id: user.id,
@@ -896,7 +896,7 @@ export async function getUnreadCounts(): Promise<Record<string, number>> {
  */
 export async function getTotalUnreadCount(): Promise<number> {
   const user = await requireAuth()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase.rpc('get_total_unread_count', {
     p_user_id: user.id,
@@ -920,7 +920,7 @@ export async function getTotalUnreadCount(): Promise<number> {
  */
 export async function getChatAttachmentUrl(messageId: string): Promise<string | null> {
   const user = await requireAuth()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get the message and verify access via RLS
   const { data: message, error } = await supabase
@@ -959,7 +959,7 @@ export async function clientGetOrCreateConversation(input?: {
   inquiry_id?: string
 }) {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const contextType = input?.context_type || 'standalone'
 
   // Try to find existing conversation for this context
@@ -1047,7 +1047,7 @@ export async function searchChatMessages(
   query: string
 ): Promise<ChatMessage[]> {
   const user = await requireAuth()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify participation
   const { data: participant } = await supabase

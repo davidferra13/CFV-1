@@ -52,7 +52,7 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
-    const supabase = createAdminClient()
+    const supabase: any = createAdminClient()
 
     // Fetch all chefs who have public profiles enabled and a slug
     const { data: chefs } = await supabase

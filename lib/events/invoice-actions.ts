@@ -100,7 +100,7 @@ export type InvoiceData = {
  * Counts existing invoices for the tenant in the current year.
  */
 export async function generateInvoiceNumber(tenantId: string): Promise<string> {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const year = new Date().getFullYear()
 
   // Count how many invoices this tenant already has this year
@@ -122,7 +122,7 @@ export async function generateInvoiceNumber(tenantId: string): Promise<string> {
  * Idempotent — does nothing if invoice_number is already set.
  */
 export async function assignInvoiceNumber(eventId: string) {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Check if already assigned
   const { data: event } = await supabase
@@ -157,7 +157,7 @@ export async function assignInvoiceNumber(eventId: string) {
  */
 export async function getInvoiceData(eventId: string): Promise<InvoiceData | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')
@@ -224,7 +224,7 @@ export async function getInvoiceData(eventId: string): Promise<InvoiceData | nul
  */
 export async function getInvoiceDataForClient(eventId: string): Promise<InvoiceData | null> {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')
@@ -356,7 +356,7 @@ function isMissingSnapshotColumnError(error: QueryErrorLike): boolean {
 }
 
 async function fetchDeliveredRedemptionsForEvent(params: {
-  supabase: ReturnType<typeof createServerClient>
+  supabase: any
   tenantId: string
   clientId: string
   eventId: string
@@ -394,7 +394,7 @@ async function fetchDeliveredRedemptionsForEvent(params: {
 }
 
 async function getEventLoyaltyAdjustmentSummary(params: {
-  supabase: ReturnType<typeof createServerClient>
+  supabase: any
   tenantId: string
   clientId: string | null | undefined
   eventId: string

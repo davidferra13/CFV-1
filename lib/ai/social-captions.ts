@@ -38,7 +38,7 @@ export async function generateSocialCaptions(
   tone: CaptionTone = 'warm_personal'
 ): Promise<SocialCaptionsResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [eventResult, menuResult, chefResult] = await Promise.all([
     supabase
@@ -48,7 +48,7 @@ export async function generateSocialCaptions(
       .eq('tenant_id', user.tenantId!)
       .single(),
     supabase
-      .from('event_menu_components')
+      .from('event_menu_components' as any)
       .select('name, course_type, description')
       .eq('event_id', eventId)
       .limit(8),

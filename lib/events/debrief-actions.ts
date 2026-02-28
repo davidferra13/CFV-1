@@ -55,7 +55,7 @@ export type DebriefBlanks = {
  */
 export async function getEventDebriefBlanks(eventId: string): Promise<DebriefBlanks | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch the event
   const { data: event, error: eventError } = await supabase
@@ -230,7 +230,7 @@ export async function saveClientInsights(
   }
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify the event belongs to this tenant (prevents cross-tenant client writes)
   const { data: event } = await supabase
@@ -333,7 +333,7 @@ export async function saveRecipeDebrief(
   }
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify event belongs to tenant
   const { data: event } = await supabase
@@ -437,7 +437,7 @@ export async function saveDebriefReflection(
   }
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (data.chef_outcome_rating !== undefined) {
     const rating = data.chef_outcome_rating
@@ -481,7 +481,7 @@ export async function completeDebrief(
   eventId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event, error: fetchError } = await supabase
     .from('events')
@@ -539,7 +539,7 @@ export async function generateDebriefDraft(
   eventId: string
 ): Promise<{ draft: string } | { error: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!process.env.GEMINI_API_KEY) {
     return { error: 'AI not configured' }

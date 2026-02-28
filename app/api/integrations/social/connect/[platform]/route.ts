@@ -15,8 +15,11 @@ function generatePKCE(): { codeVerifier: string; codeChallenge: string } {
   return { codeVerifier, codeChallenge }
 }
 
-export async function GET(request: NextRequest, { params }: { params: { platform: string } }) {
-  const { platform } = params
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ platform: string }> }
+) {
+  const { platform } = await params
   const origin = request.nextUrl.origin
 
   const failRedirect = (code: string) => {
@@ -57,7 +60,7 @@ export async function GET(request: NextRequest, { params }: { params: { platform
     codeChallenge = pkce.codeChallenge
   }
 
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const { error: stateErr } = await supabase.from('social_oauth_states').insert({
     tenant_id: user.tenantId,
     platform,
@@ -65,7 +68,7 @@ export async function GET(request: NextRequest, { params }: { params: { platform
     code_verifier: codeVerifier,
     redirect_to: '/social/connections',
     expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-  })
+  } as any)
 
   if (stateErr) {
     console.error('[social-connect] state insert failed:', stateErr)

@@ -36,7 +36,7 @@ export async function updatePipelineStage(
 ) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch current stage for history tracking
   const { data: current } = await supabase
@@ -72,7 +72,7 @@ export async function updatePipelineStage(
 
   // Record stage history (non-blocking)
   try {
-    await supabase.from('prospect_stage_history').insert({
+    await supabase.from('prospect_stage_history' as any).insert({
       prospect_id: prospectId,
       chef_id: user.tenantId!,
       from_stage: fromStage,
@@ -101,7 +101,7 @@ export async function updatePipelineStage(
 export async function getProspectsByPipelineStage(): Promise<Record<PipelineStage, Prospect[]>> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('prospects')
@@ -158,7 +158,7 @@ export async function logOutreach(
 ) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('prospect_outreach_log').insert({
     prospect_id: prospectId,
@@ -212,7 +212,7 @@ export async function logOutreach(
 export async function getOutreachLog(prospectId: string): Promise<OutreachLogEntry[]> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('prospect_outreach_log')
@@ -241,7 +241,7 @@ const FollowUpSequenceSchema = z.object({
 export async function generateFollowUpSequence(prospectId: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: prospect, error: fetchError } = await supabase
     .from('prospects')
@@ -265,7 +265,7 @@ export async function generateFollowUpSequence(prospectId: string) {
     newsIntel: prospect.news_intel,
   })
 
-  const raw = await parseWithOllama(userPrompt, {
+  const raw = await (parseWithOllama as any)(userPrompt, {
     systemPrompt: FOLLOW_UP_SEQUENCE_SYSTEM_PROMPT,
     format: 'json',
     temperature: 0.7,
@@ -325,7 +325,7 @@ const CallScriptSchema = z.object({
 export async function generateAICallScript(prospectId: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: prospect, error: fetchError } = await supabase
     .from('prospects')
@@ -354,7 +354,7 @@ export async function generateAICallScript(prospectId: string) {
     competitorsPresent: prospect.competitors_present,
   })
 
-  const raw = await parseWithOllama(userPrompt, {
+  const raw = await (parseWithOllama as any)(userPrompt, {
     systemPrompt: AI_CALL_SCRIPT_SYSTEM_PROMPT,
     format: 'json',
     temperature: 0.7,
@@ -486,7 +486,7 @@ function parseCSVLine(line: string): string[] {
 export async function importProspectsFromCSV(csvText: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const rows = parseCSV(csvText)
   if (rows.length === 0) throw new Error('No valid rows found in CSV')
@@ -560,7 +560,7 @@ export async function importProspectsFromCSV(csvText: string) {
 export async function getGeoClusters(): Promise<GeoCluster[]> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('prospects')
@@ -603,7 +603,7 @@ export async function getGeoClusters(): Promise<GeoCluster[]> {
 export async function geocodeProspect(prospectId: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: prospect, error: fetchError } = await supabase
     .from('prospects')
@@ -657,7 +657,7 @@ export async function geocodeProspect(prospectId: string) {
 export async function batchGeocode() {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Find prospects without coordinates that have addresses
   const { data, error } = await supabase
@@ -693,7 +693,7 @@ export async function exportProspectsToCSV(filters?: {
 }): Promise<string> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('prospects')
@@ -756,7 +756,7 @@ export async function getPipelineRevenueByStage(): Promise<
 > {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('prospects')
@@ -811,7 +811,7 @@ export async function runAutoPipelineRules(): Promise<{
 }> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let staleToLost = 0
   let followUpBumped = 0
@@ -891,7 +891,7 @@ export async function runAutoPipelineRules(): Promise<{
 export async function mergeProspects(keepId: string, mergeId: string): Promise<{ success: true }> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch both prospects
   const [keepResult, mergeResult] = await Promise.all([
@@ -1016,7 +1016,7 @@ export async function mergeProspects(keepId: string, mergeId: string): Promise<{
 export async function snapshotLeadScores(): Promise<{ updated: number }> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('prospects')
@@ -1046,7 +1046,7 @@ export async function snapshotLeadScores(): Promise<{ updated: number }> {
 export async function findSimilarProspects(prospectId: string): Promise<Prospect[]> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: prospect } = await supabase
     .from('prospects')
@@ -1075,7 +1075,7 @@ export async function findSimilarProspects(prospectId: string): Promise<Prospect
 export async function sendProspectEmail(prospectId: string, subject: string, body: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: prospect, error: fetchError } = await supabase
     .from('prospects')
@@ -1121,7 +1121,7 @@ export async function sendProspectEmail(prospectId: string, subject: string, bod
 
     // Record stage history (non-blocking)
     try {
-      await supabase.from('prospect_stage_history').insert({
+      await supabase.from('prospect_stage_history' as any).insert({
         prospect_id: prospectId,
         chef_id: user.tenantId!,
         from_stage: prospect.pipeline_stage,
@@ -1161,7 +1161,7 @@ export async function sendProspectEmail(prospectId: string, subject: string, bod
 export async function updateProspectTags(prospectId: string, tags: string[]) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('prospects')
@@ -1182,10 +1182,10 @@ export async function updateProspectTags(prospectId: string, tags: string[]) {
 export async function getStageHistory(prospectId: string): Promise<StageHistoryEntry[]> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
-    .from('prospect_stage_history')
+    .from('prospect_stage_history' as any)
     .select('*')
     .eq('prospect_id', prospectId)
     .eq('chef_id', user.tenantId!)
@@ -1208,7 +1208,7 @@ export async function bulkUpdateProspects(
 ) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (prospectIds.length === 0) throw new Error('No prospects selected')
   if (prospectIds.length > 100) throw new Error('Max 100 prospects per batch')
@@ -1255,7 +1255,7 @@ export async function bulkUpdateProspects(
         to_stage: updates.pipeline_stage!,
         notes: 'Bulk update',
       }))
-      await supabase.from('prospect_stage_history').insert(historyRows)
+      await supabase.from('prospect_stage_history' as any).insert(historyRows)
     } catch (err) {
       console.error('[bulkUpdateProspects] Stage history failed (non-blocking):', err)
     }
@@ -1270,7 +1270,7 @@ export async function bulkUpdateProspects(
 export async function bulkDeleteProspects(prospectIds: string[]) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (prospectIds.length === 0) throw new Error('No prospects selected')
   if (prospectIds.length > 100) throw new Error('Max 100 prospects per batch')
@@ -1294,7 +1294,7 @@ export async function bulkDeleteProspects(prospectIds: string[]) {
 export async function createFollowUpReminders(): Promise<{ created: number }> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Find prospects with follow-ups due today or overdue
   const now = new Date().toISOString()
@@ -1352,7 +1352,7 @@ export async function getConversionFunnelStats(): Promise<{
 }> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Count prospects per pipeline stage
   const { data: prospects, error } = await supabase
@@ -1370,7 +1370,7 @@ export async function getConversionFunnelStats(): Promise<{
 
   // Calculate avg days in stage from stage history
   const { data: history } = await supabase
-    .from('prospect_stage_history')
+    .from('prospect_stage_history' as any)
     .select('from_stage, to_stage, changed_at')
     .eq('chef_id', user.tenantId!)
     .order('changed_at', { ascending: true })
@@ -1439,7 +1439,7 @@ export async function getConversionFunnelStats(): Promise<{
 export async function getHotPipelineCount(): Promise<number> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { count, error } = await supabase
     .from('prospects')
@@ -1456,7 +1456,7 @@ export async function getHotPipelineCount(): Promise<number> {
 export async function checkGmailConnected(): Promise<boolean> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('google_connections')

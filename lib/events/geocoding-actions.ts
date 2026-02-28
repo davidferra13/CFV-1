@@ -14,7 +14,7 @@ export async function geocodeEventAddress(eventId: string): Promise<{
   error?: string
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch the event (tenant-scoped)
   const { data: event, error: fetchError } = await supabase

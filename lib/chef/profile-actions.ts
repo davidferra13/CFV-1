@@ -270,7 +270,7 @@ export async function uploadChefLogo(formData: FormData): Promise<{ success: tru
 
 export async function markOnboardingComplete() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase
     .from('chefs')
@@ -282,7 +282,7 @@ export async function markOnboardingComplete() {
 
 export async function getOnboardingStatus(): Promise<boolean> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('chefs')

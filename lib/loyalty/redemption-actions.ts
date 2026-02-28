@@ -42,7 +42,7 @@ export async function validateIncentiveCode(
   eventId: string
 ): Promise<ValidationResult> {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   // Admin client used specifically for the incentive code lookup.
   // The regular client RLS policy only lets clients see codes they created or were
   // targeted at them — but a gift card purchased by a guest (no auth account) or
@@ -175,7 +175,7 @@ export async function redeemIncentiveCode(
   eventId: string
 ): Promise<RedemptionResult> {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const adminSupabase = createServerClient({ admin: true })
 
   const normalizedCode = code.trim().toUpperCase()
@@ -298,11 +298,7 @@ export async function redeemIncentiveCode(
   }
 }
 
-async function getEventTenantId(
-  supabase: ReturnType<typeof createServerClient>,
-  eventId: string,
-  clientId: string
-): Promise<string> {
+async function getEventTenantId(supabase: any, eventId: string, clientId: string): Promise<string> {
   const { data, error } = await supabase
     .from('events')
     .select('tenant_id')

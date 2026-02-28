@@ -12,7 +12,7 @@ import type { UnifiedInboxItem, InboxFilters, InboxStats, InboxSource } from './
 
 export async function getUnifiedInbox(filters?: InboxFilters): Promise<UnifiedInboxItem[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const limit = filters?.limit ?? 30
   const offset = filters?.offset ?? 0
 
@@ -58,7 +58,7 @@ export async function getUnifiedInbox(filters?: InboxFilters): Promise<UnifiedIn
 
 export async function getInboxStats(): Promise<InboxStats> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get counts per source (recent 7 days to keep performant)
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()

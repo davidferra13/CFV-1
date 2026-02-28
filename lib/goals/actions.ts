@@ -125,7 +125,7 @@ export async function createGoal(input: CreateGoalInput): Promise<{ goalId: stri
 
   const trackingMethod = getTrackingMethod(parsed.data.goalType)
 
-  const supabase = createServerClient() as any
+  const supabase: any = createServerClient() as any
   const { data, error } = await supabase
     .from('chef_goals')
     .insert({
@@ -165,7 +165,7 @@ export async function updateGoal(goalId: string, input: Partial<CreateGoalInput>
   if (input.nudgeLevel !== undefined) updates.nudge_level = input.nudgeLevel
   if (input.notes !== undefined) updates.notes = input.notes
 
-  const supabase = createServerClient() as any
+  const supabase: any = createServerClient() as any
   const { error } = await supabase
     .from('chef_goals')
     .update(updates)
@@ -179,7 +179,7 @@ export async function updateGoal(goalId: string, input: Partial<CreateGoalInput>
 export async function archiveGoal(goalId: string): Promise<void> {
   const user = await requireChef()
 
-  const supabase = createServerClient() as any
+  const supabase: any = createServerClient() as any
   const { error } = await supabase
     .from('chef_goals')
     .update({ status: 'archived', updated_at: new Date().toISOString() })
@@ -192,7 +192,7 @@ export async function archiveGoal(goalId: string): Promise<void> {
 
 export async function getActiveGoals(): Promise<ChefGoal[]> {
   const user = await requireChef()
-  const supabase = createServerClient() as any
+  const supabase: any = createServerClient() as any
 
   const { data, error } = await supabase
     .from('chef_goals')
@@ -208,7 +208,7 @@ export async function getActiveGoals(): Promise<ChefGoal[]> {
 // Fetch a single goal by ID regardless of status (used by history page).
 export async function getGoalById(goalId: string): Promise<ChefGoal | null> {
   const user = await requireChef()
-  const supabase = createServerClient() as any
+  const supabase: any = createServerClient() as any
 
   const { data } = await supabase
     .from('chef_goals')
@@ -225,7 +225,7 @@ export async function getGoalById(goalId: string): Promise<ChefGoal | null> {
 
 export async function getCategorySettings(): Promise<CategorySettings> {
   const user = await requireChef()
-  const supabase = createServerClient() as any
+  const supabase: any = createServerClient() as any
 
   const { data } = await supabase
     .from('chef_preferences')
@@ -261,7 +261,7 @@ export async function updateCategorySettings(
   const alwaysOn = GOAL_CATEGORY_META.filter((c) => c.alwaysEnabled).map((c) => c.id)
   const merged = Array.from(new Set([...alwaysOn, ...enabledCategories])) as GoalCategory[]
 
-  const supabase = createServerClient() as any
+  const supabase: any = createServerClient() as any
   const { error } = await supabase.from('chef_preferences').upsert(
     {
       chef_id: user.tenantId,
@@ -302,7 +302,7 @@ function computeCategoryProgress(goals: GoalView[]): Partial<Record<GoalCategory
 
 export async function getGoalsDashboard(): Promise<GoalsDashboard> {
   const user = await requireChef()
-  const supabase = createServerClient() as any
+  const supabase: any = createServerClient() as any
   const tenantId = user.tenantId!
   const now = new Date()
 
@@ -518,7 +518,7 @@ async function computeAutoGoalView(
 
 export async function getGoalHistory(goalId: string, limit = 12): Promise<GoalSnapshot[]> {
   const user = await requireChef()
-  const supabase = createServerClient() as any
+  const supabase: any = createServerClient() as any
 
   const { data: goal } = await supabase
     .from('chef_goals')
@@ -606,7 +606,7 @@ export async function updateSuggestionStatus(
   bookedEventId?: string
 ): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient() as any
+  const supabase: any = createServerClient() as any
 
   const updates: Record<string, unknown> = {
     status,

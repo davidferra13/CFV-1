@@ -23,7 +23,7 @@ export type KitchenRentalInput = z.infer<typeof KitchenRentalSchema>
 
 export async function createKitchenRental(input: KitchenRentalInput) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const data = KitchenRentalSchema.parse(input)
 
   const { error } = await supabase.from('kitchen_rentals').insert({ ...data, chef_id: chef.id })
@@ -34,7 +34,7 @@ export async function createKitchenRental(input: KitchenRentalInput) {
 
 export async function updateKitchenRental(id: string, input: KitchenRentalInput) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const data = KitchenRentalSchema.parse(input)
 
   const { error } = await supabase
@@ -49,7 +49,7 @@ export async function updateKitchenRental(id: string, input: KitchenRentalInput)
 
 export async function deleteKitchenRental(id: string) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('kitchen_rentals')
@@ -63,7 +63,7 @@ export async function deleteKitchenRental(id: string) {
 
 export async function listKitchenRentals(limit = 50) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('kitchen_rentals')
@@ -78,7 +78,7 @@ export async function listKitchenRentals(limit = 50) {
 
 export async function getKitchenRentalsForEvent(eventId: string) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('kitchen_rentals')
@@ -93,7 +93,7 @@ export async function getKitchenRentalsForEvent(eventId: string) {
 
 export async function getMonthlyKitchenCosts(year: number, month: number) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Build date range for the month
   const start = `${year}-${String(month).padStart(2, '0')}-01`

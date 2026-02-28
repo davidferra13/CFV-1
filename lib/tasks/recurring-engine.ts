@@ -23,7 +23,7 @@ import type { Database } from '@/types/database'
  */
 export async function generateRecurringTasks(date: string): Promise<number> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const chefId = user.tenantId!
 
   // Fetch all tasks with a recurring rule for this chef

@@ -44,7 +44,7 @@ export interface HistoricalFinding {
 
 export async function enableHistoricalEmailScan(): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase
     .from('google_connections')
@@ -61,7 +61,7 @@ export async function enableHistoricalEmailScan(): Promise<void> {
 
 export async function disableHistoricalEmailScan(): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Pause (not reset) — preserves progress and existing findings
   await supabase
@@ -79,7 +79,7 @@ export async function disableHistoricalEmailScan(): Promise<void> {
 
 export async function getHistoricalScanStatus(): Promise<HistoricalScanStatus | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('google_connections')
@@ -112,7 +112,7 @@ export async function getHistoricalFindings(
   limit = 50
 ): Promise<HistoricalFinding[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('gmail_historical_findings')
@@ -151,7 +151,7 @@ export async function getHistoricalFindings(
 
 export async function importHistoricalFinding(findingId: string): Promise<{ inquiryId: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Load the finding (tenant-scoped)
   const { data: finding, error: findErr } = await supabase
@@ -269,7 +269,7 @@ export async function importHistoricalFinding(findingId: string): Promise<{ inqu
 
 export async function dismissHistoricalFinding(findingId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase
     .from('gmail_historical_findings')
@@ -290,7 +290,7 @@ export async function dismissAllFindings(filter: {
   classification?: 'inquiry' | 'existing_thread'
 }): Promise<{ count: number }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('gmail_historical_findings')

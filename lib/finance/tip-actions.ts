@@ -17,7 +17,7 @@ export interface TipEntry {
 
 export async function getEventTips(eventId: string): Promise<TipEntry[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('event_tips' as any)
@@ -43,7 +43,7 @@ export async function getYtdTipSummary(): Promise<{
   byMethod: Record<string, number>
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const year = new Date().getFullYear()
 
@@ -66,7 +66,7 @@ export async function getYtdTipSummary(): Promise<{
 
 export async function addTip(formData: FormData): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const eventId = formData.get('eventId') as string
   const amountDollars = parseFloat(formData.get('amountDollars') as string)
@@ -88,7 +88,7 @@ export async function addTip(formData: FormData): Promise<void> {
 
 export async function deleteTip(id: string, eventId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase
     .from('event_tips' as any)

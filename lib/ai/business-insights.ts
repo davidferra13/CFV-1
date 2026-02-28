@@ -37,7 +37,7 @@ export type InsightCard = z.infer<typeof InsightCardSchema>
 
 export async function getBusinessInsights(): Promise<BusinessInsights> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const now = new Date()
   const thisYear = now.getFullYear()

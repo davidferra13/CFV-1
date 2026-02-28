@@ -854,6 +854,7 @@ export default function SnakeGame() {
     }
 
     function draw() {
+      if (!ctx) return
       const state = stateRef.current
 
       const gradient = ctx.createLinearGradient(0, 0, SIZE, SIZE)

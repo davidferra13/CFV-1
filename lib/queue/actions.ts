@@ -16,7 +16,7 @@ import type { PriorityQueue } from './types'
  */
 export async function getPriorityQueue(): Promise<PriorityQueue> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch the work surface (it has its own requireChef call, cached per request)
   const workSurface = await getDashboardWorkSurface()

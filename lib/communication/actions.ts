@@ -371,7 +371,7 @@ export async function createInquiryFromCommunicationEvent(communicationEventId: 
     notes: 'Created from Communication Inbox',
   })
 
-  const inquiryId = inquiry.inquiry.id
+  const inquiryId = inquiry.inquiry?.id
 
   await supabase
     .from('communication_events' as any)

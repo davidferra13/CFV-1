@@ -69,7 +69,7 @@ export async function listTimeBlocks(rangeStart: string, rangeEnd: string): Prom
   const supabase: any = createServerClient()
 
   const { data, error } = await supabase
-    .from('time_blocks')
+    .from('time_blocks' as any)
     .select('id, tenant_id, title, start_at, end_at, block_type, notes, created_at')
     .eq('tenant_id', user.tenantId!)
     .gte('start_at', `${rangeStart}T00:00:00`)
@@ -110,7 +110,7 @@ export async function createTimeBlock(input: z.infer<typeof TimeBlockSchema>) {
   }
 
   const { data, error } = await supabase
-    .from('time_blocks')
+    .from('time_blocks' as any)
     .insert({
       tenant_id: user.tenantId!,
       title: validated.title,
@@ -137,7 +137,7 @@ export async function deleteTimeBlock(timeBlockId: string) {
   const supabase: any = createServerClient()
 
   const { error } = await supabase
-    .from('time_blocks')
+    .from('time_blocks' as any)
     .delete()
     .eq('id', timeBlockId)
     .eq('tenant_id', user.tenantId!)
@@ -164,7 +164,7 @@ export async function getSchedulingAvailability(date: string): Promise<{
 
   const [timeBlocksResult, eventsResult] = await Promise.all([
     supabase
-      .from('time_blocks')
+      .from('time_blocks' as any)
       .select('id, title, start_at, end_at')
       .eq('tenant_id', user.tenantId!)
       .gte('start_at', dayStart)

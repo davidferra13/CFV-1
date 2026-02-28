@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     }
 
     const codeHash = hashToken(pairing_code.toUpperCase().trim())
-    const supabase = createAdminClient()
+    const supabase: any = createAdminClient()
 
     // Find device by pairing code hash
     const { data: device, error } = await supabase

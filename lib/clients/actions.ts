@@ -204,7 +204,7 @@ export async function inviteClient(input: InviteClientInput) {
   const user = await requireChef()
   const validated = InviteClientSchema.parse(input)
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Check if client already exists with this email in this tenant
   const findExistingClient = async (withSoftDeleteFilter: boolean) => {
@@ -321,7 +321,7 @@ export async function createClient(input: CreateClientInput) {
   const user = await requireChef()
   const validated = CreateClientSchema.parse(input)
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // If email provided, ensure no existing client with same email in tenant
   if (validated.email) {
@@ -507,7 +507,7 @@ export async function createClient(input: CreateClientInput) {
  */
 export async function getClients() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
     let query = supabase.from('clients').select('*').eq('tenant_id', user.tenantId!)
@@ -536,7 +536,7 @@ export async function getClients() {
  */
 export async function getClientById(clientId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
     let query = supabase
@@ -580,7 +580,7 @@ export async function createClientFromLead(
     source?: string | null
   }
 ) {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Idempotent: check if client already exists with this email
   const findExisting = async (withSoftDeleteFilter: boolean) => {
@@ -645,7 +645,7 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
   const validated = UpdateClientSchema.parse(input)
   const { expected_updated_at, idempotency_key, ...updateFields } = validated
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: currentClient } = await (supabase
     .from('clients')
@@ -771,7 +771,7 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
  */
 export async function deleteClient(clientId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: client } = await (supabase
     .from('clients')
@@ -809,7 +809,7 @@ export async function deleteClient(clientId: string) {
  */
 export async function restoreClient(clientId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('clients')
@@ -834,7 +834,7 @@ export async function restoreClient(clientId: string) {
  */
 export async function getPendingInvitations() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: invitations, error } = await supabase
     .from('client_invitations')
@@ -858,7 +858,7 @@ export async function getPendingInvitations() {
  */
 export async function cancelInvitation(invitationId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('client_invitations')
@@ -881,7 +881,7 @@ export async function cancelInvitation(invitationId: string) {
  */
 export async function getClientsWithStats() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all clients
   const { data: clients, error: clientsError } = await supabase
@@ -938,7 +938,7 @@ export async function getClientsWithStats() {
  */
 export async function getClientEvents(clientId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify client belongs to tenant
   const { data: client } = await supabase
@@ -976,7 +976,7 @@ export async function getClientEvents(clientId: string) {
  */
 export async function getClientWithStats(clientId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get client
   const { data: client, error: clientError } = await supabase
@@ -1024,7 +1024,7 @@ export async function updateClientHousehold(formData: FormData) {
 
   if (!clientId) throw new ValidationError('Missing clientId')
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: client, error } = await supabase
     .from('clients')
@@ -1051,7 +1051,7 @@ export async function updateClientHousehold(formData: FormData) {
  */
 export async function getClientDormancyInfo(clientId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('client_financial_summary')
@@ -1080,7 +1080,7 @@ export async function updateClientStatus(clientId: string, status: string) {
     throw new ValidationError(`Invalid status: ${status}`)
   }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('clients')
@@ -1105,7 +1105,7 @@ export async function updateClientStatus(clientId: string, status: string) {
  */
 export async function getClientFinancialDetail(clientId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify client belongs to this tenant
   const { data: clientCheck } = await supabase
@@ -1234,7 +1234,7 @@ export async function getClientFinancialDetail(clientId: string) {
  */
 export async function setClientAutomatedEmails(clientId: string, enabled: boolean) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('clients')
@@ -1266,7 +1266,7 @@ export async function addClientFromInquiry(input: {
 }): Promise<{ success: true; clientId: string } | { success: false; error: string }> {
   try {
     const user = await requireChef()
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
 
     if (!input.full_name.trim() || !input.email.trim()) {
       return { success: false, error: 'Name and email are required' }
@@ -1349,7 +1349,7 @@ export async function createClientDirect(input: {
       return { success: false, error: 'Client email is required' }
     }
 
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
 
     // Check for duplicate email in this tenant
     const { data: existing } = await supabase
@@ -1416,7 +1416,7 @@ export async function searchClientsByName(
   Array<{ id: string; full_name: string | null; email: string | null; status: string | null }>
 > {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('clients')

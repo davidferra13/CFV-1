@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: 'Backup Chef Protocol — ChefFlow' }
 
 export default async function BackupChefPage() {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: contacts } = await supabase
     .from('chef_backup_contacts')

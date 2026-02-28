@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: 'Daily Revenue — ChefFlow' }
 
 export default async function DailyRevenuePage() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: entries } = await supabase
     .from('daily_revenue')
@@ -53,7 +53,7 @@ export default async function DailyRevenuePage() {
               const { revalidatePath } = await import('next/cache')
 
               const user = await requireChef()
-              const supabase = createServerClient()
+              const supabase: any = createServerClient()
               const date = formData.get('date') as string
               const amount = formData.get('amount') as string
               const notes = formData.get('notes') as string

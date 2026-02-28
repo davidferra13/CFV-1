@@ -35,7 +35,7 @@ function getMilestoneMessage(streak: number): string | null {
  */
 export async function getClosureStreak(): Promise<ClosureStreakData> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: chef } = await supabase
     .from('chefs')
@@ -66,7 +66,7 @@ export async function getClosureStreak(): Promise<ClosureStreakData> {
  */
 export async function recordClosureForStreak(eventDate: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: chef } = await supabase
     .from('chefs')

@@ -29,7 +29,7 @@ export async function cleanupStorageBuckets(chefId: string): Promise<{
   filesRemoved: number
   errors: string[]
 }> {
-  const adminClient = createServerClient({ admin: true })
+  const adminClient: any = createServerClient({ admin: true })
   let filesRemoved = 0
   let bucketsProcessed = 0
   const errors: string[] = []

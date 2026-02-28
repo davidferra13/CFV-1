@@ -36,10 +36,10 @@ export type RecordSettlementInput = {
 export async function recordSettlement(input: RecordSettlementInput) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data, error } = await supabase
-    .from('settlement_records')
+  const { data, error } = await (supabase
+    .from('settlement_records' as any)
     .upsert(
       {
         tenant_id: user.tenantId!,
@@ -62,7 +62,7 @@ export async function recordSettlement(input: RecordSettlementInput) {
       { onConflict: 'tenant_id,stripe_payout_id' }
     )
     .select('id')
-    .single()
+    .single() as any)
 
   if (error) throw new Error(`Failed to record settlement: ${error.message}`)
   revalidatePath('/commerce/settlements')
@@ -81,16 +81,16 @@ export async function updateSettlementStatus(
 ) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updates: Record<string, any> = { payout_status: status }
   if (arrivalDate) updates.payout_arrival_date = arrivalDate
 
-  const { error } = await supabase
-    .from('settlement_records')
-    .update(updates)
+  const { error } = await (supabase
+    .from('settlement_records' as any)
+    .update(updates as any)
     .eq('id', settlementId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!) as any)
 
   if (error) throw new Error(`Failed to update settlement: ${error.message}`)
   revalidatePath('/commerce/settlements')
@@ -101,17 +101,17 @@ export async function updateSettlementStatus(
 export async function listSettlements(opts?: { limit?: number; offset?: number; status?: string }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const limit = opts?.limit ?? 30
   const offset = opts?.offset ?? 0
 
   let query = supabase
-    .from('settlement_records')
+    .from('settlement_records' as any)
     .select('*', { count: 'exact' })
     .eq('tenant_id', user.tenantId!)
     .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1)
+    .range(offset, offset + limit - 1) as any
 
   if (opts?.status) {
     query = query.eq('payout_status', opts.status)
@@ -128,14 +128,14 @@ export async function listSettlements(opts?: { limit?: number; offset?: number; 
 export async function getSettlement(settlementId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data, error } = await supabase
-    .from('settlement_records')
+  const { data, error } = await (supabase
+    .from('settlement_records' as any)
     .select('*')
     .eq('id', settlementId)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
   if (error || !data) throw new Error('Settlement not found')
   return data
@@ -149,12 +149,12 @@ export async function getSettlement(settlementId: string) {
 export async function getSettlementSummary() {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data: all } = await supabase
-    .from('settlement_records')
+  const { data: all } = await (supabase
+    .from('settlement_records' as any)
     .select('payout_status, net_amount_cents, payment_count')
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!) as any)
 
   const records = (all ?? []) as any[]
 

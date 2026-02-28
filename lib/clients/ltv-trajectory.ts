@@ -28,7 +28,7 @@ export type ClientLTVTrajectory = {
  */
 export async function getClientLTVTrajectory(clientId: string): Promise<ClientLTVTrajectory> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch all completed events for this client in chronological order
   const { data: events } = await supabase

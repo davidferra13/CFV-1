@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: 'Incident Documentation — ChefFlow'
 
 export default async function IncidentsPage() {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: incidents } = await supabase
     .from('chef_incidents')

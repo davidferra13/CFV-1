@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: 'Business Continuity — ChefFlow' }
 
 export default async function BusinessContinuityPage() {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: chefRow } = await supabase
     .from('chefs')

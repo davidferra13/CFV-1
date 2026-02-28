@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache'
 
 export async function createRemovalRequest(input: { client_id?: string; reason?: string }) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const defaultTasks = [
     {
       id: 'REMOVE_WEBSITE',
@@ -52,7 +52,7 @@ export async function createRemovalRequest(input: { client_id?: string; reason?:
 
 export async function toggleRemovalTask(requestId: string, taskId: string) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { data } = await supabase
     .from('chef_portfolio_removal_requests')
     .select('tasks')
@@ -75,7 +75,7 @@ export async function toggleRemovalTask(requestId: string, taskId: string) {
 
 export async function completeRemovalRequest(requestId: string) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   await supabase
     .from('chef_portfolio_removal_requests')
     .update({ status: 'completed', completed_at: new Date().toISOString() })
@@ -86,7 +86,7 @@ export async function completeRemovalRequest(requestId: string) {
 
 export async function getRemovalRequests() {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { data } = await supabase
     .from('chef_portfolio_removal_requests')
     .select('*, clients(full_name)')

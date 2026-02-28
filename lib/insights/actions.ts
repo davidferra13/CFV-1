@@ -71,7 +71,7 @@ export interface ChatInsight {
  */
 export async function processMessageInsights(messageId: string, conversationId: string) {
   try {
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
 
     // Get the message
     const { data: message } = await supabase
@@ -208,7 +208,7 @@ async function autoEscalateAllergyInsight({
   messageId,
   insight,
 }: {
-  supabase: ReturnType<typeof createServerClient>
+  supabase: any
   tenantId: string
   clientId: string
   messageId: string
@@ -327,7 +327,7 @@ async function autoEscalateAllergyInsight({
  */
 export async function getPendingInsights(conversationId: string): Promise<ChatInsight[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('chat_insights')
@@ -355,7 +355,7 @@ export async function acceptInsight(
   }
 ) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get the insight
   const { data: insight, error: fetchError } = await supabase
@@ -416,7 +416,7 @@ export async function acceptInsight(
  */
 export async function dismissInsight(insightId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('chat_insights')

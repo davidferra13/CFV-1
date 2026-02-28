@@ -39,7 +39,7 @@ const MONTH_LABELS = [
 
 export async function getFoodCostTrend(months = 6): Promise<FoodCostTrend> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Compute the cutoff date: first day of the month N months ago
   const cutoff = new Date()

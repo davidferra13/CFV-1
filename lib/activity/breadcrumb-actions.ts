@@ -27,7 +27,7 @@ export async function getBreadcrumbSessions(
   } = {}
 ): Promise<BreadcrumbQueryResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const daysBack = parseDaysBack(options.daysBack)
   const rawLimit = Math.max(1, Math.min(500, options.limit ?? 200))
 

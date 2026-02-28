@@ -9,7 +9,7 @@ import { revalidatePath } from 'next/cache'
 
 export async function getClientTags(clientId: string): Promise<string[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('client_tags' as any)
@@ -24,7 +24,7 @@ export async function getClientTags(clientId: string): Promise<string[]> {
 /** Returns all distinct tags used by this chef, sorted alphabetically. */
 export async function getAllUsedTags(): Promise<string[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('client_tags' as any)
@@ -38,7 +38,7 @@ export async function getAllUsedTags(): Promise<string[]> {
 
 export async function addClientTag(clientId: string, tag: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const trimmed = tag.trim().slice(0, 50)
   if (!trimmed) return
@@ -56,7 +56,7 @@ export async function addClientTag(clientId: string, tag: string): Promise<void>
 
 export async function removeClientTag(clientId: string, tag: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase
     .from('client_tags' as any)
@@ -72,7 +72,7 @@ export async function removeClientTag(clientId: string, tag: string): Promise<vo
 /** Returns a map of clientId → tag array for all clients with tags. */
 export async function getTagsForAllClients(): Promise<Map<string, string[]>> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('client_tags' as any)

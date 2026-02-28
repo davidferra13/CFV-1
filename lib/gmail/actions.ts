@@ -16,7 +16,7 @@ import type { SyncResult, GmailSyncLogEntry, SendMessageResult } from './types'
 
 export async function triggerGmailSync(): Promise<SyncResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify Gmail is connected
   const { data: conn } = await supabase
@@ -45,7 +45,7 @@ export async function triggerGmailSync(): Promise<SyncResult> {
 
 export async function getGmailSyncHistory(limit = 20): Promise<GmailSyncLogEntry[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('gmail_sync_log')
@@ -76,7 +76,7 @@ export async function createDraftMessage(input: {
   eventId?: string | null
 }): Promise<{ messageId: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify client belongs to tenant
   const { data: client } = await supabase
@@ -121,7 +121,7 @@ export async function createDraftMessage(input: {
 
 export async function approveAndSendMessage(messageId: string): Promise<SendMessageResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // 1. Fetch the draft message
   const { data: message, error: msgErr } = await supabase
@@ -325,7 +325,7 @@ export async function updateDraftMessage(
   updates: { subject?: string; body?: string }
 ): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: message } = await supabase
     .from('messages')
@@ -356,7 +356,7 @@ export async function updateDraftMessage(
 
 export async function getMessagesForInquiry(inquiryId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('messages')
@@ -377,7 +377,7 @@ export async function getMessagesForInquiry(inquiryId: string) {
 
 export async function deleteDraftMessage(messageId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: message } = await supabase
     .from('messages')

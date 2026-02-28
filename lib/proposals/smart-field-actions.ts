@@ -45,7 +45,7 @@ const RenderSmartFieldsSchema = z.object({
 
 export async function getSmartFields(): Promise<SmartField[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('smart_field_values')
@@ -61,7 +61,7 @@ export async function getSmartFields(): Promise<SmartField[]> {
 export async function saveSmartField(fieldKey: string, fieldValue: string): Promise<SmartField> {
   const user = await requireChef()
   const parsed = SaveSmartFieldSchema.parse({ fieldKey, fieldValue })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('smart_field_values')
@@ -96,7 +96,7 @@ export async function renderSmartFields(
 ): Promise<RenderedTemplate> {
   const user = await requireChef()
   const parsed = RenderSmartFieldsSchema.parse({ template, context })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch all smart fields for this chef
   const { data, error } = await supabase

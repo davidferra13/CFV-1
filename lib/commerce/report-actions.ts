@@ -63,38 +63,38 @@ export type ChannelReport = {
 export async function getShiftReport(sessionId: string): Promise<ShiftReport> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch session
-  const { data: session, error: sessErr } = await supabase
-    .from('register_sessions')
+  const { data: session, error: sessErr } = await (supabase
+    .from('register_sessions' as any)
     .select('*')
     .eq('id', sessionId)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
   if (sessErr || !session) throw new Error('Register session not found')
   const s = session as any
 
   // Fetch sales for this session
-  const { data: sales } = await supabase
+  const { data: sales } = await (supabase
     .from('sales')
     .select('id')
     .eq('register_session_id', sessionId)
     .eq('tenant_id', user.tenantId!)
-    .neq('status', 'voided')
+    .neq('status', 'voided') as any)
 
   const saleIds = (sales ?? []).map((sl: any) => sl.id)
 
   // Payment breakdown
   let paymentBreakdown: ShiftReport['paymentBreakdown'] = []
   if (saleIds.length > 0) {
-    const { data: payments } = await supabase
+    const { data: payments } = await (supabase
       .from('commerce_payments')
       .select('payment_method, amount_cents')
       .eq('tenant_id', user.tenantId!)
       .in('sale_id', saleIds)
-      .in('status', ['captured', 'settled'])
+      .in('status', ['captured', 'settled']) as any)
 
     const methodMap = new Map<string, { count: number; totalCents: number }>()
     for (const p of (payments ?? []) as any[]) {
@@ -112,11 +112,11 @@ export async function getShiftReport(sessionId: string): Promise<ShiftReport> {
   // Top products
   let topProducts: ShiftReport['topProducts'] = []
   if (saleIds.length > 0) {
-    const { data: items } = await supabase
+    const { data: items } = await (supabase
       .from('sale_items')
       .select('name, quantity, line_total_cents')
       .eq('tenant_id', user.tenantId!)
-      .in('sale_id', saleIds)
+      .in('sale_id', saleIds) as any)
 
     const productMap = new Map<string, { quantity: number; revenueCents: number }>()
     for (const item of (items ?? []) as any[]) {
@@ -156,24 +156,24 @@ export async function getShiftReport(sessionId: string): Promise<ShiftReport> {
 export async function getDailySalesReport(from: string, to: string): Promise<DailySalesReport[]> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data: sales } = await supabase
+  const { data: sales } = await (supabase
     .from('sales')
     .select('created_at, subtotal_cents, tax_cents, total_cents, tip_cents, status')
     .eq('tenant_id', user.tenantId!)
     .gte('created_at', `${from}T00:00:00.000Z`)
     .lte('created_at', `${to}T23:59:59.999Z`)
     .neq('status', 'voided')
-    .neq('status', 'draft')
+    .neq('status', 'draft') as any)
 
-  const { data: refunds } = await supabase
+  const { data: refunds } = await (supabase
     .from('commerce_refunds')
     .select('created_at, amount_cents')
     .eq('tenant_id', user.tenantId!)
     .eq('status', 'processed')
     .gte('created_at', `${from}T00:00:00.000Z`)
-    .lte('created_at', `${to}T23:59:59.999Z`)
+    .lte('created_at', `${to}T23:59:59.999Z`) as any)
 
   // Group by date
   const dayMap = new Map<
@@ -238,29 +238,29 @@ export async function getDailySalesReport(from: string, to: string): Promise<Dai
 export async function getProductReport(from: string, to: string): Promise<ProductReport[]> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data: items } = await supabase
+  const { data: items } = await (supabase
     .from('sale_items')
     .select(
       'name, product_projection_id, category, quantity, line_total_cents, unit_cost_cents, sale_id'
     )
     .eq('tenant_id', user.tenantId!)
     .gte('created_at', `${from}T00:00:00.000Z`)
-    .lte('created_at', `${to}T23:59:59.999Z`)
+    .lte('created_at', `${to}T23:59:59.999Z`) as any)
 
   // Filter out voided sales
   const saleIds = [...new Set((items ?? []).map((i: any) => i.sale_id))]
   let validSaleIds = new Set<string>()
 
   if (saleIds.length > 0) {
-    const { data: sales } = await supabase
+    const { data: sales } = await (supabase
       .from('sales')
       .select('id, status')
       .eq('tenant_id', user.tenantId!)
       .in('id', saleIds)
       .neq('status', 'voided')
-      .neq('status', 'draft')
+      .neq('status', 'draft') as any)
 
     validSaleIds = new Set((sales ?? []).map((s: any) => s.id))
   }
@@ -320,16 +320,16 @@ export async function getProductReport(from: string, to: string): Promise<Produc
 export async function getChannelReport(from: string, to: string): Promise<ChannelReport[]> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data: sales } = await supabase
+  const { data: sales } = await (supabase
     .from('sales')
     .select('channel, total_cents')
     .eq('tenant_id', user.tenantId!)
     .neq('status', 'voided')
     .neq('status', 'draft')
     .gte('created_at', `${from}T00:00:00.000Z`)
-    .lte('created_at', `${to}T23:59:59.999Z`)
+    .lte('created_at', `${to}T23:59:59.999Z`) as any)
 
   const channelMap = new Map<string, { salesCount: number; revenueCents: number }>()
   let grandTotal = 0

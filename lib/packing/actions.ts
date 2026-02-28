@@ -23,7 +23,7 @@ export async function markCarPacked(
   eventId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('events')
@@ -52,7 +52,7 @@ export async function resetPackingStatus(
   eventId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('events')
@@ -78,7 +78,7 @@ export async function resetPackingStatus(
  */
 export async function getPackingStatus(eventId: string): Promise<PackingStatus> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')
@@ -108,7 +108,7 @@ export async function togglePackingConfirmation(
   confirmed: boolean
 ): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (confirmed) {
     await supabase
@@ -133,7 +133,7 @@ export async function togglePackingConfirmation(
  */
 export async function getPackingConfirmationCount(eventId: string): Promise<number> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { count } = await supabase
     .from('packing_confirmations')

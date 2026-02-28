@@ -57,7 +57,7 @@ export async function generateDailyReport(date?: string): Promise<DailyReport> {
  */
 export async function getDailyReport(date?: string): Promise<DailyReport | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const reportDate = date ?? new Date().toISOString().split('T')[0]
 
@@ -90,7 +90,7 @@ export async function getDailyReport(date?: string): Promise<DailyReport | null>
  */
 export async function getDailyReportHistory(limit = 30): Promise<DailyReportSummary[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('daily_reports')

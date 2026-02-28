@@ -43,7 +43,7 @@ export async function getTakeAChefStats(): Promise<TakeAChefStats> {
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
 
     // Run all count queries in parallel for speed
     const [newRes, awaitingRes, confirmedRes, totalRes, syncRes, staleRes] = await Promise.all([
@@ -129,7 +129,7 @@ export async function getTakeAChefDailyStats(): Promise<TakeAChefDailyStats> {
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
 
     const now = new Date()
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
@@ -259,7 +259,7 @@ export async function getTakeAChefActionableLeads(): Promise<{
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
 
     const { data } = await supabase
       .from('inquiries')

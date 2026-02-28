@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     }
 
     // DB-based rate limit — count recent pin_failed events for this device
-    const supabase = createAdminClient()
+    const supabase: any = createAdminClient()
     const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString()
 
     const { count: failedCount } = await supabase

@@ -47,7 +47,7 @@ export async function saveEmailTemplate(
   input: SaveEmailTemplateInput
 ): Promise<{ success: boolean; template: EmailTemplate }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const validated = SaveEmailTemplateSchema.parse(input)
 
@@ -131,7 +131,7 @@ export async function saveEmailTemplate(
  */
 export async function listEmailTemplates(): Promise<EmailTemplate[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('campaign_templates')
@@ -165,7 +165,7 @@ export async function listEmailTemplates(): Promise<EmailTemplate[]> {
  */
 export async function deleteEmailTemplate(id: string): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const validatedId = TemplateIdSchema.parse(id)
 

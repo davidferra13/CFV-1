@@ -78,7 +78,7 @@ const EQUIPMENT_TRIGGERS: Record<string, string[]> = {
 
 export async function fetchPackingListData(eventId: string): Promise<PackingListData | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event with client site info
   // Note: equipment_must_bring, kitchen_notes, house_rules were added in operational_refinements migration

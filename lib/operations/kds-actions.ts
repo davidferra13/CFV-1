@@ -70,7 +70,7 @@ function mapServiceCourse(row: any): ServiceCourse {
  */
 export async function getServiceCourses(eventId: string): Promise<ServiceCourse[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('service_courses')
@@ -97,7 +97,7 @@ export async function createServiceCourses(
 ) {
   const user = await requireChef()
   const validated = CreateServiceCoursesSchema.parse({ eventId, courses })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const rows = validated.courses.map((c) => ({
     event_id: validated.eventId,
@@ -124,7 +124,7 @@ export async function createServiceCourses(
  */
 export async function fireCourse(courseId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('service_courses')
@@ -151,7 +151,7 @@ export async function fireCourse(courseId: string) {
  */
 export async function markCoursePlated(courseId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('service_courses')
@@ -176,7 +176,7 @@ export async function markCoursePlated(courseId: string) {
  */
 export async function markCourseServed(courseId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('service_courses')
@@ -212,7 +212,7 @@ export async function markServed(courseId: string) {
  */
 export async function mark86(courseId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('service_courses')

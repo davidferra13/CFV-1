@@ -10,7 +10,7 @@ import { revalidatePath } from 'next/cache'
  */
 export async function getActivityLogEnabled(): Promise<boolean> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('chef_preferences')
@@ -27,7 +27,7 @@ export async function getActivityLogEnabled(): Promise<boolean> {
  */
 export async function setActivityLogEnabled(enabled: boolean): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('chef_preferences')

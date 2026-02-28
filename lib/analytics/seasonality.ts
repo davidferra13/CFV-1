@@ -56,7 +56,7 @@ const MONTH_SHORT = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D']
 
 export async function getBookingSeasonality(): Promise<BookingSeasonality> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch all completed + in-progress events (i.e., real bookings, not drafts)
   // supabase because amount_paid_cents is not yet in the generated types
@@ -192,7 +192,7 @@ export type HolidayYoYRow = {
  */
 export async function getHolidayYearOverYear(): Promise<HolidayYoYRow[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Import lazily to avoid circular deps at module load time
   const { HOLIDAYS } = await import('@/lib/holidays/constants')

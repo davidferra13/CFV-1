@@ -133,7 +133,7 @@ export async function createAdjustment({
   internal_notes?: string
 }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event to validate ownership
   const { data: event, error: eventError } = await supabase
@@ -191,7 +191,7 @@ export async function createAdjustment({
  */
 export async function getEventLedger(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: entries, error } = await supabase
     .from('ledger_entries')
@@ -213,7 +213,7 @@ export async function getEventLedger(eventId: string) {
  */
 export async function getTenantLedger(limit = 100) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: entries, error } = await supabase
     .from('ledger_entries')

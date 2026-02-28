@@ -17,7 +17,7 @@ import { revalidatePath } from 'next/cache'
  * - Create a dish_appearance record linking to the menu's event
  */
 export async function indexDishesFromMenu(menuId: string, tenantId: string, userId: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get the menu with its event info and all dishes
   const { data: menu, error: menuError } = await supabase
@@ -159,7 +159,7 @@ export async function indexDishesFromMenu(menuId: string, tenantId: string, user
  * Returns matching dishes for the chef to add to a menu.
  */
 export async function searchDishIndexForMenu(query: string, limit = 10) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { requireChef } = await import('@/lib/auth/get-user')
   const user = await requireChef()
 

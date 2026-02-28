@@ -25,7 +25,7 @@ export interface RemyConversation {
 export async function createConversation(): Promise<{ id: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('remy_conversations')
@@ -45,7 +45,7 @@ export async function listConversations(options?: {
 }): Promise<{ conversations: RemyConversation[]; total: number }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const limit = options?.limit ?? 30
   const offset = options?.offset ?? 0
@@ -98,7 +98,7 @@ export async function listConversations(options?: {
 export async function loadConversationMessages(conversationId: string): Promise<RemyMessage[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('remy_messages')
@@ -130,7 +130,7 @@ export async function saveConversationMessage(input: {
 }): Promise<{ id: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('remy_messages')
@@ -170,7 +170,7 @@ export async function autoTitleConversation(
 ): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   try {
     const result = await parseWithOllama(
@@ -196,7 +196,7 @@ export async function autoTitleConversation(
 export async function deleteConversationMessage(messageId: string): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('remy_messages')
@@ -266,7 +266,7 @@ export async function exportConversation(
 ): Promise<{ title: string; content: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: conv } = await supabase
     .from('remy_conversations')
@@ -306,7 +306,7 @@ export async function exportConversation(
 export async function deleteConversation(conversationId: string): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('remy_conversations')

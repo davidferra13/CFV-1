@@ -87,7 +87,7 @@ const UpdatePreferencesSchema = z.object({
 export type UpdatePreferencesInput = z.infer<typeof UpdatePreferencesSchema>
 
 // Type assertion helper — chef_preferences not in generated types until migration applied
-function fromChefPreferences(supabase: ReturnType<typeof createServerClient>): any {
+function fromChefPreferences(supabase: any): any {
   return supabase.from('chef_preferences')
 }
 
@@ -249,7 +249,7 @@ function getPrimaryNavHrefsFromUnknown(value: unknown): string[] {
  */
 export async function getChefPreferences(): Promise<ChefPreferences> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await fromChefPreferences(supabase)
     .select('*')
@@ -302,7 +302,7 @@ export async function getChefPreferences(): Promise<ChefPreferences> {
 
 export async function getChefPrimaryNavHrefs(): Promise<string[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await fromChefPreferences(supabase)
     .select('primary_nav_hrefs')
@@ -352,7 +352,7 @@ export async function updateChefPreferences(input: UpdatePreferencesInput) {
 
   delete payload.default_stores
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Check if preferences exist
   const { data: existing } = await fromChefPreferences(supabase)
@@ -403,7 +403,7 @@ export async function getBusinessMode(): Promise<{
   business_address: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await fromChefPreferences(supabase)
     .select('is_business, business_legal_name, business_address')
@@ -426,7 +426,7 @@ export async function setBusinessMode(input: {
   business_address?: string | null
 }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const payload: Record<string, unknown> = {
     is_business: input.is_business,

@@ -9,7 +9,7 @@ import { requireChef } from '@/lib/auth/get-user'
  */
 export async function getRepeatGuests() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all guests across all events for this chef, grouped by email
   const { data: allGuests, error } = await supabase
@@ -76,7 +76,7 @@ export async function getRepeatGuests() {
  */
 export async function getGuestFrequencyStats() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('event_guests')
@@ -120,7 +120,7 @@ export async function getGuestFrequencyStats() {
  */
 export async function getDinnerGroups() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all events with their attending guests
   const { data, error } = await supabase

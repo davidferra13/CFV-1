@@ -97,7 +97,7 @@ const LinkRecipeSchema = z.object({
 export async function addInquiryNote(input: z.infer<typeof AddNoteSchema>) {
   const user = await requireChef()
   const validated = AddNoteSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('inquiry_notes')
@@ -153,7 +153,7 @@ export async function addInquiryNote(input: z.infer<typeof AddNoteSchema>) {
 export async function updateInquiryNote(noteId: string, input: z.infer<typeof UpdateNoteSchema>) {
   const user = await requireChef()
   const validated = UpdateNoteSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('inquiry_notes')
@@ -176,7 +176,7 @@ export async function updateInquiryNote(noteId: string, input: z.infer<typeof Up
  */
 export async function deleteInquiryNote(noteId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('inquiry_notes')
@@ -197,7 +197,7 @@ export async function deleteInquiryNote(noteId: string) {
  */
 export async function toggleInquiryNotePinned(noteId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: existing, error: fetchError } = await supabase
     .from('inquiry_notes')
@@ -236,7 +236,7 @@ export async function getInquiryNotes(
   }
 ): Promise<InquiryNote[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('inquiry_notes')
@@ -282,7 +282,7 @@ export interface RecipeSlim {
  */
 export async function getRecipesForLinker(): Promise<RecipeSlim[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('recipes')
@@ -309,7 +309,7 @@ export async function getRecipesForLinker(): Promise<RecipeSlim[]> {
 export async function linkRecipeToInquiry(input: z.infer<typeof LinkRecipeSchema>) {
   const user = await requireChef()
   const validated = LinkRecipeSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('inquiry_recipe_links')
@@ -341,7 +341,7 @@ export async function linkRecipeToInquiry(input: z.infer<typeof LinkRecipeSchema
  */
 export async function unlinkRecipeFromInquiry(linkId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('inquiry_recipe_links')
@@ -362,7 +362,7 @@ export async function unlinkRecipeFromInquiry(linkId: string) {
  */
 export async function getLinkedRecipes(inquiryId: string): Promise<InquiryRecipeLink[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('inquiry_recipe_links')

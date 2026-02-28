@@ -33,7 +33,7 @@ export async function buildClientPreferenceProfile(
   clientId: string
 ): Promise<ClientPreferenceProfile> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Gather all historical data for this client
   const [clientResult, eventsResult, messagesResult, inquiriesResult] = await Promise.all([

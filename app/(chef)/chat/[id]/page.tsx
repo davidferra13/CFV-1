@@ -23,7 +23,7 @@ export async function generateMetadata({
   const { id } = await params
   const conversation = await getConversation(id)
   return {
-    title: conversation?.title ? `Chat: ${conversation.title} — ChefFlow` : 'Chat — ChefFlow',
+    title: conversation ? `Chat — ChefFlow` : 'Chat — ChefFlow',
   }
 }
 
@@ -61,7 +61,7 @@ export default async function ChefChatViewPage({ params }: { params: Promise<{ i
 
   if (clientParticipant) {
     // Resolve client entity ID from auth_user_id
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
     const { data: clientRow } = await supabase
       .from('clients')
       .select('id')

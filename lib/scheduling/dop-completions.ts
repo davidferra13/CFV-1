@@ -15,7 +15,7 @@ import { revalidatePath } from 'next/cache'
  */
 export async function getDOPManualCompletions(eventId: string): Promise<Set<string>> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('dop_task_completions')
@@ -37,7 +37,7 @@ export async function toggleDOPTaskCompletion(
   notes?: string
 ): Promise<{ completed: boolean }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Check if already completed
   const { data: existing } = await supabase

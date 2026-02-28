@@ -100,7 +100,7 @@ export async function getStaffSchedulerData(
 ): Promise<StaffSchedulerData> {
   const user = await requireChef()
   const parsed = DateRangeSchema.parse({ startDate, endDate })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [staffResult, eventsResult, assignmentResult, availabilityResult] = await Promise.all([
     supabase
@@ -206,7 +206,7 @@ export async function scheduleStaffMemberWithConflictCheck(input: {
 }) {
   const parsed = ScheduleSchema.parse(input)
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event, error: eventError } = await supabase
     .from('events')
@@ -245,7 +245,7 @@ export async function getTimeTrackerData(
 ): Promise<TimeTrackerData> {
   const user = await requireChef()
   const parsed = DateRangeSchema.parse({ startDate, endDate })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [staffResult, eventsResult, entriesResult] = await Promise.all([
     supabase
@@ -342,7 +342,7 @@ export async function clockInFromTimeTracker(input: {
       throw new Error('Staff can only clock in themselves')
     }
 
-    const supabase = createServerClient({ admin: true })
+    const supabase: any = createServerClient({ admin: true })
     if (parsed.eventId) {
       const { data: event } = await supabase
         .from('events')
@@ -408,7 +408,7 @@ export async function clockOutFromTimeTracker(entryId: string) {
     entry = await clockOut(entryId)
   } else {
     const staffUser = await requireStaff()
-    const supabase = createServerClient({ admin: true })
+    const supabase: any = createServerClient({ admin: true })
 
     const { data: existing, error: fetchError } = await supabase
       .from('staff_clock_entries')
@@ -472,7 +472,7 @@ export async function getStaffPortalTimeTrackerData(
 ): Promise<TimeTrackerData> {
   const user = await requireStaff()
   const parsed = DateRangeSchema.parse({ startDate, endDate })
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const [staffResult, eventsResult, entriesResult] = await Promise.all([
     supabase
@@ -548,7 +548,7 @@ export async function getPayrollReportForPeriod(
 ): Promise<PayrollReportData> {
   const user = await requireChef()
   const parsed = DateRangeSchema.parse({ startDate, endDate })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('staff_clock_entries')

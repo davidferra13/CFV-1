@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid or inactive device' }, { status: 401 })
     }
 
-    const supabase = createAdminClient()
+    const supabase: any = createAdminClient()
     const tenantId = device.tenantId
 
     // DB-based rate limit — count recent submissions for this device

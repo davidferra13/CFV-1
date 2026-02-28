@@ -58,7 +58,7 @@ function fromStored(stored: StoredEqItem): EquipmentItem {
 export async function saveEquipmentChecklist(eventId: string, items: EquipmentItem[]) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const eqItems: StoredEqItem[] = items.map(toStored)
 
@@ -103,7 +103,7 @@ export async function saveEquipmentChecklist(eventId: string, items: EquipmentIt
 export async function getEquipmentChecklist(eventId: string): Promise<EquipmentItem[]> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: checklist } = await supabase
     .from('event_safety_checklists')

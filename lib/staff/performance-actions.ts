@@ -48,7 +48,7 @@ export async function computePerformanceScore(
 ): Promise<StaffPerformanceScore> {
   const user = await requireChef()
   z.string().uuid().parse(staffMemberId)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch all assignments for this staff member
   const { data: assignments, error: assignError } = await supabase
@@ -135,7 +135,7 @@ export async function computePerformanceScore(
  */
 export async function getStaffPerformanceBoard(): Promise<StaffPerformanceScore[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('staff_performance_scores')
@@ -172,7 +172,7 @@ export async function getStaffReliabilityForEvent(
 ): Promise<StaffReliabilityInfo[]> {
   const user = await requireChef()
   z.string().uuid().parse(eventId)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get staff assigned to this event
   const { data: assignments, error: assignError } = await supabase

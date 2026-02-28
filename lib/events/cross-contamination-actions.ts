@@ -76,7 +76,7 @@ function buildItemsForAllergens(allergens: string[]): CrossContamItem[] {
 export async function getOrCreateCrossContaminationChecklist(eventId: string, allergens: string[]) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!allergens || allergens.length === 0) {
     return null
@@ -159,7 +159,7 @@ export async function getOrCreateCrossContaminationChecklist(eventId: string, al
 export async function toggleCrossContaminationItem(checklistId: string, itemKey: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: checklist, error: fetchError } = await supabase
     .from('event_safety_checklists')

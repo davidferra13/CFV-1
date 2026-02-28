@@ -88,7 +88,7 @@ function median(arr: number[]): number {
  */
 export async function getClientHealthScores(): Promise<ClientHealthSummary> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch client financial summary + event counts
   // cast as any — total_events/days_since_last_event may not be in generated types

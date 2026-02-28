@@ -249,23 +249,23 @@ export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema>
 // ============================================
 
 // chef_connections not in generated types until migration applied and types regenerated
-function fromChefConnections(supabase: ReturnType<typeof createServerClient>): any {
+function fromChefConnections(supabase: any): any {
   return supabase.from('chef_connections')
 }
 
-function fromChefPreferences(supabase: ReturnType<typeof createServerClient>): any {
+function fromChefPreferences(supabase: any): any {
   return supabase.from('chef_preferences')
 }
 
-function fromChefNetworkPosts(supabase: ReturnType<typeof createServerClient>): any {
+function fromChefNetworkPosts(supabase: any): any {
   return supabase.from('chef_network_posts')
 }
 
-function fromChefNetworkFeaturePreferences(supabase: ReturnType<typeof createServerClient>): any {
+function fromChefNetworkFeaturePreferences(supabase: any): any {
   return supabase.from('chef_network_feature_preferences')
 }
 
-function fromChefNetworkContactShares(supabase: ReturnType<typeof createServerClient>): any {
+function fromChefNetworkContactShares(supabase: any): any {
   return supabase.from('chef_network_contact_shares')
 }
 
@@ -282,7 +282,7 @@ function extractChefProfileImagePath(url: string | null | undefined): string | n
   return decodeURIComponent(encodedPath)
 }
 
-async function ensureChefProfileImagesBucket(supabase: ReturnType<typeof createServerClient>) {
+async function ensureChefProfileImagesBucket(supabase: any) {
   const { error: createError } = await supabase.storage.createBucket(CHEF_PROFILE_IMAGES_BUCKET, {
     public: true,
     allowedMimeTypes: ALLOWED_PROFILE_IMAGE_TYPES,
@@ -323,7 +323,7 @@ function getDefaultFeaturePreferenceMap(): Record<NetworkFeatureKey, boolean> {
 }
 
 async function getFeaturePreferenceMapForChef(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   chefId: string
 ): Promise<Record<NetworkFeatureKey, boolean>> {
   const map = getDefaultFeaturePreferenceMap()
@@ -619,7 +619,7 @@ export async function getNetworkFeed(
  */
 export async function getNetworkFeaturePreferences(): Promise<NetworkFeaturePreference[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const preferenceMap = await getFeaturePreferenceMapForChef(supabase, user.entityId)
 
   return NETWORK_FEATURE_KEYS.map((key) => ({
@@ -844,7 +844,7 @@ function normalizePhone(value: string): string {
  */
 export async function getNetworkDiscoverable(): Promise<boolean> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await fromChefPreferences(supabase)
     .select('network_discoverable')
@@ -869,7 +869,7 @@ export async function getChefProfile(): Promise<{
   profile_image_url: string | null
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('chefs')
@@ -1027,7 +1027,7 @@ export async function removeConnection(connectionId: string) {
  */
 export async function toggleNetworkDiscoverable(discoverable: boolean) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Upsert pattern (same as updateChefPreferences)
   const { data: existing } = await fromChefPreferences(supabase)
@@ -1062,7 +1062,7 @@ export async function toggleNetworkDiscoverable(discoverable: boolean) {
 export async function updateChefProfile(input: UpdateProfileInput) {
   const user = await requireChef()
   const validated = UpdateProfileSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('chefs').update(validated).eq('id', user.entityId)
 
@@ -1223,7 +1223,7 @@ export async function updateNetworkFeaturePreference(
 ) {
   const user = await requireChef()
   const validated = UpdateFeaturePreferenceSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await fromChefNetworkFeaturePreferences(supabase).upsert(
     {

@@ -57,7 +57,7 @@ export interface SalesTaxSummary {
 
 export async function getSalesTaxSettings(): Promise<SalesTaxSettings | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('sales_tax_settings')
@@ -79,7 +79,7 @@ export async function saveSalesTaxSettings(input: {
   notes: string | null
 }): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase.from('sales_tax_settings').upsert(
     {
@@ -107,7 +107,7 @@ export async function setEventSalesTax(input: {
   exemptionReason: string | null
 }): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const taxCollectedCents = input.isExempt
     ? 0
@@ -130,7 +130,7 @@ export async function setEventSalesTax(input: {
 
 export async function getEventSalesTax(eventId: string): Promise<EventSalesTax | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('event_sales_tax')
@@ -148,7 +148,7 @@ export async function markEventSalesTaxRemitted(input: {
   remittancePeriod: string
 }): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase
     .from('event_sales_tax')
@@ -169,7 +169,7 @@ export async function getSalesTaxSummary(filters?: {
   periodEnd?: string
 }): Promise<SalesTaxSummary> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('event_sales_tax')
@@ -220,7 +220,7 @@ export async function recordSalesTaxRemittance(input: {
   notes: string | null
 }): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase.from('sales_tax_remittances').insert({
     chef_id: user.entityId,
@@ -236,7 +236,7 @@ export async function recordSalesTaxRemittance(input: {
 
 export async function getSalesTaxRemittances(): Promise<SalesTaxRemittance[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('sales_tax_remittances')
@@ -257,7 +257,7 @@ export async function getUnremittedEventTax(): Promise<
   }>
 > {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('event_sales_tax')

@@ -38,7 +38,7 @@ const AARDraftAISchema = z.object({
 
 export async function generateAARDraft(eventId: string): Promise<AARDraft> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // @ts-ignore - supabase type depth
   const eventResult: any = await supabase
@@ -56,7 +56,7 @@ export async function generateAARDraft(eventId: string): Promise<AARDraft> {
     .single()
   // @ts-ignore - supabase type depth
   const menuResult: any = await supabase
-    .from('event_menu_components')
+    .from('event_menu_components' as any)
     .select('name, course_type, description')
     .eq('event_id', eventId)
   // @ts-ignore - supabase type depth
@@ -66,13 +66,13 @@ export async function generateAARDraft(eventId: string): Promise<AARDraft> {
     .eq('event_id', eventId)
   // @ts-ignore - supabase type depth
   const debrief: any = await supabase
-    .from('aars')
+    .from('aars' as any)
     .select('chef_notes, client_feedback, rating')
     .eq('event_id', eventId)
     .maybeSingle()
   // @ts-ignore - supabase type depth
   const tempLog: any = await supabase
-    .from('temp_logs')
+    .from('temp_logs' as any)
     .select('food_item, temp_f, stage, logged_at')
     .eq('event_id', eventId)
     .limit(10)

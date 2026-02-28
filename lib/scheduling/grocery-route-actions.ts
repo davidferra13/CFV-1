@@ -59,7 +59,7 @@ const EventIdSchema = z.string().uuid()
  */
 export async function getGroceryRoute(eventId: string): Promise<GroceryRoute> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validatedEventId = EventIdSchema.parse(eventId)
 
   // Fetch event details

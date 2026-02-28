@@ -19,7 +19,7 @@ export interface RevenueForecast {
 
 export async function getRevenueForecast(): Promise<RevenueForecast> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch last 12 months of completed event revenue
   const twelveMonthsAgo = subMonths(new Date(), 12)

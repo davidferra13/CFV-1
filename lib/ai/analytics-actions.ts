@@ -27,7 +27,7 @@ export interface BreakEvenResult {
 
 export async function analyzeBreakEven(eventName: string): Promise<BreakEvenResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Find event
   const { data: events } = await supabase
@@ -113,7 +113,7 @@ export interface ClientLTVResult {
 
 export async function calculateClientLTV(clientName: string): Promise<ClientLTVResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Find client
   const { data: clients } = await supabase
@@ -225,7 +225,7 @@ export interface RecipeCostResult {
 
 export async function optimizeRecipeCost(recipeName: string): Promise<RecipeCostResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Find recipe
   const { data: recipes } = await supabase

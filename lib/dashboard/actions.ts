@@ -16,7 +16,7 @@ import { formatMinutesAsDuration } from '@/lib/events/time-tracking'
 
 export async function getOutstandingPayments() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: summaries, error } = await supabase
     .from('event_financial_summary')
@@ -70,7 +70,7 @@ export type OutstandingEvent = {
 
 export async function getDashboardQuoteStats() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: quotes, error } = await supabase
     .from('quotes')
@@ -116,7 +116,7 @@ export async function getDashboardQuoteStats() {
 
 export async function getDashboardEventCounts() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const now = new Date()
   const yearStart = `${now.getFullYear()}-01-01`
@@ -167,7 +167,7 @@ export async function getDashboardEventCounts() {
 
 export async function getMonthOverMonthRevenue() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const now = new Date()
   const currentYear = now.getFullYear()
@@ -253,7 +253,7 @@ export async function getMonthOverMonthRevenue() {
 
 export async function getCurrentMonthExpenseSummary() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const now = new Date()
   const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
@@ -288,7 +288,7 @@ export async function getCurrentMonthExpenseSummary() {
 
 export async function getNextUpcomingEvent() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -551,7 +551,7 @@ function buildTopActivity(
 
 export async function getDashboardHoursSnapshot(): Promise<DashboardHoursSnapshot> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const todayIso = new Date().toISOString().slice(0, 10)
   const sevenDaysAgoIso = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
@@ -756,7 +756,7 @@ export type TopProfitEvent = {
 
 export async function getTopEventsByProfit(limit = 3): Promise<TopProfitEvent[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const now = new Date()
   const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
@@ -803,7 +803,7 @@ export async function getTopEventsByProfit(limit = 3): Promise<TopProfitEvent[]>
 
 export async function getMonthlyAvgHourlyRate(): Promise<number | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const now = new Date()
   const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`

@@ -24,26 +24,26 @@ export type OpenRegisterInput = {
 export async function openRegister(input: OpenRegisterInput) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!Number.isInteger(input.openingCashCents) || input.openingCashCents < 0) {
     throw new Error('Opening cash must be a non-negative integer (cents)')
   }
 
   // Check for existing open session
-  const { data: existing } = await supabase
-    .from('register_sessions')
+  const { data: existing } = await (supabase
+    .from('register_sessions' as any)
     .select('id')
     .eq('tenant_id', user.tenantId!)
     .eq('status', 'open')
-    .limit(1)
+    .limit(1) as any)
 
   if (existing && existing.length > 0) {
     throw new Error('A register session is already open. Close or suspend it first.')
   }
 
-  const { data, error } = await supabase
-    .from('register_sessions')
+  const { data, error } = await (supabase
+    .from('register_sessions' as any)
     .insert({
       tenant_id: user.tenantId!,
       session_name: input.sessionName ?? null,
@@ -52,7 +52,7 @@ export async function openRegister(input: OpenRegisterInput) {
       opening_cash_cents: input.openingCashCents,
     } as any)
     .select('id, session_name, opened_at')
-    .single()
+    .single() as any)
 
   if (error) throw new Error(`Failed to open register: ${error.message}`)
 
@@ -65,10 +65,10 @@ export async function openRegister(input: OpenRegisterInput) {
 export async function suspendRegister(sessionId: string, notes?: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { error } = await supabase
-    .from('register_sessions')
+  const { error } = await (supabase
+    .from('register_sessions' as any)
     .update({
       status: 'suspended',
       suspended_at: new Date().toISOString(),
@@ -76,7 +76,7 @@ export async function suspendRegister(sessionId: string, notes?: string) {
     } as any)
     .eq('id', sessionId)
     .eq('tenant_id', user.tenantId!)
-    .eq('status', 'open')
+    .eq('status', 'open') as any)
 
   if (error) throw new Error(`Failed to suspend register: ${error.message}`)
 
@@ -88,17 +88,17 @@ export async function suspendRegister(sessionId: string, notes?: string) {
 export async function resumeRegister(sessionId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { error } = await supabase
-    .from('register_sessions')
+  const { error } = await (supabase
+    .from('register_sessions' as any)
     .update({
       status: 'open',
       suspended_at: null,
     } as any)
     .eq('id', sessionId)
     .eq('tenant_id', user.tenantId!)
-    .eq('status', 'suspended')
+    .eq('status', 'suspended') as any)
 
   if (error) throw new Error(`Failed to resume register: ${error.message}`)
 
@@ -114,19 +114,19 @@ export async function closeRegister(
 ) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!Number.isInteger(closingCashCents) || closingCashCents < 0) {
     throw new Error('Closing cash must be a non-negative integer (cents)')
   }
 
   // Fetch session to compute expected cash
-  const { data: session, error: fetchErr } = await supabase
-    .from('register_sessions')
+  const { data: session, error: fetchErr } = await (supabase
+    .from('register_sessions' as any)
     .select('opening_cash_cents, total_revenue_cents, total_tips_cents, status')
     .eq('id', sessionId)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
   if (fetchErr || !session) throw new Error('Register session not found')
   if ((session as any).status === 'closed') {
@@ -134,27 +134,27 @@ export async function closeRegister(
   }
 
   // Get sales linked to this session to filter payments
-  const { data: sessionSales } = await supabase
+  const { data: sessionSales } = await (supabase
     .from('sales')
     .select('id')
     .eq('register_session_id', sessionId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!) as any)
 
   const sessionSaleIds = new Set((sessionSales ?? []).map((s: any) => s.id))
 
   // Filter to only payments for this session's sales
-  const { data: sessionPayments } = await supabase
+  const { data: sessionPayments } = await (supabase
     .from('commerce_payments')
     .select('amount_cents, tip_cents, payment_method, sale_id')
     .eq('tenant_id', user.tenantId!)
-    .in('status', ['captured', 'settled'])
+    .in('status', ['captured', 'settled']) as any)
 
   // Expected cash is now derived from itemized drawer movements.
-  const { data: movements } = await supabase
-    .from('cash_drawer_movements')
+  const { data: movements } = await (supabase
+    .from('cash_drawer_movements' as any)
     .select('amount_cents')
     .eq('tenant_id', user.tenantId!)
-    .eq('register_session_id', sessionId)
+    .eq('register_session_id', sessionId) as any)
 
   const movementNet = (movements ?? []).reduce((sum: number, m: any) => sum + m.amount_cents, 0)
   const expectedCash = (session as any).opening_cash_cents + movementNet
@@ -172,8 +172,8 @@ export async function closeRegister(
     }
   }
 
-  const { error } = await supabase
-    .from('register_sessions')
+  const { error } = await (supabase
+    .from('register_sessions' as any)
     .update({
       status: 'closed',
       closed_at: new Date().toISOString(),
@@ -187,7 +187,7 @@ export async function closeRegister(
       close_notes: closeNotes ?? null,
     } as any)
     .eq('id', sessionId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!) as any)
 
   if (error) throw new Error(`Failed to close register: ${error.message}`)
 
@@ -200,16 +200,16 @@ export async function closeRegister(
 export async function getCurrentRegisterSession() {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data, error } = await supabase
-    .from('register_sessions')
+  const { data, error } = await (supabase
+    .from('register_sessions' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
     .in('status', ['open', 'suspended'])
     .order('opened_at', { ascending: false })
     .limit(1)
-    .maybeSingle()
+    .maybeSingle() as any)
 
   if (error) throw new Error(`Failed to fetch register session: ${error.message}`)
   return data
@@ -224,13 +224,13 @@ export async function getRegisterSessionHistory(filters?: {
 }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
-    .from('register_sessions')
+    .from('register_sessions' as any)
     .select('*', { count: 'exact' })
     .eq('tenant_id', user.tenantId!)
-    .order('opened_at', { ascending: false })
+    .order('opened_at', { ascending: false }) as any
 
   if (filters?.status) query = query.eq('status', filters.status)
 
@@ -250,14 +250,14 @@ export async function getRegisterSessionHistory(filters?: {
 export async function getRegisterSession(sessionId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data, error } = await supabase
-    .from('register_sessions')
+  const { data, error } = await (supabase
+    .from('register_sessions' as any)
     .select('*')
     .eq('id', sessionId)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
   if (error) throw new Error(`Register session not found: ${error.message}`)
   return data

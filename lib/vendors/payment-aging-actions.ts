@@ -10,7 +10,7 @@ export type { VendorAgingEntry }
 export async function getVendorPaymentAging(): Promise<VendorAgingEntry[]> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch expenses with vendor info — expenses table has no paid_at column,
   // so we use expense_date as the due-date proxy for aging buckets.

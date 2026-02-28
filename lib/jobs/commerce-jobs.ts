@@ -27,7 +27,7 @@ export const commerceDayCloseout = inngest.createFunction(
     const { tenantId, reportDate } = event.data
 
     const result = await step.run('generate-reconciliation-report', async () => {
-      const supabase = createAdminClient()
+      const supabase: any = createAdminClient()
 
       // Date range for the report day
       const dayStart = `${reportDate}T00:00:00.000Z`
@@ -88,7 +88,7 @@ export const commerceDayCloseout = inngest.createFunction(
 
       // Cash drawer
       const { data: sessions } = await supabase
-        .from('register_sessions')
+        .from('register_sessions' as any)
         .select('opening_cash_cents, closing_cash_cents, expected_cash_cents, cash_variance_cents')
         .eq('tenant_id', tenantId)
         .eq('status', 'closed')
@@ -120,7 +120,7 @@ export const commerceDayCloseout = inngest.createFunction(
       }
 
       // Upsert
-      const { error } = await supabase.from('daily_reconciliation_reports').upsert(
+      const { error } = await supabase.from('daily_reconciliation_reports' as any).upsert(
         {
           tenant_id: tenantId,
           report_date: reportDate,
@@ -174,7 +174,7 @@ export const commercePaymentReconciliation = inngest.createFunction(
     const { tenantId, reportDate } = event.data
 
     const result = await step.run('reconcile-payments', async () => {
-      const supabase = createAdminClient()
+      const supabase: any = createAdminClient()
 
       const dayStart = `${reportDate}T00:00:00.000Z`
       const dayEnd = `${reportDate}T23:59:59.999Z`
@@ -233,7 +233,7 @@ export const commercePaymentReconciliation = inngest.createFunction(
       // Append flags to reconciliation report if it exists
       if (flags.length > 0) {
         const { data: report } = await supabase
-          .from('daily_reconciliation_reports')
+          .from('daily_reconciliation_reports' as any)
           .select('id, flags')
           .eq('tenant_id', tenantId)
           .eq('report_date', reportDate)
@@ -248,7 +248,7 @@ export const commercePaymentReconciliation = inngest.createFunction(
           const mergedFlags = [...existingFlags, ...flags]
 
           await supabase
-            .from('daily_reconciliation_reports')
+            .from('daily_reconciliation_reports' as any)
             .update({ flags: JSON.stringify(mergedFlags) } as any)
             .eq('id', (report as any).id)
         }
@@ -279,7 +279,7 @@ export const commerceSettlementMapping = inngest.createFunction(
     const { tenantId, stripePayoutId, payoutAmountCents, payoutStatus, arrivalDate } = event.data
 
     const result = await step.run('map-settlement-payments', async () => {
-      const supabase = createAdminClient()
+      const supabase: any = createAdminClient()
 
       // Find unsettled payments that could be part of this payout.
       // In practice, Stripe provides balance_transaction details; here we match by
@@ -308,7 +308,7 @@ export const commerceSettlementMapping = inngest.createFunction(
       const netCents = payoutAmountCents
 
       // Upsert settlement record
-      const { error: settleErr } = await supabase.from('settlement_records').upsert(
+      const { error: settleErr } = await supabase.from('settlement_records' as any).upsert(
         {
           tenant_id: tenantId,
           stripe_payout_id: stripePayoutId,

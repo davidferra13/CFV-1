@@ -31,7 +31,7 @@ export async function addBackupContact(input: AddBackupContactInput) {
   const tenantId = chef.tenantId!
   const validated = BackupContactSchema.parse(input)
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_backup_contacts')
@@ -53,7 +53,7 @@ export async function updateBackupContact(id: string, input: UpdateBackupContact
   const tenantId = chef.tenantId!
   const validated = UpdateBackupContactSchema.parse(input)
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: existing } = await supabase
     .from('chef_backup_contacts')
@@ -86,7 +86,7 @@ export async function deactivateBackupContact(id: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: existing } = await supabase
     .from('chef_backup_contacts')
@@ -118,7 +118,7 @@ export async function getBackupContacts() {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_backup_contacts')
@@ -140,7 +140,7 @@ export async function hasActiveBackupContact(): Promise<boolean> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_backup_contacts')

@@ -34,7 +34,7 @@ export type AllergenResult = {
  */
 export async function detectAllergens(recipeId: string): Promise<AllergenResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const emptyResult: AllergenResult = {
     allergens: [],

@@ -29,7 +29,7 @@ export type ChefLayoutData = {
 export function getChefLayoutData(chefId: string): Promise<ChefLayoutData> {
   return unstable_cache(
     async (): Promise<ChefLayoutData> => {
-      const supabase = createAdminClient()
+      const supabase: any = createAdminClient()
 
       const [chefResult, prefsResult] = await Promise.all([
         supabase

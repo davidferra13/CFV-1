@@ -78,7 +78,7 @@ function mapABTest(row: any): ABTest {
 export async function createABTest(input: CreateABTestInput) {
   const user = await requireChef()
   const validated = CreateABTestSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('ab_tests')
@@ -108,7 +108,7 @@ export async function createABTest(input: CreateABTestInput) {
 export async function resolveABTest(testId: string, winner: 'a' | 'b') {
   const user = await requireChef()
   const validated = ResolveABTestSchema.parse({ testId, winner })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('ab_tests')
@@ -136,7 +136,7 @@ export async function resolveABTest(testId: string, winner: 'a' | 'b') {
  */
 export async function getABTestResults(testId: string): Promise<ABTestWithStats> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch the test itself
   const { data: test, error } = await supabase
@@ -191,7 +191,7 @@ export async function getABTestResults(testId: string): Promise<ABTestWithStats>
  */
 export async function listABTests(): Promise<ABTest[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('ab_tests')

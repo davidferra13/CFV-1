@@ -19,19 +19,29 @@ function row(cells: (string | number | null | undefined)[]): string {
 
 export async function GET() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       occasion, event_date, status, guest_count,
       quoted_price_cents, payment_status,
       clients:client_id (full_name)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .order('event_date', { ascending: false })
 
-  const header = row(['Occasion', 'Date', 'Client', 'Status', 'Guests', 'Quoted ($)', 'Payment Status'])
+  const header = row([
+    'Occasion',
+    'Date',
+    'Client',
+    'Status',
+    'Guests',
+    'Quoted ($)',
+    'Payment Status',
+  ])
   const body = (events ?? []).map((e: any) =>
     row([
       e.occasion,

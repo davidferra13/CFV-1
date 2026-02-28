@@ -38,7 +38,7 @@ function getApiBase() {
 export async function initiateQuickBooksConnect(): Promise<{ redirectUrl: string }> {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Generate CSRF state
   const state = crypto.randomUUID()
@@ -95,7 +95,7 @@ export async function exchangeQuickBooksCode(
     expires_in: number
   }
 
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Upsert connection (tokens encrypted at rest)
   await supabase.from('integration_connections').upsert(
@@ -119,7 +119,7 @@ export async function exchangeQuickBooksCode(
 }
 
 async function refreshQuickBooksToken(tenantId: string): Promise<string> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: conn } = await supabase
     .from('integration_connections')
@@ -227,7 +227,7 @@ export async function syncInvoiceToQuickBooks(
     dueDate?: string
   }
 ) {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
   const { data: conn } = await supabase
     .from('integration_connections')
     .select('config')
@@ -293,7 +293,7 @@ export async function syncExpenseToQuickBooks(
     category?: string
   }
 ) {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
   const { data: conn } = await supabase
     .from('integration_connections')
     .select('config')
@@ -349,7 +349,7 @@ export async function syncExpenseToQuickBooks(
 }
 
 export async function getQuickBooksConnectionStatus(tenantId: string) {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data } = await supabase
     .from('integration_connections')
@@ -374,7 +374,7 @@ export async function getQuickBooksConnectionStatus(tenantId: string) {
 export async function disconnectQuickBooks() {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   await supabase
     .from('integration_connections')

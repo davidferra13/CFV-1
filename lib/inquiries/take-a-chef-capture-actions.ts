@@ -56,7 +56,7 @@ export async function captureTakeAChefBooking(
 ): Promise<TakeAChefCaptureResult> {
   const user = await requireChef()
   const validated = TakeAChefCaptureSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   try {
@@ -290,7 +290,7 @@ export async function getTakeAChefConversionData(
   eventId: string
 ): Promise<TakeAChefConversionData> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const empty: TakeAChefConversionData = {

@@ -25,7 +25,7 @@ export type ChannelSet = {
 
 // ─── Default Tier per Action ──────────────────────────────────────────────────
 
-export const DEFAULT_TIER_MAP: Record<NotificationAction, NotificationTier> = {
+export const DEFAULT_TIER_MAP: Record<string, NotificationTier> = {
   // ── Critical ── SMS + Push + Email
   new_inquiry: 'critical',
   wix_submission: 'critical',

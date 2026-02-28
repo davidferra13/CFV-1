@@ -23,7 +23,7 @@ export interface CommunityTemplate {
 export async function getCommunityTemplates(
   type?: CommunityTemplateType
 ): Promise<CommunityTemplate[]> {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   let query = supabase
     .from('community_templates' as any)
     .select(
@@ -41,7 +41,7 @@ export async function getCommunityTemplates(
 
 export async function getMyTemplates(): Promise<CommunityTemplate[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('community_templates' as any)
@@ -63,7 +63,7 @@ export async function publishTemplate(input: {
   dietary_tags?: string[]
 }): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase.from('community_templates' as any).insert({
     author_tenant_id: user.entityId,

@@ -30,7 +30,7 @@ const UpdateSchema = z.object({
 
 export async function getFavoriteChefs(): Promise<FavoriteChef[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('favorite_chefs')
@@ -51,7 +51,7 @@ export async function createFavoriteChef(
 ): Promise<{ success: boolean; chef: FavoriteChef }> {
   const validated = CreateSchema.parse(input)
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get next sort_order
   const { data: existing } = await supabase
@@ -92,7 +92,7 @@ export async function updateFavoriteChef(
 ): Promise<{ success: boolean; chef: FavoriteChef }> {
   const validated = UpdateSchema.parse(updates)
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const payload: Record<string, unknown> = {}
   if (validated.chefName !== undefined) payload.chef_name = validated.chefName
@@ -124,7 +124,7 @@ export async function updateFavoriteChef(
 
 export async function deleteFavoriteChef(id: string): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('favorite_chefs')
@@ -146,7 +146,7 @@ export async function reorderFavoriteChefs(
   ordered: { id: string; sortOrder: number }[]
 ): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await Promise.all(
     ordered.map(({ id, sortOrder }) =>

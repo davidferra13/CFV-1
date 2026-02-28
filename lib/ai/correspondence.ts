@@ -16,7 +16,7 @@ import {
 
 export async function draftResponseForInquiry(inquiryId: string) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // ── 1. Fetch inquiry ──────────────────────────────────────────────────────
 
@@ -293,7 +293,7 @@ export async function draftSimpleResponse(
   latestClientMessage: string
 ) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: chefRecord } = await supabase
     .from('chefs')
@@ -311,7 +311,7 @@ export async function draftSimpleResponse(
 
 export async function draftPostEventFollowUp(clientName: string, eventDate: string) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: chefRecord } = await supabase
     .from('chefs')

@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: 'Print Order Sheet — ChefFlow' }
 
 export default async function PrintOrderSheetPage() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const today = new Date().toISOString().split('T')[0]
 

@@ -29,7 +29,7 @@ const ContractSchema = z.object({
 
 export async function generateContract(eventId: string): Promise<GeneratedContract> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [eventResult, chefResult] = await Promise.all([
     supabase

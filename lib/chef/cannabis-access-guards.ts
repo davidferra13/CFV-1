@@ -31,7 +31,7 @@ export async function getCannabisHostAgreement(
   hostUserId: string,
   agreementVersion = CANNABIS_HOST_AGREEMENT_VERSION
 ): Promise<CannabisHostAgreementRecord | null> {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { data, error } = await (supabase as any)
     .from('cannabis_host_agreements')
     .select(

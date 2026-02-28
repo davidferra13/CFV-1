@@ -58,7 +58,7 @@ export type LogFeedbackInput = z.infer<typeof LogFeedbackSchema>
 export async function logChefFeedback(input: LogFeedbackInput) {
   const user = await requireChef()
   const validated = LogFeedbackSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: feedback, error } = await supabase
     .from('chef_feedback')
@@ -93,7 +93,7 @@ export async function logChefFeedback(input: LogFeedbackInput) {
  */
 export async function getChefFeedback() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_feedback')

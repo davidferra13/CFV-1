@@ -32,7 +32,7 @@ export type CreateRefundInput = {
 export async function createRefund(input: CreateRefundInput) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!Number.isInteger(input.amountCents) || input.amountCents <= 0) {
     throw new Error('Refund amount must be a positive integer (cents)')
@@ -137,7 +137,7 @@ export async function createRefund(input: CreateRefundInput) {
 export async function getRefundsForSale(saleId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('commerce_refunds')
@@ -153,7 +153,7 @@ export async function getRefundsForSale(saleId: string) {
 // ─── Internal: Update Sale Status After Refund ────────────────────
 
 async function updateSaleStatusAfterRefund(saleId: string, tenantId: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: sale } = await supabase
     .from('sales')

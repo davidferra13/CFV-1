@@ -46,7 +46,7 @@ export const menuAgentActions: AgentActionDefinition[] = [
 
       let eventId: string | undefined
       if (parsed.event_identifier) {
-        const supabase = createServerClient()
+        const supabase: any = createServerClient()
         const { data: events } = await supabase
           .from('events')
           .select('id, occasion')
@@ -127,7 +127,7 @@ export const menuAgentActions: AgentActionDefinition[] = [
           .includes(menuName)
       )
 
-      const supabase = createServerClient()
+      const supabase: any = createServerClient()
       const { data: events } = await supabase
         .from('events')
         .select('id, occasion, client:clients(full_name)')

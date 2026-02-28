@@ -29,7 +29,7 @@ const AppendOpsLogSchema = z.object({
   station_id: z.string().uuid().nullable().optional(),
   staff_member_id: z.string().uuid().nullable().optional(),
   action_type: z.enum(OPS_LOG_ACTIONS),
-  details: z.record(z.unknown()).default({}),
+  details: z.record(z.string(), z.unknown()).default({}),
 })
 
 const OpsLogFilterSchema = z.object({
@@ -54,7 +54,7 @@ export type OpsLogFilterInput = z.infer<typeof OpsLogFilterSchema>
 export async function appendOpsLog(input: AppendOpsLogInput) {
   const user = await requireChef()
   const validated = AppendOpsLogSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('ops_log')
@@ -63,7 +63,7 @@ export async function appendOpsLog(input: AppendOpsLogInput) {
       station_id: validated.station_id ?? null,
       staff_member_id: validated.staff_member_id ?? null,
       action_type: validated.action_type,
-      details: validated.details,
+      details: validated.details as any,
     })
     .select()
     .single()
@@ -82,7 +82,7 @@ export async function appendOpsLog(input: AppendOpsLogInput) {
 export async function getOpsLog(filters?: OpsLogFilterInput) {
   const user = await requireChef()
   const validated = OpsLogFilterSchema.parse(filters ?? {})
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const offset = (validated.page - 1) * validated.per_page
 
@@ -136,7 +136,7 @@ export async function getOpsLog(filters?: OpsLogFilterInput) {
  */
 export async function getOpsLogActionTypes() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('ops_log')

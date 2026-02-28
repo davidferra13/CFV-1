@@ -96,7 +96,7 @@ export async function getEntityActivityTimeline(
   entityId: string
 ): Promise<EntityTimelineEntry[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const transitionConfig = TRANSITION_CONFIG[entityType]
   const transitionsPromise = transitionConfig

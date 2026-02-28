@@ -163,7 +163,7 @@ async function applyBehavioralFilters(
 export async function buildBehavioralSegment(input: BuildBehavioralSegmentInput) {
   const user = await requireChef()
   const validated = BuildBehavioralSegmentSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Convert behavioral filters into the stored JSONB format
   const filterEntries: { field: string; op: string; value: string | number }[] = []
@@ -237,7 +237,7 @@ export async function buildBehavioralSegment(input: BuildBehavioralSegmentInput)
 export async function getSegmentPreview(filters: BehavioralFilters): Promise<SegmentPreview> {
   const user = await requireChef()
   const validated = BehavioralFiltersSchema.parse(filters)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const matching = await applyBehavioralFilters(supabase, user.tenantId!, validated)
 
@@ -253,7 +253,7 @@ export async function getSegmentPreview(filters: BehavioralFilters): Promise<Seg
  */
 export async function evaluateSegmentFilters(segmentId: string): Promise<EvaluatedSegment> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch the segment
   const { data: segment, error } = await supabase

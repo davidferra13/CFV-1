@@ -45,7 +45,7 @@ const UpdateProspectSchema = ManualProspectSchema.partial()
 export async function getProspects(filter?: ProspectsFilter): Promise<Prospect[]> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase.from('prospects').select('*').eq('chef_id', user.tenantId!)
 
@@ -83,7 +83,7 @@ export async function getProspects(filter?: ProspectsFilter): Promise<Prospect[]
 export async function getProspect(id: string): Promise<Prospect | null> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('prospects')
@@ -102,7 +102,7 @@ export async function getProspect(id: string): Promise<Prospect | null> {
 export async function getProspectStats(): Promise<ProspectStats> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('prospects')
@@ -141,7 +141,7 @@ export async function getProspectStats(): Promise<ProspectStats> {
 export async function getProspectNotes(prospectId: string): Promise<ProspectNote[]> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('prospect_notes')
@@ -160,7 +160,7 @@ export async function getProspectNotes(prospectId: string): Promise<ProspectNote
 export async function getScrubSessions() {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('prospect_scrub_sessions')
@@ -182,7 +182,7 @@ export async function addProspectManually(input: z.infer<typeof ManualProspectSc
   await requireAdmin()
   const user = await requireChef()
   const validated = ManualProspectSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('prospects')
@@ -206,7 +206,7 @@ export async function addProspectManually(input: z.infer<typeof ManualProspectSc
 export async function addProspectNote(prospectId: string, content: string, noteType = 'general') {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('prospect_notes')
@@ -234,7 +234,7 @@ export async function updateProspect(id: string, input: z.infer<typeof UpdatePro
   await requireAdmin()
   const user = await requireChef()
   const validated = UpdateProspectSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('prospects')
@@ -257,7 +257,7 @@ export async function updateProspect(id: string, input: z.infer<typeof UpdatePro
 export async function updateProspectStatus(id: string, status: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updates: Record<string, unknown> = { status }
   if (status === 'converted') updates.converted_at = new Date().toISOString()
@@ -285,7 +285,7 @@ export async function updateProspectStatus(id: string, status: string) {
 export async function deleteScrubSession(sessionId: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Delete associated prospects first (FK), then the session
   const { error: prospectsError } = await supabase
@@ -318,7 +318,7 @@ export async function deleteScrubSession(sessionId: string) {
 export async function deleteProspect(id: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('prospects')

@@ -2,6 +2,9 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
+import type { BodyState } from '@/lib/ai/remy-body-state'
+import type { EyeState } from '@/lib/ai/remy-eye-blink'
+import type { Viseme, RemyEmotion } from '@/lib/ai/remy-visemes'
 
 const SPEECH_HOVER_DELAY_MS = 500
 

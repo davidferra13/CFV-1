@@ -63,7 +63,7 @@ export type UpdateComponentInput = z.infer<typeof UpdateComponentSchema>
 export async function createStation(input: CreateStationInput) {
   const user = await requireChef()
   const validated = CreateStationSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // If no display_order specified, place at end
   if (validated.display_order === 0) {
@@ -101,7 +101,7 @@ export async function createStation(input: CreateStationInput) {
 export async function updateStation(id: string, input: UpdateStationInput) {
   const user = await requireChef()
   const validated = UpdateStationSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updatePayload: Record<string, unknown> = {}
   if (validated.name !== undefined) updatePayload.name = validated.name
@@ -128,7 +128,7 @@ export async function updateStation(id: string, input: UpdateStationInput) {
 
 export async function deleteStation(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Check for existing clipboard entries — prevent deletion if any exist
   const { data: entries } = await supabase
@@ -182,7 +182,7 @@ export async function deleteStation(id: string) {
 
 export async function listStations() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('stations')
@@ -217,7 +217,7 @@ export async function listStations() {
 
 export async function getStation(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('stations')
@@ -260,7 +260,7 @@ export async function getStation(id: string) {
 export async function addMenuItemToStation(input: AddMenuItemInput) {
   const user = await requireChef()
   const validated = AddMenuItemSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('station_menu_items')
@@ -285,7 +285,7 @@ export async function addMenuItemToStation(input: AddMenuItemInput) {
 
 export async function removeMenuItemFromStation(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get station_id for revalidation
   const { data: menuItem } = await supabase
@@ -324,7 +324,7 @@ export async function removeMenuItemFromStation(id: string) {
 export async function addComponent(input: AddComponentInput) {
   const user = await requireChef()
   const validated = AddComponentSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Look up station_id from the menu item for revalidation
   const { data: menuItem } = await supabase
@@ -363,7 +363,7 @@ export async function addComponent(input: AddComponentInput) {
 export async function updateComponent(id: string, input: UpdateComponentInput) {
   const user = await requireChef()
   const validated = UpdateComponentSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('station_components')
@@ -384,7 +384,7 @@ export async function updateComponent(id: string, input: UpdateComponentInput) {
 
 export async function removeComponent(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('station_components')
@@ -402,7 +402,7 @@ export async function removeComponent(id: string) {
 
 export async function listStationComponents(stationId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('station_menu_items')

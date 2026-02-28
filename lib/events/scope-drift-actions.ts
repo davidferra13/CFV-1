@@ -7,7 +7,7 @@ import { revalidatePath } from 'next/cache'
 export async function acknowledgeScopeDrift(eventId: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('events')
@@ -28,7 +28,7 @@ export async function acknowledgeScopeDrift(eventId: string) {
 export async function getConvertingQuote(eventId: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // First, find the converting_quote_id on the event
   const { data: event, error: eventError } = await supabase

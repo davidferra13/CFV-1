@@ -37,7 +37,7 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
   }
 
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // ── 1. Fetch event and verify ownership ─────────────────────────────────
   const { data: event, error: eventError } = await supabase

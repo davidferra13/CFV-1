@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: 'Food Cost Analysis - ChefFlow' }
 
 export default async function FoodCostAnalysisPage() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch recent completed events (last 20) to compute variance
   const { data: recentEvents } = await supabase

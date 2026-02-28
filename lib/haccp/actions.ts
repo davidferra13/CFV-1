@@ -9,7 +9,7 @@ import type { ArchetypeId } from '@/lib/archetypes/presets'
 import { ARCHETYPE_IDS } from '@/lib/archetypes/presets'
 
 // haccp_plans may not be in generated types yet — cast as needed
-function fromHACCP(supabase: ReturnType<typeof createServerClient>): any {
+function fromHACCP(supabase: any): any {
   return (supabase as any).from('haccp_plans')
 }
 
@@ -21,7 +21,7 @@ function fromHACCP(supabase: ReturnType<typeof createServerClient>): any {
  */
 export async function ensureHACCPPlan(archetypeId?: ArchetypeId) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Determine archetype
   let archetype = archetypeId
@@ -93,7 +93,7 @@ export async function ensureHACCPPlan(archetypeId?: ArchetypeId) {
  */
 export async function getHACCPPlan() {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await fromHACCP(supabase)
     .select('*')
@@ -109,7 +109,7 @@ export async function getHACCPPlan() {
  */
 export async function toggleHACCPSection(sectionId: string, enabled: boolean) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: plan } = await fromHACCP(supabase)
     .select('plan_data')
@@ -137,7 +137,7 @@ export async function toggleHACCPSection(sectionId: string, enabled: boolean) {
  */
 export async function updateHACCPSectionNotes(sectionId: string, notes: string) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: plan } = await fromHACCP(supabase)
     .select('plan_data')
@@ -165,7 +165,7 @@ export async function updateHACCPSectionNotes(sectionId: string, notes: string) 
  */
 export async function markHACCPReviewed() {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await fromHACCP(supabase)
     .update({ last_reviewed_at: new Date().toISOString() })
@@ -181,7 +181,7 @@ export async function markHACCPReviewed() {
  */
 export async function resetHACCPPlan() {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: plan } = await fromHACCP(supabase)
     .select('archetype')

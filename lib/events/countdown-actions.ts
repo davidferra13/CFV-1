@@ -42,7 +42,7 @@ export async function getEventCountdown(eventId: string): Promise<EventCountdown
     throw new Error('Authentication required')
   }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validatedEventId = EventIdSchema.parse(eventId)
 
   let query = supabase
@@ -90,7 +90,7 @@ export async function toggleCountdown(
   enabled: boolean
 ): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const validated = ToggleCountdownSchema.parse({ eventId, enabled })
 
@@ -133,7 +133,7 @@ export async function toggleCountdown(
  */
 export async function getUpcomingCountdowns(): Promise<EventCountdown[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const today = new Date().toISOString().split('T')[0]
 

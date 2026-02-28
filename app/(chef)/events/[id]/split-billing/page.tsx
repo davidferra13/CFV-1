@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: 'Split Billing - ChefFlow' }
 
 export default async function SplitBillingPage({ params }: { params: { id: string } }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let splitData: Awaited<ReturnType<typeof getSplitBilling>> | null = null
   try {

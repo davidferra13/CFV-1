@@ -34,7 +34,7 @@ type TravelRouteData = {
 
 export async function fetchTravelRouteData(eventId: string): Promise<TravelRouteData | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Event + client
   const { data: event } = await supabase

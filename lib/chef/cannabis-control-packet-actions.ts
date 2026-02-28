@@ -162,7 +162,7 @@ function buildCoursePlanFromDishes(dishes: any[], courseCount: number): CoursePl
 }
 
 async function ensureEventCannabisCourseConfigRows(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   eventId: string,
   tenantId: string,
   courseCount: number
@@ -352,7 +352,7 @@ function sanitizeSnapshotPlan(snapshot: any): SnapshotPlan | null {
 }
 
 async function loadCannabisEventContext(eventId: string, tenantId: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event, error: eventError } = await (supabase
     .from('events' as any)
@@ -602,7 +602,7 @@ function buildSnapshotJsonPayload(args: {
 
 export async function getCannabisControlPacketData(eventId: string, snapshotId?: string | null) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const context = await loadCannabisEventContext(eventId, user.tenantId!)
 
   const { data: snapshots, error: snapshotsError } = await (supabase
@@ -716,7 +716,7 @@ export async function upsertEventCannabisCourseConfig(
 ) {
   const validated = UpsertCourseConfigSchema.parse(input)
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event, error: eventError } = await (supabase
     .from('events' as any)
@@ -805,7 +805,7 @@ export async function generateCannabisControlPacketSnapshot(
 ) {
   const validated = GenerateSnapshotSchema.parse(input)
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const context = await loadCannabisEventContext(validated.eventId, user.tenantId!)
 
   if (!context.menu) {
@@ -908,7 +908,7 @@ export async function generateCannabisControlPacketSnapshot(
 
 export async function uploadControlPacketEvidence(snapshotId: string, formData: FormData) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: snapshot, error: snapshotError } = await (supabase
     .from('cannabis_control_packet_snapshots' as any)
@@ -976,7 +976,7 @@ export async function upsertControlPacketReconciliation(
 ) {
   const validated = SaveReconciliationSchema.parse(input)
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: snapshot, error: snapshotError } = await (supabase
     .from('cannabis_control_packet_snapshots' as any)
@@ -1092,7 +1092,7 @@ export async function upsertControlPacketReconciliation(
 export async function finalizeControlPacket(input: z.infer<typeof FinalizePacketSchema>) {
   const validated = FinalizePacketSchema.parse(input)
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: snapshot, error: snapshotError } = await (supabase
     .from('cannabis_control_packet_snapshots' as any)

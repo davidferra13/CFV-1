@@ -41,7 +41,7 @@ export async function scaleRecipeWithAI(
   targetServings: number
 ): Promise<ScaledRecipe> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: recipe } = await supabase
     .from('recipes')

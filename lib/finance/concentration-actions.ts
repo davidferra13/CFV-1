@@ -10,7 +10,7 @@ export type { ConcentrationRisk }
 export async function getConcentrationRisk(): Promise<ConcentrationRisk | null> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Look back 12 months
   const twelveMonthsAgo = new Date()

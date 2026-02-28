@@ -32,7 +32,7 @@ export type LogUnusedInput = z.infer<typeof LogUnusedSchema>
 export async function logUnusedIngredient(input: LogUnusedInput) {
   const user = await requireChef()
   const validated = LogUnusedSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('unused_ingredients')
@@ -57,7 +57,7 @@ export async function logUnusedIngredient(input: LogUnusedInput) {
  */
 export async function getUnusedIngredients(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('unused_ingredients')
@@ -79,7 +79,7 @@ export async function getUnusedIngredients(eventId: string) {
  */
 export async function deleteUnusedIngredient(id: string, eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('unused_ingredients')
@@ -102,7 +102,7 @@ export async function deleteUnusedIngredient(id: string, eventId: string) {
  */
 export async function transferUnusedToEvent(unusedId: string, targetEventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify the target event belongs to same tenant
   const { data: targetEvent } = await supabase
@@ -139,7 +139,7 @@ export async function transferUnusedToEvent(unusedId: string, targetEventId: str
  */
 export async function markIngredientExpired(id: string, eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('unused_ingredients')

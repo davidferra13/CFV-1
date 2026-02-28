@@ -68,7 +68,7 @@ const PIPELINE_WEIGHTS: Record<string, number> = {
  */
 export async function getPipelineRevenueForecast(): Promise<PipelineRevenueForecast> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch all active pipeline events (not draft, not terminal)
   const { data: events } = await supabase
@@ -124,7 +124,7 @@ export async function getFunnelMetrics(
   const validated = GetFunnelMetricsSchema.parse({ startDate, endDate })
 
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Default to current calendar year
   const now = new Date()

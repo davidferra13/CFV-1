@@ -64,7 +64,7 @@ const UploadSchema = z.object({
 export async function uploadReceiptPhoto(input: z.infer<typeof UploadSchema>) {
   const user = await requireChef()
   const { eventId, photoUrl } = UploadSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify event belongs to chef
   const { data: event } = await supabase
@@ -102,7 +102,7 @@ export async function uploadReceiptPhoto(input: z.infer<typeof UploadSchema>) {
  */
 export async function processReceiptOCR(receiptPhotoId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch the photo record
   const { data: photo } = await supabase
@@ -233,7 +233,7 @@ const UpdateLineItemSchema = z.object({
 export async function updateLineItem(input: z.infer<typeof UpdateLineItemSchema>) {
   const user = await requireChef()
   const { lineItemId, ...fields } = UpdateLineItemSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updates: Record<string, unknown> = {}
   if (fields.expenseTag !== undefined) updates.expense_tag = fields.expenseTag
@@ -263,7 +263,7 @@ export async function updateLineItem(input: z.infer<typeof UpdateLineItemSchema>
  */
 export async function approveReceiptSummary(receiptPhotoId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch photo + extraction + line items
   const { data: photo } = await supabase
@@ -353,7 +353,7 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
 /** Fetch all receipts with extractions and line items for an event. */
 export async function getReceiptSummaryForEvent(eventId: string): Promise<ReceiptPhoto[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('receipt_photos')

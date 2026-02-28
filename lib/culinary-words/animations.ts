@@ -313,10 +313,6 @@ const WORD_ANIMATION_MAP: Record<string, CulinaryAnimation> = {
   Fermented: 'bloom',
   Ferment: 'bloom',
 
-  // ── Added by user ──
-  Splintery: 'shatter',
-  Burnt: 'flame',
-
   // ── Remaining words that need a home ──
   Soggy: 'melt',
   Sweet: 'glide',

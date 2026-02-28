@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
 
     // Generate CSRF state token
     const state = crypto.randomUUID()
-    const supabase = createAdminClient()
+    const supabase: any = createAdminClient()
 
     // Store state in social_oauth_states (created in social_connected_accounts migration)
     await supabase.from('social_oauth_states' as any).insert({
@@ -46,6 +46,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(authUrl.toString())
   } catch (err) {
     console.error('[instagram-connect]', err)
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/settings/integrations?error=instagram_connect_failed`)
+    return NextResponse.redirect(
+      `${process.env.NEXT_PUBLIC_APP_URL}/settings/integrations?error=instagram_connect_failed`
+    )
   }
 }

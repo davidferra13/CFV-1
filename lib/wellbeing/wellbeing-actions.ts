@@ -26,7 +26,7 @@ export type WellbeingResult = {
 export async function getWellbeingSignals(): Promise<WellbeingResult> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const now = new Date()
   const todayStr = now.toISOString().slice(0, 10)

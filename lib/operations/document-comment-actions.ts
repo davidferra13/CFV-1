@@ -64,7 +64,7 @@ function mapDocumentComment(row: any): DocumentComment {
 export async function addComment(input: AddCommentInput) {
   const user = await requireChef()
   const validated = AddCommentSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('document_comments')
@@ -92,7 +92,7 @@ export async function addComment(input: AddCommentInput) {
  */
 export async function resolveComment(commentId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('document_comments')
@@ -119,7 +119,7 @@ export async function getComments(
   entityId: string
 ): Promise<DocumentComment[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('document_comments')

@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Store the original file in Supabase Storage
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
     const storagePath = `${tenantId}/${job.id}/${fileName}`
 
     const { error: storageError } = await supabase.storage

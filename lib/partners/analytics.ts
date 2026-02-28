@@ -88,7 +88,7 @@ const CHANNEL_LABELS: Record<string, string> = {
 
 export async function getSourceDistribution(range?: DateRange): Promise<SourceDataPoint[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { from, to } = range || getDefaultRange()
 
   const { data: inquiries, error } = await supabase
@@ -120,7 +120,7 @@ export async function getSourceDistribution(range?: DateRange): Promise<SourceDa
 
 export async function getConversionRatesBySource(range?: DateRange): Promise<ConversionData[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { from, to } = range || getDefaultRange()
 
   const { data: inquiries, error } = await supabase
@@ -170,7 +170,7 @@ export async function getConversionRatesBySource(range?: DateRange): Promise<Con
 
 export async function getRevenueBySource(range?: DateRange): Promise<RevenueData[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { from, to } = range || getDefaultRange()
 
   // Get completed events with their inquiry channel
@@ -219,7 +219,7 @@ export async function getRevenueBySource(range?: DateRange): Promise<RevenueData
 
 export async function getSourceTrends(months = 12): Promise<TrendDataPoint[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const now = new Date()
   const from = startOfMonth(subMonths(now, months - 1)).toISOString()
@@ -264,7 +264,7 @@ export async function getSourceTrends(months = 12): Promise<TrendDataPoint[]> {
 
 export async function getPartnerLeaderboard(range?: DateRange): Promise<PartnerLeaderboardEntry[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { from, to } = range || getDefaultRange()
 
   // Get all active partners

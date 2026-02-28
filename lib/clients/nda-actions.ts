@@ -41,7 +41,7 @@ export async function updateNDA(clientId: string, input: NDAUpdateInput) {
   const tenantId = chef.tenantId!
   const validated = NDAUpdateSchema.parse(input)
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify the client belongs to this tenant
   const { data: existing } = await supabase
@@ -77,7 +77,7 @@ export async function getNDAStatus(clientId: string): Promise<NDAStatus> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('clients')
@@ -101,7 +101,7 @@ export async function getClientsRequiringNDA() {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all client IDs that have at least one event in this tenant
   const { data: clientsWithEvents, error: eventsError } = await supabase

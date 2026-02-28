@@ -27,7 +27,7 @@ export interface EventRecapResult {
 
 export async function getEventRecap(eventName: string): Promise<EventRecapResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Find event
   const { data: events } = await supabase
@@ -105,7 +105,7 @@ export interface MenuExplanationResult {
 
 export async function explainMenu(menuName: string): Promise<MenuExplanationResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Find menu
   const { data: menus } = await supabase

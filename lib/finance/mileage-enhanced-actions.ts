@@ -64,7 +64,7 @@ export async function logRoundTrip(
   input: LogRoundTripInput
 ): Promise<{ success: boolean; entries: MileageEntry[] }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const validated = LogRoundTripSchema.parse(input)
 
@@ -127,7 +127,7 @@ export async function logRoundTrip(
  */
 export async function getMileageByPurpose(taxYear: number): Promise<MileageSummary> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const validatedYear = TaxYearSchema.parse(taxYear)
 

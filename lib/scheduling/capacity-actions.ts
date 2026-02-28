@@ -34,7 +34,7 @@ export type CapacityCheckResult = {
 
 export async function getCapacitySettings(): Promise<CapacitySettings & OffHoursSettings> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('chefs')
@@ -66,7 +66,7 @@ export async function updateCapacitySettings(input: {
   max_hours_per_week?: number | null
 }): Promise<{ success: boolean }> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('chefs')
@@ -96,7 +96,7 @@ export async function updateOffHoursSettings(input: {
   off_days?: string[] | null
 }): Promise<{ success: boolean }> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('chefs')
@@ -124,7 +124,7 @@ export async function updateOffHoursSettings(input: {
  */
 export async function checkCapacityForDate(eventDate: string): Promise<CapacityCheckResult> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = chef.tenantId!
 
   // Fetch current limits

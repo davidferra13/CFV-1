@@ -15,7 +15,7 @@ function normalize(s: string | null | undefined): string {
 
 export async function findDuplicateClients(): Promise<DuplicatePair[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: clients } = await supabase
     .from('clients')

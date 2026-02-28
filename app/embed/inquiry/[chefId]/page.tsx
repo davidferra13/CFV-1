@@ -13,7 +13,7 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const { data: chef } = await supabase
     .from('chefs')
     .select('business_name, display_name')
@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function EmbedInquiryPage({ params, searchParams }: Props) {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data: chef, error } = await supabase
     .from('chefs')

@@ -26,7 +26,7 @@ export type LogVisitInput = z.infer<typeof LogVisitSchema>
 
 export async function logVisit(input: LogVisitInput) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const data = LogVisitSchema.parse(input)
 
   const { data: visit, error } = await supabase
@@ -55,7 +55,7 @@ export async function logVisit(input: LogVisitInput) {
 
 export async function listVisits(guestId: string, limit = 50) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('guest_visits')
@@ -75,7 +75,7 @@ export async function listVisits(guestId: string, limit = 50) {
 
 export async function getVisitStats(guestId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: visits, error } = await supabase
     .from('guest_visits')

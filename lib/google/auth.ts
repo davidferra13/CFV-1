@@ -161,7 +161,7 @@ export async function getGoogleAccessToken(chefId: string): Promise<string> {
 
 export async function getGoogleConnection(): Promise<GoogleConnectionStatus> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('google_connections')
@@ -198,7 +198,7 @@ export async function getGoogleConnection(): Promise<GoogleConnectionStatus> {
 
 export async function disconnectGoogle(service: 'gmail' | 'calendar') {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: conn } = await supabase
     .from('google_connections')

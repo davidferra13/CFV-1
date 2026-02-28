@@ -27,7 +27,7 @@ export async function getClientProfitabilityHistory(
   clientId: string
 ): Promise<ClientProfitabilityHistory> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all completed events for this client
   const { data: events } = await supabase

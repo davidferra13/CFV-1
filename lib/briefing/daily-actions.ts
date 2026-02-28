@@ -67,7 +67,7 @@ const DateSchema = z
  */
 export async function generateDailyBriefing(date?: string): Promise<DailyBriefing> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const briefingDate = DateSchema.parse(date) ?? new Date().toISOString().split('T')[0]
 
@@ -273,7 +273,7 @@ export async function generateDailyBriefing(date?: string): Promise<DailyBriefin
  */
 export async function getDailyBriefing(date?: string): Promise<DailyBriefing | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const briefingDate = DateSchema.parse(date) ?? new Date().toISOString().split('T')[0]
 

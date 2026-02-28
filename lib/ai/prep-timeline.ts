@@ -41,7 +41,7 @@ const getClient = () => {
 
 export async function generatePrepTimeline(eventId: string): Promise<PrepTimeline> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [eventResult, menuResult] = await Promise.all([
     supabase
@@ -51,7 +51,7 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
       .eq('tenant_id', user.tenantId!)
       .single(),
     supabase
-      .from('event_menu_components')
+      .from('event_menu_components' as any)
       .select(
         `
         name, course_type, description,

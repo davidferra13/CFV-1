@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${redirectBase}?error=instagram_invalid_callback`)
   }
 
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Validate state
   const { data: stateRow } = await supabase
@@ -38,7 +38,10 @@ export async function GET(req: NextRequest) {
   const chefId = stateRow.tenant_id
 
   // Delete used state
-  await supabase.from('social_oauth_states' as any).delete().eq('state', state)
+  await supabase
+    .from('social_oauth_states' as any)
+    .delete()
+    .eq('state', state)
 
   // Exchange code for short-lived token
   const appId = process.env.INSTAGRAM_APP_ID!
@@ -65,7 +68,7 @@ export async function GET(req: NextRequest) {
 
   // Exchange for long-lived token (60 days)
   const longTokenRes = await fetch(
-    `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${appSecret}&access_token=${shortToken}`,
+    `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${appSecret}&access_token=${shortToken}`
   )
 
   const { access_token: longToken, expires_in } = await longTokenRes.json()
@@ -73,14 +76,13 @@ export async function GET(req: NextRequest) {
 
   // Get account info
   const profileRes = await fetch(
-    `https://graph.instagram.com/me?fields=id,username,name,followers_count,media_count&access_token=${longToken}`,
+    `https://graph.instagram.com/me?fields=id,username,name,followers_count,media_count&access_token=${longToken}`
   )
   const profile = await profileRes.json()
 
   // Upsert connection
-  await supabase
-    .from('social_connected_accounts')
-    .upsert({
+  await supabase.from('social_connected_accounts').upsert(
+    {
       tenant_id: chefId,
       platform: 'instagram',
       access_token: longToken,
@@ -93,7 +95,9 @@ export async function GET(req: NextRequest) {
       connected_at: new Date().toISOString(),
       last_refreshed_at: new Date().toISOString(),
       error_count: 0,
-    }, { onConflict: 'tenant_id,platform' })
+    },
+    { onConflict: 'tenant_id,platform' }
+  )
 
   // Trigger initial sync
   await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/social/instagram/sync`, {

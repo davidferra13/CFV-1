@@ -38,7 +38,7 @@ export type RecordPaymentInput = {
 export async function recordPayment(input: RecordPaymentInput) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!Number.isInteger(input.amountCents) || input.amountCents <= 0) {
     throw new Error('Amount must be a positive integer (cents)')
@@ -120,7 +120,7 @@ export async function recordPayment(input: RecordPaymentInput) {
 export async function getPaymentsForSale(saleId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('commerce_payments')
@@ -138,7 +138,7 @@ export async function getPaymentsForSale(saleId: string) {
 export async function updatePaymentStatus(paymentId: string, status: CommercePaymentStatus) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updates: Record<string, any> = { status }
   if (status === 'captured') updates.captured_at = new Date().toISOString()
@@ -165,7 +165,7 @@ export async function updatePaymentStatus(paymentId: string, status: CommercePay
 // ─── Internal: Update Sale Status After Payment ───────────────────
 
 async function updateSaleStatusAfterPayment(saleId: string, tenantId: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get sale totals
   const { data: sale } = await supabase

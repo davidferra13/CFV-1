@@ -20,7 +20,7 @@ const getClient = () => {
 
 export async function generateQuoteDraft(inquiryId: string): Promise<QuoteDraftResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: inquiry } = await supabase
     .from('inquiries')

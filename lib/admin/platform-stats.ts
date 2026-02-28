@@ -88,7 +88,7 @@ function startOfCurrentMonth(): string {
 }
 
 export async function getPlatformOverviewStats(): Promise<PlatformOverviewStats> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const monthStart = startOfCurrentMonth()
 
   // Fetch counts (head:true = no rows returned, just count) and ledger sums
@@ -147,7 +147,7 @@ export async function getPlatformOverviewStats(): Promise<PlatformOverviewStats>
 }
 
 export async function getPlatformChefList(): Promise<PlatformChefRow[]> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data: chefs } = await supabase
     .from('chefs')
@@ -196,7 +196,7 @@ export async function getPlatformChefList(): Promise<PlatformChefRow[]> {
 }
 
 export async function getPlatformClientList(): Promise<PlatformClientRow[]> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data: rawClients } = await supabase
     .from('clients')
@@ -265,7 +265,7 @@ export async function getPlatformClientList(): Promise<PlatformClientRow[]> {
 }
 
 export async function getAllPlatformEvents(): Promise<PlatformEventRow[]> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data: events } = await supabase
     .from('events')
@@ -299,7 +299,7 @@ export async function getAllPlatformEvents(): Promise<PlatformEventRow[]> {
 }
 
 export async function getPlatformGrowthStats(): Promise<GrowthDataPoint[]> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const twelveMonthsAgo = new Date()
   twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12)
@@ -337,7 +337,7 @@ export async function getPlatformGrowthStats(): Promise<GrowthDataPoint[]> {
 }
 
 export async function getPlatformRevenueByMonth(): Promise<RevenueDataPoint[]> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const twelveMonthsAgo = new Date()
   twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12)
@@ -361,7 +361,7 @@ export async function getPlatformRevenueByMonth(): Promise<RevenueDataPoint[]> {
 }
 
 export async function getPlatformFinancialOverview() {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const monthStart = startOfCurrentMonth()
 
   const [allPayments, monthPayments, allExpenses, monthExpenses] = await Promise.all([
@@ -397,7 +397,7 @@ export async function getPlatformFinancialOverview() {
 }
 
 export async function getPlatformLedgerEntries(limit = 100) {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data } = await supabase
     .from('ledger_entries')
@@ -409,7 +409,7 @@ export async function getPlatformLedgerEntries(limit = 100) {
 }
 
 export async function getSystemHealthStats(): Promise<SystemHealthStats> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
@@ -461,7 +461,7 @@ export async function getSystemHealthStats(): Promise<SystemHealthStats> {
 }
 
 export async function getQolMetricsSummary(days = 30): Promise<QolMetricsSummary> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const sinceDate = new Date()
   sinceDate.setDate(sinceDate.getDate() - Math.max(1, days))
   const since = sinceDate.toISOString()
@@ -494,7 +494,7 @@ export async function getQolMetricsSummary(days = 30): Promise<QolMetricsSummary
 }
 
 export async function getPlatformAuditLog(limit = 100): Promise<Record<string, unknown>[]> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data } = await supabase
     .from('admin_audit_log')
@@ -506,7 +506,7 @@ export async function getPlatformAuditLog(limit = 100): Promise<Record<string, u
 }
 
 export async function getChefFeatureFlags(chefId: string): Promise<Record<string, boolean>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data } = await supabase
     .from('chef_feature_flags')
@@ -520,7 +520,7 @@ export async function getAllChefFlags(): Promise<{
   chefs: { id: string; business_name: string | null }[]
   flagsByChef: Record<string, Record<string, boolean>>
 }> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const [chefsResult, flagsResult] = await Promise.all([
     supabase.from('chefs').select('id, business_name').order('business_name').limit(10000),

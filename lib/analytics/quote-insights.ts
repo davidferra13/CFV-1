@@ -33,7 +33,7 @@ export interface QuoteAcceptanceInsights {
 
 export async function getQuoteAcceptanceInsights(): Promise<QuoteAcceptanceInsights> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const since90 = new Date(Date.now() - 90 * 86_400_000).toISOString()
   const today = new Date().toISOString().slice(0, 10)

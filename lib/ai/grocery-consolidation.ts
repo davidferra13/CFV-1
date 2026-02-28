@@ -49,7 +49,7 @@ const GroceryResultSchema = z.object({
 
 export async function consolidateGroceryList(eventId: string): Promise<GroceryConsolidationResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [eventResult, menuResult] = await Promise.all([
     supabase
@@ -59,7 +59,7 @@ export async function consolidateGroceryList(eventId: string): Promise<GroceryCo
       .eq('tenant_id', user.tenantId!)
       .single(),
     supabase
-      .from('event_menu_components')
+      .from('event_menu_components' as any)
       .select(
         `
         name,

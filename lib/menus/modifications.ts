@@ -31,7 +31,7 @@ export type LogModificationInput = z.infer<typeof LogModificationSchema>
 export async function logMenuModification(input: LogModificationInput) {
   const user = await requireChef()
   const validated = LogModificationSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('menu_modifications')
@@ -56,7 +56,7 @@ export async function logMenuModification(input: LogModificationInput) {
  */
 export async function getEventModifications(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('menu_modifications')
@@ -78,7 +78,7 @@ export async function getEventModifications(eventId: string) {
  */
 export async function deleteMenuModification(id: string, eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('menu_modifications')
@@ -123,7 +123,7 @@ export async function uploadModificationPhoto(
   formData: FormData
 ): Promise<ModificationPhotoResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify modification belongs to this chef
   const { data: mod } = await supabase
@@ -180,7 +180,7 @@ export async function uploadModificationPhoto(
  */
 export async function getModificationStats() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('menu_modifications')

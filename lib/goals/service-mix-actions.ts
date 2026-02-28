@@ -60,7 +60,7 @@ function mapServiceTypeRow(row: Record<string, unknown>): ServiceType {
 
 export async function getServiceTypes(): Promise<ServiceType[]> {
   const user = await requireChef()
-  const supabase = createServerClient() as any
+  const supabase: any = createServerClient() as any
 
   const { data, error } = await supabase
     .from('chef_service_types')
@@ -77,7 +77,7 @@ export async function getServiceTypes(): Promise<ServiceType[]> {
 export async function createServiceType(input: CreateServiceTypeInput): Promise<{ id: string }> {
   const user = await requireChef()
   const parsed = ServiceTypeSchema.parse(input)
-  const supabase = createServerClient() as any
+  const supabase: any = createServerClient() as any
 
   const { data, error } = await supabase
     .from('chef_service_types')
@@ -108,7 +108,7 @@ export async function updateServiceType(
 ): Promise<void> {
   const user = await requireChef()
   const parsed = ServiceTypeSchema.partial().parse(input)
-  const supabase = createServerClient() as any
+  const supabase: any = createServerClient() as any
 
   const updates: Record<string, unknown> = {}
   if (parsed.name !== undefined) updates.name = parsed.name
@@ -134,7 +134,7 @@ export async function updateServiceType(
 
 export async function deleteServiceType(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient() as any
+  const supabase: any = createServerClient() as any
 
   const { error } = await supabase
     .from('chef_service_types')
@@ -148,7 +148,7 @@ export async function deleteServiceType(id: string): Promise<void> {
 
 export async function reorderServiceTypes(orderedIds: string[]): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient() as any
+  const supabase: any = createServerClient() as any
 
   // Update each row's sort_order sequentially
   for (let i = 0; i < orderedIds.length; i++) {
@@ -166,7 +166,7 @@ export async function reorderServiceTypes(orderedIds: string[]): Promise<void> {
 
 export async function getRevenuePath(goalId: string): Promise<RevenuePathData> {
   const user = await requireChef()
-  const supabase = createServerClient() as any
+  const supabase: any = createServerClient() as any
 
   // Fetch the goal (verify it belongs to this tenant)
   const { data: goalRow, error: goalError } = await supabase
@@ -235,7 +235,7 @@ export async function getClientMatchesForServiceType(
   limit = 3
 ): Promise<ServiceSlotClientMatch[]> {
   const user = await requireChef()
-  const supabase = createServerClient() as any
+  const supabase: any = createServerClient() as any
 
   // Verify service type belongs to tenant and get its effective price
   const { data: stRow, error: stError } = await supabase

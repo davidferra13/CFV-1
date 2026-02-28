@@ -16,7 +16,7 @@ export async function addAgreement(input: {
   expires_at?: string
 }) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { error } = await supabase.from('contractor_service_agreements').insert({
     tenant_id: chef.tenantId!,
     staff_member_id: input.staff_member_id,
@@ -36,7 +36,7 @@ export async function addAgreement(input: {
 
 export async function getAgreementsForStaff(staffMemberId: string) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { data } = await supabase
     .from('contractor_service_agreements')
     .select('*')
@@ -48,7 +48,7 @@ export async function getAgreementsForStaff(staffMemberId: string) {
 
 export async function hasActiveAgreement(staffMemberId: string) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { count } = await supabase
     .from('contractor_service_agreements')
     .select('id', { count: 'exact', head: true })

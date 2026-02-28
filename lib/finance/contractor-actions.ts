@@ -45,7 +45,7 @@ export async function recordContractorPayment(
 ): Promise<ContractorPayment> {
   const user = await requireChef()
   const parsed = RecordPaymentSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('contractor_payments')
@@ -102,7 +102,7 @@ export async function getContractorPayments(filters?: {
   taxYear?: number
 }): Promise<ContractorPayment[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('contractor_payments')
@@ -131,7 +131,7 @@ export async function getContractorPayments(filters?: {
 
 export async function get1099Summary(taxYear: number): Promise<Contractor1099Summary[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all staff marked as contractors
   const { data: staff } = await supabase
@@ -212,7 +212,7 @@ export async function saveW9Data(
 ): Promise<{ success: boolean }> {
   const user = await requireChef()
   const parsed = SaveW9Schema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('staff_members')

@@ -49,7 +49,7 @@ function periodLabel(start: string, end: string): string {
 
 export async function getCashFlowForecast(days: 30 | 60 | 90 = 30): Promise<CashFlowForecast> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const today = new Date().toISOString().split('T')[0]
   const endDate = addDays(today, days)
@@ -159,7 +159,7 @@ export async function getWhatIfScenario(params: {
   // If events are cancelled, reduce income
   if (params.cancelledEventIds?.length) {
     const user = await requireChef()
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
 
     const { data: cancelled } = await supabase
       .from('events')

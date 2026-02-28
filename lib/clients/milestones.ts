@@ -60,7 +60,7 @@ const MilestonesArraySchema = z.array(MilestoneSchema)
 export async function updateClientMilestones(clientId: string, milestones: Milestone[]) {
   const user = await requireChef()
   const validated = MilestonesArraySchema.parse(milestones)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('clients')
@@ -85,7 +85,7 @@ export async function updateClientMilestones(clientId: string, milestones: Miles
  */
 export async function getUpcomingMilestones(daysAhead: number = 30): Promise<UpcomingMilestone[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: clients, error } = await supabase
     .from('clients')
@@ -210,7 +210,7 @@ export async function updateClientPersonalInfo(
   }
 ) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('clients')

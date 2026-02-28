@@ -76,7 +76,7 @@ export async function hasCannabisAccess(authUserId: string): Promise<boolean> {
     const adminCheck = await isAdmin().catch(() => false)
     if (adminCheck) return true
 
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
     const { data, error } = await supabase
       .from('cannabis_tier_users')
       .select('status')
@@ -98,7 +98,7 @@ export async function hasCannabisAccess(authUserId: string): Promise<boolean> {
  */
 export async function getCannabisEvents() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('events')
@@ -149,7 +149,7 @@ export async function getCannabisEvents() {
 
 export async function getCannabisEventDetails(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('cannabis_event_details')
@@ -170,7 +170,7 @@ export async function upsertCannabisEventDetails(input: {
   compliancePlaceholderAcknowledged?: boolean
 }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('cannabis_event_details').upsert(
     {
@@ -197,7 +197,7 @@ export async function upsertCannabisEventDetails(input: {
  */
 export async function getCannabisLedger() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // First get all cannabis event IDs
   const { data: cannabisEvents, error: eventsError } = await supabase
@@ -269,7 +269,7 @@ export async function sendCannabisInvite(input: {
   const hasAccess = await hasCannabisAccess(user.id)
   if (!hasAccess) throw new Error('Cannabis tier access required to send invites')
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Check if an invite for this email is already pending or approved
   const { data: existing } = await supabase
@@ -306,7 +306,7 @@ export async function sendCannabisInvite(input: {
 
 export async function getMySentCannabisInvites() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('cannabis_tier_invitations')
@@ -329,7 +329,7 @@ export async function getMySentCannabisInvites() {
 // RSVP Dashboard (chef-facing cannabis intake overview)
 export async function getCannabisRSVPDashboardData(selectedEventId?: string | null) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: eventRows, error: eventsError } = await supabase
     .from('events')
@@ -502,7 +502,7 @@ export async function updateChefCannabisGuestProfile(
 ) {
   const validated = UpdateChefCannabisGuestSchema.parse(input)
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event, error: eventError } = await supabase
     .from('events')

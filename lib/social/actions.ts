@@ -775,7 +775,7 @@ async function refreshPostPreflight(
 
 export async function getSocialQueueSettings(): Promise<SocialQueueSettings> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('social_queue_settings' as any)
@@ -795,7 +795,7 @@ export async function upsertSocialQueueSettings(
 ): Promise<SocialQueueSettings> {
   const user = await requireChef()
   const validated = QueueSettingsSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const payload = {
     tenant_id: user.tenantId!,
@@ -829,7 +829,7 @@ export async function getSocialPosts(options?: {
   limit?: number
 }): Promise<SocialPost[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('social_posts' as any)
@@ -861,7 +861,7 @@ export async function getSocialPosts(options?: {
 
 export async function getSocialMediaAssets(): Promise<SocialMediaAsset[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('social_media_assets' as any)
@@ -880,7 +880,7 @@ export async function getSocialMediaAssets(): Promise<SocialMediaAsset[]> {
 
 export async function getSocialPostAssetLinks(): Promise<SocialPostAssetLink[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('social_post_assets' as any)
@@ -931,7 +931,7 @@ export async function generateAnnualSocialPlan(input: AnnualGenerationInput): Pr
 }> {
   const user = await requireChef()
   const validated = GenerateAnnualPlanSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await upsertSocialQueueSettings({
     target_year: validated.target_year,
@@ -1053,7 +1053,7 @@ export async function updateSocialPost(
 ): Promise<SocialPost> {
   const user = await requireChef()
   const validated = UpdatePostSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: existingData, error: existingError } = await supabase
     .from('social_posts' as any)
@@ -1103,7 +1103,7 @@ export async function updateSocialPost(
 
 export async function bulkUpdateSocialPostStatus(postIds: string[], status: SocialPostStatus) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (postIds.length === 0) return
 
@@ -1149,7 +1149,7 @@ export async function setSocialPostHotSwap(postId: string, hotSwapReady: boolean
 export async function applyHotSwapToScheduledPost(input: z.infer<typeof HotSwapSchema>) {
   const user = await requireChef()
   const validated = HotSwapSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: sourceRowData, error: sourceError } = await supabase
     .from('social_posts' as any)
@@ -1220,7 +1220,7 @@ export async function applyHotSwapToScheduledPost(input: z.infer<typeof HotSwapS
 
 export async function uploadSocialAsset(formData: FormData): Promise<SocialMediaAsset> {
   const user = await requireChef()
-  const supabase = createAdminClient() as any
+  const supabase: any = createAdminClient() as any
 
   const file = formData.get('asset') as File | null
   if (!file) throw new Error('No asset file provided.')
@@ -1283,7 +1283,7 @@ export async function updateSocialAsset(
 ): Promise<SocialMediaAsset> {
   const user = await requireChef()
   const validated = UpdateAssetSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('social_media_assets' as any)
@@ -1300,7 +1300,7 @@ export async function updateSocialAsset(
 
 export async function deleteSocialAsset(assetId: string) {
   const user = await requireChef()
-  const supabase = createAdminClient() as any
+  const supabase: any = createAdminClient() as any
 
   const { data: assetData, error: assetError } = await supabase
     .from('social_media_assets')
@@ -1346,7 +1346,7 @@ export async function attachSocialAssetToPost(
 ): Promise<SocialPostAssetLink> {
   const user = await requireChef()
   const validated = AttachAssetSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const db = supabase as any
 
   const { data: assetData, error: assetError } = await db
@@ -1411,7 +1411,7 @@ export async function attachSocialAssetToPost(
 export async function detachSocialAssetFromPost(input: z.infer<typeof DetachAssetSchema>) {
   const user = await requireChef()
   const validated = DetachAssetSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const db = supabase as any
 
   const { data: linkData, error: linkError } = await db
@@ -1481,7 +1481,7 @@ export async function exportSocialPlatformWindowCsv(
 }> {
   const user = await requireChef()
   const validated = PlatformExportSchema.parse(rawInput)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const windowConfig = SOCIAL_PLATFORM_WINDOWS.find(
     (entry) => entry.platform === validated.platform

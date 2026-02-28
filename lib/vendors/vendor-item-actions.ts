@@ -31,7 +31,7 @@ export type UpdateVendorItemInput = z.infer<typeof UpdateVendorItemSchema>
 
 export async function addVendorItem(input: AddVendorItemInput) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const data = AddVendorItemSchema.parse(input)
 
   const { data: item, error } = await supabase
@@ -61,7 +61,7 @@ export async function addVendorItem(input: AddVendorItemInput) {
 
 export async function updateVendorItem(id: string, input: UpdateVendorItemInput) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const data = UpdateVendorItemSchema.parse(input)
 
   const updateData: Record<string, unknown> = {}
@@ -90,7 +90,7 @@ export async function updateVendorItem(id: string, input: UpdateVendorItemInput)
 
 export async function deleteVendorItem(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('vendor_items')
@@ -108,7 +108,7 @@ export async function deleteVendorItem(id: string) {
 
 export async function listVendorItems(vendorId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('vendor_items')
@@ -127,7 +127,7 @@ export async function listVendorItems(vendorId: string) {
 
 export async function getPriceComparison(ingredientId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('vendor_items')
@@ -146,7 +146,7 @@ export async function getPriceComparison(ingredientId: string) {
 
 export async function getPriceComparisonAll() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all vendor items that have an ingredient_id
   const { data, error } = await supabase

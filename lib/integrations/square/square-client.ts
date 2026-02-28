@@ -53,7 +53,7 @@ function getApiBase() {
 export async function initiateSquareConnect(): Promise<{ redirectUrl: string }> {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const state = crypto.randomUUID()
 
@@ -119,7 +119,7 @@ export async function exchangeSquareCode(code: string, tenantId: string): Promis
     merchantName = merchant.merchant?.business_name || merchantName
   }
 
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   await supabase.from('integration_connections').upsert(
     {
@@ -142,7 +142,7 @@ export async function exchangeSquareCode(code: string, tenantId: string): Promis
 }
 
 async function refreshSquareToken(tenantId: string): Promise<string> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: conn } = await supabase
     .from('integration_connections')
@@ -218,7 +218,7 @@ export async function createSquarePaymentLink(
     clientId?: string
   }
 ) {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
   const { data: conn } = await supabase
     .from('integration_connections')
     .select('config')
@@ -274,7 +274,7 @@ export async function createSquarePaymentLink(
 }
 
 export async function getSquareConnectionStatus(tenantId: string) {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data } = await supabase
     .from('integration_connections')
@@ -298,7 +298,7 @@ export async function getSquareConnectionStatus(tenantId: string) {
 export async function disconnectSquare() {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Revoke token with Square
   const { data: conn } = await supabase

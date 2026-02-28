@@ -44,7 +44,7 @@ export async function addPolicy(input: AddPolicyInput) {
   const tenantId = chef.tenantId!
   const validated = PolicySchema.parse(input)
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_insurance_policies')
@@ -67,7 +67,7 @@ export async function updatePolicy(id: string, input: UpdatePolicyInput) {
   const tenantId = chef.tenantId!
   const validated = UpdatePolicySchema.parse(input)
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify ownership
   const { data: existing } = await supabase
@@ -101,7 +101,7 @@ export async function deletePolicy(id: string) {
   await requirePro('protection')
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify ownership
   const { data: existing } = await supabase
@@ -132,7 +132,7 @@ export async function getPolicies() {
   await requirePro('protection')
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_insurance_policies')
@@ -154,7 +154,7 @@ export async function getExpiringPolicies(daysAhead: number) {
   await requirePro('protection')
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const today = new Date()
   const cutoff = new Date(today)
@@ -182,7 +182,7 @@ export async function getCoverageGapReport() {
   await requirePro('protection')
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const today = new Date().toISOString().slice(0, 10)
 

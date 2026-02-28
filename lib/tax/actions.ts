@@ -41,7 +41,7 @@ export type TaxSettingsInput = z.infer<typeof TaxSettingsSchema>
 export async function logMileage(input: MileageInput) {
   const user = await requireChef()
   const validated = MileageSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('mileage_logs')
@@ -64,14 +64,14 @@ export async function logMileage(input: MileageInput) {
 
 export async function deleteMileageLog(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   await supabase.from('mileage_logs').delete().eq('id', id).eq('chef_id', user.tenantId!)
   revalidatePath('/finance/tax')
 }
 
 export async function getMileageForPeriod(startDate: string, endDate: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('mileage_logs')
@@ -106,7 +106,7 @@ export async function getYearlyMileageSummary(year: number) {
 export async function saveTaxSettings(input: TaxSettingsInput) {
   const user = await requireChef()
   const validated = TaxSettingsSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('tax_settings')
@@ -121,7 +121,7 @@ export async function saveTaxSettings(input: TaxSettingsInput) {
 
 export async function getTaxSettings(year: number) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('tax_settings')
@@ -144,7 +144,7 @@ export async function getTaxSettings(year: number) {
  */
 export async function computeQuarterlyEstimate(year: number, quarter: 1 | 2 | 3 | 4) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const quarterDate = new Date(year, (quarter - 1) * 3, 1)
   const start = format(startOfQuarter(quarterDate), 'yyyy-MM-dd')
@@ -215,7 +215,7 @@ export async function computeQuarterlyEstimate(year: number, quarter: 1 | 2 | 3 
  */
 export async function generateAccountantExport(year: number) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const start = `${year}-01-01`
   const end = `${year}-12-31`

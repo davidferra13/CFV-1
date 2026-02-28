@@ -26,20 +26,16 @@ import { ROLE_DEFAULTS } from './types'
 
 // ─── Helpers ─────────────────────────────────
 
-function collab(supabase: ReturnType<typeof createServerClient>): any {
+function collab(supabase: any): any {
   return supabase.from('event_collaborators')
 }
 
-function recipeShares(supabase: ReturnType<typeof createServerClient>): any {
+function recipeShares(supabase: any): any {
   return supabase.from('recipe_shares')
 }
 
 /** Check that an accepted chef_connections row exists between two chefs. */
-async function assertConnected(
-  supabase: ReturnType<typeof createServerClient>,
-  chefAId: string,
-  chefBId: string
-): Promise<void> {
+async function assertConnected(supabase: any, chefAId: string, chefBId: string): Promise<void> {
   const { data } = await supabase
     .from('chef_connections')
     .select('id')
@@ -78,7 +74,7 @@ const CHEF_PROFILE_SELECT = 'id, business_name, display_name, profile_image_url,
  */
 export async function getEventCollaborators(eventId: string): Promise<EventCollaborator[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify caller owns event OR is themselves a collaborator
   const { data: event } = (await supabase
@@ -131,7 +127,7 @@ export async function inviteChefToEvent(input: {
   note?: string
 }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify the event belongs to the caller
   const { data: event, error: evErr } = (await supabase
@@ -226,7 +222,7 @@ export async function respondToEventInvitation(input: {
   declineReason?: string
 }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify the row belongs to the caller
   const { data: row, error: fetchErr } = await collab(supabase)
@@ -266,7 +262,7 @@ export async function updateCollaboratorRole(input: {
   permissions?: Partial<CollaboratorPermissions>
 }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify caller owns the event this collaborator is on
   const { data: row } = await collab(supabase)
@@ -307,7 +303,7 @@ export async function updateCollaboratorRole(input: {
  */
 export async function removeCollaborator(collaboratorId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: row } = await collab(supabase)
     .select('id, event_id, chef_id')
@@ -345,7 +341,7 @@ export async function removeCollaborator(collaboratorId: string) {
  */
 export async function handoffEvent(input: { eventId: string; newPrimaryChefId: string }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify caller owns the event
   const { data: event, error: evErr } = (await supabase
@@ -417,7 +413,7 @@ export async function handoffEvent(input: { eventId: string; newPrimaryChefId: s
  */
 export async function getPendingCollaborationInvitations(): Promise<EventCollaborator[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await collab(supabase)
     .select(
@@ -458,7 +454,7 @@ export async function getCollaboratingOnEvents(): Promise<
   }>
 > {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await collab(supabase)
     .select(
@@ -503,7 +499,7 @@ export async function getConnectedChefsForCollaboration(search?: string): Promis
   }>
 > {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get accepted connections
   const { data: connections } = await supabase
@@ -542,7 +538,7 @@ export async function shareRecipe(input: {
   note?: string
 }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify recipe belongs to caller
   const { data: recipe, error: recipeErr } = (await supabase
@@ -623,7 +619,7 @@ export async function shareRecipe(input: {
  */
 export async function respondToRecipeShare(input: { shareId: string; accepted: boolean }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify the share is addressed to the caller
   const { data: share, error: shareErr } = await recipeShares(supabase)
@@ -669,7 +665,7 @@ async function deepCopyRecipe(input: {
   originalRecipeId: string
   toTenantId: string
   toUserId: string
-  supabase: ReturnType<typeof createServerClient>
+  supabase: any
 }): Promise<string> {
   const { originalRecipeId, toTenantId, toUserId, supabase } = input
 
@@ -774,7 +770,7 @@ async function deepCopyRecipe(input: {
  */
 export async function getPendingRecipeShares(): Promise<RecipeShare[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await recipeShares(supabase)
     .select(
@@ -802,7 +798,7 @@ export async function getPendingRecipeShares(): Promise<RecipeShare[]> {
  */
 export async function getOutgoingRecipeShares(recipeId?: string): Promise<RecipeShare[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = recipeShares(supabase)
     .select(

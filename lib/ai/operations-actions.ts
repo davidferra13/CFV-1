@@ -30,7 +30,7 @@ export async function calculatePortions(
   guestCount: number
 ): Promise<PortionResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Find recipe by name
   const { data: recipes } = await supabase
@@ -108,7 +108,7 @@ export interface PackingListResult {
 
 export async function generatePackingList(eventName: string): Promise<PackingListResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Find event
   const { data: events } = await supabase
@@ -233,7 +233,7 @@ export async function analyzeCrossContamination(
   eventName: string
 ): Promise<CrossContaminationResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Find event with client
   const { data: events } = await supabase

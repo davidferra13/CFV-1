@@ -20,7 +20,7 @@ interface ContractHistoryPageProps {
 
 export default async function ContractHistoryPage({ params }: ContractHistoryPageProps) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: contract } = await supabase
     .from('event_contracts')

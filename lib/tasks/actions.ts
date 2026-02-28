@@ -90,7 +90,7 @@ export type Task = {
 
 export async function getActiveStaff() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('staff_members')
@@ -112,7 +112,7 @@ export async function getActiveStaff() {
 
 export async function getActiveStations() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('stations')
@@ -136,7 +136,7 @@ export async function getActiveStations() {
 export async function createTask(input: CreateTaskInput) {
   const user = await requireChef()
   const validated = CreateTaskSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('tasks')
@@ -190,7 +190,7 @@ export async function createTask(input: CreateTaskInput) {
 export async function updateTask(id: string, input: UpdateTaskInput) {
   const user = await requireChef()
   const validated = UpdateTaskSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Build update payload — only include fields that were explicitly provided
   const updatePayload: Record<string, unknown> = {}
@@ -229,7 +229,7 @@ export async function updateTask(id: string, input: UpdateTaskInput) {
 
 export async function deleteTask(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('tasks').delete().eq('id', id).eq('chef_id', user.tenantId!)
 
@@ -248,7 +248,7 @@ export async function deleteTask(id: string) {
 export async function listTasks(filters?: ListTasksFilter) {
   const user = await requireChef()
   const parsed = ListTasksFilterSchema.parse(filters)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('tasks')
@@ -287,7 +287,7 @@ export async function listTasks(filters?: ListTasksFilter) {
 
 export async function getTasksByDate(date: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('tasks')
@@ -340,7 +340,7 @@ export async function completeTask(
   notes?: string
 ) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const now = new Date().toISOString()
 
   // Update task status
@@ -386,7 +386,7 @@ export async function completeTask(
 
 export async function reopenTask(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('tasks')

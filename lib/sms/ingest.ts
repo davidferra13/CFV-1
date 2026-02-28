@@ -28,7 +28,7 @@ export async function ingestInboundSms(
   body: string,
   timestamp?: string
 ): Promise<SmsIngestResult> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const receivedAt = timestamp ? new Date(timestamp).toISOString() : new Date().toISOString()
 

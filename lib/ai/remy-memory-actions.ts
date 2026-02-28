@@ -93,7 +93,7 @@ export async function extractAndSaveMemories(
 
     if (!result.memories || result.memories.length === 0) return
 
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
 
     for (const mem of result.memories) {
       // Validate extracted memory content before saving
@@ -179,7 +179,7 @@ export async function loadRelevantMemories(
 ): Promise<RemyMemory[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const memories: RemyMemory[] = []
   const seenIds = new Set<string>()
@@ -294,7 +294,7 @@ export async function loadRelevantMemories(
 export async function deleteRemyMemory(memoryId: string): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('remy_memories')
@@ -313,7 +313,7 @@ export async function listRemyMemories(options?: {
 }): Promise<RemyMemory[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('remy_memories')
@@ -339,7 +339,7 @@ export async function listRemyMemories(options?: {
 export async function decayStaleMemories(): Promise<{ deactivated: number }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Memories not accessed in 90 days with low importance get deactivated
   const cutoff = new Date()
@@ -372,7 +372,7 @@ export async function addRemyMemoryManual(input: {
 }): Promise<{ id: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const contentHash = hashContent(input.content)
 

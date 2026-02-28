@@ -156,7 +156,7 @@ export async function checkDietaryConflicts(
   menuItemNames: string[]
 ): Promise<DietaryCheckResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Load client dietary restrictions
   const { data: client } = await supabase
@@ -280,7 +280,7 @@ export async function checkEventDietaryConflicts(
   clientId: string
 ): Promise<DietaryCheckResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Load menus linked to this event
   const { data: eventMenus } = await (supabase
@@ -328,7 +328,7 @@ export async function checkEventDietaryConflicts(
  */
 export async function checkDietaryByClientName(clientName: string): Promise<DietaryCheckResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Find client
   const { data: clients } = await supabase

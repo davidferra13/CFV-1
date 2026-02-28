@@ -33,7 +33,7 @@ export interface RemyNudge {
  */
 export async function getProactiveNudges(): Promise<RemyNudge[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
   const now = new Date()
   const nudges: RemyNudge[] = []

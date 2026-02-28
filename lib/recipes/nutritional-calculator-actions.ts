@@ -252,7 +252,7 @@ export async function saveRecipeNutritionalSnapshot(
   snapshot: NutritionalSnapshot
 ) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase
     .from('recipes')
@@ -301,7 +301,7 @@ export async function saveRecipeNutritionalSnapshot(
 
 export async function recalculateAndSaveRecipeNutrition(recipeId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: recipe, error: recipeError } = await supabase
     .from('recipes')

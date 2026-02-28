@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache'
 
 export async function createApiKey(name: string): Promise<{ key: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const key = generateApiKey()
   const keyHash = hashApiKey(key)
   const keyPrefix = key.substring(0, 15)
@@ -25,7 +25,7 @@ export async function createApiKey(name: string): Promise<{ key: string }> {
 
 export async function revokeApiKey(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   await supabase
     .from('chef_api_keys' as any)
     .update({ is_active: false })

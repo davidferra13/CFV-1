@@ -38,7 +38,7 @@ const getClient = () => {
 
 export async function generateServiceTimeline(eventId: string): Promise<ServiceTimeline> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [eventResult, menuResult, staffResult] = await Promise.all([
     supabase
@@ -50,10 +50,13 @@ export async function generateServiceTimeline(eventId: string): Promise<ServiceT
       .eq('tenant_id', user.tenantId!)
       .single(),
     supabase
-      .from('event_menu_components')
+      .from('event_menu_components' as any)
       .select('name, course_type, description, prep_time_minutes, cook_time_minutes')
       .eq('event_id', eventId),
-    supabase.from('event_staff').select('staff_members(full_name, role)').eq('event_id', eventId),
+    supabase
+      .from('event_staff' as any)
+      .select('staff_members(full_name, role)')
+      .eq('event_id', eventId),
   ])
 
   const event = eventResult.data

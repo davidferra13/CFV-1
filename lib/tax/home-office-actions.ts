@@ -56,7 +56,7 @@ const SaveSchema = z.object({
 export async function saveHomeOfficeSettings(input: z.infer<typeof SaveSchema>): Promise<void> {
   const user = await requireChef()
   const parsed = SaveSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('tax_settings').upsert(
     {
@@ -81,7 +81,7 @@ export async function saveHomeOfficeSettings(input: z.infer<typeof SaveSchema>):
 
 export async function getHomeOfficeDeduction(taxYear: number): Promise<HomeOfficeDeductionResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('tax_settings')

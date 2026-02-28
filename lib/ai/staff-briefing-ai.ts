@@ -43,7 +43,7 @@ const StaffBriefingSchema = z.object({
 
 export async function generateAIStaffBriefing(eventId: string): Promise<AIStaffBriefing> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [eventResult, menuResult, guestsResult, staffResult, chefResult] = await Promise.all([
     supabase
@@ -55,7 +55,7 @@ export async function generateAIStaffBriefing(eventId: string): Promise<AIStaffB
       .eq('tenant_id', user.tenantId!)
       .single(),
     supabase
-      .from('event_menu_components')
+      .from('event_menu_components' as any)
       .select('name, course_type, description, allergen_tags')
       .eq('event_id', eventId)
       .order('created_at', { ascending: true }),
@@ -64,7 +64,7 @@ export async function generateAIStaffBriefing(eventId: string): Promise<AIStaffB
       .select('name, dietary_restrictions, allergies')
       .eq('event_id', eventId),
     supabase
-      .from('event_staff')
+      .from('event_staff' as any)
       .select('role, staff_members(full_name, role)')
       .eq('event_id', eventId),
     supabase.from('chefs').select('full_name, business_name').eq('id', user.tenantId!).single(),

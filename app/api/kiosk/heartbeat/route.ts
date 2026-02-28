@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const supabase = createAdminClient()
+    const supabase: any = createAdminClient()
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
     const body = await request.json().catch(() => ({}))
     const now = new Date().toISOString()

@@ -20,7 +20,7 @@ export default async function MyEventsHistoryPage() {
   const { past, pastTotalCount } = await getClientEvents({ pastLimit: Infinity })
 
   // Outstanding balance check for all past events
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   let pastWithBalance: Set<string> = new Set()
 
   if (past.length > 0) {

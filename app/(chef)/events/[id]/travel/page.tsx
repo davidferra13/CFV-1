@@ -11,7 +11,7 @@ import { TravelPlanClient } from '@/components/events/travel-plan-client'
 import { Button } from '@/components/ui/button'
 
 async function getEventForTravel(eventId: string, tenantId: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { data } = await supabase
     .from('events')
     .select(
@@ -28,7 +28,7 @@ async function getEventForTravel(eventId: string, tenantId: string) {
 }
 
 async function getChefHomeAddress(chefId: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { data } = await supabase
     .from('chef_preferences')
     .select('home_address, home_city, home_state')

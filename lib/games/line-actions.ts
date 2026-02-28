@@ -48,7 +48,7 @@ export type EventForGame = {
 export async function getLineGameData(): Promise<{ events: EventForGame[] }> {
   try {
     const user = await requireChef()
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
 
     const today = new Date().toISOString().split('T')[0]
 

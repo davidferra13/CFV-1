@@ -69,10 +69,9 @@ export async function updateInventoryCount(
 ): Promise<InventoryCount> {
   const user = await requireChef()
   const parsed = UpdateInventoryCountSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data, error } = await supabase
-    .from('inventory_counts')
+  const { data, error } = await (supabase.from('inventory_counts') as any)
     .upsert(
       {
         chef_id: user.tenantId!,
@@ -88,22 +87,22 @@ export async function updateInventoryCount(
     .select()
     .single()
 
-  if (error) throw new Error(`Failed to update inventory count: ${error.message}`)
+  if (error) throw new Error(`Failed to update inventory count: ${(error as any).message}`)
 
   revalidatePath('/inventory')
 
   return {
-    id: data.id,
-    chefId: data.chef_id,
-    ingredientId: data.ingredient_id,
-    ingredientName: data.ingredient_name,
-    currentQty: parseFloat(data.current_qty),
-    parLevel: data.par_level != null ? parseFloat(data.par_level) : null,
-    unit: data.unit,
-    lastCountedAt: data.last_counted_at,
-    vendorId: data.vendor_id,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    id: (data as any).id,
+    chefId: (data as any).chef_id,
+    ingredientId: (data as any).ingredient_id,
+    ingredientName: (data as any).ingredient_name,
+    currentQty: Number((data as any).current_qty),
+    parLevel: (data as any).par_level != null ? Number((data as any).par_level) : null,
+    unit: (data as any).unit,
+    lastCountedAt: (data as any).last_counted_at,
+    vendorId: (data as any).vendor_id,
+    createdAt: (data as any).created_at,
+    updatedAt: (data as any).updated_at,
   }
 }
 
@@ -112,7 +111,7 @@ export async function updateInventoryCount(
  */
 export async function getInventoryCounts(): Promise<InventoryCount[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('inventory_counts')
@@ -122,13 +121,13 @@ export async function getInventoryCounts(): Promise<InventoryCount[]> {
 
   if (error) throw new Error(`Failed to fetch inventory counts: ${error.message}`)
 
-  return (data || []).map((row: any) => ({
+  return ((data || []) as any[]).map((row: any) => ({
     id: row.id,
     chefId: row.chef_id,
     ingredientId: row.ingredient_id,
     ingredientName: row.ingredient_name,
-    currentQty: parseFloat(row.current_qty),
-    parLevel: row.par_level != null ? parseFloat(row.par_level) : null,
+    currentQty: Number(row.current_qty),
+    parLevel: row.par_level != null ? Number(row.par_level) : null,
     unit: row.unit,
     lastCountedAt: row.last_counted_at,
     vendorId: row.vendor_id,
@@ -142,7 +141,7 @@ export async function getInventoryCounts(): Promise<InventoryCount[]> {
  */
 export async function getParAlerts(): Promise<ParAlert[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch items that have a par_level set
   const { data, error } = await supabase
@@ -155,15 +154,15 @@ export async function getParAlerts(): Promise<ParAlert[]> {
   if (error) throw new Error(`Failed to fetch par alerts: ${error.message}`)
 
   // Filter client-side: current_qty < par_level
-  return (data || [])
-    .filter((row: any) => parseFloat(row.current_qty) < parseFloat(row.par_level))
+  return ((data || []) as any[])
+    .filter((row: any) => Number(row.current_qty) < Number(row.par_level))
     .map((row: any) => ({
       id: row.id,
       ingredientName: row.ingredient_name,
-      currentQty: parseFloat(row.current_qty),
-      parLevel: parseFloat(row.par_level),
+      currentQty: Number(row.current_qty),
+      parLevel: Number(row.par_level),
       unit: row.unit,
-      deficit: parseFloat(row.par_level) - parseFloat(row.current_qty),
+      deficit: Number(row.par_level) - Number(row.current_qty),
       vendorId: row.vendor_id,
     }))
 }

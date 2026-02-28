@@ -30,7 +30,7 @@ export async function updateHealthItem(
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const completedAt = status === 'complete' ? new Date().toISOString() : null
 
@@ -64,7 +64,7 @@ export async function getHealthChecklist(): Promise<HealthChecklistItem[]> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_business_health_items')

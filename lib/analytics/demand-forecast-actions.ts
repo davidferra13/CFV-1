@@ -47,7 +47,7 @@ export async function generateDemandForecast(
 ): Promise<{ success: boolean; months: DemandForecastMonth[] }> {
   const validated = GenerateForecastSchema.parse({ year })
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch all inquiries for this chef, grouped by year-month
   const { data: inquiries } = await supabase
@@ -155,7 +155,7 @@ export async function getSeasonalHeatmap(year?: number): Promise<SeasonalHeatmap
   const targetYear = validated.year ?? new Date().getFullYear()
 
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: forecasts, error } = await supabase
     .from('demand_forecasts')

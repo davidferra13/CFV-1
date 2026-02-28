@@ -33,15 +33,15 @@ function formatCents(cents: number): string {
 export async function exportSalesCsv(from: string, to: string): Promise<string> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data: sales } = await supabase
+  const { data: sales } = await (supabase
     .from('sales')
     .select('*')
     .eq('tenant_id', user.tenantId!)
     .gte('created_at', `${from}T00:00:00.000Z`)
     .lte('created_at', `${to}T23:59:59.999Z`)
-    .order('created_at', { ascending: false })
+    .order('created_at', { ascending: false }) as any)
 
   const header = [
     'Sale Number',
@@ -83,15 +83,15 @@ export async function exportSalesCsv(from: string, to: string): Promise<string> 
 export async function exportPaymentsCsv(from: string, to: string): Promise<string> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data: payments } = await supabase
+  const { data: payments } = await (supabase
     .from('commerce_payments')
     .select('*')
     .eq('tenant_id', user.tenantId!)
     .gte('created_at', `${from}T00:00:00.000Z`)
     .lte('created_at', `${to}T23:59:59.999Z`)
-    .order('created_at', { ascending: false })
+    .order('created_at', { ascending: false }) as any)
 
   const header = [
     'Date',
@@ -127,15 +127,15 @@ export async function exportPaymentsCsv(from: string, to: string): Promise<strin
 export async function exportRefundsCsv(from: string, to: string): Promise<string> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data: refunds } = await supabase
+  const { data: refunds } = await (supabase
     .from('commerce_refunds')
     .select('*')
     .eq('tenant_id', user.tenantId!)
     .gte('created_at', `${from}T00:00:00.000Z`)
     .lte('created_at', `${to}T23:59:59.999Z`)
-    .order('created_at', { ascending: false })
+    .order('created_at', { ascending: false }) as any)
 
   const header = ['Date', 'Sale ID', 'Payment ID', 'Amount', 'Reason', 'Status']
 
@@ -158,15 +158,15 @@ export async function exportRefundsCsv(from: string, to: string): Promise<string
 export async function exportTaxSummaryCsv(from: string, to: string): Promise<string> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data: taxRows } = await supabase
-    .from('daily_tax_summary')
+  const { data: taxRows } = await (supabase
+    .from('daily_tax_summary' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
     .gte('report_date', from)
     .lte('report_date', to)
-    .order('report_date', { ascending: false })
+    .order('report_date', { ascending: false }) as any)
 
   const header = [
     'Date',

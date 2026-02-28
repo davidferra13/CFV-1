@@ -23,7 +23,7 @@ export interface MultiEventDay {
  */
 export async function getMultiEventDays(lookaheadDays = 90): Promise<MultiEventDay[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)

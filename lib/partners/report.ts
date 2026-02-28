@@ -49,7 +49,7 @@ export async function getPartnerReportData(
   month?: Date
 ): Promise<PartnerReportData | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const targetMonth = month || new Date()
   const from = startOfMonth(targetMonth).toISOString()

@@ -38,10 +38,10 @@ export type TempLogAnomalyResult = z.infer<typeof TempLogAnomalyResultSchema>
 
 export async function analyzeTempLog(eventId: string): Promise<TempLogAnomalyResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: tempLog } = await supabase
-    .from('temp_logs')
+    .from('temp_logs' as any)
     .select('food_item, temp_f, logged_at, stage, notes')
     .eq('event_id', eventId)
     .eq('tenant_id', user.tenantId!)

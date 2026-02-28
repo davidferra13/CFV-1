@@ -29,7 +29,7 @@ export async function getAvailableCarryForwardItems(
   currentEventId: string
 ): Promise<CarryForwardItem[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch reusable leftovers from other events (no transfer yet)
   const { data, error } = await supabase

@@ -21,7 +21,7 @@ import { format, parseISO } from 'date-fns'
  */
 async function fetchEventWeather(eventId: string, tenantId: string): Promise<EventWeather | null> {
   try {
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
     const { data } = await supabase
       .from('events')
       .select('location_lat, location_lng, event_date')

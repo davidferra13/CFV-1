@@ -56,7 +56,7 @@ export async function getCustomFieldDefinitions(
   entityType: CustomFieldEntityType
 ): Promise<CustomFieldDefinition[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('custom_field_definitions' as any)
@@ -77,7 +77,7 @@ export async function getAllCustomFieldDefinitions(): Promise<
   Record<CustomFieldEntityType, CustomFieldDefinition[]>
 > {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('custom_field_definitions' as any)
@@ -112,7 +112,7 @@ export async function createCustomFieldDefinition(raw: unknown): Promise<CustomF
     throw new Error('Select fields require at least one option')
   }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('custom_field_definitions' as any)
@@ -139,7 +139,7 @@ export async function createCustomFieldDefinition(raw: unknown): Promise<CustomF
  */
 export async function deleteCustomFieldDefinition(id: string): Promise<void> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Tenant-scoped delete: only deletes if the row belongs to this chef
   const { error } = await supabase
@@ -163,7 +163,7 @@ export async function saveCustomFieldValues(
   values: Record<string, unknown>
 ): Promise<void> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch definitions so we know each field's type
   const { data: defs, error: defError } = await supabase
@@ -235,7 +235,7 @@ export async function getCustomFieldValues(
   entityId: string
 ): Promise<Record<string, CustomFieldValue>> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('custom_field_values' as any)

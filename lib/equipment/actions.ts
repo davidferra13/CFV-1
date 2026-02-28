@@ -52,7 +52,7 @@ export type RentalInput = z.infer<typeof RentalSchema>
 export async function createEquipmentItem(input: CreateEquipmentInput) {
   const user = await requireChef()
   const validated = CreateEquipmentSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('equipment_items')
@@ -67,7 +67,7 @@ export async function createEquipmentItem(input: CreateEquipmentInput) {
 
 export async function updateEquipmentItem(id: string, input: Partial<CreateEquipmentInput>) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('equipment_items')
@@ -84,7 +84,7 @@ export async function updateEquipmentItem(id: string, input: Partial<CreateEquip
 
 export async function retireEquipmentItem(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   await supabase
     .from('equipment_items')
     .update({ status: 'retired' })
@@ -95,7 +95,7 @@ export async function retireEquipmentItem(id: string) {
 
 export async function logMaintenance(id: string, notes?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const today = format(new Date(), 'yyyy-MM-dd')
   const { error } = await supabase
@@ -110,7 +110,7 @@ export async function logMaintenance(id: string, notes?: string) {
 
 export async function listEquipment(category?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('equipment_items')
@@ -132,7 +132,7 @@ export async function listEquipment(category?: string) {
  */
 export async function getEquipmentDueForMaintenance() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('equipment_items')
@@ -157,7 +157,7 @@ export async function getEquipmentDueForMaintenance() {
 export async function logRental(input: RentalInput) {
   const user = await requireChef()
   const validated = RentalSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('equipment_rentals')
@@ -173,14 +173,14 @@ export async function logRental(input: RentalInput) {
 
 export async function deleteRental(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   await supabase.from('equipment_rentals').delete().eq('id', id).eq('chef_id', user.tenantId!)
   revalidatePath('/operations/equipment')
 }
 
 export async function getRentalCostForEvent(eventId: string): Promise<number> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('equipment_rentals')
@@ -193,7 +193,7 @@ export async function getRentalCostForEvent(eventId: string): Promise<number> {
 
 export async function listRentals(eventId?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('equipment_rentals')

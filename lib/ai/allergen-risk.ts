@@ -37,7 +37,7 @@ export type DishRisk = z.infer<typeof DishRiskSchema>
 
 export async function getEventAllergenRisk(eventId: string): Promise<AllergenRiskResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event + guests + menu components
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -67,7 +67,7 @@ export async function getEventAllergenRisk(eventId: string): Promise<AllergenRis
       .select('name, dietary_restrictions, allergies, notes')
       .eq('event_id', eventId),
     db
-      .from('event_menu_components')
+      .from('event_menu_components' as any)
       .select('name, description, allergen_tags')
       .eq('event_id', eventId),
   ])

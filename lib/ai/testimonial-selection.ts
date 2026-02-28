@@ -36,12 +36,12 @@ const getClient = () => {
 
 export async function selectTestimonialHighlights(): Promise<TestimonialSelectionResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Gather AAR client feedback and positive messages
   const [aarResult, messagesResult, surveysResult] = await Promise.all([
     supabase
-      .from('aars')
+      .from('aars' as any)
       .select(
         `
         client_feedback, event_id,
@@ -64,7 +64,7 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
       .eq('direction', 'in')
       .limit(50),
     supabase
-      .from('client_surveys')
+      .from('client_surveys' as any)
       .select(
         `
         overall_rating, feedback_text, event_id,

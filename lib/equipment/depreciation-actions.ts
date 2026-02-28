@@ -56,7 +56,7 @@ const SetMethodSchema = z.object({
 export async function setDepreciationMethod(input: z.infer<typeof SetMethodSchema>): Promise<void> {
   const user = await requireChef()
   const parsed = SetMethodSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('equipment_items')
@@ -81,7 +81,7 @@ export async function generateDepreciationSchedule(
   equipmentItemId: string
 ): Promise<DepreciationScheduleRow[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch the equipment item
   const { data: item, error: itemError } = await supabase
@@ -166,7 +166,7 @@ export async function generateDepreciationSchedule(
 
 async function getScheduleForItem(equipmentItemId: string): Promise<DepreciationScheduleRow[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('equipment_depreciation_schedules')
@@ -194,7 +194,7 @@ async function getScheduleForItem(equipmentItemId: string): Promise<Depreciation
 
 export async function getDepreciationForYear(taxYear: number): Promise<DepreciationYearSummary> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('equipment_depreciation_schedules')
@@ -237,7 +237,7 @@ export async function getDepreciationForYear(taxYear: number): Promise<Depreciat
 
 export async function markDepreciationClaimed(scheduleId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('equipment_depreciation_schedules')
@@ -253,7 +253,7 @@ export async function getEquipmentWithDepreciation(
   taxYear: number
 ): Promise<EquipmentWithDepreciation[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: items, error } = await supabase
     .from('equipment_items')

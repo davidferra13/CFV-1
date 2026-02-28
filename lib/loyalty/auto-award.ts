@@ -33,7 +33,7 @@ export async function autoAwardWelcomePoints(
   clientId: string,
   tenantId: string
 ): Promise<{ awarded: boolean; points: number }> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Idempotency check — never double-award
   const { data: client } = await supabase
@@ -165,7 +165,7 @@ export async function createPendingDelivery({
   redeemedBy: 'client' | 'chef'
 }): Promise<string | null> {
   // Admin client: this may be called from server actions without a chef session
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data, error } = await supabase
     .from('loyalty_reward_redemptions')
@@ -200,7 +200,7 @@ export async function createPendingDelivery({
 export async function getPendingRewardDeliveries(): Promise<PendingDeliveryWithClient[]> {
   const { requireChef } = await import('@/lib/auth/get-user')
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('loyalty_reward_redemptions')
@@ -228,7 +228,7 @@ export async function getPendingRewardDeliveries(): Promise<PendingDeliveryWithC
 export async function getClientRedemptionHistory(clientId: string): Promise<PendingDelivery[]> {
   const { requireChef } = await import('@/lib/auth/get-user')
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('loyalty_reward_redemptions')
@@ -256,7 +256,7 @@ export async function markRewardDelivered(
 ): Promise<{ success: boolean }> {
   const { requireChef } = await import('@/lib/auth/get-user')
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('loyalty_reward_redemptions')
@@ -291,7 +291,7 @@ export async function cancelRewardDelivery(
 ): Promise<{ success: boolean }> {
   const { requireChef } = await import('@/lib/auth/get-user')
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('loyalty_reward_redemptions')
@@ -318,7 +318,7 @@ export async function cancelRewardDelivery(
 export async function getMyPendingRedemptions(): Promise<PendingDelivery[]> {
   const { requireClient } = await import('@/lib/auth/get-user')
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('loyalty_reward_redemptions')

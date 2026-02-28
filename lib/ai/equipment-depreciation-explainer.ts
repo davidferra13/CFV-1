@@ -56,7 +56,7 @@ const EquipmentReportSchema = z.object({
 
 export async function explainEquipmentDepreciation(): Promise<EquipmentDepreciationReport> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: equipment } = await supabase
     .from('equipment_items')

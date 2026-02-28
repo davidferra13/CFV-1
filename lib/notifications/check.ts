@@ -22,7 +22,7 @@ export async function getNotificationsByCategory(
   offset = 0
 ): Promise<Notification[]> {
   const user = await requireAuth()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('notifications')
@@ -47,7 +47,7 @@ export async function getNotificationsByCategory(
  */
 export async function getUnreadNotifications(limit = 20, offset = 0): Promise<Notification[]> {
   const user = await requireAuth()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('notifications')
@@ -72,7 +72,7 @@ export async function getUnreadNotifications(limit = 20, offset = 0): Promise<No
  */
 export async function getNotificationCount(category?: NotificationCategory): Promise<number> {
   const user = await requireAuth()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('notifications')

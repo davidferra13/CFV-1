@@ -15,7 +15,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
  * Returns null if the token is invalid, expired, already claimed, or not approved.
  */
 export async function getCannabisInviteByToken(token: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('cannabis_tier_invitations')
@@ -50,7 +50,7 @@ export async function getCannabisInviteByToken(token: string) {
  * 2. Inserts a cannabis_tier_users row for the claiming user
  */
 export async function claimCannabisInvite(token: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get current user
   const {
@@ -90,7 +90,7 @@ export async function claimCannabisInvite(token: string) {
   }
 
   // Use admin client for the writes (bypasses RLS for insert into cannabis_tier_users)
-  const adminClient = createAdminClient()
+  const adminClient: any = createAdminClient()
 
   // Mark invite as claimed
   const { error: claimError } = await (adminClient as any)

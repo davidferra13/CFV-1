@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache'
 
 export async function clientRedeemReward(rewardId: string) {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: client } = await supabase
     .from('clients')

@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 async function syncInstagramStats(chefId: string): Promise<{ ok: boolean; error?: string }> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Get stored token
   const { data: conn } = await supabase
@@ -25,14 +25,17 @@ async function syncInstagramStats(chefId: string): Promise<{ ok: boolean; error?
 
   // Fetch profile stats
   const profileRes = await fetch(
-    `https://graph.instagram.com/${igUserId}?fields=followers_count,follows_count,media_count&access_token=${token}`,
+    `https://graph.instagram.com/${igUserId}?fields=followers_count,follows_count,media_count&access_token=${token}`
   )
 
   if (!profileRes.ok) {
     const err = await profileRes.text()
     await supabase
       .from('social_connected_accounts')
-      .update({ last_error: err, error_count: supabase.rpc('increment', { x: 1 }) as unknown as number })
+      .update({
+        last_error: err,
+        error_count: supabase.rpc('increment', { x: 1 }) as unknown as number,
+      })
       .eq('tenant_id', chefId)
       .eq('platform', 'instagram')
     return { ok: false, error: err }
@@ -42,19 +45,22 @@ async function syncInstagramStats(chefId: string): Promise<{ ok: boolean; error?
 
   // Fetch recent media for engagement calculation
   const mediaRes = await fetch(
-    `https://graph.instagram.com/${igUserId}/media?fields=like_count,comments_count,permalink&limit=10&access_token=${token}`,
+    `https://graph.instagram.com/${igUserId}/media?fields=like_count,comments_count,permalink&limit=10&access_token=${token}`
   )
   const mediaData = await mediaRes.json()
   const posts = mediaData?.data ?? []
 
   const topPost = posts.sort(
-    (a: { like_count: number; comments_count: number }, b: { like_count: number; comments_count: number }) =>
-      (b.like_count + b.comments_count) - (a.like_count + a.comments_count)
+    (
+      a: { like_count: number; comments_count: number },
+      b: { like_count: number; comments_count: number }
+    ) => b.like_count + b.comments_count - (a.like_count + a.comments_count)
   )[0]
 
   const totalEngagement = posts.reduce(
-    (s: number, p: { like_count?: number; comments_count?: number }) => s + (p.like_count ?? 0) + (p.comments_count ?? 0),
-    0,
+    (s: number, p: { like_count?: number; comments_count?: number }) =>
+      s + (p.like_count ?? 0) + (p.comments_count ?? 0),
+    0
   )
   const avgEngagementRate =
     posts.length > 0 && profile.followers_count > 0
@@ -68,7 +74,7 @@ async function syncInstagramStats(chefId: string): Promise<{ ok: boolean; error?
 
   try {
     const insightRes = await fetch(
-      `https://graph.instagram.com/${igUserId}/insights?metric=reach,impressions,profile_views&period=week&access_token=${token}`,
+      `https://graph.instagram.com/${igUserId}/insights?metric=reach,impressions,profile_views&period=week&access_token=${token}`
     )
     if (insightRes.ok) {
       const insightData = await insightRes.json()
@@ -85,9 +91,8 @@ async function syncInstagramStats(chefId: string): Promise<{ ok: boolean; error?
 
   const today = new Date().toISOString().slice(0, 10)
 
-  await supabase
-    .from('social_stats_snapshots')
-    .upsert({
+  await supabase.from('social_stats_snapshots').upsert(
+    {
       chef_id: chefId,
       platform: 'instagram',
       snapshot_date: today,
@@ -103,7 +108,9 @@ async function syncInstagramStats(chefId: string): Promise<{ ok: boolean; error?
       top_post_comments: topPost?.comments_count ?? null,
       raw_payload: { profile, topPost: topPost ?? null },
       synced_at: new Date().toISOString(),
-    }, { onConflict: 'chef_id,platform,snapshot_date' })
+    },
+    { onConflict: 'chef_id,platform,snapshot_date' }
+  )
 
   // Update last_refreshed_at on connection
   await supabase

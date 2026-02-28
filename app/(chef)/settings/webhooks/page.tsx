@@ -6,7 +6,7 @@ import { WebhookManager } from '@/components/settings/webhook-manager'
 export const metadata: Metadata = { title: 'Webhooks - ChefFlow' }
 
 async function getWebhooks(tenantId: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { data } = await supabase
     .from('webhook_endpoints' as any)
     .select('*')

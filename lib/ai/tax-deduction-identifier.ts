@@ -41,7 +41,7 @@ export async function identifyMissedDeductions(
   taxYearEnd?: string
 ): Promise<TaxDeductionResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const start = taxYearStart ?? `${new Date().getFullYear()}-01-01`
   const end = taxYearEnd ?? `${new Date().getFullYear()}-12-31`

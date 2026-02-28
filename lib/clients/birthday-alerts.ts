@@ -88,7 +88,7 @@ function nextOccurrence(month: number, day: number, today: Date): Date {
  */
 export async function getUpcomingMilestones(lookaheadDays = 14): Promise<UpcomingMilestone[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: clients } = await supabase
     .from('clients')

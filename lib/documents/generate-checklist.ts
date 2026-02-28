@@ -28,7 +28,7 @@ export type ChecklistData = {
 /** Fetch all data needed for the checklist */
 export async function fetchChecklistData(eventId: string): Promise<ChecklistData | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event basics
   const { data: event } = await supabase

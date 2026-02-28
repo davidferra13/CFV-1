@@ -175,7 +175,7 @@ export function PosRegister({ products, registerSession, defaultTaxZip }: Props)
           if (!product || !Number.isInteger(quantity) || quantity <= 0) return null
           return { product, quantity }
         })
-        .filter(Boolean)
+        .filter((x): x is CartItem => Boolean(x))
 
       setCart(restored)
     } catch {

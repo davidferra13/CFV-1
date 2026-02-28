@@ -29,7 +29,7 @@ export async function getChefActivityFeed(
   options: ChefActivityQueryOptions = {}
 ): Promise<ChefActivityQueryResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const limit = Math.max(1, Math.min(100, options.limit ?? 50))
   const daysBack = parseDaysBack(options.daysBack)
 
@@ -92,7 +92,7 @@ export async function getActivityCountsByDomain(
   daysBack = 7
 ): Promise<Partial<Record<ChefActivityDomain, number>>> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const resolved = parseDaysBack(daysBack)
 
   let query = supabase.from('chef_activity_log').select('domain').eq('tenant_id', user.tenantId!)

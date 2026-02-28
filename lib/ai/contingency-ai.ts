@@ -44,7 +44,7 @@ const ContingencyAIResultSchema = z.object({
 
 export async function generateContingencyPlans(eventId: string): Promise<ContingencyAIResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [eventResult, menuResult] = await Promise.all([
     supabase
@@ -56,7 +56,7 @@ export async function generateContingencyPlans(eventId: string): Promise<Conting
       .eq('tenant_id', user.tenantId!)
       .single(),
     supabase
-      .from('event_menu_components')
+      .from('event_menu_components' as any)
       .select('name, course_type, description')
       .eq('event_id', eventId),
   ])

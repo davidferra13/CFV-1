@@ -25,11 +25,12 @@ const DAY_LABELS: Record<string, string> = {
   sunday: 'Sunday',
 }
 
-export default async function VendorDetailPage({ params }: { params: { id: string } }) {
+export default async function VendorDetailPage({ params }: { params: Promise<{ id: string }> }) {
   await requireChef()
+  const { id } = await params
 
-  const vendor = await getVendor(params.id)
-  const invoices = await listInvoices(params.id)
+  const vendor = await getVendor(id)
+  const invoices = await listInvoices(id)
   const allVendors = await listVendors()
 
   return (
@@ -66,10 +67,10 @@ export default async function VendorDetailPage({ params }: { params: { id: strin
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
-            {vendor.contact_name && (
+            {(vendor as any).contact_name && (
               <div>
                 <span className="text-stone-500">Contact</span>
-                <p className="text-stone-200">{vendor.contact_name}</p>
+                <p className="text-stone-200">{(vendor as any).contact_name}</p>
               </div>
             )}
             {vendor.phone && (
@@ -84,23 +85,23 @@ export default async function VendorDetailPage({ params }: { params: { id: strin
                 <p className="text-stone-200">{vendor.email}</p>
               </div>
             )}
-            {vendor.account_number && (
+            {(vendor as any).account_number && (
               <div>
                 <span className="text-stone-500">Account #</span>
-                <p className="text-stone-200">{vendor.account_number}</p>
+                <p className="text-stone-200">{(vendor as any).account_number}</p>
               </div>
             )}
-            {vendor.payment_terms && (
+            {(vendor as any).payment_terms && (
               <div>
                 <span className="text-stone-500">Payment Terms</span>
-                <p className="text-stone-200">{vendor.payment_terms}</p>
+                <p className="text-stone-200">{(vendor as any).payment_terms}</p>
               </div>
             )}
-            {vendor.delivery_days && vendor.delivery_days.length > 0 && (
+            {(vendor as any).delivery_days && (vendor as any).delivery_days.length > 0 && (
               <div>
                 <span className="text-stone-500">Delivery Days</span>
                 <p className="text-stone-200">
-                  {vendor.delivery_days.map((d: string) => DAY_LABELS[d] || d).join(', ')}
+                  {(vendor as any).delivery_days.map((d: string) => DAY_LABELS[d] || d).join(', ')}
                 </p>
               </div>
             )}

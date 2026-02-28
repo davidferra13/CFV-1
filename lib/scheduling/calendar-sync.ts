@@ -23,7 +23,7 @@ export interface CalendarConnection {
 
 export async function getCalendarConnection(): Promise<CalendarConnection> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('google_connections')
@@ -72,7 +72,7 @@ export async function checkCalendarAvailability(date: string): Promise<{
   conflicts: Array<{ occasion: string; time: string }>
 }> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const dayStart = `${date}T00:00:00`
   const dayEnd = `${date}T23:59:59`
@@ -108,7 +108,7 @@ export async function syncEventToGoogleCalendar(
 ): Promise<{ success: boolean; googleEventId?: string; error?: string }> {
   try {
     const chef = await requireChef()
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
 
     // Check calendar connection
     const { data: conn } = await supabase
@@ -236,7 +236,7 @@ export async function deleteEventFromGoogleCalendar(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const chef = await requireChef()
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
 
     const { data: event } = await supabase
       .from('events')

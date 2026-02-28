@@ -34,7 +34,7 @@ export type NotificationExperienceSettings = {
  */
 export async function getNotificationPreferences(): Promise<CategoryPreference[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('notification_preferences')
@@ -63,7 +63,7 @@ export async function upsertCategoryPreference(
 ): Promise<{ error: string | null }> {
   const user = await requireChef()
   if (!user.tenantId) return { error: 'No tenant context' }
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('notification_preferences').upsert(
     {
@@ -90,7 +90,7 @@ export async function upsertCategoryPreference(
  */
 export async function getSmsSettings(): Promise<SmsSettings> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('chef_preferences')
@@ -112,7 +112,7 @@ export async function getSmsSettings(): Promise<SmsSettings> {
 export async function updateSmsSettings(settings: SmsSettings): Promise<{ error: string | null }> {
   const user = await requireChef()
   if (!user.tenantId) return { error: 'No tenant context' }
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const update: Record<string, unknown> = {
     sms_opt_in: settings.sms_opt_in,
@@ -150,7 +150,7 @@ export async function updateSmsSettings(settings: SmsSettings): Promise<{ error:
 
 export async function getNotificationExperienceSettings(): Promise<NotificationExperienceSettings> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('chef_preferences')
@@ -183,7 +183,7 @@ export async function updateNotificationExperienceSettings(
 ): Promise<{ error: string | null }> {
   const user = await requireChef()
   if (!user.tenantId) return { error: 'No tenant context' }
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const quietHoursEnabled = Boolean(settings.quiet_hours_enabled)
   const digestInterval = Math.min(120, Math.max(5, Number(settings.digest_interval_minutes || 15)))

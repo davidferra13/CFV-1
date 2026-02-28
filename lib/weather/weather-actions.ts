@@ -90,7 +90,7 @@ export async function getWeatherForDateRange(
 ): Promise<Record<string, EventWeather>> {
   try {
     const user = await requireChef()
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
 
     const { data: events } = await supabase
       .from('events')

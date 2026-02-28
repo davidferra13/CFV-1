@@ -14,7 +14,7 @@ const adminClient = createClient(
 export async function POST(request: Request) {
   try {
     // Authenticate the user
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
     const {
       data: { user },
     } = await supabase.auth.getUser()

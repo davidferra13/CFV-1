@@ -1,4 +1,4 @@
-﻿'use server'
+'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
@@ -33,13 +33,13 @@ type MovementRecord = {
 }
 
 async function assertOpenRegisterSession(tenantId: string, registerSessionId: string) {
-  const supabase = createServerClient()
-  const { data: session, error } = await supabase
-    .from('register_sessions')
+  const supabase: any = createServerClient()
+  const { data: session, error } = await (supabase
+    .from('register_sessions' as any)
     .select('id, status')
     .eq('id', registerSessionId)
     .eq('tenant_id', tenantId)
-    .single()
+    .single() as any)
 
   if (error || !session) {
     throw new Error('Register session not found')
@@ -77,24 +77,24 @@ export async function getCashDrawerSummary(registerSessionId: string): Promise<C
   const user = await requireChef()
   await requirePro('commerce')
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data: session, error: sessionError } = await supabase
-    .from('register_sessions')
+  const { data: session, error: sessionError } = await (supabase
+    .from('register_sessions' as any)
     .select('id, status, opening_cash_cents')
     .eq('id', registerSessionId)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
   if (sessionError || !session) {
     throw new Error('Register session not found')
   }
 
-  const { data: movements, error: movementError } = await supabase
-    .from('cash_drawer_movements')
+  const { data: movements, error: movementError } = await (supabase
+    .from('cash_drawer_movements' as any)
     .select('movement_type, amount_cents')
     .eq('tenant_id', user.tenantId!)
-    .eq('register_session_id', registerSessionId)
+    .eq('register_session_id', registerSessionId) as any)
 
   if (movementError) {
     throw new Error(`Failed to load cash drawer summary: ${movementError.message}`)
@@ -122,17 +122,17 @@ export async function listCashDrawerMovements(input: {
   const user = await requireChef()
   await requirePro('commerce')
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const limit = Math.max(1, Math.min(input.limit ?? 50, 250))
   const offset = Math.max(0, input.offset ?? 0)
 
-  const { data, error, count } = await supabase
-    .from('cash_drawer_movements')
+  const { data, error, count } = await (supabase
+    .from('cash_drawer_movements' as any)
     .select('*', { count: 'exact' })
     .eq('tenant_id', user.tenantId!)
     .eq('register_session_id', input.registerSessionId)
     .order('created_at', { ascending: false })
-    .range(offset, offset + limit - 1)
+    .range(offset, offset + limit - 1) as any)
 
   if (error) throw new Error(`Failed to list drawer movements: ${error.message}`)
 
@@ -157,8 +157,8 @@ async function insertMovement(input: {
 
   await assertOpenRegisterSession(user.tenantId!, input.registerSessionId)
 
-  const supabase = createServerClient()
-  const { error } = await supabase.from('cash_drawer_movements').insert({
+  const supabase: any = createServerClient()
+  const { error } = await (supabase.from('cash_drawer_movements' as any).insert({
     tenant_id: user.tenantId!,
     register_session_id: input.registerSessionId,
     movement_type: input.movementType,
@@ -168,7 +168,7 @@ async function insertMovement(input: {
       source: 'manual',
     },
     created_by: user.id,
-  } as any)
+  } as any) as any)
 
   if (error) throw new Error(`Failed to record cash movement: ${error.message}`)
 

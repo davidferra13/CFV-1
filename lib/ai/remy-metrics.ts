@@ -35,7 +35,7 @@ export async function recordRemyMetric(input: MetricInput): Promise<void> {
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
 
     const category = input.category ?? 'general'
     const today = new Date().toISOString().split('T')[0]
@@ -83,7 +83,7 @@ export async function recordConversationStart(
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
 
     const today = new Date().toISOString().split('T')[0]
 
@@ -130,7 +130,7 @@ export async function getRemyMetricsSummary(): Promise<{
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
 
     const { data: metrics } = await supabase
       .from('remy_usage_metrics')

@@ -69,7 +69,7 @@ function classifySeverity(allergy: string): DietaryConflictSeverity {
  */
 export async function checkDietaryConflicts(eventId: string): Promise<DietaryConflict[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validatedEventId = EventIdSchema.parse(eventId)
 
   // Fetch event with dietary info
@@ -120,7 +120,7 @@ export async function checkDietaryConflicts(eventId: string): Promise<DietaryCon
   // Also fetch recipe ingredients if available
   const dishIds = dishes.map((d) => d.id)
   const { data: recipeLinks } = await supabase
-    .from('dish_recipes')
+    .from('dish_recipes' as any)
     .select('dish_id, recipe_id')
     .in('dish_id', dishIds)
 
@@ -224,7 +224,7 @@ export async function checkDietaryConflicts(eventId: string): Promise<DietaryCon
  */
 export async function acknowledgeDietaryConflict(alertId: string): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validatedAlertId = AlertIdSchema.parse(alertId)
 
   const { error } = await supabase
@@ -248,7 +248,7 @@ export async function acknowledgeDietaryConflict(alertId: string): Promise<{ suc
  */
 export async function getDietaryConflicts(eventId: string): Promise<DietaryConflict[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validatedEventId = EventIdSchema.parse(eventId)
 
   const { data, error } = await supabase

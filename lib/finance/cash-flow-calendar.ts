@@ -29,7 +29,7 @@ export async function getCashFlowCalendar(
   month: number = new Date().getMonth() + 1
 ): Promise<CashFlowCalendarData> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const startDate = `${year}-${String(month).padStart(2, '0')}-01`
   const endYear = month === 12 ? year + 1 : year

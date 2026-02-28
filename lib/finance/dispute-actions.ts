@@ -56,7 +56,7 @@ function mapRow(row: any): PaymentDispute {
 
 export async function getDisputes(status?: string): Promise<PaymentDispute[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('payment_disputes')
@@ -77,7 +77,7 @@ export async function createDispute(
 ): Promise<PaymentDispute> {
   const user = await requireChef()
   const parsed = CreateDisputeSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('payment_disputes')
@@ -105,7 +105,7 @@ export async function updateDisputeEvidence(
 ): Promise<PaymentDispute> {
   const user = await requireChef()
   const parsed = UpdateEvidenceSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updates: Record<string, any> = {}
   if (parsed.evidenceNotes !== undefined) updates.evidence_notes = parsed.evidenceNotes
@@ -133,7 +133,7 @@ export async function resolveDispute(
   outcome: 'won' | 'lost'
 ): Promise<PaymentDispute> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('payment_disputes')

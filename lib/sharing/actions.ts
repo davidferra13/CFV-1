@@ -301,7 +301,7 @@ async function verifyCaptchaIfProvided(token?: string, ipHint?: string) {
 }
 
 async function trackInviteEvent(params: {
-  supabase: ReturnType<typeof createServerClient>
+  supabase: any
   tenantId: string
   eventId: string
   inviteId?: string | null
@@ -325,7 +325,7 @@ async function trackInviteEvent(params: {
 }
 
 async function syncGuestDietaryItems(params: {
-  supabase: ReturnType<typeof createServerClient>
+  supabase: any
   tenantId: string
   eventId: string
   guestId: string
@@ -353,7 +353,7 @@ async function syncGuestDietaryItems(params: {
 }
 
 async function logRsvpAudit(params: {
-  supabase: ReturnType<typeof createServerClient>
+  supabase: any
   tenantId: string
   eventId: string
   guestId: string
@@ -403,7 +403,7 @@ async function logRsvpAudit(params: {
 }
 
 async function getCapacityDecision(params: {
-  supabase: ReturnType<typeof createServerClient>
+  supabase: any
   shareId: string
   shareEventId: string
   enforceCapacity: boolean
@@ -447,7 +447,7 @@ async function getCapacityDecision(params: {
  */
 export async function createEventShare(eventId: string) {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify client owns this event
   const { data: event, error: eventError } = await supabase
@@ -521,7 +521,7 @@ export async function createEventShare(eventId: string) {
  */
 export async function revokeEventShare(eventShareId: string) {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('event_shares')
@@ -546,7 +546,7 @@ export async function addGuestManually(input: z.infer<typeof AddGuestManuallySch
   const user = await requireClient()
   const validated = AddGuestManuallySchema.parse(input)
   const normalizedEmail = validated.email ? validated.email.toLowerCase().trim() : null
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify client owns this event
   const { data: event } = await supabase
@@ -612,7 +612,7 @@ export async function createViewerInviteForEvent(
   const normalizedInvitedEmail = validated.invited_email
     ? validated.invited_email.toLowerCase().trim()
     : null
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')
@@ -693,7 +693,7 @@ export async function updateEventShareAdvancedSettings(
 ) {
   const user = await requireClient()
   const validated = UpdateEventShareAdvancedSettingsSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: share } = await supabase
     .from('event_shares')
@@ -755,7 +755,7 @@ export async function updateEventShareAdvancedSettings(
 export async function updateGuestVisibility(eventShareId: string, settings: VisibilitySettings) {
   const user = await requireChef()
   const validated = VisibilitySettingsSchema.parse(settings)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch current settings and merge (partial update)
   const { data: share } = await supabase
@@ -792,7 +792,7 @@ async function getEventForUserAccess(
   user: Awaited<ReturnType<typeof getCurrentUser>>
 ) {
   if (!user) throw new Error('Authentication required')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (user.role === 'chef') {
     const { data: event } = await supabase
@@ -822,7 +822,7 @@ export async function getEventGuests(eventId: string) {
   const user = await getCurrentUser()
   if (!user) throw new Error('Authentication required')
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Build query based on role
   let query = supabase
@@ -863,7 +863,7 @@ export async function getEventRSVPSummary(eventId: string) {
   const user = await getCurrentUser()
   if (!user) throw new Error('Authentication required')
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify access
   if (user.role === 'chef') {
@@ -919,7 +919,7 @@ export async function getEventShares(eventId: string) {
   const user = await getCurrentUser()
   if (!user) throw new Error('Authentication required')
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase.from('event_shares').select('*').eq('event_id', eventId)
 

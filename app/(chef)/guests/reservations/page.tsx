@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: 'Reservations — ChefFlow' }
 
 export default async function ReservationsPage() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const today = new Date().toISOString().split('T')[0]
 

@@ -38,7 +38,7 @@ async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promis
 
 export async function getDailyPlan(): Promise<DailyPlan> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const todayStr = new Date().toISOString().split('T')[0]
 
   // Fetch all data sources in parallel
@@ -226,7 +226,7 @@ export async function dismissDailyPlanItem(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const user = await requireChef()
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
     const todayStr = new Date().toISOString().split('T')[0]
 
     const { error } = await supabase.from('daily_plan_dismissals').upsert(

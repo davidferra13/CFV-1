@@ -8,7 +8,7 @@ import { createServerClient } from '@/lib/supabase/server'
  */
 export async function exportMyData(): Promise<Record<string, unknown>> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.entityId
 
   // Helper to safely query a table — returns empty array if table doesn't exist

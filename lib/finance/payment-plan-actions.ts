@@ -21,7 +21,7 @@ export interface PaymentPlanInstallment {
 
 export async function getPaymentPlan(eventId: string): Promise<PaymentPlanInstallment[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('payment_plan_installments' as any)
@@ -49,7 +49,7 @@ export async function getPaymentPlan(eventId: string): Promise<PaymentPlanInstal
 
 export async function addInstallment(formData: FormData): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const eventId = formData.get('eventId') as string
   const label = formData.get('label') as string
@@ -88,7 +88,7 @@ export async function markInstallmentPaid(
   paymentMethod?: string
 ): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase
     .from('payment_plan_installments' as any)
@@ -104,7 +104,7 @@ export async function markInstallmentPaid(
 
 export async function deleteInstallment(installmentId: string, eventId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase
     .from('payment_plan_installments' as any)

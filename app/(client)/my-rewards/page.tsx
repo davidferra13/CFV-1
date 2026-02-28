@@ -72,7 +72,7 @@ function getTierProgress(
 
 export default async function MyRewardsPage() {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const status = await getMyLoyaltyStatus()
   if (!status) {

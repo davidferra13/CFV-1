@@ -15,15 +15,17 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) {
       incrementMetric('activity.track.invalid_payload')
       logActivityEvent('warn', 'activity track rejected invalid payload', {
-        issues: parsed.error.issues.map(issue => issue.message),
+        issues: parsed.error.issues.map((issue) => issue.message),
       })
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
     }
 
     const { event_type, entity_type, entity_id, metadata } = parsed.data
 
-    const supabase = createServerClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const supabase: any = createServerClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
     if (!user) {
       incrementMetric('activity.track.unauthorized')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

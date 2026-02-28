@@ -27,7 +27,7 @@ export type UpdateGuestInput = z.infer<typeof UpdateGuestSchema>
 
 export async function createGuest(input: CreateGuestInput) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const data = CreateGuestSchema.parse(input)
 
   const { data: guest, error } = await supabase
@@ -53,7 +53,7 @@ export async function createGuest(input: CreateGuestInput) {
 
 export async function updateGuest(id: string, input: UpdateGuestInput) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const data = UpdateGuestSchema.parse(input)
 
   const updateData: Record<string, unknown> = {}
@@ -80,7 +80,7 @@ export async function updateGuest(id: string, input: UpdateGuestInput) {
 
 export async function deleteGuest(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('guests')
@@ -98,7 +98,7 @@ export async function deleteGuest(id: string) {
 
 export async function listGuests(search?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let q = supabase
     .from('guests')
@@ -122,7 +122,7 @@ export async function listGuests(search?: string) {
 
 export async function getGuest(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: guest, error } = await supabase
     .from('guests')
@@ -196,7 +196,7 @@ export async function getGuest(id: string) {
 
 export async function searchGuests(query: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!query.trim()) return []
 

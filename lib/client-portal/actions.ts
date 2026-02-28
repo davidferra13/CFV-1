@@ -46,7 +46,7 @@ export type ClientPortalData = {
 
 export async function generateClientPortalToken(clientId: string): Promise<string> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify ownership
   const { data: client } = await supabase
@@ -77,7 +77,7 @@ export async function generateClientPortalToken(clientId: string): Promise<strin
 
 export async function revokeClientPortalToken(clientId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase
     .from('clients')
@@ -96,7 +96,7 @@ export async function revokeClientPortalToken(clientId: string): Promise<void> {
 
 export async function getClientPortalData(token: string): Promise<ClientPortalData | null> {
   // Use admin client for public read (no user session)
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Look up client by token
   const { data: client } = await supabase
@@ -190,7 +190,7 @@ export async function getClientPortalToken(
   clientId: string
 ): Promise<{ token: string | null; createdAt: string | null }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('clients')

@@ -13,7 +13,7 @@ import { randomBytes } from 'crypto'
 
 export async function getAllCannabisUsers() {
   await requireAdmin()
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data, error } = await supabase
     .from('cannabis_tier_users')
@@ -38,7 +38,7 @@ export async function getAllCannabisUsers() {
 
 export async function getPendingInvites() {
   await requireAdmin()
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data, error } = await supabase
     .from('cannabis_tier_invitations')
@@ -63,7 +63,7 @@ export async function getPendingInvites() {
 
 export async function getAllCannabisInvites() {
   await requireAdmin()
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data, error } = await supabase
     .from('cannabis_tier_invitations')
@@ -101,7 +101,7 @@ export async function grantCannabisTier(input: {
   notes?: string
 }) {
   const admin = await requireAdmin()
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { error } = await supabase.from('cannabis_tier_users').upsert(
     {
@@ -134,7 +134,7 @@ export async function grantCannabisTier(input: {
 
 export async function revokeCannabisTier(authUserId: string) {
   const admin = await requireAdmin()
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { error } = await supabase
     .from('cannabis_tier_users')
@@ -161,7 +161,7 @@ export async function revokeCannabisTier(authUserId: string) {
 
 export async function approveInvite(inviteId: string) {
   const admin = await requireAdmin()
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const token = randomBytes(32).toString('hex')
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
@@ -197,7 +197,7 @@ export async function approveInvite(inviteId: string) {
 
 export async function rejectInvite(inviteId: string, reason?: string) {
   const admin = await requireAdmin()
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { error } = await supabase
     .from('cannabis_tier_invitations')
@@ -228,7 +228,7 @@ export async function rejectInvite(inviteId: string, reason?: string) {
 
 export async function adminGrantTierByEmail(input: { email: string; notes?: string }) {
   const admin = await requireAdmin()
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Look up the auth user by email
   const { data: authData, error: authError } = await supabase.auth.admin.listUsers()

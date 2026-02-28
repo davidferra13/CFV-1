@@ -34,7 +34,7 @@ export async function handleDailyBriefing(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const today = new Date().toISOString().split('T')[0]
   const threeDaysOut = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
@@ -101,7 +101,7 @@ export async function handleLeadScoring(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Find inquiries without scores
   const { data: unscoredInquiries } = await (supabase
@@ -147,7 +147,7 @@ export async function handleWeeklyInsights(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const now = new Date()
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()
   const chefName = await loadChefName(supabase, tenantId)
@@ -217,7 +217,7 @@ export async function handleRevenueGoal(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Get completed events this month for revenue approximation
   const monthStart = new Date()
@@ -253,7 +253,7 @@ export async function handleChurnPrediction(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()
 
   // Find clients whose last event was >60 days ago (at-risk)
@@ -286,7 +286,7 @@ export async function handleFoodCostAlert(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Get recent events with food cost data
   const { data: events } = await supabase
@@ -332,7 +332,7 @@ export async function handlePipelineBottleneck(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Count events by status
   const statuses = ['draft', 'proposed', 'accepted', 'paid', 'confirmed', 'in_progress']
@@ -372,7 +372,7 @@ export async function handleCertExpiry(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const thirtyDaysOut = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
   const { data: expiringCerts } = await (supabase
@@ -467,7 +467,7 @@ export async function handleQuoteAnalysis(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Get recent quotes
   const { data: quotes } = await (supabase
@@ -511,7 +511,7 @@ export async function handleAnomalyDetection(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
   // Check for anomalies in the last 24h
@@ -559,7 +559,7 @@ export async function handleMenuEngineering(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Get most-used menu items across events
   const { data: menuItems } = await (supabase
@@ -605,7 +605,7 @@ export async function handleStaleInquiryScanner(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
 
   // Find inquiries that are still open and older than 48h
@@ -661,7 +661,7 @@ export async function handlePaymentOverdueScanner(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
   // Find events in 'accepted' status (awaiting payment) older than 7 days
@@ -720,7 +720,7 @@ export async function handleSocialPostDraft(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const chefName = await loadChefName(supabase, tenantId)
 
   // Get recent completed events for inspiration
@@ -789,7 +789,7 @@ export async function handleClientSentiment(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
 
   // Gather signals: recent messages, event completion rate, inquiry conversion

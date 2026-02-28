@@ -29,7 +29,7 @@ export type SaveTranscriptInput = z.infer<typeof SaveTranscriptSchema>
 export async function saveTacTranscript(input: SaveTranscriptInput) {
   const user = await requireChef()
   const validated = SaveTranscriptSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const now = new Date()
   const rows = validated.messages.map((msg, i) => ({

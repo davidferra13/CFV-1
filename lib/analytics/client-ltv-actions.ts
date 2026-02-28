@@ -50,7 +50,7 @@ const GetTopClientsSchema = z.object({
 export async function computeCLV(clientId: string): Promise<ClientLTV> {
   const validated = ComputeCLVSchema.parse({ clientId })
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get client info
   const { data: client, error: clientError } = await supabase
@@ -115,7 +115,7 @@ export async function getTopClientsByLTV(limit?: number): Promise<ClientLTV[]> {
   const resultLimit = validated.limit ?? 10
 
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all clients
   const { data: clients } = await supabase
@@ -213,7 +213,7 @@ export async function getTopClientsByLTV(limit?: number): Promise<ClientLTV[]> {
  */
 export async function getRetentionCohort(): Promise<RetentionCohortRow[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all completed events with client_id and event_date
   const { data: events } = await supabase

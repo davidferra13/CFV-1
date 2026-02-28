@@ -37,7 +37,7 @@ export async function createDevice(input: unknown) {
   const pairingCodeHash = hashToken(pairingCode)
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString() // 15 min
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { data, error } = await supabase
     .from('devices')
     .insert({
@@ -66,7 +66,7 @@ export async function createDevice(input: unknown) {
 
 export async function listDevices(): Promise<DeviceWithOnlineStatus[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('devices')
@@ -112,7 +112,7 @@ export async function listDevices(): Promise<DeviceWithOnlineStatus[]> {
 
 export async function getDeviceDetail(deviceId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: device, error } = await supabase
     .from('devices')
@@ -140,7 +140,7 @@ export async function getDeviceDetail(deviceId: string) {
 
 export async function enableDevice(deviceId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Only disabled devices can be re-enabled
   const { data: device } = await supabase
@@ -180,7 +180,7 @@ export async function enableDevice(deviceId: string) {
 
 export async function disableDevice(deviceId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('devices')
@@ -210,7 +210,7 @@ export async function disableDevice(deviceId: string) {
 
 export async function revokeDevice(deviceId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('devices')
@@ -239,7 +239,7 @@ export async function revokeDevice(deviceId: string) {
 
 export async function regeneratePairingCode(deviceId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify device belongs to tenant and is in pending_pair or disabled state
   const { data: existing } = await supabase
@@ -280,7 +280,7 @@ export async function updateDevice(deviceId: string, input: unknown) {
   const user = await requireChef()
   const parsed = UpdateDeviceSchema.parse(input)
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { error } = await supabase
     .from('devices')
     .update(parsed)
@@ -297,7 +297,7 @@ export async function updateDevice(deviceId: string, input: unknown) {
 
 export async function listDeviceEvents(deviceId: string, limit = 50) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('device_events')
@@ -336,7 +336,7 @@ export async function setStaffPin(staffMemberId: string, pin: string) {
   }
 
   const pinHash = hashToken(pin)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Check uniqueness within tenant before setting
   const { data: existing } = await supabase
@@ -368,7 +368,7 @@ export async function setStaffPin(staffMemberId: string, pin: string) {
 
 export async function removeStaffPin(staffMemberId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('staff_members')
@@ -386,7 +386,7 @@ export async function removeStaffPin(staffMemberId: string) {
 
 export async function listStaffWithPinStatus() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('staff_members')

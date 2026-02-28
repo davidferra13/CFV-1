@@ -27,7 +27,7 @@ export type AiDataSummary = {
 
 export async function getAiPreferences(): Promise<AiPreferences> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('ai_preferences')
@@ -63,7 +63,7 @@ export async function getAiPreferences(): Promise<AiPreferences> {
 
 export async function getAiDataSummary(): Promise<AiDataSummary> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const [convResult, msgResult, memResult, artResult] = await Promise.all([
@@ -100,7 +100,7 @@ export async function saveAiPreferences(
   prefs: Partial<Omit<AiPreferences, 'onboarding_completed_at'>>
 ): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const { error } = await supabase.from('ai_preferences').upsert(
@@ -122,7 +122,7 @@ export async function saveAiPreferences(
 
 export async function completeOnboarding(): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const { error } = await supabase.from('ai_preferences').upsert(
@@ -146,7 +146,7 @@ export async function completeOnboarding(): Promise<{ success: boolean }> {
 
 export async function disableRemy(): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('ai_preferences').upsert(
     {
@@ -169,7 +169,7 @@ export async function disableRemy(): Promise<{ success: boolean }> {
 
 export async function saveRemyArchetype(archetype: string | null): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const { error } = await supabase.from('ai_preferences').upsert(
@@ -191,7 +191,7 @@ export async function saveRemyArchetype(archetype: string | null): Promise<{ suc
 
 export async function getRemyArchetype(): Promise<string | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('ai_preferences')
@@ -206,7 +206,7 @@ export async function getRemyArchetype(): Promise<string | null> {
 
 export async function deleteAllConversations(): Promise<{ success: boolean; deleted: number }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Messages cascade-delete when conversations are deleted
@@ -226,7 +226,7 @@ export async function deleteAllConversations(): Promise<{ success: boolean; dele
 
 export async function deleteAllMemories(): Promise<{ success: boolean; deleted: number }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Hard delete — user explicitly asked to remove memories
@@ -246,7 +246,7 @@ export async function deleteAllMemories(): Promise<{ success: boolean; deleted: 
 
 export async function deleteAllArtifacts(): Promise<{ success: boolean; deleted: number }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const { data, error } = await supabase

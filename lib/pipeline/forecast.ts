@@ -43,7 +43,7 @@ export interface PipelineRevenueForecast {
 
 export async function getPipelineRevenueForecast(): Promise<PipelineRevenueForecast> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [inquiriesResult, eventsResult] = await Promise.all([
     supabase

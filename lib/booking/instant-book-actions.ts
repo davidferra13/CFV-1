@@ -52,7 +52,7 @@ export async function createInstantBookingCheckout(
   input: InstantBookInput
 ): Promise<InstantBookResult> {
   const validated = InstantBookSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // 1. Resolve chef and verify instant-book configuration
   const { data: chef } = await supabase

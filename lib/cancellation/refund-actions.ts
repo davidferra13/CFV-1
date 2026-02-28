@@ -34,7 +34,7 @@ export type RefundResult = {
  */
 export async function getCancellationRefundRecommendation(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event
   const { data: event } = await supabase
@@ -139,7 +139,7 @@ export async function initiateRefund(input: InitiateRefundInput): Promise<Refund
   }
 
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Validate event ownership and cancelled status
   const { data: event } = await supabase

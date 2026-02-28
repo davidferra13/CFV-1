@@ -30,10 +30,10 @@ export async function createOrderQueueEntry(input: {
 }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data, error } = await supabase
-    .from('order_queue')
+  const { data, error } = await (supabase
+    .from('order_queue' as any)
     .insert({
       tenant_id: user.tenantId!,
       sale_id: input.saleId,
@@ -44,7 +44,7 @@ export async function createOrderQueueEntry(input: {
       notes: input.notes ?? null,
     } as any)
     .select('id, order_number, status')
-    .single()
+    .single() as any)
 
   if (error) throw new Error(`Failed to create order queue entry: ${error.message}`)
 
@@ -57,15 +57,15 @@ export async function createOrderQueueEntry(input: {
 export async function updateOrderStatus(orderId: string, newStatus: OrderQueueStatus) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch current status
-  const { data: order, error: fetchErr } = await supabase
-    .from('order_queue')
+  const { data: order, error: fetchErr } = await (supabase
+    .from('order_queue' as any)
     .select('status, received_at')
     .eq('id', orderId)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
   if (fetchErr || !order) throw new Error('Order not found')
 
@@ -97,11 +97,11 @@ export async function updateOrderStatus(orderId: string, newStatus: OrderQueueSt
       break
   }
 
-  const { error } = await supabase
-    .from('order_queue')
+  const { error } = await (supabase
+    .from('order_queue' as any)
     .update(updates as any)
     .eq('id', orderId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!) as any)
 
   if (error) throw new Error(`Failed to update order status: ${error.message}`)
 
@@ -113,14 +113,14 @@ export async function updateOrderStatus(orderId: string, newStatus: OrderQueueSt
 export async function cancelOrder(orderId: string, reason: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data: order, error: fetchErr } = await supabase
-    .from('order_queue')
+  const { data: order, error: fetchErr } = await (supabase
+    .from('order_queue' as any)
     .select('status')
     .eq('id', orderId)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
   if (fetchErr || !order) throw new Error('Order not found')
 
@@ -129,15 +129,15 @@ export async function cancelOrder(orderId: string, reason: string) {
     throw new Error(`Cannot cancel an order in ${currentStatus} status`)
   }
 
-  const { error } = await supabase
-    .from('order_queue')
+  const { error } = await (supabase
+    .from('order_queue' as any)
     .update({
       status: 'cancelled',
       cancelled_at: new Date().toISOString(),
       cancel_reason: reason,
     } as any)
     .eq('id', orderId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!) as any)
 
   if (error) throw new Error(`Failed to cancel order: ${error.message}`)
 
@@ -149,14 +149,14 @@ export async function cancelOrder(orderId: string, reason: string) {
 export async function getActiveOrders() {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data, error } = await supabase
-    .from('order_queue')
+  const { data, error } = await (supabase
+    .from('order_queue' as any)
     .select('*, sales!inner(sale_number, total_cents, client_id)')
     .eq('tenant_id', user.tenantId!)
     .in('status', ['received', 'preparing', 'ready'])
-    .order('received_at', { ascending: true })
+    .order('received_at', { ascending: true }) as any)
 
   if (error) throw new Error(`Failed to fetch active orders: ${error.message}`)
   return data ?? []
@@ -173,13 +173,13 @@ export async function getOrderQueueHistory(filters?: {
 }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
-    .from('order_queue')
+    .from('order_queue' as any)
     .select('*, sales!inner(sale_number, total_cents)', { count: 'exact' })
     .eq('tenant_id', user.tenantId!)
-    .order('created_at', { ascending: false })
+    .order('created_at', { ascending: false }) as any
 
   if (filters?.status) query = query.eq('status', filters.status)
   if (filters?.from) query = query.gte('created_at', filters.from)
@@ -201,14 +201,14 @@ export async function getOrderQueueHistory(filters?: {
 export async function getOrder(orderId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data, error } = await supabase
-    .from('order_queue')
+  const { data, error } = await (supabase
+    .from('order_queue' as any)
     .select('*, sales!inner(*, sale_items(*))')
     .eq('id', orderId)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
   if (error) throw new Error(`Order not found: ${error.message}`)
   return data

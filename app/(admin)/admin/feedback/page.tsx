@@ -30,7 +30,7 @@ function formatDate(iso: string) {
 export default async function AdminFeedbackPage() {
   await requireAdmin()
 
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const { data: rows, error } = await supabase
     .from('user_feedback')
     .select('id, created_at, sentiment, message, anonymous, user_role, page_context')

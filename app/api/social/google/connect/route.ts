@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     }
 
     const state = crypto.randomUUID()
-    const supabase = createAdminClient()
+    const supabase: any = createAdminClient()
 
     await supabase.from('social_oauth_states' as any).insert({
       tenant_id: chef.id,
@@ -39,6 +39,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(authUrl.toString())
   } catch (err) {
     console.error('[google-connect]', err)
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/settings/integrations?error=google_connect_failed`)
+    return NextResponse.redirect(
+      `${process.env.NEXT_PUBLIC_APP_URL}/settings/integrations?error=google_connect_failed`
+    )
   }
 }

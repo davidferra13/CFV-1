@@ -144,7 +144,7 @@ export async function submitGuestLead(input: {
  */
 export async function getGuestLeads(filters?: { status?: string }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('guest_leads')
@@ -176,7 +176,7 @@ export async function getGuestLeads(filters?: { status?: string }) {
  */
 export async function getGuestLeadStats() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('guest_leads')
@@ -205,7 +205,7 @@ export async function updateGuestLeadStatus(
   status: 'new' | 'contacted' | 'converted' | 'archived'
 ) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('guest_leads')
@@ -294,7 +294,7 @@ export async function convertLeadToClient(leadId: string) {
  */
 export async function getEventGuestCode(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('events')
@@ -311,7 +311,7 @@ export async function getEventGuestCode(eventId: string) {
  */
 export async function getEventGuestLeadCount(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('guest_leads')
@@ -328,7 +328,7 @@ export async function getEventGuestLeadCount(eventId: string) {
  */
 export async function draftGuestOutreachEmail(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get event + chef info
   const { data: event } = await supabase

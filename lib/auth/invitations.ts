@@ -11,7 +11,7 @@ import { revalidatePath } from 'next/cache'
  * Get invitation by token (public - for signup flow)
  */
 export async function getInvitationByToken(token: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: invitation, error } = await supabase
     .from('client_invitations')
@@ -53,7 +53,7 @@ export async function markInvitationUsed(invitationId: string) {
  */
 export async function revokeInvitation(invitationId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('client_invitations')

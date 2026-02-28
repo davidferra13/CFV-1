@@ -75,7 +75,7 @@ export async function createDishIndexEntry(input: CreateDishIndexInput) {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const parsed = CreateDishIndexSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const canonical = canonicalizeDishName(parsed.name)
 
@@ -139,7 +139,7 @@ export async function getDishIndex(filters?: {
   offset?: number
 }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('dish_index')
@@ -199,7 +199,7 @@ export async function getDishIndex(filters?: {
  */
 export async function getDishById(dishId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase as any)
     .from('dish_index')
@@ -235,7 +235,7 @@ export async function updateDishIndexEntry(dishId: string, input: UpdateDishInde
   const user = await requireChef()
   const tenantId = user.tenantId!
   const parsed = UpdateDishIndexSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updates: Record<string, unknown> = { ...parsed }
 
@@ -269,7 +269,7 @@ export async function updateDishIndexEntry(dishId: string, input: UpdateDishInde
  */
 export async function archiveDish(dishId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('dish_index')
@@ -286,7 +286,7 @@ export async function archiveDish(dishId: string) {
  */
 export async function restoreDish(dishId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('dish_index')
@@ -303,7 +303,7 @@ export async function restoreDish(dishId: string) {
  */
 export async function linkRecipeToDish(dishId: string, recipeId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('dish_index')
@@ -321,7 +321,7 @@ export async function linkRecipeToDish(dishId: string, recipeId: string) {
  */
 export async function unlinkRecipeFromDish(dishId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('dish_index')
@@ -343,7 +343,7 @@ export async function unlinkRecipeFromDish(dishId: string) {
  */
 export async function getDishAppearances(dishId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('dish_appearances')
@@ -361,7 +361,7 @@ export async function getDishAppearances(dishId: string) {
  */
 export async function getClientDishHistory(clientName: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('dish_appearances')
@@ -393,7 +393,7 @@ export async function addDishAppearance(input: {
 }) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('dish_appearances').insert({
     dish_id: input.dish_id,
@@ -449,7 +449,7 @@ export async function addDishAppearance(input: {
 export async function addDishFeedback(input: z.infer<typeof DishFeedbackSchema>) {
   const user = await requireChef()
   const parsed = DishFeedbackSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('dish_feedback').insert({
     dish_id: parsed.dish_id,
@@ -470,7 +470,7 @@ export async function addDishFeedback(input: z.infer<typeof DishFeedbackSchema>)
  */
 export async function getDishFeedback(dishId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('dish_feedback')
@@ -493,7 +493,7 @@ export async function getDishFeedback(dishId: string) {
  */
 export async function findPotentialDuplicates() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all non-archived dishes
   const { data: dishes, error } = await supabase
@@ -541,7 +541,7 @@ export async function findPotentialDuplicates() {
 export async function mergeDishes(keepId: string, mergeId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Transfer all appearances from mergeId to keepId
   const { error: transferError } = await supabase
@@ -606,7 +606,7 @@ export async function mergeDishes(keepId: string, mergeId: string) {
  */
 export async function getDishIndexStats() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const { data: dishes } = await supabase
@@ -653,7 +653,7 @@ export async function getDishIndexStats() {
  */
 export async function getSeasonalDistribution() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('dish_appearances')
@@ -679,7 +679,7 @@ export async function getSeasonalDistribution() {
  */
 export async function getDishPairings(dishId: string, limit = 10) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Get all upload job IDs where this dish appeared

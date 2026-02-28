@@ -20,7 +20,7 @@ async function logDeletionAudit(input: {
   performedBy?: string
 }) {
   try {
-    const adminClient = createServerClient({ admin: true })
+    const adminClient: any = createServerClient({ admin: true })
     await adminClient.from('account_deletion_audit').insert({
       chef_id: input.chefId,
       auth_user_id: input.authUserId,
@@ -50,7 +50,7 @@ export async function requestAccountDeletion(
   reason?: string
 ): Promise<{ success: true }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // 1. Get current user from auth
   const {
@@ -72,7 +72,7 @@ export async function requestAccountDeletion(
   }
 
   // 4. Get chef details for audit
-  const adminClient = createServerClient({ admin: true })
+  const adminClient: any = createServerClient({ admin: true })
   const { data: chef } = await adminClient
     .from('chefs')
     .select('business_name, email')
@@ -155,7 +155,7 @@ export async function requestAccountDeletion(
 export async function cancelAccountDeletion(token: string): Promise<{ success: true }> {
   if (!token) throw new Error('Reactivation token is required')
 
-  const adminClient = createServerClient({ admin: true })
+  const adminClient: any = createServerClient({ admin: true })
 
   // 1. Find the chef by reactivation token
   const { data: chef, error: findError } = await adminClient
@@ -229,7 +229,7 @@ export async function cancelDeletionByChefId(chefId: string): Promise<{ success:
   const user = await requireChef()
   if (user.entityId !== chefId) throw new Error('Unauthorized')
 
-  const adminClient = createServerClient({ admin: true })
+  const adminClient: any = createServerClient({ admin: true })
 
   const { data: chef } = await adminClient
     .from('chefs')
@@ -259,7 +259,7 @@ export type DeletionStatus = {
  */
 export async function getAccountDeletionStatus(): Promise<DeletionStatus> {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: chef } = await supabase
     .from('chefs')
@@ -307,7 +307,7 @@ export async function executeFinalPurge(chefId: string): Promise<{
   success: boolean
   error?: string
 }> {
-  const adminClient = createServerClient({ admin: true })
+  const adminClient: any = createServerClient({ admin: true })
 
   // 1. Verify the chef exists and grace period has passed
   const { data: chef, error: findError } = await adminClient

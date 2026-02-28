@@ -188,7 +188,7 @@ export function ConnectedAccounts({ initialAccounts }: { initialAccounts: Connec
                       </p>
                     </div>
                     <Button
-                      variant="outline"
+                      variant="secondary"
                       size="sm"
                       onClick={() => handleDisconnect(account.id)}
                       disabled={isPending}

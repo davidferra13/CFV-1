@@ -55,7 +55,7 @@ export interface ExternalReviewSummary {
 
 export async function getSocialConnectionStatuses(): Promise<SocialConnectionStatus[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('social_connected_accounts')
@@ -94,7 +94,7 @@ export async function getLatestSocialSnapshot(
   platform: string
 ): Promise<SocialPlatformSnapshot | null> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('social_stats_snapshots')
@@ -128,7 +128,7 @@ export async function getSocialGrowthTrend(
   months: number = 6
 ): Promise<SocialGrowthTrend[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const cutoff = new Date()
   cutoff.setMonth(cutoff.getMonth() - months)
@@ -158,7 +158,7 @@ export async function getFollowerGrowthRate(
   growthRate: number | null
 }> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() - periodDays)
@@ -186,7 +186,7 @@ export async function getFollowerGrowthRate(
 
 export async function getGoogleReviewStats(): Promise<GoogleReviewStats | null> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get latest and historical snapshots from external_reviews
   const { data: reviews } = await supabase
@@ -240,7 +240,7 @@ export async function getGoogleReviewStats(): Promise<GoogleReviewStats | null> 
 
 export async function getExternalReviewSummary(): Promise<ExternalReviewSummary[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: sources } = await supabase
     .from('external_review_sources')

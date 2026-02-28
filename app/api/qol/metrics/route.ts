@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid metric key' }, { status: 400 })
     }
 
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
     await (supabase.from('qol_metric_events' as any) as any).insert({
       tenant_id: user.tenantId,
       actor_id: user.id,

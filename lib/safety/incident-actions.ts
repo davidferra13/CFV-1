@@ -59,7 +59,7 @@ export async function createIncident(input: CreateIncidentInput) {
   const tenantId = chef.tenantId!
   const validated = IncidentSchema.parse(input)
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_incidents')
@@ -87,7 +87,7 @@ export async function updateIncident(id: string, input: UpdateIncidentInput) {
   const tenantId = chef.tenantId!
   const validated = UpdateIncidentSchema.parse(input)
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: existing } = await supabase
     .from('chef_incidents')
@@ -120,7 +120,7 @@ export async function addFollowUpStep(id: string, step: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: existing, error: fetchError } = await supabase
     .from('chef_incidents')
@@ -166,7 +166,7 @@ export async function toggleFollowUpStep(incidentId: string, stepId: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: existing, error: fetchError } = await supabase
     .from('chef_incidents')
@@ -216,7 +216,7 @@ export async function updateResolutionStatus(
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: existing } = await supabase
     .from('chef_incidents')
@@ -252,7 +252,7 @@ export async function getIncidents(filters?: {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('chef_incidents')
@@ -281,7 +281,7 @@ export async function getIncident(id: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_incidents')
@@ -303,7 +303,7 @@ export async function getIncidentsByEvent(eventId: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify the event belongs to this tenant
   const { data: eventCheck } = await supabase

@@ -13,7 +13,7 @@ import type { SeasonalPalette } from './types'
 import { DEFAULT_SEASONS } from './types'
 
 // Type assertion helper — seasonal_palettes not in generated types until migration applied
-function fromSeasonalPalettes(supabase: ReturnType<typeof createServerClient>): any {
+function fromSeasonalPalettes(supabase: any): any {
   return supabase.from('seasonal_palettes')
 }
 
@@ -70,7 +70,7 @@ export type CreatePaletteInput = z.infer<typeof CreatePaletteSchema>
  */
 export async function getSeasonalPalettes(): Promise<SeasonalPalette[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await fromSeasonalPalettes(supabase)
     .select('*')
@@ -94,7 +94,7 @@ export async function getSeasonalPalettes(): Promise<SeasonalPalette[]> {
  */
 export async function getSeasonalPaletteById(paletteId: string): Promise<SeasonalPalette | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await fromSeasonalPalettes(supabase)
     .select('*')
@@ -113,7 +113,7 @@ export async function getSeasonalPaletteById(paletteId: string): Promise<Seasona
  */
 export async function getActivePalette(): Promise<SeasonalPalette | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await fromSeasonalPalettes(supabase)
     .select('*')
@@ -136,7 +136,7 @@ export async function getActivePalette(): Promise<SeasonalPalette | null> {
 export async function updateSeasonalPalette(paletteId: string, input: UpdatePaletteInput) {
   const user = await requireChef()
   const validated = UpdatePaletteSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // If setting this palette as active, deactivate others first
   if (validated.is_active) {
@@ -171,7 +171,7 @@ export async function updateSeasonalPalette(paletteId: string, input: UpdatePale
 export async function createSeasonalPalette(input: CreatePaletteInput) {
   const user = await requireChef()
   const validated = CreatePaletteSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await fromSeasonalPalettes(supabase)
     .insert({
@@ -197,7 +197,7 @@ export async function createSeasonalPalette(input: CreatePaletteInput) {
  */
 export async function deleteSeasonalPalette(paletteId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await fromSeasonalPalettes(supabase)
     .delete()
@@ -218,7 +218,7 @@ export async function deleteSeasonalPalette(paletteId: string) {
  */
 export async function setActiveSeason(paletteId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Deactivate all
   await fromSeasonalPalettes(supabase)
@@ -247,7 +247,7 @@ export async function setActiveSeason(paletteId: string) {
  */
 export async function deactivateAllSeasons() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await fromSeasonalPalettes(supabase)
     .update({ is_active: false, updated_by: user.id })
@@ -269,7 +269,7 @@ export async function deactivateAllSeasons() {
 // ============================================
 
 async function seedDefaultPalettes(tenantId: string, userId: string): Promise<SeasonalPalette[]> {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const rows = DEFAULT_SEASONS.map((s) => ({
     tenant_id: tenantId,

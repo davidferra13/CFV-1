@@ -42,7 +42,7 @@ export default async function YearEndPage({ searchParams }: { searchParams: { ye
   const yearOptions = [currentYear, currentYear - 1, currentYear - 2]
 
   // Run P&L compute and events query in parallel
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const startDate = `${validYear}-01-01`
   const endDate = `${validYear}-12-31`
 

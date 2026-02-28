@@ -21,7 +21,7 @@ import type { SaleChannel } from './constants'
 export async function buildReceiptData(saleId: string): Promise<CommerceReceiptData> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Fetch sale

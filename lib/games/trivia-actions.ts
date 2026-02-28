@@ -107,7 +107,7 @@ export async function generateInternalTriviaQuestions(
 ): Promise<{ questions: TriviaQuestion[]; error?: string }> {
   try {
     const user = await requireChef()
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
 
     // Fetch events with client info
     const { data: events } = await supabase

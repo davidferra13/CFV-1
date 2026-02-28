@@ -97,7 +97,7 @@ export type PublicCreatePartnerInput = z.infer<typeof CreatePartnerSchema>
 export async function createPartner(input: CreatePartnerInput) {
   const user = await requireChef()
   const validated = CreatePartnerSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: partner, error } = await supabase
     .from('referral_partners')
@@ -183,7 +183,7 @@ export async function createPublicPartnerProfile(
 export async function updatePartner(id: string, input: UpdatePartnerInput) {
   const user = await requireChef()
   const validated = UpdatePartnerSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Clean empty strings to null
   const updates: Record<string, unknown> = {}
@@ -217,7 +217,7 @@ export async function updatePartner(id: string, input: UpdatePartnerInput) {
 
 export async function getPartners(filters?: { partner_type?: string; status?: string }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('referral_partners')
@@ -311,7 +311,7 @@ export async function getPartners(filters?: { partner_type?: string; status?: st
 
 export async function getPartnerById(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: partner, error } = await supabase
     .from('referral_partners')
@@ -415,7 +415,7 @@ export async function getPartnerById(id: string) {
 
 export async function deletePartner(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Check for linked inquiries or events
   const [{ count: inquiryCount }, { count: eventCount }] = await Promise.all([
@@ -469,7 +469,7 @@ export async function deletePartner(id: string) {
 export async function createPartnerLocation(input: CreateLocationInput) {
   const user = await requireChef()
   const validated = CreateLocationSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify partner belongs to this tenant
   const { data: partner } = await supabase
@@ -517,7 +517,7 @@ export async function createPartnerLocation(input: CreateLocationInput) {
 export async function updatePartnerLocation(id: string, input: UpdateLocationInput) {
   const user = await requireChef()
   const validated = UpdateLocationSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updates: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(validated)) {
@@ -549,7 +549,7 @@ export async function updatePartnerLocation(id: string, input: UpdateLocationInp
 
 export async function getPartnerLocations(partnerId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: locations, error } = await supabase
     .from('partner_locations')
@@ -572,7 +572,7 @@ export async function getPartnerLocations(partnerId: string) {
 
 export async function deletePartnerLocation(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get location to find partner_id for revalidation
   const { data: location } = await supabase
@@ -637,7 +637,7 @@ export async function deletePartnerLocation(id: string) {
 export async function addPartnerImage(input: AddImageInput) {
   const user = await requireChef()
   const validated = AddImageSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify partner belongs to this tenant
   const { data: partner } = await supabase
@@ -680,7 +680,7 @@ export async function addPartnerImage(input: AddImageInput) {
 
 export async function removePartnerImage(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get image for partner_id revalidation
   const { data: image } = await supabase
@@ -715,7 +715,7 @@ export async function removePartnerImage(id: string) {
 
 export async function reorderPartnerImages(partnerId: string, imageIds: string[]) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Update display_order for each image
   const updates = imageIds.map((imageId, index) =>
@@ -742,7 +742,7 @@ export async function reorderPartnerImages(partnerId: string, imageIds: string[]
  */
 export async function getPartnersWithLocations() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: partners, error } = await supabase
     .from('referral_partners')
@@ -792,7 +792,7 @@ export async function getPartnersWithLocations() {
  */
 export async function getPartnerEvents(partnerId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify partner belongs to this tenant
   const { data: partner } = await supabase
@@ -844,7 +844,7 @@ export async function getPartnerEvents(partnerId: string) {
  */
 export async function getEventsNotAssignedToPartner(partnerId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify partner belongs to this tenant
   const { data: partner } = await supabase
@@ -898,7 +898,7 @@ export async function bulkAssignEventsToPartner(
   eventIds: string[]
 ) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!eventIds.length) return { success: true, count: 0 }
 
@@ -955,7 +955,7 @@ export async function bulkAssignEventsToPartner(
  */
 export async function generatePartnerShareLink(partnerId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: partner, error: fetchError } = await supabase
     .from('referral_partners')

@@ -82,7 +82,7 @@ export async function getQuarterlyEstimate(
   quarter: number
 ): Promise<QuarterlyEstimate | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('tax_quarterly_estimates')
@@ -103,7 +103,7 @@ export async function saveQuarterlyEstimate(
 ): Promise<QuarterlyEstimate> {
   const user = await requireChef()
   const parsed = SaveEstimateSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('tax_quarterly_estimates')
@@ -134,7 +134,7 @@ export async function recordQuarterlyPayment(
 ): Promise<QuarterlyEstimate> {
   const user = await requireChef()
   const parsed = RecordPaymentSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('tax_quarterly_estimates')
@@ -156,7 +156,7 @@ export async function recordQuarterlyPayment(
 
 export async function getTaxSummaryForYear(taxYear: number): Promise<TaxYearSummary> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('tax_quarterly_estimates')
@@ -210,7 +210,7 @@ export async function exportTaxPackage(taxYear: number): Promise<{
   expensesByCategory: Record<string, number>
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const summary = await getTaxSummaryForYear(taxYear)
 

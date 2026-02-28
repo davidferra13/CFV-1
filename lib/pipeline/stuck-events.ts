@@ -30,7 +30,7 @@ export interface StuckEvent {
 
 export async function getStuckEvents(limit = 5): Promise<StuckEvent[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const activeStatuses = Object.keys(STUCK_THRESHOLDS_DAYS) as Array<
     | 'draft'

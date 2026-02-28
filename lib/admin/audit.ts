@@ -42,7 +42,7 @@ export async function logAdminAction({
   ipAddress?: string
 }) {
   try {
-    const supabase = createAdminClient()
+    const supabase: any = createAdminClient()
     await supabase.from('admin_audit_log').insert({
       actor_email: actorEmail,
       actor_user_id: actorUserId,

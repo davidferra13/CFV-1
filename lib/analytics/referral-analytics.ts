@@ -111,7 +111,7 @@ export async function getReferralFunnelData(): Promise<{
   }
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch all inquiries with channel, referral_source, and status
   const { data: inquiries, error: inqError } = await supabase
@@ -236,7 +236,7 @@ export async function getReferralFunnelData(): Promise<{
 
 export async function getClientAcquisitionBySource(): Promise<ClientAcquisitionBySource[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: clients, error } = await supabase
     .from('clients')
@@ -278,7 +278,7 @@ export async function getClientAcquisitionBySource(): Promise<ClientAcquisitionB
 
 export async function getTopReferrers(): Promise<TopReferrer[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get clients who came via referral and have a named referrer
   const { data: clients, error } = await supabase
@@ -355,7 +355,7 @@ export async function getReferralTimeSeries(months = 12): Promise<{
   sources: string[]
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const now = new Date()
   const from = startOfMonth(subMonths(now, months - 1)).toISOString()

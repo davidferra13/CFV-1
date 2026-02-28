@@ -27,7 +27,7 @@ function getStripe(): Stripe {
  */
 export async function createPaymentIntent(eventId: string) {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event and verify ownership
   const { data: event, error } = await supabase
@@ -134,7 +134,7 @@ export async function createPaymentIntent(eventId: string) {
  */
 export async function getEventPaymentStatus(eventId: string) {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event
   const { data: event, error } = await supabase

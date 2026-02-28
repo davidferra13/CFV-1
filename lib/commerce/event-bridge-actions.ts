@@ -28,7 +28,7 @@ export type EventBridgeResult = {
 export async function createSaleFromEvent(eventId: string): Promise<EventBridgeResult> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Fetch event
@@ -219,7 +219,7 @@ export async function createSaleFromEvent(eventId: string): Promise<EventBridgeR
 export async function getEventSale(eventId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('sales')

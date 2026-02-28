@@ -32,7 +32,7 @@ export type LogProductionInput = z.infer<typeof LogProductionSchema>
 
 export async function logProduction(input: LogProductionInput) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validated = LogProductionSchema.parse(input)
 
   // Verify the recipe belongs to this chef
@@ -111,7 +111,7 @@ export type ProductionLogEntry = {
 
 export async function getProductionLog(recipeId: string): Promise<ProductionLogEntry[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase
     .from('recipe_production_log' as any)
@@ -134,7 +134,7 @@ export async function getProductionLog(recipeId: string): Promise<ProductionLogE
 
 export async function deleteProductionEntry(entryId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get the entry first to know which recipe to update
   const { data: entry, error: fetchErr } = await (supabase
@@ -193,7 +193,7 @@ export type GlobalProductionLogEntry = ProductionLogEntry & {
 
 export async function getAllProductionLogs(): Promise<GlobalProductionLogEntry[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all production entries with recipe name
   const { data: entries, error } = await (supabase

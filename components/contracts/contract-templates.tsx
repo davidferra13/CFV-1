@@ -59,7 +59,7 @@ export function ContractTemplates({ templates }: { templates: ContractTemplate[]
                     await deleteContractTemplate(template.id)
                   }}
                 >
-                  <Button type="submit" variant="outline" size="sm">
+                  <Button type="submit" variant="secondary" size="sm">
                     Delete template
                   </Button>
                 </form>

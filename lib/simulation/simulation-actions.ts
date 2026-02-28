@@ -25,7 +25,7 @@ export async function startSimulationRun(config: SimRunConfig): Promise<{
 
 export async function getSimulationRuns(limit = 10): Promise<SimRun[]> {
   const user = await requireAdmin()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('simulation_runs')
@@ -52,7 +52,7 @@ export async function getSimulationRuns(limit = 10): Promise<SimRun[]> {
 
 export async function getSimulationResults(runId: string): Promise<SimResult[]> {
   const user = await requireAdmin()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('simulation_results')
@@ -82,7 +82,7 @@ export async function getFailureExamples(
   limit = 5
 ): Promise<Array<{ scenarioPayload: string; score: number; failures: string[] }>> {
   const user = await requireAdmin()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('simulation_results')
@@ -106,7 +106,7 @@ export async function getFailureExamples(
 
 export async function getSimulationSummary(): Promise<SimSummary> {
   const user = await requireAdmin()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const [runsRes, totalRes, ftRes] = await Promise.all([

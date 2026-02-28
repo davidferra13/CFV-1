@@ -17,7 +17,7 @@ export default async function GuestCardPage({ params }: Props) {
   if (!event) notFound()
 
   // Get chef display info
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { data: chef } = await supabase
     .from('chefs')
     .select('display_name, business_name, tagline, profile_image_url')

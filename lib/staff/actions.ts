@@ -68,7 +68,7 @@ export type RecordHoursInput = z.infer<typeof RecordHoursSchema>
 export async function createStaffMember(input: CreateStaffInput) {
   const user = await requireChef()
   const validated = CreateStaffSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('staff_members')
@@ -88,7 +88,7 @@ export async function createStaffMember(input: CreateStaffInput) {
 export async function updateStaffMember(id: string, input: UpdateStaffInput) {
   const user = await requireChef()
   const validated = UpdateStaffSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('staff_members')
@@ -109,7 +109,7 @@ export async function updateStaffMember(id: string, input: UpdateStaffInput) {
 
 export async function deactivateStaffMember(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('staff_members')
@@ -123,7 +123,7 @@ export async function deactivateStaffMember(id: string) {
 
 export async function listStaffMembers(activeOnly = true) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase.from('staff_members').select('*').eq('chef_id', user.tenantId!).order('name')
 
@@ -143,7 +143,7 @@ export async function searchStaffMembers(filters: {
   status?: string
 }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase.from('staff_members').select('*').eq('chef_id', user.tenantId!).order('name')
 
@@ -167,7 +167,7 @@ export async function searchStaffMembers(filters: {
  */
 export async function getStaffMember(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: member, error } = await supabase
     .from('staff_members')
@@ -234,7 +234,7 @@ export async function checkAssignmentConflict(
   excludeEventId?: string
 ) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('event_staff_assignments')
@@ -265,7 +265,7 @@ export async function checkAssignmentConflict(
 export async function assignStaffToEvent(input: AssignStaffInput) {
   const user = await requireChef()
   const validated = AssignStaffSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('event_staff_assignments')
@@ -296,7 +296,7 @@ export async function assignStaffToEvent(input: AssignStaffInput) {
 
 export async function removeStaffFromEvent(assignmentId: string, eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('event_staff_assignments')
@@ -310,7 +310,7 @@ export async function removeStaffFromEvent(assignmentId: string, eventId: string
 
 export async function getEventStaffRoster(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('event_staff_assignments')
@@ -335,7 +335,7 @@ export async function getEventStaffRoster(eventId: string) {
 export async function recordStaffHours(input: RecordHoursInput) {
   const user = await requireChef()
   const validated = RecordHoursSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Load assignment + staff default rate
   const { data: assignment } = await supabase
@@ -383,7 +383,7 @@ export async function recordStaffHours(input: RecordHoursInput) {
  */
 export async function computeEventLaborCost(eventId: string): Promise<number> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('event_staff_assignments')
@@ -412,7 +412,7 @@ const CreateStaffLoginSchema = z.object({
  */
 export async function checkStaffHasLogin(staffMemberId: string): Promise<boolean> {
   await requireChef()
-  const adminClient = createServerClient({ admin: true })
+  const adminClient: any = createServerClient({ admin: true })
 
   const { data } = await adminClient
     .from('user_roles')
@@ -442,7 +442,7 @@ export async function createStaffLogin(input: {
 }): Promise<{ success: true }> {
   const user = await requireChef()
   const validated = CreateStaffLoginSchema.parse(input)
-  const adminClient = createServerClient({ admin: true })
+  const adminClient: any = createServerClient({ admin: true })
 
   // 1. Verify staff member belongs to this chef
   const { data: member, error: memberError } = await adminClient

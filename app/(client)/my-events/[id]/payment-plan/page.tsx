@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: 'Payment Plan - ChefFlow' }
 
 export default async function PaymentPlanPage({ params }: { params: { id: string } }) {
   await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let eventResult: {
     id: string

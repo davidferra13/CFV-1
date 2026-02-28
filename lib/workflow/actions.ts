@@ -14,7 +14,7 @@ import { getPreparableActions } from './preparable-actions'
  */
 export async function getDashboardWorkSurface(): Promise<DashboardWorkSurface> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch events with client data
   const { data: events, error: eventsError } = await supabase

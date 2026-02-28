@@ -34,7 +34,7 @@ export type CreateInvoiceInput = z.infer<typeof CreateInvoiceSchema>
 
 export async function createInvoice(input: CreateInvoiceInput) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const data = CreateInvoiceSchema.parse(input)
 
   // Insert the invoice
@@ -84,7 +84,7 @@ export async function createInvoice(input: CreateInvoiceInput) {
 
 export async function listInvoices(vendorId?: string, startDate?: string, endDate?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let q = supabase
     .from('vendor_invoices')
@@ -114,7 +114,7 @@ export async function listInvoices(vendorId?: string, startDate?: string, endDat
 
 export async function getInvoice(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: invoice, error } = await supabase
     .from('vendor_invoices')
@@ -141,7 +141,7 @@ export async function getInvoice(id: string) {
 
 export async function deleteInvoice(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Delete line items first (cascade may handle this, but be explicit)
   await supabase

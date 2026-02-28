@@ -37,7 +37,7 @@ export async function fetchContractData(
   contractId: string,
   owner: { chefId: string | null; clientEntityId: string | null }
 ): Promise<ContractDocumentData | null> {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const db = supabase as any
 
   let query = db

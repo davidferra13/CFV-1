@@ -18,7 +18,7 @@ const getClient = () => {
 
 export async function getAIMenuSuggestions(eventId: string): Promise<MenuSuggestion[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event details
   const { data: event } = await supabase

@@ -29,7 +29,7 @@ export async function createProtectedBlock(input: {
   block_type: ProtectedBlockType
 }): Promise<{ success: boolean; id?: string }> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!['protected_personal', 'rest'].includes(input.block_type)) {
     throw new Error('Invalid block_type for protected block')
@@ -42,7 +42,7 @@ export async function createProtectedBlock(input: {
   // OR we store end_date in the notes column. Using notes for end_date is the pragmatic
   // approach until a dedicated table is added.
   const { data, error } = await supabase
-    .from('event_prep_blocks')
+    .from('event_prep_blocks' as any)
     .insert({
       chef_id: chef.tenantId!,
       block_date: input.start_date,
@@ -69,11 +69,11 @@ export async function createProtectedBlock(input: {
 
 export async function deleteProtectedBlock(id: string): Promise<{ success: boolean }> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify ownership before deleting
   const { data: existing } = await supabase
-    .from('event_prep_blocks')
+    .from('event_prep_blocks' as any)
     .select('id, chef_id')
     .eq('id', id)
     .single()
@@ -82,7 +82,10 @@ export async function deleteProtectedBlock(id: string): Promise<{ success: boole
     throw new Error('Block not found or access denied')
   }
 
-  const { error } = await supabase.from('event_prep_blocks').delete().eq('id', id)
+  const { error } = await supabase
+    .from('event_prep_blocks' as any)
+    .delete()
+    .eq('id', id)
 
   if (error) {
     console.error('[deleteProtectedBlock] Error:', error)
@@ -98,10 +101,10 @@ export async function deleteProtectedBlock(id: string): Promise<{ success: boole
 
 export async function listProtectedBlocks(): Promise<ProtectedBlock[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
-    .from('event_prep_blocks')
+    .from('event_prep_blocks' as any)
     .select('id, title, block_date, notes, block_type, created_at')
     .eq('chef_id', chef.tenantId!)
     .in('block_type', ['protected_personal', 'rest'])

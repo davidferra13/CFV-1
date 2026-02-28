@@ -14,7 +14,7 @@ import type { WixConnectionStatus, WixSubmission } from './types'
 
 export async function getWixConnection(): Promise<WixConnectionStatus> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('wix_connections')
@@ -49,7 +49,7 @@ export async function getWixConnection(): Promise<WixConnectionStatus> {
 
 export async function setupWixConnection(): Promise<{ webhookUrl: string; webhookSecret: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Generate a secure webhook secret
   const webhookSecret = crypto.randomBytes(32).toString('hex')
@@ -81,7 +81,7 @@ export async function setupWixConnection(): Promise<{ webhookUrl: string; webhoo
 
 export async function disconnectWix(): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('wix_connections').delete().eq('chef_id', user.entityId)
 
@@ -100,7 +100,7 @@ export async function regenerateWixSecret(): Promise<{
   webhookSecret: string
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const newSecret = crypto.randomBytes(32).toString('hex')
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
@@ -129,7 +129,7 @@ export async function getWixSubmissions(options?: {
   limit?: number
 }): Promise<WixSubmission[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('wix_submissions')
@@ -156,7 +156,7 @@ export async function getWixSubmissions(options?: {
 
 export async function retryWixSubmission(submissionId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify the submission belongs to this tenant
   const { data: submission, error: fetchError } = await supabase

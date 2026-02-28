@@ -60,7 +60,7 @@ export type CounterCheckoutResult = {
 export async function counterCheckout(input: CounterCheckoutInput): Promise<CounterCheckoutResult> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (input.items.length === 0) {
     throw new Error('At least one item is required')
@@ -77,7 +77,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
   }
 
   // 1. Create sale
-  const { data: sale, error: saleErr } = await supabase
+  const { data: sale, error: saleErr } = await (supabase
     .from('sales')
     .insert({
       tenant_id: user.tenantId!,
@@ -90,7 +90,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
       created_by: user.id,
     } as any)
     .select('id, sale_number')
-    .single()
+    .single() as any)
 
   if (saleErr || !sale) throw new Error(`Failed to create sale: ${saleErr?.message}`)
 
@@ -119,7 +119,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
     }
   })
 
-  const { error: itemsErr } = await supabase.from('sale_items').insert(itemRows as any)
+  const { error: itemsErr } = await (supabase.from('sale_items').insert(itemRows as any) as any)
 
   if (itemsErr) throw new Error(`Failed to add items: ${itemsErr.message}`)
 
@@ -129,7 +129,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
   const totalCents = subtotalCents + taxCents
   const tipCents = input.tipCents ?? 0
 
-  await supabase
+  await (supabase
     .from('sales')
     .update({
       subtotal_cents: subtotalCents,
@@ -139,13 +139,13 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
       tip_cents: tipCents,
     } as any)
     .eq('id', sale.id)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!) as any)
 
   // 4. Record payment (captured immediately)
   const idempotencyKey = `checkout_${sale.id}_${Date.now()}`
   const txnRef = `commerce_${idempotencyKey}`
 
-  const { data: payment, error: payErr } = await supabase
+  const { data: payment, error: payErr } = await (supabase
     .from('commerce_payments')
     .insert({
       tenant_id: user.tenantId!,
@@ -162,36 +162,36 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
       created_by: user.id,
     } as any)
     .select('id')
-    .single()
+    .single() as any)
 
   if (payErr) throw new Error(`Failed to record payment: ${payErr.message}`)
 
   // 5. Update sale status to captured
-  await supabase
+  await (supabase
     .from('sales')
     .update({ status: 'captured' } as any)
     .eq('id', sale.id)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!) as any)
 
   // 6. Increment register session counters if linked
   if (input.registerSessionId) {
-    const { data: session } = await supabase
-      .from('register_sessions')
+    const { data: session } = await (supabase
+      .from('register_sessions' as any)
       .select('total_sales_count, total_revenue_cents, total_tips_cents')
       .eq('id', input.registerSessionId)
       .eq('tenant_id', user.tenantId!)
-      .single()
+      .single() as any)
 
     if (session) {
-      await supabase
-        .from('register_sessions')
+      await (supabase
+        .from('register_sessions' as any)
         .update({
           total_sales_count: (session as any).total_sales_count + 1,
           total_revenue_cents: (session as any).total_revenue_cents + totalCents,
           total_tips_cents: (session as any).total_tips_cents + tipCents,
         } as any)
         .eq('id', input.registerSessionId)
-        .eq('tenant_id', user.tenantId!)
+        .eq('tenant_id', user.tenantId!) as any)
     }
   }
 
@@ -205,11 +205,11 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
         finalTotalCents = subtotalCents + taxResult.totalTaxCents
 
         // Update payment amount to reflect tax
-        await supabase
+        await (supabase
           .from('commerce_payments')
           .update({ amount_cents: finalTotalCents } as any)
           .eq('id', payment.id)
-          .eq('tenant_id', user.tenantId!)
+          .eq('tenant_id', user.tenantId!) as any)
       }
     } catch (err) {
       console.error('[non-blocking] Tax computation failed:', err)
@@ -261,16 +261,16 @@ export async function quickSale(input: {
 }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch product
-  const { data: product, error: prodErr } = await supabase
+  const { data: product, error: prodErr } = await (supabase
     .from('product_projections')
     .select('id, name, price_cents, tax_class, cost_cents, modifiers')
     .eq('id', input.productProjectionId)
     .eq('tenant_id', user.tenantId!)
     .eq('is_active', true)
-    .single()
+    .single() as any)
 
   if (prodErr || !product) throw new Error('Product not found or inactive')
 

@@ -16,7 +16,7 @@ const FollowUpDraftSchema = z.object({
 
 export async function generateFollowUpDraft(clientId: string): Promise<string> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: client } = await supabase
     .from('clients')

@@ -22,7 +22,7 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/heic', 'image/heif', 'i
  */
 export async function uploadReceipt(eventId: string, expenseId: string, formData: FormData) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const file = formData.get('receipt') as File | null
   if (!file) {
@@ -81,7 +81,7 @@ export async function uploadReceipt(eventId: string, expenseId: string, formData
  */
 export async function getReceiptUrl(expenseId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get the storage path from the expense record
   const { data: expense, error } = await supabase
@@ -113,7 +113,7 @@ export async function getReceiptUrl(expenseId: string) {
  */
 export async function deleteReceipt(expenseId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get the storage path
   const { data: expense } = await supabase

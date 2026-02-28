@@ -41,7 +41,7 @@ export type ConnectAccountStatus = {
  */
 export async function getConnectAccountStatus(): Promise<ConnectAccountStatus> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('chefs')
@@ -78,7 +78,7 @@ export async function getConnectAccountStatus(): Promise<ConnectAccountStatus> {
  */
 export async function createConnectAccountLink(fromOnboarding = false): Promise<{ url: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const stripe = getStripe()
 
   // Fetch current state
@@ -141,7 +141,7 @@ export async function createConnectAccountLink(fromOnboarding = false): Promise<
  */
 export async function refreshConnectAccountStatus(): Promise<ConnectAccountStatus> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const stripe = getStripe()
 
   const { data: chef } = await supabase

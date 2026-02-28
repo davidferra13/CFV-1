@@ -69,6 +69,17 @@ const UpdateAuditItemSchema = z.object({
 export type CreateAuditInput = z.infer<typeof CreateAuditSchema>
 export type UpdateAuditItemInput = z.infer<typeof UpdateAuditItemSchema>
 
+// ─── Supabase helper ────────────────────────────────────────────
+// All inventory tables are pre-built for planned schema.
+// Cast .from() to bypass strict Supabase type checking.
+function db(supabase: any) {
+  return {
+    audits: () => supabase.from('inventory_audits' as any) as any,
+    auditItems: () => supabase.from('inventory_audit_items' as any) as any,
+    transactions: () => supabase.from('inventory_transactions' as any) as any,
+  }
+}
+
 // ─── Actions ─────────────────────────────────────────────────────
 
 /**
@@ -81,11 +92,11 @@ export async function createAudit(
 ): Promise<{ audit: InventoryAudit; items: AuditItem[] }> {
   const user = await requireChef()
   const parsed = CreateAuditSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Create the audit record
-  const { data: audit, error: auditError } = await supabase
-    .from('inventory_audits' as any)
+  const { data: audit, error: auditError } = await db(supabase)
+    .audits()
     .insert({
       chef_id: user.tenantId!,
       audit_type: parsed.auditType,
@@ -100,12 +111,12 @@ export async function createAudit(
     .select()
     .single()
 
-  if (auditError) throw new Error(`Failed to create audit: ${auditError.message}`)
+  if (auditError) throw new Error(`Failed to create audit: ${(auditError as any).message}`)
 
   // Get current stock from the inventory ledger
   // SUM(quantity) grouped by ingredient, filtered by location if specified
-  let stockQuery = supabase
-    .from('inventory_transactions' as any)
+  let stockQuery = db(supabase)
+    .transactions()
     .select('ingredient_id, ingredient_name, unit, quantity, cost_cents')
     .eq('chef_id', user.tenantId!)
 
@@ -115,7 +126,7 @@ export async function createAudit(
 
   const { data: transactions, error: txError } = await stockQuery
 
-  if (txError) throw new Error(`Failed to fetch stock for audit: ${txError.message}`)
+  if (txError) throw new Error(`Failed to fetch stock for audit: ${(txError as any).message}`)
 
   // Aggregate by ingredient_id + unit
   const stockMap = new Map<
@@ -129,11 +140,11 @@ export async function createAudit(
     }
   >()
 
-  for (const tx of transactions || []) {
+  for (const tx of (transactions || []) as any[]) {
     const key = `${tx.ingredient_id || 'null'}:${tx.unit}`
     const existing = stockMap.get(key)
     if (existing) {
-      existing.totalQty += parseFloat(tx.quantity)
+      existing.totalQty += Number(tx.quantity)
       // Keep the most recent cost
       if (tx.cost_cents != null) {
         existing.latestCostCents = tx.cost_cents
@@ -143,7 +154,7 @@ export async function createAudit(
         ingredientId: tx.ingredient_id,
         ingredientName: tx.ingredient_name,
         unit: tx.unit,
-        totalQty: parseFloat(tx.quantity),
+        totalQty: Number(tx.quantity),
         latestCostCents: tx.cost_cents,
       })
     }
@@ -161,7 +172,7 @@ export async function createAudit(
       }
 
       auditItems.push({
-        audit_id: audit.id,
+        audit_id: (audit as any).id,
         ingredient_id: stock.ingredientId,
         ingredient_name: stock.ingredientName,
         unit: stock.unit,
@@ -174,13 +185,13 @@ export async function createAudit(
 
   let createdItems: AuditItem[] = []
   if (auditItems.length > 0) {
-    const { data: items, error: itemsError } = await supabase
-      .from('inventory_audit_items' as any)
+    const { data: items, error: itemsError } = await db(supabase)
+      .auditItems()
       .insert(auditItems)
       .select()
 
-    if (itemsError) throw new Error(`Failed to create audit items: ${itemsError.message}`)
-    createdItems = (items || []).map(mapAuditItem)
+    if (itemsError) throw new Error(`Failed to create audit items: ${(itemsError as any).message}`)
+    createdItems = ((items || []) as any[]).map(mapAuditItem)
   }
 
   revalidatePath('/inventory')
@@ -202,11 +213,11 @@ export async function updateAuditItem(
 ): Promise<AuditItem> {
   const user = await requireChef()
   const parsed = UpdateAuditItemSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get the item and verify ownership via the parent audit
-  const { data: item, error: fetchError } = await supabase
-    .from('inventory_audit_items' as any)
+  const { data: item, error: fetchError } = await db(supabase)
+    .auditItems()
     .select('*, inventory_audits!inner(chef_id, status)')
     .eq('id', itemId)
     .single()
@@ -222,26 +233,26 @@ export async function updateAuditItem(
   }
 
   // Compute variance
-  const expectedQty = item.expected_qty != null ? parseFloat(item.expected_qty) : 0
+  const expectedQty = (item as any).expected_qty != null ? Number((item as any).expected_qty) : 0
   const varianceQty = parsed.actualQty - expectedQty
-  const unitCostCents = item.unit_cost_cents ?? 0
+  const unitCostCents = (item as any).unit_cost_cents ?? 0
   const varianceCostCents = Math.round(varianceQty * unitCostCents)
 
-  const { data, error } = await supabase
-    .from('inventory_audit_items' as any)
+  const { data, error } = await db(supabase)
+    .auditItems()
     .update({
       actual_qty: parsed.actualQty,
       variance_qty: Math.round(varianceQty * 1000) / 1000,
       variance_cost_cents: varianceCostCents,
-      photo_url: parsed.photoUrl ?? item.photo_url,
-      notes: parsed.notes ?? item.notes,
+      photo_url: parsed.photoUrl ?? (item as any).photo_url,
+      notes: parsed.notes ?? (item as any).notes,
       counted_at: new Date().toISOString(),
     })
     .eq('id', itemId)
     .select()
     .single()
 
-  if (error) throw new Error(`Failed to update audit item: ${error.message}`)
+  if (error) throw new Error(`Failed to update audit item: ${(error as any).message}`)
 
   revalidatePath('/inventory')
   revalidatePath('/inventory/audits')
@@ -257,33 +268,33 @@ export async function updateAuditItem(
  */
 export async function finalizeAudit(auditId: string): Promise<InventoryAudit> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify ownership and status
-  const { data: audit, error: auditError } = await supabase
-    .from('inventory_audits' as any)
+  const { data: audit, error: auditError } = await db(supabase)
+    .audits()
     .select('*')
     .eq('id', auditId)
     .eq('chef_id', user.tenantId!)
     .single()
 
   if (auditError || !audit) throw new Error('Audit not found')
-  if (audit.status === 'finalized') throw new Error('Audit is already finalized')
+  if ((audit as any).status === 'finalized') throw new Error('Audit is already finalized')
 
   // Get all audit items
-  const { data: items, error: itemsError } = await supabase
-    .from('inventory_audit_items' as any)
+  const { data: items, error: itemsError } = await db(supabase)
+    .auditItems()
     .select('*')
     .eq('audit_id', auditId)
 
-  if (itemsError) throw new Error(`Failed to fetch audit items: ${itemsError.message}`)
+  if (itemsError) throw new Error(`Failed to fetch audit items: ${(itemsError as any).message}`)
 
-  const allItems = items || []
+  const allItems = (items || []) as any[]
 
   // Count items that have been counted (actual_qty is not null)
   const countedItems = allItems.filter((i: any) => i.actual_qty != null)
   const itemsWithVariance = countedItems.filter(
-    (i: any) => i.variance_qty != null && parseFloat(i.variance_qty) !== 0
+    (i: any) => i.variance_qty != null && Number(i.variance_qty) !== 0
   )
 
   // Create adjustment transactions for each variance
@@ -291,7 +302,7 @@ export async function finalizeAudit(auditId: string): Promise<InventoryAudit> {
   let totalVarianceCents = 0
 
   for (const item of itemsWithVariance) {
-    const varianceQty = parseFloat(item.variance_qty)
+    const varianceQty = Number(item.variance_qty)
     const varianceCost = item.variance_cost_cents ?? 0
     totalVarianceCents += varianceCost
 
@@ -303,7 +314,7 @@ export async function finalizeAudit(auditId: string): Promise<InventoryAudit> {
       quantity: varianceQty, // Positive if we found MORE than expected, negative if LESS
       unit: item.unit,
       cost_cents: varianceCost !== 0 ? Math.abs(varianceCost) : null,
-      location_id: item.location_id ?? audit.location_id ?? null,
+      location_id: item.location_id ?? (audit as any).location_id ?? null,
       audit_id: auditId,
       notes: `Audit adjustment: expected ${item.expected_qty}, counted ${item.actual_qty}`,
       created_by: user.id,
@@ -312,16 +323,14 @@ export async function finalizeAudit(auditId: string): Promise<InventoryAudit> {
 
   // Insert all adjustment transactions
   if (adjustmentRows.length > 0) {
-    const { error: txError } = await supabase
-      .from('inventory_transactions' as any)
-      .insert(adjustmentRows)
+    const { error: txError } = await db(supabase).transactions().insert(adjustmentRows)
 
-    if (txError) throw new Error(`Failed to create audit adjustments: ${txError.message}`)
+    if (txError) throw new Error(`Failed to create audit adjustments: ${(txError as any).message}`)
   }
 
   // Update audit summary and finalize
-  const { data: finalized, error: finalizeError } = await supabase
-    .from('inventory_audits' as any)
+  const { data: finalized, error: finalizeError } = await db(supabase)
+    .audits()
     .update({
       status: 'finalized',
       total_items_counted: countedItems.length,
@@ -335,7 +344,7 @@ export async function finalizeAudit(auditId: string): Promise<InventoryAudit> {
     .select()
     .single()
 
-  if (finalizeError) throw new Error(`Failed to finalize audit: ${finalizeError.message}`)
+  if (finalizeError) throw new Error(`Failed to finalize audit: ${(finalizeError as any).message}`)
 
   revalidatePath('/inventory')
   revalidatePath('/inventory/audits')
@@ -351,10 +360,10 @@ export async function getAudits(filters?: {
   auditType?: InventoryAuditType
 }): Promise<InventoryAudit[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  let query = supabase
-    .from('inventory_audits' as any)
+  let query = db(supabase)
+    .audits()
     .select('*')
     .eq('chef_id', user.tenantId!)
     .order('created_at', { ascending: false })
@@ -368,9 +377,9 @@ export async function getAudits(filters?: {
 
   const { data, error } = await query
 
-  if (error) throw new Error(`Failed to fetch audits: ${error.message}`)
+  if (error) throw new Error(`Failed to fetch audits: ${(error as any).message}`)
 
-  return (data || []).map(mapAudit)
+  return ((data || []) as any[]).map(mapAudit)
 }
 
 /**
@@ -380,10 +389,10 @@ export async function getAuditDetail(
   auditId: string
 ): Promise<{ audit: InventoryAudit; items: AuditItem[] }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data: audit, error: auditError } = await supabase
-    .from('inventory_audits' as any)
+  const { data: audit, error: auditError } = await db(supabase)
+    .audits()
     .select('*')
     .eq('id', auditId)
     .eq('chef_id', user.tenantId!)
@@ -391,17 +400,17 @@ export async function getAuditDetail(
 
   if (auditError || !audit) throw new Error('Audit not found')
 
-  const { data: items, error: itemsError } = await supabase
-    .from('inventory_audit_items' as any)
+  const { data: items, error: itemsError } = await db(supabase)
+    .auditItems()
     .select('*')
     .eq('audit_id', auditId)
     .order('ingredient_name', { ascending: true })
 
-  if (itemsError) throw new Error(`Failed to fetch audit items: ${itemsError.message}`)
+  if (itemsError) throw new Error(`Failed to fetch audit items: ${(itemsError as any).message}`)
 
   return {
     audit: mapAudit(audit),
-    items: (items || []).map(mapAuditItem),
+    items: ((items || []) as any[]).map(mapAuditItem),
   }
 }
 
@@ -434,9 +443,9 @@ function mapAuditItem(row: any): AuditItem {
     ingredientId: row.ingredient_id,
     ingredientName: row.ingredient_name,
     unit: row.unit,
-    expectedQty: row.expected_qty != null ? parseFloat(row.expected_qty) : null,
-    actualQty: row.actual_qty != null ? parseFloat(row.actual_qty) : null,
-    varianceQty: row.variance_qty != null ? parseFloat(row.variance_qty) : null,
+    expectedQty: row.expected_qty != null ? Number(row.expected_qty) : null,
+    actualQty: row.actual_qty != null ? Number(row.actual_qty) : null,
+    varianceQty: row.variance_qty != null ? Number(row.variance_qty) : null,
     unitCostCents: row.unit_cost_cents,
     varianceCostCents: row.variance_cost_cents,
     locationId: row.location_id,

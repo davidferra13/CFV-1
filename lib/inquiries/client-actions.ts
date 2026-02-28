@@ -53,7 +53,7 @@ export type ClientInquiryDetail = ClientInquiryListItem & {
  */
 export async function getClientInquiries(): Promise<ClientInquiryListItem[]> {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('inquiries')
@@ -90,7 +90,7 @@ export async function getClientInquiries(): Promise<ClientInquiryListItem[]> {
  */
 export async function getClientInquiryById(inquiryId: string): Promise<ClientInquiryDetail | null> {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: inquiry, error } = await supabase
     .from('inquiries')

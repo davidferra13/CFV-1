@@ -20,7 +20,7 @@ export type AdminUser = {
  * Use in app/(admin)/layout.tsx and admin server actions.
  */
 export async function requireAdmin(): Promise<AdminUser> {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const {
     data: { user },
     error,
@@ -42,7 +42,7 @@ export async function requireAdmin(): Promise<AdminUser> {
  */
 export async function isAdmin(): Promise<boolean> {
   try {
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
     const {
       data: { user },
     } = await supabase.auth.getUser()

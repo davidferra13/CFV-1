@@ -43,7 +43,7 @@ const REASON_LABELS: Record<string, string> = {
 export async function logWaste(input: LogWasteInput) {
   const user = await requireChef()
   const validated = LogWasteSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('waste_log')
@@ -76,7 +76,7 @@ export async function logWaste(input: LogWasteInput) {
  */
 export async function getWasteLog(startDate: string, endDate: string, stationId?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('waste_log')
@@ -114,7 +114,7 @@ export async function getWasteLog(startDate: string, endDate: string, stationId?
  */
 export async function getWasteSummary(startDate: string, endDate: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('waste_log')

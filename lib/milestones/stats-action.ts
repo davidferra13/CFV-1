@@ -21,7 +21,7 @@ export async function getChefMilestoneStats(): Promise<ChefMilestoneStats | null
     const user = await requireChef()
     if (!user.tenantId) return null
 
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
 
     const [clientRes, eventRes, chefRes] = await Promise.all([
       // head: true = COUNT only, no rows returned

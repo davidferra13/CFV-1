@@ -121,7 +121,7 @@ export async function createEvent(input: CreateEventInput) {
   // Validate input
   const validated = CreateEventSchema.parse(input)
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify client belongs to this tenant
   const { data: client } = await supabase
@@ -234,7 +234,7 @@ export async function createEvent(input: CreateEventInput) {
  */
 export async function getEvents() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
     let query = supabase
@@ -275,7 +275,7 @@ export async function getEvents() {
  */
 export async function getEventById(eventId: string) {
   await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
     let query = supabase
@@ -320,7 +320,7 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
   const validated = UpdateEventSchema.parse(input)
   const { expected_updated_at, idempotency_key, ...updateFields } = validated
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch current event to verify ownership and status
   const { data: currentEvent } = await (supabase
@@ -453,7 +453,7 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
  */
 export async function deleteEvent(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify event exists and is draft
   const { data: event } = await (supabase
@@ -497,7 +497,7 @@ export async function deleteEvent(eventId: string) {
  */
 export async function restoreEvent(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('events')
@@ -535,7 +535,7 @@ export type EventClosureStatus = {
  */
 export async function getEventClosureStatus(eventId: string): Promise<EventClosureStatus> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event, error } = await supabase
     .from('events')
@@ -564,7 +564,7 @@ export async function getEventClosureStatus(eventId: string): Promise<EventClosu
  */
 export async function markResetComplete(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')
@@ -600,7 +600,7 @@ export async function markResetComplete(eventId: string) {
  */
 export async function markFollowUpSent(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')
@@ -636,7 +636,7 @@ export async function markFollowUpSent(eventId: string) {
  */
 export async function getEventsNeedingClosure() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events, error } = await supabase
     .from('events')
@@ -694,7 +694,7 @@ function getActiveEventActivity(event: {
 export async function startEventActivity(eventId: string, activityInput: EventTimeActivityType) {
   const user = await requireChef()
   const activity = EventTimeActivitySchema.parse(activityInput)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event, error: fetchError } = await supabase
     .from('events')
@@ -780,7 +780,7 @@ export async function startEventActivity(eventId: string, activityInput: EventTi
 export async function stopEventActivity(eventId: string, activityInput: EventTimeActivityType) {
   const user = await requireChef()
   const activity = EventTimeActivitySchema.parse(activityInput)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const config = EVENT_TIME_ACTIVITY_CONFIG[activity]
   const { data: event, error: fetchError } = await supabase
@@ -883,7 +883,7 @@ export async function updateEventTimeAndCard(
   }
 ) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('events')
@@ -946,7 +946,7 @@ export async function logCharityHours(input: LogCharityHoursInput) {
  */
 export async function setEventFoodCostBudget(eventId: string, budgetCents: number | null) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Validate the budget amount when provided
   if (budgetCents !== null && (budgetCents < 0 || !Number.isInteger(budgetCents))) {

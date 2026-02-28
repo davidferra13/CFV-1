@@ -8,7 +8,7 @@ export async function saveContinuityPlan(plan: Record<string, unknown>) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('chefs')
@@ -24,7 +24,7 @@ export async function getContinuityPlan() {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('chefs')

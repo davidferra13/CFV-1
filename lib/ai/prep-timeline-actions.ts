@@ -39,7 +39,7 @@ const PrepTimelineSchema = z.object({
  */
 export async function generatePrepTimeline(eventId: string): Promise<PrepTimeline> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Load event details
   const { data: event } = await supabase
@@ -145,7 +145,7 @@ Categories: shopping, prep, cooking, plating, service, cleanup, transport`
  */
 export async function generatePrepTimelineByName(eventName: string): Promise<PrepTimeline> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events } = await supabase
     .from('events')

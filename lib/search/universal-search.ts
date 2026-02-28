@@ -34,7 +34,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   if (!query || query.length < 2) return { results: [], grouped: {} }
 
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const q = `%${query}%`
   const needle = query.trim().toLowerCase()
   const results: SearchResult[] = []

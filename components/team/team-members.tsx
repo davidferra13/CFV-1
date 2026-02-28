@@ -122,14 +122,14 @@ export function TeamMembers({ members }: { members: TeamMember[] }) {
                       <option value="inactive">Inactive</option>
                       <option value="removed">Removed</option>
                     </select>
-                    <Button type="submit" size="sm" variant="outline">
+                    <Button type="submit" size="sm" variant="secondary">
                       Save
                     </Button>
                   </form>
 
                   <form action={removeMemberAction}>
                     <input type="hidden" name="member_id" value={member.id} />
-                    <Button type="submit" size="sm" variant="outline">
+                    <Button type="submit" size="sm" variant="secondary">
                       Remove
                     </Button>
                   </form>

@@ -21,7 +21,7 @@ import type {
 
 // event_travel_legs and travel_leg_ingredients have a pending migration (20260303000020).
 // Cast to bypass the typed client until the migration is applied to the remote DB.
-type AnySupabase = ReturnType<typeof createServerClient> & { from: (t: string) => any }
+type AnySupabase = any & { from: (t: string) => any }
 function createClient(): AnySupabase {
   return createServerClient() as AnySupabase
 }

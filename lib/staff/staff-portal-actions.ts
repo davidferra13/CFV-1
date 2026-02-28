@@ -79,7 +79,7 @@ export type StaffProfile = {
 
 export async function getMyProfile(): Promise<StaffProfile | null> {
   const user = await requireStaff()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data, error } = await supabase
     .from('staff_members')
@@ -102,7 +102,7 @@ export async function getMyProfile(): Promise<StaffProfile | null> {
 
 export async function getMyTasks(date?: string): Promise<StaffTask[]> {
   const user = await requireStaff()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   let query = supabase
     .from('tasks')
@@ -135,7 +135,7 @@ export async function getMyTasks(date?: string): Promise<StaffTask[]> {
 
 export async function getMyTasksGroupedByDate(): Promise<Record<string, StaffTask[]>> {
   const user = await requireStaff()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Get upcoming tasks (today and future, plus recently overdue)
   const today = new Date().toISOString().split('T')[0]
@@ -178,7 +178,7 @@ export async function getMyTasksGroupedByDate(): Promise<Record<string, StaffTas
 
 export async function completeMyTask(taskId: string): Promise<{ success: boolean }> {
   const user = await requireStaff()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
   const now = new Date().toISOString()
 
   // Verify the task is assigned to this staff member and belongs to the tenant
@@ -233,7 +233,7 @@ export async function completeMyTask(taskId: string): Promise<{ success: boolean
 
 export async function uncompleteMyTask(taskId: string): Promise<{ success: boolean }> {
   const user = await requireStaff()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Verify the task is assigned to this staff member
   const { data: task, error: fetchError } = await supabase
@@ -274,7 +274,7 @@ export async function uncompleteMyTask(taskId: string): Promise<{ success: boole
 
 export async function getMyAssignments(): Promise<StaffAssignment[]> {
   const user = await requireStaff()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data, error } = await supabase
     .from('event_staff_assignments')
@@ -304,7 +304,7 @@ export async function getMyAssignments(): Promise<StaffAssignment[]> {
 
 export async function getMyUpcomingAssignments(): Promise<StaffAssignment[]> {
   const user = await requireStaff()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -342,7 +342,7 @@ export async function getMyUpcomingAssignments(): Promise<StaffAssignment[]> {
 
 export async function getMyStations(): Promise<StaffStation[]> {
   const user = await requireStaff()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Find stations through shift_logs — staff who checked in most recently
   // Also check tasks assigned to the staff member that reference a station
@@ -420,7 +420,7 @@ export async function getMyStations(): Promise<StaffStation[]> {
 
 export async function getStationClipboard(stationId: string, date: string) {
   const user = await requireStaff()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Verify station belongs to tenant
   const { data: station, error: stationError } = await supabase
@@ -476,7 +476,7 @@ export async function updateClipboardEntry(
   }
 ) {
   const user = await requireStaff()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Verify entry belongs to tenant
   const { data: entry, error: fetchError } = await supabase
@@ -520,7 +520,7 @@ export async function updateClipboardEntry(
 
 export async function getStationRecipes(stationId: string): Promise<StaffRecipe[]> {
   const user = await requireStaff()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Verify station belongs to tenant
   const { data: station, error: stationError } = await supabase
@@ -586,7 +586,7 @@ export async function getStationRecipes(stationId: string): Promise<StaffRecipe[
 
 export async function getMyRecipes(): Promise<StaffRecipe[]> {
   const user = await requireStaff()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data, error } = await supabase
     .from('recipes')
@@ -608,7 +608,7 @@ export async function getMyRecipes(): Promise<StaffRecipe[]> {
 
 export async function staffShiftCheckIn(stationId: string, shiftType: 'open' | 'mid' | 'close') {
   const user = await requireStaff()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Verify station belongs to tenant
   const { data: station, error: stationError } = await supabase
@@ -644,7 +644,7 @@ export async function staffShiftCheckIn(stationId: string, shiftType: 'open' | '
 
 export async function staffShiftCheckOut(shiftLogId: string, notes?: string) {
   const user = await requireStaff()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Verify shift belongs to this staff member
   const { data: shift, error: fetchError } = await supabase

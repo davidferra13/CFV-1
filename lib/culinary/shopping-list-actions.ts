@@ -37,7 +37,7 @@ function round2(value: number) {
 }
 
 async function getRecipeMultipliersForEvents(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   eventIds: string[]
 ): Promise<Map<string, number>> {
@@ -114,7 +114,7 @@ export async function generateShoppingList(input: {
 }): Promise<ShoppingListResult> {
   const user = await requireChef()
   const parsed = ShoppingListInputSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let eventsQuery = supabase
     .from('events')
@@ -300,7 +300,7 @@ export async function createPurchaseOrderFromShoppingList(input: {
   }>
 }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const filteredItems = input.items.filter((item) => item.toBuy > 0)
   if (!filteredItems.length)

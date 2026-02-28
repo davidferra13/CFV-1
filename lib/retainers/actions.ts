@@ -72,7 +72,7 @@ function computePeriodEnd(periodStart: string, cycle: string): string {
 export async function createRetainer(input: z.infer<typeof CreateRetainerSchema>) {
   const user = await requireChef()
   const parsed = CreateRetainerSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('retainers')
@@ -102,7 +102,7 @@ export async function createRetainer(input: z.infer<typeof CreateRetainerSchema>
 export async function updateRetainer(id: string, input: z.infer<typeof UpdateRetainerSchema>) {
   const user = await requireChef()
   const parsed = UpdateRetainerSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify retainer exists and is editable
   const { data: existing, error: fetchError } = await supabase
@@ -146,7 +146,7 @@ export async function updateRetainer(id: string, input: z.infer<typeof UpdateRet
 
 export async function activateRetainer(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: retainer, error: fetchError } = await supabase
     .from('retainers')
@@ -215,7 +215,7 @@ export async function activateRetainer(id: string) {
 
 export async function pauseRetainer(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: retainer, error: fetchError } = await supabase
     .from('retainers')
@@ -262,7 +262,7 @@ export async function pauseRetainer(id: string) {
 
 export async function resumeRetainer(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: retainer, error: fetchError } = await supabase
     .from('retainers')
@@ -316,7 +316,7 @@ export async function resumeRetainer(id: string) {
 
 export async function cancelRetainer(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: retainer, error: fetchError } = await supabase
     .from('retainers')
@@ -378,7 +378,7 @@ export async function cancelRetainer(id: string) {
 
 export async function completeRetainer(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: retainer, error: fetchError } = await supabase
     .from('retainers')
@@ -425,7 +425,7 @@ export async function completeRetainer(id: string) {
 
 export async function getRetainersByTenant() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('retainers')
@@ -439,7 +439,7 @@ export async function getRetainersByTenant() {
 
 export async function getRetainerDetail(retainerId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch retainer with client name
   const { data: retainer, error: retainerError } = await supabase
@@ -486,7 +486,7 @@ export async function recordRetainerPayment(
   notes?: string
 ) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch the period and its parent retainer
   const { data: period, error: periodError } = await supabase
@@ -571,7 +571,7 @@ export async function recordRetainerPayment(
 
 export async function linkEventToRetainer(eventId: string, retainerId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify both event and retainer belong to this tenant
   const { data: event, error: eventError } = await supabase
@@ -641,7 +641,7 @@ export async function linkEventToRetainer(eventId: string, retainerId: string) {
 
 export async function unlinkEventFromRetainer(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event with retainer info
   const { data: event, error: eventError } = await supabase

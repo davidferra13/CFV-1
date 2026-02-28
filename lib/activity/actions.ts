@@ -37,7 +37,7 @@ function parseDaysBack(daysBack?: number): number {
 
 export async function getActiveClients(minutesWindow = 15): Promise<ActiveClient[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const since = new Date(Date.now() - minutesWindow * 60 * 1000).toISOString()
 
   const { data, error } = await supabase
@@ -87,7 +87,7 @@ export async function getActivityFeed(
   options: ActivityQueryOptions = {}
 ): Promise<ActivityQueryResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const limit = Math.max(1, Math.min(100, options.limit ?? 25))
   const daysBack = parseDaysBack(options.daysBack)
@@ -186,7 +186,7 @@ export async function getEngagementStats(): Promise<{
   totalEventsThisWeek: number
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const todayStart = new Date()
   todayStart.setHours(0, 0, 0, 0)
@@ -234,7 +234,7 @@ export async function getActiveClientsWithContext(
   minutesWindow = 60
 ): Promise<ActiveClientWithContext[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const activeClients = await getActiveClients(minutesWindow)
   if (activeClients.length === 0) return []

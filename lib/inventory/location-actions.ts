@@ -99,7 +99,7 @@ export type TransferInventoryInput = z.infer<typeof TransferInventorySchema>
 export async function createStorageLocation(input: CreateLocationInput): Promise<StorageLocation> {
   const user = await requireChef()
   const parsed = CreateLocationSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // If this should be the default, unset any existing default first
   if (parsed.isDefault) {
@@ -142,7 +142,7 @@ export async function updateStorageLocation(
 ): Promise<StorageLocation> {
   const user = await requireChef()
   const parsed = UpdateLocationSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify ownership
   const { data: existing, error: fetchError } = await supabase
@@ -195,7 +195,7 @@ export async function updateStorageLocation(
  */
 export async function deleteStorageLocation(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('storage_locations' as any)
@@ -214,7 +214,7 @@ export async function deleteStorageLocation(id: string): Promise<void> {
  */
 export async function getStorageLocations(): Promise<StorageLocation[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('storage_locations' as any)
@@ -234,7 +234,7 @@ export async function getStorageLocations(): Promise<StorageLocation[]> {
  */
 export async function setDefaultLocation(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify ownership
   const { data: existing, error: fetchError } = await supabase
@@ -278,7 +278,7 @@ export async function transferInventory(
 ): Promise<{ transferPairId: string }> {
   const user = await requireChef()
   const parsed = TransferInventorySchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (parsed.fromLocationId === parsed.toLocationId) {
     throw new Error('Source and destination locations must be different')

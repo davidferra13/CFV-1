@@ -135,7 +135,7 @@ export async function confirmPhotoTag(
   tags: string[]
 ): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const validated = ConfirmPhotoTagSchema.parse({ photoId, tags })
 

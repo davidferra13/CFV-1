@@ -46,7 +46,7 @@ export type AchievementInput = z.infer<typeof AchievementSchema>
 export async function createAchievement(input: AchievementInput) {
   const chef = await requireChef()
   await requirePro('professional')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const data = AchievementSchema.parse(input)
 
   const { error } = await supabase.from('professional_achievements').insert({
@@ -64,7 +64,7 @@ export async function createAchievement(input: AchievementInput) {
 export async function updateAchievement(id: string, input: AchievementInput) {
   const chef = await requireChef()
   await requirePro('professional')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const data = AchievementSchema.parse(input)
 
   const { error } = await supabase
@@ -85,7 +85,7 @@ export async function updateAchievement(id: string, input: AchievementInput) {
 export async function deleteAchievement(id: string) {
   const chef = await requireChef()
   await requirePro('professional')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('professional_achievements')
@@ -100,7 +100,7 @@ export async function deleteAchievement(id: string) {
 export async function listAchievements(publicOnly = false) {
   const chef = await requireChef()
   await requirePro('professional')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let q = supabase
     .from('professional_achievements')
@@ -149,7 +149,7 @@ export type LearningGoalInput = z.infer<typeof LearningGoalSchema>
 export async function createLearningGoal(input: LearningGoalInput) {
   const chef = await requireChef()
   await requirePro('professional')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const data = LearningGoalSchema.parse(input)
 
   const { error } = await supabase.from('learning_goals').insert({
@@ -165,7 +165,7 @@ export async function createLearningGoal(input: LearningGoalInput) {
 export async function completeLearningGoal(id: string, notes?: string) {
   const chef = await requireChef()
   await requirePro('professional')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('learning_goals')
@@ -184,7 +184,7 @@ export async function completeLearningGoal(id: string, notes?: string) {
 export async function updateLearningGoal(id: string, input: Partial<LearningGoalInput>) {
   const chef = await requireChef()
   await requirePro('professional')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('learning_goals')
@@ -199,7 +199,7 @@ export async function updateLearningGoal(id: string, input: Partial<LearningGoal
 export async function deleteLearningGoal(id: string) {
   const chef = await requireChef()
   await requirePro('professional')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('learning_goals')
@@ -214,7 +214,7 @@ export async function deleteLearningGoal(id: string) {
 export async function listLearningGoals(status?: 'active' | 'completed' | 'abandoned') {
   const chef = await requireChef()
   await requirePro('professional')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let q = supabase
     .from('learning_goals')

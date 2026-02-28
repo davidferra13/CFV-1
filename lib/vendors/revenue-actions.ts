@@ -24,7 +24,7 @@ export type UpsertDailyRevenueInput = z.infer<typeof UpsertDailyRevenueSchema>
 
 export async function upsertDailyRevenue(input: UpsertDailyRevenueInput) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const data = UpsertDailyRevenueSchema.parse(input)
 
   // Check if entry already exists for this date
@@ -73,7 +73,7 @@ export async function upsertDailyRevenue(input: UpsertDailyRevenueInput) {
 
 export async function listDailyRevenue(startDate: string, endDate: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('daily_revenue')
@@ -93,7 +93,7 @@ export async function listDailyRevenue(startDate: string, endDate: string) {
 
 export async function getDailyRevenue(date: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('daily_revenue')

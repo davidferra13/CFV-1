@@ -97,8 +97,8 @@ export function NutritionPanel({ recipeId, ingredientCount }: Props) {
   }
 
   // Loaded — show the nutrition summary
-  const totals: NutritionTotals = viewMode === 'serving' ? data.perServing : data.wholeRecipe
-  const matchedCount = data.ingredients.filter((i) => i.matched).length
+  const totals: NutritionTotals = viewMode === 'serving' ? data!.perServing : data!.wholeRecipe
+  const matchedCount = data!.ingredients.filter((i) => i.matched).length
 
   return (
     <Card>
@@ -106,9 +106,9 @@ export function NutritionPanel({ recipeId, ingredientCount }: Props) {
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <CardTitle>Nutrition</CardTitle>
-            {data.missingCount > 0 && (
+            {data!.missingCount > 0 && (
               <Badge variant="warning">
-                {data.missingCount} ingredient{data.missingCount !== 1 ? 's' : ''} not found
+                {data!.missingCount} ingredient{data!.missingCount !== 1 ? 's' : ''} not found
               </Badge>
             )}
           </div>
@@ -128,7 +128,7 @@ export function NutritionPanel({ recipeId, ingredientCount }: Props) {
                 : 'text-stone-500 hover:text-stone-300'
             }`}
           >
-            Per Serving ({data.servings} servings)
+            Per Serving ({data!.servings} servings)
           </button>
           <button
             onClick={() => setViewMode('total')}
@@ -154,7 +154,7 @@ export function NutritionPanel({ recipeId, ingredientCount }: Props) {
 
         {/* Data quality note */}
         <p className="text-xs text-stone-500 mb-3">
-          {matchedCount}/{data.ingredients.length} ingredients matched. Estimates use USDA FoodData
+          {matchedCount}/{data!.ingredients.length} ingredients matched. Estimates use USDA FoodData
           Central. Volume-based ingredients use approximate density.
         </p>
 
@@ -180,7 +180,7 @@ export function NutritionPanel({ recipeId, ingredientCount }: Props) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-800">
-                {data.ingredients.map((ing, i) => (
+                {data!.ingredients.map((ing, i) => (
                   <tr key={i} className={ing.matched ? '' : 'opacity-50'}>
                     <td className="px-3 py-2">
                       <div className="text-stone-100">

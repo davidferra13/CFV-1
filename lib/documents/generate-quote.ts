@@ -62,7 +62,7 @@ export type QuoteDocumentData = {
 
 export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocumentData | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch quote with client
   const { data: quote } = await supabase

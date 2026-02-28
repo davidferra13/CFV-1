@@ -73,7 +73,7 @@ function toWorkflowStatus(status: string): ProcurementOrder['workflowStatus'] {
 
 export async function getSupplierDirectoryData(): Promise<SupplierDirectoryEntry[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [vendors, vendorItems, poRows] = await Promise.all([
     listVendors(false),
@@ -138,7 +138,7 @@ export async function createSupplier(input: {
 
 export async function getProcurementReferenceData(): Promise<ProcurementReferenceData> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [vendors, ingredients, events] = await Promise.all([
     listVendors(true),
@@ -232,7 +232,7 @@ export async function sendProcurementOrder(orderId: string) {
 
 export async function fulfillProcurementOrder(orderId: string, autoUpdateStock = true) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { po, items } = await getPurchaseOrder(orderId)
 

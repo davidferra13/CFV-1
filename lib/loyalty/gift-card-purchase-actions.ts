@@ -56,7 +56,7 @@ export async function initiateGiftCardPurchase(input: InitiateGiftCardPurchaseIn
 
   // Resolve logged-in user (if any) — gift card purchases are also open to guests
   const currentUser = await getCurrentUser()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Verify chef exists and get their display name for the checkout line item
   const { data: chef, error: chefError } = await supabase
@@ -155,7 +155,7 @@ export async function initiateGiftCardPurchase(input: InitiateGiftCardPurchaseIn
 export async function getGiftCardPurchaseBySession(sessionId: string) {
   if (!sessionId) return null
 
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: intent } = await supabase
     .from('gift_card_purchase_intents')

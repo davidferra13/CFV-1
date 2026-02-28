@@ -41,7 +41,7 @@ function csvRow(cells: (string | number | null | undefined)[]): string {
 
 export async function exportEventCSV(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get event details
   const { data: event } = await supabase
@@ -243,7 +243,7 @@ export async function exportExpensesCSV(filters: ExpenseFilters = {}) {
 
 export async function exportAllEventsCSV(year: number) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const startDate = `${year}-01-01`
   const endDate = `${year + 1}-01-01`

@@ -10,7 +10,7 @@ export type { ReferralHealthScore }
 export async function getReferralHealthData(): Promise<ReferralHealthScore> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch all clients with referral info
   const { data: clients, error } = await supabase

@@ -58,7 +58,7 @@ export async function addRetirementContribution(
 ): Promise<RetirementContribution> {
   const user = await requireChef()
   const parsed = AddContributionSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('retirement_contributions')
@@ -88,7 +88,7 @@ export async function addRetirementContribution(
 
 export async function deleteRetirementContribution(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('retirement_contributions')
@@ -107,7 +107,7 @@ export async function getRetirementContributions(taxYear: number): Promise<{
   remainingCapacityCents: number
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('retirement_contributions')
@@ -164,7 +164,7 @@ export async function addHealthInsurancePremium(
 ): Promise<HealthInsurancePremium> {
   const user = await requireChef()
   const parsed = AddPremiumSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('health_insurance_premiums')
@@ -192,7 +192,7 @@ export async function addHealthInsurancePremium(
 
 export async function deleteHealthInsurancePremium(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('health_insurance_premiums')
@@ -209,7 +209,7 @@ export async function getHealthInsurancePremiums(taxYear: number): Promise<{
   totalPremiumCents: number
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('health_insurance_premiums')

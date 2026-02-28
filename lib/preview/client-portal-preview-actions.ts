@@ -18,7 +18,7 @@ export type PreviewClient = {
 
 export async function getPreviewClients(): Promise<PreviewClient[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('clients')
@@ -40,7 +40,7 @@ export async function getPreviewClients(): Promise<PreviewClient[]> {
 
 export async function getPreviewClientEvents(clientId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify client belongs to this tenant
   const { data: client } = await supabase
@@ -74,7 +74,7 @@ export async function getPreviewClientEvents(clientId: string) {
 
 export async function getPreviewClientQuotes(clientId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify client belongs to this tenant
   const { data: client } = await supabase
@@ -108,7 +108,7 @@ export async function getPreviewClientQuotes(clientId: string) {
 
 export async function getPreviewClientLoyaltyStatus(clientId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: client } = await supabase
     .from('clients')

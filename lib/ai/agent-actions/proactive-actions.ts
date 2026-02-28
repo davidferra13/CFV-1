@@ -25,7 +25,7 @@ export const proactiveAgentActions: AgentActionDefinition[] = [
     tierNote: 'Tier 2 — presents recommendation, chef decides to act.',
 
     async executor(_inputs, ctx) {
-      const supabase = createServerClient()
+      const supabase: any = createServerClient()
       const now = new Date().toISOString().slice(0, 10)
 
       // Gather data in parallel

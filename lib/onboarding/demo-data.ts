@@ -18,7 +18,7 @@ export interface DemoDataResult {
 
 export async function seedDemoData(): Promise<DemoDataResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
   const chefId = user.entityId
 
@@ -195,7 +195,7 @@ export async function seedDemoData(): Promise<DemoDataResult> {
 
 export async function clearDemoData(): Promise<{ cleared: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Delete in reverse dependency order
@@ -220,7 +220,7 @@ export async function clearDemoData(): Promise<{ cleared: boolean; error?: strin
 
 export async function hasDemoData(): Promise<boolean> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { count } = await supabase
     .from('clients')

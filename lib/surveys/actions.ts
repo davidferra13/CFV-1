@@ -71,7 +71,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
  */
 export async function sendClientSurvey(eventId: string): Promise<{ ok: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')
@@ -234,7 +234,7 @@ export async function submitSurveyResponse(input: {
 
 export async function getChefSurveys(): Promise<ChefSurveyRow[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('event_surveys')

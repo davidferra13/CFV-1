@@ -28,7 +28,7 @@ export type LeadScore = z.infer<typeof LeadScoreSchema>
 
 export async function scoreInquiry(inquiryId: string): Promise<LeadScore> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [inquiryResult, historicalResult] = await Promise.all([
     supabase

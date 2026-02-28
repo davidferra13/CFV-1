@@ -65,7 +65,19 @@ export function DishDetailClient({
   })
 
   const handleSave = useCallback(async () => {
-    await updateDishIndexEntry(dish.id as string, editData)
+    await updateDishIndexEntry(dish.id as string, {
+      ...editData,
+      prep_complexity: (editData.prep_complexity || null) as
+        | 'quick'
+        | 'moderate'
+        | 'intensive'
+        | null,
+      plating_difficulty: (editData.plating_difficulty || null) as
+        | 'simple'
+        | 'moderate'
+        | 'architectural'
+        | null,
+    })
     setEditing(false)
     router.refresh()
   }, [dish.id, editData, router])
@@ -133,8 +145,8 @@ export function DishDetailClient({
               {(dish.is_signature as boolean) && <span className="text-brand-400 text-xl">★</span>}
               <h1 className="text-3xl font-bold text-stone-100">{dish.name as string}</h1>
             </div>
-            {dish.description && (
-              <p className="text-stone-400 mt-1">{dish.description as string}</p>
+            {!!dish.description && (
+              <p className="text-stone-400 mt-1">{String(dish.description)}</p>
             )}
             <div className="flex items-center gap-2 mt-2">
               <span className="text-xs font-medium bg-stone-800 text-stone-400 px-2 py-0.5 rounded-full">
@@ -401,14 +413,14 @@ export function DishDetailClient({
                 className="flex items-center justify-between py-1.5 border-b border-stone-800 last:border-0"
               >
                 <div>
-                  {a.client_name && (
-                    <span className="text-sm text-stone-300">{a.client_name as string}</span>
+                  {!!a.client_name && (
+                    <span className="text-sm text-stone-300">{String(a.client_name)}</span>
                   )}
-                  {a.event_type && (
-                    <span className="text-xs text-stone-600 ml-2">{a.event_type as string}</span>
+                  {!!a.event_type && (
+                    <span className="text-xs text-stone-600 ml-2">{String(a.event_type)}</span>
                   )}
-                  {a.variation_notes && (
-                    <p className="text-xs text-stone-500 italic">{a.variation_notes as string}</p>
+                  {!!a.variation_notes && (
+                    <p className="text-xs text-stone-500 italic">{String(a.variation_notes)}</p>
                   )}
                 </div>
                 <span className="text-xs text-stone-600">
@@ -524,13 +536,11 @@ export function DishDetailClient({
                     </span>
                   )}
                 </div>
-                {f.client_reaction && (
-                  <p className="text-xs text-stone-400 mt-1">
-                    Client: {f.client_reaction as string}
-                  </p>
+                {!!f.client_reaction && (
+                  <p className="text-xs text-stone-400 mt-1">Client: {String(f.client_reaction)}</p>
                 )}
-                {f.execution_notes && (
-                  <p className="text-xs text-stone-500 mt-0.5">{f.execution_notes as string}</p>
+                {!!f.execution_notes && (
+                  <p className="text-xs text-stone-500 mt-0.5">{String(f.execution_notes)}</p>
                 )}
                 <p className="text-[10px] text-stone-700 mt-1">
                   {new Date(f.created_at as string).toLocaleDateString()}

@@ -30,7 +30,7 @@ function getInitialMode(mode?: string): ImportMode {
 }
 
 async function getEventsForDropdown() {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { data } = await supabase
     .from('events')
     .select('id, occasion, event_date, client:clients(full_name)')

@@ -61,7 +61,7 @@ function mapEventToScheduling(event: any, componentCount = 0, hasAlcohol = false
  */
 async function fetchSchedulingEvent(eventId: string): Promise<SchedulingEvent | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')
@@ -119,7 +119,7 @@ async function fetchSchedulingEvent(eventId: string): Promise<SchedulingEvent | 
  */
 async function fetchUpcomingSchedulingEvents(): Promise<SchedulingEvent[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
@@ -328,7 +328,7 @@ export async function rescheduleEvent(
   newServeTime?: string
 ): Promise<{ success: boolean; error?: string; clearedPrepBlocks?: number }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')
@@ -367,7 +367,7 @@ export async function rescheduleEvent(
   let clearedPrepBlocks = 0
   try {
     const { data: oldBlocks } = await supabase
-      .from('event_prep_blocks')
+      .from('event_prep_blocks' as any)
       .select('id')
       .eq('event_id', eventId)
       .eq('chef_id', user.tenantId!)
@@ -375,7 +375,7 @@ export async function rescheduleEvent(
 
     if (oldBlocks && oldBlocks.length > 0) {
       await supabase
-        .from('event_prep_blocks')
+        .from('event_prep_blocks' as any)
         .delete()
         .in(
           'id',
@@ -427,7 +427,7 @@ export async function getCalendarEvents(
   rangeEnd: string
 ): Promise<CalendarEvent[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const prefs = await getChefPreferences()
 
   const { data: events } = await supabase
@@ -579,7 +579,7 @@ export async function getCalendarEvents(
  */
 export async function updateEventTravelTime(eventId: string, travelTimeMinutes: number) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // travel_time_minutes added in Layer 5 migration — type assertion until types regenerated
   const { error } = await supabase

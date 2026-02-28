@@ -67,7 +67,7 @@ export async function setAvailability(
 ): Promise<StaffAvailability> {
   const user = await requireChef()
   const parsed = SetAvailabilitySchema.parse({ staffMemberId, date, isAvailable, notes })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('staff_availability')
@@ -110,7 +110,7 @@ export async function getStaffAvailabilityGrid(
 ): Promise<StaffAvailabilityGridRow[]> {
   const user = await requireChef()
   DateRangeSchema.parse({ startDate, endDate })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch all active staff members
   const { data: staffMembers, error: staffError } = await supabase
@@ -159,7 +159,7 @@ export async function getAvailableStaffForDate(date: string): Promise<AvailableS
   z.string()
     .regex(/^\d{4}-\d{2}-\d{2}$/)
     .parse(date)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all active staff
   const { data: allStaff, error: staffError } = await supabase
@@ -206,7 +206,7 @@ export async function bulkSetAvailability(
 ): Promise<{ updated: number }> {
   const user = await requireChef()
   const parsed = BulkSetAvailabilitySchema.parse({ staffMemberId, dates, isAvailable })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const rows = parsed.dates.map((date) => ({
     staff_member_id: parsed.staffMemberId,

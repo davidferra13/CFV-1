@@ -53,7 +53,7 @@ const UpdateConnectionSchema = z.object({
  */
 export async function getClientConnections(clientId: string): Promise<ClientConnection[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get connections where this client is on either side
   const { data: connections, error } = await supabase
@@ -115,7 +115,7 @@ export async function getClientConnections(clientId: string): Promise<ClientConn
 export async function createConnection(input: z.infer<typeof CreateConnectionSchema>) {
   const user = await requireChef()
   const validated = CreateConnectionSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (validated.client_a_id === validated.client_b_id) {
     throw new Error('Cannot connect a client to themselves')
@@ -174,7 +174,7 @@ export async function updateConnection(
 ) {
   const user = await requireChef()
   const validated = UpdateConnectionSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Build update object
   const updates: Record<string, unknown> = {}
@@ -210,7 +210,7 @@ export async function updateConnection(
  */
 export async function removeConnection(connectionId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get connection first for revalidation paths
   const { data: connection } = await supabase

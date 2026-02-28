@@ -134,7 +134,7 @@ function estimateGrams(quantity: number, unit: string): number | null {
 
 export async function getRecipeNutrition(recipeId: string): Promise<RecipeNutritionResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // 1. Fetch recipe + ingredients
   const { data: recipe, error: recipeError } = await supabase

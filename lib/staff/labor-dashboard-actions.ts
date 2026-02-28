@@ -74,7 +74,7 @@ const DateRangeSchema = z.object({
 export async function getLaborByEvent(eventId: string): Promise<LaborByEventResult> {
   const user = await requireChef()
   z.string().uuid().parse(eventId)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('event_staff_assignments')
@@ -140,7 +140,7 @@ export async function getLaborByEvent(eventId: string): Promise<LaborByEventResu
 export async function getLaborByMonth(year: number, month: number): Promise<LaborByMonthResult> {
   const user = await requireChef()
   LaborByMonthSchema.parse({ year, month })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Build date range for the month
   const startDate = `${year}-${String(month).padStart(2, '0')}-01`
@@ -230,7 +230,7 @@ export async function getLaborRevenueRatio(
 ): Promise<LaborRevenueRatioResult> {
   const user = await requireChef()
   DateRangeSchema.parse({ startDate, endDate })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get events in the date range with their revenue
   const { data: events, error: eventsError } = await supabase

@@ -82,7 +82,7 @@ function serializeSplits(splits: SplitEntry[]): any[] {
 export async function setSplitBilling(eventId: string, splits: SplitEntry[]) {
   const user = await requireChef()
   const validated = SetSplitBillingSchema.parse({ eventId, splits })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Validate that percentages sum to 100
   const totalPercent = validated.splits.reduce((sum, s) => sum + s.percentage, 0)
@@ -111,7 +111,7 @@ export async function setSplitBilling(eventId: string, splits: SplitEntry[]) {
  */
 export async function getSplitBilling(eventId: string): Promise<SplitBillingConfig> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('events')
@@ -138,7 +138,7 @@ export async function getSplitBilling(eventId: string): Promise<SplitBillingConf
  */
 export async function generateSplitInvoices(eventId: string): Promise<SplitInvoiceSummary> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('events')

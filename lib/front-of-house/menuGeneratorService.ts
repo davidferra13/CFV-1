@@ -20,10 +20,10 @@ const SaveTemplateSchema = z.object({
   type: z.enum(['default', 'holiday', 'special_event']),
   event_type: FrontOfHouseEventTypeSchema.optional().nullable(),
   theme: z.string().optional().nullable(),
-  layout: z.record(z.any()).default({}),
+  layout: z.record(z.string(), z.any()).default({}),
   placeholders: z.array(z.string()).default([]),
-  styles: z.record(z.any()).default({}),
-  default_fields: z.record(z.boolean()).default({}),
+  styles: z.record(z.string(), z.any()).default({}),
+  default_fields: z.record(z.string(), z.boolean()).default({}),
 })
 
 const GenerateSchema = z.object({
@@ -34,7 +34,7 @@ const GenerateSchema = z.object({
 
 export async function listFrontOfHouseTemplates() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { data, error } = await (supabase as any)
     .from('menu_templates')
     .select('*')
@@ -52,7 +52,7 @@ export async function listFrontOfHouseTemplates() {
 export async function saveFrontOfHouseTemplate(input: z.infer<typeof SaveTemplateSchema>) {
   const user = await requireChef()
   const parsed = SaveTemplateSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const table = (supabase as any).from('menu_templates')
   const payload = {
@@ -97,7 +97,7 @@ export async function saveFrontOfHouseTemplate(input: z.infer<typeof SaveTemplat
 
 export async function deleteFrontOfHouseTemplate(templateId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { error } = await (supabase as any)
     .from('menu_templates')
     .delete()
@@ -116,7 +116,7 @@ export async function deleteFrontOfHouseTemplate(templateId: string) {
 export async function generateAndSaveFrontOfHouseMenu(input: z.infer<typeof GenerateSchema>) {
   const user = await requireChef()
   const parsed = GenerateSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: menu, error: menuError } = await supabase
     .from('menus')
@@ -172,7 +172,7 @@ export async function generateAndSaveFrontOfHouseMenu(input: z.infer<typeof Gene
 
 export async function getLatestFrontOfHouseMenu(menuId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await (supabase as any)
     .from('front_of_house_menus')

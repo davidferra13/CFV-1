@@ -20,24 +20,34 @@ function row(cells: (string | number | null | undefined)[]): string {
 
 export async function GET(request: Request) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { searchParams } = new URL(request.url)
   const year = parseInt(searchParams.get('year') ?? String(new Date().getFullYear()), 10)
 
   const { data: entries } = await supabase
     .from('ledger_entries')
-    .select(`
+    .select(
+      `
       created_at, received_at, entry_type, amount_cents,
       payment_method, description,
       events:event_id (occasion, event_date),
       clients:client_id (full_name)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .gte('created_at', `${year}-01-01`)
     .lt('created_at', `${year + 1}-01-01`)
     .order('created_at', { ascending: false })
 
-  const header = row(['Date', 'Type', 'Client', 'Event', 'Amount ($)', 'Payment Method', 'Description'])
+  const header = row([
+    'Date',
+    'Type',
+    'Client',
+    'Event',
+    'Amount ($)',
+    'Payment Method',
+    'Description',
+  ])
   const body = (entries ?? []).map((e: any) => {
     const date = e.received_at ?? e.created_at
     return row([

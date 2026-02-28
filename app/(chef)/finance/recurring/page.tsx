@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: 'Recurring Invoices - ChefFlow' }
 
 export default async function RecurringInvoicesPage() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [invoices, clientsResult] = await Promise.all([
     getRecurringInvoices().catch(() => null),

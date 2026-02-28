@@ -14,7 +14,7 @@ import { revalidatePath } from 'next/cache'
 
 export async function getAvailabilitySignalSetting(): Promise<boolean> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('chefs')
@@ -27,7 +27,7 @@ export async function getAvailabilitySignalSetting(): Promise<boolean> {
 
 export async function setAvailabilitySignalSetting(enabled: boolean) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('chefs')
@@ -49,7 +49,7 @@ export async function setAvailabilitySignalSetting(enabled: boolean) {
 
 export async function getClientSignalNotificationPref(): Promise<boolean> {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('clients')
@@ -62,7 +62,7 @@ export async function getClientSignalNotificationPref(): Promise<boolean> {
 
 export async function setClientSignalNotificationPref(enabled: boolean) {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('clients')

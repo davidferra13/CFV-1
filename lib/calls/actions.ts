@@ -153,7 +153,7 @@ export type CreateCallInput = z.infer<typeof CreateCallSchema>
 export async function createCall(input: CreateCallInput) {
   const user = await requireChef()
   const validated = CreateCallSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Auto-seed agenda items from linked inquiry or event
   const agenda_items: AgendaItem[] = []
@@ -329,7 +329,7 @@ export async function createCall(input: CreateCallInput) {
  */
 export async function getCalls(filter?: CallsFilter): Promise<ScheduledCall[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('scheduled_calls')
@@ -384,7 +384,7 @@ export async function getCalls(filter?: CallsFilter): Promise<ScheduledCall[]> {
  */
 export async function getUpcomingCalls(limit = 5): Promise<ScheduledCall[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('scheduled_calls')
@@ -413,7 +413,7 @@ export async function getUpcomingCalls(limit = 5): Promise<ScheduledCall[]> {
  */
 export async function getCall(id: string): Promise<ScheduledCall | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('scheduled_calls')
@@ -449,7 +449,7 @@ export type UpdateCallInput = z.infer<typeof UpdateCallSchema>
 export async function updateCall(id: string, input: UpdateCallInput) {
   const user = await requireChef()
   const validated = UpdateCallSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('scheduled_calls')
@@ -489,7 +489,7 @@ const VALID_TRANSITIONS: Record<CallStatus, CallStatus[]> = {
  */
 export async function updateCallStatus(id: string, newStatus: CallStatus) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch current status
   const { data: current, error: fetchError } = await supabase
@@ -557,7 +557,7 @@ export async function updateCallStatus(id: string, newStatus: CallStatus) {
  */
 export async function addAgendaItem(callId: string, itemText: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: current, error: fetchError } = await supabase
     .from('scheduled_calls')
@@ -599,7 +599,7 @@ export async function addAgendaItem(callId: string, itemText: string) {
  */
 export async function toggleAgendaItem(callId: string, itemId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: current, error: fetchError } = await supabase
     .from('scheduled_calls')
@@ -638,7 +638,7 @@ export async function toggleAgendaItem(callId: string, itemId: string) {
  */
 export async function removeAgendaItem(callId: string, itemId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: current, error: fetchError } = await supabase
     .from('scheduled_calls')
@@ -683,7 +683,7 @@ export type LogOutcomeInput = z.infer<typeof LogOutcomeSchema>
 export async function logCallOutcome(id: string, input: LogOutcomeInput) {
   const user = await requireChef()
   const validated = LogOutcomeSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('scheduled_calls')
@@ -751,7 +751,7 @@ export async function cancelCall(id: string) {
  */
 async function _notifyClientOfCall(callId: string, tenantId: string) {
   try {
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
 
     const { data: call } = await supabase
       .from('scheduled_calls')

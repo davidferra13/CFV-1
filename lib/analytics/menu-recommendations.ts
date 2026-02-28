@@ -36,7 +36,7 @@ export async function getMenuRecommendations(params: {
   limit?: number
 }): Promise<MenuRecommendationResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const allergies = params.allergies ?? []
   const limit = params.limit ?? 20

@@ -330,7 +330,7 @@ export async function signIn(input: SignInInput) {
     throw new Error('Sign-in is temporarily unavailable. Please contact support.')
   }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let data: Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>['data'] | null = null
   let error: Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>['error'] | null = null
@@ -412,7 +412,7 @@ export async function signIn(input: SignInInput) {
 export async function requestPasswordReset(email: string) {
   const validated = PasswordResetRequestSchema.parse({ email })
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
@@ -435,7 +435,7 @@ export async function requestPasswordReset(email: string) {
 export async function updatePassword(newPassword: string) {
   const validated = UpdatePasswordSchema.parse({ password: newPassword })
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify user is authenticated (session from recovery token exchange)
   const {
@@ -466,7 +466,7 @@ export async function updatePassword(newPassword: string) {
  * from onClick (not a form action) causes an unhandled NEXT_REDIRECT throw.
  */
 export async function signOut() {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.auth.signOut()
 
@@ -488,7 +488,7 @@ export async function signOut() {
  * Change password - Requires re-verification with current password
  */
 export async function changePassword(currentPassword: string, newPassword: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -523,7 +523,7 @@ export async function deleteAccount(password: string, reason?: string) {
  * Creates the corresponding chef or client profile.
  */
 export async function assignRole(role: 'chef' | 'client', context?: { signup_ref?: string }) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()

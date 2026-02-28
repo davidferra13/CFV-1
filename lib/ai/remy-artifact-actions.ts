@@ -39,7 +39,7 @@ export interface SaveArtifactInput {
 export async function saveRemyArtifact(input: SaveArtifactInput): Promise<{ id: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('remy_artifacts')
@@ -103,7 +103,7 @@ export async function listRemyArtifacts(options?: {
 }): Promise<{ artifacts: RemyArtifact[]; total: number }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const limit = options?.limit ?? 50
   const offset = options?.offset ?? 0
@@ -150,7 +150,7 @@ export async function listRemyArtifacts(options?: {
 export async function toggleArtifactPin(artifactId: string, pinned: boolean): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('remy_artifacts')
@@ -166,7 +166,7 @@ export async function toggleArtifactPin(artifactId: string, pinned: boolean): Pr
 export async function updateArtifactTitle(artifactId: string, title: string): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('remy_artifacts')
@@ -182,7 +182,7 @@ export async function updateArtifactTitle(artifactId: string, title: string): Pr
 export async function deleteRemyArtifact(artifactId: string): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('remy_artifacts')

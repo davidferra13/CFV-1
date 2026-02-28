@@ -113,7 +113,7 @@ export type MuseData = {
 
 export async function getMuseData(eventId?: string): Promise<MuseData> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
   const now = new Date()
   const currentMonth = now.getMonth() + 1
@@ -316,7 +316,7 @@ export async function getMuseData(eventId?: string): Promise<MuseData> {
 // ---------------------------------------------------------------------------
 
 async function getClientContext(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   eventId: string
 ): Promise<MuseClientContext | null> {

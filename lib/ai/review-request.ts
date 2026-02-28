@@ -27,7 +27,7 @@ const getClient = () => {
 
 export async function draftReviewRequest(eventId: string): Promise<ReviewRequestDraft> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [eventResult, chefResult] = await Promise.all([
     supabase
@@ -55,7 +55,7 @@ export async function draftReviewRequest(eventId: string): Promise<ReviewRequest
 
   // Get event highlights (menu)
   const { data: menuItems } = await supabase
-    .from('event_menu_components')
+    .from('event_menu_components' as any)
     .select('name, course_type')
     .eq('event_id', eventId)
     .order('created_at', { ascending: true })

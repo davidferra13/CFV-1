@@ -41,9 +41,9 @@ export type AddSaleItemInput = {
 export async function createSale(input: CreateSaleInput) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('sales')
     .insert({
       tenant_id: user.tenantId!,
@@ -56,7 +56,7 @@ export async function createSale(input: CreateSaleInput) {
       created_by: user.id,
     } as any)
     .select('id, sale_number')
-    .single()
+    .single() as any)
 
   if (error) throw new Error(`Failed to create sale: ${error.message}`)
 
@@ -69,7 +69,7 @@ export async function createSale(input: CreateSaleInput) {
 export async function addSaleItem(input: AddSaleItemInput) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!Number.isInteger(input.unitPriceCents) || input.unitPriceCents < 0) {
     throw new Error('Unit price must be a non-negative integer (cents)')
@@ -86,17 +86,17 @@ export async function addSaleItem(input: AddSaleItemInput) {
   const lineTotalCents = input.unitPriceCents * input.quantity + modifierTotal - discount
 
   // Get current max sort_order for this sale
-  const { data: existing } = await supabase
+  const { data: existing } = await (supabase
     .from('sale_items')
     .select('sort_order')
     .eq('sale_id', input.saleId)
     .eq('tenant_id', user.tenantId!)
     .order('sort_order', { ascending: false })
-    .limit(1)
+    .limit(1) as any)
 
   const nextSort = existing && existing.length > 0 ? (existing[0] as any).sort_order + 1 : 0
 
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('sale_items')
     .insert({
       sale_id: input.saleId,
@@ -117,7 +117,7 @@ export async function addSaleItem(input: AddSaleItemInput) {
       sort_order: nextSort,
     } as any)
     .select('id')
-    .single()
+    .single() as any)
 
   if (error) throw new Error(`Failed to add sale item: ${error.message}`)
 
@@ -133,14 +133,14 @@ export async function addSaleItem(input: AddSaleItemInput) {
 export async function removeSaleItem(saleId: string, itemId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await (supabase
     .from('sale_items')
     .delete()
     .eq('id', itemId)
     .eq('sale_id', saleId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!) as any)
 
   if (error) throw new Error(`Failed to remove sale item: ${error.message}`)
 
@@ -153,20 +153,20 @@ export async function removeSaleItem(saleId: string, itemId: string) {
 export async function updateSaleItemQuantity(saleId: string, itemId: string, quantity: number) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!Number.isInteger(quantity) || quantity < 1) {
     throw new Error('Quantity must be a positive integer')
   }
 
   // Fetch existing item to recalculate line total
-  const { data: item, error: fetchErr } = await supabase
+  const { data: item, error: fetchErr } = await (supabase
     .from('sale_items')
     .select('unit_price_cents, discount_cents, modifiers_applied')
     .eq('id', itemId)
     .eq('sale_id', saleId)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
   if (fetchErr || !item) throw new Error('Sale item not found')
 
@@ -177,12 +177,12 @@ export async function updateSaleItemQuantity(saleId: string, itemId: string, qua
   const lineTotalCents =
     (item as any).unit_price_cents * quantity + modifierTotal - ((item as any).discount_cents ?? 0)
 
-  const { error } = await supabase
+  const { error } = await (supabase
     .from('sale_items')
     .update({ quantity, line_total_cents: lineTotalCents } as any)
     .eq('id', itemId)
     .eq('sale_id', saleId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!) as any)
 
   if (error) throw new Error(`Failed to update quantity: ${error.message}`)
 
@@ -195,15 +195,15 @@ export async function updateSaleItemQuantity(saleId: string, itemId: string, qua
 export async function voidSale(saleId: string, reason: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch current status
-  const { data: sale, error: fetchErr } = await supabase
+  const { data: sale, error: fetchErr } = await (supabase
     .from('sales')
     .select('status')
     .eq('id', saleId)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
   if (fetchErr || !sale) throw new Error('Sale not found')
 
@@ -211,7 +211,7 @@ export async function voidSale(saleId: string, reason: string) {
     throw new Error(`Cannot void a sale in ${(sale as any).status} status`)
   }
 
-  const { error } = await supabase
+  const { error } = await (supabase
     .from('sales')
     .update({
       status: 'voided',
@@ -220,7 +220,7 @@ export async function voidSale(saleId: string, reason: string) {
       void_reason: reason,
     } as any)
     .eq('id', saleId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!) as any)
 
   if (error) throw new Error(`Failed to void sale: ${error.message}`)
 
@@ -232,24 +232,24 @@ export async function voidSale(saleId: string, reason: string) {
 export async function getSale(saleId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data: sale, error } = await supabase
+  const { data: sale, error } = await (supabase
     .from('sales')
     .select('*')
     .eq('id', saleId)
     .eq('tenant_id', user.tenantId!)
-    .single()
+    .single() as any)
 
   if (error) throw new Error(`Sale not found: ${error.message}`)
 
   // Fetch items
-  const { data: items } = await supabase
+  const { data: items } = await (supabase
     .from('sale_items')
     .select('*')
     .eq('sale_id', saleId)
     .eq('tenant_id', user.tenantId!)
-    .order('sort_order', { ascending: true })
+    .order('sort_order', { ascending: true }) as any)
 
   return { sale, items: items ?? [] }
 }
@@ -268,13 +268,13 @@ export async function listSales(filters?: {
 }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('sales')
     .select('*', { count: 'exact' })
     .eq('tenant_id', user.tenantId!)
-    .order('created_at', { ascending: false })
+    .order('created_at', { ascending: false }) as any
 
   if (filters?.status) query = query.eq('status', filters.status)
   if (filters?.channel) query = query.eq('channel', filters.channel)
@@ -297,13 +297,13 @@ export async function listSales(filters?: {
 // ─── Internal: Recalculate Sale Totals ────────────────────────────
 
 async function recalculateSaleTotals(saleId: string, tenantId: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data: items } = await supabase
+  const { data: items } = await (supabase
     .from('sale_items')
     .select('line_total_cents, tax_cents, discount_cents')
     .eq('sale_id', saleId)
-    .eq('tenant_id', tenantId)
+    .eq('tenant_id', tenantId) as any)
 
   if (!items) return
 
@@ -312,7 +312,7 @@ async function recalculateSaleTotals(saleId: string, tenantId: string) {
   const discountCents = items.reduce((sum, i) => sum + ((i as any).discount_cents ?? 0), 0)
   const totalCents = subtotalCents + taxCents
 
-  await supabase
+  await (supabase
     .from('sales')
     .update({
       subtotal_cents: subtotalCents,
@@ -321,5 +321,5 @@ async function recalculateSaleTotals(saleId: string, tenantId: string) {
       total_cents: totalCents,
     } as any)
     .eq('id', saleId)
-    .eq('tenant_id', tenantId)
+    .eq('tenant_id', tenantId) as any)
 }

@@ -42,7 +42,7 @@ void SERVICE_TYPE_LABELS // suppress unused warning
 
 export async function createRecurringService(input: RecurringServiceInput) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const data = RecurringServiceSchema.parse(input)
 
   const { error } = await supabase.from('recurring_services').insert({
@@ -58,7 +58,7 @@ export async function createRecurringService(input: RecurringServiceInput) {
 
 export async function updateRecurringService(id: string, input: Partial<RecurringServiceInput>) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('recurring_services')
@@ -76,7 +76,7 @@ export async function pauseRecurringService(id: string) {
 
 export async function endRecurringService(id: string) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('recurring_services')
@@ -90,7 +90,7 @@ export async function endRecurringService(id: string) {
 
 export async function listRecurringServices(clientId?: string) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let q = supabase
     .from('recurring_services')
@@ -132,7 +132,7 @@ void REACTION_LABELS // suppress unused warning
 
 export async function logServedDish(input: ServedDishInput) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const data = ServedDishSchema.parse(input)
 
   const { error } = await supabase.from('served_dish_history').insert({
@@ -149,7 +149,7 @@ export async function logServedDish(input: ServedDishInput) {
 
 export async function deleteServedDishEntry(id: string) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('served_dish_history')
@@ -162,7 +162,7 @@ export async function deleteServedDishEntry(id: string) {
 
 export async function getServedHistoryForClient(clientId: string, weeks = 12) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const since = addWeeks(new Date(), -weeks).toISOString().slice(0, 10)
 
@@ -180,7 +180,7 @@ export async function getServedHistoryForClient(clientId: string, weeks = 12) {
 
 export async function getSuggestedMenuItems(clientId: string) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all history for this client
   const { data: history } = await supabase

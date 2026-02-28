@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: 'Insurance Policies — ChefFlow' }
 
 export default async function InsurancePoliciesPage() {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: policies } = await supabase
     .from('chef_insurance_policies')

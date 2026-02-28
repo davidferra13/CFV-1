@@ -127,7 +127,7 @@ export async function evaluateAutomations(
 // ─── Log Execution ───────────────────────────────────────────────────────
 
 async function logExecution(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   rule: AutomationRule,
   context: AutomationContext,

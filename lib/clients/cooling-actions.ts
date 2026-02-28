@@ -10,7 +10,7 @@ export type { CoolingClient }
 export async function getCoolingClients(): Promise<CoolingClient[]> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch all clients with tier info
   const { data: clients, error } = await supabase
@@ -49,7 +49,7 @@ export async function getCoolingClients(): Promise<CoolingClient[]> {
 export async function markIntentionallyInactive(clientId: string): Promise<void> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: existing } = await supabase
     .from('clients')

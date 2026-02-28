@@ -116,7 +116,7 @@ import { getQrCodeUrl } from '@/lib/qr/qr-code'
 import { shortenUrl } from '@/lib/links/url-shortener'
 
 async function getEventFinancialSummary(eventId: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Use the event_financial_summary view
   const { data: summary } = await supabase
@@ -134,7 +134,7 @@ async function getEventFinancialSummary(eventId: string) {
 }
 
 async function getEventTransitions(eventId: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: transitions } = await supabase
     .from('event_state_transitions')
@@ -146,7 +146,7 @@ async function getEventTransitions(eventId: string) {
 }
 
 async function getEventMenusForCheck(eventId: string): Promise<string | false> {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: menus } = await supabase.from('menus').select('id').eq('event_id', eventId).limit(1)
 

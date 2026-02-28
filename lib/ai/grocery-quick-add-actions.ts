@@ -100,7 +100,7 @@ export async function getEventGroceryList(
   eventId: string
 ): Promise<{ items: ParsedGroceryItem[]; summary: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Try to load from grocery_items table
   const { data: groceryItems } = await (supabase

@@ -46,7 +46,7 @@ export type ChecklistItem = {
  */
 export async function getChefChecklist(eventId?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const items: ChecklistItem[] = []
 

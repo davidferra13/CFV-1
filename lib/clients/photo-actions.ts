@@ -38,7 +38,7 @@ export type { PhotoCategory, ClientPhoto } from './photo-constants'
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 async function hydrateSignedUrls(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   photos: Omit<ClientPhoto, 'signedUrl'>[]
 ): Promise<ClientPhoto[]> {
   if (photos.length === 0) return []
@@ -67,7 +67,7 @@ export async function uploadClientPhoto(
   formData: FormData
 ): Promise<{ success: true; photo: ClientPhoto } | { success: false; error: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify client belongs to this chef's tenant
   const { data: client } = await supabase
@@ -183,7 +183,7 @@ export async function uploadClientPhoto(
 
 export async function getClientPhotos(clientId: string): Promise<ClientPhoto[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: photos, error } = await supabase
     .from('client_photos')
@@ -209,7 +209,7 @@ export async function deleteClientPhoto(
   photoId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: photo } = await supabase
     .from('client_photos')
@@ -249,7 +249,7 @@ export async function updateClientPhotoCaption(
   caption: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: photo, error } = await supabase
     .from('client_photos')
@@ -276,7 +276,7 @@ export async function updateClientPhotoCategory(
   category: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: photo, error } = await supabase
     .from('client_photos')

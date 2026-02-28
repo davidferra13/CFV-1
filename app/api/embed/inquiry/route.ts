@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
       console.error('[embed-inquiry] Email validation failed (non-blocking):', err)
     }
 
-    const supabase = createAdminClient()
+    const supabase: any = createAdminClient()
 
     // 1. Verify chef exists
     const { data: chef, error: chefError } = await supabase

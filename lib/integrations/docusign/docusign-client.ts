@@ -37,7 +37,7 @@ function getApiBase() {
 export async function initiateDocuSignConnect(): Promise<{ redirectUrl: string }> {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const state = crypto.randomUUID()
 
@@ -105,7 +105,7 @@ export async function exchangeDocuSignCode(code: string, tenantId: string): Prom
   const defaultAccount = userInfo.accounts.find((a) => a.is_default) || userInfo.accounts[0]
   if (!defaultAccount) throw new Error('No DocuSign account found')
 
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   await supabase.from('integration_connections').upsert(
     {
@@ -133,7 +133,7 @@ export async function exchangeDocuSignCode(code: string, tenantId: string): Prom
 }
 
 async function refreshDocuSignToken(tenantId: string): Promise<string> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: conn } = await supabase
     .from('integration_connections')
@@ -210,7 +210,7 @@ export async function sendContractForSignature(
     emailBody?: string
   }
 ) {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: conn } = await supabase
     .from('integration_connections')
@@ -290,7 +290,7 @@ export async function sendContractForSignature(
 
   // Update contract record with DocuSign envelope info
   await supabase
-    .from('contracts')
+    .from('contracts' as any)
     .update({
       docusign_envelope_id: envelope.envelopeId,
       docusign_status: envelope.status,
@@ -303,7 +303,7 @@ export async function sendContractForSignature(
 }
 
 export async function getEnvelopeStatus(tenantId: string, envelopeId: string) {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: conn } = await supabase
     .from('integration_connections')
@@ -333,7 +333,7 @@ export async function getEnvelopeStatus(tenantId: string, envelopeId: string) {
 }
 
 export async function getDocuSignConnectionStatus(tenantId: string) {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data } = await supabase
     .from('integration_connections')
@@ -357,7 +357,7 @@ export async function getDocuSignConnectionStatus(tenantId: string) {
 export async function disconnectDocuSign() {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   await supabase
     .from('integration_connections')

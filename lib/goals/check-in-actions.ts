@@ -25,7 +25,7 @@ export async function logGoalCheckIn(input: {
     throw new Error(parsed.error.issues.map((i) => i.message).join(', '))
   }
 
-  const supabase = createServerClient() as any
+  const supabase: any = createServerClient() as any
 
   // Verify the goal belongs to this tenant
   const { data: goal } = await supabase
@@ -62,7 +62,7 @@ export async function logGoalCheckIn(input: {
 
 export async function getGoalCheckIns(goalId: string, limit = 5): Promise<GoalCheckIn[]> {
   const user = await requireChef()
-  const supabase = createServerClient() as any
+  const supabase: any = createServerClient() as any
 
   // Verify ownership
   const { data: goal } = await supabase

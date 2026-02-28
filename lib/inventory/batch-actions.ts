@@ -44,7 +44,7 @@ export type IngredientBatch = {
  */
 export async function getExpiryAlerts(daysAhead: number = 7): Promise<ExpiryAlert[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Compute the cutoff date: now + daysAhead days
   const cutoff = new Date()
@@ -135,7 +135,7 @@ export async function consumeFromBatch(
   quantity: number
 ): Promise<{ remainingQty: number; isDepleted: boolean }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (quantity <= 0) throw new Error('Quantity must be positive')
 
@@ -182,7 +182,7 @@ export async function consumeFromBatch(
  */
 export async function markBatchExpired(batchId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch the batch — verify ownership
   const { data: batch, error: fetchError } = await supabase
@@ -240,7 +240,7 @@ export async function markBatchExpired(batchId: string): Promise<void> {
  */
 export async function getBatchesForIngredient(ingredientId: string): Promise<IngredientBatch[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('inventory_batches' as any)

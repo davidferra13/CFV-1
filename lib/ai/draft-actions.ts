@@ -111,7 +111,7 @@ function formatDraft(subject: string, body: string): string {
 
 export async function generateThankYouDraft(clientName: string): Promise<DraftResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const client = await findClientByName(supabase, clientName, tenantId)
@@ -155,7 +155,7 @@ export async function generateThankYouDraft(clientName: string): Promise<DraftRe
 
 export async function generateReferralRequestDraft(clientName: string): Promise<DraftResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const client = await findClientByName(supabase, clientName, tenantId)
@@ -196,7 +196,7 @@ export async function generateReferralRequestDraft(clientName: string): Promise<
 
 export async function generateTestimonialRequestDraft(clientName: string): Promise<DraftResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const client = await findClientByName(supabase, clientName, tenantId)
@@ -241,7 +241,7 @@ Guests: ${lastEvent?.guest_count ?? 'N/A'}`,
 
 export async function generateQuoteCoverLetterDraft(eventIdOrName: string): Promise<DraftResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Try by ID first, then by name search
@@ -304,7 +304,7 @@ export async function generateDeclineResponseDraft(
   reason?: string
 ): Promise<DraftResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const client = await findClientByName(supabase, clientName, tenantId)
@@ -347,7 +347,7 @@ export async function generateCancellationResponseDraft(
   eventIdOrName: string
 ): Promise<DraftResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   let event = await loadEvent(supabase, eventIdOrName, tenantId)
@@ -404,7 +404,7 @@ Event status: ${(event as any).status ?? 'cancelled'}`,
 
 export async function generatePaymentReminderDraft(clientName: string): Promise<DraftResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const client = await findClientByName(supabase, clientName, tenantId)
@@ -460,7 +460,7 @@ Status: ${lastEvent?.status ?? 'N/A'}`,
 
 export async function generateReEngagementDraft(clientName: string): Promise<DraftResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const client = await findClientByName(supabase, clientName, tenantId)
@@ -509,7 +509,7 @@ export async function generateMilestoneRecognitionDraft(
   milestone?: string
 ): Promise<DraftResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const client = await findClientByName(supabase, clientName, tenantId)
@@ -568,7 +568,7 @@ Client notes: ${client.vibe_notes ?? 'none'}`,
 
 export async function generateFoodSafetyIncidentDraft(description: string): Promise<DraftResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
   const chefName = await loadChefName(supabase, tenantId)
 

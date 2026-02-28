@@ -69,7 +69,7 @@ export async function getClientRetentionRate(
 ): Promise<ClientRetentionResult> {
   const user = await requireChef()
   await requirePro('custom-reports')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const parsed = DateRangeSchema.parse({ startDate, endDate })
   const defaults = getDefaultDateRange()
@@ -135,7 +135,7 @@ export async function getRevenueBySource(
 ): Promise<RevenueBySourceResult> {
   const user = await requireChef()
   await requirePro('custom-reports')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const parsed = DateRangeSchema.parse({ startDate, endDate })
   const defaults = getDefaultDateRange()

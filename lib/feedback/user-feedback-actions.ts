@@ -11,7 +11,7 @@ export async function submitUserFeedback(input: {
   pageContext: string
 }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('user_feedback').insert({
     user_id: user.id,

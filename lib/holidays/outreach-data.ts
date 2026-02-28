@@ -11,7 +11,7 @@ import { type HolidayClientMatch, type HolidayOutreachSuggestion } from './outre
  */
 export async function getHolidayOutreachSuggestions(): Promise<HolidayOutreachSuggestion[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const upcoming = getUpcomingHolidays({ lookaheadDays: 60, minRelevance: 'medium' })
     .filter((h) => h.inOutreachWindow)

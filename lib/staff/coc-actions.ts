@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache'
 
 export async function acknowledgeCOC(assignmentId: string) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('event_staff_assignments')
@@ -22,7 +22,7 @@ export async function acknowledgeCOC(assignmentId: string) {
 
 export async function getCOCStatus(eventId: string) {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('event_staff_assignments')

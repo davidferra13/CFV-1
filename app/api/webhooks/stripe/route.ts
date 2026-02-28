@@ -181,10 +181,7 @@ export async function POST(req: Request) {
  *
  * Idempotency: Checks gift_card_purchase_intents.status — if already 'paid', returns early.
  */
-async function handleGiftCardPurchaseCompleted(
-  event: Stripe.Event,
-  supabase: ReturnType<typeof createServerClient>
-) {
+async function handleGiftCardPurchaseCompleted(event: Stripe.Event, supabase: any) {
   const session = event.data.object as Stripe.Checkout.Session
 
   // Only handle gift card purchases (ignore other checkout sessions)
@@ -206,11 +203,11 @@ async function handleGiftCardPurchaseCompleted(
   )
 
   // Idempotency: if already processed, skip
-  const { data: intent } = await supabase
+  const { data: intent } = await (supabase
     .from('gift_card_purchase_intents')
     .select('*')
     .eq('id', purchase_intent_id)
-    .single()
+    .single() as any)
 
   if (!intent) {
     console.error(
@@ -243,7 +240,7 @@ async function handleGiftCardPurchaseCompleted(
   const amountDollars = (intent.amount_cents / 100).toFixed(2)
 
   // Create the client_incentives row (the actual gift card)
-  const { data: incentive, error: incentiveError } = await supabase
+  const { data: incentive, error: incentiveError } = await (supabase
     .from('client_incentives')
     .insert({
       tenant_id,
@@ -266,28 +263,28 @@ async function handleGiftCardPurchaseCompleted(
       created_by_user_id: null,
       created_by_role: 'system',
       created_by_client_id: null,
-    })
+    } as any)
     .select('id, code, amount_cents, title')
-    .single()
+    .single() as any)
 
   if (incentiveError || !incentive) {
     console.error('[handleGiftCardPurchaseCompleted] Failed to create incentive:', incentiveError)
     // Mark as failed so we can retry / investigate
-    await supabase
+    await (supabase
       .from('gift_card_purchase_intents')
-      .update({ status: 'failed' })
-      .eq('id', purchase_intent_id)
+      .update({ status: 'failed' } as any)
+      .eq('id', purchase_intent_id) as any)
     return
   }
 
   // Mark the intent as paid and link the created incentive
-  await supabase
+  await (supabase
     .from('gift_card_purchase_intents')
     .update({
       status: 'paid',
-      created_incentive_id: incentive.id,
-    })
-    .eq('id', purchase_intent_id)
+      created_incentive_id: (incentive as any).id,
+    } as any)
+    .eq('id', purchase_intent_id) as any)
 
   console.log('[handleGiftCardPurchaseCompleted] Gift card created:', code)
 
@@ -301,7 +298,7 @@ async function handleGiftCardPurchaseCompleted(
       recipientName: intent.recipient_name,
       senderName: intent.buyer_email, // Buyer's email as sender identifier
       incentiveType: 'gift_card',
-      title: incentive.title || `Gift Card — ${chefName}`,
+      title: (incentive as any).title || `Gift Card — ${chefName}`,
       code,
       valueLabel: `$${amountDollars} gift card value`,
       expiresAt: expiresAtLabel,
@@ -364,7 +361,7 @@ async function handleGiftCardPurchaseCompleted(
       await sendGiftCardPurchasedChefEmail({
         chefEmail: chef.email,
         chefName,
-        buyerName: intent.buyer_name || null,
+        buyerName: (intent as any).buyer_name || null,
         recipientName: intent.recipient_name || null,
         amountCents: intent.amount_cents,
         code,
@@ -488,11 +485,11 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
   }
 
   // 3. Check financial summary (reuse the admin client created above)
-  const { data: financialSummary } = await supabaseAdmin
+  const { data: financialSummary } = await (supabaseAdmin
     .from('event_financial_summary')
     .select('*')
     .eq('event_id', event_id)
-    .single()
+    .single() as any)
 
   if (!financialSummary) {
     console.error('[handlePaymentSucceeded] Could not fetch financial summary')
@@ -509,7 +506,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
         stripe_event_id: event.id,
         payment_intent_id: paymentIntent.id,
         amount_cents: paymentIntent.amount,
-        payment_status: financialSummary.payment_status,
+        payment_status: (financialSummary as any).payment_status,
       },
       systemTransition: true, // Bypass permission checks
     })
@@ -579,11 +576,11 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
         .eq('id', event_id)
         .single()
 
-      const { data: clientData } = await supabaseAdmin
+      const { data: clientData } = await (supabaseAdmin
         .from('clients')
         .select('email, full_name, loyalty_tier, loyalty_points')
         .eq('id', client_id)
-        .single()
+        .single() as any)
 
       const { data: chefData } = await supabaseAdmin
         .from('chefs')
@@ -594,7 +591,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
       if (clientData?.email && eventData) {
         const { sendPaymentConfirmationEmail, sendPaymentReceivedChefEmail } =
           await import('@/lib/email/notifications')
-        const remaining = financialSummary.outstanding_balance_cents
+        const remaining = (financialSummary as any).outstanding_balance_cents
 
         // Client receipt
         await sendPaymentConfirmationEmail({
@@ -632,11 +629,11 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
     const bookingSource = paymentIntent.metadata.booking_source
     if (bookingSource === 'instant_book') {
       try {
-        const { data: eventData } = await supabaseAdmin
+        const { data: eventData } = await (supabaseAdmin
           .from('events')
           .select('occasion, event_date, guest_count, quoted_price_cents, deposit_amount_cents')
           .eq('id', event_id)
-          .single()
+          .single() as any)
 
         const { data: clientData } = await supabaseAdmin
           .from('clients')
@@ -755,7 +752,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
         event_id,
         tenant_id,
         from_status: null,
-        to_status: 'paid' as const,
+        to_status: 'paid',
         transitioned_by: null,
         reason: 'Auto-transition failed after payment',
         metadata: {
@@ -764,7 +761,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
           payment_intent_id: paymentIntent.id,
           requires_manual_review: true,
         },
-      })
+      } as any)
       console.log('[handlePaymentSucceeded] Audit trail inserted for failed transition:', event_id)
     } catch (auditError: unknown) {
       console.error('[handlePaymentSucceeded] Failed to insert audit trail:', auditError)
@@ -1350,11 +1347,11 @@ async function handleApplicationFeeRefunded(event: Stripe.Event) {
   let stripeTransferId: string | null = null
 
   if (chargeId) {
-    const { data: transferRecord } = await supabase
+    const { data: transferRecord } = await (supabase
       .from('stripe_transfers')
       .select('tenant_id, event_id, stripe_payment_intent_id, stripe_transfer_id')
       .eq('stripe_charge_id', chargeId)
-      .single()
+      .single() as any)
 
     if (transferRecord) {
       tenantId = transferRecord.tenant_id
@@ -1432,12 +1429,12 @@ async function handleCommercePaymentSucceeded(event: Stripe.Event) {
   const supabase = createServerClient({ admin: true })
 
   // Verify the sale exists and belongs to the tenant
-  const { data: sale } = await supabase
-    .from('sales')
+  const { data: sale } = await (supabase
+    .from('sales' as any)
     .select('id, client_id, event_id')
     .eq('id', sale_id)
     .eq('tenant_id', tenant_id)
-    .single()
+    .single() as any)
 
   if (!sale) {
     console.error('[handleCommercePaymentSucceeded] Sale not found or tenant mismatch:', sale_id)
@@ -1449,7 +1446,7 @@ async function handleCommercePaymentSucceeded(event: Stripe.Event) {
   const txnRef = `commerce_${paymentIntent.id}`
 
   // Insert into commerce_payments — DB trigger handles ledger entry
-  const { error: insertErr } = await supabase.from('commerce_payments').insert({
+  const { error: insertErr } = await (supabase.from('commerce_payments').insert({
     tenant_id,
     sale_id,
     event_id: (sale as any).event_id ?? null,
@@ -1467,7 +1464,7 @@ async function handleCommercePaymentSucceeded(event: Stripe.Event) {
     transaction_reference: txnRef,
     captured_at: new Date().toISOString(),
     created_by: null,
-  } as any)
+  } as any) as any)
 
   if (insertErr) {
     // Idempotency: duplicate key is fine
@@ -1483,21 +1480,21 @@ async function handleCommercePaymentSucceeded(event: Stripe.Event) {
   }
 
   // Update sale status
-  const { data: payments } = await supabase
+  const { data: payments } = await (supabase
     .from('commerce_payments')
     .select('amount_cents, status')
     .eq('sale_id', sale_id)
-    .eq('tenant_id', tenant_id)
+    .eq('tenant_id', tenant_id) as any)
 
   const totalPaid = ((payments ?? []) as any[])
     .filter((p) => ['captured', 'settled'].includes(p.status))
     .reduce((sum, p) => sum + p.amount_cents, 0)
 
-  const { data: saleData } = await supabase
-    .from('sales')
+  const { data: saleData } = await (supabase
+    .from('sales' as any)
     .select('total_cents, status')
     .eq('id', sale_id)
-    .single()
+    .single() as any)
 
   if (saleData) {
     const { computeSaleStatus } = await import('@/lib/commerce/sale-fsm')
@@ -1509,9 +1506,9 @@ async function handleCommercePaymentSucceeded(event: Stripe.Event) {
     })
 
     if (newStatus !== (saleData as any).status) {
-      await supabase
+      await (supabase as any)
         .from('sales')
-        .update({ status: newStatus } as any)
+        .update({ status: newStatus })
         .eq('id', sale_id)
         .eq('tenant_id', tenant_id)
     }
@@ -1551,7 +1548,7 @@ async function handlePayoutEvent(event: Stripe.Event) {
   // Dispatch Inngest job to map the settlement
   try {
     const { inngest } = await import('@/lib/jobs/inngest-client')
-    await inngest.send({
+    await (inngest as any).send({
       name: 'chefflow/commerce.map-settlement',
       data: {
         tenantId: chef.id,

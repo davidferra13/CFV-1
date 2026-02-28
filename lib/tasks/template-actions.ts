@@ -57,7 +57,7 @@ export type TaskTemplate = {
 export async function createTemplate(input: CreateTemplateInput) {
   const user = await requireChef()
   const validated = CreateTemplateSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('task_templates')
@@ -87,7 +87,7 @@ export async function createTemplate(input: CreateTemplateInput) {
 export async function updateTemplate(id: string, input: UpdateTemplateInput) {
   const user = await requireChef()
   const validated = UpdateTemplateSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const updatePayload: Record<string, unknown> = {}
   if (validated.name !== undefined) updatePayload.name = validated.name
@@ -118,7 +118,7 @@ export async function updateTemplate(id: string, input: UpdateTemplateInput) {
 
 export async function deleteTemplate(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('task_templates')
@@ -140,7 +140,7 @@ export async function deleteTemplate(id: string) {
 
 export async function listTemplates() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('task_templates')
@@ -167,7 +167,7 @@ export async function generateTasksFromTemplate(
   assignedTo?: string
 ) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Load the template
   const { data: template, error: loadError } = await supabase

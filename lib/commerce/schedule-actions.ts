@@ -27,7 +27,7 @@ export type CreateScheduleInput = {
  */
 export async function createPaymentSchedule(input: CreateScheduleInput) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!input.saleId && !input.eventId) {
     throw new Error('Either saleId or eventId is required')
@@ -68,7 +68,7 @@ export async function createPaymentSchedule(input: CreateScheduleInput) {
 
 export async function markInstallmentPaid(installmentId: string, paymentId?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('commerce_payment_schedules')
@@ -88,7 +88,7 @@ export async function markInstallmentPaid(installmentId: string, paymentId?: str
 
 export async function waiveInstallment(installmentId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('commerce_payment_schedules')
@@ -105,7 +105,7 @@ export async function waiveInstallment(installmentId: string) {
 
 export async function getPaymentSchedule(filters: { saleId?: string; eventId?: string }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('commerce_payment_schedules')
@@ -125,7 +125,7 @@ export async function getPaymentSchedule(filters: { saleId?: string; eventId?: s
 
 export async function getOverdueInstallments() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const today = new Date().toISOString().split('T')[0]
 

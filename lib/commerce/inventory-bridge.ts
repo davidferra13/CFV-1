@@ -45,11 +45,11 @@ async function walkSaleRecipeChain(
   tenantId: string
 ): Promise<Map<string, IngredientNeed>> {
   // Step 1: Get sale items with their product projections
-  const { data: saleItems } = await supabase
+  const { data: saleItems } = await (supabase
     .from('sale_items')
     .select('quantity, product_projection_id')
     .eq('sale_id', saleId)
-    .eq('tenant_id', tenantId)
+    .eq('tenant_id', tenantId) as any)
 
   if (!saleItems || saleItems.length === 0) return new Map()
 
@@ -58,10 +58,10 @@ async function walkSaleRecipeChain(
 
   if (ppIds.length === 0) return new Map()
 
-  const { data: products } = await supabase
+  const { data: products } = await (supabase
     .from('product_projections')
     .select('id, recipe_id')
-    .in('id', ppIds)
+    .in('id', ppIds) as any)
 
   if (!products || products.length === 0) return new Map()
 
@@ -95,10 +95,10 @@ async function walkSaleRecipeChain(
     if (batch.length === 0) break
     batch.forEach((id) => visited.add(id))
 
-    const { data: subRecipes } = await supabase
+    const { data: subRecipes } = await (supabase
       .from('recipe_sub_recipes')
       .select('parent_recipe_id, child_recipe_id, quantity')
-      .in('parent_recipe_id', batch)
+      .in('parent_recipe_id', batch) as any)
 
     if (subRecipes && subRecipes.length > 0) {
       for (const sr of subRecipes) {
@@ -120,22 +120,22 @@ async function walkSaleRecipeChain(
 
   // Step 4: Get recipe_ingredients for all collected recipes
   const allRecipeIds = Array.from(allRecipeMultipliers.keys())
-  const { data: recipeIngredients } = await supabase
+  const { data: recipeIngredients } = await (supabase
     .from('recipe_ingredients')
     .select('recipe_id, ingredient_id, quantity, unit')
-    .in('recipe_id', allRecipeIds)
+    .in('recipe_id', allRecipeIds) as any)
 
   if (!recipeIngredients || recipeIngredients.length === 0) return new Map()
 
   // Step 5: Get ingredient names
   const ingredientIds = [...new Set(recipeIngredients.map((ri: any) => ri.ingredient_id))]
-  const { data: ingredients } = await supabase
+  const { data: ingredients } = await (supabase
     .from('ingredients')
     .select('id, name')
-    .in('id', ingredientIds)
+    .in('id', ingredientIds) as any)
 
   const ingredientNameMap = new Map<string, string>()
-  for (const ing of ingredients ?? []) {
+  for (const ing of (ingredients ?? []) as any[]) {
     ingredientNameMap.set(ing.id, ing.name)
   }
 
@@ -172,7 +172,7 @@ async function walkSaleRecipeChain(
  */
 export async function previewSaleDeduction(saleId: string): Promise<SaleDeductionPreview> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const needs = await walkSaleRecipeChain(supabase, saleId, user.tenantId!)
 
@@ -183,30 +183,27 @@ export async function previewSaleDeduction(saleId: string): Promise<SaleDeductio
   // Get current stock levels
   const ingredientIds = [...new Set([...needs.values()].map((n) => n.ingredientId))]
 
-  const { data: stockData } = await supabase
+  const { data: stockData } = await (supabase
     .from('inventory_current_stock' as any)
     .select('ingredient_id, unit, current_qty')
     .eq('chef_id', user.tenantId!)
-    .in('ingredient_id', ingredientIds)
+    .in('ingredient_id', ingredientIds) as any)
 
   const stockMap = new Map<string, number>()
-  for (const s of stockData ?? []) {
-    stockMap.set(
-      `${(s as any).ingredient_id}:${(s as any).unit}`,
-      parseFloat((s as any).current_qty ?? 0)
-    )
+  for (const s of (stockData ?? []) as any[]) {
+    stockMap.set(`${s.ingredient_id}:${s.unit}`, parseFloat(s.current_qty ?? 0))
   }
 
   // Get ingredient prices
-  const { data: priceData } = await supabase
+  const { data: priceData } = await (supabase
     .from('ingredients')
     .select('id, last_price_cents, price_unit')
-    .in('id', ingredientIds)
+    .in('id', ingredientIds) as any)
 
   const priceMap = new Map<string, number>()
-  for (const p of priceData ?? []) {
-    if ((p as any).last_price_cents) {
-      priceMap.set(p.id, (p as any).last_price_cents)
+  for (const p of (priceData ?? []) as any[]) {
+    if (p.last_price_cents) {
+      priceMap.set(p.id, p.last_price_cents)
     }
   }
 
@@ -243,7 +240,7 @@ export async function previewSaleDeduction(saleId: string): Promise<SaleDeductio
  */
 export async function executeSaleDeduction(saleId: string): Promise<{ transactionIds: string[] }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const needs = await walkSaleRecipeChain(supabase, saleId, user.tenantId!)
 
@@ -251,15 +248,15 @@ export async function executeSaleDeduction(saleId: string): Promise<{ transactio
 
   // Get ingredient prices for cost tracking
   const ingredientIds = [...new Set([...needs.values()].map((n) => n.ingredientId))]
-  const { data: priceData } = await supabase
+  const { data: priceData } = await (supabase
     .from('ingredients')
     .select('id, last_price_cents')
-    .in('id', ingredientIds)
+    .in('id', ingredientIds) as any)
 
   const priceMap = new Map<string, number>()
-  for (const p of priceData ?? []) {
-    if ((p as any).last_price_cents) {
-      priceMap.set(p.id, (p as any).last_price_cents)
+  for (const p of (priceData ?? []) as any[]) {
+    if (p.last_price_cents) {
+      priceMap.set(p.id, p.last_price_cents)
     }
   }
 
@@ -277,10 +274,10 @@ export async function executeSaleDeduction(saleId: string): Promise<{ transactio
     created_by: user.id,
   }))
 
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('inventory_transactions')
     .insert(transactions as any)
-    .select('id')
+    .select('id') as any)
 
   if (error) throw new Error(`Failed to deduct inventory: ${error.message}`)
 
@@ -296,15 +293,15 @@ export async function executeSaleDeduction(saleId: string): Promise<{ transactio
  */
 export async function reverseSaleDeduction(saleId: string): Promise<{ transactionIds: string[] }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Find all deduction transactions for this sale
-  const { data: deductions, error: fetchErr } = await supabase
+  const { data: deductions, error: fetchErr } = await (supabase
     .from('inventory_transactions')
     .select('ingredient_id, ingredient_name, quantity, unit, cost_cents')
-    .eq('sale_id', saleId)
+    .eq('sale_id' as any, saleId)
     .eq('chef_id', user.tenantId!)
-    .eq('transaction_type', 'sale_deduction')
+    .eq('transaction_type', 'sale_deduction') as any)
 
   if (fetchErr) throw new Error(`Failed to fetch deductions: ${fetchErr.message}`)
   if (!deductions || deductions.length === 0) return { transactionIds: [] }
@@ -323,10 +320,10 @@ export async function reverseSaleDeduction(saleId: string): Promise<{ transactio
     created_by: user.id,
   }))
 
-  const { data, error } = await supabase
+  const { data, error } = await (supabase
     .from('inventory_transactions')
     .insert(reversals as any)
-    .select('id')
+    .select('id') as any)
 
   if (error) throw new Error(`Failed to reverse deductions: ${error.message}`)
 
@@ -342,25 +339,25 @@ export async function reverseSaleDeduction(saleId: string): Promise<{ transactio
  */
 export async function deductProductStock(saleId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get sale items with product projections that track inventory
-  const { data: saleItems } = await supabase
+  const { data: saleItems } = await (supabase
     .from('sale_items')
     .select('product_projection_id, quantity')
     .eq('sale_id', saleId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!) as any)
 
   if (!saleItems || saleItems.length === 0) return
 
   const ppIds = saleItems.map((si: any) => si.product_projection_id).filter(Boolean)
   if (ppIds.length === 0) return
 
-  const { data: products } = await supabase
+  const { data: products } = await (supabase
     .from('product_projections')
     .select('id, track_inventory, available_qty, recipe_id')
     .in('id', ppIds)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!) as any)
 
   if (!products) return
 
@@ -375,10 +372,10 @@ export async function deductProductStock(saleId: string) {
     const currentQty = (product as any).available_qty ?? 0
     const newQty = Math.max(0, currentQty - (saleItem as any).quantity)
 
-    await supabase
+    await (supabase
       .from('product_projections')
       .update({ available_qty: newQty } as any)
       .eq('id', product.id)
-      .eq('tenant_id', user.tenantId!)
+      .eq('tenant_id', user.tenantId!) as any)
   }
 }

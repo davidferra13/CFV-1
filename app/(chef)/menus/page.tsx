@@ -21,7 +21,7 @@ export default async function MenusPage() {
   > = {}
 
   if (eventIds.length > 0) {
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
     const { data: events } = await supabase
       .from('events')
       .select('id, occasion, event_date, status')

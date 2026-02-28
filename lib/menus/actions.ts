@@ -148,11 +148,7 @@ export type UpdateComponentInput = z.infer<typeof UpdateComponentSchema>
 export type { ComponentCategory, TransportCategory } from './constants'
 // COMPONENT_CATEGORIES and TRANSPORT_CATEGORIES are in lib/menus/constants.ts
 
-async function getMenuCourseCountForEventSync(
-  supabase: ReturnType<typeof createServerClient>,
-  menuId: string,
-  tenantId: string
-) {
+async function getMenuCourseCountForEventSync(supabase: any, menuId: string, tenantId: string) {
   const { data: dishRows, error: dishError } = await (supabase
     .from('dishes' as any)
     .select('course_number')
@@ -183,7 +179,7 @@ async function getMenuCourseCountForEventSync(
 export async function createMenu(input: CreateMenuInput) {
   const user = await requireChef()
   const validated = CreateMenuSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // If event_id provided, verify event belongs to tenant
   if (validated.event_id) {
@@ -288,7 +284,7 @@ export async function createMenu(input: CreateMenuInput) {
  */
 export async function getMenus({ statusFilter }: { statusFilter?: MenuStatus } = {}) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const buildQuery = (withSoftDeleteFilter: boolean) => {
     let query = supabase.from('menus').select('*').eq('tenant_id', user.tenantId!)
@@ -322,7 +318,7 @@ export async function getMenus({ statusFilter }: { statusFilter?: MenuStatus } =
  */
 export async function getMenuById(menuId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
     let query = supabase.from('menus').select('*').eq('id', menuId).eq('tenant_id', user.tenantId!)
@@ -396,7 +392,7 @@ export async function updateMenu(menuId: string, input: UpdateMenuInput) {
   const validated = UpdateMenuSchema.parse(input)
   const { expected_updated_at, idempotency_key, ...updateFields } = validated
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify menu exists and is editable
   const { data: currentMenu } = await (supabase
@@ -527,7 +523,7 @@ export async function updateMenu(menuId: string, input: UpdateMenuInput) {
  */
 export async function deleteMenu(menuId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Check menu status and event attachment
   const { data: menu } = await (supabase
@@ -572,7 +568,7 @@ export async function deleteMenu(menuId: string) {
 
 export async function restoreMenu(menuId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('menus')
@@ -603,7 +599,7 @@ export async function restoreMenu(menuId: string) {
  */
 export async function attachMenuToEvent(eventId: string, menuId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify event belongs to tenant
   const { data: event } = await supabase
@@ -669,7 +665,7 @@ export async function attachMenuToEvent(eventId: string, menuId: string) {
  */
 export async function detachMenuFromEvent(menuId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get current event_id for revalidation
   const { data: menu } = await supabase
@@ -716,7 +712,7 @@ export async function detachMenuFromEvent(menuId: string) {
  */
 export async function getEventMenus(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: menus, error } = await supabase
     .from('menus')
@@ -739,7 +735,7 @@ export async function getEventMenus(eventId: string) {
  */
 export async function getMenuEvent(menuId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: menu, error } = await supabase
     .from('menus')
@@ -778,7 +774,7 @@ const VALID_MENU_TRANSITIONS: Record<MenuStatus, MenuStatus[]> = {
  */
 export async function transitionMenu(menuId: string, toStatus: MenuStatus, reason?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch current menu
   const { data: menu } = await (supabase
@@ -880,7 +876,7 @@ export async function addDishToMenu(input: CreateDishInput) {
   const user = await requireChef()
   const validated = CreateDishSchema.parse(input)
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify menu belongs to tenant and is editable
   const { data: menu } = await supabase
@@ -938,7 +934,7 @@ export async function updateDish(dishId: string, input: UpdateDishInput) {
   const user = await requireChef()
   const validated = UpdateDishSchema.parse(input)
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: dish, error } = await supabase
     .from('dishes')
@@ -966,7 +962,7 @@ export async function updateDish(dishId: string, input: UpdateDishInput) {
  */
 export async function deleteDish(dishId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get menu_id for revalidation
   const { data: dish } = await supabase
@@ -1000,7 +996,7 @@ export async function deleteDish(dishId: string) {
  */
 export async function getAllDishes(): Promise<{ id: string; name: string; menuName: string }[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('dishes')
@@ -1031,7 +1027,7 @@ export async function addComponentToDish(input: CreateComponentInput) {
   const user = await requireChef()
   const validated = CreateComponentSchema.parse(input)
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: component, error } = await supabase
     .from('components')
@@ -1075,7 +1071,7 @@ export async function updateComponent(componentId: string, input: UpdateComponen
   const user = await requireChef()
   const validated = UpdateComponentSchema.parse(input)
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: component, error } = await supabase
     .from('components')
@@ -1102,7 +1098,7 @@ export async function updateComponent(componentId: string, input: UpdateComponen
  */
 export async function deleteComponent(componentId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('components')
@@ -1144,7 +1140,7 @@ export async function getAllComponents(filters?: {
   has_recipe?: boolean
 }): Promise<ComponentListItem[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('components')
@@ -1216,7 +1212,7 @@ export type MenuCostSummary = {
 
 export async function getMenuCostSummaries(): Promise<MenuCostSummary[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('menu_cost_summary')
@@ -1252,7 +1248,7 @@ export async function duplicateMenu(menuId: string) {
     throw new UnknownAppError('Menu not found')
   }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Create menu copy (no event attachment, draft status)
   const { data: newMenu, error: menuError } = await supabase
@@ -1367,7 +1363,7 @@ export async function cloneMenu(menuId: string) {
 
   // Ensure the clone is not marked as a template
   try {
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
     const user = await requireChef()
     await supabase
       .from('menus')
@@ -1389,7 +1385,7 @@ export async function cloneMenu(menuId: string) {
  */
 export async function saveMenuAsTemplate(menuId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('menus')
@@ -1413,7 +1409,7 @@ export async function saveMenuAsTemplate(menuId: string) {
  */
 export async function listMenuTemplates() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   try {
     const { data, error } = await supabase
@@ -1460,7 +1456,7 @@ export type PrepTimelineSlot = {
  */
 export async function getMenuPrepTimeline(menuId: string): Promise<PrepTimelineSlot[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all components for this menu with dish info
   const { data: dishes } = await supabase
@@ -1554,7 +1550,7 @@ export type MenuQuickViewData = {
  */
 export async function getMenuQuickViewData(menuId: string): Promise<MenuQuickViewData> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch dishes with component counts
   const { data: dishes } = await supabase
@@ -1644,7 +1640,7 @@ export async function getMenuQuickViewData(menuId: string): Promise<MenuQuickVie
  */
 export async function applyMenuToEvent(menuId: string, eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: menu } = await supabase
     .from('menus')
@@ -1705,7 +1701,7 @@ export type DishIndexEntry = {
  */
 export async function getDishIndex(): Promise<DishIndexEntry[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('dishes')

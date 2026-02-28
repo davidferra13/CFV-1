@@ -65,7 +65,7 @@ function pct(n: number, d: number) {
 
 export async function getCampaignEmailStats(): Promise<CampaignEmailStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: campaigns } = await supabase
     .from('marketing_campaigns')
@@ -137,7 +137,7 @@ export async function getMarketingSpendByChannel(
   endDate: string
 ): Promise<MarketingSpendByChannel[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('marketing_spend_log')
@@ -168,7 +168,7 @@ export async function getCostPerLeadByChannel(
   endDate: string
 ): Promise<CostPerLeadByChannel[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Marketing spend by channel in period
   const { data: spendData } = await supabase
@@ -235,7 +235,7 @@ export async function getCostPerLeadByChannel(
 
 export async function getReviewStats(): Promise<ReviewStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: reviews } = await supabase
     .from('client_reviews')
@@ -292,7 +292,7 @@ export async function getReviewStats(): Promise<ReviewStats> {
 
 export async function getWebsiteStats(): Promise<WebsiteStatsLatest> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('website_stats_snapshots')

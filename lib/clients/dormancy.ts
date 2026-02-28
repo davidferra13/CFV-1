@@ -18,7 +18,7 @@ export type DormantClientEntry = {
 
 export async function getDormantClients(limit = 5): Promise<DormantClientEntry[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Join clients + client_financial_summary in one query using the view
   const { data: summaries } = await supabase

@@ -56,7 +56,7 @@ export type EventPhoto = {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 async function hydrateSignedUrls(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   photos: Omit<EventPhoto, 'signedUrl'>[]
 ): Promise<EventPhoto[]> {
   if (photos.length === 0) return []
@@ -91,7 +91,7 @@ export async function uploadEventPhoto(
   formData: FormData
 ): Promise<{ success: true; photo: EventPhoto } | { success: false; error: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify the event belongs to this chef's tenant
   const { data: event } = await supabase
@@ -290,7 +290,7 @@ export async function uploadEventPhoto(
  */
 export async function getEventPhotosForChef(eventId: string): Promise<EventPhoto[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: photos, error } = await supabase
     .from('event_photos')
@@ -319,7 +319,7 @@ export async function getEventPhotosForChef(eventId: string): Promise<EventPhoto
  */
 export async function getEventPhotosForClient(eventId: string): Promise<EventPhoto[]> {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify client owns this event and get the tenant_id
   const { data: ev } = await supabase
@@ -354,7 +354,7 @@ export async function deleteEventPhoto(
   photoId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: photo } = await supabase
     .from('event_photos')
@@ -402,7 +402,7 @@ export async function updatePhotoCaption(
   caption: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: photo, error } = await supabase
     .from('event_photos')
@@ -435,7 +435,7 @@ export async function reorderEventPhotos(
   orderedPhotoIds: string[]
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify event belongs to this chef's tenant
   const { data: event } = await supabase

@@ -30,7 +30,7 @@ export type WixSubmissionDetail = {
 
 export async function getWixSubmission(submissionId: string): Promise<WixSubmissionDetail | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('wix_submissions')
@@ -55,7 +55,7 @@ export async function retryWixSubmission(submissionId: string): Promise<{
   error?: string
 }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify ownership before retrying
   const { data: submission } = await supabase

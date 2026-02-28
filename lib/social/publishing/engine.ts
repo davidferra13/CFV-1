@@ -217,7 +217,7 @@ async function markPlatformError(
 // ── Main engine run ───────────────────────────────────────────────────────────
 
 export async function runPublishingEngine(): Promise<EngineRun> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const run: EngineRun = { processed: 0, succeeded: 0, failed: 0, skipped: 0, errors: [] }
 
   // 5-minute lookahead so a post scheduled at :00 is caught by the :55 cron run

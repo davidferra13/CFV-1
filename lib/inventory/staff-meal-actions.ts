@@ -83,7 +83,7 @@ export type StaffMealFilters = z.infer<typeof StaffMealFilterSchema>
 export async function logStaffMeal(input: LogStaffMealInput): Promise<StaffMeal> {
   const user = await requireChef()
   const parsed = LogStaffMealSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Insert the staff meal header
   const { data: meal, error: mealError } = await supabase
@@ -223,7 +223,7 @@ export async function logStaffMeal(input: LogStaffMealInput): Promise<StaffMeal>
  */
 export async function getStaffMeals(filters?: StaffMealFilters): Promise<StaffMeal[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('staff_meals' as any)
@@ -292,7 +292,7 @@ export async function getStaffMealCostSummary(
   endDate: string
 ): Promise<StaffMealCostSummary> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: meals, error } = await supabase
     .from('staff_meals' as any)

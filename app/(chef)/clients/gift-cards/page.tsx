@@ -19,7 +19,7 @@ import { GiftCardsClientShell } from './gift-cards-client-shell'
 export default async function GiftCardsPage() {
   await requireChef()
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const user = await requireChef()
 
   // Fetch clients for the "for client" dropdown in the issue form

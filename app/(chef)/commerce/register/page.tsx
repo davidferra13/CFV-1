@@ -21,7 +21,7 @@ export default async function RegisterPage() {
   // Fetch chef's zip for default tax calculation
   let defaultTaxZip: string | undefined
   try {
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
     const { data: chef } = await supabase
       .from('chefs')
       .select('zip')
@@ -34,9 +34,15 @@ export default async function RegisterPage() {
     // non-blocking — POS works without tax zip
   }
 
+  // Cast products: product_projections.modifiers is Json|null, PosRegister expects any[]
+  const products = productsData.products.map((p) => ({
+    ...p,
+    modifiers: Array.isArray(p.modifiers) ? p.modifiers : [],
+  }))
+
   return (
     <PosRegister
-      products={productsData.products}
+      products={products}
       registerSession={registerSession}
       defaultTaxZip={defaultTaxZip}
     />

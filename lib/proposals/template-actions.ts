@@ -38,7 +38,7 @@ export async function createProposalTemplate(
 ): Promise<ProposalTemplate> {
   const user = await requireChef()
   const parsed = CreateTemplateSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('proposal_templates')
@@ -63,7 +63,7 @@ export async function createProposalTemplate(
 
 export async function listProposalTemplates(): Promise<ProposalTemplate[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('proposal_templates')
@@ -78,7 +78,7 @@ export async function listProposalTemplates(): Promise<ProposalTemplate[]> {
 
 export async function getProposalTemplate(id: string): Promise<ProposalTemplate> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('proposal_templates')
@@ -94,7 +94,7 @@ export async function getProposalTemplate(id: string): Promise<ProposalTemplate>
 
 export async function deleteProposalTemplate(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('proposal_templates')

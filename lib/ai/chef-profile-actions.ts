@@ -29,7 +29,7 @@ interface CulinaryProfileRow {
  */
 export async function getCulinaryProfile(): Promise<CulinaryProfileAnswer[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await (supabase
     .from('chef_culinary_profiles' as any)
@@ -57,7 +57,7 @@ export async function saveCulinaryProfileAnswer(
   answer: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Validate question key
   const valid = CULINARY_QUESTIONS.some((q) => q.key === questionKey)
@@ -89,7 +89,7 @@ export async function saveCulinaryProfileBulk(
   answers: Record<string, string>
 ): Promise<{ success: boolean; saved: number; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const rows = Object.entries(answers)
     .filter(([key]) => CULINARY_QUESTIONS.some((q) => q.key === key))
@@ -121,7 +121,7 @@ export async function saveCulinaryProfileBulk(
  * Returns null if no answers exist yet.
  */
 export async function getCulinaryProfileForPrompt(chefId: string): Promise<string | null> {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await (supabase
     .from('chef_culinary_profiles' as any)

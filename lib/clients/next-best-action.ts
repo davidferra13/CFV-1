@@ -40,7 +40,7 @@ export type NextBestAction = {
  */
 export async function getNextBestActions(limit = 10): Promise<NextBestAction[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch health scores for all clients
   const { scores } = await getClientHealthScores()

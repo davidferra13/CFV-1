@@ -26,7 +26,7 @@ export type TierStatus = {
  * so multiple components/actions in the same render don't re-query.
  */
 export const getTierForChef = cache(async (chefId: string): Promise<TierStatus> => {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const { data } = await supabase
     .from('chefs')
     .select('subscription_status, trial_ends_at')

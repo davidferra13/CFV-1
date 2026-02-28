@@ -16,12 +16,12 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
   const supabase = createServerClient({ admin: true })
 
   // Look up chef by feed token
-  const { data: chef } = await supabase
+  const { data: chef } = await (supabase
     .from('chefs')
     .select('id, business_name')
-    .eq('ical_feed_token', token)
-    .eq('ical_feed_enabled', true)
-    .single()
+    .eq('ical_feed_token' as any, token)
+    .eq('ical_feed_enabled' as any, true)
+    .single() as any)
 
   if (!chef) {
     return NextResponse.json({ error: 'Feed not found or disabled' }, { status: 404 })
@@ -30,7 +30,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
   // Fetch events — include upcoming and recent past (30 days back)
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
 
-  const { data: events } = await supabase
+  const { data: events } = await (supabase
     .from('events')
     .select('id, occasion, event_date, start_time, end_time, status, location, guest_count, notes')
     .eq('tenant_id', chef.id)
@@ -45,7 +45,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
       'completed',
     ])
     .order('event_date', { ascending: true })
-    .limit(500)
+    .limit(500) as any)
 
   const calName = chef.business_name || 'ChefFlow'
   const icsEvents = (events || []).map((event) => formatIcsEvent(event, chef.id))

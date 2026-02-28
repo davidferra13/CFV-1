@@ -78,7 +78,7 @@ function buildFunnel(
 
 export async function getStageConversionData(): Promise<StageConversionData> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [inquiriesRes, eventsRes] = await Promise.all([
     // Count per status for ALL inquiries (including terminal states)

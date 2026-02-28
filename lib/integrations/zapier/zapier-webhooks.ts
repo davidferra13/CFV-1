@@ -17,7 +17,7 @@ export async function createWebhookSubscription(input: {
 }) {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Validate URL
   try {
@@ -55,7 +55,7 @@ export async function createWebhookSubscription(input: {
 export async function listWebhookSubscriptions() {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data, error } = await supabase
     .from('zapier_webhook_subscriptions')
@@ -71,7 +71,7 @@ export async function listWebhookSubscriptions() {
 export async function deleteWebhookSubscription(subscriptionId: string) {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { error } = await supabase
     .from('zapier_webhook_subscriptions')
@@ -87,7 +87,7 @@ export async function deleteWebhookSubscription(subscriptionId: string) {
 export async function getRecentDeliveries(subscriptionId: string, limit = 20) {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data, error } = await supabase
     .from('zapier_webhook_deliveries')
@@ -109,7 +109,7 @@ export async function dispatchWebhookEvent(
   eventType: ZapierEventType,
   payload: Record<string, unknown>
 ) {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   // Find all active subscriptions for this tenant and event type
   const { data: subs } = await supabase
@@ -189,7 +189,7 @@ export async function dispatchWebhookEvent(
 export async function testWebhookSubscription(subscriptionId: string) {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data: sub } = await supabase
     .from('zapier_webhook_subscriptions')

@@ -403,7 +403,7 @@ async function buildRevenueGoalSnapshotForTenant(
 
 export async function getRevenueGoalSnapshot(now = new Date()): Promise<RevenueGoalSnapshot> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const prefs = await getPreferencesForTenant(supabase as unknown as SupabaseClient, user.tenantId!)
   return buildRevenueGoalSnapshotForTenant(
     supabase as unknown as SupabaseClient,

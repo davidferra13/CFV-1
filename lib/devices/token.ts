@@ -49,7 +49,7 @@ export async function validateDeviceToken(bearerToken: string): Promise<{
   if (!bearerToken) return null
 
   const tokenHash = hashToken(bearerToken)
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data, error } = await supabase
     .from('devices')
@@ -100,7 +100,7 @@ export async function validateStaffPin(
   if (!pin || pin.length < 4 || pin.length > 6) return null
 
   const pinHash = hashToken(pin)
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data, error } = await supabase
     .from('staff_members')

@@ -12,7 +12,7 @@ export async function bulkUpdateIngredientPrices(
   updates: Array<{ ingredientId: string; pricePerUnitCents: number }>
 ): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (updates.length === 0) return
 

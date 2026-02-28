@@ -6,7 +6,7 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 import { getArchetype, ARCHETYPE_IDS } from './presets'
 import type { ArchetypeId } from './presets'
 
-function fromChefPreferences(supabase: ReturnType<typeof createServerClient>): any {
+function fromChefPreferences(supabase: any): any {
   return (supabase as any).from('chef_preferences')
 }
 
@@ -23,7 +23,7 @@ export async function selectArchetype(archetypeId: ArchetypeId) {
   if (!archetype) throw new Error(`Archetype not found: ${archetypeId}`)
 
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const payload = {
     archetype: archetypeId,
@@ -78,7 +78,7 @@ export async function selectArchetype(archetypeId: ArchetypeId) {
  */
 export async function getChefArchetype(): Promise<ArchetypeId | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await fromChefPreferences(supabase)
     .select('archetype')
@@ -98,7 +98,7 @@ export async function getChefArchetype(): Promise<ArchetypeId | null> {
  */
 export async function saveCustomNavDefault() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Read current nav hrefs and modules
   const { data: prefs } = await fromChefPreferences(supabase)
@@ -131,7 +131,7 @@ export async function saveCustomNavDefault() {
  */
 export async function restoreCustomNavDefault() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: prefs } = await fromChefPreferences(supabase)
     .select('saved_custom_nav_hrefs')
@@ -165,7 +165,7 @@ export async function restoreCustomNavDefault() {
  */
 export async function hasCustomNavDefault(): Promise<boolean> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await fromChefPreferences(supabase)
     .select('saved_custom_nav_hrefs')

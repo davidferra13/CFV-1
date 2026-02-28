@@ -56,7 +56,7 @@ export type ExecutionSheetData = {
 /** Fetch all data needed for the execution sheet */
 export async function fetchExecutionSheetData(eventId: string): Promise<ExecutionSheetData | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event with extended client data
   const { data: event } = await supabase

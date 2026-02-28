@@ -60,7 +60,7 @@ export async function createFollowupRule(
 ): Promise<FollowupRule> {
   const user = await requireChef()
   const parsed = CreateFollowupRuleSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('followup_rules')
@@ -83,7 +83,7 @@ export async function createFollowupRule(
 
 export async function listFollowupRules(): Promise<FollowupRule[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('followup_rules')
@@ -99,7 +99,7 @@ export async function listFollowupRules(): Promise<FollowupRule[]> {
 
 export async function toggleFollowupRule(id: string, isActive: boolean): Promise<FollowupRule> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('followup_rules')
@@ -124,7 +124,7 @@ export async function toggleFollowupRule(id: string, isActive: boolean): Promise
  */
 export async function processFollowupRules(): Promise<PendingFollowup[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch all active rules
   const { data: rules, error: rulesError } = await supabase
@@ -209,7 +209,7 @@ export async function processFollowupRules(): Promise<PendingFollowup[]> {
   // --- booking_confirmed: events that transitioned to 'confirmed' ---
   if (rulesByTrigger['booking_confirmed']) {
     const { data: transitions } = await supabase
-      .from('event_transitions')
+      .from('event_transitions' as any)
       .select('event_id, transitioned_at')
       .eq('to_status', 'confirmed')
 

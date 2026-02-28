@@ -23,7 +23,7 @@ export interface PendingFollowUp {
  */
 export async function getStaleInquiries(staleDays: number = 3): Promise<PendingFollowUp[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Inquiries in "awaiting_client" or "quoted" where the ball is in client's court
   const { data: inquiries } = await supabase

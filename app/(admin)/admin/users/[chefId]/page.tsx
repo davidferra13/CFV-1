@@ -35,7 +35,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
     redirect('/unauthorized')
   }
 
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data: chef } = await supabase
     .from('chefs')

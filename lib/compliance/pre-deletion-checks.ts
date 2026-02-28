@@ -13,7 +13,7 @@ export type DeletionBlocker = {
  * before account deletion can proceed.
  */
 export async function runPreDeletionChecks(chefId: string): Promise<DeletionBlocker[]> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
   const blockers: DeletionBlocker[] = []
 
   // 1. Check for active events (not completed or cancelled)

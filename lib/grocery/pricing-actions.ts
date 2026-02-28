@@ -65,7 +65,7 @@ type RawIngredient = {
 }
 
 async function getEventIngredients(eventId: string, tenantId: string): Promise<RawIngredient[]> {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: menus } = await supabase
     .from('menus')
@@ -355,7 +355,7 @@ function usdaUnitMatches(usdaUnit: string, recipeUnit: string): boolean {
 
 export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuoteResult | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Return cached quote if < 24 hours old
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
@@ -541,7 +541,7 @@ export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuot
 
 export async function getLatestGroceryQuote(eventId: string): Promise<GroceryQuoteResult | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('grocery_price_quotes')
@@ -567,7 +567,7 @@ function sumNullable(values: (number | null)[]): number | null {
 async function getEventBudgetContext(
   eventId: string,
   tenantId: string,
-  supabase: ReturnType<typeof createServerClient>
+  supabase: any
 ): Promise<{ budgetCeilingCents: number | null; quotedPriceCents: number | null }> {
   const [{ data: event }, { data: prefs }] = await Promise.all([
     supabase.from('events').select('quoted_price_cents').eq('id', eventId).single(),
@@ -598,7 +598,7 @@ export async function logActualGroceryCost(
   actualCostCents: number
 ): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Find the most recent complete quote for this event
   const { data: quote } = await supabase
@@ -636,7 +636,7 @@ export async function logActualGroceryCost(
 async function buildResultFromRow(
   row: any,
   eventId: string,
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   isFromCache: boolean
 ): Promise<GroceryQuoteResult> {

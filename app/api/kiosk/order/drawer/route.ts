@@ -40,12 +40,12 @@ export async function GET(request: Request) {
         registerSessionId: registerSession.id,
       }),
       supabase
-        .from('cash_drawer_movements')
+        .from('cash_drawer_movements' as any)
         .select('*')
         .eq('tenant_id', device.tenantId)
         .eq('register_session_id', registerSession.id)
         .order('created_at', { ascending: false })
-        .limit(60),
+        .limit(60) as any,
     ])
 
     return NextResponse.json({
@@ -101,7 +101,7 @@ export async function POST(request: Request) {
           ? Math.abs(rawAmount)
           : rawAmount
 
-    const { error } = await supabase.from('cash_drawer_movements').insert({
+    const { error } = await (supabase as any).from('cash_drawer_movements').insert({
       tenant_id: device.tenantId,
       register_session_id: registerSession.id,
       movement_type: parsed.action,
@@ -124,7 +124,7 @@ export async function POST(request: Request) {
     }
 
     try {
-      await supabase.from('device_events').insert({
+      await (supabase as any).from('device_events').insert({
         device_id: device.deviceId,
         tenant_id: device.tenantId,
         staff_member_id: (session as any)?.staff_member_id ?? null,

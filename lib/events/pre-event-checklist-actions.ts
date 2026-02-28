@@ -11,7 +11,7 @@ import { revalidatePath } from 'next/cache'
  */
 export async function confirmPreEventChecklist(eventId: string) {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify ownership and status
   const { data: event } = await supabase
@@ -49,7 +49,7 @@ export async function confirmPreEventChecklist(eventId: string) {
  */
 export async function updateClientJourneyNote(eventId: string, note: string) {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('events')
@@ -69,7 +69,7 @@ export async function updateClientJourneyNote(eventId: string, note: string) {
  */
 export async function getPreEventChecklistData(eventId: string) {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [{ data: event }, { data: client }] = await Promise.all([
     supabase

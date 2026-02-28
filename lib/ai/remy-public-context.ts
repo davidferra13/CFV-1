@@ -21,7 +21,7 @@ export interface RemyPublicContext {
  * Uses admin client since there's no authenticated user.
  */
 export async function loadRemyPublicContext(tenantId: string): Promise<RemyPublicContext> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Load chef public profile
   const { data: chef } = await supabase

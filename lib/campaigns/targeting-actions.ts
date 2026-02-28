@@ -40,7 +40,7 @@ async function baseClients(chefId: string, supabase: any) {
 /** Clients who have booked this exact occasion type before */
 export async function getClientsByOccasion(occasion: string): Promise<TargetClient[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
@@ -72,7 +72,7 @@ export async function getClientsByOccasion(occasion: string): Promise<TargetClie
 /** Clients who haven't booked in N+ days */
 export async function getDormantClients(dayThreshold = 90): Promise<TargetClient[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const cutoff = subDays(new Date(), dayThreshold).toISOString().slice(0, 10)
 
@@ -98,7 +98,7 @@ export async function getDormantClients(dayThreshold = 90): Promise<TargetClient
 /** VIP / high-tier clients */
 export async function getVIPClients(): Promise<TargetClient[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await baseClients(chef.entityId, supabase).in('loyalty_tier', [
     'vip',
@@ -117,7 +117,7 @@ export async function getVIPClients(): Promise<TargetClient[]> {
 /** All active/subscribed clients */
 export async function getAllClients(): Promise<TargetClient[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await baseClients(chef.entityId, supabase).limit(200)
   return (data ?? []).map((c: any) => ({
@@ -131,7 +131,7 @@ export async function getAllClients(): Promise<TargetClient[]> {
 /** Clients who booked events in a given calendar month across any year */
 export async function getSeasonalClients(month: number): Promise<TargetClient[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch all events for this chef (limited), then filter by month in JS
   const { data: events } = await supabase
@@ -167,7 +167,7 @@ export async function getSeasonalClients(month: number): Promise<TargetClient[]>
 /** Search clients by name or email for handpick mode */
 export async function searchClientsForCampaign(query: string): Promise<TargetClient[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const q = query.toLowerCase().trim()
   if (!q) return []
@@ -197,7 +197,7 @@ export async function searchClientsForCampaign(query: string): Promise<TargetCli
 
 export async function getOpenDateSuggestions(): Promise<OpenDateSlot[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const today = new Date()
   const endDate = addDays(today, 90)

@@ -47,7 +47,7 @@ export type UpsertRulesInput = z.infer<typeof UpsertRulesSchema>
 
 export async function getSchedulingRules(): Promise<SchedulingRules | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // cast as any — table not in generated types until migration is pushed
   const { data } = await supabase
@@ -66,7 +66,7 @@ export async function upsertSchedulingRules(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const validated = UpsertRulesSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // cast as any — table not in generated types until migration is pushed
   const { error } = await supabase.from('chef_scheduling_rules').upsert(
@@ -103,7 +103,7 @@ export async function validateDateAgainstRules(
   excludeEventId?: string
 ): Promise<DateRuleValidation> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const blockers: string[] = []

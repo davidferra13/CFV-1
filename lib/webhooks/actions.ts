@@ -10,7 +10,7 @@ export async function createWebhookEndpoint(input: {
   events: string[]
 }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const secret = randomBytes(32).toString('hex')
   const { error } = await supabase.from('webhook_endpoints' as any).insert({
     tenant_id: user.entityId,
@@ -25,7 +25,7 @@ export async function createWebhookEndpoint(input: {
 
 export async function deleteWebhookEndpoint(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   await supabase
     .from('webhook_endpoints' as any)
     .delete()

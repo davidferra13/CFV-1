@@ -40,7 +40,7 @@ export async function getProfitAndLossReport(
 ): Promise<ProfitAndLossReportData> {
   const user = await requireChef()
   const parsed = DateRangeSchema.parse({ startDate, endDate })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [
     ledgerResult,

@@ -24,7 +24,7 @@ const ScriptSchema = z.object({
 export async function getCallScripts(): Promise<CallScript[]> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('prospect_call_scripts')
@@ -43,7 +43,7 @@ export async function getCallScripts(): Promise<CallScript[]> {
 export async function getCallScript(id: string): Promise<CallScript | null> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('prospect_call_scripts')
@@ -59,7 +59,7 @@ export async function getCallScript(id: string): Promise<CallScript | null> {
 export async function getScriptForCategory(category: string): Promise<CallScript | null> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Try exact category match first
   const { data: exact } = await supabase
@@ -88,7 +88,7 @@ export async function createCallScript(input: z.infer<typeof ScriptSchema>) {
   await requireAdmin()
   const user = await requireChef()
   const validated = ScriptSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // If setting as default, unset any existing default
   if (validated.is_default) {
@@ -121,7 +121,7 @@ export async function updateCallScript(id: string, input: Partial<z.infer<typeof
   await requireAdmin()
   const user = await requireChef()
   const validated = ScriptSchema.partial().parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // If setting as default, unset any existing default
   if (validated.is_default) {
@@ -153,7 +153,7 @@ export async function updateCallScript(id: string, input: Partial<z.infer<typeof
 export async function deleteCallScript(id: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('prospect_call_scripts')

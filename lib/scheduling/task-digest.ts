@@ -90,7 +90,7 @@ const PHASE_LABELS: Record<string, string> = {
  */
 export async function getDOPTaskDigest(): Promise<DOPTaskDigest> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Events from 7 days ago to any future date, excluding cancelled
   const sevenDaysAgo = new Date()

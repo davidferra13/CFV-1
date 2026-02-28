@@ -44,7 +44,7 @@ const getClient = () => {
 
 export async function getMenuNutritionalSummary(eventId: string): Promise<MenuNutritionalSummary> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [eventResult, menuResult] = await Promise.all([
     supabase
@@ -54,7 +54,7 @@ export async function getMenuNutritionalSummary(eventId: string): Promise<MenuNu
       .eq('tenant_id', user.tenantId!)
       .single(),
     supabase
-      .from('event_menu_components')
+      .from('event_menu_components' as any)
       .select(
         `
         name, course_type, description, allergen_tags,

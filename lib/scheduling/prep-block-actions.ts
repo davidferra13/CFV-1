@@ -89,7 +89,7 @@ async function fetchPrepBlocks(
   options?: { eventId?: string; dateStart?: string; dateEnd?: string }
 ): Promise<PrepBlock[]> {
   let query = supabase
-    .from('event_prep_blocks')
+    .from('event_prep_blocks' as any)
     .select('*')
     .eq('chef_id', chefId)
     .order('block_date', { ascending: true })
@@ -145,7 +145,7 @@ function getWeekStartForWeekNumber(year: number, weekNum: number): Date {
  */
 export async function getEventPrepBlocks(eventId: string): Promise<PrepBlock[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   return fetchPrepBlocks(supabase, user.tenantId!, { eventId })
 }
 
@@ -155,7 +155,7 @@ export async function getEventPrepBlocks(eventId: string): Promise<PrepBlock[]> 
  */
 export async function getWeekPrepBlocks(weekOffset = 0): Promise<PrepBlock[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { start, end } = getWeekBounds(weekOffset)
   return fetchPrepBlocks(supabase, user.tenantId!, { dateStart: start, dateEnd: end })
 }
@@ -166,7 +166,7 @@ export async function getWeekPrepBlocks(weekOffset = 0): Promise<PrepBlock[]> {
  */
 export async function getYearSummary(year: number): Promise<YearSummary> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const yearStart = `${year}-01-01`
@@ -183,7 +183,7 @@ export async function getYearSummary(year: number): Promise<YearSummary> {
       .lte('event_date', yearEnd)
       .order('event_date', { ascending: true }),
     supabase
-      .from('event_prep_blocks')
+      .from('event_prep_blocks' as any)
       .select('*')
       .eq('chef_id', tenantId)
       .gte('block_date', yearStart)
@@ -236,7 +236,7 @@ export async function getYearSummary(year: number): Promise<YearSummary> {
  */
 export async function getSchedulingGaps(): Promise<SchedulingGap[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 
   const [events, blocks] = await Promise.all([
@@ -258,10 +258,10 @@ export async function createPrepBlock(
   input: CreatePrepBlockInput
 ): Promise<{ success: boolean; block?: PrepBlock; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
-    .from('event_prep_blocks')
+    .from('event_prep_blocks' as any)
     .insert({
       chef_id: user.tenantId!,
       event_id: input.event_id ?? null,
@@ -300,7 +300,7 @@ export async function bulkCreatePrepBlocks(
   if (blocks.length === 0) return { success: true, count: 0 }
 
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const rows = blocks.map((input) => ({
     chef_id: user.tenantId!,
@@ -317,7 +317,10 @@ export async function bulkCreatePrepBlocks(
     is_system_generated: input.is_system_generated ?? false,
   }))
 
-  const { data, error } = await supabase.from('event_prep_blocks').insert(rows).select()
+  const { data, error } = await supabase
+    .from('event_prep_blocks' as any)
+    .insert(rows)
+    .select()
 
   if (error) return { success: false, error: error.message }
 
@@ -341,10 +344,10 @@ export async function updatePrepBlock(
   updates: UpdatePrepBlockInput
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
-    .from('event_prep_blocks')
+    .from('event_prep_blocks' as any)
     .update({
       ...(updates.block_date !== undefined && { block_date: updates.block_date }),
       ...(updates.start_time !== undefined && { start_time: updates.start_time }),
@@ -378,10 +381,10 @@ export async function updatePrepBlock(
  */
 export async function deletePrepBlock(id: string): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
-    .from('event_prep_blocks')
+    .from('event_prep_blocks' as any)
     .delete()
     .eq('id', id)
     .eq('chef_id', user.tenantId!)
@@ -400,10 +403,10 @@ export async function deletePrepBlock(id: string): Promise<{ success: boolean; e
  */
 export async function completePrepBlock(id: string): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
-    .from('event_prep_blocks')
+    .from('event_prep_blocks' as any)
     .update({
       is_completed: true,
       completed_at: new Date().toISOString(),
@@ -427,10 +430,10 @@ export async function uncompletePrepBlock(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
-    .from('event_prep_blocks')
+    .from('event_prep_blocks' as any)
     .update({ is_completed: false, completed_at: null })
     .eq('id', id)
     .eq('chef_id', user.tenantId!)
@@ -461,7 +464,7 @@ export async function autoPlacePrepBlocks(eventId: string): Promise<{
 }> {
   try {
     const user = await requireChef()
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
     const tenantId = user.tenantId!
 
     // Check if blocks already exist
@@ -522,7 +525,7 @@ export async function autoSuggestEventBlocks(eventId: string): Promise<{
 }> {
   try {
     const user = await requireChef()
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
     const tenantId = user.tenantId!
 
     // Fetch the event

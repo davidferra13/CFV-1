@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: 'Beta Signups - Admin' }
 export default async function AdminBetaPage() {
   await requireAdmin()
 
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const { data: rows, error } = await supabase
     .from('beta_signups')
     .select('*')

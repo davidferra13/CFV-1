@@ -119,7 +119,7 @@ export function PaymentReminders({ duePayments }: { duePayments: DueRecurringPay
               </div>
               <Button
                 size="sm"
-                variant="outline"
+                variant="secondary"
                 disabled={isPending}
                 onClick={() => sendReminder(payment)}
               >

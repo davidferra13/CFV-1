@@ -90,7 +90,7 @@ export interface PayrollW2Summary {
 
 export async function listEmployees(includeTerminated = false): Promise<Employee[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase.from('employees').select('*').eq('chef_id', user.entityId).order('name')
 
@@ -121,7 +121,7 @@ export async function createEmployee(input: {
   staffMemberId?: string | null
 }): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase.from('employees').insert({
     chef_id: user.entityId,
@@ -164,7 +164,7 @@ export async function updateEmployee(
   }>
 ): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (input.name !== undefined) patch.name = input.name
@@ -188,7 +188,7 @@ export async function updateEmployee(
 
 export async function terminateEmployee(id: string, terminationDate: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase
     .from('employees')
@@ -218,7 +218,7 @@ export async function recordPayroll(input: {
   notes?: string | null
 }): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const regularPayCents = Math.round(input.regularHours * input.hourlyRateCents)
   const overtimePayCents = Math.round(input.overtimeHours * input.overtimeRateCents)
@@ -262,7 +262,7 @@ export async function getPayrollRecords(filters?: {
   year?: number
 }): Promise<PayrollRecord[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('payroll_records')
@@ -289,7 +289,7 @@ export async function compute941Summary(
   quarter: number
 ): Promise<Payroll941Summary> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Quarter date ranges
   const quarterRanges: Record<number, [string, string]> = {
@@ -347,7 +347,7 @@ export async function compute941Summary(
 export async function save941Summary(taxYear: number, quarter: number): Promise<void> {
   const summary = await compute941Summary(taxYear, quarter)
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase.from('payroll_941_summaries').upsert(
     {
@@ -374,7 +374,7 @@ export async function mark941Filed(input: {
   notes: string | null
 }): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase
     .from('payroll_941_summaries')
@@ -392,7 +392,7 @@ export async function mark941Filed(input: {
 
 export async function get941Summaries(taxYear: number): Promise<Payroll941Summary[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('payroll_941_summaries')
@@ -408,7 +408,7 @@ export async function get941Summaries(taxYear: number): Promise<Payroll941Summar
 
 export async function generateW2Summaries(taxYear: number): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: employees } = await supabase
     .from('employees')
@@ -457,7 +457,7 @@ export async function generateW2Summaries(taxYear: number): Promise<void> {
 
 export async function getW2Summaries(taxYear: number): Promise<PayrollW2Summary[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('payroll_w2_summaries')

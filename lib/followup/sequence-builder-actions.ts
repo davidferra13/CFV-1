@@ -56,7 +56,7 @@ const BuildBirthdaySchema = z.object({
 export async function buildPostBookingSequence(eventId: string): Promise<AutomatedSequence> {
   const user = await requireChef()
   BuildPostBookingSchema.parse({ eventId })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch the event to get event_date for the final-details step
   const { data: event, error: eventError } = await supabase
@@ -141,7 +141,7 @@ export async function buildPostBookingSequence(eventId: string): Promise<Automat
 export async function buildReEngagementSequence(clientId: string): Promise<AutomatedSequence> {
   const user = await requireChef()
   BuildReEngagementSchema.parse({ clientId })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify the client belongs to this chef
   const { data: client, error: clientError } = await supabase
@@ -224,7 +224,7 @@ export async function buildBirthdaySequence(
 ): Promise<AutomatedSequence> {
   const user = await requireChef()
   BuildBirthdaySchema.parse({ clientId, birthdayDate })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify the client belongs to this chef
   const { data: client, error: clientError } = await supabase

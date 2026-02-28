@@ -48,7 +48,7 @@ export type BookingSettings = {
 
 export async function getBookingSettings(): Promise<BookingSettings> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('chefs')
@@ -82,7 +82,7 @@ export async function upsertBookingSettings(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const validated = BookingSettingsSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Validation: instant-book requires base price and Stripe Connect
   if (validated.booking_model === 'instant_book') {
@@ -144,7 +144,7 @@ export type PublicBookingConfig = {
 export async function getPublicBookingConfig(
   chefSlug: string
 ): Promise<PublicBookingConfig | null> {
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data } = await supabase
     .from('chefs')

@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}))
     const { session_id, reason } = body
 
-    const supabase = createAdminClient()
+    const supabase: any = createAdminClient()
     const now = new Date().toISOString()
 
     if (session_id) {

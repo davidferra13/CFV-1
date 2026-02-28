@@ -45,7 +45,7 @@ export type UpdateClientProfileInput = z.infer<typeof UpdateClientProfileSchema>
  */
 export async function getMyProfile() {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: profile, error } = await supabase
     .from('clients')
@@ -77,7 +77,7 @@ export async function getMyProfile() {
 export async function updateMyProfile(input: UpdateClientProfileInput) {
   const user = await requireClient()
   const validated = UpdateClientProfileSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Convert empty strings to null for optional text fields
   const cleanedData = {
@@ -161,7 +161,7 @@ export async function updateMyProfile(input: UpdateClientProfileInput) {
  */
 export async function getMyFunQA(): Promise<FunQAAnswers> {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('clients')
@@ -182,7 +182,7 @@ export async function getMyFunQA(): Promise<FunQAAnswers> {
  */
 export async function updateMyFunQA(answers: FunQAAnswers) {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Strip blank strings so the object stays clean
   const cleaned: FunQAAnswers = {}
@@ -209,7 +209,7 @@ export async function updateMyFunQA(answers: FunQAAnswers) {
  */
 export async function getClientFunQA(clientId: string): Promise<FunQAAnswers> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('clients')

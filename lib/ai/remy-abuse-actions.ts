@@ -30,7 +30,7 @@ interface LogAbuseParams {
 export async function logRemyAbuse(params: LogAbuseParams): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get auth user ID
   const {
@@ -90,7 +90,7 @@ export async function isRemyBlocked(): Promise<BlockStatus> {
 
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await (supabase as any)
     .from('chefs')
@@ -141,7 +141,7 @@ export async function getRemyAbuseLog(options?: {
 }): Promise<AbuseLogEntry[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = (supabase as any)
     .from('remy_abuse_log')

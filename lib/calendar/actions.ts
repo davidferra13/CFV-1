@@ -72,7 +72,7 @@ export async function getUnifiedCalendar(
   endDate: string
 ): Promise<UnifiedCalendarItem[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const chefId = user.tenantId!
   const items: UnifiedCalendarItem[] = []
 
@@ -97,11 +97,11 @@ export async function getUnifiedCalendar(
 
     // 2. Prep blocks
     supabase
-      .from('event_prep_blocks')
+      .from('event_prep_blocks' as any)
       .select('id, block_date, start_time, end_time, block_type, title, is_completed, event_id')
       .eq('chef_id', chefId)
       .gte('block_date', startDate)
-      .lte('block_date', endDate),
+      .lte('block_date', endDate) as any,
 
     // 3. Scheduled calls
     supabase
@@ -148,7 +148,7 @@ export async function getUnifiedCalendar(
       .not('preferred_date', 'is', null)
       .gte('preferred_date', startDate)
       .lte('preferred_date', endDate)
-      .in('status', ['new', 'contacted', 'menu_drafting', 'sent_to_client']),
+      .in('status', ['new', 'contacted', 'menu_drafting', 'sent_to_client']) as any,
   ])
 
   // -- 1. Events --

@@ -13,7 +13,7 @@ export interface ReferralNode {
 
 export async function getClientReferralTree(clientId: string): Promise<ReferralNode> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: clientRaw } = await supabase
     .from('clients')

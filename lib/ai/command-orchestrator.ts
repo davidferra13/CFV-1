@@ -82,7 +82,7 @@ async function executeCalendarAvailability(inputs: Record<string, unknown>) {
 }
 
 async function executeEventListUpcoming(tenantId: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { data } = await supabase
     .from('events')
     .select('id, occasion, event_date, status, client:clients(full_name)')
@@ -103,7 +103,7 @@ async function executeEventListUpcoming(tenantId: string) {
 }
 
 async function executeFinanceSummary(tenantId: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
@@ -199,7 +199,7 @@ async function executeClientDetails(inputs: Record<string, unknown>) {
 
 async function executeEventDetails(inputs: Record<string, unknown>, tenantId: string) {
   const eventName = String(inputs.eventName ?? '')
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Search events by occasion
   const { data } = await supabase
@@ -236,7 +236,7 @@ async function executeEventListByStatus(inputs: Record<string, unknown>, tenantI
     | 'in_progress'
     | 'completed'
     | 'cancelled'
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('events')
@@ -1163,7 +1163,7 @@ export async function approveTask(
     case 'event.create_draft': {
       const d = data as { draft?: Record<string, unknown>; error?: string } | null
       if (d?.draft && !d.error) {
-        const supabase = createServerClient()
+        const supabase: any = createServerClient()
         const draft = d.draft
         try {
           const { data: event, error } = await supabase

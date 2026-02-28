@@ -51,7 +51,7 @@ export async function uploadStandaloneReceipt(
   opts: { eventId?: string; clientId?: string; notes?: string } = {}
 ): Promise<UploadStandaloneResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // If an eventId was provided, verify it belongs to this chef (security check — no state restriction)
   if (opts.eventId) {
@@ -202,7 +202,7 @@ export async function getAllReceiptsForChef(
   } = {}
 ): Promise<AllReceiptPhoto[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('receipt_photos')
@@ -303,7 +303,7 @@ export async function getAllReceiptsForChef(
 /** Fetch all events for the chef — used to populate the event selector on the upload form. */
 export async function getEventOptionsForChef(): Promise<EventOption[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('events')
@@ -321,7 +321,7 @@ export async function getEventOptionsForChef(): Promise<EventOption[]> {
 /** Fetch all clients for the chef — used to populate the client selector on the upload form. */
 export async function getClientOptionsForChef(): Promise<ClientOption[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('clients')

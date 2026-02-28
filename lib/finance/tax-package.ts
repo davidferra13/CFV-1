@@ -51,7 +51,7 @@ const IRS_CATEGORY_MAP: Record<string, { label: string; code: string }> = {
 
 export async function getYearEndTaxPackage(taxYear: number): Promise<TaxPackage> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const yearStart = startOfYear(new Date(taxYear, 0, 1))
     .toISOString()

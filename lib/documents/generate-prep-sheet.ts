@@ -130,7 +130,7 @@ function getBriefMethodNote(recipe: RecipeInfo | null): string | null {
 
 export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event with client (including dietary preferences for guest notes section)
   const { data: event } = await supabase

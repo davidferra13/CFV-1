@@ -64,7 +64,7 @@ export async function getComplianceStats(
   endDate?: string
 ): Promise<ComplianceStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('events')
@@ -158,7 +158,7 @@ export async function getTimePhaseStats(
   endDate?: string
 ): Promise<TimePhaseStats[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('events')
@@ -243,7 +243,7 @@ export async function getTimePhaseStats(
 
 export async function getWasteStats(startDate: string, endDate: string): Promise<WasteStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
@@ -285,7 +285,7 @@ export async function getWasteStats(startDate: string, endDate: string): Promise
 
 export async function getCulinaryOperationsStats(): Promise<CulinaryOperationsStats> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
@@ -345,7 +345,7 @@ export async function getCulinaryOperationsStats(): Promise<CulinaryOperationsSt
 
 export async function getEffectiveHourlyRateByMonth(): Promise<EffectiveHourlyRateByMonth[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const oneYearAgo = new Date()
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)

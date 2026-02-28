@@ -55,7 +55,7 @@ export async function recordProposalView(
   })
 
   // Use admin client — no auth required for client-side tracking
-  const supabase = createServerClient({ admin: true })
+  const supabase: any = createServerClient({ admin: true })
 
   const { data, error } = await supabase
     .from('proposal_views')
@@ -80,7 +80,7 @@ export async function recordProposalView(
  */
 export async function getProposalViewAnalytics(quoteId: string): Promise<ProposalViewAnalytics> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify the quote belongs to this chef
   const { data: quote, error: quoteError } = await supabase

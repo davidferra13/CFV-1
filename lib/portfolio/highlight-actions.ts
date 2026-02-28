@@ -57,7 +57,7 @@ export async function createHighlight(
 ): Promise<{ success: boolean; highlight: ProfileHighlight }> {
   const validated = CreateHighlightSchema.parse(input)
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get current max display_order
   const { data: existing } = await supabase
@@ -105,7 +105,7 @@ export async function updateHighlight(
 ): Promise<{ success: boolean; highlight: ProfileHighlight }> {
   const validated = UpdateHighlightSchema.parse(updates)
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Build the update payload from only provided fields
   const updatePayload: Record<string, any> = {}
@@ -145,7 +145,7 @@ export async function updateHighlight(
 export async function deleteHighlight(id: string): Promise<{ success: boolean }> {
   const validated = DeleteHighlightSchema.parse({ id })
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('profile_highlights')
@@ -169,7 +169,7 @@ export async function deleteHighlight(id: string): Promise<{ success: boolean }>
  */
 export async function getHighlights(): Promise<ProfileHighlight[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: highlights, error } = await supabase
     .from('profile_highlights')
@@ -199,7 +199,7 @@ export async function reorderHighlights(
   ordered: { id: string; displayOrder: number }[]
 ): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await Promise.all(
     ordered.map(({ id, displayOrder }) =>

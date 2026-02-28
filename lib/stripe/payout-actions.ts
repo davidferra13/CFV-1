@@ -37,7 +37,7 @@ export type ChefPayoutSummary = {
  */
 export async function getChefPayoutSummary(): Promise<ChefPayoutSummary> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: transfers } = await supabase
     .from('stripe_transfers')
@@ -92,7 +92,7 @@ export async function getChefTransfers(opts?: {
   offset?: number
 }): Promise<ChefTransfer[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const limit = opts?.limit ?? 50
   const offset = opts?.offset ?? 0

@@ -37,7 +37,7 @@ export async function cloneEvent(
   newClientId?: string
 ): Promise<CloneEventResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const validated = CloneEventSchema.parse({ sourceEventId, newDate, newClientId })
 

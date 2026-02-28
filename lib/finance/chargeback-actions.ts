@@ -10,7 +10,7 @@ export type { ChargebackRate }
 export async function getChargebackRate(): Promise<ChargebackRate | null> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const twelveMonthsAgo = new Date()
   twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12)

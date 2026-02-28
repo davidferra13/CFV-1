@@ -39,7 +39,7 @@ const ClientIdSchema = z.string().uuid()
  */
 export async function learnClientPreferences(clientId: string): Promise<ClientPattern[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validatedClientId = ClientIdSchema.parse(clientId)
 
   // Verify client belongs to this tenant
@@ -197,7 +197,7 @@ export async function learnClientPreferences(clientId: string): Promise<ClientPa
  */
 export async function getClientPatterns(clientId: string): Promise<ClientPattern[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validatedClientId = ClientIdSchema.parse(clientId)
 
   const { data, error } = await supabase

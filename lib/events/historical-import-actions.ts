@@ -46,7 +46,7 @@ export type HistoricalEventResult = {
 // ============================================
 
 async function resolveClient(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   userId: string,
   clientId: string | null,
@@ -110,7 +110,7 @@ export async function importHistoricalEvent(
   input: HistoricalEventInput
 ): Promise<HistoricalEventResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const label = [input.event_date, input.client_name || 'Unknown client', input.occasion || '']
     .filter(Boolean)
@@ -233,7 +233,7 @@ export async function getClientsForHistoricalImport(): Promise<
   { id: string; full_name: string }[]
 > {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('clients')

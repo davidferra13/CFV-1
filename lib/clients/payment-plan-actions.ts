@@ -79,7 +79,7 @@ function distributeCents(totalCents: number, count: number): number[] {
  */
 export async function getPaymentPlan(eventId: string): Promise<EventPaymentPlan | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const validatedEventId = EventIdSchema.parse(eventId)
 
   // Fetch event

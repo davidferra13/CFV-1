@@ -44,7 +44,7 @@ export type WaitlistEntryInput = z.infer<typeof WaitlistEntrySchema>
 export async function blockDate(input: BlockDateInput) {
   const user = await requireChef()
   const validated = BlockDateSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_availability_blocks')
@@ -67,7 +67,7 @@ export async function blockDate(input: BlockDateInput) {
 
 export async function unblockDate(blockId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('chef_availability_blocks')
@@ -85,7 +85,7 @@ export async function unblockDate(blockId: string) {
  * Called from the event transition logic.
  */
 export async function autoBlockEventDate(eventId: string, chefId: string, eventDate: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Idempotent: skip if already blocked for this event
   const { data: existing } = await supabase
@@ -111,7 +111,7 @@ export async function autoBlockEventDate(eventId: string, chefId: string, eventD
  * Remove auto-block when an event is cancelled.
  */
 export async function removeEventAutoBlock(eventId: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   await supabase
     .from('chef_availability_blocks')
     .delete()
@@ -128,7 +128,7 @@ export async function getAvailabilityForMonth(
   month: number // 1-12
 ): Promise<Record<string, 'event_auto' | 'blocked' | 'free'>> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const startDate = `${year}-${String(month).padStart(2, '0')}-01`
   const endDate = new Date(year, month, 0).toISOString().split('T')[0] // last day of month
@@ -149,7 +149,7 @@ export async function getAvailabilityForMonth(
 
 export async function isDateAvailable(date: string): Promise<boolean> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('chef_availability_blocks')
@@ -178,7 +178,7 @@ export async function checkDateConflicts(
   excludeEventId?: string
 ): Promise<DateConflictResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Parallel: availability blocks + existing events on same date
   const [blocksResult, eventsResult] = await Promise.all([
@@ -254,7 +254,7 @@ export async function checkDateConflicts(
 export async function addToWaitlist(input: WaitlistEntryInput) {
   const user = await requireChef()
   const validated = WaitlistEntrySchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('waitlist_entries')
@@ -277,7 +277,7 @@ export async function addToWaitlist(input: WaitlistEntryInput) {
 
 export async function contactWaitlistEntry(entryId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase
     .from('waitlist_entries')
@@ -290,7 +290,7 @@ export async function contactWaitlistEntry(entryId: string) {
 
 export async function convertWaitlistEntry(entryId: string, eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase
     .from('waitlist_entries')
@@ -303,7 +303,7 @@ export async function convertWaitlistEntry(entryId: string, eventId: string) {
 
 export async function expireWaitlistEntry(entryId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase
     .from('waitlist_entries')
@@ -316,7 +316,7 @@ export async function expireWaitlistEntry(entryId: string) {
 
 export async function getWaitlistEntries(status?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('waitlist_entries')
@@ -338,7 +338,7 @@ export async function getWaitlistEntries(status?: string) {
 
 export async function getWaitlistForDate(date: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('waitlist_entries')

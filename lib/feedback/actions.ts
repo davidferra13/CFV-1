@@ -26,7 +26,7 @@ export async function submitFeedback(
   // Best-effort: attach identity if the user is authenticated and not sending anonymously
   const user = await getCurrentUser()
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('user_feedback').insert({
     sentiment,

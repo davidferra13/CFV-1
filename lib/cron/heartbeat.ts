@@ -20,7 +20,7 @@ export async function recordCronHeartbeat(
   durationMs?: number
 ): Promise<void> {
   try {
-    const supabase = createServerClient({ admin: true })
+    const supabase: any = createServerClient({ admin: true })
     const { error } = await supabase.from('cron_executions').insert({
       cron_name: cronName,
       status: 'success',
@@ -41,7 +41,7 @@ export async function recordCronError(
   durationMs?: number
 ): Promise<void> {
   try {
-    const supabase = createServerClient({ admin: true })
+    const supabase: any = createServerClient({ admin: true })
     const { error } = await supabase.from('cron_executions').insert({
       cron_name: cronName,
       status: 'error',

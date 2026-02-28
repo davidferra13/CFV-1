@@ -79,7 +79,7 @@ export async function submitBetaSignup(
   }
 
   try {
-    const supabase = createAdminClient()
+    const supabase: any = createAdminClient()
 
     // Check if this email already exists (for deciding whether to send emails)
     const { data: existing } = await supabase
@@ -164,7 +164,7 @@ export async function markBetaSignupOnboardedByEmail(
 
   const source = input.source?.trim() || null
   const nowIso = new Date().toISOString()
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   try {
     const { data: existing, error: existingError } = await supabase
@@ -236,7 +236,7 @@ export async function markBetaSignupOnboardedByEmail(
  * Get all beta signups for the admin view.
  */
 export async function getBetaSignups() {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data, error } = await supabase
     .from('beta_signups')
@@ -259,7 +259,7 @@ export async function updateBetaSignupStatus(
   status: 'pending' | 'invited' | 'onboarded' | 'declined',
   notes?: string
 ): Promise<{ success: boolean; error?: string }> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const updates: Record<string, unknown> = { status }
 
@@ -287,7 +287,7 @@ export async function updateBetaSignupStatus(
  * Delete a beta signup (admin action).
  */
 export async function deleteBetaSignup(id: string): Promise<{ success: boolean; error?: string }> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { error } = await supabase.from('beta_signups').delete().eq('id', id)
 
@@ -303,7 +303,7 @@ export async function deleteBetaSignup(id: string): Promise<{ success: boolean; 
  * Get the total count of beta signups (for social proof on public page).
  */
 export async function getBetaSignupCount(): Promise<number> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { count, error } = await supabase
     .from('beta_signups')
@@ -321,7 +321,7 @@ export async function getBetaSignupCount(): Promise<number> {
  * Export beta signups as CSV string (admin action).
  */
 export async function exportBetaSignupsCsv(): Promise<string> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data, error } = await supabase
     .from('beta_signups')

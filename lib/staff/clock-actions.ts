@@ -83,7 +83,7 @@ export async function clockIn(
 ): Promise<ClockEntry> {
   const user = await requireChef()
   const parsed = ClockInSchema.parse({ staffMemberId, eventId, gpsLat, gpsLng })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('staff_clock_entries')
@@ -124,7 +124,7 @@ export async function clockIn(
 export async function clockOut(entryId: string): Promise<ClockEntry> {
   const user = await requireChef()
   ClockOutSchema.parse({ entryId })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch the existing entry to compute duration
   const { data: existing, error: fetchError } = await supabase
@@ -182,7 +182,7 @@ export async function getClockEntries(filters?: {
 }): Promise<ClockEntryWithStaff[]> {
   const user = await requireChef()
   ClockFiltersSchema.parse(filters)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('staff_clock_entries')
@@ -227,7 +227,7 @@ export async function getClockEntries(filters?: {
 export async function getEventClockSummary(eventId: string): Promise<EventClockSummary> {
   const user = await requireChef()
   z.string().uuid().parse(eventId)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('staff_clock_entries')

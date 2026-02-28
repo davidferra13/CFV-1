@@ -123,7 +123,7 @@ function deriveNotificationActionUrl(input: {
  */
 export async function getNotifications(limit = 20, offset = 0): Promise<Notification[]> {
   const user = await requireAuth()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('notifications')
@@ -146,7 +146,7 @@ export async function getNotifications(limit = 20, offset = 0): Promise<Notifica
  */
 export async function getUnreadCount(): Promise<number> {
   const user = await requireAuth()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase.rpc('get_unread_notification_count', {
     p_user_id: user.id,
@@ -167,7 +167,7 @@ export async function getUnreadCount(): Promise<number> {
  */
 export async function markAsRead(notificationId: string) {
   const user = await requireAuth()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('notifications')
@@ -186,7 +186,7 @@ export async function markAsRead(notificationId: string) {
  */
 export async function markAllAsRead() {
   const user = await requireAuth()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('notifications')
@@ -207,7 +207,7 @@ export async function markAllAsRead() {
  */
 export async function archiveNotification(notificationId: string) {
   const user = await requireAuth()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('notifications')
@@ -241,7 +241,7 @@ export type NotificationRuntimeSettings = {
  */
 export async function getNotificationPreferences(): Promise<NotificationPreference[]> {
   const user = await requireAuth()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('notification_preferences')
@@ -268,7 +268,7 @@ export async function getNotificationRuntimeSettings(): Promise<NotificationRunt
     }
   }
 
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { data } = await supabase
     .from('chef_preferences')
     .select(
@@ -303,7 +303,7 @@ export async function updateNotificationPreference(
   toastEnabled: boolean
 ) {
   const user = await requireAuth()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('notification_preferences').upsert(
     {

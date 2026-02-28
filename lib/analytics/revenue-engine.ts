@@ -99,7 +99,7 @@ export async function solveRevenueClosure(
 
 export async function computeDashboardKPIs(range: DateRange): Promise<DashboardKPIs> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Events in range
   const { data: events } = await supabase
@@ -187,7 +187,7 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
 
 export async function computeRevenueByMonth(range: DateRange): Promise<RevenueByPeriod[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: ledger } = await supabase
     .from('ledger_entries')
@@ -215,7 +215,7 @@ export async function computeRevenueByMonth(range: DateRange): Promise<RevenueBy
 
 export async function computeTopClients(range: DateRange): Promise<TopClient[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
@@ -254,7 +254,7 @@ export async function computeTopClients(range: DateRange): Promise<TopClient[]> 
 
 export async function computeSeasonalPerformance(range: DateRange): Promise<SeasonalMonth[]> {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: events } = await supabase
     .from('events')

@@ -13,19 +13,18 @@ import { generateICS } from '@/lib/scheduling/generate-ics'
 
 const DOWNLOADABLE_STATUSES = ['paid', 'confirmed', 'in_progress', 'completed']
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const user = await requireClient()
-    const supabase = createServerClient()
+    const supabase: any = createServerClient()
     const eventId = params.id
 
     // Fetch event — must belong to this client
     const { data: event } = await supabase
       .from('events')
-      .select('id, status, occasion, event_date, serve_time, location_address, location_city, location_state, guest_count, special_requests')
+      .select(
+        'id, status, occasion, event_date, serve_time, location_address, location_city, location_state, guest_count, special_requests'
+      )
       .eq('id', eventId)
       .eq('client_id', user.entityId)
       .single()
@@ -41,7 +40,11 @@ export async function GET(
       )
     }
 
-    const locationParts = [event.location_address, event.location_city, event.location_state].filter(Boolean)
+    const locationParts = [
+      event.location_address,
+      event.location_city,
+      event.location_state,
+    ].filter(Boolean)
     const location = locationParts.length > 0 ? locationParts.join(', ') : undefined
 
     const icsString = generateICS({

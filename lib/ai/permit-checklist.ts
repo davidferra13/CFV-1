@@ -40,7 +40,7 @@ export async function generatePermitRenewalChecklist(
   permitId?: string
 ): Promise<PermitChecklistResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Try to fetch permit from health permits table
   let permitData: {
@@ -52,7 +52,7 @@ export async function generatePermitRenewalChecklist(
 
   if (permitId) {
     const { data } = await supabase
-      .from('health_permits')
+      .from('health_permits' as any)
       .select('permit_type, jurisdiction, expiry_date, notes')
       .eq('id', permitId)
       .eq('tenant_id', user.tenantId!)
@@ -61,7 +61,7 @@ export async function generatePermitRenewalChecklist(
   } else {
     // Get soonest-expiring permit
     const { data } = await supabase
-      .from('health_permits')
+      .from('health_permits' as any)
       .select('permit_type, jurisdiction, expiry_date, notes')
       .eq('tenant_id', user.tenantId!)
       .order('expiry_date', { ascending: true })

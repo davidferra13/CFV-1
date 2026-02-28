@@ -76,7 +76,7 @@ export async function sendAdminBroadcastEmail(
   }
 
   const admin = await requireAdmin()
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Fetch target chefs
   let query = supabase.from('chefs').select('id, email, business_name')

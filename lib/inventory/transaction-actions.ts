@@ -106,6 +106,15 @@ const RecordTransactionSchema = z.object({
 
 export type RecordTransactionInput = z.infer<typeof RecordTransactionSchema>
 
+// ─── Supabase helper ────────────────────────────────────────────
+function db(supabase: any) {
+  return {
+    transactions: () => supabase.from('inventory_transactions' as any) as any,
+    currentStock: () => supabase.from('inventory_current_stock' as any) as any,
+    byLocation: () => supabase.from('inventory_by_location' as any) as any,
+  }
+}
+
 // ─── Actions ─────────────────────────────────────────────────────
 
 /**
@@ -117,10 +126,10 @@ export async function recordInventoryTransaction(
 ): Promise<InventoryTransaction> {
   const user = await requireChef()
   const parsed = RecordTransactionSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  const { data, error } = await supabase
-    .from('inventory_transactions' as any)
+  const { data, error } = await db(supabase)
+    .transactions()
     .insert({
       chef_id: user.tenantId!,
       ingredient_id: parsed.ingredientId ?? null,
@@ -144,7 +153,7 @@ export async function recordInventoryTransaction(
     .select()
     .single()
 
-  if (error) throw new Error(`Failed to record inventory transaction: ${error.message}`)
+  if (error) throw new Error(`Failed to record inventory transaction: ${(error as any).message}`)
 
   revalidatePath('/inventory')
 
@@ -161,7 +170,7 @@ export async function recordBulkTransactions(
   if (items.length === 0) return []
 
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const rows = items.map((item) => {
     const parsed = RecordTransactionSchema.parse(item)
@@ -187,16 +196,13 @@ export async function recordBulkTransactions(
     }
   })
 
-  const { data, error } = await supabase
-    .from('inventory_transactions' as any)
-    .insert(rows)
-    .select()
+  const { data, error } = await db(supabase).transactions().insert(rows).select()
 
-  if (error) throw new Error(`Failed to record bulk transactions: ${error.message}`)
+  if (error) throw new Error(`Failed to record bulk transactions: ${(error as any).message}`)
 
   revalidatePath('/inventory')
 
-  return (data || []).map(mapTransaction)
+  return ((data || []) as any[]).map(mapTransaction)
 }
 
 /**
@@ -212,15 +218,15 @@ export async function getTransactionHistory(filters?: {
   pageSize?: number
 }): Promise<{ transactions: InventoryTransaction[]; total: number }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const page = filters?.page ?? 1
   const pageSize = filters?.pageSize ?? 50
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1
 
-  let query = supabase
-    .from('inventory_transactions' as any)
+  let query = db(supabase)
+    .transactions()
     .select('*', { count: 'exact' })
     .eq('chef_id', user.tenantId!)
     .order('created_at', { ascending: false })
@@ -245,10 +251,10 @@ export async function getTransactionHistory(filters?: {
 
   const { data, error, count } = await query
 
-  if (error) throw new Error(`Failed to fetch transaction history: ${error.message}`)
+  if (error) throw new Error(`Failed to fetch transaction history: ${(error as any).message}`)
 
   return {
-    transactions: (data || []).map(mapTransaction),
+    transactions: ((data || []) as any[]).map(mapTransaction),
     total: count ?? 0,
   }
 }
@@ -259,12 +265,9 @@ export async function getTransactionHistory(filters?: {
  */
 export async function getCurrentStock(ingredientId?: string): Promise<StockItem[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  let query = supabase
-    .from('inventory_current_stock' as any)
-    .select('*')
-    .eq('chef_id', user.tenantId!)
+  let query = db(supabase).currentStock().select('*').eq('chef_id', user.tenantId!)
 
   if (ingredientId) {
     query = query.eq('ingredient_id', ingredientId)
@@ -272,15 +275,15 @@ export async function getCurrentStock(ingredientId?: string): Promise<StockItem[
 
   const { data, error } = await query
 
-  if (error) throw new Error(`Failed to fetch current stock: ${error.message}`)
+  if (error) throw new Error(`Failed to fetch current stock: ${(error as any).message}`)
 
-  return (data || []).map((row: any) => ({
+  return ((data || []) as any[]).map((row: any) => ({
     chefId: row.chef_id,
     ingredientId: row.ingredient_id,
     ingredientName: row.ingredient_name,
     unit: row.unit,
-    currentQty: parseFloat(row.current_qty ?? 0),
-    parLevel: row.par_level != null ? parseFloat(row.par_level) : null,
+    currentQty: Number(row.current_qty ?? 0),
+    parLevel: row.par_level != null ? Number(row.par_level) : null,
     lastMovementAt: row.last_movement_at,
     transactionCount: parseInt(row.transaction_count ?? 0, 10),
   }))
@@ -292,12 +295,9 @@ export async function getCurrentStock(ingredientId?: string): Promise<StockItem[
  */
 export async function getStockByLocation(locationId?: string): Promise<StockByLocation[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  let query = supabase
-    .from('inventory_by_location' as any)
-    .select('*')
-    .eq('chef_id', user.tenantId!)
+  let query = db(supabase).byLocation().select('*').eq('chef_id', user.tenantId!)
 
   if (locationId) {
     query = query.eq('location_id', locationId)
@@ -305,9 +305,9 @@ export async function getStockByLocation(locationId?: string): Promise<StockByLo
 
   const { data, error } = await query
 
-  if (error) throw new Error(`Failed to fetch stock by location: ${error.message}`)
+  if (error) throw new Error(`Failed to fetch stock by location: ${(error as any).message}`)
 
-  return (data || []).map((row: any) => ({
+  return ((data || []) as any[]).map((row: any) => ({
     chefId: row.chef_id,
     locationId: row.location_id,
     locationName: row.location_name,
@@ -315,7 +315,7 @@ export async function getStockByLocation(locationId?: string): Promise<StockByLo
     ingredientId: row.ingredient_id,
     ingredientName: row.ingredient_name,
     unit: row.unit,
-    currentQty: parseFloat(row.current_qty ?? 0),
+    currentQty: Number(row.current_qty ?? 0),
   }))
 }
 
@@ -324,41 +324,36 @@ export async function getStockByLocation(locationId?: string): Promise<StockByLo
  */
 export async function getStockSummary(): Promise<StockSummary> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all current stock items
-  const { data, error } = await supabase
-    .from('inventory_current_stock' as any)
+  const { data, error } = await db(supabase)
+    .currentStock()
     .select('*')
     .eq('chef_id', user.tenantId!)
 
-  if (error) throw new Error(`Failed to fetch stock summary: ${error.message}`)
+  if (error) throw new Error(`Failed to fetch stock summary: ${(error as any).message}`)
 
-  const items = data || []
+  const items = (data || []) as any[]
   let totalItems = 0
   let totalValueCents = 0
   let belowParCount = 0
 
   for (const row of items) {
-    const qty = parseFloat(row.current_qty ?? 0)
+    const qty = Number(row.current_qty ?? 0)
     if (qty > 0) {
       totalItems++
     }
 
-    // Estimate value from the most recent cost per unit — use transactions to get latest cost_cents
-    // For the summary, we only count items with positive stock
-    // Value estimation: check if we can get last known cost from the row
-    // The view doesn't include cost, so we'll fetch the latest cost per ingredient separately
-    const parLevel = row.par_level != null ? parseFloat(row.par_level) : null
+    const parLevel = row.par_level != null ? Number(row.par_level) : null
     if (parLevel != null && qty < parLevel) {
       belowParCount++
     }
   }
 
   // Get total value by summing (latest cost_cents) for each ingredient with positive stock
-  // Use a separate query: for each ingredient, get the most recent transaction with cost_cents
-  const { data: costData, error: costError } = await supabase
-    .from('inventory_transactions' as any)
+  const { data: costData, error: costError } = await db(supabase)
+    .transactions()
     .select('ingredient_id, cost_cents, quantity')
     .eq('chef_id', user.tenantId!)
     .not('cost_cents', 'is', null)
@@ -367,9 +362,9 @@ export async function getStockSummary(): Promise<StockSummary> {
   if (!costError && costData) {
     // Build a map of ingredient_id -> latest unit cost
     const latestCostMap = new Map<string, number>()
-    for (const tx of costData) {
+    for (const tx of costData as any[]) {
       if (tx.ingredient_id && !latestCostMap.has(tx.ingredient_id)) {
-        const txQty = Math.abs(parseFloat(tx.quantity ?? 1))
+        const txQty = Math.abs(Number(tx.quantity ?? 1))
         const unitCost = txQty > 0 ? Math.round(tx.cost_cents / txQty) : tx.cost_cents
         latestCostMap.set(tx.ingredient_id, unitCost)
       }
@@ -377,7 +372,7 @@ export async function getStockSummary(): Promise<StockSummary> {
 
     // Calculate total value
     for (const row of items) {
-      const qty = parseFloat(row.current_qty ?? 0)
+      const qty = Number(row.current_qty ?? 0)
       if (qty > 0 && row.ingredient_id && latestCostMap.has(row.ingredient_id)) {
         totalValueCents += Math.round(qty * latestCostMap.get(row.ingredient_id)!)
       }
@@ -400,7 +395,7 @@ function mapTransaction(row: any): InventoryTransaction {
     ingredientId: row.ingredient_id,
     ingredientName: row.ingredient_name,
     transactionType: row.transaction_type,
-    quantity: parseFloat(row.quantity),
+    quantity: Number(row.quantity),
     unit: row.unit,
     costCents: row.cost_cents,
     locationId: row.location_id,

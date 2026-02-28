@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: 'Proposal Templates - ChefFlow' }
 
 export default async function ProposalTemplatesPage() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [templates, menusResult] = await Promise.all([
     listProposalTemplates().catch(() => []),

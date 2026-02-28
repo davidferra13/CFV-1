@@ -30,7 +30,7 @@ export async function enqueueTask(
     return { error: `Unknown task type: ${input.taskType}` }
   }
 
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Queue depth guard — prevent runaway enqueuing
   const { count } = await supabase
@@ -100,7 +100,7 @@ export async function enqueueTask(
  * Returns null if no tasks are ready.
  */
 export async function claimNextTask(): Promise<AiQueueItem | null> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const now = new Date().toISOString()
 
   // First, recover any hung tasks (processing for too long)
@@ -158,7 +158,7 @@ export async function claimNextTask(): Promise<AiQueueItem | null> {
  * If the task is a 'draft' tier, moves to 'awaiting_approval' instead.
  */
 export async function completeTask(taskId: string, result: Record<string, unknown>): Promise<void> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Get the task to check its approval tier
   const { data: task } = await supabase
@@ -206,7 +206,7 @@ export async function completeTask(taskId: string, result: Record<string, unknow
  * If at max attempts, mark as dead and push to DLQ.
  */
 export async function failTask(taskId: string, errorMessage: string): Promise<void> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data: task } = await supabase
     .from('ai_task_queue')
@@ -270,7 +270,7 @@ export async function failTask(taskId: string, errorMessage: string): Promise<vo
  */
 export async function approveTask(taskId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase
     .from('ai_task_queue')
@@ -288,7 +288,7 @@ export async function approveTask(taskId: string): Promise<void> {
  */
 export async function rejectTask(taskId: string, reason?: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase
     .from('ai_task_queue')
@@ -310,7 +310,7 @@ export async function rejectTask(taskId: string, reason?: string): Promise<void>
  */
 export async function getTasksAwaitingApproval(): Promise<AiQueueItem[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('ai_task_queue')
@@ -331,7 +331,7 @@ export async function getTaskHistory(
   statusFilter?: AiTaskStatus
 ): Promise<AiQueueItem[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('ai_task_queue')
@@ -358,7 +358,7 @@ export async function getQueueStats(tenantId: string): Promise<{
   failed: number
   completedToday: number
 }> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
@@ -420,7 +420,7 @@ export async function getQueueStats(tenantId: string): Promise<{
  *   - Jittered polling prevents thundering herd when both slots poll simultaneously
  */
 export async function claimNextTaskForEndpoint(endpoint: 'pc' | 'pi'): Promise<AiQueueItem | null> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const now = new Date().toISOString()
 
   // First, recover any hung tasks
@@ -522,7 +522,7 @@ function pickBestCandidate(
  * This handles cases where the worker crashed mid-task.
  */
 async function recoverHungTasks(): Promise<void> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const cutoff = new Date(Date.now() - OLLAMA_GUARD.HUNG_TASK_TIMEOUT_MS).toISOString()
 
   await supabase

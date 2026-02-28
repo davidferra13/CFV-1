@@ -138,7 +138,7 @@ export async function submitTestimonial(input: {
  */
 export async function getTestimonials(filters?: { approved?: boolean; eventId?: string }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('guest_testimonials')
@@ -171,7 +171,7 @@ export async function getTestimonials(filters?: { approved?: boolean; eventId?: 
  */
 export async function setTestimonialApproval(testimonialId: string, approved: boolean) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('guest_testimonials')
@@ -190,7 +190,7 @@ export async function setTestimonialApproval(testimonialId: string, approved: bo
  */
 export async function setTestimonialFeatured(testimonialId: string, featured: boolean) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('guest_testimonials')

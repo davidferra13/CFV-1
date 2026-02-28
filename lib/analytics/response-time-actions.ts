@@ -20,7 +20,7 @@ export interface InquiryUrgency {
  */
 export async function getInquiryUrgencies(): Promise<InquiryUrgency[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch open inquiries
   const { data: inquiries } = await supabase

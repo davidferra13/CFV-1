@@ -299,7 +299,7 @@ export async function getClientLoyaltySnapshotByTenant(
   tenantId: string,
   clientId: string
 ): Promise<ClientLoyaltySnapshot | null> {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: client } = await supabase
     .from('clients')
@@ -417,7 +417,7 @@ export async function getEventLoyaltyImpactByTenant(input: {
 
 export async function getLoyaltyConfig(): Promise<LoyaltyConfig> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: config, error } = await supabase
     .from('loyalty_config')
@@ -482,7 +482,7 @@ export async function getLoyaltyConfig(): Promise<LoyaltyConfig> {
 export async function updateLoyaltyConfig(input: z.infer<typeof UpdateLoyaltyConfigSchema>) {
   const user = await requireChef()
   const validated = UpdateLoyaltyConfigSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Ensure config exists
   await getLoyaltyConfig()
@@ -510,7 +510,7 @@ export async function updateLoyaltyConfig(input: z.infer<typeof UpdateLoyaltyCon
 
 export async function awardEventPoints(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event with client info (include total_price_cents for per_dollar earn mode)
   const { data: event, error: eventError } = await supabase
@@ -749,7 +749,7 @@ export async function awardEventPoints(eventId: string) {
 // =====================================================================================
 
 export async function getLoyaltyConfigByTenant(tenantId: string): Promise<LoyaltyConfig | null> {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: config } = await supabase
     .from('loyalty_config')
@@ -773,7 +773,7 @@ export async function getLoyaltyConfigByTenant(tenantId: string): Promise<Loyalt
 
 export async function awardLiteVisit(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event, error: eventError } = await supabase
     .from('events')
@@ -869,7 +869,7 @@ export async function awardLiteVisit(eventId: string) {
 
 export async function awardBonusPoints(clientId: string, points: number, description: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (points <= 0) {
     throw new Error('Bonus points must be positive')
@@ -937,7 +937,7 @@ export async function awardBonusPoints(clientId: string, points: number, descrip
 
 export async function redeemReward(clientId: string, rewardId: string, eventId?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get client
   const { data: client } = await supabase
@@ -1041,7 +1041,7 @@ export async function redeemReward(clientId: string, rewardId: string, eventId?:
 
 export async function getClientLoyaltyProfile(clientId: string): Promise<ClientLoyaltyProfile> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get client
   const { data: client } = await supabase
@@ -1128,7 +1128,7 @@ export async function getClientLoyaltyProfile(clientId: string): Promise<ClientL
 
 export async function getLoyaltyTransactions(clientId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: transactions, error } = await supabase
     .from('loyalty_transactions')
@@ -1152,7 +1152,7 @@ export async function getLoyaltyTransactions(clientId: string) {
 export async function createReward(input: CreateRewardInput) {
   const user = await requireChef()
   const validated = CreateRewardSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: reward, error } = await supabase
     .from('loyalty_rewards')
@@ -1185,7 +1185,7 @@ export async function createReward(input: CreateRewardInput) {
 
 export async function getRewards() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: rewards, error } = await supabase
     .from('loyalty_rewards')
@@ -1209,7 +1209,7 @@ export async function getRewards() {
 export async function updateReward(rewardId: string, input: UpdateRewardInput) {
   const user = await requireChef()
   const validated = UpdateRewardSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: reward, error } = await supabase
     .from('loyalty_rewards')
@@ -1237,7 +1237,7 @@ export async function updateReward(rewardId: string, input: UpdateRewardInput) {
 
 export async function deactivateReward(rewardId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('loyalty_rewards')
@@ -1263,7 +1263,7 @@ export async function deactivateReward(rewardId: string) {
 
 export async function getLoyaltyOverview(): Promise<LoyaltyOverview> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const config = await getLoyaltyConfig()
 
@@ -1354,7 +1354,7 @@ export async function getLoyaltyOverview(): Promise<LoyaltyOverview> {
 
 export async function getClientsApproachingRewards() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all active rewards
   const { data: rewards } = await supabase
@@ -1413,7 +1413,7 @@ export async function getClientsApproachingRewards() {
 
 export async function getMyLoyaltyStatus() {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get client record
   const { data: client } = await supabase

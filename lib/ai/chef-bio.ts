@@ -31,7 +31,7 @@ const ChefBioDraftSchema = z.object({
 
 export async function generateChefBioDraft(): Promise<ChefBioDraft> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [chefResult, eventsResult, recipesResult] = await Promise.all([
     supabase

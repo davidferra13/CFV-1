@@ -133,15 +133,12 @@ function StateNode({
   isActive: boolean
   isCurrent: boolean
 }) {
-  const bgColor = isActive
-    ? typeof state.color.bg === 'string'
-      ? state.color.bg
-      : state.color[100] || BRAND[100]
-    : STONE[100]
+  const c = state.color as any
+  const bgColor = isActive ? (typeof c.bg === 'string' ? c.bg : c[100] || BRAND[100]) : STONE[100]
   const borderColor = isActive
-    ? typeof state.color.border === 'string'
-      ? state.color.border
-      : state.color[400] || BRAND[400]
+    ? typeof c.border === 'string'
+      ? c.border
+      : c[400] || BRAND[400]
     : STONE[200]
 
   return (

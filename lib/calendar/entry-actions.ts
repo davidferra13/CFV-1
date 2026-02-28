@@ -119,7 +119,7 @@ export type UpdateCalendarEntryInput = z.infer<typeof UpdateEntrySchema>
 export async function createCalendarEntry(input: CreateCalendarEntryInput) {
   const user = await requireChef()
   const validated = CreateEntrySchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Auto-set blocks_bookings from type default if not explicitly provided
   const blocksBookings =
@@ -173,7 +173,7 @@ export async function createCalendarEntry(input: CreateCalendarEntryInput) {
 export async function updateCalendarEntry(id: string, input: UpdateCalendarEntryInput) {
   const user = await requireChef()
   const validated = UpdateEntrySchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify ownership
   const { data: existing } = await supabase
@@ -221,7 +221,7 @@ export async function updateCalendarEntry(id: string, input: UpdateCalendarEntry
 
 export async function deleteCalendarEntry(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('chef_calendar_entries')
@@ -246,7 +246,7 @@ export async function getCalendarEntriesForRange(
   endDate: string
 ): Promise<ChefCalendarEntry[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Entries that overlap the query window:
   // entry.start_date <= endDate AND entry.end_date >= startDate
@@ -272,7 +272,7 @@ export async function getCalendarEntriesForRange(
 
 export async function getCalendarEntry(id: string): Promise<ChefCalendarEntry | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('chef_calendar_entries')
@@ -291,7 +291,7 @@ export async function getCalendarEntry(id: string): Promise<ChefCalendarEntry | 
 
 export async function markCalendarEntryComplete(id: string, actualRevenueCents?: number) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify ownership
   const { data: existing } = await supabase
@@ -330,7 +330,7 @@ export async function markCalendarEntryComplete(id: string, actualRevenueCents?:
 
 export async function notifyClientsOfPublicSignal(calendarEntryId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const chefId = user.tenantId!
 
   // Verify entry exists, belongs to this chef, and is public + target_booking
@@ -385,7 +385,7 @@ export async function notifyClientsOfPublicSignal(calendarEntryId: string) {
 // ============================================
 
 export async function getPublicAvailabilitySignals(chefId: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const today = new Date().toISOString().split('T')[0]
 
   const { data, error } = await supabase
@@ -415,7 +415,7 @@ export async function getPublicAvailabilitySignals(chefId: string) {
 
 export async function getMarketIncomeSummary(year: number) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const startDate = `${year}-01-01`
   const endDate = `${year}-12-31`

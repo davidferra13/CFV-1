@@ -21,7 +21,7 @@ export type BusinessDocInfo = {
  */
 export async function getBusinessDocInfo(eventId: string): Promise<BusinessDocInfo> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')
@@ -104,7 +104,7 @@ export type DocumentReadiness = {
  */
 export async function getDocumentReadiness(eventId: string): Promise<DocumentReadiness> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch event basics
   const { data: event } = await supabase

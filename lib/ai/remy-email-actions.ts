@@ -14,7 +14,7 @@ import { z } from 'zod'
 export async function getRecentEmails(limit = 10) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('gmail_sync_log')
@@ -48,7 +48,7 @@ export async function getRecentEmails(limit = 10) {
 export async function searchEmails(query: string, limit = 10) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const searchTerm = `%${query.toLowerCase()}%`
 
@@ -88,7 +88,7 @@ export async function searchEmails(query: string, limit = 10) {
 export async function getEmailThread(threadId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all emails in this thread from sync log
   const { data: syncEmails } = await supabase
@@ -144,7 +144,7 @@ export async function getEmailThread(threadId: string) {
 export async function summarizeInbox() {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const now = new Date()
   const today = now.toISOString().split('T')[0]
@@ -195,7 +195,7 @@ export async function summarizeInbox() {
 export async function draftEmailReply(messageId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Load the email we're replying to
   const { data: email } = await supabase
@@ -274,7 +274,7 @@ ${clientContext ? `\n${clientContext}` : ''}`,
 // Used by remy-context.ts to build the email awareness tier.
 
 export async function loadEmailDigest(tenantId: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const now = new Date()
   const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString()
 

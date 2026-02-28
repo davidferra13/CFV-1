@@ -55,7 +55,7 @@ export async function connectBankAccount(
 ): Promise<BankConnection> {
   const user = await requireChef()
   const parsed = ConnectBankSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('bank_connections')
@@ -92,7 +92,7 @@ export async function connectBankAccount(
 
 export async function disconnectBankAccount(connectionId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('bank_connections')
@@ -106,7 +106,7 @@ export async function disconnectBankAccount(connectionId: string): Promise<void>
 
 export async function getBankConnections(): Promise<BankConnection[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('bank_connections')
@@ -135,7 +135,7 @@ export async function getBankTransactions(filters?: {
   endDate?: string
 }): Promise<BankTransaction[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('bank_transactions')
@@ -174,7 +174,7 @@ export async function confirmTransaction(
   matchedExpenseId?: string
 ): Promise<BankTransaction> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('bank_transactions')
@@ -209,7 +209,7 @@ export async function confirmTransaction(
 
 export async function ignoreTransaction(transactionId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('bank_transactions')
@@ -231,7 +231,7 @@ export async function addManualTransaction(input: {
   date: string
 }): Promise<BankTransaction> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('bank_transactions')
@@ -268,7 +268,7 @@ export async function addManualTransaction(input: {
 
 export async function getReconciliationSummary(): Promise<ReconciliationSummary> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('bank_transactions')

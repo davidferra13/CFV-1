@@ -37,7 +37,7 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
       )
 
       // Find the expense
-      const supabase = createServerClient()
+      const supabase: any = createServerClient()
       const { data: expenses } = await supabase
         .from('expenses')
         .select('id, description, amount_cents, vendor, category, expense_date')

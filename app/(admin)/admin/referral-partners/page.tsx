@@ -27,7 +27,7 @@ export default async function AdminReferralPartnersPage() {
     redirect('/unauthorized')
   }
 
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Fetch all referral partners across all tenants
   const { data: rawPartners, error } = await supabase

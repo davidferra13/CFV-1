@@ -87,11 +87,11 @@ export type InvoiceFilters = z.infer<typeof InvoiceFilterSchema>
 export async function uploadVendorInvoice(input: UploadVendorInvoiceInput): Promise<VendorInvoice> {
   const user = await requireChef()
   const parsed = UploadVendorInvoiceSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Insert the invoice header
-  const { data: invoice, error: invoiceError } = await supabase
-    .from('vendor_invoices')
+  // vendor_invoices.invoice_number is nullable in DB but we require it in schema
+  const { data: invoice, error: invoiceError } = await (supabase.from('vendor_invoices') as any)
     .insert({
       chef_id: user.tenantId!,
       vendor_id: parsed.vendorId ?? null,
@@ -104,11 +104,11 @@ export async function uploadVendorInvoice(input: UploadVendorInvoiceInput): Prom
     .select()
     .single()
 
-  if (invoiceError) throw new Error(`Failed to create invoice: ${invoiceError.message}`)
+  if (invoiceError) throw new Error(`Failed to create invoice: ${(invoiceError as any).message}`)
 
   // Insert line items
   const itemRows = parsed.items.map((item) => ({
-    vendor_invoice_id: invoice.id,
+    vendor_invoice_id: (invoice as any).id,
     item_name: item.itemName,
     quantity: item.quantity,
     unit_price_cents: item.unitPriceCents,
@@ -117,36 +117,35 @@ export async function uploadVendorInvoice(input: UploadVendorInvoiceInput): Prom
     price_changed: false,
   }))
 
-  const { data: items, error: itemsError } = await supabase
-    .from('vendor_invoice_items')
+  const { data: items, error: itemsError } = await (supabase.from('vendor_invoice_items') as any)
     .insert(itemRows)
     .select()
 
-  if (itemsError) throw new Error(`Failed to create invoice items: ${itemsError.message}`)
+  if (itemsError) throw new Error(`Failed to create invoice items: ${(itemsError as any).message}`)
 
   revalidatePath('/inventory/invoices')
 
   return {
-    id: invoice.id,
-    chefId: invoice.chef_id,
-    vendorId: invoice.vendor_id,
-    invoiceNumber: invoice.invoice_number,
-    invoiceDate: invoice.invoice_date,
-    totalCents: invoice.total_cents,
-    photoUrl: invoice.photo_url,
-    status: invoice.status,
-    items: (items || []).map((row: any) => ({
+    id: (invoice as any).id,
+    chefId: (invoice as any).chef_id,
+    vendorId: (invoice as any).vendor_id,
+    invoiceNumber: (invoice as any).invoice_number,
+    invoiceDate: (invoice as any).invoice_date,
+    totalCents: (invoice as any).total_cents,
+    photoUrl: (invoice as any).photo_url,
+    status: (invoice as any).status,
+    items: ((items || []) as any[]).map((row: any) => ({
       id: row.id,
       vendorInvoiceId: row.vendor_invoice_id,
       itemName: row.item_name,
-      quantity: parseFloat(row.quantity),
+      quantity: Number(row.quantity),
       unitPriceCents: row.unit_price_cents,
       totalCents: row.total_cents,
       matchedIngredientId: row.matched_ingredient_id,
       priceChanged: row.price_changed,
     })),
-    createdAt: invoice.created_at,
-    updatedAt: invoice.updated_at,
+    createdAt: (invoice as any).created_at,
+    updatedAt: (invoice as any).updated_at,
   }
 }
 
@@ -160,11 +159,10 @@ export async function matchInvoiceItems(
 ): Promise<void> {
   const user = await requireChef()
   const parsed = MatchInvoiceItemsSchema.parse({ invoiceId, matches })
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify the invoice belongs to this chef
-  const { data: invoice, error: verifyError } = await supabase
-    .from('vendor_invoices')
+  const { data: invoice, error: verifyError } = await (supabase.from('vendor_invoices') as any)
     .select('id')
     .eq('id', parsed.invoiceId)
     .eq('chef_id', user.tenantId!)
@@ -174,27 +172,26 @@ export async function matchInvoiceItems(
 
   // Update each item's matched_ingredient_id
   for (const match of parsed.matches) {
-    const { error } = await supabase
-      .from('vendor_invoice_items')
+    const { error } = await (supabase.from('vendor_invoice_items') as any)
       .update({ matched_ingredient_id: match.ingredientId })
       .eq('id', match.itemId)
       .eq('vendor_invoice_id', parsed.invoiceId)
 
-    if (error) throw new Error(`Failed to match item ${match.itemId}: ${error.message}`)
+    if (error) throw new Error(`Failed to match item ${match.itemId}: ${(error as any).message}`)
   }
 
   // Check if all items on the invoice are now matched
-  const { data: allItems } = await supabase
-    .from('vendor_invoice_items')
+  const { data: allItems } = await (supabase.from('vendor_invoice_items') as any)
     .select('matched_ingredient_id')
     .eq('vendor_invoice_id', parsed.invoiceId)
 
-  const allMatched = (allItems || []).every((item: any) => item.matched_ingredient_id !== null)
+  const allMatched = ((allItems || []) as any[]).every(
+    (item: any) => item.matched_ingredient_id !== null
+  )
 
   // If all items are matched, update invoice status to 'matched'
   if (allMatched) {
-    await supabase
-      .from('vendor_invoices')
+    await (supabase.from('vendor_invoices') as any)
       .update({ status: 'matched' })
       .eq('id', parsed.invoiceId)
       .eq('chef_id', user.tenantId!)
@@ -209,10 +206,9 @@ export async function matchInvoiceItems(
  */
 export async function getVendorInvoices(filters?: InvoiceFilters): Promise<VendorInvoice[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
-  let query = supabase
-    .from('vendor_invoices')
+  let query = (supabase.from('vendor_invoices') as any)
     .select('*')
     .eq('chef_id', user.tenantId!)
     .order('invoice_date', { ascending: false })
@@ -225,29 +221,28 @@ export async function getVendorInvoices(filters?: InvoiceFilters): Promise<Vendo
 
   const { data: invoices, error } = await query
 
-  if (error) throw new Error(`Failed to fetch invoices: ${error.message}`)
+  if (error) throw new Error(`Failed to fetch invoices: ${(error as any).message}`)
 
   // Fetch items for all invoices in one query
-  const invoiceIds = (invoices || []).map((inv: any) => inv.id)
+  const invoiceIds = ((invoices || []) as any[]).map((inv: any) => inv.id)
 
   if (invoiceIds.length === 0) return []
 
-  const { data: allItems, error: itemsError } = await supabase
-    .from('vendor_invoice_items')
+  const { data: allItems, error: itemsError } = await (supabase.from('vendor_invoice_items') as any)
     .select('*')
     .in('vendor_invoice_id', invoiceIds)
 
-  if (itemsError) throw new Error(`Failed to fetch invoice items: ${itemsError.message}`)
+  if (itemsError) throw new Error(`Failed to fetch invoice items: ${(itemsError as any).message}`)
 
   // Group items by invoice_id
   const itemsByInvoice = new Map<string, any[]>()
-  for (const item of allItems || []) {
+  for (const item of (allItems || []) as any[]) {
     const list = itemsByInvoice.get(item.vendor_invoice_id) || []
     list.push(item)
     itemsByInvoice.set(item.vendor_invoice_id, list)
   }
 
-  return (invoices || []).map((inv: any) => ({
+  return ((invoices || []) as any[]).map((inv: any) => ({
     id: inv.id,
     chefId: inv.chef_id,
     vendorId: inv.vendor_id,
@@ -260,7 +255,7 @@ export async function getVendorInvoices(filters?: InvoiceFilters): Promise<Vendo
       id: row.id,
       vendorInvoiceId: row.vendor_invoice_id,
       itemName: row.item_name,
-      quantity: parseFloat(row.quantity),
+      quantity: Number(row.quantity),
       unitPriceCents: row.unit_price_cents,
       totalCents: row.total_cents,
       matchedIngredientId: row.matched_ingredient_id,
@@ -276,32 +271,29 @@ export async function getVendorInvoices(filters?: InvoiceFilters): Promise<Vendo
  */
 export async function flagPriceChange(invoiceItemId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify the item belongs to an invoice owned by this chef
-  const { data: item, error: fetchError } = await supabase
-    .from('vendor_invoice_items')
+  const { data: item, error: fetchError } = await (supabase.from('vendor_invoice_items') as any)
     .select('vendor_invoice_id')
     .eq('id', invoiceItemId)
     .single()
 
   if (fetchError || !item) throw new Error('Invoice item not found')
 
-  const { data: invoice, error: verifyError } = await supabase
-    .from('vendor_invoices')
+  const { data: invoice, error: verifyError } = await (supabase.from('vendor_invoices') as any)
     .select('id')
-    .eq('id', item.vendor_invoice_id)
+    .eq('id', (item as any).vendor_invoice_id)
     .eq('chef_id', user.tenantId!)
     .single()
 
   if (verifyError || !invoice) throw new Error('Invoice not found or access denied')
 
-  const { error } = await supabase
-    .from('vendor_invoice_items')
+  const { error } = await (supabase.from('vendor_invoice_items') as any)
     .update({ price_changed: true })
     .eq('id', invoiceItemId)
 
-  if (error) throw new Error(`Failed to flag price change: ${error.message}`)
+  if (error) throw new Error(`Failed to flag price change: ${(error as any).message}`)
 
   revalidatePath('/inventory/invoices')
 }

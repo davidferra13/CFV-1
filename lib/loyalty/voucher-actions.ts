@@ -44,7 +44,7 @@ type IncentiveDeliveryRecord = {
   sent_at: string
 }
 
-type UntypedSupabaseClient = ReturnType<typeof createServerClient> & {
+type UntypedSupabaseClient = any & {
   from: (relation: string) => any
 }
 

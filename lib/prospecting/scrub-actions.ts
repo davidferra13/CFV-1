@@ -449,7 +449,7 @@ async function gatherNewsIntel(
 // ── Progress helper ─────────────────────────────────────────────────────────
 
 async function updateProgress(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   sessionId: string,
   message: string,
   extraFields?: Record<string, unknown>
@@ -465,7 +465,7 @@ async function updateProgress(
 export async function scrubProspects(query: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!query.trim()) throw new Error('Query is required')
 
@@ -1014,7 +1014,7 @@ export async function scrubProspects(query: string) {
 export async function reEnrichProspect(prospectId: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: prospect, error } = await supabase
     .from('prospects')
@@ -1191,7 +1191,7 @@ export async function reEnrichProspect(prospectId: string) {
 export async function batchReEnrich() {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Find prospects that are stale (>14 days since enrichment) or never enriched
   const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
@@ -1235,7 +1235,7 @@ export async function batchReEnrich() {
 export async function getScrubSessionProgress(sessionId: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('prospect_scrub_sessions')
@@ -1255,7 +1255,7 @@ export async function getScrubSessionProgress(sessionId: string) {
 export async function competitorIntelScrub(region: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   if (!region.trim()) throw new Error('Region is required for competitor intelligence scrub')
 
@@ -1520,7 +1520,7 @@ export async function competitorIntelScrub(region: string) {
 export async function lookalikeProspect(sourceProspectId: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Load the source prospect
   const { data: source, error } = await supabase

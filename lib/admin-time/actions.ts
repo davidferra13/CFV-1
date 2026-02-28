@@ -42,7 +42,7 @@ export type LogAdminTimeInput = z.infer<typeof LogAdminTimeSchema>
 export async function logAdminTime(input: LogAdminTimeInput) {
   const user = await requireChef()
   const validated = LogAdminTimeSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('admin_time_logs')
@@ -65,7 +65,7 @@ export async function logAdminTime(input: LogAdminTimeInput) {
 
 export async function deleteAdminTimeLog(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   await supabase.from('admin_time_logs').delete().eq('id', id).eq('chef_id', user.tenantId!)
 
@@ -78,7 +78,7 @@ export async function deleteAdminTimeLog(id: string) {
  */
 export async function getAdminTimeForPeriod(startDate: string, endDate: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('admin_time_logs')
@@ -117,7 +117,7 @@ export async function getAdminTimeThisWeek() {
  */
 export async function getAdminTimeForEvent(eventId: string): Promise<number> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('admin_time_logs')

@@ -23,7 +23,7 @@ export function getCachedCannabisAccess(authUserId: string, userEmail: string): 
       // Admins always have cannabis access
       if (ADMIN_EMAILS.length > 0 && ADMIN_EMAILS.includes(userEmail)) return true
 
-      const supabase = createAdminClient()
+      const supabase: any = createAdminClient()
       const { data, error } = await supabase
         .from('cannabis_tier_users')
         .select('status')
@@ -43,7 +43,7 @@ export function getCachedCannabisAccess(authUserId: string, userEmail: string): 
 export function getCachedChefArchetype(chefId: string): Promise<ArchetypeId | null> {
   return unstable_cache(
     async (): Promise<ArchetypeId | null> => {
-      const supabase = createAdminClient()
+      const supabase: any = createAdminClient()
       const { data } = await supabase
         .from('chef_preferences')
         .select('archetype')
@@ -74,7 +74,7 @@ export type CachedDeletionStatus = {
 export function getCachedDeletionStatus(chefId: string): Promise<CachedDeletionStatus> {
   return unstable_cache(
     async (): Promise<CachedDeletionStatus> => {
-      const supabase = createAdminClient()
+      const supabase: any = createAdminClient()
       const { data: chef } = await supabase
         .from('chefs')
         .select('deletion_requested_at, deletion_scheduled_for, deletion_reason')

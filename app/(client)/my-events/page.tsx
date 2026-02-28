@@ -262,7 +262,7 @@ const TIER_LABELS: Record<string, string> = {
 
 export default async function MyEventsPage() {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [eventsResult, loyaltyStatus] = await Promise.all([
     getClientEvents({ pastLimit: 5 }),

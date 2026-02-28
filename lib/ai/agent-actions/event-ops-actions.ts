@@ -27,7 +27,7 @@ import { z } from 'zod'
 // ─── Event Finder Helper ─────────────────────────────────────────────────────
 
 async function findEvent(identifier: string, tenantId: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const { data: events } = await supabase
     .from('events')
     .select('id, occasion, event_date, status, client:clients(full_name)')

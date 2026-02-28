@@ -117,7 +117,7 @@ export const operationsAgentActions: AgentActionDefinition[] = [
           ? `${payload.scheduled_date}T${payload.scheduled_time}:00`
           : new Date().toISOString()
 
-      const supabase = createServerClient()
+      const supabase: any = createServerClient()
       const { data, error } = await supabase
         .from('scheduled_calls')
         .insert({
@@ -176,7 +176,7 @@ export const operationsAgentActions: AgentActionDefinition[] = [
     },
 
     async commitAction(payload) {
-      const supabase = createServerClient()
+      const supabase: any = createServerClient()
       const user = await (await import('@/lib/auth/get-user')).requireChef()
       const { error } = await supabase.from('chef_todos').insert({
         tenant_id: user.tenantId,
@@ -228,7 +228,7 @@ export const operationsAgentActions: AgentActionDefinition[] = [
     },
 
     async commitAction(payload) {
-      const supabase = createServerClient()
+      const supabase: any = createServerClient()
       const user = await (await import('@/lib/auth/get-user')).requireChef()
       const { error } = await supabase.from('expenses').insert({
         tenant_id: user.tenantId,

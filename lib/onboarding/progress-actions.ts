@@ -19,7 +19,7 @@ export type OnboardingProgress = {
 
 export async function getOnboardingProgress(): Promise<OnboardingProgress> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [chefRow, clients, loyaltyConfig, recipes, staff] = await Promise.all([
     supabase

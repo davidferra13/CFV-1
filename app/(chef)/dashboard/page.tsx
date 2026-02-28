@@ -520,7 +520,7 @@ export default async function ChefDashboard() {
     safe(
       'chefProfile',
       async () => {
-        const supabase = createServerClient()
+        const supabase: any = createServerClient()
         const { data } = await supabase
           .from('chefs')
           .select('slug, display_name')
@@ -548,7 +548,7 @@ export default async function ChefDashboard() {
       if (eventIds.size === 0) return {}
 
       // Fetch coordinates for these events from the database
-      const supabase = createServerClient()
+      const supabase: any = createServerClient()
       const { data: eventCoords } = await supabase
         .from('events')
         .select('id, event_date, location_lat, location_lng')

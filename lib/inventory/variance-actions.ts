@@ -42,7 +42,7 @@ export type VarianceTrendPoint = {
  * Returns Map<ingredientId, { ingredientName, unit, expectedQty, lastPriceCents }>
  */
 async function getExpectedForEvent(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   eventId: string
 ): Promise<
@@ -138,7 +138,7 @@ async function getExpectedForEvent(
  */
 export async function getEventVarianceReport(eventId: string): Promise<EventVarianceReport> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get expected ingredient quantities from the recipe chain
   const expectedMap = await getExpectedForEvent(supabase, user.tenantId!, eventId)
@@ -220,7 +220,7 @@ export async function getEventVarianceReport(eventId: string): Promise<EventVari
  */
 export async function getVarianceTrend(months: number = 6): Promise<VarianceTrendPoint[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Compute date range
   const now = new Date()
@@ -319,7 +319,7 @@ export async function getIngredientVarianceHistory(
   months: number = 6
 ): Promise<Array<{ month: string; totalUsed: number; eventCount: number }>> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Compute date range
   const now = new Date()

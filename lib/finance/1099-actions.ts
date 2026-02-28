@@ -53,7 +53,7 @@ function buildAddress(s: {
 
 export async function generate1099NECReports(taxYear: number): Promise<Form1099NEC[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all active staff with W-9 fields
   const { data: staff, error: staffError } = await supabase

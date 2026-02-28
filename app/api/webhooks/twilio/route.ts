@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    const supabase = createAdminClient()
+    const supabase: any = createAdminClient()
 
     // Try to match inbound phone to a client
     // Strip formatting: +1 (555) 123-4567 → search for various formats
@@ -31,22 +31,22 @@ export async function POST(request: NextRequest) {
     let tenantId: string | null = null
 
     for (const pattern of searchPatterns) {
-      const { data: client } = await supabase
+      const { data: client } = await (supabase
         .from('clients')
-        .select('id, chef_id')
-        .ilike('phone', `%${pattern.slice(-10)}%`) // Match last 10 digits
+        .select('id, tenant_id')
+        .ilike('phone', `%${pattern.slice(-10)}%`)
         .limit(1)
-        .single()
+        .single() as any)
 
       if (client) {
-        clientId = client.id
-        tenantId = client.chef_id
+        clientId = (client as any).id
+        tenantId = (client as any).tenant_id
         break
       }
     }
 
     // Store the message (even if we can't match a client — it'll show as unlinked)
-    await supabase.from('messages').insert({
+    await (supabase as any).from('messages').insert({
       tenant_id: tenantId,
       client_id: clientId,
       direction: 'inbound',

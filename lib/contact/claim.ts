@@ -32,7 +32,7 @@ type ContactSubmission = {
  */
 export async function getUnclaimedSubmissions() {
   await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('contact_submissions')
@@ -56,7 +56,7 @@ export async function getUnclaimedSubmissions() {
  */
 export async function getUnclaimedCount(): Promise<number> {
   await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { count, error } = await supabase
     .from('contact_submissions')
@@ -80,7 +80,7 @@ export async function getUnclaimedCount(): Promise<number> {
  */
 export async function claimContactSubmission(submissionId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // 1. Fetch and verify unclaimed
   const { data: submission, error: fetchError } = await supabase
@@ -142,7 +142,7 @@ export async function claimContactSubmission(submissionId: string) {
  */
 export async function dismissContactSubmission(submissionId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('contact_submissions')
@@ -174,7 +174,7 @@ export async function getLinkedContactSubmission(
   inquiryId: string
 ): Promise<{ id: string } | null> {
   await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('contact_submissions')
@@ -192,7 +192,7 @@ export async function getLinkedContactSubmission(
  */
 export async function releaseToMarketplace(inquiryId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify inquiry exists, belongs to this chef, and is still 'new'
   const { data: inquiry, error: inquiryError } = await supabase

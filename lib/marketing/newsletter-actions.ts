@@ -15,7 +15,7 @@ export async function subscribeToNewsletter(
   }
 
   try {
-    const supabase = createAdminClient()
+    const supabase: any = createAdminClient()
 
     const { error } = await supabase
       .from('newsletter_subscribers')

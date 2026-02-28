@@ -79,7 +79,10 @@ export function AvailabilityShareSettings({ tokens }: { tokens: Token[] }) {
                       </div>
                       <p className="text-xs text-stone-400 truncate mt-0.5">{url}</p>
                       <p className="text-xs text-stone-400">
-                        Created {new Date(token.created_at).toLocaleDateString()}
+                        Created{' '}
+                        {token.created_at
+                          ? new Date(token.created_at).toLocaleDateString()
+                          : 'Unknown'}
                       </p>
                     </div>
                     <div className="flex gap-2 shrink-0">

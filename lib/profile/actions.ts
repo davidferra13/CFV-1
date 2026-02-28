@@ -168,7 +168,7 @@ export async function getPublicChefProfile(slug: string) {
 export async function updateChefSlug(slug: string) {
   const user = await requireChef()
   const validated = SlugSchema.parse(slug)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Check uniqueness
   const { data: existing } = await supabase
@@ -200,7 +200,7 @@ export async function updateChefSlug(slug: string) {
 
 export async function updateChefTagline(tagline: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase.from('chefs').update({ tagline }).eq('id', user.entityId)
 
@@ -224,7 +224,7 @@ const UpdateChefPortalThemeSchema = z.object({
 export async function updateChefPortalTheme(input: z.infer<typeof UpdateChefPortalThemeSchema>) {
   const user = await requireChef()
   const validated = UpdateChefPortalThemeSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: currentChef } = await supabase
     .from('chefs')
@@ -360,7 +360,7 @@ export async function uploadChefPortalBackgroundImage(
 
 export async function getChefSlug() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('chefs')

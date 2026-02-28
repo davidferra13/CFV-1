@@ -31,7 +31,7 @@ export type LogPriceInput = z.infer<typeof LogPriceSchema>
 export async function logIngredientPrice(input: LogPriceInput) {
   const user = await requireChef()
   const validated = LogPriceSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Auto-compute price_per_unit if not provided
   const pricePerUnit =
@@ -63,7 +63,7 @@ export async function logIngredientPrice(input: LogPriceInput) {
  */
 export async function getIngredientPriceHistory(ingredientId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('ingredient_price_history')
@@ -85,7 +85,7 @@ export async function getIngredientPriceHistory(ingredientId: string) {
  */
 export async function getIngredientAveragePrice(ingredientId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('ingredient_price_history')
@@ -142,7 +142,7 @@ export async function getIngredientAveragePrice(ingredientId: string) {
  */
 export async function getIngredientPriceAlerts() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get all ingredients with price history
   const { data: ingredients } = await supabase
@@ -191,7 +191,7 @@ export async function getIngredientPriceAlerts() {
  */
 export async function getStoreComparison(ingredientId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('ingredient_price_history')
@@ -224,7 +224,7 @@ export async function getStoreComparison(ingredientId: string) {
 // --- Internal helper ---
 
 async function updateIngredientPriceFields(ingredientId: string, tenantId: string) {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: history } = await supabase
     .from('ingredient_price_history')

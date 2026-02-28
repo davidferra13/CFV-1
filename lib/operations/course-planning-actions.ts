@@ -46,7 +46,7 @@ export async function generateDefaultCourses(
   courseNames: string[]
 ): Promise<{ success: boolean; courses: ServiceCourse[] }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const validated = GenerateCoursesSchema.parse({ eventId, courseNames })
 
@@ -119,7 +119,7 @@ export async function generateDefaultCourses(
  */
 export async function reorderCourses(courseIds: string[]): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const validated = ReorderCoursesSchema.parse({ courseIds })
 
@@ -172,7 +172,7 @@ export async function reorderCourses(courseIds: string[]): Promise<{ success: bo
  */
 export async function getEventCourses(eventId: string): Promise<ServiceCourse[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const validatedEventId = z.string().uuid().parse(eventId)
 
@@ -207,7 +207,7 @@ export async function updateCourseNotes(
   notes: string
 ): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const validatedCourseId = z.string().uuid().parse(courseId)
   const validatedNotes = z.string().max(1000).parse(notes)

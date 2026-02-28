@@ -27,7 +27,7 @@ export async function checkClientDuplicates(
   candidates: { full_name: string; email?: string | null }[]
 ): Promise<DuplicateCheckResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const emails = candidates
     .map((c) => c.email)
@@ -75,7 +75,7 @@ export async function checkClientDuplicates(
 
 export async function importClient(parsed: ParsedClient) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Build regular_guests JSON
   const regularGuests =
@@ -184,7 +184,7 @@ export async function importClients(parsedClients: ParsedClient[]) {
 
 export async function importRecipe(parsed: ParsedRecipe) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Create the recipe record
   const { data: recipe, error: recipeError } = await supabase
@@ -245,7 +245,7 @@ export async function importRecipe(parsed: ParsedRecipe) {
  * Find existing ingredient by name (case-insensitive) or create new one
  */
 async function findOrCreateIngredient(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   userId: string,
   ing: ParsedIngredient
@@ -300,7 +300,7 @@ export type BrainDumpImportResult = {
 
 export async function importBrainDump(parsed: BrainDumpResult): Promise<BrainDumpImportResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const result: BrainDumpImportResult = {
     clients: [],

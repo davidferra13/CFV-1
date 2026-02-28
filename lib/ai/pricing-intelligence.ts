@@ -34,7 +34,7 @@ export type PricingIntelligenceResult = z.infer<typeof PricingIntelligenceSchema
 
 export async function getPricingIntelligence(eventId: string): Promise<PricingIntelligenceResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const [eventResult, historicalResult] = await Promise.all([
     supabase

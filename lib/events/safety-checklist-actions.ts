@@ -23,7 +23,7 @@ const DEFAULT_SAFETY_ITEMS = [
 export async function getOrCreateSafetyChecklist(eventId: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Try to fetch existing checklist
   const { data: existing, error: fetchError } = await supabase
@@ -69,7 +69,7 @@ export async function getOrCreateSafetyChecklist(eventId: string) {
 export async function toggleSafetyItem(checklistId: string, itemKey: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: checklist, error: fetchError } = await supabase
     .from('event_safety_checklists')
@@ -117,7 +117,7 @@ export async function toggleSafetyItem(checklistId: string, itemKey: string) {
 export async function completeSafetyChecklist(checklistId: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: checklist, error: fetchError } = await supabase
     .from('event_safety_checklists')

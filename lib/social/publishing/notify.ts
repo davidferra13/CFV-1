@@ -20,7 +20,7 @@ export async function sendChefPublishFailureNotification(
   postTitle: string,
   platform: SocialPlatform
 ): Promise<void> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const label = PLATFORM_LABELS[platform] ?? platform
 
   // Resolve chef's auth_user_id from user_roles

@@ -46,7 +46,7 @@ export async function loadRemyClientContext(
   clientId: string,
   tenantId: string
 ): Promise<RemyClientContext> {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Load client profile
   const { data: client } = await supabase

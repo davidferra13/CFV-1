@@ -14,7 +14,7 @@ type Likelihood = 'hot' | 'warm' | 'cold'
  */
 export async function setInquiryLikelihood(inquiryId: string, likelihood: Likelihood | null) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('inquiries')

@@ -43,14 +43,21 @@ export type ShortageAlert = {
   costImpactCents: number
 }
 
+// ─── Supabase helper ────────────────────────────────────────────
+function db(supabase: any) {
+  return {
+    transactions: () => supabase.from('inventory_transactions' as any) as any,
+  }
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────
 
 /**
- * Walk the event → menu → dishes → components → recipes → recipe_ingredients chain
- * and aggregate ingredient demand. Returns a Map of ingredientId → aggregate info.
+ * Walk the event -> menu -> dishes -> components -> recipes -> recipe_ingredients chain
+ * and aggregate ingredient demand. Returns a Map of ingredientId -> aggregate info.
  */
 async function aggregateIngredientDemand(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   eventFilter: { ids?: string[]; daysAhead?: number }
 ): Promise<
@@ -89,7 +96,7 @@ async function aggregateIngredientDemand(
   if (eventsError) throw new Error(`Failed to fetch events: ${eventsError.message}`)
   if (!events || events.length === 0) return new Map()
 
-  const eventIds = events.map((e: any) => e.id)
+  const eventIds = (events as any[]).map((e: any) => e.id)
   const eventDateMap = new Map<string, string>()
   for (const e of events as any[]) {
     eventDateMap.set(e.id, e.event_date)
@@ -115,7 +122,6 @@ async function aggregateIngredientDemand(
   const { data: dishes, error: dishesError } = await supabase
     .from('dishes')
     .select('id, menu_id')
-    .eq('tenant_id', tenantId)
     .in('menu_id', menuIds)
 
   if (dishesError) throw new Error(`Failed to fetch dishes: ${dishesError.message}`)
@@ -131,14 +137,13 @@ async function aggregateIngredientDemand(
   const { data: components, error: compsError } = await supabase
     .from('components')
     .select('id, dish_id, recipe_id, scale_factor')
-    .eq('tenant_id', tenantId)
     .in('dish_id', dishIds)
     .not('recipe_id', 'is', null)
 
   if (compsError) throw new Error(`Failed to fetch components: ${compsError.message}`)
   if (!components || components.length === 0) return new Map()
 
-  // Build recipe_id → [{scaleFactor, eventId}]
+  // Build recipe_id -> [{scaleFactor, eventId}]
   const recipeToUsages = new Map<string, Array<{ scaleFactor: number; eventId: string }>>()
   for (const comp of components as any[]) {
     const menuId = dishMenuMap.get(comp.dish_id)
@@ -159,8 +164,9 @@ async function aggregateIngredientDemand(
   if (recipeIds.length === 0) return new Map()
 
   // Fetch recipe_ingredients with ingredient details
-  const { data: recipeIngredients, error: riError } = await supabase
-    .from('recipe_ingredients')
+  const { data: recipeIngredients, error: riError } = await (
+    supabase.from('recipe_ingredients') as any
+  )
     .select(
       `
       recipe_id, ingredient_id, quantity, unit,
@@ -169,7 +175,7 @@ async function aggregateIngredientDemand(
     )
     .in('recipe_id', recipeIds)
 
-  if (riError) throw new Error(`Failed to fetch recipe ingredients: ${riError.message}`)
+  if (riError) throw new Error(`Failed to fetch recipe ingredients: ${(riError as any).message}`)
   if (!recipeIngredients) return new Map()
 
   // Aggregate by ingredient across all recipe usages
@@ -190,7 +196,7 @@ async function aggregateIngredientDemand(
     if (!ingredient || !ingredient.id) continue
 
     const usages = recipeToUsages.get(ri.recipe_id) || []
-    const qty = parseFloat(ri.quantity) || 0
+    const qty = Number(ri.quantity) || 0
 
     for (const usage of usages) {
       const scaledQty = qty * usage.scaleFactor
@@ -221,7 +227,7 @@ async function aggregateIngredientDemand(
  * Get current on-hand stock for a set of ingredient IDs by summing inventory_transactions.
  */
 async function getCurrentStock(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   ingredientIds: string[]
 ): Promise<Map<string, number>> {
@@ -229,21 +235,24 @@ async function getCurrentStock(
   if (ingredientIds.length === 0) return stockMap
 
   // Sum inventory_transactions per ingredient
-  const { data: transactions, error } = await supabase
-    .from('inventory_transactions' as any)
+  const { data: transactions, error } = await db(supabase)
+    .transactions()
     .select('ingredient_id, quantity')
     .eq('chef_id', tenantId)
     .in('ingredient_id', ingredientIds)
 
   if (error) {
-    console.error('[getCurrentStock] Failed to fetch inventory transactions:', error.message)
+    console.error(
+      '[getCurrentStock] Failed to fetch inventory transactions:',
+      (error as any).message
+    )
     return stockMap
   }
 
   for (const tx of (transactions as any[]) || []) {
     if (!tx.ingredient_id) continue
     const current = stockMap.get(tx.ingredient_id) || 0
-    stockMap.set(tx.ingredient_id, current + (parseFloat(tx.quantity) || 0))
+    stockMap.set(tx.ingredient_id, current + (Number(tx.quantity) || 0))
   }
 
   return stockMap
@@ -253,13 +262,13 @@ async function getCurrentStock(
 
 /**
  * Get demand forecast for the next N days.
- * Walks upcoming events → menus → dishes → components → recipes → recipe_ingredients.
+ * Walks upcoming events -> menus -> dishes -> components -> recipes -> recipe_ingredients.
  * Compares to current stock (from inventory_transactions).
  * Returns ForecastItem[] with deficit = max(0, totalNeeded - currentStock).
  */
 export async function getDemandForecast(daysAhead: number = 14): Promise<ForecastItem[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const demand = await aggregateIngredientDemand(supabase, user.tenantId!, { daysAhead })
 
@@ -304,15 +313,14 @@ export async function getDemandForecast(daysAhead: number = 14): Promise<Forecas
  */
 export async function getReorderSuggestions(): Promise<ReorderGroup[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get demand forecast items with a deficit
   const forecast = await getDemandForecast(14)
   const deficitItems = forecast.filter((item) => item.deficit > 0)
 
   // Also check inventory_counts for items below par_level
-  const { data: parAlerts } = await supabase
-    .from('inventory_counts')
+  const { data: parAlerts } = await (supabase.from('inventory_counts') as any)
     .select('ingredient_id, ingredient_name, current_qty, par_level, unit, vendor_id')
     .eq('chef_id', user.tenantId!)
     .not('par_level', 'is', null)
@@ -342,8 +350,8 @@ export async function getReorderSuggestions(): Promise<ReorderGroup[]> {
 
   // Add par-level shortfalls (merge if already in forecast)
   for (const row of (parAlerts as any[]) || []) {
-    const currentQty = parseFloat(row.current_qty) || 0
-    const parLevel = parseFloat(row.par_level) || 0
+    const currentQty = Number(row.current_qty) || 0
+    const parLevel = Number(row.par_level) || 0
     if (currentQty >= parLevel) continue
     if (!row.ingredient_id) continue
 
@@ -369,17 +377,18 @@ export async function getReorderSuggestions(): Promise<ReorderGroup[]> {
   if (mergedMap.size === 0) return []
 
   // Look up preferred vendors for these ingredients
+  // Note: ingredients table has preferred_vendor (not preferred_vendor_id)
   const ingredientIds = [...mergedMap.keys()]
 
   const { data: ingredients } = await supabase
     .from('ingredients')
-    .select('id, preferred_vendor_id')
+    .select('id, preferred_vendor')
     .in('id', ingredientIds)
 
-  // Build ingredient → vendorId mapping
+  // Build ingredient -> vendorId mapping
   const ingredientVendorMap = new Map<string, string | null>()
   for (const ing of (ingredients as any[]) || []) {
-    ingredientVendorMap.set(ing.id, ing.preferred_vendor_id ?? null)
+    ingredientVendorMap.set(ing.id, ing.preferred_vendor ?? null)
   }
 
   // Fetch vendor names
@@ -389,8 +398,7 @@ export async function getReorderSuggestions(): Promise<ReorderGroup[]> {
   const vendorNameMap = new Map<string, string>()
 
   if (vendorIds.length > 0) {
-    const { data: vendors } = await supabase
-      .from('vendors' as any)
+    const { data: vendors } = await (supabase.from('vendors') as any)
       .select('id, name')
       .in('id', vendorIds)
 
@@ -436,12 +444,12 @@ export async function getReorderSuggestions(): Promise<ReorderGroup[]> {
 
 /**
  * Get shortage alerts for a specific event.
- * Walks event → menu → recipes → ingredients and compares to current stock.
+ * Walks event -> menu -> recipes -> ingredients and compares to current stock.
  * Returns items where on-hand stock is less than what the event requires.
  */
 export async function getShortageAlerts(eventId: string): Promise<ShortageAlert[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const demand = await aggregateIngredientDemand(supabase, user.tenantId!, { ids: [eventId] })
 

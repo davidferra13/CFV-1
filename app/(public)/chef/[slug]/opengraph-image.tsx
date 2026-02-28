@@ -7,7 +7,7 @@ export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
 export default async function Image({ params }: { params: { slug: string } }) {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const { data: chef } = await supabase
     .from('chefs')
     .select('display_name, tagline, bio, profile_image_url, cuisine_types')

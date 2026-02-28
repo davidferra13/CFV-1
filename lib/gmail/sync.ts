@@ -180,7 +180,7 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
 // ─── Process Single Message ─────────────────────────────────────────────────
 
 async function processMessage(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   accessToken: string,
   messageId: string,
   chefId: string,
@@ -289,7 +289,7 @@ async function processMessage(
 // ─── Handle Inquiry Email ───────────────────────────────────────────────────
 
 async function handleInquiry(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   email: ParsedEmail,
   chefId: string,
   tenantId: string,
@@ -454,7 +454,7 @@ async function handleInquiry(
 // ─── Handle Existing Thread Email ───────────────────────────────────────────
 
 async function handleExistingThread(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   email: ParsedEmail,
   tenantId: string,
   classification: { category: string; confidence: string },
@@ -581,7 +581,7 @@ async function handleExistingThread(
 // ─── TakeAChef Email Handler ────────────────────────────────────────────────
 
 async function handleTakeAChefEmail(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   email: ParsedEmail,
   chefId: string,
   tenantId: string,
@@ -642,7 +642,7 @@ async function handleTakeAChefEmail(
 // ─── TAC: New Inquiry ──────────────────────────────────────────────────────
 
 async function handleTacNewInquiry(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   email: ParsedEmail,
   parsed: TacParseResult,
   chefId: string,
@@ -823,7 +823,7 @@ async function handleTacNewInquiry(
 // ─── TAC: Client Message ───────────────────────────────────────────────────
 
 async function handleTacClientMessage(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   email: ParsedEmail,
   parsed: TacParseResult,
   tenantId: string,
@@ -897,7 +897,7 @@ async function handleTacClientMessage(
 // ─── TAC: Booking Confirmed ────────────────────────────────────────────────
 
 async function handleTacBookingConfirmed(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   email: ParsedEmail,
   parsed: TacParseResult,
   chefId: string,
@@ -1047,7 +1047,7 @@ async function handleTacBookingConfirmed(
 // ─── TAC: Customer Information (Personal Info Reveal) ──────────────────────
 
 async function handleTacCustomerInfo(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   email: ParsedEmail,
   parsed: TacParseResult,
   tenantId: string,
@@ -1141,7 +1141,7 @@ async function handleTacCustomerInfo(
 // ─── TAC: Payment ──────────────────────────────────────────────────────────
 
 async function handleTacPayment(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   email: ParsedEmail,
   parsed: TacParseResult,
   tenantId: string,
@@ -1179,7 +1179,7 @@ async function handleTacPayment(
 // ─── Yhangry Email Handler ─────────────────────────────────────────────────
 
 async function handleYhangryEmail(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   email: ParsedEmail,
   chefId: string,
   tenantId: string,
@@ -1232,7 +1232,7 @@ async function handleYhangryEmail(
 // ─── Yhangry: New Inquiry ─────────────────────────────────────────────────
 
 async function handleYhangryNewInquiry(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   email: ParsedEmail,
   parsed: YhangryParseResult,
   chefId: string,
@@ -1385,7 +1385,7 @@ async function handleYhangryNewInquiry(
 // ─── Yhangry: Client Message ──────────────────────────────────────────────
 
 async function handleYhangryClientMessage(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   email: ParsedEmail,
   parsed: YhangryParseResult,
   tenantId: string,
@@ -1453,7 +1453,7 @@ async function handleYhangryClientMessage(
 // ─── Yhangry: Booking Confirmed ──────────────────────────────────────────
 
 async function handleYhangryBookingConfirmed(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   email: ParsedEmail,
   parsed: YhangryParseResult,
   chefId: string,
@@ -1514,7 +1514,7 @@ async function handleYhangryBookingConfirmed(
 // ─── Log Sync Entry ─────────────────────────────────────────────────────────
 
 async function logSyncEntry(
-  supabase: ReturnType<typeof createServerClient>,
+  supabase: any,
   tenantId: string,
   email: ParsedEmail,
   entry: {

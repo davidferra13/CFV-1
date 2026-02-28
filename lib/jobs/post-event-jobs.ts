@@ -27,7 +27,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
  * client opted out of marketing, etc).
  */
 async function getPostEventContext(eventId: string, tenantId: string, clientId: string) {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Fetch event — verify it's still completed (not somehow cancelled after trigger)
   const { data: event, error: eventErr } = await supabase

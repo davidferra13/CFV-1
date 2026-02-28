@@ -68,7 +68,7 @@ export async function checkInquiryDuplicates(
   candidates: { client_name: string; first_contact_at: string }[]
 ): Promise<Map<string, boolean>> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Build a map: "name|date" → is duplicate
   const results = new Map<string, boolean>()
@@ -116,7 +116,7 @@ async function importSingleInquiry(
   tenantId: string,
   userId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const validated = ImportInquirySchema.parse(input)
 

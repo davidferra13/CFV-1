@@ -31,7 +31,7 @@ export interface SpendingSummary {
  */
 export async function getClientSpendingSummary(): Promise<SpendingSummary> {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Fetch all non-draft, non-cancelled events for this client with financials
   const { data: events, error } = await supabase

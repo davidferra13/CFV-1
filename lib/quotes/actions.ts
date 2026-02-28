@@ -75,7 +75,7 @@ export type UpdateQuoteInput = z.infer<typeof UpdateQuoteSchema>
 export async function createQuote(input: CreateQuoteInput) {
   const user = await requireChef()
   const validated = CreateQuoteSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify client belongs to tenant
   const { data: client } = await supabase
@@ -183,7 +183,7 @@ export async function getQuotes(filters?: {
   event_id?: string
 }) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const buildQuery = (withSoftDeleteFilter: boolean) => {
     let query = supabase
@@ -246,7 +246,7 @@ export async function getQuotes(filters?: {
 
 export async function getQuoteById(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
     let query = supabase
@@ -299,7 +299,7 @@ export async function updateQuote(id: string, input: UpdateQuoteInput) {
   const user = await requireChef()
   const validated = UpdateQuoteSchema.parse(input)
   const { expected_updated_at, idempotency_key, ...updateFields } = validated
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Verify quote exists and is in draft
   const { data: current } = await (supabase
@@ -433,7 +433,7 @@ export async function updateQuote(id: string, input: UpdateQuoteInput) {
 
 export async function transitionQuote(id: string, newStatus: QuoteStatus) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const getCurrentQuote = async (withSoftDeleteFilter: boolean) => {
     let query = supabase
@@ -653,7 +653,7 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
 
 export async function getClientPricingHistory(clientId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
     let query = supabase
@@ -702,7 +702,7 @@ export async function getClientPricingHistory(clientId: string) {
 
 export async function getQuotesForInquiry(inquiryId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
     let query = supabase
@@ -737,7 +737,7 @@ export async function getQuotesForInquiry(inquiryId: string) {
 
 export async function deleteQuote(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: quote } = await (supabase
     .from('quotes')
@@ -776,7 +776,7 @@ export async function deleteQuote(id: string) {
 
 export async function restoreQuote(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('quotes')
@@ -877,7 +877,7 @@ export type QuoteVersionSummary = {
  */
 export async function reviseQuote(quoteId: string): Promise<{ success: true; newQuoteId: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: original } = await supabase
     .from('quotes')
@@ -942,7 +942,7 @@ export async function reviseQuote(quoteId: string): Promise<{ success: true; new
  */
 export async function getQuoteVersionHistory(quoteId: string): Promise<QuoteVersionSummary[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Walk back through the version chain to find the root
   let rootId = quoteId

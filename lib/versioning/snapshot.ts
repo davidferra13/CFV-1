@@ -19,7 +19,7 @@ export async function saveSnapshot(
   changeSummary?: string
 ): Promise<void> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Get current max version for this entity
   const { data: latest } = await supabase
@@ -49,7 +49,7 @@ export async function getVersionHistory(
   entityId: string
 ): Promise<DocumentVersion[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('document_versions' as any)

@@ -28,7 +28,7 @@ export async function fetchFrontOfHouseMenuData(
   eventId: string
 ): Promise<FrontOfHouseMenuData | null> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')
@@ -90,7 +90,7 @@ export async function fetchFrontOfHouseMenuDataForClient(
   eventId: string
 ): Promise<FrontOfHouseMenuData | null> {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: event } = await supabase
     .from('events')

@@ -26,11 +26,11 @@ async function handleRaffleDraw(request: NextRequest): Promise<NextResponse> {
   const today = new Date().toISOString().split('T')[0]
 
   // Find all active rounds whose month has ended
-  const { data: expiredRounds, error } = await supabase
-    .from('raffle_rounds')
+  const { data: expiredRounds, error } = await (supabase
+    .from('raffle_rounds' as any)
     .select('id, month_label, tenant_id')
     .eq('status', 'active')
-    .lt('month_end', today)
+    .lt('month_end', today) as any)
 
   if (error) {
     console.error('[Raffle Draw Cron] Failed to query rounds:', error)
@@ -45,7 +45,7 @@ async function handleRaffleDraw(request: NextRequest): Promise<NextResponse> {
     error?: string
   }[] = []
 
-  for (const round of expiredRounds || []) {
+  for (const round of (expiredRounds || []) as any[]) {
     console.log(`[Raffle Draw Cron] Drawing winner for ${round.month_label} (${round.id})`)
     const result = await drawRaffleWinner(round.id)
     results.push({

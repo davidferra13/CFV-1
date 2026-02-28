@@ -45,7 +45,7 @@ export async function handleInquiryCreated(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const inquiryId = String(payload.inquiryId ?? '')
 
   const { data: inquiry } = await (supabase
@@ -110,7 +110,7 @@ export async function handleEventConfirmed(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const eventId = String(payload.eventId ?? '')
 
   const event = await loadEventWithClient(supabase, eventId, tenantId)
@@ -160,7 +160,7 @@ export async function handleEventCompleted(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const eventId = String(payload.eventId ?? '')
 
   const event = await loadEventWithClient(supabase, eventId, tenantId)
@@ -215,7 +215,7 @@ export async function handleEventCancelled(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const eventId = String(payload.eventId ?? '')
 
   const event = await loadEventWithClient(supabase, eventId, tenantId)
@@ -265,7 +265,7 @@ export async function handleMenuApproved(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const eventId = String(payload.eventId ?? '')
   const clientId = String(payload.clientId ?? '')
 
@@ -298,7 +298,7 @@ export async function handlePaymentReceived(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const eventId = String(payload.eventId ?? '')
   const amountCents = Number(payload.amountCents ?? 0)
 
@@ -328,7 +328,7 @@ export async function handleGuestListUpdated(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const eventId = String(payload.eventId ?? '')
 
   // Load the event to get client_id
@@ -392,7 +392,7 @@ export async function handleStaffNoShow(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const eventId = String(payload.eventId ?? '')
   const staffName = String(payload.staffName ?? 'Unknown')
 
@@ -448,7 +448,7 @@ export async function handleClientBirthday(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const clientId = String(payload.clientId ?? '')
 
   const { data: client } = await supabase
@@ -494,7 +494,7 @@ export async function handleClientComplaint(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const clientId = String(payload.clientId ?? '')
   const complaint = String(payload.complaint ?? '')
 
@@ -527,7 +527,7 @@ export async function handleFoodRecall(
   const reason = String(payload.reason ?? '')
 
   // Check upcoming events for the ingredient
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const today = new Date().toISOString().split('T')[0]
 
   const { data: upcomingEvents } = await supabase
@@ -561,7 +561,7 @@ export async function handlePaymentOverdue(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const eventId = String(payload.eventId ?? '')
 
   const event = await loadEventWithClient(supabase, eventId, tenantId)
@@ -629,7 +629,7 @@ export async function handleInquiryStale(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
   const inquiryId = String(payload.inquiryId ?? '')
 
   const { data: inquiry } = await (supabase

@@ -19,7 +19,7 @@ function row(cells: (string | number | null | undefined)[]): string {
 
 export async function GET() {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: clients } = await supabase
     .from('clients')

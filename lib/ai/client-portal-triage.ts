@@ -28,7 +28,7 @@ export type TriageResult = z.infer<typeof TriageResultSchema>
 
 export async function triageIncomingMessage(messageId: string): Promise<TriageResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: message } = await supabase
     .from('messages')

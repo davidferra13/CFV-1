@@ -15,7 +15,7 @@ import type { ChefFolder, ChefDocument } from './document-management-types'
  */
 export async function listFolders(): Promise<ChefFolder[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await (supabase
     .from('chef_folders' as any)
@@ -44,7 +44,7 @@ export async function createFolder(
   icon?: string
 ): Promise<{ success: boolean; folder?: ChefFolder; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await (supabase
     .from('chef_folders' as any)
@@ -85,7 +85,7 @@ export async function moveDocumentToFolder(
   folderId: string | null
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('chef_documents')
@@ -106,7 +106,7 @@ export async function moveDocumentToFolder(
  */
 export async function listDocuments(folderId?: string | null): Promise<ChefDocument[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   let query = supabase
     .from('chef_documents')
@@ -141,7 +141,7 @@ export async function listDocuments(folderId?: string | null): Promise<ChefDocum
  */
 export async function searchDocuments(query: string): Promise<ChefDocument[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('chef_documents')
@@ -169,7 +169,7 @@ export async function deleteFolder(
   folderId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Move documents out of folder first
   await supabase

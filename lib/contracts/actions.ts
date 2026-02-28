@@ -93,7 +93,7 @@ function renderMergeFields(
 export async function createContractTemplate(input: CreateTemplateInput) {
   const user = await requireChef()
   const validated = CreateTemplateSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const db = supabase as any
 
@@ -129,7 +129,7 @@ export async function createContractTemplate(input: CreateTemplateInput) {
 export async function updateContractTemplate(id: string, input: UpdateTemplateInput) {
   const user = await requireChef()
   const validated = UpdateTemplateSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
   const db = supabase as any
 
   // If setting as default, unset existing default first
@@ -180,7 +180,7 @@ type ContractTemplate = {
 
 export async function listContractTemplates(): Promise<ContractTemplate[]> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data, error } = await supabase
     .from('contract_templates')
@@ -199,7 +199,7 @@ export async function listContractTemplates(): Promise<ContractTemplate[]> {
 
 export async function deleteContractTemplate(id: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { error } = await supabase
     .from('contract_templates')
@@ -226,7 +226,7 @@ export async function deleteContractTemplate(id: string) {
  */
 export async function generateEventContract(eventId: string, templateId?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   // Load event + client
   const { data: event, error: eventError } = await supabase
@@ -334,7 +334,7 @@ export async function generateEventContract(eventId: string, templateId?: string
  */
 export async function sendContractToClient(contractId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: contract, error } = await supabase
     .from('event_contracts')
@@ -396,7 +396,7 @@ export async function sendContractToClient(contractId: string) {
  */
 export async function recordClientView(contractId: string) {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: contract } = await supabase
     .from('event_contracts')
@@ -423,7 +423,7 @@ export async function recordClientView(contractId: string) {
 export async function signContract(input: SignContractInput) {
   const user = await requireClient()
   const validated = SignContractSchema.parse(input)
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: contract } = await supabase
     .from('event_contracts')
@@ -516,7 +516,7 @@ export async function signContract(input: SignContractInput) {
  */
 export async function voidContract(contractId: string, reason?: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: contract } = await supabase
     .from('event_contracts')
@@ -576,7 +576,7 @@ export async function voidContract(contractId: string, reason?: string) {
  */
 export async function getEventContract(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('event_contracts')
@@ -595,7 +595,7 @@ export async function getEventContract(eventId: string) {
  */
 export async function getClientEventContract(eventId: string) {
   const user = await requireClient()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data } = await supabase
     .from('event_contracts')

@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: 'Certifications — ChefFlow' }
 
 export default async function ProtectionCertificationsPage() {
   const chef = await requireChef()
-  const supabase = createServerClient()
+  const supabase: any = createServerClient()
 
   const { data: certs } = await supabase
     .from('chef_certifications')
