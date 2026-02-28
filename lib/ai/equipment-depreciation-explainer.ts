@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // Equipment Depreciation Plain-Language Explainer
@@ -13,6 +12,7 @@ import { parseWithOllama } from './parse-ollama'
 import { OllamaOfflineError } from './ollama-errors'
 import { z } from 'zod'
 import { calculateDepreciationFormula } from '@/lib/formulas/depreciation'
+import type { EquipmentItem } from '@/lib/formulas/depreciation'
 
 export interface EquipmentExplanation {
   itemName: string
@@ -56,14 +56,15 @@ const EquipmentReportSchema = z.object({
 
 export async function explainEquipmentDepreciation(): Promise<EquipmentDepreciationReport> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
+  // equipment_items uses chef_id (not tenant_id) and useful_life_years (not depreciation_years)
   const { data: equipment } = await supabase
     .from('equipment_items')
     .select(
-      'name, purchase_price_cents, purchase_date, depreciation_years, depreciation_method, category'
+      'name, purchase_price_cents, purchase_date, useful_life_years, depreciation_method, category'
     )
-    .eq('tenant_id', user.tenantId!)
+    .eq('chef_id', user.tenantId!)
     .gt('purchase_price_cents', 0)
     .order('purchase_date', { ascending: false })
     .limit(30)
@@ -81,11 +82,22 @@ export async function explainEquipmentDepreciation(): Promise<EquipmentDepreciat
   }
 
   const currentYear = new Date().getFullYear()
-  const equipmentList = equipment.map((e: any) => ({
+
+  // Map DB columns to formula's expected EquipmentItem shape
+  const formulaEquipment: EquipmentItem[] = equipment.map((e) => ({
+    name: e.name,
+    purchase_price_cents: e.purchase_price_cents,
+    purchase_date: e.purchase_date,
+    depreciation_years: e.useful_life_years,
+    depreciation_method: e.depreciation_method,
+    category: e.category,
+  }))
+
+  const equipmentList = equipment.map((e) => ({
     name: e.name,
     priceDollars: (e.purchase_price_cents ?? 0) / 100,
     purchaseDate: e.purchase_date ?? 'Unknown',
-    depreciationYears: e.depreciation_years ?? 5,
+    depreciationYears: e.useful_life_years ?? 5,
     method: e.depreciation_method ?? 'straight_line',
   }))
 
@@ -108,7 +120,7 @@ Equipment items:
 ${equipmentList.map((e) => `- ${e.name}: $${e.priceDollars.toFixed(2)}, purchased ${e.purchaseDate}, depreciation: ${e.depreciationYears}-year ${e.method}`).join('\n')}`
 
   // Formula: straight-line depreciation — always runs first (pure math, always correct)
-  const formulaResult = calculateDepreciationFormula(equipment, currentYear)
+  const formulaResult = calculateDepreciationFormula(formulaEquipment, currentYear)
 
   // Try AI enhancement (Ollama) for richer plain-English explanations
   // If Ollama is offline → fall back to formulaResult (no data leak, just less pretty text)

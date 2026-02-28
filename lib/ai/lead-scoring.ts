@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // Lead Scoring
@@ -28,15 +27,15 @@ export type LeadScore = z.infer<typeof LeadScoreSchema>
 
 export async function scoreInquiry(inquiryId: string): Promise<LeadScore> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const [inquiryResult, historicalResult] = await Promise.all([
     supabase
       .from('inquiries')
       .select(
         `
-        status, notes, created_at, confirmed_budget_cents,
-        clients(full_name, preferences),
+        status, source_message, created_at, confirmed_budget_cents,
+        clients(full_name, dietary_restrictions),
         events(occasion, guest_count, event_date, quoted_price_cents)
       `
       )
@@ -56,7 +55,7 @@ export async function scoreInquiry(inquiryId: string): Promise<LeadScore> {
 
   const historical = historicalResult.data ?? []
   const totalHistorical = historical.length
-  const converted = historical.filter((i) => i.status === 'converted').length
+  const converted = historical.filter((i: { status: string }) => i.status === 'converted').length
   const historicalRate = totalHistorical > 0 ? Math.round((converted / totalHistorical) * 100) : 0
 
   const event = Array.isArray(inquiry.events) ? inquiry.events[0] : inquiry.events
@@ -87,13 +86,13 @@ Return valid JSON only.`
 Inquiry Details:
   Status: ${inquiry.status}
   Budget: ${budgetCents > 0 ? '$' + (budgetCents / 100).toFixed(0) : 'Not specified'}
-  Notes/description: ${inquiry.notes ?? 'None'}
+  Notes/description: ${inquiry.source_message ?? 'None'}
   Days since inquiry: ${daysSinceInquiry}
   Days until event: ${daysUntilEvent ?? 'Date not set'}
   Occasion: ${event?.occasion ?? 'Not specified'}
   Guest count: ${event?.guest_count ?? 'Unknown'}
-  Client: ${client ? ((client as any).full_name ?? 'Unknown') : 'New client'}
-  Client preferences on file: ${client ? ((client as any).preferences ?? 'None') : 'No prior history'}
+  Client: ${client ? (client.full_name ?? 'Unknown') : 'New client'}
+  Client preferences on file: ${client ? (client.dietary_restrictions?.join(', ') ?? 'None') : 'No prior history'}
 
 Chef's historical conversion rate: ${historicalRate}% (based on ${totalHistorical} closed inquiries)
 

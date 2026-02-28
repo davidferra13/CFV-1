@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // Gratuity Framing Message Generator
@@ -33,15 +32,15 @@ const GratuityFramingSchema = z.object({
 
 export async function draftGratuityFraming(eventId: string): Promise<GratuityFramingDraft> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data: event } = await supabase
     .from('events')
     .select(
       `
-      occasion, guest_count, event_date, quoted_price_cents, amount_paid_cents, service_style,
+      occasion, guest_count, event_date, quoted_price_cents, service_style,
       client_id,
-      clients(full_name, preferences)
+      clients(full_name)
     `
     )
     .eq('id', eventId)
@@ -51,7 +50,7 @@ export async function draftGratuityFraming(eventId: string): Promise<GratuityFra
   if (!event) throw new Error('Event not found')
 
   const client = Array.isArray(event.clients) ? event.clients[0] : event.clients
-  const clientName = (client as any)?.full_name ?? 'Client'
+  const clientName = client?.full_name ?? 'Client'
   const firstName = clientName.split(' ')[0]
 
   // Get event count for this client (relationship depth)
@@ -63,7 +62,7 @@ export async function draftGratuityFraming(eventId: string): Promise<GratuityFra
     .in('status', ['completed', 'in_progress'])
 
   const isReturningClient = (eventCount ?? 0) > 1
-  const totalSpend = event.amount_paid_cents ?? event.quoted_price_cents ?? 0
+  const totalSpend = event.quoted_price_cents ?? 0
   const isHighValue = totalSpend > 200000 // >$2,000
   const isVeryHighValue = totalSpend > 500000 // >$5,000
 

@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // AAR (After-Action Report) Generator
@@ -38,42 +37,50 @@ const AARDraftAISchema = z.object({
 
 export async function generateAARDraft(eventId: string): Promise<AARDraft> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
-  // @ts-ignore - supabase type depth
-  const eventResult: any = await supabase
+  const eventResult = await supabase
     .from('events')
     .select(
       `
       occasion, guest_count, event_date, serve_time, status,
       quoted_price_cents, service_style,
-      dietary_restrictions, allergies, special_requests, notes,
+      dietary_restrictions, allergies, special_requests, kitchen_notes,
       client_id, clients(full_name)
     `
     )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
-  // @ts-ignore - supabase type depth
-  const menuResult: any = await supabase
-    .from('event_menu_components' as any)
+
+  // event_menu_components is not in generated types — table exists in DB but not yet in types/database.ts
+  const menuResult = (await (supabase.from as Function)('event_menu_components')
     .select('name, course_type, description')
-    .eq('event_id', eventId)
-  // @ts-ignore - supabase type depth
-  const expensesResult: any = await supabase
+    .eq('event_id', eventId)) as {
+    data: Array<{ name: string; course_type: string | null; description: string | null }> | null
+  }
+
+  const expensesResult = await supabase
     .from('expenses')
     .select('description, amount_cents, category')
     .eq('event_id', eventId)
-  // @ts-ignore - supabase type depth
-  const debrief: any = await supabase
-    .from('aars' as any)
+
+  // aars table is not in generated types — table exists in DB but not yet in types/database.ts
+  const debrief = (await (supabase.from as Function)('aars')
     .select('chef_notes, client_feedback, rating')
     .eq('event_id', eventId)
-    .maybeSingle()
-  // @ts-ignore - supabase type depth
-  const tempLog: any = await supabase
-    .from('temp_logs' as any)
-    .select('food_item, temp_f, stage, logged_at')
+    .maybeSingle()) as {
+    data: {
+      chef_notes: string | null
+      client_feedback: string | null
+      rating: number | null
+    } | null
+  }
+
+  // event_temp_logs exists in schema
+  const tempLog = await supabase
+    .from('event_temp_logs')
+    .select('item_description, temp_fahrenheit, phase, logged_at')
     .eq('event_id', eventId)
     .limit(10)
 
@@ -87,7 +94,7 @@ export async function generateAARDraft(eventId: string): Promise<AARDraft> {
 
   const client = Array.isArray(event.clients) ? event.clients[0] : event.clients
   const totalRevenue = event.quoted_price_cents ?? 0
-  const totalExpenses = expenses.reduce((s, e) => s + (e.amount_cents ?? 0), 0)
+  const totalExpenses = expenses.reduce((s: number, e) => s + (e.amount_cents ?? 0), 0)
   const grossProfit = totalRevenue - totalExpenses
   const marginPct = totalRevenue > 0 ? Math.round((grossProfit / totalRevenue) * 100) : 0
 
@@ -110,7 +117,7 @@ Return ONLY valid JSON.`
 
   const userContent = `EVENT SUMMARY:
   Occasion: ${event.occasion ?? 'Private Event'}
-  Client: ${(client as any)?.full_name ?? 'Unknown'}
+  Client: ${client?.full_name ?? 'Unknown'}
   Date: ${event.event_date ?? 'Unknown'}
   Guests: ${event.guest_count ?? 'Unknown'}
   Service style: ${event.service_style ?? 'Unknown'}
@@ -127,10 +134,10 @@ FINANCIALS:
 ${expenses.map((e) => `  - ${e.category ?? 'other'}: $${((e.amount_cents ?? 0) / 100).toFixed(2)} — ${e.description}`).join('\n') || '  No expenses logged'}
 
 TEMPERATURE LOG (${temps.length} entries):
-${temps.map((t) => `  - ${t.food_item}: ${t.temp_f}°F at ${t.stage ?? 'unknown stage'}`).join('\n') || '  No temp log'}
+${temps.map((t) => `  - ${t.item_description}: ${t.temp_fahrenheit}°F at ${t.phase ?? 'unknown phase'}`).join('\n') || '  No temp log'}
 
 EXISTING NOTES:
-  Chef notes: ${existingDebrief?.chef_notes ?? event.notes ?? 'None'}
+  Chef notes: ${existingDebrief?.chef_notes ?? event.kitchen_notes ?? 'None'}
   Client feedback: ${existingDebrief?.client_feedback ?? 'Not yet collected'}
   Rating: ${existingDebrief?.rating ?? 'Not rated'}
   Special requests fulfilled: ${event.special_requests ?? 'None noted'}`

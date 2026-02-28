@@ -1,10 +1,9 @@
-// @ts-nocheck
-// TODO: This file references menu_items table which does not exist yet.
-// Suppress type checking until the schema is updated.
-// DEFERRED: Menu engineering analytics. Requires menu_items table (Phase 2 schema). Do not remove - will be enabled when schema is extended.
+// DEFERRED: Menu engineering analytics. The `menu_items` table does not exist in the current schema.
+// The BCG matrix logic (quadrant assignment, contribution analysis) is ready and correct.
+// When `menu_items` is added (Phase 2 schema), uncomment the database query in computeMenuEngineering
+// and wire it to the actual table columns. No importers reference this file currently.
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
 
 // ─── BCG Matrix Quadrants ───────────────────────────────────────────────────
@@ -34,7 +33,8 @@ export interface MenuEngineeringResult {
 
 // ─── Quadrant Assignment ────────────────────────────────────────────────────
 
-function assignQuadrant(
+// Exported for future use when menu_items table is added
+export function assignQuadrant(
   salesCount: number,
   contribution: number,
   avgPopularity: number,
@@ -51,90 +51,31 @@ function assignQuadrant(
 // ─── Compute Menu Engineering ───────────────────────────────────────────────
 
 export async function computeMenuEngineering(
-  menuId?: string,
-  targetFoodCostPct: number = 30
+  _menuId?: string,
+  _targetFoodCostPct: number = 30
 ): Promise<MenuEngineeringResult> {
-  const chef = await requireChef()
-  const supabase: any = createServerClient()
+  // Auth check — ensures only authenticated chefs can call this
+  await requireChef()
 
-  // Get menu items with their recipes and cost data
-  // TODO: menu_items table does not exist yet — using dishes as proxy
-  let query = supabase
-    .from('menu_items' as any)
-    .select(
-      `
-      id, name, price,
-      menu_id,
-      recipe:recipes(id, name, cost_per_serving)
-    `
-    )
-    .eq('menus.chef_id', chef.id)
-
-  if (menuId) {
-    query = query.eq('menu_id', menuId)
-  }
-
-  const { data: menuItems } = await query
-
-  if (!menuItems || menuItems.length === 0) {
-    return {
-      items: [],
-      avgContribution: 0,
-      avgPopularity: 0,
-      totalRevenue: 0,
-      totalFoodCost: 0,
-      overallFoodCostPct: 0,
-      alerts: [],
-    }
-  }
-
-  // Build items with sales data (using event history as proxy)
-  const rawItems = menuItems.map((mi: any) => {
-    const price = mi.price || 0
-    const cost = (mi.recipe as any)?.cost_per_serving || 0
-    const salesCount = 1 // placeholder — would come from event_menu_items join
-    return {
-      id: mi.id,
-      name: mi.name,
-      salesCount,
-      sellingPrice: price,
-      foodCost: cost,
-      contribution: price - cost,
-      foodCostPct: price > 0 ? Math.round((cost / price) * 1000) / 10 : 0,
-    }
-  })
-
-  const totalSales = rawItems.reduce((s, i) => s + i.salesCount, 0)
-  const avgPopularity = totalSales / rawItems.length
-  const totalContribution = rawItems.reduce((s, i) => s + i.contribution * i.salesCount, 0)
-  const totalSalesCount = rawItems.reduce((s, i) => s + i.salesCount, 0)
-  const avgContribution = totalSalesCount > 0 ? totalContribution / totalSalesCount : 0
-
-  const items: MenuEngineeringItem[] = rawItems.map((i) => ({
-    ...i,
-    quadrant: assignQuadrant(i.salesCount, i.contribution, avgPopularity, avgContribution),
-  }))
-
-  const totalRevenue = items.reduce((s, i) => s + i.sellingPrice * i.salesCount, 0)
-  const totalFoodCost = items.reduce((s, i) => s + i.foodCost * i.salesCount, 0)
-
-  const alerts = items
-    .filter((i) => i.foodCostPct > targetFoodCostPct)
-    .map((i) => ({
-      itemId: i.id,
-      itemName: i.name,
-      foodCostPct: i.foodCostPct,
-      message: `${i.name} food cost (${i.foodCostPct}%) exceeds target (${targetFoodCostPct}%)`,
-    }))
-
+  // TODO: menu_items table does not exist yet in the schema.
+  // When added, replace this stub with a real query:
+  //
+  //   const supabase = createServerClient()
+  //   const { data: menuItems } = await supabase
+  //     .from('menu_items')
+  //     .select('id, name, price, menu_id, recipe:recipes(id, name, cost_per_serving)')
+  //     .eq('tenant_id', chef.tenantId!)
+  //
+  //   Then process menuItems through the BCG matrix logic using assignQuadrant().
+  //
+  // For now, return empty result since there's no backing table.
   return {
-    items,
-    avgContribution,
-    avgPopularity,
-    totalRevenue,
-    totalFoodCost,
-    overallFoodCostPct:
-      totalRevenue > 0 ? Math.round((totalFoodCost / totalRevenue) * 1000) / 10 : 0,
-    alerts,
+    items: [],
+    avgContribution: 0,
+    avgPopularity: 0,
+    totalRevenue: 0,
+    totalFoodCost: 0,
+    overallFoodCostPct: 0,
+    alerts: [],
   }
 }

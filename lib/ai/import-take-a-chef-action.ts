@@ -1,4 +1,3 @@
-// @ts-nocheck — insert object has dynamic AI-parsed fields; strict typing not enforced here
 'use server'
 
 // Take a Chef AI Import Action
@@ -12,6 +11,7 @@ import { parseInquiryFromText } from '@/lib/ai/parse-inquiry'
 import { createClientFromLead } from '@/lib/clients/actions'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import type { Database } from '@/types/database'
 
 // ─── Input Schema ──────────────────────────────────────────────────────────
 
@@ -42,7 +42,7 @@ export async function importTakeAChefBooking(
 ): Promise<TakeAChefImportResult> {
   const user = await requireChef()
   const validated = TakeAChefImportSchema.parse(input)
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
   const tenantId = user.tenantId!
 
   try {
@@ -102,7 +102,8 @@ export async function importTakeAChefBooking(
         confirmed_service_expectations: parsed.confirmed_service_expectations || null,
         confirmed_cannabis_preference: parsed.confirmed_cannabis_preference || null,
         source_message: validated.rawText,
-        unknown_fields: unknownFields as any,
+        unknown_fields:
+          unknownFields as unknown as Database['public']['Tables']['inquiries']['Insert']['unknown_fields'],
         status: 'new',
         next_action_required: 'Review Take a Chef booking import',
         next_action_by: 'chef',
@@ -119,7 +120,7 @@ export async function importTakeAChefBooking(
       .from('events')
       .insert({
         tenant_id: tenantId,
-        client_id: clientId,
+        client_id: clientId!,
         inquiry_id: inquiry.id,
         event_date:
           parsed.confirmed_date ||
@@ -153,7 +154,7 @@ export async function importTakeAChefBooking(
     }
 
     // 6. Log event state transition (null → draft)
-    await supabase.from('event_state_transitions' as any).insert({
+    await supabase.from('event_state_transitions').insert({
       tenant_id: tenantId,
       event_id: event.id,
       from_status: null,
@@ -164,7 +165,7 @@ export async function importTakeAChefBooking(
     // 7. Link inquiry to event
     await supabase
       .from('inquiries')
-      .update({ converted_to_event_id: event.id } as any)
+      .update({ converted_to_event_id: event.id })
       .eq('id', inquiry.id)
 
     // 8. Log commission as expense (if requested and price is known)
@@ -250,7 +251,7 @@ export async function importTakeAChefBooking(
 export async function getChefDirectBookingLink(): Promise<string | null> {
   try {
     const user = await requireChef()
-    const supabase: any = createServerClient()
+    const supabase = createServerClient()
 
     const { data } = await supabase.from('chefs').select('slug').eq('id', user.tenantId!).single()
 

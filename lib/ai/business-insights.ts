@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // Business Insights Narrative
@@ -37,36 +36,35 @@ export type InsightCard = z.infer<typeof InsightCardSchema>
 
 export async function getBusinessInsights(): Promise<BusinessInsights> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const now = new Date()
   const thisYear = now.getFullYear()
   const thisMonth = now.getMonth() + 1
   const ytdStart = `${thisYear}-01-01`
 
-  // @ts-ignore - supabase type depth
-  const eventsResult: any = await supabase
+  const eventsResult = await supabase
     .from('events')
     .select('status, event_date, quoted_price_cents, occasion, guest_count')
     .eq('tenant_id', user.tenantId!)
     .order('event_date', { ascending: false })
     .limit(50)
-  // @ts-ignore - supabase type depth
-  const clientsResult: any = await supabase
+
+  const clientsResult = await supabase
     .from('clients')
     .select('id, full_name, created_at')
     .eq('tenant_id', user.tenantId!)
     .order('created_at', { ascending: false })
     .limit(50)
-  // @ts-ignore - supabase type depth
-  const expensesResult: any = await supabase
+
+  const expensesResult = await supabase
     .from('expenses')
     .select('amount_cents, category, created_at')
     .eq('tenant_id', user.tenantId!)
     .gte('created_at', ytdStart)
     .limit(200)
-  // @ts-ignore - supabase type depth
-  const inquiriesResult: any = await supabase
+
+  const inquiriesResult = await supabase
     .from('inquiries')
     .select('status, created_at, confirmed_budget_cents')
     .eq('tenant_id', user.tenantId!)
@@ -82,24 +80,24 @@ export async function getBusinessInsights(): Promise<BusinessInsights> {
   const completedEvents = events.filter((e) => e.status === 'completed')
   const ytdRevenue = completedEvents
     .filter((e) => e.event_date && e.event_date >= ytdStart)
-    .reduce((s: number, e: any) => s + (e.quoted_price_cents ?? 0), 0)
-  const ytdExpenses = expenses.reduce((s, e) => s + (e.amount_cents ?? 0), 0)
+    .reduce((s: number, e) => s + (e.quoted_price_cents ?? 0), 0)
+  const ytdExpenses = expenses.reduce((s: number, e) => s + (e.amount_cents ?? 0), 0)
   const ytdProfit = ytdRevenue - ytdExpenses
   const avgEventSize =
     completedEvents.length > 0
       ? Math.round(
-          completedEvents.reduce((s, e) => s + (e.quoted_price_cents ?? 0), 0) /
+          completedEvents.reduce((s: number, e) => s + (e.quoted_price_cents ?? 0), 0) /
             completedEvents.length
         )
       : 0
-  const conversionCount = inquiries.filter((i) => i.status === 'converted').length
+  const conversionCount = inquiries.filter((i) => i.status === 'confirmed').length
   const closedInquiries = inquiries.filter((i) =>
-    ['converted', 'declined', 'expired'].includes(i.status)
+    ['confirmed', 'declined', 'expired'].includes(i.status)
   ).length
   const conversionRate =
     closedInquiries > 0 ? Math.round((conversionCount / closedInquiries) * 100) : 0
   const activeInquiries = inquiries.filter(
-    (i) => !['converted', 'declined', 'expired'].includes(i.status)
+    (i) => !['confirmed', 'declined', 'expired'].includes(i.status)
   ).length
 
   // Monthly event distribution

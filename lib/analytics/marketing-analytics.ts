@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -65,12 +64,12 @@ function pct(n: number, d: number) {
 
 export async function getCampaignEmailStats(): Promise<CampaignEmailStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data: campaigns } = await supabase
     .from('marketing_campaigns')
     .select('id, name')
-    .eq('chef_id', chef.id)
+    .eq('chef_id', chef.entityId)
     .eq('status', 'sent')
 
   if (!campaigns?.length) {
@@ -92,7 +91,7 @@ export async function getCampaignEmailStats(): Promise<CampaignEmailStats> {
   const { data: recipients } = await supabase
     .from('campaign_recipients')
     .select('sent_at, opened_at, clicked_at, bounced_at, spam_at, unsubscribed_at, campaign_id')
-    .eq('chef_id', chef.id)
+    .eq('chef_id', chef.entityId)
     .in('campaign_id', campaignIds)
 
   const all = recipients ?? []
@@ -137,12 +136,12 @@ export async function getMarketingSpendByChannel(
   endDate: string
 ): Promise<MarketingSpendByChannel[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data } = await supabase
     .from('marketing_spend_log')
     .select('channel, amount_cents')
-    .eq('chef_id', chef.id)
+    .eq('chef_id', chef.entityId)
     .gte('spend_date', startDate)
     .lte('spend_date', endDate)
 
@@ -168,13 +167,13 @@ export async function getCostPerLeadByChannel(
   endDate: string
 ): Promise<CostPerLeadByChannel[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   // Marketing spend by channel in period
   const { data: spendData } = await supabase
     .from('marketing_spend_log')
     .select('channel, amount_cents')
-    .eq('chef_id', chef.id)
+    .eq('chef_id', chef.entityId)
     .gte('spend_date', startDate)
     .lte('spend_date', endDate)
 
@@ -202,7 +201,7 @@ export async function getCostPerLeadByChannel(
       const { count: leadCount } = await supabase
         .from('inquiries')
         .select('id', { count: 'exact', head: true })
-        .eq('tenant_id', chef.id)
+        .eq('tenant_id', chef.tenantId!)
         .in('channel', inquiryChannels)
         .gte('created_at', startDate)
         .lte('created_at', endDate)
@@ -210,7 +209,7 @@ export async function getCostPerLeadByChannel(
       const { count: bookedCount } = await supabase
         .from('inquiries')
         .select('id', { count: 'exact', head: true })
-        .eq('tenant_id', chef.id)
+        .eq('tenant_id', chef.tenantId!)
         .in('channel', inquiryChannels)
         .gte('created_at', startDate)
         .lte('created_at', endDate)
@@ -235,18 +234,18 @@ export async function getCostPerLeadByChannel(
 
 export async function getReviewStats(): Promise<ReviewStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data: reviews } = await supabase
     .from('client_reviews')
     .select('rating, created_at, client_id')
-    .eq('chef_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .order('created_at', { ascending: false })
 
   const { count: completedEvents } = await supabase
     .from('events')
     .select('id', { count: 'exact', head: true })
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .eq('status', 'completed')
 
   const all = reviews ?? []
@@ -292,12 +291,12 @@ export async function getReviewStats(): Promise<ReviewStats> {
 
 export async function getWebsiteStats(): Promise<WebsiteStatsLatest> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data } = await supabase
     .from('website_stats_snapshots')
     .select('*')
-    .eq('chef_id', chef.id)
+    .eq('chef_id', chef.entityId)
     .order('snapshot_month', { ascending: false })
     .limit(2)
 

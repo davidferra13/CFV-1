@@ -1,13 +1,12 @@
-// @ts-nocheck
-// TODO: This file references columns (total_price, etc.) that don't match the current schema.
-// Suppress type checking until revenue engine is aligned with schema.
-// DEFERRED: Revenue analytics engine. Requires menu_items table and total_price column (Phase 2 schema). Do not remove - will be enabled when schema is extended.
 // Note: 'use server' removed — file mixes server actions (async) with pure utility fns (sync)
 
 import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
+import type { Database } from '@/types/database'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
+
+type ClientRow = Database['public']['Tables']['clients']['Row']
 
 export interface DateRange {
   start: string // YYYY-MM-DD
@@ -99,7 +98,7 @@ export async function solveRevenueClosure(
 
 export async function computeDashboardKPIs(range: DateRange): Promise<DashboardKPIs> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   // Events in range
   const { data: events } = await supabase
@@ -120,7 +119,7 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
   // Inquiries in range
   const { data: inquiries } = await supabase
     .from('inquiries')
-    .select('id, status')
+    .select('id, status, converted_to_event_id')
     .eq('tenant_id', chef.tenantId!)
     .gte('created_at', range.start)
     .lte('created_at', range.end)
@@ -139,15 +138,13 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
 
   // Booked value from quoted_price_cents
   const nonCancelled = allEvents.filter((e) => e.status !== 'cancelled')
-  const bookedValue = nonCancelled.reduce((s, e) => s + ((e as any).quoted_price_cents || 0), 0)
+  const bookedValue = nonCancelled.reduce((s, e) => s + (e.quoted_price_cents || 0), 0)
 
   // Completed
   const completed = allEvents.filter((e) => e.status === 'completed')
 
-  // Conversion — inquiries that became events (status = confirmed or have a linked event)
-  const converted = allInquiries.filter(
-    (i) => i.status === 'confirmed' || (i as any).converted_to_event_id
-  )
+  // Conversion — inquiries that became events (have a linked event)
+  const converted = allInquiries.filter((i) => i.converted_to_event_id != null)
 
   // Average event value
   const avgValue = nonCancelled.length > 0 ? Math.round(bookedValue / nonCancelled.length) : 0
@@ -187,7 +184,7 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
 
 export async function computeRevenueByMonth(range: DateRange): Promise<RevenueByPeriod[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data: ledger } = await supabase
     .from('ledger_entries')
@@ -199,7 +196,7 @@ export async function computeRevenueByMonth(range: DateRange): Promise<RevenueBy
   const monthMap = new Map<string, number>()
 
   for (const entry of ledger || []) {
-    const key = (entry.created_at as string).slice(0, 7) // YYYY-MM
+    const key = entry.created_at.slice(0, 7) // YYYY-MM
     const current = monthMap.get(key) || 0
     const amount =
       entry.entry_type === 'refund' ? -Math.abs(entry.amount_cents) : entry.amount_cents
@@ -215,7 +212,7 @@ export async function computeRevenueByMonth(range: DateRange): Promise<RevenueBy
 
 export async function computeTopClients(range: DateRange): Promise<TopClient[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
@@ -230,12 +227,13 @@ export async function computeTopClients(range: DateRange): Promise<TopClient[]> 
   for (const e of events || []) {
     const clientId = e.client_id
     if (!clientId) continue
+    const clientJoin = e.clients as unknown as Pick<ClientRow, 'full_name'> | null
     const entry = clientMap.get(clientId) || {
-      name: ((e as any).clients as any)?.full_name || 'Unknown',
+      name: clientJoin?.full_name || 'Unknown',
       revenue: 0,
       count: 0,
     }
-    entry.revenue += (e as any).quoted_price_cents || 0
+    entry.revenue += e.quoted_price_cents || 0
     entry.count++
     clientMap.set(clientId, entry)
   }
@@ -254,7 +252,7 @@ export async function computeTopClients(range: DateRange): Promise<TopClient[]> 
 
 export async function computeSeasonalPerformance(range: DateRange): Promise<SeasonalMonth[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
@@ -275,7 +273,7 @@ export async function computeSeasonalPerformance(range: DateRange): Promise<Seas
   >()
 
   for (const e of events || []) {
-    const key = (e.event_date as string).slice(0, 7)
+    const key = e.event_date.slice(0, 7)
     const entry = monthMap.get(key) || {
       total: 0,
       cancelled: 0,
@@ -289,7 +287,7 @@ export async function computeSeasonalPerformance(range: DateRange): Promise<Seas
       entry.guestSum += e.guest_count
       entry.guestCount++
     }
-    entry.revenue += (e as any).quoted_price_cents || 0
+    entry.revenue += e.quoted_price_cents || 0
     monthMap.set(key, entry)
   }
 

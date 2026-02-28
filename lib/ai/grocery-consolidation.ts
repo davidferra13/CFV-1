@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // Grocery List Consolidation + Substitution
@@ -49,8 +48,9 @@ const GroceryResultSchema = z.object({
 
 export async function consolidateGroceryList(eventId: string): Promise<GroceryConsolidationResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
+  // event_menu_components is not in generated types — table exists in DB but not yet in types/database.ts
   const [eventResult, menuResult] = await Promise.all([
     supabase
       .from('events')
@@ -58,15 +58,23 @@ export async function consolidateGroceryList(eventId: string): Promise<GroceryCo
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    supabase
-      .from('event_menu_components' as any)
+    (supabase.from as Function)('event_menu_components')
       .select(
         `
         name,
-        recipes(name, servings, recipe_ingredients(ingredient_name, quantity, unit, category, notes))
+        recipes(name, servings, recipe_ingredients(ingredient_id, quantity, unit))
       `
       )
-      .eq('event_id', eventId),
+      .eq('event_id', eventId) as Promise<{
+      data: Array<{
+        name: string
+        recipes: {
+          name: string
+          servings: number | null
+          recipe_ingredients: Array<{ ingredient_id: string; quantity: number; unit: string }>
+        } | null
+      }> | null
+    }>,
   ])
 
   const event = eventResult.data
@@ -76,9 +84,11 @@ export async function consolidateGroceryList(eventId: string): Promise<GroceryCo
   const guestCount = event.guest_count ?? 10
 
   // Flatten all ingredients with recipe context
+  // Note: recipe_ingredients uses ingredient_id FK to ingredients table,
+  // not a direct ingredient_name column. We use ingredient_id as placeholder.
   const allIngredients: {
     recipeName: string
-    ingredientName: string
+    ingredientId: string
     quantity: string
     unit: string
     servings: number
@@ -87,17 +97,15 @@ export async function consolidateGroceryList(eventId: string): Promise<GroceryCo
   for (const item of menuItems) {
     const recipe = Array.isArray(item.recipes) ? item.recipes[0] : item.recipes
     if (!recipe) continue
-    const recipeServings = (recipe as any).servings ?? 4
+    const recipeServings = recipe.servings ?? 4
     const scaleFactor = guestCount / recipeServings
-    const ingredients = Array.isArray((recipe as any).recipe_ingredients)
-      ? (recipe as any).recipe_ingredients
-      : []
+    const ingredients = Array.isArray(recipe.recipe_ingredients) ? recipe.recipe_ingredients : []
 
     for (const ing of ingredients) {
       allIngredients.push({
         recipeName: item.name,
-        ingredientName: ing.ingredient_name,
-        quantity: ing.quantity ? String(Math.ceil(parseFloat(ing.quantity) * scaleFactor)) : '',
+        ingredientId: ing.ingredient_id,
+        quantity: ing.quantity ? String(Math.ceil(Number(ing.quantity) * scaleFactor)) : '',
         unit: ing.unit ?? '',
         servings: recipeServings,
       })
@@ -115,10 +123,9 @@ export async function consolidateGroceryList(eventId: string): Promise<GroceryCo
     }
   }
 
-  const restrictions = [
-    ...((event.dietary_restrictions as string[]) ?? []),
-    ...((event.allergies as string[]) ?? []),
-  ].filter(Boolean)
+  const restrictions = [...(event.dietary_restrictions ?? []), ...(event.allergies ?? [])].filter(
+    Boolean
+  )
 
   const systemPrompt = `You are a professional chef's grocery planning assistant.
 Consolidate ingredient lists, combine duplicate ingredients, group by store section, and flag any items that conflict with dietary restrictions.
@@ -136,7 +143,7 @@ Return JSON with keys: ingredients (array of objects with name, totalQuantity, u
 Dietary restrictions/allergies: ${restrictions.join(', ') || 'None'}
 
 All ingredients (scaled for ${guestCount} guests):
-${allIngredients.map((i) => `- [${i.recipeName}] ${i.quantity} ${i.unit} ${i.ingredientName}`).join('\n')}`
+${allIngredients.map((i) => `- [${i.recipeName}] ${i.quantity} ${i.unit} (ingredient: ${i.ingredientId})`).join('\n')}`
 
   try {
     const parsed = await parseWithOllama(systemPrompt, userContent, GroceryResultSchema, {

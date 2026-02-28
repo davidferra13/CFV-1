@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // Chef Bio / Tagline Refresh
@@ -31,14 +30,12 @@ const ChefBioDraftSchema = z.object({
 
 export async function generateChefBioDraft(): Promise<ChefBioDraft> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const [chefResult, eventsResult, recipesResult] = await Promise.all([
     supabase
       .from('chefs')
-      .select(
-        'full_name, business_name, tagline, bio, years_experience, cuisine_specialties, certifications'
-      )
+      .select('display_name, business_name, tagline, bio')
       .eq('id', user.tenantId!)
       .single(),
     supabase
@@ -67,10 +64,9 @@ export async function generateChefBioDraft(): Promise<ChefBioDraft> {
       : 0
 
   const categories = [...new Set(recipes.map((r) => r.category).filter(Boolean))]
-  const dietaryTags = [
-    ...new Set(recipes.flatMap((r) => (r.dietary_tags as string[] | null) ?? [])),
-  ]
+  const dietaryTags = [...new Set(recipes.flatMap((r) => r.dietary_tags ?? []))]
 
+  // Note: chefs table does not have years_experience, cuisine_specialties, or certifications columns
   const systemPrompt = `You are a brand copywriter specializing in personal chef businesses.
 Write fresh bio copy and a tagline for a chef.
 Write in third person for long bio, first person for short bio.
@@ -80,13 +76,10 @@ Be specific, warm, and confidence-inspiring. Avoid cliches like "passionate" and
 Return JSON with keys: shortBio (2-3 sentence first-person bio for social profiles), longBio (4-6 sentence third-person bio for website), tagline (primary tagline under 10 words), linkedInHeadline (LinkedIn-style professional headline), alternativeTaglines (array of 2 alternative taglines).`
 
   const userContent = `Chef Details:
-  Name: ${chef?.full_name ?? 'Chef'}
+  Name: ${chef?.display_name ?? 'Chef'}
   Business: ${chef?.business_name ?? ''}
   Current tagline: ${chef?.tagline ?? 'None set'}
-  Current bio excerpt: ${chef?.bio ? (chef.bio as string).slice(0, 200) : 'None set'}
-  Years of experience: ${(chef as any)?.years_experience ?? 'Not specified'}
-  Cuisine specialties: ${(chef as any)?.cuisine_specialties ? ((chef as any).cuisine_specialties as string[]).join(', ') : 'Not specified'}
-  Certifications: ${(chef as any)?.certifications ?? 'Not specified'}
+  Current bio excerpt: ${chef?.bio ? chef.bio.slice(0, 200) : 'None set'}
 
 Recent Event History:
   Total completed events: ${totalEvents}

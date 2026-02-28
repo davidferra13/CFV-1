@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // Menu Nutritional Summary
@@ -44,7 +43,7 @@ const getClient = () => {
 
 export async function getMenuNutritionalSummary(eventId: string): Promise<MenuNutritionalSummary> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const [eventResult, menuResult] = await Promise.all([
     supabase
@@ -53,8 +52,9 @@ export async function getMenuNutritionalSummary(eventId: string): Promise<MenuNu
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
+    // @ts-expect-error event_menu_components not yet in generated types
     supabase
-      .from('event_menu_components' as any)
+      .from('event_menu_components')
       .select(
         `
         name, course_type, description, allergen_tags,
@@ -68,7 +68,21 @@ export async function getMenuNutritionalSummary(eventId: string): Promise<MenuNu
   const event = eventResult.data
   if (!event) throw new Error('Event not found')
 
-  const menuItems = menuResult.data ?? []
+  const menuItems = (menuResult.data ?? []) as Array<{
+    name: string
+    course_type: string | null
+    description: string | null
+    allergen_tags: string[] | null
+    recipes: {
+      name: string
+      servings: number | null
+      recipe_ingredients: Array<{
+        ingredient_name: string
+        quantity: number | null
+        unit: string | null
+      }>
+    } | null
+  }>
 
   if (menuItems.length === 0) {
     return {
@@ -95,18 +109,18 @@ Menu courses:
 ${menuItems
   .map((m) => {
     const recipe = Array.isArray(m.recipes) ? m.recipes[0] : m.recipes
-    const ingredients = recipe
-      ? Array.isArray((recipe as any).recipe_ingredients)
-        ? (recipe as any).recipe_ingredients
+    const ingredients = recipe?.recipe_ingredients
+      ? Array.isArray(recipe.recipe_ingredients)
+        ? recipe.recipe_ingredients
         : []
       : []
     return `- [${m.course_type ?? 'Course'}] ${m.name}${m.description ? ': ' + m.description : ''}
-  Ingredients: ${ingredients.map((i: any) => `${i.quantity ?? ''} ${i.unit ?? ''} ${i.ingredient_name}`).join(', ') || 'Not listed'}
-  Allergen tags: ${m.allergen_tags ? (m.allergen_tags as string[]).join(', ') : 'None noted'}`
+  Ingredients: ${ingredients.map((i) => `${i.quantity ?? ''} ${i.unit ?? ''} ${i.ingredient_name}`).join(', ') || 'Not listed'}
+  Allergen tags: ${m.allergen_tags ? m.allergen_tags.join(', ') : 'None noted'}`
   })
   .join('\n\n')}
 
-Guest dietary restrictions: ${[...((event.dietary_restrictions as string[]) ?? []), ...((event.allergies as string[]) ?? [])].join(', ') || 'None'}
+Guest dietary restrictions: ${[...(event.dietary_restrictions ?? []), ...(event.allergies ?? [])].join(', ') || 'None'}
 
 Return JSON: {
   "totalCaloriesPerGuest": number|null,

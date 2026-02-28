@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -98,12 +97,12 @@ function daysBetween(a: string | null, b: string | null): number | null {
 
 export async function getInquiryFunnelStats(): Promise<InquiryFunnelStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data } = await supabase
     .from('inquiries')
     .select('status, converted_to_event_id')
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
 
   const inquiries = data ?? []
   const total = inquiries.length
@@ -119,7 +118,7 @@ export async function getInquiryFunnelStats(): Promise<InquiryFunnelStats> {
   const { count: completedFromInquiries } = await supabase
     .from('inquiries')
     .select('id', { count: 'exact', head: true })
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .not('converted_to_event_id', 'is', null)
 
   return {
@@ -138,12 +137,12 @@ export async function getInquiryFunnelStats(): Promise<InquiryFunnelStats> {
 
 export async function getQuoteAcceptanceStats(): Promise<QuoteAcceptanceStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data } = await supabase
     .from('quotes')
     .select('status, total_quoted_cents')
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .in('status', ['sent', 'accepted', 'rejected', 'expired'])
 
   const quotes = data ?? []
@@ -172,12 +171,12 @@ export async function getQuoteAcceptanceStats(): Promise<QuoteAcceptanceStats> {
 
 export async function getGhostRateStats(): Promise<GhostRateStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data } = await supabase
     .from('inquiries')
     .select('status, ghost_at, created_at')
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
 
   const all = data ?? []
   const ghosted = all.filter((i) => i.status === 'expired')
@@ -199,12 +198,12 @@ export async function getGhostRateStats(): Promise<GhostRateStats> {
 
 export async function getLeadTimeStats(): Promise<LeadTimeStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data } = await supabase
     .from('events')
     .select('inquiry_received_at, event_date')
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .not('inquiry_received_at', 'is', null)
     .not('event_date', 'is', null)
 
@@ -229,7 +228,7 @@ export async function getLeadTimeStats(): Promise<LeadTimeStats> {
   const { data: quotes } = await supabase
     .from('quotes')
     .select('created_at, accepted_at')
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .eq('status', 'accepted')
     .not('accepted_at', 'is', null)
 
@@ -255,12 +254,12 @@ export async function getLeadTimeStats(): Promise<LeadTimeStats> {
 
 export async function getDeclineReasonStats(): Promise<DeclineReasonStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data } = await supabase
     .from('inquiries')
     .select('decline_reason')
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .not('decline_reason', 'is', null)
 
   const all = data ?? []
@@ -284,12 +283,12 @@ export async function getDeclineReasonStats(): Promise<DeclineReasonStats> {
 
 export async function getNegotiationStats(): Promise<NegotiationStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data } = await supabase
     .from('quotes')
     .select('total_quoted_cents, original_quoted_cents, negotiation_occurred')
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .not('total_quoted_cents', 'is', null)
 
   const quotes = data ?? []
@@ -334,13 +333,13 @@ export async function getNegotiationStats(): Promise<NegotiationStats> {
 
 export async function getAvgInquiryResponseTime(): Promise<ResponseTimeStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   // Find first outbound message per inquiry
   const { data: inquiries } = await supabase
     .from('inquiries')
     .select('id, created_at')
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
 
   if (!inquiries?.length) {
     return {

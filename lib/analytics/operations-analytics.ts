@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -64,7 +63,7 @@ export async function getComplianceStats(
   endDate?: string
 ): Promise<ComplianceStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   let query = supabase
     .from('events')
@@ -72,11 +71,11 @@ export async function getComplianceStats(
       `
       id, serve_time, service_started_at,
       reset_complete, actual_menu_deviations,
-      dietary_restrictions, receipt_uploaded,
+      dietary_restrictions,
       event_date
     `
     )
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .eq('status', 'completed')
 
   if (startDate) query = query.gte('event_date', startDate)
@@ -98,7 +97,6 @@ export async function getComplianceStats(
 
   // On-time start: service_started_at <= serve_time (same date)
   let onTimeCount = 0
-  let receiptOnTimeCount = 0
   let kitchenCompliantCount = 0
   let menuDeviationCount = 0
   let dietaryCount = 0
@@ -158,7 +156,7 @@ export async function getTimePhaseStats(
   endDate?: string
 ): Promise<TimePhaseStats[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   let query = supabase
     .from('events')
@@ -172,7 +170,7 @@ export async function getTimePhaseStats(
       event_date
     `
     )
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .eq('status', 'completed')
 
   if (startDate) query = query.gte('event_date', startDate)
@@ -180,42 +178,29 @@ export async function getTimePhaseStats(
 
   const { data: events } = await query
 
-  const phases = [
+  type PhaseConfig = {
+    key: string
+    label: string
+    start: keyof NonNullable<typeof events>[number]
+    end: keyof NonNullable<typeof events>[number]
+  }
+
+  const phases: PhaseConfig[] = [
     {
       key: 'shopping',
       label: 'Shopping',
-      start: 'shopping_started_at' as const,
-      end: 'shopping_completed_at' as const,
+      start: 'shopping_started_at',
+      end: 'shopping_completed_at',
     },
-    {
-      key: 'prep',
-      label: 'Prep',
-      start: 'prep_started_at' as const,
-      end: 'prep_completed_at' as const,
-    },
-    {
-      key: 'travel',
-      label: 'Travel',
-      start: 'travel_started_at' as const,
-      end: 'travel_completed_at' as const,
-    },
-    {
-      key: 'service',
-      label: 'Service',
-      start: 'service_started_at' as const,
-      end: 'service_completed_at' as const,
-    },
-    {
-      key: 'reset',
-      label: 'Reset/Cleanup',
-      start: 'reset_started_at' as const,
-      end: 'reset_completed_at' as const,
-    },
+    { key: 'prep', label: 'Prep', start: 'prep_started_at', end: 'prep_completed_at' },
+    { key: 'travel', label: 'Travel', start: 'travel_started_at', end: 'travel_completed_at' },
+    { key: 'service', label: 'Service', start: 'service_started_at', end: 'service_completed_at' },
+    { key: 'reset', label: 'Reset/Cleanup', start: 'reset_started_at', end: 'reset_completed_at' },
   ]
 
   return phases.map(({ label, start, end }) => {
     const durations = (events ?? [])
-      .map((ev) => phaseMinutes(ev[start], ev[end]))
+      .map((ev) => phaseMinutes(ev[start] as string | null, ev[end] as string | null))
       .filter((d): d is number => d !== null)
 
     if (durations.length === 0) {
@@ -243,12 +228,12 @@ export async function getTimePhaseStats(
 
 export async function getWasteStats(startDate: string, endDate: string): Promise<WasteStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
     .select('id, leftover_value_carried_forward_cents')
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .eq('status', 'completed')
     .gte('event_date', startDate)
     .lte('event_date', endDate)
@@ -285,12 +270,12 @@ export async function getWasteStats(startDate: string, endDate: string): Promise
 
 export async function getCulinaryOperationsStats(): Promise<CulinaryOperationsStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
     .select('id, guest_count, occasion, dietary_restrictions')
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .eq('status', 'completed')
 
   const total = events?.length ?? 0
@@ -322,7 +307,7 @@ export async function getCulinaryOperationsStats(): Promise<CulinaryOperationsSt
   if (eventIds.length > 0) {
     const { data: menus } = await supabase
       .from('menus')
-      .select('event_id, dishes(count)')
+      .select('event_id, dishes(id)')
       .in('event_id', eventIds)
       .not('event_id', 'is', null)
 
@@ -345,7 +330,7 @@ export async function getCulinaryOperationsStats(): Promise<CulinaryOperationsSt
 
 export async function getEffectiveHourlyRateByMonth(): Promise<EffectiveHourlyRateByMonth[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const oneYearAgo = new Date()
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
@@ -362,7 +347,7 @@ export async function getEffectiveHourlyRateByMonth(): Promise<EffectiveHourlyRa
       reset_started_at, reset_completed_at
     `
     )
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .eq('status', 'completed')
     .gte('event_date', oneYearAgo.toISOString().slice(0, 10))
 

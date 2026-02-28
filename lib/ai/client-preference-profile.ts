@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // Client Preference Profile Builder
@@ -33,20 +32,22 @@ export async function buildClientPreferenceProfile(
   clientId: string
 ): Promise<ClientPreferenceProfile> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   // Gather all historical data for this client
   const [clientResult, eventsResult, messagesResult, inquiriesResult] = await Promise.all([
     supabase
       .from('clients')
-      .select('full_name, dietary_restrictions, allergies, preferences, notes, created_at')
+      .select(
+        'full_name, dietary_restrictions, allergies, what_they_care_about, communication_style_notes, created_at'
+      )
       .eq('id', clientId)
       .eq('tenant_id', user.tenantId!)
       .single(),
     supabase
       .from('events')
       .select(
-        'occasion, guest_count, event_date, status, quoted_price_cents, amount_paid_cents, dietary_restrictions, allergies, special_requests, service_style'
+        'occasion, guest_count, event_date, status, quoted_price_cents, dietary_restrictions, allergies, special_requests, service_style'
       )
       .eq('client_id', clientId)
       .eq('tenant_id', user.tenantId!)
@@ -61,7 +62,7 @@ export async function buildClientPreferenceProfile(
       .limit(30),
     supabase
       .from('inquiries')
-      .select('status, notes, created_at')
+      .select('status, created_at')
       .eq('client_id', clientId)
       .eq('tenant_id', user.tenantId!)
       .order('created_at', { ascending: false })
@@ -84,9 +85,10 @@ Return valid JSON only.`
   const userContent = `
 Client Profile:
 Name: ${client.full_name}
-Dietary restrictions: ${(client.dietary_restrictions as string[] | null)?.join(', ') || 'None noted'}
-Allergies: ${(client.allergies as string[] | null)?.join(', ') || 'None noted'}
-Preferences (notes): ${client.preferences ?? client.notes ?? 'None'}
+Dietary restrictions: ${client.dietary_restrictions?.join(', ') || 'None noted'}
+Allergies: ${client.allergies?.join(', ') || 'None noted'}
+What they care about: ${client.what_they_care_about ?? 'None'}
+Communication style notes: ${client.communication_style_notes ?? 'None'}
 Client since: ${client.created_at?.split('T')[0] ?? 'Unknown'}
 
 Event History (${events.length} events):
@@ -96,15 +98,12 @@ Recent Messages (last ${messages.length}):
 ${
   messages
     .slice(0, 15)
-    .map(
-      (m) =>
-        `[${m.direction === 'in' ? 'Client' : 'Chef'}]: ${(m.body as string)?.slice(0, 100) ?? ''}`
-    )
+    .map((m) => `[${m.direction === 'in' ? 'Client' : 'Chef'}]: ${m.body.slice(0, 100)}`)
     .join('\n') || '- No messages'
 }
 
 Inquiry History (${inquiries.length} inquiries):
-${inquiries.map((i) => `- ${i.created_at?.split('T')[0] ?? ''}: status=${i.status}${i.notes ? ', notes: ' + (i.notes as string).slice(0, 80) : ''}`).join('\n') || '- None'}
+${inquiries.map((i) => `- ${i.created_at?.split('T')[0] ?? ''}: status=${i.status}`).join('\n') || '- None'}
 
 Return JSON with these exact fields:
 {

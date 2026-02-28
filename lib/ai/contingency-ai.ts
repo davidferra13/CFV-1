@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // Contingency Suggestion Engine
@@ -44,8 +43,9 @@ const ContingencyAIResultSchema = z.object({
 
 export async function generateContingencyPlans(eventId: string): Promise<ContingencyAIResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
+  // event_menu_components is not in generated types — table exists in DB but not yet in types/database.ts
   const [eventResult, menuResult] = await Promise.all([
     supabase
       .from('events')
@@ -55,10 +55,11 @@ export async function generateContingencyPlans(eventId: string): Promise<Conting
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    supabase
-      .from('event_menu_components' as any)
+    (supabase.from as Function)('event_menu_components')
       .select('name, course_type, description')
-      .eq('event_id', eventId),
+      .eq('event_id', eventId) as Promise<{
+      data: Array<{ name: string; course_type: string | null; description: string | null }> | null
+    }>,
   ])
 
   const event = eventResult.data
@@ -67,10 +68,9 @@ export async function generateContingencyPlans(eventId: string): Promise<Conting
   const menu = menuResult.data ?? []
   const guestCount = event.guest_count ?? 10
   const isLargeEvent = guestCount > 20
-  const allergens = [
-    ...((event.dietary_restrictions as string[]) ?? []),
-    ...((event.allergies as string[]) ?? []),
-  ].filter(Boolean)
+  const allergens = [...(event.dietary_restrictions ?? []), ...(event.allergies ?? [])].filter(
+    Boolean
+  )
 
   const systemPrompt = `You are a risk management consultant for a private chef business.
 Generate 4–6 specific, realistic contingency plans for this event.

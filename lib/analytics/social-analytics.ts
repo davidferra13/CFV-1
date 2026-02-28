@@ -1,9 +1,7 @@
-// @ts-nocheck
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface SocialPlatformSnapshot {
@@ -55,14 +53,14 @@ export interface ExternalReviewSummary {
 
 export async function getSocialConnectionStatuses(): Promise<SocialConnectionStatus[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data } = await supabase
     .from('social_connected_accounts')
     .select(
       'platform, is_active, platform_account_handle, platform_account_name, last_refreshed_at'
     )
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
 
   const platforms = [
     'instagram',
@@ -73,7 +71,7 @@ export async function getSocialConnectionStatuses(): Promise<SocialConnectionSta
     'pinterest',
     'youtube_shorts',
   ]
-  const connectedMap = new Map<string, typeof data extends (infer T)[] ? T : never>()
+  const connectedMap = new Map<string, NonNullable<typeof data>[number]>()
   for (const row of data ?? []) {
     if (row.is_active) connectedMap.set(row.platform, row)
   }
@@ -94,12 +92,12 @@ export async function getLatestSocialSnapshot(
   platform: string
 ): Promise<SocialPlatformSnapshot | null> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data } = await supabase
     .from('social_stats_snapshots')
     .select('*')
-    .eq('chef_id', chef.id)
+    .eq('chef_id', chef.entityId)
     .eq('platform', platform)
     .order('snapshot_date', { ascending: false })
     .limit(1)
@@ -128,7 +126,7 @@ export async function getSocialGrowthTrend(
   months: number = 6
 ): Promise<SocialGrowthTrend[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const cutoff = new Date()
   cutoff.setMonth(cutoff.getMonth() - months)
@@ -136,7 +134,7 @@ export async function getSocialGrowthTrend(
   const { data } = await supabase
     .from('social_stats_snapshots')
     .select('snapshot_date, followers, avg_engagement_rate, reach_7d')
-    .eq('chef_id', chef.id)
+    .eq('chef_id', chef.entityId)
     .eq('platform', platform)
     .gte('snapshot_date', cutoff.toISOString().slice(0, 10))
     .order('snapshot_date', { ascending: true })
@@ -158,7 +156,7 @@ export async function getFollowerGrowthRate(
   growthRate: number | null
 }> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() - periodDays)
@@ -166,7 +164,7 @@ export async function getFollowerGrowthRate(
   const { data } = await supabase
     .from('social_stats_snapshots')
     .select('snapshot_date, followers')
-    .eq('chef_id', chef.id)
+    .eq('chef_id', chef.entityId)
     .eq('platform', platform)
     .not('followers', 'is', null)
     .order('snapshot_date', { ascending: false })
@@ -186,13 +184,13 @@ export async function getFollowerGrowthRate(
 
 export async function getGoogleReviewStats(): Promise<GoogleReviewStats | null> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   // Get latest and historical snapshots from external_reviews
   const { data: reviews } = await supabase
     .from('external_reviews')
     .select('rating, review_date, first_seen_at')
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .eq('provider', 'google_places')
     .not('rating', 'is', null)
     .order('review_date', { ascending: false })
@@ -240,12 +238,12 @@ export async function getGoogleReviewStats(): Promise<GoogleReviewStats | null> 
 
 export async function getExternalReviewSummary(): Promise<ExternalReviewSummary[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data: sources } = await supabase
     .from('external_review_sources')
     .select('id, provider, label')
-    .eq('tenant_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .eq('active', true)
 
   const results: ExternalReviewSummary[] = []

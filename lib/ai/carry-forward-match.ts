@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // Carry-Forward Inventory AI Matching
@@ -41,20 +40,29 @@ export async function matchCarryForwardToEvent(
   targetEventId: string
 ): Promise<CarryForwardMatchResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
+  // event_menu_components is not in generated types — table exists in DB but not yet in types/database.ts
   const [leftovers, recipesResult] = await Promise.all([
     getAvailableCarryForwardItems(targetEventId),
-    supabase
-      .from('event_menu_components' as any)
+    (supabase.from as Function)('event_menu_components')
       .select(
         `
         name,
         recipe_id,
-        recipes(name, recipe_ingredients(ingredient_name, quantity, unit))
+        recipes(name, recipe_ingredients(ingredient_id, quantity, unit))
       `
       )
-      .eq('event_id', targetEventId),
+      .eq('event_id', targetEventId) as Promise<{
+      data: Array<{
+        name: string
+        recipe_id: string | null
+        recipes: {
+          name: string
+          recipe_ingredients: Array<{ ingredient_id: string; quantity: number; unit: string }>
+        } | null
+      }> | null
+    }>,
   ])
 
   if (leftovers.length === 0) {
@@ -72,12 +80,11 @@ export async function matchCarryForwardToEvent(
   for (const comp of menuComponents) {
     const recipe = Array.isArray(comp.recipes) ? comp.recipes[0] : comp.recipes
     if (recipe) {
-      const ingredients = Array.isArray((recipe as any).recipe_ingredients)
-        ? (recipe as any).recipe_ingredients
-        : []
+      const ingredients = Array.isArray(recipe.recipe_ingredients) ? recipe.recipe_ingredients : []
       for (const ing of ingredients) {
+        // recipe_ingredients uses ingredient_id FK — we build a placeholder string for AI matching
         neededIngredients.push(
-          `${ing.quantity ?? ''} ${ing.unit ?? ''} ${ing.ingredient_name ?? ''}`.trim()
+          `${ing.quantity ?? ''} ${ing.unit ?? ''} (ingredient_id: ${ing.ingredient_id})`.trim()
         )
       }
     }
