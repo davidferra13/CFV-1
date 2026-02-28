@@ -17,6 +17,8 @@ This file is read by Claude Code at the start of every conversation. These rules
 > **NEVER** wait for the developer to tell you the obvious next step. If you know what comes next, DO IT. If a task has a clear continuation, CONTINUE. Don't pause, don't ask "what would you like me to do next?" — just do the work. The developer is paying per token. Every unnecessary back-and-forth is their money wasted on nothing.
 >
 > **NEVER** generate padded, hedging, verbose responses when a short one works. Don't add caveats. Don't restate what you're about to do — just do it. Don't offer multiple options when one is clearly correct. Be direct. Be brief. Do the work.
+>
+> **NEVER** tell the developer to restart something. You have Bash. If the dev server needs restarting, kill the process and start it. If Ollama needs restarting, run `ollama serve`. If a service is down, check why and fix it. The ONLY exception is if you literally cannot do it (e.g., a physical power cycle, or a process owned by a different user). "Please restart the dev server" when you have `bash` access is laziness. Just run the command.
 
 > **BLOCK 3 — READ THIS ENTIRE FILE BEFORE STARTING WORK**
 >
