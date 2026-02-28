@@ -50,6 +50,7 @@ import { PostEventReferralAskEmail } from './templates/post-event-referral-ask'
 import { ContractSignedChefEmail } from './templates/contract-signed-chef'
 import { MenuApprovedChefEmail } from './templates/menu-approved-chef'
 import { MenuRevisionChefEmail } from './templates/menu-revision-chef'
+import { AvailabilitySignalEmail } from './templates/availability-signal'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -1269,6 +1270,29 @@ export async function sendMenuRevisionChefEmail(params: {
       eventDate: params.eventDate ? formatDate(params.eventDate) : 'TBD',
       revisionNotes: params.revisionNotes,
       eventUrl: `${APP_URL}/events/${params.eventId}`,
+    }),
+  })
+}
+
+// ─── Availability Signal — Notify Opted-In Clients ──────────────────────────
+
+export async function sendAvailabilitySignalEmail(params: {
+  clientEmail: string
+  clientName: string
+  chefName: string
+  title: string
+  date: string
+  publicNote: string | null
+}) {
+  await sendEmail({
+    to: params.clientEmail,
+    subject: `${params.chefName} has availability on ${formatDate(params.date)}`,
+    react: createElement(AvailabilitySignalEmail, {
+      clientName: params.clientName,
+      chefName: params.chefName,
+      title: params.title,
+      date: formatDate(params.date),
+      publicNote: params.publicNote,
     }),
   })
 }

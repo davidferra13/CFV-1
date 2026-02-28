@@ -98,13 +98,9 @@ export default async function PrintClipboardPage({
         })}
       </div>
 
-      <button
-        onClick={() => {}}
-        className="no-print mb-4 px-4 py-2 bg-stone-800 text-stone-100 rounded text-sm"
-        style={{ cursor: 'pointer' }}
-      >
-        Print (Ctrl+P)
-      </button>
+      <div className="no-print mb-4">
+        <PrintButton />
+      </div>
 
       {allComponents.length === 0 ? (
         <p style={{ color: '#888' }}>No components configured for this station.</p>

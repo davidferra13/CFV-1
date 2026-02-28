@@ -5,7 +5,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Download, Globe } from 'lucide-react'
-import Link from 'next/link'
 import { CommunityTemplateImport } from '@/components/community/community-template-import'
 
 export const metadata: Metadata = { title: 'Community Templates - ChefFlow' }
@@ -28,12 +27,10 @@ export default async function CommunityTemplatesPage() {
           <h1 className="text-3xl font-bold text-stone-100">Community Templates</h1>
           <p className="text-stone-400 mt-1">Browse and import templates shared by other chefs</p>
         </div>
-        <Link href="/community/templates/share">
-          <Button variant="secondary">
-            <Globe className="h-4 w-4 mr-2" />
-            Share a Template
-          </Button>
-        </Link>
+        <Button variant="secondary" disabled title="Coming soon">
+          <Globe className="h-4 w-4 mr-2" />
+          Share a Template (Coming Soon)
+        </Button>
       </div>
 
       {templates.length === 0 ? (

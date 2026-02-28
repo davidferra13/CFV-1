@@ -8,6 +8,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { sendAvailabilitySignalEmail } from '@/lib/email/notifications'
 import { z } from 'zod'
 import { ENTRY_TYPE_BLOCKS_BOOKINGS, REVENUE_CAPABLE_TYPES } from './colors'
 
@@ -345,10 +346,10 @@ export async function notifyClientsOfPublicSignal(calendarEntryId: string) {
     throw new Error('Entry not found or not a public target_booking')
   }
 
-  // Get all opted-in clients for this chef
+  // Get all opted-in clients for this chef (need email + name for notifications)
   const { data: clients } = await supabase
     .from('clients')
-    .select('id')
+    .select('id, email, full_name')
     .eq('tenant_id', chefId)
     .eq('availability_signal_notifications', true)
 
@@ -364,7 +365,7 @@ export async function notifyClientsOfPublicSignal(calendarEntryId: string) {
   const { data: inserted, error } = await supabase
     .from('availability_signal_notification_log')
     .insert(rows)
-    .select('id')
+    .select('id, client_id')
 
   if (error) {
     // Unique violations expected for already-notified clients — not a hard error
@@ -374,8 +375,37 @@ export async function notifyClientsOfPublicSignal(calendarEntryId: string) {
     )
   }
 
-  // TODO: trigger actual email/push notification via notification system
-  // await sendAvailabilitySignalNotification(chefId, entry, clients)
+  // Get chef business name for email
+  const { data: chef } = await supabase
+    .from('chefs')
+    .select('business_name')
+    .eq('id', chefId)
+    .single()
+
+  const chefName = chef?.business_name || 'Your Chef'
+
+  // Send email notifications to newly-notified clients (non-blocking)
+  if (inserted && inserted.length > 0) {
+    const notifiedClientIds = new Set(inserted.map((r: { client_id: string }) => r.client_id))
+    const clientsToEmail = clients.filter(
+      (c: { id: string; email: string | null }) => notifiedClientIds.has(c.id) && c.email
+    )
+
+    for (const client of clientsToEmail) {
+      try {
+        await sendAvailabilitySignalEmail({
+          clientEmail: client.email,
+          clientName: client.full_name || 'there',
+          chefName,
+          title: entry.title || 'Available Date',
+          date: entry.start_date,
+          publicNote: entry.public_note || null,
+        })
+      } catch (err) {
+        console.error('[non-blocking] Availability signal email failed for client', client.id, err)
+      }
+    }
+  }
 
   return { notified: inserted?.length ?? 0 }
 }
