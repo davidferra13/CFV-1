@@ -173,7 +173,8 @@ CREATE INDEX IF NOT EXISTS idx_guest_communication_logs_tenant ON guest_communic
 ALTER TABLE guest_leads
   ADD COLUMN IF NOT EXISTS source_join_request_id UUID REFERENCES event_join_requests(id) ON DELETE SET NULL;
 
-CREATE OR REPLACE VIEW event_rsvp_summary AS
+DROP VIEW IF EXISTS event_rsvp_summary;
+CREATE VIEW event_rsvp_summary AS
 SELECT
   eg.event_id,
   eg.tenant_id,

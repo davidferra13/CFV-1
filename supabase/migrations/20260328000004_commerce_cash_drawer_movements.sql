@@ -1,4 +1,4 @@
-﻿-- Commerce Engine Wave 2.5 - Cash Drawer Movements
+-- Commerce Engine Wave 2.5 - Cash Drawer Movements
 -- Tracks every cash movement in real time per register session.
 
 DO $$ BEGIN
