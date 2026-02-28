@@ -286,7 +286,12 @@ export function EmailBuilder({ templates: initialTemplates }: EmailBuilderProps)
               <hr className="my-2 border-stone-800" />
               <div
                 className="text-sm text-stone-200 prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: previewTemplate.bodyHtml }}
+                dangerouslySetInnerHTML={{
+                  __html: previewTemplate.bodyHtml
+                    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+                    .replace(/javascript:/gi, '#'),
+                }}
               />
             </div>
           </div>

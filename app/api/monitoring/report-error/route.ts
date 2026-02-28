@@ -4,9 +4,18 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { reportError } from '@/lib/monitoring/sentry-reporter'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: 20 reports per minute per IP to prevent flooding
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+    try {
+      await checkRateLimit(`error-report:${ip}`, 20, 60_000)
+    } catch {
+      return NextResponse.json({ ok: false, error: 'Rate limited' }, { status: 429 })
+    }
+
     const body = await request.json()
     const { message, stack, name, digest, tags } = body as {
       message?: string

@@ -391,7 +391,10 @@ export async function launchCampaign(campaignId: string): Promise<LaunchResult> 
     const unsubscribeUrl = `${unsubscribeBase}${recipient.id}`
 
     if (!resend) {
-      console.log('[push-dinner] RESEND_API_KEY not set — skipping email to', recipient.email)
+      console.log(
+        '[push-dinner] RESEND_API_KEY not set — skipping email to recipient',
+        recipient.id
+      )
       await supabase
         .from('campaign_recipients')
         .update({ error_message: 'Email not configured' })

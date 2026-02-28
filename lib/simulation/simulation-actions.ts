@@ -5,7 +5,7 @@
 // Core logic lives in simulation-runner.ts (no 'use server') so it can also
 // be called from the auto-scheduler and manual API route without a user session.
 
-import { requireAdmin } from '@/lib/auth/get-user'
+import { requireChefAdmin } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { runSimulationInternal } from './simulation-runner'
 import type { SimModule, SimRun, SimResult, SimSummary, SimRunConfig } from './types'
@@ -17,14 +17,14 @@ export async function startSimulationRun(config: SimRunConfig): Promise<{
   runId: string | null
   error: string | null
 }> {
-  const user = await requireAdmin()
+  const user = await requireChefAdmin()
   return runSimulationInternal(user.tenantId!, config)
 }
 
 // ── Read runs ─────────────────────────────────────────────────────────────────
 
 export async function getSimulationRuns(limit = 10): Promise<SimRun[]> {
-  const user = await requireAdmin()
+  const user = await requireChefAdmin()
   const supabase: any = createServerClient()
 
   const { data, error } = await supabase
@@ -51,7 +51,7 @@ export async function getSimulationRuns(limit = 10): Promise<SimRun[]> {
 // ── Read results for a specific run ──────────────────────────────────────────
 
 export async function getSimulationResults(runId: string): Promise<SimResult[]> {
-  const user = await requireAdmin()
+  const user = await requireChefAdmin()
   const supabase: any = createServerClient()
 
   const { data, error } = await supabase
@@ -81,7 +81,7 @@ export async function getFailureExamples(
   module: SimModule,
   limit = 5
 ): Promise<Array<{ scenarioPayload: string; score: number; failures: string[] }>> {
-  const user = await requireAdmin()
+  const user = await requireChefAdmin()
   const supabase: any = createServerClient()
 
   const { data, error } = await supabase
@@ -105,7 +105,7 @@ export async function getFailureExamples(
 // ── Overall summary ───────────────────────────────────────────────────────────
 
 export async function getSimulationSummary(): Promise<SimSummary> {
-  const user = await requireAdmin()
+  const user = await requireChefAdmin()
   const supabase: any = createServerClient()
   const tenantId = user.tenantId!
 

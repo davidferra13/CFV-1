@@ -1,7 +1,8 @@
 // GET /api/ai/health
 // Returns health status of ALL Ollama endpoints (PC + Pi).
 // Used by dashboard, watchdog, and cross-monitoring system.
-// No auth required — health metadata is non-sensitive.
+// Gated behind CRON_SECRET or authenticated admin access to prevent
+// exposing internal infrastructure details (LAN IPs, model names).
 //
 // Best practices adopted:
 //   Google SRE: golden signals (latency, error rate, saturation)
@@ -10,6 +11,7 @@
 //   Netflix: circuit breaker state exposure for observability
 
 import { NextResponse } from 'next/server'
+import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { getOllamaConfig, getOllamaPiUrl, getModelForEndpoint } from '@/lib/ai/providers'
 
 // ============================================
@@ -108,7 +110,11 @@ async function checkEndpoint(
 // ROUTE HANDLER
 // ============================================
 
-export async function GET() {
+export async function GET(req: Request) {
+  // Gate behind cron secret — exposes internal LAN IPs and model details
+  const authError = verifyCronAuth(req.headers.get('authorization'))
+  if (authError) return authError
+
   const config = getOllamaConfig()
   const piUrl = getOllamaPiUrl()
 

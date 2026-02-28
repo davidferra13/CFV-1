@@ -1,7 +1,6 @@
 'use server'
 
-import { requireChef } from '@/lib/auth/get-user'
-import { requireAdmin } from '@/lib/auth/get-user'
+import { requireChef, requireChefAdmin } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -125,7 +124,7 @@ export async function removeCulinaryWord(id: string): Promise<{ success: boolean
 
 /** Admin: get ALL user-submitted words across all chefs */
 export async function getAllUserWords(): Promise<AdminWordView[]> {
-  await requireAdmin()
+  await requireChefAdmin()
   const supabase = createServerClient({ admin: true })
 
   const { data, error } = await supabase

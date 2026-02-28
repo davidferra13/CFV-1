@@ -7,9 +7,18 @@ import { trackActivity } from '@/lib/activity/track'
 import { activityTrackPayloadSchema } from '@/lib/activity/schemas'
 import { incrementMetric, logActivityEvent } from '@/lib/activity/observability'
 import { checkAndFireIntentNotifications } from '@/lib/activity/intent-notifications'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: 120 events per minute per IP
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+    try {
+      await checkRateLimit(`activity-track:${ip}`, 120, 60_000)
+    } catch {
+      return NextResponse.json({ error: 'Rate limited' }, { status: 429 })
+    }
+
     const body = await request.json()
     const parsed = activityTrackPayloadSchema.safeParse(body)
     if (!parsed.success) {

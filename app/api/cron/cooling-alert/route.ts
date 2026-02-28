@@ -60,7 +60,7 @@ export async function GET(request: Request) {
 
           if (!count || count === 0) {
             // Queue a notification (using notification_queue if exists, else log)
-            console.log(`[cooling-alert] Client ${client.display_name} cooling for chef ${chef.id}`)
+            console.log(`[cooling-alert] Client ${client.id} cooling for chef ${chef.id}`)
             totalAlerts++
           }
         }

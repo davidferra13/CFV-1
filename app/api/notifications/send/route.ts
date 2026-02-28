@@ -6,6 +6,7 @@ import { createNotification } from '@/lib/notifications/actions'
 import { sendNotificationEmail } from '@/lib/notifications/email-service'
 import { sendNotificationSms } from '@/lib/notifications/sms-service'
 import { NOTIFICATION_CONFIG, type NotificationAction } from '@/lib/notifications/types'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 const NotificationSendSchema = z.object({
   recipientAuthUserId: z.string().uuid().optional(),
@@ -66,6 +67,14 @@ async function verifyRecipientScope(input: {
 }
 
 export async function POST(request: NextRequest) {
+  // Rate limit: 30 notifications per minute per IP
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  try {
+    await checkRateLimit(`notif-send:${ip}`, 30, 60_000)
+  } catch {
+    return NextResponse.json({ error: 'Rate limited' }, { status: 429 })
+  }
+
   let user
   try {
     user = await requireChef()

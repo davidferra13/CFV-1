@@ -8,36 +8,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { z } from 'zod'
 import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-validator'
 import { verifyTurnstileToken } from '@/lib/security/turnstile'
-
-// ── In-memory IP rate limiting (no Redis dependency for embed route) ──
-const ipBuckets = new Map<string, { count: number; windowStart: number }>()
-const RATE_LIMIT_MAX = 10 // 10 submissions per window
-const RATE_LIMIT_WINDOW_MS = 60_000 * 5 // 5 minutes
-
-function checkEmbedRateLimit(ip: string): boolean {
-  const now = Date.now()
-  const bucket = ipBuckets.get(ip)
-  if (!bucket || now - bucket.windowStart > RATE_LIMIT_WINDOW_MS) {
-    ipBuckets.set(ip, { count: 1, windowStart: now })
-    return true
-  }
-  bucket.count++
-  return bucket.count <= RATE_LIMIT_MAX
-}
-
-// Periodic cleanup to prevent memory leaks (every 100 requests)
-let requestCount = 0
-function maybeCleanBuckets() {
-  requestCount++
-  if (requestCount % 100 === 0) {
-    const now = Date.now()
-    for (const [ip, bucket] of ipBuckets) {
-      if (now - bucket.windowStart > RATE_LIMIT_WINDOW_MS * 2) {
-        ipBuckets.delete(ip)
-      }
-    }
-  }
-}
+import { checkRateLimit } from '@/lib/rateLimit'
 
 // ── CORS headers for cross-origin embeds ──
 const corsHeaders = {
@@ -90,11 +61,11 @@ export async function OPTIONS() {
 
 // ── Main submission handler ──
 export async function POST(request: NextRequest) {
-  maybeCleanBuckets()
-
-  // Rate limit by IP
+  // Rate limit by IP: 10 submissions per 5 minutes (uses Upstash Redis when configured)
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-  if (!checkEmbedRateLimit(ip)) {
+  try {
+    await checkRateLimit(`embed-inquiry:${ip}`, 10, 5 * 60_000)
+  } catch {
     return NextResponse.json(
       { error: 'Too many submissions. Please try again later.' },
       { status: 429, headers: corsHeaders }

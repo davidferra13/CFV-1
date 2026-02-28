@@ -10,7 +10,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
 export async function POST(req: NextRequest) {
-  // Hard gate — only allowed when explicitly opted into E2E remote testing
+  // Hard gate — never available in production, regardless of env vars
+  if (process.env.NODE_ENV === 'production') {
+    return new NextResponse('Forbidden', { status: 403 })
+  }
+
+  // Only allowed when explicitly opted into E2E remote testing
   if (process.env.SUPABASE_E2E_ALLOW_REMOTE !== 'true') {
     return new NextResponse('Forbidden', { status: 403 })
   }

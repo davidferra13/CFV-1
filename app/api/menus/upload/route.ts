@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createHash } from 'crypto'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
+import { checkRateLimit } from '@/lib/rateLimit'
 import {
   createUploadJob,
   processUploadJob,
@@ -16,6 +17,14 @@ const MENU_UPLOADS_BUCKET = 'menu-uploads'
 const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50 MB
 
 export async function POST(request: NextRequest) {
+  // Rate limit: 10 uploads per minute per IP
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  try {
+    await checkRateLimit(`menu-upload:${ip}`, 10, 60_000)
+  } catch {
+    return NextResponse.json({ error: 'Rate limited' }, { status: 429 })
+  }
+
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!

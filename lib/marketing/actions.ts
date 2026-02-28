@@ -383,7 +383,7 @@ export async function sendCampaignNow(campaignId: string) {
     try {
       // Call Resend directly to capture the message ID
       if (!process.env.RESEND_API_KEY) {
-        console.log('[campaign] RESEND_API_KEY not configured, skipping email to:', client.email)
+        console.log('[campaign] RESEND_API_KEY not configured, skipping email to client', client.id)
         await supabase
           .from('campaign_recipients')
           .update({ error_message: 'Email not configured' })

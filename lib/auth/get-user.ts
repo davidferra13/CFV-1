@@ -250,11 +250,11 @@ export async function requireStaff(): Promise<StaffAuthUser> {
 }
 
 /**
- * Require platform admin — email must be in ADMIN_EMAILS env var.
- * Used for dev tools, simulation lab, and internal dashboards.
- * Builds on requireChef() so the caller must also be a valid chef account.
+ * Require platform admin with chef context — email must be in ADMIN_EMAILS env var.
+ * Returns full AuthUser (with tenantId) for server actions that need both admin + chef data.
+ * For page-level admin gating (redirect on failure), use requireAdmin() from lib/auth/admin.ts.
  */
-export async function requireAdmin(): Promise<AuthUser> {
+export async function requireChefAdmin(): Promise<AuthUser> {
   const user = await requireChef()
 
   const adminEmails = (process.env.ADMIN_EMAILS ?? '')

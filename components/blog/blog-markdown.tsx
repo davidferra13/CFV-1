@@ -20,7 +20,7 @@ function markdownToHtml(md: string): string {
       const headers = headerRow
         .split('|')
         .filter((c: string) => c.trim())
-        .map((c: string) => `<th>${c.trim()}</th>`)
+        .map((c: string) => `<th>${escapeHtml(c.trim())}</th>`)
         .join('')
       const rows = bodyRows
         .trim()
@@ -29,7 +29,7 @@ function markdownToHtml(md: string): string {
           const cells = row
             .split('|')
             .filter((c: string) => c.trim())
-            .map((c: string) => `<td>${c.trim()}</td>`)
+            .map((c: string) => `<td>${escapeHtml(c.trim())}</td>`)
             .join('')
           return `<tr>${cells}</tr>`
         })
@@ -52,7 +52,7 @@ function markdownToHtml(md: string): string {
     const items = block
       .trim()
       .split('\n')
-      .map((line: string) => `<li>${line.replace(/^- /, '')}</li>`)
+      .map((line: string) => `<li>${escapeHtml(line.replace(/^- /, ''))}</li>`)
       .join('')
     return `<ul>${items}</ul>`
   })
@@ -62,7 +62,7 @@ function markdownToHtml(md: string): string {
     const items = block
       .trim()
       .split('\n')
-      .map((line: string) => `<li>${line.replace(/^\d+\. /, '')}</li>`)
+      .map((line: string) => `<li>${escapeHtml(line.replace(/^\d+\. /, ''))}</li>`)
       .join('')
     return `<ol>${items}</ol>`
   })
@@ -74,10 +74,11 @@ function markdownToHtml(md: string): string {
 
   // Links — internal links (starting with /) stay in-tab, external open in new tab
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match: string, text: string, url: string) => {
-    if (url.startsWith('/') || url.startsWith('#')) {
-      return `<a href="${url}" class="blog-link">${text}</a>`
+    const safeUrl = sanitizeUrl(url)
+    if (safeUrl.startsWith('/') || safeUrl.startsWith('#')) {
+      return `<a href="${escapeHtml(safeUrl)}" class="blog-link">${escapeHtml(text)}</a>`
     }
-    return `<a href="${url}" class="blog-link" target="_blank" rel="noopener">${text}</a>`
+    return `<a href="${escapeHtml(safeUrl)}" class="blog-link" target="_blank" rel="noopener">${escapeHtml(text)}</a>`
   })
 
   // Images
@@ -101,7 +102,18 @@ function markdownToHtml(md: string): string {
 }
 
 function escapeHtml(text: string): string {
-  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+/** Only allow safe URL protocols — blocks javascript:, data:, vbscript:, etc. */
+function sanitizeUrl(url: string): string {
+  const trimmed = url.trim()
+  if (/^(https?:\/\/|\/|#|mailto:)/i.test(trimmed)) return trimmed
+  return '#'
 }
 
 export function BlogMarkdown({ content }: { content: string }) {

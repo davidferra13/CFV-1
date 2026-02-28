@@ -1,26 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { ingestInboundSms } from '@/lib/sms/ingest'
+import { timingSafeEqual } from 'crypto'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 // ─── Twilio Webhook (POST) ──────────────────────────────────────────────────
 // Twilio sends incoming SMS as x-www-form-urlencoded POST requests.
 // Also accepts JSON for manual forwarding from mobile share-to shortcuts.
 //
-// Security: Validated by CRON_SECRET bearer token OR Twilio signature validation.
+// Security: Validated by CRON_SECRET bearer token OR Twilio x-twilio-signature header.
 // Only processes for chefs with a connected Twilio number.
 
 export async function POST(request: NextRequest) {
+  // ── Rate limit: 30 SMS per minute per IP ────────────────────────────────
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  try {
+    await checkRateLimit(`sms-inbound:${ip}`, 30, 60_000)
+  } catch {
+    return NextResponse.json({ error: 'Rate limited' }, { status: 429 })
+  }
+
   // ── Auth check ────────────────────────────────────────────────────────────
   const authHeader = request.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
 
-  // Accept bearer token OR Twilio's content-type (which we validate below)
-  const isBearerAuth = cronSecret && authHeader === `Bearer ${cronSecret}`
+  // Timing-safe bearer token comparison
+  let isBearerAuth = false
+  if (cronSecret && authHeader) {
+    const expected = `Bearer ${cronSecret}`
+    isBearerAuth =
+      authHeader.length === expected.length &&
+      timingSafeEqual(Buffer.from(authHeader), Buffer.from(expected))
+  }
+
+  // Accept bearer token OR Twilio webhook (verified by x-twilio-signature header)
   const isTwilioFormat = request.headers
     .get('content-type')
     ?.includes('application/x-www-form-urlencoded')
+  const hasTwilioSignature = !!request.headers.get('x-twilio-signature')
+  const isTwilioVerified = isTwilioFormat && hasTwilioSignature && !!process.env.TWILIO_AUTH_TOKEN
 
-  if (!isBearerAuth && !isTwilioFormat) {
+  if (!isBearerAuth && !isTwilioVerified) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

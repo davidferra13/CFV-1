@@ -32,7 +32,7 @@ export async function sendEmail({
 }: SendEmailParams): Promise<boolean> {
   // Skip if Resend is not configured (dev environments without key)
   if (!process.env.RESEND_API_KEY) {
-    console.log('[sendEmail] RESEND_API_KEY not configured, skipping email to:', to)
+    console.log('[sendEmail] RESEND_API_KEY not configured, skipping email')
     return false
   }
 

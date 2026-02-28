@@ -5,6 +5,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { createServerClient } from '@/lib/supabase/server'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 const adminClient = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,6 +14,14 @@ const adminClient = createClient(
 
 export async function POST(request: Request) {
   try {
+    // Rate limit: 60 batches per minute per IP
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+    try {
+      await checkRateLimit(`breadcrumbs:${ip}`, 60, 60_000)
+    } catch {
+      return NextResponse.json({ tracked: false, error: 'rate_limited' }, { status: 429 })
+    }
+
     // Authenticate the user
     const supabase: any = createServerClient()
     const {

@@ -4,6 +4,7 @@
 
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { signRoleCookie, verifyRoleCookie } from '@/lib/auth/signed-cookie'
 
 /** Generate a short, URL-safe correlation ID for request tracing. */
 function generateRequestId(): string {
@@ -174,13 +175,16 @@ export async function middleware(request: NextRequest) {
 
   // Role cache cookie — avoids a DB round-trip on every navigation.
   // The layout's requireChef() / requireClient() remain the authoritative security check.
+  // HMAC-signed to prevent client-side tampering.
   const roleCookieName = 'chefflow-role-cache'
-  const cachedRole = request.cookies.get(roleCookieName)?.value
+  const rawCachedRole = request.cookies.get(roleCookieName)?.value
+  const cachedRole = rawCachedRole ? await verifyRoleCookie(rawCachedRole) : null
   const roleIsKnown = cachedRole === 'chef' || cachedRole === 'client' || cachedRole === 'staff'
 
-  // Helper: write the role cookie onto a response, mirroring the sessionOnly flag.
-  function setRoleCookie(res: NextResponse, role: string) {
-    res.cookies.set(roleCookieName, role, {
+  // Helper: write the HMAC-signed role cookie onto a response, mirroring the sessionOnly flag.
+  async function setRoleCookie(res: NextResponse, role: string) {
+    const signedValue = await signRoleCookie(role)
+    res.cookies.set(roleCookieName, signedValue, {
       maxAge: sessionOnly ? undefined : 300, // 5 min persistent, or session-scoped
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -203,7 +207,7 @@ export async function middleware(request: NextRequest) {
         .eq('auth_user_id', user.id)
         .single()
       landingRole = roleData?.role
-      if (landingRole) setRoleCookie(response, landingRole)
+      if (landingRole) await setRoleCookie(response, landingRole)
     }
     if (landingRole === 'client') {
       return redirectWithCookies(new URL('/my-events', request.url), response)
@@ -235,7 +239,7 @@ export async function middleware(request: NextRequest) {
       .eq('auth_user_id', user.id)
       .single()
     roleData = data
-    if (roleData) setRoleCookie(response, roleData.role)
+    if (roleData) await setRoleCookie(response, roleData.role)
   }
 
   if (!roleData) {
@@ -247,11 +251,21 @@ export async function middleware(request: NextRequest) {
     return response
   }
 
-  // Admin paths — any authenticated user can reach /admin; the layout enforces the email check
+  // Admin paths — defense-in-depth: check admin email list in middleware AND layout
   const isAdminRoute = adminPaths.some(
     (path) => pathname === path || pathname.startsWith(path + '/')
   )
   if (isAdminRoute) {
+    const adminEmails = (process.env.ADMIN_EMAILS ?? '')
+      .split(',')
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean)
+    if (
+      adminEmails.length > 0 &&
+      (!user.email || !adminEmails.includes(user.email.toLowerCase()))
+    ) {
+      return redirectWithCookies(new URL('/unauthorized', request.url), response)
+    }
     return response
   }
 
