@@ -1,5 +1,158 @@
 {
   "lastUpdated": "2026-02-28",
+  "projectOrigin": {
+    "ideaStartDate": "2024-06-01",
+    "firstConfirmedWork": "2024-07-18",
+    "finalVersionStartDate": "2026-02-14",
+    "finalVersionName": "CFv1",
+    "notes": "Project concept started ~June 2024. First confirmed ChefFlow prompt in ChatGPT: July 18, 2024. Current and final version (CFv1) initial commit: February 14, 2026."
+  },
+  "restarts": {
+    "totalCount": 21,
+    "note": "Each entry represents a distinct restart — a new codebase, a new AI Studio submission, or a new major architectural attempt. The final version (CFv1) is NOT counted as a restart.",
+    "versions": [
+      {
+        "name": "BillyBob1",
+        "date": "2026-01-16",
+        "source": "filesystem-graveyard",
+        "files": 40,
+        "bytes": 273669
+      },
+      {
+        "name": "BillyBob2",
+        "date": "2026-01-31",
+        "source": "filesystem-graveyard",
+        "files": 25297,
+        "bytes": 1030030110
+      },
+      {
+        "name": "BillyBob3",
+        "date": "2026-01-08",
+        "source": "filesystem-graveyard",
+        "files": 49,
+        "bytes": 60417
+      },
+      {
+        "name": "BillyBob4",
+        "date": "2026-01-27",
+        "source": "filesystem-graveyard",
+        "files": 26018,
+        "bytes": 782504455
+      },
+      {
+        "name": "BillyBob5",
+        "date": "2026-01-02",
+        "source": "filesystem-graveyard",
+        "files": 60711,
+        "bytes": 526665544
+      },
+      {
+        "name": "BillyBob6",
+        "date": "2026-01-31",
+        "source": "filesystem-graveyard",
+        "files": 1,
+        "bytes": 54
+      },
+      {
+        "name": "BillyBob7",
+        "date": "2026-01-14",
+        "source": "filesystem-graveyard",
+        "files": 30,
+        "bytes": 271731
+      },
+      {
+        "name": "BillyBob8",
+        "date": "2026-01-27",
+        "source": "filesystem-graveyard",
+        "files": 27474,
+        "bytes": 813627095
+      },
+      {
+        "name": "BillyBob9",
+        "date": "2025-08-08",
+        "source": "filesystem-graveyard",
+        "files": 12965,
+        "bytes": 299234122
+      },
+      {
+        "name": "BillyBob10",
+        "date": "2026-01-17",
+        "source": "filesystem-graveyard",
+        "files": 20118,
+        "bytes": 406848642
+      },
+      {
+        "name": "BillyBob11",
+        "date": "2025-09-03",
+        "source": "filesystem-graveyard",
+        "files": 1,
+        "bytes": 1822933
+      },
+      {
+        "name": "BillyBob12",
+        "date": "2026-01-23",
+        "source": "filesystem-graveyard",
+        "files": 1,
+        "bytes": 54
+      },
+      {
+        "name": "BillyBob13",
+        "date": "2026-02-12",
+        "source": "filesystem-graveyard",
+        "files": 1,
+        "bytes": 54
+      },
+      {
+        "name": "BillyBob14",
+        "date": "2025-08-08",
+        "source": "filesystem-graveyard",
+        "files": 12994,
+        "bytes": 299323416
+      },
+      {
+        "name": "ChefFlow (OLD)",
+        "date": "2026-02-13",
+        "source": "filesystem-graveyard",
+        "files": 51211,
+        "bytes": 971790281
+      },
+      {
+        "name": "ChefFlow_MASTER",
+        "date": "2026-02-13",
+        "source": "filesystem-graveyard",
+        "files": 51471,
+        "bytes": 954356149
+      },
+      {
+        "name": "OLD_Project_V1_DO_NOT_TOUCH",
+        "date": "2026-01-26",
+        "source": "filesystem-archive",
+        "files": 10646,
+        "bytes": 272134220
+      },
+      {
+        "name": "Copy of Chef Flow11",
+        "date": "2025-07-30",
+        "source": "google-ai-studio",
+        "sizeKB": 377
+      },
+      {
+        "name": "Chef Flow (AI Studio)",
+        "date": "2025-08-15",
+        "source": "google-ai-studio",
+        "sizeKB": 402
+      },
+      { "name": "chef 1", "date": "2025-10-05", "source": "google-ai-studio", "sizeKB": 566 },
+      {
+        "name": "ChefFlow (AI Studio Jan)",
+        "date": "2026-01-02",
+        "source": "google-ai-studio",
+        "sizeKB": 793
+      }
+    ],
+    "graveyardTotalFiles": 185700,
+    "graveyardTotalGB": 3.87
+  },
   "assumptions": {
     "earliestProjectWorkDate": "2024-07-18",
     "notes": [

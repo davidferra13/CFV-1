@@ -1138,6 +1138,33 @@ function buildLifeTimelineView(timelineData, gitSummary) {
     .sort((a, b) => String(b.date).localeCompare(String(a.date)))
     .slice(0, 300)
 
+  // Build project origin + restart stats
+  const origin = timelineData.projectOrigin || {}
+  const restarts = timelineData.restarts || {}
+  const restartVersions = Array.isArray(restarts.versions) ? restarts.versions : []
+
+  const projectStats = {
+    ideaStartDate: origin.ideaStartDate || null,
+    firstConfirmedWork: origin.firstConfirmedWork || null,
+    finalVersionStartDate: origin.finalVersionStartDate || null,
+    finalVersionName: origin.finalVersionName || 'CFv1',
+    totalRestarts: restarts.totalCount || restartVersions.length,
+    restartSources: {
+      billyBobVersions: restartVersions.filter(v => v.name?.startsWith('BillyBob')).length,
+      filesystemGraveyard: restartVersions.filter(v => v.source === 'filesystem-graveyard' || v.source === 'filesystem-archive').length,
+      aiStudioSubmissions: restartVersions.filter(v => v.source === 'google-ai-studio').length,
+    },
+    graveyardTotalFiles: restarts.graveyardTotalFiles || 0,
+    graveyardTotalGB: restarts.graveyardTotalGB || 0,
+    restartVersions,
+    daysFromIdeaToFinal: origin.ideaStartDate && origin.finalVersionStartDate
+      ? Math.floor((Date.parse(origin.finalVersionStartDate) - Date.parse(origin.ideaStartDate)) / 86400000)
+      : null,
+    daysFromIdeaToNow: origin.ideaStartDate
+      ? Math.floor((Date.now() - Date.parse(origin.ideaStartDate)) / 86400000)
+      : null,
+  }
+
   return {
     lastUpdated: timelineData.lastUpdated || null,
     assumptions: timelineData.assumptions || {},
@@ -1152,6 +1179,7 @@ function buildLifeTimelineView(timelineData, gitSummary) {
       gitLastTimestamp: gitSummary?.lastTimestamp || null,
     },
     milestones,
+    projectStats,
   }
 }
 

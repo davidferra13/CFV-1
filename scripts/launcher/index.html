@@ -2150,9 +2150,67 @@ body {
           <button class="btn btn-ghost" onclick="loadProjectTimeline(true)">↻ Refresh Timeline</button>
         </div>
 
+        <!-- ── Project At A Glance ── -->
+        <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:10px;">Project At A Glance</h3>
+
+        <!-- Row 1: Origin story — 3 hero cards -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;">
+          <div class="info-card" style="text-align:center;padding:16px 12px;">
+            <div style="font-size:22px;margin-bottom:4px;">&#x1F4A1;</div>
+            <div class="info-label">Idea Born</div>
+            <div class="info-value small" id="timeline-idea-start">--</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;" id="timeline-idea-ago">--</div>
+          </div>
+          <div class="info-card" style="text-align:center;padding:16px 12px;">
+            <div style="font-size:22px;margin-bottom:4px;">&#x1F525;</div>
+            <div class="info-label">Times Restarted</div>
+            <div class="info-value" style="font-size:28px;color:var(--warning);" id="timeline-restart-count">--</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;" id="timeline-restart-detail">--</div>
+          </div>
+          <div class="info-card" style="text-align:center;padding:16px 12px;">
+            <div style="font-size:22px;margin-bottom:4px;">&#x1F3AF;</div>
+            <div class="info-label">Final Version Started</div>
+            <div class="info-value small" id="timeline-final-start">--</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;" id="timeline-final-name">--</div>
+          </div>
+        </div>
+
+        <!-- Row 2: Graveyard stats — compact bar -->
+        <div class="info-card" style="display:flex;align-items:center;gap:16px;padding:10px 16px;margin-bottom:12px;">
+          <span style="font-size:18px;">&#x1FAA6;</span>
+          <div style="flex:1;display:flex;gap:20px;flex-wrap:wrap;">
+            <div>
+              <span style="font-size:11px;color:var(--text-muted);">Graveyard Files</span>
+              <div style="font-size:14px;font-weight:600;" id="timeline-graveyard-files">--</div>
+            </div>
+            <div>
+              <span style="font-size:11px;color:var(--text-muted);">Graveyard Size</span>
+              <div style="font-size:14px;font-weight:600;" id="timeline-graveyard-size">--</div>
+            </div>
+            <div>
+              <span style="font-size:11px;color:var(--text-muted);">BillyBob Versions</span>
+              <div style="font-size:14px;font-weight:600;" id="timeline-billybob-count">--</div>
+            </div>
+            <div>
+              <span style="font-size:11px;color:var(--text-muted);">AI Studio Submissions</span>
+              <div style="font-size:14px;font-weight:600;" id="timeline-aistudio-count">--</div>
+            </div>
+            <div>
+              <span style="font-size:11px;color:var(--text-muted);">Days: Idea &#x2192; Final</span>
+              <div style="font-size:14px;font-weight:600;" id="timeline-idea-to-final">--</div>
+            </div>
+            <div>
+              <span style="font-size:11px;color:var(--text-muted);">Total Project Age</span>
+              <div style="font-size:14px;font-weight:600;" id="timeline-total-age">--</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 3: Current version activity stats -->
+        <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Current Version (CFv1) Activity</h3>
         <div class="info-grid">
           <div class="info-card">
-            <div class="info-label">Project Start</div>
+            <div class="info-label">First Commit</div>
             <div class="info-value small" id="timeline-start">--</div>
           </div>
           <div class="info-card">
@@ -6926,6 +6984,19 @@ function resetTimelineSummary() {
   setText('timeline-life-upper', '--')
   setText('timeline-life-note', '--')
   setText('timeline-benchmark-summary', '--')
+  // Project At A Glance fields
+  setText('timeline-idea-start', '--')
+  setText('timeline-idea-ago', '--')
+  setText('timeline-restart-count', '--')
+  setText('timeline-restart-detail', '--')
+  setText('timeline-final-start', '--')
+  setText('timeline-final-name', '--')
+  setText('timeline-graveyard-files', '--')
+  setText('timeline-graveyard-size', '--')
+  setText('timeline-billybob-count', '--')
+  setText('timeline-aistudio-count', '--')
+  setText('timeline-idea-to-final', '--')
+  setText('timeline-total-age', '--')
   const badgeEl = document.getElementById('timeline-progress-badges')
   const benchEl = document.getElementById('timeline-benchmarks')
   if (badgeEl) badgeEl.innerHTML = ''
@@ -6956,6 +7027,61 @@ function renderTimelineLifeSummary(life) {
     'timeline-life-note',
     `Combined model = tracked evidence (${formatTimelineHours(tracked.low)} to ${formatTimelineHours(tracked.high)}) + restart-era estimate (${formatTimelineHours(preTelemetry.low)} to ${formatTimelineHours(preTelemetry.high)}). Earliest work date: ${assumptionStart}. Last updated: ${updated}.`
   )
+}
+
+function renderProjectStats(stats) {
+  if (!stats) return
+
+  // Idea born date
+  if (stats.firstConfirmedWork) {
+    const d = new Date(stats.firstConfirmedWork + 'T00:00:00')
+    setText('timeline-idea-start', d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))
+    const daysAgo = stats.daysFromIdeaToNow
+    if (daysAgo != null) {
+      const months = Math.floor(daysAgo / 30)
+      setText('timeline-idea-ago', months >= 12 ? `${(months / 12).toFixed(1)} years ago` : `${months} months ago`)
+    }
+  }
+
+  // Restarts
+  if (stats.totalRestarts != null) {
+    setText('timeline-restart-count', String(stats.totalRestarts))
+    const parts = []
+    if (stats.restartSources?.billyBobVersions) parts.push(`${stats.restartSources.billyBobVersions} BillyBob`)
+    if (stats.restartSources?.aiStudioSubmissions) parts.push(`${stats.restartSources.aiStudioSubmissions} AI Studio`)
+    const otherFs = (stats.restartSources?.filesystemGraveyard || 0) - (stats.restartSources?.billyBobVersions || 0)
+    if (otherFs > 0) parts.push(`${otherFs} other archives`)
+    setText('timeline-restart-detail', parts.join(' + '))
+  }
+
+  // Final version
+  if (stats.finalVersionStartDate) {
+    const d = new Date(stats.finalVersionStartDate + 'T00:00:00')
+    setText('timeline-final-start', d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))
+    setText('timeline-final-name', stats.finalVersionName || 'CFv1')
+  }
+
+  // Graveyard stats bar
+  if (stats.graveyardTotalFiles) {
+    setText('timeline-graveyard-files', stats.graveyardTotalFiles.toLocaleString())
+  }
+  if (stats.graveyardTotalGB) {
+    setText('timeline-graveyard-size', stats.graveyardTotalGB.toFixed(2) + ' GB')
+  }
+  if (stats.restartSources?.billyBobVersions != null) {
+    setText('timeline-billybob-count', String(stats.restartSources.billyBobVersions))
+  }
+  if (stats.restartSources?.aiStudioSubmissions != null) {
+    setText('timeline-aistudio-count', String(stats.restartSources.aiStudioSubmissions))
+  }
+  if (stats.daysFromIdeaToFinal != null) {
+    const months = Math.floor(stats.daysFromIdeaToFinal / 30)
+    setText('timeline-idea-to-final', months >= 12 ? `${(months / 12).toFixed(1)} years` : `${months} months`)
+  }
+  if (stats.daysFromIdeaToNow != null) {
+    const months = Math.floor(stats.daysFromIdeaToNow / 30)
+    setText('timeline-total-age', months >= 12 ? `${(months / 12).toFixed(1)} years` : `${months} months`)
+  }
 }
 
 function renderTimelineLifeEvents(events) {
@@ -7009,6 +7135,7 @@ async function loadProjectTimeline(force = false) {
     if (!data.summary) {
       setText('timeline-status', 'No commits yet')
       resetTimelineSummary()
+      renderProjectStats(data.life?.projectStats || null)
       renderTimelineLifeSummary(data.life || null)
       renderTimelineStatusAndBenchmarks(data)
       renderTimelineLifeEvents(data.life?.milestones || [])
@@ -7036,6 +7163,7 @@ async function loadProjectTimeline(force = false) {
       'timeline-hours-note',
       `Estimated from commit sessions (${s.sessions45m} at 45m gaps, ${s.sessions90m} at 90m gaps). Active-day average: ${s.commitsPerActiveDay} commits/day.`
     )
+    renderProjectStats(data.life?.projectStats || null)
     renderTimelineLifeSummary(data.life || null)
     renderTimelineStatusAndBenchmarks(data)
     renderTimelineLifeEvents(data.life?.milestones || [])
