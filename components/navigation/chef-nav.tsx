@@ -600,7 +600,10 @@ export function ChefSidebar({
 
   // Filter nav groups by enabled modules (progressive disclosure)
   // Admins always see every group — they're the developer, not a gated user
-  const enabledSet = enabledModules ? new Set(enabledModules) : null
+  const enabledSet = useMemo(
+    () => (enabledModules ? new Set(enabledModules) : null),
+    [enabledModules]
+  )
   const groupEntries = useMemo(
     () =>
       navGroups.map((group) => ({
@@ -1517,7 +1520,10 @@ export function ChefMobileNav({
 
   // Filter nav groups by enabled modules (progressive disclosure)
   // Admins always see every group — they're the developer, not a gated user
-  const enabledSet = enabledModules ? new Set(enabledModules) : null
+  const enabledSet = useMemo(
+    () => (enabledModules ? new Set(enabledModules) : null),
+    [enabledModules]
+  )
   const groupEntries = useMemo(
     () =>
       navGroups.map((group) => ({
