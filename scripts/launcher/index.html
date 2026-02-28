@@ -2211,21 +2211,25 @@ body {
             <div style="font-size:18px;margin-bottom:4px;">&#x1F4DD;</div>
             <div class="info-label">Total Commits</div>
             <div class="info-value" style="font-size:24px;" id="timeline-stat-commits">--</div>
+            <div style="font-size:11px;color:var(--error);margin-top:2px;" id="timeline-stat-commits-failed"></div>
           </div>
           <div class="info-card" style="text-align:center;padding:14px 12px;">
             <div style="font-size:18px;margin-bottom:4px;">&#x1F680;</div>
             <div class="info-label">Total Pushes</div>
             <div class="info-value" style="font-size:24px;" id="timeline-stat-pushes">--</div>
+            <div style="font-size:11px;color:var(--error);margin-top:2px;" id="timeline-stat-pushes-failed"></div>
           </div>
           <div class="info-card" style="text-align:center;padding:14px 12px;">
             <div style="font-size:18px;margin-bottom:4px;">&#x1F4E6;</div>
             <div class="info-label">Beta Deploys</div>
             <div class="info-value" style="font-size:24px;" id="timeline-stat-beta-deploys">--</div>
+            <div style="font-size:11px;color:var(--error);margin-top:2px;" id="timeline-stat-beta-deploys-failed"></div>
           </div>
           <div class="info-card" style="text-align:center;padding:14px 12px;">
             <div style="font-size:18px;margin-bottom:4px;">&#x25B2;</div>
             <div class="info-label">Vercel Deploys</div>
             <div class="info-value" style="font-size:24px;" id="timeline-stat-deploys">--</div>
+            <div style="font-size:11px;color:var(--error);margin-top:2px;" id="timeline-stat-deploys-failed"></div>
           </div>
         </div>
 
@@ -7024,6 +7028,10 @@ function resetTimelineSummary() {
   setText('timeline-stat-pushes', '--')
   setText('timeline-stat-beta-deploys', '--')
   setText('timeline-stat-deploys', '--')
+  setText('timeline-stat-commits-failed', '')
+  setText('timeline-stat-pushes-failed', '')
+  setText('timeline-stat-beta-deploys-failed', '')
+  setText('timeline-stat-deploys-failed', '')
   const badgeEl = document.getElementById('timeline-progress-badges')
   const benchEl = document.getElementById('timeline-benchmarks')
   if (badgeEl) badgeEl.innerHTML = ''
@@ -7111,6 +7119,11 @@ function renderGitActivity(activity) {
   if (activity.totalPushes != null) setText('timeline-stat-pushes', activity.totalPushes.toLocaleString())
   if (activity.betaDeploys != null) setText('timeline-stat-beta-deploys', activity.betaDeploys.toLocaleString())
   if (activity.vercelDeploys != null) setText('timeline-stat-deploys', activity.vercelDeploys.toLocaleString())
+  // Failure counters
+  setText('timeline-stat-commits-failed', activity.commitsFailed ? `${activity.commitsFailed} failed` : '')
+  setText('timeline-stat-pushes-failed', activity.pushesFailed ? `${activity.pushesFailed} failed` : '')
+  setText('timeline-stat-beta-deploys-failed', activity.betaDeploysFailed ? `${activity.betaDeploysFailed} failed` : '')
+  setText('timeline-stat-deploys-failed', activity.vercelDeploysFailed ? `${activity.vercelDeploysFailed} failed` : '')
 }
 
 function renderTimelineLifeEvents(events) {

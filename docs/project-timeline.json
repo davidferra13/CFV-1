@@ -1,6 +1,10 @@
 {
   "lastUpdated": "2026-02-28",
   "betaDeploys": 15,
+  "betaDeploysFailed": 8,
+  "vercelDeploysFailed": 0,
+  "pushesFailed": 0,
+  "commitsFailed": 0,
   "projectOrigin": {
     "ideaStartDate": "2024-06-01",
     "firstConfirmedWork": "2024-07-18",
