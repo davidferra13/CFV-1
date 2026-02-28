@@ -5,7 +5,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { encryptToken, decryptToken } from './crypto'
 import type { SocialPlatform } from '@/lib/social/types'
-import type { Database } from '@/types/database'
+import type { Database, Json } from '@/types/database'
 
 type CredentialRow = Database['public']['Tables']['social_platform_credentials']['Row']
 
@@ -163,7 +163,7 @@ export async function upsertCredential(input: UpsertCredentialInput): Promise<vo
     access_token: encryptToken(input.accessToken),
     refresh_token: input.refreshToken ? encryptToken(input.refreshToken) : null,
     token_expires_at: input.tokenExpiresAt?.toISOString() ?? null,
-    additional_data: input.additionalData ?? {},
+    additional_data: (input.additionalData ?? {}) as Json,
     scopes: input.scopes ?? [],
     is_active: true,
     failed_attempts: 0,

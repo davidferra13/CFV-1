@@ -23,7 +23,7 @@ export type OpenDateSlot = {
 }
 
 // Base query: all subscribed clients for this chef
-async function baseClients(chefId: string, supabase: ReturnType<typeof createServerClient>) {
+function baseClients(chefId: string, supabase: ReturnType<typeof createServerClient>) {
   return supabase
     .from('clients')
     .select('id, full_name, email, loyalty_tier')
@@ -61,7 +61,8 @@ export async function getClientsByOccasion(occasion: string): Promise<TargetClie
   const ids = Array.from(clientMap.keys())
   const { data: clients } = await baseClients(chef.entityId, supabase).in('id', ids)
 
-  return (clients ?? []).map((c) => ({
+  type ClientRow = { id: string; full_name: string; email: string; loyalty_tier: string | null }
+  return ((clients ?? []) as ClientRow[]).map((c) => ({
     id: c.id,
     full_name: c.full_name,
     email: c.email,
@@ -103,9 +104,8 @@ export async function getVIPClients(): Promise<TargetClient[]> {
   const supabase = createServerClient()
 
   const { data } = await baseClients(chef.entityId, supabase).in('loyalty_tier', [
-    'vip',
     'gold',
-    'premium',
+    'platinum',
   ])
 
   return (data ?? []).map((c) => ({

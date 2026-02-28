@@ -97,12 +97,13 @@ export async function captureTakeAChefBooking(
         console.error('[captureTakeAChefBooking] Client creation failed (non-fatal):', clientErr)
       }
     } else {
-      // No email — create a minimal client record without email
+      // No email — create a minimal client record with placeholder email
       const { data: newClient } = await supabase
         .from('clients')
         .insert({
           tenant_id: tenantId,
           full_name: validated.full_name.trim(),
+          email: `tac-${Date.now()}@placeholder.cheflowhq.com`,
           phone: validated.phone?.trim() || null,
           dietary_restrictions: dietaryList || [],
           allergies: [],
@@ -151,7 +152,16 @@ export async function captureTakeAChefBooking(
       throw new Error(`Inquiry creation failed: ${inquiryError?.message}`)
     }
 
-    // 5. Create draft event
+    // 5. Create draft event (requires client)
+    if (!clientId) {
+      return {
+        success: true,
+        inquiryId: inquiry.id,
+        clientCreated,
+        error: 'Client creation failed — event not created',
+      }
+    }
+
     const { data: event, error: eventError } = await supabase
       .from('events')
       .insert({

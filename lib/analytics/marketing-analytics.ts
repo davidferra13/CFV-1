@@ -2,6 +2,9 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
+import type { Database } from '@/types/database'
+
+type InquiryChannel = Database['public']['Enums']['inquiry_channel']
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -183,10 +186,10 @@ export async function getCostPerLeadByChannel(
   }
 
   // Map marketing channels to inquiry channels
-  const channelMapping: Record<string, string[]> = {
+  const channelMapping: Record<string, InquiryChannel[]> = {
     instagram_ads: ['instagram'],
     google_ads: ['website'],
-    facebook_ads: ['facebook'],
+    facebook_ads: ['other'], // facebook not a valid inquiry channel — map to 'other'
   }
 
   const results: CostPerLeadByChannel[] = []

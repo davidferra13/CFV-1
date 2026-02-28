@@ -39,6 +39,10 @@ export async function GET(
     return NextResponse.redirect(new URL('/auth/signin', origin))
   }
 
+  if (!user.tenantId) {
+    return failRedirect('config_error')
+  }
+
   const config = getOAuthConfig(platform)
   if (!config) return failRedirect('config_error')
 

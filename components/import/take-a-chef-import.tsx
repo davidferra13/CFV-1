@@ -214,7 +214,7 @@ export function TakeAChefImport({ aiConfigured }: { aiConfigured: boolean }) {
 
         {/* If AI isn't configured or user wants to skip review, just save directly */}
         {rawText.trim() && phase === 'input' && aiConfigured && (
-          <Button variant="secondary" onClick={handleSave} disabled={phase === 'saving'}>
+          <Button variant="secondary" onClick={handleSave}>
             Save Directly (No Review)
           </Button>
         )}

@@ -307,10 +307,14 @@ export async function getReferralConversionStats(): Promise<ReferralConversionSt
     .eq('channel', 'referral')
 
   const referred = inquiries?.length ?? 0
-  const converted = (inquiries ?? []).filter((i) => i.converted_to_event_id != null).length
+  const converted = (inquiries ?? []).filter(
+    (i: { converted_to_event_id: string | null }) => i.converted_to_event_id != null
+  ).length
 
   // Revenue from referral-sourced events
-  const eventIds = (inquiries ?? []).map((i) => i.converted_to_event_id).filter(Boolean) as string[]
+  const eventIds = (inquiries ?? [])
+    .map((i: { converted_to_event_id: string | null }) => i.converted_to_event_id)
+    .filter(Boolean) as string[]
 
   let referralRevenue = 0
   if (eventIds.length > 0) {
@@ -322,7 +326,8 @@ export async function getReferralConversionStats(): Promise<ReferralConversionSt
       .in('entry_type', ['payment', 'deposit', 'installment', 'final_payment', 'add_on'])
 
     referralRevenue = (ledger ?? []).reduce(
-      (sum, e) => sum + (e.is_refund ? -e.amount_cents : e.amount_cents),
+      (sum: number, e: { is_refund: boolean; amount_cents: number }) =>
+        sum + (e.is_refund ? -e.amount_cents : e.amount_cents),
       0
     )
   }

@@ -713,7 +713,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
             clientName: client.full_name,
             chefName: chef?.business_name || 'Your Chef',
             occasion: occasion6,
-            validUntil: quote.valid_until,
+            validUntil: quote.valid_until!,
             totalCents: quote.total_quoted_cents,
             quoteId: quote.id,
           })
@@ -803,11 +803,11 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
           // Get chef name
           const { data: chef } = await supabase
             .from('chefs')
-            .select('business_name, full_name')
+            .select('business_name, display_name')
             .eq('id', event.tenant_id)
             .single()
 
-          const chefName = chef?.business_name || chef?.full_name || 'Your Chef'
+          const chefName = chef?.business_name || chef?.display_name || 'Your Chef'
           const firstName = client.full_name.split(' ')[0]
           const occasion = event.occasion || 'your dinner'
           const eventDateLabel = new Date(event.event_date).toLocaleDateString('en-US', {

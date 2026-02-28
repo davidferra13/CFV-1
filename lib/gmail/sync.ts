@@ -433,7 +433,7 @@ async function handleInquiry(
             clientName: email.from.name || 'there',
             chefName: chefProfile.name,
             occasion: parseResult.parsed.confirmed_occasion || '',
-            eventDate: parseResult.parsed.confirmed_date || undefined,
+            eventDate: parseResult.parsed.confirmed_date ?? null,
           })
         }
       }
@@ -690,7 +690,7 @@ async function handleTacNewInquiry(
   try {
     const clientResult = await createClientFromLead(tenantId, {
       full_name: inquiry.clientName,
-      email: null,
+      email: `tac-${Date.now()}@placeholder.cheflowhq.com`,
       phone: null,
       dietary_restrictions: inquiry.dietaryRestrictions
         ? inquiry.dietaryRestrictions
@@ -951,17 +951,23 @@ async function handleTacBookingConfirmed(
       .single()
 
     if (existingInquiry) {
+      const eventDate =
+        existingInquiry.confirmed_date ||
+        booking.serviceDates?.split(/[-–]/)[0]?.trim() ||
+        new Date().toISOString().slice(0, 10)
+
+      const clientId = existingInquiry.client_id
+      if (!clientId) return // Cannot create event without a client
+
       const { data: event } = await supabase
         .from('events')
         .insert({
           tenant_id: tenantId,
-          client_id: existingInquiry.client_id,
+          client_id: clientId,
           inquiry_id: inquiryId,
-          event_date:
-            existingInquiry.confirmed_date ||
-            booking.serviceDates?.split(/[-–]/)[0]?.trim() ||
-            null,
-          guest_count: existingInquiry.confirmed_guest_count,
+          event_date: eventDate,
+          serve_time: 'TBD',
+          guest_count: existingInquiry.confirmed_guest_count ?? 2,
           location_address: booking.address || '',
           location_city: 'TBD',
           location_zip: 'TBD',
@@ -1280,7 +1286,7 @@ async function handleYhangryNewInquiry(
   try {
     const clientResult = await createClientFromLead(tenantId, {
       full_name: inquiry.clientName || 'Yhangry Client',
-      email: null,
+      email: `yhangry-${Date.now()}@placeholder.cheflowhq.com`,
       phone: null,
       dietary_restrictions: null,
       source: 'yhangry',
@@ -1556,7 +1562,7 @@ async function logSyncEntry(
       // Remy email awareness — store body content for search/context
       body_preview: email.body?.slice(0, 2000) || null,
       snippet: email.body?.slice(0, 200) || null,
-      to_address: ((email as Record<string, unknown>).to as string) || null,
+      to_address: email.to || null,
       received_at: receivedAt,
       platform_email_type: entry.platform_email_type || null,
     },

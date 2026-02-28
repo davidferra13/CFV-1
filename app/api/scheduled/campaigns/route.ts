@@ -2,7 +2,7 @@
 // Fires any marketing campaigns whose scheduled_at is now or in the past.
 // Called hourly by Vercel Cron. Protected by CRON_SECRET.
 
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { processScheduledCampaigns } from '@/lib/marketing/actions'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 

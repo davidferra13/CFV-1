@@ -59,11 +59,11 @@ export async function getCampaignByToken(token: string): Promise<PublicDinnerInf
   // Fetch chef info
   const { data: chef } = await db
     .from('chefs')
-    .select('full_name, business_name, display_name')
+    .select('business_name, display_name')
     .eq('id', campaign.chef_id)
     .single()
 
-  const chefName = chef?.display_name || chef?.business_name || chef?.full_name || 'Your Chef'
+  const chefName = chef?.display_name || chef?.business_name || 'Your Chef'
 
   // Fetch menu preview (courses only — no costs)
   let menuPreview: Array<{ name: string; course_name: string }> = []
@@ -266,15 +266,11 @@ export async function submitCampaignBooking(
 
     const { data: chefForEmail } = await db
       .from('chefs')
-      .select('full_name, business_name, display_name')
+      .select('business_name, display_name')
       .eq('id', campaign.chef_id)
       .single()
 
-    const chefName =
-      chefForEmail?.display_name ||
-      chefForEmail?.business_name ||
-      chefForEmail?.full_name ||
-      'Your Chef'
+    const chefName = chefForEmail?.display_name || chefForEmail?.business_name || 'Your Chef'
 
     const ackBody = [
       `Hi ${input.full_name.split(' ')[0]},`,

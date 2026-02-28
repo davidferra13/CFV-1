@@ -15,10 +15,7 @@ export default async function MySpendingPage() {
   return (
     <div>
       <SpendingDashboardClient summary={summary} />
-      <ActivityTracker
-        eventType="spending_viewed"
-        metadata={{ event_count: summary.events.length }}
-      />
+      <ActivityTracker eventType="page_viewed" metadata={{ event_count: summary.events.length }} />
     </div>
   )
 }

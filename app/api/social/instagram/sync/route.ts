@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { createAdminClient } from '@/lib/supabase/admin'
+import type { Json } from '@/types/database'
 
 interface IGPost {
   like_count: number
@@ -129,7 +130,7 @@ async function syncInstagramStats(chefId: string): Promise<{ ok: boolean; error?
       top_post_url: topPost?.permalink ?? null,
       top_post_likes: topPost?.like_count ?? null,
       top_post_comments: topPost?.comments_count ?? null,
-      raw_payload: { profile, topPost: topPost ?? null },
+      raw_payload: { profile, topPost: topPost ?? null } as unknown as Json,
       synced_at: new Date().toISOString(),
     },
     { onConflict: 'chef_id,platform,snapshot_date' }
