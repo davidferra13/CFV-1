@@ -34,6 +34,8 @@ export type QuoteDocumentData = {
   client: {
     fullName: string
     email: string | null
+    loyaltyTier: 'bronze' | 'silver' | 'gold' | 'platinum' | null
+    loyaltyPoints: number | null
   }
   event: {
     occasion: string | null
@@ -71,7 +73,7 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
       guest_count_estimated, deposit_required, deposit_amount_cents,
       deposit_percentage, valid_until, pricing_notes, sent_at,
       event_id, inquiry_id,
-      client:clients(full_name, email)
+      client:clients(full_name, email, loyalty_tier, loyalty_points)
     `
     )
     .eq('id', quoteId)
@@ -89,7 +91,12 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
 
   if (!chef) return null
 
-  const clientData = quote.client as unknown as { full_name: string; email: string | null } | null
+  const clientData = quote.client as {
+    full_name: string
+    email: string | null
+    loyalty_tier: 'bronze' | 'silver' | 'gold' | 'platinum' | null
+    loyalty_points: number | null
+  } | null
 
   // Resolve event details — either from the linked event or from the linked inquiry
   let eventDetails: QuoteDocumentData['event'] = {
@@ -258,6 +265,8 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
     client: {
       fullName: clientData?.full_name ?? 'Valued Guest',
       email: clientData?.email ?? null,
+      loyaltyTier: clientData?.loyalty_tier ?? null,
+      loyaltyPoints: clientData?.loyalty_points ?? null,
     },
     event: eventDetails,
     menu: menuCourses,
@@ -296,6 +305,15 @@ export function renderQuote(pdf: PDFLayout, data: QuoteDocumentData) {
     ['Date', dateStr],
     ['Ref', quote.quoteRef],
   ])
+  if (client.loyaltyTier) {
+    const loyaltyLabel = `${client.loyaltyTier.charAt(0).toUpperCase()}${client.loyaltyTier.slice(1)} member`
+    const pointsLabel =
+      typeof client.loyaltyPoints === 'number'
+        ? `${client.loyaltyPoints.toLocaleString()} points`
+        : 'Loyalty account active'
+    pdf.text(`Loyalty status: ${loyaltyLabel} - ${pointsLabel}`, 8, 'italic', 0)
+    pdf.space(1)
+  }
 
   if (quote.validUntil) {
     pdf.text(

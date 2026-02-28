@@ -12,6 +12,9 @@ type PostEventThankYouProps = {
   occasion: string
   eventDate: string
   bookAgainUrl: string
+  loyaltyTier?: 'bronze' | 'silver' | 'gold' | 'platinum' | null
+  loyaltyPointsEarned?: number | null
+  loyaltyPointsBalance?: number | null
 }
 
 export function PostEventThankYouEmail({
@@ -20,6 +23,9 @@ export function PostEventThankYouEmail({
   occasion,
   eventDate,
   bookAgainUrl,
+  loyaltyTier,
+  loyaltyPointsEarned,
+  loyaltyPointsBalance,
 }: PostEventThankYouProps) {
   return (
     <BaseLayout preview={`${chefName} wanted to say thank you`}>
@@ -37,6 +43,21 @@ export function PostEventThankYouEmail({
         Creating memorable dining experiences is what drives us, and having guests like you makes it
         all worthwhile. We truly hope every dish exceeded your expectations.
       </Text>
+
+      {(typeof loyaltyPointsEarned === 'number' && loyaltyPointsEarned > 0) ||
+      loyaltyTier ||
+      typeof loyaltyPointsBalance === 'number' ? (
+        <Text style={paragraph}>
+          Loyalty update:{' '}
+          {typeof loyaltyPointsEarned === 'number' && loyaltyPointsEarned > 0
+            ? `you earned ${loyaltyPointsEarned} points from this event`
+            : 'your loyalty profile is active'}
+          {typeof loyaltyPointsBalance === 'number'
+            ? ` and now have ${loyaltyPointsBalance.toLocaleString()} total points`
+            : ''}
+          {loyaltyTier ? ` (${loyaltyTier} tier).` : '.'}
+        </Text>
+      ) : null}
 
       <Hr style={divider} />
 

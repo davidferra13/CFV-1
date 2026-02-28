@@ -17,7 +17,7 @@ import { getEventExpenses, getEventProfitSummary, getBudgetGuardrail } from '@/l
 import { getUnrecordedComponentsForEvent } from '@/lib/recipes/actions'
 import { isAIConfigured } from '@/lib/ai/parse'
 import { getEventDOPProgress } from '@/lib/scheduling/actions'
-import { getLoyaltyTransactions } from '@/lib/loyalty/actions'
+import { getEventLoyaltyImpactByTenant, getLoyaltyTransactions } from '@/lib/loyalty/actions'
 import { getMessageThread, getResponseTemplates } from '@/lib/messages/actions'
 import { EventStatusBadge } from '@/components/events/event-status-badge'
 import { EventTransitions } from '@/components/events/event-transitions'
@@ -221,6 +221,7 @@ export default async function EventDetailPage({
     messages,
     templates,
     eventLoyaltyTxs,
+    eventLoyaltyImpact,
     menuMods,
     unusedItems,
     substitutionItems,
@@ -252,6 +253,15 @@ export default async function EventDetailPage({
           .then((txs) => txs.filter((tx) => tx.event_id === params.id))
           .catch(() => [])
       : Promise.resolve([]),
+    event.client_id
+      ? getEventLoyaltyImpactByTenant({
+          tenantId: (event as any).tenant_id,
+          clientId: event.client_id,
+          guestCount: event.guest_count || 0,
+          eventTotalCents:
+            (event as any).total_price_cents ?? (event as any).quoted_price_cents ?? 0,
+        }).catch(() => null)
+      : Promise.resolve(null),
     isCompletedOrBeyond ? getEventModifications(params.id) : Promise.resolve([]),
     isCompletedOrBeyond ? getUnusedIngredients(params.id) : Promise.resolve([]),
     getSubstitutions(params.id),
@@ -700,6 +710,49 @@ export default async function EventDetailPage({
                     >
                       {event.client.phone}
                     </a>
+                  </dd>
+                </div>
+              )}
+              {eventLoyaltyImpact && (
+                <div className="pt-2 border-t border-stone-800">
+                  <dt className="text-sm font-medium text-stone-500">Loyalty</dt>
+                  <dd className="text-sm text-stone-100 mt-1 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center rounded-full bg-brand-950 px-2 py-0.5 text-xs font-semibold text-brand-300 capitalize">
+                        {eventLoyaltyImpact.currentTier}
+                      </span>
+                      <span className="text-stone-300">
+                        {eventLoyaltyImpact.pointsBalance.toLocaleString()} points
+                      </span>
+                    </div>
+                    {event.status === 'completed' ? (
+                      eventLoyaltyPoints > 0 ? (
+                        <p className="text-xs text-emerald-700">
+                          This event awarded {eventLoyaltyPoints} points.
+                        </p>
+                      ) : (
+                        <p className="text-xs text-stone-500">
+                          No points were awarded for this event.
+                        </p>
+                      )
+                    ) : eventLoyaltyImpact.programMode === 'full' ? (
+                      <p className="text-xs text-stone-300">
+                        Estimated earn: {eventLoyaltyImpact.estimatedPoints} pts (
+                        {eventLoyaltyImpact.estimatedBreakdown}).
+                      </p>
+                    ) : eventLoyaltyImpact.programMode === 'lite' ? (
+                      <p className="text-xs text-stone-300">
+                        Lite mode active: this event contributes to visit-based tier progress.
+                      </p>
+                    ) : (
+                      <p className="text-xs text-stone-500">Loyalty program is currently off.</p>
+                    )}
+                    {eventLoyaltyImpact.nextTierName && eventLoyaltyImpact.pointsToNextTier > 0 && (
+                      <p className="text-xs text-stone-500">
+                        {eventLoyaltyImpact.pointsToNextTier.toLocaleString()} points to{' '}
+                        {eventLoyaltyImpact.nextTierName}.
+                      </p>
+                    )}
                   </dd>
                 </div>
               )}

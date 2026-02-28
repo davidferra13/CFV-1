@@ -581,7 +581,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
 
       const { data: clientData } = await supabaseAdmin
         .from('clients')
-        .select('email, full_name')
+        .select('email, full_name, loyalty_tier, loyalty_points')
         .eq('id', client_id)
         .single()
 
@@ -605,6 +605,8 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
           occasion: eventData.occasion || 'your event',
           eventDate: eventData.event_date,
           remainingBalanceCents: typeof remaining === 'number' ? remaining : null,
+          loyaltyTier: (clientData as any).loyalty_tier ?? null,
+          loyaltyPoints: (clientData as any).loyalty_points ?? null,
         })
 
         // Chef email notification (in addition to in-app notification)

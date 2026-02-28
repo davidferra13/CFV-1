@@ -119,10 +119,14 @@ export interface RemyContext {
     status: string
     clientName: string
     guestCount: number | null
+    clientLoyaltyTier?: 'bronze' | 'silver' | 'gold' | 'platinum' | null
+    clientLoyaltyPoints?: number | null
   }>
   recentClients?: Array<{
     id: string
     name: string
+    tier?: 'bronze' | 'silver' | 'gold' | 'platinum' | null
+    pointsBalance?: number | null
   }>
   monthRevenueCents?: number
   pendingQuoteCount?: number

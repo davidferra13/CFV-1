@@ -186,6 +186,24 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
     if (data.client.email) {
       doc.text(data.client.email, MARGIN_LEFT, y + clientNameHeight + 2, { width: colWidth })
     }
+    if (data.loyalty) {
+      const loyaltyParts = [
+        `${data.loyalty.tier} member`,
+        `${data.loyalty.pointsBalance.toLocaleString()} points`,
+      ]
+      if (data.loyalty.nextTierName && data.loyalty.pointsToNextTier > 0) {
+        loyaltyParts.push(
+          `${data.loyalty.pointsToNextTier.toLocaleString()} to ${data.loyalty.nextTierName}`
+        )
+      }
+      doc
+        .font('Helvetica')
+        .fontSize(8)
+        .fillColor(TEXT_MUTED)
+        .text(`Loyalty: ${loyaltyParts.join(' | ')}`, MARGIN_LEFT, y + clientNameHeight + 14, {
+          width: colWidth,
+        })
+    }
 
     // Event — right column
     const rightX = MARGIN_LEFT + colWidth + 20

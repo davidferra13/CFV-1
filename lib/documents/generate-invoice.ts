@@ -84,8 +84,16 @@ export function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
   doc.setFont('helvetica', 'normal')
   doc.text(client.displayName, MARGIN_X + halfWidth + 4, pdf.y + 4)
   if (client.email) doc.text(client.email, MARGIN_X + halfWidth + 4, pdf.y + 8)
+  if (data.loyalty) {
+    const loyaltyLine = `${data.loyalty.tier} member | ${data.loyalty.pointsBalance.toLocaleString()} points`
+    doc.setFontSize(7.5)
+    doc.setTextColor(110, 110, 110)
+    doc.text(loyaltyLine, MARGIN_X + halfWidth + 4, pdf.y + 12)
+    doc.setTextColor(0, 0, 0)
+    doc.setFontSize(8)
+  }
 
-  pdf.y += chef.phone ? 16 : 14
+  pdf.y += chef.phone ? 18 : 16
   pdf.space(3)
 
   // ── EVENT DETAILS ─────────────────────────────────────────────────────────

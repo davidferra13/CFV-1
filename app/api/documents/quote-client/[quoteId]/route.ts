@@ -18,13 +18,15 @@ async function fetchQuoteDataForClient(
   // Verify client owns this quote
   const { data: quote } = await supabase
     .from('quotes')
-    .select(`
+    .select(
+      `
       id, created_at, pricing_model, total_quoted_cents, price_per_person_cents,
       guest_count_estimated, deposit_required, deposit_amount_cents,
       deposit_percentage, valid_until, pricing_notes, sent_at,
       event_id, inquiry_id, tenant_id,
-      client:clients(full_name, email)
-    `)
+      client:clients(full_name, email, loyalty_tier, loyalty_points)
+    `
+    )
     .eq('id', quoteId)
     .eq('client_id', entityId)
     .single()
@@ -40,7 +42,12 @@ async function fetchQuoteDataForClient(
 
   if (!chef) return null
 
-  const clientData = quote.client as unknown as { full_name: string; email: string | null } | null
+  const clientData = quote.client as {
+    full_name: string
+    email: string | null
+    loyalty_tier: 'bronze' | 'silver' | 'gold' | 'platinum' | null
+    loyalty_points: number | null
+  } | null
 
   // Resolve event details
   let eventDetails: QuoteDocumentData['event'] = {
@@ -58,16 +65,22 @@ async function fetchQuoteDataForClient(
   if (quote.event_id) {
     const { data: event } = await supabase
       .from('events')
-      .select(`
+      .select(
+        `
         occasion, event_date, guest_count, location_address, location_city,
         location_state, service_style, dietary_restrictions, allergies
-      `)
+      `
+      )
       .eq('id', quote.event_id)
       .eq('client_id', entityId)
       .single()
 
     if (event) {
-      const locationParts = [event.location_address, event.location_city, event.location_state].filter(Boolean)
+      const locationParts = [
+        event.location_address,
+        event.location_city,
+        event.location_state,
+      ].filter(Boolean)
       eventDetails = {
         occasion: event.occasion,
         eventDate: event.event_date,
@@ -95,7 +108,10 @@ async function fetchQuoteDataForClient(
           .order('sort_order', { ascending: true })
 
         if (dishes && dishes.length > 0) {
-          const courseMap = new Map<number, { name: string; description: string | null; dishIds: string[] }>()
+          const courseMap = new Map<
+            number,
+            { name: string; description: string | null; dishIds: string[] }
+          >()
           for (const dish of dishes) {
             const existing = courseMap.get(dish.course_number)
             if (existing) {
@@ -114,7 +130,7 @@ async function fetchQuoteDataForClient(
             }
           }
 
-          const allDishIds = dishes.map(d => d.id)
+          const allDishIds = dishes.map((d) => d.id)
           const { data: components } = await supabase
             .from('components')
             .select('dish_id, name')
@@ -134,7 +150,7 @@ async function fetchQuoteDataForClient(
               courseNumber,
               courseName: data.name,
               description: data.description,
-              componentNames: data.dishIds.flatMap(id => compsByDish.get(id) || []),
+              componentNames: data.dishIds.flatMap((id) => compsByDish.get(id) || []),
             }))
         }
       }
@@ -142,7 +158,9 @@ async function fetchQuoteDataForClient(
   } else if (quote.inquiry_id) {
     const { data: inquiry } = await supabase
       .from('inquiries')
-      .select('confirmed_date, confirmed_guest_count, confirmed_location, confirmed_occasion, confirmed_dietary_restrictions')
+      .select(
+        'confirmed_date, confirmed_guest_count, confirmed_location, confirmed_occasion, confirmed_dietary_restrictions'
+      )
       .eq('id', quote.inquiry_id)
       .eq('client_id', entityId)
       .single()
@@ -187,6 +205,8 @@ async function fetchQuoteDataForClient(
     client: {
       fullName: clientData?.full_name ?? 'Valued Guest',
       email: clientData?.email ?? null,
+      loyaltyTier: clientData?.loyalty_tier ?? null,
+      loyaltyPoints: clientData?.loyalty_points ?? null,
     },
     event: eventDetails,
     menu: menuCourses,
@@ -197,10 +217,7 @@ async function fetchQuoteDataForClient(
   }
 }
 
-export async function GET(
-  _request: Request,
-  { params }: { params: { quoteId: string } }
-) {
+export async function GET(_request: Request, { params }: { params: { quoteId: string } }) {
   try {
     const user = await requireClient()
 

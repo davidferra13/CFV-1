@@ -31,6 +31,11 @@ export interface RemyClientContext {
   dietaryRestrictions: string | null
   allergies: string | null
   openInquiries: number
+  loyaltyTier: 'bronze' | 'silver' | 'gold' | 'platinum'
+  loyaltyPointsBalance: number
+  loyaltyLifetimePoints: number
+  nextTierName: 'silver' | 'gold' | 'platinum' | null
+  pointsToNextTier: number
 }
 
 /**
@@ -46,7 +51,7 @@ export async function loadRemyClientContext(
   // Load client profile
   const { data: client } = await supabase
     .from('clients')
-    .select('full_name, dietary_restrictions, allergies')
+    .select('full_name, dietary_restrictions, allergies, loyalty_tier, loyalty_points')
     .eq('id', clientId)
     .eq('tenant_id', tenantId)
     .single()
@@ -103,6 +108,40 @@ export async function loadRemyClientContext(
     .eq('tenant_id', tenantId)
     .in('status', ['new', 'awaiting_client', 'awaiting_chef'])
 
+  const [{ data: earnedRows }, { data: config }] = await Promise.all([
+    supabase
+      .from('loyalty_transactions')
+      .select('points')
+      .eq('tenant_id', tenantId)
+      .eq('client_id', clientId)
+      .in('type', ['earned', 'bonus']),
+    supabase
+      .from('loyalty_config')
+      .select('tier_silver_min, tier_gold_min, tier_platinum_min')
+      .eq('tenant_id', tenantId)
+      .single(),
+  ])
+
+  const lifetimePoints = (earnedRows || []).reduce((sum, row) => sum + (row.points || 0), 0)
+  const tier = ((client?.loyalty_tier as 'bronze' | 'silver' | 'gold' | 'platinum') || 'bronze') as
+    | 'bronze'
+    | 'silver'
+    | 'gold'
+    | 'platinum'
+
+  const nextTierName =
+    tier === 'bronze' ? 'silver' : tier === 'silver' ? 'gold' : tier === 'gold' ? 'platinum' : null
+  const nextTierThreshold =
+    nextTierName === 'silver'
+      ? (config?.tier_silver_min ?? 100)
+      : nextTierName === 'gold'
+        ? (config?.tier_gold_min ?? 250)
+        : nextTierName === 'platinum'
+          ? (config?.tier_platinum_min ?? 500)
+          : null
+  const pointsToNextTier =
+    nextTierThreshold !== null ? Math.max(0, nextTierThreshold - lifetimePoints) : 0
+
   return {
     clientName: client?.full_name ?? null,
     chefName: chef?.display_name ?? chef?.business_name ?? null,
@@ -130,6 +169,11 @@ export async function loadRemyClientContext(
     dietaryRestrictions: client?.dietary_restrictions?.join(', ') ?? null,
     allergies: client?.allergies?.join(', ') ?? null,
     openInquiries: inquiryCount ?? 0,
+    loyaltyTier: tier,
+    loyaltyPointsBalance: client?.loyalty_points ?? 0,
+    loyaltyLifetimePoints: lifetimePoints,
+    nextTierName,
+    pointsToNextTier,
   }
 }
 
@@ -148,6 +192,14 @@ export function formatClientContext(ctx: RemyClientContext): string {
   }
   if (ctx.allergies) {
     parts.push(`- Allergies: **${ctx.allergies.toUpperCase()}**`)
+  }
+  parts.push(
+    `- Loyalty: ${ctx.loyaltyTier} tier, ${ctx.loyaltyPointsBalance.toLocaleString()} points balance`
+  )
+  if (ctx.nextTierName) {
+    parts.push(
+      `- Progress: ${ctx.pointsToNextTier.toLocaleString()} points to ${ctx.nextTierName} tier`
+    )
   }
 
   if (ctx.upcomingEvents.length > 0) {

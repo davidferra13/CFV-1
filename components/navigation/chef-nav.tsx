@@ -2,13 +2,14 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { signOut } from '@/lib/auth/actions'
-import { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react'
+import { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import { navGroups, standaloneBottom, mobileTabItems, resolveStandaloneTop } from './nav-config'
 import type { NavGroup, NavCollapsibleItem, NavSubItem } from './nav-config'
 import { NotificationBell } from '@/components/notifications/notification-bell'
+import { useNotifications } from '@/components/notifications/notification-provider'
 import { GlobalSearch } from '@/components/search/global-search'
 import { OfflineNavIndicator } from '@/components/offline/offline-nav-indicator'
 import { OllamaStatusBadge } from '@/components/dashboard/ollama-status-badge'
@@ -25,6 +26,10 @@ import {
   Leaf,
   Bot,
   Rss,
+  Search,
+  Plus,
+  Lock,
+  Sparkles,
 } from 'lucide-react'
 // Navigation items are centrally defined in `components/navigation/nav-config.tsx`
 
@@ -74,23 +79,79 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
-// ─── Helper: check if a pathname matches a nav item ─
-function isItemActive(pathname: string, href: string) {
-  const normalizedHref = href.split('?')[0]
-  if (normalizedHref === '/dashboard') return pathname === '/dashboard'
-  return pathname === normalizedHref || pathname.startsWith(normalizedHref + '/')
+type SearchParamsLike = Pick<URLSearchParams, 'entries' | 'get'>
+type NavQuickItem = { href: string; label: string; icon: LucideIcon }
+
+const QUICK_CREATE_ITEMS: NavQuickItem[] = [
+  { href: '/events/new', label: 'Event', icon: Plus },
+  { href: '/quotes/new', label: 'Quote', icon: Plus },
+  { href: '/inquiries/new', label: 'Inquiry', icon: Plus },
+  { href: '/clients/new', label: 'Client', icon: Plus },
+]
+
+const CORE_GROUP_ORDER = ['remy', 'sales', 'clients', 'events', 'culinary', 'operations', 'finance']
+
+const cannabisSectionItems = [
+  { href: '/cannabis', label: 'Cannabis Hub' },
+  { href: '/cannabis/events', label: 'Cannabis Events' },
+  { href: '/cannabis/rsvps', label: 'RSVPs' },
+  { href: '/cannabis/ledger', label: 'Cannabis Ledger' },
+  { href: '/cannabis/invite', label: 'Invite' },
+  { href: '/cannabis/handbook', label: 'Handbook (Draft)' },
+  { href: '/cannabis/compliance', label: 'Compliance' },
+  { href: '/cannabis/about', label: 'About' },
+]
+
+const communitySectionItems = [
+  { href: '/network', label: 'Community Hub' },
+  { href: '/network?tab=feed', label: 'Feed' },
+  { href: '/network?tab=channels', label: 'Channels' },
+  { href: '/network?tab=discover', label: 'Discover Chefs' },
+  { href: '/network?tab=connections', label: 'Connections' },
+  { href: '/network/saved', label: 'Saved Posts' },
+  { href: '/network/notifications', label: 'Notifications' },
+]
+
+function splitHref(href: string) {
+  const [path, query = ''] = href.split('?')
+  return { path, query }
 }
 
-function isGroupActive(pathname: string, group: NavGroup) {
+function queryMatches(searchParams: SearchParamsLike | null | undefined, query: string) {
+  if (!query) return true
+  if (!searchParams) return false
+
+  const target = new URLSearchParams(query)
+  for (const [key, value] of target.entries()) {
+    if (searchParams.get(key) !== value) return false
+  }
+  return true
+}
+
+// ─── Helper: check if current route matches a nav item (path + query-aware) ─
+function isItemActive(pathname: string, href: string, searchParams?: SearchParamsLike | null) {
+  const { path, query } = splitHref(href)
+  if (query) {
+    return pathname === path && queryMatches(searchParams, query)
+  }
+  if (path === '/dashboard') return pathname === '/dashboard'
+  return pathname === path || pathname.startsWith(path + '/')
+}
+
+function isGroupActive(pathname: string, group: NavGroup, searchParams?: SearchParamsLike | null) {
   return group.items.some((item) => {
-    if (isItemActive(pathname, item.href)) return true
-    return item.children?.some((child) => isItemActive(pathname, child.href)) ?? false
+    if (isItemActive(pathname, item.href, searchParams)) return true
+    return item.children?.some((child) => isItemActive(pathname, child.href, searchParams)) ?? false
   })
 }
 
-function isCollapsibleItemActive(pathname: string, item: NavCollapsibleItem) {
-  if (isItemActive(pathname, item.href)) return true
-  return item.children?.some((child) => isItemActive(pathname, child.href)) ?? false
+function isCollapsibleItemActive(
+  pathname: string,
+  item: NavCollapsibleItem,
+  searchParams?: SearchParamsLike | null
+) {
+  if (isItemActive(pathname, item.href, searchParams)) return true
+  return item.children?.some((child) => isItemActive(pathname, child.href, searchParams)) ?? false
 }
 
 function partitionChildren(children: NavSubItem[] = []) {
@@ -105,14 +166,56 @@ function partitionChildren(children: NavSubItem[] = []) {
   return { secondary, advanced }
 }
 
+function isSectionActive(
+  pathname: string,
+  items: Array<{ href: string }>,
+  searchParams?: SearchParamsLike | null
+) {
+  return items.some((item) => isItemActive(pathname, item.href, searchParams))
+}
+
+function filterNavGroup(group: NavGroup, filter: string): NavGroup | null {
+  const q = filter.trim().toLowerCase()
+  if (!q) return group
+
+  const groupMatch = group.label.toLowerCase().includes(q)
+  const items = group.items
+    .map((item) => {
+      const itemMatch = item.label.toLowerCase().includes(q)
+      const children = (item.children ?? []).filter((child) =>
+        child.label.toLowerCase().includes(q)
+      )
+
+      if (groupMatch || itemMatch || children.length > 0) {
+        return {
+          ...item,
+          children: item.children ? children : undefined,
+        }
+      }
+      return null
+    })
+    .filter((item): item is NavCollapsibleItem => Boolean(item))
+
+  if (!groupMatch && items.length === 0) return null
+  return { ...group, items }
+}
+
 // ─── Flyout for rail mode ───────────────────────────
-function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) {
+function RailFlyout({
+  group,
+  pathname,
+  searchParams,
+}: {
+  group: NavGroup
+  pathname: string
+  searchParams?: SearchParamsLike | null
+}) {
   const [open, setOpen] = useState(false)
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const GroupIcon = group.icon
-  const active = isGroupActive(pathname, group)
+  const active = isGroupActive(pathname, group, searchParams)
 
   const handleEnter = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current)
@@ -125,7 +228,7 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
 
   useEffect(() => {
     for (const item of group.items) {
-      if (item.children?.length && isCollapsibleItemActive(pathname, item)) {
+      if (item.children?.length && isCollapsibleItemActive(pathname, item, searchParams)) {
         setOpenItems((prev) => {
           if (prev.has(item.href)) return prev
           const next = new Set(prev)
@@ -134,7 +237,7 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
         })
       }
     }
-  }, [group.items, pathname])
+  }, [group.items, pathname, searchParams])
 
   const toggleItem = (href: string) => {
     setOpenItems((prev) => {
@@ -173,7 +276,7 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
           </p>
           {group.items.map((item) => {
             const Icon = item.icon
-            const itemActive = isCollapsibleItemActive(pathname, item)
+            const itemActive = isCollapsibleItemActive(pathname, item, searchParams)
             const itemOpen = openItems.has(item.href)
 
             if (item.children?.length) {
@@ -206,7 +309,7 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
                   >
                     <div className="ml-8 mr-2 mb-1 space-y-0.5 max-h-[60vh] overflow-y-auto custom-scrollbar">
                       {secondary.map((child) => {
-                        const childActive = isItemActive(pathname, child.href)
+                        const childActive = isItemActive(pathname, child.href, searchParams)
                         return (
                           <Link
                             key={child.href}
@@ -229,7 +332,7 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
                           </summary>
                           <div className="space-y-0.5">
                             {advanced.map((child) => {
-                              const childActive = isItemActive(pathname, child.href)
+                              const childActive = isItemActive(pathname, child.href, searchParams)
                               return (
                                 <Link
                                   key={child.href}
@@ -282,20 +385,26 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
 function NavGroupSection({
   group,
   pathname,
+  searchParams,
   isOpen,
   onToggle,
   openItems,
   onToggleItem,
+  badgeCount,
+  isLocked = false,
 }: {
   group: NavGroup
   pathname: string
+  searchParams?: SearchParamsLike | null
   isOpen: boolean
   onToggle: () => void
   openItems: Set<string>
   onToggleItem: (href: string) => void
+  badgeCount?: number
+  isLocked?: boolean
 }) {
   const GroupIcon = group.icon
-  const active = isGroupActive(pathname, group)
+  const active = isGroupActive(pathname, group, searchParams)
 
   return (
     <div>
@@ -318,6 +427,17 @@ function NavGroupSection({
         >
           {group.label}
         </span>
+        {badgeCount && badgeCount > 0 ? (
+          <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-semibold bg-brand-950 text-brand-400">
+            {badgeCount > 99 ? '99+' : badgeCount}
+          </span>
+        ) : null}
+        {isLocked ? (
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wide bg-amber-900/40 text-amber-300">
+            <Lock className="w-3 h-3" />
+            Pro
+          </span>
+        ) : null}
         <ChevronDown
           className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
             isOpen ? 'rotate-0' : '-rotate-90'
@@ -330,109 +450,122 @@ function NavGroupSection({
           isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="ml-3 pl-3 border-l-2 border-stone-800 mt-0.5 space-y-1">
-          {group.items.map((item) => {
-            const Icon = item.icon
-            const itemActive = isCollapsibleItemActive(pathname, item)
+        {isLocked ? (
+          <div className="ml-3 pl-3 border-l-2 border-stone-800 mt-1 mb-2">
+            <Link
+              href="/settings/billing"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-amber-300 bg-amber-950/40 hover:bg-amber-950/60 transition-colors"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Upgrade to unlock
+            </Link>
+          </div>
+        ) : null}
+        {!isLocked ? (
+          <div className="ml-3 pl-3 border-l-2 border-stone-800 mt-0.5 space-y-1">
+            {group.items.map((item) => {
+              const Icon = item.icon
+              const itemActive = isCollapsibleItemActive(pathname, item, searchParams)
 
-            if (item.children?.length) {
-              const itemOpen = openItems.has(item.href)
-              const { secondary, advanced } = partitionChildren(item.children)
-              return (
-                <div key={item.href}>
-                  <button
-                    type="button"
-                    onClick={() => onToggleItem(item.href)}
-                    aria-expanded={itemOpen}
-                    className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                      itemActive
-                        ? 'text-brand-400'
-                        : 'text-stone-300 hover:bg-stone-800 hover:text-brand-400'
-                    }`}
-                  >
-                    <Icon
-                      className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`}
-                    />
-                    <span className="flex-1 text-left">{item.label}</span>
-                    <ChevronDown
-                      className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
-                        itemOpen ? 'rotate-0' : '-rotate-90'
+              if (item.children?.length) {
+                const itemOpen = openItems.has(item.href)
+                const { secondary, advanced } = partitionChildren(item.children)
+                return (
+                  <div key={item.href}>
+                    <button
+                      type="button"
+                      onClick={() => onToggleItem(item.href)}
+                      aria-expanded={itemOpen}
+                      className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                        itemActive
+                          ? 'text-brand-400'
+                          : 'text-stone-300 hover:bg-stone-800 hover:text-brand-400'
                       }`}
-                    />
-                  </button>
-                  <div
-                    className={`overflow-hidden transition-all duration-200 ${
-                      itemOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
-                    }`}
-                  >
-                    <div className="ml-6 pl-2 border-l border-stone-800 mt-0.5 space-y-0.5">
-                      {secondary.map((child) => {
-                        const childActive = isItemActive(pathname, child.href)
-                        return (
-                          <Link
-                            key={child.href}
-                            href={child.href}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm font-normal transition-colors ${
-                              childActive
-                                ? 'bg-brand-950 text-brand-400'
-                                : 'text-stone-400 hover:bg-stone-800 hover:text-brand-400'
-                            }`}
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
-                            {child.label}
-                          </Link>
-                        )
-                      })}
-                      {advanced.length > 0 && (
-                        <details className="pt-1">
-                          <summary className="cursor-pointer px-3 py-1 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-400">
-                            Advanced
-                          </summary>
-                          <div className="space-y-0.5">
-                            {advanced.map((child) => {
-                              const childActive = isItemActive(pathname, child.href)
-                              return (
-                                <Link
-                                  key={child.href}
-                                  href={child.href}
-                                  className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm font-normal transition-colors ${
-                                    childActive
-                                      ? 'bg-brand-950 text-brand-400'
-                                      : 'text-stone-400 hover:bg-stone-800 hover:text-brand-400'
-                                  }`}
-                                >
-                                  <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
-                                  {child.label}
-                                </Link>
-                              )
-                            })}
-                          </div>
-                        </details>
-                      )}
+                    >
+                      <Icon
+                        className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`}
+                      />
+                      <span className="flex-1 text-left">{item.label}</span>
+                      <ChevronDown
+                        className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                          itemOpen ? 'rotate-0' : '-rotate-90'
+                        }`}
+                      />
+                    </button>
+                    <div
+                      className={`overflow-hidden transition-all duration-200 ${
+                        itemOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+                      }`}
+                    >
+                      <div className="ml-6 pl-2 border-l border-stone-800 mt-0.5 space-y-0.5">
+                        {secondary.map((child) => {
+                          const childActive = isItemActive(pathname, child.href, searchParams)
+                          return (
+                            <Link
+                              key={child.href}
+                              href={child.href}
+                              className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm font-normal transition-colors ${
+                                childActive
+                                  ? 'bg-brand-950 text-brand-400'
+                                  : 'text-stone-400 hover:bg-stone-800 hover:text-brand-400'
+                              }`}
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
+                              {child.label}
+                            </Link>
+                          )
+                        })}
+                        {advanced.length > 0 && (
+                          <details className="pt-1">
+                            <summary className="cursor-pointer px-3 py-1 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-400">
+                              Advanced
+                            </summary>
+                            <div className="space-y-0.5">
+                              {advanced.map((child) => {
+                                const childActive = isItemActive(pathname, child.href, searchParams)
+                                return (
+                                  <Link
+                                    key={child.href}
+                                    href={child.href}
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm font-normal transition-colors ${
+                                      childActive
+                                        ? 'bg-brand-950 text-brand-400'
+                                        : 'text-stone-400 hover:bg-stone-800 hover:text-brand-400'
+                                    }`}
+                                  >
+                                    <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
+                                    {child.label}
+                                  </Link>
+                                )
+                              })}
+                            </div>
+                          </details>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )
-            }
+                )
+              }
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 pl-2 pr-3 py-1.5 rounded-lg text-sm font-medium transition-colors border-l-2 ${
-                  itemActive
-                    ? 'bg-brand-950 text-brand-400 border-brand-500'
-                    : 'text-stone-300 hover:bg-stone-800 hover:text-brand-400 border-transparent'
-                }`}
-              >
-                <Icon
-                  className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`}
-                />
-                {item.label}
-              </Link>
-            )
-          })}
-        </div>
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-3 pl-2 pr-3 py-1.5 rounded-lg text-sm font-medium transition-colors border-l-2 ${
+                    itemActive
+                      ? 'bg-brand-950 text-brand-400 border-brand-500'
+                      : 'text-stone-300 hover:bg-stone-800 hover:text-brand-400 border-transparent'
+                  }`}
+                >
+                  <Icon
+                    className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`}
+                  />
+                  {item.label}
+                </Link>
+              )
+            })}
+          </div>
+        ) : null}
       </div>
     </div>
   )
@@ -455,24 +588,69 @@ export function ChefSidebar({
   tenantId: string
 }) {
   const pathname = usePathname() ?? ''
+  const searchParams = useSearchParams()
   const { collapsed, setCollapsed } = useSidebar()
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
+  const [shortcutsOpen, setShortcutsOpen] = useState(true)
+  const [quickCreateOpen, setQuickCreateOpen] = useState(true)
+  const [settingsOpen, setSettingsOpen] = useState(true)
+  const [cannabisSectionOpen, setCannabisSectionOpen] = useState(false)
+  const [communitySectionOpen, setCommunitySectionOpen] = useState(false)
+  const [navFilter, setNavFilter] = useState('')
   const primaryItems = resolveStandaloneTop(primaryNavHrefs)
 
   // Filter nav groups by enabled modules (progressive disclosure)
   // Admins always see every group — they're the developer, not a gated user
   const enabledSet = enabledModules ? new Set(enabledModules) : null
-  const visibleGroups = isAdmin
-    ? navGroups
-    : enabledSet
-      ? navGroups.filter((g) => !g.module || enabledSet.has(g.module))
-      : navGroups
+  const groupEntries = useMemo(
+    () =>
+      navGroups.map((group) => ({
+        group,
+        isLocked: Boolean(!isAdmin && enabledSet && group.module && !enabledSet.has(group.module)),
+      })),
+    [enabledSet, isAdmin]
+  )
+  const filteredGroupEntries = useMemo(
+    () =>
+      groupEntries
+        .map(({ group, isLocked }) => ({
+          group: filterNavGroup(group, navFilter),
+          isLocked,
+        }))
+        .filter((entry): entry is { group: NavGroup; isLocked: boolean } => Boolean(entry.group)),
+    [groupEntries, navFilter]
+  )
+  const filteredPrimaryItems = useMemo(() => {
+    const q = navFilter.trim().toLowerCase()
+    if (!q) return primaryItems
+    return primaryItems.filter((item) => item.label.toLowerCase().includes(q))
+  }, [navFilter, primaryItems])
+  const filteredQuickCreateItems = useMemo(() => {
+    const q = navFilter.trim().toLowerCase()
+    if (!q) return QUICK_CREATE_ITEMS
+    return QUICK_CREATE_ITEMS.filter((item) => item.label.toLowerCase().includes(q))
+  }, [navFilter])
+  const filteredSettingsItems = useMemo(() => {
+    const q = navFilter.trim().toLowerCase()
+    if (!q) return standaloneBottom
+    return standaloneBottom.filter((item) => item.label.toLowerCase().includes(q))
+  }, [navFilter])
+  const filteredCannabisItems = useMemo(() => {
+    const q = navFilter.trim().toLowerCase()
+    if (!q) return cannabisSectionItems
+    return cannabisSectionItems.filter((item) => item.label.toLowerCase().includes(q))
+  }, [navFilter])
+  const filteredCommunityItems = useMemo(() => {
+    const q = navFilter.trim().toLowerCase()
+    if (!q) return communitySectionItems
+    return communitySectionItems.filter((item) => item.label.toLowerCase().includes(q))
+  }, [navFilter])
 
   // Auto-expand group containing active route
   useEffect(() => {
-    for (const group of visibleGroups) {
-      if (isGroupActive(pathname, group)) {
+    for (const { group } of groupEntries) {
+      if (isGroupActive(pathname, group, searchParams)) {
         setOpenGroups((prev) => {
           if (prev.has(group.id)) return prev
           const next = new Set(prev)
@@ -481,12 +659,37 @@ export function ChefSidebar({
         })
       }
     }
-  }, [pathname, visibleGroups])
+  }, [pathname, groupEntries, searchParams])
 
   useEffect(() => {
-    for (const group of visibleGroups) {
+    if (!hasCannabisTier) {
+      setCannabisSectionOpen(false)
+      return
+    }
+    if (isSectionActive(pathname, cannabisSectionItems, searchParams)) {
+      setCannabisSectionOpen(true)
+    }
+  }, [hasCannabisTier, pathname, searchParams])
+
+  useEffect(() => {
+    if (isSectionActive(pathname, communitySectionItems, searchParams)) {
+      setCommunitySectionOpen(true)
+    }
+  }, [pathname, searchParams])
+
+  useEffect(() => {
+    if (!navFilter.trim()) return
+    setShortcutsOpen(true)
+    setQuickCreateOpen(true)
+    setSettingsOpen(true)
+    if (hasCannabisTier) setCannabisSectionOpen(true)
+    setCommunitySectionOpen(true)
+  }, [hasCannabisTier, navFilter])
+
+  useEffect(() => {
+    for (const { group } of groupEntries) {
       for (const item of group.items) {
-        if (item.children?.length && isCollapsibleItemActive(pathname, item)) {
+        if (item.children?.length && isCollapsibleItemActive(pathname, item, searchParams)) {
           setOpenItems((prev) => {
             if (prev.has(item.href)) return prev
             const next = new Set(prev)
@@ -496,7 +699,7 @@ export function ChefSidebar({
         }
       }
     }
-  }, [pathname, visibleGroups])
+  }, [pathname, groupEntries, searchParams])
 
   const toggleGroup = (id: string) => {
     setOpenGroups((prev) => {
@@ -515,6 +718,11 @@ export function ChefSidebar({
       return next
     })
   }
+
+  const cannabisSectionActive = hasCannabisTier
+    ? isSectionActive(pathname, cannabisSectionItems, searchParams)
+    : false
+  const communitySectionActive = isSectionActive(pathname, communitySectionItems, searchParams)
 
   return (
     <aside
@@ -595,7 +803,7 @@ export function ChefSidebar({
             {/* Dashboard */}
             {primaryItems.map((item) => {
               const Icon = item.icon
-              const active = isItemActive(pathname, item.href)
+              const active = isItemActive(pathname, item.href, searchParams)
               return (
                 <Link
                   key={item.href}
@@ -615,8 +823,13 @@ export function ChefSidebar({
             <div className="w-6 border-t border-stone-800 my-1.5" />
 
             {/* Groups as flyouts */}
-            {visibleGroups.map((group) => (
-              <RailFlyout key={group.id} group={group} pathname={pathname} />
+            {groupEntries.map(({ group }) => (
+              <RailFlyout
+                key={group.id}
+                group={group}
+                pathname={pathname}
+                searchParams={searchParams}
+              />
             ))}
 
             <div className="w-6 border-t border-stone-800 my-1.5" />
@@ -645,7 +858,7 @@ export function ChefSidebar({
             {/* Settings */}
             {standaloneBottom.map((item) => {
               const Icon = item.icon
-              const active = isItemActive(pathname, item.href)
+              const active = isItemActive(pathname, item.href, searchParams)
               return (
                 <Link
                   key={item.href}
@@ -725,80 +938,105 @@ export function ChefSidebar({
             {/* Cannabis Tier — hidden unless chef has cannabis access */}
             {hasCannabisTier && (
               <>
-                <div className="flex items-center gap-2 px-3 py-1">
+                <button
+                  type="button"
+                  onClick={() => setCannabisSectionOpen((prev) => !prev)}
+                  aria-expanded={cannabisSectionOpen}
+                  className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg transition-colors ${
+                    cannabisSectionActive
+                      ? 'text-green-600'
+                      : 'text-green-700 hover:bg-green-950/20 hover:text-green-600'
+                  }`}
+                >
                   <div className="flex-1 border-t border-green-800/30" />
-                  <span className="text-[9px] font-semibold uppercase tracking-widest text-green-700">
+                  <span className="text-[9px] font-semibold uppercase tracking-widest">
                     Cannabis
                   </span>
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                      cannabisSectionOpen ? 'rotate-0' : '-rotate-90'
+                    }`}
+                  />
                   <div className="flex-1 border-t border-green-800/30" />
+                </button>
+                <div
+                  className={`overflow-hidden transition-all duration-200 ${
+                    cannabisSectionOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+                  }`}
+                >
+                  <div className="space-y-0.5">
+                    {cannabisSectionItems.map((item) => {
+                      const active = isItemActive(pathname, item.href)
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                            active ? 'text-emerald-700' : 'text-stone-500 hover:text-stone-300'
+                          }`}
+                          style={active ? { background: 'rgba(74, 124, 78, 0.08)' } : undefined}
+                        >
+                          <Leaf
+                            className="w-[18px] h-[18px] flex-shrink-0"
+                            style={{ color: active ? '#4a7c4e' : 'rgba(74, 124, 78, 0.5)' }}
+                          />
+                          {item.label}
+                        </Link>
+                      )
+                    })}
+                  </div>
                 </div>
-                {[
-                  { href: '/cannabis', label: 'Cannabis Hub' },
-                  { href: '/cannabis/events', label: 'Cannabis Events' },
-                  { href: '/cannabis/rsvps', label: 'RSVPs' },
-                  { href: '/cannabis/ledger', label: 'Cannabis Ledger' },
-                  { href: '/cannabis/invite', label: 'Invite' },
-                  { href: '/cannabis/handbook', label: 'Handbook (Draft)' },
-                  { href: '/cannabis/compliance', label: 'Compliance' },
-                  { href: '/cannabis/about', label: 'About' },
-                ].map((item) => {
+                <div className="border-t border-stone-800 my-2" />
+              </>
+            )}
+
+            {/* Community / Chef Network — always visible */}
+            <button
+              type="button"
+              onClick={() => setCommunitySectionOpen((prev) => !prev)}
+              aria-expanded={communitySectionOpen}
+              className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg transition-colors ${
+                communitySectionActive
+                  ? 'text-indigo-400'
+                  : 'text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300'
+              }`}
+            >
+              <div className="flex-1 border-t border-indigo-800/30" />
+              <span className="text-[9px] font-semibold uppercase tracking-widest">Community</span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                  communitySectionOpen ? 'rotate-0' : '-rotate-90'
+                }`}
+              />
+              <div className="flex-1 border-t border-indigo-800/30" />
+            </button>
+            <div
+              className={`overflow-hidden transition-all duration-200 ${
+                communitySectionOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+              }`}
+            >
+              <div className="space-y-0.5">
+                {communitySectionItems.map((item) => {
                   const active = isItemActive(pathname, item.href)
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
                       className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                        active ? 'text-emerald-700' : 'text-stone-500 hover:text-stone-300'
+                        active ? 'text-indigo-400' : 'text-stone-500 hover:text-stone-300'
                       }`}
-                      style={active ? { background: 'rgba(74, 124, 78, 0.08)' } : undefined}
+                      style={active ? { background: 'rgba(79, 70, 229, 0.08)' } : undefined}
                     >
-                      <Leaf
+                      <Rss
                         className="w-[18px] h-[18px] flex-shrink-0"
-                        style={{ color: active ? '#4a7c4e' : 'rgba(74, 124, 78, 0.5)' }}
+                        style={{ color: active ? '#818cf8' : 'rgba(99, 102, 241, 0.5)' }}
                       />
                       {item.label}
                     </Link>
                   )
                 })}
-                <div className="border-t border-stone-800 my-2" />
-              </>
-            )}
-
-            {/* Community / Chef Network — always visible */}
-            <div className="flex items-center gap-2 px-3 py-1">
-              <div className="flex-1 border-t border-indigo-800/30" />
-              <span className="text-[9px] font-semibold uppercase tracking-widest text-indigo-400">
-                Community
-              </span>
-              <div className="flex-1 border-t border-indigo-800/30" />
+              </div>
             </div>
-            {[
-              { href: '/network', label: 'Community Hub' },
-              { href: '/network?tab=feed', label: 'Feed' },
-              { href: '/network?tab=channels', label: 'Channels' },
-              { href: '/network?tab=discover', label: 'Discover Chefs' },
-              { href: '/network?tab=connections', label: 'Connections' },
-              { href: '/network/saved', label: 'Saved Posts' },
-              { href: '/network/notifications', label: 'Notifications' },
-            ].map((item) => {
-              const active = isItemActive(pathname, item.href)
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                    active ? 'text-indigo-400' : 'text-stone-500 hover:text-stone-300'
-                  }`}
-                  style={active ? { background: 'rgba(79, 70, 229, 0.08)' } : undefined}
-                >
-                  <Rss
-                    className="w-[18px] h-[18px] flex-shrink-0"
-                    style={{ color: active ? '#818cf8' : 'rgba(99, 102, 241, 0.5)' }}
-                  />
-                  {item.label}
-                </Link>
-              )
-            })}
             <div className="border-t border-stone-800 my-2" />
 
             {/* Settings */}
@@ -846,28 +1084,160 @@ export function ChefSidebar({
   )
 }
 
+function NavFilterInput({
+  value,
+  onChange,
+  placeholder = 'Filter menu...',
+}: {
+  value: string
+  onChange: (value: string) => void
+  placeholder?: string
+}) {
+  return (
+    <label className="relative block px-1">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-500 pointer-events-none" />
+      <input
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        className="w-full h-8 pl-8 pr-3 rounded-lg border border-stone-700 bg-stone-950 text-xs text-stone-200 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-brand-600"
+      />
+    </label>
+  )
+}
+
+function SectionAccordion({
+  title,
+  items,
+  icon: Icon,
+  isOpen,
+  onToggle,
+  pathname,
+  searchParams,
+  headerActiveClass,
+  headerInactiveClass,
+  dividerClass,
+  itemActiveClass,
+  itemInactiveClass,
+  activeBgStyle,
+  iconActiveColor,
+  iconInactiveColor,
+  onNavigate,
+  locked,
+}: {
+  title: string
+  items: Array<{ href: string; label: string }>
+  icon: LucideIcon
+  isOpen: boolean
+  onToggle: () => void
+  pathname: string
+  searchParams?: SearchParamsLike | null
+  headerActiveClass: string
+  headerInactiveClass: string
+  dividerClass: string
+  itemActiveClass: string
+  itemInactiveClass: string
+  activeBgStyle?: React.CSSProperties
+  iconActiveColor: string
+  iconInactiveColor: string
+  onNavigate?: () => void
+  locked?: boolean
+}) {
+  const active = isSectionActive(pathname, items, searchParams)
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={isOpen}
+        className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg transition-colors ${
+          active ? headerActiveClass : headerInactiveClass
+        }`}
+      >
+        <div className={`flex-1 border-t ${dividerClass}`} />
+        <span className="text-[9px] font-semibold uppercase tracking-widest">{title}</span>
+        {locked ? <Lock className="w-3.5 h-3.5" /> : null}
+        <ChevronDown
+          className={`w-3.5 h-3.5 transition-transform duration-200 ${
+            isOpen ? 'rotate-0' : '-rotate-90'
+          }`}
+        />
+        <div className={`flex-1 border-t ${dividerClass}`} />
+      </button>
+      <div
+        className={`overflow-hidden transition-all duration-200 ${
+          isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        {locked ? (
+          <div className="px-3 py-1.5">
+            <Link
+              href="/settings/billing"
+              onClick={onNavigate}
+              className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-amber-300 bg-amber-950/40 hover:bg-amber-950/60 transition-colors"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Upgrade to unlock
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-0.5">
+            {items.map((item) => {
+              const itemActive = isItemActive(pathname, item.href, searchParams)
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onNavigate}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                    itemActive ? itemActiveClass : itemInactiveClass
+                  }`}
+                  style={itemActive ? activeBgStyle : undefined}
+                >
+                  <Icon
+                    className="w-[18px] h-[18px] flex-shrink-0"
+                    style={{ color: itemActive ? iconActiveColor : iconInactiveColor }}
+                  />
+                  {item.label}
+                </Link>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
+
 // Mobile tab items provided by central nav config
 
 // ─── Mobile group section (for slide-out) ───────────
 function MobileGroupSection({
   group,
   pathname,
+  searchParams,
   isOpen,
   onToggle,
   openItems,
   onToggleItem,
   onNavigate,
+  badgeCount,
+  isLocked = false,
 }: {
   group: NavGroup
   pathname: string
+  searchParams?: SearchParamsLike | null
   isOpen: boolean
   onToggle: () => void
   openItems: Set<string>
   onToggleItem: (href: string) => void
   onNavigate: () => void
+  badgeCount?: number
+  isLocked?: boolean
 }) {
   const GroupIcon = group.icon
-  const active = isGroupActive(pathname, group)
+  const active = isGroupActive(pathname, group, searchParams)
 
   return (
     <div>
@@ -885,6 +1255,17 @@ function MobileGroupSection({
           className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
         />
         <span className="flex-1 text-left">{group.label}</span>
+        {badgeCount && badgeCount > 0 ? (
+          <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-semibold bg-brand-950 text-brand-400">
+            {badgeCount > 99 ? '99+' : badgeCount}
+          </span>
+        ) : null}
+        {isLocked ? (
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wide bg-amber-900/40 text-amber-300">
+            <Lock className="w-3 h-3" />
+            Pro
+          </span>
+        ) : null}
         <ChevronDown
           className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
             isOpen ? 'rotate-0' : '-rotate-90'
@@ -897,112 +1278,126 @@ function MobileGroupSection({
           isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="ml-3 pl-3 border-l border-stone-800 mt-0.5 space-y-0.5">
-          {group.items.map((item) => {
-            const Icon = item.icon
-            const itemActive = isCollapsibleItemActive(pathname, item)
+        {isLocked ? (
+          <div className="ml-3 pl-3 border-l border-stone-800 mt-1 mb-2">
+            <Link
+              href="/settings/billing"
+              onClick={onNavigate}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-amber-300 bg-amber-950/40"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Upgrade to unlock
+            </Link>
+          </div>
+        ) : null}
+        {!isLocked ? (
+          <div className="ml-3 pl-3 border-l border-stone-800 mt-0.5 space-y-0.5">
+            {group.items.map((item) => {
+              const Icon = item.icon
+              const itemActive = isCollapsibleItemActive(pathname, item, searchParams)
 
-            if (item.children?.length) {
-              const itemOpen = openItems.has(item.href)
-              const { secondary, advanced } = partitionChildren(item.children)
-              return (
-                <div key={item.href}>
-                  <button
-                    type="button"
-                    onClick={() => onToggleItem(item.href)}
-                    aria-expanded={itemOpen}
-                    className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      itemActive
-                        ? 'text-brand-400'
-                        : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
-                    }`}
-                  >
-                    <Icon
-                      className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`}
-                    />
-                    <span className="flex-1 text-left">{item.label}</span>
-                    <ChevronDown
-                      className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
-                        itemOpen ? 'rotate-0' : '-rotate-90'
+              if (item.children?.length) {
+                const itemOpen = openItems.has(item.href)
+                const { secondary, advanced } = partitionChildren(item.children)
+                return (
+                  <div key={item.href}>
+                    <button
+                      type="button"
+                      onClick={() => onToggleItem(item.href)}
+                      aria-expanded={itemOpen}
+                      className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        itemActive
+                          ? 'text-brand-400'
+                          : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
                       }`}
-                    />
-                  </button>
-                  <div
-                    className={`overflow-hidden transition-all duration-200 ${
-                      itemOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
-                    }`}
-                  >
-                    <div className="ml-5 pl-3 border-l border-stone-800 mt-0.5 space-y-0.5">
-                      {secondary.map((child) => {
-                        const childActive = isItemActive(pathname, child.href)
-                        return (
-                          <Link
-                            key={child.href}
-                            href={child.href}
-                            onClick={onNavigate}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                              childActive
-                                ? 'bg-brand-950 text-brand-400'
-                                : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
-                            }`}
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
-                            {child.label}
-                          </Link>
-                        )
-                      })}
-                      {advanced.length > 0 && (
-                        <details className="pt-1">
-                          <summary className="cursor-pointer px-3 py-1 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-400">
-                            Advanced
-                          </summary>
-                          <div className="space-y-0.5">
-                            {advanced.map((child) => {
-                              const childActive = isItemActive(pathname, child.href)
-                              return (
-                                <Link
-                                  key={child.href}
-                                  href={child.href}
-                                  onClick={onNavigate}
-                                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                                    childActive
-                                      ? 'bg-brand-950 text-brand-400'
-                                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
-                                  }`}
-                                >
-                                  <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
-                                  {child.label}
-                                </Link>
-                              )
-                            })}
-                          </div>
-                        </details>
-                      )}
+                    >
+                      <Icon
+                        className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`}
+                      />
+                      <span className="flex-1 text-left">{item.label}</span>
+                      <ChevronDown
+                        className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                          itemOpen ? 'rotate-0' : '-rotate-90'
+                        }`}
+                      />
+                    </button>
+                    <div
+                      className={`overflow-hidden transition-all duration-200 ${
+                        itemOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+                      }`}
+                    >
+                      <div className="ml-5 pl-3 border-l border-stone-800 mt-0.5 space-y-0.5">
+                        {secondary.map((child) => {
+                          const childActive = isItemActive(pathname, child.href, searchParams)
+                          return (
+                            <Link
+                              key={child.href}
+                              href={child.href}
+                              onClick={onNavigate}
+                              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                                childActive
+                                  ? 'bg-brand-950 text-brand-400'
+                                  : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
+                              }`}
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
+                              {child.label}
+                            </Link>
+                          )
+                        })}
+                        {advanced.length > 0 && (
+                          <details className="pt-1">
+                            <summary className="cursor-pointer px-3 py-1 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-400">
+                              Advanced
+                            </summary>
+                            <div className="space-y-0.5">
+                              {advanced.map((child) => {
+                                const childActive = isItemActive(pathname, child.href, searchParams)
+                                return (
+                                  <Link
+                                    key={child.href}
+                                    href={child.href}
+                                    onClick={onNavigate}
+                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                                      childActive
+                                        ? 'bg-brand-950 text-brand-400'
+                                        : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
+                                    }`}
+                                  >
+                                    <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
+                                    {child.label}
+                                  </Link>
+                                )
+                              })}
+                            </div>
+                          </details>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )
-            }
+                )
+              }
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onNavigate}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  itemActive
-                    ? 'bg-brand-950 text-brand-400'
-                    : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
-                }`}
-              >
-                <Icon
-                  className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`}
-                />
-                {item.label}
-              </Link>
-            )
-          })}
-        </div>
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onNavigate}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    itemActive
+                      ? 'bg-brand-950 text-brand-400'
+                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
+                  }`}
+                >
+                  <Icon
+                    className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`}
+                  />
+                  {item.label}
+                </Link>
+              )
+            })}
+          </div>
+        ) : null}
       </div>
     </div>
   )
@@ -1092,6 +1487,8 @@ export function ChefMobileNav({
   const [menuOpen, setMenuOpen] = useState(false)
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
+  const [cannabisSectionOpen, setCannabisSectionOpen] = useState(false)
+  const [communitySectionOpen, setCommunitySectionOpen] = useState(false)
   const primaryItems = resolveStandaloneTop(primaryNavHrefs)
 
   // Filter nav groups by enabled modules (progressive disclosure)
@@ -1117,6 +1514,22 @@ export function ChefMobileNav({
       }
     }
   }, [pathname, menuOpen, visibleGroups])
+
+  useEffect(() => {
+    if (!hasCannabisTier) {
+      setCannabisSectionOpen(false)
+      return
+    }
+    if (isSectionActive(pathname, cannabisSectionItems)) {
+      setCannabisSectionOpen(true)
+    }
+  }, [hasCannabisTier, pathname])
+
+  useEffect(() => {
+    if (isSectionActive(pathname, communitySectionItems)) {
+      setCommunitySectionOpen(true)
+    }
+  }, [pathname])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -1153,6 +1566,10 @@ export function ChefMobileNav({
   }
 
   const closeMenu = () => setMenuOpen(false)
+  const cannabisSectionActive = hasCannabisTier
+    ? isSectionActive(pathname, cannabisSectionItems)
+    : false
+  const communitySectionActive = isSectionActive(pathname, communitySectionItems)
 
   return (
     <>
@@ -1251,23 +1668,88 @@ export function ChefMobileNav({
               {/* Cannabis Tier — mobile */}
               {hasCannabisTier && (
                 <>
-                  <div className="flex items-center gap-2 px-3 py-1">
+                  <button
+                    type="button"
+                    onClick={() => setCannabisSectionOpen((prev) => !prev)}
+                    aria-expanded={cannabisSectionOpen}
+                    className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg transition-colors ${
+                      cannabisSectionActive
+                        ? 'text-green-600'
+                        : 'text-green-700 hover:bg-green-950/20 hover:text-green-600'
+                    }`}
+                  >
                     <div className="flex-1 border-t border-green-800/30" />
-                    <span className="text-[9px] font-semibold uppercase tracking-widest text-green-700">
+                    <span className="text-[9px] font-semibold uppercase tracking-widest">
                       Cannabis
                     </span>
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                        cannabisSectionOpen ? 'rotate-0' : '-rotate-90'
+                      }`}
+                    />
                     <div className="flex-1 border-t border-green-800/30" />
+                  </button>
+                  <div
+                    className={`overflow-hidden transition-all duration-200 ${
+                      cannabisSectionOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <div className="space-y-0.5">
+                      {cannabisSectionItems.map((item) => {
+                        const active = isItemActive(pathname, item.href)
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={closeMenu}
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                              active
+                                ? 'text-green-700 bg-green-950/50'
+                                : 'text-stone-500 hover:bg-stone-800'
+                            }`}
+                          >
+                            <Leaf
+                              className={`w-[18px] h-[18px] ${active ? 'text-green-600' : 'text-green-700/40'}`}
+                            />
+                            {item.label}
+                          </Link>
+                        )
+                      })}
+                    </div>
                   </div>
-                  {[
-                    { href: '/cannabis', label: 'Cannabis Hub' },
-                    { href: '/cannabis/events', label: 'Events' },
-                    { href: '/cannabis/rsvps', label: 'RSVPs' },
-                    { href: '/cannabis/ledger', label: 'Ledger' },
-                    { href: '/cannabis/invite', label: 'Invite' },
-                    { href: '/cannabis/handbook', label: 'Handbook (Draft)' },
-                    { href: '/cannabis/compliance', label: 'Compliance' },
-                    { href: '/cannabis/about', label: 'About' },
-                  ].map((item) => {
+                  <div className="border-t border-stone-800 my-2" />
+                </>
+              )}
+
+              {/* Community / Chef Network — mobile */}
+              <button
+                type="button"
+                onClick={() => setCommunitySectionOpen((prev) => !prev)}
+                aria-expanded={communitySectionOpen}
+                className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg transition-colors ${
+                  communitySectionActive
+                    ? 'text-indigo-400'
+                    : 'text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300'
+                }`}
+              >
+                <div className="flex-1 border-t border-indigo-800/30" />
+                <span className="text-[9px] font-semibold uppercase tracking-widest">
+                  Community
+                </span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                    communitySectionOpen ? 'rotate-0' : '-rotate-90'
+                  }`}
+                />
+                <div className="flex-1 border-t border-indigo-800/30" />
+              </button>
+              <div
+                className={`overflow-hidden transition-all duration-200 ${
+                  communitySectionOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+                }`}
+              >
+                <div className="space-y-0.5">
+                  {communitySectionItems.map((item) => {
                     const active = isItemActive(pathname, item.href)
                     return (
                       <Link
@@ -1276,57 +1758,19 @@ export function ChefMobileNav({
                         onClick={closeMenu}
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                           active
-                            ? 'text-green-700 bg-green-950/50'
+                            ? 'text-indigo-400 bg-indigo-950/50'
                             : 'text-stone-500 hover:bg-stone-800'
                         }`}
                       >
-                        <Leaf
-                          className={`w-[18px] h-[18px] ${active ? 'text-green-600' : 'text-green-700/40'}`}
+                        <Rss
+                          className={`w-[18px] h-[18px] ${active ? 'text-indigo-400' : 'text-indigo-500/40'}`}
                         />
                         {item.label}
                       </Link>
                     )
                   })}
-                  <div className="border-t border-stone-800 my-2" />
-                </>
-              )}
-
-              {/* Community / Chef Network — mobile */}
-              <div className="flex items-center gap-2 px-3 py-1">
-                <div className="flex-1 border-t border-indigo-800/30" />
-                <span className="text-[9px] font-semibold uppercase tracking-widest text-indigo-400">
-                  Community
-                </span>
-                <div className="flex-1 border-t border-indigo-800/30" />
+                </div>
               </div>
-              {[
-                { href: '/network', label: 'Community Hub' },
-                { href: '/network?tab=feed', label: 'Feed' },
-                { href: '/network?tab=channels', label: 'Channels' },
-                { href: '/network?tab=discover', label: 'Discover Chefs' },
-                { href: '/network?tab=connections', label: 'Connections' },
-                { href: '/network/saved', label: 'Saved Posts' },
-                { href: '/network/notifications', label: 'Notifications' },
-              ].map((item) => {
-                const active = isItemActive(pathname, item.href)
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={closeMenu}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      active
-                        ? 'text-indigo-400 bg-indigo-950/50'
-                        : 'text-stone-500 hover:bg-stone-800'
-                    }`}
-                  >
-                    <Rss
-                      className={`w-[18px] h-[18px] ${active ? 'text-indigo-400' : 'text-indigo-500/40'}`}
-                    />
-                    {item.label}
-                  </Link>
-                )
-              })}
               <div className="border-t border-stone-800 my-2" />
 
               {/* Settings */}

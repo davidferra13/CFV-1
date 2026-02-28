@@ -120,6 +120,8 @@ export type PendingDelivery = {
   reward_name: string
   reward_type: string
   points_spent: number
+  reward_value_cents: number | null
+  reward_percent: number | null
   delivery_status: 'pending' | 'delivered' | 'cancelled'
   event_id: string | null
   delivered_at: string | null
@@ -147,6 +149,8 @@ export async function createPendingDelivery({
   rewardName,
   rewardType,
   pointsSpent,
+  rewardValueCents,
+  rewardPercent,
   redeemedBy,
 }: {
   tenantId: string
@@ -156,6 +160,8 @@ export async function createPendingDelivery({
   rewardName: string
   rewardType: string
   pointsSpent: number
+  rewardValueCents: number | null
+  rewardPercent: number | null
   redeemedBy: 'client' | 'chef'
 }): Promise<string | null> {
   // Admin client: this may be called from server actions without a chef session
@@ -171,6 +177,8 @@ export async function createPendingDelivery({
       reward_name: rewardName,
       reward_type: rewardType,
       points_spent: pointsSpent,
+      reward_value_cents: rewardValueCents,
+      reward_percent: rewardPercent,
       delivery_status: 'pending',
       redeemed_by: redeemedBy,
     })

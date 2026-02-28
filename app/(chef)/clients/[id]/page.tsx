@@ -190,6 +190,21 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             )}
           </div>
           <p className="text-stone-300 mt-1">{client.email}</p>
+          {loyaltyProfile && (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span
+                className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${TIER_COLORS[loyaltyProfile.currentTier]}`}
+              >
+                {TIER_LABELS[loyaltyProfile.currentTier]}
+              </span>
+              <span className="inline-flex items-center rounded-full bg-stone-800 px-2.5 py-1 text-xs text-stone-300">
+                {loyaltyProfile.pointsBalance.toLocaleString()} points
+              </span>
+              <span className="inline-flex items-center rounded-full bg-stone-800 px-2.5 py-1 text-xs text-stone-300">
+                {loyaltyProfile.totalEventsCompleted} visits
+              </span>
+            </div>
+          )}
           {/* Tags */}
           <div className="mt-2">
             <ClientTags clientId={client.id} initialTags={clientTags} suggestedTags={allUsedTags} />

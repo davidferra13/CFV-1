@@ -179,11 +179,27 @@ function buildRemySystemPrompt(
 
   if (context.upcomingEvents && context.upcomingEvents.length > 0) {
     parts.push(`\nUPCOMING EVENTS:
-${context.upcomingEvents.map((e) => `- ${e.occasion ?? 'Event'} on ${e.date ?? '(no date)'} for ${e.clientName} (${e.guestCount ?? '?'} guests, ${e.status})`).join('\n')}`)
+${context.upcomingEvents
+  .map((e) => {
+    const loyaltySuffix =
+      e.clientLoyaltyTier || typeof e.clientLoyaltyPoints === 'number'
+        ? `, loyalty ${e.clientLoyaltyTier ?? 'tier unknown'}${typeof e.clientLoyaltyPoints === 'number' ? ` (${e.clientLoyaltyPoints} pts)` : ''}`
+        : ''
+    return `- ${e.occasion ?? 'Event'} on ${e.date ?? '(no date)'} for ${e.clientName} (${e.guestCount ?? '?'} guests, ${e.status}${loyaltySuffix})`
+  })
+  .join('\n')}`)
   }
 
   if (context.recentClients && context.recentClients.length > 0) {
-    parts.push(`\nRECENT CLIENTS: ${context.recentClients.map((c) => c.name).join(', ')}`)
+    parts.push(
+      `\nRECENT CLIENTS: ${context.recentClients
+        .map((c) =>
+          c.tier || typeof c.pointsBalance === 'number'
+            ? `${c.name} [${c.tier ?? 'tier unknown'}${typeof c.pointsBalance === 'number' ? `, ${c.pointsBalance} pts` : ''}]`
+            : c.name
+        )
+        .join(', ')}`
+    )
   }
 
   // Daily plan — what's on the chef's plate today

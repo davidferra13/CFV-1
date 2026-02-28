@@ -183,6 +183,8 @@ export async function sendPaymentConfirmationEmail(params: {
   occasion: string
   eventDate: string | null
   remainingBalanceCents: number | null
+  loyaltyTier?: 'bronze' | 'silver' | 'gold' | 'platinum' | null
+  loyaltyPoints?: number | null
 }) {
   await sendEmail({
     to: params.clientEmail,
@@ -197,6 +199,8 @@ export async function sendPaymentConfirmationEmail(params: {
         params.remainingBalanceCents && params.remainingBalanceCents > 0
           ? formatCents(params.remainingBalanceCents)
           : null,
+      loyaltyTier: params.loyaltyTier ?? null,
+      loyaltyPoints: params.loyaltyPoints ?? null,
     }),
   })
 }
@@ -1130,6 +1134,9 @@ export async function sendPostEventThankYouEmail(params: {
   occasion: string
   eventDate: string
   bookAgainUrl: string
+  loyaltyTier?: 'bronze' | 'silver' | 'gold' | 'platinum' | null
+  loyaltyPointsEarned?: number | null
+  loyaltyPointsBalance?: number | null
 }) {
   await sendEmail({
     to: params.clientEmail,
@@ -1140,6 +1147,9 @@ export async function sendPostEventThankYouEmail(params: {
       occasion: params.occasion,
       eventDate: formatDate(params.eventDate),
       bookAgainUrl: params.bookAgainUrl,
+      loyaltyTier: params.loyaltyTier ?? null,
+      loyaltyPointsEarned: params.loyaltyPointsEarned ?? null,
+      loyaltyPointsBalance: params.loyaltyPointsBalance ?? null,
     }),
   })
 }

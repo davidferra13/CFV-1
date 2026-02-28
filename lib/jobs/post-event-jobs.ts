@@ -49,7 +49,7 @@ async function getPostEventContext(eventId: string, tenantId: string, clientId: 
   // Fetch client
   const { data: client, error: clientErr } = await supabase
     .from('clients')
-    .select('id, email, full_name, marketing_unsubscribed')
+    .select('id, email, full_name, marketing_unsubscribed, loyalty_tier, loyalty_points')
     .eq('id', clientId)
     .single()
 
@@ -77,6 +77,19 @@ async function getPostEventContext(eventId: string, tenantId: string, clientId: 
     .eq('id', tenantId)
     .single()
 
+  const { data: loyaltyEarnRows } = await supabase
+    .from('loyalty_transactions')
+    .select('points')
+    .eq('tenant_id', tenantId)
+    .eq('client_id', clientId)
+    .eq('event_id', eventId)
+    .in('type', ['earned', 'bonus'])
+
+  const loyaltyPointsEarned = (loyaltyEarnRows || []).reduce(
+    (sum, row) => sum + (row.points || 0),
+    0
+  )
+
   return {
     event,
     client: {
@@ -86,6 +99,11 @@ async function getPostEventContext(eventId: string, tenantId: string, clientId: 
     chefName: chef?.business_name || 'Your Chef',
     occasion: event.occasion || 'your event',
     eventDate: event.event_date,
+    loyalty: {
+      tier: (client as any).loyalty_tier ?? null,
+      pointsBalance: (client as any).loyalty_points ?? null,
+      pointsEarned: loyaltyPointsEarned,
+    },
   }
 }
 
@@ -119,6 +137,9 @@ export const postEventThankYou = inngest.createFunction(
         occasion: ctx.occasion,
         eventDate: ctx.eventDate,
         bookAgainUrl: `${APP_URL}/book`,
+        loyaltyTier: ctx.loyalty.tier,
+        loyaltyPointsEarned: ctx.loyalty.pointsEarned,
+        loyaltyPointsBalance: ctx.loyalty.pointsBalance,
       })
 
       log.info('Post-event thank-you email sent', {

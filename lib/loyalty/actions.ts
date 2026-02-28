@@ -100,6 +100,29 @@ export type LoyaltyOverview = {
   }[]
 }
 
+export type ClientLoyaltySnapshot = {
+  tier: LoyaltyTier
+  pointsBalance: number
+  lifetimePointsEarned: number
+  totalEventsCompleted: number
+  totalGuestsServed: number
+  nextTierName: string | null
+  pointsToNextTier: number
+}
+
+export type EventLoyaltyImpact = {
+  isActive: boolean
+  programMode: ProgramMode
+  earnMode: EarnMode
+  currentTier: LoyaltyTier
+  pointsBalance: number
+  lifetimePointsEarned: number
+  nextTierName: string | null
+  pointsToNextTier: number
+  estimatedPoints: number
+  estimatedBreakdown: string
+}
+
 // =====================================================================================
 // VALIDATION SCHEMAS
 // =====================================================================================
@@ -238,6 +261,153 @@ function getTierThreshold(tier: LoyaltyTier, config: LoyaltyConfig): number {
       return config.tier_gold_min
     case 'platinum':
       return config.tier_platinum_min
+  }
+}
+
+function estimatePointsFromConfig(
+  config: LoyaltyConfig,
+  guestCount: number,
+  eventTotalCents: number
+): { points: number; breakdown: string } {
+  switch (config.earn_mode) {
+    case 'per_dollar': {
+      const dollars = Math.max(0, eventTotalCents) / 100
+      const points = Math.round(dollars * config.points_per_dollar)
+      return {
+        points,
+        breakdown: `$${dollars.toFixed(2)} x ${config.points_per_dollar} pts/$`,
+      }
+    }
+    case 'per_event': {
+      return {
+        points: config.points_per_event,
+        breakdown: `Flat ${config.points_per_event} pts per event`,
+      }
+    }
+    case 'per_guest':
+    default: {
+      const safeGuestCount = Math.max(1, guestCount || 1)
+      return {
+        points: safeGuestCount * config.points_per_guest,
+        breakdown: `${safeGuestCount} guests x ${config.points_per_guest} pts/guest`,
+      }
+    }
+  }
+}
+
+export async function getClientLoyaltySnapshotByTenant(
+  tenantId: string,
+  clientId: string
+): Promise<ClientLoyaltySnapshot | null> {
+  const supabase = createServerClient()
+
+  const { data: client } = await supabase
+    .from('clients')
+    .select('id, loyalty_tier, loyalty_points, total_events_completed, total_guests_served')
+    .eq('tenant_id', tenantId)
+    .eq('id', clientId)
+    .single()
+
+  if (!client) return null
+
+  const config = await getLoyaltyConfigByTenant(tenantId)
+  if (!config) return null
+
+  const { data: earnedRows } = await supabase
+    .from('loyalty_transactions')
+    .select('points')
+    .eq('tenant_id', tenantId)
+    .eq('client_id', clientId)
+    .in('type', ['earned', 'bonus'])
+
+  const lifetimePointsEarned = (earnedRows || []).reduce(
+    (sum: number, row: { points: number }) => sum + row.points,
+    0
+  )
+
+  const tier = ((client.loyalty_tier || 'bronze') as LoyaltyTier) || 'bronze'
+  const nextTier = getNextTier(tier)
+  const pointsToNextTier = nextTier
+    ? Math.max(0, getTierThreshold(nextTier.key, config) - lifetimePointsEarned)
+    : 0
+
+  return {
+    tier,
+    pointsBalance: client.loyalty_points || 0,
+    lifetimePointsEarned,
+    totalEventsCompleted: client.total_events_completed || 0,
+    totalGuestsServed: client.total_guests_served || 0,
+    nextTierName: nextTier?.name ?? null,
+    pointsToNextTier,
+  }
+}
+
+export async function getEventLoyaltyImpactByTenant(input: {
+  tenantId: string
+  clientId: string
+  guestCount: number
+  eventTotalCents: number
+}): Promise<EventLoyaltyImpact | null> {
+  const config = await getLoyaltyConfigByTenant(input.tenantId)
+  if (!config) return null
+
+  const snapshot = await getClientLoyaltySnapshotByTenant(input.tenantId, input.clientId)
+  if (!snapshot) return null
+
+  if (!config.is_active || config.program_mode === 'off') {
+    return {
+      isActive: false,
+      programMode: config.program_mode,
+      earnMode: config.earn_mode,
+      currentTier: snapshot.tier,
+      pointsBalance: snapshot.pointsBalance,
+      lifetimePointsEarned: snapshot.lifetimePointsEarned,
+      nextTierName: snapshot.nextTierName,
+      pointsToNextTier: snapshot.pointsToNextTier,
+      estimatedPoints: 0,
+      estimatedBreakdown: 'Program inactive',
+    }
+  }
+
+  if (config.program_mode === 'lite') {
+    return {
+      isActive: true,
+      programMode: config.program_mode,
+      earnMode: config.earn_mode,
+      currentTier: snapshot.tier,
+      pointsBalance: snapshot.pointsBalance,
+      lifetimePointsEarned: snapshot.lifetimePointsEarned,
+      nextTierName: snapshot.nextTierName,
+      pointsToNextTier: snapshot.pointsToNextTier,
+      estimatedPoints: 0,
+      estimatedBreakdown: 'Lite mode: visit-based recognition',
+    }
+  }
+
+  const baseEstimate = estimatePointsFromConfig(config, input.guestCount, input.eventTotalCents)
+  let estimatedPoints = baseEstimate.points
+  const parts: string[] = [baseEstimate.breakdown]
+
+  if (
+    config.bonus_large_party_threshold &&
+    input.guestCount >= config.bonus_large_party_threshold &&
+    (config.bonus_large_party_points || 0) > 0
+  ) {
+    estimatedPoints += config.bonus_large_party_points || 0
+    parts.push(`+${config.bonus_large_party_points} large-party bonus`)
+  }
+
+  return {
+    isActive: true,
+    programMode: config.program_mode,
+    earnMode: config.earn_mode,
+    currentTier: snapshot.tier,
+    pointsBalance: snapshot.pointsBalance,
+    lifetimePointsEarned: snapshot.lifetimePointsEarned,
+    nextTierName: snapshot.nextTierName,
+    pointsToNextTier: snapshot.pointsToNextTier,
+    estimatedPoints,
+    estimatedBreakdown: parts.join(' | '),
   }
 }
 
@@ -425,7 +595,7 @@ export async function awardEventPoints(eventId: string) {
   // Get current client stats for milestone check
   const { data: client } = await supabase
     .from('clients')
-    .select('total_events_completed, total_guests_served, loyalty_points')
+    .select('full_name, total_events_completed, total_guests_served, loyalty_points')
     .eq('id', event.client_id)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -531,6 +701,22 @@ export async function awardEventPoints(eventId: string) {
         actionUrl: '/my-rewards',
         eventId,
       })
+
+      const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
+      const chefUserId = await getChefAuthUserId(user.tenantId!)
+      if (chefUserId) {
+        await createNotification({
+          tenantId: user.tenantId!,
+          recipientId: chefUserId,
+          category: 'loyalty',
+          action: 'tier_upgraded',
+          title: 'Client tier upgraded',
+          body: `${client?.full_name || 'A client'} reached ${newTier} tier`,
+          actionUrl: `/clients/${event.client_id}`,
+          clientId: event.client_id,
+          eventId,
+        })
+      }
     }
   } catch (err) {
     console.error('[awardEventPoints] Client notification failed (non-blocking):', err)
@@ -605,7 +791,7 @@ export async function awardLiteVisit(eventId: string) {
   // Get current client stats
   const { data: client } = await supabase
     .from('clients')
-    .select('total_events_completed, total_guests_served, loyalty_tier')
+    .select('full_name, total_events_completed, total_guests_served, loyalty_tier')
     .eq('id', event.client_id)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -642,6 +828,22 @@ export async function awardLiteVisit(eventId: string) {
         actionUrl: '/my-rewards',
         eventId,
       })
+
+      const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
+      const chefUserId = await getChefAuthUserId(user.tenantId!)
+      if (chefUserId) {
+        await createNotification({
+          tenantId: user.tenantId!,
+          recipientId: chefUserId,
+          category: 'loyalty',
+          action: 'tier_upgraded',
+          title: 'Client tier upgraded',
+          body: `${client?.full_name || 'A client'} reached ${newTier} tier`,
+          actionUrl: `/clients/${event.client_id}`,
+          clientId: event.client_id,
+          eventId,
+        })
+      }
     } catch (err) {
       console.error('[awardLiteVisit] Notification failed (non-blocking):', err)
     }
@@ -813,6 +1015,8 @@ export async function redeemReward(clientId: string, rewardId: string, eventId?:
         rewardName: reward.name,
         rewardType: reward.reward_type,
         pointsSpent: reward.points_required,
+        rewardValueCents: reward.reward_value_cents ?? null,
+        rewardPercent: reward.reward_percent ?? null,
         redeemedBy: 'chef',
       })
     } catch (delivErr) {

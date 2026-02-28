@@ -49,6 +49,7 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
     balanceDueCents,
     isPaidInFull,
     salesTax,
+    loyalty,
   } = invoice
 
   const locationStr = [event.locationCity, event.locationState].filter(Boolean).join(', ')
@@ -95,6 +96,20 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
             </h2>
             <p className="font-semibold text-stone-100">{client.displayName}</p>
             <p className="text-stone-400 text-sm">{client.email}</p>
+            {loyalty && (
+              <div className="mt-2 rounded-md border border-stone-700 bg-stone-800 px-3 py-2">
+                <p className="text-xs text-stone-400 uppercase tracking-wide">Loyalty</p>
+                <p className="text-sm font-medium text-stone-100 capitalize">
+                  {loyalty.tier} member
+                </p>
+                <p className="text-xs text-stone-300">
+                  {loyalty.pointsBalance.toLocaleString()} points available
+                  {loyalty.nextTierName && loyalty.pointsToNextTier > 0
+                    ? ` - ${loyalty.pointsToNextTier.toLocaleString()} to ${loyalty.nextTierName}`
+                    : ''}
+                </p>
+              </div>
+            )}
           </div>
           <div>
             <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">

@@ -177,7 +177,9 @@ async function loadDetailedContext(
     // Upcoming events (next 7 days, limit 10)
     supabase
       .from('events')
-      .select('id, occasion, event_date, status, guest_count, client:clients(full_name)')
+      .select(
+        'id, occasion, event_date, status, guest_count, client:clients(full_name, loyalty_tier, loyalty_points)'
+      )
       .eq('tenant_id', tenantId)
       .not('status', 'in', '("cancelled","completed")')
       .gte('event_date', today)
@@ -187,7 +189,7 @@ async function loadDetailedContext(
     // Recent clients (limit 5)
     supabase
       .from('clients')
-      .select('id, full_name')
+      .select('id, full_name, loyalty_tier, loyalty_points')
       .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false })
       .limit(5),
@@ -407,17 +409,25 @@ async function loadDetailedContext(
   const equipCategories = [...new Set(equipItems.map((e) => (e.category as string) ?? 'other'))]
 
   return {
-    upcomingEvents: (eventsResult.data ?? []).map((e: Record<string, unknown>) => ({
-      id: e.id as string,
-      occasion: e.occasion as string | null,
-      date: e.event_date as string | null,
-      status: e.status as string,
-      clientName: ((e.client as Record<string, unknown> | null)?.full_name as string) ?? 'Unknown',
-      guestCount: e.guest_count as number | null,
-    })),
+    upcomingEvents: (eventsResult.data ?? []).map((e: Record<string, unknown>) => {
+      const client = (e.client as Record<string, unknown> | null) ?? null
+      return {
+        id: e.id as string,
+        occasion: e.occasion as string | null,
+        date: e.event_date as string | null,
+        status: e.status as string,
+        clientName: (client?.full_name as string) ?? 'Unknown',
+        guestCount: e.guest_count as number | null,
+        clientLoyaltyTier:
+          (client?.loyalty_tier as 'bronze' | 'silver' | 'gold' | 'platinum' | null) ?? null,
+        clientLoyaltyPoints: (client?.loyalty_points as number | null) ?? null,
+      }
+    }),
     recentClients: (clientsResult.data ?? []).map((c: Record<string, unknown>) => ({
       id: c.id as string,
       name: (c.full_name as string) ?? 'Unknown',
+      tier: (c.loyalty_tier as 'bronze' | 'silver' | 'gold' | 'platinum' | null) ?? null,
+      pointsBalance: (c.loyalty_points as number | null) ?? null,
     })),
     monthRevenueCents,
     pendingQuoteCount: quotesResult.count ?? 0,
@@ -540,7 +550,7 @@ async function loadEventEntity(
          quoted_price_cents, payment_status, kitchen_notes,
          prep_list_ready, grocery_list_ready, timeline_ready,
          menu_approval_status, menu_sent_at, menu_approved_at, menu_revision_notes,
-         client:clients(full_name, email, phone, dietary_restrictions, allergies, vibe_notes)`
+         client:clients(full_name, email, phone, dietary_restrictions, allergies, vibe_notes, loyalty_tier, loyalty_points)`
       )
       .eq('id', eventId)
       .eq('tenant_id', tenantId)
@@ -688,6 +698,10 @@ async function loadEventEntity(
     if ((client.allergies as string[] | null)?.length)
       lines.push(`Client allergies: ${(client.allergies as string[]).join(', ')}`)
     if (client.vibe_notes) lines.push(`Vibe: ${sanitizeForPrompt(client.vibe_notes as string)}`)
+    if (client.loyalty_tier) lines.push(`Loyalty tier: ${client.loyalty_tier}`)
+    if (typeof client.loyalty_points === 'number') {
+      lines.push(`Loyalty points: ${client.loyalty_points}`)
+    }
   }
 
   // Ledger entries (financial breakdown)
@@ -852,7 +866,8 @@ async function loadClientEntity(
          partner_name, dietary_restrictions, allergies, dislikes, spice_tolerance,
          favorite_cuisines, favorite_dishes, vibe_notes, payment_behavior,
          tipping_pattern, what_they_care_about, kitchen_size, kitchen_constraints,
-         lifetime_value_cents, total_events_count, average_spend_cents, status`
+         lifetime_value_cents, total_events_count, average_spend_cents, status,
+         loyalty_tier, loyalty_points`
       )
       .eq('id', clientId)
       .eq('tenant_id', tenantId)
@@ -915,6 +930,8 @@ async function loadClientEntity(
   if (data.kitchen_constraints)
     lines.push(`Kitchen constraints: ${sanitizeForPrompt(data.kitchen_constraints)}`)
   if (data.total_events_count) lines.push(`Total events: ${data.total_events_count}`)
+  if (data.loyalty_tier) lines.push(`Loyalty tier: ${data.loyalty_tier}`)
+  if (typeof data.loyalty_points === 'number') lines.push(`Loyalty points: ${data.loyalty_points}`)
   if (data.lifetime_value_cents)
     lines.push(`Lifetime value: $${(data.lifetime_value_cents / 100).toFixed(2)}`)
   if (data.average_spend_cents)

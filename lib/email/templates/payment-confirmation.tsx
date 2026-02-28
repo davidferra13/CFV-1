@@ -12,6 +12,8 @@ type PaymentConfirmationProps = {
   occasion: string
   eventDate: string | null
   remainingBalanceFormatted: string | null
+  loyaltyTier?: 'bronze' | 'silver' | 'gold' | 'platinum' | null
+  loyaltyPoints?: number | null
 }
 
 export function PaymentConfirmationEmail({
@@ -21,6 +23,8 @@ export function PaymentConfirmationEmail({
   occasion,
   eventDate,
   remainingBalanceFormatted,
+  loyaltyTier,
+  loyaltyPoints,
 }: PaymentConfirmationProps) {
   return (
     <BaseLayout preview={`Payment of ${amountFormatted} received`}>
@@ -50,6 +54,17 @@ export function PaymentConfirmationEmail({
             <tr>
               <td style={detailLabel}>Remaining</td>
               <td style={detailValue}>{remainingBalanceFormatted}</td>
+            </tr>
+          )}
+          {(loyaltyTier || typeof loyaltyPoints === 'number') && (
+            <tr>
+              <td style={detailLabel}>Loyalty</td>
+              <td style={detailValue}>
+                {loyaltyTier ? `${loyaltyTier} tier` : 'Member'}
+                {typeof loyaltyPoints === 'number'
+                  ? ` - ${loyaltyPoints.toLocaleString()} points`
+                  : ''}
+              </td>
             </tr>
           )}
         </tbody>

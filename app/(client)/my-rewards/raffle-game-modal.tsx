@@ -2,27 +2,44 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { submitRaffleEntry } from '@/lib/raffle/actions'
+import {
+  type Dir,
+  collidesWithBody,
+  nextHeadPosition,
+  positionsEqual,
+  queueDirection,
+  randomOpenPosition,
+} from '@/lib/games/snake-utils'
 
-/* ── constants ──────────────────────────────────────────────── */
 const GRID = 16
 const CELL = 24
-const SIZE = GRID * CELL // 384px
-const INITIAL_SPEED = 150
-const SPEED_STEP = 5
-const MIN_SPEED = 60
+const SIZE = GRID * CELL
+const INITIAL_SPEED = 230
+const SPEED_STEP = 3
+const MIN_SPEED = 118
+const FOOD_POINTS = 10
+const MOBILE_BREAKPOINT_PX = 900
 
-type Dir = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT'
 type Pos = { x: number; y: number }
+type GamePhase = 'running' | 'paused' | 'over'
+type ControlMode = 'swipe' | 'tap-turn'
 
-const FOODS = ['🍅', '🧅', '🥩', '🌶️', '🧄', '🥕', '🍋', '🧀', '🥦', '🍗', '🥚', '🫒', '🍄', '🌽']
-
-function randomPos(exclude: Pos[]): Pos {
-  let p: Pos
-  do {
-    p = { x: Math.floor(Math.random() * GRID), y: Math.floor(Math.random() * GRID) }
-  } while (exclude.some((e) => e.x === p.x && e.y === p.y))
-  return p
-}
+const FOODS = [
+  'Ã°Å¸Ââ€¦',
+  'Ã°Å¸Â§â€¦',
+  'Ã°Å¸Â¥Â©',
+  'Ã°Å¸Å’Â¶Ã¯Â¸Â',
+  'Ã°Å¸Â§â€ž',
+  'Ã°Å¸Â¥â€¢',
+  'Ã°Å¸Ââ€¹',
+  'Ã°Å¸Â§â‚¬',
+  'Ã°Å¸Â¥Â¦',
+  'Ã°Å¸Ââ€”',
+  'Ã°Å¸Â¥Å¡',
+  'Ã°Å¸Â«â€™',
+  'Ã°Å¸Ââ€ž',
+  'Ã°Å¸Å’Â½',
+]
 
 type Props = {
   roundId: string
@@ -30,31 +47,73 @@ type Props = {
   onEntryEarned: (totalEntries: number, alias: string) => void
 }
 
-export function RaffleGameModal({ roundId, onClose, onEntryEarned }: Props) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [score, setScore] = useState(0)
-  const [gameOver, setGameOver] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
-  const [submitError, setSubmitError] = useState<string | null>(null)
-  const hasSubmittedRef = useRef(false)
+type GameState = {
+  snake: Pos[]
+  dir: Dir
+  queue: Dir[]
+  food: { pos: Pos; emoji: string }
+  score: number
+  eaten: number
+  speed: number
+  phase: GamePhase
+}
 
-  const stateRef = useRef({
-    snake: [
-      { x: 8, y: 8 },
-      { x: 7, y: 8 },
-      { x: 6, y: 8 },
-    ] as Pos[],
-    dir: 'RIGHT' as Dir,
-    nextDir: 'RIGHT' as Dir,
-    food: { pos: { x: 12, y: 8 }, emoji: '🍅' },
+function createInitialState(): GameState {
+  const snake = [
+    { x: 8, y: 8 },
+    { x: 7, y: 8 },
+    { x: 6, y: 8 },
+  ]
+  return {
+    snake,
+    dir: 'RIGHT',
+    queue: [],
+    food: {
+      pos: randomOpenPosition(GRID, snake),
+      emoji: FOODS[Math.floor(Math.random() * FOODS.length)],
+    },
     score: 0,
     eaten: 0,
     speed: INITIAL_SPEED,
-    running: true,
-  })
+    phase: 'running',
+  }
+}
 
-  // Submit score as raffle entry on game over
+function vibrate(ms: number) {
+  if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+    navigator.vibrate(ms)
+  }
+}
+
+function getRelativeTurn(current: Dir, side: 'LEFT' | 'RIGHT'): Dir {
+  if (current === 'UP') return side === 'LEFT' ? 'LEFT' : 'RIGHT'
+  if (current === 'DOWN') return side === 'LEFT' ? 'RIGHT' : 'LEFT'
+  if (current === 'LEFT') return side === 'LEFT' ? 'DOWN' : 'UP'
+  return side === 'LEFT' ? 'UP' : 'DOWN'
+}
+
+function getBoardSizePx(viewportWidth: number, viewportHeight: number): number {
+  const widthBudget = viewportWidth - 64
+  const heightBudget = viewportHeight - 360
+  return Math.max(240, Math.min(SIZE, Math.floor(Math.min(widthBudget, heightBudget))))
+}
+
+export function RaffleGameModal({ roundId, onClose, onEntryEarned }: Props) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const touchAreaRef = useRef<HTMLDivElement>(null)
+  const stateRef = useRef<GameState>(createInitialState())
+  const hasSubmittedRef = useRef(false)
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null)
+
+  const [controlMode, setControlMode] = useState<ControlMode>('tap-turn')
+  const [isMobile, setIsMobile] = useState(false)
+  const [boardSizePx, setBoardSizePx] = useState(SIZE)
+  const [score, setScore] = useState(0)
+  const [phase, setPhase] = useState<GamePhase>('running')
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+
   const handleSubmitEntry = useCallback(
     async (finalScore: number) => {
       if (hasSubmittedRef.current) return
@@ -79,37 +138,69 @@ export function RaffleGameModal({ roundId, onClose, onEntryEarned }: Props) {
     [roundId, onEntryEarned]
   )
 
-  const reset = useCallback(() => {
-    const s = stateRef.current
-    s.snake = [
-      { x: 8, y: 8 },
-      { x: 7, y: 8 },
-      { x: 6, y: 8 },
-    ]
-    s.dir = 'RIGHT'
-    s.nextDir = 'RIGHT'
-    s.score = 0
-    s.eaten = 0
-    s.speed = INITIAL_SPEED
-    s.running = true
-    s.food = { pos: randomPos(s.snake), emoji: FOODS[Math.floor(Math.random() * FOODS.length)] }
+  const resetGame = useCallback(() => {
+    if (submitted) return
+    stateRef.current = createInitialState()
     setScore(0)
-    setGameOver(false)
+    setPhase('running')
+    setSubmitError(null)
+    hasSubmittedRef.current = false
+  }, [submitted])
+
+  const queueTurn = useCallback((next: Dir) => {
+    const state = stateRef.current
+    if (state.phase !== 'running') return
+    state.queue = queueDirection(state.queue, next, state.dir, 2)
   }, [])
 
-  // Keyboard controls
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
+    const updateViewport = () => {
+      const mobile = window.innerWidth < MOBILE_BREAKPOINT_PX
+      setIsMobile(mobile)
+      setBoardSizePx(getBoardSizePx(window.innerWidth, window.innerHeight))
+      setControlMode((current) => {
+        if (!mobile) return 'swipe'
+        return current
+      })
+    }
+
+    updateViewport()
+    window.addEventListener('resize', updateViewport)
+    window.addEventListener('orientationchange', updateViewport)
+    return () => {
+      window.removeEventListener('resize', updateViewport)
+      window.removeEventListener('orientationchange', updateViewport)
+    }
+  }, [])
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const state = stateRef.current
       if (e.key === 'Escape') {
         onClose()
         return
       }
-      const s = stateRef.current
-      if (e.code === 'Space' && !s.running && !submitted) {
+
+      if (e.code === 'Space') {
         e.preventDefault()
-        reset()
+        if (state.phase === 'paused') {
+          state.phase = 'running'
+          setPhase('running')
+          return
+        }
+        if (state.phase === 'over' && !submitted) {
+          resetGame()
+        }
         return
       }
+
+      if (e.code === 'KeyP' && state.phase !== 'over') {
+        e.preventDefault()
+        state.phase = state.phase === 'running' ? 'paused' : 'running'
+        setPhase(state.phase)
+        return
+      }
+
       const map: Record<string, Dir> = {
         ArrowUp: 'UP',
         ArrowDown: 'DOWN',
@@ -120,21 +211,20 @@ export function RaffleGameModal({ roundId, onClose, onEntryEarned }: Props) {
         KeyA: 'LEFT',
         KeyD: 'RIGHT',
       }
-      const nd = map[e.code]
-      if (!nd) return
-      e.preventDefault()
-      const opp: Record<Dir, Dir> = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' }
-      if (opp[nd] !== s.dir) s.nextDir = nd
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [reset, onClose, submitted])
 
-  // Touch controls
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null)
+      const nextDirection = map[e.code]
+      if (!nextDirection) return
+      e.preventDefault()
+      queueTurn(nextDirection)
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [onClose, queueTurn, resetGame, submitted])
+
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
+    const touchArea = touchAreaRef.current
+    if (!touchArea) return
 
     const onTouchStart = (e: TouchEvent) => {
       e.preventDefault()
@@ -142,180 +232,249 @@ export function RaffleGameModal({ roundId, onClose, onEntryEarned }: Props) {
       touchStartRef.current = { x: t.clientX, y: t.clientY }
     }
 
+    const onTouchMove = (e: TouchEvent) => {
+      e.preventDefault()
+    }
+
     const onTouchEnd = (e: TouchEvent) => {
       e.preventDefault()
-      const s = stateRef.current
+      const state = stateRef.current
       const start = touchStartRef.current
       if (!start) return
+
+      if (state.phase === 'over' && !submitted) {
+        resetGame()
+        touchStartRef.current = null
+        return
+      }
+
+      if (state.phase !== 'running') {
+        touchStartRef.current = null
+        return
+      }
 
       const t = e.changedTouches[0]
       const dx = t.clientX - start.x
       const dy = t.clientY - start.y
-
-      if (!s.running && !submitted) {
-        reset()
+      const absDx = Math.abs(dx)
+      const absDy = Math.abs(dy)
+      if (controlMode === 'tap-turn' && absDx < 24 && absDy < 24) {
+        const rect = touchArea.getBoundingClientRect()
+        const side = t.clientX < rect.left + rect.width / 2 ? 'LEFT' : 'RIGHT'
+        const nextDirection = getRelativeTurn(state.dir, side)
+        state.queue = queueDirection(state.queue, nextDirection, state.dir, 2)
         touchStartRef.current = null
         return
       }
 
-      if (Math.abs(dx) < 15 && Math.abs(dy) < 15) {
+      if (absDx < 15 && absDy < 15) {
         touchStartRef.current = null
         return
       }
 
-      const opp: Record<Dir, Dir> = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' }
-      let nd: Dir
-      if (Math.abs(dx) > Math.abs(dy)) {
-        nd = dx > 0 ? 'RIGHT' : 'LEFT'
-      } else {
-        nd = dy > 0 ? 'DOWN' : 'UP'
-      }
-      if (opp[nd] !== s.dir) s.nextDir = nd
+      const nextDirection: Dir =
+        absDx > absDy ? (dx > 0 ? 'RIGHT' : 'LEFT') : dy > 0 ? 'DOWN' : 'UP'
+
+      state.queue = queueDirection(state.queue, nextDirection, state.dir, 2)
       touchStartRef.current = null
     }
 
-    canvas.addEventListener('touchstart', onTouchStart, { passive: false })
-    canvas.addEventListener('touchend', onTouchEnd, { passive: false })
+    touchArea.addEventListener('touchstart', onTouchStart, { passive: false })
+    touchArea.addEventListener('touchmove', onTouchMove, { passive: false })
+    touchArea.addEventListener('touchend', onTouchEnd, { passive: false })
     return () => {
-      canvas.removeEventListener('touchstart', onTouchStart)
-      canvas.removeEventListener('touchend', onTouchEnd)
+      touchArea.removeEventListener('touchstart', onTouchStart)
+      touchArea.removeEventListener('touchmove', onTouchMove)
+      touchArea.removeEventListener('touchend', onTouchEnd)
     }
-  }, [reset, submitted])
+  }, [controlMode, resetGame, submitted])
 
-  // Game loop
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      const state = stateRef.current
+      if (document.visibilityState !== 'visible' && state.phase === 'running') {
+        state.phase = 'paused'
+        setPhase('paused')
+      }
+    }
+
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange)
+  }, [])
+
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    const ctx = canvas.getContext('2d')!
-    let timer: ReturnType<typeof setTimeout>
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
 
-    function tick() {
-      const s = stateRef.current
-      if (!s.running) return
+    let raf = 0
+    let previousFrameAt = 0
+    let accumulator = 0
 
-      s.dir = s.nextDir
-      const head = { ...s.snake[0] }
-      if (s.dir === 'UP') head.y--
-      if (s.dir === 'DOWN') head.y++
-      if (s.dir === 'LEFT') head.x--
-      if (s.dir === 'RIGHT') head.x++
+    function gameOver(state: GameState) {
+      state.phase = 'over'
+      setPhase('over')
+      setScore(state.score)
+      vibrate(80)
 
-      // Collision
-      if (
-        head.x < 0 ||
-        head.x >= GRID ||
-        head.y < 0 ||
-        head.y >= GRID ||
-        s.snake.some((seg) => seg.x === head.x && seg.y === head.y)
-      ) {
-        s.running = false
-        setGameOver(true)
-        setScore(s.score)
-        draw()
+      if (state.score > 0) {
+        handleSubmitEntry(state.score)
+      }
+    }
 
-        // Auto-submit entry if score > 0
-        if (s.score > 0) {
-          handleSubmitEntry(s.score)
-        }
+    function update() {
+      const state = stateRef.current
+      if (state.phase !== 'running') return
+
+      if (state.queue.length > 0) {
+        state.dir = state.queue.shift() || state.dir
+      }
+
+      const nextHead = nextHeadPosition(state.snake[0], state.dir)
+      const willGrow = positionsEqual(nextHead, state.food.pos)
+
+      if (nextHead.x < 0 || nextHead.x >= GRID || nextHead.y < 0 || nextHead.y >= GRID) {
+        gameOver(state)
         return
       }
 
-      s.snake.unshift(head)
-
-      // Eat food?
-      if (head.x === s.food.pos.x && head.y === s.food.pos.y) {
-        s.score += 10
-        s.eaten++
-        setScore(s.score)
-
-        if (s.eaten % 5 === 0) {
-          s.speed = Math.max(MIN_SPEED, s.speed - SPEED_STEP)
-        }
-
-        s.food = {
-          pos: randomPos(s.snake),
-          emoji: FOODS[Math.floor(Math.random() * FOODS.length)],
-        }
-      } else {
-        s.snake.pop()
+      if (collidesWithBody(state.snake, nextHead, willGrow)) {
+        gameOver(state)
+        return
       }
 
-      draw()
-      timer = setTimeout(tick, s.speed)
+      state.snake.unshift(nextHead)
+
+      if (!willGrow) {
+        state.snake.pop()
+        return
+      }
+
+      state.score += FOOD_POINTS
+      state.eaten++
+      setScore(state.score)
+      vibrate(12)
+
+      if (state.eaten % 7 === 0) {
+        state.speed = Math.max(MIN_SPEED, state.speed - SPEED_STEP)
+      }
+
+      state.food = {
+        pos: randomOpenPosition(GRID, state.snake),
+        emoji: FOODS[Math.floor(Math.random() * FOODS.length)],
+      }
     }
 
     function draw() {
-      const s = stateRef.current
+      const state = stateRef.current
 
-      // Background
-      ctx.fillStyle = '#1a1a2e'
+      const gradient = ctx.createLinearGradient(0, 0, SIZE, SIZE)
+      gradient.addColorStop(0, '#111827')
+      gradient.addColorStop(1, '#1f2937')
+      ctx.fillStyle = gradient
       ctx.fillRect(0, 0, SIZE, SIZE)
 
-      // Grid
-      ctx.strokeStyle = '#ffffff08'
+      ctx.strokeStyle = '#ffffff0a'
       ctx.lineWidth = 0.5
       for (let i = 0; i <= GRID; i++) {
         ctx.beginPath()
         ctx.moveTo(i * CELL, 0)
         ctx.lineTo(i * CELL, SIZE)
         ctx.stroke()
+
         ctx.beginPath()
         ctx.moveTo(0, i * CELL)
         ctx.lineTo(SIZE, i * CELL)
         ctx.stroke()
       }
 
-      // Food
-      ctx.font = `${CELL - 4}px serif`
+      ctx.font = `${CELL - 4}px "Segoe UI Emoji", serif`
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
-      ctx.fillText(s.food.emoji, s.food.pos.x * CELL + CELL / 2, s.food.pos.y * CELL + CELL / 2)
+      ctx.fillText(
+        state.food.emoji,
+        state.food.pos.x * CELL + CELL / 2,
+        state.food.pos.y * CELL + CELL / 2
+      )
 
-      // Snake
-      s.snake.forEach((seg, i) => {
+      state.snake.forEach((segment, i) => {
         if (i === 0) {
           ctx.fillStyle = '#e88f47'
           ctx.beginPath()
-          ctx.roundRect(seg.x * CELL + 1, seg.y * CELL + 1, CELL - 2, CELL - 2, 6)
-          ctx.fill()
-          ctx.fillStyle = '#fff'
-          const ex = seg.x * CELL + CELL / 2
-          const ey = seg.y * CELL + CELL / 2
-          ctx.beginPath()
-          ctx.arc(ex - 3, ey - 3, 2, 0, Math.PI * 2)
-          ctx.arc(ex + 3, ey - 3, 2, 0, Math.PI * 2)
+          ctx.roundRect(segment.x * CELL + 1, segment.y * CELL + 1, CELL - 2, CELL - 2, 6)
           ctx.fill()
         } else {
-          const alpha = 1 - (i / s.snake.length) * 0.6
-          ctx.fillStyle = `rgba(232, 143, 71, ${alpha})`
+          const alpha = 1 - (i / state.snake.length) * 0.65
+          ctx.fillStyle = `rgba(232, 143, 71, ${Math.max(0.25, alpha)})`
           ctx.beginPath()
-          ctx.roundRect(seg.x * CELL + 2, seg.y * CELL + 2, CELL - 4, CELL - 4, 4)
+          ctx.roundRect(segment.x * CELL + 2, segment.y * CELL + 2, CELL - 4, CELL - 4, 4)
           ctx.fill()
         }
       })
 
-      // Game over overlay
-      if (!s.running) {
+      if (state.phase === 'paused' || state.phase === 'over') {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
         ctx.fillRect(0, 0, SIZE, SIZE)
-        ctx.fillStyle = '#e88f47'
-        ctx.font = 'bold 28px sans-serif'
         ctx.textAlign = 'center'
-        ctx.fillText('Game Over!', SIZE / 2, SIZE / 2 - 20)
-        ctx.fillStyle = '#fff'
-        ctx.font = '18px sans-serif'
-        ctx.fillText(`Score: ${s.score}`, SIZE / 2, SIZE / 2 + 12)
+
+        if (state.phase === 'paused') {
+          ctx.fillStyle = '#f97316'
+          ctx.font = 'bold 28px system-ui'
+          ctx.fillText('Paused', SIZE / 2, SIZE / 2 - 12)
+          ctx.fillStyle = '#e5e7eb'
+          ctx.font = '14px system-ui'
+          ctx.fillText('Press Space or Resume', SIZE / 2, SIZE / 2 + 18)
+        }
+
+        if (state.phase === 'over') {
+          ctx.fillStyle = '#f97316'
+          ctx.font = 'bold 28px system-ui'
+          ctx.fillText('Game Over', SIZE / 2, SIZE / 2 - 20)
+          ctx.fillStyle = '#f3f4f6'
+          ctx.font = '18px system-ui'
+          ctx.fillText(`Score: ${state.score}`, SIZE / 2, SIZE / 2 + 10)
+        }
       }
     }
 
-    tick()
-    return () => clearTimeout(timer)
-  }, [gameOver, handleSubmitEntry])
+    function frame(timestamp: number) {
+      if (!previousFrameAt) {
+        previousFrameAt = timestamp
+      }
+      const elapsed = Math.min(120, timestamp - previousFrameAt)
+      previousFrameAt = timestamp
+
+      const state = stateRef.current
+      if (state.phase === 'running') {
+        accumulator += elapsed
+        while (accumulator >= state.speed && state.phase === 'running') {
+          update()
+          accumulator -= state.speed
+        }
+      }
+
+      draw()
+      raf = requestAnimationFrame(frame)
+    }
+
+    raf = requestAnimationFrame(frame)
+    return () => cancelAnimationFrame(raf)
+  }, [handleSubmitEntry])
+
+  const onPauseToggle = () => {
+    const state = stateRef.current
+    if (state.phase === 'over') return
+    state.phase = state.phase === 'running' ? 'paused' : 'running'
+    setPhase(state.phase)
+  }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-      <div className="relative w-full max-w-md rounded-2xl border border-stone-700 bg-stone-900 p-4 shadow-2xl">
-        {/* Header */}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3"
+      style={{ overscrollBehavior: 'contain' }}
+    >
+      <div className="relative w-full max-w-md rounded-2xl border border-stone-700 bg-stone-900 p-3 shadow-2xl sm:p-4">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-bold text-stone-100">Raffle Snake</h2>
           <button
@@ -335,61 +494,141 @@ export function RaffleGameModal({ roundId, onClose, onEntryEarned }: Props) {
           </button>
         </div>
 
-        {/* Score */}
         <div className="mb-2 text-center text-lg font-bold text-stone-100">
           Score: <span className="text-brand-500">{score}</span>
         </div>
 
-        {/* Canvas */}
-        <div className="flex justify-center">
-          <canvas
-            ref={canvasRef}
-            width={SIZE}
-            height={SIZE}
-            className="rounded-lg border-2 border-stone-700"
-            style={{ maxWidth: '100%', aspectRatio: '1 / 1', touchAction: 'none' }}
-          />
+        <div
+          ref={touchAreaRef}
+          className="rounded-xl border border-stone-700/70 bg-stone-950/30 p-2"
+          style={{ touchAction: 'none', overscrollBehavior: 'contain' }}
+        >
+          <div className="flex justify-center">
+            <canvas
+              ref={canvasRef}
+              width={SIZE}
+              height={SIZE}
+              className="rounded-lg border-2 border-stone-700"
+              style={{
+                width: boardSizePx,
+                height: boardSizePx,
+                maxWidth: '100%',
+                aspectRatio: '1 / 1',
+              }}
+            />
+          </div>
         </div>
 
-        {/* Status bar */}
+        <div className="mt-3 flex items-center justify-center gap-2">
+          <button
+            onClick={() => setControlMode('tap-turn')}
+            className={`min-h-10 rounded-full border px-4 py-1.5 text-xs font-semibold ${
+              controlMode === 'tap-turn'
+                ? 'border-brand-500 bg-brand-500/20 text-brand-400'
+                : 'border-stone-700 text-stone-300'
+            }`}
+          >
+            Tap Turn
+          </button>
+          <button
+            onClick={() => setControlMode('swipe')}
+            className={`min-h-10 rounded-full border px-4 py-1.5 text-xs font-semibold ${
+              controlMode === 'swipe'
+                ? 'border-brand-500 bg-brand-500/20 text-brand-400'
+                : 'border-stone-700 text-stone-300'
+            }`}
+          >
+            Swipe
+          </button>
+        </div>
+
+        <div className="mx-auto mt-3 grid w-full max-w-xs grid-cols-3 gap-3 rounded-2xl border border-stone-700/70 bg-stone-950/40 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+          <button
+            onClick={() => queueTurn('UP')}
+            className="col-start-2 flex min-h-14 items-center justify-center rounded-xl border border-stone-700 text-base font-bold text-stone-200"
+          >
+            Ã¢â€ â€˜
+          </button>
+          <button
+            onClick={() => queueTurn('LEFT')}
+            className="flex min-h-14 items-center justify-center rounded-xl border border-stone-700 text-base font-bold text-stone-200"
+          >
+            Ã¢â€ Â
+          </button>
+          <button
+            onClick={() => queueTurn('DOWN')}
+            className="flex min-h-14 items-center justify-center rounded-xl border border-stone-700 text-base font-bold text-stone-200"
+          >
+            Ã¢â€ â€œ
+          </button>
+          <button
+            onClick={() => queueTurn('RIGHT')}
+            className="flex min-h-14 items-center justify-center rounded-xl border border-stone-700 text-base font-bold text-stone-200"
+          >
+            Ã¢â€ â€™
+          </button>
+        </div>
+
         <div className="mt-3 text-center text-sm">
-          {!gameOver && (
-            <p className="text-stone-400">Swipe or arrow keys to move. Collect food!</p>
+          {phase === 'running' && (
+            <p className="text-stone-400">
+              {controlMode === 'tap-turn'
+                ? 'Tap left or right half of the board to turn.'
+                : 'Swipe in the board area to turn.'}{' '}
+              {isMobile ? 'Mobile mode active.' : 'Desktop mode active.'}
+            </p>
           )}
-          {gameOver && submitting && (
-            <p className="text-brand-400 animate-pulse">Submitting your entry...</p>
+          {phase === 'paused' && <p className="text-amber-400">Paused</p>}
+          {phase === 'over' && submitting && (
+            <p className="animate-pulse text-brand-400">Submitting your entry...</p>
           )}
-          {gameOver && submitted && (
-            <p className="text-emerald-400 font-medium">Raffle entry earned! Score: {score}</p>
+          {phase === 'over' && submitted && (
+            <p className="font-medium text-emerald-400">Raffle entry earned! Score: {score}</p>
           )}
-          {gameOver && submitError && <p className="text-red-400">{submitError}</p>}
-          {gameOver && score === 0 && !submitting && !submitted && (
+          {phase === 'over' && submitError && <p className="text-red-400">{submitError}</p>}
+          {phase === 'over' && score === 0 && !submitting && !submitted && (
             <p className="text-stone-400">Score at least 10 points to earn a raffle entry.</p>
           )}
         </div>
 
-        {/* Action buttons */}
-        {gameOver && (
-          <div className="mt-3 flex gap-2 justify-center">
-            {!submitted && !submitting && score > 0 && submitError && (
-              <button
-                onClick={() => {
-                  hasSubmittedRef.current = false
-                  handleSubmitEntry(score)
-                }}
-                className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
-              >
-                Retry Submit
-              </button>
-            )}
+        <div className="mt-3 flex justify-center gap-2">
+          {phase !== 'over' && (
             <button
-              onClick={onClose}
-              className="rounded-lg bg-stone-700 px-4 py-2 text-sm font-medium text-stone-200 hover:bg-stone-600"
+              onClick={onPauseToggle}
+              className="min-h-11 rounded-lg bg-stone-700 px-4 py-2 text-sm font-medium text-stone-200 hover:bg-stone-600"
             >
-              {submitted ? 'Done' : 'Close'}
+              {phase === 'paused' ? 'Resume' : 'Pause'}
             </button>
-          </div>
-        )}
+          )}
+
+          {phase === 'over' && !submitted && !submitting && (
+            <button
+              onClick={resetGame}
+              className="min-h-11 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
+            >
+              Play Again
+            </button>
+          )}
+
+          {phase === 'over' && !submitted && !submitting && score > 0 && submitError && (
+            <button
+              onClick={() => {
+                hasSubmittedRef.current = false
+                handleSubmitEntry(score)
+              }}
+              className="min-h-11 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
+            >
+              Retry Submit
+            </button>
+          )}
+
+          <button
+            onClick={onClose}
+            className="min-h-11 rounded-lg bg-stone-700 px-4 py-2 text-sm font-medium text-stone-200 hover:bg-stone-600"
+          >
+            {submitted ? 'Done' : 'Close'}
+          </button>
+        </div>
       </div>
     </div>
   )

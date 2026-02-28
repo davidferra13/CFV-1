@@ -11,6 +11,12 @@ import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { format } from 'date-fns'
 import { calculateSalesTax } from '@/lib/tax/api-ninjas'
+import { getClientLoyaltySnapshotByTenant } from '@/lib/loyalty/actions'
+import {
+  computeLoyaltyInvoiceAdjustments,
+  type LoyaltyInvoiceAdjustmentSummary,
+  type LoyaltyInvoiceRedemption,
+} from '@/lib/loyalty/invoice-adjustments'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -54,6 +60,9 @@ export type InvoiceData = {
   }
   // Financials
   quotedPriceCents: number | null
+  serviceSubtotalCents: number
+  loyaltyDiscountCents: number
+  loyaltyAdjustments: LoyaltyInvoiceAdjustmentSummary | null
   pricePerPersonCents: number | null
   depositAmountCents: number | null
   paymentStatus: string
@@ -63,7 +72,7 @@ export type InvoiceData = {
   tipAmountCents: number
   balanceDueCents: number
   isPaidInFull: boolean
-  // Sales tax (computed from event zip code via API Ninjas)
+  // Sales tax (computed from event zip code via API Ninjas on adjusted subtotal)
   salesTax: {
     taxRate: number // combined rate as decimal (e.g. 0.0825)
     taxAmountCents: number // tax on the quoted price
@@ -74,6 +83,13 @@ export type InvoiceData = {
     }
     zipCode: string
   } | null // null = tax lookup failed or no zip code — treat as $0 tax
+  loyalty?: {
+    tier: 'bronze' | 'silver' | 'gold' | 'platinum'
+    pointsBalance: number
+    lifetimePointsEarned: number
+    nextTierName: string | null
+    pointsToNextTier: number
+  } | null
 }
 
 // ─── generateInvoiceNumber ────────────────────────────────────────────────────
@@ -181,8 +197,13 @@ export async function getInvoiceData(eventId: string): Promise<InvoiceData | nul
 
   // Sales tax lookup — non-blocking, defaults to null on failure
   const taxCalc = await lookupSalesTax(event.quoted_price_cents ?? 0, event.location_zip ?? null)
+  const clientData = event.client as { id?: string } | null
+  const loyalty =
+    clientData?.id && user.tenantId
+      ? await getClientLoyaltySnapshotByTenant(user.tenantId, clientData.id).catch(() => null)
+      : null
 
-  return buildInvoiceData(event, chef, ledgerEntries ?? [], taxCalc)
+  return buildInvoiceData(event, chef, ledgerEntries ?? [], taxCalc, loyalty)
 }
 
 // ─── getInvoiceDataForClient ──────────────────────────────────────────────────
@@ -232,8 +253,15 @@ export async function getInvoiceDataForClient(eventId: string): Promise<InvoiceD
 
   // Sales tax lookup — non-blocking, defaults to null on failure
   const taxCalc = await lookupSalesTax(event.quoted_price_cents ?? 0, event.location_zip ?? null)
+  const clientData = event.client as { id?: string } | null
+  const loyalty =
+    clientData?.id && event.tenant_id
+      ? await getClientLoyaltySnapshotByTenant(event.tenant_id as string, clientData.id).catch(
+          () => null
+        )
+      : null
 
-  return buildInvoiceData(event, chef, ledgerEntries ?? [], taxCalc)
+  return buildInvoiceData(event, chef, ledgerEntries ?? [], taxCalc, loyalty)
 }
 
 // ─── buildInvoiceData ─────────────────────────────────────────────────────────
@@ -274,6 +302,156 @@ type RawLedgerEntry = {
   description: string
   transaction_reference: string | null
   is_refund: boolean
+}
+
+type RawRedemptionRow = {
+  id: string
+  reward_id: string
+  reward_name: string
+  reward_type: string
+  points_spent: number
+  created_at: string
+  reward_value_cents?: number | null
+  reward_percent?: number | null
+}
+
+type RawRewardValueRow = {
+  id: string
+  reward_value_cents: number | null
+  reward_percent: number | null
+}
+
+type QueryErrorLike = {
+  code?: string
+  message?: string
+} | null
+
+function isMissingSnapshotColumnError(error: QueryErrorLike): boolean {
+  if (!error) return false
+  return (
+    error.code === '42703' ||
+    error.message?.includes('reward_value_cents') ||
+    error.message?.includes('reward_percent') ||
+    false
+  )
+}
+
+async function fetchDeliveredRedemptionsForEvent(params: {
+  supabase: ReturnType<typeof createServerClient>
+  tenantId: string
+  clientId: string
+  eventId: string
+}): Promise<RawRedemptionRow[]> {
+  const { supabase, tenantId, clientId, eventId } = params
+
+  const withSnapshots = await supabase
+    .from('loyalty_reward_redemptions')
+    .select(
+      'id, reward_id, reward_name, reward_type, points_spent, created_at, reward_value_cents, reward_percent'
+    )
+    .eq('tenant_id', tenantId)
+    .eq('client_id', clientId)
+    .eq('event_id', eventId)
+    .eq('delivery_status', 'delivered')
+    .order('created_at', { ascending: true })
+
+  if (!withSnapshots.error) return (withSnapshots.data || []) as RawRedemptionRow[]
+  if (!isMissingSnapshotColumnError(withSnapshots.error as QueryErrorLike)) {
+    throw withSnapshots.error
+  }
+
+  // Backward-compatible fallback before snapshot migration is applied.
+  const legacy = await supabase
+    .from('loyalty_reward_redemptions')
+    .select('id, reward_id, reward_name, reward_type, points_spent, created_at')
+    .eq('tenant_id', tenantId)
+    .eq('client_id', clientId)
+    .eq('event_id', eventId)
+    .eq('delivery_status', 'delivered')
+    .order('created_at', { ascending: true })
+
+  if (legacy.error) throw legacy.error
+  return (legacy.data || []) as RawRedemptionRow[]
+}
+
+async function getEventLoyaltyAdjustmentSummary(params: {
+  supabase: ReturnType<typeof createServerClient>
+  tenantId: string
+  clientId: string | null | undefined
+  eventId: string
+  baseServiceCents: number
+}): Promise<LoyaltyInvoiceAdjustmentSummary | null> {
+  const { supabase, tenantId, clientId, eventId, baseServiceCents } = params
+  if (!clientId || baseServiceCents <= 0) return null
+
+  try {
+    const rows = await fetchDeliveredRedemptionsForEvent({
+      supabase,
+      tenantId,
+      clientId,
+      eventId,
+    })
+    if (rows.length === 0) return null
+
+    const missingRewardValueIds = Array.from(
+      new Set(
+        rows
+          .filter(
+            (row) =>
+              (row.reward_type === 'discount_fixed' || row.reward_type === 'discount_percent') &&
+              row.reward_value_cents == null &&
+              row.reward_percent == null
+          )
+          .map((row) => row.reward_id)
+      )
+    )
+
+    const rewardValueMap = new Map<string, RawRewardValueRow>()
+    if (missingRewardValueIds.length > 0) {
+      const { data: rewardRows, error: rewardErr } = await supabase
+        .from('loyalty_rewards')
+        .select('id, reward_value_cents, reward_percent')
+        .in('id', missingRewardValueIds)
+
+      if (rewardErr) {
+        console.error('[invoice] Failed to load fallback reward values', rewardErr)
+      } else {
+        for (const reward of (rewardRows || []) as RawRewardValueRow[]) {
+          rewardValueMap.set(reward.id, reward)
+        }
+      }
+    }
+
+    const policyRows: LoyaltyInvoiceRedemption[] = rows.map((row) => {
+      const fallbackReward = rewardValueMap.get(row.reward_id)
+      const rewardValueCents = row.reward_value_cents ?? fallbackReward?.reward_value_cents ?? null
+      const rewardPercent = row.reward_percent ?? fallbackReward?.reward_percent ?? null
+      const valuationSource =
+        row.reward_value_cents != null || row.reward_percent != null
+          ? 'snapshot'
+          : fallbackReward
+            ? 'catalog_fallback'
+            : 'unknown'
+
+      return {
+        id: row.id,
+        rewardId: row.reward_id,
+        rewardName: row.reward_name,
+        rewardType: row.reward_type,
+        pointsSpent: row.points_spent,
+        createdAt: row.created_at,
+        rewardValueCents,
+        rewardPercent,
+        valuationSource,
+      }
+    })
+
+    const summary = computeLoyaltyInvoiceAdjustments(baseServiceCents, policyRows)
+    return summary.totalDiscountCents > 0 ? summary : null
+  } catch (err) {
+    console.error('[invoice] Failed to compute loyalty invoice adjustments', err)
+    return null
+  }
 }
 
 // ─── lookupSalesTax ──────────────────────────────────────────────────────────
@@ -318,7 +496,8 @@ function buildInvoiceData(
   event: RawEvent,
   chef: RawChef,
   entries: RawLedgerEntry[],
-  salesTax: SalesTaxInfo | null = null
+  salesTax: SalesTaxInfo | null = null,
+  loyaltySnapshot: Awaited<ReturnType<typeof getClientLoyaltySnapshotByTenant>> | null = null
 ): InvoiceData {
   const clientData = event.client as { id: string; full_name: string; email: string } | null
 
@@ -396,5 +575,14 @@ function buildInvoiceData(
     balanceDueCents,
     isPaidInFull: balanceDueCents === 0 && quotedPriceCents > 0,
     salesTax,
+    loyalty: loyaltySnapshot
+      ? {
+          tier: loyaltySnapshot.tier,
+          pointsBalance: loyaltySnapshot.pointsBalance,
+          lifetimePointsEarned: loyaltySnapshot.lifetimePointsEarned,
+          nextTierName: loyaltySnapshot.nextTierName,
+          pointsToNextTier: loyaltySnapshot.pointsToNextTier,
+        }
+      : null,
   }
 }

@@ -82,6 +82,8 @@ export async function clientRedeemReward(rewardId: string) {
         rewardName: reward.name,
         rewardType: reward.reward_type,
         pointsSpent: reward.points_required,
+        rewardValueCents: reward.reward_value_cents ?? null,
+        rewardPercent: reward.reward_percent ?? null,
         redeemedBy: 'client',
       })
     } catch (delivErr) {
