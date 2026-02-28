@@ -1,0 +1,1973 @@
+# ChefFlow Deployment Hardening Master TODO
+
+**Date:** 2026-02-28
+**Branch:** `feature/risk-gap-closure`
+**Purpose:** Single exhaustive launch-readiness checklist for a new engineering owner. Preserve existing work, unify all open items, and add missing hardening work so deployment can happen safely.
+
+---
+
+## 0) Current Reality Snapshot (must be acknowledged)
+
+- [ ] `docs/simulation-report.md` currently shows **50% pass rate**; failing modules are `inquiry_parse`, `correspondence`, `quote_draft`.
+- [ ] `docs/remy-onboarding-todo.md` is marked **Not started**.
+- [ ] Large test gap remains in `docs/test-coverage-todo.md` (majority of business-logic modules still unchecked).
+- [ ] Local working tree currently includes mutable ops telemetry files (for example `docs/uptime-history.json`) and requires a release cleanliness decision.
+- [ ] Confirm all previously documented closeouts/regression fixes stay in place (do not regress):
+  - `docs/v1-closeout-fixes.md`
+  - `CLIENT_PORTAL_REGRESSION_REPORT.md`
+  - `docs/cross-boundary-closure.md`
+
+---
+
+## 1) Release Governance (program-level)
+
+### 1.1 Launch control
+
+- [ ] Appoint a single **release owner** (one accountable person).
+- [ ] Appoint explicit backups for release owner (minimum 1).
+- [ ] Define freeze date/time for code and migrations.
+- [ ] Define go/no-go decision meeting with required attendees.
+- [ ] Define launch communication channel and escalation chain.
+- [ ] Define launch severity levels (P1/P2/P3/P4) and response targets.
+
+### 1.2 Branch and merge policy
+
+- [ ] Confirm all release changes are on one release branch.
+- [ ] Enforce no direct push to `main` without explicit release approval.
+- [ ] Enforce PR review checklist for every high-risk area (auth, money, lifecycle, AI).
+- [ ] Require passing health checks before merge (`tsc`, `next build`).
+- [ ] Require migration review + rollback note before merge.
+
+### 1.3 Definition of done for deploy
+
+- [ ] Create launch checklist signoff artifact (who signed what, when).
+- [ ] Define objective launch criteria (all blockers complete; no subjective "looks good").
+- [ ] Define objective abort criteria (if any hit, stop deployment).
+
+---
+
+## 2) Blocker Gate A: Build, Type, and Runtime Integrity
+
+- [ ] `npx tsc --noEmit --skipLibCheck` exits 0 on release branch.
+- [ ] `npx next build --no-lint` exits 0 on release branch.
+- [ ] Confirm no hidden runtime-only errors in startup logs.
+- [ ] Confirm no unresolved TODO/no-op code paths on critical surfaces.
+- [ ] Confirm no `@ts-nocheck` files export callable server actions.
+
+---
+
+## 3) Blocker Gate B: Database and Migration Safety
+
+### 3.1 Schema correctness
+
+- [ ] Enumerate all migrations included in release.
+- [ ] Verify migration ordering and timestamp monotonicity.
+- [ ] Verify additive-only policy for release migrations unless explicitly approved.
+- [ ] Verify no accidental destructive SQL in release migration set.
+- [ ] Verify all new constraints/indexes apply cleanly.
+
+### 3.2 Migration execution rehearsal
+
+- [ ] Rehearse migration run on a fresh DB copy.
+- [ ] Rehearse migration run on a realistic staging snapshot.
+- [ ] Measure migration runtime and lock windows.
+- [ ] Identify any migration that blocks writes/reads too long.
+- [ ] Define production migration order and rollback steps.
+
+### 3.3 Data protection
+
+- [ ] Take pre-deploy backup (`supabase db dump --linked`).
+- [ ] Verify backup file readability + restore drill on non-prod.
+- [ ] Define point-in-time restoration runbook.
+- [ ] Define who can run restore and how approval is granted.
+
+---
+
+## 4) Blocker Gate C: Auth, RLS, Tenant Isolation, and Access Control
+
+- [ ] Re-validate `requireChef()`, `requireClient()`, `requireAuth()` behavior.
+- [ ] Re-validate middleware role redirects and bypass paths.
+- [ ] Re-run cross-tenant negative tests for core entities (events, clients, quotes, inquiries, ledger, documents, chat).
+- [ ] Re-run URL tampering tests (`/events/[other-tenant-id]` etc.).
+- [ ] Re-run API auth boundary tests (missing cookie, malformed cookie, expired cookie, wrong role).
+- [ ] Validate RLS policies for every table touched in release.
+- [ ] Validate service-role-only paths are not reachable by user session context.
+- [ ] Validate admin-only routes/actions are consistently gated.
+
+---
+
+## 5) Blocker Gate D: Financial and Lifecycle Truth
+
+### 5.1 Ledger and payment correctness
+
+- [ ] Re-verify immutable ledger behavior (`UPDATE`/`DELETE` blocked).
+- [ ] Verify idempotency for payments and webhooks.
+- [ ] Verify outstanding balances and event financial summary computations.
+- [ ] Verify tax and discount calculations remain deterministic.
+- [ ] Verify invoice/receipt totals match stored financial records exactly.
+
+### 5.2 Event/quote/inquiry state machines
+
+- [ ] Re-verify allowed state transitions only.
+- [ ] Re-verify forbidden transitions are blocked with explicit errors.
+- [ ] Re-verify client-side transitions reflect true backend writes (no false optimistic success).
+- [ ] Re-verify cache invalidation after each mutation that affects lifecycle state.
+
+---
+
+## 6) Blocker Gate E: Zero Hallucination and UI Honesty
+
+- [ ] Audit critical dashboards for fake zero fallbacks when fetch fails.
+- [ ] Audit optimistic updates for rollback + user-visible error handling.
+- [ ] Audit every high-impact button for real backend implementation (no placeholder no-ops).
+- [ ] Audit all financial KPIs to ensure data source is real and current.
+- [ ] Audit all "notified" user messages to ensure a notification/email is actually sent.
+
+---
+
+## 7) Blocker Gate F: AI Safety and Reliability
+
+### 7.1 Policy hard constraints
+
+- [ ] Re-verify AI policy boundaries in implementation (`docs/AI_POLICY.md`).
+- [ ] Re-verify AI cannot mutate ledger/lifecycle/identity directly.
+- [ ] Re-verify recipe generation is blocked where required.
+- [ ] Re-verify AI suggestions are visibly non-canonical and require explicit confirmation.
+
+### 7.2 Simulation quality (current known blocker)
+
+- [ ] Raise simulation pass rate above launch target (define target; recommended >=90%).
+- [ ] Fix `inquiry_parse` extraction reliability (client name, guest count).
+- [ ] Fix `correspondence` tone/personalization reliability.
+- [ ] Fix `quote_draft` pricing bounds enforcement.
+- [ ] Establish stable pass trend over multiple consecutive runs (not one lucky run).
+
+### 7.3 Remy onboarding decision
+
+- [ ] Decide if Remy onboarding ships in this release or is deferred.
+- [ ] If shipping: complete `docs/remy-onboarding-todo.md` blocker subset (schema + engine + integration + tests).
+- [ ] If deferring: hard-disable incomplete onboarding surfaces and remove dead UI affordances.
+
+---
+
+## 8) Blocker Gate G: End-to-End Contracts
+
+- [ ] Run chef portal regression suite.
+- [ ] Run client portal regression suite.
+- [ ] Run cross-portal contract suite.
+- [ ] Verify all critical documents load with ownership enforcement (FOH PDFs, invoices, contracts).
+- [ ] Verify no broken navigation paths for core daily workflows.
+- [ ] Verify mobile critical path for chef day-of operations.
+
+---
+
+## 9) Required Gate H: Security Hardening (beyond baseline)
+
+- [ ] Secrets inventory and rotation plan (Supabase, Stripe, Resend, API keys).
+- [ ] Confirm no secrets in git history or docs.
+- [ ] Add/verify strict security headers (CSP, HSTS, X-Frame-Options, Referrer-Policy, etc.).
+- [ ] Verify webhook signature validation for all inbound providers.
+- [ ] Verify rate limits on auth + AI + public ingestion endpoints.
+- [ ] Verify brute-force and abuse protections on login/contact/public forms.
+- [ ] Verify upload validation (size, MIME, content checks) and malware strategy.
+- [ ] Verify audit trail completeness for security-sensitive mutations.
+- [ ] Define vulnerability scanning cadence and patch SLA.
+
+---
+
+## 10) Required Gate I: Performance and Capacity
+
+- [ ] Define SLO/SLA numbers for core routes/APIs (P50/P95/P99 targets).
+- [ ] Define max acceptable cold-start latency for AI paths.
+- [ ] Run load checks on top revenue-critical endpoints.
+- [ ] Validate queueing/timeout behavior under degraded dependencies.
+- [ ] Set budgets for bundle size and route performance.
+- [ ] Validate caching strategy and cache invalidation correctness under load.
+
+---
+
+## 11) Required Gate J: Observability, Alerting, and Operations
+
+- [ ] Ensure structured logging for all critical server actions.
+- [ ] Ensure correlation IDs across request/action/background tasks.
+- [ ] Ensure error tracking catches server/client/action failures.
+- [ ] Ensure alert rules exist for payment/webhook failures and auth anomalies.
+- [ ] Ensure dashboards include release-day health KPIs.
+- [ ] Ensure incident runbooks exist and are tested.
+- [ ] Ensure on-call rota/contact tree is documented.
+
+---
+
+## 12) Required Gate K: Backup, DR, and Business Continuity
+
+- [ ] Verify automated backup schedule and retention policy.
+- [ ] Verify restore drill completion date and evidence.
+- [ ] Verify RTO/RPO targets and realism.
+- [ ] Verify failover approach for critical dependencies.
+- [ ] Verify manual continuity mode for major outages.
+- [ ] Verify customer communication templates for incident scenarios.
+
+---
+
+## 13) Required Gate L: Compliance, Legal, and Trust
+
+- [ ] Finalize Terms/Privacy docs and ensure routes are live/accurate.
+- [ ] Validate consent and communication preference handling.
+- [ ] Validate data deletion/export workflows (where promised).
+- [ ] Validate confidentiality controls for NDA/photo permissions.
+- [ ] Validate allergy/dietary risk handling language and UX clarity.
+- [ ] Validate billing/legal disclaimers in quotes/contracts/invoices.
+
+---
+
+## 14) Required Gate M: Deployment and Rollback Runbook
+
+- [ ] Write exact deployment sequence (step-by-step commands and verification points).
+- [ ] Define canary rollout strategy (if available) or staged ramp strategy.
+- [ ] Define immediate rollback steps with time budget.
+- [ ] Define database rollback/forward-fix strategy for migration failures.
+- [ ] Define post-deploy smoke script (must-pass list).
+- [ ] Define release note template and stakeholder comms.
+
+---
+
+## 15) Post-Launch Gate N: Stabilization (first 14 days)
+
+- [ ] Daily triage cadence for launch issues.
+- [ ] Daily review of P1/P2 alert volume and false positives.
+- [ ] Daily review of AI simulation trend.
+- [ ] Daily review of payment/dispute/webhook anomalies.
+- [ ] Daily review of top user-facing errors and UX friction.
+- [ ] Weekly hardening patch train with changelog discipline.
+
+---
+
+## 16) Brand-New Unknowns To Figure Out (explicit discovery backlog)
+
+### 16.1 Architecture and data
+
+- [ ] What is the authoritative production data contract for every financial metric shown in UI?
+- [ ] Which tables/views are still carrying legacy or duplicate semantics?
+- [ ] Which long-running actions need background jobs instead of request/response blocking?
+- [ ] Which caches have no documented invalidation ownership?
+- [ ] Which migrations are currently hardest to roll back safely?
+
+### 16.2 Security and abuse
+
+- [ ] What is the current attack surface inventory by route/action/webhook?
+- [ ] Which endpoints lack meaningful abuse throttling?
+- [ ] Which public forms can be spammed today and how quickly?
+- [ ] Which data exfiltration paths are plausible via mis-scoped queries?
+- [ ] What is the fastest way a compromised session could cause irreversible damage?
+
+### 16.3 Financial risk
+
+- [ ] Which payment edge cases are not covered by idempotency tests?
+- [ ] Which refund/dispute flows are partially manual and undocumented?
+- [ ] Which currency/tax assumptions are hardcoded and region-fragile?
+- [ ] Which finance exports could fail silently and mislead accounting?
+
+### 16.4 AI risk
+
+- [ ] Which AI flows still rely on prompt compliance vs deterministic guardrails?
+- [ ] Which AI outputs can appear authoritative without enough provenance?
+- [ ] Which AI tasks should be moved to deterministic code paths immediately?
+- [ ] Which AI failure modes are currently unalerted in production monitoring?
+
+### 16.5 SRE and cost
+
+- [ ] What is the monthly cost envelope under expected load and 2x load?
+- [ ] Which dependencies are single points of failure with no fallback mode?
+- [ ] What are concrete capacity limits before user-visible degradation?
+- [ ] What is the release-day rollback time target and is it realistic?
+
+### 16.6 Product operations
+
+- [ ] Which workflows still depend on implicit tribal knowledge rather than runbooks?
+- [ ] Which "critical path" operations take too many clicks/time under pressure?
+- [ ] Which alerts are noisy vs actionable for real operators?
+- [ ] Which screens are still risky on mobile for day-of chef usage?
+
+---
+
+## 17) Existing Open-Item Inventory (imported from repo)
+
+This section preserves every open checkbox already tracked across `docs/` and `plans/`, so existing work is not discredited.
+
+- [ ] Total unchecked checklist items currently detected: **1648**
+- [ ] Largest sources right now:
+  - `docs/test-coverage-todo.md` (973)
+  - `docs/remy-onboarding-todo.md` (190)
+  - `docs/testing-roadmap.md` (169)
+  - `docs/guest-experience-master-plan.md` (38)
+  - `docs/remy-animation-system.md` (36)
+  - `docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md` (29)
+  - `docs/beta-testers.md` (28)
+  - `docs/domain-migration-cheflow-us-to-cheflowhq-com.md` (26)
+  - `docs/SECURITY_AND_ISOLATION_MASTER.md` (21)
+  - `plans/ollama-status-badge-button.md` (5)
+
+### 17.1 Execution order for a brand-new engineering owner
+
+- [ ] Phase A: Close **all blocker gates (Sections 2�8)** before any production deploy attempt.
+- [ ] Phase B: Close **required gates (Sections 9�14)** and rehearse release + rollback.
+- [ ] Phase C: Triage imported checklist inventory by risk and convert into sprintable tickets.
+- [ ] Phase D: Hold go/no-go; deploy only if all blockers + required gates are complete.
+
+---
+
+## 18) Raw Imported Open Checklist Items (full list)
+
+> Auto-imported from `docs/` and `plans/` using `rg -n "^- [ ]"`.
+> This is intentionally verbose and exhaustive.
+
+### 18.1 Imported Items
+
+- [ ] [plans/ollama-status-badge-button.md:195] Create `/api/ai/wake` endpoint for wake/ping actions
+- [ ] [plans/ollama-status-badge-button.md:196] Create `lib/ai/ollama-wake.ts` utility module
+- [ ] [plans/ollama-status-badge-button.md:197] Update `components/dashboard/ollama-status-badge.tsx`:
+- [ ] [plans/ollama-status-badge-button.md:204] Test all actions (refresh, ping, wake, load model)
+- [ ] [plans/ollama-status-badge-button.md:205] Add error handling and user feedback
+- [ ] [docs/AGENT-WORKFLOW.md:151] `rm .multi-agent-lock` (if active)
+- [ ] [docs/AGENT-WORKFLOW.md:152] `npx tsc --noEmit --skipLibCheck` exits 0
+- [ ] [docs/AGENT-WORKFLOW.md:153] `npx next build --no-lint` exits 0
+- [ ] [docs/AGENT-WORKFLOW.md:154] All work is committed (no untracked files that matter)
+- [ ] [docs/AGENT-WORKFLOW.md:155] `types/database.ts` is current with the remote schema
+- [ ] [docs/backup-and-restore.md:146] Verify Supabase dashboard shows backup completed in the last 24 hours
+- [ ] [docs/backup-and-restore.md:147] Check storage usage hasn't approached limits (free tier: 500MB DB, 1GB storage)
+- [ ] [docs/backup-and-restore.md:148] Run manual `pg_dump` and store encrypted copy off-platform
+- [ ] [docs/backup-and-restore.md:149] Verify GDPR export works (Settings > Compliance > GDPR)
+- [ ] [docs/beta-server-setup.md:150] Separate Supabase project for beta (isolated database)
+- [ ] [docs/beta-server-setup.md:151] Ethernet connection for Pi (more reliable than WiFi)
+- [ ] [docs/beta-server-setup.md:152] USB SSD for Pi (better than microSD for long-term server use)
+- [ ] [docs/beta-server-setup.md:153] UptimeRobot monitoring for beta.cheflowhq.com
+- [ ] [docs/beta-server-setup.md:154] Stripe test mode webhooks on beta
+- [ ] [docs/beta-testers.md:17] Beta server is running � `https://beta.cheflowhq.com` loads without errors
+- [ ] [docs/beta-testers.md:18] PM2 process `chefflow-beta` is healthy on Pi (`ssh pi` ? `pm2 status`)
+- [ ] [docs/beta-testers.md:19] Cloudflare Tunnel is active (`cloudflared.service` running on Pi)
+- [ ] [docs/beta-testers.md:23] Beta is using **Stripe test mode**, not live keys
+- [ ] [docs/beta-testers.md:24] Verify: `.env.local` on Pi has `STRIPE_SECRET_KEY=sk_test_...` (not `sk_live_...`)
+- [ ] [docs/beta-testers.md:25] Verify: `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...` (not `pk_live_...`)
+- [ ] [docs/beta-testers.md:26] Test a payment with Stripe test card `4242 4242 4242 4242` � confirm it goes through without real charges
+- [ ] [docs/beta-testers.md:30] Confirmation emails send from beta (sign up ? check inbox)
+- [ ] [docs/beta-testers.md:31] Quote emails send from beta (create a quote ? send ? check inbox)
+- [ ] [docs/beta-testers.md:32] Inquiry notification emails fire (submit public inquiry ? chef gets notified)
+- [ ] [docs/beta-testers.md:33] If emails fail: check email provider config in `.env.local` on Pi � API keys, sender domain, etc.
+- [ ] [docs/beta-testers.md:37] Ollama is running on Pi (`ssh pi` ? `systemctl status ollama`)
+- [ ] [docs/beta-testers.md:38] Remy chat responds (open Remy ? send a message ? get a reply)
+- [ ] [docs/beta-testers.md:39] Lead scoring works (submit an inquiry ? check if score appears)
+- [ ] [docs/beta-testers.md:40] If Ollama is down: `sudo systemctl start ollama` on Pi (but remember � stop it before any builds)
+- [ ] [docs/beta-testers.md:44] Landing page clearly communicates what ChefFlow is (a tester shouldn't need to ask "what is this?")
+- [ ] [docs/beta-testers.md:45] Sign-up form works � create a throwaway account, confirm email, log in
+- [ ] [docs/beta-testers.md:46] Password reset works � trigger a reset, receive email, set new password
+- [ ] [docs/beta-testers.md:47] Delete the throwaway account after testing (keep the beta clean)
+- [ ] [docs/beta-testers.md:91] Both testers can sign up without help
+- [ ] [docs/beta-testers.md:92] Core event lifecycle works end to end (no crashes, no dead ends)
+- [ ] [docs/beta-testers.md:93] Client-side experience works (view quote, accept, pay, see event)
+- [ ] [docs/beta-testers.md:94] Emails deliver correctly (confirmations, quotes, notifications)
+- [ ] [docs/beta-testers.md:95] Financial numbers display correctly
+- [ ] [docs/beta-testers.md:96] AI features respond without errors (or fail gracefully with a clear message)
+- [ ] [docs/beta-testers.md:97] App works on mobile (no layout breaks, forms are usable)
+- [ ] [docs/beta-testers.md:98] No data loss or corruption during normal use
+- [ ] [docs/beta-testers.md:99] Critical bugs from Phase 1 are fixed and redeployed
+- [ ] [docs/backlog/remy-public-client-layers.md:56] Public Remy: new API route (unauthenticated, rate-limited)
+- [ ] [docs/backlog/remy-public-client-layers.md:57] Public Remy: separate system prompt with public-only context
+- [ ] [docs/backlog/remy-public-client-layers.md:58] Public Remy: UI component for public pages (no drawer � maybe inline widget?)
+- [ ] [docs/backlog/remy-public-client-layers.md:59] Client Remy: new API route (client-authenticated)
+- [ ] [docs/backlog/remy-public-client-layers.md:60] Client Remy: system prompt with client-scoped context
+- [ ] [docs/backlog/remy-public-client-layers.md:61] Client Remy: UI integration in client portal layout
+- [ ] [docs/backlog/remy-public-client-layers.md:62] Shared: decide on model strategy (Ollama for all? lighter model for public?)
+- [ ] [docs/backlog/remy-public-client-layers.md:63] Shared: conversation persistence per layer (separate from chef conversations)
+- [ ] [docs/build-mobile-readiness.md:129] Dashboard: only the priority strip loads; "Analytics & more" button appears at bottom; tap it to expand analytics
+- [ ] [docs/build-mobile-readiness.md:130] Event detail: 4 tabs (Overview / Money / Ops / Wrap-up) visible below header; tab switching works without page jump
+- [ ] [docs/build-mobile-readiness.md:131] Overview tab: shows event details grid + client info + comms
+- [ ] [docs/build-mobile-readiness.md:132] Money tab: shows financial summary + payments + expenses
+- [ ] [docs/build-mobile-readiness.md:133] Ops tab: shows staff, transitions, closure checklist
+- [ ] [docs/build-mobile-readiness.md:134] Wrap-up tab: shows debrief prompts, history
+- [ ] [docs/build-mobile-readiness.md:135] Event form: number inputs open numeric keypad on phone
+- [ ] [docs/build-mobile-readiness.md:136] Hamburger button is easily tappable
+- [ ] [docs/build-mobile-readiness.md:140] Dashboard: no "Analytics & more" button; all sections render in full scroll as before
+- [ ] [docs/build-mobile-readiness.md:141] Event detail: no tab bar; all sections render in full scroll as before
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1204] All migrations applied to production database
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1205] RLS enabled on ALL tables (verify with SQL query)
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1206] Immutability triggers on `ledger_entries` verified (attempt UPDATE, must fail)
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1207] Immutability triggers on `event_transitions` verified (attempt UPDATE, must fail)
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1208] RLS harness passes:
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1216] Middleware blocks unauthenticated users from protected routes
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1217] Middleware redirects chef attempting client portal access
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1218] Middleware redirects client attempting chef portal access
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1219] No "flash of wrong portal" (verified via Network tab - 307 redirect before HTML)
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1220] Layout guards throw error if role mismatch (verified via logging)
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1221] Role resolution queries `user_roles` table (verified via query logs)
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1225] Webhook signature verification works (verified with Stripe CLI)
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1226] Idempotency works (duplicate webhook returns 200, no second ledger entry)
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1227] Amounts stored as INTEGER cents (no DECIMAL types in schema)
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1228] `event_financial_summary` view returns correct balances
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1229] Event status transitions to `paid` after successful webhook
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1230] Ledger totals match Stripe dashboard (manual reconciliation)
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1234] Invalid state transitions blocked (e.g., `draft` ? `confirmed`)
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1235] Client cannot transition events to `confirmed` (RLS blocks)
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1236] All transitions logged to `event_transitions` (verified via query)
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1237] Terminal states prevent further transitions
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1238] Cancellation requires `cancellation_reason` (enforced server-side)
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1242] Chef A creates event ? Chef B cannot see it (verified via queries)
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1243] Client A1 accepts event ? Client A2 cannot see it (verified via queries)
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1244] Cross-tenant foreign keys impossible (constraint verified)
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1245] Service role key only used server-side (grep codebase for anon key usage)
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1249] Full happy path works:
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1260] Payment flow works with test Stripe keys
+- [ ] [docs/CORE_SYSTEM_ARCHITECTURE_MASTER.md:1261] Invitation flow creates client with correct `tenant_id`
+- [ ] [docs/disaster-recovery.md:334] Restore last Supabase backup to a throwaway project (see `docs/backup-and-restore.md`)
+- [ ] [docs/disaster-recovery.md:335] Verify restored data row counts match production
+- [ ] [docs/disaster-recovery.md:336] Practice rotating CRON_SECRET end-to-end (see `docs/key-rotation-policy.md`)
+- [ ] [docs/disaster-recovery.md:337] Verify maintenance mode works: set `MAINTENANCE_MODE=1` env var, confirm 503 response
+- [ ] [docs/disaster-recovery.md:338] Verify `/api/health` returns degraded (not error) when Redis is unavailable
+- [ ] [docs/disaster-recovery.md:339] Confirm all team members know their role in this runbook
+- [ ] [docs/disaster-recovery.md:340] Update incident log table above with drill result
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:29] Go to **Vercel Dashboard > Project Settings > Domains**
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:30] Add `cheflowhq.com` as the primary domain
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:31] Remove `cheflow.us` (or keep as redirect)
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:32] Update environment variables:
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:36] Redeploy after changing env vars
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:40] Point `cheflowhq.com` A record to Vercel: `76.76.21.21`
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:41] Add CNAME `www` -> `cname.vercel-dns.com` (if you want www support)
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:42] Vercel will auto-provision SSL once DNS propagates
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:46] Go to **Supabase Dashboard > Authentication > URL Configuration**
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:47] Update **Site URL** to `https://cheflowhq.com`
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:48] Update **Redirect URLs** to include `https://cheflowhq.com/**`
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:49] Remove old `cheflow.us` redirect entries
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:53] Go to **Resend Dashboard > Domains**
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:54] Add and verify `cheflowhq.com` (add the DNS records Resend provides: SPF, DKIM, DMARC)
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:55] Once verified, emails will send from `noreply@cheflowhq.com`
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:56] Optionally remove old `cheflow.us` domain verification
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:60] Update webhook endpoint URL if it references `cheflow.us`
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:61] Check any Stripe Checkout `success_url` / `cancel_url` references
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:65] Go to **Google Cloud Console > Credentials > OAuth Client**
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:66] Update **Authorized redirect URIs** to use `cheflowhq.com`
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:67] Update **Authorized JavaScript origins** to use `cheflowhq.com`
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:81] Visit `https://cheflowhq.com` � site loads with HTTPS
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:82] Sign in works (Supabase auth redirects correctly)
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:83] Send a test email (quote or invitation) � arrives from `noreply@cheflowhq.com`
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:84] Email links point to `cheflowhq.com` (not the old domain)
+- [ ] [docs/domain-migration-cheflow-us-to-cheflowhq-com.md:85] PWA manifest loads correctly at new domain
+- [ ] [docs/event-summary-document.md:124] Navigate to any event ? Documents section ? "Event Summary" shows as first entry, "Ready"
+- [ ] [docs/event-summary-document.md:125] Click "View PDF" ? modal opens with one-page PDF
+- [ ] [docs/event-summary-document.md:126] Verify: header bar (dark background, date, stage label)
+- [ ] [docs/event-summary-document.md:127] Verify: allergy bar appears in red if client has allergies
+- [ ] [docs/event-summary-document.md:128] Verify: two-column layout � CLIENT/LOCATION/TIMING left, FINANCIAL/STATUS/HISTORY right
+- [ ] [docs/event-summary-document.md:129] Verify: history entries show state transitions with timestamps
+- [ ] [docs/event-summary-document.md:130] Verify: menu section shows FOH descriptions + BOH component breakdown
+- [ ] [docs/event-summary-document.md:131] Test with no menu ? menu section shows placeholder message, rest of doc still renders
+- [ ] [docs/event-summary-document.md:132] Click "Print All (8 Sheets)" ? Event Summary is page 1
+- [ ] [docs/event-summary-document.md:133] Test with a dense menu (>15 components) ? doc still fits one page (font scaling)
+- [ ] [docs/grade-improvements.md:130] `types/database.ts` � verify against remote schema if migrations are applied before merge
+- [ ] [docs/grocery-quote-v2.md:147] Run a grocery quote on an event with a menu ? USDA (NE) column shows blue prices
+- [ ] [docs/grocery-quote-v2.md:148] Ingredients with no USDA match show `�` in the USDA column (not an error)
+- [ ] [docs/grocery-quote-v2.md:149] Amber row highlighting appears for any ingredient where all 4 sources returned null
+- [ ] [docs/grocery-quote-v2.md:150] Totals row shows USDA total (null dash if no USDA matches for any ingredient)
+- [ ] [docs/grocery-quote-v2.md:151] Budget Check card still works as before
+- [ ] [docs/grocery-quote-v2.md:152] Close out an event ? ReceiptsStep shows grocery cost input in all 3 branches
+- [ ] [docs/grocery-quote-v2.md:153] Enter an actual cost ? advance ? open grocery quote page ? Accuracy Check card appears
+- [ ] [docs/grocery-quote-v2.md:154] Delta shows green if within 10%, amber if = 10%
+- [ ] [docs/grocery-quote-v2.md:155] Leaving grocery cost blank ? no error, proceeds normally
+- [ ] [docs/grocery-quote-v2.md:156] `npx tsc --noEmit --skipLibCheck` ? zero errors
+- [ ] [docs/guest-experience-master-plan.md:32] **1.1 � Add `/guest-leads` to chef sidebar nav**
+- [ ] [docs/guest-experience-master-plan.md:37] **1.2 � Account creation nudge on guest lead thank-you screen**
+- [ ] [docs/guest-experience-master-plan.md:42] **1.3 � "Book your own event" CTA on RSVP confirmation**
+- [ ] [docs/guest-experience-master-plan.md:47] **1.4 � Host message template (copy-paste for group chat)**
+- [ ] [docs/guest-experience-master-plan.md:53] **1.5 � Chef can create RSVP share links (not just client)**
+- [ ] [docs/guest-experience-master-plan.md:63] **2.1 � `guest_messages` table**
+- [ ] [docs/guest-experience-master-plan.md:69] **2.2 � Message form on RSVP page**
+- [ ] [docs/guest-experience-master-plan.md:75] **2.3 � Message feed on RSVP page**
+- [ ] [docs/guest-experience-master-plan.md:81] **2.4 � Chef sees excitement feed**
+- [ ] [docs/guest-experience-master-plan.md:86] **2.5 � Real-time guest list on RSVP page**
+- [ ] [docs/guest-experience-master-plan.md:95] **3.1 � Guest photo uploads**
+- [ ] [docs/guest-experience-master-plan.md:101] **3.2 � Photo upload UI on share page (post-event)**
+- [ ] [docs/guest-experience-master-plan.md:107] **3.3 � Combined photo gallery (chef + guest photos)**
+- [ ] [docs/guest-experience-master-plan.md:112] **3.4 � Chef shares photos back to guests**
+- [ ] [docs/guest-experience-master-plan.md:118] **3.5 � Photo notification to guests**
+- [ ] [docs/guest-experience-master-plan.md:127] **4.1 � `/share/[token]/recap` page**
+- [ ] [docs/guest-experience-master-plan.md:135] **4.2 � Downloadable PDF keepsake**
+- [ ] [docs/guest-experience-master-plan.md:141] **4.3 � Chef profile link on recap page**
+- [ ] [docs/guest-experience-master-plan.md:146] **4.4 � Auto-generate recap after event completion**
+- [ ] [docs/guest-experience-master-plan.md:155] **5.1 � Guest profiles (lightweight, optional)**
+- [ ] [docs/guest-experience-master-plan.md:161] **5.2 � "We should do this again" group creation**
+- [ ] [docs/guest-experience-master-plan.md:167] **5.3 � Recurring event interest**
+- [ ] [docs/guest-experience-master-plan.md:173] **5.4 � Guest event history (for guests with accounts)**
+- [ ] [docs/guest-experience-master-plan.md:183] **6.1 � QR scan tracking**
+- [ ] [docs/guest-experience-master-plan.md:188] **6.2 � RSVP completion rate**
+- [ ] [docs/guest-experience-master-plan.md:193] **6.3 � Guest pipeline conversion funnel**
+- [ ] [docs/guest-experience-master-plan.md:199] **6.4 � Repeat guest tracking**
+- [ ] [docs/guest-experience-master-plan.md:204] **6.5 � Social sharing analytics**
+- [ ] [docs/guest-experience-master-plan.md:213] **7.1 � Batch post-event email to all guest leads**
+- [ ] [docs/guest-experience-master-plan.md:219] **7.2 � Post-event email to RSVP guests**
+- [ ] [docs/guest-experience-master-plan.md:225] **7.3 � SMS follow-up for guests with phone numbers**
+- [ ] [docs/guest-experience-master-plan.md:231] **7.4 � Guest testimonial collection**
+- [ ] [docs/guest-experience-master-plan.md:238] **7.5 � Automated RSVP reminders**
+- [ ] [docs/guest-experience-master-plan.md:244] **7.6 � Host auto-update on RSVP progress**
+- [ ] [docs/guest-experience-master-plan.md:253] **8.1 � Guest referral program**
+- [ ] [docs/guest-experience-master-plan.md:258] **8.2 � Gift card from guest pipeline**
+- [ ] [docs/guest-experience-master-plan.md:263] **8.3 � Social media integration**
+- [ ] [docs/guest-experience-master-plan.md:269] **8.4 � Event countdown on RSVP page**
+- [ ] [docs/incident-reporting-system.md:140] Email/notification alert when a critical incident is written
+- [ ] [docs/incident-reporting-system.md:141] Admin UI page to browse incidents from the app (`/settings/incidents`)
+- [ ] [docs/incident-reporting-system.md:142] Auto-cleanup of reports older than 30 days
+- [ ] [docs/incident-reporting-system.md:143] Wire into webhook delivery failures (`lib/webhooks/deliver.ts`)
+- [ ] [docs/inquiry-pipeline-uniformity.md:102] Submit public inquiry form ? client receives "Inquiry received" email within seconds
+- [ ] [docs/inquiry-pipeline-uniformity.md:103] Log in as client whose only event is a draft ? `/my-events` shows empty (no draft visible)
+- [ ] [docs/inquiry-pipeline-uniformity.md:104] With a `paid`-status event whose `event_date` is tomorrow, invoke `GET /api/scheduled/lifecycle` with `Authorization: Bearer {CRON_SECRET}` ? response JSON shows `eventReminders: 1`
+- [ ] [docs/inquiry-pipeline-uniformity.md:105] Full happy-path walkthrough: draft ? proposed ? accepted ? paid ? confirmed ? completed ? confirm all existing emails still fire at correct stages
+- [ ] [docs/inventory-food-cost-actions.md:111] Create database migrations for `inventory_counts`, `waste_logs`, `vendor_invoices`, `vendor_invoice_items`
+- [ ] [docs/inventory-food-cost-actions.md:112] Build UI pages at `/inventory`, `/inventory/waste`, `/inventory/invoices`
+- [ ] [docs/inventory-food-cost-actions.md:113] Wire reorder suggestions into the pre-event shopping checklist
+- [ ] [docs/inventory-food-cost-actions.md:114] Connect waste logging to the event close-out wizard
+- [ ] [docs/inventory-food-cost-actions.md:115] Add price cascade confirmation dialog in recipe management UI
+- [ ] [docs/mobile-ux-and-help-center.md:108] Add `<OfflineBanner />` to `app/(chef)/layout.tsx` (or root layout)
+- [ ] [docs/mobile-ux-and-help-center.md:109] Add `<QuickCapture />` to `app/(chef)/layout.tsx`
+- [ ] [docs/mobile-ux-and-help-center.md:110] Add a "DOP Mobile" link to the event detail page schedule tab (link to `/events/[id]/dop/mobile`)
+- [ ] [docs/mobile-ux-and-help-center.md:111] Add "Help" to the chef sidebar navigation (`components/admin/admin-sidebar.tsx` or equivalent chef nav)
+- [ ] [docs/new-integrations-wave1.md:174] Wire Apple/Google Pay toggle into `lib/stripe/checkout.ts` (pass `payment_method_types` instead of `automatic_payment_methods` when disabled)
+- [ ] [docs/new-integrations-wave1.md:175] Add QuickBooks webhook handler for payment notifications from QB
+- [ ] [docs/new-integrations-wave1.md:176] Add DocuSign webhook handler for `envelope.completed` status updates
+- [ ] [docs/new-integrations-wave1.md:177] Build Square Terminal integration for Reader SDK (hardware)
+- [ ] [docs/new-integrations-wave1.md:178] Add Zapier event dispatch calls into existing server actions (inquiry, event, payment)
+- [ ] [docs/new-integrations-wave1.md:179] Build setup wizards for QuickBooks/DocuSign/Square in the integration center
+- [ ] [docs/new-integrations-wave1.md:180] Add Yelp business search UI to external review source setup
+- [ ] [docs/phase2-ai-fallback-wiring.md:63] Stop Ollama ? open any event detail ? click AI panels ? all return results
+- [ ] [docs/phase2-ai-fallback-wiring.md:64] Start Ollama ? click again ? results should be richer
+- [ ] [docs/phase2-ai-fallback-wiring.md:65] 10 email drafts work offline (template versions)
+- [ ] [docs/phase2-ai-fallback-wiring.md:66] Contract/staff briefing/prep timeline work offline
+- [ ] [docs/phase2-ai-fallback-wiring.md:67] Equipment depreciation works without Gemini API key
+- [ ] [docs/remy-animation-system.md:753] Normalize all existing frame PNGs to uniform canvas sizes (pad, center)
+- [ ] [docs/remy-animation-system.md:754] Build sprite sheet compiler (take PNGs ? output single sheet + manifest JSON)
+- [ ] [docs/remy-animation-system.md:755] Create `remy-sprite-renderer.tsx` � generic component that renders any sprite sheet
+- [ ] [docs/remy-animation-system.md:756] Create `remy-animation-state.ts` � body state machine with `useReducer`
+- [ ] [docs/remy-animation-system.md:757] Build `remy-body-idle.png` sprite sheet (breathing loop, 6 frames)
+- [ ] [docs/remy-animation-system.md:758] Wire idle breathing into `RemyMascotButton`
+- [ ] [docs/remy-animation-system.md:762] Create `remy-body-walk.png` from existing walk frames
+- [ ] [docs/remy-animation-system.md:763] Create `remy-body-whisk.png` from existing whisk frames
+- [ ] [docs/remy-animation-system.md:764] Create `remy-body-think.png` from existing pondering/aha assets
+- [ ] [docs/remy-animation-system.md:765] Create `remy-body-sleep.png` from existing sleeping assets
+- [ ] [docs/remy-animation-system.md:766] Build transition system (crossfade between body states)
+- [ ] [docs/remy-animation-system.md:767] Wire state machine to app events (drawer open, response start/end)
+- [ ] [docs/remy-animation-system.md:768] Add auto-sleep after 60s idle
+- [ ] [docs/remy-animation-system.md:772] Build `elevenlabs-tts.ts` � API client with HTTP streaming
+- [ ] [docs/remy-animation-system.md:773] Pre-generate 10 voice clips (greetings, success, error, goodbye)
+- [ ] [docs/remy-animation-system.md:774] Add voice toggle to Remy drawer settings
+- [ ] [docs/remy-animation-system.md:775] Play pre-rendered clips on app events (greeting, success, error)
+- [ ] [docs/remy-animation-system.md:776] Build `remy-audio-sync.ts` � AudioContext playback + timing
+- [ ] [docs/remy-animation-system.md:780] Add WebSocket streaming to `elevenlabs-tts.ts`
+- [ ] [docs/remy-animation-system.md:781] Connect Ollama token stream ? ElevenLabs WebSocket
+- [ ] [docs/remy-animation-system.md:782] Play audio chunks via AudioContext (gapless)
+- [ ] [docs/remy-animation-system.md:783] Upgrade lip-sync to use alignment timestamps (Tier 3)
+- [ ] [docs/remy-animation-system.md:784] Sync viseme frames to `AudioContext.currentTime`
+- [ ] [docs/remy-animation-system.md:788] Commission/create waving animation (6 frames)
+- [ ] [docs/remy-animation-system.md:789] Commission/create celebration animation (8 frames)
+- [ ] [docs/remy-animation-system.md:790] Commission/create error/worried animation (2-3 frames)
+- [ ] [docs/remy-animation-system.md:791] Add eye blink layer (`remy-eye-layer.tsx`)
+- [ ] [docs/remy-animation-system.md:792] Add sound effects (confetti pop, cha-ching, notification)
+- [ ] [docs/remy-animation-system.md:793] WebP conversion for all sprite sheets
+- [ ] [docs/remy-animation-system.md:794] Final performance audit
+- [ ] [docs/remy-animation-system.md:798] Extract pancake flip from animation pack
+- [ ] [docs/remy-animation-system.md:799] Extract thumbs-up from animation pack
+- [ ] [docs/remy-animation-system.md:800] Nodding/head shake animations
+- [ ] [docs/remy-animation-system.md:801] Seasonal hat variants
+- [ ] [docs/remy-animation-system.md:802] Dark mode Remy variant
+- [ ] [docs/remy-animation-system.md:803] Mini Remy for notification badges
+- [ ] [docs/remy-onboarding-todo.md:11] Create `remy_onboarding` table (id, chef_id, stage, skipped, started_at, completed_at, last_checkin_at, message_count)
+- [ ] [docs/remy-onboarding-todo.md:12] Add CHECK constraint on stage: `'not_started', 'greeted', 'toured', 'first_interaction', 'onboarded'`
+- [ ] [docs/remy-onboarding-todo.md:13] Add UNIQUE constraint on chef_id (one row per chef)
+- [ ] [docs/remy-onboarding-todo.md:14] Enable RLS on `remy_onboarding` � chefs see only their own row
+- [ ] [docs/remy-onboarding-todo.md:15] Create `remy_milestones` table (id, chef_id, milestone_key, celebrated_at, data jsonb)
+- [ ] [docs/remy-onboarding-todo.md:16] Add UNIQUE constraint on (chef_id, milestone_key) � celebrate each milestone once
+- [ ] [docs/remy-onboarding-todo.md:17] Enable RLS on `remy_milestones` � chefs see only their own milestones
+- [ ] [docs/remy-onboarding-todo.md:18] Check existing migration timestamps before creating files (multi-agent collision safety)
+- [ ] [docs/remy-onboarding-todo.md:19] Backfill migration: for existing chefs, insert already-passed milestones as celebrated so they don't get dumped on first load
+- [ ] [docs/remy-onboarding-todo.md:25] Create `lib/ai/remy-curated.ts` � all curated messages as typed constants
+- [ ] [docs/remy-onboarding-todo.md:26] Create `lib/ai/remy-personality-engine.ts` � deterministic personality logic
+- [ ] [docs/remy-onboarding-todo.md:34] Write Variant A � "Hey Chef {chefName}! I'm Remy. Think of me as your sous chef..." (pocket, clients, emails, revenue, schedule)
+- [ ] [docs/remy-onboarding-todo.md:35] Write Variant B � "Chef {chefName}! Welcome to the kitchen. I'm Remy � your ride-or-die sous..." (clients, events, financials, emails, scheduling, menus)
+- [ ] [docs/remy-onboarding-todo.md:36] Write Variant C � "Well well well � Chef {chefName} in the house! I'm Remy..." (sous who never calls in sick, never forgets, likes paperwork)
+- [ ] [docs/remy-onboarding-todo.md:37] Each variant ends with tour offer question
+- [ ] [docs/remy-onboarding-todo.md:38] Interpolation: `{chefName}`
+- [ ] [docs/remy-onboarding-todo.md:42] Write Tour Beat 1 � Your Clients (rolodex on steroids, profiles, allergies, example queries: "Find my client Sarah", "Who are my repeat clients?", "Does anyone have a nut allergy?")
+- [ ] [docs/remy-onboarding-todo.md:43] Write Tour Beat 2 � Your Events (heartbeat of business, 8 stages, schedule/follow-ups/payments, example queries: "What's on my schedule?", "How many events this month?", "Draft a follow-up for the Johnson dinner")
+- [ ] [docs/remy-onboarding-todo.md:44] Write Tour Beat 3 � Your Money (revenue, expenses, food costs, margins, ledger-based, example queries: "How's my revenue?", "What are my margins?", "Break down my food costs")
+- [ ] [docs/remy-onboarding-todo.md:45] Write Tour Beat 4 � Your Memory (persistent learning, "Remember that...", "What do you remember?", "Forget that thing about...", brain around YOUR business)
+- [ ] [docs/remy-onboarding-todo.md:46] Each beat has "Next" and "Skip the rest" quick-reply buttons
+- [ ] [docs/remy-onboarding-todo.md:50] Write closer line � "you're officially out of onboarding now" � appended to Ollama response after 3 exchanges post-tour
+- [ ] [docs/remy-onboarding-todo.md:54] Write Day 1 check-in � variant for < 3 clients (suggest importing)
+- [ ] [docs/remy-onboarding-todo.md:55] Write Day 1 check-in � variant for 3+ clients (acknowledge, ask what they need)
+- [ ] [docs/remy-onboarding-todo.md:56] Write Day 3 check-in � variant for 0 events (suggest first event, "easier than a basic brunoise")
+- [ ] [docs/remy-onboarding-todo.md:57] Write Day 3 check-in � variant for 1+ events (acknowledge progress)
+- [ ] [docs/remy-onboarding-todo.md:58] Write Day 5 check-in � variant for 0 recipes (explain recipe book, redirect to Recipes page)
+- [ ] [docs/remy-onboarding-todo.md:59] Write Day 5 check-in � variant for 1+ recipes (acknowledge, explain search capability)
+- [ ] [docs/remy-onboarding-todo.md:60] Write Day 7 check-in � final check-in for all chefs ("tell me something to remember")
+- [ ] [docs/remy-onboarding-todo.md:61] Interpolation: `{clientCount}`, `{eventCount}`, `{recipeCount}`
+- [ ] [docs/remy-onboarding-todo.md:65] Write `first_client` � "First client in the book! The journey of a thousand plates..."
+- [ ] [docs/remy-onboarding-todo.md:66] Write `clients_10` � "Double digits on the client list � 10 and counting"
+- [ ] [docs/remy-onboarding-todo.md:67] Write `clients_25` � "25 clients! That's not a side hustle anymore"
+- [ ] [docs/remy-onboarding-todo.md:68] Write `clients_50` � "50 clients, chef. Five-zero."
+- [ ] [docs/remy-onboarding-todo.md:69] Write `clients_100` � "The big 1-0-0! 100 clients."
+- [ ] [docs/remy-onboarding-todo.md:70] Write `first_repeat_client` � "They're back! {clientName} just booked again."
+- [ ] [docs/remy-onboarding-todo.md:71] Interpolation: `{clientName}`
+- [ ] [docs/remy-onboarding-todo.md:75] Write `first_event` � "Your first event is on the board!"
+- [ ] [docs/remy-onboarding-todo.md:76] Write `first_event_completed` � "First event in the books! You did it, chef."
+- [ ] [docs/remy-onboarding-todo.md:77] Write `events_10` � "Double-digit events! 10 down."
+- [ ] [docs/remy-onboarding-todo.md:78] Write `events_25` � "25 events, chef! (Pun very much intended.)"
+- [ ] [docs/remy-onboarding-todo.md:79] Write `events_50` � "50 events! Half a hundred services."
+- [ ] [docs/remy-onboarding-todo.md:80] Write `events_100` � "ONE HUNDRED EVENTS" (big celebration)
+- [ ] [docs/remy-onboarding-todo.md:84] Write `first_payment` � "Money in the register! First payment received."
+- [ ] [docs/remy-onboarding-todo.md:85] Write `revenue_1k` � "You just crossed $1,000 in revenue"
+- [ ] [docs/remy-onboarding-todo.md:86] Write `revenue_5k` � "$5K revenue! That's a real number."
+- [ ] [docs/remy-onboarding-todo.md:87] Write `revenue_10k` � "Five figures! $10,000 in revenue."
+- [ ] [docs/remy-onboarding-todo.md:88] Write `revenue_25k` � "$25K in the books! Quarter of a hundred grand."
+- [ ] [docs/remy-onboarding-todo.md:89] Write `revenue_50k` � "FIFTY THOUSAND DOLLARS" (big celebration)
+- [ ] [docs/remy-onboarding-todo.md:90] Write `revenue_100k` � "$100,000" (biggest celebration, offer year in review)
+- [ ] [docs/remy-onboarding-todo.md:94] Write `first_review` � "Your first review is in!"
+- [ ] [docs/remy-onboarding-todo.md:95] Write `first_five_star` � "Five stars! Perfect score."
+- [ ] [docs/remy-onboarding-todo.md:99] Write `anniversary_30d` � "One month together, chef"
+- [ ] [docs/remy-onboarding-todo.md:100] Write `anniversary_90d` � "Three months! Quarter one is done."
+- [ ] [docs/remy-onboarding-todo.md:101] Write `anniversary_180d` � "Half a year, chef!"
+- [ ] [docs/remy-onboarding-todo.md:102] Write `anniversary_365d` � "ONE YEAR!" (big celebration, reference shared history)
+- [ ] [docs/remy-onboarding-todo.md:103] Interpolation: `{chefName}`
+- [ ] [docs/remy-onboarding-todo.md:107] Write 3 Monday variants � "Fresh week, fresh mise" / "Boards are clean, knives are sharp" / "New week energy"
+- [ ] [docs/remy-onboarding-todo.md:108] Write 3 Friday variants � "Got anything cooking this weekend?" / "Weekend service incoming?" / "TGIF"
+- [ ] [docs/remy-onboarding-todo.md:109] Write 1 Saturday variant � "Saturday service! Hope you're crushing it"
+- [ ] [docs/remy-onboarding-todo.md:110] Write 1 Sunday variant � "Sunday � the kitchen's quiet"
+- [ ] [docs/remy-onboarding-todo.md:114] Write January � "Kitchen's quiet after the holiday rush"
+- [ ] [docs/remy-onboarding-todo.md:115] Write February � "Valentine's season! Private dinners in hot demand"
+- [ ] [docs/remy-onboarding-todo.md:116] Write March � "Spring is coming. Fresh produce, outdoor events"
+- [ ] [docs/remy-onboarding-todo.md:117] Write April � "April showers bring... spring dinner parties"
+- [ ] [docs/remy-onboarding-todo.md:118] Write May � "Outdoor season is here"
+- [ ] [docs/remy-onboarding-todo.md:119] Write June � "Wedding season and summer entertaining in full swing"
+- [ ] [docs/remy-onboarding-todo.md:120] Write July � "Peak summer. Grill marks, sunset dinners"
+- [ ] [docs/remy-onboarding-todo.md:121] Write August � "The summer push. Back-to-school dinners"
+- [ ] [docs/remy-onboarding-todo.md:122] Write September � "Fall is almost here. Heartier menus"
+- [ ] [docs/remy-onboarding-todo.md:123] Write October � "Fall flavors are in � squash, root vegetables, warming spices"
+- [ ] [docs/remy-onboarding-todo.md:124] Write November � "Thanksgiving month! Super Bowl for private chefs"
+- [ ] [docs/remy-onboarding-todo.md:125] Write December � "The big one. Holiday parties, NYE galas"
+- [ ] [docs/remy-onboarding-todo.md:129] Write New Year's Day (Jan 1) � "Happy New Year, chef!"
+- [ ] [docs/remy-onboarding-todo.md:130] Write Valentine's Day (Feb 14) � "The food is the love letter"
+- [ ] [docs/remy-onboarding-todo.md:131] Write Thanksgiving (4th Thursday of Nov) � "Happy Thanksgiving, chef!"
+- [ ] [docs/remy-onboarding-todo.md:132] Write Christmas (Dec 25) � "Merry Christmas, chef. Take a breath."
+- [ ] [docs/remy-onboarding-todo.md:136] Write 0 clients � "blank canvas... every great kitchen builds regulars one plate at a time"
+- [ ] [docs/remy-onboarding-todo.md:137] Write 0 events � "no events yet � but that's about to change"
+- [ ] [docs/remy-onboarding-todo.md:138] Write 0 revenue � "register's empty, but we haven't opened the doors yet"
+- [ ] [docs/remy-onboarding-todo.md:139] Write 0 recipes � "recipe book is empty... head to Recipes when ready"
+- [ ] [docs/remy-onboarding-todo.md:140] Write 0 inquiries � "no inquiries yet � make sure embed widget is set up"
+- [ ] [docs/remy-onboarding-todo.md:144] Write slow week context � "even the best kitchens have slow weeks... the rush is coming"
+- [ ] [docs/remy-onboarding-todo.md:145] Write event cancellation context � "one 86'd ticket doesn't define a service"
+- [ ] [docs/remy-onboarding-todo.md:146] Write tight margins context � "sometimes it's one ingredient throwing the whole plate off"
+- [ ] [docs/remy-onboarding-todo.md:147] Write great month context � celebrate with specific numbers, reference what's working
+- [ ] [docs/remy-onboarding-todo.md:148] Write stale inquiries context � "a cold lead is like a cold steak"
+- [ ] [docs/remy-onboarding-todo.md:149] Write repeat client booking context � "regulars are the foundation of every great kitchen"
+- [ ] [docs/remy-onboarding-todo.md:153] Write Week 1 tone (0-7 days) � explanatory, shows features, new colleague energy
+- [ ] [docs/remy-onboarding-todo.md:154] Write Month 1 tone (8-30 days) � peer-to-peer, drop hand-holding
+- [ ] [docs/remy-onboarding-todo.md:155] Write Month 2-3 tone (31-90 days) � trusted partner, shorthand, references patterns
+- [ ] [docs/remy-onboarding-todo.md:156] Write Veteran tone (90+ days) � ride-or-die, challenges chef, references shared history
+- [ ] [docs/remy-onboarding-todo.md:160] Write `REMY_KITCHEN_PHRASES` constant � "Heard, chef", "Behind!", "Cooking with gas", "Let's get your mise together", "On the fly!", "All day", "Fire it", "86 that", "In the weeds", "Full rail", "Clean board", "On the pass", "Let's plate this up", "The rush is coming", "Service!", "No substitutions"
+- [ ] [docs/remy-onboarding-todo.md:161] Add to `lib/ai/remy-personality.ts` as new export
+- [ ] [docs/remy-onboarding-todo.md:165] Write client greeting � with upcoming event ("Welcome! I'm Remy � your personal concierge for your event with Chef {chefName}")
+- [ ] [docs/remy-onboarding-todo.md:166] Write client greeting � no upcoming event ("Hey there! It looks like you don't have an upcoming event right now")
+- [ ] [docs/remy-onboarding-todo.md:167] Interpolation: `{chefName}`, `{eventType}`
+- [ ] [docs/remy-onboarding-todo.md:171] Write visitor greeting � "Hey there! I'm Remy � think of me as your personal connection to an incredible private chef experience"
+- [ ] [docs/remy-onboarding-todo.md:172] Interpolation: `{chefName}`
+- [ ] [docs/remy-onboarding-todo.md:180] Implement `getOnboardingStage(chefId)` � query `remy_onboarding` table, return stage or 'not_started' if no row
+- [ ] [docs/remy-onboarding-todo.md:181] Implement `advanceOnboarding(chefId, stage)` � upsert `remy_onboarding` row, update stage + timestamps
+- [ ] [docs/remy-onboarding-todo.md:182] Implement `skipOnboarding(chefId)` � set stage='onboarded', skipped=true, completed_at=now()
+- [ ] [docs/remy-onboarding-todo.md:183] Implement `incrementMessageCount(chefId)` � bump message_count, check if >= 3 for auto-advance to 'onboarded'
+- [ ] [docs/remy-onboarding-todo.md:187] Implement `getRelationshipTenure(createdAt)` � return `'new' | 'settling' | 'established' | 'veteran'` based on days since creation
+- [ ] [docs/remy-onboarding-todo.md:188] Thresholds: 0-7 = new, 8-30 = settling, 31-90 = established, 90+ = veteran
+- [ ] [docs/remy-onboarding-todo.md:192] Implement `detectMilestones(chefId)` � query client count, event count, revenue total, review count, repeat clients, chef created_at from database
+- [ ] [docs/remy-onboarding-todo.md:193] Compare against milestone thresholds (first_client, clients_10, clients_25, clients_50, clients_100, first_repeat_client, first_event, first_event_completed, events_10, events_25, events_50, events_100, first_payment, revenue_1k, revenue_5k, revenue_10k, revenue_25k, revenue_50k, revenue_100k, first_review, first_five_star, anniversary_30d, anniversary_90d, anniversary_180d, anniversary_365d)
+- [ ] [docs/remy-onboarding-todo.md:194] Cross-reference against `remy_milestones` table � filter out already-celebrated
+- [ ] [docs/remy-onboarding-todo.md:195] Return highest-priority uncelebrated milestone (or null)
+- [ ] [docs/remy-onboarding-todo.md:196] Implement `markMilestoneCelebrated(chefId, key, data?)` � insert into `remy_milestones`
+- [ ] [docs/remy-onboarding-todo.md:200] Implement `getSeasonalOpener()` � pick by current month + day of week
+- [ ] [docs/remy-onboarding-todo.md:201] Implement `getSpecialDayOpener()` � check against special dates (Jan 1, Feb 14, Thanksgiving, Dec 25)
+- [ ] [docs/remy-onboarding-todo.md:202] Thanksgiving calculation: 4th Thursday of November (dynamic)
+- [ ] [docs/remy-onboarding-todo.md:203] Random variant selection for days with multiple openers (Monday, Friday)
+- [ ] [docs/remy-onboarding-todo.md:207] Implement `getMotivationalContext(chefId)` � check for:
+- [ ] [docs/remy-onboarding-todo.md:214] Return relevant context strings (can return multiple)
+- [ ] [docs/remy-onboarding-todo.md:218] Implement `getCheckIn(chefId)` � determine if a check-in is due
+- [ ] [docs/remy-onboarding-todo.md:227] Implement `getCuratedGreeting(chefId)` � priority cascade:
+- [ ] [docs/remy-onboarding-todo.md:233] Return: `{ message: string, quickReplies?: string[], type: 'onboarding' | 'milestone' | 'checkin' | 'seasonal' | null }`
+- [ ] [docs/remy-onboarding-todo.md:237] Implement `buildDynamicPersonalityBlock(chefId)` � build system prompt additions:
+- [ ] [docs/remy-onboarding-todo.md:241] Return as string to append to system prompt
+- [ ] [docs/remy-onboarding-todo.md:249] Import `getCuratedGreeting` and `buildDynamicPersonalityBlock` from personality engine
+- [ ] [docs/remy-onboarding-todo.md:250] Before hitting Ollama: call `getCuratedGreeting(chefId)`
+- [ ] [docs/remy-onboarding-todo.md:251] If curated greeting returned: send it directly as Remy's message (no LLM call for opener)
+- [ ] [docs/remy-onboarding-todo.md:252] Call `buildDynamicPersonalityBlock(chefId)` and append to system prompt for all LLM responses
+- [ ] [docs/remy-onboarding-todo.md:253] After Ollama response: call `advanceOnboarding` if stage transition is needed
+- [ ] [docs/remy-onboarding-todo.md:254] After Ollama response: call `incrementMessageCount` if in post-tour stage
+- [ ] [docs/remy-onboarding-todo.md:255] After celebrating milestone: call `markMilestoneCelebrated`
+- [ ] [docs/remy-onboarding-todo.md:256] All side effects wrapped in try/catch � non-blocking, log failures as warnings
+- [ ] [docs/remy-onboarding-todo.md:260] Add `REMY_KITCHEN_PHRASES` export constant (16 phrases with descriptions and usage guidance)
+- [ ] [docs/remy-onboarding-todo.md:264] Render quick-reply buttons when curated greeting includes them
+- [ ] [docs/remy-onboarding-todo.md:265] Quick-reply buttons: "Give me the tour" / "I'll figure it out" (onboarding Stage 1)
+- [ ] [docs/remy-onboarding-todo.md:266] Quick-reply buttons: "Next" / "Skip the rest" (tour beats)
+- [ ] [docs/remy-onboarding-todo.md:267] Clicking a quick-reply sends the text as if the chef typed it
+- [ ] [docs/remy-onboarding-todo.md:268] Style quick-replies as clickable chips below Remy's message
+- [ ] [docs/remy-onboarding-todo.md:269] Do NOT touch resize handles or drag corners (sacred architecture)
+- [ ] [docs/remy-onboarding-todo.md:273] Add "Reset Remy Tour" button to Settings ? AI Privacy page
+- [ ] [docs/remy-onboarding-todo.md:274] Button deletes `remy_onboarding` row for current chef
+- [ ] [docs/remy-onboarding-todo.md:275] Row re-creates automatically on next drawer open (triggers Stage 1 again)
+- [ ] [docs/remy-onboarding-todo.md:281] Stale inquiries: surface count + offer to draft follow-ups when inquiries sit 48+ hours
+- [ ] [docs/remy-onboarding-todo.md:282] Upcoming events with missing prep: flag events within 3 days missing menu approval
+- [ ] [docs/remy-onboarding-todo.md:283] Unpaid balances: surface total outstanding across events
+- [ ] [docs/remy-onboarding-todo.md:284] Repeat client approaching loyalty milestone: "{clientName} is 1 event from Gold tier"
+- [ ] [docs/remy-onboarding-todo.md:285] Empty calendar gaps: "Your Tuesdays have been empty for 3 weeks"
+- [ ] [docs/remy-onboarding-todo.md:286] Revenue trend shift: "Revenue up/down X% vs last month"
+- [ ] [docs/remy-onboarding-todo.md:287] Client at churn risk: no booking in 6+ months, offer re-engagement draft
+- [ ] [docs/remy-onboarding-todo.md:288] Staff scheduling gap: event with no staff assigned within 7 days
+- [ ] [docs/remy-onboarding-todo.md:289] Quote expiring soon: quote expires in 3 days
+- [ ] [docs/remy-onboarding-todo.md:290] Upcoming client birthday/anniversary
+- [ ] [docs/remy-onboarding-todo.md:291] Seasonal demand pattern: reference same month last year
+- [ ] [docs/remy-onboarding-todo.md:292] Daily ops priority: admin item count + estimated time
+- [ ] [docs/remy-onboarding-todo.md:293] Follow-up due: post-event thank-you/review/referral sequence
+- [ ] [docs/remy-onboarding-todo.md:294] Missing client dietary data: clients with no restrictions on file (safety risk)
+- [ ] [docs/remy-onboarding-todo.md:295] Certification expiring: food handler cert within 30 days
+- [ ] [docs/remy-onboarding-todo.md:301] Chef skips onboarding ? set skipped=true, jump to 'onboarded', no tour replay
+- [ ] [docs/remy-onboarding-todo.md:302] Chef with imported data ? detect counts BEFORE showing check-ins, use conditional variants
+- [ ] [docs/remy-onboarding-todo.md:303] Ollama offline ? curated messages still display (pre-written strings), LLM chat shows "Start Ollama" message
+- [ ] [docs/remy-onboarding-todo.md:304] Multiple sessions same day ? last_checkin_at prevents repeat check-ins, seasonal openers once per day
+- [ ] [docs/remy-onboarding-todo.md:305] Chef resets onboarding ? delete remy_onboarding row, re-create on next drawer open
+- [ ] [docs/remy-onboarding-todo.md:306] Multiple milestones at once ? show only highest priority, one per session
+- [ ] [docs/remy-onboarding-todo.md:307] Milestone with dynamic data ? interpolate from `data` jsonb column (client name, revenue amount)
+- [ ] [docs/remy-onboarding-todo.md:308] Query failure ? skip curated message, don't show broken interpolation
+- [ ] [docs/remy-onboarding-todo.md:309] Backfill for existing chefs ? run detection, mark all passed milestones as silently celebrated on deploy
+- [ ] [docs/remy-onboarding-todo.md:315] Update `docs/app-complete-audit.md` with quick-reply buttons and onboarding UI elements
+- [ ] [docs/remy-onboarding-todo.md:316] Create `docs/remy-onboarding-personality.md` explaining the full system
+- [ ] [docs/remy-onboarding-todo.md:317] Commit to feature branch
+- [ ] [docs/remy-onboarding-todo.md:323] New chef opens Remy ? gets one of 3 curated greetings with their name
+- [ ] [docs/remy-onboarding-todo.md:324] Quick-reply buttons render and work ("Give me the tour" / "I'll figure it out")
+- [ ] [docs/remy-onboarding-todo.md:325] Tour progresses through 4 beats with Next/Skip buttons
+- [ ] [docs/remy-onboarding-todo.md:326] Skipping tour sets skipped=true, no tour replay ever
+- [ ] [docs/remy-onboarding-todo.md:327] After 3 message exchanges post-tour, onboarding closer appears
+- [ ] [docs/remy-onboarding-todo.md:328] Day 1/3/5/7 check-ins show at correct times with correct conditions
+- [ ] [docs/remy-onboarding-todo.md:329] Check-ins don't repeat same day (last_checkin_at works)
+- [ ] [docs/remy-onboarding-todo.md:330] Milestones detected correctly (first client, first event, revenue thresholds)
+- [ ] [docs/remy-onboarding-todo.md:331] Milestones never celebrated twice (unique constraint enforced)
+- [ ] [docs/remy-onboarding-todo.md:332] Seasonal openers match current month
+- [ ] [docs/remy-onboarding-todo.md:333] Day-of-week openers match current day
+- [ ] [docs/remy-onboarding-todo.md:334] Special day openers fire on correct dates (Jan 1, Feb 14, Thanksgiving, Dec 25)
+- [ ] [docs/remy-onboarding-todo.md:335] Tenure tone adjusts based on chef's created_at
+- [ ] [docs/remy-onboarding-todo.md:336] Empty states show encouragement, not zeros or errors
+- [ ] [docs/remy-onboarding-todo.md:337] Motivational contexts injected when conditions met
+- [ ] [docs/remy-onboarding-todo.md:338] Client portal Remy shows client-specific greeting
+- [ ] [docs/remy-onboarding-todo.md:339] Public Remy shows visitor greeting
+- [ ] [docs/remy-onboarding-todo.md:340] All curated messages work with Ollama offline
+- [ ] [docs/remy-onboarding-todo.md:341] Kitchen phrases appear in remy-personality.ts
+- [ ] [docs/remy-onboarding-todo.md:342] No recipe generation anywhere in any curated message
+- [ ] [docs/remy-onboarding-todo.md:343] All new server actions use requireChef() for tenant ID
+- [ ] [docs/remy-onboarding-todo.md:344] remy_onboarding and remy_milestones tables created with RLS
+- [ ] [docs/remy-onboarding-todo.md:345] Reset Remy Tour button works in Settings ? AI Privacy
+- [ ] [docs/remy-onboarding-todo.md:346] Backfill migration runs correctly for existing chefs
+- [ ] [docs/remy-privacy-architecture.md:145] Run migration on linked Supabase
+- [ ] [docs/remy-privacy-architecture.md:146] Verify `remy_usage_metrics` table exists with correct schema
+- [ ] [docs/remy-privacy-architecture.md:147] Verify `remy_support_shares` table exists with correct schema
+- [ ] [docs/remy-privacy-architecture.md:148] Test transparency page renders 3 sections + external API disclosure
+- [ ] [docs/remy-privacy-architecture.md:149] Test "Send to Support" button in Remy drawer
+- [ ] [docs/remy-privacy-architecture.md:150] Verify Remotion composition renders without errors
+- [ ] [docs/remy-privacy-architecture.md:151] `npx tsc --noEmit --skipLibCheck` passes
+- [ ] [docs/remy-privacy-architecture.md:152] `npx next build --no-lint` passes
+- [ ] [docs/remy-privacy-integration.md:93] Open Remy drawer ? start new conversation ? messages save to IndexedDB (check DevTools > Application > IndexedDB > chefflow-remy)
+- [ ] [docs/remy-privacy-integration.md:94] Close drawer ? reopen ? conversation history persists
+- [ ] [docs/remy-privacy-integration.md:95] Create multiple conversations ? switch between them
+- [ ] [docs/remy-privacy-integration.md:96] Delete a conversation ? confirm gone from IndexedDB
+- [ ] [docs/remy-privacy-integration.md:97] Export conversation ? downloads as markdown
+- [ ] [docs/remy-privacy-integration.md:98] Send to Support ? confirm toast success
+- [ ] [docs/remy-privacy-integration.md:99] Visit Settings > Remy > Privacy & Data ? Remotion video plays
+- [ ] [docs/remy-privacy-integration.md:100] Check ollama-status-badge tooltips ? should say "conversations stay in your browser"
+- [ ] [docs/remy-privacy-integration.md:101] Visit /terms ? �15 and �17 reflect new architecture
+- [ ] [docs/remy-privacy-integration.md:102] Log in from different browser ? no conversation history (proving local-only)
+- [ ] [docs/SECURITY_AND_ISOLATION_MASTER.md:1597] All protected routes require authentication (middleware enforces)
+- [ ] [docs/SECURITY_AND_ISOLATION_MASTER.md:1598] Session stored in httpOnly, Secure cookies
+- [ ] [docs/SECURITY_AND_ISOLATION_MASTER.md:1599] No service role key in client-side code (grep verification)
+- [ ] [docs/SECURITY_AND_ISOLATION_MASTER.md:1600] Logout invalidates session server-side
+- [ ] [docs/SECURITY_AND_ISOLATION_MASTER.md:1604] RLS enabled on ALL tables
+- [ ] [docs/SECURITY_AND_ISOLATION_MASTER.md:1605] RLS policies include tenant_id filtering (chef access)
+- [ ] [docs/SECURITY_AND_ISOLATION_MASTER.md:1606] RLS policies include client_id filtering (client access)
+- [ ] [docs/SECURITY_AND_ISOLATION_MASTER.md:1607] Service role used ONLY in backend (webhook handlers, migrations)
+- [ ] [docs/SECURITY_AND_ISOLATION_MASTER.md:1611] Chef A cannot see Chef B's data (verified via direct query)
+- [ ] [docs/SECURITY_AND_ISOLATION_MASTER.md:1612] Client A1 cannot see Client A2's data (verified via direct query)
+- [ ] [docs/SECURITY_AND_ISOLATION_MASTER.md:1613] Cross-tenant foreign keys blocked by constraints
+- [ ] [docs/SECURITY_AND_ISOLATION_MASTER.md:1617] Ledger entries immutable (UPDATE/DELETE triggers verified)
+- [ ] [docs/SECURITY_AND_ISOLATION_MASTER.md:1618] Webhook signature verification works (Stripe CLI test)
+- [ ] [docs/SECURITY_AND_ISOLATION_MASTER.md:1619] Idempotency prevents duplicate ledger entries (duplicate webhook test)
+- [ ] [docs/SECURITY_AND_ISOLATION_MASTER.md:1620] Amounts stored as INTEGER cents (no DECIMAL in schema)
+- [ ] [docs/SECURITY_AND_ISOLATION_MASTER.md:1624] Server-side validation on ALL inputs (Zod schemas)
+- [ ] [docs/SECURITY_AND_ISOLATION_MASTER.md:1625] No SQL injection (Supabase parameterized queries only)
+- [ ] [docs/SECURITY_AND_ISOLATION_MASTER.md:1626] No XSS (React auto-escapes, no dangerouslySetInnerHTML without sanitization)
+- [ ] [docs/SECURITY_AND_ISOLATION_MASTER.md:1630] Event transitions immutable (triggers verified)
+- [ ] [docs/SECURITY_AND_ISOLATION_MASTER.md:1631] Ledger entries timestamped and permanent
+- [ ] [docs/SECURITY_AND_ISOLATION_MASTER.md:1632] No audit log deletion possible
+- [ ] [docs/staging-environment-plan.md:119] All E2E tests pass on staging (`npm run test:e2e`)
+- [ ] [docs/staging-environment-plan.md:120] No new Sentry errors on staging in last 30 minutes
+- [ ] [docs/staging-environment-plan.md:121] `/api/health` on staging returns `status: ok`
+- [ ] [docs/staging-environment-plan.md:122] Any new migrations applied to staging without error
+- [ ] [docs/staging-environment-plan.md:123] TypeScript check passes (`npx tsc --noEmit --skipLibCheck`)
+- [ ] [docs/staging-environment-plan.md:124] Build is clean (`npx next build --no-lint`)
+- [ ] [docs/terms-of-service-draft.md:582] **�1** � Legal entity name and state of incorporation
+- [ ] [docs/terms-of-service-draft.md:583] **�4** � Adequacy of "not a party to" language for your specific payment flow
+- [ ] [docs/terms-of-service-draft.md:584] **�5.2** � Whether to require (not merely recommend) liability insurance
+- [ ] [docs/terms-of-service-draft.md:585] **�7.1** � Exact Platform Fee percentage to disclose
+- [ ] [docs/terms-of-service-draft.md:586] **�9.3** � JAMS vs. AAA, arbitration location, and fee allocation
+- [ ] [docs/terms-of-service-draft.md:587] **�9.4** � Confirm governing state
+- [ ] [docs/terms-of-service-draft.md:588] **�11 & �12** � Confirm all-caps disclaimer format meets enforceability standard in governing state
+- [ ] [docs/terms-of-service-draft.md:589] **�15 (GDPR)** � Whether a formal DPA and EU representative are required given user scale
+- [ ] [docs/terms-of-service-draft.md:590] **�15 (CCPA)** � Confirm California-specific language meets current CPRA requirements
+- [ ] [docs/terms-of-service-draft.md:591] Entire document � Compliance with any new state-level consumer protection laws (Virginia VCDPA, Colorado CPA, Connecticut CTDPA, etc.)
+- [ ] [docs/travel-route-planning.md:225] Apply migration `20260303000020` to remote Supabase
+- [ ] [docs/travel-route-planning.md:226] Navigate to any event ? "Travel Plan" button appears
+- [ ] [docs/travel-route-planning.md:227] `/events/[id]/travel` loads with TravelPlanClient
+- [ ] [docs/travel-route-planning.md:228] Add a `specialty_sourcing` leg � link 2 ingredients, mark one sourced
+- [ ] [docs/travel-route-planning.md:229] Generate grocery list ? sourced ingredient appears in PRE-SOURCED section (pre-checked)
+- [ ] [docs/travel-route-planning.md:230] Add a `grocery_shopping` leg on the day before the event � timeline loses the day-of shopping blocks
+- [ ] [docs/travel-route-planning.md:231] Add a `service_travel` leg with a departure time � timeline departure uses leg's `total_estimated_minutes`
+- [ ] [docs/travel-route-planning.md:232] Navigate to `/travel` � global weekly view shows all legs
+- [ ] [docs/travel-route-planning.md:233] Hit `?type=travel` on document API � PDF generates with one page per leg
+- [ ] [docs/travel-route-planning.md:234] Run `npx tsc --noEmit` � no TypeScript errors
+- [ ] [docs/testing-roadmap.md:21] Stripe webhook handler (`/api/webhooks/stripe`) � signature verification
+- [ ] [docs/testing-roadmap.md:22] Payment success webhook ? ledger entry + event status update
+- [ ] [docs/testing-roadmap.md:23] Refund webhook handling
+- [ ] [docs/testing-roadmap.md:24] Failed payment webhook handling
+- [ ] [docs/testing-roadmap.md:25] Stripe Connect OAuth callback (`/api/stripe/connect/callback`)
+- [ ] [docs/testing-roadmap.md:26] Connect account verification status
+- [ ] [docs/testing-roadmap.md:27] Payment page renders with Stripe Elements
+- [ ] [docs/testing-roadmap.md:28] Checkout flow end-to-end (create payment intent ? confirm ? success)
+- [ ] [docs/testing-roadmap.md:29] Invoice creation ? send ? payment recording
+- [ ] [docs/testing-roadmap.md:30] Invoice status transitions (draft ? sent ? paid)
+- [ ] [docs/testing-roadmap.md:31] Partial payment handling
+- [ ] [docs/testing-roadmap.md:32] Payment receipt generation
+- [ ] [docs/testing-roadmap.md:36] Inquiry confirmation email sends on submission
+- [ ] [docs/testing-roadmap.md:37] Quote email sends when chef shares quote
+- [ ] [docs/testing-roadmap.md:38] Payment receipt email
+- [ ] [docs/testing-roadmap.md:39] Event confirmation email
+- [ ] [docs/testing-roadmap.md:40] Resend webhook handler (`/api/webhooks/resend`)
+- [ ] [docs/testing-roadmap.md:41] Email bounce handling
+- [ ] [docs/testing-roadmap.md:42] Email template rendering with real data
+- [ ] [docs/testing-roadmap.md:43] Marketing email (push dinner campaign)
+- [ ] [docs/testing-roadmap.md:47] Day-of Plan PDF (`/api/documents/day-of-plan`)
+- [ ] [docs/testing-roadmap.md:48] Packing List PDF
+- [ ] [docs/testing-roadmap.md:49] Grocery List PDF
+- [ ] [docs/testing-roadmap.md:50] Invoice PDF
+- [ ] [docs/testing-roadmap.md:51] Contract PDF
+- [ ] [docs/testing-roadmap.md:52] Receipt PDF
+- [ ] [docs/testing-roadmap.md:53] Quote PDF
+- [ ] [docs/testing-roadmap.md:54] AAR/Debrief PDF
+- [ ] [docs/testing-roadmap.md:55] PDF download triggers and file integrity
+- [ ] [docs/testing-roadmap.md:59] Staff login page renders (`/staff-login`)
+- [ ] [docs/testing-roadmap.md:60] Staff authentication (separate from chef auth)
+- [ ] [docs/testing-roadmap.md:61] Staff dashboard (`/app/(staff)/staff-dashboard`)
+- [ ] [docs/testing-roadmap.md:62] Staff tasks page � view assigned tasks
+- [ ] [docs/testing-roadmap.md:63] Staff station page � station clipboard
+- [ ] [docs/testing-roadmap.md:64] Staff recipes page � read-only recipe access
+- [ ] [docs/testing-roadmap.md:65] Staff schedule page � shift viewing
+- [ ] [docs/testing-roadmap.md:66] Staff task completion + accountability logging
+- [ ] [docs/testing-roadmap.md:70] Account deletion initiation (`/settings/delete-account`)
+- [ ] [docs/testing-roadmap.md:71] 30-day grace period enforcement
+- [ ] [docs/testing-roadmap.md:72] Data export (JSON download)
+- [ ] [docs/testing-roadmap.md:73] Reactivation during grace period (`/reactivate-account`)
+- [ ] [docs/testing-roadmap.md:74] 7-year financial retention compliance
+- [ ] [docs/testing-roadmap.md:75] Client data deletion request handling
+- [ ] [docs/testing-roadmap.md:85] Keyboard navigation � all interactive elements reachable via Tab
+- [ ] [docs/testing-roadmap.md:86] Focus management � modals trap focus, return focus on close
+- [ ] [docs/testing-roadmap.md:87] ARIA labels on buttons, inputs, and interactive elements
+- [ ] [docs/testing-roadmap.md:88] Screen reader compatibility (landmark roles, headings hierarchy)
+- [ ] [docs/testing-roadmap.md:89] Color contrast (WCAG AA minimum)
+- [ ] [docs/testing-roadmap.md:90] Form label associations
+- [ ] [docs/testing-roadmap.md:91] Error message association with fields
+- [ ] [docs/testing-roadmap.md:92] Skip-to-content link
+- [ ] [docs/testing-roadmap.md:93] All pages pass axe-core automated scan
+- [ ] [docs/testing-roadmap.md:97] CSP headers present and correct
+- [ ] [docs/testing-roadmap.md:98] XSS prevention � script injection in form fields rejected
+- [ ] [docs/testing-roadmap.md:99] CSRF tokens on mutating endpoints
+- [ ] [docs/testing-roadmap.md:100] Rate limiting on login endpoint
+- [ ] [docs/testing-roadmap.md:101] Rate limiting on API endpoints
+- [ ] [docs/testing-roadmap.md:102] SQL injection prevention (Supabase RLS verification)
+- [ ] [docs/testing-roadmap.md:103] Sensitive headers not leaked (X-Powered-By, server info)
+- [ ] [docs/testing-roadmap.md:104] Auth token expiration and refresh
+- [ ] [docs/testing-roadmap.md:105] Session fixation prevention
+- [ ] [docs/testing-roadmap.md:109] Firefox � core flows (auth, dashboard, event create)
+- [ ] [docs/testing-roadmap.md:110] WebKit/Safari � core flows
+- [ ] [docs/testing-roadmap.md:111] Edge � core flows
+- [ ] [docs/testing-roadmap.md:112] Mobile Safari viewport behavior
+- [ ] [docs/testing-roadmap.md:113] Mobile Chrome viewport behavior
+- [ ] [docs/testing-roadmap.md:117] Two sessions editing same event � last-write-wins behavior
+- [ ] [docs/testing-roadmap.md:118] Duplicate form submission prevention (double-click guard)
+- [ ] [docs/testing-roadmap.md:119] Optimistic update rollback on conflict
+- [ ] [docs/testing-roadmap.md:120] Real-time subscription reconnection after disconnect
+- [ ] [docs/testing-roadmap.md:130] AI Pricing Intelligence panel renders
+- [ ] [docs/testing-roadmap.md:131] AI Allergen Risk Matrix panel renders
+- [ ] [docs/testing-roadmap.md:132] AI Menu Nutritional Summary panel renders
+- [ ] [docs/testing-roadmap.md:133] AI Staff Briefing panel renders
+- [ ] [docs/testing-roadmap.md:134] AI Prep Timeline panel renders
+- [ ] [docs/testing-roadmap.md:135] AI Service Timeline panel renders
+- [ ] [docs/testing-roadmap.md:136] AI Grocery List Consolidation panel renders
+- [ ] [docs/testing-roadmap.md:137] AI Temperature Anomaly Detection panel renders
+- [ ] [docs/testing-roadmap.md:138] AI Contract Generator panel renders
+- [ ] [docs/testing-roadmap.md:139] AI AAR Generator panel renders
+- [ ] [docs/testing-roadmap.md:140] AI Review Request Drafter panel renders
+- [ ] [docs/testing-roadmap.md:141] AI Gratuity Framing panel renders
+- [ ] [docs/testing-roadmap.md:142] AI Social Media Captions panel renders
+- [ ] [docs/testing-roadmap.md:143] Ollama offline ? clear error message shown
+- [ ] [docs/testing-roadmap.md:144] Ollama timeout ? graceful failure
+- [ ] [docs/testing-roadmap.md:148] Conversation persistence in IndexedDB
+- [ ] [docs/testing-roadmap.md:149] Project create/rename/delete
+- [ ] [docs/testing-roadmap.md:150] Message bookmarking
+- [ ] [docs/testing-roadmap.md:151] Conversation archive/pin
+- [ ] [docs/testing-roadmap.md:152] Search across conversations
+- [ ] [docs/testing-roadmap.md:153] Export (Markdown + JSON)
+- [ ] [docs/testing-roadmap.md:154] Templates CRUD
+- [ ] [docs/testing-roadmap.md:155] Voice input (Web Speech API)
+- [ ] [docs/testing-roadmap.md:156] Culinary profile setup
+- [ ] [docs/testing-roadmap.md:160] Widget JS loads in iframe
+- [ ] [docs/testing-roadmap.md:161] Inline mode renders form
+- [ ] [docs/testing-roadmap.md:162] Popup mode opens overlay
+- [ ] [docs/testing-roadmap.md:163] Form submission creates inquiry + client + draft event
+- [ ] [docs/testing-roadmap.md:164] CORS headers correct for cross-origin
+- [ ] [docs/testing-roadmap.md:165] Rate limiting on embed API
+- [ ] [docs/testing-roadmap.md:166] Honeypot spam protection works
+- [ ] [docs/testing-roadmap.md:170] KDS page renders (`/events/[id]/kds`)
+- [ ] [docs/testing-roadmap.md:171] Course progression (fire ? plating ? served)
+- [ ] [docs/testing-roadmap.md:172] Course timing display
+- [ ] [docs/testing-roadmap.md:176] All 7 views render (month, day, week, year, share, schedule, waitlist)
+- [ ] [docs/testing-roadmap.md:177] Prep block creation
+- [ ] [docs/testing-roadmap.md:178] Entry modal interactions
+- [ ] [docs/testing-roadmap.md:179] Calendar sharing token generation
+- [ ] [docs/testing-roadmap.md:183] Brain Dump mode
+- [ ] [docs/testing-roadmap.md:184] CSV/Spreadsheet import
+- [ ] [docs/testing-roadmap.md:185] Past Events import
+- [ ] [docs/testing-roadmap.md:186] Import Inquiries
+- [ ] [docs/testing-roadmap.md:187] Import Clients
+- [ ] [docs/testing-roadmap.md:188] Import Recipe
+- [ ] [docs/testing-roadmap.md:189] Import Receipt
+- [ ] [docs/testing-roadmap.md:190] Import Document
+- [ ] [docs/testing-roadmap.md:194] Admin panel full access
+- [ ] [docs/testing-roadmap.md:195] Simulation lab (`/dev/simulate`)
+- [ ] [docs/testing-roadmap.md:196] Prospecting module � lead scrubbing, call queue
+- [ ] [docs/testing-roadmap.md:200] Notifications page renders
+- [ ] [docs/testing-roadmap.md:201] Mark as read
+- [ ] [docs/testing-roadmap.md:202] Filter by type
+- [ ] [docs/testing-roadmap.md:203] Bulk actions
+- [ ] [docs/testing-roadmap.md:207] Task creation from templates
+- [ ] [docs/testing-roadmap.md:208] Task completion with accountability
+- [ ] [docs/testing-roadmap.md:209] Task reassignment
+- [ ] [docs/testing-roadmap.md:210] Template CRUD
+- [ ] [docs/testing-roadmap.md:214] Shelf life color coding logic
+- [ ] [docs/testing-roadmap.md:215] 86 toggle (mark items unavailable)
+- [ ] [docs/testing-roadmap.md:216] Par level validations
+- [ ] [docs/testing-roadmap.md:217] Waste log calculations
+- [ ] [docs/testing-roadmap.md:218] Order sheet generation
+- [ ] [docs/testing-roadmap.md:226] Tax sub-pages (mileage, quarterly estimates, 1099, depreciation, home office, retirement)
+- [ ] [docs/testing-roadmap.md:227] Payroll features
+- [ ] [docs/testing-roadmap.md:228] Contractor management
+- [ ] [docs/testing-roadmap.md:229] Bank feed integration
+- [ ] [docs/testing-roadmap.md:230] Goals & financial planning
+- [ ] [docs/testing-roadmap.md:231] P&L statement generation
+- [ ] [docs/testing-roadmap.md:232] Break-even calculator
+- [ ] [docs/testing-roadmap.md:236] Custom report builder
+- [ ] [docs/testing-roadmap.md:237] Benchmark comparisons
+- [ ] [docs/testing-roadmap.md:238] Pipeline forecasting
+- [ ] [docs/testing-roadmap.md:239] Demand heatmap
+- [ ] [docs/testing-roadmap.md:240] Client LTV projections
+- [ ] [docs/testing-roadmap.md:241] Referral attribution
+- [ ] [docs/testing-roadmap.md:242] Funnel conversion
+- [ ] [docs/testing-roadmap.md:246] Push dinner campaign creation
+- [ ] [docs/testing-roadmap.md:247] Email sequence builder
+- [ ] [docs/testing-roadmap.md:248] Social post scheduling
+- [ ] [docs/testing-roadmap.md:249] Media vault upload
+- [ ] [docs/testing-roadmap.md:250] Platform connections
+- [ ] [docs/testing-roadmap.md:254] Community feed (posts, comments, reactions)
+- [ ] [docs/testing-roadmap.md:255] Channel subscriptions
+- [ ] [docs/testing-roadmap.md:256] Direct messaging
+- [ ] [docs/testing-roadmap.md:257] Follow/unfollow
+- [ ] [docs/testing-roadmap.md:261] Cannabis vertical (6 pages)
+- [ ] [docs/testing-roadmap.md:262] Games (6 games)
+- [ ] [docs/testing-roadmap.md:263] Help center
+- [ ] [docs/testing-roadmap.md:264] Dark mode toggle
+- [ ] [docs/testing-roadmap.md:265] Guest CRM
+- [ ] [docs/testing-roadmap.md:266] Loyalty program advanced (tiers, redemption)
+- [ ] [docs/testing-roadmap.md:267] Vendor invoice OCR
+- [ ] [docs/testing-roadmap.md:268] Travel & operations
+- [ ] [docs/testing-roadmap.md:274] Lighthouse scores on key pages (Performance, A11y, Best Practices, SEO)
+- [ ] [docs/testing-roadmap.md:275] Core Web Vitals (LCP, FID, CLS) on landing page
+- [ ] [docs/testing-roadmap.md:276] Bundle size audit
+- [ ] [docs/testing-roadmap.md:277] Large dataset pagination (1000+ records)
+- [ ] [docs/testing-roadmap.md:278] Image optimization verification
+- [ ] [docs/testing-roadmap.md:279] Database query performance (N+1 detection)
+- [ ] [docs/test-coverage-todo.md:25] `lib/auth/get-user.ts` � `requireChef()`, `requireClient()`, `requireAuth()` role resolution
+- [ ] [docs/test-coverage-todo.md:26] `lib/auth/admin.ts` � `isAdmin()`, `requireAdmin()` checks
+- [ ] [docs/test-coverage-todo.md:37] `lib/oauth/actions.ts` � OAuth flow actions
+- [ ] [docs/test-coverage-todo.md:38] `lib/oauth/code-flow.ts` � authorization code exchange
+- [ ] [docs/test-coverage-todo.md:39] `lib/oauth/github.ts` � GitHub OAuth provider
+- [ ] [docs/test-coverage-todo.md:40] `lib/oauth/google.ts` � Google OAuth provider
+- [ ] [docs/test-coverage-todo.md:41] `lib/oauth/jwt.ts` � JWT generation, validation, expiry
+- [ ] [docs/test-coverage-todo.md:42] `lib/oauth/supabase-provider.ts` � Supabase auth provider wrapper
+- [ ] [docs/test-coverage-todo.md:46] `lib/billing/tier.ts` � tier resolution logic (Free vs Pro)
+- [ ] [docs/test-coverage-todo.md:47] `lib/billing/require-pro.ts` � `requirePro()` enforcement, admin bypass
+- [ ] [docs/test-coverage-todo.md:48] `lib/billing/modules.ts` � module slug mapping, definitions
+- [ ] [docs/test-coverage-todo.md:49] `lib/billing/pro-features.ts` � Pro feature registry
+- [ ] [docs/test-coverage-todo.md:50] `lib/billing/module-actions.ts` � module toggle server actions
+- [ ] [docs/test-coverage-todo.md:51] `lib/billing/errors.ts` � billing error types
+- [ ] [docs/test-coverage-todo.md:55] `lib/crypto/hash.ts` � hash functions
+- [ ] [docs/test-coverage-todo.md:67] `lib/ledger/actions.ts` � ledger server actions
+- [ ] [docs/test-coverage-todo.md:71] `lib/stripe/actions.ts` � Stripe checkout, payment intent creation
+- [ ] [docs/test-coverage-todo.md:72] `lib/stripe/checkout.ts` � checkout session builder
+- [ ] [docs/test-coverage-todo.md:73] `lib/stripe/connect.ts` � Stripe Connect account management
+- [ ] [docs/test-coverage-todo.md:74] `lib/stripe/deferred-transfers.ts` � deferred transfer logic
+- [ ] [docs/test-coverage-todo.md:75] `lib/stripe/payout-actions.ts` � payout processing
+- [ ] [docs/test-coverage-todo.md:76] `lib/stripe/refund.ts` � refund processing
+- [ ] [docs/test-coverage-todo.md:77] `lib/stripe/subscription.ts` � subscription management
+- [ ] [docs/test-coverage-todo.md:78] `lib/stripe/transfer-routing.ts` � transfer routing logic
+- [ ] [docs/test-coverage-todo.md:82] `lib/payments/payment-flow.ts` � payment state machine
+- [ ] [docs/test-coverage-todo.md:83] `lib/payments/status-flow.ts` � payment status transitions
+- [ ] [docs/test-coverage-todo.md:84] `lib/payments/settlement-validator.ts` � settlement validation
+- [ ] [docs/test-coverage-todo.md:85] `lib/payments/ledger-sync.ts` � ledger synchronization
+- [ ] [docs/test-coverage-todo.md:86] `lib/payments/plan-selector.ts` � payment plan selection
+- [ ] [docs/test-coverage-todo.md:87] `lib/payments/quote-format.ts` � quote formatting for payments
+- [ ] [docs/test-coverage-todo.md:88] `lib/payments/performance.ts` � payment performance tracking
+- [ ] [docs/test-coverage-todo.md:89] `lib/payments/errors.ts` � payment error types
+- [ ] [docs/test-coverage-todo.md:90] `lib/payments/models.ts` � payment data models
+- [ ] [docs/test-coverage-todo.md:98] `lib/financials/balance-sheet.ts` � balance sheet generation
+- [ ] [docs/test-coverage-todo.md:99] `lib/financials/cash-flow.ts` � cash flow statement
+- [ ] [docs/test-coverage-todo.md:100] `lib/financials/income-statement.ts` � P&L computation
+- [ ] [docs/test-coverage-todo.md:101] `lib/financials/depreciation-engine.ts` � asset depreciation calculations
+- [ ] [docs/test-coverage-todo.md:102] `lib/financials/reports.ts` � financial report generation
+- [ ] [docs/test-coverage-todo.md:103] `lib/financials/tax-summary.ts` � tax summary computation
+- [ ] [docs/test-coverage-todo.md:107] `lib/finance/1099-actions.ts` � 1099 contractor tax reporting
+- [ ] [docs/test-coverage-todo.md:108] `lib/finance/bank-feed-actions.ts` � bank feed sync/reconciliation
+- [ ] [docs/test-coverage-todo.md:109] `lib/finance/break-even-actions.ts` � break-even analysis
+- [ ] [docs/test-coverage-todo.md:110] `lib/finance/cash-flow-actions.ts` � cash flow projections
+- [ ] [docs/test-coverage-todo.md:111] `lib/finance/cash-flow-calendar.ts` � calendar-based cash flow
+- [ ] [docs/test-coverage-todo.md:112] `lib/finance/chargeback-actions.ts` � chargeback handling
+- [ ] [docs/test-coverage-todo.md:113] `lib/finance/concentration-actions.ts` � revenue concentration risk
+- [ ] [docs/test-coverage-todo.md:114] `lib/finance/contractor-actions.ts` � contractor payment management
+- [ ] [docs/test-coverage-todo.md:115] `lib/finance/dispute-actions.ts` � payment dispute handling
+- [ ] [docs/test-coverage-todo.md:116] `lib/finance/export-actions.ts` � financial data export
+- [ ] [docs/test-coverage-todo.md:117] `lib/finance/mileage-actions.ts` � mileage deduction tracking
+- [ ] [docs/test-coverage-todo.md:118] `lib/finance/mileage-enhanced-actions.ts` � enhanced mileage calculations
+- [ ] [docs/test-coverage-todo.md:119] `lib/finance/payment-plan-actions.ts` � payment plan CRUD
+- [ ] [docs/test-coverage-todo.md:120] `lib/finance/payment-reminder-actions.ts` � payment reminder scheduling
+- [ ] [docs/test-coverage-todo.md:121] `lib/finance/payroll-actions.ts` � payroll processing
+- [ ] [docs/test-coverage-todo.md:122] `lib/finance/recurring-invoice-actions.ts` � recurring invoice generation
+- [ ] [docs/test-coverage-todo.md:123] `lib/finance/sales-tax-actions.ts` � sales tax calculation
+- [ ] [docs/test-coverage-todo.md:124] `lib/finance/tax-estimate-actions.ts` � quarterly tax estimation
+- [ ] [docs/test-coverage-todo.md:125] `lib/finance/tax-package.ts` � year-end tax package
+- [ ] [docs/test-coverage-todo.md:126] `lib/finance/tip-actions.ts` � tip/gratuity handling
+- [ ] [docs/test-coverage-todo.md:130] `lib/tax/actions.ts` � tax server actions
+- [ ] [docs/test-coverage-todo.md:131] `lib/tax/home-office-actions.ts` � home office deduction
+- [ ] [docs/test-coverage-todo.md:132] `lib/tax/retirement-actions.ts` � retirement contribution tracking
+- [ ] [docs/test-coverage-todo.md:133] `lib/tax/api-ninjas.ts` � API Ninjas tax data integration
+- [ ] [docs/test-coverage-todo.md:137] `lib/expenses/actions.ts` � expense CRUD
+- [ ] [docs/test-coverage-todo.md:138] `lib/expenses/receipt-actions.ts` � receipt processing
+- [ ] [docs/test-coverage-todo.md:139] `lib/expenses/receipt-upload.ts` � receipt upload handling
+- [ ] [docs/test-coverage-todo.md:140] `lib/expenses/mileage-calculator.ts` � mileage calculation formulas
+- [ ] [docs/test-coverage-todo.md:141] `lib/expenses/receipt-parsing-engine.ts` � receipt OCR/parsing
+- [ ] [docs/test-coverage-todo.md:142] `lib/expenses/receipt-classifier.ts` � receipt categorization
+- [ ] [docs/test-coverage-todo.md:143] `lib/expenses/receipt-vendor-classifier.ts` � vendor identification from receipts
+- [ ] [docs/test-coverage-todo.md:144] `lib/expenses/details-parser.ts` � expense detail extraction
+- [ ] [docs/test-coverage-todo.md:145] `lib/expenses/ocr-backup-pipeline.ts` � OCR fallback pipeline
+- [ ] [docs/test-coverage-todo.md:149] `lib/expense-categories/actions.ts` � category CRUD
+- [ ] [docs/test-coverage-todo.md:150] `lib/expense-categories/categorizer-engine.ts` � auto-categorization engine
+- [ ] [docs/test-coverage-todo.md:151] `lib/expense-categories/merchant-mapper.ts` � merchant-to-category mapping
+- [ ] [docs/test-coverage-todo.md:155] `lib/cost-of-goods/cost-engine.ts` � COGS calculation engine
+- [ ] [docs/test-coverage-todo.md:156] `lib/cost-of-goods/cost-utils.ts` � cost utility functions
+- [ ] [docs/test-coverage-todo.md:157] `lib/cost-of-goods/margin-engine.ts` � margin calculation engine
+- [ ] [docs/test-coverage-todo.md:158] `lib/cost-of-goods/supplier-cost-matrix.ts` � supplier cost comparison
+- [ ] [docs/test-coverage-todo.md:162] `lib/cancellation/refund-actions.ts` � refund processing
+- [ ] [docs/test-coverage-todo.md:163] `lib/cancellation/policy.ts` � cancellation policy engine
+- [ ] [docs/test-coverage-todo.md:173] `lib/events/actions.ts` � event CRUD server actions
+- [ ] [docs/test-coverage-todo.md:174] `lib/events/carry-forward.ts` � event carry-forward logic
+- [ ] [docs/test-coverage-todo.md:175] `lib/events/readiness.ts` � event readiness scoring
+- [ ] [docs/test-coverage-todo.md:176] `lib/events/event-audit.ts` � event audit trail
+- [ ] [docs/test-coverage-todo.md:177] `lib/events/event-formatter.ts` � event data formatting
+- [ ] [docs/test-coverage-todo.md:178] `lib/events/export-ics.ts` � iCalendar export
+- [ ] [docs/test-coverage-todo.md:179] `lib/events/guest-capacity.ts` � guest capacity calculations
+- [ ] [docs/test-coverage-todo.md:180] `lib/events/guest-flow-estimator.ts` � guest flow timing estimation
+- [ ] [docs/test-coverage-todo.md:181] `lib/events/location-parser.ts` � address/location parsing
+- [ ] [docs/test-coverage-todo.md:182] `lib/events/menu-format.ts` � menu format rendering
+- [ ] [docs/test-coverage-todo.md:183] `lib/events/search-index.ts` � event search indexing
+- [ ] [docs/test-coverage-todo.md:184] `lib/events/staffing-matrix.ts` � staff requirement matrix
+- [ ] [docs/test-coverage-todo.md:185] `lib/events/status-helpers.ts` � event status utilities
+- [ ] [docs/test-coverage-todo.md:186] `lib/events/site-visit-template.ts` � site visit template generation
+- [ ] [docs/test-coverage-todo.md:190] `lib/events/alcohol-log-actions.ts` � alcohol consumption tracking
+- [ ] [docs/test-coverage-todo.md:191] `lib/events/client-actions.ts` � event-client relationship actions
+- [ ] [docs/test-coverage-todo.md:192] `lib/events/clone-actions.ts` � event cloning/duplication
+- [ ] [docs/test-coverage-todo.md:193] `lib/events/countdown-actions.ts` � event countdown timer
+- [ ] [docs/test-coverage-todo.md:194] `lib/events/cross-contamination-actions.ts` � allergen cross-contamination checks
+- [ ] [docs/test-coverage-todo.md:195] `lib/events/debrief-actions.ts` � post-event debrief
+- [ ] [docs/test-coverage-todo.md:196] `lib/events/dietary-conflict-actions.ts` � dietary conflict detection
+- [ ] [docs/test-coverage-todo.md:197] `lib/events/equipment-checklist-actions.ts` � equipment checklist management
+- [ ] [docs/test-coverage-todo.md:198] `lib/events/financial-summary-actions.ts` � per-event financial summary
+- [ ] [docs/test-coverage-todo.md:199] `lib/events/fire-order.ts` � kitchen fire order/timing
+- [ ] [docs/test-coverage-todo.md:200] `lib/events/geocoding-actions.ts` � address geocoding
+- [ ] [docs/test-coverage-todo.md:201] `lib/events/historical-import-actions.ts` � historical event import
+- [ ] [docs/test-coverage-todo.md:202] `lib/events/invoice-actions.ts` � invoice generation
+- [ ] [docs/test-coverage-todo.md:203] `lib/events/menu-approval-actions.ts` � menu approval workflow
+- [ ] [docs/test-coverage-todo.md:204] `lib/events/offline-payment-actions.ts` � offline payment recording
+- [ ] [docs/test-coverage-todo.md:205] `lib/events/parse-event-from-text.ts` � NLP event parsing
+- [ ] [docs/test-coverage-todo.md:206] `lib/events/photo-actions.ts` � event photo management
+- [ ] [docs/test-coverage-todo.md:207] `lib/events/photo-tagging-actions.ts` � photo tagging/labeling
+- [ ] [docs/test-coverage-todo.md:208] `lib/events/pre-event-checklist-actions.ts` � pre-event checklist
+- [ ] [docs/test-coverage-todo.md:209] `lib/events/safety-checklist-actions.ts` � safety checklist
+- [ ] [docs/test-coverage-todo.md:210] `lib/events/scope-drift.ts` � scope drift detection engine
+- [ ] [docs/test-coverage-todo.md:211] `lib/events/scope-drift-actions.ts` � scope drift server actions
+- [ ] [docs/test-coverage-todo.md:220] `lib/pricing/dynamic-pricing.ts` � dynamic/demand-based pricing
+- [ ] [docs/test-coverage-todo.md:221] `lib/pricing/margin-calculator.ts` � margin calculations
+- [ ] [docs/test-coverage-todo.md:222] `lib/pricing/payment-plan-builder.ts` � payment plan construction
+- [ ] [docs/test-coverage-todo.md:223] `lib/pricing/tier-engine.ts` � pricing tier resolution
+- [ ] [docs/test-coverage-todo.md:224] `lib/pricing/currency.ts` � currency formatting/conversion
+- [ ] [docs/test-coverage-todo.md:228] `lib/quotes/actions.ts` � quote CRUD
+- [ ] [docs/test-coverage-todo.md:229] `lib/quotes/calculator.ts` � quote total calculation
+- [ ] [docs/test-coverage-todo.md:230] `lib/quotes/client-actions.ts` � client-facing quote actions
+- [ ] [docs/test-coverage-todo.md:231] `lib/quotes/depreciation.ts` � equipment depreciation in quotes
+- [ ] [docs/test-coverage-todo.md:232] `lib/quotes/formatter.ts` � quote display formatting
+- [ ] [docs/test-coverage-todo.md:233] `lib/quotes/loss-analysis-actions.ts` � lost quote analysis
+- [ ] [docs/test-coverage-todo.md:234] `lib/quotes/menu-breakdown.ts` � per-dish menu cost breakdown
+- [ ] [docs/test-coverage-todo.md:235] `lib/quotes/proposal-builder.ts` � proposal document builder
+- [ ] [docs/test-coverage-todo.md:236] `lib/quotes/staffing-suggestion.ts` � staffing recommendations
+- [ ] [docs/test-coverage-todo.md:237] `lib/quotes/tax-calculator.ts` � tax calculations on quotes
+- [ ] [docs/test-coverage-todo.md:241] `lib/proposals/addon-actions.ts` � proposal add-on management
+- [ ] [docs/test-coverage-todo.md:242] `lib/proposals/builder.ts` � proposal builder engine
+- [ ] [docs/test-coverage-todo.md:243] `lib/proposals/format-proposal.ts` � proposal formatting
+- [ ] [docs/test-coverage-todo.md:244] `lib/proposals/generators.ts` � proposal content generators
+- [ ] [docs/test-coverage-todo.md:245] `lib/proposals/overview-generator.ts` � proposal overview generation
+- [ ] [docs/test-coverage-todo.md:246] `lib/proposals/smart-field-actions.ts` � smart field auto-fill
+- [ ] [docs/test-coverage-todo.md:247] `lib/proposals/template-actions.ts` � proposal template management
+- [ ] [docs/test-coverage-todo.md:248] `lib/proposals/view-tracking-actions.ts` � proposal view analytics
+- [ ] [docs/test-coverage-todo.md:256] `lib/clients/actions.ts` � client CRUD
+- [ ] [docs/test-coverage-todo.md:257] `lib/clients/scoring.ts` � client scoring algorithm
+- [ ] [docs/test-coverage-todo.md:258] `lib/clients/churn-score.ts` � churn risk scoring
+- [ ] [docs/test-coverage-todo.md:259] `lib/clients/health-score.ts` � client health computation
+- [ ] [docs/test-coverage-todo.md:260] `lib/clients/health-score-utils.ts` � health score helpers
+- [ ] [docs/test-coverage-todo.md:261] `lib/clients/deduplication.ts` � client deduplication matching
+- [ ] [docs/test-coverage-todo.md:262] `lib/clients/completeness.ts` � profile completeness calculation
+- [ ] [docs/test-coverage-todo.md:263] `lib/clients/lead-quality.ts` � lead quality scoring
+- [ ] [docs/test-coverage-todo.md:264] `lib/clients/lead-target-calc.ts` � lead target calculations
+- [ ] [docs/test-coverage-todo.md:265] `lib/clients/ltv-trajectory.ts` � lifetime value trajectory
+- [ ] [docs/test-coverage-todo.md:266] `lib/clients/profitability.ts` � client profitability analysis
+- [ ] [docs/test-coverage-todo.md:267] `lib/clients/overlap-detector.ts` � scheduling overlap detection
+- [ ] [docs/test-coverage-todo.md:268] `lib/clients/portfolio-quality.ts` � portfolio quality metrics
+- [ ] [docs/test-coverage-todo.md:269] `lib/clients/reactivation.ts` � dormant client reactivation
+- [ ] [docs/test-coverage-todo.md:270] `lib/clients/traction-analytics.ts` � client traction analytics
+- [ ] [docs/test-coverage-todo.md:271] `lib/clients/segments.ts` � client segmentation
+- [ ] [docs/test-coverage-todo.md:272] `lib/clients/birthday-alerts.ts` � birthday alert generation
+- [ ] [docs/test-coverage-todo.md:273] `lib/clients/cooling-actions.ts` � cooling period enforcement
+- [ ] [docs/test-coverage-todo.md:274] `lib/clients/dormancy.ts` � dormancy detection
+- [ ] [docs/test-coverage-todo.md:275] `lib/clients/milestones.ts` � client milestone tracking
+- [ ] [docs/test-coverage-todo.md:276] `lib/clients/referral-tree.ts` � referral tree graph
+- [ ] [docs/test-coverage-todo.md:277] `lib/clients/unified-timeline.ts` � unified client timeline
+- [ ] [docs/test-coverage-todo.md:278] `lib/clients/unified-timeline-utils.ts` � timeline utilities
+- [ ] [docs/test-coverage-todo.md:279] `lib/clients/client-profile-actions.ts` � profile update actions
+- [ ] [docs/test-coverage-todo.md:280] `lib/clients/import-actions.ts` � client import/CSV
+- [ ] [docs/test-coverage-todo.md:281] `lib/clients/menu-history.ts` � per-client menu history
+- [ ] [docs/test-coverage-todo.md:282] `lib/clients/nda-actions.ts` � NDA management
+- [ ] [docs/test-coverage-todo.md:283] `lib/clients/payment-plan-actions.ts` � client payment plans
+- [ ] [docs/test-coverage-todo.md:284] `lib/clients/photo-actions.ts` � client photo management
+- [ ] [docs/test-coverage-todo.md:285] `lib/clients/preference-learning-actions.ts` � preference learning
+- [ ] [docs/test-coverage-todo.md:286] `lib/clients/referral-health-actions.ts` � referral health tracking
+- [ ] [docs/test-coverage-todo.md:287] `lib/clients/spending-actions.ts` � client spending analysis
+- [ ] [docs/test-coverage-todo.md:288] `lib/clients/tag-actions.ts` � client tagging
+- [ ] [docs/test-coverage-todo.md:289] `lib/clients/cannabis-client-actions.ts` � cannabis client management
+- [ ] [docs/test-coverage-todo.md:293] `lib/inquiries/actions.ts` � inquiry CRUD
+- [ ] [docs/test-coverage-todo.md:294] `lib/inquiries/client-actions.ts` � inquiry-to-client conversion
+- [ ] [docs/test-coverage-todo.md:295] `lib/inquiries/follow-up-actions.ts` � follow-up scheduling
+- [ ] [docs/test-coverage-todo.md:296] `lib/inquiries/import-actions.ts` � inquiry import
+- [ ] [docs/test-coverage-todo.md:297] `lib/inquiries/likelihood-actions.ts` � booking likelihood scoring
+- [ ] [docs/test-coverage-todo.md:298] `lib/inquiries/note-actions.ts` � inquiry notes
+- [ ] [docs/test-coverage-todo.md:299] `lib/inquiries/public-actions.ts` � public inquiry submission
+- [ ] [docs/test-coverage-todo.md:300] `lib/inquiries/take-a-chef-capture-actions.ts` � Take-a-Chef import
+- [ ] [docs/test-coverage-todo.md:301] `lib/inquiries/enrichment.ts` � inquiry data enrichment
+- [ ] [docs/test-coverage-todo.md:302] `lib/inquiries/intent-parser.ts` � inquiry intent parsing
+- [ ] [docs/test-coverage-todo.md:303] `lib/inquiries/formats.ts` � inquiry format helpers
+- [ ] [docs/test-coverage-todo.md:311] `lib/recipes/actions.ts` � recipe CRUD
+- [ ] [docs/test-coverage-todo.md:312] `lib/recipes/allergen-actions.ts` � allergen detection
+- [ ] [docs/test-coverage-todo.md:313] `lib/recipes/bulk-price-actions.ts` � bulk ingredient price write-back
+- [ ] [docs/test-coverage-todo.md:314] `lib/recipes/nutrition-actions.ts` � nutritional info
+- [ ] [docs/test-coverage-todo.md:315] `lib/recipes/cost-calculator.ts` � recipe cost calculation
+- [ ] [docs/test-coverage-todo.md:316] `lib/recipes/ingredient-parser.ts` � ingredient text parsing
+- [ ] [docs/test-coverage-todo.md:317] `lib/recipes/scaling.ts` � recipe scaling math
+- [ ] [docs/test-coverage-todo.md:318] `lib/recipes/search-engine.ts` � recipe search
+- [ ] [docs/test-coverage-todo.md:322] `lib/menus/actions.ts` � menu CRUD
+- [ ] [docs/test-coverage-todo.md:323] `lib/menus/editor-actions.ts` � menu editor server actions
+- [ ] [docs/test-coverage-todo.md:324] `lib/menus/modifications.ts` � menu modification tracking
+- [ ] [docs/test-coverage-todo.md:325] `lib/menus/cost-breakdown.ts` � menu cost breakdown engine
+- [ ] [docs/test-coverage-todo.md:326] `lib/menus/format-parser.ts` � menu format parsing
+- [ ] [docs/test-coverage-todo.md:327] `lib/menus/ingredients-extractor.ts` � ingredient extraction from menus
+- [ ] [docs/test-coverage-todo.md:328] `lib/menus/parser-engine.ts` � menu text parser
+- [ ] [docs/test-coverage-todo.md:332] `lib/grocery/pricing-actions.ts` � multi-vendor grocery pricing
+- [ ] [docs/test-coverage-todo.md:333] `lib/grocery/instacart-actions.ts` � Instacart integration
+- [ ] [docs/test-coverage-todo.md:334] `lib/shopping/substitutions.ts` � ingredient substitution logic
+- [ ] [docs/test-coverage-todo.md:338] `lib/food-cost/actions.ts` � food cost actions
+- [ ] [docs/test-coverage-todo.md:339] `lib/food-cost/analyzer.ts` � food cost analysis engine
+- [ ] [docs/test-coverage-todo.md:340] `lib/food-cost/recipe-costing.ts` � per-recipe costing
+- [ ] [docs/test-coverage-todo.md:344] `lib/ingredients/pricing.ts` � ingredient pricing logic
+- [ ] [docs/test-coverage-todo.md:348] `lib/nutrition/actions.ts` � nutritional computation actions
+- [ ] [docs/test-coverage-todo.md:352] `lib/front-of-house/generateFrontOfHouseMenu.ts` � FOH menu PDF generation
+- [ ] [docs/test-coverage-todo.md:353] `lib/front-of-house/menuGeneratorService.ts` � menu generator service
+- [ ] [docs/test-coverage-todo.md:361] `lib/inventory/actions.ts` � inventory CRUD
+- [ ] [docs/test-coverage-todo.md:362] `lib/inventory/audit-actions.ts` � inventory audit
+- [ ] [docs/test-coverage-todo.md:363] `lib/inventory/batch-actions.ts` � batch tracking
+- [ ] [docs/test-coverage-todo.md:364] `lib/inventory/count-actions.ts` � physical count
+- [ ] [docs/test-coverage-todo.md:365] `lib/inventory/demand-forecast-actions.ts` � demand forecasting
+- [ ] [docs/test-coverage-todo.md:366] `lib/inventory/event-deduction-actions.ts` � auto-deduct from events
+- [ ] [docs/test-coverage-todo.md:367] `lib/inventory/location-actions.ts` � multi-location tracking
+- [ ] [docs/test-coverage-todo.md:368] `lib/inventory/price-cascade-actions.ts` � price cascade updates
+- [ ] [docs/test-coverage-todo.md:369] `lib/inventory/purchase-order-actions.ts` � PO management
+- [ ] [docs/test-coverage-todo.md:370] `lib/inventory/staff-meal-actions.ts` � staff meal deductions
+- [ ] [docs/test-coverage-todo.md:371] `lib/inventory/transaction-actions.ts` � inventory transactions
+- [ ] [docs/test-coverage-todo.md:372] `lib/inventory/variance-actions.ts` � variance analysis
+- [ ] [docs/test-coverage-todo.md:373] `lib/inventory/vendor-invoice-actions.ts` � vendor invoice matching
+- [ ] [docs/test-coverage-todo.md:374] `lib/inventory/waste-actions.ts` � waste tracking
+- [ ] [docs/test-coverage-todo.md:378] `lib/inventory/assignment-engine.ts` � ingredient assignment
+- [ ] [docs/test-coverage-todo.md:379] `lib/inventory/bulk-operations.ts` � bulk inventory ops
+- [ ] [docs/test-coverage-todo.md:380] `lib/inventory/capacity-calculator.ts` � storage capacity
+- [ ] [docs/test-coverage-todo.md:381] `lib/inventory/ledger.ts` � inventory ledger
+- [ ] [docs/test-coverage-todo.md:382] `lib/inventory/reorder-points.ts` � reorder point calculation
+- [ ] [docs/test-coverage-todo.md:383] `lib/inventory/split-optimizer.ts` � split optimization
+- [ ] [docs/test-coverage-todo.md:384] `lib/inventory/stock-valuation.ts` � stock valuation (FIFO/LIFO)
+- [ ] [docs/test-coverage-todo.md:385] `lib/inventory/unit-conversion.ts` � unit conversion engine
+- [ ] [docs/test-coverage-todo.md:389] `lib/vendors/actions.ts` � vendor CRUD
+- [ ] [docs/test-coverage-todo.md:390] `lib/vendors/invoice-actions.ts` � vendor invoice processing
+- [ ] [docs/test-coverage-todo.md:391] `lib/vendors/payment-aging-actions.ts` � AP aging
+- [ ] [docs/test-coverage-todo.md:392] `lib/vendors/payment-aging.ts` � aging calculation engine
+- [ ] [docs/test-coverage-todo.md:393] `lib/vendors/revenue-actions.ts` � vendor revenue tracking
+- [ ] [docs/test-coverage-todo.md:394] `lib/vendors/vendor-item-actions.ts` � vendor catalog items
+- [ ] [docs/test-coverage-todo.md:398] `lib/waste/actions.ts` � waste logging
+- [ ] [docs/test-coverage-todo.md:406] `lib/staff/actions.ts` � staff CRUD
+- [ ] [docs/test-coverage-todo.md:407] `lib/staff/availability-actions.ts` � staff availability
+- [ ] [docs/test-coverage-todo.md:408] `lib/staff/briefing-actions.ts` � staff briefing generation
+- [ ] [docs/test-coverage-todo.md:409] `lib/staff/clock-actions.ts` � time clock in/out
+- [ ] [docs/test-coverage-todo.md:410] `lib/staff/coc-actions.ts` � code of conduct
+- [ ] [docs/test-coverage-todo.md:411] `lib/staff/contractor-agreement-actions.ts` � contractor agreements
+- [ ] [docs/test-coverage-todo.md:412] `lib/staff/labor-dashboard-actions.ts` � labor metrics dashboard
+- [ ] [docs/test-coverage-todo.md:413] `lib/staff/onboarding-actions.ts` � staff onboarding
+- [ ] [docs/test-coverage-todo.md:414] `lib/staff/performance-actions.ts` � performance reviews
+- [ ] [docs/test-coverage-todo.md:415] `lib/staff/staff-portal-actions.ts` � staff portal access
+- [ ] [docs/test-coverage-todo.md:423] `lib/ai/parse-ollama.ts` � Ollama API calls, retry logic, timeout
+- [ ] [docs/test-coverage-todo.md:424] `lib/ai/parse.ts` � AI parsing router (Ollama vs Gemini)
+- [ ] [docs/test-coverage-todo.md:425] `lib/ai/ollama-errors.ts` � `OllamaOfflineError` handling
+- [ ] [docs/test-coverage-todo.md:426] `lib/ai/ollama-cache.ts` � Ollama response caching
+- [ ] [docs/test-coverage-todo.md:427] `lib/ai/ollama-health.ts` � Ollama health check
+- [ ] [docs/test-coverage-todo.md:428] `lib/ai/ollama-wake.ts` � Ollama wake-up trigger
+- [ ] [docs/test-coverage-todo.md:429] `lib/ai/llm-router.ts` � LLM model selection routing
+- [ ] [docs/test-coverage-todo.md:430] `lib/ai/providers.ts` � AI provider configuration
+- [ ] [docs/test-coverage-todo.md:431] `lib/ai/gemini-service.ts` � Gemini API service
+- [ ] [docs/test-coverage-todo.md:432] `lib/ai/with-ai-fallback.ts` � AI fallback wrapper
+- [ ] [docs/test-coverage-todo.md:433] `lib/ai/fallback-parsers.ts` � regex/heuristic fallback parsers
+- [ ] [docs/test-coverage-todo.md:437] `lib/ai/remy-personality.ts` � Remy personality system prompt
+- [ ] [docs/test-coverage-todo.md:438] `lib/ai/remy-guardrails.ts` � Remy safety guardrails
+- [ ] [docs/test-coverage-todo.md:439] `lib/ai/remy-classifier.ts` � intent classification
+- [ ] [docs/test-coverage-todo.md:440] `lib/ai/remy-archetypes.ts` � user archetype detection
+- [ ] [docs/test-coverage-todo.md:441] `lib/ai/remy-client-personality.ts` � client-facing personality
+- [ ] [docs/test-coverage-todo.md:442] `lib/ai/remy-public-personality.ts` � public page personality
+- [ ] [docs/test-coverage-todo.md:443] `lib/ai/remy-landing-personality.ts` � landing page personality
+- [ ] [docs/test-coverage-todo.md:444] `lib/ai/remy-input-validation.ts` � input sanitization
+- [ ] [docs/test-coverage-todo.md:445] `lib/ai/remy-abuse-actions.ts` � abuse detection/prevention
+- [ ] [docs/test-coverage-todo.md:446] `lib/ai/remy-welcome.ts` � welcome message generation
+- [ ] [docs/test-coverage-todo.md:450] `lib/ai/remy-actions.ts` � Remy server actions
+- [ ] [docs/test-coverage-todo.md:451] `lib/ai/remy-artifact-actions.ts` � artifact management
+- [ ] [docs/test-coverage-todo.md:452] `lib/ai/remy-conversation-actions.ts` � conversation management
+- [ ] [docs/test-coverage-todo.md:453] `lib/ai/remy-email-actions.ts` � email drafting
+- [ ] [docs/test-coverage-todo.md:454] `lib/ai/remy-memory-actions.ts` � conversation memory
+- [ ] [docs/test-coverage-todo.md:455] `lib/ai/remy-metrics.ts` � Remy usage metrics
+- [ ] [docs/test-coverage-todo.md:456] `lib/ai/remy-web-actions.ts` � web search integration
+- [ ] [docs/test-coverage-todo.md:457] `lib/ai/remy-context.ts` � context window builder
+- [ ] [docs/test-coverage-todo.md:458] `lib/ai/remy-client-context.ts` � client context builder
+- [ ] [docs/test-coverage-todo.md:459] `lib/ai/remy-public-context.ts` � public context builder
+- [ ] [docs/test-coverage-todo.md:460] `lib/ai/remy-emotion.ts` � emotion state machine
+- [ ] [docs/test-coverage-todo.md:461] `lib/ai/remy-body-state.ts` � body animation state
+- [ ] [docs/test-coverage-todo.md:462] `lib/ai/remy-eye-blink.ts` � eye blink animation timing
+- [ ] [docs/test-coverage-todo.md:463] `lib/ai/remy-sprite-loader.ts` � sprite sheet loader
+- [ ] [docs/test-coverage-todo.md:464] `lib/ai/remy-sprite-manifests.ts` � sprite manifest definitions
+- [ ] [docs/test-coverage-todo.md:465] `lib/ai/remy-visemes.ts` � lip-sync viseme mapping
+- [ ] [docs/test-coverage-todo.md:466] `lib/ai/remy-local-storage.ts` � IndexedDB conversation storage
+- [ ] [docs/test-coverage-todo.md:470] `lib/ai/parse-client.ts` � client info extraction
+- [ ] [docs/test-coverage-todo.md:471] `lib/ai/parse-clients-bulk.ts` � bulk client parsing
+- [ ] [docs/test-coverage-todo.md:472] `lib/ai/parse-inquiry.ts` � inquiry text parsing
+- [ ] [docs/test-coverage-todo.md:473] `lib/ai/parse-inquiries-bulk.ts` � bulk inquiry parsing
+- [ ] [docs/test-coverage-todo.md:474] `lib/ai/parse-recipe.ts` � recipe text parsing
+- [ ] [docs/test-coverage-todo.md:475] `lib/ai/parse-receipt.ts` � receipt OCR parsing
+- [ ] [docs/test-coverage-todo.md:476] `lib/ai/parse-transcript.ts` � call transcript parsing
+- [ ] [docs/test-coverage-todo.md:477] `lib/ai/parse-brain-dump.ts` � brain dump text parsing
+- [ ] [docs/test-coverage-todo.md:478] `lib/ai/parse-document-text.ts` � document text extraction
+- [ ] [docs/test-coverage-todo.md:479] `lib/ai/parse-document-vision.ts` � document image parsing
+- [ ] [docs/test-coverage-todo.md:480] `lib/ai/parse-csv-clients.ts` � CSV client import parsing
+- [ ] [docs/test-coverage-todo.md:481] `lib/ai/parse-csv-events.ts` � CSV event import parsing
+- [ ] [docs/test-coverage-todo.md:482] `lib/ai/parse-csv-inquiries.ts` � CSV inquiry import parsing
+- [ ] [docs/test-coverage-todo.md:486] `lib/ai/command-orchestrator.ts` � command routing, fail-fast guard
+- [ ] [docs/test-coverage-todo.md:487] `lib/ai/command-intent-parser.ts` � command intent extraction
+- [ ] [docs/test-coverage-todo.md:488] `lib/ai/command-task-descriptions.ts` � task description generation
+- [ ] [docs/test-coverage-todo.md:489] `lib/ai/command-types.ts` � command type definitions
+- [ ] [docs/test-coverage-todo.md:493] `lib/ai/lead-scoring.ts` � AI lead scoring
+- [ ] [docs/test-coverage-todo.md:494] `lib/ai/sentiment-analysis.ts` � sentiment analysis
+- [ ] [docs/test-coverage-todo.md:495] `lib/ai/business-insights.ts` � business insight generation
+- [ ] [docs/test-coverage-todo.md:496] `lib/ai/chat-insights.ts` � chat-based insights
+- [ ] [docs/test-coverage-todo.md:497] `lib/ai/pricing-intelligence.ts` � competitive pricing insights
+- [ ] [docs/test-coverage-todo.md:498] `lib/ai/analytics-actions.ts` � AI analytics actions
+- [ ] [docs/test-coverage-todo.md:502] `lib/ai/chef-bio.ts` � chef bio generation
+- [ ] [docs/test-coverage-todo.md:503] `lib/ai/quote-draft.ts` � quote draft generation
+- [ ] [docs/test-coverage-todo.md:504] `lib/ai/followup-draft.ts` � follow-up email drafts
+- [ ] [docs/test-coverage-todo.md:505] `lib/ai/contract-generator.ts` � contract generation
+- [ ] [docs/test-coverage-todo.md:506] `lib/ai/correspondence.ts` � correspondence drafting
+- [ ] [docs/test-coverage-todo.md:507] `lib/ai/social-captions.ts` � social media captions
+- [ ] [docs/test-coverage-todo.md:508] `lib/ai/review-request.ts` � review request generation
+- [ ] [docs/test-coverage-todo.md:509] `lib/ai/campaign-outreach.ts` � campaign outreach copy
+- [ ] [docs/test-coverage-todo.md:510] `lib/ai/gratuity-framing.ts` � gratuity suggestion framing
+- [ ] [docs/test-coverage-todo.md:511] `lib/ai/testimonial-selection.ts` � testimonial selection
+- [ ] [docs/test-coverage-todo.md:512] `lib/ai/staff-briefing-ai.ts` � staff briefing generation
+- [ ] [docs/test-coverage-todo.md:516] `lib/ai/allergen-risk.ts` � allergen risk assessment
+- [ ] [docs/test-coverage-todo.md:517] `lib/ai/contingency-ai.ts` � contingency plan generation
+- [ ] [docs/test-coverage-todo.md:518] `lib/ai/cross-monitor.ts` � cross-contamination monitoring
+- [ ] [docs/test-coverage-todo.md:519] `lib/ai/dietary-check-actions.ts` � dietary restriction checking
+- [ ] [docs/test-coverage-todo.md:520] `lib/ai/expense-categorizer.ts` � expense auto-categorization
+- [ ] [docs/test-coverage-todo.md:521] `lib/ai/grocery-consolidation.ts` � grocery list consolidation
+- [ ] [docs/test-coverage-todo.md:522] `lib/ai/grocery-quick-add-actions.ts` � quick grocery add
+- [ ] [docs/test-coverage-todo.md:523] `lib/ai/menu-nutritional.ts` � menu nutritional analysis
+- [ ] [docs/test-coverage-todo.md:524] `lib/ai/menu-suggestions.ts` � menu suggestions
+- [ ] [docs/test-coverage-todo.md:525] `lib/ai/permit-checklist.ts` � permit checklist generation
+- [ ] [docs/test-coverage-todo.md:526] `lib/ai/prep-timeline.ts` � prep timeline generation
+- [ ] [docs/test-coverage-todo.md:527] `lib/ai/prep-timeline-actions.ts` � prep timeline actions
+- [ ] [docs/test-coverage-todo.md:528] `lib/ai/recipe-scaling.ts` � recipe scaling assistance
+- [ ] [docs/test-coverage-todo.md:529] `lib/ai/service-timeline.ts` � service day timeline
+- [ ] [docs/test-coverage-todo.md:530] `lib/ai/tax-deduction-identifier.ts` � tax deduction identification
+- [ ] [docs/test-coverage-todo.md:531] `lib/ai/temp-log-anomaly.ts` � temperature log anomaly detection
+- [ ] [docs/test-coverage-todo.md:532] `lib/ai/vendor-comparison.ts` � vendor price comparison
+- [ ] [docs/test-coverage-todo.md:533] `lib/ai/equipment-depreciation-explainer.ts` � depreciation explanation
+- [ ] [docs/test-coverage-todo.md:534] `lib/ai/carry-forward-match.ts` � event carry-forward matching
+- [ ] [docs/test-coverage-todo.md:538] `lib/ai/agent-actions/calendar-actions.ts`
+- [ ] [docs/test-coverage-todo.md:539] `lib/ai/agent-actions/client-actions.ts`
+- [ ] [docs/test-coverage-todo.md:540] `lib/ai/agent-actions/draft-email-actions.ts`
+- [ ] [docs/test-coverage-todo.md:541] `lib/ai/agent-actions/event-actions.ts`
+- [ ] [docs/test-coverage-todo.md:542] `lib/ai/agent-actions/event-ops-actions.ts`
+- [ ] [docs/test-coverage-todo.md:543] `lib/ai/agent-actions/financial-call-actions.ts`
+- [ ] [docs/test-coverage-todo.md:544] `lib/ai/agent-actions/grocery-actions.ts`
+- [ ] [docs/test-coverage-todo.md:545] `lib/ai/agent-actions/inquiry-actions.ts`
+- [ ] [docs/test-coverage-todo.md:546] `lib/ai/agent-actions/intake-actions.ts`
+- [ ] [docs/test-coverage-todo.md:547] `lib/ai/agent-actions/menu-edit-actions.ts`
+- [ ] [docs/test-coverage-todo.md:548] `lib/ai/agent-actions/notes-tags-actions.ts`
+- [ ] [docs/test-coverage-todo.md:549] `lib/ai/agent-actions/operations-actions.ts`
+- [ ] [docs/test-coverage-todo.md:550] `lib/ai/agent-actions/proactive-actions.ts`
+- [ ] [docs/test-coverage-todo.md:551] `lib/ai/agent-actions/quote-actions.ts`
+- [ ] [docs/test-coverage-todo.md:552] `lib/ai/agent-actions/recipe-actions.ts`
+- [ ] [docs/test-coverage-todo.md:553] `lib/ai/agent-actions/restricted-actions.ts`
+- [ ] [docs/test-coverage-todo.md:554] `lib/ai/agent-actions/staff-actions.ts`
+- [ ] [docs/test-coverage-todo.md:558] `lib/ai/queue/actions.ts` � queue management
+- [ ] [docs/test-coverage-todo.md:559] `lib/ai/queue/monitor.ts` � queue monitoring
+- [ ] [docs/test-coverage-todo.md:560] `lib/ai/queue/registry.ts` � task registry
+- [ ] [docs/test-coverage-todo.md:561] `lib/ai/queue/worker.ts` � background worker
+- [ ] [docs/test-coverage-todo.md:562] `lib/ai/scheduled/scheduler.ts` � AI task scheduler
+- [ ] [docs/test-coverage-todo.md:563] `lib/ai/scheduled/jobs.ts` � scheduled job runner
+- [ ] [docs/test-coverage-todo.md:564] `lib/ai/scheduled/job-definitions.ts` � job type definitions
+- [ ] [docs/test-coverage-todo.md:568] `lib/ai/privacy-actions.ts` � privacy management actions
+- [ ] [docs/test-coverage-todo.md:569] `lib/ai/privacy-audit.ts` � privacy audit logging
+- [ ] [docs/test-coverage-todo.md:570] `lib/ai/import-actions.ts` � AI-assisted import
+- [ ] [docs/test-coverage-todo.md:571] `lib/ai/import-receipt-action.ts` � receipt import
+- [ ] [docs/test-coverage-todo.md:572] `lib/ai/import-take-a-chef-action.ts` � Take-a-Chef import
+- [ ] [docs/test-coverage-todo.md:573] `lib/ai/support-share-action.ts` � support sharing
+- [ ] [docs/test-coverage-todo.md:574] `lib/ai/draft-actions.ts` � draft management
+- [ ] [docs/test-coverage-todo.md:575] `lib/ai/operations-actions.ts` � operations AI actions
+- [ ] [docs/test-coverage-todo.md:576] `lib/ai/reminder-actions.ts` � reminder actions
+- [ ] [docs/test-coverage-todo.md:577] `lib/ai/client-facing-actions.ts` � client-facing AI actions
+- [ ] [docs/test-coverage-todo.md:578] `lib/ai/chef-profile-actions.ts` � chef profile AI actions
+- [ ] [docs/test-coverage-todo.md:579] `lib/ai/document-management-actions.ts` � document management AI
+- [ ] [docs/test-coverage-todo.md:583] `lib/ai/reactive/handlers.ts` � reactive event handlers
+- [ ] [docs/test-coverage-todo.md:584] `lib/ai/reactive/hooks.ts` � reactive hooks
+- [ ] [docs/test-coverage-todo.md:590] `lib/scheduling/actions.ts` � scheduling CRUD
+- [ ] [docs/test-coverage-todo.md:591] `lib/scheduling/calendar-sync.ts` � Google/Apple calendar sync engine
+- [ ] [docs/test-coverage-todo.md:592] `lib/scheduling/calendar-sync-actions.ts` � sync server actions
+- [ ] [docs/test-coverage-todo.md:593] `lib/scheduling/capacity-actions.ts` � capacity management
+- [ ] [docs/test-coverage-todo.md:594] `lib/scheduling/availability-share-actions.ts` � availability sharing
+- [ ] [docs/test-coverage-todo.md:595] `lib/scheduling/dop-completions.ts` � day-of-prep completions
+- [ ] [docs/test-coverage-todo.md:596] `lib/scheduling/grocery-route-actions.ts` � grocery route planning
+- [ ] [docs/test-coverage-todo.md:597] `lib/scheduling/multi-event-days.ts` � multi-event day handling
+- [ ] [docs/test-coverage-todo.md:598] `lib/scheduling/prep-block-actions.ts` � prep block scheduling
+- [ ] [docs/test-coverage-todo.md:599] `lib/scheduling/protected-time-actions.ts` � protected time management
+- [ ] [docs/test-coverage-todo.md:600] `lib/scheduling/task-digest.ts` � daily task digest
+- [ ] [docs/test-coverage-todo.md:601] `lib/calendar/actions.ts` � calendar CRUD
+- [ ] [docs/test-coverage-todo.md:602] `lib/calendar/entry-actions.ts` � calendar entry management
+- [ ] [docs/test-coverage-todo.md:603] `lib/calendar/signal-settings-actions.ts` � calendar signal settings
+- [ ] [docs/test-coverage-todo.md:604] `lib/calendar/seasonal-produce.ts` � seasonal produce calendar
+- [ ] [docs/test-coverage-todo.md:605] `lib/availability/actions.ts` � availability CRUD
+- [ ] [docs/test-coverage-todo.md:606] `lib/availability/rules-actions.ts` � availability rules engine
+- [ ] [docs/test-coverage-todo.md:607] `lib/scheduler/calendar-engine.ts` � calendar computation engine
+- [ ] [docs/test-coverage-todo.md:608] `lib/scheduler/slot-optimizer.ts` � time slot optimization
+- [ ] [docs/test-coverage-todo.md:616] `lib/analytics/revenue-engine.ts` � revenue computation engine
+- [ ] [docs/test-coverage-todo.md:617] `lib/analytics/revenue-forecast.ts` � revenue forecasting
+- [ ] [docs/test-coverage-todo.md:618] `lib/analytics/revenue-analytics.ts` � revenue analytics
+- [ ] [docs/test-coverage-todo.md:619] `lib/analytics/pipeline-analytics.ts` � pipeline conversion analytics
+- [ ] [docs/test-coverage-todo.md:620] `lib/analytics/stage-conversion.ts` � stage-to-stage conversion rates
+- [ ] [docs/test-coverage-todo.md:621] `lib/analytics/booking-score.ts` � booking probability scoring
+- [ ] [docs/test-coverage-todo.md:622] `lib/analytics/seasonality.ts` � seasonality detection
+- [ ] [docs/test-coverage-todo.md:623] `lib/analytics/year-over-year.ts` � YoY comparison
+- [ ] [docs/test-coverage-todo.md:624] `lib/analytics/cost-trends.ts` � cost trend analysis
+- [ ] [docs/test-coverage-todo.md:625] `lib/analytics/menu-engineering.ts` � menu engineering (stars, dogs, puzzles, plow horses)
+- [ ] [docs/test-coverage-todo.md:626] `lib/analytics/menu-recommendations.ts` � menu optimization recommendations
+- [ ] [docs/test-coverage-todo.md:627] `lib/analytics/pricing-suggestions.ts` � pricing suggestion engine
+- [ ] [docs/test-coverage-todo.md:628] `lib/analytics/quote-insights.ts` � quote conversion insights
+- [ ] [docs/test-coverage-todo.md:629] `lib/analytics/referral-analytics.ts` � referral source analytics
+- [ ] [docs/test-coverage-todo.md:630] `lib/analytics/social-analytics.ts` � social media analytics
+- [ ] [docs/test-coverage-todo.md:631] `lib/analytics/culinary-analytics.ts` � culinary trend analytics
+- [ ] [docs/test-coverage-todo.md:632] `lib/analytics/operations-analytics.ts` � operations efficiency analytics
+- [ ] [docs/test-coverage-todo.md:633] `lib/analytics/marketing-analytics.ts` � marketing performance analytics
+- [ ] [docs/test-coverage-todo.md:634] `lib/analytics/client-analytics.ts` � client behavior analytics
+- [ ] [docs/test-coverage-todo.md:638] `lib/analytics/benchmark-actions.ts` � industry benchmark comparison
+- [ ] [docs/test-coverage-todo.md:639] `lib/analytics/client-ltv-actions.ts` � client LTV calculations
+- [ ] [docs/test-coverage-todo.md:640] `lib/analytics/custom-report.ts` � custom report builder
+- [ ] [docs/test-coverage-todo.md:641] `lib/analytics/custom-report-enhanced-actions.ts` � enhanced custom reports
+- [ ] [docs/test-coverage-todo.md:642] `lib/analytics/demand-forecast-actions.ts` � demand forecasting actions
+- [ ] [docs/test-coverage-todo.md:643] `lib/analytics/insights-actions.ts` � insight generation actions
+- [ ] [docs/test-coverage-todo.md:644] `lib/analytics/pipeline-forecast-actions.ts` � pipeline forecast actions
+- [ ] [docs/test-coverage-todo.md:645] `lib/analytics/response-time-actions.ts` � response time tracking
+- [ ] [docs/test-coverage-todo.md:651] `lib/reports/actions.ts` � report CRUD
+- [ ] [docs/test-coverage-todo.md:652] `lib/reports/query-builders.ts` � report query builders
+- [ ] [docs/test-coverage-todo.md:657] `lib/revenue-goals/actions.ts` � revenue goal actions
+- [ ] [docs/test-coverage-todo.md:665] `lib/email/classify-automated.ts` � automated email classification
+- [ ] [docs/test-coverage-todo.md:666] `lib/email/context-enricher.ts` � email context enrichment
+- [ ] [docs/test-coverage-todo.md:667] `lib/email/headers-parser.ts` � email header parsing
+- [ ] [docs/test-coverage-todo.md:668] `lib/email/ingest-pipeline.ts` � email ingestion pipeline
+- [ ] [docs/test-coverage-todo.md:669] `lib/email/mime-parser.ts` � MIME parsing
+- [ ] [docs/test-coverage-todo.md:670] `lib/email/response-classifier.ts` � response type classification
+- [ ] [docs/test-coverage-todo.md:671] `lib/email/sendgrid.ts` � SendGrid API wrapper
+- [ ] [docs/test-coverage-todo.md:672] `lib/email/smtp-provider.ts` � SMTP provider abstraction
+- [ ] [docs/test-coverage-todo.md:673] `lib/email/subject-parser.ts` � subject line parsing
+- [ ] [docs/test-coverage-todo.md:674] `lib/email/threading.ts` � email thread resolution
+- [ ] [docs/test-coverage-todo.md:675] `lib/email/validate-sender.ts` � sender validation
+- [ ] [docs/test-coverage-todo.md:676] `lib/email/oauth2.ts` � email OAuth2 flow
+- [ ] [docs/test-coverage-todo.md:677] `lib/email/queue.ts` � email send queue
+- [ ] [docs/test-coverage-todo.md:681] `lib/gmail/actions.ts` � Gmail integration actions
+- [ ] [docs/test-coverage-todo.md:682] `lib/gmail/classify.ts` � Gmail message classification
+- [ ] [docs/test-coverage-todo.md:683] `lib/gmail/historical-scan-actions.ts` � Gmail historical scan
+- [ ] [docs/test-coverage-todo.md:684] `lib/gmail/take-a-chef-stats.ts` � Take-a-Chef email stats
+- [ ] [docs/test-coverage-todo.md:688] `lib/sms/actions.ts` � SMS server actions
+- [ ] [docs/test-coverage-todo.md:689] `lib/sms/ingest.ts` � inbound SMS processing
+- [ ] [docs/test-coverage-todo.md:690] `lib/sms/send.ts` � SMS sending
+- [ ] [docs/test-coverage-todo.md:691] `lib/sms/rate-limit.ts` � SMS rate limiting
+- [ ] [docs/test-coverage-todo.md:692] `lib/sms/twilio-client.ts` � Twilio client wrapper
+- [ ] [docs/test-coverage-todo.md:696] `lib/chat/actions.ts` � chat CRUD
+- [ ] [docs/test-coverage-todo.md:697] `lib/chat/realtime.ts` � real-time chat (Supabase Realtime)
+- [ ] [docs/test-coverage-todo.md:698] `lib/chat/system-messages.ts` � system message generation
+- [ ] [docs/test-coverage-todo.md:699] `lib/messages/actions.ts` � message CRUD
+- [ ] [docs/test-coverage-todo.md:700] `lib/messages/tac-transcript-actions.ts` � Take-a-Chef transcript
+- [ ] [docs/test-coverage-todo.md:701] `lib/messaging/actions.ts` � messaging server actions
+- [ ] [docs/test-coverage-todo.md:702] `lib/messaging/format-message.ts` � message formatting
+- [ ] [docs/test-coverage-todo.md:703] `lib/messaging/socket-client.ts` � WebSocket client
+- [ ] [docs/test-coverage-todo.md:707] `lib/notifications/actions.ts` � notification CRUD
+- [ ] [docs/test-coverage-todo.md:708] `lib/notifications/send.ts` � notification delivery
+- [ ] [docs/test-coverage-todo.md:709] `lib/notifications/check.ts` � notification checks
+- [ ] [docs/test-coverage-todo.md:710] `lib/notifications/channel-router.ts` � multi-channel routing (push/email/SMS)
+- [ ] [docs/test-coverage-todo.md:711] `lib/notifications/digest.ts` � notification digest builder
+- [ ] [docs/test-coverage-todo.md:712] `lib/notifications/handlers.ts` � notification event handlers
+- [ ] [docs/test-coverage-todo.md:713] `lib/notifications/nudges.ts` � proactive nudge generation
+- [ ] [docs/test-coverage-todo.md:714] `lib/notifications/preferences.ts` � notification preferences
+- [ ] [docs/test-coverage-todo.md:715] `lib/notifications/ring-buffer.ts` � notification ring buffer
+- [ ] [docs/test-coverage-todo.md:716] `lib/notifications/scheduler.ts` � notification scheduling
+- [ ] [docs/test-coverage-todo.md:717] `lib/notifications/triggers.ts` � notification trigger definitions
+- [ ] [docs/test-coverage-todo.md:718] `lib/notifications/client-actions.ts` � client notification actions
+- [ ] [docs/test-coverage-todo.md:719] `lib/notifications/off-hours-check.ts` � off-hours gate
+- [ ] [docs/test-coverage-todo.md:720] `lib/notifications/settings-actions.ts` � notification settings
+- [ ] [docs/test-coverage-todo.md:724] `lib/communication/actions.ts` � communication actions
+- [ ] [docs/test-coverage-todo.md:725] `lib/communication/outbound-flow.ts` � outbound communication flow
+- [ ] [docs/test-coverage-todo.md:726] `lib/communication/priority-scorer.ts` � message priority scoring
+- [ ] [docs/test-coverage-todo.md:727] `lib/communication/email-provider-switcher.ts` � provider failover
+- [ ] [docs/test-coverage-todo.md:728] `lib/communication/slack-logger.ts` � Slack logging integration
+- [ ] [docs/test-coverage-todo.md:732] `lib/push/subscriptions.ts` � push notification subscriptions
+- [ ] [docs/test-coverage-todo.md:740] `lib/marketing/actions.ts` � marketing actions
+- [ ] [docs/test-coverage-todo.md:741] `lib/marketing/ab-test-actions.ts` � A/B test management
+- [ ] [docs/test-coverage-todo.md:742] `lib/marketing/content-performance-actions.ts` � content performance tracking
+- [ ] [docs/test-coverage-todo.md:743] `lib/marketing/email-template-actions.ts` � email template builder
+- [ ] [docs/test-coverage-todo.md:744] `lib/marketing/holiday-campaign-actions.ts` � holiday campaigns
+- [ ] [docs/test-coverage-todo.md:745] `lib/marketing/segmentation-actions.ts` � audience segmentation
+- [ ] [docs/test-coverage-todo.md:746] `lib/marketing/campaign-creator.ts` � campaign creation engine
+- [ ] [docs/test-coverage-todo.md:747] `lib/marketing/copy-templates.ts` � marketing copy templates
+- [ ] [docs/test-coverage-todo.md:748] `lib/marketing/cta-optimizer.ts` � CTA optimization
+- [ ] [docs/test-coverage-todo.md:749] `lib/marketing/drip-scheduler.ts` � drip campaign scheduler
+- [ ] [docs/test-coverage-todo.md:750] `lib/marketing/email-sequencer.ts` � email sequence builder
+- [ ] [docs/test-coverage-todo.md:751] `lib/marketing/goals.ts` � marketing goals
+- [ ] [docs/test-coverage-todo.md:752] `lib/marketing/handles.ts` � social handle management
+- [ ] [docs/test-coverage-todo.md:753] `lib/marketing/kpis.ts` � marketing KPIs
+- [ ] [docs/test-coverage-todo.md:754] `lib/marketing/roi-engine.ts` � marketing ROI engine
+- [ ] [docs/test-coverage-todo.md:755] `lib/marketing/segment-engine.ts` � segmentation engine
+- [ ] [docs/test-coverage-todo.md:756] `lib/marketing/viral-coefficient.ts` � viral coefficient calculation
+- [ ] [docs/test-coverage-todo.md:760] `lib/loyalty/actions.ts` � loyalty program CRUD
+- [ ] [docs/test-coverage-todo.md:761] `lib/loyalty/auto-award.ts` � automatic point awarding
+- [ ] [docs/test-coverage-todo.md:762] `lib/loyalty/client-loyalty-actions.ts` � client loyalty management
+- [ ] [docs/test-coverage-todo.md:763] `lib/loyalty/gift-card-purchase-actions.ts` � gift card purchases
+- [ ] [docs/test-coverage-todo.md:764] `lib/loyalty/redemption-actions.ts` � point redemption
+- [ ] [docs/test-coverage-todo.md:765] `lib/loyalty/voucher-actions.ts` � voucher management
+- [ ] [docs/test-coverage-todo.md:769] `lib/campaigns/public-booking-actions.ts` � public booking campaigns
+- [ ] [docs/test-coverage-todo.md:770] `lib/campaigns/push-dinner-actions.ts` � push dinner campaigns
+- [ ] [docs/test-coverage-todo.md:771] `lib/campaigns/targeting-actions.ts` � campaign targeting
+- [ ] [docs/test-coverage-todo.md:775] `lib/followup/rule-actions.ts` � follow-up rule engine
+- [ ] [docs/test-coverage-todo.md:776] `lib/followup/sequence-builder-actions.ts` � sequence builder
+- [ ] [docs/test-coverage-todo.md:780] `lib/prospecting/actions.ts` � prospecting CRUD
+- [ ] [docs/test-coverage-todo.md:781] `lib/prospecting/queue-actions.ts` � prospecting queue
+- [ ] [docs/test-coverage-todo.md:782] `lib/prospecting/script-actions.ts` � call scripts
+- [ ] [docs/test-coverage-todo.md:783] `lib/prospecting/scrub-actions.ts` � lead scrubbing
+- [ ] [docs/test-coverage-todo.md:784] `lib/prospecting/scrub-prompt.ts` � scrub prompt generation
+- [ ] [docs/test-coverage-todo.md:792] `lib/operations/course-planning-actions.ts` � course planning
+- [ ] [docs/test-coverage-todo.md:793] `lib/operations/document-comment-actions.ts` � document comments
+- [ ] [docs/test-coverage-todo.md:794] `lib/operations/document-version-actions.ts` � document versioning
+- [ ] [docs/test-coverage-todo.md:795] `lib/operations/kds-actions.ts` � kitchen display system
+- [ ] [docs/test-coverage-todo.md:796] `lib/operations/split-billing-actions.ts` � split billing
+- [ ] [docs/test-coverage-todo.md:797] `lib/operations/batch-scheduler.ts` � batch scheduling
+- [ ] [docs/test-coverage-todo.md:798] `lib/operations/event-day-checklist.ts` � event day checklist
+- [ ] [docs/test-coverage-todo.md:799] `lib/operations/prep-helper.ts` � prep assistance
+- [ ] [docs/test-coverage-todo.md:803] `lib/documents/actions.ts` � document CRUD
+- [ ] [docs/test-coverage-todo.md:804] `lib/documents/import-actions.ts` � document import
+- [ ] [docs/test-coverage-todo.md:805] `lib/documents/extraction-engine.ts` � text extraction
+- [ ] [docs/test-coverage-todo.md:806] `lib/documents/parser-dispatcher.ts` � parser routing
+- [ ] [docs/test-coverage-todo.md:807] `lib/documents/presigned-urls.ts` � S3 presigned URL generation
+- [ ] [docs/test-coverage-todo.md:808] `lib/documents/search.ts` � document search
+- [ ] [docs/test-coverage-todo.md:809] `lib/documents/upload-validator.ts` � upload validation
+- [ ] [docs/test-coverage-todo.md:810] `lib/documents/archive.ts` � document archival
+- [ ] [docs/test-coverage-todo.md:811] `lib/documents/mime-types.ts` � MIME type handling
+- [ ] [docs/test-coverage-todo.md:815] `lib/contracts/actions.ts` � contract CRUD
+- [ ] [docs/test-coverage-todo.md:816] `lib/contracts/generator.ts` � contract document generation
+- [ ] [docs/test-coverage-todo.md:817] `lib/contracts/parser-classes.ts` � contract clause parsing
+- [ ] [docs/test-coverage-todo.md:818] `lib/contracts/parser-conditions.ts` � conditional clause parsing
+- [ ] [docs/test-coverage-todo.md:819] `lib/contracts/template-variables.ts` � template variable resolution
+- [ ] [docs/test-coverage-todo.md:823] `lib/data-import/csv-parser.ts` � CSV parsing engine
+- [ ] [docs/test-coverage-todo.md:824] `lib/data-import/field-mapper.ts` � field mapping
+- [ ] [docs/test-coverage-todo.md:825] `lib/data-import/schema-infer.ts` � schema inference
+- [ ] [docs/test-coverage-todo.md:826] `lib/data-import/validation.ts` � import data validation
+- [ ] [docs/test-coverage-todo.md:827] `lib/data-import/wix-parser.ts` � Wix data parser
+- [ ] [docs/test-coverage-todo.md:828] `lib/data-import/error-handler.ts` � import error handling
+- [ ] [docs/test-coverage-todo.md:829] `lib/data-import/async-reader.ts` � async file reader
+- [ ] [docs/test-coverage-todo.md:837] `lib/social/actions.ts` � social posting actions
+- [ ] [docs/test-coverage-todo.md:838] `lib/social/chef-social-actions.ts` � chef social profile
+- [ ] [docs/test-coverage-todo.md:839] `lib/social/hashtag-actions.ts` � hashtag management
+- [ ] [docs/test-coverage-todo.md:840] `lib/social/oauth-actions.ts` � social OAuth
+- [ ] [docs/test-coverage-todo.md:841] `lib/social/publishing/engine.ts` � social publishing engine
+- [ ] [docs/test-coverage-todo.md:842] `lib/social/publishing/adapters/linkedin.ts` � LinkedIn adapter
+- [ ] [docs/test-coverage-todo.md:843] `lib/social/publishing/adapters/meta.ts` � Meta/Instagram adapter
+- [ ] [docs/test-coverage-todo.md:844] `lib/social/publishing/adapters/pinterest.ts` � Pinterest adapter
+- [ ] [docs/test-coverage-todo.md:845] `lib/social/publishing/adapters/tiktok.ts` � TikTok adapter
+- [ ] [docs/test-coverage-todo.md:846] `lib/social/publishing/adapters/x.ts` � X/Twitter adapter
+- [ ] [docs/test-coverage-todo.md:847] `lib/social/publishing/adapters/youtube.ts` � YouTube adapter
+- [ ] [docs/test-coverage-todo.md:848] `lib/social/platform-adapters/*` � platform API adapters (7 files)
+- [ ] [docs/test-coverage-todo.md:849] `lib/social/preflight-check.ts` � pre-publish validation
+- [ ] [docs/test-coverage-todo.md:850] `lib/social/oauth/config.ts` � OAuth configuration
+- [ ] [docs/test-coverage-todo.md:851] `lib/social/oauth/crypto.ts` � OAuth crypto utilities
+- [ ] [docs/test-coverage-todo.md:852] `lib/social/oauth/token-store.ts` � token storage
+- [ ] [docs/test-coverage-todo.md:856] `lib/partners/actions.ts` � partner CRUD
+- [ ] [docs/test-coverage-todo.md:857] `lib/partners/analytics.ts` � partner analytics
+- [ ] [docs/test-coverage-todo.md:858] `lib/partners/invite-actions.ts` � partner invitations
+- [ ] [docs/test-coverage-todo.md:859] `lib/partners/portal-actions.ts` � partner portal
+- [ ] [docs/test-coverage-todo.md:860] `lib/partners/report.ts` � partner reports
+- [ ] [docs/test-coverage-todo.md:864] `lib/network/actions.ts` � chef network
+- [ ] [docs/test-coverage-todo.md:865] `lib/community/template-sharing.ts` � community template sharing
+- [ ] [docs/test-coverage-todo.md:866] `lib/collaboration/actions.ts` � collaboration features
+- [ ] [docs/test-coverage-todo.md:867] `lib/collaboration/state-machine.ts` � collaboration state machine
+- [ ] [docs/test-coverage-todo.md:875] `lib/compliance/actions.ts` � compliance checks
+- [ ] [docs/test-coverage-todo.md:876] `lib/compliance/account-deletion-actions.ts` � GDPR account deletion
+- [ ] [docs/test-coverage-todo.md:877] `lib/compliance/data-export.ts` � GDPR data export
+- [ ] [docs/test-coverage-todo.md:878] `lib/compliance/pre-deletion-checks.ts` � pre-deletion safety checks
+- [ ] [docs/test-coverage-todo.md:879] `lib/compliance/storage-cleanup.ts` � storage cleanup
+- [ ] [docs/test-coverage-todo.md:883] `lib/protection/business-health-actions.ts` � business health scoring
+- [ ] [docs/test-coverage-todo.md:884] `lib/protection/certification-actions.ts` � certification tracking
+- [ ] [docs/test-coverage-todo.md:885] `lib/protection/continuity-actions.ts` � business continuity planning
+- [ ] [docs/test-coverage-todo.md:886] `lib/protection/insurance-actions.ts` � insurance management
+- [ ] [docs/test-coverage-todo.md:887] `lib/protection/removal-request-actions.ts` � data removal requests
+- [ ] [docs/test-coverage-todo.md:891] `lib/safety/backup-chef-actions.ts` � backup chef arrangements
+- [ ] [docs/test-coverage-todo.md:892] `lib/safety/incident-actions.ts` � incident reporting
+- [ ] [docs/test-coverage-todo.md:893] `lib/safety/recall-actions.ts` � product recall handling
+- [ ] [docs/test-coverage-todo.md:898] `lib/cannabis/invitation-actions.ts` � cannabis event invitations
+- [ ] [docs/test-coverage-todo.md:899] `lib/cannabis/host-agreement.ts` � host agreement generation
+- [ ] [docs/test-coverage-todo.md:903] `lib/haccp/actions.ts` � HACCP plan management
+- [ ] [docs/test-coverage-todo.md:904] `lib/haccp/templates.ts` � HACCP templates
+- [ ] [docs/test-coverage-todo.md:912] `lib/admin/audit.ts` � admin audit trail
+- [ ] [docs/test-coverage-todo.md:913] `lib/admin/cannabis-actions.ts` � admin cannabis management
+- [ ] [docs/test-coverage-todo.md:914] `lib/admin/chef-admin-actions.ts` � admin chef management
+- [ ] [docs/test-coverage-todo.md:915] `lib/admin/email-actions.ts` � admin email tools
+- [ ] [docs/test-coverage-todo.md:916] `lib/admin/flag-actions.ts` � feature flag management
+- [ ] [docs/test-coverage-todo.md:917] `lib/admin/platform-actions.ts` � platform-wide operations
+- [ ] [docs/test-coverage-todo.md:918] `lib/admin/platform-stats.ts` � platform statistics
+- [ ] [docs/test-coverage-todo.md:919] `lib/admin/reconciliation-actions.ts` � data reconciliation
+- [ ] [docs/test-coverage-todo.md:923] `lib/system/heal-actions.ts` � self-healing actions
+- [ ] [docs/test-coverage-todo.md:924] `lib/system/health-sweep.ts` � health sweep engine
+- [ ] [docs/test-coverage-todo.md:928] `lib/automations/actions.ts` � automation CRUD
+- [ ] [docs/test-coverage-todo.md:929] `lib/automations/settings-actions.ts` � automation settings
+- [ ] [docs/test-coverage-todo.md:930] `lib/automations/engine.ts` � automation execution engine
+- [ ] [docs/test-coverage-todo.md:931] `lib/automations/conditions.ts` � condition evaluation
+- [ ] [docs/test-coverage-todo.md:932] `lib/automations/action-handlers.ts` � action handler registry
+- [ ] [docs/test-coverage-todo.md:936] `lib/webhooks/actions.ts` � webhook CRUD
+- [ ] [docs/test-coverage-todo.md:937] `lib/webhooks/audit-log.ts` � webhook audit logging
+- [ ] [docs/test-coverage-todo.md:938] `lib/webhooks/deliver.ts` � webhook delivery engine
+- [ ] [docs/test-coverage-todo.md:942] `lib/cron/heartbeat.ts` � cron heartbeat
+- [ ] [docs/test-coverage-todo.md:952] `lib/activity/actions.ts` � activity CRUD
+- [ ] [docs/test-coverage-todo.md:953] `lib/activity/track.ts` � activity tracking engine
+- [ ] [docs/test-coverage-todo.md:954] `lib/activity/engagement.ts` � engagement scoring
+- [ ] [docs/test-coverage-todo.md:955] `lib/activity/entity-timeline.ts` � entity timeline builder
+- [ ] [docs/test-coverage-todo.md:956] `lib/activity/intent-notifications.ts` � intent-based notifications
+- [ ] [docs/test-coverage-todo.md:957] `lib/activity/log-chef.ts` � chef activity logging
+- [ ] [docs/test-coverage-todo.md:958] `lib/activity/observability.ts` � observability logging
+- [ ] [docs/test-coverage-todo.md:959] `lib/activity/breadcrumb-actions.ts` � breadcrumb actions
+- [ ] [docs/test-coverage-todo.md:960] `lib/activity/chef-actions.ts` � chef activity actions
+- [ ] [docs/test-coverage-todo.md:961] `lib/activity/preference-actions.ts` � preference actions
+- [ ] [docs/test-coverage-todo.md:962] `lib/activity/resume.ts` � session resume
+- [ ] [docs/test-coverage-todo.md:971] `lib/reviews/actions.ts` � review CRUD
+- [ ] [docs/test-coverage-todo.md:972] `lib/reviews/chef-feedback-actions.ts` � chef-to-client feedback
+- [ ] [docs/test-coverage-todo.md:973] `lib/reviews/external-actions.ts` � external review import
+- [ ] [docs/test-coverage-todo.md:974] `lib/reviews/public-actions.ts` � public review display
+- [ ] [docs/test-coverage-todo.md:975] `lib/feedback/actions.ts` � feedback collection
+- [ ] [docs/test-coverage-todo.md:976] `lib/feedback/user-feedback-actions.ts` � user feedback forms
+- [ ] [docs/test-coverage-todo.md:980] `lib/surveys/actions.ts` � survey CRUD
+- [ ] [docs/test-coverage-todo.md:981] `lib/surveys/survey-utils.ts` � survey utility functions
+- [ ] [docs/test-coverage-todo.md:985] `lib/tasks/actions.ts` � task CRUD
+- [ ] [docs/test-coverage-todo.md:986] `lib/tasks/recurring-engine.ts` � recurring task engine
+- [ ] [docs/test-coverage-todo.md:987] `lib/tasks/template-actions.ts` � task template management
+- [ ] [docs/test-coverage-todo.md:988] `lib/todos/actions.ts` � todo list actions
+- [ ] [docs/test-coverage-todo.md:992] `lib/goals/actions.ts` � goal CRUD
+- [ ] [docs/test-coverage-todo.md:993] `lib/goals/check-in-actions.ts` � goal check-ins
+- [ ] [docs/test-coverage-todo.md:994] `lib/goals/service-mix-actions.ts` � service mix goals
+- [ ] [docs/test-coverage-todo.md:995] `lib/goals/service-mix-utils.ts` � service mix calculations
+- [ ] [docs/test-coverage-todo.md:999] `lib/simulation/simulation-actions.ts` � simulation server actions
+- [ ] [docs/test-coverage-todo.md:1000] `lib/simulation/simulation-runner.ts` � simulation runner
+- [ ] [docs/test-coverage-todo.md:1001] `lib/simulation/auto-schedule.ts` � auto-scheduling simulation
+- [ ] [docs/test-coverage-todo.md:1002] `lib/simulation/pipeline-runner.ts` � pipeline simulation
+- [ ] [docs/test-coverage-todo.md:1003] `lib/simulation/quality-evaluator.ts` � quality evaluation
+- [ ] [docs/test-coverage-todo.md:1004] `lib/simulation/report-generator.ts` � simulation report generation
+- [ ] [docs/test-coverage-todo.md:1005] `lib/simulation/scenario-generator.ts` � scenario generation
+- [ ] [docs/test-coverage-todo.md:1006] `lib/simulation/ollama-client.ts` � Ollama client for simulation
+- [ ] [docs/test-coverage-todo.md:1010] `lib/guests/actions.ts` � guest CRUD
+- [ ] [docs/test-coverage-todo.md:1011] `lib/guests/comp-actions.ts` � complimentary guest management
+- [ ] [docs/test-coverage-todo.md:1012] `lib/guests/reservation-actions.ts` � reservation management
+- [ ] [docs/test-coverage-todo.md:1013] `lib/guests/tag-actions.ts` � guest tagging
+- [ ] [docs/test-coverage-todo.md:1014] `lib/guests/visit-actions.ts` � guest visit tracking
+- [ ] [docs/test-coverage-todo.md:1015] `lib/guests/occupancy-calculator.ts` � occupancy calculations
+- [ ] [docs/test-coverage-todo.md:1016] `lib/guest-analytics/actions.ts` � guest analytics
+- [ ] [docs/test-coverage-todo.md:1017] `lib/guest-comms/actions.ts` � guest communications
+- [ ] [docs/test-coverage-todo.md:1018] `lib/guest-leads/actions.ts` � guest-to-lead conversion
+- [ ] [docs/test-coverage-todo.md:1019] `lib/guest-messages/actions.ts` � guest messaging
+- [ ] [docs/test-coverage-todo.md:1020] `lib/guest-photos/actions.ts` � guest photo sharing
+- [ ] [docs/test-coverage-todo.md:1024] `lib/equipment/actions.ts` � equipment CRUD
+- [ ] [docs/test-coverage-todo.md:1025] `lib/equipment/depreciation-actions.ts` � depreciation server actions
+- [ ] [docs/test-coverage-todo.md:1026] `lib/equipment/depreciation.ts` � depreciation calculation engine
+- [ ] [docs/test-coverage-todo.md:1027] `lib/equipment/equipment-cost-allocation.ts` � cost allocation
+- [ ] [docs/test-coverage-todo.md:1028] `lib/equipment/health-rules.ts` � equipment health rules
+- [ ] [docs/test-coverage-todo.md:1029] `lib/equipment/inventory-engine.ts` � equipment inventory
+- [ ] [docs/test-coverage-todo.md:1030] `lib/equipment/rental-cost.ts` � rental cost calculation
+- [ ] [docs/test-coverage-todo.md:1034] `lib/wellbeing/wellbeing-actions.ts` � wellbeing check-in
+- [ ] [docs/test-coverage-todo.md:1035] `lib/wellbeing/burnout-score.ts` � burnout risk score
+- [ ] [docs/test-coverage-todo.md:1039] `lib/retention/churn-engine.ts` � churn prediction engine
+- [ ] [docs/test-coverage-todo.md:1040] `lib/retention/cohort-analysis.ts` � cohort analysis
+- [ ] [docs/test-coverage-todo.md:1041] `lib/retention/engagement-signals.ts` � engagement signal detection
+- [ ] [docs/test-coverage-todo.md:1045] `lib/travel/actions.ts` � travel management
+- [ ] [docs/test-coverage-todo.md:1046] `lib/weather/weather-actions.ts` � weather integration
+- [ ] [docs/test-coverage-todo.md:1047] `lib/weather/open-meteo.ts` � Open-Meteo API client
+- [ ] [docs/test-coverage-todo.md:1051] `lib/invoice/actions.ts` � invoice CRUD
+- [ ] [docs/test-coverage-todo.md:1052] `lib/invoice/formatter.ts` � invoice formatting
+- [ ] [docs/test-coverage-todo.md:1053] `lib/invoice/numbering.ts` � invoice number generation
+- [ ] [docs/test-coverage-todo.md:1057] `lib/receipts/actions.ts` � receipt CRUD
+- [ ] [docs/test-coverage-todo.md:1058] `lib/receipts/library-actions.ts` � receipt library
+- [ ] [docs/test-coverage-todo.md:1059] `lib/receipts/quick-capture.ts` � quick receipt capture
+- [ ] [docs/test-coverage-todo.md:1063] `lib/packing/actions.ts` � packing list management
+- [ ] [docs/test-coverage-todo.md:1067] `lib/portfolio/actions.ts` � portfolio CRUD
+- [ ] [docs/test-coverage-todo.md:1068] `lib/portfolio/highlight-actions.ts` � portfolio highlights
+- [ ] [docs/test-coverage-todo.md:1069] `lib/portfolio/permission-actions.ts` � portfolio access permissions
+- [ ] [docs/test-coverage-todo.md:1073] `lib/professional/actions.ts` � professional profile
+- [ ] [docs/test-coverage-todo.md:1074] `lib/professional/capability-actions.ts` � capability tracking
+- [ ] [docs/test-coverage-todo.md:1075] `lib/professional/creative-project-actions.ts` � creative projects
+- [ ] [docs/test-coverage-todo.md:1076] `lib/professional/education-actions.ts` � education/cert tracking
+- [ ] [docs/test-coverage-todo.md:1077] `lib/professional/growth-checkin-actions.ts` � growth check-ins
+- [ ] [docs/test-coverage-todo.md:1078] `lib/professional/menu-diversity.ts` � menu diversity scoring
+- [ ] [docs/test-coverage-todo.md:1079] `lib/professional/momentum-actions.ts` � momentum tracking
+- [ ] [docs/test-coverage-todo.md:1083] `lib/milestones/milestone-defs.ts` � milestone definitions
+- [ ] [docs/test-coverage-todo.md:1084] `lib/milestones/stats-action.ts` � milestone stats
+- [ ] [docs/test-coverage-todo.md:1085] `lib/chefs/streaks.ts` � streak tracking
+- [ ] [docs/test-coverage-todo.md:1086] `lib/chefs/health-score.ts` � chef health score
+- [ ] [docs/test-coverage-todo.md:1087] `lib/habits/streak-tracker.ts` � habit streak tracker
+- [ ] [docs/test-coverage-todo.md:1091] `lib/onboarding/actions.ts` � onboarding CRUD
+- [ ] [docs/test-coverage-todo.md:1092] `lib/onboarding/demo-data.ts` � demo data generation
+- [ ] [docs/test-coverage-todo.md:1093] `lib/onboarding/progress-actions.ts` � onboarding progress
+- [ ] [docs/test-coverage-todo.md:1094] `lib/booking/booking-settings-actions.ts` � booking settings
+- [ ] [docs/test-coverage-todo.md:1095] `lib/booking/instant-book-actions.ts` � instant booking
+- [ ] [docs/test-coverage-todo.md:1096] `lib/recurring/actions.ts` � recurring event management
+- [ ] [docs/test-coverage-todo.md:1097] `lib/retainers/actions.ts` � retainer management
+- [ ] [docs/test-coverage-todo.md:1098] `lib/sharing/actions.ts` � content sharing
+- [ ] [docs/test-coverage-todo.md:1099] `lib/search/universal-search.ts` � universal search
+- [ ] [docs/test-coverage-todo.md:1100] `lib/translate/translate-actions.ts` � translation
+- [ ] [docs/test-coverage-todo.md:1101] `lib/translate/libre-translate.ts` � LibreTranslate client
+- [ ] [docs/test-coverage-todo.md:1102] `lib/contact/actions.ts` � contact actions
+- [ ] [docs/test-coverage-todo.md:1103] `lib/contact/claim.ts` � contact claiming
+- [ ] [docs/test-coverage-todo.md:1104] `lib/profile/actions.ts` � profile management
+- [ ] [docs/test-coverage-todo.md:1105] `lib/wix/actions.ts` � Wix integration
+- [ ] [docs/test-coverage-todo.md:1106] `lib/wix/submission-actions.ts` � Wix form submissions
+- [ ] [docs/test-coverage-todo.md:1107] `lib/wix/process.ts` � Wix data processing
+- [ ] [docs/test-coverage-todo.md:1108] `lib/holiday/outreach-actions.ts` � holiday outreach
+- [ ] [docs/test-coverage-todo.md:1109] `lib/geo/geo-actions.ts` � geolocation
+- [ ] [docs/test-coverage-todo.md:1110] `lib/currency/currency-actions.ts` � currency management
+- [ ] [docs/test-coverage-todo.md:1111] `lib/reputation/mention-actions.ts` � brand mention tracking
+- [ ] [docs/test-coverage-todo.md:1112] `lib/leads/scoring.ts` � lead scoring
+- [ ] [docs/test-coverage-todo.md:1113] `lib/pipeline/forecast.ts` � pipeline forecasting
+- [ ] [docs/test-coverage-todo.md:1114] `lib/pipeline/stuck-events.ts` � stuck event detection
+- [ ] [docs/test-coverage-todo.md:1115] `lib/daily-ops/actions.ts` � daily operations
+- [ ] [docs/test-coverage-todo.md:1116] `lib/daily-ops/draft-engine.ts` � daily ops draft engine
+- [ ] [docs/test-coverage-todo.md:1117] `lib/dashboard/actions.ts` � dashboard data actions
+- [ ] [docs/test-coverage-todo.md:1118] `lib/dashboard/accountability.ts` � accountability tracking
+- [ ] [docs/test-coverage-todo.md:1119] `lib/games/line-actions.ts` � gamification line cook
+- [ ] [docs/test-coverage-todo.md:1120] `lib/games/menu-muse-actions.ts` � menu muse game
+- [ ] [docs/test-coverage-todo.md:1121] `lib/games/trivia-actions.ts` � trivia game
+- [ ] [docs/test-coverage-todo.md:1122] `lib/stations/actions.ts` � station management
+- [ ] [docs/test-coverage-todo.md:1123] `lib/stations/clipboard-actions.ts` � station clipboard
+- [ ] [docs/test-coverage-todo.md:1124] `lib/stations/daily-ops-actions.ts` � station daily ops
+- [ ] [docs/test-coverage-todo.md:1125] `lib/stations/ops-log-actions.ts` � ops log
+- [ ] [docs/test-coverage-todo.md:1126] `lib/stations/order-actions.ts` � station orders
+- [ ] [docs/test-coverage-todo.md:1127] `lib/stations/waste-actions.ts` � station waste tracking
+- [ ] [docs/test-coverage-todo.md:1131] `lib/host-marketplace/actions.ts` � marketplace listing
+- [ ] [docs/test-coverage-todo.md:1132] `lib/host-marketplace/commission-calculator.ts` � commission calculation
+- [ ] [docs/test-coverage-todo.md:1133] `lib/host-marketplace/endorsement-engine.ts` � endorsement scoring
+- [ ] [docs/test-coverage-todo.md:1134] `lib/host-marketplace/feature-matrix.ts` � feature comparison
+- [ ] [docs/test-coverage-todo.md:1135] `lib/host-marketplace/query-builders.ts` � marketplace queries
+- [ ] [docs/test-coverage-todo.md:1139] `lib/impact/carbon-calculator.ts` � carbon footprint calculator
+- [ ] [docs/test-coverage-todo.md:1140] `lib/impact/impact-metrics.ts` � impact metrics
+- [ ] [docs/test-coverage-todo.md:1141] `lib/impact/social-metrics.ts` � social impact metrics
+- [ ] [docs/test-coverage-todo.md:1145] `lib/personalization/preference-engine.ts` � preference engine
+- [ ] [docs/test-coverage-todo.md:1149] `lib/client-portal/actions.ts` � client portal actions
+- [ ] [docs/test-coverage-todo.md:1150] `lib/preview/client-portal-preview-actions.ts` � portal preview
+- [ ] [docs/test-coverage-todo.md:1151] `lib/public-profile/actions.ts` � public profile
+- [ ] [docs/test-coverage-todo.md:1152] `lib/public-profile/social-preview.ts` � social preview cards
+- [ ] [docs/test-coverage-todo.md:1162] `app/api/stripe/checkout/route.ts`
+- [ ] [docs/test-coverage-todo.md:1163] `app/api/stripe/connect/route.ts`
+- [ ] [docs/test-coverage-todo.md:1164] `app/api/stripe/webhook/route.ts`
+- [ ] [docs/test-coverage-todo.md:1165] `app/api/stripe/create-payment-intent/route.ts`
+- [ ] [docs/test-coverage-todo.md:1166] `app/api/stripe/payout/route.ts`
+- [ ] [docs/test-coverage-todo.md:1167] `app/api/stripe/subscription/route.ts`
+- [ ] [docs/test-coverage-todo.md:1168] `app/api/stripe/transfer/route.ts`
+- [ ] [docs/test-coverage-todo.md:1172] `app/api/auth/callback/route.ts`
+- [ ] [docs/test-coverage-todo.md:1173] `app/api/auth/confirm/route.ts`
+- [ ] [docs/test-coverage-todo.md:1174] `app/api/auth/e2e/route.ts`
+- [ ] [docs/test-coverage-todo.md:1175] `app/api/e2e/auth/route.ts`
+- [ ] [docs/test-coverage-todo.md:1176] `app/api/e2e/seed/route.ts`
+- [ ] [docs/test-coverage-todo.md:1180] `app/api/cron/daily-report/route.ts`
+- [ ] [docs/test-coverage-todo.md:1181] `app/api/cron/dormancy-check/route.ts`
+- [ ] [docs/test-coverage-todo.md:1182] `app/api/cron/follow-up/route.ts`
+- [ ] [docs/test-coverage-todo.md:1183] `app/api/cron/heartbeat/route.ts`
+- [ ] [docs/test-coverage-todo.md:1184] `app/api/cron/payment-reminders/route.ts`
+- [ ] [docs/test-coverage-todo.md:1185] `app/api/cron/recurring-events/route.ts`
+- [ ] [docs/test-coverage-todo.md:1186] `app/api/cron/revenue-snapshot/route.ts`
+- [ ] [docs/test-coverage-todo.md:1190] `app/api/remy/stream/route.ts`
+- [ ] [docs/test-coverage-todo.md:1191] `app/api/ai/health/route.ts`
+- [ ] [docs/test-coverage-todo.md:1192] `app/api/ai/monitor/route.ts`
+- [ ] [docs/test-coverage-todo.md:1196] `app/api/embed/inquiry/route.ts`
+- [ ] [docs/test-coverage-todo.md:1200] `app/api/webhooks/gmail/route.ts`
+- [ ] [docs/test-coverage-todo.md:1201] `app/api/webhooks/twilio/route.ts`
+- [ ] [docs/test-coverage-todo.md:1202] `app/api/webhooks/sendgrid/route.ts`
+- [ ] [docs/test-coverage-todo.md:1203] `app/api/webhooks/calendar/route.ts`
+- [ ] [docs/test-coverage-todo.md:1207] `app/api/activity/track/route.ts`
+- [ ] [docs/test-coverage-todo.md:1208] `app/api/activity/breadcrumb/route.ts`
+- [ ] [docs/test-coverage-todo.md:1209] `app/api/analytics/posthog/route.ts`
+- [ ] [docs/test-coverage-todo.md:1213] `app/api/calendar/sync/route.ts`
+- [ ] [docs/test-coverage-todo.md:1214] `app/api/calendar/feed/route.ts`
+- [ ] [docs/test-coverage-todo.md:1215] `app/api/comms/email/route.ts`
+- [ ] [docs/test-coverage-todo.md:1216] `app/api/comms/sms/route.ts`
+- [ ] [docs/test-coverage-todo.md:1217] `app/api/documents/upload/route.ts`
+- [ ] [docs/test-coverage-todo.md:1218] `app/api/health/route.ts`
+- [ ] [docs/test-coverage-todo.md:1219] `app/api/images/placeholder/route.ts`
+- [ ] [docs/test-coverage-todo.md:1220] `app/api/integrations/oauth/route.ts`
+- [ ] [docs/test-coverage-todo.md:1221] `app/api/push/subscribe/route.ts`
+- [ ] [docs/test-coverage-todo.md:1222] `app/api/social/publish/route.ts`
+- [ ] [docs/test-coverage-todo.md:1232] `components/events/event-form.tsx` � event creation form
+- [ ] [docs/test-coverage-todo.md:1233] `components/quotes/quote-builder.tsx` � quote builder
+- [ ] [docs/test-coverage-todo.md:1234] `components/recipes/recipe-editor.tsx` � recipe editor
+- [ ] [docs/test-coverage-todo.md:1235] `components/menus/menu-editor.tsx` � menu editor
+- [ ] [docs/test-coverage-todo.md:1236] `components/clients/client-form.tsx` � client form
+- [ ] [docs/test-coverage-todo.md:1240] `components/financials/*` � financial dashboards, charts
+- [ ] [docs/test-coverage-todo.md:1241] `components/billing/upgrade-gate.tsx` � upgrade gate component
+- [ ] [docs/test-coverage-todo.md:1245] `components/ai/remy-drawer.tsx` � Remy chat drawer
+- [ ] [docs/test-coverage-todo.md:1246] `components/ai/remy-mascot-button.tsx` � Remy mascot button
+- [ ] [docs/test-coverage-todo.md:1247] `components/ai/remy-animated-mascot.tsx` � animated mascot
+- [ ] [docs/test-coverage-todo.md:1248] `components/ai/remy-wrapper.tsx` � Remy wrapper
+- [ ] [docs/test-coverage-todo.md:1252] `components/embed/embed-inquiry-form.tsx` � embeddable inquiry form
+- [ ] [docs/test-coverage-todo.md:1253] `components/settings/embed-code-panel.tsx` � embed settings
+- [ ] [docs/test-coverage-todo.md:1261] `middleware.ts` � auth redirect logic (unauthenticated ? sign-in, authenticated ? dashboard)
+- [ ] [docs/test-coverage-todo.md:1262] `middleware.ts` � `skipAuthPaths` matching (public routes, embed routes, API bypasses)
+- [ ] [docs/test-coverage-todo.md:1263] `middleware.ts` � tenant scoping injection (does the correct tenant propagate?)
+- [ ] [docs/test-coverage-todo.md:1264] `middleware.ts` � role-based redirect logic (chef vs client vs admin landing pages)
+- [ ] [docs/test-coverage-todo.md:1265] `middleware.ts` � edge cases (expired session, malformed cookies, missing headers)
+- [ ] [docs/test-coverage-todo.md:1275] RLS on `events` � tenant A cannot SELECT/UPDATE/DELETE tenant B's events
+- [ ] [docs/test-coverage-todo.md:1276] RLS on `clients` � tenant A cannot see tenant B's clients
+- [ ] [docs/test-coverage-todo.md:1277] RLS on `ledger_entries` � tenant A cannot read tenant B's financial entries
+- [ ] [docs/test-coverage-todo.md:1278] RLS on `inquiries` � tenant A cannot access tenant B's inquiries
+- [ ] [docs/test-coverage-todo.md:1279] RLS on `quotes` � tenant A cannot access tenant B's quotes
+- [ ] [docs/test-coverage-todo.md:1280] RLS on `recipes` � tenant A cannot access tenant B's recipes
+- [ ] [docs/test-coverage-todo.md:1281] RLS on `menus` � tenant A cannot access tenant B's menus
+- [ ] [docs/test-coverage-todo.md:1282] RLS on `staff` � tenant A cannot see tenant B's staff
+- [ ] [docs/test-coverage-todo.md:1283] RLS on `inventory_items` � tenant A cannot access tenant B's inventory
+- [ ] [docs/test-coverage-todo.md:1284] RLS on `documents` � tenant A cannot access tenant B's documents
+- [ ] [docs/test-coverage-todo.md:1285] RLS on `notifications` � tenant A cannot read tenant B's notifications
+- [ ] [docs/test-coverage-todo.md:1286] RLS on `chat_messages` � tenant A cannot read tenant B's messages
+- [ ] [docs/test-coverage-todo.md:1287] RLS bypass � service role key correctly bypasses RLS when needed
+- [ ] [docs/test-coverage-todo.md:1288] RLS on all remaining tables � systematic sweep of every table with `tenant_id`
+- [ ] [docs/test-coverage-todo.md:1292] `ledger_entries` � `UPDATE` must fail with error
+- [ ] [docs/test-coverage-todo.md:1293] `ledger_entries` � `DELETE` must fail with error
+- [ ] [docs/test-coverage-todo.md:1294] `event_transitions` � `UPDATE` must fail with error
+- [ ] [docs/test-coverage-todo.md:1295] `event_transitions` � `DELETE` must fail with error
+- [ ] [docs/test-coverage-todo.md:1296] `quote_state_transitions` � `UPDATE` must fail with error
+- [ ] [docs/test-coverage-todo.md:1297] `quote_state_transitions` � `DELETE` must fail with error
+- [ ] [docs/test-coverage-todo.md:1301] `event_financial_summary` view � returns correct computed balances
+- [ ] [docs/test-coverage-todo.md:1302] `event_financial_summary` view � handles events with zero ledger entries
+- [ ] [docs/test-coverage-todo.md:1303] `event_financial_summary` view � respects tenant isolation
+- [ ] [docs/test-coverage-todo.md:1304] Any other computed views � verify formula correctness after migrations
+- [ ] [docs/test-coverage-todo.md:1308] `CHECK` constraints on monetary columns (no negative amounts where disallowed)
+- [ ] [docs/test-coverage-todo.md:1309] `CHECK` constraints on enum-like columns (status values)
+- [ ] [docs/test-coverage-todo.md:1310] `UNIQUE` constraints (email uniqueness, transaction_reference uniqueness)
+- [ ] [docs/test-coverage-todo.md:1311] `NOT NULL` constraints on required fields
+- [ ] [docs/test-coverage-todo.md:1312] Foreign key cascades � deleting a parent doesn't orphan children silently
+- [ ] [docs/test-coverage-todo.md:1316] All 60+ migrations apply cleanly to a fresh database (in order)
+- [ ] [docs/test-coverage-todo.md:1317] No migration depends on data that may not exist
+- [ ] [docs/test-coverage-todo.md:1318] Migrations are idempotent (re-running doesn't break anything)
+- [ ] [docs/test-coverage-todo.md:1319] Migration rollback � can the schema be reverted safely?
+- [ ] [docs/test-coverage-todo.md:1327] Double-click payment button � cannot create two ledger entries for the same payment
+- [ ] [docs/test-coverage-todo.md:1328] Concurrent ledger appends � two payments for the same event at the same time
+- [ ] [docs/test-coverage-todo.md:1329] Concurrent event FSM transitions � two users transitioning the same event simultaneously
+- [ ] [docs/test-coverage-todo.md:1330] Optimistic locking � editing an event while another user also edits it
+- [ ] [docs/test-coverage-todo.md:1331] Concurrent quote generation � two quotes for the same inquiry at the same time
+- [ ] [docs/test-coverage-todo.md:1332] Stripe webhook replay � same webhook delivered twice (idempotency key handling)
+- [ ] [docs/test-coverage-todo.md:1333] Concurrent client creation � deduplication under race conditions
+- [ ] [docs/test-coverage-todo.md:1334] Session expiry during active mutation � what happens mid-save?
+- [ ] [docs/test-coverage-todo.md:1335] Concurrent cron job execution � two cron triggers fire at the same time
+- [ ] [docs/test-coverage-todo.md:1345] `lib/hooks/use-debounce.ts` � debounce timing, cleanup on unmount
+- [ ] [docs/test-coverage-todo.md:1346] `lib/hooks/use-throttle.ts` � throttle timing, edge cases
+- [ ] [docs/test-coverage-todo.md:1350] `lib/hooks/use-billing-data.ts` � billing data fetching, caching
+- [ ] [docs/test-coverage-todo.md:1351] `lib/hooks/use-chef-wallet.ts` � wallet balance state
+- [ ] [docs/test-coverage-todo.md:1352] `lib/hooks/use-entity-timeline.ts` � timeline data loading
+- [ ] [docs/test-coverage-todo.md:1353] `lib/hooks/use-form-state.ts` � form state management, dirty tracking
+- [ ] [docs/test-coverage-todo.md:1354] `lib/hooks/use-form-tracking.ts` � form analytics tracking
+- [ ] [docs/test-coverage-todo.md:1355] `lib/hooks/use-http-cache.ts` � HTTP cache management
+- [ ] [docs/test-coverage-todo.md:1356] `lib/hooks/use-load-balance.ts` � load balancing state
+- [ ] [docs/test-coverage-todo.md:1357] `lib/hooks/use-notification-center.ts` � notification center state
+- [ ] [docs/test-coverage-todo.md:1358] `lib/hooks/use-pagination.ts` � pagination state, page calculations
+- [ ] [docs/test-coverage-todo.md:1359] `lib/hooks/use-payments.ts` � payment state management
+- [ ] [docs/test-coverage-todo.md:1360] `lib/hooks/use-query-string.ts` � URL query string sync
+- [ ] [docs/test-coverage-todo.md:1361] `lib/hooks/use-remy-response.ts` � Remy response handling
+- [ ] [docs/test-coverage-todo.md:1362] `lib/hooks/use-responsive.ts` � responsive breakpoint detection
+- [ ] [docs/test-coverage-todo.md:1363] `lib/hooks/use-sidebar.ts` � sidebar open/close state
+- [ ] [docs/test-coverage-todo.md:1364] `lib/hooks/use-tile-layout.ts` � tile layout calculations
+- [ ] [docs/test-coverage-todo.md:1368] `lib/ai/use-remy-lip-sync.ts` � lip-sync animation hook
+- [ ] [docs/test-coverage-todo.md:1369] `lib/ai/reactive/hooks.ts` � reactive AI hooks
+- [ ] [docs/test-coverage-todo.md:1373] `lib/undo/use-undo-stack.ts` � undo/redo stack management
+- [ ] [docs/test-coverage-todo.md:1374] `lib/view-state/use-persistent-view-state.ts` � persistent view state
+- [ ] [docs/test-coverage-todo.md:1380] `lib/cache/upstash.ts` � Upstash Redis cache: set, get, invalidation, TTL expiry
+- [ ] [docs/test-coverage-todo.md:1381] `lib/cache/upstash.ts` � cache stampede prevention (concurrent requests for same key)
+- [ ] [docs/test-coverage-todo.md:1382] `lib/chef/layout-cache.ts` � layout data caching
+- [ ] [docs/test-coverage-todo.md:1383] `lib/chef/layout-data-cache.ts` � layout data cache invalidation
+- [ ] [docs/test-coverage-todo.md:1384] `lib/pagination/cursor.ts` � cursor-based pagination math, edge cases (first page, last page, empty)
+- [ ] [docs/test-coverage-todo.md:1385] `lib/supabase/client.ts` � client-side Supabase client creation
+- [ ] [docs/test-coverage-todo.md:1386] `lib/supabase/server.ts` � server-side Supabase client creation
+- [ ] [docs/test-coverage-todo.md:1387] `lib/supabase/admin.ts` � admin Supabase client (service role)
+- [ ] [docs/test-coverage-todo.md:1397] Invoice email � renders correctly with real data, no broken variables
+- [ ] [docs/test-coverage-todo.md:1398] Quote email � renders correctly, includes all line items
+- [ ] [docs/test-coverage-todo.md:1399] Payment confirmation email � correct amounts, correct currency formatting
+- [ ] [docs/test-coverage-todo.md:1400] Inquiry confirmation email � all fields populated
+- [ ] [docs/test-coverage-todo.md:1401] Follow-up email templates � variable substitution works
+- [ ] [docs/test-coverage-todo.md:1402] Daily report email � charts/tables render correctly
+- [ ] [docs/test-coverage-todo.md:1403] Welcome/onboarding email � links are valid
+- [ ] [docs/test-coverage-todo.md:1407] Invoice PDF generation � layout, math, totals, tax lines
+- [ ] [docs/test-coverage-todo.md:1408] Contract PDF generation � all template variables resolved, no `{{undefined}}`
+- [ ] [docs/test-coverage-todo.md:1409] Proposal document generation � sections render, images load
+- [ ] [docs/test-coverage-todo.md:1410] FOH menu PDF � formatting, allergen icons, course headers
+- [ ] [docs/test-coverage-todo.md:1411] Data export (CSV/JSON) � correct encoding, all columns, proper escaping
+- [ ] [docs/test-coverage-todo.md:1415] `lib/events/export-ics.ts` � valid ICS format, timezone handling, recurring events
+- [ ] [docs/test-coverage-todo.md:1421] Service worker registration � installs correctly, caches critical assets
+- [ ] [docs/test-coverage-todo.md:1422] Offline fallback � shows offline page when network is unavailable
+- [ ] [docs/test-coverage-todo.md:1423] Cache-first strategy � previously loaded pages work offline
+- [ ] [docs/test-coverage-todo.md:1424] Background sync � queued mutations sync when back online
+- [ ] [docs/test-coverage-todo.md:1425] Push notification delivery � service worker receives and displays push events
+- [ ] [docs/test-coverage-todo.md:1426] App manifest � correct icons, theme color, start URL, display mode
+- [ ] [docs/test-coverage-todo.md:1436] `createTestChef()` � factory to create a chef with tenant, auth user, and role
+- [ ] [docs/test-coverage-todo.md:1437] `createTestClient()` � factory to create a client linked to a chef
+- [ ] [docs/test-coverage-todo.md:1438] `createTestEvent()` � factory to create an event with all required relations
+- [ ] [docs/test-coverage-todo.md:1439] `createTestInquiry()` � factory to create an inquiry with client
+- [ ] [docs/test-coverage-todo.md:1440] `createTestQuote()` � factory to create a quote with line items
+- [ ] [docs/test-coverage-todo.md:1441] `createTestLedgerEntry()` � factory to create ledger entries with valid references
+- [ ] [docs/test-coverage-todo.md:1442] `createTestRecipe()` � factory to create a recipe with ingredients
+- [ ] [docs/test-coverage-todo.md:1443] `createTestMenu()` � factory to create a menu with dishes
+- [ ] [docs/test-coverage-todo.md:1444] `createTestStaffMember()` � factory to create staff with role/permissions
+- [ ] [docs/test-coverage-todo.md:1445] `seedTestDatabase()` � seed a clean test DB with realistic interconnected data
+- [ ] [docs/test-coverage-todo.md:1446] `cleanupTestData()` � tear down test data without affecting other tenants
+- [ ] [docs/test-coverage-todo.md:1450] Stripe mock � mock `stripe` SDK for checkout, webhooks, refunds, Connect
+- [ ] [docs/test-coverage-todo.md:1451] Ollama mock � mock `parseWithOllama` for deterministic AI responses
+- [ ] [docs/test-coverage-todo.md:1452] Supabase mock � mock Supabase client for unit tests that don't need a real DB
+- [ ] [docs/test-coverage-todo.md:1453] SendGrid mock � mock email sending, capture sent emails for assertion
+- [ ] [docs/test-coverage-todo.md:1454] Twilio mock � mock SMS sending, capture sent messages
+- [ ] [docs/test-coverage-todo.md:1455] Spoonacular/Kroger/MealMe mocks � mock grocery API responses
+- [ ] [docs/test-coverage-todo.md:1456] Google Calendar mock � mock calendar sync API
+- [ ] [docs/test-coverage-todo.md:1457] Cloudflare Turnstile mock � mock captcha verification
+- [ ] [docs/test-coverage-todo.md:1461] Isolated test database � separate from dev/beta Supabase for safe integration tests
+- [ ] [docs/test-coverage-todo.md:1462] Transaction rollback � wrap each integration test in a transaction that rolls back
+- [ ] [docs/test-coverage-todo.md:1463] Parallel test safety � tests don't interfere with each other when run concurrently
+- [ ] [docs/test-coverage-todo.md:1473] Event times display in chef's local timezone on dashboard/calendar
+- [ ] [docs/test-coverage-todo.md:1474] Client portal shows event times in the client's timezone (if different)
+- [ ] [docs/test-coverage-todo.md:1475] Timezone edge cases � events crossing midnight, DST transitions
+- [ ] [docs/test-coverage-todo.md:1476] Timezone stored correctly in database (UTC) and converted on display
+- [ ] [docs/test-coverage-todo.md:1477] Calendar sync (ICS/Google) exports correct timezone-aware datetimes
+- [ ] [docs/test-coverage-todo.md:1481] Cents-to-dollars conversion is consistent across all views (invoices, quotes, ledger, dashboard widgets, daily report)
+- [ ] [docs/test-coverage-todo.md:1482] Rounding � no floating-point errors in financial displays (e.g., $10.005 rounding)
+- [ ] [docs/test-coverage-todo.md:1483] Large numbers � commas/formatting for $10,000+ amounts
+- [ ] [docs/test-coverage-todo.md:1484] Zero and negative amounts � displayed correctly, not as blank or NaN
+- [ ] [docs/test-coverage-todo.md:1485] Currency symbol placement � consistent ($X.XX) across all templates and pages
+- [ ] [docs/test-coverage-todo.md:1489] Chef A visits `/events/[chefB-event-id]` � gets 404/403, not a crash or data leak
+- [ ] [docs/test-coverage-todo.md:1490] Chef A visits `/clients/[chefB-client-id]` � blocked by RLS, graceful error
+- [ ] [docs/test-coverage-todo.md:1491] Chef A visits `/quotes/[chefB-quote-id]` � blocked
+- [ ] [docs/test-coverage-todo.md:1492] Client visits chef-only routes via direct URL � redirected, not crashed
+- [ ] [docs/test-coverage-todo.md:1493] Invalid UUIDs in URL params � handled gracefully (not a 500)
+- [ ] [docs/test-coverage-todo.md:1494] SQL injection via URL params � sanitized before hitting database
+- [ ] [docs/test-coverage-todo.md:1498] Chat messages � user B sees user A's message without refreshing
+- [ ] [docs/test-coverage-todo.md:1499] Notifications � new notification appears in notification center live
+- [ ] [docs/test-coverage-todo.md:1500] Event status change � dashboard updates when another user transitions an event
+- [ ] [docs/test-coverage-todo.md:1501] Supabase Realtime subscription cleanup � no leaked subscriptions on unmount
+- [ ] [docs/test-coverage-todo.md:1502] Reconnection after network drop � subscriptions re-establish automatically
+- [ ] [docs/test-coverage-todo.md:1506] Oversized file (>10MB) � shows clear error, doesn't crash
+- [ ] [docs/test-coverage-todo.md:1507] Wrong MIME type (e.g., .exe uploaded as profile photo) � rejected
+- [ ] [docs/test-coverage-todo.md:1508] Interrupted upload � partial upload doesn't corrupt state
+- [ ] [docs/test-coverage-todo.md:1509] Drag-and-drop upload � works on document/photo upload areas
+- [ ] [docs/test-coverage-todo.md:1510] Multiple simultaneous uploads � all complete correctly
+- [ ] [docs/test-coverage-todo.md:1511] Empty file (0 bytes) � rejected with clear message
+- [ ] [docs/test-coverage-todo.md:1512] Filename with special characters (spaces, unicode, long names) � handled
+- [ ] [docs/test-coverage-todo.md:1516] Browser back button � returns to previous page, doesn't break state
+- [ ] [docs/test-coverage-todo.md:1517] Browser forward button � works after going back
+- [ ] [docs/test-coverage-todo.md:1518] Deep linking � bookmarked URL loads the correct page with correct data
+- [ ] [docs/test-coverage-todo.md:1519] Filter/sort state in URL � preserved on back/forward, shareable
+- [ ] [docs/test-coverage-todo.md:1520] Scroll position � restored when navigating back to a long list
+- [ ] [docs/test-coverage-todo.md:1521] Page refresh � current page reloads correctly, doesn't redirect to dashboard
+- [ ] [docs/test-coverage-todo.md:1525] Sign out in tab A � tab B detects it on next action (doesn't silently fail)
+- [ ] [docs/test-coverage-todo.md:1526] Two tabs editing the same event � last write wins, no data corruption
+- [ ] [docs/test-coverage-todo.md:1527] Two tabs on different pages � no cross-tab state interference
+- [ ] [docs/test-coverage-todo.md:1528] Session refresh � one tab refreshing the session doesn't break the other
+- [ ] [docs/test-coverage-todo.md:1532] Missing `STRIPE_SECRET_KEY` � clear startup error, not a runtime crash mid-checkout
+- [ ] [docs/test-coverage-todo.md:1533] Missing `NEXT_PUBLIC_SUPABASE_URL` � app fails to start with clear message
+- [ ] [docs/test-coverage-todo.md:1534] Missing `SUPABASE_SERVICE_ROLE_KEY` � server actions fail gracefully
+- [ ] [docs/test-coverage-todo.md:1535] Missing Ollama endpoint � `OllamaOfflineError` thrown, not a generic crash
+- [ ] [docs/test-coverage-todo.md:1536] Missing email provider credentials � emails fail gracefully with warning log
+- [ ] [docs/test-coverage-todo.md:1537] Invalid/expired API keys � detected and reported, not silent failures
+- [ ] [docs/test-coverage-todo.md:1541] Stripe webhook � valid signature accepted, processes correctly
+- [ ] [docs/test-coverage-todo.md:1542] Stripe webhook � forged/missing signature rejected with 401/403
+- [ ] [docs/test-coverage-todo.md:1543] Stripe webhook � expired timestamp rejected (replay attack protection)
+- [ ] [docs/test-coverage-todo.md:1544] Twilio webhook � signature verification on inbound SMS
+- [ ] [docs/test-coverage-todo.md:1545] SendGrid webhook � signature verification on email events
+- [ ] [docs/test-coverage-todo.md:1546] Calendar webhook � signature/token verification
+- [ ] [docs/test-coverage-todo.md:1550] Event creation ? activity log entry created
+- [ ] [docs/test-coverage-todo.md:1551] Event status transition ? activity log entry with before/after state
+- [ ] [docs/test-coverage-todo.md:1552] Client creation/update ? activity log entry
+- [ ] [docs/test-coverage-todo.md:1553] Quote creation/approval ? activity log entry
+- [ ] [docs/test-coverage-todo.md:1554] Payment recorded ? activity log entry with amount
+- [ ] [docs/test-coverage-todo.md:1555] Ledger entry created ? activity log entry
+- [ ] [docs/test-coverage-todo.md:1556] Settings changed ? activity log entry
+- [ ] [docs/test-coverage-todo.md:1557] Systematic sweep � every server action mutation creates an audit trail entry
+- [ ] [docs/test-coverage-todo.md:1561] Invoice print view � `@media print` CSS renders clean layout (no nav, no sidebar)
+- [ ] [docs/test-coverage-todo.md:1562] Contract print view � page breaks in correct places, no cut-off text
+- [ ] [docs/test-coverage-todo.md:1563] Quote print/export � all line items, totals, and notes included
+- [ ] [docs/test-coverage-todo.md:1564] Event summary print � readable single-page layout
+- [ ] [docs/test-coverage-todo.md:1565] CSV export � proper escaping (commas in values, quotes, newlines, unicode)
+- [ ] [docs/test-coverage-todo.md:1566] JSON export � valid JSON, all fields present, no circular references
+- [ ] [docs/test-coverage-todo.md:1570] `app/opengraph-image.tsx` � OG image generates correct PNG with brand colors
+- [ ] [docs/test-coverage-todo.md:1571] Public pages have correct `<title>`, `<meta description>`, canonical URL
+- [ ] [docs/test-coverage-todo.md:1572] Public chef profile � OG tags show chef name, photo, tagline
+- [ ] [docs/test-coverage-todo.md:1573] Public inquiry form � no-index (shouldn't appear in search results)
+- [ ] [docs/test-coverage-todo.md:1574] Structured data (JSON-LD) � if present, validates against schema.org
+- [ ] [docs/test-coverage-todo.md:1575] Sitemap � if generated, includes all public routes, excludes private ones

@@ -21,6 +21,9 @@ ssh $SSH_OPTS "$REMOTE" << 'ROLLBACK'
   [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
   cd ~/apps/chefflow-beta
 
+  # Clean up any leftover staging dir from a failed deploy
+  rm -rf .next-staging 2>/dev/null || true
+
   if [ -d .next.backup ] && [ -f .next.backup/BUILD_ID ]; then
     rm -rf .next
     mv .next.backup .next

@@ -26,7 +26,8 @@ if (process.env.ENABLE_PWA_BUILD === '1') {
 const nextConfig = {
   // Keep dev artifacts separate from production build output.
   // This prevents `npm run build` from corrupting a running `next dev` session.
-  distDir: process.env.NODE_ENV === 'development' ? '.next-dev' : '.next',
+  distDir:
+    process.env.NEXT_DIST_DIR || (process.env.NODE_ENV === 'development' ? '.next-dev' : '.next'),
   // Allow LAN access in development (e.g. http://10.0.0.177:3100) so
   // internal /_next assets are not rejected as cross-origin.
   // Extra hosts can be added via NEXT_ALLOWED_DEV_ORIGINS=host1,host2

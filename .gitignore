@@ -149,3 +149,4 @@ null
 # Incident reports (local failure logs, machine-specific, no PII)
 /data/incidents/
 .next-dev/
+.next-staging/
