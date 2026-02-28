@@ -23,7 +23,9 @@ const CategorizationResultSchema = z.object({
   alternativeCategory: z.enum(EXPENSE_CATEGORIES).nullable(),
 })
 
-export type CategorizationResult = z.infer<typeof CategorizationResultSchema>
+export type CategorizationResult = z.infer<typeof CategorizationResultSchema> & {
+  _aiSource?: string
+}
 
 // ── Server Action ─────────────────────────────────────────────────────────
 

@@ -19,6 +19,7 @@ export interface GratuityFramingDraft {
   suggestedGratuityRangePercent: { min: number; max: number } | null
   timing: string // when to present the ask (e.g., "at end of service")
   generatedAt: string
+  _aiSource?: string
 }
 
 const GratuityFramingSchema = z.object({

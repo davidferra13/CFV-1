@@ -32,7 +32,9 @@ const CarryForwardMatchResultSchema = z.object({
   confidence: z.enum(['high', 'medium', 'low']),
 })
 
-export type CarryForwardMatchResult = z.infer<typeof CarryForwardMatchResultSchema>
+export type CarryForwardMatchResult = z.infer<typeof CarryForwardMatchResultSchema> & {
+  _aiSource?: string
+}
 
 // ── Server Action ─────────────────────────────────────────────────────────
 

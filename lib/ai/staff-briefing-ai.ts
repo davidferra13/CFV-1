@@ -24,6 +24,7 @@ export interface AIStaffBriefing {
   closingNote: string // motivational / expectation setter
   fullDocument: string // assembled single-page briefing
   generatedAt: string
+  _aiSource?: string
 }
 
 const StaffBriefingSchema = z.object({

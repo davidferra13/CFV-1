@@ -18,6 +18,7 @@ export interface GeneratedContract {
   fullMarkdown: string // complete contract as editable markdown
   disclaimer: string // legal disclaimer (always included)
   generatedAt: string
+  _aiSource?: string
 }
 
 const ContractSchema = z.object({
