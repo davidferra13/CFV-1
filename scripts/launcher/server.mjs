@@ -14,7 +14,7 @@
 import { createServer } from 'node:http'
 import { exec, spawn } from 'node:child_process'
 import { readFile, writeFile, appendFile, stat, readdir } from 'node:fs/promises'
-import { readFileSync } from 'node:fs'
+import { readFileSync, watch } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
@@ -88,6 +88,111 @@ function log(source, message, type = 'info') {
   // Persist to log file (non-blocking, errors silently)
   const ts = new Date(entry.time).toISOString()
   appendFile(CONFIG.logFile, `[${ts}] [${type}] [${source}] ${message}\n`).catch(() => {})
+}
+
+// ── File Watcher (VS Code Activity Tracking) ─────────────────────
+
+const fileActivity = []
+const MAX_ACTIVITY = 500
+const WATCH_DIRS = ['app', 'components', 'lib', 'types', 'supabase/migrations']
+const IGNORE_PATTERNS = /node_modules|\.next|\.git|\.swp$|\.tmp$|~$/
+let watchDebounce = new Map()
+
+function initFileWatcher() {
+  for (const dir of WATCH_DIRS) {
+    const fullPath = join(PROJECT_ROOT, dir)
+    try {
+      watch(fullPath, { recursive: true }, (eventType, filename) => {
+        if (!filename || IGNORE_PATTERNS.test(filename)) return
+        const filePath = `${dir}/${filename.replace(/\\/g, '/')}`
+
+        // Debounce — VS Code fires multiple events per save
+        const key = `${eventType}:${filePath}`
+        if (watchDebounce.has(key)) return
+        watchDebounce.set(key, true)
+        setTimeout(() => watchDebounce.delete(key), 500)
+
+        const entry = {
+          time: Date.now(),
+          type: eventType, // 'rename' (create/delete) or 'change' (modify)
+          file: filePath,
+          dir: dir,
+          ext: filename.split('.').pop() || '',
+        }
+        fileActivity.push(entry)
+        if (fileActivity.length > MAX_ACTIVITY) fileActivity.shift()
+
+        // Determine friendly action
+        const action = eventType === 'rename' ? 'created/deleted' : 'modified'
+        log('vscode', `${action}: ${filePath}`, 'info')
+
+        // Auto-invalidate manual scan cache when pages or routes change
+        if (filePath.endsWith('page.tsx') || filePath.endsWith('page.ts') ||
+            filePath.endsWith('route.ts') || filePath.endsWith('route.tsx')) {
+          scanCache = null
+          scanCacheTime = 0
+        }
+      })
+      log('watcher', `Watching ${dir}/`, 'info')
+    } catch (err) {
+      log('watcher', `Cannot watch ${dir}/: ${err.message}`, 'warn')
+    }
+  }
+}
+
+function getActivitySummary() {
+  const now = Date.now()
+  const last5min = fileActivity.filter(e => now - e.time < 5 * 60 * 1000)
+  const lastHour = fileActivity.filter(e => now - e.time < 60 * 60 * 1000)
+  const today = fileActivity.filter(e => {
+    const d = new Date(e.time)
+    const t = new Date()
+    return d.toDateString() === t.toDateString()
+  })
+
+  // Group by directory
+  const byDir = {}
+  for (const e of today) {
+    if (!byDir[e.dir]) byDir[e.dir] = { count: 0, files: new Set() }
+    byDir[e.dir].count++
+    byDir[e.dir].files.add(e.file)
+  }
+
+  // Recent timeline (last 50 unique files)
+  const seen = new Set()
+  const recent = []
+  for (let i = fileActivity.length - 1; i >= 0 && recent.length < 50; i--) {
+    const e = fileActivity[i]
+    if (!seen.has(e.file)) {
+      seen.add(e.file)
+      recent.push(e)
+    }
+  }
+
+  // Hotspots — most frequently changed files today
+  const fileCounts = {}
+  for (const e of today) {
+    fileCounts[e.file] = (fileCounts[e.file] || 0) + 1
+  }
+  const hotspots = Object.entries(fileCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 15)
+    .map(([file, count]) => ({ file, count }))
+
+  return {
+    counts: {
+      last5min: last5min.length,
+      lastHour: lastHour.length,
+      today: today.length,
+      total: fileActivity.length,
+    },
+    byDir: Object.fromEntries(
+      Object.entries(byDir).map(([dir, data]) => [dir, { count: data.count, uniqueFiles: data.files.size }])
+    ),
+    recent,
+    hotspots,
+    watchedDirs: WATCH_DIRS,
+  }
 }
 
 // ── Process tracking ──────────────────────────────────────────────
@@ -3534,6 +3639,11 @@ async function handleRequest(req, res) {
     }
   }
 
+  // ── VS Code Activity Summary ──────────────────────────────────
+  if (path === '/api/activity/summary' && method === 'GET') {
+    return json(res, { ok: true, ...getActivitySummary() })
+  }
+
   // 404
   res.writeHead(404)
   res.end('Not found')
@@ -3870,6 +3980,9 @@ server.listen(PORT, '127.0.0.1', () => {
 
   // Start scheduled DB backups (daily at 3 AM, keep 7)
   startScheduledBackups()
+
+  // Start file watcher (VS Code activity tracking)
+  initFileWatcher()
 
   // Auto-open in browser
   const openCmd = process.platform === 'win32' ? 'start' : process.platform === 'darwin' ? 'open' : 'xdg-open'

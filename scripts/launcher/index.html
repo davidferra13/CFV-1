@@ -8712,6 +8712,10 @@ function renderManualTabs() {
       html += `<button class="manual-tab${apiActive}" onclick="renderManualTab('_api')" title="${manualScanData.apiRoutes.length} endpoints">API <span style="opacity:0.5;font-size:10px;">${manualScanData.apiRoutes.length}</span></button>`
     }
 
+    // Activity tab
+    const actActive = manualActiveTab === '_activity' ? ' active' : ''
+    html += `<button class="manual-tab${actActive}" onclick="renderManualTab('_activity')">&#x1F4A1; Activity</button>`
+
     // Reference docs toggle
     html += `<button class="manual-tab" onclick="switchManualMode('docs')" style="margin-left:auto;" title="View hand-written audit docs">&#x1F4D6; Docs</button>`
   } else if (manualMode === 'docs' && manualDocsData) {
@@ -8759,6 +8763,8 @@ function renderManualTab(key) {
     renderManualOverview(contentEl, tocList)
   } else if (key === '_api') {
     renderManualApiRoutes(contentEl, tocList)
+  } else if (key === '_activity') {
+    renderManualActivity(contentEl, tocList)
   } else {
     renderManualSection(key, contentEl, tocList)
   }
@@ -8899,6 +8905,119 @@ function renderManualApiRoutes(contentEl, tocList) {
     }
     tocList.innerHTML = tocHtml
   }
+}
+
+let activityRefreshInterval = null
+
+async function renderManualActivity(contentEl, tocList) {
+  const modEl = document.getElementById('manual-modified')
+  if (modEl) modEl.textContent = 'Live Activity'
+
+  // Fetch activity summary
+  let data
+  try {
+    const res = await fetch(`${API}/api/activity/summary`)
+    data = await res.json()
+  } catch {
+    contentEl.innerHTML = '<div style="color:var(--error);text-align:center;padding:40px;">Failed to load activity data.</div>'
+    return
+  }
+
+  if (!data.ok) {
+    contentEl.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:40px;">No activity data available yet. Start editing files in VS Code.</div>'
+    return
+  }
+
+  const c = data.counts
+  let html = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-size:16px;font-weight:700;color:var(--text-primary);">VS Code Activity</div>
+      <div style="font-size:11px;color:var(--text-muted);">Watching: ${data.watchedDirs.join(', ')}</div>
+    </div>
+    <div class="manual-stat-grid">
+      <div class="manual-stat-card"><div class="manual-stat-value">${c.last5min}</div><div class="manual-stat-label">Last 5 min</div></div>
+      <div class="manual-stat-card"><div class="manual-stat-value">${c.lastHour}</div><div class="manual-stat-label">Last Hour</div></div>
+      <div class="manual-stat-card"><div class="manual-stat-value">${c.today}</div><div class="manual-stat-label">Today</div></div>
+      <div class="manual-stat-card"><div class="manual-stat-value">${c.total}</div><div class="manual-stat-label">Session Total</div></div>
+    </div>
+  `
+
+  // Activity by directory
+  if (Object.keys(data.byDir).length) {
+    html += '<div class="manual-section-header">Activity by Directory</div>'
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:20px;">'
+    for (const [dir, info] of Object.entries(data.byDir)) {
+      html += `
+        <div class="manual-page-card">
+          <div style="font-family:monospace;font-size:13px;color:var(--brand);font-weight:600;">${escapeHtml(dir)}/</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">${info.count} changes \u00b7 ${info.uniqueFiles} files</div>
+        </div>`
+    }
+    html += '</div>'
+  }
+
+  // Hotspots
+  if (data.hotspots.length) {
+    html += '<div class="manual-section-header">Hotspots <span class="manual-section-count">most changed files today</span></div>'
+    html += '<div style="display:flex;flex-direction:column;gap:4px;margin-bottom:20px;">'
+    for (const h of data.hotspots) {
+      const barWidth = Math.min(100, (h.count / data.hotspots[0].count) * 100)
+      html += `
+        <div style="display:flex;align-items:center;gap:10px;padding:6px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;font-size:12px;">
+          <div style="width:30px;text-align:right;font-weight:700;color:var(--brand);">${h.count}x</div>
+          <div style="flex:1;position:relative;">
+            <div style="position:absolute;left:0;top:0;bottom:0;width:${barWidth}%;background:rgba(232,143,71,0.1);border-radius:4px;"></div>
+            <span style="position:relative;font-family:monospace;color:var(--text-secondary);">${escapeHtml(h.file)}</span>
+          </div>
+        </div>`
+    }
+    html += '</div>'
+  }
+
+  // Recent timeline
+  if (data.recent.length) {
+    html += '<div class="manual-section-header">Recent Changes <span class="manual-section-count">last 50 unique files</span></div>'
+    html += '<div style="display:flex;flex-direction:column;gap:3px;">'
+    for (const e of data.recent) {
+      const time = new Date(e.time).toLocaleTimeString()
+      const icon = e.type === 'rename' ? '&#x2728;' : '&#x270F;&#xFE0F;'
+      const action = e.type === 'rename' ? 'created/deleted' : 'modified'
+      html += `
+        <div style="display:flex;align-items:center;gap:10px;padding:5px 12px;font-size:12px;border-bottom:1px solid var(--border);">
+          <span style="min-width:70px;color:var(--text-muted);">${time}</span>
+          <span>${icon}</span>
+          <span style="font-family:monospace;color:var(--text-secondary);flex:1;">${escapeHtml(e.file)}</span>
+          <span style="color:var(--text-muted);font-size:11px;">${action}</span>
+        </div>`
+    }
+    html += '</div>'
+  }
+
+  if (!data.recent.length && !data.hotspots.length) {
+    html += '<div style="color:var(--text-muted);text-align:center;padding:40px;font-size:14px;">No file changes detected yet. Start editing in VS Code.</div>'
+  }
+
+  contentEl.innerHTML = html
+  setText('manual-status', `${c.today} changes today`)
+
+  // Build TOC
+  if (tocList) {
+    let tocHtml = `<a class="manual-toc-item" onclick="renderManualTab('_overview')">&#x2190; Overview</a>`
+    tocHtml += `<div style="margin:10px 0 4px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Activity</div>`
+    tocHtml += '<a class="manual-toc-item active">Live Activity</a>'
+    for (const dir of data.watchedDirs) {
+      const info = data.byDir[dir]
+      tocHtml += `<a class="manual-toc-item h3">${escapeHtml(dir)}/ ${info ? `<span style="opacity:0.5;">${info.count}</span>` : ''}</a>`
+    }
+    tocList.innerHTML = tocHtml
+  }
+
+  // Auto-refresh every 5 seconds while on Activity tab
+  clearInterval(activityRefreshInterval)
+  activityRefreshInterval = setInterval(() => {
+    if (manualActiveTab === '_activity') renderManualActivity(contentEl, tocList)
+    else clearInterval(activityRefreshInterval)
+  }, 5000)
 }
 
 function renderPageCard(page) {
