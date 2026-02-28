@@ -58,6 +58,7 @@ const skipAuthPaths = [
   '/terms',
   '/unauthorized',
   '/share',
+  '/view',
   '/event',
   '/chef',
   '/cannabis/public',

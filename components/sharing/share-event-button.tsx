@@ -4,7 +4,11 @@
 'use client'
 
 import { useState } from 'react'
-import { createEventShare, revokeEventShare } from '@/lib/sharing/actions'
+import {
+  createEventShare,
+  createViewerInviteForEvent,
+  revokeEventShare,
+} from '@/lib/sharing/actions'
 
 interface ShareEventButtonProps {
   eventId: string
@@ -24,6 +28,8 @@ export function ShareEventButton({ eventId, existingShare }: ShareEventButtonPro
   const [shareId, setShareId] = useState(existingShare?.id || '')
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [viewerUrl, setViewerUrl] = useState('')
+  const [viewerCopied, setViewerCopied] = useState(false)
   const [error, setError] = useState('')
 
   async function handleCreateShare() {
@@ -65,11 +71,32 @@ export function ShareEventButton({ eventId, existingShare }: ShareEventButtonPro
       await revokeEventShare(shareId)
       setShareUrl('')
       setShareId('')
+      setViewerUrl('')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to revoke link')
     } finally {
       setLoading(false)
     }
+  }
+
+  async function handleCreateViewerLink() {
+    setLoading(true)
+    setError('')
+    try {
+      const result = await createViewerInviteForEvent({ eventId })
+      setViewerUrl(result.viewerUrl)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create viewer invite')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleCopyViewer() {
+    if (!viewerUrl) return
+    await navigator.clipboard.writeText(viewerUrl)
+    setViewerCopied(true)
+    setTimeout(() => setViewerCopied(false), 2000)
   }
 
   if (error) {
@@ -132,6 +159,40 @@ export function ShareEventButton({ eventId, existingShare }: ShareEventButtonPro
         >
           Revoke link
         </button>
+      </div>
+      <div className="pt-2 border-t border-stone-800 space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-stone-500">
+            Optional: generate a viewer link for non-party prospects
+          </span>
+          <button
+            onClick={handleCreateViewerLink}
+            disabled={loading}
+            className="text-xs text-brand-600 hover:text-brand-400 underline"
+          >
+            {loading ? 'Generating...' : 'Create viewer link'}
+          </button>
+        </div>
+        {viewerUrl && (
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              readOnly
+              value={viewerUrl}
+              className="flex-1 px-3 py-2 bg-stone-800 border border-stone-700 rounded-lg text-xs text-stone-300 truncate"
+            />
+            <button
+              onClick={handleCopyViewer}
+              className={`px-3 py-2 rounded-lg text-xs font-medium transition ${
+                viewerCopied
+                  ? 'bg-emerald-900 text-emerald-700'
+                  : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
+              }`}
+            >
+              {viewerCopied ? 'Copied!' : 'Copy'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -63,6 +63,37 @@ const AddGuestManuallySchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
 })
 
+const CreateViewerInviteForEventSchema = z.object({
+  eventId: z.string().uuid(),
+  invited_name: z.string().max(120).optional(),
+  invited_email: z.string().email().optional().or(z.literal('')),
+  note: z.string().max(500).optional(),
+})
+
+const CreateViewerInviteFromGuestSchema = z.object({
+  shareToken: z.string().min(1),
+  guestToken: z.string().min(32),
+  invited_name: z.string().max(120).optional(),
+  invited_email: z.string().email().optional().or(z.literal('')),
+  note: z.string().max(500).optional(),
+})
+
+const CreateGuestInviteFromGuestSchema = z.object({
+  shareToken: z.string().min(1),
+  guestToken: z.string().min(32),
+  full_name: z.string().min(1, 'Name is required'),
+  email: z.string().email().optional().or(z.literal('')),
+  note: z.string().max(500).optional(),
+})
+
+const ViewerIntentSchema = z.object({
+  viewerToken: z.string().min(32),
+  full_name: z.string().min(1, 'Name is required'),
+  email: z.string().email(),
+  intent: z.enum(['join_event', 'book_own']),
+  note: z.string().max(500).optional(),
+})
+
 const GuestPortalLookupSchema = z.object({
   eventId: z.string().uuid(),
   secureToken: z.string().min(32),
@@ -108,6 +139,7 @@ export type SubmitRSVPInput = z.infer<typeof SubmitRSVPSchema>
 export type UpdateRSVPInput = z.infer<typeof UpdateRSVPSchema>
 export type VisibilitySettings = z.infer<typeof VisibilitySettingsSchema>
 export type SaveGuestPortalRSVPInput = z.infer<typeof SaveGuestPortalRSVPSchema>
+export type ViewerIntentInput = z.infer<typeof ViewerIntentSchema>
 
 function parseEventDateTime(eventDate: string, timeValue?: string | null) {
   const safeTime = timeValue && /^\d{2}:\d{2}/.test(timeValue) ? timeValue.slice(0, 5) : '18:00'
@@ -116,6 +148,13 @@ function parseEventDateTime(eventDate: string, timeValue?: string | null) {
 
 function parseEventEndOfDay(eventDate: string) {
   return new Date(`${eventDate}T23:59:59`)
+}
+
+function parseInviteExpiry(eventDate: string, existingExpiry?: string | null) {
+  const defaultExpiry = new Date(parseEventEndOfDay(eventDate).getTime() + 30 * 24 * 60 * 60 * 1000)
+  if (!existingExpiry) return defaultExpiry.toISOString()
+  const existing = new Date(existingExpiry)
+  return existing < defaultExpiry ? existing.toISOString() : defaultExpiry.toISOString()
 }
 
 function parseEditCutoff(
@@ -304,6 +343,79 @@ export async function addGuestManually(input: z.infer<typeof AddGuestManuallySch
   return { success: true, guest }
 }
 
+/**
+ * Create a read-only viewer invite link for an event (client-only).
+ * Lets hosts share the dinner context with non-party viewers.
+ */
+export async function createViewerInviteForEvent(
+  input: z.infer<typeof CreateViewerInviteForEventSchema>
+) {
+  const user = await requireClient()
+  const validated = CreateViewerInviteForEventSchema.parse(input)
+  const supabase = createServerClient()
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('id, tenant_id, event_date')
+    .eq('id', validated.eventId)
+    .eq('client_id', user.entityId)
+    .single()
+
+  if (!event) {
+    throw new Error('Event not found or access denied')
+  }
+
+  let { data: share } = await supabase
+    .from('event_shares')
+    .select('id, token, expires_at')
+    .eq('event_id', validated.eventId)
+    .eq('created_by_client_id', user.entityId)
+    .eq('is_active', true)
+    .single()
+
+  if (!share) {
+    const created = await createEventShare(validated.eventId)
+    share = created.share
+  }
+
+  const viewerToken = crypto.randomBytes(32).toString('hex')
+  const expiresAt = parseInviteExpiry(event.event_date, share.expires_at)
+
+  const { data: invite, error: inviteError } = await (supabase
+    .from('event_share_invites' as any)
+    .insert({
+      tenant_id: event.tenant_id,
+      event_id: validated.eventId,
+      event_share_id: share.id,
+      created_by_client_id: user.entityId,
+      token: viewerToken,
+      audience_role: 'viewer',
+      invited_name: validated.invited_name || null,
+      invited_email: validated.invited_email || null,
+      note: validated.note || null,
+      expires_at: expiresAt,
+    })
+    .select('id')
+    .single() as any)
+
+  if (inviteError || !invite) {
+    console.error('[createViewerInviteForEvent] Error:', inviteError)
+    throw new Error('Failed to create viewer invite')
+  }
+
+  const fullViewerUrl = `${process.env.NEXT_PUBLIC_APP_URL}/view/${viewerToken}`
+  let viewerUrl = fullViewerUrl
+  try {
+    const shortened = await shortenUrl(fullViewerUrl)
+    if (shortened) viewerUrl = shortened
+  } catch {
+    // Non-blocking: fallback to full URL.
+  }
+
+  revalidatePath(`/my-events/${validated.eventId}`)
+  return { success: true, inviteId: invite.id as string, viewerToken, viewerUrl }
+}
+
 // ============================================================
 // CHEF ACTIONS (Authenticated)
 // ============================================================
@@ -468,6 +580,470 @@ export async function getEventShares(eventId: string) {
   }
 
   return shares || []
+}
+
+async function resolveViewerInviteContext(viewerToken: string) {
+  const supabase = createServerClient({ admin: true })
+
+  const { data: invite } = await (supabase
+    .from('event_share_invites' as any)
+    .select('*')
+    .eq('token', viewerToken)
+    .eq('audience_role', 'viewer')
+    .maybeSingle() as any)
+
+  if (!invite) return null
+  if (invite.status !== 'active') return null
+  if (invite.expires_at && new Date(invite.expires_at) < new Date()) return null
+
+  const { data: share } = await supabase
+    .from('event_shares')
+    .select('id, token, event_id, tenant_id, is_active, expires_at, visibility_settings')
+    .eq('id', invite.event_share_id)
+    .maybeSingle()
+
+  if (!share || !share.is_active) return null
+  if (share.expires_at && new Date(share.expires_at) < new Date()) return null
+
+  const { data: event } = await supabase
+    .from('events')
+    .select(
+      `id, tenant_id, status, event_date, serve_time, arrival_time, guest_count, occasion, service_style,
+       location_address, location_city, location_state, location_zip, location_notes,
+       dietary_restrictions, allergies, special_requests`
+    )
+    .eq('id', share.event_id)
+    .maybeSingle()
+
+  if (!event || event.status === 'cancelled') return null
+
+  return { invite, share, event, supabase }
+}
+
+/**
+ * Guest creates a read-only viewer invite from the public share page.
+ */
+export async function createViewerInviteFromGuest(
+  input: z.infer<typeof CreateViewerInviteFromGuestSchema>
+) {
+  const validated = CreateViewerInviteFromGuestSchema.parse(input)
+  const supabase = createServerClient({ admin: true })
+
+  const { data: share } = await supabase
+    .from('event_shares')
+    .select('id, event_id, tenant_id, is_active, expires_at')
+    .eq('token', validated.shareToken)
+    .eq('is_active', true)
+    .single()
+
+  if (!share) {
+    throw new Error('Invalid or expired share link')
+  }
+  if (share.expires_at && new Date(share.expires_at) < new Date()) {
+    throw new Error('This share link has expired')
+  }
+
+  const { data: invitingGuest } = await supabase
+    .from('event_guests')
+    .select('id, full_name, event_share_id')
+    .eq('guest_token', validated.guestToken)
+    .eq('event_share_id', share.id)
+    .maybeSingle()
+
+  if (!invitingGuest) {
+    throw new Error('Only an invited guest can share this event')
+  }
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('event_date')
+    .eq('id', share.event_id)
+    .single()
+
+  if (!event) {
+    throw new Error('Event not found')
+  }
+
+  const viewerToken = crypto.randomBytes(32).toString('hex')
+  const expiresAt = parseInviteExpiry(event.event_date, share.expires_at)
+
+  const { data: invite, error: inviteError } = await (supabase
+    .from('event_share_invites' as any)
+    .insert({
+      tenant_id: share.tenant_id,
+      event_id: share.event_id,
+      event_share_id: share.id,
+      created_by_guest_token: validated.guestToken,
+      token: viewerToken,
+      audience_role: 'viewer',
+      invited_name: validated.invited_name || null,
+      invited_email: validated.invited_email || null,
+      note: validated.note || null,
+      expires_at: expiresAt,
+    })
+    .select('id')
+    .single() as any)
+
+  if (inviteError || !invite) {
+    console.error('[createViewerInviteFromGuest] Error:', inviteError)
+    throw new Error('Failed to create viewer invite')
+  }
+
+  const fullViewerUrl = `${process.env.NEXT_PUBLIC_APP_URL}/view/${viewerToken}`
+  let viewerUrl = fullViewerUrl
+  try {
+    const shortened = await shortenUrl(fullViewerUrl)
+    if (shortened) viewerUrl = shortened
+  } catch {
+    // Non-blocking: fallback to full URL.
+  }
+
+  return { success: true, inviteId: invite.id as string, viewerToken, viewerUrl }
+}
+
+/**
+ * Guest directly invites someone as a new pending guest.
+ */
+export async function createGuestInviteFromGuest(
+  input: z.infer<typeof CreateGuestInviteFromGuestSchema>
+) {
+  const validated = CreateGuestInviteFromGuestSchema.parse(input)
+  const supabase = createServerClient({ admin: true })
+
+  const { data: share } = await supabase
+    .from('event_shares')
+    .select('id, event_id, tenant_id, token, is_active, expires_at')
+    .eq('token', validated.shareToken)
+    .eq('is_active', true)
+    .single()
+
+  if (!share) {
+    throw new Error('Invalid or expired share link')
+  }
+  if (share.expires_at && new Date(share.expires_at) < new Date()) {
+    throw new Error('This share link has expired')
+  }
+
+  const { data: invitingGuest } = await supabase
+    .from('event_guests')
+    .select('id, full_name, event_share_id')
+    .eq('guest_token', validated.guestToken)
+    .eq('event_share_id', share.id)
+    .maybeSingle()
+
+  if (!invitingGuest) {
+    throw new Error('Only an invited guest can add another guest')
+  }
+
+  if (validated.email) {
+    const { data: existing } = await supabase
+      .from('event_guests')
+      .select('id, guest_token')
+      .eq('event_share_id', share.id)
+      .eq('email', validated.email)
+      .maybeSingle()
+
+    if (existing) {
+      return {
+        success: true,
+        alreadyExists: true,
+        guestToken: existing.guest_token,
+        guestPortalUrl: `${process.env.NEXT_PUBLIC_APP_URL}/event/${share.event_id}/guest/${existing.guest_token}`,
+      }
+    }
+  }
+
+  const guestToken = crypto.randomBytes(32).toString('hex')
+  const { data: guest, error: guestError } = await supabase
+    .from('event_guests')
+    .insert({
+      tenant_id: share.tenant_id,
+      event_id: share.event_id,
+      event_share_id: share.id,
+      guest_token: guestToken,
+      full_name: validated.full_name,
+      email: validated.email || null,
+      rsvp_status: 'pending',
+      notes: validated.note
+        ? `Guest invite request from ${invitingGuest.full_name}: ${validated.note}`
+        : `Guest invite request from ${invitingGuest.full_name}`,
+    })
+    .select('id')
+    .single()
+
+  if (guestError || !guest) {
+    console.error('[createGuestInviteFromGuest] Error:', guestError)
+    throw new Error('Failed to create guest invite')
+  }
+
+  const inviteToken = crypto.randomBytes(32).toString('hex')
+  const { data: event } = await supabase
+    .from('events')
+    .select('event_date')
+    .eq('id', share.event_id)
+    .single()
+
+  const expiresAt = event ? parseInviteExpiry(event.event_date, share.expires_at) : null
+
+  await (supabase.from('event_share_invites' as any).insert({
+    tenant_id: share.tenant_id,
+    event_id: share.event_id,
+    event_share_id: share.id,
+    created_by_guest_token: validated.guestToken,
+    token: inviteToken,
+    audience_role: 'guest',
+    status: 'consumed',
+    invited_name: validated.full_name,
+    invited_email: validated.email || null,
+    note: validated.note || null,
+    expires_at: expiresAt,
+    consumed_at: new Date().toISOString(),
+    consumed_by_guest_id: guest.id,
+  }) as any)
+
+  try {
+    const chefAuthId = await getChefAuthUserId(share.tenant_id)
+    if (chefAuthId) {
+      await createNotification({
+        tenantId: share.tenant_id,
+        recipientId: chefAuthId,
+        category: 'client',
+        action: 'guest_rsvp_received',
+        title: `New guest added: ${validated.full_name}`,
+        body: `${invitingGuest.full_name} invited an additional guest.`,
+        eventId: share.event_id,
+      })
+    }
+  } catch (err) {
+    console.error('[createGuestInviteFromGuest] Non-blocking notification failed:', err)
+  }
+
+  revalidatePath(`/events/${share.event_id}`)
+  revalidatePath(`/my-events/${share.event_id}`)
+
+  return {
+    success: true,
+    alreadyExists: false,
+    guestToken,
+    guestPortalUrl: `${process.env.NEXT_PUBLIC_APP_URL}/event/${share.event_id}/guest/${guestToken}`,
+  }
+}
+
+/**
+ * Resolve a viewer invite token into read-only event context.
+ */
+export async function getViewerEventByToken(viewerToken: string) {
+  const context = await resolveViewerInviteContext(viewerToken)
+  if (!context) return null
+
+  const { invite, share, event, supabase } = context
+  const visibility = (share.visibility_settings || {}) as Record<string, boolean>
+
+  const { data: chef } = await supabase
+    .from('chefs')
+    .select('display_name, business_name, booking_slug')
+    .eq('id', share.tenant_id)
+    .single()
+
+  let menus: {
+    id: string
+    name: string
+    description: string | null
+    service_style: string | null
+  }[] = []
+  if (visibility.show_menu) {
+    const { data: menuRows } = await supabase
+      .from('menus')
+      .select('id, name, description, service_style')
+      .eq('event_id', event.id)
+      .order('created_at', { ascending: true })
+    menus = menuRows || []
+  }
+
+  return {
+    inviteId: invite.id as string,
+    inviteToken: viewerToken,
+    shareToken: share.token,
+    eventId: event.id,
+    status: event.status,
+    occasion: visibility.show_occasion ? event.occasion : null,
+    eventDate: visibility.show_date_time ? event.event_date : null,
+    serveTime: visibility.show_date_time ? event.serve_time : null,
+    arrivalTime: visibility.show_date_time ? event.arrival_time : null,
+    guestCount: event.guest_count,
+    serviceStyle: event.service_style,
+    location: visibility.show_location
+      ? {
+          address: event.location_address,
+          city: event.location_city,
+          state: event.location_state,
+          zip: event.location_zip,
+          notes: event.location_notes,
+        }
+      : null,
+    chefName: visibility.show_chef_name ? chef?.display_name || chef?.business_name : null,
+    chefProfileUrl: chef?.booking_slug ? `/chef/${chef.booking_slug}` : null,
+    menus,
+    dietaryInfo: visibility.show_dietary_info
+      ? {
+          restrictions: event.dietary_restrictions,
+          allergies: event.allergies,
+        }
+      : null,
+    specialRequests: visibility.show_special_requests ? event.special_requests : null,
+    inviteNote: invite.note as string | null,
+  }
+}
+
+/**
+ * Viewer intent: request to join this event or request their own booking follow-up.
+ */
+export async function submitViewerIntent(input: ViewerIntentInput) {
+  const validated = ViewerIntentSchema.parse(input)
+  const context = await resolveViewerInviteContext(validated.viewerToken)
+
+  if (!context) {
+    throw new Error('This viewer link is invalid or expired.')
+  }
+
+  const { invite, share, event, supabase } = context
+
+  if (validated.intent === 'join_event') {
+    const { data: existing } = await supabase
+      .from('event_guests')
+      .select('id, guest_token')
+      .eq('event_share_id', share.id)
+      .eq('email', validated.email.toLowerCase().trim())
+      .maybeSingle()
+
+    if (existing) {
+      return {
+        success: true,
+        mode: 'join_event' as const,
+        alreadyExists: true,
+        guestPortalUrl: `${process.env.NEXT_PUBLIC_APP_URL}/event/${event.id}/guest/${existing.guest_token}`,
+      }
+    }
+
+    const guestToken = crypto.randomBytes(32).toString('hex')
+    const { data: guest, error: guestError } = await supabase
+      .from('event_guests')
+      .insert({
+        tenant_id: share.tenant_id,
+        event_id: event.id,
+        event_share_id: share.id,
+        guest_token: guestToken,
+        full_name: validated.full_name,
+        email: validated.email.toLowerCase().trim(),
+        rsvp_status: 'pending',
+        notes: validated.note ? `Viewer join request: ${validated.note}` : 'Viewer join request',
+      })
+      .select('id')
+      .single()
+
+    if (guestError || !guest) {
+      console.error('[submitViewerIntent] Join request error:', guestError)
+      throw new Error('Failed to submit join request')
+    }
+
+    await (supabase
+      .from('event_share_invites' as any)
+      .update({
+        status: 'consumed',
+        consumed_at: new Date().toISOString(),
+        consumed_by_guest_id: guest.id,
+      })
+      .eq('id', invite.id) as any)
+
+    try {
+      const chefAuthId = await getChefAuthUserId(share.tenant_id)
+      if (chefAuthId) {
+        await createNotification({
+          tenantId: share.tenant_id,
+          recipientId: chefAuthId,
+          category: 'client',
+          action: 'guest_rsvp_received',
+          title: `${validated.full_name} requested to join`,
+          body: 'A viewer requested to join this dinner.',
+          eventId: event.id,
+        })
+      }
+    } catch (err) {
+      console.error('[submitViewerIntent] Non-blocking notification failed:', err)
+    }
+
+    return {
+      success: true,
+      mode: 'join_event' as const,
+      alreadyExists: false,
+      guestPortalUrl: `${process.env.NEXT_PUBLIC_APP_URL}/event/${event.id}/guest/${guestToken}`,
+    }
+  }
+
+  const normalizedEmail = validated.email.toLowerCase().trim()
+  const { data: existingLead } = await (supabase
+    .from('guest_leads' as any)
+    .select('id')
+    .eq('event_id', event.id)
+    .eq('email', normalizedEmail)
+    .maybeSingle() as any)
+
+  if (existingLead) {
+    await (supabase
+      .from('guest_leads' as any)
+      .update({
+        name: validated.full_name.trim(),
+        message: validated.note?.trim() || null,
+        source: 'viewer_invite',
+        source_invite_token: validated.viewerToken,
+        source_event_share_id: share.id,
+      })
+      .eq('id', existingLead.id) as any)
+  } else {
+    const { error: leadError } = await (supabase.from('guest_leads' as any).insert({
+      tenant_id: share.tenant_id,
+      event_id: event.id,
+      name: validated.full_name.trim(),
+      email: normalizedEmail,
+      message: validated.note?.trim() || null,
+      status: 'new',
+      source: 'viewer_invite',
+      source_invite_token: validated.viewerToken,
+      source_event_share_id: share.id,
+    }) as any)
+
+    if (leadError) {
+      console.error('[submitViewerIntent] Lead insert error:', leadError)
+      throw new Error('Failed to submit request')
+    }
+  }
+
+  await (supabase
+    .from('event_share_invites' as any)
+    .update({
+      status: 'consumed',
+      consumed_at: new Date().toISOString(),
+    })
+    .eq('id', invite.id) as any)
+
+  try {
+    const chefAuthId = await getChefAuthUserId(share.tenant_id)
+    if (chefAuthId) {
+      await createNotification({
+        tenantId: share.tenant_id,
+        recipientId: chefAuthId,
+        category: 'lead',
+        action: 'new_guest_lead',
+        title: `${validated.full_name} wants their own event`,
+        body: 'New viewer conversion from event sharing.',
+        actionUrl: '/guest-leads',
+      })
+    }
+  } catch (err) {
+    console.error('[submitViewerIntent] Non-blocking notification failed:', err)
+  }
+
+  return { success: true, mode: 'book_own' as const }
 }
 
 async function loadGuestPortalContext(eventId: string, secureToken: string) {

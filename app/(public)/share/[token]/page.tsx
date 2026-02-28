@@ -11,6 +11,7 @@ import { RSVPForm } from '@/components/sharing/rsvp-form'
 import { ExcitementWall } from '@/components/sharing/excitement-wall'
 import { GuestPhotoGallery } from '@/components/sharing/guest-photo-gallery'
 import { EventCountdown } from '@/components/sharing/event-countdown'
+import { GuestNetworkShare } from '@/components/sharing/guest-network-share'
 import { cookies } from 'next/headers'
 
 export default async function SharePage({ params }: { params: { token: string } }) {
@@ -259,6 +260,22 @@ export default async function SharePage({ params }: { params: { token: string } 
                 chefProfileUrl={eventData.chefProfileUrl}
                 chefName={eventData.chefName}
                 existingGuest={existingGuest}
+              />
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Invite Others: viewer or guest (available once the current guest has a token) */}
+        {existingGuest?.guest_token && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Invite Someone Else</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <GuestNetworkShare
+                shareToken={params.token}
+                eventId={eventData.eventId}
+                guestToken={existingGuest.guest_token}
               />
             </CardContent>
           </Card>
