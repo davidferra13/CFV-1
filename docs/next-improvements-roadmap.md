@@ -1,8 +1,78 @@
 # Chef Portal — Next Improvements Roadmap
 
 **Created:** 2026-02-28
-**Status:** Planning — not yet started
-**Context:** Written after completing the 14 QoL features (`docs/qol-14-features.md`). These are the next highest-impact improvements identified from a full codebase review.
+**Last updated:** 2026-02-28
+**Branch:** `feature/risk-gap-closure`
+**Status:** Planning — none started yet
+
+---
+
+## How to Use This Document
+
+This is the master list of every improvement identified for the chef portal, organized by tier and priority. When you're ready to build:
+
+1. **Check the build order table** at the bottom — items are ranked by priority
+2. **Pick the next un-checked item** and read its full section above for context
+3. **Each feature section includes:** problem statement, what already exists in the codebase, what to build, files to create/modify, and database changes if any
+4. **After completing a feature:** mark it done in the status table below, update `docs/app-complete-audit.md` if UI changed, and commit
+
+### Prerequisite: Branch & Build State
+
+- All work should stay on a feature branch (not `main`)
+- The 14 QoL features (F1-F14) are complete — see `docs/qol-14-features.md`
+- Build was passing clean as of 2026-02-28 (`npx next build --no-lint` — exit 0)
+- No pending migrations — schema is current
+
+### Feature Status Tracker
+
+| #   | Feature                       | Status      | Tier |
+| --- | ----------------------------- | ----------- | ---- |
+| 1   | Keyboard Power-User Mode      | Not started | 1    |
+| 2   | Recurring Events              | Not started | 1    |
+| 3   | Event Templates               | Not started | 1    |
+| 4   | Smart Auto-Fill               | Not started | 1    |
+| 5   | Cash Flow Forecasting         | Not started | 2    |
+| 6   | Client Self-Service Portal    | Not started | 2    |
+| 7   | Offline-First for Kitchen     | Not started | 2    |
+| 8   | Scheduling + CRM Intelligence | Not started | 3    |
+| 9   | Vendor Price Tracking         | Not started | 3    |
+| 10  | Photo Portfolio               | Not started | 3    |
+| 11  | Equipment Dashboard           | Not started | 4    |
+| 12  | Contract Library              | Not started | 4    |
+| 13  | Staff Shift Scheduling        | Not started | 5    |
+| 14  | Service-Time Dashboard        | Not started | 5    |
+| 15  | Automated Follow-Up Sequences | Not started | 5    |
+| 16  | Analytics Drill-Down          | Not started | 5    |
+| 17  | Public Chef Profile & SEO     | Not started | 6    |
+| 18  | Message Templates             | Not started | 6    |
+| 19  | Revenue Goal Tracking         | Not started | 6    |
+| 20  | Inventory & Pantry            | Not started | 6    |
+| 21  | Dark Mode Fix                 | Not started | 7    |
+| 22  | Toast Feedback                | Not started | 7    |
+| 23  | Optimistic Rollback           | Not started | 7    |
+| 24  | Date Formatting Helpers       | Not started | 7    |
+| 25  | Status Color Registry         | Not started | 7    |
+| 26  | Error Boundaries              | Not started | 7    |
+| 27  | Accessibility Fixes           | Not started | 7    |
+| 28  | In-Page Search                | Not started | 7    |
+| 29  | Loading States (Async)        | Not started | 7    |
+| 30  | Pagination                    | Not started | 7    |
+| 31  | Tax Reports                   | Not started | 8    |
+| 32  | Event PDF Exports             | Not started | 8    |
+| 33  | Client Year-End Summary       | Not started | 8    |
+| 34  | Staff Utilization Report      | Not started | 8    |
+| 35  | Webhook Triggers              | Not started | 9    |
+| 36  | Notification Triggers         | Not started | 9    |
+| 37  | Financial Alerts              | Not started | 9    |
+| 38  | Operational Reminders         | Not started | 9    |
+| 39  | Audit Trail Viewer            | Not started | 10   |
+| 40  | Data Archival                 | Not started | 10   |
+| 41  | Duplicate Detection           | Not started | 10   |
+| 42  | Bulk Import                   | Not started | 10   |
+
+### Where to Start
+
+The recommended starting point is **#21 Dark Mode Fix** — it's the highest-priority item in the build order because it's a visible bug with a mechanical fix (just swap color classes in 6 files). Then **#22 Toast Feedback** and **#23 Optimistic Rollback** for Zero Hallucination Rule compliance. After those three fixes, move to **#2+3 Recurring Events + Templates** for the biggest daily-workflow impact.
 
 ---
 
