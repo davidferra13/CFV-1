@@ -3790,6 +3790,33 @@ async function handleRequest(req, res) {
     return json(res, { ok: true, role, message: `Launching Chrome as ${role}...` })
   }
 
+  // ── Developer Account Reset ─────────────────────────────────────
+  if (path === '/api/reset-developer' && method === 'POST') {
+    log('reset', 'Resetting developer account...', 'warn')
+    try {
+      const result = await new Promise((resolve, reject) => {
+        let output = ''
+        const child = spawn('npx', ['tsx', join(PROJECT_ROOT, 'scripts', 'reset-developer-account.ts')], {
+          cwd: PROJECT_ROOT,
+          stdio: ['ignore', 'pipe', 'pipe'],
+          shell: true,
+        })
+        child.stdout.on('data', d => { output += d.toString() })
+        child.stderr.on('data', d => { output += d.toString() })
+        child.on('close', code => {
+          if (code === 0) resolve(output)
+          else reject(new Error(output || `Exit code ${code}`))
+        })
+        child.on('error', reject)
+      })
+      log('reset', 'Developer account reset complete', 'success')
+      return json(res, { ok: true, output: result })
+    } catch (err) {
+      log('reset', `Reset failed: ${err.message}`, 'error')
+      return json(res, { error: err.message }, 500)
+    }
+  }
+
   // ── Manual / App Audit docs ──────────────────────────────────────
   if (path === '/api/manual' && method === 'GET') {
     const DOCS_DIR = join(PROJECT_ROOT, 'docs')
