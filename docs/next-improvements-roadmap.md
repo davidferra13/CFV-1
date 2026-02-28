@@ -669,25 +669,509 @@ These features have **complete backend logic** but no UI pages. Building the fro
 
 ---
 
-## Notes
+## Tier 7 — UX Hardening & Polish
 
-| Priority | Feature                                  | Why First                                      |
-| -------- | ---------------------------------------- | ---------------------------------------------- |
-| 1        | **Recurring Events + Templates** (2 & 3) | Eliminates the most repetitive daily work      |
-| 2        | **Smart Auto-Fill** (4)                  | Quick win, high perceived value, no migration  |
-| 3        | **Keyboard Power-User** (1)              | Desktop chefs get dramatically faster          |
-| 4        | **Cash Flow Forecast** (5)               | Business-critical insight, data already exists |
-| 5        | **Client Self-Service** (6)              | Reduces back-and-forth, scales the business    |
-| 6        | **Offline-First** (7)                    | Kitchen reliability, differentiator            |
-| 7        | **Scheduling Intelligence** (8)          | Proactive revenue generation                   |
-| 8        | **Vendor Pricing** (9)                   | Cost savings, data-driven purchasing           |
-| 9        | **Photo Portfolio** (10)                 | Marketing + proposals, client-facing           |
+These improvements fix inconsistencies, accessibility gaps, and feedback holes found during a deep codebase audit. No new features — just making existing features bulletproof.
+
+### 21. Dark Mode Consistency Fix
+
+**Problem:** ~6 files use hardcoded light-theme colors (`bg-gray-50`, `bg-gray-100`, `text-gray-900`, `border-gray-300`) that break the dark theme.
+
+**Affected files:**
+
+- `app/(chef)/calls/page.tsx` — `text-gray-900`, `bg-gray-50`, light blue buttons
+- `app/(chef)/calls/[id]/page.tsx` — `text-gray-900`, `text-gray-800`, `text-blue-600`
+- `app/(chef)/calls/[id]/edit/page.tsx` — same light colors
+- `app/(chef)/calendar/week/week-planner-client.tsx` — `bg-gray-50`, `border-gray-300`, input fields with light borders
+- `app/(chef)/calendar/year/year-view-client.tsx` — `bg-gray-50`, `hover:bg-gray-100`, `text-gray-900`
+- Status pills in calls: `bg-gray-100 text-gray-600` and `bg-gray-100 text-gray-400` for completed/cancelled
+
+**Fix:** Replace all `gray-50/100/200/300` backgrounds with `stone-800/900`, all `gray-800/900` text with `stone-100/200`, all `gray-300` borders with `stone-600/700`. Match the rest of the app's dark palette.
+
+**Effort:** Small (~2 hours, 50+ replacements across 6 files)
+
+---
+
+### 22. Toast Feedback on All Server Actions
+
+**Problem:** ~10-15 `startTransition` calls catch errors silently — `console.error(err)` with no user-facing toast. User sees loading state disappear but no indication the action failed.
+
+**Pattern found in:**
+
+- `components/calls/call-status-actions.tsx` — call status update failures
+- `app/(chef)/calendar/week/week-planner-client.tsx` — prep block toggle, auto-schedule
+- Multiple other transition-based operations across the codebase
+
+**Fix:** Add `toast.error('Failed to [action]')` to every `catch` block in `startTransition`. Also add `toast.success()` on successful mutations where missing.
+
+**Effort:** Small (~1-2 hours, mechanical find-and-fix)
+
+---
+
+### 23. Optimistic Update Rollback
+
+**Problem:** ~5-8 functions modify local state optimistically before calling server actions, but don't rollback on failure. If the server call fails, UI shows stale data.
+
+**Example:** `toggleComplete()` in week-planner-client.tsx modifies the prep block state, but if `completePrepBlock()` fails, the UI still shows it as completed.
+
+**Fix:** Save previous state before mutation, restore it in the catch block. Pattern: `const previous = state; setState(optimistic); try { await action() } catch { setState(previous); toast.error() }`
+
+**Effort:** Small (~2-3 hours)
+
+---
+
+### 24. Centralized Date Formatting
+
+**Problem:** 20+ files use inconsistent date format strings. Some use `format(new Date(), 'EEEE, MMM d, yyyy')`, others use `toLocaleDateString('en-US', ...)`, others use `parseISO()` + `format()`. No timezone handling.
+
+**Fix:** Create `lib/date/format-helpers.ts` with standardized formatters:
+
+- `formatEventDate(date)` — "Saturday, Mar 5, 2026"
+- `formatShortDate(date)` — "Mar 5"
+- `formatTime(date)` — "2:30 PM"
+- `formatRelative(date)` — "2 hours ago"
+- `formatDateRange(start, end)` — "Mar 5 – Mar 7, 2026"
+
+Then find/replace across 20+ call sites.
+
+**Effort:** Small-Medium (~1 hour for helper, ~2 hours for migration)
+
+---
+
+### 25. Centralized Status Color Registry
+
+**Problem:** Status indicator colors are defined ad-hoc in each component. Calls use one color map, prep blocks use another, events use a third. Duplicated and inconsistent.
+
+**Fix:** Create `lib/ui/status-colors.ts` that exports one canonical color mapping for every status type (event status, call status, prep block type, payment status, etc.). All components import from this single source.
+
+**Effort:** Small (~1 hour)
+
+---
+
+### 26. Missing Error Boundaries
+
+**Problem:** 17 `error.tsx` files exist, but deep route segments lack them. If a component crashes in `/calendar/week/` or `/finance/payroll/`, the entire chef layout error boundary catches it — losing all navigation context.
+
+**Missing route segments:**
+
+- `app/(chef)/calendar/day/`
+- `app/(chef)/calendar/week/`
+- `app/(chef)/finance/` subsections (payroll, expenses, reports)
+- `app/(chef)/operations/` subsections
+- `app/(chef)/vendors/` subsections
+
+**Fix:** Add `error.tsx` to ~8-12 route segments using the existing error component pattern.
+
+**Effort:** Small (~1 hour, mostly copy-paste with route-specific messaging)
+
+---
+
+### 27. Accessibility Fixes
+
+**Problem:** While `AccessibleDialog` (focus trap, ARIA roles) is excellent, gaps exist elsewhere:
+
+- Buttons with `+` icon only, no `aria-label` (week planner "add" buttons)
+- Status pills without screen reader descriptions
+- Weather emoji in calendar day headers without alt text
+- Date/time inputs in forms without associated `<label>` elements
+- No `aria-live` regions for dynamically loaded filtered views
+
+**Fix:** Add `aria-label` to ~20 elements across 6-8 files. Add `sr-only` spans for icon-only buttons. Add `aria-live="polite"` to filter result areas.
+
+**Effort:** Small (~2 hours)
+
+---
+
+### 28. In-Page Search & Filtering
+
+**Problem:** Most list pages lack client-side search/filter beyond the global Cmd+K. Users can't filter within:
+
+- Calls list (no search by contact name)
+- Calendar events (no search within day/week/year views)
+- Activity feed (no action type or date filter)
+- Ledger entries (no client-side filter)
+- Components (garnishes, sauces, stocks — no search)
+
+**Fix:** Add a search input with debounced client-side filtering to ~8 list pages. Pattern: `<Input placeholder="Search..." onChange={debouncedFilter} />` at top of list.
+
+**Effort:** Medium (~3-4 hours across all pages)
+
+---
+
+### 29. Missing Loading States for Async Operations
+
+**Problem:** While 83 `loading.tsx` skeleton files exist, some async operations triggered by button clicks lack visual feedback:
+
+- `autoSchedule()` in week planner — no spinner between click and modal
+- Prep block save — no disabled state while saving
+- Server actions triggered by buttons outside of `startTransition`
+
+**Fix:** Add `isPending` state or `useTransition` pending state to buttons that trigger async operations. Show spinner or disabled state during processing.
+
+**Effort:** Small (~1-2 hours)
+
+---
+
+### 30. Pagination for Large Data Sets
+
+**Problem:** List pages fetch all records without limits. Events, clients, and calls pages load everything at once, which slows down as data grows.
+
+**Fix:** Add cursor-based pagination to list queries. Show "Load more" button or infinite scroll. Start with events and clients pages (highest row counts).
+
+**Effort:** Medium (~3-4 hours, requires modifying queries + UI)
+
+---
+
+## Tier 8 — Reporting & Financial Intelligence
+
+### 31. Tax & Compliance Reports
+
+**Problem:** Chef needs tax-related reports for their accountant. Currently, all financial data exists in the ledger but there's no structured tax output.
+
+**What exists:**
+
+- 1099 contractor tracking: `lib/finance/1099-actions.ts`
+- Tax estimates: `lib/finance/tax-estimate-actions.ts`
+- Tax deduction identifier: `lib/ai/tax-deduction-identifier.ts`
+- Profit/loss reports: `lib/finance/profit-loss-report-actions.ts`
+- Year-end page: `app/(chef)/finance/year-end/year-end-client.tsx`
+
+**What to build:**
+
+- **Quarterly Estimated Tax Report** — IRS Form 1040-ES pre-computed from YTD revenue/expenses
+- **Sales Tax Nexus Report** — States where chef has nexus + tax obligations
+- **Deduction Tracker Dashboard** — Real-time deduction summary by IRS category (home office %, mileage, equipment depreciation, ingredients)
+- **Self-Employment Tax Worksheet** — IRS Schedule SE pre-filled from ledger
+- **Tax Summary Package** — One-click PDF: all forms + schedules + supporting documentation
+
+**Files to create:**
+
+- `lib/finance/tax-reports.ts` — quarterly, annual, and SE tax computations
+- `app/(chef)/finance/tax-reports/page.tsx` — tax reporting dashboard
+- `components/finance/tax-deduction-tracker.tsx` — real-time deduction cards
+
+---
+
+### 32. Event-Level PDF Exports
+
+**Problem:** No way to export an event's full record as a PDF for client handoffs, team briefings, or archival.
+
+**What exists:**
+
+- Quote PDF exists
+- Invoice PDF exists
+- Contract generation exists
+- No event summary PDF
+
+**What to build:**
+
+- **Event Proposal PDF** — Client-facing: occasion, menu, pricing, timeline, photos
+- **Event Prep Sheet PDF** — Team-facing: prep timeline, ingredient lists, station assignments, dietary notes
+- **Post-Event Summary PDF** — Photos, actual costs vs quoted, client feedback, lessons learned
+- **Guest Dietary Card PDF** — Printable card with each guest's allergies/restrictions for kitchen posting
+
+**Files to create:**
+
+- `lib/documents/generate-event-pdf.ts` — event summary PDF builder
+- `lib/documents/generate-prep-sheet.ts` — team-facing prep document
+- `components/events/event-export-menu.tsx` — dropdown with export options on event detail page
+
+---
+
+### 33. Client Year-End Summary
+
+**Problem:** Loyal clients (corporate accounts, recurring households) would value a year-end statement showing all events, total spent, dietary preferences tracked, and tier status.
+
+**What to build:**
+
+- **Client Annual Statement** — One-click PDF per client showing:
+  - All events in the year (date, occasion, guest count, price)
+  - Total spent with breakdown by category
+  - Loyalty tier, points earned, rewards redeemed
+  - Dietary accommodations tracked
+  - Testimonials left
+- **Bulk generation** — Generate statements for all active clients at once (December/January)
+- **Email delivery** — Option to email statement to client with thank-you message
+
+**Files to create:**
+
+- `lib/reports/client-annual-statement.ts` — computation + PDF generation
+- `app/(chef)/reports/client-statements/page.tsx` — bulk generation page
+
+---
+
+### 34. Staff Utilization Report
+
+**Problem:** Chef with 3-5 staff can't see who's overworked, who's underutilized, or what labor costs per event look like.
+
+**What exists:**
+
+- Staff performance scoring: `lib/staff/performance-actions.ts`
+- Labor cost tracking: `lib/staff/labor-dashboard-actions.ts`
+- Event staff assignments: `components/events/event-staff-panel.tsx`
+
+**What to build:**
+
+- **Hours per staff member** — Weekly/monthly totals from shift assignments
+- **Utilization rate** — Hours worked / hours available
+- **Cost per event** — Labor cost breakdown by staff member per event
+- **Overtime alerts** — Flag when any staff member exceeds configurable weekly hour limit
+- **Performance + utilization correlation** — Overlay performance scores with hours to spot burnout
+
+**Files to create:**
+
+- `lib/staff/utilization-report.ts` — compute utilization metrics
+- `app/(chef)/staff/reports/page.tsx` — staff analytics page
+- `components/staff/utilization-chart.tsx` — visual utilization breakdown
+
+---
+
+## Tier 9 — Integration & Automation
+
+### 35. Event-Driven Webhook Triggers
+
+**Problem:** Integrations exist (17 providers) but are mostly pull-based. When an event status changes, no automatic push to external systems.
+
+**What exists:**
+
+- Integration framework: `lib/integrations/core/pipeline.ts`
+- 17 providers configured
+- Zapier webhook subscriptions: `lib/integrations/zapier/zapier-webhooks.ts`
+- 8-state event FSM: `lib/events/transitions.ts`
+
+**What to build:**
+
+- **Post-transition webhook emitter** — After any FSM transition, fire registered webhooks:
+  - `event.proposed` → push to Google Calendar + CRM
+  - `event.accepted` → push to accounting (QuickBooks) + calendar
+  - `event.paid` → push to payment tracker + CRM deal update
+  - `event.completed` → push to review request + survey system
+- **Webhook delivery audit** — Log every delivery attempt with response code, timing, retry count
+- **Webhook management UI** — `app/(chef)/settings/integrations/webhooks/page.tsx` with test/retry buttons
+
+**Files to create:**
+
+- `lib/integrations/event-emitter.ts` — post-transition webhook dispatcher
+- `lib/integrations/webhook-audit.ts` — delivery tracking + retry with exponential backoff
+- `app/(chef)/settings/integrations/webhooks/page.tsx` — webhook management
+
+**Files to modify:**
+
+- `lib/events/transitions.ts` — add webhook trigger after successful transition
+
+---
+
+### 36. Missing Notification Triggers
+
+**Problem:** 120+ notification action types are defined, but ~30% of triggers are never fired. Notifications like `burnout_risk_high`, `relationship_cooling`, `capacity_limit_approaching`, and `recall_alert_matched` are defined but never sent.
+
+**What exists:**
+
+- Full notification types: `lib/notifications/types.ts` (14 categories, 120+ actions)
+- Partial triggers: `lib/notifications/triggers.ts`
+- Send infrastructure: `lib/notifications/send.ts`
+
+**What to build:**
+
+- Implement trigger functions for all unused notification types:
+  - `burnout_risk_high` — compute from events/month vs capacity limit
+  - `relationship_cooling` — query `activity_events` for clients inactive 60+ days
+  - `capacity_limit_approaching` — compare event count to monthly max
+  - `recall_alert_matched` — periodic check against FDA recall database
+  - `quarterly_checkin_due` — fire every 90 days per chef
+  - `no_education_logged_90d` — check education/certificate tables
+
+**Files to create:**
+
+- `lib/notifications/proactive-triggers.ts` — implementations for all missing triggers
+- `app/api/scheduled/proactive-notifications/route.ts` — cron job to fire periodic triggers
+
+---
+
+### 37. Scheduled Financial Alerts
+
+**Problem:** Chef finds out about financial issues after the fact. No proactive alerts for overdue payments, budget overruns, or cash flow dips.
+
+**What to build:**
+
+- **Overdue payment reminders** — Escalating sequence: 7d, 14d, 21d past due → email + in-app notification
+- **Low cash flow alert** — If month-to-date revenue < 50% of average by mid-month → alert
+- **Expense anomaly detection** — If any expense > 3x the category average → flag for review
+- **Budget variance alert** — If spending pace will exceed monthly budget → warning
+- **Payment settlement notifications** — Daily: which payments cleared, which are pending
+
+**Files to create:**
+
+- `lib/finance/financial-alerts.ts` — alert computation logic
+- `app/api/scheduled/financial-alerts/route.ts` — daily/weekly cron job
+
+---
+
+### 38. Operational Reminder Cron Jobs
+
+**Problem:** Equipment maintenance, certificate renewals, and staff availability gaps go unnoticed until they cause problems.
+
+**What to build:**
+
+- **Equipment maintenance due** — Check maintenance intervals, alert 7 days before
+- **Certificate renewal reminders** — Food handler, health permit, insurance expiry → 30-day warning
+- **Staff availability gaps** — Event scheduled but no staff assigned → 48-hour warning
+- **Guest dietary accommodation check** — 7 days before event, flag unaccommodated restrictions
+- **Stale data quality scan** — Recipes without costs, events without menus, incomplete client profiles → weekly digest
+
+**Files to create:**
+
+- `lib/operations/proactive-alerts.ts` — operational check logic
+- `app/api/scheduled/operations-check/route.ts` — cron job
+
+---
+
+## Tier 10 — Data Management & Compliance
+
+### 39. Audit Trail Viewer
+
+**Problem:** Chef activity is logged (`chef_activity_log`, `activity_events`) but there's no UI to browse the audit trail. Useful for compliance, debugging, and understanding team activity.
+
+**What exists:**
+
+- Chef activity log: `lib/activity/log-chef.ts`
+- Client activity tracking: `lib/activity/track.ts` (15 event types)
+- Entity timeline: `lib/activity/entity-timeline.ts`
+
+**What to build:**
+
+- `app/(chef)/admin/audit-log/page.tsx` — filterable audit log viewer
+  - Filter by: action type, date range, entity, actor
+  - Timeline view per entity (event lifecycle: inquiry → quote → accept → pay → complete)
+  - Export audit log as CSV
+- Entity change history sidebar on detail pages (who changed what, when)
+
+**Files to create:**
+
+- `lib/activity/audit-viewer-actions.ts` — paginated audit log queries
+- `app/(chef)/admin/audit-log/page.tsx` — audit log page
+- `components/activity/entity-change-history.tsx` — sidebar component
+
+---
+
+### 40. Data Archival Strategy
+
+**Problem:** No automated archival of old data. Completed events from 2+ years ago still appear in queries, slowing everything down.
+
+**What to build:**
+
+- **Archive settings page** — Configure retention policies per data type
+- **Auto-archive** — Completed events older than N months move to archive table
+- **Archive browser** — View archived events by year, search within archives
+- **Restore** — Convert archived event back to active with one click
+- **Export before delete** — Full data export before any permanent deletion
+
+**Database changes (additive):**
+
+- `archived_events` table (mirrors `events` schema + `archived_at`, `archived_by`)
+- `archival_policies` table (tenant_id, entity_type, retention_months, auto_archive boolean)
+
+**Files to create:**
+
+- `lib/archival/archive-actions.ts` — archive, restore, export
+- `app/(chef)/settings/data-management/page.tsx` — retention policy settings
+- `app/(chef)/admin/archives/page.tsx` — archive browser
+
+---
+
+### 41. Duplicate Client Detection
+
+**Problem:** Same client may be entered twice (once from inquiry widget, once manually). No deduplication.
+
+**What to build:**
+
+- **Duplicate scanner** — Match on normalized name + email or phone
+- **Merge wizard** — Select primary record, merge activity history, combine contacts
+- **Prevention** — On new client creation, show "Similar clients found" if near-match exists
+- Run as weekly cron + on-demand scan
+
+**Files to create:**
+
+- `lib/clients/duplicate-detection.ts` — fuzzy matching + merge logic
+- `components/clients/duplicate-merge-modal.tsx` — merge wizard UI
+- `app/api/scheduled/duplicate-scan/route.ts` — weekly cron job
+
+---
+
+### 42. Bulk Data Import
+
+**Problem:** New chef has existing clients, recipes, and vendors in spreadsheets. No way to import them into ChefFlow.
+
+**What to build:**
+
+- **CSV import wizard** — Upload CSV, map columns to fields, preview, import
+- Supported entities: Clients, Recipes, Vendors, Expenses, Equipment
+- **Validation** — Show errors per row before importing
+- **Rollback** — If import fails mid-way, rollback all rows
+- **Deduplication** — Skip or flag duplicates during import
+
+**Files to create:**
+
+- `lib/imports/csv-importer.ts` — generic CSV parser + validator
+- `components/settings/import-wizard.tsx` — column mapping UI
+- `app/(chef)/settings/import/page.tsx` — import page
+
+---
+
+## Recommended Build Order (Final)
+
+| Priority | Feature                                  | Tier | Why                                           | Effort |
+| -------- | ---------------------------------------- | ---- | --------------------------------------------- | ------ |
+| 1        | **Dark Mode Fix** (21)                   | 7    | Visible bug, mechanical fix                   | XS     |
+| 2        | **Toast Feedback** (22)                  | 7    | Zero Hallucination Rule compliance            | XS     |
+| 3        | **Optimistic Rollback** (23)             | 7    | Zero Hallucination Rule compliance            | S      |
+| 4        | **Recurring Events + Templates** (2 & 3) | 1    | Eliminates most repetitive daily work         | M      |
+| 5        | **Smart Auto-Fill** (4)                  | 1    | Quick win, no migration needed                | S      |
+| 6        | **Equipment Dashboard** (11)             | 4    | Backend 100% done, just needs UI              | S      |
+| 7        | **Contract Library** (12)                | 4    | Backend mostly done, needs UI + signing       | S-M    |
+| 8        | **Status Color Registry** (25)           | 7    | Quick consistency win                         | XS     |
+| 9        | **Date Formatting Helpers** (24)         | 7    | Consistency + prevents timezone bugs          | S      |
+| 10       | **Notification Triggers** (36)           | 9    | Fires existing notifications, high engagement | S      |
+| 11       | **Keyboard Power-User** (1)              | 1    | Desktop speed boost                           | S      |
+| 12       | **Revenue Goal Tracking** (19)           | 6    | Business-critical visibility                  | S      |
+| 13       | **Message Templates** (18)               | 6    | Reduces daily typing                          | S      |
+| 14       | **Error Boundaries** (26)                | 7    | Crash resilience, 1hr work                    | XS     |
+| 15       | **Accessibility Fixes** (27)             | 7    | Inclusive design, small effort                | S      |
+| 16       | **Tax Reports** (31)                     | 8    | Accountant handoff, tax season                | M      |
+| 17       | **Event PDF Exports** (32)               | 8    | Client-facing deliverables                    | M      |
+| 18       | **Staff Scheduling** (13)                | 5    | Operational efficiency                        | M      |
+| 19       | **Follow-Up Sequences** (15)             | 5    | Revenue recovery on autopilot                 | M      |
+| 20       | **Cash Flow Forecast** (5)               | 2    | Financial planning                            | M      |
+| 21       | **Financial Alerts** (37)                | 9    | Proactive money management                    | S      |
+| 22       | **Analytics Drill-Down** (16)            | 5    | Makes 40+ metrics actionable                  | M      |
+| 23       | **In-Page Search** (28)                  | 7    | List page usability                           | M      |
+| 24       | **Pagination** (30)                      | 7    | Performance at scale                          | M      |
+| 25       | **Staff Utilization** (34)               | 8    | Labor cost visibility                         | M      |
+| 26       | **Client Self-Service** (6)              | 2    | Scales the business                           | L      |
+| 27       | **Webhook Triggers** (35)                | 9    | Automation backbone                           | M      |
+| 28       | **Public Chef Profile** (17)             | 6    | Client acquisition channel                    | M      |
+| 29       | **Client Statements** (33)               | 8    | Client retention                              | S      |
+| 30       | **Service Dashboard** (14)               | 5    | During-service ops                            | M      |
+| 31       | **Operational Alerts** (38)              | 9    | Proactive maintenance/compliance              | S      |
+| 32       | **Audit Trail** (39)                     | 10   | Compliance + debugging                        | M      |
+| 33       | **Offline-First** (7)                    | 2    | Kitchen reliability                           | L      |
+| 34       | **Scheduling Intelligence** (8)          | 3    | Proactive revenue                             | M      |
+| 35       | **Vendor Pricing** (9)                   | 3    | Cost optimization                             | M      |
+| 36       | **Photo Portfolio** (10)                 | 3    | Marketing + proposals                         | M      |
+| 37       | **Duplicate Detection** (41)             | 10   | Data quality                                  | S      |
+| 38       | **Bulk Import** (42)                     | 10   | Onboarding new chefs                          | M      |
+| 39       | **Archival Strategy** (40)               | 10   | Long-term data management                     | M      |
+| 40       | **Inventory/Pantry** (20)                | 6    | Waste reduction + planning                    | L      |
+| 41       | **Loading States** (29)                  | 7    | Polish                                        | XS     |
 
 ---
 
 ## Notes
 
-- Features 2 and 3 (Recurring Events + Templates) should be built together — they share the event form infrastructure and solve the same pain (repetitive event creation)
+- Features 2 and 3 (Recurring Events + Templates) should be built together — they share the event form infrastructure and solve the same pain
+- Features 21-23 (Dark Mode, Toast, Rollback) are Zero Hallucination Rule compliance items — they should be fixed before new features
 - Feature 4 (Auto-Fill) requires no database migration — pure read from existing data
-- Feature 6 (Client Self-Service) is the biggest scope item but has the highest long-term leverage for scaling
+- Feature 6 (Client Self-Service) is the biggest scope item but has the highest long-term leverage
+- Features 36 and 38 (Notification Triggers, Operational Alerts) unlock value from already-built infrastructure
 - All database changes listed are additive (new tables/columns only) — no destructive operations
+- **Effort key:** XS = <1hr, S = 1-3hr, S-M = 3-5hr, M = 5-10hr, L = 10-20hr
