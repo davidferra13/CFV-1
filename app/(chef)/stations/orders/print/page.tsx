@@ -1,16 +1,25 @@
 // Print-Friendly Unified Order Sheet
 // Aggregates all "need to order" items from ALL stations into one printable sheet.
 // Clean layout for calling vendors or emailing orders.
+// Uses the shared print system from globals.css.
+// Supports ?mode=thermal query param for 80mm thermal printers.
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
+import { PrintableDocument } from '@/components/print/printable-document'
 
 export const metadata: Metadata = { title: 'Print Order Sheet — ChefFlow' }
 
-export default async function PrintOrderSheetPage() {
+export default async function PrintOrderSheetPage({
+  searchParams,
+}: {
+  searchParams: { mode?: string }
+}) {
   const user = await requireChef()
   const supabase: any = createServerClient()
+  const printMode =
+    searchParams.mode === 'thermal' ? ('thermal-80' as const) : ('standard' as const)
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -46,57 +55,27 @@ export default async function PrintOrderSheetPage() {
   const orderItems = orders ?? []
   const clipboardItems = clipboardNeeds ?? []
 
+  const dateLabel = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+
   return (
-    <div className="print-orders p-4 max-w-[8.5in]">
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        @media print {
-          body { background: white !important; color: black !important; }
-          nav, header, footer, .no-print { display: none !important; }
-          .print-orders { padding: 0.25in; font-size: 12px; }
-          .print-orders table { border-collapse: collapse; width: 100%; margin-bottom: 16px; }
-          .print-orders th, .print-orders td { border: 1px solid #333; padding: 6px 8px; text-align: left; }
-          .print-orders th { background: #eee; font-weight: bold; }
-          .print-orders h1 { font-size: 20px; margin-bottom: 4px; }
-          .print-orders h2 { font-size: 16px; margin-top: 16px; margin-bottom: 8px; }
-          .print-orders .meta { font-size: 11px; color: #666; }
-        }
-        @media screen {
-          .print-orders { background: white; color: black; border-radius: 8px; }
-          .print-orders table { border-collapse: collapse; width: 100%; margin-bottom: 16px; }
-          .print-orders th, .print-orders td { border: 1px solid #ccc; padding: 8px 10px; text-align: left; font-size: 13px; }
-          .print-orders th { background: #f5f5f5; font-weight: 600; }
-        }
-      `,
-        }}
-      />
-
-      <h1 style={{ fontSize: '22px', fontWeight: 'bold' }}>Order Sheet</h1>
-      <div className="meta" style={{ fontSize: '13px', color: '#666', marginBottom: '16px' }}>
-        Generated:{' '}
-        {new Date().toLocaleDateString('en-US', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })}
-      </div>
-
-      <button
-        className="no-print mb-4 px-4 py-2 bg-stone-800 text-stone-100 rounded text-sm"
-        style={{ cursor: 'pointer' }}
-      >
-        Print (Ctrl+P)
-      </button>
-
+    <PrintableDocument
+      title="Order Sheet"
+      subtitle={`Generated: ${dateLabel}`}
+      footer={`ChefFlow Order Sheet — Printed ${new Date().toLocaleString()}\nBlank "Ordered" column for manual checkoff when calling vendors.`}
+      mode={printMode}
+    >
       {/* Pending Order Requests */}
       {orderItems.length > 0 && (
         <>
           <h2 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '8px' }}>
             Pending Order Requests
           </h2>
-          <table>
+          <table className="print-table">
             <thead>
               <tr>
                 <th>Station</th>
@@ -126,10 +105,17 @@ export default async function PrintOrderSheetPage() {
       {/* Clipboard "Need to Order" */}
       {clipboardItems.length > 0 && (
         <>
-          <h2 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '8px' }}>
+          <h2
+            style={{
+              fontSize: '16px',
+              fontWeight: 'bold',
+              marginBottom: '8px',
+              marginTop: '16px',
+            }}
+          >
             Today&apos;s Clipboard Needs
           </h2>
-          <table>
+          <table className="print-table">
             <thead>
               <tr>
                 <th>Station</th>
@@ -161,12 +147,6 @@ export default async function PrintOrderSheetPage() {
           No pending orders. All stations are stocked.
         </p>
       )}
-
-      <div className="meta" style={{ marginTop: '16px', fontSize: '10px', color: '#999' }}>
-        ChefFlow Order Sheet — Printed {new Date().toLocaleString()}
-        <br />
-        Blank &quot;Ordered&quot; column for manual checkoff when calling vendors.
-      </div>
-    </div>
+    </PrintableDocument>
   )
 }

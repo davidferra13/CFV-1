@@ -1,11 +1,12 @@
 // Print-Friendly Station Clipboard
 // Clean layout optimized for paper — no nav chrome, large cells, clear labels.
-// Uses @media print CSS for proper paper output.
+// Uses the shared print system from globals.css (print-standard, print-table, etc.)
+// Also works on 80mm thermal printers — the table auto-compresses.
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { PrintClipboardButton } from './print-button'
+import { PrintableDocument } from '@/components/print/printable-document'
 
 export const metadata: Metadata = { title: 'Print Clipboard — ChefFlow' }
 
@@ -14,12 +15,14 @@ export default async function PrintClipboardPage({
   searchParams,
 }: {
   params: { id: string }
-  searchParams: { date?: string }
+  searchParams: { date?: string; mode?: string }
 }) {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
   const date = searchParams.date ?? new Date().toISOString().split('T')[0]
+  const printMode =
+    searchParams.mode === 'thermal' ? ('thermal-80' as const) : ('standard' as const)
 
   // Load station
   const { data: station } = await supabase
@@ -59,54 +62,23 @@ export default async function PrintClipboardPage({
     }))
   )
 
+  const dateLabel = new Date(date).toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+
   return (
-    <div className="print-clipboard p-4 max-w-[11in]">
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        @media print {
-          body { background: white !important; color: black !important; }
-          nav, header, footer, .no-print { display: none !important; }
-          .print-clipboard { padding: 0.25in; font-size: 11px; }
-          .print-clipboard table { border-collapse: collapse; width: 100%; }
-          .print-clipboard th, .print-clipboard td { border: 1px solid #333; padding: 4px 6px; text-align: left; }
-          .print-clipboard th { background: #eee; font-weight: bold; }
-          .print-clipboard .expired { background: #fdd; }
-          .print-clipboard .expiring { background: #ffd; }
-          .print-clipboard h1 { font-size: 18px; margin-bottom: 4px; }
-          .print-clipboard .meta { font-size: 12px; color: #666; margin-bottom: 12px; }
-        }
-        @media screen {
-          .print-clipboard { background: white; color: black; border-radius: 8px; }
-          .print-clipboard table { border-collapse: collapse; width: 100%; }
-          .print-clipboard th, .print-clipboard td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; font-size: 13px; }
-          .print-clipboard th { background: #f5f5f5; font-weight: 600; }
-          .print-clipboard .expired { background: #fee; }
-          .print-clipboard .expiring { background: #ffd; }
-        }
-      `,
-        }}
-      />
-
-      <h1 style={{ fontSize: '20px', fontWeight: 'bold' }}>{station.name} — Daily Clipboard</h1>
-      <div className="meta" style={{ fontSize: '13px', color: '#666', marginBottom: '12px' }}>
-        Date:{' '}
-        {new Date(date).toLocaleDateString('en-US', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })}
-      </div>
-
-      <div className="no-print mb-4">
-        <PrintClipboardButton />
-      </div>
-
+    <PrintableDocument
+      title={`${station.name} — Daily Clipboard`}
+      subtitle={`Date: ${dateLabel}`}
+      mode={printMode}
+    >
       {allComponents.length === 0 ? (
         <p style={{ color: '#888' }}>No components configured for this station.</p>
       ) : (
-        <table>
+        <table className="print-table">
           <thead>
             <tr>
               <th>Item</th>
@@ -136,7 +108,10 @@ export default async function PrintClipboardPage({
                 expiresOn && !isExpired && expiresOn <= new Date(today.getTime() + 86400000)
 
               return (
-                <tr key={comp.id} className={isExpired ? 'expired' : isExpiring ? 'expiring' : ''}>
+                <tr
+                  key={comp.id}
+                  className={isExpired ? 'print-row-danger' : isExpiring ? 'print-row-warn' : ''}
+                >
                   <td>{comp.menuItem}</td>
                   <td>{comp.name}</td>
                   <td>
@@ -161,10 +136,6 @@ export default async function PrintClipboardPage({
           </tbody>
         </table>
       )}
-
-      <div className="meta" style={{ marginTop: '12px', fontSize: '11px', color: '#999' }}>
-        ChefFlow Station Clipboard — Printed {new Date().toLocaleString()}
-      </div>
-    </div>
+    </PrintableDocument>
   )
 }
