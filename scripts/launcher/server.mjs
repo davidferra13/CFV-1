@@ -13,7 +13,7 @@
 
 import { createServer } from 'node:http'
 import { exec, spawn } from 'node:child_process'
-import { readFile, writeFile, appendFile, stat } from 'node:fs/promises'
+import { readFile, writeFile, appendFile, stat, readdir } from 'node:fs/promises'
 import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -3523,9 +3523,326 @@ async function handleRequest(req, res) {
     return json(res, { ok: true, files: results })
   }
 
+  // ── Manual / Live Codebase Scan ──────────────────────────────────
+  if (path === '/api/manual/scan' && method === 'GET') {
+    try {
+      const result = await scanCodebase()
+      return json(res, { ok: true, ...result })
+    } catch (err) {
+      log('manual', `Scan failed: ${err.message}`, 'error')
+      return json(res, { ok: false, error: err.message }, 500)
+    }
+  }
+
   // 404
   res.writeHead(404)
   res.end('Not found')
+}
+
+// ── Codebase Scanner (Auto-Manual) ────────────────────────────────
+
+let scanCache = null
+let scanCacheTime = 0
+const SCAN_CACHE_TTL = 30_000 // 30 seconds
+
+async function scanCodebase() {
+  // Return cached result if fresh
+  if (scanCache && Date.now() - scanCacheTime < SCAN_CACHE_TTL) return scanCache
+
+  const appDir = join(PROJECT_ROOT, 'app')
+  const pages = []
+  const apiRoutes = []
+
+  // Recursively find all page.tsx and route.ts files
+  async function walk(dir) {
+    let entries
+    try { entries = await readdir(dir, { withFileTypes: true }) } catch { return }
+    for (const entry of entries) {
+      const fullPath = join(dir, entry.name)
+      if (entry.isDirectory()) {
+        if (entry.name === 'node_modules' || entry.name === '.next') continue
+        await walk(fullPath)
+      } else if (entry.name === 'page.tsx' || entry.name === 'page.ts') {
+        pages.push(await analyzePage(fullPath))
+      } else if (entry.name === 'route.ts' || entry.name === 'route.tsx') {
+        apiRoutes.push(await analyzeApiRoute(fullPath))
+      }
+    }
+  }
+  await walk(appDir)
+
+  // Get git info for all files in one batch
+  const gitMap = await getGitInfoBatch()
+
+  // Attach git info to pages and routes
+  for (const page of pages) {
+    const relPath = page.file.replace(/^\//, '')
+    page.git = gitMap[relPath] || null
+  }
+  for (const route of apiRoutes) {
+    const relPath = route.file.replace(/^\//, '')
+    route.git = gitMap[relPath] || null
+  }
+
+  // Group pages by section
+  const sections = {}
+  for (const page of pages) {
+    const sec = page.section
+    if (!sections[sec]) sections[sec] = { label: sec, pages: [], pageCount: 0 }
+    sections[sec].pages.push(page)
+    sections[sec].pageCount++
+  }
+
+  // Sort pages within each section by route
+  for (const sec of Object.values(sections)) {
+    sec.pages.sort((a, b) => a.route.localeCompare(b.route))
+  }
+
+  // Sort sections alphabetically but put "Dashboard" first
+  const sortedSections = {}
+  const sectionKeys = Object.keys(sections).sort((a, b) => {
+    if (a === 'Dashboard') return -1
+    if (b === 'Dashboard') return 1
+    return a.localeCompare(b)
+  })
+  for (const key of sectionKeys) sortedSections[key] = sections[key]
+
+  // Stats
+  const totalLines = pages.reduce((sum, p) => sum + p.lineCount, 0)
+  const proPages = pages.filter(p => p.proGated).length
+  const allComponents = new Set()
+  for (const p of pages) for (const c of p.components) allComponents.add(c)
+
+  const result = {
+    sections: sortedSections,
+    apiRoutes: apiRoutes.sort((a, b) => a.route.localeCompare(b.route)),
+    stats: {
+      totalPages: pages.length,
+      totalApiRoutes: apiRoutes.length,
+      totalLines,
+      totalComponents: allComponents.size,
+      proPages,
+      freePages: pages.length - proPages,
+      scannedAt: new Date().toISOString(),
+    },
+  }
+
+  scanCache = result
+  scanCacheTime = Date.now()
+  return result
+}
+
+async function analyzePage(filePath) {
+  let content
+  try { content = await readFile(filePath, 'utf-8') } catch { content = '' }
+  const relativePath = filePath.replace(PROJECT_ROOT, '').replace(/\\/g, '/')
+  const routePath = deriveRoute(relativePath)
+  const section = deriveSection(relativePath)
+
+  const imports = extractImports(content)
+  const components = extractComponents(content, imports)
+  const actions = extractActions(imports)
+  const hasProGate = /requirePro|UpgradeGate|upgrade-gate/.test(content)
+  const hasForms = /<(?:form|Form)\b/i.test(content)
+  const buttonCount = (content.match(/<(?:Button|button)\b/gi) || []).length
+  const tabMatches = content.match(/(?:tabs|TabsList|tab-list|data-tab)/gi)
+  const hasTabs = !!tabMatches
+  const hasModal = /(?:Dialog|Modal|Sheet|Drawer|AlertDialog)/i.test(content)
+  const hasUseEffect = /useEffect/.test(content)
+  const hasUseState = /useState/.test(content)
+  const isClientComponent = /^['"]use client['"]/.test(content.trim())
+  const lineCount = content.split('\n').length
+
+  // Try to extract page title from metadata or h1
+  let title = ''
+  const metaTitle = content.match(/title:\s*['"`]([^'"`]+)['"`]/)
+  if (metaTitle) title = metaTitle[1]
+  const h1Match = content.match(/<h1[^>]*>([^<]+)</)
+  if (!title && h1Match) title = h1Match[1]
+  const panelTitle = content.match(/panel-title[^>]*>([^<]+)</)
+  if (!title && panelTitle) title = panelTitle[1]
+
+  return {
+    route: routePath,
+    file: relativePath,
+    section,
+    title,
+    components,
+    actions,
+    proGated: hasProGate,
+    hasForms,
+    hasTabs,
+    hasModal,
+    buttonCount,
+    lineCount,
+    isClientComponent,
+    hasUseEffect,
+    hasUseState,
+  }
+}
+
+async function analyzeApiRoute(filePath) {
+  let content
+  try { content = await readFile(filePath, 'utf-8') } catch { content = '' }
+  const relativePath = filePath.replace(PROJECT_ROOT, '').replace(/\\/g, '/')
+  const routePath = deriveRoute(relativePath)
+
+  // Extract HTTP methods
+  const methods = []
+  if (/export\s+(?:async\s+)?function\s+GET/m.test(content)) methods.push('GET')
+  if (/export\s+(?:async\s+)?function\s+POST/m.test(content)) methods.push('POST')
+  if (/export\s+(?:async\s+)?function\s+PUT/m.test(content)) methods.push('PUT')
+  if (/export\s+(?:async\s+)?function\s+PATCH/m.test(content)) methods.push('PATCH')
+  if (/export\s+(?:async\s+)?function\s+DELETE/m.test(content)) methods.push('DELETE')
+
+  const lineCount = content.split('\n').length
+  const hasAuth = /requireChef|requireClient|requireAuth|requireAdmin/.test(content)
+  const isPublic = !hasAuth
+
+  return {
+    route: routePath,
+    file: relativePath,
+    methods,
+    lineCount,
+    hasAuth,
+    isPublic,
+  }
+}
+
+function deriveRoute(filePath) {
+  // /app/(chef)/events/[id]/page.tsx → /events/[id]
+  // /app/api/events/route.ts → /api/events
+  let route = filePath
+    .replace(/^\/app/, '')
+    .replace(/\/page\.(tsx?|jsx?)$/, '')
+    .replace(/\/route\.(tsx?|jsx?)$/, '')
+    .replace(/\/\([^)]+\)/g, '') // strip route groups like (chef), (client)
+  if (!route) route = '/'
+  return route
+}
+
+function deriveSection(filePath) {
+  // /app/(chef)/events/[id]/page.tsx → "Events"
+  // /app/(client)/my-events/page.tsx → "Client Portal"
+  // /app/(public)/login/page.tsx → "Public"
+  // /app/(admin)/admin/page.tsx → "Admin"
+  // /app/embed/inquiry/page.tsx → "Embed"
+
+  const match = filePath.match(/\/app\/\(([^)]+)\)\/([^/]+)/)
+  if (match) {
+    const group = match[1] // chef, client, public, admin
+    const subdir = match[2] // events, clients, etc.
+
+    if (group === 'client') return 'Client Portal'
+    if (group === 'public') return 'Public'
+    if (group === 'admin') return 'Admin'
+
+    // For chef pages, derive from subdirectory
+    const sectionMap = {
+      'dashboard': 'Dashboard',
+      'events': 'Events',
+      'clients': 'Clients',
+      'financials': 'Financials',
+      'culinary': 'Culinary',
+      'calendar': 'Calendar',
+      'inbox': 'Inbox',
+      'staff': 'Staff',
+      'analytics': 'Analytics',
+      'settings': 'Settings',
+      'marketing': 'Marketing',
+      'network': 'Network',
+      'loyalty': 'Loyalty',
+      'safety': 'Safety',
+      'daily-ops': 'Daily Ops',
+      'activity': 'Activity',
+      'travel': 'Travel',
+      'reviews': 'Reviews',
+      'games': 'Games',
+      'help': 'Help',
+      'cannabis': 'Cannabis',
+      'blog': 'Blog',
+      'dev-tools': 'Dev Tools',
+      'onboarding': 'Onboarding',
+      'my-spending': 'Client Portal',
+    }
+    return sectionMap[subdir] || subdir.charAt(0).toUpperCase() + subdir.slice(1).replace(/-/g, ' ')
+  }
+
+  // Non-grouped routes
+  if (filePath.includes('/app/api/')) return 'API'
+  if (filePath.includes('/app/embed/')) return 'Embed'
+  return 'Other'
+}
+
+function extractImports(content) {
+  const imports = []
+  const importRegex = /import\s+(?:{([^}]+)}|(\w+))\s+from\s+['"]([^'"]+)['"]/g
+  let match
+  while ((match = importRegex.exec(content)) !== null) {
+    const names = match[1] ? match[1].split(',').map(s => s.trim().split(/\s+as\s+/).pop().trim()).filter(Boolean) : [match[2]]
+    const source = match[3]
+    imports.push({ names, source })
+  }
+  return imports
+}
+
+function extractComponents(content, imports) {
+  // Get component names from imports (PascalCase from @/components/)
+  const componentNames = new Set()
+  for (const imp of imports) {
+    if (imp.source.includes('/components/') || imp.source.includes('@/components')) {
+      for (const name of imp.names) {
+        if (/^[A-Z]/.test(name)) componentNames.add(name)
+      }
+    }
+  }
+  // Also scan JSX for PascalCase components used
+  const jsxRegex = /<([A-Z][A-Za-z0-9]+)\b/g
+  let match
+  while ((match = jsxRegex.exec(content)) !== null) {
+    componentNames.add(match[1])
+  }
+  return [...componentNames].sort()
+}
+
+function extractActions(imports) {
+  const actionNames = []
+  for (const imp of imports) {
+    if (imp.source.includes('/actions') || imp.source.includes('action')) {
+      for (const name of imp.names) {
+        actionNames.push(name)
+      }
+    }
+  }
+  return actionNames
+}
+
+async function getGitInfoBatch() {
+  // Get last commit info for all files in app/ directory in one command
+  const gitMap = {}
+  try {
+    const { stdout } = await execAsync(
+      'git log --format="COMMIT_SEP%H|%aI|%an|%s" --name-only -300',
+      { cwd: PROJECT_ROOT, maxBuffer: 10 * 1024 * 1024 }
+    )
+    const commits = stdout.split('COMMIT_SEP').filter(Boolean)
+    for (const block of commits) {
+      const lines = block.trim().split('\n')
+      if (lines.length < 2) continue
+      const [hash, date, author, ...msgParts] = lines[0].split('|')
+      const message = msgParts.join('|')
+      const files = lines.slice(1).filter(f => f.trim())
+      for (const file of files) {
+        const f = file.trim().replace(/\\/g, '/')
+        if (!gitMap[f]) { // Only keep the most recent commit per file
+          gitMap[f] = { hash: hash?.slice(0, 8), date, author, message }
+        }
+      }
+    }
+  } catch (err) {
+    log('manual', `Git info batch failed: ${err.message}`, 'warn')
+  }
+  return gitMap
 }
 
 // ── Server startup ────────────────────────────────────────────────

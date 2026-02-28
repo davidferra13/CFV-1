@@ -342,6 +342,126 @@ body {
 
 .manual-search-highlight { background: rgba(232,143,71,0.35); border-radius: 2px; padding: 0 1px; }
 
+.manual-page-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  transition: border-color 0.2s;
+}
+.manual-page-card:hover { border-color: var(--brand); }
+.manual-page-route {
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand);
+  margin-bottom: 2px;
+}
+.manual-page-title {
+  font-size: 12px;
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.manual-page-file {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: monospace;
+  margin-bottom: 8px;
+}
+.manual-page-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.manual-chip {
+  display: inline-block;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.manual-chip.pro { background: rgba(139,92,246,0.15); color: #a78bfa; border-color: rgba(139,92,246,0.3); }
+.manual-chip.form { background: rgba(59,130,246,0.15); color: #60a5fa; border-color: rgba(59,130,246,0.3); }
+.manual-chip.tabs { background: rgba(34,197,94,0.15); color: #4ade80; border-color: rgba(34,197,94,0.3); }
+.manual-chip.modal { background: rgba(249,115,22,0.15); color: #fb923c; border-color: rgba(249,115,22,0.3); }
+.manual-chip.client { background: rgba(236,72,153,0.15); color: #f472b6; border-color: rgba(236,72,153,0.3); }
+.manual-chip.method-get { background: rgba(34,197,94,0.15); color: #4ade80; border-color: rgba(34,197,94,0.3); }
+.manual-chip.method-post { background: rgba(59,130,246,0.15); color: #60a5fa; border-color: rgba(59,130,246,0.3); }
+.manual-chip.method-put { background: rgba(249,115,22,0.15); color: #fb923c; border-color: rgba(249,115,22,0.3); }
+.manual-chip.method-patch { background: rgba(249,115,22,0.15); color: #fb923c; border-color: rgba(249,115,22,0.3); }
+.manual-chip.method-delete { background: rgba(239,68,68,0.15); color: #f87171; border-color: rgba(239,68,68,0.3); }
+.manual-page-components {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.manual-page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.manual-page-git {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.manual-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.manual-stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+}
+.manual-stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--brand);
+  line-height: 1;
+}
+.manual-stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 6px;
+}
+.manual-section-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 20px 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.manual-section-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.manual-pages-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
 /* ── Info Grid ────────────────────────────────────────────────── */
 .info-grid {
   display: grid;
@@ -8539,23 +8659,30 @@ function switchSection(section) {
 
 // ── Manual Panel ─────────────────────────────────────────────────
 
-let manualData = null
+let manualScanData = null
+let manualDocsData = null
 let manualLoaded = false
-let manualActiveTab = 'main'
+let manualActiveTab = '_overview'
+let manualMode = 'scan' // 'scan' (live codebase) or 'docs' (reference markdown)
 
 async function loadManual() {
   if (manualLoaded) return
   try {
-    const res = await fetch(`${API}/api/manual`)
-    const data = await res.json()
-    if (data.ok) {
-      manualData = data.files
-      manualLoaded = true
-      renderManualTabs()
-      renderManualDoc('main')
-      const totalLines = Object.values(manualData).reduce((sum, f) => sum + (f.lines || 0), 0)
-      setText('manual-status', `${totalLines.toLocaleString()} lines`)
-    }
+    // Load both scan and docs in parallel
+    const [scanRes, docsRes] = await Promise.all([
+      fetch(`${API}/api/manual/scan`),
+      fetch(`${API}/api/manual`),
+    ])
+    const scanData = await scanRes.json()
+    const docsData = await docsRes.json()
+
+    if (scanData.ok) manualScanData = scanData
+    if (docsData.ok) manualDocsData = docsData.files
+
+    manualLoaded = true
+    renderManualTabs()
+    renderManualTab('_overview')
+    setText('manual-status', `${manualScanData?.stats?.totalPages || 0} pages · Live`)
   } catch (err) {
     console.error('Failed to load manual:', err)
     const el = document.getElementById('manual-content')
@@ -8565,44 +8692,295 @@ async function loadManual() {
 
 function renderManualTabs() {
   const tabsEl = document.getElementById('manual-tabs')
-  if (!tabsEl || !manualData) return
+  if (!tabsEl) return
   let html = ''
-  for (const [key, file] of Object.entries(manualData)) {
-    const active = key === manualActiveTab ? ' active' : ''
-    const sizeKb = Math.round(file.size / 1024)
-    html += `<button class="manual-tab${active}" onclick="renderManualDoc('${key}')" title="${escapeHtml(file.label)} (${sizeKb}KB, ${file.lines} lines)">${escapeHtml(file.label)}</button>`
+
+  if (manualMode === 'scan' && manualScanData) {
+    // Overview tab
+    const ovActive = manualActiveTab === '_overview' ? ' active' : ''
+    html += `<button class="manual-tab${ovActive}" onclick="renderManualTab('_overview')">Overview</button>`
+
+    // Auto-generated section tabs
+    for (const [key, sec] of Object.entries(manualScanData.sections)) {
+      const active = manualActiveTab === key ? ' active' : ''
+      html += `<button class="manual-tab${active}" onclick="renderManualTab('${escapeHtml(key)}')" title="${sec.pageCount} pages">${escapeHtml(sec.label)} <span style="opacity:0.5;font-size:10px;">${sec.pageCount}</span></button>`
+    }
+
+    // API routes tab
+    if (manualScanData.apiRoutes?.length) {
+      const apiActive = manualActiveTab === '_api' ? ' active' : ''
+      html += `<button class="manual-tab${apiActive}" onclick="renderManualTab('_api')" title="${manualScanData.apiRoutes.length} endpoints">API <span style="opacity:0.5;font-size:10px;">${manualScanData.apiRoutes.length}</span></button>`
+    }
+
+    // Reference docs toggle
+    html += `<button class="manual-tab" onclick="switchManualMode('docs')" style="margin-left:auto;" title="View hand-written audit docs">&#x1F4D6; Docs</button>`
+  } else if (manualMode === 'docs' && manualDocsData) {
+    // Markdown doc tabs
+    for (const [key, file] of Object.entries(manualDocsData)) {
+      const active = manualActiveTab === key ? ' active' : ''
+      html += `<button class="manual-tab${active}" onclick="renderManualDoc('${key}')">${escapeHtml(file.label)}</button>`
+    }
+    // Back to live scan
+    html += `<button class="manual-tab" onclick="switchManualMode('scan')" style="margin-left:auto;" title="Back to live codebase scan">&#x2190; Live Scan</button>`
   }
+
   tabsEl.innerHTML = html
 }
 
-function renderManualDoc(key) {
+function switchManualMode(mode) {
+  manualMode = mode
+  if (mode === 'scan') {
+    manualActiveTab = '_overview'
+    renderManualTabs()
+    renderManualTab('_overview')
+    setText('manual-status', `${manualScanData?.stats?.totalPages || 0} pages \u00b7 Live`)
+  } else {
+    manualActiveTab = 'main'
+    renderManualTabs()
+    renderManualDoc('main')
+  }
+}
+
+function renderManualTab(key) {
   manualActiveTab = key
+  manualMode = 'scan'
   renderManualTabs()
 
-  const file = manualData[key]
+  const contentEl = document.getElementById('manual-content')
+  const tocList = document.getElementById('manual-toc-list')
+  if (!contentEl || !manualScanData) return
+  contentEl.scrollTop = 0
+
+  // Clear search
+  const searchEl = document.getElementById('manual-search')
+  if (searchEl) searchEl.value = ''
+
+  if (key === '_overview') {
+    renderManualOverview(contentEl, tocList)
+  } else if (key === '_api') {
+    renderManualApiRoutes(contentEl, tocList)
+  } else {
+    renderManualSection(key, contentEl, tocList)
+  }
+}
+
+function renderManualOverview(contentEl, tocList) {
+  const s = manualScanData.stats
+  const modEl = document.getElementById('manual-modified')
+  if (modEl) modEl.textContent = `Scanned ${new Date(s.scannedAt).toLocaleTimeString()}`
+
+  let html = `
+    <div class="manual-stat-grid">
+      <div class="manual-stat-card"><div class="manual-stat-value">${s.totalPages}</div><div class="manual-stat-label">Pages</div></div>
+      <div class="manual-stat-card"><div class="manual-stat-value">${s.totalApiRoutes}</div><div class="manual-stat-label">API Routes</div></div>
+      <div class="manual-stat-card"><div class="manual-stat-value">${s.totalComponents}</div><div class="manual-stat-label">Components</div></div>
+      <div class="manual-stat-card"><div class="manual-stat-value">${s.totalLines.toLocaleString()}</div><div class="manual-stat-label">Lines of Code</div></div>
+      <div class="manual-stat-card"><div class="manual-stat-value">${s.proPages}</div><div class="manual-stat-label">Pro Pages</div></div>
+      <div class="manual-stat-card"><div class="manual-stat-value">${s.freePages}</div><div class="manual-stat-label">Free Pages</div></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:20px;">
+      <button class="btn btn-primary" onclick="rescanManual()" style="font-size:12px;">&#x1F504; Rescan Codebase</button>
+    </div>
+    <h3 style="color:var(--text-primary);margin-bottom:12px;">All Sections</h3>
+  `
+
+  // Section summary cards
+  html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:24px;">'
+  for (const [key, sec] of Object.entries(manualScanData.sections)) {
+    const lines = sec.pages.reduce((sum, p) => sum + p.lineCount, 0)
+    const pro = sec.pages.filter(p => p.proGated).length
+    html += `
+      <div class="manual-page-card" style="cursor:pointer;" onclick="renderManualTab('${escapeHtml(key)}')">
+        <div style="font-weight:600;color:var(--text-primary);margin-bottom:4px;">${escapeHtml(sec.label)}</div>
+        <div style="font-size:12px;color:var(--text-muted);">${sec.pageCount} pages \u00b7 ${lines.toLocaleString()} lines${pro ? ` \u00b7 ${pro} Pro` : ''}</div>
+      </div>`
+  }
+  html += '</div>'
+
+  // Recent changes across all pages
+  html += '<h3 style="color:var(--text-primary);margin-bottom:12px;">Recently Changed Pages</h3>'
+  const allPages = Object.values(manualScanData.sections).flatMap(s => s.pages)
+  const recentPages = allPages
+    .filter(p => p.git?.date)
+    .sort((a, b) => new Date(b.git.date) - new Date(a.git.date))
+    .slice(0, 15)
+
+  if (recentPages.length) {
+    html += '<div style="display:flex;flex-direction:column;gap:6px;">'
+    for (const p of recentPages) {
+      const ago = timeAgo(p.git.date)
+      html += `
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;font-size:12px;">
+          <span style="font-family:monospace;color:var(--brand);min-width:180px;">${escapeHtml(p.route)}</span>
+          <span style="color:var(--text-muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(p.git.message || '')}</span>
+          <span style="color:var(--text-muted);white-space:nowrap;">${ago}</span>
+        </div>`
+    }
+    html += '</div>'
+  }
+
+  contentEl.innerHTML = html
+
+  // Build TOC for overview
+  if (tocList) {
+    let tocHtml = '<a class="manual-toc-item active" onclick="renderManualTab(\'_overview\')">Overview</a>'
+    tocHtml += '<div style="margin:10px 0 4px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Sections</div>'
+    for (const [key, sec] of Object.entries(manualScanData.sections)) {
+      tocHtml += `<a class="manual-toc-item" onclick="renderManualTab('${escapeHtml(key)}')">${escapeHtml(sec.label)} <span style="opacity:0.5;">${sec.pageCount}</span></a>`
+    }
+    if (manualScanData.apiRoutes?.length) {
+      tocHtml += `<a class="manual-toc-item" onclick="renderManualTab('_api')">API Routes <span style="opacity:0.5;">${manualScanData.apiRoutes.length}</span></a>`
+    }
+    tocList.innerHTML = tocHtml
+  }
+}
+
+function renderManualSection(sectionKey, contentEl, tocList) {
+  const sec = manualScanData.sections[sectionKey]
+  if (!sec) return
+
+  const modEl = document.getElementById('manual-modified')
+  if (modEl) modEl.textContent = `${sec.label} \u00b7 ${sec.pageCount} pages`
+
+  let html = `<div class="manual-section-header">${escapeHtml(sec.label)} <span class="manual-section-count">${sec.pageCount} pages</span></div>`
+  html += '<div class="manual-pages-grid">'
+
+  for (const page of sec.pages) {
+    html += renderPageCard(page)
+  }
+
+  html += '</div>'
+  contentEl.innerHTML = html
+
+  // Build TOC for this section
+  if (tocList) {
+    let tocHtml = `<a class="manual-toc-item" onclick="renderManualTab('_overview')">&#x2190; Overview</a>`
+    tocHtml += `<div style="margin:10px 0 4px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">${escapeHtml(sec.label)}</div>`
+    for (const page of sec.pages) {
+      tocHtml += `<a class="manual-toc-item" title="${escapeHtml(page.file)}">${escapeHtml(page.route)}</a>`
+    }
+    tocList.innerHTML = tocHtml
+  }
+}
+
+function renderManualApiRoutes(contentEl, tocList) {
+  const routes = manualScanData.apiRoutes
+  if (!routes) return
+
+  const modEl = document.getElementById('manual-modified')
+  if (modEl) modEl.textContent = `API \u00b7 ${routes.length} routes`
+
+  let html = `<div class="manual-section-header">API Routes <span class="manual-section-count">${routes.length} endpoints</span></div>`
+  html += '<div class="manual-pages-grid">'
+
+  for (const route of routes) {
+    html += `
+      <div class="manual-page-card">
+        <div class="manual-page-route">${escapeHtml(route.route)}</div>
+        <div class="manual-page-file">${escapeHtml(route.file)}</div>
+        <div class="manual-page-meta">
+          ${route.methods.map(m => `<span class="manual-chip method-${m.toLowerCase()}">${m}</span>`).join('')}
+          <span class="manual-chip">${route.lineCount} lines</span>
+          ${route.hasAuth ? '<span class="manual-chip">Auth</span>' : '<span class="manual-chip" style="color:#4ade80;">Public</span>'}
+        </div>
+        ${route.git ? `<div class="manual-page-git">${escapeHtml(route.git.message || '')} \u00b7 ${timeAgo(route.git.date)}</div>` : ''}
+      </div>`
+  }
+
+  html += '</div>'
+  contentEl.innerHTML = html
+
+  // Build TOC
+  if (tocList) {
+    let tocHtml = `<a class="manual-toc-item" onclick="renderManualTab('_overview')">&#x2190; Overview</a>`
+    tocHtml += `<div style="margin:10px 0 4px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">API Routes</div>`
+    for (const route of routes) {
+      tocHtml += `<a class="manual-toc-item" title="${route.methods.join(', ')}">${escapeHtml(route.route)}</a>`
+    }
+    tocList.innerHTML = tocHtml
+  }
+}
+
+function renderPageCard(page) {
+  const chips = []
+  chips.push(`<span class="manual-chip">${page.lineCount} lines</span>`)
+  if (page.proGated) chips.push('<span class="manual-chip pro">PRO</span>')
+  if (page.hasForms) chips.push('<span class="manual-chip form">Form</span>')
+  if (page.hasTabs) chips.push('<span class="manual-chip tabs">Tabs</span>')
+  if (page.hasModal) chips.push('<span class="manual-chip modal">Modal</span>')
+  if (page.isClientComponent) chips.push('<span class="manual-chip client">Client</span>')
+  if (page.buttonCount > 0) chips.push(`<span class="manual-chip">${page.buttonCount} btn${page.buttonCount > 1 ? 's' : ''}</span>`)
+
+  const comps = page.components.slice(0, 8)
+  const compHtml = comps.length
+    ? `<div class="manual-page-components"><span style="font-size:10px;color:var(--text-muted);margin-right:2px;">Components:</span> ${comps.map(c => `<span class="manual-chip">${escapeHtml(c)}</span>`).join('')}${page.components.length > 8 ? `<span class="manual-chip">+${page.components.length - 8}</span>` : ''}</div>`
+    : ''
+
+  const acts = page.actions.slice(0, 6)
+  const actHtml = acts.length
+    ? `<div class="manual-page-actions"><span style="font-size:10px;color:var(--text-muted);margin-right:2px;">Actions:</span> ${acts.map(a => `<span class="manual-chip">${escapeHtml(a)}</span>`).join('')}${page.actions.length > 6 ? `<span class="manual-chip">+${page.actions.length - 6}</span>` : ''}</div>`
+    : ''
+
+  const gitHtml = page.git
+    ? `<div class="manual-page-git">${escapeHtml(page.git.message || '')} \u00b7 ${timeAgo(page.git.date)}</div>`
+    : ''
+
+  return `
+    <div class="manual-page-card">
+      <div class="manual-page-route">${escapeHtml(page.route)}</div>
+      ${page.title ? `<div class="manual-page-title">${escapeHtml(page.title)}</div>` : ''}
+      <div class="manual-page-file">${escapeHtml(page.file)}</div>
+      <div class="manual-page-meta">${chips.join('')}</div>
+      ${compHtml}
+      ${actHtml}
+      ${gitHtml}
+    </div>`
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return ''
+  const now = new Date()
+  const then = new Date(dateStr)
+  const diffMs = now - then
+  const mins = Math.floor(diffMs / 60000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  if (days < 30) return `${days}d ago`
+  const months = Math.floor(days / 30)
+  return `${months}mo ago`
+}
+
+// --- Reference docs mode (hand-written audit markdown) ---
+
+function renderManualDoc(key) {
+  manualActiveTab = key
+  manualMode = 'docs'
+  renderManualTabs()
+
+  const file = manualDocsData[key]
   if (!file || !file.content) {
     const el = document.getElementById('manual-content')
     if (el) el.innerHTML = `<div style="color:var(--error);text-align:center;padding:40px;">Document not found: ${escapeHtml(key)}</div>`
     return
   }
 
-  // Parse markdown to HTML using marked (already loaded via CDN)
   const html = marked.parse(file.content, { breaks: true, gfm: true })
-
   const contentEl = document.getElementById('manual-content')
   if (!contentEl) return
   contentEl.innerHTML = html
   contentEl.scrollTop = 0
 
-  // Update last-modified display
   const modEl = document.getElementById('manual-modified')
   if (modEl) modEl.textContent = `${escapeHtml(file.label)} \u00b7 ${file.lines.toLocaleString()} lines`
 
-  // Clear search
   const searchEl = document.getElementById('manual-search')
   if (searchEl) searchEl.value = ''
 
   buildManualToc(contentEl)
+  setText('manual-status', `${file.lines.toLocaleString()} lines \u00b7 Docs`)
 }
 
 function buildManualToc(contentEl) {
@@ -8658,6 +9036,8 @@ function setupManualScrollSpy(contentEl) {
   })
 }
 
+// --- Search (works in both modes) ---
+
 let manualSearchTimeout = null
 function searchManual(query) {
   clearTimeout(manualSearchTimeout)
@@ -8666,7 +9046,7 @@ function searchManual(query) {
 
 function _doManualSearch(query) {
   const contentEl = document.getElementById('manual-content')
-  if (!contentEl || !manualData) return
+  if (!contentEl) return
 
   // Clear previous highlights
   contentEl.querySelectorAll('.manual-search-highlight').forEach(el => {
@@ -8675,9 +9055,15 @@ function _doManualSearch(query) {
   })
 
   if (!query || query.length < 2) {
-    const totalLines = Object.values(manualData).reduce((sum, f) => sum + (f.lines || 0), 0)
-    setText('manual-status', `${totalLines.toLocaleString()} lines`)
+    if (manualMode === 'scan') {
+      setText('manual-status', `${manualScanData?.stats?.totalPages || 0} pages \u00b7 Live`)
+    }
     return
+  }
+
+  // In scan mode, also filter the page cards
+  if (manualMode === 'scan' && manualActiveTab !== '_overview') {
+    // Text highlight still works on rendered cards
   }
 
   const walker = document.createTreeWalker(contentEl, NodeFilter.SHOW_TEXT, null)
@@ -8718,7 +9104,6 @@ function _doManualSearch(query) {
     node.replaceWith(frag)
   }
 
-  // Scroll to first match
   const firstHighlight = contentEl.querySelector('.manual-search-highlight')
   if (firstHighlight) {
     firstHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -8727,9 +9112,13 @@ function _doManualSearch(query) {
   setText('manual-status', totalHighlights > 0 ? `${totalHighlights} matches` : 'No matches')
 }
 
-async function reloadManual() {
+async function rescanManual() {
   manualLoaded = false
-  manualData = null
+  manualScanData = null
+  manualDocsData = null
+  setText('manual-status', 'Scanning...')
+  const el = document.getElementById('manual-content')
+  if (el) el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:60px 0;"><span style="font-size:48px;">&#x1F50D;</span><div style="margin-top:12px;font-size:14px;">Scanning codebase...</div></div>'
   await loadManual()
 }
 
