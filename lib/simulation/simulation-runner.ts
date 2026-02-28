@@ -12,6 +12,7 @@ import { runScenario } from './pipeline-runner'
 import { evaluateOutput } from './quality-evaluator'
 import { generatePostRunReport } from './report-generator'
 import type { SimModule, SimRunConfig } from './types'
+import type { Json } from '@/types/database'
 
 export async function runSimulationInternal(
   tenantId: string,
@@ -51,7 +52,7 @@ export async function runSimulationInternal(
       source: string
       module: string
       input_text: string
-      output_json: unknown
+      output_json: Json
       quality_score: number
     }> = []
 
@@ -69,10 +70,10 @@ export async function runSimulationInternal(
         tenant_id: string
         module: string
         scenario_payload: string
-        raw_output: unknown
+        raw_output: Json
         score: number
         passed: boolean
-        failures: unknown
+        failures: Json
         duration_ms: number
       }> = []
 
@@ -85,10 +86,10 @@ export async function runSimulationInternal(
           tenant_id: tenantId,
           module,
           scenario_payload: scenario.inputText,
-          raw_output: output.rawOutput,
+          raw_output: output.rawOutput as Json,
           score: evaluation.score,
           passed: evaluation.passed,
-          failures: evaluation.failures,
+          failures: evaluation.failures as Json,
           duration_ms: output.durationMs,
         })
 
@@ -108,7 +109,7 @@ export async function runSimulationInternal(
               source: 'simulation',
               module,
               input_text: scenario.inputText,
-              output_json: output.rawOutput,
+              output_json: output.rawOutput as Json,
               quality_score: evaluation.score,
             })
           }
