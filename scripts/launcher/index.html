@@ -431,6 +431,101 @@ body {
 }
 .commit-msg { color: var(--text-secondary); }
 
+/* ── Timeline Visuals ───────────────────────────────────────────── */
+.timeline-visual-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 12px 0 16px;
+}
+.timeline-visual-card {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.35), rgba(15, 23, 42, 0.45));
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+}
+.timeline-visual-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: var(--text-primary);
+}
+.timeline-visual-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.timeline-illustrated-strip {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+.timeline-illustrated-card {
+  min-width: 280px;
+  max-width: 320px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-radius: 10px;
+  padding: 10px 11px;
+}
+.timeline-wall-list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.timeline-wall-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 180px) 1fr;
+  gap: 10px;
+  align-items: center;
+}
+.timeline-wall-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+.timeline-wall-track {
+  position: relative;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(100, 116, 139, 0.08), rgba(100, 116, 139, 0.02));
+  overflow: hidden;
+}
+.timeline-wall-dot {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  opacity: 0.95;
+}
+.timeline-historical-wrap {
+  margin-top: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.65);
+  padding: 8px;
+}
+.timeline-historical-svg {
+  width: 100%;
+  height: 220px;
+  display: block;
+}
+.timeline-historical-legend {
+  margin-top: 8px;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
 /* ── Console ──────────────────────────────────────────────────── */
 .console-wrapper {
   border-top: 1px solid var(--border);
@@ -2102,6 +2197,72 @@ body {
         <div class="divider"></div>
         <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Recent Timeline Events</h3>
         <div class="commit-list" id="timeline-commits"></div>
+
+        <div class="divider"></div>
+        <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Full Linear Project Ledger</h3>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">
+          Chronological ledger of detected project activity: commits, file lifecycle changes, branch actions, pushes, and recorded milestones.
+        </div>
+
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr auto;gap:8px;align-items:end;margin-bottom:10px;">
+          <div>
+            <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">Search</label>
+            <input id="timeline-filter-search" type="text" placeholder="message, file path, branch, hash..." style="width:100%;padding:8px 10px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:12px;outline:none;" />
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">Type</label>
+            <select id="timeline-filter-type" style="width:100%;padding:8px 10px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:12px;outline:none;">
+              <option value="all">All types</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">Source</label>
+            <select id="timeline-filter-source" style="width:100%;padding:8px 10px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:12px;outline:none;">
+              <option value="all">All sources</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">Order</label>
+            <select id="timeline-filter-order" style="width:100%;padding:8px 10px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:12px;outline:none;">
+              <option value="asc">Oldest first</option>
+              <option value="desc">Newest first</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">From</label>
+            <input id="timeline-filter-from" type="date" style="width:100%;padding:8px 10px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:12px;outline:none;" />
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">To</label>
+            <input id="timeline-filter-to" type="date" style="width:100%;padding:8px 10px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:12px;outline:none;" />
+          </div>
+          <button class="btn btn-ghost" id="timeline-filter-reset" style="height:34px;">Reset</button>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;flex-wrap:wrap;">
+          <div style="font-size:12px;color:var(--text-muted);" id="timeline-ledger-count">0 events</div>
+          <div style="font-size:11px;color:var(--text-muted);" id="timeline-ledger-meta">--</div>
+        </div>
+
+        <div class="timeline-visual-stack">
+          <div class="timeline-visual-card">
+            <div class="timeline-visual-title">Illustrated Timeline</div>
+            <div class="timeline-visual-sub">Story-card view of each event in time order.</div>
+            <div id="timeline-illustrated" class="timeline-illustrated-strip"></div>
+          </div>
+          <div class="timeline-visual-card">
+            <div class="timeline-visual-title">Chronological Wall Chart</div>
+            <div class="timeline-visual-sub">Month-by-month event wall with density and placement.</div>
+            <div id="timeline-wall-chart" class="timeline-wall-list"></div>
+          </div>
+          <div class="timeline-visual-card">
+            <div class="timeline-visual-title">Historical Timeline Chart</div>
+            <div class="timeline-visual-sub">Monthly velocity bars + cumulative history line.</div>
+            <div id="timeline-historical-chart" class="timeline-historical-wrap"></div>
+          </div>
+        </div>
+
+        <div id="timeline-ledger-list" style="display:flex;flex-direction:column;gap:6px;max-height:520px;overflow-y:auto;"></div>
       </div>
 
       <!-- ─── Feedback Panel ─── -->
@@ -5884,6 +6045,8 @@ function renderHistory(commits) {
 // ── Feedback ──────────────────────────────────────────────────────
 
 let timelineLoaded = false
+let timelineLinearEvents = []
+let timelineFiltersBound = false
 
 function formatTimelineHours(hours) {
   const n = Number(hours)
@@ -5916,6 +6079,356 @@ function formatTimelineDateLabel(dateKey) {
     month: 'short',
     day: 'numeric',
   })
+}
+
+function titleizeTimelineToken(token) {
+  return String(token || '')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+function shortTimelineText(text, max = 220) {
+  const t = String(text || '')
+  if (t.length <= max) return t
+  return `${t.slice(0, max - 1)}…`
+}
+
+function timelineEventMeta(type) {
+  const key = String(type || '').toLowerCase()
+  if (key === 'commit') return { icon: '🧩', color: '#f59e0b' }
+  if (key === 'milestone') return { icon: '🏁', color: '#22c55e' }
+  if (key === 'push') return { icon: '🚀', color: '#3b82f6' }
+  if (key === 'branch_created') return { icon: '🌱', color: '#84cc16' }
+  if (key === 'branch_deleted') return { icon: '🪓', color: '#ef4444' }
+  if (key === 'branch_renamed') return { icon: '✍️', color: '#a78bfa' }
+  if (key === 'checkout') return { icon: '🔀', color: '#06b6d4' }
+  if (key === 'merge') return { icon: '🧬', color: '#14b8a6' }
+  if (key === 'rebase') return { icon: '🛠️', color: '#f97316' }
+  if (key === 'reset') return { icon: '↩️', color: '#f43f5e' }
+  if (key === 'pull') return { icon: '📥', color: '#60a5fa' }
+  if (key === 'cherry_pick') return { icon: '🍒', color: '#fb7185' }
+  if (key === 'file_created') return { icon: '📄', color: '#10b981' }
+  if (key === 'file_deleted') return { icon: '🗑️', color: '#ef4444' }
+  if (key === 'file_renamed') return { icon: '📝', color: '#8b5cf6' }
+  return { icon: '📌', color: '#94a3b8' }
+}
+
+function monthKeyFromTimestamp(ts) {
+  const d = new Date(Number(ts || 0) * 1000)
+  if (Number.isNaN(d.getTime())) return 'unknown'
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  return `${y}-${m}`
+}
+
+function formatMonthKeyLabel(monthKey) {
+  const [y, m] = String(monthKey || '').split('-')
+  const year = Number(y)
+  const month = Number(m)
+  if (!Number.isFinite(year) || !Number.isFinite(month) || month < 1 || month > 12) return monthKey
+  return new Date(year, month - 1, 1).toLocaleDateString('en-US', {
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
+function renderIllustratedTimeline(events) {
+  const el = document.getElementById('timeline-illustrated')
+  if (!el) return
+  if (!events.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:8px 0;">No events to illustrate for current filters.</div>'
+    return
+  }
+
+  const list = events.slice(0, 180)
+  el.innerHTML = list.map((event) => {
+    const meta = timelineEventMeta(event.type)
+    const date = formatTimelineDateTime(event.timestamp)
+    const typeLabel = titleizeTimelineToken(event.type)
+    const title = shortTimelineText(event.title || '(untitled event)', 180)
+    const details = shortTimelineText(event.details || '', 210)
+    const trail = [event.source, event.hash ? `#${event.hash}` : '', event.path || '', event.branch || '']
+      .filter(Boolean)
+      .join(' • ')
+    return `
+      <div class="timeline-illustrated-card" style="border-left-color:${meta.color}">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <div style="font-size:18px;line-height:1;">${meta.icon}</div>
+          <div style="font-size:10px;color:var(--text-muted);white-space:nowrap;">${escapeHtml(date)}</div>
+        </div>
+        <div style="margin-top:6px;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;">${escapeHtml(typeLabel)}</div>
+        <div style="margin-top:4px;font-size:12px;font-weight:700;color:var(--text-primary);line-height:1.35;">${escapeHtml(title)}</div>
+        ${details ? `<div style="margin-top:4px;font-size:11px;color:var(--text-secondary);line-height:1.35;">${escapeHtml(details)}</div>` : ''}
+        ${trail ? `<div style="margin-top:6px;font-size:10px;color:var(--text-muted);">${escapeHtml(trail)}</div>` : ''}
+      </div>
+    `
+  }).join('')
+}
+
+function renderChronologicalWallChart(events) {
+  const el = document.getElementById('timeline-wall-chart')
+  if (!el) return
+  if (!events.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:8px 0;">No events available for wall chart.</div>'
+    return
+  }
+
+  const monthMap = new Map()
+  for (const event of events) {
+    const key = monthKeyFromTimestamp(event.timestamp)
+    if (!monthMap.has(key)) monthMap.set(key, [])
+    monthMap.get(key).push(event)
+  }
+  const monthKeys = Array.from(monthMap.keys()).sort()
+
+  const rows = monthKeys.slice(-24).map((key) => {
+    const monthEvents = monthMap.get(key) || []
+    const [yearRaw, monthRaw] = key.split('-')
+    const year = Number(yearRaw)
+    const month = Number(monthRaw)
+    const startTs = Math.floor(new Date(year, month - 1, 1, 0, 0, 0).getTime() / 1000)
+    const endTs = Math.floor(new Date(year, month, 0, 23, 59, 59).getTime() / 1000)
+    const span = Math.max(1, endTs - startTs)
+    const dots = monthEvents.slice(0, 220).map((event) => {
+      const pct = Math.max(0, Math.min(100, ((event.timestamp - startTs) / span) * 100))
+      const meta = timelineEventMeta(event.type)
+      return `<span class="timeline-wall-dot" title="${escapeHtml(event.title || event.type)}" style="left:${pct.toFixed(2)}%;background:${meta.color};"></span>`
+    }).join('')
+    return `
+      <div class="timeline-wall-row">
+        <div class="timeline-wall-label">${escapeHtml(formatMonthKeyLabel(key))} <span style="color:var(--text-muted);font-weight:500;">(${monthEvents.length})</span></div>
+        <div class="timeline-wall-track">${dots}</div>
+      </div>
+    `
+  }).join('')
+
+  el.innerHTML = rows || '<div style="font-size:12px;color:var(--text-muted);padding:8px 0;">No monthly wall data.</div>'
+}
+
+function renderHistoricalTimelineChart(events) {
+  const el = document.getElementById('timeline-historical-chart')
+  if (!el) return
+  if (!events.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:8px;">No events available for historical chart.</div>'
+    return
+  }
+
+  const monthCounts = new Map()
+  for (const event of events) {
+    const key = monthKeyFromTimestamp(event.timestamp)
+    monthCounts.set(key, (monthCounts.get(key) || 0) + 1)
+  }
+  const keys = Array.from(monthCounts.keys()).sort()
+  const counts = keys.map(k => monthCounts.get(k) || 0)
+  const maxCount = Math.max(1, ...counts)
+  let running = 0
+  const cumulative = counts.map(c => (running += c))
+  const maxCum = Math.max(1, ...cumulative)
+
+  const width = 1000
+  const height = 220
+  const padL = 42
+  const padR = 20
+  const chartW = width - padL - padR
+  const baseY = 180
+  const barMaxH = 96
+  const lineTop = 24
+  const n = counts.length
+  const slot = chartW / Math.max(1, n)
+  const barW = Math.max(3, Math.min(24, slot * 0.55))
+
+  const bars = counts.map((count, i) => {
+    const h = (count / maxCount) * barMaxH
+    const x = padL + (i * slot) + (slot - barW) / 2
+    const y = baseY - h
+    return `<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${barW.toFixed(2)}" height="${h.toFixed(2)}" rx="2" fill="rgba(232,143,71,0.45)" stroke="rgba(232,143,71,0.8)" stroke-width="0.7"></rect>`
+  }).join('')
+
+  const points = cumulative.map((value, i) => {
+    const x = padL + (i * slot) + (slot / 2)
+    const y = baseY - ((value / maxCum) * (baseY - lineTop))
+    return { x, y }
+  })
+  const path = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(' ')
+  const pointDots = points.map((p) => `<circle cx="${p.x.toFixed(2)}" cy="${p.y.toFixed(2)}" r="2.4" fill="#34d399"></circle>`).join('')
+
+  const axisTicks = keys.map((k, i) => {
+    const shouldLabel = (n <= 12) || (i === 0) || (i === n - 1) || (i % Math.ceil(n / 8) === 0)
+    if (!shouldLabel) return ''
+    const x = padL + (i * slot) + (slot / 2)
+    const label = formatMonthKeyLabel(k).replace(' ', '\u00A0')
+    return `<text x="${x.toFixed(2)}" y="${height - 12}" text-anchor="middle" fill="#64748b" font-size="10">${escapeHtml(label)}</text>`
+  }).join('')
+
+  el.innerHTML = `
+    <svg class="timeline-historical-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="Historical timeline chart">
+      <line x1="${padL}" y1="${baseY}" x2="${width - padR}" y2="${baseY}" stroke="#334155" stroke-width="1"></line>
+      <line x1="${padL}" y1="${lineTop}" x2="${padL}" y2="${baseY}" stroke="#334155" stroke-width="1"></line>
+      ${bars}
+      <path d="${path}" fill="none" stroke="#34d399" stroke-width="2"></path>
+      ${pointDots}
+      ${axisTicks}
+    </svg>
+    <div class="timeline-historical-legend">
+      <span>🟧 Bars: monthly event volume (max ${maxCount})</span>
+      <span>🟢 Line: cumulative total (${events.length})</span>
+      <span>Range: ${escapeHtml(formatMonthKeyLabel(keys[0]))} -> ${escapeHtml(formatMonthKeyLabel(keys[keys.length - 1]))}</span>
+    </div>
+  `
+}
+
+function renderTimelineVisuals(events) {
+  const ordered = [...events].sort((a, b) => Number(a.timestamp || 0) - Number(b.timestamp || 0))
+  renderIllustratedTimeline(ordered)
+  renderChronologicalWallChart(ordered)
+  renderHistoricalTimelineChart(ordered)
+}
+
+function bindTimelineFilters() {
+  if (timelineFiltersBound) return
+  timelineFiltersBound = true
+
+  const ids = [
+    'timeline-filter-search',
+    'timeline-filter-type',
+    'timeline-filter-source',
+    'timeline-filter-order',
+    'timeline-filter-from',
+    'timeline-filter-to',
+  ]
+  for (const id of ids) {
+    const el = document.getElementById(id)
+    if (!el) continue
+    const eventName = id === 'timeline-filter-search' ? 'input' : 'change'
+    el.addEventListener(eventName, applyTimelineFilters)
+  }
+
+  const resetBtn = document.getElementById('timeline-filter-reset')
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      const setValue = (id, value) => {
+        const el = document.getElementById(id)
+        if (el) el.value = value
+      }
+      setValue('timeline-filter-search', '')
+      setValue('timeline-filter-type', 'all')
+      setValue('timeline-filter-source', 'all')
+      setValue('timeline-filter-order', 'asc')
+      setValue('timeline-filter-from', '')
+      setValue('timeline-filter-to', '')
+      applyTimelineFilters()
+    })
+  }
+}
+
+function hydrateTimelineFilterOptions(events) {
+  const typeSelect = document.getElementById('timeline-filter-type')
+  const sourceSelect = document.getElementById('timeline-filter-source')
+  if (!typeSelect || !sourceSelect) return
+
+  const prevType = typeSelect.value || 'all'
+  const prevSource = sourceSelect.value || 'all'
+
+  const types = Array.from(new Set((events || []).map(e => String(e.type || '').trim()).filter(Boolean))).sort()
+  const sources = Array.from(new Set((events || []).map(e => String(e.source || '').trim()).filter(Boolean))).sort()
+
+  typeSelect.innerHTML = `<option value="all">All types</option>${types.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(titleizeTimelineToken(t))}</option>`).join('')}`
+  sourceSelect.innerHTML = `<option value="all">All sources</option>${sources.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('')}`
+
+  if (types.includes(prevType)) typeSelect.value = prevType
+  if (sources.includes(prevSource)) sourceSelect.value = prevSource
+}
+
+function renderTimelineLedger(events) {
+  const el = document.getElementById('timeline-ledger-list')
+  if (!el) return
+
+  if (!events.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:10px 0;">No events match the current filters.</div>'
+    return
+  }
+
+  el.innerHTML = events.map((event) => {
+    const ts = Number(event.timestamp || 0)
+    const typeLabel = titleizeTimelineToken(event.type)
+    const sourceLabel = String(event.source || 'unknown')
+    const dateLabel = Number.isFinite(ts) && ts > 0 ? formatTimelineDateTime(ts) : '--'
+    const title = shortTimelineText(event.title || '(untitled event)', 260)
+    const details = shortTimelineText(event.details || '', 320)
+    const metaParts = []
+    if (event.hash) metaParts.push(`#${event.hash}`)
+    if (event.branch) metaParts.push(event.branch)
+    if (event.path) metaParts.push(event.path)
+    const meta = metaParts.length ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${escapeHtml(metaParts.join(' • '))}</div>` : ''
+
+    return `
+      <div class="commit-item" style="display:grid;grid-template-columns:minmax(170px,1fr) minmax(130px,0.7fr) minmax(150px,1fr) minmax(300px,2fr);gap:10px;align-items:start;">
+        <div style="font-size:11px;color:var(--text-muted);">${escapeHtml(dateLabel)}</div>
+        <div style="font-size:11px;color:var(--text-secondary);font-weight:600;">${escapeHtml(typeLabel)}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${escapeHtml(sourceLabel)}</div>
+        <div>
+          <div class="commit-msg" style="font-size:12px;font-weight:600;">${escapeHtml(title)}</div>
+          ${details ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${escapeHtml(details)}</div>` : ''}
+          ${meta}
+        </div>
+      </div>
+    `
+  }).join('')
+}
+
+function applyTimelineFilters() {
+  const search = (document.getElementById('timeline-filter-search')?.value || '').trim().toLowerCase()
+  const type = document.getElementById('timeline-filter-type')?.value || 'all'
+  const source = document.getElementById('timeline-filter-source')?.value || 'all'
+  const order = document.getElementById('timeline-filter-order')?.value || 'asc'
+  const fromDate = document.getElementById('timeline-filter-from')?.value || ''
+  const toDate = document.getElementById('timeline-filter-to')?.value || ''
+
+  const fromTs = fromDate ? Math.floor(new Date(`${fromDate}T00:00:00`).getTime() / 1000) : null
+  const toTs = toDate ? Math.floor(new Date(`${toDate}T23:59:59`).getTime() / 1000) : null
+
+  let filtered = timelineLinearEvents.filter((event) => {
+    const ts = Number(event.timestamp || 0)
+    if (type !== 'all' && event.type !== type) return false
+    if (source !== 'all' && event.source !== source) return false
+    if (Number.isFinite(fromTs) && ts < fromTs) return false
+    if (Number.isFinite(toTs) && ts > toTs) return false
+    if (search) {
+      const haystack = [
+        event.title,
+        event.details,
+        event.path,
+        event.branch,
+        event.hash,
+        event.source,
+        event.type,
+      ].map(x => String(x || '').toLowerCase()).join(' ')
+      if (!haystack.includes(search)) return false
+    }
+    return true
+  })
+
+  filtered.sort((a, b) => {
+    const ta = Number(a.timestamp || 0)
+    const tb = Number(b.timestamp || 0)
+    if (order === 'desc') return tb - ta
+    return ta - tb
+  })
+
+  setText('timeline-ledger-count', `${filtered.length.toLocaleString()} events`)
+  if (filtered.length) {
+    const firstTs = Number(filtered[0].timestamp || 0)
+    const lastTs = Number(filtered[filtered.length - 1].timestamp || 0)
+    const spanText = order === 'desc'
+      ? `${formatTimelineDateTime(lastTs)} -> ${formatTimelineDateTime(firstTs)}`
+      : `${formatTimelineDateTime(firstTs)} -> ${formatTimelineDateTime(lastTs)}`
+    setText('timeline-ledger-meta', `Visible span: ${spanText}`)
+  } else {
+    setText('timeline-ledger-meta', '--')
+  }
+
+  renderTimelineVisuals(filtered)
+  renderTimelineLedger(filtered)
 }
 
 function resetTimelineSummary() {
@@ -5999,6 +6512,7 @@ function renderTimelineLifeEvents(events) {
 async function loadProjectTimeline(force = false) {
   if (timelineLoaded && !force) return
   setText('timeline-status', 'Loading...')
+  bindTimelineFilters()
   const dateInput = document.getElementById('timeline-add-date')
   if (dateInput && !dateInput.value) {
     dateInput.value = new Date().toISOString().slice(0, 10)
@@ -6014,6 +6528,9 @@ async function loadProjectTimeline(force = false) {
       resetTimelineSummary()
       renderTimelineLifeSummary(data.life || null)
       renderTimelineLifeEvents(data.life?.milestones || [])
+      timelineLinearEvents = Array.isArray(data.linear?.events) ? data.linear.events : []
+      hydrateTimelineFilterOptions(timelineLinearEvents)
+      applyTimelineFilters()
       renderTimelineDays([])
       renderTimelineCommits([])
       timelineLoaded = true
@@ -6037,6 +6554,9 @@ async function loadProjectTimeline(force = false) {
     )
     renderTimelineLifeSummary(data.life || null)
     renderTimelineLifeEvents(data.life?.milestones || [])
+    timelineLinearEvents = Array.isArray(data.linear?.events) ? data.linear.events : []
+    hydrateTimelineFilterOptions(timelineLinearEvents)
+    applyTimelineFilters()
     renderTimelineDays(data.days || [])
     renderTimelineCommits(data.commits || [])
     timelineLoaded = true
@@ -6044,6 +6564,9 @@ async function loadProjectTimeline(force = false) {
     setText('timeline-status', 'Load failed')
     setText('timeline-hours-note', `Could not load timeline: ${err.message}`)
     setText('timeline-life-note', `Could not load lifetime estimate: ${err.message}`)
+    timelineLinearEvents = []
+    hydrateTimelineFilterOptions([])
+    applyTimelineFilters()
     renderTimelineLifeEvents([])
     renderTimelineDays([])
     renderTimelineCommits([])
@@ -6628,6 +7151,12 @@ document.addEventListener('keydown', (e) => {
     'timeline-add-hours-low',
     'timeline-add-hours-mid',
     'timeline-add-hours-high',
+    'timeline-filter-search',
+    'timeline-filter-type',
+    'timeline-filter-source',
+    'timeline-filter-order',
+    'timeline-filter-from',
+    'timeline-filter-to',
   ])
   if (activeEl === document.getElementById('chat-input') ||
       activeEl === document.getElementById('commit-msg') ||

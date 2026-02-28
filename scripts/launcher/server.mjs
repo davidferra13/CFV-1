@@ -1140,6 +1140,266 @@ function buildLifeTimelineView(timelineData, gitSummary) {
   }
 }
 
+function cleanEventIdPart(value) {
+  return String(value || '')
+    .replace(/[^a-zA-Z0-9._-]+/g, '_')
+    .slice(0, 80)
+}
+
+function parseSelectorDate(selector) {
+  const text = String(selector || '')
+  const at = text.lastIndexOf('@{')
+  const close = text.endsWith('}')
+  if (at === -1 || !close) return { ref: text, timestamp: null, dateRaw: null }
+  const ref = text.slice(0, at)
+  const dateRaw = text.slice(at + 2, -1)
+  const ms = Date.parse(dateRaw)
+  if (!Number.isFinite(ms)) return { ref, timestamp: null, dateRaw }
+  return { ref, timestamp: Math.floor(ms / 1000), dateRaw }
+}
+
+function timestampFromDate(dateLike) {
+  if (!dateLike) return null
+  const ms = Date.parse(String(dateLike))
+  if (Number.isFinite(ms)) return Math.floor(ms / 1000)
+  return null
+}
+
+function classifyReflogMessage(message) {
+  const lower = String(message || '').toLowerCase()
+  if (!lower) return null
+  if (lower.includes('update by push')) return 'push'
+  if (lower.startsWith('branch: created')) return 'branch_created'
+  if (lower.startsWith('branch: deleted')) return 'branch_deleted'
+  if (lower.startsWith('branch: renamed')) return 'branch_renamed'
+  if (lower.startsWith('checkout:')) return 'checkout'
+  if (lower.startsWith('merge ')) return 'merge'
+  if (lower.startsWith('rebase')) return 'rebase'
+  if (lower.startsWith('reset:')) return 'reset'
+  if (lower.startsWith('pull ')) return 'pull'
+  if (lower.startsWith('cherry-pick')) return 'cherry_pick'
+  return null
+}
+
+function titleForReflogEvent(type, ref, message) {
+  if (type === 'push') return `Push: ${ref}`
+  if (type === 'branch_created') return `Branch created: ${ref}`
+  if (type === 'branch_deleted') return `Branch deleted: ${ref}`
+  if (type === 'branch_renamed') return `Branch renamed: ${ref}`
+  if (type === 'checkout') return `Checkout switch (${ref})`
+  if (type === 'merge') return `Merge action (${ref})`
+  if (type === 'rebase') return `Rebase action (${ref})`
+  if (type === 'reset') return `Reset action (${ref})`
+  if (type === 'pull') return `Pull action (${ref})`
+  if (type === 'cherry_pick') return `Cherry-pick action (${ref})`
+  return message || `Reflog event (${ref})`
+}
+
+async function getReflogTimelineEvents() {
+  try {
+    const { stdout } = await execAsync(
+      'git reflog show --all --date=iso-strict --pretty=format:"%gD%x1f%gs%x1f%H"',
+      { cwd: PROJECT_ROOT, maxBuffer: 30 * 1024 * 1024 }
+    )
+    const lines = stdout.split('\n').filter(line => line.trim())
+    const out = []
+    const seen = new Set()
+
+    for (const line of lines) {
+      const [selectorRaw, messageRaw, hashRaw] = line.split('\x1f')
+      const message = String(messageRaw || '').trim()
+      const type = classifyReflogMessage(message)
+      if (!type) continue
+
+      const parsed = parseSelectorDate(selectorRaw)
+      if (!Number.isFinite(parsed.timestamp)) continue
+
+      const hash = String(hashRaw || '').trim()
+      const dedupeKey = `${type}|${parsed.ref}|${parsed.timestamp}|${message}`
+      if (seen.has(dedupeKey)) continue
+      seen.add(dedupeKey)
+
+      const id = [
+        'reflog',
+        cleanEventIdPart(type),
+        parsed.timestamp,
+        cleanEventIdPart(parsed.ref),
+        cleanEventIdPart(hash.slice(0, 8)),
+      ].join('-')
+
+      out.push({
+        id,
+        timestamp: parsed.timestamp,
+        date: localDateKeyFromSeconds(parsed.timestamp),
+        type,
+        source: 'git-reflog',
+        title: titleForReflogEvent(type, parsed.ref, message),
+        details: message,
+        branch: parsed.ref,
+        hash: hash ? hash.slice(0, 12) : null,
+      })
+    }
+
+    return out
+  } catch {
+    return []
+  }
+}
+
+async function getFileLifecycleTimelineEvents() {
+  try {
+    const { stdout } = await execAsync(
+      'git log --all --date=iso-strict --name-status --diff-filter=ADR --pretty=format:"__CF__%H%x1f%ad%x1f%an%x1f%s"',
+      { cwd: PROJECT_ROOT, maxBuffer: 50 * 1024 * 1024 }
+    )
+
+    const lines = stdout.split('\n')
+    const out = []
+    let current = null
+    let idx = 0
+
+    for (const raw of lines) {
+      const line = String(raw || '')
+      if (line.startsWith('__CF__')) {
+        const payload = line.slice('__CF__'.length)
+        const [hash, dateIso, author, ...subjectParts] = payload.split('\x1f')
+        const timestamp = timestampFromDate(dateIso)
+        current = {
+          hash: String(hash || ''),
+          hashShort: String(hash || '').slice(0, 12),
+          dateIso: String(dateIso || ''),
+          author: String(author || 'Unknown'),
+          subject: subjectParts.join('\x1f'),
+          timestamp,
+        }
+        continue
+      }
+
+      if (!line.trim() || !current || !Number.isFinite(current.timestamp)) continue
+      const cols = line.split('\t')
+      const status = String(cols[0] || '').trim()
+      if (!status) continue
+
+      if (status === 'A' || status === 'D') {
+        const path = String(cols[1] || '').trim()
+        if (!path) continue
+        idx += 1
+        out.push({
+          id: `file-${status.toLowerCase()}-${current.hashShort}-${idx}`,
+          timestamp: current.timestamp,
+          date: localDateKeyFromSeconds(current.timestamp),
+          type: status === 'A' ? 'file_created' : 'file_deleted',
+          source: 'git-files',
+          title: `${status === 'A' ? 'File created' : 'File deleted'}: ${path}`,
+          details: `Commit ${current.hashShort} by ${current.author}: ${current.subject}`,
+          path,
+          hash: current.hashShort,
+          author: current.author,
+        })
+        continue
+      }
+
+      if (status.startsWith('R')) {
+        const fromPath = String(cols[1] || '').trim()
+        const toPath = String(cols[2] || '').trim()
+        if (!fromPath || !toPath) continue
+        idx += 1
+        out.push({
+          id: `file-r-${current.hashShort}-${idx}`,
+          timestamp: current.timestamp,
+          date: localDateKeyFromSeconds(current.timestamp),
+          type: 'file_renamed',
+          source: 'git-files',
+          title: `File renamed: ${fromPath} -> ${toPath}`,
+          details: `Commit ${current.hashShort} by ${current.author}: ${current.subject}`,
+          path: toPath,
+          fromPath,
+          hash: current.hashShort,
+          author: current.author,
+        })
+      }
+    }
+
+    return out
+  } catch {
+    return []
+  }
+}
+
+function commitToTimelineEvent(commit) {
+  return {
+    id: `commit-${cleanEventIdPart(commit.hash)}`,
+    timestamp: commit.timestamp,
+    date: commit.date,
+    type: 'commit',
+    source: 'git',
+    title: commit.message,
+    details: `${commit.author} committed ${commit.hash}`,
+    hash: commit.hash,
+    author: commit.author,
+  }
+}
+
+function milestoneToTimelineEvent(milestone, index) {
+  const createdTs = timestampFromDate(milestone.createdAt)
+  const dateTs = /^\d{4}-\d{2}-\d{2}$/.test(String(milestone.date || ''))
+    ? timestampFromDate(`${milestone.date}T12:00:00`)
+    : null
+  const timestamp = Number.isFinite(createdTs) ? createdTs : dateTs
+  if (!Number.isFinite(timestamp)) return null
+
+  const low = toFiniteNumber(milestone.hoursLow, 0)
+  const mid = toFiniteNumber(milestone.hoursMid, 0)
+  const high = toFiniteNumber(milestone.hoursHigh, 0)
+  const hoursText = (low > 0 || mid > 0 || high > 0) ? ` | hours ${low}/${mid}/${high}` : ''
+
+  return {
+    id: `milestone-${cleanEventIdPart(milestone.id || index + 1)}`,
+    timestamp,
+    date: localDateKeyFromSeconds(timestamp),
+    type: 'milestone',
+    source: milestone.source ? `timeline-${milestone.source}` : 'timeline',
+    title: milestone.title || `Milestone ${index + 1}`,
+    details: `${milestone.notes || ''}${hoursText}`.trim(),
+    milestoneType: milestone.type || 'manual',
+  }
+}
+
+function buildLinearTimelineBundle({ commits, timelineData, reflogEvents, fileEvents }) {
+  const commitEvents = (commits || []).map(commitToTimelineEvent)
+  const milestoneEvents = (timelineData.milestones || [])
+    .map((m, i) => milestoneToTimelineEvent(m, i))
+    .filter(Boolean)
+
+  const events = [...commitEvents, ...milestoneEvents, ...(reflogEvents || []), ...(fileEvents || [])]
+    .filter(e => e && Number.isFinite(e.timestamp))
+    .sort((a, b) => {
+      if (a.timestamp !== b.timestamp) return a.timestamp - b.timestamp
+      return String(a.id).localeCompare(String(b.id))
+    })
+
+  const byType = {}
+  const bySource = {}
+  for (const event of events) {
+    byType[event.type] = (byType[event.type] || 0) + 1
+    bySource[event.source] = (bySource[event.source] || 0) + 1
+  }
+
+  const firstTimestamp = events.length ? events[0].timestamp : null
+  const lastTimestamp = events.length ? events[events.length - 1].timestamp : null
+
+  return {
+    total: events.length,
+    firstTimestamp,
+    lastTimestamp,
+    byType,
+    bySource,
+    availableTypes: Object.keys(byType).sort(),
+    availableSources: Object.keys(bySource).sort(),
+    events,
+  }
+}
+
 async function getProjectTimeline() {
   try {
     const timelineData = await readProjectTimelineData()
@@ -1160,6 +1420,18 @@ async function getProjectTimeline() {
       }
     }).filter(c => Number.isFinite(c.timestamp))
 
+    const [reflogEvents, fileEvents] = await Promise.all([
+      getReflogTimelineEvents(),
+      getFileLifecycleTimelineEvents(),
+    ])
+
+    const linear = buildLinearTimelineBundle({
+      commits,
+      timelineData,
+      reflogEvents,
+      fileEvents,
+    })
+
     if (!commits.length) {
       const life = buildLifeTimelineView(timelineData, null)
       return {
@@ -1168,6 +1440,7 @@ async function getProjectTimeline() {
         commits: [],
         days: [],
         life,
+        linear,
       }
     }
 
@@ -1235,9 +1508,18 @@ async function getProjectTimeline() {
       commits: commits.slice(0, 300),
       days: days.slice(0, 180),
       life,
+      linear,
     }
   } catch (err) {
-    return { ok: false, error: err.message, summary: null, commits: [], days: [], life: null }
+    return {
+      ok: false,
+      error: err.message,
+      summary: null,
+      commits: [],
+      days: [],
+      life: null,
+      linear: null,
+    }
   }
 }
 
