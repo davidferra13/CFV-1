@@ -283,12 +283,12 @@ export function RemyHistoryList() {
                         {artifact.content}
                       </pre>
                     )}
-                    {artifact.data && !artifact.content && (
+                    {!!artifact.data && !artifact.content && (
                       <pre className="whitespace-pre-wrap font-mono text-xs text-stone-500 mt-3 max-h-64 overflow-auto bg-stone-800 dark:bg-stone-800/50 rounded p-3">
                         {JSON.stringify(artifact.data, null, 2)}
                       </pre>
                     )}
-                    {artifact.data && artifact.content && (
+                    {!!artifact.data && artifact.content && (
                       <details className="mt-2">
                         <summary className="text-xs text-stone-400 cursor-pointer hover:text-stone-400">
                           Raw data

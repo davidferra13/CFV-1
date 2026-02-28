@@ -4728,6 +4728,8 @@ async function toggleChat() {
       GustavStorage.decayMemories(30).then(n => {
         if (n > 0) console.log(`[gustav] Decayed ${n} stale memories`)
       }).catch(() => {})
+      // Auto-enforce conversation limits on init (non-blocking)
+      GustavStorage.pruneOldConversations().catch(() => {})
     }
   } else {
     drawer.classList.remove('open')
@@ -5369,7 +5371,7 @@ function timeAgo(dateInput) {
   if (hours < 24) return `${hours}h`
   const days = Math.floor(hours / 24)
   if (days < 7) return `${days}d`
-  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return new Date(dateInput).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
 function toggleProjectCollapse(projId) {
@@ -5716,23 +5718,45 @@ async function executeSearch() {
   }
 
   try {
-    const matches = await GustavStorage.searchConversations(query)
+    const [matches, projects] = await Promise.all([
+      GustavStorage.searchConversations(query),
+      GustavStorage.getProjects(),
+    ])
     if (matches.length === 0) {
       results.innerHTML = `<div class="chat-empty-state">No results for "${escapeHtml(query)}"</div>`
       return
     }
 
-    let html = ''
-    for (const match of matches) {
-      const projName = match.conversation.projectId ? '' : 'Uncategorized'
-      const snippet = highlightSearch(match.matchingSnippet, query)
-      html += `<div class="chat-search-result" onclick="loadConversation('${match.conversation.id}')">
-        <div class="chat-search-result-title">${escapeHtml(match.conversation.title)}</div>
-        ${projName ? `<div class="chat-search-result-project">${projName}</div>` : ''}
-        <div class="chat-search-result-snippet">${snippet}</div>
-      </div>`
+    const projMap = {}
+    for (const p of projects) { projMap[p.id] = p.name }
+
+    const SEARCH_PAGE_SIZE = 20
+    let searchDisplayCount = SEARCH_PAGE_SIZE
+
+    function renderSearchResults() {
+      let html = ''
+      const visible = matches.slice(0, searchDisplayCount)
+      for (const match of visible) {
+        const projName = match.conversation.projectId ? (projMap[match.conversation.projectId] || 'Unknown') : 'Uncategorized'
+        const snippet = highlightSearch(match.matchingSnippet, query)
+        html += `<div class="chat-search-result" onclick="loadConversation('${match.conversation.id}')">
+          <div class="chat-search-result-title">${escapeHtml(match.conversation.title)}</div>
+          <div class="chat-search-result-project">${escapeHtml(projName)}</div>
+          <div class="chat-search-result-snippet">${snippet}</div>
+        </div>`
+      }
+      if (matches.length > searchDisplayCount) {
+        html += `<div class="chat-empty-state" style="cursor:pointer;color:#e88f47" id="chat-search-more">Show more (${matches.length - searchDisplayCount} remaining)</div>`
+      }
+      html += `<div class="chat-empty-state" style="font-size:11px;opacity:0.5">${matches.length} result${matches.length === 1 ? '' : 's'}</div>`
+      results.innerHTML = html
+      // Bind "Show more" button
+      const moreBtn = document.getElementById('chat-search-more')
+      if (moreBtn) {
+        moreBtn.onclick = () => { searchDisplayCount += SEARCH_PAGE_SIZE; renderSearchResults() }
+      }
     }
-    results.innerHTML = html
+    renderSearchResults()
   } catch (e) {
     results.innerHTML = '<div class="chat-empty-state">Search failed</div>'
     console.error('[gustav] Search failed:', e)
@@ -5831,12 +5855,25 @@ async function renderTemplates() {
   }
 }
 
+function interpolateTemplate(prompt) {
+  const now = new Date()
+  const vars = {
+    date: now.toLocaleDateString(),
+    time: now.toLocaleTimeString(),
+    day: now.toLocaleDateString('en-US', { weekday: 'long' }),
+    month: now.toLocaleDateString('en-US', { month: 'long' }),
+    year: now.getFullYear().toString(),
+    timestamp: now.toISOString(),
+  }
+  return prompt.replace(/\{\{(\w+)\}\}/g, (match, key) => vars[key] ?? match)
+}
+
 async function runTemplate(templateId) {
   try {
     const tmpl = (await GustavStorage.getTemplates()).find(t => t.id === templateId)
     if (!tmpl) return
     await newConversation(tmpl.projectId)
-    document.getElementById('chat-input').value = tmpl.prompt
+    document.getElementById('chat-input').value = interpolateTemplate(tmpl.prompt)
     sendChat()
   } catch (e) { console.error('[gustav] Run template failed:', e) }
 }
@@ -5848,7 +5885,7 @@ function showNewTemplateDialog() {
     inputPlaceholder: 'Template name (e.g., Morning Check)',
     confirmText: 'Next',
     onConfirm: async (name) => {
-      if (!name?.trim()) return
+      if (!name?.trim() || name.trim().length > 100) return
       showDialog({
         title: 'Template Prompt',
         input: true,

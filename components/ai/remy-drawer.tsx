@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -13,21 +13,11 @@ import {
   Send,
   Loader2,
   ArrowRight,
-  CalendarDays,
-  TrendingUp,
-  Mail,
-  Users,
-  AlertCircle,
-  History,
   Plus,
   MessageSquare,
   ChevronLeft,
   ChevronsRight,
   ChevronsLeft,
-  Trash2,
-  Brain,
-  Copy,
-  Check,
   Download,
   Globe,
   Paperclip,
@@ -35,7 +25,6 @@ import {
   Volume2,
   VolumeX,
   Square,
-  ChefHat,
   Mic,
   MicOff,
   Settings2,
@@ -45,6 +34,8 @@ import {
   BookTemplate,
   List,
   Bookmark,
+  Check,
+  Copy,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { RemyTaskCard } from '@/components/ai/remy-task-card'
@@ -53,305 +44,153 @@ import { RemyConversationList } from '@/components/ai/remy-conversation-list'
 import { RemySearchView } from '@/components/ai/remy-search-view'
 import { RemyActionLog } from '@/components/ai/remy-action-log'
 import { RemyTemplatesView } from '@/components/ai/remy-templates-view'
-import { approveTask } from '@/lib/ai/command-orchestrator'
-import { saveRemyMessage, saveRemyTaskResult } from '@/lib/ai/remy-artifact-actions'
-import {
-  createConversation as createLocalConversation,
-  getConversations as listLocalConversations,
-  getMessages as loadLocalMessages,
-  addMessage as saveLocalMessage,
-  updateConversation as updateLocalConversation,
-  deleteConversation as deleteLocalConversation,
-  exportConversation as exportLocalConversation,
-  pruneOldConversations,
-  trimConversationMessages,
-  logAction,
-  autoSuggestProject,
-  autoTitle,
-  createProject,
-  getProjects,
-  moveConversation,
-  toggleBookmark,
-  deleteMessage,
-} from '@/lib/ai/remy-local-storage'
-import type { LocalConversation } from '@/lib/ai/remy-local-storage'
-import {
-  extractAndSaveMemories,
-  deleteRemyMemory,
-  decayStaleMemories,
-} from '@/lib/ai/remy-memory-actions'
+import { exportConversation as exportLocalConversation } from '@/lib/ai/remy-local-storage'
+import { decayStaleMemories } from '@/lib/ai/remy-memory-actions'
 import { shareConversationWithSupport } from '@/lib/ai/support-share-action'
 import { toast } from 'sonner'
-import type { BodyEvent } from '@/lib/ai/remy-body-state'
-import type {
-  RemyMessage,
-  RemyMemoryItem,
-  RemyTaskResult,
-  NavigationSuggestion,
-} from '@/lib/ai/remy-types'
+import type { RemyMessage, RemyMemoryItem } from '@/lib/ai/remy-types'
+import { trackPageVisit, initSessionTimer } from '@/lib/ai/remy-activity-tracker'
+import { NEW_USER_STARTERS } from '@/lib/ai/remy-welcome'
+
+// ─── Extracted modules ───────────────────────────────────────────────────────
+import { getStartersForPage, getThinkingMessage } from '@/lib/ai/remy-starters'
+import { markdownComponents } from '@/lib/ai/remy-markdown-config'
+import { useVoiceInput } from '@/lib/hooks/use-voice-input'
 import {
-  trackPageVisit,
-  getSessionActivity,
-  initSessionTimer,
-} from '@/lib/ai/remy-activity-tracker'
-import {
-  REMY_WELCOME_MESSAGE,
-  NEW_USER_STARTERS,
-  REMY_WELCOME_SHOWN_KEY,
-} from '@/lib/ai/remy-welcome'
-// RemyConversation type mapped from LocalConversation for UI compatibility
-type RemyConversation = {
-  id: string
-  title: string
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
-  lastMessage?: string
-}
+  useMessageActions,
+  DEFAULT_VOICE_SETTINGS,
+  saveVoiceSettings,
+} from '@/lib/hooks/use-message-actions'
+import { useConversationManagement } from '@/lib/hooks/use-conversation-management'
+import { useRemySend } from '@/lib/hooks/use-remy-send'
 
-function generateId(): string {
-  try {
-    if (typeof crypto !== 'undefined' && (crypto as any).randomUUID)
-      return (crypto as any).randomUUID()
-    if (typeof window !== 'undefined' && window.crypto && (window.crypto as any).randomUUID)
-      return (window.crypto as any).randomUUID()
-  } catch (e) {
-    // ignore and fallback
-  }
-  return 'id_' + Math.random().toString(36).slice(2) + Date.now().toString(36)
-}
-
-// ─── Context-Aware Starter Prompts ────────────────────────────────────────────
-
-function getStartersForPage(pathname: string) {
-  const starters = [
-    { text: "What's on my plate this week?", icon: CalendarDays },
-    { text: "How's business looking this month?", icon: TrendingUp },
-    { text: 'Draft a follow-up for my last event', icon: Mail },
-    { text: 'Show my memories', icon: Brain },
-  ]
-
-  if (pathname.startsWith('/events/') && pathname !== '/events/new') {
-    return [
-      { text: 'Tell me about this event', icon: CalendarDays },
-      { text: 'Draft a follow-up email for this client', icon: Mail },
-      { text: 'What should I prep for this event?', icon: ChefHat },
-      { text: 'Search the web for menu inspiration', icon: Globe },
-    ]
-  }
-  if (pathname === '/events' || pathname === '/events/upcoming') {
-    return [
-      { text: "What's on my plate this week?", icon: CalendarDays },
-      { text: 'Show my upcoming events', icon: CalendarDays },
-      { text: 'Find my next available date', icon: Search },
-      { text: 'Search for trending catering ideas online', icon: Globe },
-    ]
-  }
-  if (pathname.startsWith('/clients')) {
-    return [
-      { text: 'Show my recent clients', icon: Users },
-      { text: 'Draft a follow-up for my last client', icon: Mail },
-      { text: 'What do you remember about my clients?', icon: Brain },
-      { text: 'Search online for client engagement tips', icon: Globe },
-    ]
-  }
-  if (pathname.startsWith('/financials') || pathname.startsWith('/expenses')) {
-    return [
-      { text: "How's revenue this month?", icon: TrendingUp },
-      { text: 'Give me a monthly financial snapshot', icon: TrendingUp },
-      { text: 'Search for private chef pricing benchmarks', icon: Globe },
-      { text: 'Show my memories about pricing', icon: Brain },
-    ]
-  }
-  if (pathname.startsWith('/recipes') || pathname.startsWith('/menus')) {
-    return [
-      { text: 'Search my recipes', icon: Search },
-      { text: 'List my menus', icon: ChefHat },
-      { text: 'Search the web for seasonal menu ideas', icon: Globe },
-      { text: 'What culinary notes do you remember?', icon: Brain },
-    ]
-  }
-  if (pathname.startsWith('/inquiries')) {
-    return [
-      { text: 'Show my open inquiries', icon: Mail },
-      { text: 'Check my availability this week', icon: CalendarDays },
-      { text: 'Draft a response to the latest inquiry', icon: Mail },
-      { text: 'Search online for inquiry response templates', icon: Globe },
-    ]
-  }
-
-  return starters
-}
-
-// ─── Thinking Time Estimate ───────────────────────────────────────────────────
-
-function getThinkingMessage(elapsed: number, intent?: string): string {
-  if (intent === 'command') {
-    if (elapsed > 10) return "Running your tasks — this one's taking a bit..."
-    return 'Running your tasks...'
-  }
-  if (intent === 'mixed') {
-    if (elapsed > 15) return 'Working on both parts — hang tight, almost there...'
-    return 'Working on your question and tasks...'
-  }
-  // Default question intent
-  if (elapsed > 20) return 'Still thinking — complex question, give me another moment...'
-  if (elapsed > 10) return 'Thinking hard on this one...'
-  if (elapsed > 5) return 'Remy is thinking...'
-  return 'Remy is thinking...'
-}
-
-// ─── Markdown Components ──────────────────────────────────────────────────────
-
-const markdownComponents = {
-  p: ({ children }: { children?: React.ReactNode }) => <p className="mb-2 last:mb-0">{children}</p>,
-  ul: ({ children }: { children?: React.ReactNode }) => (
-    <ul className="list-disc list-inside mb-2 space-y-0.5">{children}</ul>
-  ),
-  ol: ({ children }: { children?: React.ReactNode }) => (
-    <ol className="list-decimal list-inside mb-2 space-y-0.5">{children}</ol>
-  ),
-  li: ({ children }: { children?: React.ReactNode }) => <li className="text-sm">{children}</li>,
-  strong: ({ children }: { children?: React.ReactNode }) => (
-    <strong className="font-semibold">{children}</strong>
-  ),
-  em: ({ children }: { children?: React.ReactNode }) => <em className="italic">{children}</em>,
-  code: ({ children, className }: { children?: React.ReactNode; className?: string }) => {
-    const isBlock = className?.includes('language-')
-    if (isBlock) {
-      return (
-        <code className="block bg-stone-700 dark:bg-stone-700 rounded px-2 py-1 text-xs font-mono my-1 overflow-x-auto">
-          {children}
-        </code>
-      )
-    }
-    return (
-      <code className="bg-stone-700 dark:bg-stone-700 rounded px-1 py-0.5 text-xs font-mono">
-        {children}
-      </code>
-    )
-  },
-  a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-brand-600 dark:text-brand-400 underline hover:text-brand-400"
-    >
-      {children}
-    </a>
-  ),
-  h1: ({ children }: { children?: React.ReactNode }) => (
-    <h1 className="text-base font-bold mb-1">{children}</h1>
-  ),
-  h2: ({ children }: { children?: React.ReactNode }) => (
-    <h2 className="text-sm font-bold mb-1">{children}</h2>
-  ),
-  h3: ({ children }: { children?: React.ReactNode }) => (
-    <h3 className="text-sm font-semibold mb-1">{children}</h3>
-  ),
-  blockquote: ({ children }: { children?: React.ReactNode }) => (
-    <blockquote className="border-l-2 border-brand-400 pl-2 italic text-stone-300 dark:text-stone-300 my-1">
-      {children}
-    </blockquote>
-  ),
-  hr: () => <hr className="border-stone-600 dark:border-stone-600 my-2" />,
-}
-
-// ─── Voice Settings ──────────────────────────────────────────────────────────
-
-interface VoiceSettings {
-  voiceURI: string | null
-  rate: number
-  pitch: number
-  volume: number
-}
-
-const VOICE_SETTINGS_KEY = 'remy-voice-settings'
-const DEFAULT_VOICE_SETTINGS: VoiceSettings = {
-  voiceURI: null,
-  rate: 1,
-  pitch: 1,
-  volume: 1,
-}
-
-function loadVoiceSettings(): VoiceSettings {
-  if (typeof window === 'undefined') return DEFAULT_VOICE_SETTINGS
-  try {
-    const raw = localStorage.getItem(VOICE_SETTINGS_KEY)
-    if (!raw) return DEFAULT_VOICE_SETTINGS
-    const parsed = JSON.parse(raw)
-    return { ...DEFAULT_VOICE_SETTINGS, ...parsed }
-  } catch {
-    return DEFAULT_VOICE_SETTINGS
-  }
-}
-
-function saveVoiceSettings(settings: VoiceSettings) {
-  try {
-    localStorage.setItem(VOICE_SETTINGS_KEY, JSON.stringify(settings))
-  } catch {
-    // localStorage full or unavailable
-  }
-}
-
-// ─── Main Component ───────────────────────────────────────────────────────────
+// ─── Constants ───────────────────────────────────────────────────────────────
 
 const DRAWER_MIN_WIDTH = 320
 const DRAWER_MAX_WIDTH = 800
 const DRAWER_DEFAULT_WIDTH = 448 // max-w-md equivalent
 
+// ─── Main Component ──────────────────────────────────────────────────────────
+
 export function RemyDrawer() {
   const {
     isDrawerOpen: open,
     closeDrawer,
-    currentViseme,
-    isSpeaking: lipSyncSpeaking,
-    currentEmotion,
     feedText,
     stopSpeaking: lipSyncStop,
     resetLipSync,
     dispatchBody,
     setIsLoading: setContextLoading,
   } = useRemyContext()
+
+  const pathname = usePathname()
+
+  // ─── Local UI state ────────────────────────────────────────────────────────
   const [collapsed, setCollapsed] = useState(false)
-  const [messages, setMessages] = useState<RemyMessage[]>([])
   const [input, setInput] = useState('')
-  const [loading, setLoadingInternal] = useState(false)
-  // Sync loading state to context so mascot shows thinking animation
-  const setLoading = useCallback(
-    (val: boolean) => {
-      setLoadingInternal(val)
-      setContextLoading(val)
-      if (val) {
-        dispatchBody({ type: 'RESPONSE_STARTED' })
-      }
-      // Note: RESPONSE_ENDED is dispatched explicitly at the end of streaming,
-      // not here — because setLoading(false) is also called on cancel/error
-    },
-    [setContextLoading, dispatchBody]
-  )
-  const [streamingContent, setStreamingContent] = useState('')
-  const [streamingIntent, setStreamingIntent] = useState<string | undefined>()
-  const [elapsedSec, setElapsedSec] = useState(0)
-  const [copiedId, setCopiedId] = useState<string | null>(null)
-  const [speakingId, setSpeakingId] = useState<string | null>(null)
   const [soundEnabled, setSoundEnabled] = useState(true)
-  const [isListening, setIsListening] = useState(false)
-  const [showVoiceSettings, setShowVoiceSettings] = useState(false)
-  const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>(loadVoiceSettings)
-  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([])
   const [drawerWidth, setDrawerWidth] = useState(DRAWER_DEFAULT_WIDTH)
+  const [drawerView, setDrawerView] = useState<
+    'chat' | 'list' | 'search' | 'actions' | 'templates'
+  >('chat')
+  const [showCapabilities, setShowCapabilities] = useState(false)
+  const [hasDecayedThisSession, setHasDecayedThisSession] = useState(false)
+
   const drawerResizingRef = useRef<{ startX: number; startW: number } | null>(null)
   const drawerDragCleanupRef = useRef<(() => void) | null>(null)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = useRef<any>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const abortControllerRef = useRef<AbortController | null>(null)
-  const pathname = usePathname()
-  const router = useRouter()
+
+  // ─── Extracted hooks ───────────────────────────────────────────────────────
+
+  const convManager = useConversationManagement(setDrawerView)
+  const {
+    messages,
+    setMessages,
+    conversations,
+    setConversations,
+    currentConversationId,
+    setCurrentConversationId,
+    conversationsLoaded,
+    isFirstExchange,
+    setIsFirstExchange,
+    projectSuggestion,
+    setProjectSuggestion,
+    loadConversationList,
+    handleSelectConversation,
+    handleNewConversation,
+    handleDeleteConversation,
+    handleAcceptProjectSuggestion,
+  } = convManager
+
+  const msgActions = useMessageActions(setMessages)
+  const {
+    copiedId,
+    speakingId,
+    voiceSettings,
+    setVoiceSettings,
+    availableVoices,
+    showVoiceSettings,
+    setShowVoiceSettings,
+    handleCopy,
+    handleToggleBookmark,
+    handleSpeak,
+    handlePreviewVoice,
+    updateVoiceSetting,
+    stopSpeaking,
+    handleDeleteMessage,
+    handleDeleteMemory,
+  } = msgActions
+
+  const sendHook = useRemySend({
+    input,
+    setInput,
+    messages,
+    setMessages,
+    currentConversationId,
+    setCurrentConversationId,
+    conversations,
+    setConversations,
+    isFirstExchange,
+    setIsFirstExchange,
+    setProjectSuggestion,
+    pathname,
+    soundEnabled,
+    feedText,
+    lipSyncStop,
+    resetLipSync,
+    dispatchBody,
+    setContextLoading,
+    closeDrawer,
+  })
+  const {
+    loading,
+    streamingContent,
+    streamingIntent,
+    elapsedSec,
+    handleSend,
+    handleCancel,
+    handleApproveTask,
+    handleRejectTask,
+    abortInflight,
+  } = sendHook
+
+  // Voice input — merge transcript into input field
+  const voiceInput = useVoiceInput(
+    useCallback((text: string) => {
+      setInput((prev) => {
+        const base = prev.replace(/\[listening\.\.\.\].*$/i, '').trim()
+        return base ? `${base} ${text}` : text
+      })
+    }, [])
+  )
+  const { isListening, supportsVoice, toggleVoiceInput } = voiceInput
+
+  // Context-aware starters
+  const starters = useMemo(() => getStartersForPage(pathname ?? '/dashboard'), [pathname])
+
+  // ─── Lifecycle effects ─────────────────────────────────────────────────────
 
   // Restore saved drawer width from sessionStorage
   useEffect(() => {
@@ -364,14 +203,78 @@ export function RemyDrawer() {
     }
   }, [])
 
-  // Cleanup drag listeners on unmount (prevents leak if component unmounts mid-drag)
+  // Cleanup drag listeners on unmount
   useEffect(() => {
     return () => {
       drawerDragCleanupRef.current?.()
     }
   }, [])
 
-  // Drag-to-resize the drawer from the left edge
+  // Initialize session timer + track navigation
+  useEffect(() => {
+    initSessionTimer()
+  }, [])
+
+  useEffect(() => {
+    if (pathname) trackPageVisit(pathname)
+  }, [pathname])
+
+  // Auto-scroll to bottom on new messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, streamingContent])
+
+  // Auto-focus textarea when drawer opens
+  useEffect(() => {
+    if (open) {
+      setTimeout(() => textareaRef.current?.focus(), 100)
+    }
+  }, [open])
+
+  // Abort in-flight request when drawer closes
+  useEffect(() => {
+    if (!open) {
+      abortInflight()
+    }
+  }, [open, abortInflight])
+
+  // Stop voice input when drawer closes
+  useEffect(() => {
+    if (!open && isListening) {
+      voiceInput.stopListening()
+    }
+  }, [open, isListening, voiceInput])
+
+  // Stop TTS when drawer closes
+  useEffect(() => {
+    if (!open) {
+      stopSpeaking()
+    }
+  }, [open, stopSpeaking])
+
+  // Memory decay — run once per session when drawer first opens
+  useEffect(() => {
+    if (open && !hasDecayedThisSession) {
+      setHasDecayedThisSession(true)
+      decayStaleMemories()
+        .then((result) => {
+          if (result.deactivated > 0) {
+            console.log(`[remy] Decayed ${result.deactivated} stale memories`)
+          }
+        })
+        .catch((err) => console.error('[non-blocking] Memory decay failed:', err))
+    }
+  }, [open, hasDecayedThisSession])
+
+  // Load conversations when drawer opens for the first time
+  useEffect(() => {
+    if (open && !conversationsLoaded) {
+      loadConversationList()
+    }
+  }, [open, conversationsLoaded, loadConversationList])
+
+  // ─── Drawer resize ─────────────────────────────────────────────────────────
+
   const startDrawerResize = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault()
@@ -381,7 +284,6 @@ export function RemyDrawer() {
       const onMouseMove = (ev: MouseEvent) => {
         if (!drawerResizingRef.current) return
         const { startX, startW } = drawerResizingRef.current
-        // Dragging left = wider, dragging right = narrower (drawer is on right side)
         latestW = Math.min(
           DRAWER_MAX_WIDTH,
           Math.max(DRAWER_MIN_WIDTH, startW + (startX - ev.clientX))
@@ -408,361 +310,7 @@ export function RemyDrawer() {
     [drawerWidth]
   )
 
-  // Conversation threading state
-  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
-  const [conversations, setConversations] = useState<RemyConversation[]>([])
-  const [drawerView, setDrawerView] = useState<
-    'chat' | 'list' | 'search' | 'actions' | 'templates'
-  >('chat')
-  const [showCapabilities, setShowCapabilities] = useState(false)
-  const [conversationsLoaded, setConversationsLoaded] = useState(false)
-  const [isFirstExchange, setIsFirstExchange] = useState(true)
-  const [hasDecayedThisSession, setHasDecayedThisSession] = useState(false)
-  const [projectSuggestion, setProjectSuggestion] = useState<{
-    name: string
-    icon: string
-  } | null>(null)
-
-  // Context-aware starters
-  const starters = useMemo(() => getStartersForPage(pathname ?? '/dashboard'), [pathname])
-
-  // Initialize session timer + track navigation for Remy's awareness
-  useEffect(() => {
-    initSessionTimer()
-  }, [])
-
-  useEffect(() => {
-    if (pathname) trackPageVisit(pathname)
-  }, [pathname])
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, streamingContent])
-
-  // Auto-focus textarea when drawer opens
-  useEffect(() => {
-    if (open) {
-      setTimeout(() => textareaRef.current?.focus(), 100)
-    }
-  }, [open])
-
-  // Elapsed timer while loading
-  useEffect(() => {
-    if (!loading) {
-      setElapsedSec(0)
-      return
-    }
-    const interval = setInterval(() => setElapsedSec((s) => s + 1), 1000)
-    return () => clearInterval(interval)
-  }, [loading])
-
-  // Load available TTS voices (they load async in some browsers)
-  useEffect(() => {
-    function loadVoices() {
-      const voices = speechSynthesis.getVoices()
-      if (voices.length > 0) setAvailableVoices(voices)
-    }
-    loadVoices()
-    speechSynthesis.addEventListener('voiceschanged', loadVoices)
-    return () => speechSynthesis.removeEventListener('voiceschanged', loadVoices)
-  }, [])
-
-  // Abort in-flight Ollama request when drawer closes
-  useEffect(() => {
-    if (!open && abortControllerRef.current) {
-      abortControllerRef.current.abort()
-      abortControllerRef.current = null
-      setLoading(false)
-      setStreamingContent('')
-      setStreamingIntent(undefined)
-    }
-  }, [open])
-
-  // Memory decay — run once per session when drawer first opens
-  useEffect(() => {
-    if (open && !hasDecayedThisSession) {
-      setHasDecayedThisSession(true)
-      decayStaleMemories()
-        .then((result) => {
-          if (result.deactivated > 0) {
-            console.log(`[remy] Decayed ${result.deactivated} stale memories`)
-          }
-        })
-        .catch((err) => console.error('[non-blocking] Memory decay failed:', err))
-    }
-  }, [open, hasDecayedThisSession])
-
-  // Load conversations when drawer opens for the first time
-  useEffect(() => {
-    if (open && !conversationsLoaded) {
-      loadConversationList()
-    }
-  }, [open, conversationsLoaded])
-
-  const loadConversationList = useCallback(async () => {
-    try {
-      const localConvs = await listLocalConversations()
-      const mapped: RemyConversation[] = localConvs.map((c) => ({
-        id: c.id,
-        title: c.title,
-        isActive: true,
-        createdAt: c.createdAt,
-        updatedAt: c.updatedAt,
-      }))
-      setConversations(mapped)
-      setConversationsLoaded(true)
-
-      if (mapped.length > 0 && !currentConversationId) {
-        const latest = mapped[0]
-        setCurrentConversationId(latest.id)
-        const localMsgs = await loadLocalMessages(latest.id)
-        const remyMsgs: RemyMessage[] = localMsgs.map((m) => ({
-          id: m.id,
-          role: m.role === 'remy' ? 'remy' : 'user',
-          content: m.content,
-          timestamp: m.createdAt,
-          bookmarked: m.bookmarked,
-          tasks: m.tasks as RemyTaskResult[] | undefined,
-          navSuggestions: m.navSuggestions as NavigationSuggestion[] | undefined,
-        }))
-        setMessages(remyMsgs)
-        setIsFirstExchange(remyMsgs.length === 0)
-      } else if (mapped.length === 0) {
-        // Brand new user — inject Remy welcome message (once per device)
-        const welcomeShown =
-          typeof window !== 'undefined' && localStorage.getItem(REMY_WELCOME_SHOWN_KEY)
-        if (!welcomeShown) {
-          const welcomeMsg: RemyMessage = {
-            id: `remy-welcome-${Date.now()}`,
-            role: 'remy',
-            content: REMY_WELCOME_MESSAGE,
-            timestamp: new Date().toISOString(),
-          }
-          setMessages([welcomeMsg])
-          setIsFirstExchange(false)
-          if (typeof window !== 'undefined') {
-            localStorage.setItem(REMY_WELCOME_SHOWN_KEY, '1')
-          }
-        }
-      }
-    } catch (err) {
-      console.error('[remy] Failed to load conversations:', err)
-    }
-  }, [currentConversationId])
-
-  const handleSelectConversation = useCallback(async (convId: string) => {
-    try {
-      const localMsgs = await loadLocalMessages(convId)
-      const remyMsgs: RemyMessage[] = localMsgs.map((m) => ({
-        id: m.id,
-        role: m.role === 'remy' ? 'remy' : 'user',
-        content: m.content,
-        timestamp: m.createdAt,
-        bookmarked: m.bookmarked,
-        tasks: m.tasks as RemyTaskResult[] | undefined,
-        navSuggestions: m.navSuggestions as NavigationSuggestion[] | undefined,
-      }))
-      setMessages(remyMsgs)
-      setCurrentConversationId(convId)
-      setDrawerView('chat')
-      setIsFirstExchange(remyMsgs.length === 0)
-      setProjectSuggestion(null)
-    } catch (err) {
-      console.error('[remy] Failed to load conversation:', err)
-      toast.error('Failed to load conversation')
-    }
-  }, [])
-
-  const handleNewConversation = useCallback(async (projectId?: string | null) => {
-    try {
-      const conv = await createLocalConversation()
-      // If a project is specified, move the conversation into it
-      if (projectId) {
-        moveConversation(conv.id, projectId).catch(() => {})
-      }
-      setCurrentConversationId(conv.id)
-      setMessages([])
-      setDrawerView('chat')
-      setIsFirstExchange(true)
-      setProjectSuggestion(null)
-      setConversations((prev) => [
-        {
-          id: conv.id,
-          title: conv.title,
-          isActive: true,
-          createdAt: conv.createdAt,
-          updatedAt: conv.updatedAt,
-        },
-        ...prev,
-      ])
-      // Auto-prune old conversations (non-blocking)
-      pruneOldConversations().catch(() => {})
-    } catch (err) {
-      console.error('[remy] Failed to create conversation:', err)
-      toast.error('Failed to start new conversation')
-    }
-  }, [])
-
-  const handleDeleteConversation = useCallback(
-    async (convId: string) => {
-      try {
-        await deleteLocalConversation(convId)
-        setConversations((prev) => prev.filter((c) => c.id !== convId))
-        if (currentConversationId === convId) {
-          setCurrentConversationId(null)
-          setMessages([])
-          setIsFirstExchange(true)
-        }
-        toast.success('Conversation deleted')
-      } catch (err) {
-        console.error('[remy] Failed to delete conversation:', err)
-        toast.error('Failed to delete conversation')
-      }
-    },
-    [currentConversationId]
-  )
-
-  const handleAcceptProjectSuggestion = useCallback(async () => {
-    if (!projectSuggestion || !currentConversationId) return
-    try {
-      // Find or create the project
-      const existing = await getProjects()
-      let project = existing.find((p) => p.name === projectSuggestion.name)
-      if (!project) {
-        project = await createProject(projectSuggestion.name, projectSuggestion.icon)
-      }
-      await moveConversation(currentConversationId, project.id)
-      setProjectSuggestion(null)
-      toast.success(`Moved to ${projectSuggestion.icon} ${projectSuggestion.name}`)
-    } catch (err) {
-      console.error('[remy] Failed to accept project suggestion:', err)
-    }
-  }, [projectSuggestion, currentConversationId])
-
-  const handleDeleteMessage = useCallback(async (msgId: string) => {
-    setMessages((prev) => prev.filter((m) => m.id !== msgId))
-    toast.success('Message removed')
-    // Also delete from IndexedDB so it doesn't reappear on reload
-    deleteMessage(msgId).catch((err) => console.error('[non-blocking] Delete msg failed', err))
-  }, [])
-
-  const handleDeleteMemory = useCallback(async (memoryId: string) => {
-    try {
-      await deleteRemyMemory(memoryId)
-      setMessages((prev) =>
-        prev.map((msg) => {
-          if (!msg.memoryItems) return msg
-          return {
-            ...msg,
-            memoryItems: msg.memoryItems.filter((m) => m.id !== memoryId),
-          }
-        })
-      )
-      toast.success('Memory deleted')
-    } catch (err) {
-      console.error('[remy] Failed to delete memory:', err)
-      toast.error('Failed to delete memory')
-    }
-  }, [])
-
-  const handleCopy = useCallback((msgId: string, content: string) => {
-    navigator.clipboard.writeText(content).then(() => {
-      setCopiedId(msgId)
-      toast.success('Copied to clipboard')
-      setTimeout(() => setCopiedId(null), 2000)
-    })
-  }, [])
-
-  const handleToggleBookmark = useCallback(async (msgId: string) => {
-    try {
-      const newState = await toggleBookmark(msgId)
-      setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, bookmarked: newState } : m)))
-      toast.success(newState ? 'Bookmarked' : 'Bookmark removed')
-    } catch (err) {
-      console.error('[remy] Failed to toggle bookmark:', err)
-    }
-  }, [])
-
-  const updateVoiceSetting = useCallback(
-    <K extends keyof VoiceSettings>(key: K, value: VoiceSettings[K]) => {
-      setVoiceSettings((prev) => {
-        const next = { ...prev, [key]: value }
-        saveVoiceSettings(next)
-        return next
-      })
-    },
-    []
-  )
-
-  const handlePreviewVoice = useCallback(
-    (voiceURI: string | null) => {
-      speechSynthesis.cancel()
-      const utterance = new SpeechSynthesisUtterance('Hey chef, this is Remy.')
-      utterance.rate = voiceSettings.rate
-      utterance.pitch = voiceSettings.pitch
-      utterance.volume = voiceSettings.volume
-      if (voiceURI) {
-        const voice = availableVoices.find((v) => v.voiceURI === voiceURI)
-        if (voice) utterance.voice = voice
-      }
-      speechSynthesis.speak(utterance)
-    },
-    [availableVoices, voiceSettings.rate, voiceSettings.pitch, voiceSettings.volume]
-  )
-
-  const handleSpeak = useCallback(
-    (msgId: string, content: string) => {
-      // If already speaking this message, stop it
-      if (speakingId === msgId) {
-        speechSynthesis.cancel()
-        setSpeakingId(null)
-        return
-      }
-      // Stop any current speech first
-      speechSynthesis.cancel()
-
-      // Strip markdown formatting for cleaner speech
-      const plainText = content
-        .replace(/#{1,6}\s+/g, '') // headings
-        .replace(/\*\*(.+?)\*\*/g, '$1') // bold
-        .replace(/\*(.+?)\*/g, '$1') // italic
-        .replace(/_(.+?)_/g, '$1') // italic underscores
-        .replace(/`{1,3}[^`]*`{1,3}/g, '') // code
-        .replace(/\[(.+?)\]\(.+?\)/g, '$1') // links
-        .replace(/[-*+]\s+/g, '. ') // list items
-        .replace(/\d+\.\s+/g, '. ') // numbered lists
-        .replace(/>\s+/g, '') // blockquotes
-        .replace(/---+/g, '') // horizontal rules
-        .replace(/\n{2,}/g, '. ') // paragraph breaks
-        .replace(/\n/g, ' ') // line breaks
-        .trim()
-
-      if (!plainText) return
-
-      const utterance = new SpeechSynthesisUtterance(plainText)
-      utterance.rate = voiceSettings.rate
-      utterance.pitch = voiceSettings.pitch
-      utterance.volume = voiceSettings.volume
-      if (voiceSettings.voiceURI) {
-        const voice = availableVoices.find((v) => v.voiceURI === voiceSettings.voiceURI)
-        if (voice) utterance.voice = voice
-      }
-      utterance.onend = () => setSpeakingId(null)
-      utterance.onerror = () => setSpeakingId(null)
-
-      setSpeakingId(msgId)
-      speechSynthesis.speak(utterance)
-    },
-    [speakingId, voiceSettings, availableVoices]
-  )
-
-  // Stop TTS when drawer closes
-  useEffect(() => {
-    if (!open && speakingId) {
-      speechSynthesis.cancel()
-      setSpeakingId(null)
-    }
-  }, [open, speakingId])
+  // ─── Handlers ──────────────────────────────────────────────────────────────
 
   const handleExport = useCallback(async () => {
     if (!currentConversationId) return
@@ -819,8 +367,7 @@ export function RemyDrawer() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Block oversized files before reading into memory (prevents browser tab crash)
-    const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+    const MAX_FILE_SIZE = 5 * 1024 * 1024
     if (file.size > MAX_FILE_SIZE) {
       toast.error(`File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Max 5MB.`)
       e.target.value = ''
@@ -855,495 +402,9 @@ export function RemyDrawer() {
     e.target.value = ''
   }, [])
 
-  // ─── Voice Input (Web Speech API) ──────────────────────────────────────────
-
-  const supportsVoice =
-    typeof window !== 'undefined' &&
-    ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
-
-  const toggleVoiceInput = useCallback(() => {
-    if (isListening) {
-      // Stop listening
-      recognitionRef.current?.stop()
-      setIsListening(false)
-      return
-    }
-
-    if (!supportsVoice) {
-      toast.error('Voice input is not supported in this browser. Try Chrome or Edge.')
-      return
-    }
-
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-    const recognition = new SpeechRecognition()
-    recognition.continuous = false
-    recognition.interimResults = true
-    recognition.lang = 'en-US'
-
-    let finalTranscript = ''
-
-    recognition.onstart = () => {
-      setIsListening(true)
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    recognition.onresult = (event: any) => {
-      let interim = ''
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript
-        if (event.results[i].isFinal) {
-          finalTranscript += transcript
-        } else {
-          interim += transcript
-        }
-      }
-      // Show interim results in the input field
-      setInput((prev) => {
-        const base = prev.replace(/\[listening\.\.\.\].*$/i, '').trim()
-        const current = finalTranscript + interim
-        return base ? `${base} ${current}` : current
-      })
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    recognition.onerror = (event: any) => {
-      console.error('[remy-voice] Speech recognition error:', event.error)
-      setIsListening(false)
-      if (event.error === 'not-allowed') {
-        toast.error('Microphone access denied. Enable it in your browser settings.')
-      } else if (event.error !== 'aborted') {
-        toast.error('Voice input error. Try again.')
-      }
-    }
-
-    recognition.onend = () => {
-      setIsListening(false)
-      if (finalTranscript.trim()) {
-        setInput((prev) => {
-          const base = prev.replace(/\[listening\.\.\.\].*$/i, '').trim()
-          return base ? `${base} ${finalTranscript.trim()}` : finalTranscript.trim()
-        })
-      }
-    }
-
-    recognitionRef.current = recognition
-    recognition.start()
-  }, [isListening, supportsVoice])
-
-  // Stop voice input when drawer closes
-  useEffect(() => {
-    if (!open && isListening) {
-      recognitionRef.current?.stop()
-      setIsListening(false)
-    }
-  }, [open, isListening])
-
-  const playNotificationSound = useCallback(() => {
-    if (!soundEnabled) return
-    try {
-      const ctx = new AudioContext()
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.frequency.value = 800
-      osc.type = 'sine'
-      gain.gain.setValueAtTime(0.1, ctx.currentTime)
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3)
-      osc.start(ctx.currentTime)
-      osc.stop(ctx.currentTime + 0.3)
-      osc.onended = () => ctx.close()
-    } catch {
-      // AudioContext not available
-    }
-  }, [soundEnabled])
-
-  const autoSave = useCallback((userMessage: string, remyMsg: RemyMessage) => {
-    const title =
-      remyMsg.content.length > 60 ? remyMsg.content.slice(0, 57) + '...' : remyMsg.content
-    saveRemyMessage({ title, content: remyMsg.content, sourceMessage: userMessage }).catch((err) =>
-      console.error('[non-blocking] Auto-save message failed', err)
-    )
-
-    if (remyMsg.tasks?.length) {
-      for (const task of remyMsg.tasks) {
-        if (task.status === 'error') continue
-        saveRemyTaskResult({
-          taskType: task.taskType,
-          taskName: task.name,
-          data: task.data,
-          sourceMessage: userMessage,
-        }).catch((err) => console.error('[non-blocking] Auto-save task failed', err))
-      }
-    }
-
-    extractAndSaveMemories(userMessage, remyMsg.content).catch((err) =>
-      console.error('[non-blocking] Memory extraction failed', err)
-    )
-  }, [])
-
-  // ─── Cancel In-Flight Request ────────────────────────────────────────────────
-
-  const handleCancel = useCallback(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort()
-      abortControllerRef.current = null
-    }
-    setLoading(false)
-    setStreamingContent('')
-    setStreamingIntent(undefined)
-    resetLipSync()
-    dispatchBody({ type: 'RESPONSE_ENDED' })
-    toast.success('Request cancelled')
-  }, [resetLipSync, setLoading, dispatchBody])
-
-  // ─── Streaming Send ─────────────────────────────────────────────────────────
-
-  // ─── Debug Commands ──────────────────────────────────────────────────────
-  // Secret words to trigger body states for testing.
-  // Type these in the chat input to fire the corresponding animation.
-  const DEBUG_COMMANDS: Record<string, BodyEvent['type']> = {
-    'remy wave': 'DRAWER_OPENED',
-    'remy think': 'RESPONSE_STARTED',
-    'remy speak': 'FIRST_TOKEN',
-    'remy done': 'RESPONSE_ENDED',
-    'remy celebrate': 'SUCCESS',
-    'remy error': 'ERROR',
-    'remy nudge': 'NUDGE',
-    'remy sleep': 'IDLE_TIMEOUT',
-    'remy wake': 'INTERACT',
-    'remy whisk': 'WHISKING',
-    'remy exit': 'DRAWER_CLOSED',
-    'remy idle': 'INTERACT',
-  }
-
-  const handleSend = useCallback(
-    async (text?: string) => {
-      const message = (text ?? input).trim()
-      if (!message || loading) return
-
-      // Check for debug commands — intercept before API call
-      const debugEvent = DEBUG_COMMANDS[message.toLowerCase()]
-      if (debugEvent) {
-        setInput('')
-        dispatchBody({ type: debugEvent } as BodyEvent)
-        const debugMsg: RemyMessage = {
-          id: generateId(),
-          role: 'remy',
-          content: `[Debug] Fired \`${debugEvent}\` → body state transition`,
-          timestamp: new Date().toISOString(),
-        }
-        setMessages((prev) => [...prev, debugMsg])
-        return
-      }
-
-      setInput('')
-
-      let convId = currentConversationId
-      if (!convId) {
-        try {
-          const conv = await createLocalConversation()
-          convId = conv.id
-          setCurrentConversationId(conv.id)
-          setConversations((prev) => [
-            {
-              id: conv.id,
-              title: conv.title,
-              isActive: true,
-              createdAt: conv.createdAt,
-              updatedAt: conv.updatedAt,
-            },
-            ...prev,
-          ])
-          // Auto-prune old conversations (non-blocking)
-          pruneOldConversations().catch(() => {})
-        } catch (err) {
-          console.error('[remy] Failed to create conversation:', err)
-          toast.error('Failed to start conversation')
-          return
-        }
-      }
-
-      const userMsg: RemyMessage = {
-        id: generateId(),
-        role: 'user',
-        content: message,
-        timestamp: new Date().toISOString(),
-      }
-      setMessages((prev) => [...prev, userMsg])
-      setLoading(true)
-      setStreamingContent('')
-      setStreamingIntent(undefined)
-      resetLipSync()
-
-      saveLocalMessage(convId, 'user', message).catch((err) =>
-        console.error('[non-blocking] Save user msg failed', err)
-      )
-
-      // Declare outside try so finally block can access them
-      let timeoutId: ReturnType<typeof setTimeout> | undefined
-      let reader: ReadableStreamDefaultReader<Uint8Array> | undefined
-
-      try {
-        // Create an AbortController so we can cancel the request
-        const controller = new AbortController()
-        abortControllerRef.current = controller
-
-        // Hard client-side timeout: 2 min — generous for a big model, but
-        // won't let a stuck request run forever. Cancel button is always available.
-        timeoutId = setTimeout(() => controller.abort(), 120_000)
-
-        const activity = getSessionActivity()
-        const response = await fetch('/api/remy/stream', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            message,
-            history: messages.slice(-30),
-            currentPage: pathname,
-            recentPages: activity.recentPages,
-            recentActions: activity.recentActions,
-            recentErrors: activity.recentErrors,
-            sessionMinutes: activity.sessionMinutes,
-            activeForm: activity.activeForm,
-          }),
-          signal: controller.signal,
-        })
-
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
-
-        reader = response.body?.getReader()
-        if (!reader) throw new Error('No response body')
-
-        const decoder = new TextDecoder()
-        let fullContent = ''
-        let hasReceivedFirstToken = false
-        let tasks: RemyTaskResult[] | undefined
-        let navSuggestions: NavigationSuggestion[] | undefined
-        let memoryItems: RemyMemoryItem[] | undefined
-        let buffer = ''
-
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
-
-          buffer += decoder.decode(value, { stream: true })
-          const lines = buffer.split('\n\n')
-          buffer = lines.pop() ?? ''
-
-          for (const line of lines) {
-            if (!line.startsWith('data: ')) continue
-            try {
-              const event = JSON.parse(line.slice(6)) as { type: string; data: unknown }
-
-              switch (event.type) {
-                case 'token':
-                  if (!hasReceivedFirstToken) {
-                    hasReceivedFirstToken = true
-                    dispatchBody({ type: 'FIRST_TOKEN' })
-                  }
-                  fullContent += event.data as string
-                  setStreamingContent(fullContent)
-                  feedText(event.data as string)
-                  break
-                case 'tasks':
-                  tasks = event.data as RemyTaskResult[]
-                  break
-                case 'nav':
-                  navSuggestions = event.data as NavigationSuggestion[]
-                  break
-                case 'memories':
-                  memoryItems = event.data as RemyMemoryItem[]
-                  break
-                case 'intent':
-                  setStreamingIntent(event.data as string)
-                  break
-                case 'error':
-                  fullContent = event.data as string
-                  setStreamingContent('')
-                  break
-                case 'done':
-                  break
-              }
-            } catch {
-              // Skip malformed SSE lines
-            }
-          }
-        }
-
-        const cleanContent = fullContent.replace(/\nNAV_SUGGESTIONS:\s*\[[\s\S]*\]/, '').trim()
-
-        const remyMsg: RemyMessage = {
-          id: generateId(),
-          role: 'remy',
-          content: cleanContent,
-          timestamp: new Date().toISOString(),
-          tasks,
-          navSuggestions,
-          memoryItems,
-        }
-        setMessages((prev) => [...prev, remyMsg])
-        setStreamingContent('')
-        setStreamingIntent(undefined)
-        lipSyncStop()
-
-        // Transition body state: response is done
-        const hasTasks = tasks && tasks.length > 0 && tasks.some((t) => t.status === 'done')
-        if (hasTasks) {
-          dispatchBody({ type: 'SUCCESS' })
-        } else {
-          dispatchBody({ type: 'RESPONSE_ENDED' })
-        }
-
-        playNotificationSound()
-
-        saveLocalMessage(convId, 'remy', cleanContent, { tasks, navSuggestions })
-          .then(() => trimConversationMessages(convId).catch(() => {}))
-          .catch((err) => console.error('[non-blocking] Save remy msg failed', err))
-
-        // Log task executions to the action log (non-blocking)
-        if (tasks && tasks.length > 0) {
-          for (const task of tasks) {
-            logAction({
-              conversationId: convId,
-              messageId: null,
-              action: task.taskType,
-              params: task.data ? JSON.stringify(task.data).slice(0, 500) : null,
-              status: task.status === 'done' || task.status === 'pending' ? 'success' : 'error',
-              result: task.error ?? (task.data ? JSON.stringify(task.data).slice(0, 200) : null),
-              duration: 0, // timing not available from stream — logged as 0
-            }).catch(() => {}) // non-blocking
-          }
-        }
-
-        if (isFirstExchange) {
-          setIsFirstExchange(false)
-          // Derive title from first message using smart auto-title
-          const title = autoTitle(message)
-          updateLocalConversation(convId, { title })
-            .then(() => {
-              setConversations((prev) => prev.map((c) => (c.id === convId ? { ...c, title } : c)))
-            })
-            .catch((err) => console.error('[non-blocking] Auto-title failed', err))
-
-          // Check if conversation should be suggested for a project
-          const suggestion = autoSuggestProject(message)
-          if (suggestion) {
-            setProjectSuggestion(suggestion)
-          }
-        }
-
-        autoSave(message, remyMsg)
-      } catch (err: unknown) {
-        resetLipSync()
-        // If the user cancelled or the timeout fired, don't show a scary error
-        if (err instanceof DOMException && err.name === 'AbortError') {
-          dispatchBody({ type: 'RESPONSE_ENDED' })
-          const cancelMsg: RemyMessage = {
-            id: generateId(),
-            role: 'remy',
-            content: "Request was cancelled or timed out. Try again when you're ready.",
-            timestamp: new Date().toISOString(),
-          }
-          setMessages((prev) => [...prev, cancelMsg])
-          setStreamingContent('')
-          setStreamingIntent(undefined)
-        } else {
-          dispatchBody({ type: 'ERROR' })
-          const errMsg = err instanceof Error ? err.message : 'Remy is having trouble. Try again.'
-          const isOllamaOffline =
-            errMsg.includes('Local AI is offline') || errMsg.includes('Ollama')
-          const remyErrorMsg: RemyMessage = {
-            id: generateId(),
-            role: 'remy',
-            content: isOllamaOffline
-              ? "I'm offline right now — Ollama needs to be running for me to help. Start it up and try again!"
-              : errMsg,
-            timestamp: new Date().toISOString(),
-          }
-          setMessages((prev) => [...prev, remyErrorMsg])
-          setStreamingContent('')
-          setStreamingIntent(undefined)
-          if (!isOllamaOffline) toast.error(errMsg)
-        }
-      } finally {
-        clearTimeout(timeoutId)
-        reader?.cancel().catch(() => {})
-        abortControllerRef.current = null
-        setLoading(false)
-      }
-    },
-    [
-      input,
-      loading,
-      messages,
-      pathname,
-      autoSave,
-      currentConversationId,
-      isFirstExchange,
-      playNotificationSound,
-      feedText,
-      lipSyncStop,
-      resetLipSync,
-      dispatchBody,
-    ]
-  )
-
-  const handleApproveTask = useCallback(
-    async (taskId: string, taskType: string, data: unknown) => {
-      try {
-        const result = await approveTask(taskType, data)
-
-        if (
-          (taskType === 'email.followup' || taskType === 'email.generic') &&
-          data &&
-          (data as { draftText?: string }).draftText
-        ) {
-          await navigator.clipboard.writeText((data as { draftText: string }).draftText)
-        }
-
-        toast.success(result.message)
-
-        if (result.redirectUrl) {
-          setTimeout(() => {
-            closeDrawer()
-            router.push(result.redirectUrl!)
-          }, 1000)
-        }
-
-        setMessages((prev) =>
-          prev.map((msg) => {
-            if (!msg.tasks) return msg
-            return {
-              ...msg,
-              tasks: msg.tasks.map((t) =>
-                t.taskId === taskId ? { ...t, status: 'done' as const } : t
-              ),
-            }
-          })
-        )
-      } catch {
-        toast.error('Failed to approve task')
-      }
-    },
-    [router]
-  )
-
-  const handleRejectTask = useCallback((taskId: string) => {
-    setMessages((prev) =>
-      prev.map((msg) => {
-        if (!msg.tasks) return msg
-        return {
-          ...msg,
-          tasks: msg.tasks.filter((t) => t.taskId !== taskId),
-        }
-      })
-    )
-    toast.success('Task dismissed')
-  }, [])
-
   const currentConvTitle = conversations.find((c) => c.id === currentConversationId)?.title
+
+  // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
     <>
@@ -1405,6 +466,7 @@ export function RemyDrawer() {
             className="absolute left-0 top-0 bottom-0 w-1.5 z-[60] cursor-ew-resize hover:bg-brand-400/30 active:bg-brand-400/50 transition-colors"
             title="Drag to resize"
           />
+
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-stone-700 dark:border-stone-700 bg-brand-600">
             <div className="flex items-center gap-2">
@@ -1490,7 +552,7 @@ export function RemyDrawer() {
                     </>
                   )}
                   <button
-                    onClick={handleNewConversation}
+                    onClick={() => handleNewConversation()}
                     className="text-white/80 hover:text-white transition-colors p-1"
                     title="New conversation"
                     aria-label="New conversation"
@@ -1697,7 +759,7 @@ export function RemyDrawer() {
                   handleSelectConversation(id)
                   setDrawerView('chat')
                 }}
-                onNewConversation={(projectId) => {
+                onNewConversation={() => {
                   handleNewConversation()
                   setDrawerView('chat')
                 }}
@@ -1958,7 +1020,7 @@ export function RemyDrawer() {
                   </div>
                 ))}
 
-                {/* New-user quick action starters (show after welcome message) */}
+                {/* New-user quick action starters */}
                 {messages.length === 1 &&
                   messages[0]?.role === 'remy' &&
                   messages[0]?.id.startsWith('remy-welcome') &&

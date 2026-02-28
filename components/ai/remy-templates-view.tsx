@@ -12,6 +12,19 @@ import type { LocalProject, LocalTemplate } from '@/lib/ai/remy-types'
 import { BookTemplate, Plus, Play, Edit3, Trash2, X } from 'lucide-react'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 
+function interpolateTemplate(prompt: string): string {
+  const now = new Date()
+  const vars: Record<string, string> = {
+    date: now.toLocaleDateString(),
+    time: now.toLocaleTimeString(),
+    day: now.toLocaleDateString('en-US', { weekday: 'long' }),
+    month: now.toLocaleDateString('en-US', { month: 'long' }),
+    year: now.getFullYear().toString(),
+    timestamp: now.toISOString(),
+  }
+  return prompt.replace(/\{\{(\w+)\}\}/g, (match, key) => vars[key] ?? match)
+}
+
 interface RemyTemplatesViewProps {
   onRunTemplate: (prompt: string, projectId?: string | null) => void
 }
@@ -88,7 +101,7 @@ export function RemyTemplatesView({ onRunTemplate }: RemyTemplatesViewProps) {
   }
 
   const handleRun = (tmpl: LocalTemplate) => {
-    onRunTemplate(tmpl.prompt, tmpl.projectId)
+    onRunTemplate(interpolateTemplate(tmpl.prompt), tmpl.projectId)
   }
 
   const isEditing = editingId !== null

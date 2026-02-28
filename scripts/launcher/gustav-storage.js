@@ -21,8 +21,39 @@ const STORES = {
 
 const MAX_CONVERSATIONS = 500
 const MAX_MESSAGES_PER_CONVERSATION = 1000
+const MAX_ARCHIVED = 100
 
-// ─── Database ───────────────────────────────────────────────────────
+// ─── Database (connection-pooled) ───────────────────────────────────
+
+let _cachedDB = null
+let _closeTimer = null
+const DB_IDLE_TIMEOUT = 5000 // close after 5s idle
+
+async function getDB() {
+  if (_cachedDB) {
+    clearTimeout(_closeTimer)
+    _closeTimer = setTimeout(() => {
+      if (_cachedDB) {
+        _cachedDB.close()
+        _cachedDB = null
+      }
+    }, DB_IDLE_TIMEOUT)
+    return _cachedDB
+  }
+  _cachedDB = await openDB()
+  // Invalidate cache if another tab upgrades the DB
+  _cachedDB.onversionchange = () => {
+    _cachedDB?.close()
+    _cachedDB = null
+  }
+  _closeTimer = setTimeout(() => {
+    if (_cachedDB) {
+      _cachedDB.close()
+      _cachedDB = null
+    }
+  }, DB_IDLE_TIMEOUT)
+  return _cachedDB
+}
 
 function openDB() {
   return new Promise((resolve, reject) => {
@@ -1072,18 +1103,32 @@ function autoSuggestProject(message) {
 
 async function pruneOldConversations(maxConversations = MAX_CONVERSATIONS) {
   const allConvs = await getAllConversations(true)
-  if (allConvs.length <= maxConversations) return 0
+  let deleted = 0
 
-  // Only prune archived conversations first
-  const archived = allConvs.filter((c) => c.archived)
-  const toDelete = archived.slice(0, allConvs.length - maxConversations)
-
-  for (const conv of toDelete) {
-    await deleteConversation(conv.id)
+  // Phase 1: If over total limit, prune archived conversations first
+  if (allConvs.length > maxConversations) {
+    const archived = allConvs.filter((c) => c.archived)
+    const toDelete = archived.slice(0, allConvs.length - maxConversations)
+    for (const conv of toDelete) {
+      await deleteConversation(conv.id)
+      deleted++
+    }
   }
 
-  console.log(`[gustav-storage] Pruned ${toDelete.length} old conversations`)
-  return toDelete.length
+  // Phase 2: Cap archived conversations independently (prevent unbounded archive growth)
+  const archived = (await getAllConversations(true)).filter((c) => c.archived)
+  if (archived.length > MAX_ARCHIVED) {
+    // Sort oldest first, delete excess
+    const sorted = archived.sort((a, b) => new Date(a.updatedAt) - new Date(b.updatedAt))
+    const excessArchived = sorted.slice(0, archived.length - MAX_ARCHIVED)
+    for (const conv of excessArchived) {
+      await deleteConversation(conv.id)
+      deleted++
+    }
+  }
+
+  if (deleted > 0) console.log(`[gustav-storage] Pruned ${deleted} old conversations`)
+  return deleted
 }
 
 async function trimMessages(conversationId, maxMessages = MAX_MESSAGES_PER_CONVERSATION) {
