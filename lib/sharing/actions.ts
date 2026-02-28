@@ -21,6 +21,7 @@ import {
   isCriticalRsvpChange,
   type StructuredDietaryItem,
 } from '@/lib/sharing/policy'
+import { EventGuestRowSchema, EventShareSettingsRowSchema } from '@/lib/sharing/row-schemas'
 
 // ============================================================
 // SCHEMAS
@@ -258,6 +259,22 @@ function parseNotesToList(notes?: string) {
     .map((item) => item.trim())
     .filter(Boolean)
     .slice(0, 30)
+}
+
+function parseShareSettingsRow(row: unknown) {
+  const parsed = EventShareSettingsRowSchema.safeParse(row)
+  if (!parsed.success) {
+    throw new Error('RSVP sharing schema mismatch. Apply latest database migrations.')
+  }
+  return parsed.data
+}
+
+function parseGuestRow(row: unknown) {
+  const parsed = EventGuestRowSchema.safeParse(row)
+  if (!parsed.success) {
+    throw new Error('RSVP guest schema mismatch. Apply latest database migrations.')
+  }
+  return parsed.data
 }
 
 function deriveAttendingStatus(rsvpStatus: string) {
@@ -2188,12 +2205,13 @@ export async function getEventShareByToken(token: string) {
   const supabase = createServerClient({ admin: true })
 
   // Fetch share by token
-  const { data: share, error: shareError } = await supabase
+  const { data: shareData, error: shareError } = await supabase
     .from('event_shares')
     .select('*')
     .eq('token', token)
     .eq('is_active', true)
     .single()
+  const share = shareData ? parseShareSettingsRow(shareData) : null
 
   if (shareError || !share) {
     return null
@@ -2289,7 +2307,7 @@ export async function getEventShareByToken(token: string) {
         }
       : null,
     chefName: visibility.show_chef_name ? chef?.display_name || chef?.business_name : null,
-    chefProfileUrl: (chef as any)?.booking_slug ? `/chef/${(chef as any).booking_slug}` : null,
+    chefProfileUrl: chef?.booking_slug ? `/chef/${chef.booking_slug}` : null,
     menus,
     dietaryInfo: visibility.show_dietary_info
       ? {
@@ -2301,10 +2319,10 @@ export async function getEventShareByToken(token: string) {
     guestList,
     serviceStyle: event.service_style,
     settings: {
-      rsvp_deadline_at: (share as any).rsvp_deadline_at || null,
-      enforce_capacity: (share as any).enforce_capacity || false,
-      waitlist_enabled: (share as any).waitlist_enabled ?? true,
-      max_capacity: (share as any).max_capacity || null,
+      rsvp_deadline_at: share.rsvp_deadline_at || null,
+      enforce_capacity: share.enforce_capacity || false,
+      waitlist_enabled: share.waitlist_enabled ?? true,
+      max_capacity: share.max_capacity || null,
     },
   }
 }
@@ -2334,7 +2352,7 @@ export async function submitRSVP(input: SubmitRSVPInput) {
     .eq('token', validated.shareToken)
     .eq('is_active', true)
     .single()
-  const share = shareData as any
+  const share = shareData ? parseShareSettingsRow(shareData) : null
 
   if (shareError || !share) {
     throw new Error('Invalid or expired share link')
@@ -2428,6 +2446,7 @@ export async function submitRSVP(input: SubmitRSVPInput) {
     console.error('[submitRSVP] Error:', error)
     throw new Error('Failed to submit RSVP')
   }
+  const guestRow = parseGuestRow(guest)
 
   const dietaryItems = buildStructuredDietaryItems({
     dietaryRestrictions: validated.dietary_restrictions || [],
@@ -2440,14 +2459,14 @@ export async function submitRSVP(input: SubmitRSVPInput) {
     supabase,
     tenantId: share.tenant_id,
     eventId: share.event_id,
-    guestId: guest.id as string,
+    guestId: guestRow.id,
     items: dietaryItems,
   })
   await logRsvpAudit({
     supabase,
     tenantId: share.tenant_id,
     eventId: share.event_id,
-    guestId: guest.id as string,
+    guestId: guestRow.id,
     guestToken,
     action: 'submit',
     beforeValues: null,
@@ -2511,7 +2530,7 @@ export async function submitRSVP(input: SubmitRSVPInput) {
     success: true,
     alreadyExists: false,
     guestToken,
-    guestId: guest.id,
+    guestId: guestRow.id,
     waitlisted: shouldWaitlist,
   }
 }
@@ -2533,7 +2552,7 @@ export async function updateRSVP(input: UpdateRSVPInput) {
     .select('*')
     .eq('guest_token', guestToken)
     .maybeSingle()
-  const existingGuest = existingGuestData as any
+  const existingGuest = existingGuestData ? parseGuestRow(existingGuestData) : null
   if (!existingGuest) {
     throw new Error('Guest RSVP not found')
   }
@@ -2545,7 +2564,7 @@ export async function updateRSVP(input: UpdateRSVPInput) {
     )
     .eq('id', existingGuest.event_share_id)
     .maybeSingle()
-  const share = shareData as any
+  const share = shareData ? parseShareSettingsRow(shareData) : null
   if (!share || !share.is_active) {
     throw new Error('This RSVP link is no longer active.')
   }
@@ -2628,6 +2647,7 @@ export async function updateRSVP(input: UpdateRSVPInput) {
     console.error('[updateRSVP] Error:', error)
     throw new Error('Failed to update RSVP')
   }
+  const guestRow = parseGuestRow(guest)
 
   const dietaryItems = buildStructuredDietaryItems({
     dietaryRestrictions:
@@ -2650,16 +2670,16 @@ export async function updateRSVP(input: UpdateRSVPInput) {
   })
   await syncGuestDietaryItems({
     supabase,
-    tenantId: guest.tenant_id as string,
-    eventId: guest.event_id as string,
-    guestId: guest.id as string,
+    tenantId: guestRow.tenant_id,
+    eventId: guestRow.event_id,
+    guestId: guestRow.id,
     items: dietaryItems,
   })
   await logRsvpAudit({
     supabase,
-    tenantId: guest.tenant_id as string,
-    eventId: guest.event_id as string,
-    guestId: guest.id as string,
+    tenantId: guestRow.tenant_id,
+    eventId: guestRow.event_id,
+    guestId: guestRow.id,
     guestToken,
     action: 'update',
     beforeValues: {
@@ -2669,22 +2689,22 @@ export async function updateRSVP(input: UpdateRSVPInput) {
       attendance_queue_status: existingGuest.attendance_queue_status || 'none',
     },
     afterValues: {
-      rsvp_status: guest.rsvp_status,
-      dietary_restrictions: guest.dietary_restrictions,
-      allergies: guest.allergies,
-      attendance_queue_status: (guest as any).attendance_queue_status || 'none',
+      rsvp_status: guestRow.rsvp_status,
+      dietary_restrictions: guestRow.dietary_restrictions || [],
+      allergies: guestRow.allergies || [],
+      attendance_queue_status: guestRow.attendance_queue_status || 'none',
     },
     dietaryItems,
   })
 
   // Cache invalidation - both portals read guest data
-  revalidatePath(`/events/${guest.event_id}`)
-  revalidatePath(`/my-events/${guest.event_id}`)
+  revalidatePath(`/events/${guestRow.event_id}`)
+  revalidatePath(`/my-events/${guestRow.event_id}`)
 
   return {
     success: true,
     guest,
-    waitlisted: ((guest as any).attendance_queue_status || 'none') === 'waitlisted',
+    waitlisted: (guestRow.attendance_queue_status || 'none') === 'waitlisted',
   }
 }
 /**
