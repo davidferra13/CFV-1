@@ -6,6 +6,7 @@ import { getClientReviewForEvent, getGoogleReviewUrlForTenant } from '@/lib/revi
 import {
   getEventInviteAnalytics,
   getEventJoinRequests,
+  getEventRSVPObservabilitySignals,
   getEventRSVPSummary,
   getEventShareInvites,
   getEventShares,
@@ -82,6 +83,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
     joinRequests,
     shareInvites,
     inviteAnalytics,
+    observability,
     communicationLogs,
   ] = await Promise.all([
     getEventShares(params.id),
@@ -90,6 +92,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
     getEventJoinRequests(params.id),
     getEventShareInvites(params.id),
     getEventInviteAnalytics(params.id),
+    getEventRSVPObservabilitySignals(params.id),
     getGuestCommunicationLogs(params.id),
   ])
   const activeShare = shares.find((s: any) => s.is_active) || null
@@ -469,6 +472,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
               joinRequests={joinRequests as any[]}
               invites={shareInvites as any[]}
               analytics={inviteAnalytics as any}
+              observability={observability as any}
               communicationLogs={communicationLogs as any[]}
             />
             {guests.length > 0 && (

@@ -53,6 +53,17 @@ type CommunicationLog = {
   created_at: string
 }
 
+type Observability = {
+  remindersFailed: number
+  remindersQueued: number
+  queueBacklog: number
+  waitlistedCount: number
+  promotedCount: number
+  stalePendingCount: number
+  highViewActiveInvites: number
+  alerts: string[]
+}
+
 const segments = ['pending', 'attending', 'waitlisted', 'allergies'] as const
 
 type Segment = (typeof segments)[number]
@@ -64,6 +75,7 @@ export function RSVPAdvancedPanel({
   joinRequests,
   invites,
   analytics,
+  observability,
   communicationLogs,
 }: {
   eventId: string
@@ -78,6 +90,7 @@ export function RSVPAdvancedPanel({
   joinRequests: JoinRequest[]
   invites: ShareInvite[]
   analytics: Analytics
+  observability: Observability
   communicationLogs: CommunicationLog[]
 }) {
   const [isPending, startTransition] = useTransition()
@@ -235,6 +248,31 @@ export function RSVPAdvancedPanel({
           <Metric label="Guest Invites" value={analytics.guestInvited} />
           <Metric label="Viewed Invites" value={analytics.viewedInvites} />
         </div>
+      </section>
+
+      <section className="space-y-3 border border-stone-800 rounded-md p-3">
+        <h5 className="text-xs font-semibold uppercase tracking-wide text-stone-400">
+          Health Signals
+        </h5>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+          <Metric label="Reminder Failures" value={observability.remindersFailed} />
+          <Metric label="Queue Backlog" value={observability.queueBacklog} />
+          <Metric label="Waitlisted" value={observability.waitlistedCount} />
+          <Metric label="Promoted" value={observability.promotedCount} />
+          <Metric label="Stale Pending" value={observability.stalePendingCount} />
+          <Metric label="High-View Invites" value={observability.highViewActiveInvites} />
+          <Metric label="Queued Reminders" value={observability.remindersQueued} />
+          <Metric label="Alerts" value={observability.alerts.length} />
+        </div>
+        {observability.alerts.length > 0 ? (
+          <div className="space-y-1 rounded-md border border-amber-800/40 bg-amber-950/40 p-2 text-xs text-amber-300">
+            {observability.alerts.map((alert, index) => (
+              <p key={`${alert}-${index}`}>{alert}</p>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-stone-500">No active RSVP health alerts.</p>
+        )}
       </section>
 
       <section className="space-y-3 border border-stone-800 rounded-md p-3">

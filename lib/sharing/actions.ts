@@ -1213,6 +1213,82 @@ export async function getEventInviteAnalytics(eventId: string) {
   }
 }
 
+export async function getEventRSVPObservabilitySignals(eventId: string) {
+  const user = await getCurrentUser()
+  await getEventForUserAccess(eventId, user)
+  const supabase = createServerClient({ admin: true })
+
+  const [remindersRes, guestsRes, invitesRes] = await Promise.all([
+    (supabase as any)
+      .from('rsvp_reminder_log')
+      .select('status, created_at')
+      .eq('event_id', eventId),
+    (supabase as any)
+      .from('event_guests')
+      .select('id, rsvp_status, attendance_queue_status, created_at, promoted_at')
+      .eq('event_id', eventId),
+    (supabase as any)
+      .from('event_share_invites')
+      .select('id, status, view_count, last_viewed_at')
+      .eq('event_id', eventId),
+  ])
+
+  const reminderRows = (remindersRes.data || []) as Array<{ status: string; created_at: string }>
+  const guestRows = (guestsRes.data || []) as Array<{
+    id: string
+    rsvp_status: string
+    attendance_queue_status?: string | null
+    created_at: string
+    promoted_at?: string | null
+  }>
+  const inviteRows = (invitesRes.data || []) as Array<{
+    id: string
+    status: string
+    view_count?: number | null
+    last_viewed_at?: string | null
+  }>
+
+  const now = Date.now()
+  const remindersFailed = reminderRows.filter((row) => row.status === 'failed').length
+  const remindersQueued = reminderRows.filter((row) => row.status === 'queued').length
+  const queueBacklog = reminderRows.filter((row) => {
+    if (row.status !== 'queued') return false
+    return now - new Date(row.created_at).getTime() > 2 * 60 * 60 * 1000
+  }).length
+  const waitlistedCount = guestRows.filter(
+    (row) => (row.attendance_queue_status || 'none') === 'waitlisted'
+  ).length
+  const promotedCount = guestRows.filter((row) => !!row.promoted_at).length
+  const stalePendingCount = guestRows.filter((row) => {
+    if (row.rsvp_status !== 'pending') return false
+    return now - new Date(row.created_at).getTime() > 7 * 24 * 60 * 60 * 1000
+  }).length
+  const highViewActiveInvites = inviteRows.filter(
+    (row) => row.status === 'active' && Number(row.view_count || 0) >= 5
+  ).length
+
+  const alerts: string[] = []
+  if (remindersFailed > 0) alerts.push(`${remindersFailed} reminder deliveries failed.`)
+  if (queueBacklog > 0) alerts.push(`${queueBacklog} reminders are queued for over 2 hours.`)
+  if (highViewActiveInvites > 0)
+    alerts.push(`${highViewActiveInvites} active invites have high views without conversion.`)
+  if (stalePendingCount > 0)
+    alerts.push(`${stalePendingCount} guests have been pending for over 7 days.`)
+  if (waitlistedCount > 0 && promotedCount === 0)
+    alerts.push('There are waitlisted guests but no promotions yet.')
+
+  return {
+    remindersFailed,
+    remindersQueued,
+    queueBacklog,
+    waitlistedCount,
+    promotedCount,
+    stalePendingCount,
+    highViewActiveInvites,
+    alerts,
+  }
+}
+
 export async function sendEventRSVPReminders(input: z.infer<typeof SendEventReminderSchema>) {
   const validated = SendEventReminderSchema.parse(input)
   const user = await getCurrentUser()
