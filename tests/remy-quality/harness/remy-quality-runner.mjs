@@ -36,6 +36,7 @@ function parseArgs() {
     suite: 'chef',
     category: null,
     promptId: null,
+    repeat: 1,
   }
 
   for (let i = 0; i < args.length; i++) {
@@ -49,6 +50,9 @@ function parseArgs() {
       case '--prompt':
         opts.promptId = args[++i]
         break
+      case '--repeat':
+        opts.repeat = parseInt(args[++i], 10) || 1
+        break
       case '--help':
         console.log(`
 Remy Quality Test Runner
@@ -57,9 +61,11 @@ Usage:
   node remy-quality-runner.mjs --suite <suite> [options]
 
 Options:
-  --suite <name>       Test suite: chef, client, adversarial (default: chef)
+  --suite <name>       Test suite: chef, client, adversarial, multi-turn,
+                       hallucination, voice-messy (default: chef)
   --category <name>    Run only prompts in this category
   --prompt <id>        Run a single prompt by ID (e.g. chef-001)
+  --repeat <n>         Run each prompt N times for consistency testing (default: 1)
   --help               Show this help
 `)
         process.exit(0)
@@ -291,11 +297,27 @@ async function main() {
 
   // 4. Load prompts
   const { prompts, defaults, endpoint } = loadPrompts(opts.suite, opts.category, opts.promptId)
-  console.log(`Suite: ${opts.suite} | Prompts: ${prompts.length}`)
+
+  // Build run list — expand prompts × repeat count
+  const runList = []
+  for (const prompt of prompts) {
+    for (let r = 0; r < opts.repeat; r++) {
+      runList.push({
+        ...prompt,
+        id: opts.repeat > 1 ? `${prompt.id}_run${r + 1}` : prompt.id,
+        _originalId: prompt.id,
+        _runNumber: r + 1,
+      })
+    }
+  }
+
+  const totalRuns = runList.length
+  console.log(`Suite: ${opts.suite} | Prompts: ${prompts.length}${opts.repeat > 1 ? ` × ${opts.repeat} repeats = ${totalRuns} total runs` : ''}`)
   if (opts.category) console.log(`Category filter: ${opts.category}`)
   if (opts.promptId) console.log(`Single prompt: ${opts.promptId}`)
+  if (opts.repeat > 1) console.log(`Consistency mode: each prompt runs ${opts.repeat} times`)
 
-  const estimateMin = Math.round((prompts.length * 45) / 60) // ~45s avg
+  const estimateMin = Math.round((totalRuns * 45) / 60) // ~45s avg
   console.log(`Estimated duration: ~${estimateMin} minutes`)
   console.log('')
   console.log('─'.repeat(60))
@@ -305,11 +327,12 @@ async function main() {
   const results = []
   const runStartMs = Date.now()
 
-  for (let i = 0; i < prompts.length; i++) {
-    const prompt = prompts[i]
-    const num = `[${i + 1}/${prompts.length}]`
+  for (let i = 0; i < runList.length; i++) {
+    const prompt = runList[i]
+    const num = `[${i + 1}/${totalRuns}]`
+    const repeatLabel = opts.repeat > 1 ? ` (run ${prompt._runNumber}/${opts.repeat})` : ''
 
-    console.log(`${num} ${prompt.id}: "${prompt.prompt}"`)
+    console.log(`${num} ${prompt.id}: "${prompt.prompt}"${repeatLabel}`)
 
     try {
       const sseResult = await sendPrompt(prompt, defaults, endpoint, cookie)
@@ -406,6 +429,49 @@ async function main() {
 
   // 7. Print summary
   printSummary(results, totalDurationMs)
+
+  // 7b. Consistency analysis (when --repeat > 1)
+  if (opts.repeat > 1) {
+    console.log('')
+    console.log('═'.repeat(60))
+    console.log('  CONSISTENCY ANALYSIS')
+    console.log('═'.repeat(60))
+    console.log('')
+
+    // Group results by original prompt ID
+    const groups = {}
+    for (const r of results) {
+      const origId = r.promptId.replace(/_run\d+$/, '')
+      if (!groups[origId]) groups[origId] = []
+      groups[origId].push(r)
+    }
+
+    let consistentCount = 0
+    let inconsistentCount = 0
+
+    for (const [origId, runs] of Object.entries(groups)) {
+      const verdicts = runs.map((r) => r.overall)
+      const timings = runs.map((r) => r.timing?.totalMs || 0)
+      const allSame = verdicts.every((v) => v === verdicts[0])
+      const avgTime = Math.round(timings.reduce((a, b) => a + b, 0) / timings.length)
+      const minTime = Math.min(...timings)
+      const maxTime = Math.max(...timings)
+      const variance = maxTime - minTime
+
+      if (allSame && verdicts[0] === 'pass') {
+        consistentCount++
+        console.log(`  ✓ ${origId}: ${verdicts.join(', ')} | avg ${(avgTime / 1000).toFixed(1)}s (±${(variance / 1000).toFixed(1)}s)`)
+      } else {
+        inconsistentCount++
+        console.log(`  ✗ ${origId}: ${verdicts.join(', ')} | avg ${(avgTime / 1000).toFixed(1)}s (±${(variance / 1000).toFixed(1)}s) ← INCONSISTENT`)
+      }
+    }
+
+    console.log('')
+    console.log(`  Consistent: ${consistentCount}/${Object.keys(groups).length}`)
+    console.log(`  Inconsistent: ${inconsistentCount}/${Object.keys(groups).length}`)
+    console.log('─'.repeat(60))
+  }
 
   console.log(`Benchmark: ${path.relative(ROOT, benchmarkPath)}`)
   console.log(`Report:    ${path.relative(ROOT, reportPath)}`)

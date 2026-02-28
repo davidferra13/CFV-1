@@ -1,0 +1,453 @@
+{
+  "suite": "multi-turn",
+  "description": "20 multi-turn conversations testing whether Remy handles follow-ups, context carryover, corrections, and topic switches across conversation history",
+  "endpoint": "/api/remy/stream",
+  "authRole": "chef",
+  "defaults": {
+    "context": {
+      "currentPage": "/dashboard",
+      "recentPages": [{ "path": "/dashboard", "label": "Dashboard", "at": "2026-02-27T10:00:00Z" }],
+      "recentActions": [],
+      "recentErrors": [],
+      "sessionMinutes": 10,
+      "activeForm": null
+    },
+    "timing": {
+      "classificationMaxMs": 8000,
+      "firstTokenMaxMs": 20000,
+      "totalMaxMs": 120000
+    },
+    "minLength": 15,
+    "maxLength": 4000
+  },
+  "prompts": [
+    {
+      "id": "mt-001",
+      "category": "follow_up",
+      "prompt": "Tell me more about the first one",
+      "context": {
+        "history": [
+          { "role": "user", "content": "Show me my upcoming events" },
+          {
+            "role": "assistant",
+            "content": "Here are your upcoming events:\n\n1. **Birthday Dinner** — March 15, 12 guests, confirmed\n2. **Corporate Lunch** — March 22, 30 guests, proposed\n3. **Anniversary Dinner** — April 5, 8 guests, draft"
+          }
+        ]
+      },
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference the Birthday Dinner (first event in the previous response). Tests pronoun/reference resolution."
+      }
+    },
+    {
+      "id": "mt-002",
+      "category": "follow_up",
+      "prompt": "What about the second one?",
+      "context": {
+        "history": [
+          { "role": "user", "content": "Show me my upcoming events" },
+          {
+            "role": "assistant",
+            "content": "Here are your upcoming events:\n\n1. **Birthday Dinner** — March 15, 12 guests, confirmed\n2. **Corporate Lunch** — March 22, 30 guests, proposed\n3. **Anniversary Dinner** — April 5, 8 guests, draft"
+          },
+          { "role": "user", "content": "Tell me more about the first one" },
+          {
+            "role": "assistant",
+            "content": "The Birthday Dinner is on March 15th for 12 guests. It's confirmed and the client is Sarah Johnson. The menu hasn't been finalized yet."
+          }
+        ]
+      },
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference the Corporate Lunch (second event). Tests ordinal tracking across 4-message history."
+      }
+    },
+    {
+      "id": "mt-003",
+      "category": "follow_up",
+      "prompt": "How many guests does she have total across all her events?",
+      "context": {
+        "history": [
+          { "role": "user", "content": "Find my client Sarah Johnson" },
+          {
+            "role": "assistant",
+            "content": "Found Sarah Johnson — she's booked 3 events with you: a birthday dinner (12 guests), a cocktail party (25 guests), and a holiday dinner (8 guests). She's a Gold loyalty tier client."
+          }
+        ]
+      },
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference Sarah from the previous turn and attempt to sum guest counts. Tests pronoun 'she' resolution."
+      }
+    },
+    {
+      "id": "mt-004",
+      "category": "follow_up",
+      "prompt": "Draft a follow-up for her",
+      "context": {
+        "history": [
+          { "role": "user", "content": "Find my client Sarah Johnson" },
+          {
+            "role": "assistant",
+            "content": "Found Sarah Johnson — email: sarah@example.com, phone: 555-0123. She has 1 upcoming event (Birthday Dinner, March 15). Gold tier client."
+          }
+        ]
+      },
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["email.followup"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should draft a follow-up for Sarah Johnson (resolved from 'her' in history). Tests command + pronoun resolution."
+      }
+    },
+    {
+      "id": "mt-005",
+      "category": "follow_up",
+      "prompt": "And a thank-you too",
+      "context": {
+        "history": [
+          { "role": "user", "content": "Find my client Sarah Johnson" },
+          { "role": "assistant", "content": "Found Sarah Johnson — Gold tier, 3 events total." },
+          { "role": "user", "content": "Draft a follow-up for her" },
+          {
+            "role": "assistant",
+            "content": "Here's a follow-up draft for Sarah:\n\nSubject: Great seeing you!\n\nHi Sarah, just wanted to follow up..."
+          }
+        ]
+      },
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["draft.thank_you"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should draft a thank-you for the same client (Sarah). Tests chaining implicit context across 3 turns."
+      }
+    },
+    {
+      "id": "mt-006",
+      "category": "correction",
+      "prompt": "Actually I meant the Henderson family, not Johnson",
+      "context": {
+        "history": [
+          { "role": "user", "content": "Find my client Johnson" },
+          { "role": "assistant", "content": "Found the Johnson family — 2 events, Silver tier." }
+        ]
+      },
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.search"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline", "Johnson"],
+        "notes": "Should search for Henderson, NOT continue talking about Johnson. Tests correction handling."
+      }
+    },
+    {
+      "id": "mt-007",
+      "category": "correction",
+      "prompt": "No, I said March, not April",
+      "context": {
+        "history": [
+          { "role": "user", "content": "Am I free in March?" },
+          { "role": "assistant", "content": "Looking at April, you have 3 events scheduled..." }
+        ]
+      },
+      "expected": {
+        "intent": "question",
+        "mustContain": ["march"],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should correct to March and answer about March availability. Tests correction handling."
+      }
+    },
+    {
+      "id": "mt-008",
+      "category": "topic_switch",
+      "prompt": "OK, now show me my financial summary",
+      "context": {
+        "history": [
+          { "role": "user", "content": "Show me my upcoming events" },
+          { "role": "assistant", "content": "You have 3 upcoming events..." },
+          { "role": "user", "content": "Tell me more about the first one" },
+          { "role": "assistant", "content": "The Birthday Dinner is on March 15th..." }
+        ]
+      },
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["finance.summary"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should cleanly switch from events topic to financials. Tests topic switching."
+      }
+    },
+    {
+      "id": "mt-009",
+      "category": "topic_switch",
+      "prompt": "Forget about the events for now. What's on my calendar next week?",
+      "context": {
+        "history": [
+          { "role": "user", "content": "List all my draft events" },
+          {
+            "role": "assistant",
+            "content": "Here are your draft events: 1. Wine Tasting (April 10), 2. Summer BBQ (May 1)"
+          }
+        ]
+      },
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline", "draft"],
+        "notes": "Should talk about next week's calendar, not draft events. Tests explicit topic switch."
+      }
+    },
+    {
+      "id": "mt-010",
+      "category": "topic_switch",
+      "prompt": "Going back to what we were talking about before — can you draft that email?",
+      "context": {
+        "history": [
+          { "role": "user", "content": "I need to send a thank-you to the Miller family" },
+          {
+            "role": "assistant",
+            "content": "I can draft a thank-you for the Millers! Would you like me to go ahead?"
+          },
+          { "role": "user", "content": "Wait, first tell me my revenue this month" },
+          { "role": "assistant", "content": "Your revenue this month is $12,500 across 4 events." }
+        ]
+      },
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["draft.thank_you"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should draft the thank-you for the Millers from 2 turns ago. Tests return-to-topic."
+      }
+    },
+    {
+      "id": "mt-011",
+      "category": "refinement",
+      "prompt": "Just the ones in March though",
+      "context": {
+        "history": [
+          { "role": "user", "content": "Show me my upcoming events" },
+          {
+            "role": "assistant",
+            "content": "Here are your upcoming events:\n1. Birthday Dinner — March 15\n2. Corporate Lunch — March 22\n3. Anniversary Dinner — April 5\n4. Graduation Party — April 20\n5. Summer BBQ — May 1"
+          }
+        ]
+      },
+      "expected": {
+        "intent": "question",
+        "mustContain": ["march"],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should filter to only March events (Birthday Dinner, Corporate Lunch). Tests result refinement."
+      }
+    },
+    {
+      "id": "mt-012",
+      "category": "refinement",
+      "prompt": "Only the ones over $5,000",
+      "context": {
+        "history": [
+          { "role": "user", "content": "What's my financial summary?" },
+          {
+            "role": "assistant",
+            "content": "Here's your financial summary:\n- Birthday Dinner: $3,600 revenue\n- Corporate Lunch: $8,200 revenue\n- Anniversary Dinner: $2,100 revenue\n- Wedding Reception: $15,400 revenue"
+          }
+        ]
+      },
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should filter to events over $5,000 (Corporate Lunch, Wedding Reception). Tests numerical filtering."
+      }
+    },
+    {
+      "id": "mt-013",
+      "category": "refinement",
+      "prompt": "Can you sort those by date instead?",
+      "context": {
+        "history": [
+          { "role": "user", "content": "Show me all my clients" },
+          {
+            "role": "assistant",
+            "content": "Here are your recent clients:\n1. Sarah Johnson (Gold tier)\n2. Mike Henderson (Silver tier)\n3. Lisa Chen (Bronze tier)\n4. David Martinez (Standard)\n5. Rachel Williams (Gold tier)"
+          }
+        ]
+      },
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should attempt to re-sort the client list by date. Tests re-sort/re-filter."
+      }
+    },
+    {
+      "id": "mt-014",
+      "category": "deep_chain",
+      "prompt": "Now draft a follow-up mentioning that menu",
+      "context": {
+        "history": [
+          { "role": "user", "content": "Find client Henderson" },
+          { "role": "assistant", "content": "Found Mike Henderson — Silver tier, 2 events." },
+          { "role": "user", "content": "What menu did I serve at his last event?" },
+          {
+            "role": "assistant",
+            "content": "At the Henderson anniversary dinner (Jan 15), you served:\n- Appetizer: Burrata with heirloom tomatoes\n- Main: Seared duck breast with cherry reduction\n- Dessert: Dark chocolate mousse"
+          },
+          { "role": "user", "content": "He loved the duck, make a note of that" },
+          {
+            "role": "assistant",
+            "content": "Noted! I'll remember that Mike Henderson loved the seared duck breast with cherry reduction."
+          }
+        ]
+      },
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["email.followup"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should draft a follow-up for Henderson referencing the menu (especially the duck). Tests 6-message deep context chain."
+      }
+    },
+    {
+      "id": "mt-015",
+      "category": "deep_chain",
+      "prompt": "Perfect. Now do the same thing for the Chen family",
+      "context": {
+        "history": [
+          { "role": "user", "content": "Draft a thank-you for Henderson" },
+          {
+            "role": "assistant",
+            "content": "Here's a thank-you draft for the Henderson family:\n\nSubject: Thank you for a wonderful evening!\n\nDear Mike and family..."
+          },
+          { "role": "user", "content": "That's great, send it" },
+          {
+            "role": "assistant",
+            "content": "I've prepared the draft for your review — you can send it from your email. I don't send emails directly to protect your client relationships."
+          }
+        ]
+      },
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["draft.thank_you"],
+        "mustContain": [],
+        "mustNotContain": ["Henderson"],
+        "notes": "Should draft a thank-you for Chen, NOT Henderson. Tests 'same thing for X' pattern."
+      }
+    },
+    {
+      "id": "mt-016",
+      "category": "implicit_reference",
+      "prompt": "Is that date available?",
+      "context": {
+        "history": [
+          { "role": "user", "content": "When is the Henderson dinner?" },
+          {
+            "role": "assistant",
+            "content": "The Henderson anniversary dinner is scheduled for March 22nd."
+          }
+        ]
+      },
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["calendar.availability"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should check availability for March 22nd (referenced as 'that date'). Tests implicit date reference."
+      }
+    },
+    {
+      "id": "mt-017",
+      "category": "implicit_reference",
+      "prompt": "How much did I charge for that?",
+      "context": {
+        "history": [
+          { "role": "user", "content": "Show me the details for my corporate lunch event" },
+          {
+            "role": "assistant",
+            "content": "Corporate Lunch — March 22\n- Client: Davis Corp\n- Guests: 30\n- Status: Proposed\n- Venue: Client's office\n- Menu: Mediterranean spread"
+          }
+        ]
+      },
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference the corporate lunch pricing. Tests 'that' resolution to previous event."
+      }
+    },
+    {
+      "id": "mt-018",
+      "category": "implicit_reference",
+      "prompt": "Add her allergy to the notes",
+      "context": {
+        "history": [
+          { "role": "user", "content": "Check dietary restrictions for client Lisa Chen" },
+          {
+            "role": "assistant",
+            "content": "Lisa Chen has the following dietary restrictions:\n- Tree nut allergy (severe)\n- Prefers gluten-free options\n- No shellfish"
+          }
+        ]
+      },
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should understand 'her' = Lisa Chen and 'allergy' = tree nut allergy. Tests multi-pronoun resolution."
+      }
+    },
+    {
+      "id": "mt-019",
+      "category": "memory_continuity",
+      "prompt": "Do you remember what I told you earlier about my pricing?",
+      "context": {
+        "history": [
+          {
+            "role": "user",
+            "content": "Remember that I charge $250 per person for wine pairing dinners"
+          },
+          {
+            "role": "assistant",
+            "content": "Got it! I'll remember that you charge $250 per person for wine pairing dinners."
+          },
+          { "role": "user", "content": "Show me my upcoming events" },
+          { "role": "assistant", "content": "You have 3 upcoming events..." },
+          { "role": "user", "content": "What's my calendar look like?" },
+          { "role": "assistant", "content": "Your calendar for next week..." }
+        ]
+      },
+      "expected": {
+        "intent": "question",
+        "mustContain": ["250"],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should recall the $250 pricing from earlier in the conversation. Tests memory persistence across topic switches."
+      }
+    },
+    {
+      "id": "mt-020",
+      "category": "memory_continuity",
+      "prompt": "Use that info to calculate the quote",
+      "context": {
+        "history": [
+          { "role": "user", "content": "I charge $200 per person for regular dinners" },
+          { "role": "assistant", "content": "Noted — $200 per person for regular dinners." },
+          { "role": "user", "content": "The Henderson dinner is 15 guests" },
+          { "role": "assistant", "content": "Got it — Henderson dinner: 15 guests." }
+        ]
+      },
+      "expected": {
+        "intent": "question",
+        "mustContain": ["3000", "3,000"],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should calculate $200 × 15 = $3,000 using info from previous turns. Tests arithmetic with conversational context."
+      }
+    }
+  ]
+}

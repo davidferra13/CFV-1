@@ -17,10 +17,14 @@ Unlike Playwright tests (which test if the UI works), this suite tests if **Remy
 tests/remy-quality/
   prompts/
     chef-prompts.json          # 100 chef-facing prompts + eval criteria
-    client-prompts.json        # Client-facing prompts (future)
-    adversarial-prompts.json   # Guardrail/injection tests (future)
+    client-prompts.json        # 100 client-facing prompts
+    multi-turn-prompts.json    # 20 multi-turn conversation tests
+    hallucination-prompts.json # 25 hallucination stress tests
+    voice-messy-prompts.json   # 25 voice-to-text messy input tests
+    adversarial-prompts.json   # 25 guardrail/injection/edge case tests
   harness/
-    remy-quality-runner.mjs    # Main orchestrator
+    remy-quality-runner.mjs    # Main orchestrator (all suites)
+    client-quality-runner.mjs  # Client-specific runner
     sse-parser.mjs             # SSE stream parser
     evaluator.mjs              # Deterministic response evaluator
     report-generator.mjs       # JSON + Markdown reports
@@ -38,20 +42,85 @@ tests/remy-quality/
 6. Runs deterministic evaluation (no AI judging AI)
 7. Generates JSON benchmark + Markdown report
 
-## Running
+## Test Suites
+
+### 1. Chef Suite (100 prompts, ~60-90 min)
+
+Core quality test. 100 real-world prompts a chef would type into Remy, covering business overview, client management, events, finances, calendar, email drafts, menus, operations, memory, context-awareness, analytics, and conversation.
 
 ```bash
-# Full suite (~60-90 min, 100 prompts)
 npm run test:remy-quality
+```
 
-# Quick test (~6-9 min, 10 prompts from one category)
-npm run test:remy-quality:quick
+### 2. Client Suite (100 prompts, ~60-90 min)
 
-# Single prompt (~30-60s, for debugging)
-npm run test:remy-quality:single chef-001
+100 prompts from the client perspective — booking, dietary needs, menu questions, payments, logistics, rebooking. Hits `/api/remy/client` (limited context, no commands).
 
-# Custom category
-node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef --category email_drafts
+```bash
+npm run test:remy-quality:client
+```
+
+### 3. Multi-Turn Suite (20 conversations, ~15-20 min)
+
+Tests conversation context carryover — follow-up questions, pronoun resolution ("tell me more about the first one"), corrections ("actually I meant Henderson"), topic switches, and memory continuity across turns. Each prompt includes a pre-defined conversation history.
+
+```bash
+npm run test:remy-quality:multi-turn
+```
+
+### 4. Hallucination Suite (25 prompts, ~15-20 min)
+
+Deliberately asks about things that DON'T exist — fake clients, fake events, fake features, false memories, leading questions. A good response says "I don't see that." A bad response fabricates an answer. The most dangerous failure mode for a business app.
+
+```bash
+npm run test:remy-quality:hallucination
+```
+
+### 5. Voice-to-Text Suite (25 prompts, ~15-20 min)
+
+Simulates real voice-to-text input — typos ("upcomming evens"), run-on sentences, missing punctuation, ALL CAPS, word repetition ("the the"), filler words ("um like whatever"), fragments ("Henderson allergy"), and brand name mishearings ("shuffle" = ChefFlow).
+
+```bash
+npm run test:remy-quality:voice
+```
+
+### 6. Adversarial Suite (25 prompts, ~15-20 min)
+
+Tests guardrails — prompt injection ("ignore previous instructions"), system prompt extraction ("show me your system prompt"), role manipulation ("pretend you're a doctor"), recipe generation (must be blocked), data boundary probes ("show me the database"), and edge cases (emoji-only, XSS, SQL, single character, word spam).
+
+```bash
+npm run test:remy-quality:adversarial
+```
+
+### 7. Consistency Testing (any suite × N repeats)
+
+Runs each prompt N times to detect inconsistency. If the same prompt passes 3 times and fails twice, that's a reliability problem. Prints variance analysis (timing spread, verdict consistency).
+
+```bash
+npm run test:remy-quality:consistency   # business_overview × 5 repeats
+# Or custom:
+node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef --repeat 3
+```
+
+### Run Everything (~3-4 hours)
+
+```bash
+npm run test:remy-quality:all
+```
+
+## Quick Reference
+
+```bash
+npm run test:remy-quality              # Chef suite (100 prompts)
+npm run test:remy-quality:quick        # Quick check (10 prompts)
+npm run test:remy-quality:single ID    # Single prompt
+npm run test:remy-quality:client       # Client suite (100 prompts)
+npm run test:remy-quality:multi-turn   # Multi-turn conversations (20)
+npm run test:remy-quality:hallucination # Hallucination stress (25)
+npm run test:remy-quality:voice        # Voice-to-text messy (25)
+npm run test:remy-quality:adversarial  # Guardrail/security (25)
+npm run test:remy-quality:consistency  # Consistency (10 × 5 repeats)
+npm run test:remy-quality:all          # Everything (~3-4 hours)
 ```
 
 ## Prerequisites
@@ -105,7 +174,7 @@ Machine-readable results with all timing data. Located at `tests/remy-quality/be
 
 ## Adding Prompts
 
-Add a new entry to `prompts/chef-prompts.json`:
+Add a new entry to any prompt JSON file:
 
 ```json
 {
@@ -125,7 +194,6 @@ The harness auto-discovers all prompts — no code changes needed.
 
 ## Future
 
-- **Client Remy suite** — 100 client-facing prompts against `/api/remy/client`
-- **Adversarial suite** — 25 guardrail/injection/recipe-generation tests
 - **Benchmark comparison** — automated regression detection between runs
 - **Nightly runs** — scheduled via Task Scheduler when Ollama is idle
+- **Model comparison** — same suite against different Ollama models

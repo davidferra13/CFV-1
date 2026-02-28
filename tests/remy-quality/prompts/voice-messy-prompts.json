@@ -1,0 +1,313 @@
+{
+  "suite": "voice-messy",
+  "description": "25 prompts simulating voice-to-text input — typos, run-ons, missing punctuation, wrong capitalization, mishearings. Tests whether Remy handles real-world messy input as well as clean input.",
+  "endpoint": "/api/remy/stream",
+  "authRole": "chef",
+  "defaults": {
+    "context": {
+      "currentPage": "/dashboard",
+      "recentPages": [{ "path": "/dashboard", "label": "Dashboard", "at": "2026-02-27T10:00:00Z" }],
+      "recentActions": [],
+      "recentErrors": [],
+      "sessionMinutes": 5,
+      "activeForm": null,
+      "history": []
+    },
+    "timing": {
+      "classificationMaxMs": 8000,
+      "firstTokenMaxMs": 20000,
+      "totalMaxMs": 120000
+    },
+    "minLength": 15,
+    "maxLength": 4000
+  },
+  "prompts": [
+    {
+      "id": "voice-001",
+      "category": "typos",
+      "prompt": "show me my upcomming evens",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["event.list_upcoming"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Typos: 'upcomming' and 'evens'. Should still recognize as event.list_upcoming."
+      }
+    },
+    {
+      "id": "voice-002",
+      "category": "typos",
+      "prompt": "whats my reveune this month",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Typos: 'whats' (no apostrophe), 'reveune'. Should still answer about monthly revenue."
+      }
+    },
+    {
+      "id": "voice-003",
+      "category": "typos",
+      "prompt": "find clinet henderson",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.search"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Typo: 'clinet'. Should still search for Henderson."
+      }
+    },
+    {
+      "id": "voice-004",
+      "category": "typos",
+      "prompt": "draft a folow up email for sarah jonson",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["email.followup"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Typos: 'folow' and 'jonson'. Should still draft a follow-up for Sarah Johnson."
+      }
+    },
+    {
+      "id": "voice-005",
+      "category": "typos",
+      "prompt": "am i free on march fifteenth",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["calendar.availability"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Spelled-out date. Should parse 'march fifteenth' as March 15."
+      }
+    },
+    {
+      "id": "voice-006",
+      "category": "run_on",
+      "prompt": "show me my events and also what about the Henderson thing and can you draft something for them",
+      "expected": {
+        "intent": "command",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Run-on with multiple requests. Should handle at least one (events or Henderson search or draft)."
+      }
+    },
+    {
+      "id": "voice-007",
+      "category": "run_on",
+      "prompt": "I need to know my revenue and also check if April 5th is free and while you're at it find me the client that booked the corporate lunch",
+      "expected": {
+        "intent": "command",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Run-on with 3 distinct requests. Should handle as mixed intent or tackle at least 1-2."
+      }
+    },
+    {
+      "id": "voice-008",
+      "category": "run_on",
+      "prompt": "ok so like I was thinking about the menu for Saturday and I want to make sure we have enough stuff for 20 people and also Sarah said she has a nut allergy so we need to be careful about that",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Long, rambling input. Should parse the key info: Saturday menu, 20 people, nut allergy for Sarah."
+      }
+    },
+    {
+      "id": "voice-009",
+      "category": "no_punctuation",
+      "prompt": "whats my revenue this month any big events coming up",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "No punctuation, two questions smashed together. Should handle both or at least one."
+      }
+    },
+    {
+      "id": "voice-010",
+      "category": "no_punctuation",
+      "prompt": "can you check if march 20th is available and if so block it off for the williams dinner",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["calendar.availability"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "No punctuation, conditional request. Should at least check availability for March 20."
+      }
+    },
+    {
+      "id": "voice-011",
+      "category": "wrong_case",
+      "prompt": "SHOW ME MY UPCOMING EVENTS",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["event.list_upcoming"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "ALL CAPS. Should treat the same as normal case."
+      }
+    },
+    {
+      "id": "voice-012",
+      "category": "wrong_case",
+      "prompt": "Find SARAH JOHNSON right now",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.search"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Mixed case with urgency. Should search for Sarah Johnson."
+      }
+    },
+    {
+      "id": "voice-013",
+      "category": "mishearing",
+      "prompt": "hey remy how's shuffle doing today",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Voice mishearing: 'shuffle' = ChefFlow. Should understand this is asking about the business. Common voice-to-text error."
+      }
+    },
+    {
+      "id": "voice-014",
+      "category": "mishearing",
+      "prompt": "open the cloud MD file",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Voice mishearing: 'cloud MD' = CLAUDE.md. Should understand or gracefully say it can't open files directly."
+      }
+    },
+    {
+      "id": "voice-015",
+      "category": "mishearing",
+      "prompt": "check the recipe's page",
+      "expected": {
+        "intent": "question",
+        "mustContain": ["recipe"],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Incorrect apostrophe from voice-to-text. Should navigate/reference recipes page."
+      }
+    },
+    {
+      "id": "voice-016",
+      "category": "fragments",
+      "prompt": "Henderson allergy",
+      "expected": {
+        "intent": "command",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Two-word fragment. Should infer: check Henderson dietary restrictions."
+      }
+    },
+    {
+      "id": "voice-017",
+      "category": "fragments",
+      "prompt": "next Saturday free?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["calendar.availability"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Three-word fragment. Should check next Saturday availability."
+      }
+    },
+    {
+      "id": "voice-018",
+      "category": "fragments",
+      "prompt": "revenue",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Single word. Should show financial summary or ask for clarification."
+      }
+    },
+    {
+      "id": "voice-019",
+      "category": "fragments",
+      "prompt": "events march",
+      "expected": {
+        "intent": "command",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Two-word fragment. Should list March events."
+      }
+    },
+    {
+      "id": "voice-020",
+      "category": "repeated_words",
+      "prompt": "show me the the upcoming events and and how everything is going",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["event.list_upcoming"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Repeated words ('the the', 'and and') from voice-to-text stuttering. Should parse past duplicates."
+      }
+    },
+    {
+      "id": "voice-021",
+      "category": "repeated_words",
+      "prompt": "draft draft a follow up for for the miller family",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["email.followup"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Doubled words. Should still parse as a follow-up draft for Miller."
+      }
+    },
+    {
+      "id": "voice-022",
+      "category": "filler_words",
+      "prompt": "um can you like show me my events or whatever",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["event.list_upcoming"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Filler words (um, like, or whatever). Should ignore fillers and list events."
+      }
+    },
+    {
+      "id": "voice-023",
+      "category": "filler_words",
+      "prompt": "so basically I need you to check if march fifteenth is available you know",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["calendar.availability"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Filler words (so basically, you know). Should check March 15 availability."
+      }
+    },
+    {
+      "id": "voice-024",
+      "category": "mixed_mess",
+      "prompt": "hey remy so I was talking to the the hendersons and they want to to book another dinner like the one we did last time for about 15 poeple and she has a peanut alergy still so we need to be carefull",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Maximum mess: repeated words, typos (poeple, alergy, carefull), run-on. Should extract: Henderson, rebooking, 15 guests, peanut allergy."
+      }
+    },
+    {
+      "id": "voice-025",
+      "category": "mixed_mess",
+      "prompt": "ok so like whats the deal with the the corporate thing on on march and can you also check the Henderson's allergies and draft something for the millers while your at it thanks",
+      "expected": {
+        "intent": "command",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Maximum mess: filler words, repeated words, wrong 'your', 3 requests. Should handle at least 1-2 of the requests."
+      }
+    }
+  ]
+}
