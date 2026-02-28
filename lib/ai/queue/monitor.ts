@@ -181,7 +181,7 @@ export function writeDailySummary(): void {
     // File doesn't exist yet
   }
 
-  existing.push(report)
+  existing.push(report as any)
 
   try {
     fs.writeFileSync(filePath, JSON.stringify(existing, null, 2), 'utf-8')

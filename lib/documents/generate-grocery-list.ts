@@ -190,7 +190,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
   if (!components) return null
 
   // Build dish lookup for course info
-  const dishById = new Map(dishes.map((d: any) => [d.id, d]))
+  const dishById = new Map<string, any>(dishes.map((d: any) => [d.id, d]))
 
   // Separate components: with recipe vs without
   const withRecipe = components.filter((c: any) => c.recipe_id)

@@ -81,7 +81,7 @@ export function computeLoyaltyInvoiceAdjustments(
       redemptionId: redemption.id,
       rewardId: redemption.rewardId,
       rewardName: redemption.rewardName,
-      rewardType: redemption.rewardType,
+      rewardType: redemption.rewardType as LoyaltyInvoiceDiscountType,
       pointsSpent: redemption.pointsSpent,
       discountCents: appliedDiscountCents,
       valuationSource: redemption.valuationSource,

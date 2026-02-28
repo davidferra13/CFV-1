@@ -84,7 +84,7 @@ export default async function VendorInvoicesPage({
                 >
                   <div>
                     <span className="text-stone-200 font-medium">
-                      {vendorMap.get(invoice.vendor_id) ?? 'Unknown Vendor'}
+                      {String(vendorMap.get(invoice.vendor_id) ?? 'Unknown Vendor')}
                     </span>
                     {invoice.invoice_number && (
                       <span className="text-stone-400 ml-2">#{invoice.invoice_number}</span>

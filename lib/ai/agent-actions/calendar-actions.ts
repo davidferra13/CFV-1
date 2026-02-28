@@ -78,7 +78,7 @@ export const calendarAgentActions: AgentActionDefinition[] = [
           end_date: (payload.end_date as string) ?? (payload.start_date as string),
           notes: payload.notes as string | undefined,
           is_all_day: (payload.is_all_day as boolean) ?? true,
-        } as Parameters<typeof createCalendarEntry>[0])
+        } as unknown as Parameters<typeof createCalendarEntry>[0])
         return { success: true, message: 'Calendar entry added!', redirectUrl: '/calendar' }
       } catch (err) {
         return {
@@ -106,7 +106,7 @@ export const calendarAgentActions: AgentActionDefinition[] = [
         description,
         z.object({
           entryTitle: z.string(),
-          updates: z.record(z.unknown()),
+          updates: z.record(z.string(), z.unknown()),
         }),
         { modelTier: 'standard' }
       )

@@ -199,7 +199,7 @@ export const proactiveAgentActions: AgentActionDefinition[] = [
           email: payload.email as string | undefined,
           role: payload.role as string | undefined,
           notes: payload.notes as string | undefined,
-        } as Parameters<typeof createEmergencyContact>[0])
+        } as unknown as Parameters<typeof createEmergencyContact>[0])
         return { success: true, message: `Emergency contact "${payload.name}" added!` }
       } catch (err) {
         return {

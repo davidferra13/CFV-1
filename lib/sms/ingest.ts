@@ -94,7 +94,7 @@ export async function ingestInboundSms(
       if (!clientId) {
         try {
           const newClient = await createClientFromLead(tenantId, {
-            email: null,
+            email: null as any,
             full_name: parseResult.parsed.client_name ?? 'Unknown (SMS)',
             phone: from,
             dietary_restrictions: parseResult.parsed.confirmed_dietary_restrictions ?? null,

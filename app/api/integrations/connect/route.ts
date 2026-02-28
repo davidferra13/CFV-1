@@ -13,7 +13,7 @@ const ConnectSchema = z.object({
   externalAccountId: z.string().optional(),
   externalAccountName: z.string().optional(),
   apiKey: z.string().optional(),
-  settings: z.record(z.unknown()).optional(),
+  settings: z.record(z.string(), z.unknown()).optional(),
 })
 
 export async function POST(request: NextRequest) {

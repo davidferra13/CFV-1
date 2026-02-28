@@ -40,7 +40,7 @@ const getChefForBooking = unstable_cache(
       .eq('booking_enabled', true)
       .single()
 
-    return data ?? null
+    return (data as ChefPublicProfile) ?? null
   },
   ['chef-booking-profile'],
   { revalidate: 300, tags: ['chef-booking-profile'] }

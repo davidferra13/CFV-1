@@ -36,7 +36,8 @@ const ACTION_COLORS: Record<string, 'success' | 'warning' | 'error' | 'default' 
 export default async function OpsLogPage() {
   await requireChef()
 
-  const entries = await getOpsLog({ limit: 100 })
+  const result: any = await getOpsLog({ limit: 100 } as any)
+  const entries = Array.isArray(result) ? result : (result?.entries ?? [])
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">

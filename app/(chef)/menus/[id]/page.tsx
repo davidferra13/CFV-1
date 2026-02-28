@@ -65,7 +65,7 @@ export default async function MenuDetailPage({ params }: Props) {
     }
   > = {}
   if (recipeMapResult.data) {
-    recipeMap = Object.fromEntries(recipeMapResult.data.map((r) => [r.id, r]))
+    recipeMap = Object.fromEntries((recipeMapResult.data as any[]).map((r: any) => [r.id, r]))
   }
 
   return (

@@ -128,7 +128,9 @@ async function walkSaleRecipeChain(
   if (!recipeIngredients || recipeIngredients.length === 0) return new Map()
 
   // Step 5: Get ingredient names
-  const ingredientIds = [...new Set(recipeIngredients.map((ri: any) => ri.ingredient_id))]
+  const ingredientIds: string[] = [
+    ...new Set<string>(recipeIngredients.map((ri: any) => ri.ingredient_id)),
+  ]
   const { data: ingredients } = await (supabase
     .from('ingredients')
     .select('id, name')

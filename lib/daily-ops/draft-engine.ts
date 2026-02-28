@@ -237,7 +237,7 @@ async function generateFollowUpDrafts(supabase: any, tenantId: string): Promise<
         FOLLOW_UP_SYSTEM,
         `Draft a follow-up for ${clientName} after their ${event.occasion ?? 'dinner'} on ${event.event_date} for ${event.guest_count ?? 'a few'} guests.`,
         DraftOutputSchema,
-        { modelTier: 'default' }
+        { modelTier: 'standard' }
       )
 
       drafts.push({
@@ -285,7 +285,7 @@ async function generateConfirmationDrafts(
         CONFIRMATION_SYSTEM,
         `Draft a confirmation for ${clientName}'s ${event.occasion ?? 'dinner'} on ${event.event_date} at ${event.serve_time ?? 'the scheduled time'} for ${event.guest_count ?? 'their'} guests.`,
         DraftOutputSchema,
-        { modelTier: 'default' }
+        { modelTier: 'standard' }
       )
 
       drafts.push({

@@ -25,7 +25,7 @@ export default async function AdminBetaPage() {
 
   const signups = rows ?? []
 
-  const statusCounts = signups.reduce<Record<string, number>>((acc: any, row: any) => {
+  const statusCounts = signups.reduce((acc: any, row: any) => {
     acc[row.status] = (acc[row.status] ?? 0) + 1
     return acc
   }, {})

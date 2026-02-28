@@ -458,7 +458,10 @@ export default async function SettingsPage() {
                   recentSyncs={recentSyncs}
                   historicalScanStatus={historicalScanStatus}
                 />
-                <WixConnection connection={wixConnection} recentSubmissions={wixSubmissions} />
+                <WixConnection
+                  connection={wixConnection as any}
+                  recentSubmissions={wixSubmissions}
+                />
               </div>
             </div>
             <div className="border-t border-stone-700 pt-4">

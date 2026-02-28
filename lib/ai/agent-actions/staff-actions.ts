@@ -97,7 +97,7 @@ export const staffAgentActions: AgentActionDefinition[] = [
           phone: payload.phone as string | undefined,
           email: payload.email as string | undefined,
           notes: payload.notes as string | undefined,
-        } as Parameters<typeof createStaffMember>[0])
+        } as unknown as Parameters<typeof createStaffMember>[0])
         return { success: true, message: `Staff member "${payload.full_name}" added!` }
       } catch (err) {
         return {
@@ -179,7 +179,7 @@ export const staffAgentActions: AgentActionDefinition[] = [
         await assignStaffToEvent({
           staff_id: String(payload.staffId),
           event_id: String(payload.eventId),
-        } as Parameters<typeof assignStaffToEvent>[0])
+        } as unknown as Parameters<typeof assignStaffToEvent>[0])
         return {
           success: true,
           message: `${payload.staffName} assigned to event!`,
@@ -284,7 +284,7 @@ export const staffAgentActions: AgentActionDefinition[] = [
         await recordStaffHours({
           assignment_id: String(payload.assignmentId),
           hours_worked: Number(payload.hours),
-        } as Parameters<typeof recordStaffHours>[0])
+        } as unknown as Parameters<typeof recordStaffHours>[0])
         return { success: true, message: `${payload.hours} hours logged!` }
       } catch (err) {
         return {

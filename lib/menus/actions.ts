@@ -1468,7 +1468,7 @@ export async function getMenuPrepTimeline(menuId: string): Promise<PrepTimelineS
   if (!dishes || dishes.length === 0) return []
 
   const dishIds = dishes.map((d: any) => d.id)
-  const dishMap = new Map(dishes.map((d: any) => [d.id, d.course_name]))
+  const dishMap = new Map<string, string>(dishes.map((d: any) => [d.id, d.course_name]))
 
   const { data: components } = await (supabase
     .from('components')

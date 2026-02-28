@@ -145,7 +145,7 @@ export async function getClientPortalData(token: string): Promise<ClientPortalDa
       .map((q: any) => ({
         id: q.id,
         event_id: q.event_id!,
-        event_occasion: eventMap.get(q.event_id!)?.occasion ?? null,
+        event_occasion: (eventMap.get(q.event_id!) as any)?.occasion ?? null,
         amount_cents: q.total_quoted_cents ?? 0,
         valid_until: q.valid_until,
         status: q.status,
@@ -167,7 +167,7 @@ export async function getClientPortalData(token: string): Promise<ClientPortalDa
       if (!ev) continue
       pendingPayments.push({
         eventId: s.event_id!,
-        occasion: ev.occasion,
+        occasion: (ev as any).occasion,
         outstandingCents: s.outstanding_balance_cents ?? 0,
         paymentUrl: `/my-events/${s.event_id!}/pay`,
       })

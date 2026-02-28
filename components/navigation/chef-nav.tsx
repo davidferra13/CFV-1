@@ -192,7 +192,7 @@ function filterNavGroup(group: NavGroup, filter: string): NavGroup | null {
       }
       return null
     })
-    .filter((item): item is NavCollapsibleItem => Boolean(item))
+    .filter((item) => Boolean(item)) as NavCollapsibleItem[]
 
   if (!groupMatch && items.length === 0) return null
   return { ...group, items }

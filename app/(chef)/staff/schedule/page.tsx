@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: 'Staff Schedule - ChefFlow' }
 
 export default async function StaffSchedulePage() {
   await requireChef()
-  const window = getDefaultStaffingWindow()
+  const window = await getDefaultStaffingWindow()
   const schedulerData = await getStaffSchedulerData(window.startDate, window.endDate).catch(() => ({
     startDate: window.startDate,
     endDate: window.endDate,

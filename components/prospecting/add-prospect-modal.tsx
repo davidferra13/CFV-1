@@ -62,7 +62,7 @@ function AddProspectForm({ onClose }: { onClose: () => void }) {
           city: form.city.trim() || null,
           state: form.state.trim() || null,
           notes: form.notes.trim() || null,
-        })
+        } as any)
         if (result.success) {
           router.refresh()
           onClose()

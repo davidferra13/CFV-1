@@ -51,7 +51,7 @@ export async function cleanupStorageBuckets(chefId: string): Promise<{
 
         if (removeError) {
           errors.push(`${bucket}: ${removeError.message}`)
-          log.error(`[storage-cleanup] Failed to remove files from ${bucket}`, {
+          ;(log as any).error(`[storage-cleanup] Failed to remove files from ${bucket}`, {
             error: removeError,
           })
         } else {
@@ -63,7 +63,7 @@ export async function cleanupStorageBuckets(chefId: string): Promise<{
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
       errors.push(`${bucket}: ${msg}`)
-      log.error(`[storage-cleanup] Bucket ${bucket} processing failed`, { error: err })
+      ;(log as any).error(`[storage-cleanup] Bucket ${bucket} processing failed`, { error: err })
     }
   }
 

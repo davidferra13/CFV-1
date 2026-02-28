@@ -23,7 +23,7 @@ export default async function SoftwareExpensesPage() {
   const expenses = allExpenses.filter((e: any) => e.category === 'subscriptions')
   const totalSpend = expenses.reduce((s: any, e: any) => s + e.amount_cents, 0)
 
-  const vendorTotals = expenses.reduce<Record<string, number>>((acc: any, e: any) => {
+  const vendorTotals = expenses.reduce((acc: any, e: any) => {
     const key = e.vendor_name ?? 'Unknown'
     acc[key] = (acc[key] ?? 0) + e.amount_cents
     return acc
@@ -65,8 +65,8 @@ export default async function SoftwareExpensesPage() {
           <h2 className="text-sm font-semibold text-stone-300 mb-3">By Vendor</h2>
           <div className="space-y-2">
             {Object.entries(vendorTotals)
-              .sort((a, b) => b[1] - a[1])
-              .map(([vendor, total]) => (
+              .sort((a: any, b: any) => b[1] - a[1])
+              .map(([vendor, total]: any) => (
                 <div
                   key={vendor}
                   className="flex items-center justify-between py-1 border-b border-stone-50 last:border-0"

@@ -192,7 +192,7 @@ export const eventAgentActions: AgentActionDefinition[] = [
         quoted_price_cents: payload.quoted_price_cents as number | undefined,
       }
 
-      const result = await createEvent(eventInput)
+      const result = await createEvent(eventInput as any)
       if ('error' in result) {
         return { success: false, message: `Failed to create event: ${result.error}` }
       }

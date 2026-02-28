@@ -65,19 +65,14 @@ export function DishDetailClient({
   })
 
   const handleSave = useCallback(async () => {
-    await updateDishIndexEntry(dish.id as string, {
-      ...editData,
-      prep_complexity: (editData.prep_complexity || null) as
-        | 'quick'
-        | 'moderate'
-        | 'intensive'
-        | null,
-      plating_difficulty: (editData.plating_difficulty || null) as
-        | 'simple'
-        | 'moderate'
-        | 'architectural'
-        | null,
-    })
+    await updateDishIndexEntry(
+      dish.id as string,
+      {
+        ...editData,
+        prep_complexity: editData.prep_complexity || null,
+        plating_difficulty: editData.plating_difficulty || null,
+      } as any
+    )
     setEditing(false)
     router.refresh()
   }, [dish.id, editData, router])

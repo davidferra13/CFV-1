@@ -1286,9 +1286,8 @@ export async function POST(req: NextRequest) {
 
       // Record anonymous command metric (non-blocking)
       recordRemyMetric({
-        featureCategory: 'general',
-        messageCount: 1,
-      }).catch(() => {})
+        category: 'general',
+      } as any).catch(() => {})
 
       return new Response(stream, { headers: sseHeaders() })
     }
@@ -1620,8 +1619,7 @@ export async function POST(req: NextRequest) {
 
           // Record anonymous usage metric (non-blocking, never fails the response)
           recordRemyMetric({
-            featureCategory: 'general',
-            messageCount: 1,
+            category: 'general',
             modelVersion: usedEndpoint.model,
           }).catch((err) => console.error('[non-blocking] Remy metric failed', err))
         } catch (err) {
@@ -1646,8 +1644,8 @@ export async function POST(req: NextRequest) {
 
           // Record error metric (non-blocking)
           recordRemyMetric({
-            featureCategory: 'general',
-            errorCount: 1,
+            category: 'general',
+            isError: true,
             modelVersion: endpoint.model,
           }).catch(() => {})
         } finally {

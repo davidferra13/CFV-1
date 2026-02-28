@@ -86,7 +86,7 @@ export function VendorPriceList({ vendorId, items }: VendorPriceListProps) {
         vendor_item_name: newName.trim(),
         vendor_sku: newSku.trim() || undefined,
         unit_price_cents: Math.round(parseFloat(newPrice) * 100),
-        unit_size: newSize.trim() || undefined,
+        unit_size: newSize.trim() ? parseFloat(newSize.trim()) : undefined,
         unit_measure: newMeasure.trim() || undefined,
       })
       setNewName('')

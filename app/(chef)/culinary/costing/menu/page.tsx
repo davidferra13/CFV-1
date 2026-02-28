@@ -116,46 +116,56 @@ export default async function MenuCostPage() {
             <TableBody>
               {menuData
                 .sort((a: any, b: any) => b.estimatedCostCents - a.estimatedCostCents)
-                .map(({ menu, componentCount, estimatedCostCents, pricedCount, costPerGuest }) => (
-                  <TableRow key={menu.id}>
-                    <TableCell className="font-medium">
-                      <Link
-                        href={`/culinary/menus/${menu.id}`}
-                        className="text-brand-600 hover:underline"
-                      >
-                        {menu.name}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-xs bg-stone-800 text-stone-400 px-2 py-0.5 rounded-full capitalize">
-                        {menu.status}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-stone-500 text-sm">{componentCount}</TableCell>
-                    <TableCell className="font-semibold text-stone-100">
-                      {estimatedCostCents > 0 ? (
-                        <span>
-                          ${(estimatedCostCents / 100).toFixed(2)}
-                          {pricedCount < componentCount && componentCount > 0 && (
-                            <span className="ml-1 text-xs text-amber-600 font-normal">partial</span>
-                          )}
+                .map(
+                  ({
+                    menu,
+                    componentCount,
+                    estimatedCostCents,
+                    pricedCount,
+                    costPerGuest,
+                  }: any) => (
+                    <TableRow key={menu.id}>
+                      <TableCell className="font-medium">
+                        <Link
+                          href={`/culinary/menus/${menu.id}`}
+                          className="text-brand-600 hover:underline"
+                        >
+                          {menu.name}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-xs bg-stone-800 text-stone-400 px-2 py-0.5 rounded-full capitalize">
+                          {menu.status}
                         </span>
-                      ) : (
-                        <span className="text-stone-300">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-stone-500 text-sm">
-                      {menu.target_guest_count ?? <span className="text-stone-300">—</span>}
-                    </TableCell>
-                    <TableCell className="text-stone-300 text-sm font-medium">
-                      {costPerGuest != null ? (
-                        `$${(costPerGuest / 100).toFixed(2)}`
-                      ) : (
-                        <span className="text-stone-300">—</span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                      <TableCell className="text-stone-500 text-sm">{componentCount}</TableCell>
+                      <TableCell className="font-semibold text-stone-100">
+                        {estimatedCostCents > 0 ? (
+                          <span>
+                            ${(estimatedCostCents / 100).toFixed(2)}
+                            {pricedCount < componentCount && componentCount > 0 && (
+                              <span className="ml-1 text-xs text-amber-600 font-normal">
+                                partial
+                              </span>
+                            )}
+                          </span>
+                        ) : (
+                          <span className="text-stone-300">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-stone-500 text-sm">
+                        {menu.target_guest_count ?? <span className="text-stone-300">—</span>}
+                      </TableCell>
+                      <TableCell className="text-stone-300 text-sm font-medium">
+                        {costPerGuest != null ? (
+                          `$${(costPerGuest / 100).toFixed(2)}`
+                        ) : (
+                          <span className="text-stone-300">—</span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  )
+                )}
             </TableBody>
           </Table>
         </Card>

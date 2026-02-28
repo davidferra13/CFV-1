@@ -40,7 +40,7 @@ export function createOfflineAction<T>(options: OfflineActionOptions<T>) {
     // Try online execution first
     if (navigator.onLine) {
       try {
-        return await action(...args)
+        return (await action(...args)) as T & { _offlineQueued?: boolean }
       } catch (err) {
         // If the error is a network error (fetch failed), queue it
         const isNetworkError =

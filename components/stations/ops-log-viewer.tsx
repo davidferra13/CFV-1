@@ -68,7 +68,7 @@ export function OpsLogViewer({ stations, initialStationId }: Props) {
   async function loadActionTypes() {
     try {
       const types = await getOpsLogActionTypes()
-      setActionTypes(types)
+      setActionTypes(types as string[])
     } catch {
       // Non-critical
     }

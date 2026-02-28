@@ -204,8 +204,12 @@ export async function generateShoppingList(input: {
   }
   if (vendorRows.error) throw new Error(`Failed to load suppliers: ${vendorRows.error.message}`)
 
-  const ingredientMap = new Map((ingredientRows.data ?? []).map((row: any) => [row.id, row]))
-  const vendorNameMap = new Map((vendorRows.data ?? []).map((row: any) => [row.id, row.name]))
+  const ingredientMap = new Map<string, any>(
+    (ingredientRows.data ?? []).map((row: any) => [row.id, row])
+  )
+  const vendorNameMap = new Map<string, string>(
+    (vendorRows.data ?? []).map((row: any) => [row.id, row.name])
+  )
 
   const preferredVendorByIngredient = new Map<string, string>()
   const vendorItemsByIngredient = new Map<string, Array<{ vendorId: string; price: number }>>()

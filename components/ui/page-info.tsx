@@ -383,7 +383,7 @@ function FallbackSummary({
 export function PageInfoButton() {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
-  const entry = findPageInfo(pathname)
+  const entry = findPageInfo(pathname ?? '')
 
   // Close on route change
   useEffect(() => {

@@ -62,7 +62,7 @@ export async function exportEventCSV(eventId: string) {
       .eq('event_id', eventId)
       .eq('tenant_id', user.tenantId!)
       .order('expense_date', { ascending: true })
-      .then(({ data }) => data || []),
+      .then(({ data }: any) => data || []),
   ])
 
   // Compute totals
@@ -271,7 +271,7 @@ export async function exportAllEventsCSV(year: number) {
     .gte('expense_date', startDate)
     .lt('expense_date', endDate)
 
-  const summaryMap = new Map((summaries || []).map((s: any) => [s.event_id, s]))
+  const summaryMap = new Map<string, any>((summaries || []).map((s: any) => [s.event_id, s]))
 
   // Build per-event expense breakdown by category
   const expensesByEvent = new Map<string | null, Map<string, number>>()

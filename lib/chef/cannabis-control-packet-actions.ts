@@ -1005,7 +1005,7 @@ export async function upsertControlPacketReconciliation(
 
   const snapshotParticipationByGuest = new Map<string, string>(
     ((snapshot.guest_snapshot ?? []) as any[])
-      .map((guest) => [
+      .map((guest): [string, string] => [
         String(guest?.full_name ?? guest?.fullName ?? '')
           .trim()
           .toLowerCase(),

@@ -77,7 +77,7 @@ export const notesTagsAgentActions: AgentActionDefinition[] = [
       const result = await addClientNote({
         client_id: String(payload.clientId),
         note_text: String(payload.noteText),
-        category: payload.category as string | undefined,
+        category: (payload.category as any) ?? undefined,
       })
       if ('error' in result) return { success: false, message: `Failed: ${result.error}` }
       return {
@@ -265,7 +265,7 @@ export const notesTagsAgentActions: AgentActionDefinition[] = [
       const result = await addInquiryNote({
         inquiry_id: String(payload.inquiryId),
         note_text: String(payload.noteText),
-      })
+      } as any)
       if ('error' in result) return { success: false, message: `Failed: ${result.error}` }
       return { success: true, message: 'Note added to inquiry!' }
     },

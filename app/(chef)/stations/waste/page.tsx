@@ -37,8 +37,8 @@ export default async function WasteLogPage() {
   const startDate = weekAgo.toISOString().split('T')[0]
   const endDate = now.toISOString().split('T')[0]
 
-  const [wasteEntries, summary] = await Promise.all([
-    getWasteLog({ startDate, endDate }),
+  const [wasteEntries, summary]: [any, any] = await Promise.all([
+    getWasteLog(startDate, endDate),
     getWasteSummary(startDate, endDate),
   ])
 

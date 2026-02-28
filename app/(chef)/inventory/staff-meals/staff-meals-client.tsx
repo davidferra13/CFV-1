@@ -51,7 +51,7 @@ export function StaffMealsClient({ initialMeals }: Props) {
         await logStaffMeal({
           description: description.trim() || 'Staff meal',
           staffCount: parseInt(staffCount) || 1,
-          mealDate: mealDate || undefined,
+          mealDate: (mealDate || undefined) as any,
           notes: notes.trim() || undefined,
           items: validItems,
         })

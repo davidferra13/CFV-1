@@ -58,12 +58,12 @@ export function IncidentsDashboard({ data }: { data: IncidentDashboardData }) {
   const [expandedContent, setExpandedContent] = useState<string>('')
   const [loadingContent, setLoadingContent] = useState(false)
 
-  const activeDate = searchParams.get('date') || ''
-  const activeSystem = searchParams.get('system') || ''
-  const activeSeverity = searchParams.get('severity') || ''
+  const activeDate = searchParams?.get('date') || ''
+  const activeSystem = searchParams?.get('system') || ''
+  const activeSeverity = searchParams?.get('severity') || ''
 
   function applyFilter(key: string, value: string) {
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(searchParams?.toString())
     if (value) {
       params.set(key, value)
     } else {

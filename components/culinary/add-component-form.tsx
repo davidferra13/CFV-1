@@ -49,7 +49,7 @@ export function AddComponentForm({ defaultCategory, dishes }: Props) {
           dish_id: form.dish_id,
           is_make_ahead: form.is_make_ahead,
           execution_notes: form.execution_notes || undefined,
-        })
+        } as any)
         setForm({
           name: '',
           category: defaultCategory ?? 'other',

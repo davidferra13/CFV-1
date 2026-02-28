@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: 'Time Tracking' }
 
 export default async function StaffTimePage() {
   const user = await requireStaff()
-  const window = getDefaultStaffingWindow()
+  const window = await getDefaultStaffingWindow()
 
   const trackerData = await getStaffPortalTimeTrackerData(window.startDate, window.endDate).catch(
     () => ({

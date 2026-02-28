@@ -42,7 +42,7 @@ export default async function AdminFeedbackPage() {
 
   const feedback = rows ?? []
 
-  const counts = feedback.reduce<Record<string, number>>((acc: any, row: any) => {
+  const counts = feedback.reduce((acc: any, row: any) => {
     acc[row.sentiment] = (acc[row.sentiment] ?? 0) + 1
     return acc
   }, {})

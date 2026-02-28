@@ -48,7 +48,7 @@ const UpdateDishIndexSchema = z.object({
   season_affinity: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
   notes: z.string().optional(),
-  dna: z.record(z.unknown()).optional(),
+  dna: z.record(z.string(), z.unknown()).optional(),
   linked_recipe_id: z.string().uuid().nullable().optional(),
 })
 
@@ -247,7 +247,7 @@ export async function updateDishIndexEntry(dishId: string, input: UpdateDishInde
   // If retiring, set retired_at
   if (parsed.rotation_status === 'retired') {
     updates.retired_at = new Date().toISOString()
-  } else if (parsed.rotation_status && parsed.rotation_status !== 'retired') {
+  } else if (parsed.rotation_status) {
     updates.retired_at = null
     updates.retirement_reason = null
   }

@@ -127,6 +127,8 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
           ingredient_count: null,
           total_cost_cents: null,
           has_all_prices: null,
+          servings: null,
+          calories_per_serving: null,
         }
         setRecipes((prev) => [newEntry, ...prev])
         setForm(EMPTY_FORM)

@@ -82,13 +82,13 @@ export default async function PaymentSplittingPage({ searchParams }: PaymentSpli
             <CardContent>
               {!splitDetails ? (
                 <p className="text-sm text-stone-400">Select an event to inspect split invoices.</p>
-              ) : splitDetails.invoices.length === 0 ? (
+              ) : (splitDetails as any).invoices.length === 0 ? (
                 <p className="text-sm text-stone-400">
                   No split invoices configured for this event.
                 </p>
               ) : (
                 <div className="space-y-2">
-                  {splitDetails.invoices.map((invoice: any) => (
+                  {(splitDetails as any).invoices.map((invoice: any) => (
                     <div
                       key={invoice.clientId}
                       className="flex items-center justify-between rounded-md border border-stone-700 bg-stone-900 p-3 text-sm"

@@ -420,8 +420,13 @@ export function RecipeDetailClient({ recipe }: Props) {
 
       {showSubRecipeModal && (
         <SubRecipeSearchModal
-          onAdd={handleAddSubRecipe}
-          onClose={() => setShowSubRecipeModal(false)}
+          {...({
+            onAdd: handleAddSubRecipe,
+            onClose: () => setShowSubRecipeModal(false),
+            parentRecipeId: recipe.id,
+            existingSubRecipeIds: [],
+            isOpen: showSubRecipeModal,
+          } as any)}
         />
       )}
 

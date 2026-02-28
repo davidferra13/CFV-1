@@ -101,7 +101,7 @@ export async function compressImageBuffer(
 
   try {
     const formData = new FormData()
-    const blob = new Blob([buffer])
+    const blob = new Blob([buffer as any])
     formData.append('files', blob, filename)
 
     const params = new URLSearchParams({ qlty: String(quality) })

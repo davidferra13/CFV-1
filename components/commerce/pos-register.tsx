@@ -654,10 +654,11 @@ export function PosRegister({ products, registerSession, defaultTaxZip }: Props)
                   product.available_qty !== null &&
                   product.low_stock_threshold !== null &&
                   product.available_qty <= product.low_stock_threshold
-                const isOutOfStock =
+                const isOutOfStock = !!(
                   product.track_inventory &&
                   product.available_qty !== null &&
                   product.available_qty <= 0
+                )
 
                 return (
                   <button

@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: 'Profit & Loss Statement - ChefFlow' 
 export default async function ProfitLossPage() {
   await requireChef()
 
-  const window = getDefaultProfitLossWindow()
+  const window = await getDefaultProfitLossWindow()
   const report = await getProfitAndLossReport(window.startDate, window.endDate).catch(() => ({
     startDate: window.startDate,
     endDate: window.endDate,

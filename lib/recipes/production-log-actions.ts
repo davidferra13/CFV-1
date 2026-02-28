@@ -217,7 +217,7 @@ export async function getAllProductionLogs(): Promise<GlobalProductionLogEntry[]
     .select('id, name, category')
     .in('id', recipeIds)
 
-  const recipeMap = new Map((recipes || []).map((r: any) => [r.id, r]))
+  const recipeMap = new Map<string, any>((recipes || []).map((r: any) => [r.id, r]))
 
   return (entries as any[]).map((entry) => {
     const recipe = recipeMap.get(entry.recipe_id)

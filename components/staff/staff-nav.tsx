@@ -22,7 +22,7 @@ const navLinks = [
 ]
 
 export function StaffNav({ staffName, staffEmail }: Props) {
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ''
   const [menuOpen, setMenuOpen] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
 

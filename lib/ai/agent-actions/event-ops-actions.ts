@@ -304,7 +304,7 @@ export const eventOpsAgentActions: AgentActionDefinition[] = [
       const result = await recordTip({
         eventId: String(payload.eventId),
         amountCents: Number(payload.amountCents),
-        paymentMethod: (payload.paymentMethod as string) ?? 'cash',
+        paymentMethod: ((payload.paymentMethod as string) ?? 'cash') as any,
       })
       if ('error' in result) return { success: false, message: `Failed: ${result.error}` }
       return {

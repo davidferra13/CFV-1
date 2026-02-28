@@ -208,7 +208,7 @@ async function aggregateIngredientDemand(
         unit: ri.unit || '',
         totalNeeded: 0,
         lastPriceCents: Number(ingredient.last_price_cents) || 0,
-        eventDates: [],
+        eventDates: [] as string[],
       }
 
       existing.totalNeeded += scaledQty

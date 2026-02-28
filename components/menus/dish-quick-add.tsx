@@ -33,7 +33,7 @@ export function DishQuickAdd({ onDishAdded }: DishQuickAddProps) {
           name: name.trim(),
           course,
           description: description.trim() || undefined,
-        })
+        } as any)
 
         if (result && 'error' in result) {
           setError(result.error as string)

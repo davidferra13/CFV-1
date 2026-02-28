@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: 'Clock In/Out - ChefFlow' }
 export default async function StaffClockPage() {
   await requireChef()
 
-  const window = getDefaultStaffingWindow()
+  const window = await getDefaultStaffingWindow()
   const trackerData = await getTimeTrackerData(window.startDate, window.endDate).catch(() => ({
     startDate: window.startDate,
     endDate: window.endDate,

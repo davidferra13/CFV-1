@@ -1062,6 +1062,9 @@ async function handleRefund(event: Stripe.Event) {
         chefName: chefData?.business_name || chefData?.display_name || 'Your chef',
         amountCents: refund.amount,
         reason: refund.reason ?? 'Refund processed',
+        isStripeRefund: true,
+        occasion: '',
+        eventDate: null,
       })
     }
   } catch (emailErr) {

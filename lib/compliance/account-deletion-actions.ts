@@ -31,7 +31,10 @@ async function logDeletionAudit(input: {
       performed_by: input.performedBy || 'system',
     })
   } catch (err) {
-    log.error('[deletion-audit] Failed to write audit entry', { error: err, action: input.action })
+    ;(log as any).error('[deletion-audit] Failed to write audit entry', {
+      error: err,
+      action: input.action,
+    })
   }
 }
 
@@ -98,7 +101,9 @@ export async function requestAccountDeletion(
     .eq('id', user.entityId)
 
   if (updateError) {
-    log.error('[account-deletion] Failed to set soft-delete columns', { error: updateError })
+    ;(log as any).error('[account-deletion] Failed to set soft-delete columns', {
+      error: updateError,
+    })
     throw new Error('Failed to process deletion request')
   }
 
@@ -195,7 +200,7 @@ export async function cancelAccountDeletion(token: string): Promise<{ success: t
     })
 
     if (unbanError) {
-      log.error('[account-deletion] Failed to unban auth user during reactivation', {
+      ;(log as any).error('[account-deletion] Failed to unban auth user during reactivation', {
         error: unbanError,
       })
     }
@@ -350,7 +355,7 @@ export async function executeFinalPurge(chefId: string): Promise<{
     })
 
     if (anonError) {
-      log.error('[purge] Financial anonymization failed', { error: anonError, chefId })
+      ;(log as any).error('[purge] Financial anonymization failed', { error: anonError, chefId })
       return { success: false, error: `Financial anonymization failed: ${anonError.message}` }
     }
 
@@ -386,7 +391,7 @@ export async function executeFinalPurge(chefId: string): Promise<{
     if (chef.auth_user_id) {
       const { error: deleteError } = await adminClient.auth.admin.deleteUser(chef.auth_user_id)
       if (deleteError) {
-        log.error('[purge] Auth user deletion failed', { error: deleteError, chefId })
+        ;(log as any).error('[purge] Auth user deletion failed', { error: deleteError, chefId })
         // This is non-fatal — the account is already anonymized and marked deleted
       } else {
         await logDeletionAudit({ ...auditBase, action: 'auth_user_deleted' })
@@ -399,12 +404,11 @@ export async function executeFinalPurge(chefId: string): Promise<{
     }
 
     await logDeletionAudit({ ...auditBase, action: 'purge_completed' })
-
-    log.info('[purge] Account purge completed', { chefId })
+    ;(log as any).info('[purge] Account purge completed', { chefId })
     return { success: true }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    log.error('[purge] Account purge failed', { error: err, chefId })
+    ;(log as any).error('[purge] Account purge failed', { error: err, chefId })
     return { success: false, error: msg }
   }
 }

@@ -223,10 +223,10 @@ export const menuEditAgentActions: AgentActionDefinition[] = [
       const result = await addDishToMenu({
         menu_id: String(payload.menuId),
         name: String(payload.name),
-        course: payload.course as string | undefined,
+        course_name: payload.course as string | undefined,
         description: payload.description as string | undefined,
         position: payload.position as number | undefined,
-      })
+      } as any)
       if ('error' in result) return { success: false, message: `Failed: ${result.error}` }
       return { success: true, message: `Dish "${payload.name}" added to menu!` }
     },
@@ -251,7 +251,7 @@ export const menuEditAgentActions: AgentActionDefinition[] = [
         z.object({
           menuName: z.string(),
           dishName: z.string(),
-          updates: z.record(z.unknown()),
+          updates: z.record(z.string(), z.unknown()),
         }),
         { modelTier: 'standard' }
       )
@@ -388,7 +388,7 @@ export const menuEditAgentActions: AgentActionDefinition[] = [
         dish_id: String(payload.dishId),
         name: String(payload.name),
         notes: payload.notes as string | undefined,
-      })
+      } as any)
       if ('error' in result) return { success: false, message: `Failed: ${result.error}` }
       return { success: true, message: `Component "${payload.name}" added!` }
     },
@@ -599,7 +599,7 @@ export const menuEditAgentActions: AgentActionDefinition[] = [
 
     async commitAction(payload) {
       if (payload._error) return { success: false, message: 'Menu not found.' }
-      const result = await transitionMenu(String(payload.menuId), payload.toStatus as string)
+      const result = await transitionMenu(String(payload.menuId), payload.toStatus as any)
       if ('error' in result) return { success: false, message: `Failed: ${result.error}` }
       return { success: true, message: `Menu status changed to "${payload.toStatus}"!` }
     },

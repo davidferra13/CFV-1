@@ -15,8 +15,8 @@ export function IntegrationCallbackToast() {
   const router = useRouter()
 
   useEffect(() => {
-    const connected = searchParams.get('connected')
-    const error = searchParams.get('error')
+    const connected = searchParams?.get('connected')
+    const error = searchParams?.get('error')
 
     if (connected) {
       const name = PROVIDER_NAMES[connected] || connected

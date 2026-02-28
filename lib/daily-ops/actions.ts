@@ -124,7 +124,7 @@ export async function getDailyPlan(): Promise<DailyPlan> {
   ])
 
   // Build dismissed keys set
-  const dismissedKeys = new Set(dismissalRows.map((r: any) => r.item_key))
+  const dismissedKeys = new Set<string>(dismissalRows.map((r: any) => r.item_key))
 
   // Map today's events
   const todayEvents = todayEventsRaw.map((e: any) => ({

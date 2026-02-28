@@ -31,7 +31,7 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
         description,
         z.object({
           expenseIdentifier: z.string(),
-          updates: z.record(z.unknown()),
+          updates: z.record(z.string(), z.unknown()),
         }),
         { modelTier: 'standard' }
       )
@@ -132,7 +132,7 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
       // Find the call
       const calls = await getUpcomingCalls(20)
       const lower = parsed.callIdentifier.toLowerCase()
-      const match = (calls ?? []).find((c: Record<string, unknown>) => {
+      const match = (calls ?? []).find((c: any) => {
         const title = String(c.title ?? '').toLowerCase()
         return title.includes(lower) || lower.includes(title)
       })
@@ -155,7 +155,7 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
       }
 
       const fields: AgentActionPreview['fields'] = [
-        { label: 'Call', value: String((match as Record<string, unknown>).title) },
+        { label: 'Call', value: String((match as any).title) },
         { label: 'Notes', value: parsed.outcome_notes, editable: true },
       ]
       if (parsed.next_steps) fields.push({ label: 'Next Steps', value: parsed.next_steps })
@@ -164,12 +164,12 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
       return {
         preview: {
           actionType: 'agent.log_call_outcome',
-          summary: `Log outcome: ${(match as Record<string, unknown>).title}`,
+          summary: `Log outcome: ${(match as any).title}`,
           fields,
           safety: 'reversible',
         },
         commitPayload: {
-          callId: (match as Record<string, unknown>).id,
+          callId: (match as any).id,
           outcome_notes: parsed.outcome_notes,
           next_steps: parsed.next_steps,
           sentiment: parsed.sentiment,
@@ -202,7 +202,7 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
     async executor(inputs) {
       const identifier = String(inputs.callIdentifier ?? inputs.description ?? '').toLowerCase()
       const calls = await getUpcomingCalls(20)
-      const match = (calls ?? []).find((c: Record<string, unknown>) => {
+      const match = (calls ?? []).find((c: any) => {
         const title = String(c.title ?? '').toLowerCase()
         return title.includes(identifier) || identifier.includes(title)
       })
@@ -222,12 +222,12 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
       return {
         preview: {
           actionType: 'agent.cancel_call',
-          summary: `Cancel call: ${(match as Record<string, unknown>).title}`,
-          fields: [{ label: 'Call', value: String((match as Record<string, unknown>).title) }],
+          summary: `Cancel call: ${(match as any).title}`,
+          fields: [{ label: 'Call', value: String((match as any).title) }],
           warnings: ['This will cancel the scheduled call.'],
           safety: 'reversible',
         },
-        commitPayload: { callId: (match as Record<string, unknown>).id },
+        commitPayload: { callId: (match as any).id },
       }
     },
 
@@ -283,7 +283,7 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
       const fields: AgentActionPreview['fields'] = [
         {
           label: 'Inquiry',
-          value: String((match as Record<string, unknown>).occasion ?? 'Inquiry'),
+          value: String((match as any).occasion ?? 'Inquiry'),
         },
       ]
       if (parsed.reason) fields.push({ label: 'Reason', value: parsed.reason })
@@ -291,12 +291,12 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
       return {
         preview: {
           actionType: 'agent.decline_inquiry',
-          summary: `Decline inquiry: ${(match as Record<string, unknown>).occasion ?? 'Inquiry'}`,
+          summary: `Decline inquiry: ${(match as any).occasion ?? 'Inquiry'}`,
           fields,
           warnings: ['This will mark the inquiry as declined.'],
           safety: 'significant',
         },
-        commitPayload: { inquiryId: (match as Record<string, unknown>).id, reason: parsed.reason },
+        commitPayload: { inquiryId: (match as any).id, reason: parsed.reason },
       }
     },
 
@@ -329,7 +329,7 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
         description,
         z.object({
           inquiryIdentifier: z.string(),
-          updates: z.record(z.unknown()),
+          updates: z.record(z.string(), z.unknown()),
         }),
         { modelTier: 'standard' }
       )
@@ -357,7 +357,7 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
       const fields: AgentActionPreview['fields'] = [
         {
           label: 'Inquiry',
-          value: String((match as Record<string, unknown>).occasion ?? 'Inquiry'),
+          value: String((match as any).occasion ?? 'Inquiry'),
         },
       ]
       for (const [key, val] of Object.entries(parsed.updates)) {
@@ -376,12 +376,12 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
       return {
         preview: {
           actionType: 'agent.update_inquiry',
-          summary: `Update inquiry: ${(match as Record<string, unknown>).occasion ?? 'Inquiry'}`,
+          summary: `Update inquiry: ${(match as any).occasion ?? 'Inquiry'}`,
           fields,
           safety: 'reversible',
         },
         commitPayload: {
-          inquiryId: (match as Record<string, unknown>).id,
+          inquiryId: (match as any).id,
           updates: parsed.updates,
         },
       }

@@ -1139,7 +1139,7 @@ export async function sendProspectEmail(prospectId: string, subject: string, bod
     await logChefActivity({
       tenantId: user.tenantId!,
       actorId: user.id,
-      action: 'prospect_emailed',
+      action: 'prospect_emailed' as any,
       domain: 'prospecting',
       entityType: 'prospect',
       entityId: prospectId,

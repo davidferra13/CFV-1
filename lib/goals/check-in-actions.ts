@@ -103,7 +103,7 @@ export async function getManualGoalCurrentValue(
   tenantId: string,
   goal: ChefGoal
 ): Promise<number> {
-  const { data } = await supabase
+  const { data } = await (supabase as any)
     .from('goal_check_ins')
     .select('logged_value')
     .eq('goal_id', goal.id)
@@ -123,7 +123,7 @@ export async function getManualGoalRecentCheckIns(
   goalId: string,
   limit = 3
 ): Promise<GoalCheckIn[]> {
-  const { data } = await supabase
+  const { data } = await (supabase as any)
     .from('goal_check_ins')
     .select('*')
     .eq('goal_id', goalId)

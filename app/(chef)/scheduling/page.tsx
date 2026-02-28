@@ -194,7 +194,7 @@ export default async function SchedulingPage({ searchParams }: SchedulingPagePro
                     </p>
                     <form action={deleteTimeBlockAction} className="mt-2">
                       <input type="hidden" name="time_block_id" value={block.id} />
-                      <Button type="submit" size="sm" variant="outline">
+                      <Button type="submit" size="sm" variant="secondary">
                         Delete
                       </Button>
                     </form>

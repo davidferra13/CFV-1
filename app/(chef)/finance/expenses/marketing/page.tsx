@@ -23,12 +23,12 @@ export default async function MarketingExpensesPage() {
   const expenses = allExpenses.filter((e: any) => e.category === 'marketing')
   const totalSpend = expenses.reduce((s: any, e: any) => s + e.amount_cents, 0)
 
-  const vendorTotals = expenses.reduce<Record<string, number>>((acc: any, e: any) => {
+  const vendorTotals = expenses.reduce((acc: any, e: any) => {
     const key = e.vendor_name ?? 'Unknown'
     acc[key] = (acc[key] ?? 0) + e.amount_cents
     return acc
   }, {})
-  const topVendor = Object.entries(vendorTotals).sort((a, b) => b[1] - a[1])[0]
+  const topVendor = Object.entries(vendorTotals).sort((a: any, b: any) => b[1] - a[1])[0]
 
   return (
     <div className="space-y-6">
@@ -59,7 +59,7 @@ export default async function MarketingExpensesPage() {
             {topVendor ? topVendor[0] : '—'}
           </p>
           <p className="text-sm text-stone-500 mt-1">
-            {topVendor ? `Top vendor (${formatCurrency(topVendor[1])})` : 'No vendors'}
+            {topVendor ? `Top vendor (${formatCurrency(topVendor[1] as number)})` : 'No vendors'}
           </p>
         </Card>
       </div>

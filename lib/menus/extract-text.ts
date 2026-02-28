@@ -8,7 +8,7 @@
  * Extract text from a PDF buffer using pdf-parse.
  */
 export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
-  const pdfParse = (await import('pdf-parse')).default
+  const pdfParse = ((await import('pdf-parse')) as any).default
   const result = await pdfParse(buffer)
   return result.text.trim()
 }

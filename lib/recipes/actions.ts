@@ -264,7 +264,7 @@ export async function getRecipes(filters?: {
     .select('recipe_id, ingredient_count, total_ingredient_cost_cents, has_all_prices')
     .eq('tenant_id', user.tenantId!)
 
-  const costMap = new Map((costData || []).map((c: any) => [c.recipe_id, c]))
+  const costMap = new Map<string, any>((costData || []).map((c: any) => [c.recipe_id, c]))
 
   const result: RecipeListItem[] = (recipes || []).map((r: any) => {
     const cost = costMap.get(r.id)

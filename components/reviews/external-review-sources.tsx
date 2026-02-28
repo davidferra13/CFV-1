@@ -228,7 +228,9 @@ export function ExternalReviewSources({ sources }: { sources: ExternalReviewSour
                         <Badge variant={source.active ? 'success' : 'default'}>
                           {source.active ? 'Active' : 'Paused'}
                         </Badge>
-                        <Badge variant="default">{providerLabel(source.provider)}</Badge>
+                        <Badge variant="default">
+                          {providerLabel(source.provider as Provider)}
+                        </Badge>
                       </div>
 
                       <p className="text-xs text-stone-500 mt-1">

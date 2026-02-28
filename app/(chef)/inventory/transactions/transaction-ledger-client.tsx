@@ -65,9 +65,9 @@ export function TransactionLedgerClient({ initialTransactions, initialTotal }: P
     startTransition(async () => {
       try {
         const result = await getTransactionHistory({
-          transactionType: type || undefined,
-          ingredientName: searchTerm || undefined,
-        })
+          transactionType: (type || undefined) as any,
+          ingredientId: (searchTerm || undefined) as any,
+        } as any)
         const data = result as { transactions: any[]; total: number }
         setTransactions(data.transactions)
         setTotal(data.total)

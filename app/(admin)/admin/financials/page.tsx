@@ -32,7 +32,7 @@ export default async function AdminFinancialsPage() {
     redirect('/unauthorized')
   }
 
-  const window = getDefaultProfitLossWindow()
+  const window = await getDefaultProfitLossWindow()
   const [overview, ledger, pnl] = await Promise.allSettled([
     getPlatformFinancialOverview(),
     getPlatformLedgerEntries(200),

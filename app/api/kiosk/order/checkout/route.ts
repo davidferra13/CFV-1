@@ -108,7 +108,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to load products for checkout' }, { status: 500 })
     }
 
-    const productMap = new Map((products ?? []).map((p: any) => [p.id, p as ProductRow]))
+    const productMap = new Map<string, ProductRow>(
+      (products ?? []).map((p: any) => [p.id, p as ProductRow])
+    )
     if (productMap.size !== productIds.length) {
       return NextResponse.json({ error: 'One or more products are unavailable' }, { status: 400 })
     }
@@ -290,7 +292,7 @@ export async function POST(request: Request) {
   } catch (err) {
     if (err instanceof z.ZodError) {
       return NextResponse.json(
-        { error: err.errors[0]?.message || 'Validation error' },
+        { error: (err as any).errors[0]?.message || 'Validation error' },
         { status: 400 }
       )
     }
