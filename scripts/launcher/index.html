@@ -525,6 +525,70 @@ body {
   font-size: 11px;
   color: var(--text-muted);
 }
+.timeline-badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+.timeline-badge-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.timeline-badge-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--text-muted);
+}
+.timeline-badge-value {
+  margin-top: 5px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.timeline-benchmark-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+.timeline-benchmark-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.8fr) auto minmax(170px, 1fr);
+  gap: 10px;
+  align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.timeline-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 68px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.timeline-progress-track {
+  width: 100%;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(100, 116, 139, 0.25);
+  overflow: hidden;
+}
+.timeline-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--brand-bright), var(--brand));
+}
 
 /* ── Console ──────────────────────────────────────────────────── */
 .console-wrapper {
@@ -2138,6 +2202,12 @@ body {
           </div>
         </div>
         <div style="margin-top:12px;font-size:12px;color:var(--text-muted);" id="timeline-life-note">--</div>
+
+        <div class="divider"></div>
+        <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Status Badges + Benchmarks</h3>
+        <div id="timeline-progress-badges" class="timeline-badge-grid"></div>
+        <div style="margin-top:10px;font-size:12px;color:var(--text-muted);" id="timeline-benchmark-summary">--</div>
+        <div id="timeline-benchmarks" class="timeline-benchmark-list"></div>
 
         <div class="divider"></div>
         <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Life Milestones (Manual + Evidence)</h3>
@@ -6431,6 +6501,151 @@ function applyTimelineFilters() {
   renderTimelineLedger(filtered)
 }
 
+const TIMELINE_HOUR_BENCHMARKS = [100, 250, 500, 750, 1000, 1500, 2000, 3000, 4000, 5000]
+
+function timelineToneStyles(tone) {
+  const key = String(tone || '').toLowerCase()
+  if (key === 'success') return { bg: 'var(--success-dim)', border: 'rgba(34,197,94,0.25)', text: 'var(--success)' }
+  if (key === 'warning') return { bg: 'var(--warning-dim)', border: 'rgba(234,179,8,0.25)', text: 'var(--warning)' }
+  if (key === 'info') return { bg: 'var(--info-dim)', border: 'rgba(59,130,246,0.25)', text: 'var(--info)' }
+  if (key === 'brand') return { bg: 'var(--brand-dim)', border: 'rgba(232,143,71,0.3)', text: 'var(--brand)' }
+  return { bg: 'rgba(100,116,139,0.12)', border: 'rgba(100,116,139,0.25)', text: 'var(--text-secondary)' }
+}
+
+function timelinePhaseFromHours(midHours) {
+  const h = Number(midHours)
+  if (!Number.isFinite(h) || h <= 0) return { label: 'Unknown', tone: 'muted' }
+  if (h < 200) return { label: 'Phase 0-1: Foundation', tone: 'info' }
+  if (h < 700) return { label: 'Phase 2: Architecture Build', tone: 'brand' }
+  if (h < 1500) return { label: 'Phase 3: Data Model Expansion', tone: 'brand' }
+  if (h < 2800) return { label: 'Phase 4: Governance Expansion', tone: 'warning' }
+  return { label: 'Phase 5+: Hardening and Infrastructure', tone: 'success' }
+}
+
+function renderTimelineStatusAndBenchmarks(payload) {
+  const badgeEl = document.getElementById('timeline-progress-badges')
+  const benchEl = document.getElementById('timeline-benchmarks')
+  if (!badgeEl || !benchEl) return
+
+  const life = payload?.life || null
+  const summary = payload?.summary || null
+  const linear = payload?.linear || null
+  const combined = life?.estimates?.combined || {}
+  const low = Number(combined.low)
+  const mid = Number(combined.mid)
+  const high = Number(combined.high)
+
+  if (!Number.isFinite(mid) || mid <= 0) {
+    badgeEl.innerHTML = '<div class="timeline-badge-card"><div class="timeline-badge-label">Status</div><div class="timeline-badge-value">No lifetime estimate yet</div></div>'
+    setText('timeline-benchmark-summary', '--')
+    benchEl.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:8px 0;">Add timeline evidence to unlock hour benchmarks.</div>'
+    return
+  }
+
+  const milestones = Array.isArray(life?.milestones) ? life.milestones : []
+  const evidenceCount = milestones.filter(m => String(m?.type || '').toLowerCase() === 'evidence').length
+  const reconstructionCount = milestones.filter(m => String(m?.type || '').toLowerCase() === 'reconstruction').length
+  const archiveCount = milestones.filter((m) => /archive|billybob|graveyard/i.test(`${m?.source || ''} ${m?.title || ''} ${m?.notes || ''}`)).length
+  const spread = Number.isFinite(low) && Number.isFinite(high) ? Math.max(0, high - low) : null
+  const spreadRatio = (Number.isFinite(spread) && mid > 0) ? spread / mid : null
+
+  let confidence = { label: 'Confidence unknown', tone: 'muted' }
+  if (Number.isFinite(spreadRatio)) {
+    if (spreadRatio <= 0.35) confidence = { label: 'High confidence range', tone: 'success' }
+    else if (spreadRatio <= 0.8) confidence = { label: 'Medium confidence range', tone: 'warning' }
+    else confidence = { label: 'Wide estimate range', tone: 'warning' }
+  }
+
+  const phase = timelinePhaseFromHours(mid)
+  const coverage = milestones.length >= 30
+    ? { label: `Dense evidence (${milestones.length})`, tone: 'success' }
+    : milestones.length >= 15
+      ? { label: `Growing evidence (${milestones.length})`, tone: 'brand' }
+      : { label: `Early evidence (${milestones.length})`, tone: 'warning' }
+
+  const cadenceRatio = summary ? summary.activeDays / Math.max(1, summary.calendarSpanDays) : null
+  let cadence = { label: 'Cadence unavailable', tone: 'muted' }
+  if (Number.isFinite(cadenceRatio)) {
+    if (cadenceRatio >= 0.35) cadence = { label: 'High build cadence', tone: 'success' }
+    else if (cadenceRatio >= 0.18) cadence = { label: 'Steady build cadence', tone: 'brand' }
+    else cadence = { label: 'Sparse commit cadence', tone: 'warning' }
+  }
+
+  const pills = [
+    { label: 'Current Stage', value: phase.label, tone: phase.tone },
+    { label: 'Lifetime Midpoint', value: `${mid.toFixed(1)}h`, tone: 'brand' },
+    { label: 'Estimate Range', value: Number.isFinite(spread) ? `${spread.toFixed(1)}h spread` : '--', tone: confidence.tone },
+    { label: 'Confidence', value: confidence.label, tone: confidence.tone },
+    { label: 'Evidence Coverage', value: coverage.label, tone: coverage.tone },
+    { label: 'Evidence Mix', value: `${evidenceCount} evidence, ${reconstructionCount} reconstructed`, tone: 'info' },
+    { label: 'Archive Captured', value: `${archiveCount} archive-linked milestones`, tone: archiveCount > 0 ? 'success' : 'muted' },
+    { label: 'Linear Events Logged', value: `${Number(linear?.total || 0).toLocaleString()} events`, tone: 'info' },
+    { label: 'Cadence', value: cadence.label, tone: cadence.tone },
+  ]
+
+  badgeEl.innerHTML = pills.map((pill) => {
+    const tone = timelineToneStyles(pill.tone)
+    return `
+      <div class="timeline-badge-card" style="border-color:${tone.border};background:linear-gradient(180deg, ${tone.bg}, rgba(15,23,42,0.58));">
+        <div class="timeline-badge-label">${escapeHtml(pill.label)}</div>
+        <div class="timeline-badge-value" style="color:${tone.text};">${escapeHtml(pill.value)}</div>
+      </div>
+    `
+  }).join('')
+
+  const nextMark = TIMELINE_HOUR_BENCHMARKS.find(mark => mid < mark) || null
+  const prevMark = [...TIMELINE_HOUR_BENCHMARKS].reverse().find(mark => mid >= mark) || 0
+  const nextPct = nextMark
+    ? Math.max(0, Math.min(100, ((mid - prevMark) / Math.max(1, nextMark - prevMark)) * 100))
+    : 100
+
+  if (nextMark) {
+    setText(
+      'timeline-benchmark-summary',
+      `Next benchmark: ${nextMark.toLocaleString()}h (${Math.max(0, nextMark - mid).toFixed(1)}h remaining). Segment progress: ${nextPct.toFixed(0)}%.`
+    )
+  } else {
+    setText('timeline-benchmark-summary', 'Top benchmark reached. Add higher targets if you want a longer runway.')
+  }
+
+  benchEl.innerHTML = TIMELINE_HOUR_BENCHMARKS.map((mark) => {
+    let status = 'Pending'
+    let toneName = 'muted'
+    let detail = `${Math.max(0, mark - mid).toFixed(1)}h remaining`
+    let fillPct = 0
+    let fillColor = '#64748b'
+
+    if (mid >= mark) {
+      const locked = Number.isFinite(low) && low >= mark
+      status = locked ? 'Locked' : 'Reached'
+      toneName = locked ? 'success' : 'info'
+      detail = locked ? 'Low estimate also clears this mark.' : 'Mid estimate clears this mark.'
+      fillPct = 100
+      fillColor = '#22c55e'
+    } else if (nextMark === mark) {
+      status = 'Next'
+      toneName = 'brand'
+      detail = `${Math.max(0, mark - mid).toFixed(1)}h to go`
+      fillPct = nextPct
+      fillColor = '#e88f47'
+    }
+
+    const tone = timelineToneStyles(toneName)
+    return `
+      <div class="timeline-benchmark-row">
+        <div style="font-size:12px;font-weight:700;color:var(--text-primary);">${mark.toLocaleString()}h</div>
+        <span class="timeline-chip" style="background:${tone.bg};border-color:${tone.border};color:${tone.text};">${escapeHtml(status)}</span>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div style="font-size:11px;color:var(--text-muted);">${escapeHtml(detail)}</div>
+          <div class="timeline-progress-track">
+            <div class="timeline-progress-fill" style="width:${fillPct.toFixed(1)}%;background:${fillColor};"></div>
+          </div>
+        </div>
+      </div>
+    `
+  }).join('')
+}
+
 function resetTimelineSummary() {
   setText('timeline-start', '--')
   setText('timeline-latest', '--')
@@ -6447,6 +6662,11 @@ function resetTimelineSummary() {
   setText('timeline-life-high', '--')
   setText('timeline-life-upper', '--')
   setText('timeline-life-note', '--')
+  setText('timeline-benchmark-summary', '--')
+  const badgeEl = document.getElementById('timeline-progress-badges')
+  const benchEl = document.getElementById('timeline-benchmarks')
+  if (badgeEl) badgeEl.innerHTML = ''
+  if (benchEl) benchEl.innerHTML = ''
 }
 
 function renderTimelineLifeSummary(life) {
@@ -6527,6 +6747,7 @@ async function loadProjectTimeline(force = false) {
       setText('timeline-status', 'No commits yet')
       resetTimelineSummary()
       renderTimelineLifeSummary(data.life || null)
+      renderTimelineStatusAndBenchmarks(data)
       renderTimelineLifeEvents(data.life?.milestones || [])
       timelineLinearEvents = Array.isArray(data.linear?.events) ? data.linear.events : []
       hydrateTimelineFilterOptions(timelineLinearEvents)
@@ -6553,6 +6774,7 @@ async function loadProjectTimeline(force = false) {
       `Estimated from commit sessions (${s.sessions45m} at 45m gaps, ${s.sessions90m} at 90m gaps). Active-day average: ${s.commitsPerActiveDay} commits/day.`
     )
     renderTimelineLifeSummary(data.life || null)
+    renderTimelineStatusAndBenchmarks(data)
     renderTimelineLifeEvents(data.life?.milestones || [])
     timelineLinearEvents = Array.isArray(data.linear?.events) ? data.linear.events : []
     hydrateTimelineFilterOptions(timelineLinearEvents)
@@ -6564,6 +6786,7 @@ async function loadProjectTimeline(force = false) {
     setText('timeline-status', 'Load failed')
     setText('timeline-hours-note', `Could not load timeline: ${err.message}`)
     setText('timeline-life-note', `Could not load lifetime estimate: ${err.message}`)
+    renderTimelineStatusAndBenchmarks(null)
     timelineLinearEvents = []
     hydrateTimelineFilterOptions([])
     applyTimelineFilters()
