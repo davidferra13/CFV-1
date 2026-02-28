@@ -1,4 +1,3 @@
-// @ts-nocheck — social_hashtag_sets table pending schema migration
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -18,7 +17,7 @@ export type SocialHashtagSet = {
 
 export async function getHashtagSets(): Promise<SocialHashtagSet[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data, error } = await supabase
     .from('social_hashtag_sets')
@@ -40,7 +39,7 @@ export async function createHashtagSet(input: {
   pillar?: SocialPillar
 }): Promise<SocialHashtagSet> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data, error } = await supabase
     .from('social_hashtag_sets')
@@ -63,7 +62,7 @@ export async function updateHashtagSet(
   input: Partial<{ set_name: string; hashtags: string[]; pillar: SocialPillar | null }>
 ): Promise<SocialHashtagSet> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const updates: Record<string, unknown> = {}
   if (input.set_name !== undefined) updates.set_name = input.set_name.trim()
@@ -85,7 +84,7 @@ export async function updateHashtagSet(
 
 export async function deleteHashtagSet(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { error } = await supabase
     .from('social_hashtag_sets')

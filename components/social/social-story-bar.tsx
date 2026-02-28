@@ -99,36 +99,10 @@ function StoryViewer({
   const [showReactions, setShowReactions] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const advanceRef = useRef<() => void>(() => {})
 
   const group = groups[groupIdx]
   const story: SocialStory | undefined = group?.stories[storyIdx]
-
-  useEffect(() => {
-    if (!story) return
-    markStoryViewed(story.id).catch(() => {})
-
-    setProgress(0)
-    if (intervalRef.current) clearInterval(intervalRef.current)
-
-    const duration = story.media_type === 'video' ? (story.duration_seconds ?? 15) * 1000 : 5000
-    const step = 100 / (duration / 100)
-
-    intervalRef.current = setInterval(() => {
-      setProgress((p) => {
-        if (p >= 100) {
-          clearInterval(intervalRef.current!)
-          advance()
-          return 100
-        }
-        return p + step
-      })
-    }, 100)
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupIdx, storyIdx])
 
   function advance() {
     const nextStory = storyIdx + 1
@@ -144,6 +118,33 @@ function StoryViewer({
       }
     }
   }
+  advanceRef.current = advance
+
+  useEffect(() => {
+    if (!story) return
+    markStoryViewed(story.id).catch(() => {})
+
+    setProgress(0)
+    if (intervalRef.current) clearInterval(intervalRef.current)
+
+    const duration = story.media_type === 'video' ? (story.duration_seconds ?? 15) * 1000 : 5000
+    const step = 100 / (duration / 100)
+
+    intervalRef.current = setInterval(() => {
+      setProgress((p) => {
+        if (p >= 100) {
+          clearInterval(intervalRef.current!)
+          advanceRef.current()
+          return 100
+        }
+        return p + step
+      })
+    }, 100)
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+    }
+  }, [groupIdx, storyIdx, story])
 
   function goBack() {
     if (storyIdx > 0) {

@@ -126,12 +126,12 @@ Return JSON: {
   "confidence": "high|medium|low"
 }`
 
-  const { result } = await withAiFallback(
+  const { result, source } = await withAiFallback(
     // Formula: Levenshtein fuzzy match + culinary substitution groups — deterministic
     () => matchCarryForwardFormula(leftovers, neededIngredients),
     // AI: enhanced matching with culinary context (when Ollama is online)
     () => parseWithOllama(systemPrompt, userContent, CarryForwardMatchResultSchema)
   )
 
-  return result
+  return { ...result, _aiSource: source }
 }

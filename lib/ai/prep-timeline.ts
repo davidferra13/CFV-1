@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // Prep Timeline Generator
@@ -31,6 +30,18 @@ export interface PrepTimeline {
   generatedAt: string
 }
 
+interface MenuComponentRow {
+  name: string
+  course_type: string | null
+  description: string | null
+  recipes: {
+    name: string
+    prep_time_minutes: number | null
+    cook_time_minutes: number | null
+    method: string | null
+  } | null
+}
+
 const getClient = () => {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
@@ -41,7 +52,7 @@ const getClient = () => {
 
 export async function generatePrepTimeline(eventId: string): Promise<PrepTimeline> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const [eventResult, menuResult] = await Promise.all([
     supabase
@@ -50,12 +61,13 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
+    // @ts-expect-error event_menu_components not yet in generated types
     supabase
-      .from('event_menu_components' as any)
+      .from('event_menu_components')
       .select(
         `
         name, course_type, description,
-        recipes(name, prep_time_minutes, cook_time_minutes, method_steps)
+        recipes(name, prep_time_minutes, cook_time_minutes, method)
       `
       )
       .eq('event_id', eventId),
@@ -64,7 +76,7 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
   const event = eventResult.data
   if (!event) throw new Error('Event not found')
 
-  const menuItems = menuResult.data ?? []
+  const menuItems = (menuResult.data ?? []) as MenuComponentRow[]
   const serveTime = event.serve_time ?? '7:00 PM'
   const guestCount = event.guest_count ?? 10
 
@@ -73,9 +85,9 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
     return {
       dish: item.name,
       course: item.course_type ?? 'Main',
-      prepMinutes: (recipe as any)?.prep_time_minutes ?? null,
-      cookMinutes: (recipe as any)?.cook_time_minutes ?? null,
-      methodSteps: (recipe as any)?.method_steps ?? null,
+      prepMinutes: recipe?.prep_time_minutes ?? null,
+      cookMinutes: recipe?.cook_time_minutes ?? null,
+      method: recipe?.method ?? null,
     }
   })
 

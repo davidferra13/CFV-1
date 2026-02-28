@@ -1,4 +1,3 @@
-/* eslint-disable */
 // GET /api/integrations/social/connect/[platform]
 // Initiates the OAuth flow: generates CSRF state (+ PKCE for X and TikTok),
 // stores it in social_oauth_states, then redirects to the platform's auth page.
@@ -60,7 +59,7 @@ export async function GET(
     codeChallenge = pkce.codeChallenge
   }
 
-  const supabase: any = createAdminClient()
+  const supabase = createAdminClient()
   const { error: stateErr } = await supabase.from('social_oauth_states').insert({
     tenant_id: user.tenantId,
     platform,
@@ -68,7 +67,7 @@ export async function GET(
     code_verifier: codeVerifier,
     redirect_to: '/social/connections',
     expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-  } as any)
+  })
 
   if (stateErr) {
     console.error('[social-connect] state insert failed:', stateErr)

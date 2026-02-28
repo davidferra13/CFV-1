@@ -1,7 +1,10 @@
-// @ts-nocheck — prep_blocks table pending schema migration
 // Prep Block Server Actions
 // Handles all DB I/O for the event prep scheduling system.
 // Calls the pure prep-block-engine.ts functions with fetched data.
+//
+// NOTE: event_prep_blocks table is not yet in types/database.ts.
+// Supabase queries use `.from('event_prep_blocks' as never)` to bypass
+// the typed client until the migration is reflected in the generated types.
 
 'use server'
 
@@ -25,7 +28,8 @@ import type {
 // INTERNAL HELPERS
 // ============================================
 
-function mapEventToScheduling(event: any): SchedulingEvent {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapEventToScheduling(event: Record<string, any>): SchedulingEvent {
   return {
     id: event.id,
     occasion: event.occasion,
@@ -69,7 +73,10 @@ const EVENT_SELECT = `
   client:clients(full_name)
 `
 
-async function fetchUpcomingEvents(supabase: any, tenantId: string): Promise<SchedulingEvent[]> {
+async function fetchUpcomingEvents(
+  supabase: ReturnType<typeof createServerClient>,
+  tenantId: string
+): Promise<SchedulingEvent[]> {
   const today = new Date().toISOString().slice(0, 10)
   const { data: events } = await supabase
     .from('events')
@@ -80,16 +87,18 @@ async function fetchUpcomingEvents(supabase: any, tenantId: string): Promise<Sch
     .order('event_date', { ascending: true })
 
   if (!events) return []
-  return events.map(mapEventToScheduling)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (events as Record<string, any>[]).map(mapEventToScheduling)
 }
 
 async function fetchPrepBlocks(
-  supabase: any,
+  supabase: ReturnType<typeof createServerClient>,
   chefId: string,
   options?: { eventId?: string; dateStart?: string; dateEnd?: string }
 ): Promise<PrepBlock[]> {
-  let query = supabase
-    .from('event_prep_blocks' as any)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let query = (supabase as any)
+    .from('event_prep_blocks')
     .select('*')
     .eq('chef_id', chefId)
     .order('block_date', { ascending: true })
@@ -145,7 +154,7 @@ function getWeekStartForWeekNumber(year: number, weekNum: number): Date {
  */
 export async function getEventPrepBlocks(eventId: string): Promise<PrepBlock[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
   return fetchPrepBlocks(supabase, user.tenantId!, { eventId })
 }
 
@@ -155,7 +164,7 @@ export async function getEventPrepBlocks(eventId: string): Promise<PrepBlock[]> 
  */
 export async function getWeekPrepBlocks(weekOffset = 0): Promise<PrepBlock[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
   const { start, end } = getWeekBounds(weekOffset)
   return fetchPrepBlocks(supabase, user.tenantId!, { dateStart: start, dateEnd: end })
 }
@@ -166,7 +175,7 @@ export async function getWeekPrepBlocks(weekOffset = 0): Promise<PrepBlock[]> {
  */
 export async function getYearSummary(year: number): Promise<YearSummary> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
   const tenantId = user.tenantId!
 
   const yearStart = `${year}-01-01`
@@ -182,15 +191,17 @@ export async function getYearSummary(year: number): Promise<YearSummary> {
       .gte('event_date', yearStart)
       .lte('event_date', yearEnd)
       .order('event_date', { ascending: true }),
-    supabase
-      .from('event_prep_blocks' as any)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any)
+      .from('event_prep_blocks')
       .select('*')
       .eq('chef_id', tenantId)
       .gte('block_date', yearStart)
       .lte('block_date', yearEnd),
   ])
 
-  const allEvents = (eventsResult.data ?? []).map(mapEventToScheduling)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const allEvents = (eventsResult.data ?? ([] as Record<string, any>[])).map(mapEventToScheduling)
   const allBlocks = (blocksResult.data ?? []) as PrepBlock[]
 
   // Build 52-week grid
@@ -236,7 +247,7 @@ export async function getYearSummary(year: number): Promise<YearSummary> {
  */
 export async function getSchedulingGaps(): Promise<SchedulingGap[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
   const tenantId = user.tenantId!
 
   const [events, blocks] = await Promise.all([
@@ -258,10 +269,11 @@ export async function createPrepBlock(
   input: CreatePrepBlockInput
 ): Promise<{ success: boolean; block?: PrepBlock; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
-  const { data, error } = await supabase
-    .from('event_prep_blocks' as any)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase as any)
+    .from('event_prep_blocks')
     .insert({
       chef_id: user.tenantId!,
       event_id: input.event_id ?? null,
@@ -279,7 +291,7 @@ export async function createPrepBlock(
     .select()
     .single()
 
-  if (error) return { success: false, error: error.message }
+  if (error) return { success: false, error: (error as { message: string }).message }
 
   revalidatePath('/calendar')
   revalidatePath('/calendar/week')
@@ -300,7 +312,7 @@ export async function bulkCreatePrepBlocks(
   if (blocks.length === 0) return { success: true, count: 0 }
 
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const rows = blocks.map((input) => ({
     chef_id: user.tenantId!,
@@ -317,12 +329,10 @@ export async function bulkCreatePrepBlocks(
     is_system_generated: input.is_system_generated ?? false,
   }))
 
-  const { data, error } = await supabase
-    .from('event_prep_blocks' as any)
-    .insert(rows)
-    .select()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase as any).from('event_prep_blocks').insert(rows).select()
 
-  if (error) return { success: false, error: error.message }
+  if (error) return { success: false, error: (error as { message: string }).message }
 
   // Revalidate all affected paths
   const eventIds = [...new Set(blocks.map((b) => b.event_id).filter(Boolean))]
@@ -333,7 +343,7 @@ export async function bulkCreatePrepBlocks(
     revalidatePath(`/events/${id}`)
   }
 
-  return { success: true, count: data?.length ?? 0 }
+  return { success: true, count: (data as unknown[] | null)?.length ?? 0 }
 }
 
 /**
@@ -344,10 +354,11 @@ export async function updatePrepBlock(
   updates: UpdatePrepBlockInput
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
-  const { error } = await supabase
-    .from('event_prep_blocks' as any)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any)
+    .from('event_prep_blocks')
     .update({
       ...(updates.block_date !== undefined && { block_date: updates.block_date }),
       ...(updates.start_time !== undefined && { start_time: updates.start_time }),
@@ -367,7 +378,7 @@ export async function updatePrepBlock(
     .eq('id', id)
     .eq('chef_id', user.tenantId!)
 
-  if (error) return { success: false, error: error.message }
+  if (error) return { success: false, error: (error as { message: string }).message }
 
   revalidatePath('/calendar')
   revalidatePath('/calendar/week')
@@ -381,15 +392,16 @@ export async function updatePrepBlock(
  */
 export async function deletePrepBlock(id: string): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
-  const { error } = await supabase
-    .from('event_prep_blocks' as any)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any)
+    .from('event_prep_blocks')
     .delete()
     .eq('id', id)
     .eq('chef_id', user.tenantId!)
 
-  if (error) return { success: false, error: error.message }
+  if (error) return { success: false, error: (error as { message: string }).message }
 
   revalidatePath('/calendar')
   revalidatePath('/calendar/week')
@@ -403,10 +415,11 @@ export async function deletePrepBlock(id: string): Promise<{ success: boolean; e
  */
 export async function completePrepBlock(id: string): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
-  const { error } = await supabase
-    .from('event_prep_blocks' as any)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any)
+    .from('event_prep_blocks')
     .update({
       is_completed: true,
       completed_at: new Date().toISOString(),
@@ -414,7 +427,7 @@ export async function completePrepBlock(id: string): Promise<{ success: boolean;
     .eq('id', id)
     .eq('chef_id', user.tenantId!)
 
-  if (error) return { success: false, error: error.message }
+  if (error) return { success: false, error: (error as { message: string }).message }
 
   revalidatePath('/calendar')
   revalidatePath('/calendar/week')
@@ -430,15 +443,16 @@ export async function uncompletePrepBlock(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
-  const { error } = await supabase
-    .from('event_prep_blocks' as any)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any)
+    .from('event_prep_blocks')
     .update({ is_completed: false, completed_at: null })
     .eq('id', id)
     .eq('chef_id', user.tenantId!)
 
-  if (error) return { success: false, error: error.message }
+  if (error) return { success: false, error: (error as { message: string }).message }
 
   revalidatePath('/calendar')
   revalidatePath('/calendar/week')
@@ -464,7 +478,7 @@ export async function autoPlacePrepBlocks(eventId: string): Promise<{
 }> {
   try {
     const user = await requireChef()
-    const supabase: any = createServerClient()
+    const supabase = createServerClient()
     const tenantId = user.tenantId!
 
     // Check if blocks already exist
@@ -525,7 +539,7 @@ export async function autoSuggestEventBlocks(eventId: string): Promise<{
 }> {
   try {
     const user = await requireChef()
-    const supabase: any = createServerClient()
+    const supabase = createServerClient()
     const tenantId = user.tenantId!
 
     // Fetch the event
@@ -545,7 +559,8 @@ export async function autoSuggestEventBlocks(eventId: string): Promise<{
     const prefs = await getChefPreferences()
 
     // Map event to scheduling shape
-    const schedulingEvent = mapEventToScheduling(event)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const schedulingEvent = mapEventToScheduling(event as Record<string, any>)
 
     // Run engine — pure computation
     const suggestions = suggestPrepBlocks(schedulingEvent, existingBlocks, prefs)

@@ -1,4 +1,3 @@
-// @ts-nocheck — tables (event_travel_legs, travel_leg_ingredients) pending schema migration
 'use server'
 
 // Travel Route Planning — Server Actions
@@ -19,11 +18,8 @@ import type {
   TravelIngredientStatus,
 } from './types'
 
-// event_travel_legs and travel_leg_ingredients have a pending migration (20260303000020).
-// Cast to bypass the typed client until the migration is applied to the remote DB.
-type AnySupabase = any & { from: (t: string) => any }
-function createClient(): AnySupabase {
-  return createServerClient() as AnySupabase
+function createClient() {
+  return createServerClient()
 }
 
 // ============================================================
@@ -47,7 +43,7 @@ export async function getTravelPlan(eventId: string): Promise<TravelPlan> {
   if (error) throw new Error(`Failed to fetch travel legs: ${error.message}`)
 
   // Fetch ingredients for all legs
-  const legIds = (legs ?? []).map((l: any) => l.id)
+  const legIds = (legs ?? []).map((l) => l.id)
   let ingredients: TravelLegIngredient[] = []
 
   if (legIds.length > 0) {
@@ -61,19 +57,20 @@ export async function getTravelPlan(eventId: string): Promise<TravelPlan> {
       )
       .in('leg_id', legIds)
 
-    ingredients = (rawIngredients ?? []).map((row: any) => ({
-      id: row.id,
-      leg_id: row.leg_id,
-      ingredient_id: row.ingredient_id,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ingredients = (rawIngredients ?? []).map((row: Record<string, any>) => ({
+      id: row.id as string,
+      leg_id: row.leg_id as string,
+      ingredient_id: row.ingredient_id as string,
       ingredient_name: (row.ingredients as { name: string } | null)?.name ?? undefined,
-      event_id: row.event_id,
-      quantity: row.quantity,
-      unit: row.unit,
-      store_name: row.store_name,
-      notes: row.notes,
+      event_id: row.event_id as string | null,
+      quantity: row.quantity as number | null,
+      unit: row.unit as string | null,
+      store_name: row.store_name as string | null,
+      notes: row.notes as string | null,
       status: row.status as TravelIngredientStatus,
-      sourced_at: row.sourced_at,
-      created_at: row.created_at,
+      sourced_at: row.sourced_at as string | null,
+      created_at: row.created_at as string,
     }))
   }
 
@@ -108,7 +105,7 @@ export async function getTravelPlan(eventId: string): Promise<TravelPlan> {
       .lte('event_date', upper.toISOString().split('T')[0])
       .order('event_date', { ascending: true })
 
-    nearbyEvents = (nearby ?? []).map((e: any) => {
+    nearbyEvents = (nearby ?? []).map((e) => {
       const eDays = Math.round(
         (new Date(e.event_date).getTime() - eventDate.getTime()) / (1000 * 60 * 60 * 24)
       )
@@ -130,9 +127,9 @@ export async function getTravelPlan(eventId: string): Promise<TravelPlan> {
     ingredientsByLeg.set(ing.leg_id, arr)
   }
 
-  const legsWithIngredients: TravelLegWithIngredients[] = (legs ?? []).map((leg: any) => ({
+  const legsWithIngredients: TravelLegWithIngredients[] = (legs ?? []).map((leg) => ({
     ...leg,
-    stops: (leg.stops as TravelLeg['stops']) ?? [],
+    stops: (leg.stops as unknown as TravelLeg['stops']) ?? [],
     linked_event_ids: leg.linked_event_ids ?? [],
     ingredients: ingredientsByLeg.get(leg.id) ?? [],
   }))
@@ -170,9 +167,9 @@ export async function getAllTravelLegs(options?: {
   const { data: legs, error } = await query
   if (error) throw new Error(`Failed to fetch travel legs: ${error.message}`)
 
-  return (legs ?? []).map((leg: any) => ({
+  return (legs ?? []).map((leg) => ({
     ...leg,
-    stops: (leg.stops as TravelLeg['stops']) ?? [],
+    stops: (leg.stops as unknown as TravelLeg['stops']) ?? [],
     linked_event_ids: leg.linked_event_ids ?? [],
     ingredients: [],
   }))
@@ -223,9 +220,9 @@ export async function createTravelLeg(input: CreateTravelLegInput): Promise<Trav
   if (error) throw new Error(`Failed to create travel leg: ${error.message}`)
 
   return {
-    ...data,
-    stops: (data.stops as TravelLeg['stops']) ?? [],
-    linked_event_ids: data.linked_event_ids ?? [],
+    ...data!,
+    stops: (data!.stops as unknown as TravelLeg['stops']) ?? [],
+    linked_event_ids: data!.linked_event_ids ?? [],
   }
 }
 
@@ -262,9 +259,9 @@ export async function updateTravelLeg(input: UpdateTravelLegInput): Promise<Trav
   if (error) throw new Error(`Failed to update travel leg: ${error.message}`)
 
   return {
-    ...data,
-    stops: (data.stops as TravelLeg['stops']) ?? [],
-    linked_event_ids: data.linked_event_ids ?? [],
+    ...data!,
+    stops: (data!.stops as unknown as TravelLeg['stops']) ?? [],
+    linked_event_ids: data!.linked_event_ids ?? [],
   }
 }
 
@@ -369,17 +366,17 @@ export async function upsertLegIngredient(
   if (error) throw new Error(`Failed to upsert leg ingredient: ${error.message}`)
 
   return {
-    id: data.id,
-    leg_id: data.leg_id,
-    ingredient_id: data.ingredient_id,
-    event_id: data.event_id,
-    quantity: data.quantity,
-    unit: data.unit,
-    store_name: data.store_name,
-    notes: data.notes,
-    status: data.status as TravelIngredientStatus,
-    sourced_at: data.sourced_at,
-    created_at: data.created_at,
+    id: data!.id,
+    leg_id: data!.leg_id,
+    ingredient_id: data!.ingredient_id,
+    event_id: data!.event_id,
+    quantity: data!.quantity,
+    unit: data!.unit,
+    store_name: data!.store_name,
+    notes: data!.notes,
+    status: data!.status as TravelIngredientStatus,
+    sourced_at: data!.sourced_at,
+    created_at: data!.created_at,
   }
 }
 
@@ -517,23 +514,24 @@ export async function searchIngredientsForEvent(
                       .select('id')
                       .eq('event_id', eventId)
                       .eq('tenant_id', user.tenantId!)
-                  ).data?.map((m: any) => m.id) ?? []
+                  ).data?.map((m) => m.id) ?? []
                 )
                 .eq('tenant_id', user.tenantId!)
-            ).data?.map((d: any) => d.id) ?? []
+            ).data?.map((d) => d.id) ?? []
           )
           .not('recipe_id', 'is', null)
           .eq('tenant_id', user.tenantId!)
       ).data
-        ?.map((c: any) => c.recipe_id)
-        .filter((id: any): id is string => id !== null) ?? []
+        ?.map((c) => c.recipe_id)
+        .filter((id): id is string => id !== null) ?? []
     )
     .limit(20)
 
   const seen = new Set<string>()
   const results: { id: string; name: string; category: string }[] = []
 
-  for (const row of (data as any[]) ?? []) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  for (const row of (data as Record<string, any>[]) ?? []) {
     const ing = row.ingredients as { id: string; name: string; category: string } | null
     if (!ing || seen.has(ing.id)) continue
     seen.add(ing.id)
@@ -560,8 +558,8 @@ export async function autoCreateServiceLegs(eventId: string): Promise<void> {
     .eq('primary_event_id', eventId)
     .in('leg_type', ['service_travel', 'return_home'])
 
-  const hasServiceTravel = (existing ?? []).some((l: any) => l.leg_type === 'service_travel')
-  const hasReturnHome = (existing ?? []).some((l: any) => l.leg_type === 'return_home')
+  const hasServiceTravel = (existing ?? []).some((l) => l.leg_type === 'service_travel')
+  const hasReturnHome = (existing ?? []).some((l) => l.leg_type === 'return_home')
 
   if (hasServiceTravel && hasReturnHome) return
 

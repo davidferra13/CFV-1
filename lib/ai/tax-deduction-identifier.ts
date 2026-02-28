@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // Tax Deduction Identifier
@@ -41,18 +40,18 @@ export async function identifyMissedDeductions(
   taxYearEnd?: string
 ): Promise<TaxDeductionResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const start = taxYearStart ?? `${new Date().getFullYear()}-01-01`
   const end = taxYearEnd ?? `${new Date().getFullYear()}-12-31`
 
   const { data: expenses } = await supabase
     .from('expenses')
-    .select('description, amount_cents, category, date, notes')
+    .select('description, amount_cents, category, expense_date, notes')
     .eq('tenant_id', user.tenantId!)
-    .gte('date', start)
-    .lte('date', end)
-    .order('date', { ascending: true })
+    .gte('expense_date', start)
+    .lte('expense_date', end)
+    .order('expense_date', { ascending: true })
     .limit(200)
 
   const expenseList = expenses ?? []
@@ -60,10 +59,10 @@ export async function identifyMissedDeductions(
   // Also check mileage logs
   const { data: mileageLogs } = await supabase
     .from('mileage_logs')
-    .select('miles, purpose, date')
+    .select('miles, purpose, log_date')
     .eq('tenant_id', user.tenantId!)
-    .gte('date', start)
-    .lte('date', end)
+    .gte('log_date', start)
+    .lte('log_date', end)
     .limit(50)
 
   const systemPrompt = `You are a tax advisor specializing in self-employed private chef businesses.
@@ -92,7 +91,7 @@ ${
     .slice(0, 80)
     .map(
       (e) =>
-        `- ${e.date}: ${e.description} | $${((e.amount_cents ?? 0) / 100).toFixed(2)} | category: ${e.category ?? 'uncategorized'}${e.notes ? ' | ' + e.notes : ''}`
+        `- ${e.expense_date}: ${e.description} | $${((e.amount_cents ?? 0) / 100).toFixed(2)} | category: ${e.category ?? 'uncategorized'}${e.notes ? ' | ' + e.notes : ''}`
     )
     .join('\n') || '- No expenses found for this period'
 }
@@ -100,7 +99,7 @@ ${
 Mileage logged: ${mileageLogs?.length ?? 0} entries
 ${(mileageLogs ?? [])
   .slice(0, 10)
-  .map((m: any) => `- ${m.date}: ${m.miles ?? 0} miles, ${m.purpose ?? 'purpose unknown'}`)
+  .map((m) => `- ${m.log_date}: ${m.miles ?? 0} miles, ${m.purpose ?? 'purpose unknown'}`)
   .join('\n')}
 
 Return JSON: {
@@ -111,12 +110,26 @@ Return JSON: {
   "confidence": "high|medium|low"
 }`
 
-  const { result } = await withAiFallback(
+  // Map DB column names to formula type field names
+  const formulaExpenses = expenseList.map((e) => ({
+    description: e.description,
+    amount_cents: e.amount_cents,
+    category: e.category,
+    date: e.expense_date,
+    notes: e.notes,
+  }))
+  const formulaMileage = (mileageLogs ?? []).map((m) => ({
+    miles: m.miles,
+    purpose: m.purpose,
+    date: m.log_date,
+  }))
+
+  const { result, source } = await withAiFallback(
     // Formula: IRS rule-based analysis — deterministic
-    () => identifyDeductionsFormula(expenseList, mileageLogs ?? []),
+    () => identifyDeductionsFormula(formulaExpenses, formulaMileage),
     // AI: enhanced analysis with contextual suggestions (when Ollama is online)
     () => parseWithOllama(systemPrompt, userContent, TaxDeductionResultSchema)
   )
 
-  return result
+  return { ...result, _aiSource: source } as TaxDeductionResult
 }

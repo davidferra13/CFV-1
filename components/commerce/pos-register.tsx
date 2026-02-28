@@ -214,8 +214,7 @@ export function PosRegister({ products, registerSession, defaultTaxZip }: Props)
 
   useEffect(() => {
     refreshDrawerData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [registerSession?.id])
+  }, [registerSession?.id]) // refreshDrawerData reads registerSession?.id — stable across calls
 
   function handleProductTap(product: Product) {
     // If product has modifiers, show the modifier popup

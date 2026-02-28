@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // Social Media Caption Generator
@@ -27,6 +26,12 @@ export interface SocialCaptionsResult {
   generatedAt: string
 }
 
+interface MenuComponentRow {
+  name: string
+  course_type: string | null
+  description: string | null
+}
+
 const getClient = () => {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
@@ -38,7 +43,7 @@ export async function generateSocialCaptions(
   tone: CaptionTone = 'warm_personal'
 ): Promise<SocialCaptionsResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const [eventResult, menuResult, chefResult] = await Promise.all([
     supabase
@@ -47,14 +52,15 @@ export async function generateSocialCaptions(
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
+    // @ts-expect-error event_menu_components not yet in generated types
     supabase
-      .from('event_menu_components' as any)
+      .from('event_menu_components')
       .select('name, course_type, description')
       .eq('event_id', eventId)
       .limit(8),
     supabase
       .from('chefs')
-      .select('full_name, business_name, tagline')
+      .select('display_name, business_name, tagline')
       .eq('id', user.tenantId!)
       .single(),
   ])
@@ -62,7 +68,7 @@ export async function generateSocialCaptions(
   const event = eventResult.data
   if (!event) throw new Error('Event not found')
 
-  const menu = menuResult.data ?? []
+  const menu = (menuResult.data ?? []) as MenuComponentRow[]
   const chef = chefResult.data
 
   const toneGuide = {
@@ -79,7 +85,7 @@ Do NOT mention the client's name or any identifying information.
 Focus on the food, craft, atmosphere, and experience.
 Never reveal private event locations or client details.
 
-Chef: ${chef?.full_name ?? 'Chef'}${chef?.business_name ? ' (' + chef.business_name + ')' : ''}
+Chef: ${chef?.display_name ?? 'Chef'}${chef?.business_name ? ' (' + chef.business_name + ')' : ''}
 ${chef?.tagline ? 'Brand tagline: ' + chef.tagline : ''}
 
 Event:

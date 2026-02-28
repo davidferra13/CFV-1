@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // Testimonial Highlight Selection
@@ -28,6 +27,20 @@ export interface TestimonialSelectionResult {
   generatedAt: string
 }
 
+// Types for tables not yet in generated types
+interface AarRow {
+  client_feedback: string | null
+  event_id: string | null
+  events: { occasion: string | null; clients: { full_name: string } | null } | null
+}
+
+interface SurveyRow {
+  overall_rating: number | null
+  feedback_text: string | null
+  event_id: string | null
+  events: { occasion: string | null; clients: { full_name: string } | null } | null
+}
+
 const getClient = () => {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
@@ -36,12 +49,13 @@ const getClient = () => {
 
 export async function selectTestimonialHighlights(): Promise<TestimonialSelectionResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   // Gather AAR client feedback and positive messages
   const [aarResult, messagesResult, surveysResult] = await Promise.all([
+    // @ts-expect-error aars table not yet in generated types
     supabase
-      .from('aars' as any)
+      .from('aars')
       .select(
         `
         client_feedback, event_id,
@@ -61,10 +75,11 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
       `
       )
       .eq('tenant_id', user.tenantId!)
-      .eq('direction', 'in')
+      .eq('direction', 'inbound')
       .limit(50),
+    // @ts-expect-error client_surveys table not yet in generated types
     supabase
-      .from('client_surveys' as any)
+      .from('client_surveys')
       .select(
         `
         overall_rating, feedback_text, event_id,
@@ -76,9 +91,9 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
       .limit(20),
   ])
 
-  const aars = aarResult.data ?? []
+  const aars = (aarResult.data ?? []) as AarRow[]
   const messages = messagesResult.data ?? []
-  const surveys = surveysResult.data ?? []
+  const surveys = (surveysResult.data ?? []) as SurveyRow[]
 
   // Combine and format all feedback sources
   const feedbackItems: {
@@ -91,14 +106,16 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
   for (const aar of aars) {
     if (aar.client_feedback) {
       const event = Array.isArray(aar.events) ? aar.events[0] : aar.events
-      const client = Array.isArray((event as any)?.clients)
-        ? (event as any).clients[0]
-        : (event as any)?.clients
+      const client = event?.clients
+        ? Array.isArray(event.clients)
+          ? event.clients[0]
+          : event.clients
+        : null
       feedbackItems.push({
         source: 'aar',
-        content: aar.client_feedback as string,
-        clientName: (client as any)?.full_name ?? 'Client',
-        eventType: (event as any)?.occasion ?? 'Private Event',
+        content: aar.client_feedback,
+        clientName: client?.full_name ?? 'Client',
+        eventType: event?.occasion ?? 'Private Event',
       })
     }
   }
@@ -106,14 +123,16 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
   for (const survey of surveys) {
     if (survey.feedback_text) {
       const event = Array.isArray(survey.events) ? survey.events[0] : survey.events
-      const client = Array.isArray((event as any)?.clients)
-        ? (event as any).clients[0]
-        : (event as any)?.clients
+      const client = event?.clients
+        ? Array.isArray(event.clients)
+          ? event.clients[0]
+          : event.clients
+        : null
       feedbackItems.push({
         source: 'survey',
-        content: survey.feedback_text as string,
-        clientName: (client as any)?.full_name ?? 'Client',
-        eventType: (event as any)?.occasion ?? 'Private Event',
+        content: survey.feedback_text,
+        clientName: client?.full_name ?? 'Client',
+        eventType: event?.occasion ?? 'Private Event',
       })
     }
   }

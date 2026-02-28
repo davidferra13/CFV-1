@@ -256,10 +256,10 @@ export function useTableSubscription<T extends Record<string, unknown>>(
   const callbackRef = useRef(options.onData)
   callbackRef.current = options.onData
 
+  const { event, table, schema, filter } = options
   const stableOptions = useCallback(
-    () => options,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [channelName, options.event, options.table, options.schema, options.filter]
+    () => ({ event, table, schema, filter }),
+    [event, table, schema, filter]
   )
 
   useEffect(() => {

@@ -58,7 +58,7 @@ Amount: $${(amountCents / 100).toFixed(2)}
 
 Return JSON: { "category": "...", "confidence": "high|medium|low", "reasoning": "one sentence", "alternativeCategory": "...or null" }`
 
-  const { result } = await withAiFallback(
+  const { result, source } = await withAiFallback(
     // Formula: keyword lookup — instant, deterministic, 150+ keywords
     () => categorizeExpenseFormula(description, amountCents),
     // AI: enhanced categorization with contextual reasoning (when Ollama is online)
@@ -69,5 +69,5 @@ Return JSON: { "category": "...", "confidence": "high|medium|low", "reasoning": 
       })
   )
 
-  return result
+  return { ...result, _aiSource: source }
 }

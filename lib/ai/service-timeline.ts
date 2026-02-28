@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // Service Timeline / Run-of-Show Generator
@@ -28,6 +27,19 @@ export interface ServiceTimeline {
   generatedAt: string
 }
 
+interface MenuComponentRow {
+  name: string
+  course_type: string | null
+  description: string | null
+  prep_time_minutes: number | null
+  cook_time_minutes: number | null
+}
+
+interface EventStaffRow {
+  role_override: string | null
+  staff_members: { name: string; role: string } | null
+}
+
 const getClient = () => {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
@@ -38,7 +50,7 @@ const getClient = () => {
 
 export async function generateServiceTimeline(eventId: string): Promise<ServiceTimeline> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const [eventResult, menuResult, staffResult] = await Promise.all([
     supabase
@@ -49,26 +61,28 @@ export async function generateServiceTimeline(eventId: string): Promise<ServiceT
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
+    // @ts-expect-error event_menu_components not yet in generated types
     supabase
-      .from('event_menu_components' as any)
+      .from('event_menu_components')
       .select('name, course_type, description, prep_time_minutes, cook_time_minutes')
       .eq('event_id', eventId),
+    // @ts-expect-error event_staff_assignments not yet in generated types as event_staff
     supabase
-      .from('event_staff' as any)
-      .select('staff_members(full_name, role)')
+      .from('event_staff_assignments')
+      .select('role_override, staff_members(name, role)')
       .eq('event_id', eventId),
   ])
 
   const event = eventResult.data
   if (!event) throw new Error('Event not found')
 
-  const menuItems = menuResult.data ?? []
-  const staffRoster = staffResult.data ?? []
+  const menuItems = (menuResult.data ?? []) as MenuComponentRow[]
+  const staffRoster = (staffResult.data ?? []) as EventStaffRow[]
 
   const serveTime = event.serve_time ?? '7:00 PM'
   const arrivalTime = event.arrival_time ?? '4:00 PM'
   const staffNames = staffRoster
-    .map((s: any) => s.staff_members?.full_name ?? 'Staff')
+    .map((s) => s.staff_members?.name ?? 'Staff')
     .filter(Boolean)
     .join(', ')
 
@@ -82,7 +96,7 @@ Event Details:
   Service start: ${serveTime}
   Location: ${event.location_address ?? 'TBD'}
   Service style: ${event.service_style ?? 'plated'}
-  Dietary restrictions: ${(event.dietary_restrictions as string[] | null)?.join(', ') || 'None'}
+  Dietary restrictions: ${event.dietary_restrictions?.join(', ') || 'None'}
   Special requests: ${event.special_requests ?? 'None'}
 
 Menu Courses:

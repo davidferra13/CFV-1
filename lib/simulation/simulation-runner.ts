@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Simulation Runner — Internal (No Auth)
 // Extracted from simulation-actions.ts so it can be called by both:
 //   • startSimulationRun() server action (UI trigger, auth-gated)

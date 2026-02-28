@@ -114,7 +114,7 @@ Return JSON: {
   "fullMarkdown": "# Private Chef Services Agreement\\n\\n[complete markdown contract]"
 }`
 
-  const { result } = await withAiFallback(
+  const { result, source } = await withAiFallback(
     // Template: standard contract sections with variable substitution — deterministic
     () =>
       generateContractTemplate({
@@ -150,5 +150,5 @@ Return JSON: {
     }
   )
 
-  return result
+  return { ...result, _aiSource: source }
 }

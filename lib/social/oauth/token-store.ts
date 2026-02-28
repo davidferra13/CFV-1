@@ -1,4 +1,3 @@
-/* eslint-disable */
 // CRUD for social_platform_credentials.
 // All reads decrypt tokens; all writes encrypt tokens.
 // Uses the admin (service role) client — never exposed to the browser.
@@ -6,6 +5,9 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { encryptToken, decryptToken } from './crypto'
 import type { SocialPlatform } from '@/lib/social/types'
+import type { Database } from '@/types/database'
+
+type CredentialRow = Database['public']['Tables']['social_platform_credentials']['Row']
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -61,7 +63,7 @@ export type UpsertCredentialInput = {
 
 // ── DB row → typed ─────────────────────────────────────────────────────────────
 
-function rowToCredential(row: any): PlatformCredential {
+function rowToCredential(row: CredentialRow): PlatformCredential {
   return {
     id: row.id,
     tenantId: row.tenant_id,
@@ -86,7 +88,7 @@ export async function getCredential(
   tenantId: string,
   platform: string
 ): Promise<PlatformCredential | null> {
-  const supabase: any = createAdminClient()
+  const supabase = createAdminClient()
 
   const { data, error } = await supabase
     .from('social_platform_credentials')
@@ -101,7 +103,7 @@ export async function getCredential(
 }
 
 export async function listConnections(tenantId: string): Promise<ConnectionSummary[]> {
-  const supabase: any = createAdminClient()
+  const supabase = createAdminClient()
 
   const { data, error } = await supabase
     .from('social_platform_credentials')
@@ -114,7 +116,7 @@ export async function listConnections(tenantId: string): Promise<ConnectionSumma
 
   if (error) return []
 
-  return (data as any[]).map((row) => ({
+  return (data ?? []).map((row) => ({
     id: row.id,
     tenantId: row.tenant_id,
     platform: row.platform,
@@ -132,7 +134,7 @@ export async function listConnections(tenantId: string): Promise<ConnectionSumma
 
 /** Fetch all active credentials with expiring tokens (within next 24h) — for refresh sweep */
 export async function listExpiringCredentials(): Promise<PlatformCredential[]> {
-  const supabase: any = createAdminClient()
+  const supabase = createAdminClient()
   const in24h = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
 
   const { data } = await supabase
@@ -144,13 +146,13 @@ export async function listExpiringCredentials(): Promise<PlatformCredential[]> {
 
   if (!data) return []
 
-  return (data as any[]).map(rowToCredential)
+  return (data ?? []).map(rowToCredential)
 }
 
 // ── Writes ─────────────────────────────────────────────────────────────────────
 
 export async function upsertCredential(input: UpsertCredentialInput): Promise<void> {
-  const supabase: any = createAdminClient()
+  const supabase = createAdminClient()
   const payload = {
     tenant_id: input.tenantId,
     platform: input.platform,
@@ -184,7 +186,7 @@ export async function updateTokens(
   refreshToken?: string | null,
   expiresAt?: Date | null
 ): Promise<void> {
-  const supabase: any = createAdminClient()
+  const supabase = createAdminClient()
 
   const { error } = await supabase
     .from('social_platform_credentials')
@@ -207,7 +209,7 @@ export async function recordPublishError(
   platform: string,
   errorMessage: string
 ): Promise<void> {
-  const supabase: any = createAdminClient()
+  const supabase = createAdminClient()
 
   const { data: current } = await supabase
     .from('social_platform_credentials')
@@ -216,7 +218,7 @@ export async function recordPublishError(
     .eq('platform', platform)
     .single()
 
-  const current_attempts = (current as any)?.failed_attempts ?? 0
+  const current_attempts = current?.failed_attempts ?? 0
 
   await supabase
     .from('social_platform_credentials')
@@ -230,7 +232,7 @@ export async function recordPublishError(
 }
 
 export async function recordPublishSuccess(tenantId: string, platform: string): Promise<void> {
-  const supabase: any = createAdminClient()
+  const supabase = createAdminClient()
 
   await supabase
     .from('social_platform_credentials')
@@ -244,7 +246,7 @@ export async function recordPublishSuccess(tenantId: string, platform: string): 
 }
 
 export async function disconnectCredential(tenantId: string, platform: string): Promise<void> {
-  const supabase: any = createAdminClient()
+  const supabase = createAdminClient()
 
   const { error } = await supabase
     .from('social_platform_credentials')

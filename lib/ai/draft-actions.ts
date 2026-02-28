@@ -33,6 +33,7 @@ export interface DraftResult {
   clientId?: string
   clientName?: string
   eventId?: string
+  _aiSource?: 'formula' | 'ai'
 }
 
 const EmailDraftSchema = z.object({
@@ -129,7 +130,7 @@ export async function generateThankYouDraft(clientName: string): Promise<DraftRe
     guestCount: lastEvent?.guest_count,
   }
 
-  const { result } = await withAiFallback(
+  const { result, source } = await withAiFallback(
     () => thankYouTemplate(templateVars),
     () =>
       parseWithOllama(
@@ -146,6 +147,7 @@ export async function generateThankYouDraft(clientName: string): Promise<DraftRe
     clientId: client.id,
     clientName: client.full_name,
     eventId: lastEvent?.id,
+    _aiSource: source,
   }
 }
 
@@ -171,7 +173,7 @@ export async function generateReferralRequestDraft(clientName: string): Promise<
     occasion: lastEvent?.occasion,
   }
 
-  const { result } = await withAiFallback(
+  const { result, source } = await withAiFallback(
     () => referralRequestTemplate(templateVars),
     () =>
       parseWithOllama(
@@ -187,6 +189,7 @@ export async function generateReferralRequestDraft(clientName: string): Promise<
     draftText: formatDraft(result.subject, result.body),
     clientId: client.id,
     clientName: client.full_name,
+    _aiSource: source,
   }
 }
 
@@ -213,7 +216,7 @@ export async function generateTestimonialRequestDraft(clientName: string): Promi
     eventDate: lastEvent?.event_date,
   }
 
-  const { result } = await withAiFallback(
+  const { result, source } = await withAiFallback(
     () => testimonialRequestTemplate(templateVars),
     () =>
       parseWithOllama(
@@ -232,6 +235,7 @@ Guests: ${lastEvent?.guest_count ?? 'N/A'}`,
     draftText: formatDraft(result.subject, result.body),
     clientId: client.id,
     clientName: client.full_name,
+    _aiSource: source,
   }
 }
 
@@ -271,7 +275,7 @@ export async function generateQuoteCoverLetterDraft(eventIdOrName: string): Prom
     guestCount: (event as any).guest_count,
   }
 
-  const { result } = await withAiFallback(
+  const { result, source } = await withAiFallback(
     () => quoteCoverLetterTemplate(templateVars),
     () =>
       parseWithOllama(
@@ -292,6 +296,7 @@ Location: ${(event as any).location ?? 'TBD'}`,
     clientId: (event as any).client_id,
     clientName,
     eventId: event.id,
+    _aiSource: source,
   }
 }
 
@@ -318,7 +323,7 @@ export async function generateDeclineResponseDraft(
     declineReason: reason,
   }
 
-  const { result } = await withAiFallback(
+  const { result, source } = await withAiFallback(
     () => declineResponseTemplate(templateVars),
     () =>
       parseWithOllama(
@@ -336,6 +341,7 @@ Reason for declining: ${reason ?? 'scheduling conflict'}`,
     draftText: formatDraft(result.subject, result.body),
     clientId: client?.id,
     clientName: resolvedName,
+    _aiSource: source,
   }
 }
 
@@ -375,7 +381,7 @@ export async function generateCancellationResponseDraft(
     eventDate: (event as any).event_date,
   }
 
-  const { result } = await withAiFallback(
+  const { result, source } = await withAiFallback(
     () => cancellationResponseTemplate(templateVars),
     () =>
       parseWithOllama(
@@ -395,6 +401,7 @@ Event status: ${(event as any).status ?? 'cancelled'}`,
     clientId: (event as any).client_id,
     clientName,
     eventId: event.id,
+    _aiSource: source,
   }
 }
 
@@ -431,7 +438,7 @@ export async function generatePaymentReminderDraft(clientName: string): Promise<
     eventDate: lastEvent?.event_date,
   }
 
-  const { result } = await withAiFallback(
+  const { result, source } = await withAiFallback(
     () => paymentReminderTemplate(templateVars),
     () =>
       parseWithOllama(
@@ -451,6 +458,7 @@ Status: ${lastEvent?.status ?? 'N/A'}`,
     clientId: client.id,
     clientName: client.full_name,
     eventId: lastEvent?.id,
+    _aiSource: source,
   }
 }
 
@@ -477,7 +485,7 @@ export async function generateReEngagementDraft(clientName: string): Promise<Dra
     eventDate: lastEvent?.event_date,
   }
 
-  const { result } = await withAiFallback(
+  const { result, source } = await withAiFallback(
     () => reEngagementTemplate(templateVars),
     () =>
       parseWithOllama(
@@ -497,6 +505,7 @@ Preferences: ${(client.dietary_restrictions as string[] | null)?.join(', ') ?? '
     draftText: formatDraft(result.subject, result.body),
     clientId: client.id,
     clientName: client.full_name,
+    _aiSource: source,
   }
 }
 
@@ -539,7 +548,7 @@ export async function generateMilestoneRecognitionDraft(
     milestone: detectedMilestone,
   }
 
-  const { result } = await withAiFallback(
+  const { result, source } = await withAiFallback(
     () => milestoneRecognitionTemplate(templateVars),
     () =>
       parseWithOllama(
@@ -559,6 +568,7 @@ Client notes: ${client.vibe_notes ?? 'none'}`,
     draftText: formatDraft(result.subject, result.body),
     clientId: client.id,
     clientName: client.full_name,
+    _aiSource: source,
   }
 }
 
@@ -579,7 +589,7 @@ export async function generateFoodSafetyIncidentDraft(description: string): Prom
     incidentDescription: description,
   }
 
-  const { result } = await withAiFallback(
+  const { result, source } = await withAiFallback(
     () => foodSafetyIncidentTemplate(templateVars),
     () =>
       parseWithOllama(
@@ -595,6 +605,7 @@ Date: ${new Date().toISOString().split('T')[0]}`,
   return {
     subject: result.subject,
     draftText: formatDraft(result.subject, result.body),
+    _aiSource: source,
   }
 }
 

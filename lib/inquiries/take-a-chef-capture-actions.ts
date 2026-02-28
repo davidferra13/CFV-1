@@ -1,4 +1,3 @@
-// @ts-nocheck — insert objects have dynamic parsed fields; strict typing not enforced here
 'use server'
 
 // Take a Chef Manual Capture Server Action
@@ -56,7 +55,7 @@ export async function captureTakeAChefBooking(
 ): Promise<TakeAChefCaptureResult> {
   const user = await requireChef()
   const validated = TakeAChefCaptureSchema.parse(input)
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
   const tenantId = user.tenantId!
 
   try {
@@ -140,7 +139,7 @@ export async function captureTakeAChefBooking(
           serve_time: validated.serve_time,
           commission_percent: validated.commission_percent,
           additional_notes: validated.additional_notes?.trim() || null,
-        } as any,
+        } as unknown as import('@/types/database').Json,
         status: 'new',
         next_action_required: 'Review Take a Chef booking details',
         next_action_by: 'chef',
@@ -187,7 +186,7 @@ export async function captureTakeAChefBooking(
     }
 
     // 6. Log event state transition
-    await supabase.from('event_state_transitions' as any).insert({
+    await supabase.from('event_state_transitions').insert({
       tenant_id: tenantId,
       event_id: event.id,
       from_status: null,
@@ -198,7 +197,7 @@ export async function captureTakeAChefBooking(
     // 7. Link inquiry to event
     await supabase
       .from('inquiries')
-      .update({ converted_to_event_id: event.id } as any)
+      .update({ converted_to_event_id: event.id })
       .eq('id', inquiry.id)
 
     // 8. Log commission as expense
@@ -290,7 +289,7 @@ export async function getTakeAChefConversionData(
   eventId: string
 ): Promise<TakeAChefConversionData> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
   const tenantId = user.tenantId!
 
   const empty: TakeAChefConversionData = {
@@ -311,7 +310,7 @@ export async function getTakeAChefConversionData(
 
     if (!event) return empty
 
-    const client = event.client as any
+    const client = event.client as { full_name: string; referral_source: string | null } | null
     const isClientFromTAC = client?.referral_source === 'take_a_chef'
 
     // Check the linked inquiry channel if client source isn't already conclusive
@@ -330,15 +329,21 @@ export async function getTakeAChefConversionData(
     if (!isTakeAChef) return empty
 
     // Fetch chef slug for the direct booking link
-    const { data: chef } = await supabase.from('chefs').select('slug').eq('id', tenantId).single()
+    const { data: chef } = await supabase
+      .from('chefs')
+      .select('booking_slug')
+      .eq('id', tenantId)
+      .single()
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
-    const directBookingUrl = chef?.slug ? `${appUrl}/chef/${chef.slug}/inquire` : null
+    const directBookingUrl = chef?.booking_slug
+      ? `${appUrl}/chef/${chef.booking_slug}/inquire`
+      : null
 
     return {
       isTakeAChef: true,
       clientName: client?.full_name || null,
-      chefSlug: chef?.slug || null,
+      chefSlug: chef?.booking_slug || null,
       directBookingUrl,
     }
   } catch {

@@ -100,7 +100,7 @@ Return JSON: {
   "timing": "when to present"
 }`
 
-  const { result } = await withAiFallback(
+  const { result, source } = await withAiFallback(
     // Formula: industry-standard rules — deterministic
     () =>
       calculateGratuityFormula({
@@ -119,5 +119,5 @@ Return JSON: {
     }
   )
 
-  return result
+  return { ...result, _aiSource: source }
 }

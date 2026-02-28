@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // Pricing Intelligence
@@ -34,7 +33,7 @@ export type PricingIntelligenceResult = z.infer<typeof PricingIntelligenceSchema
 
 export async function getPricingIntelligence(eventId: string): Promise<PricingIntelligenceResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const [eventResult, historicalResult] = await Promise.all([
     supabase
@@ -46,11 +45,10 @@ export async function getPricingIntelligence(eventId: string): Promise<PricingIn
       .eq('tenant_id', user.tenantId!)
       .single(),
     // Historical accepted/paid events for pricing reference
+    // Note: amount_paid_cents doesn't exist on events table; using quoted_price_cents only
     supabase
       .from('events')
-      .select(
-        'occasion, guest_count, quoted_price_cents, amount_paid_cents, service_style, event_date'
-      )
+      .select('occasion, guest_count, quoted_price_cents, service_style, event_date')
       .eq('tenant_id', user.tenantId!)
       .in('status', ['completed', 'in_progress', 'confirmed', 'paid'])
       .not('quoted_price_cents', 'is', null)
@@ -83,7 +81,7 @@ NEW EVENT TO PRICE:
   Occasion: ${event.occasion ?? 'Private Event'}
   Guest count: ${guestCount}
   Service style: ${event.service_style ?? 'Not specified'}
-  Dietary restrictions: ${(event.dietary_restrictions as string[] | null)?.join(', ') || 'None'}
+  Dietary restrictions: ${event.dietary_restrictions?.join(', ') || 'None'}
   Current draft price: ${currentQuote ? '$' + (currentQuote / 100).toFixed(0) : 'Not yet set'}
 
 CHEF'S HISTORICAL PRICING (last ${historicalEvents.length} completed events):
@@ -92,7 +90,7 @@ ${
     .slice(0, 15)
     .map(
       (h) =>
-        `  - ${h.occasion ?? 'Event'}, ${h.guest_count ?? '?'} guests, $${((h.quoted_price_cents ?? 0) / 100).toFixed(0)} quoted${h.amount_paid_cents ? ', $' + (h.amount_paid_cents / 100).toFixed(0) + ' paid' : ''}, style: ${h.service_style ?? 'unknown'}`
+        `  - ${h.occasion ?? 'Event'}, ${h.guest_count ?? '?'} guests, $${((h.quoted_price_cents ?? 0) / 100).toFixed(0)} quoted, style: ${h.service_style ?? 'unknown'}`
     )
     .join('\n') || '  No historical data yet'
 }
@@ -111,14 +109,21 @@ Return JSON: { "suggestedMinCents": number, "suggestedMaxCents": number, "sugges
           guest_count: event.guest_count,
           event_date: event.event_date,
           service_style: event.service_style,
-          dietary_restrictions: event.dietary_restrictions as string[] | null,
+          dietary_restrictions: event.dietary_restrictions,
           quoted_price_cents: event.quoted_price_cents,
         },
-        historicalEvents
+        historicalEvents.map((h) => ({
+          occasion: h.occasion,
+          guest_count: h.guest_count,
+          quoted_price_cents: h.quoted_price_cents,
+          amount_paid_cents: null, // not available on events table; formula handles null
+          service_style: h.service_style,
+          event_date: h.event_date,
+        }))
       ),
     // AI: enhanced pricing analysis with narrative (when Ollama is online)
     () => parseWithOllama(systemPrompt, userContent, PricingIntelligenceSchema)
   )
 
-  return { ...result, _aiSource: source }
+  return { ...result, _aiSource: source } as PricingIntelligenceResult
 }

@@ -1,10 +1,13 @@
-// @ts-nocheck
 // Gmail Sync Engine
 // Core pipeline: fetch emails → classify → create inquiries / log messages
 // Runs with admin Supabase client (no user session required) so it works
 // from both the manual UI trigger and the cron endpoint.
 
 import { createServerClient } from '@/lib/supabase/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from '@/types/database'
+
+type DbClient = SupabaseClient<Database>
 import { getGoogleAccessToken } from '@/lib/google/auth'
 import {
   listRecentMessages,
@@ -180,7 +183,7 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
 // ─── Process Single Message ─────────────────────────────────────────────────
 
 async function processMessage(
-  supabase: any,
+  supabase: DbClient,
   accessToken: string,
   messageId: string,
   chefId: string,
@@ -289,7 +292,7 @@ async function processMessage(
 // ─── Handle Inquiry Email ───────────────────────────────────────────────────
 
 async function handleInquiry(
-  supabase: any,
+  supabase: DbClient,
   email: ParsedEmail,
   chefId: string,
   tenantId: string,
@@ -454,7 +457,7 @@ async function handleInquiry(
 // ─── Handle Existing Thread Email ───────────────────────────────────────────
 
 async function handleExistingThread(
-  supabase: any,
+  supabase: DbClient,
   email: ParsedEmail,
   tenantId: string,
   classification: { category: string; confidence: string },
@@ -581,7 +584,7 @@ async function handleExistingThread(
 // ─── TakeAChef Email Handler ────────────────────────────────────────────────
 
 async function handleTakeAChefEmail(
-  supabase: any,
+  supabase: DbClient,
   email: ParsedEmail,
   chefId: string,
   tenantId: string,
@@ -642,7 +645,7 @@ async function handleTakeAChefEmail(
 // ─── TAC: New Inquiry ──────────────────────────────────────────────────────
 
 async function handleTacNewInquiry(
-  supabase: any,
+  supabase: DbClient,
   email: ParsedEmail,
   parsed: TacParseResult,
   chefId: string,
@@ -823,7 +826,7 @@ async function handleTacNewInquiry(
 // ─── TAC: Client Message ───────────────────────────────────────────────────
 
 async function handleTacClientMessage(
-  supabase: any,
+  supabase: DbClient,
   email: ParsedEmail,
   parsed: TacParseResult,
   tenantId: string,
@@ -897,7 +900,7 @@ async function handleTacClientMessage(
 // ─── TAC: Booking Confirmed ────────────────────────────────────────────────
 
 async function handleTacBookingConfirmed(
-  supabase: any,
+  supabase: DbClient,
   email: ParsedEmail,
   parsed: TacParseResult,
   chefId: string,
@@ -973,11 +976,11 @@ async function handleTacBookingConfirmed(
         // Link inquiry to event
         await supabase
           .from('inquiries')
-          .update({ converted_to_event_id: event.id } as any)
+          .update({ converted_to_event_id: event.id })
           .eq('id', inquiryId)
 
         // Log event state transition
-        await supabase.from('event_state_transitions' as any).insert({
+        await supabase.from('event_state_transitions').insert({
           tenant_id: tenantId,
           event_id: event.id,
           from_status: null,
@@ -1047,7 +1050,7 @@ async function handleTacBookingConfirmed(
 // ─── TAC: Customer Information (Personal Info Reveal) ──────────────────────
 
 async function handleTacCustomerInfo(
-  supabase: any,
+  supabase: DbClient,
   email: ParsedEmail,
   parsed: TacParseResult,
   tenantId: string,
@@ -1141,7 +1144,7 @@ async function handleTacCustomerInfo(
 // ─── TAC: Payment ──────────────────────────────────────────────────────────
 
 async function handleTacPayment(
-  supabase: any,
+  supabase: DbClient,
   email: ParsedEmail,
   parsed: TacParseResult,
   tenantId: string,
@@ -1179,7 +1182,7 @@ async function handleTacPayment(
 // ─── Yhangry Email Handler ─────────────────────────────────────────────────
 
 async function handleYhangryEmail(
-  supabase: any,
+  supabase: DbClient,
   email: ParsedEmail,
   chefId: string,
   tenantId: string,
@@ -1232,7 +1235,7 @@ async function handleYhangryEmail(
 // ─── Yhangry: New Inquiry ─────────────────────────────────────────────────
 
 async function handleYhangryNewInquiry(
-  supabase: any,
+  supabase: DbClient,
   email: ParsedEmail,
   parsed: YhangryParseResult,
   chefId: string,
@@ -1303,7 +1306,7 @@ async function handleYhangryNewInquiry(
     .from('inquiries')
     .insert({
       tenant_id: tenantId,
-      channel: 'yhangry' as any,
+      channel: 'yhangry',
       client_id: clientId,
       first_contact_at: email.date ? new Date(email.date).toISOString() : new Date().toISOString(),
       confirmed_date: inquiry.eventDate,
@@ -1385,7 +1388,7 @@ async function handleYhangryNewInquiry(
 // ─── Yhangry: Client Message ──────────────────────────────────────────────
 
 async function handleYhangryClientMessage(
-  supabase: any,
+  supabase: DbClient,
   email: ParsedEmail,
   parsed: YhangryParseResult,
   tenantId: string,
@@ -1453,7 +1456,7 @@ async function handleYhangryClientMessage(
 // ─── Yhangry: Booking Confirmed ──────────────────────────────────────────
 
 async function handleYhangryBookingConfirmed(
-  supabase: any,
+  supabase: DbClient,
   email: ParsedEmail,
   parsed: YhangryParseResult,
   chefId: string,
@@ -1514,7 +1517,7 @@ async function handleYhangryBookingConfirmed(
 // ─── Log Sync Entry ─────────────────────────────────────────────────────────
 
 async function logSyncEntry(
-  supabase: any,
+  supabase: DbClient,
   tenantId: string,
   email: ParsedEmail,
   entry: {

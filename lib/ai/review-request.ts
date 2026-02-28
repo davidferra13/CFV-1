@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // Review Request Drafter
@@ -27,7 +26,7 @@ const getClient = () => {
 
 export async function draftReviewRequest(eventId: string): Promise<ReviewRequestDraft> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const [eventResult, chefResult] = await Promise.all([
     supabase
@@ -36,13 +35,13 @@ export async function draftReviewRequest(eventId: string): Promise<ReviewRequest
         `
         occasion, guest_count, event_date, service_style,
         client_id,
-        clients(full_name, preferences)
+        clients(full_name)
       `
       )
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    supabase.from('chefs').select('full_name, business_name').eq('id', user.tenantId!).single(),
+    supabase.from('chefs').select('display_name, business_name').eq('id', user.tenantId!).single(),
   ])
 
   const event = eventResult.data
@@ -50,19 +49,22 @@ export async function draftReviewRequest(eventId: string): Promise<ReviewRequest
 
   const chef = chefResult.data
   const client = Array.isArray(event.clients) ? event.clients[0] : event.clients
-  const clientName = (client as any)?.full_name ?? 'there'
+  const clientName = client?.full_name ?? 'there'
   const firstName = clientName.split(' ')[0]
 
   // Get event highlights (menu)
-  const { data: menuItems } = await supabase
-    .from('event_menu_components' as any)
+  // @ts-expect-error event_menu_components not yet in generated types
+  const menuResult = await supabase
+    .from('event_menu_components')
     .select('name, course_type')
     .eq('event_id', eventId)
     .order('created_at', { ascending: true })
     .limit(5)
 
+  const menuItems = (menuResult.data ?? []) as Array<{ name: string; course_type: string | null }>
+
   const menuHighlight =
-    menuItems && menuItems.length > 0
+    menuItems.length > 0
       ? menuItems
           .slice(0, 3)
           .map((m) => m.name)
@@ -74,7 +76,7 @@ Write in first person singular. Warm, genuine, never pushy or salesy.
 Reference specific details from the event to make it personal.
 The ask should feel natural — like a friend asking for a favor, not a business soliciting reviews.
 
-Chef: ${chef?.full_name ?? 'Chef'}, ${chef?.business_name ?? ''}
+Chef: ${chef?.display_name ?? 'Chef'}, ${chef?.business_name ?? ''}
 Client first name: ${firstName}
 Event: ${event.occasion ?? 'Private Dinner'}
 Event date: ${event.event_date ?? 'recently'}

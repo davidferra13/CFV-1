@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // Client Sentiment Analysis
@@ -38,14 +37,14 @@ export type SentimentAnalysis = z.infer<typeof SentimentAnalysisSchema>
 
 export async function analyzeClientSentiment(clientId: string): Promise<SentimentAnalysis> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data: messages } = await supabase
     .from('messages')
     .select('body, direction, created_at')
     .eq('client_id', clientId)
     .eq('tenant_id', user.tenantId!)
-    .eq('direction', 'in') // only client-sent messages
+    .eq('direction', 'inbound') // only client-sent messages
     .order('created_at', { ascending: true })
     .limit(20)
 
@@ -68,7 +67,7 @@ Risk flag: true only if there is a genuine dissatisfaction risk requiring chef a
 Return valid JSON only.`
 
   const userContent = `Client messages (chronological, client-sent only):
-${messages.map((m, i) => `${i + 1}. [${m.created_at?.split('T')[0] ?? 'Date unknown'}]: "${(m.body as string)?.slice(0, 150) ?? ''}"`).join('\n')}
+${messages.map((m, i) => `${i + 1}. [${m.created_at?.split('T')[0] ?? 'Date unknown'}]: "${m.body?.slice(0, 150) ?? ''}"`).join('\n')}
 
 Return JSON: {
   "overallSentiment": "very_positive|positive|neutral|negative|very_negative",

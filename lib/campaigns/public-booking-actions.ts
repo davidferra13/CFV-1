@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // Public Campaign Booking Actions
@@ -46,7 +45,7 @@ export type CampaignBookingInput = {
 
 export async function getCampaignByToken(token: string): Promise<PublicDinnerInfo | null> {
   const { createAdminClient } = await import('@/lib/supabase/admin')
-  const db = createAdminClient() as any
+  const db = createAdminClient()
 
   const { data: campaign } = await db
     .from('marketing_campaigns')
@@ -60,30 +59,23 @@ export async function getCampaignByToken(token: string): Promise<PublicDinnerInf
   // Fetch chef info
   const { data: chef } = await db
     .from('chefs')
-    .select('full_name, business_name')
+    .select('full_name, business_name, display_name')
     .eq('id', campaign.chef_id)
     .single()
 
-  // Fetch chef preferences for display name
-  const { data: prefs } = await db
-    .from('chef_preferences')
-    .select('display_name, business_name')
-    .eq('chef_id', campaign.chef_id)
-    .maybeSingle()
-
-  const chefName = prefs?.display_name || prefs?.business_name || chef?.full_name || 'Your Chef'
+  const chefName = chef?.display_name || chef?.business_name || chef?.full_name || 'Your Chef'
 
   // Fetch menu preview (courses only — no costs)
   let menuPreview: Array<{ name: string; course_name: string }> = []
   if (campaign.menu_id) {
     const { data: dishes } = await db
-      .from('menu_dishes')
+      .from('dishes')
       .select('course_name, description')
       .eq('menu_id', campaign.menu_id)
       .order('course_number', { ascending: true })
       .limit(8)
 
-    menuPreview = (dishes ?? []).map((d: any) => ({
+    menuPreview = (dishes ?? []).map((d) => ({
       name: d.description ?? '',
       course_name: d.course_name ?? '',
     }))
@@ -138,7 +130,7 @@ export async function submitCampaignBooking(
   const input = parse.data
 
   const { createAdminClient } = await import('@/lib/supabase/admin')
-  const db = createAdminClient() as any
+  const db = createAdminClient()
 
   // 1. Look up campaign
   const { data: campaign } = await db
@@ -164,7 +156,7 @@ export async function submitCampaignBooking(
     .from('clients')
     .select('id')
     .eq('email', input.email)
-    .eq('chef_id', campaign.chef_id)
+    .eq('tenant_id', campaign.chef_id)
     .maybeSingle()
 
   let clientId: string
@@ -175,7 +167,7 @@ export async function submitCampaignBooking(
     const { data: newClient, error: clientErr } = await db
       .from('clients')
       .insert({
-        chef_id: campaign.chef_id,
+        tenant_id: campaign.chef_id,
         full_name: input.full_name,
         email: input.email,
         phone: input.phone ?? null,
@@ -209,10 +201,11 @@ export async function submitCampaignBooking(
   const { data: inquiry, error: inqErr } = await db
     .from('inquiries')
     .insert({
-      chef_id: campaign.chef_id,
+      tenant_id: campaign.chef_id,
       client_id: clientId,
       channel: 'campaign_response',
       status: 'new',
+      first_contact_at: new Date().toISOString(),
       confirmed_date: campaign.proposed_date ?? null,
       confirmed_guest_count: input.guest_count,
       confirmed_occasion: campaign.occasion ?? null,
@@ -235,15 +228,18 @@ export async function submitCampaignBooking(
 
   // 6. Create a draft event linked to this inquiry
   await db.from('events').insert({
-    chef_id: campaign.chef_id,
+    tenant_id: campaign.chef_id,
     client_id: clientId,
     inquiry_id: inquiry.id,
-    status: 'draft',
-    event_date: campaign.proposed_date ?? null,
-    serve_time: campaign.proposed_time ?? null,
+    event_date: campaign.proposed_date ?? new Date().toISOString().slice(0, 10),
+    serve_time: campaign.proposed_time ?? '18:00',
     guest_count: input.guest_count,
     occasion: campaign.occasion ?? campaign.name,
     dietary_restrictions: input.dietary_restrictions ? [input.dietary_restrictions] : [],
+    location_address: '',
+    location_city: 'TBD',
+    location_state: '',
+    location_zip: '',
   })
 
   // 7. Update campaign_recipients if this client was in the list
@@ -268,19 +264,17 @@ export async function submitCampaignBooking(
     const { CampaignEmail } = await import('@/lib/email/templates/campaign')
     const React = await import('react')
 
-    const { data: prefs } = await db
-      .from('chef_preferences')
-      .select('display_name, business_name')
-      .eq('chef_id', campaign.chef_id)
-      .maybeSingle()
-
-    const { data: chef } = await db
+    const { data: chefForEmail } = await db
       .from('chefs')
-      .select('full_name')
+      .select('full_name, business_name, display_name')
       .eq('id', campaign.chef_id)
       .single()
 
-    const chefName = prefs?.display_name || prefs?.business_name || chef?.full_name || 'Your Chef'
+    const chefName =
+      chefForEmail?.display_name ||
+      chefForEmail?.business_name ||
+      chefForEmail?.full_name ||
+      'Your Chef'
 
     const ackBody = [
       `Hi ${input.full_name.split(' ')[0]},`,

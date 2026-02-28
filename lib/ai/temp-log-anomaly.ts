@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // Temperature Log Anomaly Detection
@@ -38,13 +37,13 @@ export type TempLogAnomalyResult = z.infer<typeof TempLogAnomalyResultSchema>
 
 export async function analyzeTempLog(eventId: string): Promise<TempLogAnomalyResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data: tempLog } = await supabase
-    .from('temp_logs' as any)
-    .select('food_item, temp_f, logged_at, stage, notes')
+    .from('event_temp_logs')
+    .select('item_description, temp_fahrenheit, logged_at, phase, notes')
     .eq('event_id', eventId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('chef_id', user.entityId)
     .order('logged_at', { ascending: true })
 
   if (!tempLog || tempLog.length === 0) {
@@ -72,7 +71,7 @@ Flag violations as:
 Return valid JSON only.`
 
   const userContent = `Temperature log for event (${tempLog.length} entries):
-${tempLog.map((t) => `- [${t.logged_at?.split('T')[1]?.slice(0, 5) ?? t.logged_at?.split('T')[0] ?? 'Time?'}] ${t.food_item}: ${t.temp_f}°F | stage: ${t.stage ?? 'unknown'}${t.notes ? ' | notes: ' + t.notes : ''}`).join('\n')}
+${tempLog.map((t) => `- [${t.logged_at?.split('T')[1]?.slice(0, 5) ?? t.logged_at?.split('T')[0] ?? 'Time?'}] ${t.item_description}: ${t.temp_fahrenheit}°F | stage: ${t.phase ?? 'unknown'}${t.notes ? ' | notes: ' + t.notes : ''}`).join('\n')}
 
 Return JSON: {
   "violations": [{ "item": "...", "loggedAt": "...", "tempF": number, "issue": "...", "regulatoryRef": "...", "severity": "critical|warning|info", "recommendation": "..." }],
@@ -81,9 +80,18 @@ Return JSON: {
   "confidence": "high|medium|low"
 }`
 
+  // Map DB column names to formula type field names
+  const formulaEntries = tempLog.map((t) => ({
+    food_item: t.item_description,
+    temp_f: t.temp_fahrenheit,
+    logged_at: t.logged_at,
+    stage: t.phase,
+    notes: t.notes,
+  }))
+
   const { result, source } = await withAiFallback(
     // Formula: deterministic FDA rules — always correct, always available
-    () => analyzeTempLogFormula(tempLog),
+    () => analyzeTempLogFormula(formulaEntries),
     // AI: enhanced analysis with contextual nuance (when Ollama is online)
     () =>
       parseWithOllama(systemPrompt, userContent, TempLogAnomalyResultSchema, {
@@ -91,5 +99,5 @@ Return JSON: {
       })
   )
 
-  return { ...result, _aiSource: source }
+  return { ...result, _aiSource: source } as TempLogAnomalyResult
 }

@@ -35,7 +35,7 @@ export type PartnerAuthUser = {
  * Returns null if not authenticated or no role assigned
  */
 export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   // Get Supabase auth user
   const {
@@ -105,14 +105,14 @@ export async function requireChef(): Promise<AuthUser> {
   // Check suspension status — additive column added by migration 20260307000004
   // account_status defaults to 'active'; only present after that migration is applied.
   if (user.entityId) {
-    const supabase: any = createServerClient()
+    const supabase = createServerClient()
     const { data: chef } = await supabase
       .from('chefs')
       .select('account_status')
       .eq('id', user.entityId)
       .single()
 
-    if ((chef as any)?.account_status === 'suspended') {
+    if (chef?.account_status === 'suspended') {
       throw new Error('Account suspended: Contact support.')
     }
   }
@@ -153,7 +153,7 @@ export async function requireAuth(): Promise<AuthUser> {
  * their invite and logged in. They are NOT chefs or clients.
  */
 export async function requirePartner(): Promise<PartnerAuthUser> {
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const {
     data: { user },
@@ -171,7 +171,7 @@ export async function requirePartner(): Promise<PartnerAuthUser> {
     .eq('auth_user_id', user.id)
     .single()
 
-  if (!roleData || (roleData.role as string) !== 'partner') {
+  if (!roleData || roleData.role !== 'partner') {
     throw new Error('Unauthorized: Partner access required')
   }
 
@@ -204,7 +204,7 @@ export async function requirePartner(): Promise<PartnerAuthUser> {
  * They see tasks, recipes, schedules, and station clipboards scoped to their chef (tenant).
  */
 export async function requireStaff(): Promise<StaffAuthUser> {
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const {
     data: { user },
@@ -222,7 +222,7 @@ export async function requireStaff(): Promise<StaffAuthUser> {
     .eq('auth_user_id', user.id)
     .single()
 
-  if (!roleData || (roleData.role as string) !== 'staff') {
+  if (!roleData || roleData.role !== 'staff') {
     throw new Error('Unauthorized: Staff access required')
   }
 

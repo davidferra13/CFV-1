@@ -108,7 +108,7 @@ Categories: shopping, prep, cooking, plating, service, cleanup, transport`
 - Menu items: ${menuItemNames.length > 0 ? menuItemNames.join(', ') : 'No menu specified — generate a general timeline'}
 - Notes: ${(event as any).notes ?? 'None'}`
 
-  const { result } = await withAiFallback(
+  const { result, source } = await withAiFallback(
     // Formula: backward-from-service-time scheduling with guest scaling — deterministic
     () =>
       buildPrepTimelineFormula({
@@ -137,7 +137,7 @@ Categories: shopping, prep, cooking, plating, service, cleanup, transport`
     }
   )
 
-  return result
+  return { ...result, _aiSource: source }
 }
 
 /**

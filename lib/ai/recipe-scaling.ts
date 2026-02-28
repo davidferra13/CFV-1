@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 // Recipe Scaling Intelligence
@@ -41,14 +40,14 @@ export async function scaleRecipeWithAI(
   targetServings: number
 ): Promise<ScaledRecipe> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   const { data: recipe } = await supabase
     .from('recipes')
     .select(
       `
-      name, servings, prep_time_minutes, cook_time_minutes, method_steps,
-      recipe_ingredients(ingredient_name, quantity, unit, notes)
+      name, servings, prep_time_minutes, cook_time_minutes, method,
+      recipe_ingredients(quantity, unit, preparation_notes, ingredients(name))
     `
     )
     .eq('id', recipeId)
@@ -60,9 +59,7 @@ export async function scaleRecipeWithAI(
   const originalServings = recipe.servings ?? 4
   const scaleFactor = targetServings / originalServings
 
-  const ingredients = Array.isArray((recipe as any).recipe_ingredients)
-    ? (recipe as any).recipe_ingredients
-    : []
+  const ingredients = Array.isArray(recipe.recipe_ingredients) ? recipe.recipe_ingredients : []
 
   const prompt = `You are a professional chef with deep knowledge of culinary scaling.
 Scale this recipe from ${originalServings} to ${targetServings} servings (${scaleFactor.toFixed(2)}x multiplier).
@@ -72,10 +69,17 @@ Original servings: ${originalServings}
 Target servings: ${targetServings}
 
 Original Ingredients:
-${ingredients.map((i: any) => `  - ${i.quantity ?? ''} ${i.unit ?? ''} ${i.ingredient_name}${i.notes ? ' (' + i.notes + ')' : ''}`).join('\n')}
+${ingredients
+  .map((i) => {
+    const ingredientName = Array.isArray(i.ingredients)
+      ? i.ingredients[0]?.name
+      : i.ingredients?.name
+    return `  - ${i.quantity ?? ''} ${i.unit ?? ''} ${ingredientName ?? 'unknown'}${i.preparation_notes ? ' (' + i.preparation_notes + ')' : ''}`
+  })
+  .join('\n')}
 
 Cooking method/steps:
-${recipe.method_steps ? JSON.stringify(recipe.method_steps).slice(0, 800) : 'Not recorded'}
+${recipe.method ? recipe.method.slice(0, 800) : 'Not recorded'}
 Prep time: ${recipe.prep_time_minutes ?? 'Unknown'} min
 Cook time: ${recipe.cook_time_minutes ?? 'Unknown'} min
 

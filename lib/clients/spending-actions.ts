@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 import { requireClient } from '@/lib/auth/get-user'
@@ -31,7 +30,7 @@ export interface SpendingSummary {
  */
 export async function getClientSpendingSummary(): Promise<SpendingSummary> {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
 
   // Fetch all non-draft, non-cancelled events for this client with financials
   const { data: events, error } = await supabase
@@ -78,6 +77,7 @@ export async function getClientSpendingSummary(): Promise<SpendingSummary> {
     { total_paid_cents: number; outstanding_balance_cents: number; quoted_price_cents: number }
   >()
   for (const f of financials ?? []) {
+    if (!f.event_id) continue
     financialMap.set(f.event_id, {
       total_paid_cents: f.total_paid_cents ?? 0,
       outstanding_balance_cents: f.outstanding_balance_cents ?? 0,

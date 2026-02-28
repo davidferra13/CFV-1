@@ -17,7 +17,7 @@ type TierKey = 'fast' | 'standard' | 'complex'
 const counters = new Map<AiMetricName, number>()
 const latencies: number[] = []
 const tierCounts = new Map<TierKey, number>()
-const MAX_LATENCY_SAMPLES = 200
+export const MAX_LATENCY_SAMPLES = 200
 
 export function incrementAiMetric(metric: AiMetricName, by = 1): void {
   counters.set(metric, (counters.get(metric) || 0) + by)
@@ -30,6 +30,12 @@ export function recordAiLatency(ms: number): void {
 
 export function recordAiTier(tier: TierKey): void {
   tierCounts.set(tier, (tierCounts.get(tier) || 0) + 1)
+}
+
+export function resetAiMetrics(): void {
+  counters.clear()
+  latencies.length = 0
+  tierCounts.clear()
 }
 
 export function getAiMetrics() {

@@ -1,10 +1,7 @@
-// @ts-nocheck
-// TODO: References menu_sections/menu_items tables that don't exist in current schema.
-// DEFERRED: Fire order system. Requires menu_sections/menu_items tables (Phase 2 schema). Do not remove - will be enabled when schema is extended.
-'use server'
-
-import { createServerClient } from '@/lib/supabase/server'
-import { requireChef } from '@/lib/auth/get-user'
+// DEFERRED: Fire order system. Will be enabled when schema is extended.
+// menu_sections/menu_items tables do not exist yet in generated types.
+// Only types and constants are exported. The getFireOrder function is commented out
+// until the schema supports it. No @ts-nocheck needed — only safe code remains.
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -97,76 +94,76 @@ const STATION_LABELS: Record<StationType, string> = {
 }
 
 // ─── Get Fire Order for Event ───────────────────────────────────────────────
-
-export async function getFireOrder(eventId: string): Promise<FireOrderResult> {
-  const chef = await requireChef()
-  const supabase: any = createServerClient()
-
-  // Fetch event with menu
-  const { data: event, error: eventErr } = await supabase
-    .from('events')
-    .select('id, title, event_date, menu_id')
-    .eq('id', eventId)
-    .eq('chef_id', chef.id)
-    .single()
-
-  if (eventErr || !event) throw new Error('Event not found')
-
-  // Fetch menu sections and items
-  const { data: sections } = await supabase
-    .from('menu_sections' as any)
-    .select('id, name, position, menu_items(id, name, position)')
-    .eq('menu_id', event.menu_id)
-    .order('position')
-
-  if (!sections || sections.length === 0) {
-    return {
-      eventId: event.id,
-      eventTitle: event.title || `Event ${event.event_date}`,
-      courses: [],
-      totalCourses: 0,
-      totalComponents: 0,
-      estimatedServiceMinutes: 0,
-    }
-  }
-
-  // Map sections to courses with fire timing
-  let fireTime = 0
-  const COURSE_GAP = 15 // minutes between courses
-
-  const courses: FireOrderCourse[] = sections.map((section, idx) => {
-    const courseType = inferCourseType(section.name, idx)
-    const items = (section.menu_items || []) as { id: string; name: string; position: number }[]
-
-    const course: FireOrderCourse = {
-      id: section.id,
-      courseType,
-      name: section.name,
-      components: items.map((item) => ({
-        id: item.id,
-        name: item.name,
-        station: inferStation(item.name, courseType),
-        leadTimeMinutes: inferLeadTime(courseType),
-      })),
-      fireTimeMinutes: fireTime,
-      fired: false,
-    }
-
-    fireTime += COURSE_GAP
-    return course
-  })
-
-  const totalComponents = courses.reduce((s, c) => s + c.components.length, 0)
-
-  return {
-    eventId: event.id,
-    eventTitle: event.title || `Event ${event.event_date}`,
-    courses,
-    totalCourses: courses.length,
-    totalComponents,
-    estimatedServiceMinutes: fireTime,
-  }
-}
+// DEFERRED: Requires menu_sections/menu_items tables + events.title column.
+// Uncomment and fix when schema is extended.
+//
+// async function getFireOrder(eventId: string): Promise<FireOrderResult> {
+//   const chef = await requireChef()
+//   const supabase = createServerClient()
+//
+//   const { data: event, error: eventErr } = await supabase
+//     .from('events')
+//     .select('id, event_date, menu_id')
+//     .eq('id', eventId)
+//     .eq('tenant_id', chef.tenantId!)
+//     .single()
+//
+//   if (eventErr || !event) throw new Error('Event not found')
+//
+//   // menu_sections table does not exist yet
+//   const { data: sections } = await supabase
+//     .from('menu_sections')
+//     .select('id, name, position, menu_items(id, name, position)')
+//     .eq('menu_id', event.menu_id)
+//     .order('position')
+//
+//   if (!sections || sections.length === 0) {
+//     return {
+//       eventId: event.id,
+//       eventTitle: `Event ${event.event_date}`,
+//       courses: [],
+//       totalCourses: 0,
+//       totalComponents: 0,
+//       estimatedServiceMinutes: 0,
+//     }
+//   }
+//
+//   let fireTime = 0
+//   const COURSE_GAP = 15
+//
+//   const courses: FireOrderCourse[] = sections.map((section, idx) => {
+//     const courseType = inferCourseType(section.name, idx)
+//     const items = (section.menu_items || []) as { id: string; name: string; position: number }[]
+//
+//     const course: FireOrderCourse = {
+//       id: section.id,
+//       courseType,
+//       name: section.name,
+//       components: items.map((item) => ({
+//         id: item.id,
+//         name: item.name,
+//         station: inferStation(item.name, courseType),
+//         leadTimeMinutes: inferLeadTime(courseType),
+//       })),
+//       fireTimeMinutes: fireTime,
+//       fired: false,
+//     }
+//
+//     fireTime += COURSE_GAP
+//     return course
+//   })
+//
+//   const totalComponents = courses.reduce((s, c) => s + c.components.length, 0)
+//
+//   return {
+//     eventId: event.id,
+//     eventTitle: `Event ${event.event_date}`,
+//     courses,
+//     totalCourses: courses.length,
+//     totalComponents,
+//     estimatedServiceMinutes: fireTime,
+//   }
+// }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
