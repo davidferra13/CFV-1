@@ -194,7 +194,8 @@ export async function evaluateOutput(
         { role: 'user', content: prompt.user },
       ],
       format: 'json',
-    })
+      think: false,
+    } as any)
 
     const rawText = response.message.content
     const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/)

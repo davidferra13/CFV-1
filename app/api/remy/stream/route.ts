@@ -567,7 +567,8 @@ async function handlePiTest(): Promise<Response> {
       ],
       options: { num_predict: 64 },
       keep_alive: '5m',
-    }) as any)
+      think: false,
+    } as any) as any)
     modelResponse = res.message?.content ?? '(no response)'
     chatMs = Date.now() - chatStart
   } catch (err) {
@@ -1389,7 +1390,8 @@ export async function POST(req: NextRequest) {
                   num_ctx: mixedNumCtx,
                 },
                 keep_alive: '1m',
-              })
+                think: false,
+              } as any)
 
               for await (const chunk of response) {
                 if (abortCtrl.signal.aborted) break
@@ -1429,7 +1431,8 @@ export async function POST(req: NextRequest) {
                   num_ctx: fbNumCtx,
                 },
                 keep_alive: '1m',
-              })
+                think: false,
+              } as any)
 
               for await (const chunk of response) {
                 if (abortCtrl.signal.aborted) break
@@ -1557,7 +1560,8 @@ export async function POST(req: NextRequest) {
                 num_ctx: numCtx,
               },
               keep_alive: '1m',
-            })
+              think: false,
+            } as any)
 
             for await (const chunk of response) {
               if (abortCtrl.signal.aborted) break
@@ -1597,7 +1601,8 @@ export async function POST(req: NextRequest) {
                 num_ctx: fallbackNumCtx,
               },
               keep_alive: '1m',
-            })
+              think: false,
+            } as any)
 
             for await (const chunk of response) {
               if (abortCtrl.signal.aborted) break

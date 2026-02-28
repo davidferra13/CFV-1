@@ -203,7 +203,8 @@ export async function POST(req: NextRequest) {
               num_ctx: getOllamaContextSize('public'),
             },
             keep_alive: '5m',
-          })
+            think: false,
+          } as any)
 
           for await (const chunk of ollamaStream) {
             if (abortController.signal.aborted) break

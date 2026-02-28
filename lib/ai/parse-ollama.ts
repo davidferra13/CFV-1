@@ -125,7 +125,8 @@ export async function parseWithOllama<T>(
             format: 'json',
             options: { num_predict: options?.maxTokens ?? DEFAULT_MAX_TOKENS },
             keep_alive: '5m',
-          }),
+            think: false,
+          } as any),
           timeoutMs,
           'chat'
         ),
@@ -208,7 +209,8 @@ export async function parseWithOllama<T>(
           format: 'json',
           options: { num_predict: options?.maxTokens ?? DEFAULT_MAX_TOKENS },
           keep_alive: '5m',
-        }),
+          think: false,
+        } as any),
         timeoutMs,
         'repair'
       )

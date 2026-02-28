@@ -60,7 +60,8 @@ async function generateText(
           temperature,
         },
         keep_alive: '5m',
-      }),
+        think: false,
+      } as any),
       DEFAULT_TIMEOUT_MS,
       'ace-draft'
     )

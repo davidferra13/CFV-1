@@ -3285,6 +3285,7 @@ async function handleRequest(req, res) {
           model: endpoint.model,
           messages,
           stream: true,
+          think: false,
           options: { num_predict: CHAT_CONFIG.maxTokens },
         }),
         signal: controller.signal,
