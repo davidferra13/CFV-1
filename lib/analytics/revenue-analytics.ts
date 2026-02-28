@@ -122,10 +122,10 @@ export async function getRevenuePerUnitStats(
     .eq('tenant_id', chef.id)
     .in('entry_type', ['payment', 'deposit', 'installment', 'final_payment', 'add_on', 'credit'])
 
-  const eventIds = new Set((events ?? []).map((e) => e.id))
+  const eventIds = new Set((events ?? []).map((e: any) => e.id))
   const netRevenue = (ledger ?? [])
-    .filter((l) => l.event_id && eventIds.has(l.event_id))
-    .reduce((sum, l) => sum + (l.is_refund ? -l.amount_cents : l.amount_cents), 0)
+    .filter((l: any) => l.event_id && eventIds.has(l.event_id))
+    .reduce((sum: any, l: any) => sum + (l.is_refund ? -l.amount_cents : l.amount_cents), 0)
 
   let totalGuests = 0
   let totalMinutes = 0
@@ -318,7 +318,7 @@ export async function getTrueLaborCostStats(
     ownerRateCents > 0 ? Math.round((totalOwnerMinutes / 60) * ownerRateCents) : 0
 
   // Staff costs in period
-  const eventIds = (events ?? []).map((e) => e.id)
+  const eventIds = (events ?? []).map((e: any) => e.id)
   let staffCostCents = 0
   if (eventIds.length > 0) {
     const { data: staff } = await supabase
@@ -328,7 +328,7 @@ export async function getTrueLaborCostStats(
       .eq('status', 'completed')
       .not('pay_amount_cents', 'is', null)
 
-    staffCostCents = (staff ?? []).reduce((sum, s) => sum + (s.pay_amount_cents ?? 0), 0)
+    staffCostCents = (staff ?? []).reduce((sum: any, s: any) => sum + (s.pay_amount_cents ?? 0), 0)
   }
 
   // Expenses (non-labor)
@@ -340,7 +340,7 @@ export async function getTrueLaborCostStats(
       .in('event_id', eventIds)
       .eq('is_business', true)
 
-    totalExpenses = (expenses ?? []).reduce((sum, e) => sum + e.amount_cents, 0)
+    totalExpenses = (expenses ?? []).reduce((sum: any, e: any) => sum + e.amount_cents, 0)
   }
 
   const totalLaborCents = ownerHoursCents + staffCostCents
@@ -418,14 +418,16 @@ export async function getCarryForwardStats(
     .gte('event_date', startDate)
     .lte('event_date', endDate)
 
-  const eventsWithCarry = (events ?? []).filter((e) => (e.leftover_value_received_cents ?? 0) > 0)
+  const eventsWithCarry = (events ?? []).filter(
+    (e: any) => (e.leftover_value_received_cents ?? 0) > 0
+  )
   const totalSavings = eventsWithCarry.reduce(
-    (sum, e) => sum + (e.leftover_value_received_cents ?? 0),
+    (sum: any, e: any) => sum + (e.leftover_value_received_cents ?? 0),
     0
   )
 
   // Total food cost in period
-  const eventIds = (events ?? []).map((e) => e.id)
+  const eventIds = (events ?? []).map((e: any) => e.id)
   let totalFoodCost = 0
   if (eventIds.length > 0) {
     const { data: expenses } = await supabase
@@ -435,7 +437,7 @@ export async function getCarryForwardStats(
       .in('category', ['groceries', 'alcohol', 'specialty_items'])
       .eq('is_business', true)
 
-    totalFoodCost = (expenses ?? []).reduce((sum, e) => sum + e.amount_cents, 0)
+    totalFoodCost = (expenses ?? []).reduce((sum: any, e: any) => sum + e.amount_cents, 0)
   }
 
   return {
@@ -462,7 +464,7 @@ export async function getBreakEvenStats(): Promise<BreakEvenStats> {
     .is('event_id', null)
     .gte('expense_date', threeMonthsAgo.toISOString().slice(0, 10))
 
-  const totalFixed = (nonEventExpenses ?? []).reduce((s, e) => s + e.amount_cents, 0)
+  const totalFixed = (nonEventExpenses ?? []).reduce((s: any, e: any) => s + e.amount_cents, 0)
   const avgMonthlyFixed = Math.round(totalFixed / 3)
 
   // Average events per month (last 12 months)
@@ -489,7 +491,8 @@ export async function getBreakEvenStats(): Promise<BreakEvenStats> {
 
   const avgRevenue = revenueData?.length
     ? Math.round(
-        revenueData.reduce((s, e) => s + (e.quoted_price_cents ?? 0), 0) / revenueData.length
+        revenueData.reduce((s: any, e: any) => s + (e.quoted_price_cents ?? 0), 0) /
+          revenueData.length
       )
     : 0
 

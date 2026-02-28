@@ -51,7 +51,7 @@ export async function getClientProfitabilityHistory(
     }
   }
 
-  const eventIds = events.map((e) => e.id)
+  const eventIds = events.map((e: any) => e.id)
 
   const { data: summaries } = await supabase
     .from('event_financial_summary')
@@ -60,7 +60,7 @@ export async function getClientProfitabilityHistory(
     .in('event_id', eventIds)
 
   const enriched = events
-    .map((event) => {
+    .map((event: any) => {
       const fin = (summaries || []).find((s: any) => s.event_id === event.id)
       const marginRaw = fin?.profit_margin ?? 0
       const foodCostRaw = fin?.food_cost_percentage ?? 0
@@ -80,7 +80,7 @@ export async function getClientProfitabilityHistory(
           (event.time_reset_minutes ?? 0),
       }
     })
-    .filter((e) => e.profitCents > 0 || e.marginPercent !== 0)
+    .filter((e: any) => e.profitCents > 0 || e.marginPercent !== 0)
 
   if (enriched.length === 0) {
     return {
@@ -94,18 +94,18 @@ export async function getClientProfitabilityHistory(
   }
 
   const avgMarginPercent = parseFloat(
-    (enriched.reduce((s, e) => s + e.marginPercent, 0) / enriched.length).toFixed(1)
+    (enriched.reduce((s: any, e: any) => s + e.marginPercent, 0) / enriched.length).toFixed(1)
   )
   const avgFoodCostPercent = parseFloat(
-    (enriched.reduce((s, e) => s + e.foodCostPercent, 0) / enriched.length).toFixed(1)
+    (enriched.reduce((s: any, e: any) => s + e.foodCostPercent, 0) / enriched.length).toFixed(1)
   )
 
   // Hourly rate: events that have time data
-  const withTime = enriched.filter((e) => e.totalMinutes > 0)
+  const withTime = enriched.filter((e: any) => e.totalMinutes > 0)
   const avgHourlyRateCents =
     withTime.length > 0
       ? Math.round(
-          withTime.reduce((s, e) => {
+          withTime.reduce((s: any, e: any) => {
             const net = e.profitCents + e.tipCents
             return s + (net > 0 ? Math.round((net / e.totalMinutes) * 60) : 0)
           }, 0) / withTime.length
@@ -116,9 +116,11 @@ export async function getClientProfitabilityHistory(
   let trend: ClientProfitabilityHistory['trend'] = 'stable'
   if (enriched.length >= 4) {
     const mid = Math.floor(enriched.length / 2)
-    const firstHalfAvg = enriched.slice(0, mid).reduce((s, e) => s + e.marginPercent, 0) / mid
+    const firstHalfAvg =
+      enriched.slice(0, mid).reduce((s: any, e: any) => s + e.marginPercent, 0) / mid
     const secondHalfAvg =
-      enriched.slice(mid).reduce((s, e) => s + e.marginPercent, 0) / (enriched.length - mid)
+      enriched.slice(mid).reduce((s: any, e: any) => s + e.marginPercent, 0) /
+      (enriched.length - mid)
     const diff = secondHalfAvg - firstHalfAvg
     if (diff >= 3) trend = 'improving'
     else if (diff <= -3) trend = 'declining'
@@ -133,7 +135,7 @@ export async function getClientProfitabilityHistory(
     avgHourlyRateCents,
     trend,
     eventCount: enriched.length,
-    events: enriched.map((e) => ({
+    events: enriched.map((e: any) => ({
       eventId: e.eventId,
       occasion: e.occasion,
       eventDate: e.eventDate,

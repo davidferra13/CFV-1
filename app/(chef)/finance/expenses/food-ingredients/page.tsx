@@ -23,7 +23,7 @@ export default async function FoodIngredientsExpensesPage() {
   await requireChef()
   const allExpenses = await getExpenses()
 
-  const expenses = allExpenses.filter((e) =>
+  const expenses = allExpenses.filter((e: any) =>
     CATEGORIES.includes(e.category as (typeof CATEGORIES)[number])
   )
 
@@ -31,11 +31,13 @@ export default async function FoodIngredientsExpensesPage() {
     cat,
     label: EXPENSE_CATEGORIES[cat].label,
     color: EXPENSE_CATEGORIES[cat].color,
-    total: expenses.filter((e) => e.category === cat).reduce((s, e) => s + e.amount_cents, 0),
-    count: expenses.filter((e) => e.category === cat).length,
+    total: expenses
+      .filter((e: any) => e.category === cat)
+      .reduce((s: any, e: any) => s + e.amount_cents, 0),
+    count: expenses.filter((e: any) => e.category === cat).length,
   }))
 
-  const grandTotal = expenses.reduce((s, e) => s + e.amount_cents, 0)
+  const grandTotal = expenses.reduce((s: any, e: any) => s + e.amount_cents, 0)
 
   return (
     <div className="space-y-6">
@@ -85,7 +87,7 @@ export default async function FoodIngredientsExpensesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {expenses.map((expense) => (
+              {expenses.map((expense: any) => (
                 <TableRow key={expense.id}>
                   <TableCell className="text-stone-500 text-sm">
                     {format(new Date(expense.expense_date), 'MMM d, yyyy')}

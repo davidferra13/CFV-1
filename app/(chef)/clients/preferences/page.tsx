@@ -38,13 +38,13 @@ export default async function ClientPreferencesPage() {
   const clients = await getClientsWithStats()
 
   const withDietary = clients.filter(
-    (c) => c.dietary_restrictions && (c.dietary_restrictions as string[]).length > 0
+    (c: any) => c.dietary_restrictions && (c.dietary_restrictions as string[]).length > 0
   ).length
   const withAllergies = clients.filter(
-    (c) => c.allergies && (c.allergies as string[]).length > 0
+    (c: any) => c.allergies && (c.allergies as string[]).length > 0
   ).length
   const withPreferences = clients.filter(
-    (c) =>
+    (c: any) =>
       (c.favorite_dishes && (c.favorite_dishes as string[]).length > 0) ||
       (c.dislikes && (c.dislikes as string[]).length > 0)
   ).length

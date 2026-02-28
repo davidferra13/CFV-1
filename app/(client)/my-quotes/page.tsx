@@ -26,8 +26,8 @@ export default async function ClientQuotesPage() {
 
   const quotes = await getClientQuotes()
 
-  const pendingQuotes = quotes.filter((q) => q.status === 'sent')
-  const resolvedQuotes = quotes.filter((q) => q.status !== 'sent')
+  const pendingQuotes = quotes.filter((q: any) => q.status === 'sent')
+  const resolvedQuotes = quotes.filter((q: any) => q.status !== 'sent')
 
   return (
     <div className="space-y-6">
@@ -40,7 +40,7 @@ export default async function ClientQuotesPage() {
       {pendingQuotes.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-stone-100">Action Needed</h2>
-          {pendingQuotes.map((quote) => (
+          {pendingQuotes.map((quote: any) => (
             <Link key={quote.id} href={`/my-quotes/${quote.id}`}>
               <Card className="p-4 border-l-4 border-l-brand-500 hover:shadow-md transition-shadow cursor-pointer">
                 <div className="flex justify-between items-center">
@@ -84,7 +84,7 @@ export default async function ClientQuotesPage() {
       {resolvedQuotes.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-stone-500">Previous Quotes</h2>
-          {resolvedQuotes.map((quote) => {
+          {resolvedQuotes.map((quote: any) => {
             const display = STATUS_DISPLAY[quote.status] || STATUS_DISPLAY.sent
 
             return (

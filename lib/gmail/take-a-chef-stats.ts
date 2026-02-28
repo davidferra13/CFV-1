@@ -284,8 +284,8 @@ export async function getTakeAChefActionableLeads(): Promise<{
     })
 
     return {
-      untouched: data.filter((r) => r.status === 'new').map(toLead),
-      awaitingChef: data.filter((r) => r.status === 'awaiting_chef').map(toLead),
+      untouched: data.filter((r: any) => r.status === 'new').map(toLead),
+      awaitingChef: data.filter((r: any) => r.status === 'awaiting_chef').map(toLead),
     }
   } catch (err) {
     console.error('[take-a-chef-stats] Failed to fetch actionable leads:', err)

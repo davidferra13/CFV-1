@@ -68,7 +68,7 @@ export default async function ProductionCalendarPage({
 
   // Fetch all events then filter to this month
   const allEvents = await getEvents()
-  const monthEvents = allEvents.filter((e) => {
+  const monthEvents = allEvents.filter((e: any) => {
     if (!e.event_date) return false
     try {
       const d = parseISO(e.event_date)
@@ -84,10 +84,10 @@ export default async function ProductionCalendarPage({
   const leadingBlanks = getDay(monthStart)
 
   // Summary stats
-  const activeMonthEvents = monthEvents.filter((e) => e.status !== 'cancelled')
-  const totalGuests = activeMonthEvents.reduce((sum, e) => sum + (e.guest_count ?? 0), 0)
+  const activeMonthEvents = monthEvents.filter((e: any) => e.status !== 'cancelled')
+  const totalGuests = activeMonthEvents.reduce((sum: any, e: any) => sum + (e.guest_count ?? 0), 0)
   const projectedRevenue = activeMonthEvents.reduce(
-    (sum, e) => sum + (e.quoted_price_cents ?? 0),
+    (sum: any, e: any) => sum + (e.quoted_price_cents ?? 0),
     0
   )
 
@@ -163,7 +163,7 @@ export default async function ProductionCalendarPage({
 
           {/* Actual days */}
           {days.map((day) => {
-            const dayEvents = monthEvents.filter((e) => {
+            const dayEvents = monthEvents.filter((e: any) => {
               if (!e.event_date) return false
               try {
                 return isSameDay(parseISO(e.event_date), day)
@@ -189,7 +189,7 @@ export default async function ProductionCalendarPage({
 
                 {/* Event chips */}
                 <div className="space-y-0.5">
-                  {dayEvents.map((e) => (
+                  {dayEvents.map((e: any) => (
                     <Link
                       key={e.id}
                       href={`/events/${e.id}`}
@@ -254,8 +254,8 @@ export default async function ProductionCalendarPage({
           </h2>
           <div className="space-y-2">
             {monthEvents
-              .sort((a, b) => (a.event_date ?? '').localeCompare(b.event_date ?? ''))
-              .map((e) => (
+              .sort((a: any, b: any) => (a.event_date ?? '').localeCompare(b.event_date ?? ''))
+              .map((e: any) => (
                 <Link
                   key={e.id}
                   href={`/events/${e.id}`}

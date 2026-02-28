@@ -198,14 +198,14 @@ async function InquiryList({
 
   // Apply channel filter
   if (channelFilter) {
-    inquiries = inquiries.filter((i) => i.channel === channelFilter)
+    inquiries = inquiries.filter((i: any) => i.channel === channelFilter)
   }
 
   // Apply status filter
   if (filter === 'closed') {
-    inquiries = inquiries.filter((i) => i.status === 'declined' || i.status === 'expired')
+    inquiries = inquiries.filter((i: any) => i.status === 'declined' || i.status === 'expired')
   } else if (filter !== 'all') {
-    inquiries = inquiries.filter((i) => i.status === filter)
+    inquiries = inquiries.filter((i: any) => i.status === filter)
   }
 
   // Build lookup maps
@@ -268,13 +268,13 @@ async function InquiryList({
   // --- Smart Priority Grouping (only for "all" view) ---
   if (filter === 'all') {
     // Group 1: Needs Your Response — new + awaiting_chef with no outbound message
-    const needsResponse = inquiries.filter((i) => {
+    const needsResponse = inquiries.filter((i: any) => {
       const u = urgencyMap.get(i.id)
       return (i.status === 'new' || i.status === 'awaiting_chef') && u && !u.hasResponse
     })
 
     // Group 2: Follow-Up Due — awaiting_client for 3+ days
-    const followUpDue = inquiries.filter((i) => {
+    const followUpDue = inquiries.filter((i: any) => {
       if (i.status !== 'awaiting_client' && i.status !== 'quoted') return false
       const u = urgencyMap.get(i.id)
       // If responded but client hasn't replied in 3+ days
@@ -285,15 +285,16 @@ async function InquiryList({
     })
 
     // Group 3: Active — everything else that's open
-    const needsResponseIds = new Set(needsResponse.map((i) => i.id))
-    const followUpIds = new Set(followUpDue.map((i) => i.id))
+    const needsResponseIds = new Set(needsResponse.map((i: any) => i.id))
+    const followUpIds = new Set(followUpDue.map((i: any) => i.id))
     const activeOpen = inquiries.filter(
-      (i) => OPEN_STATUSES.has(i.status) && !needsResponseIds.has(i.id) && !followUpIds.has(i.id)
+      (i: any) =>
+        OPEN_STATUSES.has(i.status) && !needsResponseIds.has(i.id) && !followUpIds.has(i.id)
     )
 
     // Group 4: Closed
     const closed = inquiries.filter(
-      (i) => i.status === 'declined' || i.status === 'expired' || i.status === 'confirmed'
+      (i: any) => i.status === 'declined' || i.status === 'expired' || i.status === 'confirmed'
     )
 
     const sharedProps = { scoreMap, leadScoreMap, urgencyMap, completenessMap }
@@ -310,7 +311,7 @@ async function InquiryList({
               </h2>
             </div>
             <div className="space-y-2">
-              {needsResponse.map((inquiry) => (
+              {needsResponse.map((inquiry: any) => (
                 <InquiryRow key={inquiry.id} inquiry={inquiry} {...sharedProps} />
               ))}
             </div>
@@ -327,7 +328,7 @@ async function InquiryList({
               </h2>
             </div>
             <div className="space-y-2">
-              {followUpDue.map((inquiry) => (
+              {followUpDue.map((inquiry: any) => (
                 <InquiryRow key={inquiry.id} inquiry={inquiry} {...sharedProps} />
               ))}
             </div>
@@ -344,7 +345,7 @@ async function InquiryList({
               </h2>
             </div>
             <div className="space-y-2">
-              {activeOpen.map((inquiry) => (
+              {activeOpen.map((inquiry: any) => (
                 <InquiryRow key={inquiry.id} inquiry={inquiry} {...sharedProps} />
               ))}
             </div>
@@ -361,7 +362,7 @@ async function InquiryList({
               <span className="text-xs text-stone-600 group-open:hidden">Click to expand</span>
             </summary>
             <div className="space-y-2">
-              {closed.map((inquiry) => (
+              {closed.map((inquiry: any) => (
                 <InquiryRow key={inquiry.id} inquiry={inquiry} {...sharedProps} />
               ))}
             </div>
@@ -374,7 +375,7 @@ async function InquiryList({
   // --- Flat list for filtered views ---
   return (
     <div className="space-y-2">
-      {inquiries.map((inquiry) => (
+      {inquiries.map((inquiry: any) => (
         <InquiryRow
           key={inquiry.id}
           inquiry={inquiry}
@@ -402,7 +403,7 @@ export default async function InquiriesPage({
   const allInquiries = await getInquiries()
 
   // Map to the shape KanbanBoard expects
-  const kanbanInquiries = allInquiries.map((inquiry) => ({
+  const kanbanInquiries = allInquiries.map((inquiry: any) => ({
     id: inquiry.id,
     status: inquiry.status,
     client_name: getDisplayName(inquiry),

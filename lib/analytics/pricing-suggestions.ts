@@ -55,7 +55,7 @@ export async function getPricingSuggestion(params: {
   // Narrow to occasion match if available and sufficient
   if (occasion && candidates.length >= 3) {
     const lower = occasion.toLowerCase()
-    const occasionMatches = candidates.filter((q) => {
+    const occasionMatches = candidates.filter((q: any) => {
       // We don't have occasion on quotes directly, so we match on occasion substring
       // This is a best-effort filter using confirmed_occasion from the inquiry join
       // For simplicity: if we had more data we'd join inquiries, but keep it fast here
@@ -71,7 +71,9 @@ export async function getPricingSuggestion(params: {
     return noData(pricingModel, guestMin, guestMax, candidates.length)
   }
 
-  const amounts = candidates.map((q) => q.total_quoted_cents ?? 0).sort((a, b) => a - b)
+  const amounts = candidates
+    .map((q: any) => q.total_quoted_cents ?? 0)
+    .sort((a: any, b: any) => a - b)
 
   const minCents = amounts[0]
   const maxCents = amounts[amounts.length - 1]
@@ -80,7 +82,7 @@ export async function getPricingSuggestion(params: {
     amounts.length % 2 !== 0 ? amounts[mid] : Math.round((amounts[mid - 1] + amounts[mid]) / 2)
 
   // Fetch food cost % for linked events from the view
-  const eventIds = candidates.map((q) => q.event_id).filter(Boolean) as string[]
+  const eventIds = candidates.map((q: any) => q.event_id).filter(Boolean) as string[]
   let avgFoodCostPercent: number | null = null
 
   if (eventIds.length > 0) {
@@ -91,11 +93,12 @@ export async function getPricingSuggestion(params: {
       .not('food_cost_percentage', 'is', null)
 
     const pcts = (financials ?? [])
-      .map((f) => f.food_cost_percentage)
-      .filter((p): p is number => typeof p === 'number' && p > 0)
+      .map((f: any) => f.food_cost_percentage)
+      .filter((p: any): p is number => typeof p === 'number' && p > 0)
 
     if (pcts.length > 0) {
-      avgFoodCostPercent = Math.round((pcts.reduce((s, p) => s + p, 0) / pcts.length) * 10) / 10
+      avgFoodCostPercent =
+        Math.round((pcts.reduce((s: any, p: any) => s + p, 0) / pcts.length) * 10) / 10
     }
   }
 

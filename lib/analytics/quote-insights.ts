@@ -58,24 +58,24 @@ export async function getQuoteAcceptanceInsights(): Promise<QuoteAcceptanceInsig
   // Always compute expiring quotes regardless of data volume
   const expiring: ExpiringQuote[] = all
     .filter(
-      (q) =>
+      (q: any) =>
         q.status === 'sent' && q.valid_until && q.valid_until >= today && q.valid_until <= in7Days
     )
-    .map((q) => ({
+    .map((q: any) => ({
       id: q.id,
       clientName: (q.client as any)?.full_name ?? 'Unknown',
       validUntil: q.valid_until!,
       totalCents: q.total_quoted_cents ?? 0,
     }))
 
-  const decided = all.filter((q) => ['accepted', 'rejected', 'expired'].includes(q.status))
+  const decided = all.filter((q: any) => ['accepted', 'rejected', 'expired'].includes(q.status))
 
   if (decided.length < 3) {
     return { ...emptyInsights(expiring), totalSent: all.length }
   }
 
-  const accepted = decided.filter((q) => q.status === 'accepted')
-  const rejected = decided.filter((q) => q.status !== 'accepted')
+  const accepted = decided.filter((q: any) => q.status === 'accepted')
+  const rejected = decided.filter((q: any) => q.status !== 'accepted')
 
   const acceptanceRate = Math.round((accepted.length / decided.length) * 100)
 
@@ -94,7 +94,9 @@ export async function getQuoteAcceptanceInsights(): Promise<QuoteAcceptanceInsig
 
   const avg = (items: typeof decided) =>
     items.length > 0
-      ? Math.round(items.reduce((s, q) => s + (q.total_quoted_cents ?? 0), 0) / items.length)
+      ? Math.round(
+          items.reduce((s: any, q: any) => s + (q.total_quoted_cents ?? 0), 0) / items.length
+        )
       : 0
 
   // By pricing model

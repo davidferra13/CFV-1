@@ -30,8 +30,8 @@ export default async function InstallmentsPage() {
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   )
 
-  const totalInstallments = installments.reduce((s, e) => s + e.amount_cents, 0)
-  const totalFinal = finalPayments.reduce((s, e) => s + e.amount_cents, 0)
+  const totalInstallments = installments.reduce((s: any, e: any) => s + e.amount_cents, 0)
+  const totalFinal = finalPayments.reduce((s: any, e: any) => s + e.amount_cents, 0)
 
   return (
     <div className="space-y-6">

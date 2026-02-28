@@ -28,13 +28,16 @@ export default async function RevenueSummaryPage() {
   const events = await getEvents()
 
   const revenueEvents = events
-    .filter((e) => ['paid', 'confirmed', 'in_progress', 'completed'].includes(e.status))
-    .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
+    .filter((e: any) => ['paid', 'confirmed', 'in_progress', 'completed'].includes(e.status))
+    .sort((a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
 
-  const totalRevenue = revenueEvents.reduce((sum, e) => sum + (e.quoted_price_cents ?? 0), 0)
+  const totalRevenue = revenueEvents.reduce(
+    (sum: any, e: any) => sum + (e.quoted_price_cents ?? 0),
+    0
+  )
   const completedRevenue = revenueEvents
-    .filter((e) => e.status === 'completed')
-    .reduce((sum, e) => sum + (e.quoted_price_cents ?? 0), 0)
+    .filter((e: any) => e.status === 'completed')
+    .reduce((sum: any, e: any) => sum + (e.quoted_price_cents ?? 0), 0)
 
   return (
     <div className="space-y-6">
@@ -91,7 +94,7 @@ export default async function RevenueSummaryPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {revenueEvents.map((event) => (
+              {revenueEvents.map((event: any) => (
                 <TableRow key={event.id}>
                   <TableCell className="text-stone-400 text-sm">
                     {format(new Date(event.event_date), 'MMM d, yyyy')}

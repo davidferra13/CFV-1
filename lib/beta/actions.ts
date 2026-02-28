@@ -353,7 +353,7 @@ export async function exportBetaSignupsCsv(): Promise<string> {
     return val
   }
 
-  const rows = data.map((r) =>
+  const rows = data.map((r: any) =>
     [
       escape(r.name),
       escape(r.email),

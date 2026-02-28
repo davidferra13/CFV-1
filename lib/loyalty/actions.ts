@@ -1291,10 +1291,13 @@ export async function getLoyaltyOverview(): Promise<LoyaltyOverview> {
   }
 
   // Total points outstanding
-  const totalPointsOutstanding = allClients.reduce((sum, c) => sum + (c.loyalty_points || 0), 0)
+  const totalPointsOutstanding = allClients.reduce(
+    (sum: any, c: any) => sum + (c.loyalty_points || 0),
+    0
+  )
 
   // Top clients
-  const topClients = allClients.slice(0, 10).map((c) => ({
+  const topClients = allClients.slice(0, 10).map((c: any) => ({
     id: c.id,
     full_name: c.full_name,
     loyalty_points: c.loyalty_points || 0,
@@ -1312,7 +1315,7 @@ export async function getLoyaltyOverview(): Promise<LoyaltyOverview> {
 
   // Clients approaching tier upgrades
   const clientsApproachingTierUpgrade = allClients
-    .map((c) => {
+    .map((c: any) => {
       const tier = (c.loyalty_tier || 'bronze') as LoyaltyTier
       const nextTier = getNextTier(tier)
       if (!nextTier) return null
@@ -1334,7 +1337,7 @@ export async function getLoyaltyOverview(): Promise<LoyaltyOverview> {
         nextTierName: nextTier.name,
       }
     })
-    .filter((c): c is NonNullable<typeof c> => c !== null)
+    .filter((c: any): c is NonNullable<typeof c> => c !== null)
 
   return {
     programMode: config.program_mode,
@@ -1379,7 +1382,7 @@ export async function getClientsApproachingRewards() {
 
   // Find clients within 20% of earning any reward they don't yet have enough for
   const approaching = clients
-    .map((client) => {
+    .map((client: any) => {
       const balance = client.loyalty_points || 0
       const nearbyRewards = rewards
         .filter((r: any) => {
@@ -1402,7 +1405,7 @@ export async function getClientsApproachingRewards() {
         approachingRewards: nearbyRewards,
       }
     })
-    .filter((c): c is NonNullable<typeof c> => c !== null)
+    .filter((c: any): c is NonNullable<typeof c> => c !== null)
 
   return approaching
 }

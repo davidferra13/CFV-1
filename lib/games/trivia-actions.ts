@@ -152,9 +152,11 @@ export async function generateInternalTriviaQuestions(
     // Build a data summary for Ollama
     const now = new Date().toISOString().split('T')[0]
     const upcomingEvents = (events || []).filter(
-      (e) => e.event_date >= now && e.status !== 'cancelled'
+      (e: any) => e.event_date >= now && e.status !== 'cancelled'
     )
-    const pastEvents = (events || []).filter((e) => e.event_date < now && e.status !== 'cancelled')
+    const pastEvents = (events || []).filter(
+      (e: any) => e.event_date < now && e.status !== 'cancelled'
+    )
 
     let dataContext = ''
 

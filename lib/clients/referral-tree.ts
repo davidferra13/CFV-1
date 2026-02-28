@@ -44,7 +44,7 @@ export async function getClientReferralTree(clientId: string): Promise<ReferralN
     .eq('status', 'completed')
 
   const totalRevenueCents = (ownEvents || []).reduce(
-    (sum, e) => sum + (e.quoted_price_cents || 0),
+    (sum: any, e: any) => sum + (e.quoted_price_cents || 0),
     0
   )
 

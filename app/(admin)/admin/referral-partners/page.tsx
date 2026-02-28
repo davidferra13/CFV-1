@@ -48,7 +48,9 @@ export default async function AdminReferralPartnersPage() {
       .from('chefs')
       .select('id, business_name')
       .in('id', tenantIds)
-    chefMap = Object.fromEntries((chefs ?? []).map((c) => [c.id, c.business_name ?? 'Unnamed']))
+    chefMap = Object.fromEntries(
+      (chefs ?? []).map((c: any) => [c.id, c.business_name ?? 'Unnamed'])
+    )
   }
 
   // Stats

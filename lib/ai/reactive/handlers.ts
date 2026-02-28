@@ -543,7 +543,7 @@ export async function handleFoodRecall(
     reason,
     alert: `FOOD RECALL: ${recalledItem}`,
     affectedEventsCount: upcomingEvents?.length ?? 0,
-    upcomingEvents: (upcomingEvents ?? []).map((e) => ({
+    upcomingEvents: (upcomingEvents ?? []).map((e: any) => ({
       id: e.id,
       occasion: (e as any).occasion,
       date: (e as any).event_date,

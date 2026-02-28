@@ -50,7 +50,7 @@ async function QuoteList({ filter }: { filter: QuoteFilter }) {
 
   return (
     <div className="space-y-2">
-      {quotes.map((quote) => {
+      {quotes.map((quote: any) => {
         const clientName = quote.client?.full_name || 'Unknown Client'
 
         return (

@@ -19,8 +19,8 @@ export default async function DietaryRestrictionsPage() {
   const clients = await getClientsWithStats()
 
   const clientsWithRestrictions = clients
-    .filter((c) => c.dietary_restrictions && (c.dietary_restrictions as string[]).length > 0)
-    .sort((a, b) => a.full_name.localeCompare(b.full_name))
+    .filter((c: any) => c.dietary_restrictions && (c.dietary_restrictions as string[]).length > 0)
+    .sort((a: any, b: any) => a.full_name.localeCompare(b.full_name))
 
   // Aggregate restriction counts
   const restrictionCounts: Record<string, number> = {}
@@ -84,7 +84,7 @@ export default async function DietaryRestrictionsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {clientsWithRestrictions.map((client) => (
+              {clientsWithRestrictions.map((client: any) => (
                 <TableRow key={client.id}>
                   <TableCell className="font-medium">
                     <Link

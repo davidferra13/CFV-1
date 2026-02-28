@@ -21,9 +21,9 @@ export default async function LaborExpensesPage() {
   await requireChef()
   const allExpenses = await getExpenses()
 
-  const expenses = allExpenses.filter((e) => e.category === 'labor')
-  const totalSpend = expenses.reduce((s, e) => s + e.amount_cents, 0)
-  const eventLinked = expenses.filter((e) => e.event_id != null).length
+  const expenses = allExpenses.filter((e: any) => e.category === 'labor')
+  const totalSpend = expenses.reduce((s: any, e: any) => s + e.amount_cents, 0)
+  const eventLinked = expenses.filter((e: any) => e.event_id != null).length
 
   return (
     <div className="space-y-6">
@@ -73,7 +73,7 @@ export default async function LaborExpensesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {expenses.map((expense) => (
+              {expenses.map((expense: any) => (
                 <TableRow key={expense.id}>
                   <TableCell className="text-stone-500 text-sm">
                     {format(new Date(expense.expense_date), 'MMM d, yyyy')}

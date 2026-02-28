@@ -20,7 +20,7 @@ export default async function ExpenseByCategoryPage() {
   await requireChef()
   const expenses = await getExpenses()
 
-  const totalSpend = expenses.reduce((s, e) => s + e.amount_cents, 0)
+  const totalSpend = expenses.reduce((s: any, e: any) => s + e.amount_cents, 0)
 
   // Compute totals per category
   const categoryTotals = new Map<string, number>()
@@ -41,7 +41,7 @@ export default async function ExpenseByCategoryPage() {
         label: c.label,
         color: c.color,
         total: categoryTotals.get(c.value) ?? 0,
-        count: expenses.filter((e) => e.category === c.value).length,
+        count: expenses.filter((e: any) => e.category === c.value).length,
       }))
       .filter((c) => c.count > 0),
   })).filter((g) => g.total > 0)

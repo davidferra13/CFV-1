@@ -45,7 +45,7 @@ Dietary restrictions: ${(event.dietary_restrictions as string[] | null)?.join(',
 Allergies: ${(event.allergies as string[] | null)?.join(', ') || 'None'}
 Special requests: ${event.special_requests || 'None'}
 
-Chef's available recipes (for inspiration): ${recipes?.map((r) => r.name).join(', ') || 'Various'}
+Chef's available recipes (for inspiration): ${recipes?.map((r: any) => r.name).join(', ') || 'Various'}
 
 Return a JSON array with exactly 3 menu options. Each option: { "name": "Menu theme name", "courses": [{"course": "Appetizer|Main|Dessert", "dish": "Dish name", "description": "1 sentence"}], "rationale": "Why this menu fits the event" }
 

@@ -23,14 +23,14 @@ export default async function TravelExpensesPage() {
   await requireChef()
   const allExpenses = await getExpenses()
 
-  const expenses = allExpenses.filter((e) =>
+  const expenses = allExpenses.filter((e: any) =>
     CATEGORIES.includes(e.category as (typeof CATEGORIES)[number])
   )
 
-  const totalSpend = expenses.reduce((s, e) => s + e.amount_cents, 0)
-  const mileageEntries = expenses.filter((e) => e.category === 'gas_mileage')
-  const vehicleEntries = expenses.filter((e) => e.category === 'vehicle')
-  const totalMiles = mileageEntries.reduce((s, e) => s + (e.mileage_miles ?? 0), 0)
+  const totalSpend = expenses.reduce((s: any, e: any) => s + e.amount_cents, 0)
+  const mileageEntries = expenses.filter((e: any) => e.category === 'gas_mileage')
+  const vehicleEntries = expenses.filter((e: any) => e.category === 'vehicle')
+  const totalMiles = mileageEntries.reduce((s: any, e: any) => s + (e.mileage_miles ?? 0), 0)
 
   return (
     <div className="space-y-6">
@@ -54,13 +54,13 @@ export default async function TravelExpensesPage() {
         </Card>
         <Card className="p-4">
           <p className="text-2xl font-bold text-stone-100">
-            {formatCurrency(mileageEntries.reduce((s, e) => s + e.amount_cents, 0))}
+            {formatCurrency(mileageEntries.reduce((s: any, e: any) => s + e.amount_cents, 0))}
           </p>
           <p className="text-sm text-stone-500 mt-1">Gas/mileage ({mileageEntries.length})</p>
         </Card>
         <Card className="p-4">
           <p className="text-2xl font-bold text-stone-100">
-            {formatCurrency(vehicleEntries.reduce((s, e) => s + e.amount_cents, 0))}
+            {formatCurrency(vehicleEntries.reduce((s: any, e: any) => s + e.amount_cents, 0))}
           </p>
           <p className="text-sm text-stone-500 mt-1">Vehicle ({vehicleEntries.length})</p>
         </Card>
@@ -90,7 +90,7 @@ export default async function TravelExpensesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {expenses.map((expense) => (
+              {expenses.map((expense: any) => (
                 <TableRow key={expense.id}>
                   <TableCell className="text-stone-500 text-sm">
                     {format(new Date(expense.expense_date), 'MMM d, yyyy')}

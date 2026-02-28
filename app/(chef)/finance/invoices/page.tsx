@@ -56,23 +56,24 @@ export default async function InvoicesPage() {
   ])
 
   const now = new Date()
-  const refundedEventIds = new Set(refundEntries.map((e) => e.event_id).filter(Boolean))
+  const refundedEventIds = new Set(refundEntries.map((e: any) => e.event_id).filter(Boolean))
 
   const counts = {
-    draft: events.filter((e) => ['draft', 'proposed'].includes(e.status)).length,
-    sent: events.filter((e) => e.status === 'accepted').length,
-    paid: events.filter((e) => ['paid', 'confirmed', 'in_progress', 'completed'].includes(e.status))
-      .length,
-    overdue: events.filter(
-      (e) => !['completed', 'cancelled'].includes(e.status) && new Date(e.event_date) < now
+    draft: events.filter((e: any) => ['draft', 'proposed'].includes(e.status)).length,
+    sent: events.filter((e: any) => e.status === 'accepted').length,
+    paid: events.filter((e: any) =>
+      ['paid', 'confirmed', 'in_progress', 'completed'].includes(e.status)
     ).length,
-    refunded: events.filter((e) => refundedEventIds.has(e.id)).length,
-    cancelled: events.filter((e) => e.status === 'cancelled').length,
+    overdue: events.filter(
+      (e: any) => !['completed', 'cancelled'].includes(e.status) && new Date(e.event_date) < now
+    ).length,
+    refunded: events.filter((e: any) => refundedEventIds.has(e.id)).length,
+    cancelled: events.filter((e: any) => e.status === 'cancelled').length,
   }
 
   const totalRevenue = events
-    .filter((e) => ['paid', 'confirmed', 'in_progress', 'completed'].includes(e.status))
-    .reduce((s, e) => s + (e.quoted_price_cents ?? 0), 0)
+    .filter((e: any) => ['paid', 'confirmed', 'in_progress', 'completed'].includes(e.status))
+    .reduce((s: any, e: any) => s + (e.quoted_price_cents ?? 0), 0)
 
   return (
     <div className="space-y-6">

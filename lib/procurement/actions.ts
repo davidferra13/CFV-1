@@ -162,13 +162,13 @@ export async function getProcurementReferenceData(): Promise<ProcurementReferenc
 
   return {
     suppliers: (vendors as any[]).map((vendor) => ({ id: vendor.id, name: vendor.name })),
-    ingredients: (ingredients.data ?? []).map((ingredient) => ({
+    ingredients: (ingredients.data ?? []).map((ingredient: any) => ({
       id: ingredient.id,
       name: ingredient.name,
       category: ingredient.category,
       defaultUnit: ingredient.default_unit,
     })),
-    events: (events.data ?? []).map((event) => ({
+    events: (events.data ?? []).map((event: any) => ({
       id: event.id,
       name: event.occasion || 'Event',
       date: event.event_date,

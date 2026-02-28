@@ -64,7 +64,7 @@ export default async function QualifiedLeadsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {inquiries.map((inquiry) => (
+              {inquiries.map((inquiry: any) => (
                 <TableRow key={inquiry.id}>
                   <TableCell className="font-medium">
                     <p>{inquiry.client?.full_name ?? '—'}</p>

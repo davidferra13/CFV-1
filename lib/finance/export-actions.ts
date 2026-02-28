@@ -48,7 +48,7 @@ export async function exportLedgerEntriesCSV(): Promise<{ csv: string; filename:
     'Description',
     'Reference',
   ]
-  const rows = entries.map((entry) => [
+  const rows = entries.map((entry: any) => [
     format(new Date(entry.created_at), 'yyyy-MM-dd'),
     entry.entry_type.replace(/_/g, ' '),
     entry.event?.occasion?.replace(/_/g, ' ') ?? '',

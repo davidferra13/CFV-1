@@ -216,7 +216,7 @@ export default async function LoyaltyDashboardPage() {
               <div>
                 <h3 className="text-sm font-medium text-brand-400 mb-2">Approaching Rewards</h3>
                 <div className="space-y-2">
-                  {approachingRewards.slice(0, 5).map((client) => (
+                  {approachingRewards.slice(0, 5).map((client: any) => (
                     <div
                       key={client.clientId}
                       className="flex items-center justify-between bg-stone-900 rounded-lg p-3"

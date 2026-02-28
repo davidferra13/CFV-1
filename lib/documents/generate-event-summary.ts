@@ -199,7 +199,7 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
       .order('sort_order', { ascending: true })
 
     if (dishes && dishes.length > 0) {
-      const dishIds = dishes.map((d) => d.id)
+      const dishIds = dishes.map((d: any) => d.id)
       const { data: components } = await supabase
         .from('components')
         .select('dish_id, name, category, execution_notes, sort_order')
@@ -254,7 +254,7 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
             dishDescription: data.dishDescription,
             dishAllergenFlags: data.dishAllergenFlags,
             componentCount: data.components.length,
-            components: data.components.map((c) => ({
+            components: data.components.map((c: any) => ({
               name: c.name,
               category: c.category,
               execution_notes: c.execution_notes,
@@ -304,20 +304,20 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
       payment_behavior: clientData?.payment_behavior ?? null,
       tipping_pattern: clientData?.tipping_pattern ?? null,
     },
-    guests: (guestsResult.data || []).map((g) => ({
+    guests: (guestsResult.data || []).map((g: any) => ({
       full_name: g.full_name,
       allergies: g.allergies ?? null,
       dietary_restrictions: g.dietary_restrictions ?? null,
       notes: g.notes ?? null,
     })),
-    ledger: (ledgerResult.data || []).map((l) => ({
+    ledger: (ledgerResult.data || []).map((l: any) => ({
       entry_type: l.entry_type,
       amount_cents: l.amount_cents,
       description: l.description,
       received_at: l.received_at ?? null,
       payment_method: l.payment_method ?? null,
     })),
-    transitions: (transitionsResult.data || []).map((t) => ({
+    transitions: (transitionsResult.data || []).map((t: any) => ({
       from_status: t.from_status ?? null,
       to_status: t.to_status,
       transitioned_at: t.transitioned_at,

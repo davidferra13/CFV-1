@@ -131,8 +131,8 @@ export async function getPreviewClientLoyaltyStatus(clientId: string) {
     .order('points_required', { ascending: true })
 
   const allRewards = rewards || []
-  const availableRewards = allRewards.filter((r) => r.points_required <= balance)
-  const nextReward = allRewards.find((r) => r.points_required > balance)
+  const availableRewards = allRewards.filter((r: any) => r.points_required <= balance)
+  const nextReward = allRewards.find((r: any) => r.points_required > balance)
 
   return {
     tier: (client.loyalty_tier || 'bronze') as 'bronze' | 'silver' | 'gold' | 'platinum',

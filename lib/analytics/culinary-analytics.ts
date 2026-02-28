@@ -65,19 +65,21 @@ export async function getRecipeUsageStats(): Promise<RecipeUsageStats> {
 
   const all = recipes ?? []
   const total = all.length
-  const neverCooked = all.filter((r) => (r.times_cooked ?? 0) === 0).length
-  const usedInEvents = all.filter((r) => (r.times_cooked ?? 0) > 0).length
-  const usedMultiple = all.filter((r) => (r.times_cooked ?? 0) >= 2).length
+  const neverCooked = all.filter((r: any) => (r.times_cooked ?? 0) === 0).length
+  const usedInEvents = all.filter((r: any) => (r.times_cooked ?? 0) > 0).length
+  const usedMultiple = all.filter((r: any) => (r.times_cooked ?? 0) >= 2).length
 
   const avgCookedCount =
     usedInEvents > 0
-      ? Math.round((all.reduce((s, r) => s + (r.times_cooked ?? 0), 0) / usedInEvents) * 10) / 10
+      ? Math.round(
+          (all.reduce((s: any, r: any) => s + (r.times_cooked ?? 0), 0) / usedInEvents) * 10
+        ) / 10
       : 0
 
   const topRecipes = all
-    .filter((r) => (r.times_cooked ?? 0) > 0)
+    .filter((r: any) => (r.times_cooked ?? 0) > 0)
     .slice(0, 10)
-    .map((r) => ({
+    .map((r: any) => ({
       id: r.id,
       name: r.name,
       timesCookedCount: r.times_cooked ?? 0,
@@ -122,8 +124,8 @@ export async function getDishPerformanceStats(): Promise<DishPerformanceStats> {
     .eq('chef_id', chef.id)
     .not('sent_at', 'is', null)
 
-  const totalSent = (approvals ?? []).filter((a) => a.sent_at).length
-  const withRevisions = (approvals ?? []).filter((a) => a.revision_notes).length
+  const totalSent = (approvals ?? []).filter((a: any) => a.sent_at).length
+  const withRevisions = (approvals ?? []).filter((a: any) => a.revision_notes).length
 
   // Avg dishes per sent menu
   const { data: menus } = await supabase
@@ -133,7 +135,7 @@ export async function getDishPerformanceStats(): Promise<DishPerformanceStats> {
     .not('status', 'eq', 'draft')
     .not('event_id', 'is', null)
 
-  const menuIds = (menus ?? []).map((m) => m.id)
+  const menuIds = (menus ?? []).map((m: any) => m.id)
   let avgDishes = 0
 
   if (menuIds.length > 0) {
@@ -170,9 +172,9 @@ export async function getIngredientCostStats(): Promise<IngredientCostStats> {
     .order('last_price_cents', { ascending: false, nullsFirst: false })
 
   const all = ingredients ?? []
-  const withPricing = all.filter((i) => i.last_price_cents != null)
+  const withPricing = all.filter((i: any) => i.last_price_cents != null)
 
-  const mostExpensive = withPricing.slice(0, 5).map((i) => ({
+  const mostExpensive = withPricing.slice(0, 5).map((i: any) => ({
     name: i.name,
     lastPriceCents: i.last_price_cents!,
     unit: i.price_unit ?? '',
@@ -209,21 +211,23 @@ export async function getMenuApprovalStats(): Promise<MenuApprovalStats> {
 
   const all = data ?? []
   const total = all.length
-  const approved = all.filter((a) => a.status === 'approved').length
-  const revisionReq = all.filter((a) => a.status === 'revision_requested').length
-  const pending = all.filter((a) => a.status === 'sent').length
+  const approved = all.filter((a: any) => a.status === 'approved').length
+  const revisionReq = all.filter((a: any) => a.status === 'revision_requested').length
+  const pending = all.filter((a: any) => a.status === 'sent').length
 
   const responseTimes = all
-    .filter((a) => a.sent_at && a.responded_at)
+    .filter((a: any) => a.sent_at && a.responded_at)
     .map(
-      (a) =>
+      (a: any) =>
         (new Date(a.responded_at!).getTime() - new Date(a.sent_at!).getTime()) / (1000 * 60 * 60)
     )
-    .filter((h) => h >= 0)
+    .filter((h: any) => h >= 0)
 
   const avgResponseHours =
     responseTimes.length > 0
-      ? Math.round((responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length) * 10) / 10
+      ? Math.round(
+          (responseTimes.reduce((a: any, b: any) => a + b, 0) / responseTimes.length) * 10
+        ) / 10
       : 0
 
   return {

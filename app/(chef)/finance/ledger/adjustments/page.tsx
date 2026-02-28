@@ -26,8 +26,8 @@ export default async function LedgerAdjustmentsPage() {
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   )
 
-  const totalCredits = credits.reduce((s, e) => s + e.amount_cents, 0)
-  const totalAddOns = addOns.reduce((s, e) => s + e.amount_cents, 0)
+  const totalCredits = credits.reduce((s: any, e: any) => s + e.amount_cents, 0)
+  const totalAddOns = addOns.reduce((s: any, e: any) => s + e.amount_cents, 0)
 
   return (
     <div className="space-y-6">

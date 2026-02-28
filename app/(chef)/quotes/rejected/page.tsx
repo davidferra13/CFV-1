@@ -42,7 +42,7 @@ export default async function RejectedQuotesPage() {
         </Card>
       ) : (
         <div className="space-y-2">
-          {quotes.map((quote) => {
+          {quotes.map((quote: any) => {
             const clientName = quote.client?.full_name || 'Unknown Client'
             return (
               <Link

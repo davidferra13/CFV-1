@@ -68,7 +68,7 @@ export async function getClientMenuHistory(clientId: string): Promise<ClientMenu
   if (!events || events.length === 0) return empty
 
   // 2. Fetch menus for events that have a menu_id
-  const menuIds = events.map((e) => e.menu_id).filter((id): id is string => !!id)
+  const menuIds = events.map((e: any) => e.menu_id).filter((id: any): id is string => !!id)
 
   const menuMap = new Map<
     string,
@@ -155,7 +155,7 @@ export async function getClientMenuHistory(clientId: string): Promise<ClientMenu
   }
 
   // 5. Assemble MenuHistoryEntry per event
-  const entries: MenuHistoryEntry[] = events.map((event) => {
+  const entries: MenuHistoryEntry[] = events.map((event: any) => {
     const menu = event.menu_id ? menuMap.get(event.menu_id) : undefined
 
     if (!menu) {

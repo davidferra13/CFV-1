@@ -19,8 +19,8 @@ export default async function FavoriteDishesPage() {
   const clients = await getClientsWithStats()
 
   const clientsWithFavorites = clients
-    .filter((c) => c.favorite_dishes && (c.favorite_dishes as string[]).length > 0)
-    .sort((a, b) => a.full_name.localeCompare(b.full_name))
+    .filter((c: any) => c.favorite_dishes && (c.favorite_dishes as string[]).length > 0)
+    .sort((a: any, b: any) => a.full_name.localeCompare(b.full_name))
 
   // Aggregate dish mentions
   const dishCounts: Record<string, number> = {}
@@ -85,7 +85,7 @@ export default async function FavoriteDishesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {clientsWithFavorites.map((client) => (
+              {clientsWithFavorites.map((client: any) => (
                 <TableRow key={client.id}>
                   <TableCell className="font-medium">
                     <Link

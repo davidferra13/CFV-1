@@ -925,7 +925,7 @@ export async function getClientsWithStats() {
   }
 
   // Merge clients with stats
-  return clients.map((client) => ({
+  return clients.map((client: any) => ({
     ...client,
     totalEvents: statsMap.get(client.id)?.totalEvents ?? 0,
     totalSpentCents: statsMap.get(client.id)?.totalSpentCents ?? 0,
@@ -1143,7 +1143,7 @@ export async function getClientFinancialDetail(clientId: string) {
   const ledgerEntries = ledgerResult.data ?? []
 
   // Fetch financial summary for each event from the view
-  const eventIds = events.map((e) => e.id)
+  const eventIds = events.map((e: any) => e.id)
   const { data: summaries } =
     eventIds.length > 0
       ? await supabase
@@ -1176,7 +1176,7 @@ export async function getClientFinancialDetail(clientId: string) {
   }
 
   // Build per-event breakdown
-  const eventBreakdown = events.map((event) => {
+  const eventBreakdown = events.map((event: any) => {
     const fin = summaryMap.get(event.id) ?? {
       total_paid_cents: 0,
       total_refunded_cents: 0,
@@ -1201,11 +1201,17 @@ export async function getClientFinancialDetail(clientId: string) {
   })
 
   // Compute summary totals (exclude cancelled events from outstanding)
-  const activeEvents = eventBreakdown.filter((e) => e.status !== 'cancelled')
-  const totalQuotedCents = activeEvents.reduce((sum, e) => sum + e.quotedPriceCents, 0)
-  const totalPaidCents = activeEvents.reduce((sum, e) => sum + e.totalPaidCents, 0)
-  const totalOutstandingCents = activeEvents.reduce((sum, e) => sum + e.outstandingBalanceCents, 0)
-  const totalRefundedCents = eventBreakdown.reduce((sum, e) => sum + e.totalRefundedCents, 0)
+  const activeEvents = eventBreakdown.filter((e: any) => e.status !== 'cancelled')
+  const totalQuotedCents = activeEvents.reduce((sum: any, e: any) => sum + e.quotedPriceCents, 0)
+  const totalPaidCents = activeEvents.reduce((sum: any, e: any) => sum + e.totalPaidCents, 0)
+  const totalOutstandingCents = activeEvents.reduce(
+    (sum: any, e: any) => sum + e.outstandingBalanceCents,
+    0
+  )
+  const totalRefundedCents = eventBreakdown.reduce(
+    (sum: any, e: any) => sum + e.totalRefundedCents,
+    0
+  )
 
   // Tips: compute from ledger entries (entry_type = 'tip') to stay consistent
   // with getTenantFinancialSummary — ledger is the source of truth, not events.tip_amount_cents

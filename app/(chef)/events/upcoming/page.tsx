@@ -25,8 +25,8 @@ export default async function UpcomingEventsPage() {
 
   const allEvents = await getEvents()
   const events = allEvents
-    .filter((e) => UPCOMING_STATUSES.includes(e.status))
-    .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
+    .filter((e: any) => UPCOMING_STATUSES.includes(e.status))
+    .sort((a: any, b: any) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
 
   return (
     <div className="space-y-6">
@@ -71,7 +71,7 @@ export default async function UpcomingEventsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {events.map((event) => (
+              {events.map((event: any) => (
                 <TableRow key={event.id}>
                   <TableCell className="font-medium">
                     <Link

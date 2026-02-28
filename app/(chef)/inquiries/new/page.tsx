@@ -42,7 +42,11 @@ export default async function NewInquiryPage() {
       <InquiryForm
         tenantId={user.tenantId!}
         clients={clients}
-        partners={partners.map((p) => ({ id: p.id, name: p.name, partner_type: p.partner_type }))}
+        partners={partners.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          partner_type: p.partner_type,
+        }))}
         partnerLocations={partnerLocations}
       />
     </div>

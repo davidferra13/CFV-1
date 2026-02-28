@@ -59,8 +59,8 @@ export async function getFoodCostTrend(months = 6): Promise<FoodCostTrend> {
     return buildEmpty(months)
   }
 
-  const eventIds = events.map((e) => e.id)
-  const dateMap = new Map<string, string>(events.map((e) => [e.id, e.event_date]))
+  const eventIds = events.map((e: any) => e.id)
+  const dateMap = new Map<string, string>(events.map((e: any) => [e.id, e.event_date]))
 
   // Fetch food_cost_percentage from the event_financial_summary view
   const { data: summaries } = await supabase

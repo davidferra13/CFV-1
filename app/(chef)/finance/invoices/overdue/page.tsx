@@ -22,12 +22,14 @@ export default async function OverdueInvoicesPage() {
 
   const now = new Date()
   const overdue = events
-    .filter((e) => new Date(e.event_date) < now && !['completed', 'cancelled'].includes(e.status))
-    .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
+    .filter(
+      (e: any) => new Date(e.event_date) < now && !['completed', 'cancelled'].includes(e.status)
+    )
+    .sort((a: any, b: any) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
 
-  const totalValue = overdue.reduce((s, e) => s + (e.quoted_price_cents ?? 0), 0)
+  const totalValue = overdue.reduce((s: any, e: any) => s + (e.quoted_price_cents ?? 0), 0)
   const criticalCount = overdue.filter(
-    (e) => differenceInDays(now, new Date(e.event_date)) > 30
+    (e: any) => differenceInDays(now, new Date(e.event_date)) > 30
   ).length
 
   return (
@@ -84,7 +86,7 @@ export default async function OverdueInvoicesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {overdue.map((event) => {
+              {overdue.map((event: any) => {
                 const daysOver = differenceInDays(now, new Date(event.event_date))
                 return (
                   <TableRow key={event.id}>

@@ -100,7 +100,7 @@ export async function fetchExecutionSheetData(eventId: string): Promise<Executio
   if (!dishes || dishes.length === 0) return null
 
   // Fetch components — include make_ahead_window_hours for arrival task ordering
-  const dishIds = dishes.map((d) => d.id)
+  const dishIds = dishes.map((d: any) => d.id)
   const { data: components } = await supabase
     .from('components')
     .select(
@@ -160,7 +160,7 @@ export async function fetchExecutionSheetData(eventId: string): Promise<Executio
         dishDescription: data.dishDescription,
         dishAllergenFlags: data.dishAllergenFlags,
         componentCount: data.components.length,
-        components: data.components.map((c) => ({
+        components: data.components.map((c: any) => ({
           name: c.name,
           category: c.category,
           execution_notes: c.execution_notes,

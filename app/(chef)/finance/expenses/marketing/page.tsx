@@ -20,10 +20,10 @@ export default async function MarketingExpensesPage() {
   await requireChef()
   const allExpenses = await getExpenses()
 
-  const expenses = allExpenses.filter((e) => e.category === 'marketing')
-  const totalSpend = expenses.reduce((s, e) => s + e.amount_cents, 0)
+  const expenses = allExpenses.filter((e: any) => e.category === 'marketing')
+  const totalSpend = expenses.reduce((s: any, e: any) => s + e.amount_cents, 0)
 
-  const vendorTotals = expenses.reduce<Record<string, number>>((acc, e) => {
+  const vendorTotals = expenses.reduce<Record<string, number>>((acc: any, e: any) => {
     const key = e.vendor_name ?? 'Unknown'
     acc[key] = (acc[key] ?? 0) + e.amount_cents
     return acc
@@ -81,7 +81,7 @@ export default async function MarketingExpensesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {expenses.map((expense) => (
+              {expenses.map((expense: any) => (
                 <TableRow key={expense.id}>
                   <TableCell className="text-stone-500 text-sm">
                     {format(new Date(expense.expense_date), 'MMM d, yyyy')}

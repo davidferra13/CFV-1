@@ -32,11 +32,14 @@ export default async function EventHistoryPage() {
   const events = await getEvents()
 
   const pastEvents = events
-    .filter((e) => new Date(e.event_date) < new Date())
-    .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
+    .filter((e: any) => new Date(e.event_date) < new Date())
+    .sort((a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
 
-  const completedEvents = pastEvents.filter((e) => e.status === 'completed')
-  const totalRevenue = completedEvents.reduce((sum, e) => sum + (e.quoted_price_cents ?? 0), 0)
+  const completedEvents = pastEvents.filter((e: any) => e.status === 'completed')
+  const totalRevenue = completedEvents.reduce(
+    (sum: any, e: any) => sum + (e.quoted_price_cents ?? 0),
+    0
+  )
 
   return (
     <div className="space-y-6">
@@ -92,7 +95,7 @@ export default async function EventHistoryPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {pastEvents.map((event) => (
+              {pastEvents.map((event: any) => (
                 <TableRow key={event.id}>
                   <TableCell className="text-stone-400 text-sm whitespace-nowrap">
                     {format(new Date(event.event_date), 'MMM d, yyyy')}

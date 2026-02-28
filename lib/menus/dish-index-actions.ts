@@ -575,7 +575,7 @@ export async function mergeDishes(keepId: string, mergeId: string) {
     .not('event_date', 'is', null)
     .order('event_date', { ascending: true })
 
-  const dates = (dateRange ?? []).map((r) => r.event_date).filter(Boolean)
+  const dates = (dateRange ?? []).map((r: any) => r.event_date).filter(Boolean)
 
   await supabase
     .from('dish_index')
@@ -618,13 +618,13 @@ export async function getDishIndexStats() {
   if (!dishes) return null
 
   const total = dishes.length
-  const withRecipe = dishes.filter((d) => d.linked_recipe_id).length
-  const signatures = dishes.filter((d) => d.is_signature).length
+  const withRecipe = dishes.filter((d: any) => d.linked_recipe_id).length
+  const signatures = dishes.filter((d: any) => d.is_signature).length
   const byRotation = {
-    active: dishes.filter((d) => d.rotation_status === 'active').length,
-    resting: dishes.filter((d) => d.rotation_status === 'resting').length,
-    retired: dishes.filter((d) => d.rotation_status === 'retired').length,
-    testing: dishes.filter((d) => d.rotation_status === 'testing').length,
+    active: dishes.filter((d: any) => d.rotation_status === 'active').length,
+    resting: dishes.filter((d: any) => d.rotation_status === 'resting').length,
+    retired: dishes.filter((d: any) => d.rotation_status === 'retired').length,
+    testing: dishes.filter((d: any) => d.rotation_status === 'testing').length,
   }
 
   // Course breakdown
@@ -691,8 +691,8 @@ export async function getDishPairings(dishId: string, limit = 10) {
 
   if (!appearances || appearances.length === 0) return []
 
-  const jobIds = appearances.map((a) => a.menu_upload_job_id).filter(Boolean) as string[]
-  const menuIds = appearances.map((a) => a.menu_id).filter(Boolean) as string[]
+  const jobIds = appearances.map((a: any) => a.menu_upload_job_id).filter(Boolean) as string[]
+  const menuIds = appearances.map((a: any) => a.menu_id).filter(Boolean) as string[]
 
   if (jobIds.length === 0 && menuIds.length === 0) return []
 

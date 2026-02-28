@@ -165,7 +165,7 @@ export async function generateDailyBriefing(date?: string): Promise<DailyBriefin
   let revenueThisWeekCents = 0
 
   if (weekEvents && weekEvents.length > 0) {
-    const weekEventIds = weekEvents.map((e) => e.id)
+    const weekEventIds = weekEvents.map((e: any) => e.id)
 
     const { data: summaries } = await supabase
       .from('event_financial_summary')

@@ -42,7 +42,7 @@ export default async function AdminFeedbackPage() {
 
   const feedback = rows ?? []
 
-  const counts = feedback.reduce<Record<string, number>>((acc, row) => {
+  const counts = feedback.reduce<Record<string, number>>((acc: any, row: any) => {
     acc[row.sentiment] = (acc[row.sentiment] ?? 0) + 1
     return acc
   }, {})
@@ -88,7 +88,7 @@ export default async function AdminFeedbackPage() {
               </tr>
             </thead>
             <tbody>
-              {feedback.map((row, i) => {
+              {feedback.map((row: any, i: any) => {
                 const s = SENTIMENT_DISPLAY[row.sentiment] ?? SENTIMENT_DISPLAY.other
                 const isLast = i === feedback.length - 1
                 return (

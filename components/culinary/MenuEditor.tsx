@@ -651,7 +651,7 @@ function DishCard({
                   )}
                   {dish.allergen_flags && dish.allergen_flags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {dish.allergen_flags.map((flag) => (
+                      {dish.allergen_flags.map((flag: any) => (
                         <Badge key={flag} variant="error">
                           {flag}
                         </Badge>
@@ -686,7 +686,7 @@ function DishCard({
         {/* Components */}
         {dish.components.length > 0 && (
           <div className="border-t border-stone-800 pt-2 divide-y divide-stone-50">
-            {dish.components.map((comp) => (
+            {dish.components.map((comp: any) => (
               <ComponentRow
                 key={comp.id}
                 component={comp}
@@ -817,7 +817,7 @@ export function MenuEditorClient({ menu }: { menu: MenuFull }) {
 
       {/* Course cards */}
       {menu.dishes && menu.dishes.length > 0 ? (
-        menu.dishes.map((dish) => (
+        menu.dishes.map((dish: any) => (
           <DishCard
             key={dish.id}
             dish={dish}

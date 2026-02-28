@@ -81,7 +81,7 @@ export async function detectAllergens(recipeId: string): Promise<AllergenResult>
 
   // 2. Build ingredient lines for Edamam
   // Format: "2 cups rice", "1 tbsp olive oil", etc.
-  const ingredientLines = ingredients.map((ri) => {
+  const ingredientLines = ingredients.map((ri: any) => {
     const ing = ri.ingredient as { name: string }
     const name = ing?.name || 'unknown'
     const prep = ri.preparation_notes ? `, ${ri.preparation_notes}` : ''

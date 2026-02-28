@@ -91,7 +91,7 @@ async function fetchSchedulingEvent(eventId: string): Promise<SchedulingEvent | 
   let hasAlcohol = false
 
   if (menus && menus.length > 0) {
-    const menuIds = menus.map((m) => m.id)
+    const menuIds = menus.map((m: any) => m.id)
 
     const { count } = await supabase
       .from('dishes')
@@ -142,7 +142,7 @@ async function fetchUpcomingSchedulingEvents(): Promise<SchedulingEvent[]> {
 
   if (!events) return []
 
-  return events.map((event) => mapEventToScheduling(event))
+  return events.map((event: any) => mapEventToScheduling(event))
 }
 
 // ============================================

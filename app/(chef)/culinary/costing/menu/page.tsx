@@ -37,7 +37,7 @@ export default async function MenuCostPage() {
     compsByMenu.get(comp.menu_id)!.push(comp)
   }
 
-  const menuData = menus.map((menu) => {
+  const menuData = menus.map((menu: any) => {
     const menuComponents = compsByMenu.get(menu.id) ?? []
     const componentCount = menuComponents.length
 
@@ -62,8 +62,8 @@ export default async function MenuCostPage() {
     return { menu, componentCount, estimatedCostCents, pricedCount, costPerGuest }
   })
 
-  const withCost = menuData.filter((m) => m.estimatedCostCents > 0)
-  const noCost = menuData.filter((m) => m.estimatedCostCents === 0)
+  const withCost = menuData.filter((m: any) => m.estimatedCostCents > 0)
+  const noCost = menuData.filter((m: any) => m.estimatedCostCents === 0)
 
   return (
     <div className="space-y-6">
@@ -115,7 +115,7 @@ export default async function MenuCostPage() {
             </TableHeader>
             <TableBody>
               {menuData
-                .sort((a, b) => b.estimatedCostCents - a.estimatedCostCents)
+                .sort((a: any, b: any) => b.estimatedCostCents - a.estimatedCostCents)
                 .map(({ menu, componentCount, estimatedCostCents, pricedCount, costPerGuest }) => (
                   <TableRow key={menu.id}>
                     <TableCell className="font-medium">

@@ -38,12 +38,15 @@ export default async function FinanceOverviewPage() {
     getExpenses(),
   ])
 
-  const totalExpenses = expenses.reduce((sum, e) => sum + e.amount_cents, 0)
-  const completedEvents = events.filter((e) => e.status === 'completed')
-  const completedRevenue = completedEvents.reduce((sum, e) => sum + (e.quoted_price_cents ?? 0), 0)
+  const totalExpenses = expenses.reduce((sum: any, e: any) => sum + e.amount_cents, 0)
+  const completedEvents = events.filter((e: any) => e.status === 'completed')
+  const completedRevenue = completedEvents.reduce(
+    (sum: any, e: any) => sum + (e.quoted_price_cents ?? 0),
+    0
+  )
   const now = new Date()
   const outstandingEvents = events.filter(
-    (e) => !['completed', 'cancelled'].includes(e.status) && new Date(e.event_date) < now
+    (e: any) => !['completed', 'cancelled'].includes(e.status) && new Date(e.event_date) < now
   )
 
   return (

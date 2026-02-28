@@ -20,10 +20,10 @@ export default async function RefundsPage() {
   await requireChef()
   const refunds = await getLedgerEntries({ entryType: 'refund' })
 
-  const totalRefunded = refunds.reduce((s, e) => s + e.amount_cents, 0)
+  const totalRefunded = refunds.reduce((s: any, e: any) => s + e.amount_cents, 0)
 
   // Count unique events with refunds
-  const uniqueEvents = new Set(refunds.map((e) => e.event_id).filter(Boolean)).size
+  const uniqueEvents = new Set(refunds.map((e: any) => e.event_id).filter(Boolean)).size
 
   return (
     <div className="space-y-6">
@@ -76,7 +76,7 @@ export default async function RefundsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {refunds.map((entry) => (
+              {refunds.map((entry: any) => (
                 <TableRow key={entry.id}>
                   <TableCell className="text-stone-500 text-sm">
                     {format(new Date(entry.created_at), 'MMM d, yyyy')}

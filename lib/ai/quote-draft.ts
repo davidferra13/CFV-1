@@ -46,7 +46,8 @@ export async function generateQuoteDraft(inquiryId: string): Promise<QuoteDraftR
     recentEvents && recentEvents.length > 0
       ? Math.round(
           recentEvents.reduce(
-            (sum, e) => sum + (e.quoted_price_cents || 0) / Math.max(e.guest_count || 1, 1),
+            (sum: any, e: any) =>
+              sum + (e.quoted_price_cents || 0) / Math.max(e.guest_count || 1, 1),
             0
           ) / recentEvents.length
         )

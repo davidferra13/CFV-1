@@ -54,12 +54,14 @@ export async function getBookingScoreForInquiry(inquiryId: string): Promise<Book
   ])
 
   const allAccepted = (avgData.data ?? []).filter(
-    (q) => q.guest_count_estimated && q.total_quoted_cents
+    (q: any) => q.guest_count_estimated && q.total_quoted_cents
   )
   const tenantAvgPerGuest =
     allAccepted.length > 0
-      ? allAccepted.reduce((s, q) => s + q.total_quoted_cents / q.guest_count_estimated!, 0) /
-        allAccepted.length
+      ? allAccepted.reduce(
+          (s: any, q: any) => s + q.total_quoted_cents / q.guest_count_estimated!,
+          0
+        ) / allAccepted.length
       : 0
 
   const inquiryPerGuest =
@@ -167,7 +169,7 @@ export async function getBookingScoresForOpenInquiries(): Promise<BookingScore[]
   if (!inquiries || inquiries.length === 0) return []
 
   const results = await Promise.allSettled(
-    inquiries.map((inq) => getBookingScoreForInquiry(inq.id))
+    inquiries.map((inq: any) => getBookingScoreForInquiry(inq.id))
   )
 
   return results

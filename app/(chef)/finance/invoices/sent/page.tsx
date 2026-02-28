@@ -21,10 +21,10 @@ export default async function SentInvoicesPage() {
   const events = await getEvents()
 
   const sent = events
-    .filter((e) => e.status === 'accepted')
-    .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
+    .filter((e: any) => e.status === 'accepted')
+    .sort((a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
 
-  const totalValue = sent.reduce((s, e) => s + (e.quoted_price_cents ?? 0), 0)
+  const totalValue = sent.reduce((s: any, e: any) => s + (e.quoted_price_cents ?? 0), 0)
 
   return (
     <div className="space-y-6">
@@ -73,7 +73,7 @@ export default async function SentInvoicesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sent.map((event) => (
+              {sent.map((event: any) => (
                 <TableRow key={event.id}>
                   <TableCell className="text-stone-400 text-sm">
                     {format(new Date(event.event_date), 'MMM d, yyyy')}

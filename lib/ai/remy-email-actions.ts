@@ -27,7 +27,7 @@ export async function getRecentEmails(limit = 10) {
     .limit(limit)
 
   return {
-    emails: (data ?? []).map((e) => ({
+    emails: (data ?? []).map((e: any) => ({
       messageId: e.gmail_message_id,
       threadId: e.gmail_thread_id,
       from: e.from_address ?? '',
@@ -68,7 +68,7 @@ export async function searchEmails(query: string, limit = 10) {
 
   return {
     query,
-    emails: (data ?? []).map((e) => ({
+    emails: (data ?? []).map((e: any) => ({
       messageId: e.gmail_message_id,
       threadId: e.gmail_thread_id,
       from: e.from_address ?? '',
@@ -121,7 +121,7 @@ export async function getEmailThread(threadId: string) {
   return {
     threadId,
     inquiryId: inquiryMsg?.inquiry_id ?? null,
-    syncedEmails: (syncEmails ?? []).map((e) => ({
+    syncedEmails: (syncEmails ?? []).map((e: any) => ({
       messageId: e.gmail_message_id,
       from: e.from_address ?? '',
       subject: e.subject ?? '(no subject)',
@@ -129,7 +129,7 @@ export async function getEmailThread(threadId: string) {
       classification: e.classification ?? 'unknown',
       receivedAt: e.received_at ?? '',
     })),
-    storedMessages: (messages ?? []).map((m) => ({
+    storedMessages: (messages ?? []).map((m: any) => ({
       direction: m.direction,
       subject: m.subject ?? '',
       body: (m.body ?? '').slice(0, 1000),
@@ -161,7 +161,7 @@ export async function summarizeInbox() {
   const emails = recentEmails ?? []
 
   const totalThisWeek = emails.length
-  const todayEmails = emails.filter((e) => e.received_at?.startsWith(today))
+  const todayEmails = emails.filter((e: any) => e.received_at?.startsWith(today))
   const byClassification: Record<string, number> = {}
   for (const e of emails) {
     const cls = e.classification ?? 'unknown'
@@ -169,7 +169,7 @@ export async function summarizeInbox() {
   }
 
   // Count unactioned inquiries (created_inquiry but no follow-up yet)
-  const inquiryEmails = emails.filter((e) => e.action_taken === 'created_inquiry')
+  const inquiryEmails = emails.filter((e: any) => e.action_taken === 'created_inquiry')
 
   // Get last sync time
   const { data: conn } = await supabase
@@ -222,7 +222,7 @@ export async function draftEmailReply(messageId: string) {
 
     if (threadMsgs && threadMsgs.length > 0) {
       threadContext = threadMsgs
-        .map((m) => {
+        .map((m: any) => {
           const dir = m.direction === 'inbound' ? 'Client' : 'Chef'
           return `${dir}: ${(m.body ?? '').slice(0, 300)}`
         })
@@ -289,14 +289,14 @@ export async function loadEmailDigest(tenantId: string) {
 
   const emails = data ?? []
 
-  const inquiryCount = emails.filter((e) => e.action_taken === 'created_inquiry').length
-  const threadReplyCount = emails.filter((e) => e.classification === 'existing_thread').length
+  const inquiryCount = emails.filter((e: any) => e.action_taken === 'created_inquiry').length
+  const threadReplyCount = emails.filter((e: any) => e.classification === 'existing_thread').length
 
   return {
     totalSinceYesterday: emails.length,
     inquiryCount,
     threadReplyCount,
-    recentEmails: emails.slice(0, 5).map((e) => ({
+    recentEmails: emails.slice(0, 5).map((e: any) => ({
       from: e.from_address ?? '',
       subject: e.subject ?? '(no subject)',
       snippet: e.snippet ?? '',

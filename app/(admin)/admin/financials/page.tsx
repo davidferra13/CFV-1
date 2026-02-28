@@ -139,7 +139,7 @@ export default async function AdminFinancialsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {entries.map((entry) => (
+                {entries.map((entry: any) => (
                   <tr key={entry.id} className="hover:bg-slate-50">
                     <td className="px-4 py-2.5">
                       <span

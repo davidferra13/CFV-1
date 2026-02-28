@@ -325,7 +325,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
   ])
 
   const monthRevenueCents = (revenueResult.data ?? []).reduce(
-    (sum, entry) => sum + ((entry as { amount_cents: number }).amount_cents ?? 0),
+    (sum: any, entry: any) => sum + ((entry as { amount_cents: number }).amount_cents ?? 0),
     0
   )
 
@@ -333,7 +333,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
   const yearRevenue = (yearRevenueResult.data ?? []) as Array<Record<string, unknown>>
   const yearRevenueCents = yearRevenue.reduce((s, e) => s + ((e.amount_cents as number) ?? 0), 0)
   const yearExpenseCents = (yearExpensesResult.data ?? []).reduce(
-    (s, e) => s + (((e as Record<string, unknown>).amount_cents as number) ?? 0),
+    (s: any, e: any) => s + (((e as Record<string, unknown>).amount_cents as number) ?? 0),
     0
   )
   const yearEvents = (yearEventsResult.data ?? []) as Array<Record<string, unknown>>
@@ -705,7 +705,7 @@ async function loadEventEntity(
   const ledger = ledgerResult.data ?? []
   if (ledger.length > 0) {
     const totalPaid = ledger.reduce(
-      (s, e) => s + (((e as Record<string, unknown>).amount_cents as number) ?? 0),
+      (s: any, e: any) => s + (((e as Record<string, unknown>).amount_cents as number) ?? 0),
       0
     )
     lines.push(
@@ -727,7 +727,7 @@ async function loadEventEntity(
   const expenses = expensesResult.data ?? []
   if (expenses.length > 0) {
     const totalExpenses = expenses.reduce(
-      (s, e) => s + (((e as Record<string, unknown>).amount_cents as number) ?? 0),
+      (s: any, e: any) => s + (((e as Record<string, unknown>).amount_cents as number) ?? 0),
       0
     )
     lines.push(
@@ -763,7 +763,7 @@ async function loadEventEntity(
   // Temperature logs
   const temps = tempLogsResult.data ?? []
   if (temps.length > 0) {
-    const unsafe = temps.filter((t) => !(t as Record<string, unknown>).is_safe)
+    const unsafe = temps.filter((t: any) => !(t as Record<string, unknown>).is_safe)
     lines.push(`\nTEMP LOGS (${temps.length} readings, ${unsafe.length} flagged unsafe):`)
     for (const t of temps as Array<Record<string, unknown>>) {
       const safe = t.is_safe ? '' : ' ⚠ UNSAFE'
@@ -938,9 +938,9 @@ async function loadClientEntity(
   const events = eventsResult.data ?? []
   if (events.length > 0) {
     const completed = events.filter(
-      (e) => (e as Record<string, unknown>).status === 'completed'
+      (e: any) => (e as Record<string, unknown>).status === 'completed'
     ).length
-    const upcoming = events.filter((e) => {
+    const upcoming = events.filter((e: any) => {
       const s = (e as Record<string, unknown>).status as string
       return s !== 'completed' && s !== 'cancelled'
     }).length
@@ -1113,10 +1113,10 @@ async function loadInquiryEntity(
   const messages = messagesResult.data ?? []
   if (messages.length > 0) {
     const inbound = messages.filter(
-      (m) => (m as Record<string, unknown>).direction === 'inbound'
+      (m: any) => (m as Record<string, unknown>).direction === 'inbound'
     ).length
     const outbound = messages.filter(
-      (m) => (m as Record<string, unknown>).direction === 'outbound'
+      (m: any) => (m as Record<string, unknown>).direction === 'outbound'
     ).length
     lines.push(
       `\nMESSAGE THREAD (${messages.length} messages — ${inbound} from client, ${outbound} from chef):`
@@ -1268,7 +1268,7 @@ async function findMentionedClients(
   if (!data) return []
 
   // Match: check if any client's first name, last name, or full name appears in the message
-  return data.filter((c) => {
+  return data.filter((c: any) => {
     if (!c.full_name) return false
     const fullLower = c.full_name.toLowerCase()
     // Full name match
@@ -1300,7 +1300,7 @@ async function findMentionedEvents(
 
   if (!data) return []
 
-  return data.filter((e) => {
+  return data.filter((e: any) => {
     // Match by occasion name
     if (e.occasion && msgLower.includes(e.occasion.toLowerCase())) return true
     // Match by client name + event-related keywords
@@ -1354,7 +1354,7 @@ async function findMentionedRecipes(
 
   if (!data) return []
 
-  return data.filter((r) => {
+  return data.filter((r: any) => {
     if (!r.name) return false
     return msgLower.includes(r.name.toLowerCase())
   })
@@ -1379,7 +1379,7 @@ async function findMentionedInquiries(
 
   if (!data) return []
 
-  return data.filter((inq) => {
+  return data.filter((inq: any) => {
     // Match by occasion
     if (inq.confirmed_occasion && msgLower.includes(inq.confirmed_occasion.toLowerCase()))
       return true

@@ -45,7 +45,7 @@ export async function ingestInboundSms(
   // 2. Load known client emails for classification context
   const { data: clients } = await supabase.from('clients').select('email').eq('tenant_id', tenantId)
 
-  const knownClientEmails = (clients ?? []).map((c) => c.email).filter(Boolean) as string[]
+  const knownClientEmails = (clients ?? []).map((c: any) => c.email).filter(Boolean) as string[]
 
   // 3. Classify the message (reuse email classifier — works for any text)
   let classification: { category: string; confidence: string }

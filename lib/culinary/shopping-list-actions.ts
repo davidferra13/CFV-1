@@ -55,7 +55,7 @@ async function getRecipeMultipliersForEvents(
     .eq('tenant_id', tenantId)
     .in(
       'menu_id',
-      menus.map((menu) => menu.id)
+      menus.map((menu: any) => menu.id)
     )
 
   if (!dishes?.length) return new Map()
@@ -66,7 +66,7 @@ async function getRecipeMultipliersForEvents(
     .eq('tenant_id', tenantId)
     .in(
       'dish_id',
-      dishes.map((dish) => dish.id)
+      dishes.map((dish: any) => dish.id)
     )
     .not('recipe_id', 'is', null)
 
@@ -141,7 +141,7 @@ export async function generateShoppingList(input: {
     }
   }
 
-  const eventIds = events.map((event) => event.id)
+  const eventIds = events.map((event: any) => event.id)
   const recipeMultipliers = await getRecipeMultipliersForEvents(supabase, user.tenantId!, eventIds)
 
   if (recipeMultipliers.size === 0) {
@@ -164,7 +164,7 @@ export async function generateShoppingList(input: {
   }
 
   const ingredientIds = Array.from(
-    new Set((recipeIngredients ?? []).map((item) => item.ingredient_id).filter(Boolean))
+    new Set((recipeIngredients ?? []).map((item: any) => item.ingredient_id).filter(Boolean))
   ) as string[]
 
   if (ingredientIds.length === 0) {
@@ -204,8 +204,8 @@ export async function generateShoppingList(input: {
   }
   if (vendorRows.error) throw new Error(`Failed to load suppliers: ${vendorRows.error.message}`)
 
-  const ingredientMap = new Map((ingredientRows.data ?? []).map((row) => [row.id, row]))
-  const vendorNameMap = new Map((vendorRows.data ?? []).map((row) => [row.id, row.name]))
+  const ingredientMap = new Map((ingredientRows.data ?? []).map((row: any) => [row.id, row]))
+  const vendorNameMap = new Map((vendorRows.data ?? []).map((row: any) => [row.id, row.name]))
 
   const preferredVendorByIngredient = new Map<string, string>()
   const vendorItemsByIngredient = new Map<string, Array<{ vendorId: string; price: number }>>()

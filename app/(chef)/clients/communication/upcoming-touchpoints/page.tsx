@@ -32,7 +32,7 @@ export default async function UpcomingTouchpointsPage() {
 
   const now = new Date()
   const upcoming = events
-    .filter((e) => {
+    .filter((e: any) => {
       const eventDate = new Date(e.event_date)
       return (
         eventDate >= now &&
@@ -40,14 +40,14 @@ export default async function UpcomingTouchpointsPage() {
         !['completed', 'cancelled'].includes(e.status)
       )
     })
-    .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
+    .sort((a: any, b: any) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
 
-  const thisWeek = upcoming.filter((e) => differenceInDays(new Date(e.event_date), now) <= 7)
-  const thisMonth = upcoming.filter((e) => {
+  const thisWeek = upcoming.filter((e: any) => differenceInDays(new Date(e.event_date), now) <= 7)
+  const thisMonth = upcoming.filter((e: any) => {
     const d = differenceInDays(new Date(e.event_date), now)
     return d > 7 && d <= 30
   })
-  const next60 = upcoming.filter((e) => differenceInDays(new Date(e.event_date), now) > 30)
+  const next60 = upcoming.filter((e: any) => differenceInDays(new Date(e.event_date), now) > 30)
 
   return (
     <div className="space-y-6">
@@ -111,7 +111,7 @@ export default async function UpcomingTouchpointsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {upcoming.map((event) => {
+              {upcoming.map((event: any) => {
                 const daysAway = differenceInDays(new Date(event.event_date), now)
                 const urgencyClass =
                   daysAway <= 7

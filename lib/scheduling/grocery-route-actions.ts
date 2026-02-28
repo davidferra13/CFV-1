@@ -88,7 +88,7 @@ export async function getGroceryRoute(eventId: string): Promise<GroceryRoute> {
     }
   }
 
-  const menuIds = menus.map((m) => m.id)
+  const menuIds = menus.map((m: any) => m.id)
 
   // Fetch dishes from menus
   const { data: dishes } = await supabase.from('dishes').select('id, name').in('menu_id', menuIds)

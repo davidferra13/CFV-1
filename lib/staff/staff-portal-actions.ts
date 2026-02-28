@@ -561,7 +561,9 @@ export async function getStationRecipes(stationId: string): Promise<StaffRecipe[
   }
 
   // Get recipes linked to these menu items (via menu_item_id)
-  const menuItemIds = stationMenuItems.map((smi) => smi.menu_item_id).filter(Boolean) as string[]
+  const menuItemIds = stationMenuItems
+    .map((smi: any) => smi.menu_item_id)
+    .filter(Boolean) as string[]
 
   // Recipes are linked to menu items through menu_items.recipe_id or similar.
   // Fallback: return all recipes for the tenant, filtered to limit

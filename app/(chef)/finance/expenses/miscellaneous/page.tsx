@@ -29,17 +29,19 @@ export default async function MiscellaneousExpensesPage() {
   await requireChef()
   const allExpenses = await getExpenses()
 
-  const expenses = allExpenses.filter((e) =>
+  const expenses = allExpenses.filter((e: any) =>
     CATEGORIES.includes(e.category as (typeof CATEGORIES)[number])
   )
 
-  const totalSpend = expenses.reduce((s, e) => s + e.amount_cents, 0)
+  const totalSpend = expenses.reduce((s: any, e: any) => s + e.amount_cents, 0)
 
   const totalByCategory = CATEGORIES.map((cat) => ({
     cat,
     label: EXPENSE_CATEGORIES[cat].label,
-    total: expenses.filter((e) => e.category === cat).reduce((s, e) => s + e.amount_cents, 0),
-    count: expenses.filter((e) => e.category === cat).length,
+    total: expenses
+      .filter((e: any) => e.category === cat)
+      .reduce((s: any, e: any) => s + e.amount_cents, 0),
+    count: expenses.filter((e: any) => e.category === cat).length,
   })).filter((c) => c.count > 0)
 
   return (
@@ -105,7 +107,7 @@ export default async function MiscellaneousExpensesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {expenses.map((expense) => (
+              {expenses.map((expense: any) => (
                 <TableRow key={expense.id}>
                   <TableCell className="text-stone-500 text-sm">
                     {format(new Date(expense.expense_date), 'MMM d, yyyy')}

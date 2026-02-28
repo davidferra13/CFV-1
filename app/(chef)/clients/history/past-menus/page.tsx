@@ -30,10 +30,10 @@ export default async function PastMenusPage() {
 
   // Show non-template menus (event-specific menus) that are locked/approved or archived
   const eventMenus = menus
-    .filter((m) => !m.is_template && (m.status === 'locked' || m.status === 'archived'))
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .filter((m: any) => !m.is_template && (m.status === 'locked' || m.status === 'archived'))
+    .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
-  const templateMenus = menus.filter((m) => m.is_template)
+  const templateMenus = menus.filter((m: any) => m.is_template)
 
   return (
     <div className="space-y-6">
@@ -96,7 +96,7 @@ export default async function PastMenusPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {eventMenus.map((menu) => (
+              {eventMenus.map((menu: any) => (
                 <TableRow key={menu.id}>
                   <TableCell className="font-medium">
                     <Link

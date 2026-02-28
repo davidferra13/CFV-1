@@ -217,7 +217,7 @@ export default async function ExpensesPage({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {expenses.map((expense) => {
+              {expenses.map((expense: any) => {
                 const event = (expense as any).event
                 return (
                   <TableRow key={expense.id}>

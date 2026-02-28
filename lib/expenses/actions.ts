@@ -404,11 +404,11 @@ export async function getEventProfitSummary(eventId: string) {
 
   if (historicalRows && historicalRows.length >= 3) {
     const values = historicalRows
-      .map((r) => parseFloat(String(r.food_cost_percentage)))
-      .filter((v) => !isNaN(v) && v > 0)
+      .map((r: any) => parseFloat(String(r.food_cost_percentage)))
+      .filter((v: any) => !isNaN(v) && v > 0)
     if (values.length >= 3) {
       chefAvgFoodCostPercent = parseFloat(
-        ((values.reduce((s, v) => s + v, 0) / values.length) * 100).toFixed(1)
+        ((values.reduce((s: any, v: any) => s + v, 0) / values.length) * 100).toFixed(1)
       )
     }
   }
@@ -518,11 +518,11 @@ export async function getMonthlyFinancialSummary(year: number, month: number) {
     .lt('event_date', endDate)
     .order('event_date', { ascending: true })
 
-  const monthEventIds = new Set((monthEvents || []).map((e) => e.id))
+  const monthEventIds = new Set((monthEvents || []).map((e: any) => e.id))
 
   // Filter financial summaries to this month's events
   const monthFinancials = (eventSummaries || []).filter(
-    (s) => s.event_id && monthEventIds.has(s.event_id)
+    (s: any) => s.event_id && monthEventIds.has(s.event_id)
   )
 
   let totalRevenueCents = 0
@@ -549,8 +549,8 @@ export async function getMonthlyFinancialSummary(year: number, month: number) {
   const TARGET_MONTHLY_REVENUE_CENTS = prefs.target_monthly_revenue_cents ?? 1000000
 
   // Build per-event breakdown
-  const eventBreakdown = (monthEvents || []).map((event) => {
-    const fin = monthFinancials.find((f) => f.event_id === event.id)
+  const eventBreakdown = (monthEvents || []).map((event: any) => {
+    const fin = monthFinancials.find((f: any) => f.event_id === event.id)
     return {
       eventId: event.id,
       occasion: event.occasion,
@@ -619,7 +619,10 @@ export async function getBudgetGuardrail(eventId: string) {
     .eq('tenant_id', user.tenantId!)
     .eq('is_business', true)
 
-  const currentSpendCents = (existingExpenses || []).reduce((sum, e) => sum + e.amount_cents, 0)
+  const currentSpendCents = (existingExpenses || []).reduce(
+    (sum: any, e: any) => sum + e.amount_cents,
+    0
+  )
 
   // Get historical average grocery spend for similar events
   const { data: historicalExpenses } = await supabase

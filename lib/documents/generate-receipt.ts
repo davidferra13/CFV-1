@@ -103,7 +103,7 @@ export async function fetchReceiptData(eventId: string): Promise<ReceiptData> {
   const quotedPriceCents = financial?.quoted_price_cents ?? event.quoted_price_cents ?? 0
   const totalPaidCents =
     financial?.total_paid_cents ??
-    (ledger || []).reduce((sum, entry) => sum + entry.amount_cents, 0)
+    (ledger || []).reduce((sum: any, entry: any) => sum + entry.amount_cents, 0)
   const outstandingBalanceCents =
     financial?.outstanding_balance_cents ?? Math.max(quotedPriceCents - totalPaidCents, 0)
 
@@ -263,7 +263,8 @@ export async function fetchReceiptDataForChef(eventId: string): Promise<ReceiptD
 
   const quotedPriceCents = financial?.quoted_price_cents ?? event.quoted_price_cents ?? 0
   const totalPaidCents =
-    financial?.total_paid_cents ?? (ledger || []).reduce((sum, e) => sum + e.amount_cents, 0)
+    financial?.total_paid_cents ??
+    (ledger || []).reduce((sum: any, e: any) => sum + e.amount_cents, 0)
   const outstandingBalanceCents =
     financial?.outstanding_balance_cents ?? Math.max(quotedPriceCents - totalPaidCents, 0)
 

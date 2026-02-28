@@ -498,7 +498,7 @@ export async function importProspectsFromCSV(csvText: string) {
     .select('id, name')
     .eq('chef_id', user.tenantId!)
 
-  const existingNames = (existingProspects ?? []).map((p) => p.name as string)
+  const existingNames = (existingProspects ?? []).map((p: any) => p.name as string)
 
   let imported = 0
   let skipped = 0
@@ -507,7 +507,7 @@ export async function importProspectsFromCSV(csvText: string) {
   for (const row of rows) {
     // Fuzzy dedup: check against existing DB records AND this batch
     const isDuplicate =
-      existingNames.some((existing) => isSimilarName(row.name, existing)) ||
+      existingNames.some((existing: any) => isSimilarName(row.name, existing)) ||
       importedNames.some((added) => isSimilarName(row.name, added))
 
     if (isDuplicate) {
@@ -742,7 +742,7 @@ export async function exportProspectsToCSV(filters?: {
     return str
   }
 
-  const rows = data.map((p) =>
+  const rows = data.map((p: any) =>
     headers.map((h) => escapeCSV((p as Record<string, unknown>)[h])).join(',')
   )
 
@@ -871,7 +871,7 @@ export async function runAutoPipelineRules(): Promise<{
     .neq('priority', 'high')
 
   if (overdueFollowUps && overdueFollowUps.length > 0) {
-    const overdueIds = overdueFollowUps.map((p) => p.id)
+    const overdueIds = overdueFollowUps.map((p: any) => p.id)
     await supabase
       .from('prospects')
       .update({ priority: 'high' })
@@ -1317,7 +1317,7 @@ export async function createFollowUpReminders(): Promise<{ created: number }> {
     .eq('completed', false)
     .ilike('text', '%follow up%prospect%')
 
-  const existingTexts = new Set((existingTodos ?? []).map((t) => t.text.toLowerCase()))
+  const existingTexts = new Set((existingTodos ?? []).map((t: any) => t.text.toLowerCase()))
 
   let created = 0
   for (const p of dueProspects) {

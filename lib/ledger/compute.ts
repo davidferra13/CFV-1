@@ -107,7 +107,7 @@ export async function getYtdCarryForwardSavings() {
     return 0
   }
 
-  return (data || []).reduce((sum, e) => sum + (e.leftover_value_received_cents ?? 0), 0)
+  return (data || []).reduce((sum: any, e: any) => sum + (e.leftover_value_received_cents ?? 0), 0)
 }
 
 /**
@@ -163,7 +163,7 @@ export async function computeProfitAndLoss(year: number) {
     expensesByCategory.set(cat, (expensesByCategory.get(cat) || 0) + expense.amount_cents)
   }
 
-  const totalExpensesCents = allExpenses.reduce((s, e) => s + e.amount_cents, 0)
+  const totalExpensesCents = allExpenses.reduce((s: any, e: any) => s + e.amount_cents, 0)
   const netProfitCents = netRevenueCents - totalExpensesCents
   const profitMarginPercent =
     netRevenueCents > 0 ? Math.round((netProfitCents / netRevenueCents) * 1000) / 10 : 0

@@ -195,8 +195,8 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
       .neq('id', menu.event_id)
 
     if (prevEvents && prevEvents.length > 0) {
-      const prevEventIds = prevEvents.map((e) => e.id)
-      const eventDateMap = Object.fromEntries(prevEvents.map((e) => [e.id, e.event_date]))
+      const prevEventIds = prevEvents.map((e: any) => e.id)
+      const eventDateMap = Object.fromEntries(prevEvents.map((e: any) => [e.id, e.event_date]))
 
       const { data: prevMenus } = await supabase
         .from('menus')
@@ -207,7 +207,7 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
         .order('created_at', { ascending: false })
         .limit(3)
 
-      previousMenus = (prevMenus ?? []).map((m) => ({
+      previousMenus = (prevMenus ?? []).map((m: any) => ({
         id: m.id,
         name: m.name,
         cuisine_type: m.cuisine_type,
@@ -384,7 +384,7 @@ export async function reorderEditorCourse(
 
   if (!dishes || dishes.length < 2) return
 
-  const idx = dishes.findIndex((d) => d.id === dishId)
+  const idx = dishes.findIndex((d: any) => d.id === dishId)
   if (idx === -1) return
 
   const swapIdx = direction === 'up' ? idx - 1 : idx + 1

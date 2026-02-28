@@ -91,7 +91,7 @@ export async function getVisitStats(guestId: string) {
 
   const allVisits = visits ?? []
   const totalVisits = allVisits.length
-  const totalSpendCents = allVisits.reduce((sum, v) => sum + (v.spend_cents || 0), 0)
+  const totalSpendCents = allVisits.reduce((sum: any, v: any) => sum + (v.spend_cents || 0), 0)
   const avgSpendCents = totalVisits > 0 ? Math.round(totalSpendCents / totalVisits) : 0
 
   // Calculate visit frequency (avg days between visits)

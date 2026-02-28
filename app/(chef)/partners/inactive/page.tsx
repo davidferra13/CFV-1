@@ -67,7 +67,7 @@ export default async function InactivePartnersPage() {
         </Card>
       ) : (
         <div className="space-y-2">
-          {partners.map((partner) => (
+          {partners.map((partner: any) => (
             <Link
               key={partner.id}
               href={`/partners/${partner.id}`}

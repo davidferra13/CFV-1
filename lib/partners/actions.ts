@@ -246,10 +246,10 @@ export async function getPartners(filters?: { partner_type?: string; status?: st
   }
 
   // Get inquiry and event counts for each partner
-  const partnerIds = partners.map((p) => p.id)
+  const partnerIds = partners.map((p: any) => p.id)
 
   if (partnerIds.length === 0) {
-    return partners.map((p) => ({
+    return partners.map((p: any) => ({
       ...p,
       inquiry_count: 0,
       event_count: 0,
@@ -296,7 +296,7 @@ export async function getPartners(filters?: { partner_type?: string; status?: st
     }
   }
 
-  return partners.map((p) => ({
+  return partners.map((p: any) => ({
     ...p,
     inquiry_count: inquiryCounts[p.id] || 0,
     event_count: eventCounts[p.id] || 0,
@@ -354,10 +354,13 @@ export async function getPartnerById(id: string) {
     .eq('status', 'completed')
 
   const totalRevenueCents = (completedEvents || []).reduce(
-    (sum, e) => sum + (e.quoted_price_cents || 0),
+    (sum: any, e: any) => sum + (e.quoted_price_cents || 0),
     0
   )
-  const totalGuests = (completedEvents || []).reduce((sum, e) => sum + (e.guest_count || 0), 0)
+  const totalGuests = (completedEvents || []).reduce(
+    (sum: any, e: any) => sum + (e.guest_count || 0),
+    0
+  )
   const completedEventCount = completedEvents?.length || 0
 
   // Get per-location stats
@@ -773,7 +776,7 @@ export async function getPartnersWithLocations() {
   }
 
   return {
-    partners: (partners || []).map((p) => ({
+    partners: (partners || []).map((p: any) => ({
       id: p.id,
       name: p.name,
       partner_type: p.partner_type,

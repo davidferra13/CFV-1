@@ -73,7 +73,7 @@ export default async function DraftMenusPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {menus.map((menu) => (
+              {menus.map((menu: any) => (
                 <TableRow key={menu.id}>
                   <TableCell className="font-medium">
                     <Link

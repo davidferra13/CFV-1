@@ -39,10 +39,12 @@ export async function getClientEvents(options?: { pastLimit?: number }) {
 
   const all = events ?? []
   const upcoming = all
-    .filter((e) => ['proposed', 'accepted', 'paid', 'confirmed', 'in_progress'].includes(e.status))
-    .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
-  const completed = all.filter((e) => e.status === 'completed')
-  const cancelled = all.filter((e) => e.status === 'cancelled')
+    .filter((e: any) =>
+      ['proposed', 'accepted', 'paid', 'confirmed', 'in_progress'].includes(e.status)
+    )
+    .sort((a: any, b: any) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
+  const completed = all.filter((e: any) => e.status === 'completed')
+  const cancelled = all.filter((e: any) => e.status === 'cancelled')
 
   const pastTotalCount = completed.length
   const pastSlice = Number.isFinite(pastLimit) ? completed.slice(0, pastLimit) : completed
@@ -53,7 +55,9 @@ export async function getClientEvents(options?: { pastLimit?: number }) {
     pastTotalCount,
     cancelled,
     // Legacy flat array for callers that don't use the grouped shape
-    all: all.sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime()),
+    all: all.sort(
+      (a: any, b: any) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime()
+    ),
   }
 }
 

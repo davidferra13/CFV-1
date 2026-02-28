@@ -166,7 +166,7 @@ export async function cloneEvent(
         .eq('menu_id', sourceMenu.id)
 
       if (sourceDishes && sourceDishes.length > 0) {
-        const dishInserts = sourceDishes.map((dish) => ({
+        const dishInserts = sourceDishes.map((dish: any) => ({
           menu_id: newMenu.id,
           tenant_id: user.entityId,
           name: dish.name,

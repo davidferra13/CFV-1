@@ -277,7 +277,7 @@ export default async function MyEventsPage() {
   let pastWithBalance: Set<string> = new Set()
 
   if (past.length > 0) {
-    const pastIds = past.map((e) => e.id)
+    const pastIds = past.map((e: any) => e.id)
 
     const [reviewRows, balanceRows] = await Promise.all([
       // Which completed events already have reviews?
@@ -285,7 +285,7 @@ export default async function MyEventsPage() {
         .from('client_reviews')
         .select('event_id')
         .in('event_id', pastIds)
-        .then((r) => r.data ?? []),
+        .then((r: any) => r.data ?? []),
 
       // Which completed events have outstanding balances?
       supabase
@@ -293,7 +293,7 @@ export default async function MyEventsPage() {
         .select('event_id, outstanding_balance_cents')
         .in('event_id', pastIds)
         .gt('outstanding_balance_cents', 0)
-        .then((r) => r.data ?? []),
+        .then((r: any) => r.data ?? []),
     ])
 
     const reviewedEventIds = new Set(
@@ -383,7 +383,7 @@ export default async function MyEventsPage() {
         <h2 className="text-2xl font-semibold text-stone-100 mb-4">Upcoming Events</h2>
         {upcoming.length > 0 ? (
           <div className="space-y-4">
-            {upcoming.map((event) => (
+            {upcoming.map((event: any) => (
               <EventCard key={event.id} event={event as ClientEvent} />
             ))}
           </div>
@@ -407,7 +407,7 @@ export default async function MyEventsPage() {
         </div>
         {past.length > 0 ? (
           <div className="space-y-4">
-            {past.map((event) => (
+            {past.map((event: any) => (
               <EventCard
                 key={event.id}
                 event={event as ClientEvent}
@@ -434,7 +434,7 @@ export default async function MyEventsPage() {
         <section>
           <h2 className="text-2xl font-semibold text-stone-100 mb-4">Cancelled Events</h2>
           <div className="space-y-4">
-            {cancelled.map((event) => (
+            {cancelled.map((event: any) => (
               <EventCard key={event.id} event={event as ClientEvent} />
             ))}
           </div>

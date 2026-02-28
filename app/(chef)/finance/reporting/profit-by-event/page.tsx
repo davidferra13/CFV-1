@@ -34,18 +34,18 @@ export default async function ProfitByEventPage() {
   }
 
   const rows = events
-    .filter((e) => (e.quoted_price_cents ?? 0) > 0 || expensesByEvent.has(e.id))
-    .map((e) => ({
+    .filter((e: any) => (e.quoted_price_cents ?? 0) > 0 || expensesByEvent.has(e.id))
+    .map((e: any) => ({
       ...e,
       revenue: e.quoted_price_cents ?? 0,
       directExpenses: expensesByEvent.get(e.id) ?? 0,
       profit: (e.quoted_price_cents ?? 0) - (expensesByEvent.get(e.id) ?? 0),
     }))
-    .sort((a, b) => b.profit - a.profit)
+    .sort((a: any, b: any) => b.profit - a.profit)
 
-  const totalRevenue = rows.reduce((s, r) => s + r.revenue, 0)
-  const totalExpenses = rows.reduce((s, r) => s + r.directExpenses, 0)
-  const totalProfit = rows.reduce((s, r) => s + r.profit, 0)
+  const totalRevenue = rows.reduce((s: any, r: any) => s + r.revenue, 0)
+  const totalExpenses = rows.reduce((s: any, r: any) => s + r.directExpenses, 0)
+  const totalProfit = rows.reduce((s: any, r: any) => s + r.profit, 0)
 
   return (
     <div className="space-y-6">
@@ -102,7 +102,7 @@ export default async function ProfitByEventPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map((row) => {
+              {rows.map((row: any) => {
                 const margin = row.revenue > 0 ? Math.round((row.profit / row.revenue) * 100) : null
                 return (
                   <TableRow key={row.id}>

@@ -189,8 +189,8 @@ export async function getRevenueBySource(range?: DateRange): Promise<RevenueData
 
   // Get the inquiry channel for each event
   const inquiryIds = (events || [])
-    .map((e) => e.inquiry_id)
-    .filter((id): id is string => id != null)
+    .map((e: any) => e.inquiry_id)
+    .filter((id: any): id is string => id != null)
   const { data: inquiries } =
     inquiryIds.length > 0
       ? await supabase.from('inquiries').select('id, channel').in('id', inquiryIds)
@@ -276,7 +276,7 @@ export async function getPartnerLeaderboard(range?: DateRange): Promise<PartnerL
 
   if (error || !partners || partners.length === 0) return []
 
-  const partnerIds = partners.map((p) => p.id)
+  const partnerIds = partners.map((p: any) => p.id)
 
   // Get inquiries in range linked to partners
   const { data: inquiries } = await supabase
@@ -334,7 +334,7 @@ export async function getPartnerLeaderboard(range?: DateRange): Promise<PartnerL
   }
 
   return partners
-    .map((p) => ({
+    .map((p: any) => ({
       id: p.id,
       name: p.name,
       partner_type: p.partner_type,
@@ -344,8 +344,8 @@ export async function getPartnerLeaderboard(range?: DateRange): Promise<PartnerL
           ? Math.round((stats[p.id].completed_count / stats[p.id].inquiry_count) * 100)
           : 0,
     }))
-    .filter((p) => p.inquiry_count > 0 || p.event_count > 0)
-    .sort((a, b) => b.revenue_cents - a.revenue_cents)
+    .filter((p: any) => p.inquiry_count > 0 || p.event_count > 0)
+    .sort((a: any, b: any) => b.revenue_cents - a.revenue_cents)
 }
 
 // ============================================

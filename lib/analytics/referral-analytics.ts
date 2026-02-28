@@ -134,8 +134,8 @@ export async function getReferralFunnelData(): Promise<{
 
   // Collect all event IDs from converted inquiries
   const eventIds = (inquiries || [])
-    .map((i) => i.converted_to_event_id)
-    .filter((id): id is string => id != null)
+    .map((i: any) => i.converted_to_event_id)
+    .filter((id: any): id is string => id != null)
 
   // Fetch events for those IDs to determine stage progression and revenue
   let eventMap: Record<string, { status: string; quoted_price_cents: number | null }> = {}

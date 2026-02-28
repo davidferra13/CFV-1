@@ -161,7 +161,7 @@ export async function getDocumentReadiness(eventId: string): Promise<DocumentRea
         .eq('menu_id', menus[0].id)
         .eq('tenant_id', user.tenantId!)
 
-      const dishIds = (dishes || []).map((d) => d.id)
+      const dishIds = (dishes || []).map((d: any) => d.id)
       if (dishIds.length > 0) {
         const { count: compCount } = await supabase
           .from('components')

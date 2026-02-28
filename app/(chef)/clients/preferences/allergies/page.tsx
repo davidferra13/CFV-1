@@ -19,8 +19,8 @@ export default async function AllergiesPage() {
   const clients = await getClientsWithStats()
 
   const clientsWithAllergies = clients
-    .filter((c) => c.allergies && (c.allergies as string[]).length > 0)
-    .sort((a, b) => a.full_name.localeCompare(b.full_name))
+    .filter((c: any) => c.allergies && (c.allergies as string[]).length > 0)
+    .sort((a: any, b: any) => a.full_name.localeCompare(b.full_name))
 
   // Aggregate allergy counts
   const allergyCounts: Record<string, number> = {}
@@ -84,7 +84,7 @@ export default async function AllergiesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {clientsWithAllergies.map((client) => (
+              {clientsWithAllergies.map((client: any) => (
                 <TableRow key={client.id}>
                   <TableCell className="font-medium">
                     <Link

@@ -46,23 +46,23 @@ export default async function ReconciliationPage() {
   }
 
   // Paid-state events with their invoice value vs recorded payments
-  const paidEvents = events.filter((e) =>
+  const paidEvents = events.filter((e: any) =>
     ['paid', 'confirmed', 'in_progress', 'completed'].includes(e.status)
   )
 
-  const reconciled = paidEvents.filter((e) => {
+  const reconciled = paidEvents.filter((e: any) => {
     const recorded = paymentsByEvent.get(e.id) ?? 0
     const invoiced = e.quoted_price_cents ?? 0
     return recorded >= invoiced
   })
 
-  const partial = paidEvents.filter((e) => {
+  const partial = paidEvents.filter((e: any) => {
     const recorded = paymentsByEvent.get(e.id) ?? 0
     const invoiced = e.quoted_price_cents ?? 0
     return recorded > 0 && recorded < invoiced
   })
 
-  const unrecorded = paidEvents.filter((e) => !paymentsByEvent.has(e.id))
+  const unrecorded = paidEvents.filter((e: any) => !paymentsByEvent.has(e.id))
 
   return (
     <div className="space-y-6">
@@ -108,7 +108,7 @@ export default async function ReconciliationPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {unrecorded.map((event) => (
+                {unrecorded.map((event: any) => (
                   <TableRow key={event.id}>
                     <TableCell className="text-stone-400 text-sm">
                       {format(new Date(event.event_date), 'MMM d, yyyy')}
@@ -164,7 +164,7 @@ export default async function ReconciliationPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {partial.map((event) => {
+                {partial.map((event: any) => {
                   const recorded = paymentsByEvent.get(event.id) ?? 0
                   const invoiced = event.quoted_price_cents ?? 0
                   return (

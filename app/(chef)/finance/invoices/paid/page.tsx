@@ -28,11 +28,11 @@ export default async function PaidInvoicesPage() {
   const events = await getEvents()
 
   const paid = events
-    .filter((e) => ['paid', 'confirmed', 'in_progress', 'completed'].includes(e.status))
-    .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
+    .filter((e: any) => ['paid', 'confirmed', 'in_progress', 'completed'].includes(e.status))
+    .sort((a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
 
-  const totalValue = paid.reduce((s, e) => s + (e.quoted_price_cents ?? 0), 0)
-  const completedCount = paid.filter((e) => e.status === 'completed').length
+  const totalValue = paid.reduce((s: any, e: any) => s + (e.quoted_price_cents ?? 0), 0)
+  const completedCount = paid.filter((e: any) => e.status === 'completed').length
 
   return (
     <div className="space-y-6">
@@ -86,7 +86,7 @@ export default async function PaidInvoicesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paid.map((event) => (
+              {paid.map((event: any) => (
                 <TableRow key={event.id}>
                   <TableCell className="text-stone-400 text-sm">
                     {format(new Date(event.event_date), 'MMM d, yyyy')}

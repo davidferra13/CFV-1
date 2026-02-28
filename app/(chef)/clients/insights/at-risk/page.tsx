@@ -27,8 +27,13 @@ export default async function AtRiskClientsPage() {
 
   const now = Date.now()
   const atRisk = clients
-    .filter((c) => c.lastEventDate && now - new Date(c.lastEventDate).getTime() > NINETY_DAYS_MS)
-    .sort((a, b) => new Date(a.lastEventDate!).getTime() - new Date(b.lastEventDate!).getTime())
+    .filter(
+      (c: any) => c.lastEventDate && now - new Date(c.lastEventDate).getTime() > NINETY_DAYS_MS
+    )
+    .sort(
+      (a: any, b: any) =>
+        new Date(a.lastEventDate!).getTime() - new Date(b.lastEventDate!).getTime()
+    )
 
   return (
     <div className="space-y-6">
@@ -68,7 +73,7 @@ export default async function AtRiskClientsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {atRisk.map((client) => {
+              {atRisk.map((client: any) => {
                 const days = daysSince(client.lastEventDate!)
                 const urgencyClass = days > 180 ? 'text-red-700 font-semibold' : 'text-amber-700'
                 return (

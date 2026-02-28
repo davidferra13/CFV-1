@@ -35,7 +35,7 @@ export default async function RegisterPage() {
   }
 
   // Cast products: product_projections.modifiers is Json|null, PosRegister expects any[]
-  const products = productsData.products.map((p) => ({
+  const products = productsData.products.map((p: any) => ({
     ...p,
     modifiers: Array.isArray(p.modifiers) ? p.modifiers : [],
   }))

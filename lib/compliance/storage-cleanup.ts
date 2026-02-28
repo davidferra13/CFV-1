@@ -46,7 +46,7 @@ export async function cleanupStorageBuckets(chefId: string): Promise<{
       }
 
       if (files && files.length > 0) {
-        const paths = files.map((f) => `${chefId}/${f.name}`)
+        const paths = files.map((f: any) => `${chefId}/${f.name}`)
         const { error: removeError } = await adminClient.storage.from(bucket).remove(paths)
 
         if (removeError) {

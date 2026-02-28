@@ -128,7 +128,7 @@ export async function dispatchWebhookEvent(
   }
 
   // Fire-and-forget to all subscriptions in parallel
-  const deliveries = subs.map(async (sub) => {
+  const deliveries = subs.map(async (sub: any) => {
     const deliveryId = crypto.randomUUID()
     let responseStatus: number | null = null
     let responseBody: string | null = null

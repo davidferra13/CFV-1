@@ -137,8 +137,8 @@ export async function fetchPackingListData(eventId: string): Promise<PackingList
       .order('course_number', { ascending: true })
 
     if (dishes && dishes.length > 0) {
-      const dishIds = dishes.map((d) => d.id)
-      const dishMap = new Map(dishes.map((d) => [d.id, d]))
+      const dishIds = dishes.map((d: any) => d.id)
+      const dishMap = new Map(dishes.map((d: any) => [d.id, d]))
 
       // Fetch only make-ahead components — these are what get packed
       // Note: transport_category was added in migration 20260301000001.
@@ -160,7 +160,7 @@ export async function fetchPackingListData(eventId: string): Promise<PackingList
         .order('sort_order', { ascending: true })
         .returns<RawComp[]>()
 
-      components = (rawComps || []).map((c) => {
+      components = (rawComps || []).map((c: any) => {
         const dish = dishMap.get(c.dish_id)
         return {
           name: c.name,

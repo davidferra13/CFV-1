@@ -152,19 +152,19 @@ export async function getFunnelMetrics(
 
   // Count events that reached at least each stage
   // FSM order: draft -> proposed -> accepted -> paid -> confirmed -> in_progress -> completed
-  const quoteSent = allEvents.filter((e) =>
+  const quoteSent = allEvents.filter((e: any) =>
     ['proposed', 'accepted', 'paid', 'confirmed', 'in_progress', 'completed'].includes(e.status)
   ).length
 
-  const accepted = allEvents.filter((e) =>
+  const accepted = allEvents.filter((e: any) =>
     ['accepted', 'paid', 'confirmed', 'in_progress', 'completed'].includes(e.status)
   ).length
 
-  const paid = allEvents.filter((e) =>
+  const paid = allEvents.filter((e: any) =>
     ['paid', 'confirmed', 'in_progress', 'completed'].includes(e.status)
   ).length
 
-  const completed = allEvents.filter((e) => e.status === 'completed').length
+  const completed = allEvents.filter((e: any) => e.status === 'completed').length
 
   const totalInquiries = inquiryCount ?? 0
 

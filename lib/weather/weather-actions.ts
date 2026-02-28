@@ -104,7 +104,7 @@ export async function getWeatherForDateRange(
 
     if (!events || events.length === 0) return {}
 
-    const requests: WeatherRequest[] = events.map((e) => ({
+    const requests: WeatherRequest[] = events.map((e: any) => ({
       lat: e.location_lat!,
       lng: e.location_lng!,
       date: e.event_date,

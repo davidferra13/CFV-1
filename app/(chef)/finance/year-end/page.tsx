@@ -58,8 +58,8 @@ export default async function YearEndPage({ searchParams }: { searchParams: { ye
   ])
 
   const events = eventsResult.data || []
-  const completedEvents = events.filter((e) => e.status === 'completed')
-  const cancelledEvents = events.filter((e) => e.status === 'cancelled')
+  const completedEvents = events.filter((e: any) => e.status === 'completed')
+  const cancelledEvents = events.filter((e: any) => e.status === 'cancelled')
   const totalEvents = events.length
 
   // Monthly revenue data — fill all 12 months

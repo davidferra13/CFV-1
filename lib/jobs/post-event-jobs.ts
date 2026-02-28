@@ -86,7 +86,7 @@ async function getPostEventContext(eventId: string, tenantId: string, clientId: 
     .in('type', ['earned', 'bonus'])
 
   const loyaltyPointsEarned = (loyaltyEarnRows || []).reduce(
-    (sum, row) => sum + (row.points || 0),
+    (sum: any, row: any) => sum + (row.points || 0),
     0
   )
 

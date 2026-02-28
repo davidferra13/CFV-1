@@ -127,8 +127,11 @@ export async function getPlatformOverviewStats(): Promise<PlatformOverviewStats>
       .limit(10000),
   ])
 
-  const totalGMV = (ledgerAll.data ?? []).reduce((s, e) => s + (e.amount_cents ?? 0), 0)
-  const gmvThisMonth = (ledgerMonth.data ?? []).reduce((s, e) => s + (e.amount_cents ?? 0), 0)
+  const totalGMV = (ledgerAll.data ?? []).reduce((s: any, e: any) => s + (e.amount_cents ?? 0), 0)
+  const gmvThisMonth = (ledgerMonth.data ?? []).reduce(
+    (s: any, e: any) => s + (e.amount_cents ?? 0),
+    0
+  )
   const totalChefs = chefsAll.count ?? 0
   const totalEvents = eventsAll.count ?? 0
 
@@ -156,7 +159,7 @@ export async function getPlatformChefList(): Promise<PlatformChefRow[]> {
 
   if (!chefs?.length) return []
 
-  const chefIds = chefs.map((c) => c.id)
+  const chefIds = chefs.map((c: any) => c.id)
 
   const [eventsRes, clientsRes, ledgerRes] = await Promise.all([
     supabase.from('events').select('tenant_id').in('tenant_id', chefIds).limit(5000),
@@ -170,21 +173,21 @@ export async function getPlatformChefList(): Promise<PlatformChefRow[]> {
   ])
 
   const eventCountMap: Record<string, number> = {}
-  ;(eventsRes.data ?? []).forEach((e) => {
+  ;(eventsRes.data ?? []).forEach((e: any) => {
     if (e.tenant_id) eventCountMap[e.tenant_id] = (eventCountMap[e.tenant_id] ?? 0) + 1
   })
 
   const clientCountMap: Record<string, number> = {}
-  ;(clientsRes.data ?? []).forEach((c) => {
+  ;(clientsRes.data ?? []).forEach((c: any) => {
     if (c.tenant_id) clientCountMap[c.tenant_id] = (clientCountMap[c.tenant_id] ?? 0) + 1
   })
 
   const gmvMap: Record<string, number> = {}
-  ;(ledgerRes.data ?? []).forEach((l) => {
+  ;(ledgerRes.data ?? []).forEach((l: any) => {
     if (l.tenant_id) gmvMap[l.tenant_id] = (gmvMap[l.tenant_id] ?? 0) + (l.amount_cents ?? 0)
   })
 
-  return chefs.map((chef) => ({
+  return chefs.map((chef: any) => ({
     id: chef.id,
     business_name: chef.business_name,
     email: chef.email,
@@ -213,7 +216,7 @@ export async function getPlatformClientList(): Promise<PlatformClientRow[]> {
     .select('id, business_name')
     .in('id', tenantIds)
 
-  const chefMap = Object.fromEntries((chefs ?? []).map((c) => [c.id, c.business_name]))
+  const chefMap = Object.fromEntries((chefs ?? []).map((c: any) => [c.id, c.business_name]))
 
   const clientIds = clients.map((c) => c.id)
 
@@ -227,7 +230,7 @@ export async function getPlatformClientList(): Promise<PlatformClientRow[]> {
   const eventCountMap: Record<string, number> = {}
   const eventToClient: Record<string, string> = {}
   const eventIds: string[] = []
-  ;(allClientEvents ?? []).forEach((e) => {
+  ;(allClientEvents ?? []).forEach((e: any) => {
     if (e.client_id) {
       eventCountMap[e.client_id] = (eventCountMap[e.client_id] ?? 0) + 1
       eventToClient[e.id] = e.client_id
@@ -247,7 +250,7 @@ export async function getPlatformClientList(): Promise<PlatformClientRow[]> {
       : { data: [] as { event_id: string | null; amount_cents: number | null }[] }
 
   const ltvMap: Record<string, number> = {}
-  ;(ledger ?? []).forEach((l) => {
+  ;(ledger ?? []).forEach((l: any) => {
     const clientId = l.event_id ? eventToClient[l.event_id] : null
     if (clientId) ltvMap[clientId] = (ltvMap[clientId] ?? 0) + (l.amount_cents ?? 0)
   })
@@ -277,15 +280,15 @@ export async function getAllPlatformEvents(): Promise<PlatformEventRow[]> {
 
   if (!events?.length) return []
 
-  const tenantIds = [...new Set(events.map((e) => e.tenant_id).filter(Boolean))] as string[]
+  const tenantIds = [...new Set(events.map((e: any) => e.tenant_id).filter(Boolean))] as string[]
   const { data: chefs } = await supabase
     .from('chefs')
     .select('id, business_name')
     .in('id', tenantIds)
 
-  const chefMap = Object.fromEntries((chefs ?? []).map((c) => [c.id, c.business_name]))
+  const chefMap = Object.fromEntries((chefs ?? []).map((c: any) => [c.id, c.business_name]))
 
-  return events.map((e) => ({
+  return events.map((e: any) => ({
     id: e.id,
     occasion: e.occasion,
     status: e.status,
@@ -320,12 +323,12 @@ export async function getPlatformGrowthStats(): Promise<GrowthDataPoint[]> {
   const monthMap: Record<string, { newChefs: number; newClients: number }> = {}
   const getMonth = (iso: string) => iso.slice(0, 7)
 
-  ;(chefsData.data ?? []).forEach((c) => {
+  ;(chefsData.data ?? []).forEach((c: any) => {
     const m = getMonth(c.created_at)
     if (!monthMap[m]) monthMap[m] = { newChefs: 0, newClients: 0 }
     monthMap[m].newChefs++
   })
-  ;(clientsData.data ?? []).forEach((c) => {
+  ;(clientsData.data ?? []).forEach((c: any) => {
     const m = getMonth(c.created_at)
     if (!monthMap[m]) monthMap[m] = { newChefs: 0, newClients: 0 }
     monthMap[m].newClients++
@@ -350,7 +353,7 @@ export async function getPlatformRevenueByMonth(): Promise<RevenueDataPoint[]> {
     .limit(10000)
 
   const monthMap: Record<string, number> = {}
-  ;(ledger ?? []).forEach((l) => {
+  ;(ledger ?? []).forEach((l: any) => {
     const m = l.created_at.slice(0, 7)
     monthMap[m] = (monthMap[m] ?? 0) + (l.amount_cents ?? 0)
   })
@@ -513,7 +516,7 @@ export async function getChefFeatureFlags(chefId: string): Promise<Record<string
     .select('flag_name, enabled')
     .eq('chef_id', chefId)
 
-  return Object.fromEntries((data ?? []).map((f) => [f.flag_name, f.enabled]))
+  return Object.fromEntries((data ?? []).map((f: any) => [f.flag_name, f.enabled]))
 }
 
 export async function getAllChefFlags(): Promise<{
@@ -529,7 +532,7 @@ export async function getAllChefFlags(): Promise<{
 
   const flagsByChef: Record<string, Record<string, boolean>> = {}
   const flags = flagsResult.data ?? []
-  flags.forEach((f) => {
+  flags.forEach((f: any) => {
     if (!flagsByChef[f.chef_id]) flagsByChef[f.chef_id] = {}
     flagsByChef[f.chef_id][f.flag_name] = f.enabled
   })

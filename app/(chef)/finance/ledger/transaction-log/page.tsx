@@ -34,11 +34,11 @@ export default async function TransactionLogPage() {
   const entries = await getLedgerEntries()
 
   const totalIn = entries
-    .filter((e) => !e.is_refund && e.entry_type !== 'refund')
-    .reduce((s, e) => s + e.amount_cents, 0)
+    .filter((e: any) => !e.is_refund && e.entry_type !== 'refund')
+    .reduce((s: any, e: any) => s + e.amount_cents, 0)
   const totalOut = entries
-    .filter((e) => e.is_refund || e.entry_type === 'refund')
-    .reduce((s, e) => s + Math.abs(e.amount_cents), 0)
+    .filter((e: any) => e.is_refund || e.entry_type === 'refund')
+    .reduce((s: any, e: any) => s + Math.abs(e.amount_cents), 0)
 
   return (
     <div className="space-y-6">
@@ -98,7 +98,7 @@ export default async function TransactionLogPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {entries.map((entry) => (
+              {entries.map((entry: any) => (
                 <TableRow key={entry.id}>
                   <TableCell className="text-stone-500 text-sm whitespace-nowrap">
                     {format(new Date(entry.created_at), 'MMM d, yyyy')}

@@ -77,7 +77,7 @@ export async function listDevices(): Promise<DeviceWithOnlineStatus[]> {
   if (error) throw new Error(`Failed to list devices: ${error.message}`)
 
   // Fetch active sessions to show who's currently using each device
-  const deviceIds = (data || []).map((d) => d.id)
+  const deviceIds = (data || []).map((d: any) => d.id)
   const { data: activeSessions } = deviceIds.length
     ? await supabase
         .from('device_sessions')
@@ -89,19 +89,21 @@ export async function listDevices(): Promise<DeviceWithOnlineStatus[]> {
   // Fetch staff names for active sessions
   const staffIds = [
     ...new Set(
-      (activeSessions || []).map((s) => s.staff_member_id).filter((id): id is string => id != null)
+      (activeSessions || [])
+        .map((s: any) => s.staff_member_id)
+        .filter((id: any): id is string => id != null)
     ),
   ]
   const { data: staffMembers } = staffIds.length
     ? await supabase.from('staff_members').select('id, name').in('id', staffIds)
     : { data: [] }
 
-  const staffMap = new Map((staffMembers || []).map((s) => [s.id, s.name]))
+  const staffMap = new Map((staffMembers || []).map((s: any) => [s.id, s.name]))
   const sessionMap = new Map(
-    (activeSessions || []).map((s) => [s.device_id, staffMap.get(s.staff_member_id!) || null])
+    (activeSessions || []).map((s: any) => [s.device_id, staffMap.get(s.staff_member_id!) || null])
   )
 
-  return (data || []).map((d) => ({
+  return (data || []).map((d: any) => ({
     ...d,
     online_status: getOnlineStatus(d.last_seen_at),
     active_staff_name: sessionMap.get(d.id) || null,
@@ -310,7 +312,7 @@ export async function listDeviceEvents(deviceId: string, limit = 50) {
   if (error) throw new Error(`Failed to list events: ${error.message}`)
 
   // Fetch staff names for attribution
-  const staffIds = [...new Set((data || []).map((e) => e.staff_member_id).filter(Boolean))]
+  const staffIds = [...new Set((data || []).map((e: any) => e.staff_member_id).filter(Boolean))]
   const { data: staffMembers } = staffIds.length
     ? await supabase
         .from('staff_members')
@@ -318,9 +320,9 @@ export async function listDeviceEvents(deviceId: string, limit = 50) {
         .in('id', staffIds as string[])
     : { data: [] }
 
-  const staffMap = new Map((staffMembers || []).map((s) => [s.id, s.name]))
+  const staffMap = new Map((staffMembers || []).map((s: any) => [s.id, s.name]))
 
-  return (data || []).map((e) => ({
+  return (data || []).map((e: any) => ({
     ...e,
     staff_name: e.staff_member_id ? staffMap.get(e.staff_member_id) || null : null,
   }))
@@ -397,7 +399,7 @@ export async function listStaffWithPinStatus() {
 
   if (error) throw new Error(`Failed to list staff: ${error.message}`)
 
-  return (data || []).map((s) => ({
+  return (data || []).map((s: any) => ({
     id: s.id,
     name: s.name,
     role: s.role,

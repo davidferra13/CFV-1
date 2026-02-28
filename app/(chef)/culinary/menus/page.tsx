@@ -45,10 +45,10 @@ const SERVICE_STYLE_LABELS: Record<string, string> = {
 export default async function ChefMenusPage() {
   await requireChef()
   const menus = await getMenus()
-  const activeMenus = menus.filter((m) => m.status !== 'archived')
+  const activeMenus = menus.filter((m: any) => m.status !== 'archived')
 
   // Batch-fetch placeholder images for menu thumbnails
-  const menuQueries = activeMenus.map((m) => ({
+  const menuQueries = activeMenus.map((m: any) => ({
     id: m.id,
     query: [m.name, m.cuisine_type].filter(Boolean).join(' '),
   }))
@@ -101,7 +101,7 @@ export default async function ChefMenusPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {activeMenus.map((menu) => (
+              {activeMenus.map((menu: any) => (
                 <TableRow key={menu.id}>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-3">

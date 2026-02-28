@@ -49,7 +49,7 @@ export async function getChefMilestoneStats(): Promise<ChefMilestoneStats | null
       .neq('entry_type', 'tip')
 
     const lifetimeRevenueCents =
-      ledgerRows?.reduce((sum, row) => sum + (row.amount_cents ?? 0), 0) ?? 0
+      ledgerRows?.reduce((sum: any, row: any) => sum + (row.amount_cents ?? 0), 0) ?? 0
 
     return {
       clientCount: clientRes.count ?? 0,

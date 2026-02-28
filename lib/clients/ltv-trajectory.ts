@@ -43,7 +43,7 @@ export async function getClientLTVTrajectory(clientId: string): Promise<ClientLT
     return { points: [], totalLifetimeValueCents: 0, eventCount: 0 }
   }
 
-  const eventIds = events.map((e) => e.id)
+  const eventIds = events.map((e: any) => e.id)
 
   // Fetch payment totals from the financial summary view
   const { data: summaries } = await supabase

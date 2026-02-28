@@ -12,7 +12,7 @@ export default async function ActiveClientsPage() {
   await requireChef()
 
   const allClients = await getClientsWithStats()
-  const clients = allClients.filter((c) => c.status === 'active')
+  const clients = allClients.filter((c: any) => c.status === 'active')
 
   return (
     <div className="space-y-6">

@@ -93,10 +93,10 @@ export async function loadRemyClientContext(
 
   // Filter quotes to this client's events
   const clientEventIds = new Set([
-    ...(upcoming ?? []).map((e) => e.id),
-    ...(past ?? []).map((e) => e.id),
+    ...(upcoming ?? []).map((e: any) => e.id),
+    ...(past ?? []).map((e: any) => e.id),
   ])
-  const clientQuotes = (quotes ?? []).filter((q) => {
+  const clientQuotes = (quotes ?? []).filter((q: any) => {
     return q.event_id && clientEventIds.has(q.event_id)
   })
 
@@ -122,7 +122,10 @@ export async function loadRemyClientContext(
       .single(),
   ])
 
-  const lifetimePoints = (earnedRows || []).reduce((sum, row) => sum + (row.points || 0), 0)
+  const lifetimePoints = (earnedRows || []).reduce(
+    (sum: any, row: any) => sum + (row.points || 0),
+    0
+  )
   const tier = ((client?.loyalty_tier as 'bronze' | 'silver' | 'gold' | 'platinum') || 'bronze') as
     | 'bronze'
     | 'silver'
@@ -146,7 +149,7 @@ export async function loadRemyClientContext(
     clientName: client?.full_name ?? null,
     chefName: chef?.display_name ?? chef?.business_name ?? null,
     businessName: chef?.business_name ?? null,
-    upcomingEvents: (upcoming ?? []).map((e) => ({
+    upcomingEvents: (upcoming ?? []).map((e: any) => ({
       id: e.id,
       occasion: e.occasion,
       date: e.event_date,
@@ -154,13 +157,13 @@ export async function loadRemyClientContext(
       guestCount: e.guest_count,
       venueAddress: e.location_address,
     })),
-    pastEvents: (past ?? []).map((e) => ({
+    pastEvents: (past ?? []).map((e: any) => ({
       id: e.id,
       occasion: e.occasion,
       date: e.event_date,
       status: e.status,
     })),
-    pendingQuotes: clientQuotes.map((q) => ({
+    pendingQuotes: clientQuotes.map((q: any) => ({
       id: q.id,
       totalCents: q.total_quoted_cents,
       status: q.status,

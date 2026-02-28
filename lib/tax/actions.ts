@@ -159,7 +159,7 @@ export async function computeQuarterlyEstimate(year: number, quarter: 1 | 2 | 3 
     .lte('created_at', end + 'T23:59:59Z')
     .in('entry_type', ['payment', 'deposit', 'installment', 'final_payment', 'tip', 'add_on'])
 
-  const grossIncomeCents = (ledgerData ?? []).reduce((sum, e) => sum + e.amount_cents, 0)
+  const grossIncomeCents = (ledgerData ?? []).reduce((sum: any, e: any) => sum + e.amount_cents, 0)
 
   // Deductible expenses
   const { data: expenseData } = await supabase
@@ -169,7 +169,10 @@ export async function computeQuarterlyEstimate(year: number, quarter: 1 | 2 | 3 
     .gte('expense_date', start)
     .lte('expense_date', end)
 
-  const totalExpensesCents = (expenseData ?? []).reduce((sum, e) => sum + e.amount_cents, 0)
+  const totalExpensesCents = (expenseData ?? []).reduce(
+    (sum: any, e: any) => sum + e.amount_cents,
+    0
+  )
 
   // Mileage deduction
   const { totalDeductionCents: mileageDeductionCents } = await getMileageForPeriod(start, end)
@@ -228,13 +231,13 @@ export async function generateAccountantExport(year: number) {
     .gte('created_at', start + 'T00:00:00Z')
     .lte('created_at', end + 'T23:59:59Z')
 
-  const incomeEntries = (ledgerData ?? []).filter((e) =>
+  const incomeEntries = (ledgerData ?? []).filter((e: any) =>
     ['payment', 'deposit', 'installment', 'final_payment', 'tip', 'add_on'].includes(e.entry_type)
   )
-  const refundEntries = (ledgerData ?? []).filter((e) => e.entry_type === 'refund')
+  const refundEntries = (ledgerData ?? []).filter((e: any) => e.entry_type === 'refund')
 
-  const grossIncomeCents = incomeEntries.reduce((sum, e) => sum + e.amount_cents, 0)
-  const totalRefundsCents = refundEntries.reduce((sum, e) => sum + e.amount_cents, 0)
+  const grossIncomeCents = incomeEntries.reduce((sum: any, e: any) => sum + e.amount_cents, 0)
+  const totalRefundsCents = refundEntries.reduce((sum: any, e: any) => sum + e.amount_cents, 0)
   const netIncomeCents = grossIncomeCents - totalRefundsCents
 
   // Monthly breakdown

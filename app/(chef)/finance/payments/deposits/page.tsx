@@ -20,7 +20,7 @@ export default async function DepositsPage() {
   await requireChef()
   const deposits = await getLedgerEntries({ entryType: 'deposit' })
 
-  const totalDeposits = deposits.reduce((s, e) => s + e.amount_cents, 0)
+  const totalDeposits = deposits.reduce((s: any, e: any) => s + e.amount_cents, 0)
 
   return (
     <div className="space-y-6">
@@ -67,7 +67,7 @@ export default async function DepositsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {deposits.map((entry) => (
+              {deposits.map((entry: any) => (
                 <TableRow key={entry.id}>
                   <TableCell className="text-stone-500 text-sm">
                     {format(new Date(entry.created_at), 'MMM d, yyyy')}

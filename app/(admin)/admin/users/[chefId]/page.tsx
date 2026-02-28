@@ -75,16 +75,16 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
   const ledger = ledgerResult.data ?? []
 
   const totalGMV = ledger
-    .filter((l) => l.entry_type === 'payment')
-    .reduce((s, l) => s + (l.amount_cents ?? 0), 0)
+    .filter((l: any) => l.entry_type === 'payment')
+    .reduce((s: any, l: any) => s + (l.amount_cents ?? 0), 0)
   const totalExpenses = ledger
-    .filter((l) => (l.entry_type as string) === 'expense')
-    .reduce((s, l) => s + (l.amount_cents ?? 0), 0)
+    .filter((l: any) => (l.entry_type as string) === 'expense')
+    .reduce((s: any, l: any) => s + (l.amount_cents ?? 0), 0)
 
   const daysSinceSignup = Math.floor((Date.now() - new Date(chef.created_at).getTime()) / 86400000)
   const cutoff90 = new Date(Date.now() - 90 * 86400000)
   const recentEventCount = events.filter(
-    (e) => e.event_date && new Date(e.event_date) >= cutoff90
+    (e: any) => e.event_date && new Date(e.event_date) >= cutoff90
   ).length
   const healthScore = computeChefHealthScore({
     eventCount: events.length,
@@ -95,7 +95,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
     hasBusinessName: !!chef.business_name,
   })
 
-  const eventOptions = events.map((e) => ({ id: e.id, occasion: e.occasion }))
+  const eventOptions = events.map((e: any) => ({ id: e.id, occasion: e.occasion }))
 
   return (
     <div className="space-y-6">
@@ -234,7 +234,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {events.map((event) => (
+                {events.map((event: any) => (
                   <tr key={event.id} className="hover:bg-slate-50">
                     <td className="px-4 py-2.5 text-slate-900 font-medium">
                       {event.occasion ?? '—'}
@@ -269,7 +269,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
           <p className="px-4 py-8 text-center text-sm text-slate-400">No clients yet.</p>
         ) : (
           <div className="divide-y divide-slate-100">
-            {clients.map((client) => (
+            {clients.map((client: any) => (
               <div key={client.id} className="px-4 py-3 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-slate-900">
@@ -310,7 +310,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {ledger.map((entry) => (
+                {ledger.map((entry: any) => (
                   <tr key={entry.id} className="hover:bg-slate-50">
                     <td className="px-4 py-2.5">
                       <span className="text-xs font-medium text-slate-600 uppercase">

@@ -894,7 +894,7 @@ export default async function EventDetailPage({
         {/* Communication Log */}
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Communication</h2>
-          {event.inquiry_id && messages.some((m) => m.inquiry_id) && (
+          {event.inquiry_id && messages.some((m: any) => m.inquiry_id) && (
             <p className="text-xs text-stone-300 mb-3">
               Includes messages from the original inquiry.
             </p>
@@ -1064,7 +1064,7 @@ export default async function EventDetailPage({
             </div>
 
             <div className="space-y-2">
-              {eventExpenseData.expenses.map((exp) => (
+              {eventExpenseData.expenses.map((exp: any) => (
                 <div
                   key={exp.id}
                   className="flex items-center justify-between py-2 border-b border-stone-800 last:border-0"
@@ -1675,7 +1675,7 @@ export default async function EventDetailPage({
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Status History</h2>
             <div className="space-y-3">
-              {transitions.map((transition) => (
+              {transitions.map((transition: any) => (
                 <div key={transition.id} className="flex items-start gap-3">
                   <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-brand-500" />
                   <div className="flex-1">

@@ -76,7 +76,7 @@ export async function getLineGameData(): Promise<{ events: EventForGame[] }> {
 
       if (!menus || menus.length === 0) continue
 
-      const menuIds = menus.map((m) => m.id)
+      const menuIds = menus.map((m: any) => m.id)
 
       // Menus → dishes
       const { data: dishes } = await supabase
@@ -87,7 +87,7 @@ export async function getLineGameData(): Promise<{ events: EventForGame[] }> {
 
       if (!dishes || dishes.length === 0) continue
 
-      const dishIds = dishes.map((d) => d.id)
+      const dishIds = dishes.map((d: any) => d.id)
 
       // Dishes → components (with optional recipe)
       const { data: components } = await supabase
@@ -98,7 +98,7 @@ export async function getLineGameData(): Promise<{ events: EventForGame[] }> {
 
       if (!components || components.length === 0) continue
 
-      const items = components.map((c) => {
+      const items = components.map((c: any) => {
         const station = CATEGORY_TO_STATION[c.category ?? 'other'] ?? 'saute'
         return {
           name: c.name,

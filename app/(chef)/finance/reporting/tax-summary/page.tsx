@@ -40,7 +40,7 @@ export default async function TaxSummaryPage() {
 
   const sortedCategories = Array.from(categoryTotals.entries()).sort((a, b) => b[1] - a[1])
 
-  const totalBusinessExpenses = allExpenses.reduce((s, e) => s + e.amount_cents, 0)
+  const totalBusinessExpenses = allExpenses.reduce((s: any, e: any) => s + e.amount_cents, 0)
   const estimatedProfit = summary.netRevenueCents - totalBusinessExpenses
 
   return (
@@ -117,7 +117,7 @@ export default async function TaxSummaryPage() {
                       </span>
                     </TableCell>
                     <TableCell className="text-stone-400 text-sm">
-                      {allExpenses.filter((e) => e.category === cat).length}
+                      {allExpenses.filter((e: any) => e.category === cat).length}
                     </TableCell>
                     <TableCell className="text-stone-100 font-semibold text-sm">
                       {formatCurrency(total)}

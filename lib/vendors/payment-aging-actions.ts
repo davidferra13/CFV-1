@@ -26,7 +26,7 @@ export async function getVendorPaymentAging(): Promise<VendorAgingEntry[]> {
   }
 
   return computeVendorAging(
-    (data || []).map((d) => ({
+    (data || []).map((d: any) => ({
       vendor_name: d.vendor_name ?? 'Unknown',
       amount_cents: d.amount_cents,
       due_date: d.expense_date,

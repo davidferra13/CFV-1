@@ -13,7 +13,7 @@ export default async function InactiveClientsPage() {
 
   const allClients = await getClientsWithStats()
   // "dormant" is the DB status for inactive clients
-  const clients = allClients.filter((c) => c.status === 'dormant')
+  const clients = allClients.filter((c: any) => c.status === 'dormant')
 
   return (
     <div className="space-y-6">

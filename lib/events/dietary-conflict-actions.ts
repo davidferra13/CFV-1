@@ -100,7 +100,7 @@ export async function checkDietaryConflicts(eventId: string): Promise<DietaryCon
     return []
   }
 
-  const menuIds = menus.map((m) => m.id)
+  const menuIds = menus.map((m: any) => m.id)
 
   const { data: dishesRaw } = await supabase
     .from('dishes')

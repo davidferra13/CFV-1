@@ -84,7 +84,7 @@ export async function getMySupportShares(): Promise<
 
     if (error || !data) return []
 
-    return data.map((row) => ({
+    return data.map((row: any) => ({
       id: row.id,
       title: (row.conversation_json as { title?: string })?.title ?? 'Untitled conversation',
       status: row.status,

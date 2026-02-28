@@ -349,7 +349,7 @@ export async function getMenuById(menuId: string) {
     .order('sort_order', { ascending: true })
 
   // Fetch components for all dishes
-  const dishIds = (dishes || []).map((d) => d.id)
+  const dishIds = (dishes || []).map((d: any) => d.id)
 
   // Query components if there are dishes
   const componentRows =
@@ -376,7 +376,7 @@ export async function getMenuById(menuId: string) {
 
   return {
     ...menu,
-    dishes: (dishes || []).map((dish) => ({
+    dishes: (dishes || []).map((dish: any) => ({
       ...dish,
       components: componentsByDish.get(dish.id) || [],
     })),
@@ -1165,7 +1165,7 @@ export async function getAllComponents(filters?: {
     throw new UnknownAppError('Failed to fetch components')
   }
 
-  let result: ComponentListItem[] = (components || []).map((c) => {
+  let result: ComponentListItem[] = (components || []).map((c: any) => {
     const dish = c.dish as any
     const raw = c as any
     return {
@@ -1467,8 +1467,8 @@ export async function getMenuPrepTimeline(menuId: string): Promise<PrepTimelineS
 
   if (!dishes || dishes.length === 0) return []
 
-  const dishIds = dishes.map((d) => d.id)
-  const dishMap = new Map(dishes.map((d) => [d.id, d.course_name]))
+  const dishIds = dishes.map((d: any) => d.id)
+  const dishMap = new Map(dishes.map((d: any) => [d.id, d.course_name]))
 
   const { data: components } = await (supabase
     .from('components')
@@ -1602,7 +1602,7 @@ export async function getMenuQuickViewData(menuId: string): Promise<MenuQuickVie
   const allAllergenFlags = new Set<string>()
   let totalComponents = 0
 
-  const courses = (dishes || []).map((dish) => {
+  const courses = (dishes || []).map((dish: any) => {
     const componentCount = Array.isArray(dish.components) ? dish.components.length : 0
     totalComponents += componentCount
     const tags = (dish.dietary_tags || []) as string[]

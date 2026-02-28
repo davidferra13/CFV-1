@@ -73,7 +73,7 @@ export async function exportLedgerCSV(filters: LedgerEntryFilters = {}) {
     'Description',
     'Transaction Ref',
   ]
-  const rows = entries.map((entry) => [
+  const rows = entries.map((entry: any) => [
     new Date(entry.created_at).toISOString(),
     entry.event?.occasion || 'N/A',
     entry.entry_type,
@@ -85,7 +85,7 @@ export async function exportLedgerCSV(filters: LedgerEntryFilters = {}) {
 
   const csv = [
     headers.join(','),
-    ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
+    ...rows.map((row: any) => row.map((cell: any) => `"${cell}"`).join(',')),
   ].join('\n')
 
   return csv

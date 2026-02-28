@@ -34,7 +34,7 @@ export default async function PublicProfileSettingsPage() {
         currentPrimaryColor={profile.portal_primary_color}
         currentBackgroundColor={profile.portal_background_color}
         currentBackgroundImageUrl={profile.portal_background_image_url}
-        partners={partners.map((p) => ({
+        partners={partners.map((p: any) => ({
           id: p.id,
           name: p.name,
           partner_type: p.partner_type,

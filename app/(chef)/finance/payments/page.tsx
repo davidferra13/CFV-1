@@ -50,7 +50,7 @@ export default async function PaymentsPage() {
 
   const allInbound = [...allPayments, ...deposits, ...installments]
   const totalReceived = allInbound.reduce((s, e) => s + e.amount_cents, 0)
-  const totalRefunded = refunds.reduce((s, e) => s + e.amount_cents, 0)
+  const totalRefunded = refunds.reduce((s: any, e: any) => s + e.amount_cents, 0)
 
   const counts = {
     deposit: deposits.length,

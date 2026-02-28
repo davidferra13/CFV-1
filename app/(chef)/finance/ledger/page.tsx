@@ -76,7 +76,7 @@ export default async function LedgerPage() {
         <Card className="p-5">
           <h2 className="text-sm font-semibold text-stone-300 mb-3">Recent Entries</h2>
           <div className="space-y-2">
-            {recent.map((entry) => (
+            {recent.map((entry: any) => (
               <div
                 key={entry.id}
                 className="flex items-center justify-between py-1.5 border-b border-stone-50 last:border-0"

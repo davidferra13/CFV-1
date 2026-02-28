@@ -74,12 +74,15 @@ export async function computeCLV(clientId: string): Promise<ClientLTV> {
     .order('event_date', { ascending: true })
 
   const completedEvents = events || []
-  const totalRevenueCents = completedEvents.reduce((sum, e) => sum + (e.quoted_price_cents || 0), 0)
+  const totalRevenueCents = completedEvents.reduce(
+    (sum: any, e: any) => sum + (e.quoted_price_cents || 0),
+    0
+  )
 
   // Get associated expenses (business expenses linked to this client's events)
   let totalExpensesCents = 0
   if (completedEvents.length > 0) {
-    const eventIds = completedEvents.map((e) => e.id)
+    const eventIds = completedEvents.map((e: any) => e.id)
     const { data: expenses } = await supabase
       .from('expenses')
       .select('amount_cents')
@@ -87,7 +90,7 @@ export async function computeCLV(clientId: string): Promise<ClientLTV> {
       .eq('is_business', true)
       .in('event_id', eventIds)
 
-    totalExpensesCents = (expenses || []).reduce((sum, e) => sum + e.amount_cents, 0)
+    totalExpensesCents = (expenses || []).reduce((sum: any, e: any) => sum + e.amount_cents, 0)
   }
 
   const firstEventDate = completedEvents.length > 0 ? completedEvents[0].event_date : null
@@ -184,7 +187,7 @@ export async function getTopClientsByLTV(limit?: number): Promise<ClientLTV[]> {
   }
 
   // Build results for all clients, sort by LTV
-  const results: ClientLTV[] = clients.map((client) => {
+  const results: ClientLTV[] = clients.map((client: any) => {
     const data = clientMap.get(client.id)
     const revenueCents = data?.revenueCents ?? 0
     const expenseCents = data?.expenseCents ?? 0

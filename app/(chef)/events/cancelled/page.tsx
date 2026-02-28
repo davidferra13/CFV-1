@@ -23,8 +23,8 @@ export default async function CancelledEventsPage() {
 
   const allEvents = await getEvents()
   const events = allEvents
-    .filter((e) => e.status === 'cancelled')
-    .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
+    .filter((e: any) => e.status === 'cancelled')
+    .sort((a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
 
   return (
     <div className="space-y-6">
@@ -67,7 +67,7 @@ export default async function CancelledEventsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {events.map((event) => (
+              {events.map((event: any) => (
                 <TableRow key={event.id}>
                   <TableCell className="font-medium">
                     <Link

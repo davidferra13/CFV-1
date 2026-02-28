@@ -21,10 +21,10 @@ export default async function DraftInvoicesPage() {
   const events = await getEvents()
 
   const drafts = events
-    .filter((e) => ['draft', 'proposed'].includes(e.status))
-    .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
+    .filter((e: any) => ['draft', 'proposed'].includes(e.status))
+    .sort((a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
 
-  const totalValue = drafts.reduce((s, e) => s + (e.quoted_price_cents ?? 0), 0)
+  const totalValue = drafts.reduce((s: any, e: any) => s + (e.quoted_price_cents ?? 0), 0)
 
   return (
     <div className="space-y-6">
@@ -76,7 +76,7 @@ export default async function DraftInvoicesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {drafts.map((event) => (
+              {drafts.map((event: any) => (
                 <TableRow key={event.id}>
                   <TableCell className="text-stone-400 text-sm">
                     {format(new Date(event.event_date), 'MMM d, yyyy')}

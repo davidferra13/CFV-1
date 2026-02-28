@@ -1134,7 +1134,7 @@ export async function getInquiriesNeedingFirstContact(): Promise<FirstContactInq
   if (!inquiries || inquiries.length === 0) return []
 
   // Filter out inquiries that already have outbound messages
-  const inquiryIds = inquiries.map((i) => i.id)
+  const inquiryIds = inquiries.map((i: any) => i.id)
   const { data: outboundMessages } = await supabase
     .from('messages')
     .select('inquiry_id')
@@ -1142,7 +1142,7 @@ export async function getInquiriesNeedingFirstContact(): Promise<FirstContactInq
     .eq('direction', 'outbound')
 
   const contactedInquiryIds = new Set(
-    (outboundMessages || []).map((m) => m.inquiry_id).filter(Boolean)
+    (outboundMessages || []).map((m: any) => m.inquiry_id).filter(Boolean)
   )
 
   // Also check if there's an existing conversation linked

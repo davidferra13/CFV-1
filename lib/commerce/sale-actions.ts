@@ -307,9 +307,15 @@ async function recalculateSaleTotals(saleId: string, tenantId: string) {
 
   if (!items) return
 
-  const subtotalCents = items.reduce((sum, i) => sum + ((i as any).line_total_cents ?? 0), 0)
-  const taxCents = items.reduce((sum, i) => sum + ((i as any).tax_cents ?? 0), 0)
-  const discountCents = items.reduce((sum, i) => sum + ((i as any).discount_cents ?? 0), 0)
+  const subtotalCents = items.reduce(
+    (sum: any, i: any) => sum + ((i as any).line_total_cents ?? 0),
+    0
+  )
+  const taxCents = items.reduce((sum: any, i: any) => sum + ((i as any).tax_cents ?? 0), 0)
+  const discountCents = items.reduce(
+    (sum: any, i: any) => sum + ((i as any).discount_cents ?? 0),
+    0
+  )
   const totalCents = subtotalCents + taxCents
 
   await (supabase

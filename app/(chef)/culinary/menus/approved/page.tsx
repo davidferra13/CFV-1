@@ -70,7 +70,7 @@ export default async function ApprovedMenusPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {menus.map((menu) => (
+              {menus.map((menu: any) => (
                 <TableRow key={menu.id}>
                   <TableCell className="font-medium">
                     <Link

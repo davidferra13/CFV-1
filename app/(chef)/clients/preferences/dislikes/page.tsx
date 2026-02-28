@@ -19,8 +19,8 @@ export default async function DislikesPage() {
   const clients = await getClientsWithStats()
 
   const clientsWithDislikes = clients
-    .filter((c) => c.dislikes && (c.dislikes as string[]).length > 0)
-    .sort((a, b) => a.full_name.localeCompare(b.full_name))
+    .filter((c: any) => c.dislikes && (c.dislikes as string[]).length > 0)
+    .sort((a: any, b: any) => a.full_name.localeCompare(b.full_name))
 
   // Aggregate dislike mentions
   const dislikeCounts: Record<string, number> = {}
@@ -84,7 +84,7 @@ export default async function DislikesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {clientsWithDislikes.map((client) => (
+              {clientsWithDislikes.map((client: any) => (
                 <TableRow key={client.id}>
                   <TableCell className="font-medium">
                     <Link

@@ -65,17 +65,17 @@ export default async function ExpensesPage() {
   await requireChef()
   const expenses = await getExpenses()
 
-  const totalSpend = expenses.reduce((s, e) => s + e.amount_cents, 0)
-  const businessExpenses = expenses.filter((e) => e.is_business)
-  const totalBusiness = businessExpenses.reduce((s, e) => s + e.amount_cents, 0)
+  const totalSpend = expenses.reduce((s: any, e: any) => s + e.amount_cents, 0)
+  const businessExpenses = expenses.filter((e: any) => e.is_business)
+  const totalBusiness = businessExpenses.reduce((s: any, e: any) => s + e.amount_cents, 0)
 
   // Compute totals per section
   const sectionTotals = SECTIONS.map((section) => {
-    const matching = expenses.filter((e) => section.categories.includes(e.category))
+    const matching = expenses.filter((e: any) => section.categories.includes(e.category))
     return {
       ...section,
       count: matching.length,
-      total: matching.reduce((s, e) => s + e.amount_cents, 0),
+      total: matching.reduce((s: any, e: any) => s + e.amount_cents, 0),
     }
   })
 

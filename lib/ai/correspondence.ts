@@ -123,7 +123,7 @@ export async function draftResponseForInquiry(inquiryId: string) {
       threadMessages = messages
         .reverse()
         .map(
-          (m) =>
+          (m: any) =>
             `[${m.created_at}] ${m.sender_id === chef.entityId ? 'Chef' : 'Client'}: ${m.body || '(no text)'}`
         )
     }

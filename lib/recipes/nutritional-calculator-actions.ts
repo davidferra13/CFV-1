@@ -335,7 +335,7 @@ export async function recalculateAndSaveRecipeNutrition(recipeId: string) {
       quantity: Number(row.quantity) || 0,
       unit: row.unit,
     }))
-    .filter((row) => row.name && row.quantity > 0 && row.unit)
+    .filter((row: any) => row.name && row.quantity > 0 && row.unit)
 
   if (!draft.length) {
     return { ok: true }

@@ -527,17 +527,17 @@ export async function getRetentionStats(): Promise<RetentionStats> {
 
   const all = clients ?? []
   const total = all.length
-  const newClients = all.filter((c) => (c.total_events_count ?? 0) <= 1).length
-  const returningClients = all.filter((c) => (c.total_events_count ?? 0) > 1).length
+  const newClients = all.filter((c: any) => (c.total_events_count ?? 0) <= 1).length
+  const returningClients = all.filter((c: any) => (c.total_events_count ?? 0) > 1).length
 
   const sixMonthsAgo = new Date()
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
-  const dormant = all.filter((c) => {
+  const dormant = all.filter((c: any) => {
     if (!c.last_event_date) return false
     return parseDate(c.last_event_date as string) < sixMonthsAgo
   }).length
 
-  const totalEvents = all.reduce((s, c) => s + (c.total_events_count ?? 0), 0)
+  const totalEvents = all.reduce((s: any, c: any) => s + (c.total_events_count ?? 0), 0)
   const repeatRate = total > 0 ? Math.round((returningClients / total) * 100) : 0
   const avgEventsPerClient = total > 0 ? Math.round((totalEvents / total) * 10) / 10 : 0
 
@@ -870,7 +870,7 @@ export async function getTakeAChefROI(): Promise<TakeAChefROI> {
 
     if (clientErr || !tacClients || tacClients.length === 0) return empty
 
-    const tacClientIds = tacClients.map((c) => c.id)
+    const tacClientIds = tacClients.map((c: any) => c.id)
 
     // 2. Get all events from TAC clients (completed/non-cancelled)
     const { data: events } = await supabase
@@ -883,7 +883,7 @@ export async function getTakeAChefROI(): Promise<TakeAChefROI> {
     const allEvents = events ?? []
 
     // 3. Get inquiry channels for these events to split platform vs direct
-    const inquiryIds = allEvents.map((e) => e.inquiry_id).filter(Boolean) as string[]
+    const inquiryIds = allEvents.map((e: any) => e.inquiry_id).filter(Boolean) as string[]
 
     let inquiryChannelMap: Record<string, string> = {}
     if (inquiryIds.length > 0) {
@@ -916,7 +916,7 @@ export async function getTakeAChefROI(): Promise<TakeAChefROI> {
       const clientId = event.client_id
       if (clientId) {
         if (!clientEventCounts[clientId]) {
-          const clientRecord = tacClients.find((c) => c.id === clientId)
+          const clientRecord = tacClients.find((c: any) => c.id === clientId)
           clientEventCounts[clientId] = {
             name: clientRecord?.full_name ?? 'Unknown',
             total: 0,
@@ -937,7 +937,7 @@ export async function getTakeAChefROI(): Promise<TakeAChefROI> {
       .eq('category', 'professional_services')
 
     const commissionPaidCents = (commissionExpenses ?? []).reduce(
-      (sum, e) => sum + (e.amount_cents ?? 0),
+      (sum: any, e: any) => sum + (e.amount_cents ?? 0),
       0
     )
 

@@ -122,14 +122,14 @@ export async function getClientPortalData(token: string): Promise<ClientPortalDa
     .order('event_date', { ascending: true })
 
   const upcoming = (events ?? []).filter(
-    (e) => e.event_date >= now && !['completed'].includes(e.status)
+    (e: any) => e.event_date >= now && !['completed'].includes(e.status)
   )
   const past = (events ?? [])
-    .filter((e) => e.status === 'completed' || e.event_date < now)
+    .filter((e: any) => e.status === 'completed' || e.event_date < now)
     .slice(-5)
 
   // Fetch active (sent) quotes for this client's events
-  const eventIds = (events ?? []).map((e) => e.id)
+  const eventIds = (events ?? []).map((e: any) => e.id)
   let activeQuotes: ClientPortalData['activeQuotes'] = []
 
   if (eventIds.length > 0) {
@@ -139,10 +139,10 @@ export async function getClientPortalData(token: string): Promise<ClientPortalDa
       .in('event_id', eventIds)
       .eq('status', 'sent')
 
-    const eventMap = new Map((events ?? []).map((e) => [e.id, e]))
+    const eventMap = new Map((events ?? []).map((e: any) => [e.id, e]))
     activeQuotes = (quotes ?? [])
-      .filter((q) => q.event_id != null)
-      .map((q) => ({
+      .filter((q: any) => q.event_id != null)
+      .map((q: any) => ({
         id: q.id,
         event_id: q.event_id!,
         event_occasion: eventMap.get(q.event_id!)?.occasion ?? null,
@@ -161,8 +161,8 @@ export async function getClientPortalData(token: string): Promise<ClientPortalDa
       .in('event_id', eventIds)
       .gt('outstanding_balance_cents', 0)
 
-    const eventMap = new Map((events ?? []).map((e) => [e.id, e]))
-    for (const s of (summaries ?? []).filter((s) => s.event_id != null)) {
+    const eventMap = new Map((events ?? []).map((e: any) => [e.id, e]))
+    for (const s of (summaries ?? []).filter((s: any) => s.event_id != null)) {
       const ev = eventMap.get(s.event_id!)
       if (!ev) continue
       pendingPayments.push({

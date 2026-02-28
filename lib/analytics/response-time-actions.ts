@@ -33,7 +33,7 @@ export async function getInquiryUrgencies(): Promise<InquiryUrgency[]> {
   if (!inquiries?.length) return []
 
   // Fetch first outbound message per inquiry
-  const inquiryIds = inquiries.map((i) => i.id)
+  const inquiryIds = inquiries.map((i: any) => i.id)
   const { data: messages } = await supabase
     .from('messages')
     .select('inquiry_id, created_at')
@@ -49,7 +49,7 @@ export async function getInquiryUrgencies(): Promise<InquiryUrgency[]> {
   }
 
   const now = Date.now()
-  return inquiries.map((inq) => {
+  return inquiries.map((inq: any) => {
     const hasResponse = firstResponse.has(inq.id)
     const hoursWaiting = hasResponse ? 0 : (now - new Date(inq.created_at).getTime()) / 3600000
 

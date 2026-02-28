@@ -15,7 +15,7 @@ export default async function EventBoardPage() {
   const events = await getEvents()
 
   // Map to lean KanbanEvent shape — only fields the board needs
-  const boardEvents = events.map((e) => ({
+  const boardEvents = events.map((e: any) => ({
     id: e.id,
     status: e.status,
     occasion: e.occasion ?? 'Untitled Event',

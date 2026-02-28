@@ -239,7 +239,7 @@ export async function getConversationInbox(): Promise<ConversationWithDetails[]>
     return []
   }
 
-  const conversationIds = participantRows.map((p) => p.conversation_id)
+  const conversationIds = participantRows.map((p: any) => p.conversation_id)
 
   // Fetch conversations with participants
   const { data: conversations, error: convError } = await supabase
@@ -323,7 +323,7 @@ export async function getConversationInbox(): Promise<ConversationWithDetails[]>
   }
 
   // Build enriched results
-  return conversations.map((conv) => {
+  return conversations.map((conv: any) => {
     const participants = (conv as any).conversation_participants || []
     const otherParticipant = participants.find(
       (p: ConversationParticipant) => p.auth_user_id !== user.id

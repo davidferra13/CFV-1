@@ -39,7 +39,7 @@ export async function getReferralHealthData(): Promise<ReferralHealthScore> {
   // Map clients to the shape computeReferralHealth expects
   // Note: referred_by_client_id is not in the schema; we approximate
   // by checking if referral_source is the id of another client.
-  const clientIds = new Set((clients || []).map((c) => c.id))
+  const clientIds = new Set((clients || []).map((c: any) => c.id))
 
   const mapped = (clients || []).map((c: any) => ({
     id: c.id,

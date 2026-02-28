@@ -23,8 +23,8 @@ export default async function ConfirmedEventsPage() {
 
   const allEvents = await getEvents()
   const events = allEvents
-    .filter((e) => e.status === 'paid' || e.status === 'confirmed')
-    .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
+    .filter((e: any) => e.status === 'paid' || e.status === 'confirmed')
+    .sort((a: any, b: any) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
 
   return (
     <div className="space-y-6">
@@ -67,7 +67,7 @@ export default async function ConfirmedEventsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {events.map((event) => (
+              {events.map((event: any) => (
                 <TableRow key={event.id}>
                   <TableCell className="font-medium">
                     <Link

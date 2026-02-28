@@ -40,8 +40,8 @@ export default async function IngredientsPage() {
   await requireChef()
   const ingredients = await getIngredients()
 
-  const stapleCount = ingredients.filter((i) => i.is_staple).length
-  const pricedCount = ingredients.filter((i) => i.average_price_cents != null).length
+  const stapleCount = ingredients.filter((i: any) => i.is_staple).length
+  const pricedCount = ingredients.filter((i: any) => i.average_price_cents != null).length
 
   return (
     <div className="space-y-6">
@@ -104,7 +104,7 @@ export default async function IngredientsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {ingredients.map((ing) => (
+              {ingredients.map((ing: any) => (
                 <TableRow key={ing.id}>
                   <TableCell className="font-medium">
                     {ing.name}

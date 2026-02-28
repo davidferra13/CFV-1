@@ -104,7 +104,7 @@ export async function getDailyReportHistory(limit = 30): Promise<DailyReportSumm
     return []
   }
 
-  return (data || []).map((row) => {
+  return (data || []).map((row: any) => {
     const content = row.content as DailyReportContent
     return {
       reportDate: row.report_date,

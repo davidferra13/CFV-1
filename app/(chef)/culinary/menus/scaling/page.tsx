@@ -18,7 +18,7 @@ export default async function MenuScalingPage() {
   await requireChef()
   const menus = await getMenus()
 
-  const menusWithGuests = menus.filter((m) => m.target_guest_count != null)
+  const menusWithGuests = menus.filter((m: any) => m.target_guest_count != null)
 
   return (
     <div className="space-y-6">
@@ -62,8 +62,8 @@ export default async function MenuScalingPage() {
             </TableHeader>
             <TableBody>
               {menusWithGuests
-                .sort((a, b) => (b.target_guest_count ?? 0) - (a.target_guest_count ?? 0))
-                .map((menu) => (
+                .sort((a: any, b: any) => (b.target_guest_count ?? 0) - (a.target_guest_count ?? 0))
+                .map((menu: any) => (
                   <TableRow key={menu.id}>
                     <TableCell className="font-medium">
                       <Link
@@ -98,10 +98,10 @@ export default async function MenuScalingPage() {
         </Card>
       )}
 
-      {menus.filter((m) => m.target_guest_count == null).length > 0 && (
+      {menus.filter((m: any) => m.target_guest_count == null).length > 0 && (
         <p className="text-xs text-stone-400">
-          {menus.filter((m) => m.target_guest_count == null).length} menus without a target guest
-          count —{' '}
+          {menus.filter((m: any) => m.target_guest_count == null).length} menus without a target
+          guest count —{' '}
           <Link href="/culinary/menus" className="text-brand-600 hover:underline">
             view all menus
           </Link>

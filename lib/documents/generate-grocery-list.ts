@@ -180,7 +180,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
   if (!dishes || dishes.length === 0) return null
 
   // Components (with recipe_id and scale_factor)
-  const dishIds = dishes.map((d) => d.id)
+  const dishIds = dishes.map((d: any) => d.id)
   const { data: components } = await supabase
     .from('components')
     .select('id, dish_id, name, recipe_id, scale_factor')
@@ -190,14 +190,14 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
   if (!components) return null
 
   // Build dish lookup for course info
-  const dishById = new Map(dishes.map((d) => [d.id, d]))
+  const dishById = new Map(dishes.map((d: any) => [d.id, d]))
 
   // Separate components: with recipe vs without
-  const withRecipe = components.filter((c) => c.recipe_id)
-  const withoutRecipe = components.filter((c) => !c.recipe_id)
+  const withRecipe = components.filter((c: any) => c.recipe_id)
+  const withoutRecipe = components.filter((c: any) => !c.recipe_id)
 
   // Warning placeholders for components without recipes
-  const unrecipedComponents: UnrecipedComponent[] = withoutRecipe.map((c) => {
+  const unrecipedComponents: UnrecipedComponent[] = withoutRecipe.map((c: any) => {
     const dish = dishById.get(c.dish_id)
     return {
       componentName: c.name,
@@ -231,7 +231,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
   const recipeIds = [...recipeToComponents.keys()]
   if (recipeIds.length === 0) {
     // No recipes linked — return with empty sections and all components as warnings
-    const allAsWarnings: UnrecipedComponent[] = components.map((c) => {
+    const allAsWarnings: UnrecipedComponent[] = components.map((c: any) => {
       const dish = dishById.get(c.dish_id)
       return {
         componentName: c.name,

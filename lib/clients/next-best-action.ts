@@ -84,8 +84,8 @@ export async function getNextBestActions(limit = 10): Promise<NextBestAction[]> 
 
   // Resolve expiring quotes to client IDs via events
   const quoteEventIds = (expiringQuotes ?? [])
-    .map((q) => q.event_id)
-    .filter((id): id is string => id != null)
+    .map((q: any) => q.event_id)
+    .filter((id: any): id is string => id != null)
   const expiringClientIds = new Set<string>()
   if (quoteEventIds.length > 0) {
     const { data: quoteEvents } = await supabase

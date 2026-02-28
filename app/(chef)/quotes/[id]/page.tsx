@@ -233,7 +233,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Status History</h2>
           <div className="space-y-3">
-            {quote.transitions.map((transition) => (
+            {quote.transitions.map((transition: any) => (
               <div key={transition.id} className="flex items-start gap-3">
                 <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-brand-500" />
                 <div className="flex-1">

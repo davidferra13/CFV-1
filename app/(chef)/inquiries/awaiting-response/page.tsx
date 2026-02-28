@@ -25,7 +25,7 @@ export default async function AwaitingResponsePage() {
   await requireChef()
 
   const allInquiries = await getInquiries()
-  const inquiries = allInquiries.filter((i) => i.status === 'awaiting_chef')
+  const inquiries = allInquiries.filter((i: any) => i.status === 'awaiting_chef')
 
   return (
     <div className="space-y-6">
@@ -54,7 +54,7 @@ export default async function AwaitingResponsePage() {
         </Card>
       ) : (
         <div className="space-y-2">
-          {inquiries.map((inquiry) => {
+          {inquiries.map((inquiry: any) => {
             const name = getDisplayName(inquiry)
             return (
               <Link

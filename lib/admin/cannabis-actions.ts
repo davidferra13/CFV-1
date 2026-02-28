@@ -235,7 +235,7 @@ export async function adminGrantTierByEmail(input: { email: string; notes?: stri
   if (authError) throw new Error('Failed to look up users')
 
   const targetUser = authData.users.find(
-    (u) => u.email?.toLowerCase() === input.email.toLowerCase()
+    (u: any) => u.email?.toLowerCase() === input.email.toLowerCase()
   )
   if (!targetUser) throw new Error(`No account found for email: ${input.email}`)
 

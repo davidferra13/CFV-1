@@ -77,7 +77,10 @@ export async function getCancellationRefundRecommendation(eventId: string) {
     .eq('entry_type', 'deposit')
     .eq('is_refund', false)
 
-  const depositPaidCents = (depositEntries ?? []).reduce((sum, e) => sum + e.amount_cents, 0)
+  const depositPaidCents = (depositEntries ?? []).reduce(
+    (sum: any, e: any) => sum + e.amount_cents,
+    0
+  )
 
   const ledger: LedgerSnapshot = {
     totalPaidCents: summary?.total_paid_cents ?? 0,

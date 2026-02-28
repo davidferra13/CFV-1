@@ -163,7 +163,7 @@ export async function getEventDebriefBlanks(eventId: string): Promise<DebriefBla
           ...new Set(
             components
               .map((c: { recipe_id: string | null }) => c.recipe_id)
-              .filter((id): id is string => id !== null)
+              .filter((id: any): id is string => id !== null)
           ),
         ]
 

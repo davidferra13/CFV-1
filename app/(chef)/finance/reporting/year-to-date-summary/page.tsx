@@ -25,25 +25,29 @@ export default async function YearToDateSummaryPage() {
   ])
 
   // YTD revenue from ledger entries (non-refund)
-  const ytdRevenue = ytdEntries.filter((e) => !e.is_refund).reduce((s, e) => s + e.amount_cents, 0)
+  const ytdRevenue = ytdEntries
+    .filter((e: any) => !e.is_refund)
+    .reduce((s: any, e: any) => s + e.amount_cents, 0)
 
-  const ytdRefunds = ytdEntries.filter((e) => e.is_refund).reduce((s, e) => s + e.amount_cents, 0)
+  const ytdRefunds = ytdEntries
+    .filter((e: any) => e.is_refund)
+    .reduce((s: any, e: any) => s + e.amount_cents, 0)
 
   const ytdNetRevenue = ytdRevenue - ytdRefunds
-  const ytdTotalExpenses = ytdExpenses.reduce((s, e) => s + e.amount_cents, 0)
+  const ytdTotalExpenses = ytdExpenses.reduce((s: any, e: any) => s + e.amount_cents, 0)
   const ytdProfit = ytdNetRevenue - ytdTotalExpenses
 
   // YTD events
-  const ytdEvents = events.filter((e) => new Date(e.event_date) >= startOfYear(new Date()))
-  const completedYtd = ytdEvents.filter((e) => e.status === 'completed').length
+  const ytdEvents = events.filter((e: any) => new Date(e.event_date) >= startOfYear(new Date()))
+  const completedYtd = ytdEvents.filter((e: any) => e.status === 'completed').length
   const upcomingYtd = ytdEvents.filter(
-    (e) => new Date(e.event_date) > new Date() && !['cancelled'].includes(e.status)
+    (e: any) => new Date(e.event_date) > new Date() && !['cancelled'].includes(e.status)
   ).length
 
   // Tips from YTD entries
   const ytdTips = ytdEntries
-    .filter((e) => e.entry_type === 'tip')
-    .reduce((s, e) => s + e.amount_cents, 0)
+    .filter((e: any) => e.entry_type === 'tip')
+    .reduce((s: any, e: any) => s + e.amount_cents, 0)
 
   return (
     <div className="space-y-6">

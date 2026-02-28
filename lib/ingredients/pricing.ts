@@ -98,10 +98,12 @@ export async function getIngredientAveragePrice(ingredientId: string) {
     return null
   }
 
-  const prices = data.map((d) => d.price_per_unit_cents).filter((p): p is number => p !== null)
+  const prices = data
+    .map((d: any) => d.price_per_unit_cents)
+    .filter((p: any): p is number => p !== null)
   if (prices.length === 0) return null
 
-  const avg = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length)
+  const avg = Math.round(prices.reduce((a: any, b: any) => a + b, 0) / prices.length)
   const min = Math.min(...prices)
   const max = Math.max(...prices)
   const mostRecent = prices[0]
@@ -236,8 +238,8 @@ async function updateIngredientPriceFields(ingredientId: string, tenantId: strin
 
   if (!history || history.length === 0) return
 
-  const prices = history.map((h) => h.price_per_unit_cents!).filter(Boolean)
-  const avg = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length)
+  const prices = history.map((h: any) => h.price_per_unit_cents!).filter(Boolean)
+  const avg = Math.round(prices.reduce((a: any, b: any) => a + b, 0) / prices.length)
 
   await supabase
     .from('ingredients')

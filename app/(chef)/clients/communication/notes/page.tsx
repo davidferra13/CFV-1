@@ -11,12 +11,12 @@ export default async function ClientNotesPage() {
   const clients = await getClientsWithStats()
 
   const clientsWithNotes = clients
-    .filter((c) => c.vibe_notes && (c.vibe_notes as string).trim().length > 0)
-    .sort((a, b) => a.full_name.localeCompare(b.full_name))
+    .filter((c: any) => c.vibe_notes && (c.vibe_notes as string).trim().length > 0)
+    .sort((a: any, b: any) => a.full_name.localeCompare(b.full_name))
 
   const clientsWithoutNotes = clients
-    .filter((c) => !c.vibe_notes || (c.vibe_notes as string).trim().length === 0)
-    .sort((a, b) => a.full_name.localeCompare(b.full_name))
+    .filter((c: any) => !c.vibe_notes || (c.vibe_notes as string).trim().length === 0)
+    .sort((a: any, b: any) => a.full_name.localeCompare(b.full_name))
 
   return (
     <div className="space-y-6">
@@ -50,7 +50,7 @@ export default async function ClientNotesPage() {
         <div>
           <h2 className="text-sm font-semibold text-stone-300 mb-3">Clients with Notes</h2>
           <div className="space-y-3">
-            {clientsWithNotes.map((client) => (
+            {clientsWithNotes.map((client: any) => (
               <Card key={client.id} className="p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
@@ -82,7 +82,7 @@ export default async function ClientNotesPage() {
         <div>
           <h2 className="text-sm font-semibold text-stone-500 mb-3">No Notes Yet</h2>
           <div className="flex flex-wrap gap-2">
-            {clientsWithoutNotes.map((client) => (
+            {clientsWithoutNotes.map((client: any) => (
               <Link
                 key={client.id}
                 href={`/clients/${client.id}`}

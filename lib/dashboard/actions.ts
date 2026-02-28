@@ -40,7 +40,7 @@ export async function getOutstandingPayments() {
     .not('status', 'in', '("draft","cancelled")')
     .order('event_date', { ascending: true })
 
-  const enriched: OutstandingEvent[] = (events || []).map((event) => {
+  const enriched: OutstandingEvent[] = (events || []).map((event: any) => {
     const fin = summaries.find((s: any) => s.event_id === event.id)
     return {
       eventId: event.id,
@@ -94,14 +94,14 @@ export async function getDashboardQuoteStats() {
     .toISOString()
     .split('T')[0]
 
-  const draft = allQuotes.filter((q) => q.status === 'draft').length
-  const sent = allQuotes.filter((q) => q.status === 'sent').length
+  const draft = allQuotes.filter((q: any) => q.status === 'draft').length
+  const sent = allQuotes.filter((q: any) => q.status === 'sent').length
 
   const expiringQuotes = allQuotes.filter(
-    (q) => q.status === 'sent' && q.valid_until && q.valid_until <= threeDaysFromNow
+    (q: any) => q.status === 'sent' && q.valid_until && q.valid_until <= threeDaysFromNow
   )
 
-  const expiringDetails = expiringQuotes.map((q) => ({
+  const expiringDetails = expiringQuotes.map((q: any) => ({
     clientName: (q.client as any)?.full_name ?? 'Unknown',
     validUntil: q.valid_until!,
     amountCents: q.total_quoted_cents ?? 0,
@@ -143,21 +143,24 @@ export async function getDashboardEventCounts() {
   }
 
   const allEvents = events || []
-  const thisMonthEvents = allEvents.filter((e) => e.event_date >= monthStart)
+  const thisMonthEvents = allEvents.filter((e: any) => e.event_date >= monthStart)
   const today = new Date().toISOString().split('T')[0]
-  const completedThisMonth = thisMonthEvents.filter((e) => e.status === 'completed').length
+  const completedThisMonth = thisMonthEvents.filter((e: any) => e.status === 'completed').length
   const upcomingThisMonth = thisMonthEvents.filter(
-    (e) => e.event_date >= today && e.status !== 'completed'
+    (e: any) => e.event_date >= today && e.status !== 'completed'
   ).length
 
   return {
     thisMonth: thisMonthEvents.length,
     ytd: allEvents.length,
     completedThisMonth,
-    completedYtd: allEvents.filter((e) => e.status === 'completed').length,
+    completedYtd: allEvents.filter((e: any) => e.status === 'completed').length,
     upcomingThisMonth,
-    totalGuestsThisMonth: thisMonthEvents.reduce((sum, e) => sum + (e.guest_count || 0), 0),
-    totalGuestsYtd: allEvents.reduce((sum, e) => sum + (e.guest_count || 0), 0),
+    totalGuestsThisMonth: thisMonthEvents.reduce(
+      (sum: any, e: any) => sum + (e.guest_count || 0),
+      0
+    ),
+    totalGuestsYtd: allEvents.reduce((sum: any, e: any) => sum + (e.guest_count || 0), 0),
   }
 }
 
@@ -200,8 +203,10 @@ export async function getMonthOverMonthRevenue() {
     }
   }
 
-  const currentIds = events.filter((e) => e.event_date >= currentMonthStart).map((e) => e.id)
-  const prevIds = events.filter((e) => e.event_date < currentMonthStart).map((e) => e.id)
+  const currentIds = events
+    .filter((e: any) => e.event_date >= currentMonthStart)
+    .map((e: any) => e.id)
+  const prevIds = events.filter((e: any) => e.event_date < currentMonthStart).map((e: any) => e.id)
   const allIds = [...currentIds, ...prevIds]
 
   if (allIds.length === 0) {
@@ -771,7 +776,7 @@ export async function getTopEventsByProfit(limit = 3): Promise<TopProfitEvent[]>
 
   if (!events || events.length === 0) return []
 
-  const eventIds = events.map((e) => e.id)
+  const eventIds = events.map((e: any) => e.id)
 
   const { data: summaries } = await supabase
     .from('event_financial_summary')
@@ -780,7 +785,7 @@ export async function getTopEventsByProfit(limit = 3): Promise<TopProfitEvent[]>
     .in('event_id', eventIds)
 
   return events
-    .map((event) => {
+    .map((event: any) => {
       const fin = (summaries || []).find((s: any) => s.event_id === event.id)
       const profitMarginRaw = fin?.profit_margin ?? 0
       return {
@@ -793,7 +798,7 @@ export async function getTopEventsByProfit(limit = 3): Promise<TopProfitEvent[]>
         revenueCents: fin?.total_paid_cents ?? 0,
       }
     })
-    .sort((a, b) => b.profitCents - a.profitCents)
+    .sort((a: any, b: any) => b.profitCents - a.profitCents)
     .slice(0, limit)
 }
 

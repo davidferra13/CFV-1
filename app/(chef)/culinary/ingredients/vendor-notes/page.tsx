@@ -10,7 +10,7 @@ export default async function VendorNotesPage() {
   await requireChef()
   const ingredients = await getIngredients()
 
-  const withVendor = ingredients.filter((i) => i.preferred_vendor)
+  const withVendor = ingredients.filter((i: any) => i.preferred_vendor)
 
   // Group by vendor
   const byVendor = new Map<string, typeof withVendor>()
@@ -63,8 +63,8 @@ export default async function VendorNotesPage() {
               <Card>
                 <div className="divide-y divide-stone-800">
                   {items
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((ing) => (
+                    .sort((a: any, b: any) => a.name.localeCompare(b.name))
+                    .map((ing: any) => (
                       <div key={ing.id} className="px-4 py-3 flex items-center gap-4">
                         <div className="flex-1">
                           <span className="font-medium text-stone-100">{ing.name}</span>
@@ -98,9 +98,9 @@ export default async function VendorNotesPage() {
         </div>
       )}
 
-      {ingredients.filter((i) => !i.preferred_vendor).length > 0 && (
+      {ingredients.filter((i: any) => !i.preferred_vendor).length > 0 && (
         <p className="text-xs text-stone-400">
-          {ingredients.filter((i) => !i.preferred_vendor).length} ingredients without a vendor
+          {ingredients.filter((i: any) => !i.preferred_vendor).length} ingredients without a vendor
           assignment —{' '}
           <Link href="/culinary/ingredients" className="text-brand-600 hover:underline">
             view all

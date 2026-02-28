@@ -24,13 +24,13 @@ export default async function FailedPaymentsPage() {
 
   // Events in "accepted" state are awaiting payment — if past event date they're stalled
   const stalled = events
-    .filter((e) => e.status === 'accepted')
-    .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
+    .filter((e: any) => e.status === 'accepted')
+    .sort((a: any, b: any) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
 
-  const pastDue = stalled.filter((e) => new Date(e.event_date) < now)
-  const upcoming = stalled.filter((e) => new Date(e.event_date) >= now)
+  const pastDue = stalled.filter((e: any) => new Date(e.event_date) < now)
+  const upcoming = stalled.filter((e: any) => new Date(e.event_date) >= now)
 
-  const totalPastDueValue = pastDue.reduce((s, e) => s + (e.quoted_price_cents ?? 0), 0)
+  const totalPastDueValue = pastDue.reduce((s: any, e: any) => s + (e.quoted_price_cents ?? 0), 0)
 
   return (
     <div className="space-y-6">
@@ -91,7 +91,7 @@ export default async function FailedPaymentsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {pastDue.map((event) => {
+                {pastDue.map((event: any) => {
                   const daysPast = differenceInDays(now, new Date(event.event_date))
                   return (
                     <TableRow key={event.id}>
@@ -157,7 +157,7 @@ export default async function FailedPaymentsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {upcoming.map((event) => (
+                {upcoming.map((event: any) => (
                   <TableRow key={event.id}>
                     <TableCell className="text-stone-400 text-sm">
                       {format(new Date(event.event_date), 'MMM d, yyyy')}

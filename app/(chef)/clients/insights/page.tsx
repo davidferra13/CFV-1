@@ -57,14 +57,14 @@ export default async function ClientInsightsPage() {
   const mostFrequent = sortedByEvents[0]
 
   const now = Date.now()
-  const atRiskCount = clients.filter((c) => {
+  const atRiskCount = clients.filter((c: any) => {
     if (!c.lastEventDate) return false
     return now - new Date(c.lastEventDate).getTime() > NINETY_DAYS_MS
   }).length
 
   const avgSpend =
     clients.length > 0
-      ? clients.reduce((sum, c) => sum + (c.totalSpentCents ?? 0), 0) / clients.length
+      ? clients.reduce((sum: any, c: any) => sum + (c.totalSpentCents ?? 0), 0) / clients.length
       : 0
 
   return (

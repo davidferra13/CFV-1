@@ -283,7 +283,7 @@ export async function loadRelevantMemories(
       .update({ last_accessed_at: new Date().toISOString() })
       .in('id', loadedIds)
       .then(() => {})
-      .catch((err) => console.error('[remy-memory] Failed to bump access:', err))
+      .catch((err: any) => console.error('[remy-memory] Failed to bump access:', err))
   }
 
   return capped

@@ -12,7 +12,7 @@ export default async function VipClientsPage() {
   await requireChef()
 
   const allClients = await getClientsWithStats()
-  const clients = allClients.filter((c) => c.status === 'vip')
+  const clients = allClients.filter((c: any) => c.status === 'vip')
 
   return (
     <div className="space-y-6">

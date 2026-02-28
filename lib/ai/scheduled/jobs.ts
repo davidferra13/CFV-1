@@ -232,7 +232,7 @@ export async function handleRevenueGoal(
     .gte('event_date', monthStart.toISOString())
 
   const totalRevenueCents = (monthEvents ?? []).reduce(
-    (sum, e) => sum + ((e as any).quoted_price_cents ?? 0),
+    (sum: any, e: any) => sum + ((e as any).quoted_price_cents ?? 0),
     0
   )
 
@@ -268,7 +268,7 @@ export async function handleChurnPrediction(
 
   return {
     atRiskCount: atRiskClients?.length ?? 0,
-    atRiskClients: (atRiskClients ?? []).map((c) => ({
+    atRiskClients: (atRiskClients ?? []).map((c: any) => ({
       id: c.id,
       name: (c as any).full_name,
       lastEvent: (c as any).last_event_date,

@@ -23,8 +23,8 @@ export default async function AwaitingDepositPage() {
 
   const allEvents = await getEvents()
   const events = allEvents
-    .filter((e) => e.status === 'accepted')
-    .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
+    .filter((e: any) => e.status === 'accepted')
+    .sort((a: any, b: any) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
 
   return (
     <div className="space-y-6">
@@ -69,7 +69,7 @@ export default async function AwaitingDepositPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {events.map((event) => (
+              {events.map((event: any) => (
                 <TableRow key={event.id}>
                   <TableCell className="font-medium">
                     <Link

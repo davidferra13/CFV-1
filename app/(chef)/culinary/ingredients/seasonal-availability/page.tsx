@@ -143,7 +143,7 @@ export default async function SeasonalAvailabilityPage() {
                 <p className="text-xs opacity-60">No ingredients matched</p>
               ) : (
                 <ul className="space-y-1">
-                  {items.slice(0, 8).map((ing) => (
+                  {items.slice(0, 8).map((ing: any) => (
                     <li key={ing.id} className="text-sm flex items-center justify-between">
                       <span>{ing.name}</span>
                       {ing.preferred_vendor && (
@@ -169,8 +169,8 @@ export default async function SeasonalAvailabilityPage() {
           <Card className="p-4">
             <div className="flex flex-wrap gap-2">
               {unmatched
-                .sort((a, b) => a.name.localeCompare(b.name))
-                .map((ing) => (
+                .sort((a: any, b: any) => a.name.localeCompare(b.name))
+                .map((ing: any) => (
                   <span
                     key={ing.id}
                     className="text-xs bg-stone-800 text-stone-400 px-2 py-1 rounded-full"

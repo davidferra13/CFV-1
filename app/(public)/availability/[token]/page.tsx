@@ -86,7 +86,7 @@ export default async function PublicAvailabilityPage({
     .lte('event_date', sixtyDaysOut.toISOString().split('T')[0])
     .not('status', 'eq', 'cancelled')
 
-  const busyDates = new Set((events ?? []).map((e) => e.event_date))
+  const busyDates = new Set((events ?? []).map((e: any) => e.event_date))
 
   // Generate calendar grid for next 60 days
   const days: { date: string; dayOfWeek: number; busy: boolean }[] = []

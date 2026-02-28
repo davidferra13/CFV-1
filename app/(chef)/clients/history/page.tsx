@@ -32,9 +32,9 @@ export default async function ClientHistoryPage() {
   await requireChef()
   const clients = await getClientsWithStats()
 
-  const totalEvents = clients.reduce((sum, c) => sum + (c.totalEvents ?? 0), 0)
-  const totalRevenue = clients.reduce((sum, c) => sum + (c.totalSpentCents ?? 0), 0)
-  const clientsWithEvents = clients.filter((c) => (c.totalEvents ?? 0) > 0).length
+  const totalEvents = clients.reduce((sum: any, c: any) => sum + (c.totalEvents ?? 0), 0)
+  const totalRevenue = clients.reduce((sum: any, c: any) => sum + (c.totalSpentCents ?? 0), 0)
+  const clientsWithEvents = clients.filter((c: any) => (c.totalEvents ?? 0) > 0).length
 
   return (
     <div className="space-y-6">

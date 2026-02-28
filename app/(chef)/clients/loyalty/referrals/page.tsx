@@ -32,7 +32,7 @@ export default async function ReferralsPage() {
   const [clients, events] = await Promise.all([getClients(), getEvents()])
 
   // Clients who came via referral
-  const referralClients = clients.filter((c) => c.referral_source === 'referral')
+  const referralClients = clients.filter((c: any) => c.referral_source === 'referral')
 
   // Map referrer name → clients they referred
   const referrerMap = new Map<string, typeof clients>()
@@ -52,11 +52,11 @@ export default async function ReferralsPage() {
   const sortedSources = Array.from(sourceBreakdown.entries()).sort((a, b) => b[1] - a[1])
 
   // Events from referral clients
-  const referralClientIds = new Set(referralClients.map((c) => c.id))
-  const referralEvents = events.filter((e) => referralClientIds.has(e.client_id ?? ''))
+  const referralClientIds = new Set(referralClients.map((c: any) => c.id))
+  const referralEvents = events.filter((e: any) => referralClientIds.has(e.client_id ?? ''))
   const referralRevenueCents = referralEvents
-    .filter((e) => ['paid', 'confirmed', 'in_progress', 'completed'].includes(e.status))
-    .reduce((s, e) => s + (e.quoted_price_cents ?? 0), 0)
+    .filter((e: any) => ['paid', 'confirmed', 'in_progress', 'completed'].includes(e.status))
+    .reduce((s: any, e: any) => s + (e.quoted_price_cents ?? 0), 0)
 
   // Sort referrers by number of clients sent
   const referrers = Array.from(referrerMap.entries()).sort((a, b) => b[1].length - a[1].length)
@@ -141,7 +141,7 @@ export default async function ReferralsPage() {
                       {referred.length} client{referred.length !== 1 ? 's' : ''} referred
                     </p>
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {referred.map((c) => (
+                      {referred.map((c: any) => (
                         <Link key={c.id} href={`/clients/${c.id}`}>
                           <span className="text-xs bg-stone-800 text-stone-300 hover:bg-stone-700 px-2 py-1 rounded-full cursor-pointer">
                             {c.full_name}
@@ -158,7 +158,7 @@ export default async function ReferralsPage() {
       )}
 
       {/* Referral clients with no named referrer */}
-      {referralClients.filter((c) => !c.referral_source_detail).length > 0 && (
+      {referralClients.filter((c: any) => !c.referral_source_detail).length > 0 && (
         <div>
           <h2 className="text-base font-semibold text-stone-300 mb-2">
             Referred (referrer not named)
@@ -166,8 +166,8 @@ export default async function ReferralsPage() {
           <Card className="p-4">
             <div className="flex flex-wrap gap-2">
               {referralClients
-                .filter((c) => !c.referral_source_detail)
-                .map((c) => (
+                .filter((c: any) => !c.referral_source_detail)
+                .map((c: any) => (
                   <Link key={c.id} href={`/clients/${c.id}`}>
                     <span className="text-xs bg-stone-800 text-stone-300 hover:bg-stone-700 px-2 py-1 rounded-full cursor-pointer">
                       {c.full_name}

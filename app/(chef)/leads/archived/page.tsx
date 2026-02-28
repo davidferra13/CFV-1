@@ -27,8 +27,8 @@ export default async function ArchivedLeadsPage() {
     status: ['declined', 'expired'] as any,
   })
 
-  const declined = inquiries.filter((i) => i.status === 'declined')
-  const expired = inquiries.filter((i) => i.status === 'expired')
+  const declined = inquiries.filter((i: any) => i.status === 'declined')
+  const expired = inquiries.filter((i: any) => i.status === 'expired')
 
   return (
     <div className="space-y-6">
@@ -78,7 +78,7 @@ export default async function ArchivedLeadsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {inquiries.map((inquiry) => (
+              {inquiries.map((inquiry: any) => (
                 <TableRow key={inquiry.id}>
                   <TableCell className="font-medium">
                     <p>{inquiry.client?.full_name ?? '—'}</p>

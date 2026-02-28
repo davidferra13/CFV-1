@@ -90,14 +90,14 @@ async function getEventIngredients(eventId: string, tenantId: string): Promise<R
     .select('recipe_id, scale_factor')
     .in(
       'dish_id',
-      dishes.map((d) => d.id)
+      dishes.map((d: any) => d.id)
     )
     .eq('tenant_id', tenantId)
     .not('recipe_id', 'is', null)
 
   if (!components || components.length === 0) return []
 
-  const recipeIds = [...new Set(components.map((c) => c.recipe_id!))]
+  const recipeIds = [...new Set(components.map((c: any) => c.recipe_id!))]
 
   // Accumulate scale factors: if recipe appears in multiple components, sum them
   const recipeScales = new Map<string, number>()

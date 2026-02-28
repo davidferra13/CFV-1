@@ -61,7 +61,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .not('slug', 'is', null)
       .eq('profile_public', true)
 
-    const chefRoutes: MetadataRoute.Sitemap = (chefs ?? []).map((chef) => ({
+    const chefRoutes: MetadataRoute.Sitemap = (chefs ?? []).map((chef: any) => ({
       url: `${BASE_URL}/chef/${chef.slug}`,
       lastModified: chef.updated_at ? new Date(chef.updated_at) : new Date(),
       changeFrequency: 'weekly' as const,
@@ -69,7 +69,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
 
     // Gift card pages for each public chef
-    const giftCardRoutes: MetadataRoute.Sitemap = (chefs ?? []).map((chef) => ({
+    const giftCardRoutes: MetadataRoute.Sitemap = (chefs ?? []).map((chef: any) => ({
       url: `${BASE_URL}/chef/${chef.slug}/gift-cards`,
       lastModified: chef.updated_at ? new Date(chef.updated_at) : new Date(),
       changeFrequency: 'monthly' as const,
@@ -77,7 +77,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
 
     // Inquiry pages for each public chef
-    const inquiryRoutes: MetadataRoute.Sitemap = (chefs ?? []).map((chef) => ({
+    const inquiryRoutes: MetadataRoute.Sitemap = (chefs ?? []).map((chef: any) => ({
       url: `${BASE_URL}/chef/${chef.slug}/inquire`,
       lastModified: chef.updated_at ? new Date(chef.updated_at) : new Date(),
       changeFrequency: 'monthly' as const,

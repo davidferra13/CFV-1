@@ -200,7 +200,7 @@ export async function getEngagementStats(): Promise<{
     .not('client_id', 'is', null)
     .gte('created_at', todayStart.toISOString())
 
-  const uniqueToday = new Set((todayData || []).map((r) => r.client_id).filter(Boolean))
+  const uniqueToday = new Set((todayData || []).map((r: any) => r.client_id).filter(Boolean))
 
   const { data: weekData } = await supabase
     .from('activity_events')
@@ -210,7 +210,7 @@ export async function getEngagementStats(): Promise<{
     .not('client_id', 'is', null)
     .gte('created_at', weekAgo.toISOString())
 
-  const uniqueWeek = new Set((weekData || []).map((r) => r.client_id).filter(Boolean))
+  const uniqueWeek = new Set((weekData || []).map((r: any) => r.client_id).filter(Boolean))
 
   const { count } = await supabase
     .from('activity_events')

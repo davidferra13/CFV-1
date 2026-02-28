@@ -41,7 +41,7 @@ export async function getStaleInquiries(staleDays: number = 3): Promise<PendingF
   if (!inquiries?.length) return []
 
   // Get last outbound message per inquiry
-  const inquiryIds = inquiries.map((i) => i.id)
+  const inquiryIds = inquiries.map((i: any) => i.id)
   const { data: messages } = await supabase
     .from('messages')
     .select('inquiry_id, created_at')

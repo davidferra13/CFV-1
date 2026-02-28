@@ -62,7 +62,7 @@ export async function exportMyData(): Promise<Record<string, unknown>> {
       .select('business_name, email, phone, display_name, bio, created_at')
       .eq('id', tenantId)
       .single()
-      .then((r) => r.data),
+      .then((r: any) => r.data),
     safeQuery('clients', '*', 'chef_id'),
     safeQuery('inquiries'),
     safeQuery('events'),
@@ -94,7 +94,7 @@ export async function exportMyData(): Promise<Record<string, unknown>> {
       .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false })
       .limit(5000)
-      .then((r) => r.data || []),
+      .then((r: any) => r.data || []),
   ])
 
   // Second batch — less critical tables

@@ -21,13 +21,13 @@ export default async function RevenueByEventPage() {
   const events = await getEvents()
 
   const revenueEvents = events
-    .filter((e) => (e.quoted_price_cents ?? 0) > 0)
-    .sort((a, b) => (b.quoted_price_cents ?? 0) - (a.quoted_price_cents ?? 0))
+    .filter((e: any) => (e.quoted_price_cents ?? 0) > 0)
+    .sort((a: any, b: any) => (b.quoted_price_cents ?? 0) - (a.quoted_price_cents ?? 0))
 
-  const totalRevenue = revenueEvents.reduce((s, e) => s + (e.quoted_price_cents ?? 0), 0)
+  const totalRevenue = revenueEvents.reduce((s: any, e: any) => s + (e.quoted_price_cents ?? 0), 0)
   const completedRevenue = revenueEvents
-    .filter((e) => e.status === 'completed')
-    .reduce((s, e) => s + (e.quoted_price_cents ?? 0), 0)
+    .filter((e: any) => e.status === 'completed')
+    .reduce((s: any, e: any) => s + (e.quoted_price_cents ?? 0), 0)
 
   const avgRevenue = revenueEvents.length > 0 ? Math.round(totalRevenue / revenueEvents.length) : 0
 
@@ -88,7 +88,7 @@ export default async function RevenueByEventPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {revenueEvents.map((event, idx) => (
+              {revenueEvents.map((event: any, idx: any) => (
                 <TableRow key={event.id}>
                   <TableCell className="text-stone-400 text-sm">{idx + 1}</TableCell>
                   <TableCell className="text-stone-400 text-sm">

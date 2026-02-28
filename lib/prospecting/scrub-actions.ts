@@ -588,14 +588,14 @@ export async function scrubProspects(query: string) {
       .select('name, city')
       .eq('chef_id', user.tenantId!)
 
-    const existingList = (existing ?? []).map((e) => ({
+    const existingList = (existing ?? []).map((e: any) => ({
       name: e.name ?? '',
       city: e.city ?? '',
     }))
 
     const newProspects = validatedProspects.filter((p) => {
       return !existingList.some(
-        (e) =>
+        (e: any) =>
           isSimilarName(p.name, e.name) &&
           (normalizeCity(p.city ?? '') === normalizeCity(e.city ?? '') ||
             !(p.city ?? '') ||
@@ -1388,14 +1388,14 @@ export async function competitorIntelScrub(region: string) {
       .select('name, city')
       .eq('chef_id', user.tenantId!)
 
-    const existingList = (existing ?? []).map((e) => ({
+    const existingList = (existing ?? []).map((e: any) => ({
       name: e.name ?? '',
       city: e.city ?? '',
     }))
 
     const newProspects = allExtractedProspects.slice(0, MAX_PROSPECTS_PER_SCRUB).filter((p) => {
       return !existingList.some(
-        (e) =>
+        (e: any) =>
           isSimilarName(p.name, e.name) &&
           (normalizeCity(p.city ?? '') === normalizeCity(e.city ?? '') ||
             !(p.city ?? '') ||
@@ -1641,14 +1641,14 @@ export async function lookalikeProspect(sourceProspectId: string) {
       .select('name, city')
       .eq('chef_id', user.tenantId!)
 
-    const existingList = (existing ?? []).map((e) => ({
+    const existingList = (existing ?? []).map((e: any) => ({
       name: e.name ?? '',
       city: e.city ?? '',
     }))
 
     const newProspects = validatedProspects.filter((p) => {
       return !existingList.some(
-        (e) =>
+        (e: any) =>
           isSimilarName(p.name, e.name) &&
           (normalizeCity(p.city ?? '') === normalizeCity(e.city ?? '') ||
             !(p.city ?? '') ||

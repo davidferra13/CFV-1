@@ -225,10 +225,10 @@ export async function exportExpensesCSV(filters: ExpenseFilters = {}) {
   }
 
   // Total row
-  const totalCents = expenses.reduce((sum, e) => sum + e.amount_cents, 0)
+  const totalCents = expenses.reduce((sum: any, e: any) => sum + e.amount_cents, 0)
   const businessCents = expenses
-    .filter((e) => e.is_business)
-    .reduce((sum, e) => sum + e.amount_cents, 0)
+    .filter((e: any) => e.is_business)
+    .reduce((sum: any, e: any) => sum + e.amount_cents, 0)
   lines.push('')
   lines.push(csvRow(['', '', '', '', '', 'TOTAL', formatDollars(totalCents)]))
   lines.push(csvRow(['', '', '', '', '', 'TOTAL BUSINESS', formatDollars(businessCents)]))
@@ -271,7 +271,7 @@ export async function exportAllEventsCSV(year: number) {
     .gte('expense_date', startDate)
     .lt('expense_date', endDate)
 
-  const summaryMap = new Map((summaries || []).map((s) => [s.event_id, s]))
+  const summaryMap = new Map((summaries || []).map((s: any) => [s.event_id, s]))
 
   // Build per-event expense breakdown by category
   const expensesByEvent = new Map<string | null, Map<string, number>>()

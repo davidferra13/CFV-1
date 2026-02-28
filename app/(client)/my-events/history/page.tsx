@@ -24,7 +24,7 @@ export default async function MyEventsHistoryPage() {
   let pastWithBalance: Set<string> = new Set()
 
   if (past.length > 0) {
-    const pastIds = past.map((e) => e.id)
+    const pastIds = past.map((e: any) => e.id)
     const { data: balanceRows } = await supabase
       .from('event_financial_summary')
       .select('event_id, outstanding_balance_cents')
@@ -33,8 +33,8 @@ export default async function MyEventsHistoryPage() {
 
     pastWithBalance = new Set(
       (balanceRows ?? [])
-        .filter((r) => (r.outstanding_balance_cents ?? 0) > 0 && r.event_id !== null)
-        .map((r) => r.event_id as string)
+        .filter((r: any) => (r.outstanding_balance_cents ?? 0) > 0 && r.event_id !== null)
+        .map((r: any) => r.event_id as string)
     )
   }
 
@@ -61,7 +61,7 @@ export default async function MyEventsHistoryPage() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {past.map((event) => {
+          {past.map((event: any) => {
             const hasBalance = pastWithBalance.has(event.id)
             const location = [event.location_address, event.location_city]
               .filter(Boolean)

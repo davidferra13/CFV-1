@@ -130,7 +130,7 @@ async function fetchQuoteDataForClient(
             }
           }
 
-          const allDishIds = dishes.map((d) => d.id)
+          const allDishIds = dishes.map((d: any) => d.id)
           const { data: components } = await supabase
             .from('components')
             .select('dish_id, name')

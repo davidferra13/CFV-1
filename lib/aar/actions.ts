@@ -328,15 +328,16 @@ export async function getAARStats() {
   }
 
   // Overall averages
-  const totalCalm = aars.reduce((sum, a) => sum + a.calm_rating, 0)
-  const totalPrep = aars.reduce((sum, a) => sum + a.preparation_rating, 0)
+  const totalCalm = aars.reduce((sum: any, a: any) => sum + a.calm_rating, 0)
+  const totalPrep = aars.reduce((sum: any, a: any) => sum + a.preparation_rating, 0)
   const avgCalmRating = totalCalm / aars.length
   const avgPrepRating = totalPrep / aars.length
 
   // Last 5 events averages
   const last5 = aars.slice(0, 5)
-  const last5AvgCalm = last5.reduce((sum, a) => sum + a.calm_rating, 0) / last5.length
-  const last5AvgPrep = last5.reduce((sum, a) => sum + a.preparation_rating, 0) / last5.length
+  const last5AvgCalm = last5.reduce((sum: any, a: any) => sum + a.calm_rating, 0) / last5.length
+  const last5AvgPrep =
+    last5.reduce((sum: any, a: any) => sum + a.preparation_rating, 0) / last5.length
 
   // Trend: compare last 5 avg calm to overall avg calm
   let trendDirection: 'improving' | 'declining' | 'neutral' = 'neutral'

@@ -99,11 +99,14 @@ export async function getPartnerReportData(
   }
 
   // Calculate summary
-  const completedEvents = (events || []).filter((e) => e.status === 'completed')
+  const completedEvents = (events || []).filter((e: any) => e.status === 'completed')
   const totalReferrals = (inquiries || []).length
   const eventsCompleted = completedEvents.length
-  const guestsServed = completedEvents.reduce((sum, e) => sum + (e.guest_count || 0), 0)
-  const revenueCents = completedEvents.reduce((sum, e) => sum + (e.quoted_price_cents || 0), 0)
+  const guestsServed = completedEvents.reduce((sum: any, e: any) => sum + (e.guest_count || 0), 0)
+  const revenueCents = completedEvents.reduce(
+    (sum: any, e: any) => sum + (e.quoted_price_cents || 0),
+    0
+  )
   const conversionRate =
     totalReferrals > 0 ? Math.round((eventsCompleted / totalReferrals) * 100) : 0
 
@@ -138,7 +141,7 @@ export async function getPartnerReportData(
       revenue_cents: revenueCents,
       conversion_rate: conversionRate,
     },
-    events: (events || []).map((e) => ({
+    events: (events || []).map((e: any) => ({
       id: e.id,
       event_date: e.event_date,
       occasion: e.occasion,

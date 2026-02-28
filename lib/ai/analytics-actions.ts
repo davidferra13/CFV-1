@@ -149,7 +149,7 @@ export async function calculateClientLTV(clientName: string): Promise<ClientLTVR
     .order('event_date', { ascending: true })
 
   // Load ledger payments for this client's events
-  const eventIds = (events ?? []).map((e) => e.id)
+  const eventIds = (events ?? []).map((e: any) => e.id)
   let totalRevenueCents = 0
 
   if (eventIds.length > 0) {

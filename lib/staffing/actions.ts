@@ -183,7 +183,7 @@ export async function getStaffSchedulerData(
     assignmentsByEvent.set(row.event_id, current)
   }
 
-  const events = (eventsResult.data ?? []).map((event) => ({
+  const events = (eventsResult.data ?? []).map((event: any) => ({
     id: event.id,
     name: event.occasion || 'Event',
     date: event.event_date,
@@ -289,12 +289,12 @@ export async function getTimeTrackerData(
   return {
     startDate: parsed.startDate,
     endDate: parsed.endDate,
-    staff: (staffResult.data ?? []).map((row) => ({
+    staff: (staffResult.data ?? []).map((row: any) => ({
       id: row.id,
       name: row.name,
       hourlyRateCents: row.hourly_rate_cents ?? 0,
     })),
-    events: (eventsResult.data ?? []).map((event) => ({
+    events: (eventsResult.data ?? []).map((event: any) => ({
       id: event.id,
       name: event.occasion || 'Event',
       date: event.event_date,
@@ -518,12 +518,12 @@ export async function getStaffPortalTimeTrackerData(
   return {
     startDate: parsed.startDate,
     endDate: parsed.endDate,
-    staff: (staffResult.data ?? []).map((row) => ({
+    staff: (staffResult.data ?? []).map((row: any) => ({
       id: row.id,
       name: row.name,
       hourlyRateCents: row.hourly_rate_cents ?? 0,
     })),
-    events: (eventsResult.data ?? []).map((event) => ({
+    events: (eventsResult.data ?? []).map((event: any) => ({
       id: event.id,
       name: event.occasion || 'Event',
       date: event.event_date,

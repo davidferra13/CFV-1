@@ -1516,7 +1516,7 @@ export async function exportSocialPlatformWindowCsv(
 
   const posts = (data ?? []).map(mapPostRow)
 
-  const csvRows = posts.map((post) => {
+  const csvRows = posts.map((post: any) => {
     const scheduleDate = new Date(post.schedule_at)
     const captionField = platformCaptionField[validated.platform]
     const platformCaption =

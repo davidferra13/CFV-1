@@ -21,10 +21,10 @@ export default async function CancelledInvoicesPage() {
   const events = await getEvents()
 
   const cancelled = events
-    .filter((e) => e.status === 'cancelled')
-    .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
+    .filter((e: any) => e.status === 'cancelled')
+    .sort((a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
 
-  const totalLost = cancelled.reduce((s, e) => s + (e.quoted_price_cents ?? 0), 0)
+  const totalLost = cancelled.reduce((s: any, e: any) => s + (e.quoted_price_cents ?? 0), 0)
 
   return (
     <div className="space-y-6">
@@ -73,7 +73,7 @@ export default async function CancelledInvoicesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {cancelled.map((event) => (
+              {cancelled.map((event: any) => (
                 <TableRow key={event.id} className="opacity-75">
                   <TableCell className="text-stone-500 text-sm">
                     {format(new Date(event.event_date), 'MMM d, yyyy')}

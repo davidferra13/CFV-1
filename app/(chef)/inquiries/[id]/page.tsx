@@ -164,7 +164,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
     last_response_at: inquiry.last_response_at,
     updated_at: inquiry.updated_at,
     transitions: inquiry.transitions as any,
-    quotes: quotes.map((q) => ({
+    quotes: quotes.map((q: any) => ({
       id: q.id,
       quote_name: q.quote_name,
       total_quoted_cents: q.total_quoted_cents,
@@ -451,7 +451,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
           <p className="text-stone-500 text-sm">No quotes created for this inquiry yet.</p>
         ) : (
           <div className="space-y-2">
-            {quotes.map((quote) => (
+            {quotes.map((quote: any) => (
               <div key={quote.id} className="border rounded-lg p-3">
                 <div className="flex justify-between items-center">
                   <Link href={`/quotes/${quote.id}`} className="flex-1 min-w-0 hover:underline">

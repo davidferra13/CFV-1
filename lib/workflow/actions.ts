@@ -38,7 +38,7 @@ export async function getDashboardWorkSurface(): Promise<DashboardWorkSurface> {
   }
 
   // Fetch menus for all events via menus.event_id FK
-  const eventIds = events.map((e) => e.id)
+  const eventIds = events.map((e: any) => e.id)
 
   const { data: menus } = await supabase
     .from('menus')
@@ -46,7 +46,7 @@ export async function getDashboardWorkSurface(): Promise<DashboardWorkSurface> {
     .in('event_id', eventIds)
 
   // Fetch dish counts per menu in one query
-  const menuIds = (menus || []).map((m) => m.id)
+  const menuIds = (menus || []).map((m: any) => m.id)
   const dishCountsByMenu = new Map<string, number>()
 
   if (menuIds.length > 0) {
@@ -95,7 +95,7 @@ export async function getDashboardWorkSurface(): Promise<DashboardWorkSurface> {
   }
 
   // Assemble contexts
-  const contexts: EventContext[] = events.map((event) => ({
+  const contexts: EventContext[] = events.map((event: any) => ({
     event: {
       id: event.id,
       occasion: event.occasion,

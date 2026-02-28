@@ -172,7 +172,7 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
 
   if (!dishes || dishes.length === 0) return null
 
-  const dishIds = dishes.map((d) => d.id)
+  const dishIds = dishes.map((d: any) => d.id)
 
   // Fetch components with linked recipe + ingredient staple data for dependency split
   const { data: rawComponents } = await supabase
@@ -202,7 +202,7 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
   } | null
 
   // Normalize Supabase's single-row join (recipe is object|null, not array)
-  const components: PrepComponent[] = (rawComponents || []).map((c) => ({
+  const components: PrepComponent[] = (rawComponents || []).map((c: any) => ({
     id: c.id,
     name: c.name,
     category: c.category,
@@ -249,7 +249,7 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
     },
     clientName: clientData?.full_name ?? 'Unknown',
     clientPreferences: hasPreferenceData ? clientPreferences : null,
-    dishes: dishes.map((d) => ({
+    dishes: dishes.map((d: any) => ({
       id: d.id,
       course_name: d.course_name,
       course_number: d.course_number,

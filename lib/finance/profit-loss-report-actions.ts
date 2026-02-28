@@ -120,25 +120,25 @@ export async function getProfitAndLossReport(
   }
 
   const commerceRevenueCents = (commerceResult.data ?? [])
-    .filter((row) => !row.ledger_entry_id)
-    .reduce((sum, row) => sum + (row.amount_cents ?? 0), 0)
+    .filter((row: any) => !row.ledger_entry_id)
+    .reduce((sum: any, row: any) => sum + (row.amount_cents ?? 0), 0)
 
   const linkedSaleIds = new Set(
-    (commerceSalesLinks.data ?? []).map((row) => row.sale_id).filter(Boolean)
+    (commerceSalesLinks.data ?? []).map((row: any) => row.sale_id).filter(Boolean)
   )
   const salesRevenueCents = (salesResult.data ?? [])
-    .filter((row) => !linkedSaleIds.has(row.id))
-    .reduce((sum, row) => sum + (row.total_cents ?? 0), 0)
+    .filter((row: any) => !linkedSaleIds.has(row.id))
+    .reduce((sum: any, row: any) => sum + (row.total_cents ?? 0), 0)
 
   const totalRevenueCents = billingRevenueCents + commerceRevenueCents + salesRevenueCents
 
-  const purchaseOrdersCents = (poResult.data ?? []).reduce((sum, row) => {
+  const purchaseOrdersCents = (poResult.data ?? []).reduce((sum: any, row: any) => {
     if (row.actual_total_cents != null) return sum + row.actual_total_cents
     return sum + (row.estimated_total_cents ?? 0)
   }, 0)
 
   const expenseTableCents = (expenseResult.data ?? []).reduce(
-    (sum, row) => sum + (row.amount_cents ?? 0),
+    (sum: any, row: any) => sum + (row.amount_cents ?? 0),
     0
   )
   const laborFromPayrollCents = payroll.totalLaborCostCents

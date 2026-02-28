@@ -46,16 +46,16 @@ async function EventsList({ status }: { status: EventStatus }) {
   let events = await getEvents()
 
   if (status !== 'all') {
-    events = events.filter((event) => event.status === status)
+    events = events.filter((event: any) => event.status === status)
   }
 
   events = events.sort(
-    (a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
+    (a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
   )
 
   // Fetch weather for upcoming events that have coordinates (non-blocking)
   const weatherById = await getWeatherForEvents(
-    events.map((e) => ({
+    events.map((e: any) => ({
       id: e.id,
       event_date: e.event_date,
       location_lat: e.location_lat ?? null,
@@ -98,7 +98,7 @@ async function EventsList({ status }: { status: EventStatus }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {events.map((event) => (
+          {events.map((event: any) => (
             <TableRow key={event.id}>
               <TableCell className="font-medium">
                 <Link

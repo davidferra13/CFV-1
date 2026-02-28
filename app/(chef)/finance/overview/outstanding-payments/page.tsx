@@ -23,14 +23,17 @@ export default async function OutstandingPaymentsPage() {
   const now = new Date()
   const outstanding = events
     .filter(
-      (e) =>
+      (e: any) =>
         new Date(e.event_date) < now &&
         !['completed', 'cancelled'].includes(e.status) &&
         (e.quoted_price_cents ?? 0) > 0
     )
-    .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
+    .sort((a: any, b: any) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
 
-  const totalOutstanding = outstanding.reduce((sum, e) => sum + (e.quoted_price_cents ?? 0), 0)
+  const totalOutstanding = outstanding.reduce(
+    (sum: any, e: any) => sum + (e.quoted_price_cents ?? 0),
+    0
+  )
 
   return (
     <div className="space-y-6">
@@ -80,7 +83,7 @@ export default async function OutstandingPaymentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {outstanding.map((event) => {
+              {outstanding.map((event: any) => {
                 const daysOver = differenceInDays(now, new Date(event.event_date))
                 return (
                   <TableRow key={event.id}>

@@ -98,7 +98,7 @@ export async function seedDemoData(): Promise<DemoDataResult> {
     }
   }
 
-  const [chenId, riveiraId, harringtonId] = createdClients.map((c) => c.id)
+  const [chenId, riveiraId, harringtonId] = createdClients.map((c: any) => c.id)
 
   // Sample events — one completed, one confirmed upcoming
   const today = new Date()

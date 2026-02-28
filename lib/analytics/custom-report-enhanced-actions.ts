@@ -159,7 +159,7 @@ export async function getRevenueBySource(
   const allEvents = events || []
 
   // Also fetch financial summaries for actual paid amounts
-  const eventIds = allEvents.map((e) => e.id)
+  const eventIds = allEvents.map((e: any) => e.id)
 
   let paidMap = new Map<string, number>()
   if (eventIds.length > 0) {

@@ -24,8 +24,8 @@ export default async function FoodCostPage() {
 
   // Food-related expense categories
   const FOOD_CATEGORIES = ['groceries', 'alcohol', 'specialty_items']
-  const foodExpenses = allExpenses.filter((e) => FOOD_CATEGORIES.includes(e.category ?? ''))
-  const totalFoodCostCents = foodExpenses.reduce((s, e) => s + (e.amount_cents ?? 0), 0)
+  const foodExpenses = allExpenses.filter((e: any) => FOOD_CATEGORIES.includes(e.category ?? ''))
+  const totalFoodCostCents = foodExpenses.reduce((s: any, e: any) => s + (e.amount_cents ?? 0), 0)
 
   const grossRevenueCents = summary.totalRevenueCents
   const foodCostPct = grossRevenueCents > 0 ? (totalFoodCostCents / grossRevenueCents) * 100 : null

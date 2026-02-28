@@ -26,7 +26,7 @@ export default async function SentToClientPage() {
 
   const allInquiries = await getInquiries()
   // "Sent to Client" = you have responded and the ball is in the client's court
-  const inquiries = allInquiries.filter((i) => i.status === 'awaiting_client')
+  const inquiries = allInquiries.filter((i: any) => i.status === 'awaiting_client')
 
   return (
     <div className="space-y-6">
@@ -59,7 +59,7 @@ export default async function SentToClientPage() {
         </Card>
       ) : (
         <div className="space-y-2">
-          {inquiries.map((inquiry) => {
+          {inquiries.map((inquiry: any) => {
             const name = getDisplayName(inquiry)
             return (
               <Link

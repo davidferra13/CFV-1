@@ -90,8 +90,11 @@ export async function getYearEndTaxPackage(taxYear: number): Promise<TaxPackage>
   const tips = tipsResult.data || []
   const { totalMiles, totalDeductionCents: mileageDeductionCents } = mileageData
 
-  const grossRevenueCents = completedEvents.reduce((s, e) => s + (e.quoted_price_cents || 0), 0)
-  const tipsCents = tips.reduce((s, t) => s + (t.amount_cents || 0), 0)
+  const grossRevenueCents = completedEvents.reduce(
+    (s: any, e: any) => s + (e.quoted_price_cents || 0),
+    0
+  )
+  const tipsCents = tips.reduce((s: any, t: any) => s + (t.amount_cents || 0), 0)
   const completedEventCount = completedEvents.length
 
   // Group expenses by category

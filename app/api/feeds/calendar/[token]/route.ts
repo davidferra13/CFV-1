@@ -48,7 +48,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
     .limit(500) as any)
 
   const calName = chef.business_name || 'ChefFlow'
-  const icsEvents = (events || []).map((event) => formatIcsEvent(event, chef.id))
+  const icsEvents = (events || []).map((event: any) => formatIcsEvent(event, chef.id))
 
   const ics = [
     'BEGIN:VCALENDAR',

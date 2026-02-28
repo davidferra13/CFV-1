@@ -37,15 +37,18 @@ export default async function FollowUpsPage() {
   // Clients worth following up with: had at least one event, last event > 30 days ago
   const followUpCandidates = clients
     .filter(
-      (c) =>
+      (c: any) =>
         (c.totalEvents ?? 0) > 0 &&
         c.lastEventDate &&
         now - new Date(c.lastEventDate).getTime() > THIRTY_DAYS_MS
     )
-    .sort((a, b) => new Date(a.lastEventDate!).getTime() - new Date(b.lastEventDate!).getTime())
+    .sort(
+      (a: any, b: any) =>
+        new Date(a.lastEventDate!).getTime() - new Date(b.lastEventDate!).getTime()
+    )
 
-  const overdue = followUpCandidates.filter((c) => daysSince(c.lastEventDate!) > 180).length
-  const atRisk = followUpCandidates.filter((c) => {
+  const overdue = followUpCandidates.filter((c: any) => daysSince(c.lastEventDate!) > 180).length
+  const atRisk = followUpCandidates.filter((c: any) => {
     const d = daysSince(c.lastEventDate!)
     return d > 90 && d <= 180
   }).length
@@ -107,7 +110,7 @@ export default async function FollowUpsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {followUpCandidates.map((client) => {
+              {followUpCandidates.map((client: any) => {
                 const days = daysSince(client.lastEventDate!)
                 const urgency = urgencyLabel(days)
                 return (

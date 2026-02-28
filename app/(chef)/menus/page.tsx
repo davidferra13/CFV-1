@@ -13,7 +13,7 @@ export default async function MenusPage() {
   const [menus, costSummaries] = await Promise.all([getMenus(), getMenuCostSummaries()])
 
   const eventIds = Array.from(
-    new Set(menus.map((menu) => menu.event_id).filter(Boolean))
+    new Set(menus.map((menu: any) => menu.event_id).filter(Boolean))
   ) as string[]
   let eventsById: Record<
     string,
@@ -28,7 +28,7 @@ export default async function MenusPage() {
       .in('id', eventIds)
       .eq('tenant_id', user.tenantId!)
 
-    eventsById = Object.fromEntries((events || []).map((event) => [event.id, event]))
+    eventsById = Object.fromEntries((events || []).map((event: any) => [event.id, event]))
   }
 
   const costByMenuId = Object.fromEntries(

@@ -36,7 +36,7 @@ export async function getSimulationRuns(limit = 10): Promise<SimRun[]> {
 
   if (error || !data) return []
 
-  return data.map((row) => ({
+  return data.map((row: any) => ({
     id: row.id,
     startedAt: row.started_at,
     completedAt: row.completed_at,
@@ -63,7 +63,7 @@ export async function getSimulationResults(runId: string): Promise<SimResult[]> 
 
   if (error || !data) return []
 
-  return data.map((row) => ({
+  return data.map((row: any) => ({
     scenarioId: row.id,
     module: row.module as SimModule,
     rawOutput: row.raw_output,
@@ -95,7 +95,7 @@ export async function getFailureExamples(
 
   if (error || !data) return []
 
-  return data.map((row) => ({
+  return data.map((row: any) => ({
     scenarioPayload: row.scenario_payload,
     score: row.score,
     failures: (row.failures ?? []) as string[],
@@ -140,7 +140,7 @@ export async function getSimulationSummary(): Promise<SimSummary> {
 
   const allResults = totalRes.data ?? []
   const totalScenarios = allResults.length
-  const totalPassed = allResults.filter((r) => r.passed).length
+  const totalPassed = allResults.filter((r: any) => r.passed).length
   const allTimePassRate = totalScenarios > 0 ? totalPassed / totalScenarios : null
 
   // Per-module pass rates across all runs

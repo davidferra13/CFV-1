@@ -25,7 +25,7 @@ export default async function DeclinedInquiriesPage() {
   await requireChef()
 
   const allInquiries = await getInquiries()
-  const inquiries = allInquiries.filter((i) => i.status === 'declined')
+  const inquiries = allInquiries.filter((i: any) => i.status === 'declined')
 
   return (
     <div className="space-y-6">
@@ -56,7 +56,7 @@ export default async function DeclinedInquiriesPage() {
         </Card>
       ) : (
         <div className="space-y-2">
-          {inquiries.map((inquiry) => {
+          {inquiries.map((inquiry: any) => {
             const name = getDisplayName(inquiry)
             return (
               <Link

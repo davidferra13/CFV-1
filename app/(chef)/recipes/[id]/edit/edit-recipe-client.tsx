@@ -94,7 +94,7 @@ export function EditRecipeClient({ recipe }: Props) {
 
   // Ingredients state
   const [existingIngredients, setExistingIngredients] = useState<ExistingIngredient[]>(
-    recipe.ingredients.map((ri) => ({
+    recipe.ingredients.map((ri: any) => ({
       id: ri.id,
       quantity: ri.quantity,
       unit: ri.unit,
@@ -180,7 +180,7 @@ export function EditRecipeClient({ recipe }: Props) {
         dietary_tags: dietaryTags
           ? dietaryTags
               .split(',')
-              .map((t) => t.trim())
+              .map((t: any) => t.trim())
               .filter(Boolean)
           : [],
         servings: servings ? parseInt(servings) : null,
@@ -189,7 +189,7 @@ export function EditRecipeClient({ recipe }: Props) {
         equipment: equipment
           ? equipment
               .split(',')
-              .map((e) => e.trim())
+              .map((e: any) => e.trim())
               .filter(Boolean)
           : [],
       })

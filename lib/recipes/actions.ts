@@ -264,9 +264,9 @@ export async function getRecipes(filters?: {
     .select('recipe_id, ingredient_count, total_ingredient_cost_cents, has_all_prices')
     .eq('tenant_id', user.tenantId!)
 
-  const costMap = new Map((costData || []).map((c) => [c.recipe_id, c]))
+  const costMap = new Map((costData || []).map((c: any) => [c.recipe_id, c]))
 
-  const result: RecipeListItem[] = (recipes || []).map((r) => {
+  const result: RecipeListItem[] = (recipes || []).map((r: any) => {
     const cost = costMap.get(r.id)
     return {
       id: r.id,
@@ -447,7 +447,7 @@ export async function getRecipeById(recipeId: string) {
 
   return {
     ...recipe,
-    ingredients: (recipeIngredients || []).map((ri) => ({
+    ingredients: (recipeIngredients || []).map((ri: any) => ({
       id: ri.id,
       quantity: ri.quantity,
       unit: ri.unit,
@@ -741,9 +741,9 @@ export async function getIngredients(filters?: { category?: string; search?: str
     .select('ingredient_id, times_used')
     .eq('tenant_id', user.tenantId!)
 
-  const usageMap = new Map((usageData || []).map((u) => [u.ingredient_id, u.times_used ?? 0]))
+  const usageMap = new Map((usageData || []).map((u: any) => [u.ingredient_id, u.times_used ?? 0]))
 
-  return (ingredients || []).map((ing) => ({
+  return (ingredients || []).map((ing: any) => ({
     ...ing,
     usage_count: usageMap.get(ing.id) ?? 0,
   }))
@@ -924,7 +924,7 @@ export async function getRecipesForEvent(eventId: string) {
 
   if (!menus || menus.length === 0) return []
 
-  const menuIds = menus.map((m) => m.id)
+  const menuIds = menus.map((m: any) => m.id)
 
   const { data: dishes } = await supabase
     .from('dishes')
@@ -934,7 +934,7 @@ export async function getRecipesForEvent(eventId: string) {
 
   if (!dishes || dishes.length === 0) return []
 
-  const dishIds = dishes.map((d) => d.id)
+  const dishIds = dishes.map((d: any) => d.id)
 
   const { data: components } = await supabase
     .from('components')
@@ -950,7 +950,7 @@ export async function getRecipesForEvent(eventId: string) {
     .eq('tenant_id', user.tenantId!)
     .not('recipe_id', 'is', null)
 
-  return (components || []).map((c) => ({
+  return (components || []).map((c: any) => ({
     componentId: c.id,
     componentName: c.name,
     componentCategory: c.category,
@@ -975,7 +975,7 @@ export async function getUnrecordedComponentsForEvent(eventId: string) {
 
   if (!menus || menus.length === 0) return []
 
-  const menuIds = menus.map((m) => m.id)
+  const menuIds = menus.map((m: any) => m.id)
 
   const { data: dishes } = await supabase
     .from('dishes')
@@ -985,7 +985,7 @@ export async function getUnrecordedComponentsForEvent(eventId: string) {
 
   if (!dishes || dishes.length === 0) return []
 
-  const dishIds = dishes.map((d) => d.id)
+  const dishIds = dishes.map((d: any) => d.id)
 
   const { data: components } = await supabase
     .from('components')
@@ -994,7 +994,7 @@ export async function getUnrecordedComponentsForEvent(eventId: string) {
     .eq('tenant_id', user.tenantId!)
     .is('recipe_id', null)
 
-  return (components || []).map((c) => ({
+  return (components || []).map((c: any) => ({
     id: c.id,
     name: c.name,
     category: c.category,

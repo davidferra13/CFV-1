@@ -32,8 +32,8 @@ export default async function RefundedInvoicesPage() {
   }
 
   const refunded = events
-    .filter((e) => refundMap.has(e.id))
-    .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
+    .filter((e: any) => refundMap.has(e.id))
+    .sort((a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
 
   const totalRefunded = Array.from(refundMap.values()).reduce((s, v) => s + v, 0)
 
@@ -85,7 +85,7 @@ export default async function RefundedInvoicesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {refunded.map((event) => (
+              {refunded.map((event: any) => (
                 <TableRow key={event.id}>
                   <TableCell className="text-stone-400 text-sm">
                     {format(new Date(event.event_date), 'MMM d, yyyy')}

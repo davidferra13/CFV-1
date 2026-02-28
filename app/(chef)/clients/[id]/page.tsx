@@ -738,7 +738,11 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       <ClientConnections
         clientId={client.id}
         connections={connections}
-        allClients={allClients.map((c) => ({ id: c.id, full_name: c.full_name, email: c.email }))}
+        allClients={allClients.map((c: any) => ({
+          id: c.id,
+          full_name: c.full_name,
+          email: c.email,
+        }))}
       />
 
       {/* Fun Q&A — client's personality answers */}

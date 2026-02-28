@@ -192,14 +192,14 @@ export async function getEventFinancialSummaryFull(
 
   if (historicalSummaries && historicalSummaries.length >= 3) {
     const validSummaries = historicalSummaries.filter(
-      (s) => s.food_cost_percentage !== null && s.profit_margin !== null
+      (s: any) => s.food_cost_percentage !== null && s.profit_margin !== null
     )
     if (validSummaries.length >= 3) {
       const avgFoodCost =
-        validSummaries.reduce((sum, s) => sum + (s.food_cost_percentage as number), 0) /
+        validSummaries.reduce((sum: any, s: any) => sum + (s.food_cost_percentage as number), 0) /
         validSummaries.length
       const avgMargin =
-        validSummaries.reduce((sum, s) => sum + (s.profit_margin as number), 0) /
+        validSummaries.reduce((sum: any, s: any) => sum + (s.profit_margin as number), 0) /
         validSummaries.length
 
       comparison = {
@@ -457,7 +457,7 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
       .select('*')
       .eq('event_id', eventId)
       .single()
-      .then((r) => r.data),
+      .then((r: any) => r.data),
 
     supabase
       .from('ledger_entries')
@@ -467,7 +467,7 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
       .eq('entry_type', 'tip')
       .order('created_at', { ascending: false })
       .limit(1)
-      .then((r) => r.data?.[0] ?? null),
+      .then((r: any) => r.data?.[0] ?? null),
 
     supabase
       .from('expenses')
@@ -475,7 +475,7 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
       .eq('event_id', eventId)
       .eq('tenant_id', user.tenantId!)
       .order('created_at', { ascending: true })
-      .then((r) => r.data ?? []),
+      .then((r: any) => r.data ?? []),
 
     supabase
       .from('after_action_reviews')
@@ -483,7 +483,7 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
       .eq('event_id', eventId)
       .eq('tenant_id', user.tenantId!)
       .limit(1)
-      .then((r) => (r.data?.length ?? 0) > 0),
+      .then((r: any) => (r.data?.length ?? 0) > 0),
   ])
 
   const totalPaid = financialRow?.total_paid_cents ?? 0

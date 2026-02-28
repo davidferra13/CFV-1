@@ -76,7 +76,7 @@ export async function fetchFrontOfHouseMenuData(
       service_style: event.service_style,
     },
     clientName: clientData?.full_name ?? 'Guest',
-    courses: dishes.map((dish) => ({
+    courses: dishes.map((dish: any) => ({
       courseNumber: dish.course_number,
       courseName: dish.course_name,
       dishDescription: dish.description,
@@ -136,7 +136,7 @@ export async function fetchFrontOfHouseMenuDataForClient(
       service_style: event.service_style,
     },
     clientName: clientData?.full_name ?? 'Guest',
-    courses: dishes.map((dish) => ({
+    courses: dishes.map((dish: any) => ({
       courseNumber: dish.course_number,
       courseName: dish.course_name,
       dishDescription: dish.description,

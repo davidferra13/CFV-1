@@ -63,13 +63,18 @@ export async function computeBenchmarkSnapshot(): Promise<{
   const events = completedEvents || []
   const avgEventValueCents =
     events.length > 0
-      ? Math.round(events.reduce((sum, e) => sum + (e.quoted_price_cents || 0), 0) / events.length)
+      ? Math.round(
+          events.reduce((sum: any, e: any) => sum + (e.quoted_price_cents || 0), 0) / events.length
+        )
       : 0
 
   // 2. Average food cost %: total food expenses / total revenue * 100
-  const totalRevenueCents = events.reduce((sum, e) => sum + (e.quoted_price_cents || 0), 0)
+  const totalRevenueCents = events.reduce(
+    (sum: any, e: any) => sum + (e.quoted_price_cents || 0),
+    0
+  )
 
-  const eventIds = events.map((e) => e.id)
+  const eventIds = events.map((e: any) => e.id)
   let totalFoodExpenseCents = 0
   if (eventIds.length > 0) {
     const { data: foodExpenses } = await supabase
@@ -80,7 +85,10 @@ export async function computeBenchmarkSnapshot(): Promise<{
       .in('category', ['groceries', 'alcohol', 'specialty_items'])
       .in('event_id', eventIds)
 
-    totalFoodExpenseCents = (foodExpenses || []).reduce((sum, e) => sum + e.amount_cents, 0)
+    totalFoodExpenseCents = (foodExpenses || []).reduce(
+      (sum: any, e: any) => sum + e.amount_cents,
+      0
+    )
   }
 
   const avgFoodCostPct =

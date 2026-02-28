@@ -26,7 +26,7 @@ export default async function MenuDraftingPage() {
 
   const allInquiries = await getInquiries()
   // "Menu Drafting" = inquiries in the quoted stage — a quote has been sent, now finalizing menu details
-  const inquiries = allInquiries.filter((i) => i.status === 'quoted')
+  const inquiries = allInquiries.filter((i: any) => i.status === 'quoted')
 
   return (
     <div className="space-y-6">
@@ -59,7 +59,7 @@ export default async function MenuDraftingPage() {
         </Card>
       ) : (
         <div className="space-y-2">
-          {inquiries.map((inquiry) => {
+          {inquiries.map((inquiry: any) => {
             const name = getDisplayName(inquiry)
             return (
               <Link

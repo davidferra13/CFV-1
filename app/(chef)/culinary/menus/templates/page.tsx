@@ -20,7 +20,7 @@ export default async function MenuTemplatesPage() {
   await requireChef()
   const allMenus = await getMenus()
 
-  const templates = allMenus.filter((m) => m.is_template)
+  const templates = allMenus.filter((m: any) => m.is_template)
 
   return (
     <div className="space-y-6">
@@ -52,7 +52,7 @@ export default async function MenuTemplatesPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-2 gap-4">
-          {templates.map((menu) => (
+          {templates.map((menu: any) => (
             <Link key={menu.id} href={`/culinary/menus/${menu.id}`}>
               <Card className="p-5 hover:shadow-md transition-shadow cursor-pointer h-full">
                 <div className="flex items-start justify-between mb-2">

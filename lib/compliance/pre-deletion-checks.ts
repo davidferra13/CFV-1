@@ -40,7 +40,7 @@ export async function runPreDeletionChecks(chefId: string): Promise<DeletionBloc
 
     if (unpaidEvents) {
       const withBalance = unpaidEvents.filter(
-        (e) => (e.total_quoted || 0) > (e.total_paid || 0) && (e.total_quoted || 0) > 0
+        (e: any) => (e.total_quoted || 0) > (e.total_paid || 0) && (e.total_quoted || 0) > 0
       )
       if (withBalance.length > 0) {
         blockers.push({

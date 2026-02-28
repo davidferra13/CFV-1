@@ -43,7 +43,7 @@ export async function getDormantClients(limit = 5): Promise<DormantClientEntry[]
 
   if (!clients) return []
 
-  const nameMap = new Map<string, string>(clients.map((c) => [c.id, c.full_name]))
+  const nameMap = new Map<string, string>(clients.map((c: any) => [c.id, c.full_name]))
 
   return summaries
     .map((s: any) => ({

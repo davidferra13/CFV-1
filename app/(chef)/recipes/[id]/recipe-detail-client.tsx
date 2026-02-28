@@ -334,7 +334,7 @@ export function RecipeDetailClient({ recipe }: Props) {
             <p className="text-stone-500 text-center py-4">No ingredients added yet.</p>
           ) : (
             <div className="space-y-2">
-              {recipe.ingredients.map((ri) => (
+              {recipe.ingredients.map((ri: any) => (
                 <div
                   key={ri.id}
                   className="flex justify-between items-center py-1 border-b border-stone-50 last:border-0"
@@ -595,7 +595,7 @@ export function RecipeDetailClient({ recipe }: Props) {
             <div className="mt-4 pt-4 border-t border-stone-800">
               <p className="text-sm font-medium text-stone-500 mb-2">Dietary Tags</p>
               <div className="flex flex-wrap gap-1">
-                {recipe.dietary_tags.map((tag) => (
+                {recipe.dietary_tags.map((tag: any) => (
                   <Badge key={tag} variant="success">
                     {tag}
                   </Badge>
@@ -665,7 +665,7 @@ export function RecipeDetailClient({ recipe }: Props) {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {recipe.eventHistory.map((event) => (
+              {recipe.eventHistory.map((event: any) => (
                 <Link
                   key={event.eventId}
                   href={`/events/${event.eventId}`}

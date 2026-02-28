@@ -250,9 +250,9 @@ export async function getChefReviewStats() {
   }
 
   const total = data.length
-  const averageRating = total > 0 ? data.reduce((sum, r) => sum + r.rating, 0) / total : 0
-  const consentCount = data.filter((r) => r.display_consent).length
-  const googleClickCount = data.filter((r) => r.google_review_clicked).length
+  const averageRating = total > 0 ? data.reduce((sum: any, r: any) => sum + r.rating, 0) / total : 0
+  const consentCount = data.filter((r: any) => r.display_consent).length
+  const googleClickCount = data.filter((r: any) => r.google_review_clicked).length
 
   return { total, averageRating, consentCount, googleClickCount }
 }
