@@ -1,31 +1,26 @@
-Called Open Shuffle.# ChefFlow V1 — Project Rules
+# ChefFlow V1 — Project Rules
 
 This file is read by Claude Code at the start of every conversation. These rules are mandatory.
 
 ---
 
-> **🚨 STOP — READ THIS BEFORE DOING ANYTHING 🚨**
->
-> **Pushing to `main` = deploying to Vercel = spending real money.**
->
-> **You are NEVER allowed to push to `main`, merge to `main`, or trigger a Vercel deployment. EVER. Not "just this once," not "to test," not for any reason. The ONLY exception is if the developer explicitly says "push everything" or "merge to main" or "deploy." No other phrasing counts.**
->
-> **Feature branch pushes (`git push origin feature/...`) are always safe — Vercel ignores them, they cost $0. Do those freely.**
->
-> **If you are unsure whether you should push to main: you should not.**
+> **🚨 STOP — READ THESE THREE BLOCKS BEFORE DOING ANYTHING 🚨**
 
----
+> **BLOCK 1 — NEVER PUSH TO MAIN**
+>
+> Pushing to `main` = deploying to Vercel = spending real money. You are NEVER allowed to push to `main`, merge to `main`, or trigger a Vercel deployment. EVER. The ONLY exception is if the developer explicitly says "push everything" or "merge to main" or "deploy." Feature branch pushes are always safe ($0). If unsure: don't push.
 
-> **✅ AI PRIVACY ARCHITECTURE — COMPLETE (2026-02-22)**
+> **BLOCK 2 — DO YOUR OWN WORK, TEST YOUR OWN WORK, FIX YOUR OWN BUGS**
 >
-> Level 3 privacy by architecture. Conversations processed privately, never stored on servers, history lives in browser IndexedDB.
+> **NEVER** tell the developer to "check the website," "verify this works," "let me know if it looks right," or "you may want to test." You have a Playwright browser. You have an agent test account (`.auth/agent.json`). You have screenshots. **USE THEM.** After writing code: sign in, navigate, screenshot, verify. If it's broken: fix it yourself, verify the fix, then report it's done. The developer is NOT your QA team. If you CAN test it, you MUST test it. If you find a bug, you MUST fix it — don't report it back.
 >
-> **Principle:** "We don't have your data" > "We promise not to look."
+> **NEVER** wait for the developer to tell you the obvious next step. If you know what comes next, DO IT. If a task has a clear continuation, CONTINUE. Don't pause, don't ask "what would you like me to do next?" — just do the work. The developer is paying per token. Every unnecessary back-and-forth is their money wasted on nothing.
 >
-> All files updated — see `docs/remy-privacy-architecture.md` for full reference.
-> Key integration: `remy-drawer.tsx` now uses IndexedDB (`remy-local-storage.ts`) instead of Supabase for conversation storage.
+> **NEVER** generate padded, hedging, verbose responses when a short one works. Don't add caveats. Don't restate what you're about to do — just do it. Don't offer multiple options when one is clearly correct. Be direct. Be brief. Do the work.
+
+> **BLOCK 3 — READ THIS ENTIRE FILE BEFORE STARTING WORK**
 >
-> **Principle:** "We don't have your data" > "We promise not to look." See `docs/remy-privacy-architecture.md`.
+> This document contains rules that will prevent you from making expensive mistakes. Every section exists because an agent already made that mistake and it cost real money. Skimming or skipping sections = repeating those mistakes. Read it all. Follow it all.
 
 ---
 
@@ -289,7 +284,7 @@ A private chef platform handles real money, real clients, real dietary restricti
 
 ---
 
-## SELF-MAINTAINING DOCUMENT (READ THIS FIRST)
+## SELF-MAINTAINING DOCUMENT
 
 This document must stay current. Claude is responsible for keeping it updated — the developer should never have to ask.
 
@@ -454,9 +449,7 @@ Run these in order — stop and report any failure before continuing:
 - `types/database.ts` current with remote schema
 - Only after all of the above: merge to `main` with explicit user approval
 
-### Agent Testing Account — Test AND Fix It Yourself
-
-> **🚨 NEVER tell the developer to "check the website," "verify this works," or "let me know if it looks right." You have your own admin account. Sign in, test it, find the problem, and FIX IT — all yourself. The developer is not your QA team. If you can test it, you MUST test it. If you find a bug, you MUST fix it. Do not report problems back — resolve them.**
+### Agent Testing Account — Details (see BLOCK 2 above for the mandate)
 
 There are **two admin accounts**:
 
@@ -775,7 +768,7 @@ Vercel (app.cheflowhq.com) → Production — public, deployed when ready
 - **Process manager:** PM2 (`pm2 restart chefflow-beta`)
 - **Tunnel:** Cloudflare Tunnel → `beta.cheflowhq.com`
 - **Env config:** `.env.local.beta` on PC → copied to Pi as `.env.local` during deploy
-- **Ollama:** runs on Pi too (`qwen3:8b`) but must be stopped during builds (RAM constraint)
+- **Ollama:** MASKED (permanently disabled) on Pi — all LLM work done on PC
 
 ### Deploy to Beta
 
@@ -784,12 +777,11 @@ bash scripts/deploy-beta.sh    # Build + push to Pi
 bash scripts/rollback-beta.sh  # Emergency rollback
 ```
 
-The deploy script: pushes to GitHub → pulls on Pi → stops Ollama → installs deps → builds → restarts PM2 → restarts Ollama → health check.
+The deploy script: pushes to GitHub → pulls on Pi → installs deps → builds → restarts PM2 → health check.
 
 ### Rules
 
 - **Never deploy to beta during active development** — test locally first
-- **The deploy script handles Ollama stop/start** — don't manually stop it
 - **Beta shares the dev Supabase database** (for now) — be careful with destructive data operations
 - **Pi builds take ~8-10 minutes** — the 6 GB heap limit is required (`NODE_OPTIONS="--max-old-space-size=6144"`) — app outgrew 4 GB as of Feb 2026
 - **Pi swap is 2 GB** at `/var/swap` — needed for builds
@@ -804,27 +796,9 @@ The deploy script: pushes to GitHub → pulls on Pi → stops Ollama → install
 
 ---
 
-## AI/Ollama Loop Bug Fix — 2026-02-22
+## COMPLETED FIXES (Reference Only)
 
-### Problem
-
-- If a user requested an unsupported AI task (e.g., "upload client ledger"), ChefFlow would repeatedly attempt to process it, causing Ollama to hang and the system to glitch.
-- There was no fail-fast guard for unsupported task types, and Ollama calls could be retried indefinitely on transient errors.
-
-### Solution (2026-02-22)
-
-- **Fail-fast guard:** `lib/ai/command-orchestrator.ts` now immediately returns an error for any unsupported `taskType`, preventing loops and runaway requests.
-- **Retry/timeouts:** `lib/ai/parse-ollama.ts` now wraps Ollama calls in a retry (max 2 attempts) for transient errors (timeouts, network issues), with logging for each retry. No infinite retries.
-- **Result:** Unsupported tasks are rejected instantly, and Ollama cannot get stuck in a retry loop. System stability is preserved.
-
-### Code locations
-
-- `lib/ai/command-orchestrator.ts` — fail-fast for unsupported task types
-- `lib/ai/parse-ollama.ts` — retry logic for Ollama calls
-
-### How to test
-
-- Try an unsupported AI request (e.g., "upload client ledger"). The system should return a clear error and not hang or loop.
-- Simulate a transient Ollama error (e.g., network blip). The system should retry once, then fail gracefully.
+- **AI Privacy Architecture (2026-02-22):** Level 3 privacy by architecture. Conversations in browser IndexedDB, never on servers. See `docs/remy-privacy-architecture.md`.
+- **Ollama Loop Bug Fix (2026-02-22):** `lib/ai/command-orchestrator.ts` fail-fast for unsupported task types. `lib/ai/parse-ollama.ts` retry max 2 attempts. No infinite loops.
 
 ---
