@@ -30,7 +30,9 @@ const AllergenRiskResultSchema = z.object({
   confidence: z.enum(['high', 'medium', 'low']),
 })
 
-export type AllergenRiskResult = z.infer<typeof AllergenRiskResultSchema> & { _aiSource?: string }
+export type AllergenRiskResult = z.infer<typeof AllergenRiskResultSchema> & {
+  _aiSource?: 'formula' | 'ai'
+}
 export type DishRisk = z.infer<typeof DishRiskSchema>
 
 // ── Server Action ─────────────────────────────────────────────────────────

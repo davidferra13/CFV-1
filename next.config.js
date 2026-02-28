@@ -38,20 +38,23 @@ const nextConfig = {
       .map((value) => value.trim())
       .filter(Boolean),
   ],
-  // ESLint: skip during production build — tsc --noEmit is the type-safety gate.
-  // Pre-existing admin files have @typescript-eslint disable comments that reference
-  // rules not in the base ESLint config, causing ESLint to error on unknown rules.
-  eslint: {
-    ignoreDuringBuilds: true,
+  // ESLint runs during build — catches lint issues in CI/CD.
+  // TypeScript type-checking runs during build — catches type errors in CI/CD.
+  // Both were previously disabled with ignoreDuringBuilds/ignoreBuildErrors
+  // as safety nets. Removed after Phase 5 hardening (all errors fixed).
+  // Use git SHA for build ID (Vercel provides VERCEL_GIT_COMMIT_SHA).
+  // When PWA dual-pass build is active, pin to a static ID to prevent
+  // _ssgManifest.js ENOENT errors from mismatched build directories.
+  generateBuildId: async () => {
+    if (process.env.ENABLE_PWA_BUILD === '1') return 'chefflow-build'
+    if (process.env.VERCEL_GIT_COMMIT_SHA) return process.env.VERCEL_GIT_COMMIT_SHA
+    // Local builds: use git SHA directly
+    try {
+      return require('child_process').execSync('git rev-parse HEAD').toString().trim()
+    } catch {
+      return 'chefflow-local'
+    }
   },
-  typescript: {
-    // Type-check separately via `tsc --noEmit`; skip during build for speed.
-    ignoreBuildErrors: true,
-  },
-  // Pin the build ID so the PWA wrapper's separate webpack pass uses the same
-  // directory as the main Next.js build. Without this, the two passes generate
-  // different IDs and the _ssgManifest.js write fails with ENOENT.
-  generateBuildId: async () => 'chefflow-build',
   images: {
     remotePatterns: [
       {
