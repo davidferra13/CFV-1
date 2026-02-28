@@ -458,6 +458,8 @@ export async function sendOfflinePaymentReceiptEmail(params: {
   eventDate: string | null
   paidAt: string
   remainingBalanceCents: number | null
+  loyaltyTier?: string
+  loyaltyPoints?: number
 }) {
   await sendEmail({
     to: params.clientEmail,
@@ -474,6 +476,8 @@ export async function sendOfflinePaymentReceiptEmail(params: {
         params.remainingBalanceCents && params.remainingBalanceCents > 0
           ? formatCents(params.remainingBalanceCents)
           : null,
+      loyaltyTier: params.loyaltyTier,
+      loyaltyPoints: params.loyaltyPoints,
     }),
   })
 }

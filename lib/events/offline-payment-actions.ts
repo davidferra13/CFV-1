@@ -164,7 +164,7 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
   try {
     const { data: client } = await supabaseAdmin
       .from('clients')
-      .select('email, full_name')
+      .select('email, full_name, loyalty_tier, loyalty_points')
       .eq('id', event.client_id)
       .single()
 
@@ -187,6 +187,8 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
         eventDate: event.event_date,
         paidAt,
         remainingBalanceCents,
+        loyaltyTier: client.loyalty_tier ?? undefined,
+        loyaltyPoints: client.loyalty_points ?? undefined,
       })
     }
   } catch (emailErr) {

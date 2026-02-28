@@ -14,6 +14,8 @@ type Props = {
   occasion: string
   eventDate: string // Already formatted
   remainingBalanceFormatted: string | null
+  loyaltyTier?: string
+  loyaltyPoints?: number
 }
 
 export function OfflinePaymentReceiptEmail({
@@ -25,6 +27,8 @@ export function OfflinePaymentReceiptEmail({
   occasion,
   eventDate,
   remainingBalanceFormatted,
+  loyaltyTier,
+  loyaltyPoints,
 }: Props) {
   const paymentLabel = entryType === 'deposit' ? 'deposit' : 'payment'
   const methodLabel = paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)
@@ -66,6 +70,18 @@ export function OfflinePaymentReceiptEmail({
             <tr>
               <td style={detailLabel}>Remaining balance</td>
               <td style={detailValue}>{remainingBalanceFormatted}</td>
+            </tr>
+          )}
+          {(loyaltyTier || loyaltyPoints) && (
+            <tr>
+              <td style={detailLabel}>Loyalty status</td>
+              <td style={detailValue}>
+                {loyaltyTier
+                  ? `${loyaltyTier.charAt(0).toUpperCase() + loyaltyTier.slice(1)} Tier`
+                  : ''}
+                {loyaltyTier && loyaltyPoints ? ' — ' : ''}
+                {loyaltyPoints ? `${loyaltyPoints.toLocaleString()} points` : ''}
+              </td>
             </tr>
           )}
         </tbody>

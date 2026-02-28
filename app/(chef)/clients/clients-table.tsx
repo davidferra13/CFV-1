@@ -18,10 +18,18 @@ import { Tables } from '@/types/database'
 import { ClientHealthBadge } from '@/components/clients/health-score-badge'
 import type { ClientHealthScore } from '@/lib/clients/health-score'
 import { usePersistentViewState } from '@/lib/view-state/use-persistent-view-state'
+import { Badge } from '@/components/ui/badge'
 
 type ClientWithStats = Tables<'clients'> & {
   totalEvents: number
   totalSpentCents: number
+}
+
+const TIER_COLORS: Record<string, string> = {
+  bronze: 'bg-amber-900/40 text-amber-300 border-amber-700/50',
+  silver: 'bg-stone-600/40 text-stone-200 border-stone-500/50',
+  gold: 'bg-yellow-900/40 text-yellow-300 border-yellow-600/50',
+  platinum: 'bg-indigo-900/40 text-indigo-300 border-indigo-600/50',
 }
 
 interface ClientsTableProps {
@@ -118,6 +126,7 @@ export function ClientsTable({ clients, healthMap }: ClientsTableProps) {
               </button>
             </TableHead>
             <TableHead>Health</TableHead>
+            <TableHead>Loyalty</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Phone</TableHead>
             <TableHead className="text-right">Total Events</TableHead>
@@ -144,7 +153,7 @@ export function ClientsTable({ clients, healthMap }: ClientsTableProps) {
         <TableBody>
           {filteredAndSortedClients.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center text-stone-500 py-8">
+              <TableCell colSpan={8} className="text-center text-stone-500 py-8">
                 No clients found matching your search
               </TableCell>
             </TableRow>
@@ -161,6 +170,16 @@ export function ClientsTable({ clients, healthMap }: ClientsTableProps) {
                     const h = healthMap?.get(client.id)
                     return h ? <ClientHealthBadge score={h.score} tier={h.tier} /> : null
                   })()}
+                </TableCell>
+                <TableCell>
+                  {(client as any).loyalty_tier ? (
+                    <Badge
+                      variant="default"
+                      className={`text-xs capitalize ${TIER_COLORS[(client as any).loyalty_tier] ?? ''}`}
+                    >
+                      {(client as any).loyalty_tier}
+                    </Badge>
+                  ) : null}
                 </TableCell>
                 <TableCell className="text-stone-400">{client.email}</TableCell>
                 <TableCell className="text-stone-400">{client.phone || '-'}</TableCell>
