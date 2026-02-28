@@ -108,7 +108,9 @@ export function EventsBulkTable({ events }: EventsBulkTableProps) {
           </td>
           <td className="px-4 py-3">{event.client?.full_name || 'Unknown'}</td>
           <td className="px-4 py-3">
-            <EventStatusBadge status={event.status} />
+            <EventStatusBadge
+              status={event.status as import('@/components/events/event-status-badge').EventStatus}
+            />
           </td>
           <td className="px-4 py-3">{formatCurrency(event.quoted_price_cents ?? 0)}</td>
           <td className="px-4 py-3">

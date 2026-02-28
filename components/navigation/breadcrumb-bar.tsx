@@ -122,6 +122,7 @@ function buildCrumbs(pathname: string): Crumb[] {
 
 export function BreadcrumbBar() {
   const pathname = usePathname()
+  if (!pathname) return null
   const crumbs = buildCrumbs(pathname)
 
   // Nothing to show on dashboard or empty state

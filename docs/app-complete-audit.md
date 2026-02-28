@@ -93,13 +93,14 @@
 
 ### Header (always visible)
 
-| Element                                    | Type                  | What It Does                                                                                                                                                                  |
-| ------------------------------------------ | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| "Dashboard"                                | h1                    | Static title                                                                                                                                                                  |
-| "Good [morning/afternoon/evening], [name]" | Text                  | Time-of-day greeting from user session                                                                                                                                        |
-| "Layout" button                            | Button → Dropdown     | Opens `DashboardQuickSettings` panel for reordering widgets. Contains: up/down arrows per widget, "Manage widget visibility" link → `/settings/dashboard`, Save/Close buttons |
-| "Full Queue"                               | Link button           | → `/queue`                                                                                                                                                                    |
-| "New Event"                                | Link button (primary) | → `/events/new`                                                                                                                                                               |
+| Element                                    | Type                  | What It Does                                                                                                                                                                                                                                                                               |
+| ------------------------------------------ | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| "Dashboard"                                | h1                    | Static title                                                                                                                                                                                                                                                                               |
+| "Good [morning/afternoon/evening], [name]" | Text                  | Time-of-day greeting from user session                                                                                                                                                                                                                                                     |
+| "Layout" button                            | Button → Dropdown     | Opens `DashboardQuickSettings` panel for reordering widgets. Contains: up/down arrows per widget, "Manage widget visibility" link → `/settings/dashboard`, "Collapse All"/"Expand All" toggle, Save/Close buttons. Per-widget collapse via `collapsible-widget.tsx`, state in localStorage |
+| "Full Queue"                               | Link button           | → `/queue`                                                                                                                                                                                                                                                                                 |
+| "New Event"                                | Link button (primary) | → `/events/new`                                                                                                                                                                                                                                                                            |
+| Cmd+K Global Search                        | Hotkey → Modal        | Enhanced with "Quick Actions" section (New Event, Client, Quote, Inquiry, Expense, Recipe) when query is empty or matches "new"/"create"                                                                                                                                                   |
 
 ### Banners (conditional, above widgets)
 
@@ -289,14 +290,14 @@
 
 **Route:** `/events`
 
-| Element           | Type             | Details                                                                                                                        |
-| ----------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| View toggle       | 2 buttons        | "List" → list view, "Board" → kanban view                                                                                      |
-| "+ New Event"     | Link (primary)   | → `/events/new`                                                                                                                |
-| Status filter bar | 9 filter buttons | All, Draft, Proposed, Accepted, Paid, Confirmed, In Progress, Completed, Cancelled — each a Link                               |
-| Table rows        | Clickable rows   | Columns: Occasion (link → `/events/[id]`), Date, Client, Status badge, Quoted Price, "View" button, "Edit" button (draft only) |
-| Empty state       | Conditional      | "No events yet" + "Create Event" → `/events/new`                                                                               |
-| Kanban view       | Component        | `EventsKanban` with drag columns by status                                                                                     |
+| Element           | Type                               | Details                                                                                                                                                                       |
+| ----------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| View toggle       | 2 buttons                          | "List" → list view, "Board" → kanban view                                                                                                                                     |
+| "+ New Event"     | Link (primary)                     | → `/events/new`                                                                                                                                                               |
+| Status filter bar | 9 filter buttons                   | All, Draft, Proposed, Accepted, Paid, Confirmed, In Progress, Completed, Cancelled — each a Link                                                                              |
+| Table rows        | Multi-select via `BulkSelectTable` | Checkbox per row. Columns: Occasion (link → `/events/[id]`), Date, Client, Status badge, Quoted Price, "View"/"Edit" buttons. Floating action bar: "Archive", "Delete Drafts" |
+| Empty state       | Conditional                        | "No events yet" + "Create Event" → `/events/new`                                                                                                                              |
+| Kanban view       | Component                          | `EventsKanban` with drag columns by status                                                                                                                                    |
 
 ### 2.2 Event Detail
 
@@ -410,13 +411,13 @@
 
 **Route:** `/clients`
 
-| Element                    | Type           | Details                                                                                                                                                            |
-| -------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| "Export CSV"               | Link           | Downloads CSV                                                                                                                                                      |
-| "+ Add Client"             | Button         | → `/clients/new`                                                                                                                                                   |
-| **Client Invitation Form** | Form           | Name + email inputs, "Create client (no invitation)" checkbox, "Send Invitation" / "Create Client" button. On success shows invitation URL with "Copy Link" button |
-| **Pending Invitations**    | Table          | Email, Name, Sent date, Status badge, "Copy Link" button, "Cancel" button (with confirm dialog)                                                                    |
-| **Clients Table**          | Sortable table | Search input, sortable columns (Name, Total Spent, Created), clickable rows → `/clients/[id]`, health badge per row                                                |
+| Element                    | Type                               | Details                                                                                                                                                            |
+| -------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| "Export CSV"               | Link                               | Downloads CSV                                                                                                                                                      |
+| "+ Add Client"             | Button                             | → `/clients/new`                                                                                                                                                   |
+| **Client Invitation Form** | Form                               | Name + email inputs, "Create client (no invitation)" checkbox, "Send Invitation" / "Create Client" button. On success shows invitation URL with "Copy Link" button |
+| **Pending Invitations**    | Table                              | Email, Name, Sent date, Status badge, "Copy Link" button, "Cancel" button (with confirm dialog)                                                                    |
+| **Clients Table**          | Multi-select via `BulkSelectTable` | Search input, sortable columns (Name, Total Spent, Created), clickable rows → `/clients/[id]`, health badge per row. Floating action bar: "Archive"                |
 
 ### 3.2 Client Detail
 
@@ -499,7 +500,7 @@
 
 **Route:** `/inquiries`
 
-- List + Kanban views with toggle buttons
+- List + Kanban views with toggle buttons. List view uses `BulkSelectTable` with checkbox per row. Floating action bar: "Decline", "Archive"
 - **Smart Priority Grouping (All view):** Inquiries auto-sorted into 4 sections:
   - "Needs Your Response" (red) — new/awaiting_chef with no outbound message
   - "Follow-Up Due" (amber) — awaiting_client/quoted, client quiet 3+ days
@@ -586,7 +587,7 @@
 
 ### 5.2 Expenses
 
-**Route:** `/expenses` — Summary cards, category breakdown chips, filter bar, expense table. "+ Add Expense" → `/expenses/new`.
+**Route:** `/expenses` — Summary cards, category breakdown chips, filter bar, expense table. "+ Add Expense" → `/expenses/new`. Mobile: floating action button (bottom-right) via `quick-expense-trigger.tsx` + Ctrl+Shift+E hotkey opens minimal expense entry modal.
 
 **`/expenses/[id]`** — Amount, category, payment method, type badge, event link, notes, receipt photo, mileage.
 
@@ -710,15 +711,15 @@
 
 > **Full element-by-element detail → [`docs/ui-audit-calendar.md`](ui-audit-calendar.md)** (1368 lines, 7 pages)
 
-| Route             | Key Elements                                                                                                                                                                                                                                                                                                                                                                                                               |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/calendar`       | Monthly grid with filter toggles (events, drafts, prep blocks, calls, personal, business, intentions, leads). Day click → detail panel with items + "Quick Block"/"Remove Block" + "+ Add Entry" modal. 2-column layout with Seasonal Palette sidebar. Entry modal: 3 entry type groups (Personal/Business/Intentions) with fields (title, dates, times, all-day, blocks bookings, revenue section, public signal section) |
-| `/calendar/day`   | 6AM–midnight time grid with 30-min slots. Click slot → pre-filled entry modal. Per-slot item cards with "View" links                                                                                                                                                                                                                                                                                                       |
-| `/calendar/week`  | 7-column Mon–Sun grid with prep blocks (complete/delete buttons), event cards (links), "+ add" per day → inline block form (type/title/date/time/duration). Gap alerts with "Auto-schedule" → suggestion modal with bulk create. Calendar entry banners spanning date ranges                                                                                                                                               |
-| `/calendar/year`  | 52-week grid grouped by month. Week cells colored by event/gap status, clickable → week view. Stats strip + year navigation                                                                                                                                                                                                                                                                                                |
-| `/calendar/share` | Generate share tokens with labels, copy URL, revoke tokens                                                                                                                                                                                                                                                                                                                                                                 |
-| `/schedule`       | FullCalendar-based with 4 views (Month/Week/Day/Agenda), keyboard shortcuts (T/M/W/D/A/N/arrows), mini calendar sidebar, drag-and-drop rescheduling, event detail popovers, seasonal sidebar                                                                                                                                                                                                                               |
-| `/waitlist`       | Waiting + contacted entries with "Mark Contacted"/"Expire" buttons. Add form: date, guests, occasion, notes                                                                                                                                                                                                                                                                                                                |
+| Route             | Key Elements                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/calendar`       | Monthly grid with filter toggles (events, drafts, prep blocks, calls, personal, business, intentions, leads). Drag-and-drop rescheduling via @dnd-kit (draft/proposed/accepted events only). Day click → detail panel with items + "Quick Block"/"Remove Block" + "+ Add Entry" modal. 2-column layout with Seasonal Palette sidebar. Entry modal: 3 entry type groups (Personal/Business/Intentions) with fields (title, dates, times, all-day, blocks bookings, revenue section, public signal section) |
+| `/calendar/day`   | 6AM–midnight time grid with 30-min slots. Click slot → pre-filled entry modal. Per-slot item cards with "View" links                                                                                                                                                                                                                                                                                                                                                                                      |
+| `/calendar/week`  | 7-column Mon–Sun grid with prep blocks (complete/delete buttons), event cards (links), "+ add" per day → inline block form (type/title/date/time/duration). Gap alerts with "Auto-schedule" → suggestion modal with bulk create. Calendar entry banners spanning date ranges                                                                                                                                                                                                                              |
+| `/calendar/year`  | 52-week grid grouped by month. Week cells colored by event/gap status, clickable → week view. Stats strip + year navigation                                                                                                                                                                                                                                                                                                                                                                               |
+| `/calendar/share` | Generate share tokens with labels, copy URL, revoke tokens                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `/schedule`       | FullCalendar-based with 4 views (Month/Week/Day/Agenda), keyboard shortcuts (T/M/W/D/A/N/arrows), mini calendar sidebar, drag-and-drop rescheduling, event detail popovers, seasonal sidebar                                                                                                                                                                                                                                                                                                              |
+| `/waitlist`       | Waiting + contacted entries with "Mark Contacted"/"Expire" buttons. Add form: date, guests, occasion, notes                                                                                                                                                                                                                                                                                                                                                                                               |
 
 ---
 
@@ -799,10 +800,10 @@
 
 ## 9E. NOTIFICATIONS
 
-| Route            | Key Elements                                                                                                                                                                                                                                                                  |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/notifications` | **Full notification center.** Filter tabs (All, Ops, Inquiries, Events, Quotes, Payments, Clients, System). Category badges with color coding. Mark individual/all as read. Archive individual. Pagination (20/page). Relative + absolute timestamps. Links to relevant pages |
-| Bell icon (nav)  | **Notification panel** (existing, enhanced). New icon mappings for ops notifications (UserCheck, ClipboardList, CalendarClock, Package, Gift). `ops` category with orange color. "View all notifications" footer link → `/notifications`                                      |
+| Route            | Key Elements                                                                                                                                                                                                                                                                                                                                                   |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/notifications` | **Full notification center.** Category filter chips (toggleable) + unread toggle. Date grouping (Today/Yesterday/This Week/Older). Category badges with color coding. Mark individual/all as read. Archive individual. Pagination (20/page). Relative + absolute timestamps. Links to relevant pages. Bell icon panel also enhanced with category filter chips |
+| Bell icon (nav)  | **Notification panel** (existing, enhanced). New icon mappings for ops notifications (UserCheck, ClipboardList, CalendarClock, Package, Gift). `ops` category with orange color. "View all notifications" footer link → `/notifications`                                                                                                                       |
 
 **Notification triggers (non-blocking, background):**
 
@@ -867,7 +868,7 @@ Protected time reminder (purple callout). Completion celebration when all done.
 
 **Route:** `/activity` — Activity log with Summary/Retrace toggle. Summary: tab selector (My/Client/All), domain filter, time range, activity heat map (7×24 grid), feeds with "Load more". Retrace: breadcrumb session timeline. Activity logging on/off toggle. Real-time Supabase subscription.
 
-**Route:** `/queue` — Priority Queue with `QueueSummaryBar` (4 stat cards) + `QueueList` (domain/urgency filters, items as links with colored borders).
+**Route:** `/queue` — Priority Queue with `QueueSummaryBar` (4 stat cards) + `QueueList` (domain/urgency filters, items as links with colored borders). Per-item snooze button via `snooze-popover.tsx` (1h, 4h, Tomorrow, Next Week). Snoozed items hidden with "X snoozed" count chip.
 
 ---
 
@@ -1298,17 +1299,22 @@ The Remy drawer (`components/ai/remy-drawer.tsx`) has 5 views accessible via ico
 
 ## GLOBAL ELEMENTS (present on every page)
 
-| Element                  | Description                                                                                                                                                                    |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Sidebar Navigation**   | 5 groups (Pipeline, Events, Clients, Finance, More) + customizable top shortcuts + bottom shortcuts (Settings). Curated per-archetype presets.                                 |
-| **Archetype Selector**   | Full-screen onboarding gate for new chefs — pick from 6 archetypes (Private Chef, Caterer, Meal Prep, Restaurant, Food Truck, Bakery) to set nav defaults. Nothing locked out. |
-| **Mobile Tab Bar**       | Home, Inbox, Events, Clients (customizable per archetype)                                                                                                                      |
-| **Remy Floating Widget** | Draggable/resizable concierge on all pages. 5-view drawer (Chat, List, Search, Actions, Templates). Projects, bookmarks, pin/archive. All data in browser IndexedDB.           |
-| **Breadcrumbs**          | Every sub-page has "← Parent" navigation                                                                                                                                       |
-| **Auth Gate**            | Every page calls `requireChef()` — unauthenticated users redirected to sign-in                                                                                                 |
-| **Tenant Scoping**       | Every query scoped to session `tenant_id`                                                                                                                                      |
-| **Pro Feature Gating**   | Pro features gated via `requirePro()` server-side + `<UpgradeGate>` client-side                                                                                                |
-| **Admin Bypass**         | Admins always have full Pro access                                                                                                                                             |
+| Element                         | Description                                                                                                                                                                                                                                   |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Sidebar Navigation**          | 5 groups (Pipeline, Events, Clients, Finance, More) + customizable top shortcuts + bottom shortcuts (Settings). Curated per-archetype presets. "Recent" section shows last 8 visited pages with relative timestamps, collapsible + clearable. |
+| **Archetype Selector**          | Full-screen onboarding gate for new chefs — pick from 6 archetypes (Private Chef, Caterer, Meal Prep, Restaurant, Food Truck, Bakery) to set nav defaults. Nothing locked out.                                                                |
+| **Mobile Tab Bar**              | Home, Inbox, Events, Clients (customizable per archetype)                                                                                                                                                                                     |
+| **Remy Floating Widget**        | Draggable/resizable concierge on all pages. 5-view drawer (Chat, List, Search, Actions, Templates). Projects, bookmarks, pin/archive. All data in browser IndexedDB.                                                                          |
+| **Breadcrumbs**                 | Every sub-page has "← Parent" navigation                                                                                                                                                                                                      |
+| **Breadcrumb Bar**              | `components/navigation/breadcrumb-bar.tsx` — clickable path trail (Dashboard / Section / Detail) rendered above main content. Mobile: truncates to last 2 segments                                                                            |
+| **Auth Gate**                   | Every page calls `requireChef()` — unauthenticated users redirected to sign-in                                                                                                                                                                |
+| **Tenant Scoping**              | Every query scoped to session `tenant_id`                                                                                                                                                                                                     |
+| **Pro Feature Gating**          | Pro features gated via `requirePro()` server-side + `<UpgradeGate>` client-side                                                                                                                                                               |
+| **Admin Bypass**                | Admins always have full Pro access                                                                                                                                                                                                            |
+| **Mobile Card Layout**          | `components/ui/responsive-table.tsx` — generic responsive wrapper renders tables on desktop, stacked cards on mobile (used across Events, Clients, Inquiries lists)                                                                           |
+| **Inline Form Validation**      | `hooks/use-field-validation.ts` + `lib/validation/form-rules.ts` — validates on blur, shows inline errors via Input `error` prop                                                                                                              |
+| **Draft Save Indicator**        | `components/ui/draft-save-indicator.tsx` — floating badge on forms using `useDurableDraft` hook. Shows "Saving..."/"Draft saved" state                                                                                                        |
+| **Undo on Destructive Actions** | `hooks/use-deferred-action.ts` — delays destructive actions (delete, archive) by 5s with undo toast. User can click "Undo" to cancel                                                                                                          |
 
 ---
 

@@ -5,6 +5,7 @@
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
+import { PrintClipboardButton } from './print-button'
 
 export const metadata: Metadata = { title: 'Print Clipboard — ChefFlow' }
 
@@ -99,7 +100,7 @@ export default async function PrintClipboardPage({
       </div>
 
       <div className="no-print mb-4">
-        <PrintButton />
+        <PrintClipboardButton />
       </div>
 
       {allComponents.length === 0 ? (
