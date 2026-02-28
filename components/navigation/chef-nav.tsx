@@ -9,7 +9,6 @@ import type { LucideIcon } from 'lucide-react'
 import { navGroups, standaloneBottom, mobileTabItems, resolveStandaloneTop } from './nav-config'
 import type { NavGroup, NavCollapsibleItem, NavSubItem } from './nav-config'
 import { NotificationBell } from '@/components/notifications/notification-bell'
-import { useNotifications } from '@/components/notifications/notification-provider'
 import { GlobalSearch } from '@/components/search/global-search'
 import { OfflineNavIndicator } from '@/components/offline/offline-nav-indicator'
 import { OllamaStatusBadge } from '@/components/dashboard/ollama-status-badge'
@@ -33,7 +32,6 @@ import {
 } from 'lucide-react'
 // Navigation items are centrally defined in `components/navigation/nav-config.tsx`
 
-// ─── Sidebar Context ────────────────────────────────
 type SidebarContextType = {
   collapsed: boolean
   setCollapsed: (v: boolean) => void
@@ -896,140 +894,42 @@ export function ChefSidebar({
         ) : (
           /* ── EXPANDED MODE ── */
           <div className="px-3 space-y-1">
-            {/* Dashboard */}
-            {primaryItems.map((item) => {
-              const Icon = item.icon
-              const active = isItemActive(pathname, item.href)
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium transition-colors border-l-2 ${
-                    active
-                      ? 'bg-brand-950 text-brand-400 border-brand-500'
-                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100 border-transparent'
-                  }`}
-                >
-                  <Icon
-                    className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
-                  />
-                  {item.label}
-                </Link>
-              )
-            })}
+            <NavFilterInput value={navFilter} onChange={setNavFilter} />
 
-            <div className="border-t border-stone-800 my-2" />
-
-            {/* Grouped nav */}
-            {visibleGroups.map((group) => (
-              <NavGroupSection
-                key={group.id}
-                group={group}
-                pathname={pathname}
-                isOpen={openGroups.has(group.id)}
-                onToggle={() => toggleGroup(group.id)}
-                openItems={openItems}
-                onToggleItem={toggleItem}
-              />
-            ))}
-
-            <div className="border-t border-stone-800 my-2" />
-
-            {/* Cannabis Tier — hidden unless chef has cannabis access */}
-            {hasCannabisTier && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setCannabisSectionOpen((prev) => !prev)}
-                  aria-expanded={cannabisSectionOpen}
-                  className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg transition-colors ${
-                    cannabisSectionActive
-                      ? 'text-green-600'
-                      : 'text-green-700 hover:bg-green-950/20 hover:text-green-600'
-                  }`}
-                >
-                  <div className="flex-1 border-t border-green-800/30" />
-                  <span className="text-[9px] font-semibold uppercase tracking-widest">
-                    Cannabis
-                  </span>
-                  <ChevronDown
-                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                      cannabisSectionOpen ? 'rotate-0' : '-rotate-90'
-                    }`}
-                  />
-                  <div className="flex-1 border-t border-green-800/30" />
-                </button>
-                <div
-                  className={`overflow-hidden transition-all duration-200 ${
-                    cannabisSectionOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
-                  }`}
-                >
-                  <div className="space-y-0.5">
-                    {cannabisSectionItems.map((item) => {
-                      const active = isItemActive(pathname, item.href)
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                            active ? 'text-emerald-700' : 'text-stone-500 hover:text-stone-300'
-                          }`}
-                          style={active ? { background: 'rgba(74, 124, 78, 0.08)' } : undefined}
-                        >
-                          <Leaf
-                            className="w-[18px] h-[18px] flex-shrink-0"
-                            style={{ color: active ? '#4a7c4e' : 'rgba(74, 124, 78, 0.5)' }}
-                          />
-                          {item.label}
-                        </Link>
-                      )
-                    })}
-                  </div>
-                </div>
-                <div className="border-t border-stone-800 my-2" />
-              </>
-            )}
-
-            {/* Community / Chef Network — always visible */}
             <button
               type="button"
-              onClick={() => setCommunitySectionOpen((prev) => !prev)}
-              aria-expanded={communitySectionOpen}
-              className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg transition-colors ${
-                communitySectionActive
-                  ? 'text-indigo-400'
-                  : 'text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300'
-              }`}
+              onClick={() => setShortcutsOpen((prev) => !prev)}
+              aria-expanded={shortcutsOpen}
+              className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
             >
-              <div className="flex-1 border-t border-indigo-800/30" />
-              <span className="text-[9px] font-semibold uppercase tracking-widest">Community</span>
+              <span className="flex-1 text-left">Shortcuts</span>
               <ChevronDown
-                className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                  communitySectionOpen ? 'rotate-0' : '-rotate-90'
+                className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                  shortcutsOpen ? 'rotate-0' : '-rotate-90'
                 }`}
               />
-              <div className="flex-1 border-t border-indigo-800/30" />
             </button>
             <div
               className={`overflow-hidden transition-all duration-200 ${
-                communitySectionOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+                shortcutsOpen ? 'max-h-[1400px] opacity-100' : 'max-h-0 opacity-0'
               }`}
             >
               <div className="space-y-0.5">
-                {communitySectionItems.map((item) => {
-                  const active = isItemActive(pathname, item.href)
+                {filteredPrimaryItems.map((item) => {
+                  const Icon = item.icon
+                  const active = isItemActive(pathname, item.href, searchParams)
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                        active ? 'text-indigo-400' : 'text-stone-500 hover:text-stone-300'
+                      className={`flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium transition-colors border-l-2 ${
+                        active
+                          ? 'bg-brand-950 text-brand-400 border-brand-500'
+                          : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100 border-transparent'
                       }`}
-                      style={active ? { background: 'rgba(79, 70, 229, 0.08)' } : undefined}
                     >
-                      <Rss
-                        className="w-[18px] h-[18px] flex-shrink-0"
-                        style={{ color: active ? '#818cf8' : 'rgba(99, 102, 241, 0.5)' }}
+                      <Icon
+                        className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
                       />
                       {item.label}
                     </Link>
@@ -1037,29 +937,148 @@ export function ChefSidebar({
                 })}
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={() => setQuickCreateOpen((prev) => !prev)}
+              aria-expanded={quickCreateOpen}
+              className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
+            >
+              <Plus className="w-4 h-4 text-stone-400" />
+              <span className="flex-1 text-left">Quick Create</span>
+              <ChevronDown
+                className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                  quickCreateOpen ? 'rotate-0' : '-rotate-90'
+                }`}
+              />
+            </button>
+            <div
+              className={`overflow-hidden transition-all duration-200 ${
+                quickCreateOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
+              }`}
+            >
+              <div className="space-y-0.5">
+                {filteredQuickCreateItems.map((item) => {
+                  const Icon = item.icon
+                  const active = isItemActive(pathname, item.href, searchParams)
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`flex items-center gap-3 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                        active
+                          ? 'bg-brand-950 text-brand-400'
+                          : 'text-brand-400/90 hover:bg-brand-950/50 hover:text-brand-300'
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      New {item.label}
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="border-t border-stone-800 my-2" />
+
+            {/* Grouped nav */}
+            {filteredGroupEntries.map(({ group, isLocked }) => (
+              <NavGroupSection
+                key={group.id}
+                group={group}
+                pathname={pathname}
+                searchParams={searchParams}
+                isOpen={openGroups.has(group.id)}
+                onToggle={() => toggleGroup(group.id)}
+                openItems={openItems}
+                onToggleItem={toggleItem}
+                isLocked={isLocked}
+              />
+            ))}
+
+            <div className="border-t border-stone-800 my-2" />
+
+            <SectionAccordion
+              title="Cannabis"
+              items={filteredCannabisItems}
+              icon={Leaf}
+              isOpen={cannabisSectionOpen}
+              onToggle={() => setCannabisSectionOpen((prev) => !prev)}
+              pathname={pathname}
+              searchParams={searchParams}
+              headerActiveClass={cannabisSectionActive ? 'text-green-600' : 'text-green-700'}
+              headerInactiveClass="text-green-700 hover:bg-green-950/20 hover:text-green-600"
+              dividerClass="border-green-800/30"
+              itemActiveClass="text-emerald-700"
+              itemInactiveClass="text-stone-500 hover:text-stone-300"
+              activeBgStyle={{ background: 'rgba(74, 124, 78, 0.08)' }}
+              iconActiveColor="#4a7c4e"
+              iconInactiveColor="rgba(74, 124, 78, 0.5)"
+              locked={!hasCannabisTier}
+            />
+
+            <SectionAccordion
+              title="Community"
+              items={filteredCommunityItems}
+              icon={Rss}
+              isOpen={communitySectionOpen}
+              onToggle={() => setCommunitySectionOpen((prev) => !prev)}
+              pathname={pathname}
+              searchParams={searchParams}
+              headerActiveClass={communitySectionActive ? 'text-indigo-400' : 'text-indigo-400'}
+              headerInactiveClass="text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300"
+              dividerClass="border-indigo-800/30"
+              itemActiveClass="text-indigo-400"
+              itemInactiveClass="text-stone-500 hover:text-stone-300"
+              activeBgStyle={{ background: 'rgba(79, 70, 229, 0.08)' }}
+              iconActiveColor="#818cf8"
+              iconInactiveColor="rgba(99, 102, 241, 0.5)"
+            />
+
             <div className="border-t border-stone-800 my-2" />
 
             {/* Settings */}
-            {standaloneBottom.map((item) => {
-              const Icon = item.icon
-              const active = isItemActive(pathname, item.href)
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium transition-colors border-l-2 ${
-                    active
-                      ? 'bg-brand-950 text-brand-400 border-brand-500'
-                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100 border-transparent'
-                  }`}
-                >
-                  <Icon
-                    className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
-                  />
-                  {item.label}
-                </Link>
-              )
-            })}
+            <button
+              type="button"
+              onClick={() => setSettingsOpen((prev) => !prev)}
+              aria-expanded={settingsOpen}
+              className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
+            >
+              <span className="flex-1 text-left">Settings & Tools</span>
+              <ChevronDown
+                className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                  settingsOpen ? 'rotate-0' : '-rotate-90'
+                }`}
+              />
+            </button>
+            <div
+              className={`overflow-hidden transition-all duration-200 ${
+                settingsOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
+              }`}
+            >
+              <div className="space-y-0.5">
+                {filteredSettingsItems.map((item) => {
+                  const Icon = item.icon
+                  const active = isItemActive(pathname, item.href, searchParams)
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium transition-colors border-l-2 ${
+                        active
+                          ? 'bg-brand-950 text-brand-400 border-brand-500'
+                          : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100 border-transparent'
+                      }`}
+                    >
+                      <Icon
+                        className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
+                      />
+                      {item.label}
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
 
             {/* Sign Out — inside nav so it's above the Remy mascot */}
             <button
@@ -1487,24 +1506,66 @@ export function ChefMobileNav({
   const [menuOpen, setMenuOpen] = useState(false)
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
+  const [mobileShortcutsOpen, setMobileShortcutsOpen] = useState(true)
+  const [mobileQuickCreateOpen, setMobileQuickCreateOpen] = useState(true)
+  const [mobileSettingsOpen, setMobileSettingsOpen] = useState(true)
   const [cannabisSectionOpen, setCannabisSectionOpen] = useState(false)
   const [communitySectionOpen, setCommunitySectionOpen] = useState(false)
+  const [navFilter, setNavFilter] = useState('')
   const primaryItems = resolveStandaloneTop(primaryNavHrefs)
 
   // Filter nav groups by enabled modules (progressive disclosure)
   // Admins always see every group — they're the developer, not a gated user
   const enabledSet = enabledModules ? new Set(enabledModules) : null
-  const visibleGroups = isAdmin
-    ? navGroups
-    : enabledSet
-      ? navGroups.filter((g) => !g.module || enabledSet.has(g.module))
-      : navGroups
+  const groupEntries = useMemo(
+    () =>
+      navGroups.map((group) => ({
+        group,
+        isLocked: Boolean(!isAdmin && enabledSet && group.module && !enabledSet.has(group.module)),
+      })),
+    [enabledSet, isAdmin]
+  )
+  const filteredGroupEntries = useMemo(
+    () =>
+      groupEntries
+        .map(({ group, isLocked }) => ({
+          group: filterNavGroup(group, navFilter),
+          isLocked,
+        }))
+        .filter((entry): entry is { group: NavGroup; isLocked: boolean } => Boolean(entry.group)),
+    [groupEntries, navFilter]
+  )
+  const filteredPrimaryItems = useMemo(() => {
+    const q = navFilter.trim().toLowerCase()
+    if (!q) return primaryItems
+    return primaryItems.filter((item) => item.label.toLowerCase().includes(q))
+  }, [navFilter, primaryItems])
+  const filteredQuickCreateItems = useMemo(() => {
+    const q = navFilter.trim().toLowerCase()
+    if (!q) return QUICK_CREATE_ITEMS
+    return QUICK_CREATE_ITEMS.filter((item) => item.label.toLowerCase().includes(q))
+  }, [navFilter])
+  const filteredSettingsItems = useMemo(() => {
+    const q = navFilter.trim().toLowerCase()
+    if (!q) return standaloneBottom
+    return standaloneBottom.filter((item) => item.label.toLowerCase().includes(q))
+  }, [navFilter])
+  const filteredCannabisItems = useMemo(() => {
+    const q = navFilter.trim().toLowerCase()
+    if (!q) return cannabisSectionItems
+    return cannabisSectionItems.filter((item) => item.label.toLowerCase().includes(q))
+  }, [navFilter])
+  const filteredCommunityItems = useMemo(() => {
+    const q = navFilter.trim().toLowerCase()
+    if (!q) return communitySectionItems
+    return communitySectionItems.filter((item) => item.label.toLowerCase().includes(q))
+  }, [navFilter])
 
   // Auto-expand group containing active route in mobile menu
   useEffect(() => {
     if (!menuOpen) return
-    for (const group of visibleGroups) {
-      if (isGroupActive(pathname, group)) {
+    for (const { group } of groupEntries) {
+      if (isGroupActive(pathname, group, searchParams)) {
         setOpenGroups((prev) => {
           if (prev.has(group.id)) return prev
           const next = new Set(prev)
@@ -1513,29 +1574,38 @@ export function ChefMobileNav({
         })
       }
     }
-  }, [pathname, menuOpen, visibleGroups])
+  }, [pathname, menuOpen, groupEntries, searchParams])
 
   useEffect(() => {
     if (!hasCannabisTier) {
       setCannabisSectionOpen(false)
       return
     }
-    if (isSectionActive(pathname, cannabisSectionItems)) {
+    if (isSectionActive(pathname, cannabisSectionItems, searchParams)) {
       setCannabisSectionOpen(true)
     }
-  }, [hasCannabisTier, pathname])
+  }, [hasCannabisTier, pathname, searchParams])
 
   useEffect(() => {
-    if (isSectionActive(pathname, communitySectionItems)) {
+    if (isSectionActive(pathname, communitySectionItems, searchParams)) {
       setCommunitySectionOpen(true)
     }
-  }, [pathname])
+  }, [pathname, searchParams])
+
+  useEffect(() => {
+    if (!navFilter.trim()) return
+    setMobileShortcutsOpen(true)
+    setMobileQuickCreateOpen(true)
+    setMobileSettingsOpen(true)
+    if (hasCannabisTier) setCannabisSectionOpen(true)
+    setCommunitySectionOpen(true)
+  }, [hasCannabisTier, navFilter])
 
   useEffect(() => {
     if (!menuOpen) return
-    for (const group of visibleGroups) {
+    for (const { group } of groupEntries) {
       for (const item of group.items) {
-        if (item.children?.length && isCollapsibleItemActive(pathname, item)) {
+        if (item.children?.length && isCollapsibleItemActive(pathname, item, searchParams)) {
           setOpenItems((prev) => {
             if (prev.has(item.href)) return prev
             const next = new Set(prev)
@@ -1545,7 +1615,7 @@ export function ChefMobileNav({
         }
       }
     }
-  }, [pathname, menuOpen, visibleGroups])
+  }, [pathname, menuOpen, groupEntries, searchParams])
 
   const toggleGroup = (id: string) => {
     setOpenGroups((prev) => {
@@ -1567,9 +1637,9 @@ export function ChefMobileNav({
 
   const closeMenu = () => setMenuOpen(false)
   const cannabisSectionActive = hasCannabisTier
-    ? isSectionActive(pathname, cannabisSectionItems)
+    ? isSectionActive(pathname, cannabisSectionItems, searchParams)
     : false
-  const communitySectionActive = isSectionActive(pathname, communitySectionItems)
+  const communitySectionActive = isSectionActive(pathname, communitySectionItems, searchParams)
 
   return (
     <>
@@ -1624,133 +1694,68 @@ export function ChefMobileNav({
               </button>
             </div>
             <nav className="p-3 overflow-y-auto max-h-[calc(100vh-3.5rem)]">
-              {/* Dashboard */}
-              {primaryItems.map((item) => {
-                const Icon = item.icon
-                const active = isItemActive(pathname, item.href)
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={closeMenu}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      active ? 'bg-brand-950 text-brand-400' : 'text-stone-400 hover:bg-stone-800'
+              <div className="sticky top-0 z-10 bg-stone-900/95 backdrop-blur-sm pb-2 space-y-2">
+                <NavFilterInput value={navFilter} onChange={setNavFilter} />
+                <button
+                  type="button"
+                  onClick={() => setMobileQuickCreateOpen((prev) => !prev)}
+                  aria-expanded={mobileQuickCreateOpen}
+                  className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
+                >
+                  <Plus className="w-4 h-4 text-stone-400" />
+                  <span className="flex-1 text-left">Quick Create</span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                      mobileQuickCreateOpen ? 'rotate-0' : '-rotate-90'
                     }`}
-                  >
-                    <Icon
-                      className={`w-[18px] h-[18px] ${active ? 'text-brand-600' : 'text-stone-400'}`}
-                    />
-                    {item.label}
-                  </Link>
-                )
-              })}
-
-              <div className="border-t border-stone-800 my-2" />
-
-              {/* Grouped nav */}
-              <div className="space-y-0.5">
-                {visibleGroups.map((group) => (
-                  <MobileGroupSection
-                    key={group.id}
-                    group={group}
-                    pathname={pathname}
-                    isOpen={openGroups.has(group.id)}
-                    onToggle={() => toggleGroup(group.id)}
-                    openItems={openItems}
-                    onToggleItem={toggleItem}
-                    onNavigate={closeMenu}
                   />
-                ))}
+                </button>
+                <div
+                  className={`overflow-hidden transition-all duration-200 ${
+                    mobileQuickCreateOpen ? 'max-h-[240px] opacity-100' : 'max-h-0 opacity-0'
+                  }`}
+                >
+                  <div className="grid grid-cols-2 gap-1">
+                    {filteredQuickCreateItems.map((item) => {
+                      const Icon = item.icon
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={closeMenu}
+                          className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[11px] font-semibold text-brand-300 bg-brand-950/40"
+                        >
+                          <Icon className="w-3.5 h-3.5" />
+                          {item.label}
+                        </Link>
+                      )
+                    })}
+                  </div>
+                </div>
               </div>
 
-              <div className="border-t border-stone-800 my-2" />
-
-              {/* Cannabis Tier — mobile */}
-              {hasCannabisTier && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => setCannabisSectionOpen((prev) => !prev)}
-                    aria-expanded={cannabisSectionOpen}
-                    className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg transition-colors ${
-                      cannabisSectionActive
-                        ? 'text-green-600'
-                        : 'text-green-700 hover:bg-green-950/20 hover:text-green-600'
-                    }`}
-                  >
-                    <div className="flex-1 border-t border-green-800/30" />
-                    <span className="text-[9px] font-semibold uppercase tracking-widest">
-                      Cannabis
-                    </span>
-                    <ChevronDown
-                      className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                        cannabisSectionOpen ? 'rotate-0' : '-rotate-90'
-                      }`}
-                    />
-                    <div className="flex-1 border-t border-green-800/30" />
-                  </button>
-                  <div
-                    className={`overflow-hidden transition-all duration-200 ${
-                      cannabisSectionOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
-                    }`}
-                  >
-                    <div className="space-y-0.5">
-                      {cannabisSectionItems.map((item) => {
-                        const active = isItemActive(pathname, item.href)
-                        return (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={closeMenu}
-                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                              active
-                                ? 'text-green-700 bg-green-950/50'
-                                : 'text-stone-500 hover:bg-stone-800'
-                            }`}
-                          >
-                            <Leaf
-                              className={`w-[18px] h-[18px] ${active ? 'text-green-600' : 'text-green-700/40'}`}
-                            />
-                            {item.label}
-                          </Link>
-                        )
-                      })}
-                    </div>
-                  </div>
-                  <div className="border-t border-stone-800 my-2" />
-                </>
-              )}
-
-              {/* Community / Chef Network — mobile */}
               <button
                 type="button"
-                onClick={() => setCommunitySectionOpen((prev) => !prev)}
-                aria-expanded={communitySectionOpen}
-                className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg transition-colors ${
-                  communitySectionActive
-                    ? 'text-indigo-400'
-                    : 'text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300'
-                }`}
+                onClick={() => setMobileShortcutsOpen((prev) => !prev)}
+                aria-expanded={mobileShortcutsOpen}
+                className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
               >
-                <div className="flex-1 border-t border-indigo-800/30" />
-                <span className="text-[9px] font-semibold uppercase tracking-widest">
-                  Community
-                </span>
+                <span className="flex-1 text-left">Shortcuts</span>
                 <ChevronDown
-                  className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                    communitySectionOpen ? 'rotate-0' : '-rotate-90'
+                  className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                    mobileShortcutsOpen ? 'rotate-0' : '-rotate-90'
                   }`}
                 />
-                <div className="flex-1 border-t border-indigo-800/30" />
               </button>
               <div
                 className={`overflow-hidden transition-all duration-200 ${
-                  communitySectionOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+                  mobileShortcutsOpen ? 'max-h-[1400px] opacity-100' : 'max-h-0 opacity-0'
                 }`}
               >
                 <div className="space-y-0.5">
-                  {communitySectionItems.map((item) => {
-                    const active = isItemActive(pathname, item.href)
+                  {filteredPrimaryItems.map((item) => {
+                    const Icon = item.icon
+                    const active = isItemActive(pathname, item.href, searchParams)
                     return (
                       <Link
                         key={item.href}
@@ -1758,12 +1763,12 @@ export function ChefMobileNav({
                         onClick={closeMenu}
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                           active
-                            ? 'text-indigo-400 bg-indigo-950/50'
-                            : 'text-stone-500 hover:bg-stone-800'
+                            ? 'bg-brand-950 text-brand-400'
+                            : 'text-stone-400 hover:bg-stone-800'
                         }`}
                       >
-                        <Rss
-                          className={`w-[18px] h-[18px] ${active ? 'text-indigo-400' : 'text-indigo-500/40'}`}
+                        <Icon
+                          className={`w-[18px] h-[18px] ${active ? 'text-brand-600' : 'text-stone-400'}`}
                         />
                         {item.label}
                       </Link>
@@ -1771,28 +1776,110 @@ export function ChefMobileNav({
                   })}
                 </div>
               </div>
+
+              <div className="border-t border-stone-800 my-2" />
+
+              {/* Grouped nav */}
+              <div className="space-y-0.5">
+                {filteredGroupEntries.map(({ group, isLocked }) => (
+                  <MobileGroupSection
+                    key={group.id}
+                    group={group}
+                    pathname={pathname}
+                    searchParams={searchParams}
+                    isOpen={openGroups.has(group.id)}
+                    onToggle={() => toggleGroup(group.id)}
+                    openItems={openItems}
+                    onToggleItem={toggleItem}
+                    onNavigate={closeMenu}
+                    isLocked={isLocked}
+                  />
+                ))}
+              </div>
+
+              <div className="border-t border-stone-800 my-2" />
+
+              <SectionAccordion
+                title="Cannabis"
+                items={filteredCannabisItems}
+                icon={Leaf}
+                isOpen={cannabisSectionOpen}
+                onToggle={() => setCannabisSectionOpen((prev) => !prev)}
+                pathname={pathname}
+                searchParams={searchParams}
+                headerActiveClass={cannabisSectionActive ? 'text-green-600' : 'text-green-700'}
+                headerInactiveClass="text-green-700 hover:bg-green-950/20 hover:text-green-600"
+                dividerClass="border-green-800/30"
+                itemActiveClass="text-green-700 bg-green-950/50"
+                itemInactiveClass="text-stone-500 hover:bg-stone-800"
+                iconActiveColor="#16a34a"
+                iconInactiveColor="rgba(21, 128, 61, 0.45)"
+                onNavigate={closeMenu}
+                locked={!hasCannabisTier}
+              />
+
+              <SectionAccordion
+                title="Community"
+                items={filteredCommunityItems}
+                icon={Rss}
+                isOpen={communitySectionOpen}
+                onToggle={() => setCommunitySectionOpen((prev) => !prev)}
+                pathname={pathname}
+                searchParams={searchParams}
+                headerActiveClass={communitySectionActive ? 'text-indigo-400' : 'text-indigo-400'}
+                headerInactiveClass="text-indigo-400 hover:bg-indigo-950/20 hover:text-indigo-300"
+                dividerClass="border-indigo-800/30"
+                itemActiveClass="text-indigo-400 bg-indigo-950/50"
+                itemInactiveClass="text-stone-500 hover:bg-stone-800"
+                iconActiveColor="#818cf8"
+                iconInactiveColor="rgba(99, 102, 241, 0.5)"
+                onNavigate={closeMenu}
+              />
               <div className="border-t border-stone-800 my-2" />
 
               {/* Settings */}
-              {standaloneBottom.map((item) => {
-                const Icon = item.icon
-                const active = isItemActive(pathname, item.href)
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={closeMenu}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      active ? 'bg-brand-950 text-brand-400' : 'text-stone-400 hover:bg-stone-800'
-                    }`}
-                  >
-                    <Icon
-                      className={`w-[18px] h-[18px] ${active ? 'text-brand-600' : 'text-stone-400'}`}
-                    />
-                    {item.label}
-                  </Link>
-                )
-              })}
+              <button
+                type="button"
+                onClick={() => setMobileSettingsOpen((prev) => !prev)}
+                aria-expanded={mobileSettingsOpen}
+                className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
+              >
+                <span className="flex-1 text-left">Settings & Tools</span>
+                <ChevronDown
+                  className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                    mobileSettingsOpen ? 'rotate-0' : '-rotate-90'
+                  }`}
+                />
+              </button>
+              <div
+                className={`overflow-hidden transition-all duration-200 ${
+                  mobileSettingsOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
+                }`}
+              >
+                <div className="space-y-0.5">
+                  {filteredSettingsItems.map((item) => {
+                    const Icon = item.icon
+                    const active = isItemActive(pathname, item.href, searchParams)
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={closeMenu}
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                          active
+                            ? 'bg-brand-950 text-brand-400'
+                            : 'text-stone-400 hover:bg-stone-800'
+                        }`}
+                      >
+                        <Icon
+                          className={`w-[18px] h-[18px] ${active ? 'text-brand-600' : 'text-stone-400'}`}
+                        />
+                        {item.label}
+                      </Link>
+                    )
+                  })}
+                </div>
+              </div>
 
               {/* Sign Out */}
               <div className="pt-4 mt-4 border-t border-stone-800">

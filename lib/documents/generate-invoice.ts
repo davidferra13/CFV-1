@@ -39,6 +39,9 @@ export function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
     event,
     paymentEntries,
     quotedPriceCents,
+    serviceSubtotalCents,
+    loyaltyDiscountCents,
+    loyaltyAdjustments,
     depositAmountCents,
     totalPaidCents,
     totalRefundedCents,
@@ -125,6 +128,20 @@ export function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
     pdf.keyValue(desc + priceNote, formatCents(quotedPriceCents), 9)
   }
 
+  if (loyaltyAdjustments?.appliedRedemptions.length) {
+    for (const adjustment of loyaltyAdjustments.appliedRedemptions) {
+      pdf.keyValue(
+        `  Loyalty redemption: ${adjustment.rewardName} (${adjustment.pointsSpent} pts)`,
+        `(${formatCents(adjustment.discountCents)})`,
+        9
+      )
+    }
+  }
+
+  if (loyaltyDiscountCents > 0) {
+    pdf.keyValue('Adjusted service subtotal', formatCents(serviceSubtotalCents), 9)
+  }
+
   if (depositAmountCents) {
     pdf.keyValue('  Deposit required', formatCents(depositAmountCents), 9)
   }
@@ -185,6 +202,10 @@ export function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
 
   if (quotedPriceCents) {
     pdf.keyValue('Service Total', formatCents(quotedPriceCents), 9)
+  }
+  if (loyaltyDiscountCents > 0) {
+    pdf.keyValue('Loyalty Discount', `(${formatCents(loyaltyDiscountCents)})`, 9)
+    pdf.keyValue('Adjusted Service Subtotal', formatCents(serviceSubtotalCents), 9)
   }
   if (salesTax && salesTax.taxAmountCents > 0) {
     pdf.keyValue(

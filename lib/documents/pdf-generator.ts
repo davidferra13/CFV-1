@@ -282,6 +282,37 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
       }
     }
 
+    if (data.loyaltyAdjustments?.appliedRedemptions.length) {
+      for (const adjustment of data.loyaltyAdjustments.appliedRedemptions) {
+        doc.font('Helvetica').fontSize(9).fillColor(TEXT_SECONDARY)
+        doc.text(
+          `Loyalty redemption - ${adjustment.rewardName} (${adjustment.pointsSpent} pts)`,
+          tableLeft + 16,
+          y,
+          { width: CONTENT_WIDTH - amountColWidth - 24 }
+        )
+        doc.font('Helvetica').fontSize(9).fillColor(PAID_GREEN)
+        doc.text(`(${formatCents(adjustment.discountCents)})`, tableRight - amountColWidth, y, {
+          width: amountColWidth - 8,
+          align: 'right',
+        })
+        y += 14
+      }
+    }
+
+    if (data.loyaltyDiscountCents > 0) {
+      doc.font('Helvetica').fontSize(9).fillColor(TEXT_SECONDARY)
+      doc.text('Adjusted service subtotal', tableLeft + 16, y, {
+        width: CONTENT_WIDTH - amountColWidth - 24,
+      })
+      doc.font('Helvetica-Bold').fontSize(9).fillColor(TEXT_PRIMARY)
+      doc.text(formatCents(data.serviceSubtotalCents), tableRight - amountColWidth, y, {
+        width: amountColWidth - 8,
+        align: 'right',
+      })
+      y += 14
+    }
+
     // Deposit line
     if (data.depositAmountCents) {
       doc.font('Helvetica').fontSize(9).fillColor(TEXT_SECONDARY)
@@ -422,6 +453,17 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
       summaryLines.push({
         label: 'Service Total',
         value: formatCents(data.quotedPriceCents),
+      })
+    }
+    if (data.loyaltyDiscountCents > 0) {
+      summaryLines.push({
+        label: 'Loyalty Discount',
+        value: `(${formatCents(data.loyaltyDiscountCents)})`,
+        color: PAID_GREEN,
+      })
+      summaryLines.push({
+        label: 'Adjusted Service Subtotal',
+        value: formatCents(data.serviceSubtotalCents),
       })
     }
     if (data.salesTax && data.salesTax.taxAmountCents > 0) {

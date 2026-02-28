@@ -75,7 +75,7 @@ export type InvoiceData = {
   // Sales tax (computed from event zip code via API Ninjas on adjusted subtotal)
   salesTax: {
     taxRate: number // combined rate as decimal (e.g. 0.0825)
-    taxAmountCents: number // tax on the quoted price
+    taxAmountCents: number // tax on the loyalty-adjusted service subtotal
     breakdown: {
       state: number
       county: number
@@ -195,15 +195,25 @@ export async function getInvoiceData(eventId: string): Promise<InvoiceData | nul
     .eq('tenant_id', user.tenantId!)
     .order('created_at', { ascending: true })
 
-  // Sales tax lookup — non-blocking, defaults to null on failure
-  const taxCalc = await lookupSalesTax(event.quoted_price_cents ?? 0, event.location_zip ?? null)
+  // Loyalty context + adjustment policy resolve before tax lookup
   const clientData = event.client as { id?: string } | null
-  const loyalty =
+  const baseServiceCents = event.quoted_price_cents ?? 0
+  const [loyalty, loyaltyAdjustments] = await Promise.all([
     clientData?.id && user.tenantId
-      ? await getClientLoyaltySnapshotByTenant(user.tenantId, clientData.id).catch(() => null)
-      : null
-
-  return buildInvoiceData(event, chef, ledgerEntries ?? [], taxCalc, loyalty)
+      ? getClientLoyaltySnapshotByTenant(user.tenantId, clientData.id).catch(() => null)
+      : Promise.resolve(null),
+    getEventLoyaltyAdjustmentSummary({
+      supabase,
+      tenantId: user.tenantId!,
+      clientId: clientData?.id,
+      eventId,
+      baseServiceCents,
+    }),
+  ])
+  const taxableSubtotalCents = loyaltyAdjustments?.adjustedServiceCents ?? baseServiceCents
+  // Sales tax lookup is non-blocking and reflects loyalty-adjusted subtotal.
+  const taxCalc = await lookupSalesTax(taxableSubtotalCents, event.location_zip ?? null)
+  return buildInvoiceData(event, chef, ledgerEntries ?? [], taxCalc, loyalty, loyaltyAdjustments)
 }
 
 // ─── getInvoiceDataForClient ──────────────────────────────────────────────────
@@ -251,17 +261,26 @@ export async function getInvoiceDataForClient(eventId: string): Promise<InvoiceD
     .eq('client_id', user.entityId!)
     .order('created_at', { ascending: true })
 
-  // Sales tax lookup — non-blocking, defaults to null on failure
-  const taxCalc = await lookupSalesTax(event.quoted_price_cents ?? 0, event.location_zip ?? null)
+  // Loyalty context + adjustment policy resolve before tax lookup
   const clientData = event.client as { id?: string } | null
-  const loyalty =
-    clientData?.id && event.tenant_id
-      ? await getClientLoyaltySnapshotByTenant(event.tenant_id as string, clientData.id).catch(
-          () => null
-        )
-      : null
-
-  return buildInvoiceData(event, chef, ledgerEntries ?? [], taxCalc, loyalty)
+  const tenantId = event.tenant_id as string
+  const baseServiceCents = event.quoted_price_cents ?? 0
+  const [loyalty, loyaltyAdjustments] = await Promise.all([
+    clientData?.id && tenantId
+      ? getClientLoyaltySnapshotByTenant(tenantId, clientData.id).catch(() => null)
+      : Promise.resolve(null),
+    getEventLoyaltyAdjustmentSummary({
+      supabase,
+      tenantId,
+      clientId: clientData?.id,
+      eventId,
+      baseServiceCents,
+    }),
+  ])
+  const taxableSubtotalCents = loyaltyAdjustments?.adjustedServiceCents ?? baseServiceCents
+  // Sales tax lookup is non-blocking and reflects loyalty-adjusted subtotal.
+  const taxCalc = await lookupSalesTax(taxableSubtotalCents, event.location_zip ?? null)
+  return buildInvoiceData(event, chef, ledgerEntries ?? [], taxCalc, loyalty, loyaltyAdjustments)
 }
 
 // ─── buildInvoiceData ─────────────────────────────────────────────────────────
@@ -497,7 +516,8 @@ function buildInvoiceData(
   chef: RawChef,
   entries: RawLedgerEntry[],
   salesTax: SalesTaxInfo | null = null,
-  loyaltySnapshot: Awaited<ReturnType<typeof getClientLoyaltySnapshotByTenant>> | null = null
+  loyaltySnapshot: Awaited<ReturnType<typeof getClientLoyaltySnapshotByTenant>> | null = null,
+  loyaltyAdjustmentSummary: LoyaltyInvoiceAdjustmentSummary | null = null
 ): InvoiceData {
   const clientData = event.client as { id: string; full_name: string; email: string } | null
 
@@ -527,6 +547,8 @@ function buildInvoiceData(
     .reduce((sum, e) => sum + Math.abs(e.amount_cents), 0)
 
   const quotedPriceCents = event.quoted_price_cents ?? 0
+  const loyaltyDiscountCents = loyaltyAdjustmentSummary?.totalDiscountCents ?? 0
+  const serviceSubtotalCents = loyaltyAdjustmentSummary?.adjustedServiceCents ?? quotedPriceCents
   const taxAmountCents = salesTax?.taxAmountCents ?? 0
   const servicePaid = entries
     .filter((e) => !e.is_refund && e.entry_type !== 'tip')
@@ -535,7 +557,7 @@ function buildInvoiceData(
   // Balance due includes tax: (service + tax) - paid + refunded
   const balanceDueCents = Math.max(
     0,
-    quotedPriceCents + taxAmountCents - servicePaid + totalRefundedCents
+    serviceSubtotalCents + taxAmountCents - servicePaid + totalRefundedCents
   )
 
   return {
@@ -562,6 +584,9 @@ function buildInvoiceData(
       pricingModel: event.pricing_model,
     },
     quotedPriceCents: event.quoted_price_cents,
+    serviceSubtotalCents,
+    loyaltyDiscountCents,
+    loyaltyAdjustments: loyaltyAdjustmentSummary,
     pricePerPersonCents:
       event.pricing_model === 'per_person' && event.quoted_price_cents && event.guest_count
         ? Math.round(event.quoted_price_cents / event.guest_count)
@@ -573,7 +598,7 @@ function buildInvoiceData(
     totalRefundedCents,
     tipAmountCents: event.tip_amount_cents,
     balanceDueCents,
-    isPaidInFull: balanceDueCents === 0 && quotedPriceCents > 0,
+    isPaidInFull: balanceDueCents === 0 && serviceSubtotalCents + taxAmountCents > 0,
     salesTax,
     loyalty: loyaltySnapshot
       ? {

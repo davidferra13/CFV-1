@@ -40,6 +40,9 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
     client,
     event,
     quotedPriceCents,
+    serviceSubtotalCents,
+    loyaltyDiscountCents,
+    loyaltyAdjustments,
     depositAmountCents,
     paymentStatus,
     paymentEntries,
@@ -147,6 +150,29 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
                     {quotedPriceCents ? formatCents(quotedPriceCents) : '—'}
                   </td>
                 </tr>
+                {loyaltyAdjustments?.appliedRedemptions.map((adjustment) => (
+                  <tr key={adjustment.redemptionId} className="border-b border-stone-800">
+                    <td className="px-4 py-3">
+                      <p className="text-sm text-stone-300">
+                        Loyalty redemption - {adjustment.rewardName}
+                      </p>
+                      <p className="text-xs text-stone-500">
+                        {adjustment.pointsSpent} points redeemed
+                      </p>
+                    </td>
+                    <td className="px-4 py-3 text-right text-green-700 text-sm">
+                      -{formatCents(adjustment.discountCents)}
+                    </td>
+                  </tr>
+                ))}
+                {loyaltyDiscountCents > 0 && (
+                  <tr className="bg-stone-800 border-b border-stone-700">
+                    <td className="px-4 py-3 text-stone-400 text-sm">Adjusted service subtotal</td>
+                    <td className="px-4 py-3 text-right text-stone-200 text-sm">
+                      {formatCents(serviceSubtotalCents)}
+                    </td>
+                  </tr>
+                )}
                 {depositAmountCents && (
                   <tr className="bg-stone-800">
                     <td className="px-4 py-3 text-stone-500 text-sm">Deposit required</td>
@@ -249,6 +275,18 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
                 <span>Service total</span>
                 <span>{formatCents(quotedPriceCents)}</span>
               </div>
+            )}
+            {loyaltyDiscountCents > 0 && (
+              <>
+                <div className="flex justify-between text-sm text-stone-400">
+                  <span>Loyalty discount</span>
+                  <span className="text-green-700">-{formatCents(loyaltyDiscountCents)}</span>
+                </div>
+                <div className="flex justify-between text-sm text-stone-400">
+                  <span>Adjusted service subtotal</span>
+                  <span>{formatCents(serviceSubtotalCents)}</span>
+                </div>
+              </>
             )}
             {salesTax && salesTax.taxAmountCents > 0 && (
               <div className="flex justify-between text-sm text-stone-400">
