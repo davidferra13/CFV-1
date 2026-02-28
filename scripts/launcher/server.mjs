@@ -3776,7 +3776,7 @@ async function handleRequest(req, res) {
   if (path === '/api/login-as' && method === 'POST') {
     const body = await parseBody(req)
     const role = body.role
-    const validRoles = ['chef', 'client', 'staff', 'partner', 'admin', 'chef-b']
+    const validRoles = ['chef', 'client', 'staff', 'partner', 'admin', 'chef-b', 'developer']
     if (!role || !validRoles.includes(role)) {
       return json(res, { error: `Invalid role. Valid: ${validRoles.join(', ')}` }, 400)
     }

@@ -31,6 +31,7 @@ import {
   bulkUnassign,
   createManualCommunicationLog,
   createInquiryFromCommunicationEvent,
+  getRawCommunicationFeed,
   linkCommunicationEventToInquiry,
   markCommunicationResolved,
   reopenCommunication,
@@ -165,14 +166,12 @@ export function CommunicationInboxClient({
   items,
   stats,
   initialTab,
-  rawFeed = [],
   unreadCount = 0,
   gmailConnected = false,
 }: {
   items: TriageItem[]
   stats: CommunicationInboxStats
   initialTab: CommunicationTab
-  rawFeed?: RawFeedItem[]
   unreadCount?: number
   gmailConnected?: boolean
 }) {
@@ -210,28 +209,51 @@ export function CommunicationInboxClient({
     return localStorage.getItem('inbox-sound') !== 'false'
   })
 
+  // Lazy-load raw feed on demand
+  const [rawFeed, setRawFeed] = useState<RawFeedItem[]>([])
+  const [rawFeedLoaded, setRawFeedLoaded] = useState(false)
+  useEffect(() => {
+    if (viewMode === 'raw_feed' && !rawFeedLoaded) {
+      let cancelled = false
+      getRawCommunicationFeed(200).then((data) => {
+        if (!cancelled) {
+          setRawFeed(data as RawFeedItem[])
+          setRawFeedLoaded(true)
+        }
+      })
+      return () => {
+        cancelled = true
+      }
+    }
+  }, [viewMode, rawFeedLoaded])
+
   useEffect(() => {
     setActiveSources(allSources)
   }, [allSources])
 
-  // Play notification sound when unread count increases
+  // Play notification sound when unread count increases (5s cooldown)
   const prevUnreadRef = useRef(unreadCount)
+  const lastSoundPlayedRef = useRef(0)
   useEffect(() => {
     if (soundEnabled && unreadCount > prevUnreadRef.current) {
-      try {
-        const ctx = new AudioContext()
-        const osc = ctx.createOscillator()
-        const gain = ctx.createGain()
-        osc.connect(gain)
-        gain.connect(ctx.destination)
-        osc.frequency.value = 880
-        osc.type = 'sine'
-        gain.gain.value = 0.1
-        osc.start()
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3)
-        osc.stop(ctx.currentTime + 0.3)
-      } catch {
-        // AudioContext not available
+      const now = Date.now()
+      if (now - lastSoundPlayedRef.current >= 5000) {
+        try {
+          const ctx = new AudioContext()
+          const osc = ctx.createOscillator()
+          const gain = ctx.createGain()
+          osc.connect(gain)
+          gain.connect(ctx.destination)
+          osc.frequency.value = 880
+          osc.type = 'sine'
+          gain.gain.value = 0.1
+          osc.start()
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3)
+          osc.stop(ctx.currentTime + 0.3)
+          lastSoundPlayedRef.current = now
+        } catch {
+          // AudioContext not available
+        }
       }
     }
     prevUnreadRef.current = unreadCount
@@ -479,7 +501,9 @@ export function CommunicationInboxClient({
           >
             <Mail className="h-3.5 w-3.5" />
             Raw Feed
-            <span className="text-[10px] text-stone-500">({rawFeed.length})</span>
+            {rawFeedLoaded && (
+              <span className="text-[10px] text-stone-500">({rawFeed.length})</span>
+            )}
           </button>
         </div>
 
@@ -526,7 +550,13 @@ export function CommunicationInboxClient({
             </p>
           </div>
 
-          {rawFeed.length === 0 ? (
+          {!rawFeedLoaded ? (
+            <Card>
+              <CardContent className="py-8 text-center text-sm text-stone-500">
+                Loading raw feed...
+              </CardContent>
+            </Card>
+          ) : rawFeed.length === 0 ? (
             <Card>
               <CardContent className="py-8 text-center text-sm text-stone-500">
                 No messages yet. Connect Gmail or log a message to get started.

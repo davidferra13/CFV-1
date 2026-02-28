@@ -259,20 +259,28 @@ export async function linkCommunicationEventToInquiry(
     .eq('id', communicationEventId)
     .eq('tenant_id', user.tenantId!)
 
-  await supabase
+  const { error: rejectErr } = await supabase
     .from('suggested_links' as any)
     .update({ status: 'rejected' })
     .eq('tenant_id', user.tenantId!)
     .eq('communication_event_id', communicationEventId)
     .eq('status', 'pending')
 
-  await supabase
+  if (rejectErr) {
+    console.error('[linkCommunicationEventToInquiry] Failed to reject suggested_links:', rejectErr)
+  }
+
+  const { error: acceptErr } = await supabase
     .from('suggested_links' as any)
     .update({ status: 'accepted' })
     .eq('tenant_id', user.tenantId!)
     .eq('communication_event_id', communicationEventId)
     .eq('suggested_entity_type', 'inquiry')
     .eq('suggested_entity_id', inquiryId)
+
+  if (acceptErr) {
+    console.error('[linkCommunicationEventToInquiry] Failed to accept suggested_link:', acceptErr)
+  }
 
   await logAction({
     tenantId: user.tenantId!,
@@ -325,20 +333,28 @@ export async function attachCommunicationEventToEvent(
     .eq('id', communicationEventId)
     .eq('tenant_id', user.tenantId!)
 
-  await supabase
+  const { error: rejectErr } = await supabase
     .from('suggested_links' as any)
     .update({ status: 'rejected' })
     .eq('tenant_id', user.tenantId!)
     .eq('communication_event_id', communicationEventId)
     .eq('status', 'pending')
 
-  await supabase
+  if (rejectErr) {
+    console.error('[attachCommunicationEventToEvent] Failed to reject suggested_links:', rejectErr)
+  }
+
+  const { error: acceptErr } = await supabase
     .from('suggested_links' as any)
     .update({ status: 'accepted' })
     .eq('tenant_id', user.tenantId!)
     .eq('communication_event_id', communicationEventId)
     .eq('suggested_entity_type', 'event')
     .eq('suggested_entity_id', eventId)
+
+  if (acceptErr) {
+    console.error('[attachCommunicationEventToEvent] Failed to accept suggested_link:', acceptErr)
+  }
 
   await logAction({
     tenantId: user.tenantId!,
@@ -691,24 +707,77 @@ export async function toggleThreadStar(threadId: string, starred: boolean) {
 
 export async function bulkMarkDone(communicationEventIds: string[]) {
   const user = await requireChef()
+  const supabase: any = createServerClient({ admin: true })
   const uniqueIds = Array.from(new Set(communicationEventIds))
   if (uniqueIds.length === 0) return { success: true, count: 0 }
 
-  for (const eventId of uniqueIds) {
-    await markCommunicationResolved(eventId)
+  // Fetch all events in one query to get their thread IDs
+  const { data: events } = await supabase
+    .from('communication_events' as any)
+    .select('id, status, thread_id')
+    .eq('tenant_id', user.tenantId!)
+    .in('id', uniqueIds)
+
+  if (!events || events.length === 0) return { success: true, count: 0 }
+
+  const threadIds = Array.from(
+    new Set((events as any[]).map((e: any) => e.thread_id).filter(Boolean))
+  )
+
+  // Batch update all communication events to resolved
+  await supabase
+    .from('communication_events' as any)
+    .update({ status: 'resolved' })
+    .eq('tenant_id', user.tenantId!)
+    .in('id', uniqueIds)
+
+  // Batch update all threads to closed
+  if (threadIds.length > 0) {
+    await supabase
+      .from('conversation_threads' as any)
+      .update({ state: 'closed', snoozed_until: null })
+      .eq('tenant_id', user.tenantId!)
+      .in('id', threadIds)
   }
+
+  // Log bulk action once
+  await logAction({
+    tenantId: user.tenantId!,
+    actorId: user.id,
+    action: 'bulk_mark_done',
+    source: 'manual',
+    previousState: { event_ids: uniqueIds },
+    newState: { status: 'resolved', thread_state: 'closed' },
+  })
 
   revalidatePath('/inbox')
   return { success: true, count: uniqueIds.length }
 }
 
 export async function bulkSnooze24h(threadIds: string[]) {
+  const user = await requireChef()
+  const supabase: any = createServerClient({ admin: true })
   const uniqueIds = Array.from(new Set(threadIds))
   if (uniqueIds.length === 0) return { success: true, count: 0 }
 
-  for (const threadId of uniqueIds) {
-    await snoozeThread(threadId, 24)
-  }
+  const snoozedUntil = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+
+  // Batch update all threads to snoozed
+  await supabase
+    .from('conversation_threads' as any)
+    .update({ state: 'snoozed', snoozed_until: snoozedUntil })
+    .eq('tenant_id', user.tenantId!)
+    .in('id', uniqueIds)
+
+  // Log bulk action once
+  await logAction({
+    tenantId: user.tenantId!,
+    actorId: user.id,
+    action: 'bulk_snooze_24h',
+    source: 'manual',
+    previousState: { thread_ids: uniqueIds },
+    newState: { state: 'snoozed', snoozed_until: snoozedUntil },
+  })
 
   revalidatePath('/inbox')
   return { success: true, count: uniqueIds.length }
@@ -1289,6 +1358,40 @@ export async function sendReplyViaChannel(input: {
     .single()
 
   if (threadErr || !thread) throw new Error('Thread not found')
+
+  // Validate recipient matches thread's known contact
+  const { data: latestInboundForValidation } = await supabase
+    .from('communication_events' as any)
+    .select('sender_identity')
+    .eq('thread_id', threadId)
+    .eq('tenant_id', user.tenantId!)
+    .eq('direction', 'inbound')
+    .order('timestamp', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (latestInboundForValidation) {
+    const senderIdentity = String((latestInboundForValidation as any).sender_identity || '')
+    if (channel === 'email') {
+      const emailMatch = senderIdentity.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)
+      const threadEmail = emailMatch ? emailMatch[0].toLowerCase() : null
+      if (threadEmail && threadEmail !== recipientAddress.toLowerCase()) {
+        throw new Error('Recipient email does not match the thread contact')
+      }
+    } else {
+      // SMS/WhatsApp: validate phone number matches sender_identity digits
+      const senderDigits = senderIdentity.replace(/\D/g, '')
+      const recipientDigits = recipientAddress.replace(/\D/g, '')
+      if (
+        senderDigits &&
+        recipientDigits &&
+        !senderDigits.endsWith(recipientDigits) &&
+        !recipientDigits.endsWith(senderDigits)
+      ) {
+        throw new Error('Recipient phone does not match the thread contact')
+      }
+    }
+  }
 
   const now = new Date().toISOString()
 

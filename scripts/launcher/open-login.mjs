@@ -3,7 +3,7 @@
 // Open Login — launches Chrome incognito, signs in, leaves it open
 // ═══════════════════════════════════════════════════════════════════
 // Usage: node scripts/launcher/open-login.mjs <role>
-//   Roles: chef, client, staff, partner, admin, chef-b
+//   Roles: chef, client, staff, partner, admin, chef-b, developer
 //
 // Requires: Playwright installed (npx playwright install chromium)
 // The dev server must be running on port 3100.
@@ -27,8 +27,32 @@ function loadSeedIds() {
   }
 }
 
+function loadDeveloperCreds() {
+  try {
+    return JSON.parse(readFileSync(join(PROJECT_ROOT, '.auth', 'developer.json'), 'utf-8'))
+  } catch {
+    return null
+  }
+}
+
 function getAccount(role) {
   const seed = loadSeedIds()
+
+  // Developer account — reads from .auth/developer.json
+  if (role === 'developer') {
+    const dev = loadDeveloperCreds()
+    if (!dev || !dev.email || !dev.password || dev.password === 'FILL_IN_YOUR_PASSWORD_HERE') {
+      console.error('[open-login] Developer credentials not configured.')
+      console.error('[open-login] Edit .auth/developer.json and fill in your password.')
+      process.exit(1)
+    }
+    return {
+      email: dev.email,
+      password: dev.password,
+      portal: '/dashboard',
+      label: 'Developer',
+    }
+  }
 
   const accounts = {
     chef: {

@@ -8,7 +8,6 @@ import { InboxCalendarPeek } from '@/components/communication/inbox-calendar-pee
 import {
   getCommunicationInbox,
   getCommunicationInboxStats,
-  getRawCommunicationFeed,
   getUnreadThreadCount,
 } from '@/lib/communication/actions'
 import type { CommunicationTab } from '@/lib/communication/types'
@@ -33,16 +32,13 @@ export default async function InboxPage({ searchParams }: { searchParams?: { tab
     const rangeStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
     const rangeEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
 
-    const [items, stats, calendarEvents, gmailConnection, rawFeed, unreadCount] = await Promise.all(
-      [
-        getCommunicationInbox(undefined, 100),
-        getCommunicationInboxStats(),
-        getCalendarEvents(rangeStart, rangeEnd),
-        getGoogleConnection(),
-        getRawCommunicationFeed(200),
-        getUnreadThreadCount(),
-      ]
-    )
+    const [items, stats, calendarEvents, gmailConnection, unreadCount] = await Promise.all([
+      getCommunicationInbox(undefined, 100),
+      getCommunicationInboxStats(),
+      getCalendarEvents(rangeStart, rangeEnd),
+      getGoogleConnection(),
+      getUnreadThreadCount(),
+    ])
 
     return (
       <div className="max-w-5xl mx-auto space-y-6">
@@ -70,7 +66,6 @@ export default async function InboxPage({ searchParams }: { searchParams?: { tab
           items={items as any}
           stats={stats}
           initialTab={tab}
-          rawFeed={rawFeed as any}
           unreadCount={unreadCount}
           gmailConnected={gmailConnection.gmail.connected}
         />
