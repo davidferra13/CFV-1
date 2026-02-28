@@ -1,0 +1,1209 @@
+{
+  "suite": "chef",
+  "description": "100 chef-facing prompts for Remy AI response quality testing",
+  "endpoint": "/api/remy/stream",
+  "authRole": "chef",
+  "defaults": {
+    "context": {
+      "currentPage": "/dashboard",
+      "recentPages": [{ "path": "/dashboard", "label": "Dashboard", "at": "2026-02-27T10:00:00Z" }],
+      "recentActions": [],
+      "recentErrors": [],
+      "sessionMinutes": 5,
+      "activeForm": null,
+      "history": []
+    },
+    "timing": {
+      "classificationMaxMs": 8000,
+      "firstTokenMaxMs": 20000,
+      "totalMaxMs": 120000
+    },
+    "minLength": 20,
+    "maxLength": 4000
+  },
+  "prompts": [
+    {
+      "id": "chef-001",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline", "undefined"],
+        "notes": "Should reference revenue, client count, or event stats from business context"
+      }
+    },
+    {
+      "id": "chef-002",
+      "category": "business_overview",
+      "prompt": "What's my revenue this month?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should give a dollar figure from the business context or say no data"
+      }
+    },
+    {
+      "id": "chef-003",
+      "category": "business_overview",
+      "prompt": "How many clients do I have?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference client count from context"
+      }
+    },
+    {
+      "id": "chef-004",
+      "category": "business_overview",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should give a business overview with multiple metrics"
+      }
+    },
+    {
+      "id": "chef-005",
+      "category": "business_overview",
+      "prompt": "What needs my attention today?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference daily plan items, upcoming events, or open inquiries"
+      }
+    },
+    {
+      "id": "chef-006",
+      "category": "business_overview",
+      "prompt": "Am I on track for my goals this month?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference active goals from context or say no goals set"
+      }
+    },
+    {
+      "id": "chef-007",
+      "category": "business_overview",
+      "prompt": "What's my year-to-date revenue?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference yearly stats from context"
+      }
+    },
+    {
+      "id": "chef-008",
+      "category": "business_overview",
+      "prompt": "How does this month compare to last month?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should attempt comparison using available financial data"
+      }
+    },
+    {
+      "id": "chef-009",
+      "category": "business_overview",
+      "prompt": "What's my average revenue per event?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference avg revenue per event from yearly stats"
+      }
+    },
+    {
+      "id": "chef-010",
+      "category": "business_overview",
+      "prompt": "Who are my top clients?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference top clients from yearly stats"
+      }
+    },
+    {
+      "id": "chef-011",
+      "category": "client_management",
+      "prompt": "Find my client Sarah",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.search"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should execute client.search with query 'Sarah'"
+      }
+    },
+    {
+      "id": "chef-012",
+      "category": "client_management",
+      "prompt": "Show me all my recent clients",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.list_recent"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should execute client.list_recent"
+      }
+    },
+    {
+      "id": "chef-013",
+      "category": "client_management",
+      "prompt": "Pull up the details for the Johnson family",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.search"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should search for 'Johnson'"
+      }
+    },
+    {
+      "id": "chef-014",
+      "category": "client_management",
+      "prompt": "Do I have a client named Martinez?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.search"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should search for 'Martinez'"
+      }
+    },
+    {
+      "id": "chef-015",
+      "category": "client_management",
+      "prompt": "Who was my last client?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.list_recent"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should list recent clients, sorted by most recent"
+      }
+    },
+    {
+      "id": "chef-016",
+      "category": "client_management",
+      "prompt": "Search for clients with the last name Williams",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.search"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should search for 'Williams'"
+      }
+    },
+    {
+      "id": "chef-017",
+      "category": "client_management",
+      "prompt": "How many events has the Henderson family booked with me?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.search"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should search for Henderson and reference event history"
+      }
+    },
+    {
+      "id": "chef-018",
+      "category": "client_management",
+      "prompt": "What dietary restrictions does my client Sarah have?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["dietary.check"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should run dietary.check for Sarah"
+      }
+    },
+    {
+      "id": "chef-019",
+      "category": "client_management",
+      "prompt": "Check if any of my clients have nut allergies",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["dietary.check"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should check dietary restrictions across clients"
+      }
+    },
+    {
+      "id": "chef-020",
+      "category": "client_management",
+      "prompt": "What's the lifetime value of my client Thompson?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["analytics.client_ltv"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should calculate LTV for Thompson"
+      }
+    },
+    {
+      "id": "chef-021",
+      "category": "event_management",
+      "prompt": "Show me my upcoming events",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["event.list_upcoming"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should list upcoming events"
+      }
+    },
+    {
+      "id": "chef-022",
+      "category": "event_management",
+      "prompt": "What events do I have this weekend?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["event.list_upcoming"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should filter to weekend events"
+      }
+    },
+    {
+      "id": "chef-023",
+      "category": "event_management",
+      "prompt": "List all my events in March",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["event.list_upcoming"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should filter to March events"
+      }
+    },
+    {
+      "id": "chef-024",
+      "category": "event_management",
+      "prompt": "Show me events that are still in draft status",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["event.list_by_status"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should filter by draft status"
+      }
+    },
+    {
+      "id": "chef-025",
+      "category": "event_management",
+      "prompt": "Which events are confirmed but not yet paid?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["event.list_by_status"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should filter by status to find unpaid confirmed events"
+      }
+    },
+    {
+      "id": "chef-026",
+      "category": "event_management",
+      "prompt": "Create a new event for a birthday dinner on March 20th, 12 guests",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["event.create_draft"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should create a draft event (tier 2, needs approval)"
+      }
+    },
+    {
+      "id": "chef-027",
+      "category": "event_management",
+      "prompt": "What are the details on my next event?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["event.list_upcoming"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should show the next upcoming event details"
+      }
+    },
+    {
+      "id": "chef-028",
+      "category": "event_management",
+      "prompt": "Show me completed events from last month",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["event.list_by_status"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should filter for completed status"
+      }
+    },
+    {
+      "id": "chef-029",
+      "category": "event_management",
+      "prompt": "Do I have any cancelled events?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["event.list_by_status"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should filter for cancelled status"
+      }
+    },
+    {
+      "id": "chef-030",
+      "category": "event_management",
+      "prompt": "How many events have I done this year?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference yearly event count from stats context"
+      }
+    },
+    {
+      "id": "chef-031",
+      "category": "financial",
+      "prompt": "What's my financial summary?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["finance.summary"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should execute finance.summary"
+      }
+    },
+    {
+      "id": "chef-032",
+      "category": "financial",
+      "prompt": "Show me my monthly revenue breakdown",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["finance.monthly_snapshot"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should execute finance.monthly_snapshot"
+      }
+    },
+    {
+      "id": "chef-033",
+      "category": "financial",
+      "prompt": "What are my total expenses?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference expenses from yearly stats or financial summary"
+      }
+    },
+    {
+      "id": "chef-034",
+      "category": "financial",
+      "prompt": "What's my profit margin?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should calculate or reference margin from financial context"
+      }
+    },
+    {
+      "id": "chef-035",
+      "category": "financial",
+      "prompt": "How much did I make on the Henderson wedding?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.search"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should search for Henderson event to find financials"
+      }
+    },
+    {
+      "id": "chef-036",
+      "category": "financial",
+      "prompt": "What's the break-even for a 20-person dinner?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["analytics.break_even"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should run break-even analysis"
+      }
+    },
+    {
+      "id": "chef-037",
+      "category": "financial",
+      "prompt": "What's the food cost on my signature risotto?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["analytics.recipe_cost"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should run recipe cost analysis"
+      }
+    },
+    {
+      "id": "chef-038",
+      "category": "financial",
+      "prompt": "Am I hitting my revenue target?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference goals and revenue from context"
+      }
+    },
+    {
+      "id": "chef-039",
+      "category": "financial",
+      "prompt": "What's my net income for this quarter?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference yearly stats (revenue - expenses)"
+      }
+    },
+    {
+      "id": "chef-040",
+      "category": "financial",
+      "prompt": "Send a payment reminder to the Garcia family",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["draft.payment_reminder"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should draft a payment reminder (tier 2, needs approval)"
+      }
+    },
+    {
+      "id": "chef-041",
+      "category": "calendar_scheduling",
+      "prompt": "Am I free on March 15th?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["calendar.availability"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should check availability for March 15"
+      }
+    },
+    {
+      "id": "chef-042",
+      "category": "calendar_scheduling",
+      "prompt": "What does my schedule look like next week?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference upcoming events and calendar from context"
+      }
+    },
+    {
+      "id": "chef-043",
+      "category": "calendar_scheduling",
+      "prompt": "When is my next available Saturday?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["scheduling.next_available"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should find next open Saturday"
+      }
+    },
+    {
+      "id": "chef-044",
+      "category": "calendar_scheduling",
+      "prompt": "Is April open for a big event?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["calendar.availability"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should check April availability"
+      }
+    },
+    {
+      "id": "chef-045",
+      "category": "calendar_scheduling",
+      "prompt": "What days am I blocked this month?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference blocked dates from calendar context"
+      }
+    },
+    {
+      "id": "chef-046",
+      "category": "calendar_scheduling",
+      "prompt": "Check availability for the first two weekends in April",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["calendar.availability"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should check multiple dates"
+      }
+    },
+    {
+      "id": "chef-047",
+      "category": "calendar_scheduling",
+      "prompt": "Do I have any upcoming calls scheduled?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference upcoming calls from context"
+      }
+    },
+    {
+      "id": "chef-048",
+      "category": "calendar_scheduling",
+      "prompt": "How busy am I in March?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference March events and calendar entries"
+      }
+    },
+    {
+      "id": "chef-049",
+      "category": "calendar_scheduling",
+      "prompt": "Block off March 25th through 28th — I'm taking a vacation",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should explain how to block dates or suggest navigating to calendar"
+      }
+    },
+    {
+      "id": "chef-050",
+      "category": "calendar_scheduling",
+      "prompt": "What's on my waitlist?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference waitlist from calendar context"
+      }
+    },
+    {
+      "id": "chef-051",
+      "category": "email_drafts",
+      "prompt": "Draft a follow-up email for the Miller family",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["email.followup"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should generate a follow-up draft (tier 2)"
+      }
+    },
+    {
+      "id": "chef-052",
+      "category": "email_drafts",
+      "prompt": "Write a thank-you note for my last event",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["draft.thank_you"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should draft a thank-you (tier 2)"
+      }
+    },
+    {
+      "id": "chef-053",
+      "category": "email_drafts",
+      "prompt": "Send a referral request to the Hendersons",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["draft.referral_request"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should draft a referral request (tier 2)"
+      }
+    },
+    {
+      "id": "chef-054",
+      "category": "email_drafts",
+      "prompt": "Draft a testimonial request for Sarah Johnson",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["draft.testimonial_request"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should draft a testimonial request (tier 2)"
+      }
+    },
+    {
+      "id": "chef-055",
+      "category": "email_drafts",
+      "prompt": "Write a polite decline for an inquiry I can't take",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["draft.decline_response"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should draft a decline response (tier 2)"
+      }
+    },
+    {
+      "id": "chef-056",
+      "category": "email_drafts",
+      "prompt": "Draft a cancellation response for the Williams event",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["draft.cancellation_response"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should draft a cancellation response (tier 2)"
+      }
+    },
+    {
+      "id": "chef-057",
+      "category": "email_drafts",
+      "prompt": "Check my recent emails",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["email.recent"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should fetch recent emails"
+      }
+    },
+    {
+      "id": "chef-058",
+      "category": "email_drafts",
+      "prompt": "Summarize my inbox",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["email.inbox_summary"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should summarize inbox"
+      }
+    },
+    {
+      "id": "chef-059",
+      "category": "email_drafts",
+      "prompt": "Write a re-engagement email for a client I haven't heard from in 3 months",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["draft.re_engagement"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should draft a re-engagement email (tier 2)"
+      }
+    },
+    {
+      "id": "chef-060",
+      "category": "email_drafts",
+      "prompt": "Draft a quote cover letter for the Davis party",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["draft.quote_cover_letter"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should draft a quote cover letter (tier 2)"
+      }
+    },
+    {
+      "id": "chef-061",
+      "category": "menu_recipes",
+      "prompt": "Search my recipes for risotto",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["recipe.search"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should search recipes for 'risotto'"
+      }
+    },
+    {
+      "id": "chef-062",
+      "category": "menu_recipes",
+      "prompt": "Show me all my menus",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["menu.list"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should list all menus"
+      }
+    },
+    {
+      "id": "chef-063",
+      "category": "menu_recipes",
+      "prompt": "What recipes do I have that use salmon?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["recipe.search"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should search recipes for 'salmon'"
+      }
+    },
+    {
+      "id": "chef-064",
+      "category": "menu_recipes",
+      "prompt": "Do I have any dessert recipes?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["recipe.search"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should search recipes for 'dessert'"
+      }
+    },
+    {
+      "id": "chef-065",
+      "category": "menu_recipes",
+      "prompt": "What's on the menu I created for corporate events?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["menu.list"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should list menus and filter for corporate"
+      }
+    },
+    {
+      "id": "chef-066",
+      "category": "menu_recipes",
+      "prompt": "Explain my spring tasting menu to a client",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["client.menu_explanation"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should draft a client-friendly menu explanation (tier 2)"
+      }
+    },
+    {
+      "id": "chef-067",
+      "category": "menu_recipes",
+      "prompt": "What's the food cost on my lamb dish?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["analytics.recipe_cost"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should analyze recipe cost"
+      }
+    },
+    {
+      "id": "chef-068",
+      "category": "menu_recipes",
+      "prompt": "Create a new recipe for pasta carbonara",
+      "expected": {
+        "intent": "question",
+        "guardrail": "recipe_block",
+        "mustContain": ["recipe"],
+        "mustNotContain": [],
+        "notes": "GUARDRAIL TEST: Should be blocked by recipe generation guard"
+      }
+    },
+    {
+      "id": "chef-069",
+      "category": "menu_recipes",
+      "prompt": "How to cook a perfect steak",
+      "expected": {
+        "intent": "question",
+        "guardrail": "recipe_block",
+        "mustContain": ["recipe"],
+        "mustNotContain": [],
+        "notes": "GUARDRAIL TEST: Should be blocked — 'how to cook' triggers recipe guard"
+      }
+    },
+    {
+      "id": "chef-070",
+      "category": "menu_recipes",
+      "prompt": "Suggest a meal for a date night",
+      "expected": {
+        "intent": "question",
+        "guardrail": "recipe_block",
+        "mustContain": [],
+        "mustNotContain": [],
+        "notes": "GUARDRAIL TEST: Should be blocked — 'suggest a meal' triggers recipe guard"
+      }
+    },
+    {
+      "id": "chef-071",
+      "category": "operations",
+      "prompt": "Generate a prep timeline for Saturday's dinner",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["prep.timeline"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should generate a prep timeline"
+      }
+    },
+    {
+      "id": "chef-072",
+      "category": "operations",
+      "prompt": "Create a packing list for my next event",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["ops.packing_list"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should generate a packing list"
+      }
+    },
+    {
+      "id": "chef-073",
+      "category": "operations",
+      "prompt": "Do a cross-contamination check for the Henderson event",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["ops.cross_contamination"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should run cross-contamination analysis"
+      }
+    },
+    {
+      "id": "chef-074",
+      "category": "operations",
+      "prompt": "Calculate portions for 25 guests",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["ops.portion_calc"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should calculate portions"
+      }
+    },
+    {
+      "id": "chef-075",
+      "category": "operations",
+      "prompt": "What do I need to buy for Saturday?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["grocery.quick_add"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should parse grocery needs"
+      }
+    },
+    {
+      "id": "chef-076",
+      "category": "operations",
+      "prompt": "Any food safety concerns for the allergy-heavy event?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["ops.cross_contamination"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should check cross-contamination for event with allergies"
+      }
+    },
+    {
+      "id": "chef-077",
+      "category": "operations",
+      "prompt": "What's on my to-do list?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference active TODOs from context"
+      }
+    },
+    {
+      "id": "chef-078",
+      "category": "operations",
+      "prompt": "Show me my nudges and reminders",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["nudge.list"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should list proactive nudges"
+      }
+    },
+    {
+      "id": "chef-079",
+      "category": "operations",
+      "prompt": "Draft a food safety incident report",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["draft.food_safety_incident"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should draft a food safety report (tier 2)"
+      }
+    },
+    {
+      "id": "chef-080",
+      "category": "operations",
+      "prompt": "List my staff",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference staff roster from context"
+      }
+    },
+    {
+      "id": "chef-081",
+      "category": "memory",
+      "prompt": "Remember that I always charge $200 per person for wine pairings",
+      "expected": {
+        "intent": "memory",
+        "mustContain": ["remember"],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should save this as a pricing preference memory"
+      }
+    },
+    {
+      "id": "chef-082",
+      "category": "memory",
+      "prompt": "Remember that the Henderson family prefers outdoor dining",
+      "expected": {
+        "intent": "memory",
+        "mustContain": ["remember"],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should save this as a client insight memory"
+      }
+    },
+    {
+      "id": "chef-083",
+      "category": "memory",
+      "prompt": "What do you remember about me?",
+      "expected": {
+        "intent": "memory",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should list all stored memories"
+      }
+    },
+    {
+      "id": "chef-084",
+      "category": "memory",
+      "prompt": "Remember that I don't work on Sundays",
+      "expected": {
+        "intent": "memory",
+        "mustContain": ["remember"],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should save as a chef preference memory"
+      }
+    },
+    {
+      "id": "chef-085",
+      "category": "memory",
+      "prompt": "Do you remember what pricing model I use?",
+      "expected": {
+        "intent": "memory",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should list memories or answer from stored memories"
+      }
+    },
+    {
+      "id": "chef-086",
+      "category": "context_aware",
+      "prompt": "What am I looking at right now?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should describe the current page (dashboard by default)"
+      },
+      "context": {
+        "currentPage": "/events",
+        "recentPages": [{ "path": "/events", "label": "Events", "at": "2026-02-27T10:00:00Z" }]
+      }
+    },
+    {
+      "id": "chef-087",
+      "category": "context_aware",
+      "prompt": "Help me with what I'm doing right now",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should offer help contextual to the current page"
+      },
+      "context": {
+        "currentPage": "/recipes",
+        "recentPages": [{ "path": "/recipes", "label": "Recipes", "at": "2026-02-27T10:00:00Z" }]
+      }
+    },
+    {
+      "id": "chef-088",
+      "category": "context_aware",
+      "prompt": "I just created a new event, what should I do next?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should suggest next steps after event creation"
+      },
+      "context": {
+        "currentPage": "/events",
+        "recentActions": [{ "action": "created", "entity": "event", "at": "2026-02-27T10:00:00Z" }]
+      }
+    },
+    {
+      "id": "chef-089",
+      "category": "context_aware",
+      "prompt": "I keep getting an error on this page",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference recent errors from context and offer help"
+      },
+      "context": {
+        "currentPage": "/clients",
+        "recentErrors": [
+          {
+            "message": "Failed to load client list",
+            "context": "ClientsPage",
+            "at": "2026-02-27T10:00:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "id": "chef-090",
+      "category": "context_aware",
+      "prompt": "Take me to the recipes page",
+      "expected": {
+        "intent": "question",
+        "mustContain": ["recipe"],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should provide navigation suggestion to /recipes"
+      }
+    },
+    {
+      "id": "chef-091",
+      "category": "analytics",
+      "prompt": "What's the break-even point for a corporate event with 50 guests?",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["analytics.break_even"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should run break-even analysis for 50 guests"
+      }
+    },
+    {
+      "id": "chef-092",
+      "category": "analytics",
+      "prompt": "Calculate the lifetime value of my top client",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["analytics.client_ltv"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should calculate LTV"
+      }
+    },
+    {
+      "id": "chef-093",
+      "category": "analytics",
+      "prompt": "Optimize the cost on my beef tenderloin recipe",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["analytics.recipe_cost"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should analyze and suggest cost optimizations"
+      }
+    },
+    {
+      "id": "chef-094",
+      "category": "analytics",
+      "prompt": "What's my most profitable type of event?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should reference event stats from yearly context"
+      }
+    },
+    {
+      "id": "chef-095",
+      "category": "analytics",
+      "prompt": "Search the web for private chef pricing trends 2026",
+      "expected": {
+        "intent": "command",
+        "taskTypes": ["web.search"],
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should execute a web search"
+      }
+    },
+    {
+      "id": "chef-096",
+      "category": "conversational",
+      "prompt": "Hey Remy, what can you help me with?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline", "As an AI"],
+        "notes": "Should describe capabilities in a warm, conversational tone"
+      }
+    },
+    {
+      "id": "chef-097",
+      "category": "conversational",
+      "prompt": "It's been a tough week. Any words of encouragement?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline", "As an AI"],
+        "notes": "Should respond supportively with chef-relevant encouragement"
+      }
+    },
+    {
+      "id": "chef-098",
+      "category": "conversational",
+      "prompt": "Good morning Remy!",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline", "As an AI"],
+        "notes": "Should greet warmly, possibly mention today's schedule"
+      }
+    },
+    {
+      "id": "chef-099",
+      "category": "conversational",
+      "prompt": "How's my week looking?",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline"],
+        "notes": "Should give a weekly overview from upcoming events and calendar"
+      }
+    },
+    {
+      "id": "chef-100",
+      "category": "conversational",
+      "prompt": "Tell me something interesting about running a private chef business",
+      "expected": {
+        "intent": "question",
+        "mustContain": [],
+        "mustNotContain": ["error", "offline", "As an AI"],
+        "notes": "Should share business insight relevant to the chef's context"
+      }
+    }
+  ]
+}
