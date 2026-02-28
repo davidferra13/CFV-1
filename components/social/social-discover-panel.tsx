@@ -7,6 +7,7 @@ import type { SocialPostAuthor } from '@/lib/social/chef-social-actions'
 import { followChef, unfollowChef } from '@/lib/social/chef-social-actions'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 function DiscoverChefCard({
   chef,
@@ -20,11 +21,17 @@ function DiscoverChefCard({
   const authorName = chef.display_name ?? chef.business_name
 
   function toggle() {
+    const prev = following
     const next = !following
     setFollowing(next)
     startTransition(async () => {
-      if (next) await followChef(chef.id)
-      else await unfollowChef(chef.id)
+      try {
+        if (next) await followChef(chef.id)
+        else await unfollowChef(chef.id)
+      } catch (err) {
+        setFollowing(prev)
+        toast.error('Failed to update follow status')
+      }
     })
   }
 

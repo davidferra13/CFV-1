@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { ChefHat, Link2, Unlink, Plus, Search, X } from 'lucide-react'
 import { linkRecipeToInquiry, unlinkRecipeFromInquiry } from '@/lib/inquiries/note-actions'
+import { toast } from 'sonner'
 import type { InquiryRecipeLink } from '@/lib/inquiries/note-actions'
 
 // ============================================================
@@ -94,8 +95,12 @@ export function InquiryRecipeLinker({
 
   const handleUnlink = (linkId: string) => {
     startTransition(async () => {
-      await unlinkRecipeFromInquiry(linkId)
-      setLinks((prev) => prev.filter((l) => l.id !== linkId))
+      try {
+        await unlinkRecipeFromInquiry(linkId)
+        setLinks((prev) => prev.filter((l) => l.id !== linkId))
+      } catch (err) {
+        toast.error('Failed to unlink recipe')
+      }
     })
   }
 

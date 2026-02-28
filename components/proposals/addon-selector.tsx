@@ -11,6 +11,7 @@ import {
   type ProposalAddon,
 } from '@/lib/proposals/addon-actions'
 import { PlusCircle, Trash2, Edit2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 type Props = {
   initialAddons: ProposalAddon[]
@@ -52,28 +53,36 @@ export function AddonSelector({ initialAddons, guestCount = 1 }: Props) {
 
   function handleCreate() {
     startTransition(async () => {
-      const created = await createAddon({
-        name: form.name,
-        description: form.description || undefined,
-        priceCentsPerPerson: form.priceCentsPerPerson,
-        isDefault: form.isDefault,
-      })
-      setAddons((prev) => [...prev, created])
-      if (created.isDefault) setSelected((prev) => new Set([...prev, created.id]))
-      setShowCreate(false)
-      setForm({ name: '', description: '', priceCentsPerPerson: 0, isDefault: false })
+      try {
+        const created = await createAddon({
+          name: form.name,
+          description: form.description || undefined,
+          priceCentsPerPerson: form.priceCentsPerPerson,
+          isDefault: form.isDefault,
+        })
+        setAddons((prev) => [...prev, created])
+        if (created.isDefault) setSelected((prev) => new Set([...prev, created.id]))
+        setShowCreate(false)
+        setForm({ name: '', description: '', priceCentsPerPerson: 0, isDefault: false })
+      } catch (err) {
+        toast.error('Failed to create add-on')
+      }
     })
   }
 
   function handleDelete(id: string) {
     startTransition(async () => {
-      await deleteAddon(id)
-      setAddons((prev) => prev.filter((a) => a.id !== id))
-      setSelected((prev) => {
-        const next = new Set(prev)
-        next.delete(id)
-        return next
-      })
+      try {
+        await deleteAddon(id)
+        setAddons((prev) => prev.filter((a) => a.id !== id))
+        setSelected((prev) => {
+          const next = new Set(prev)
+          next.delete(id)
+          return next
+        })
+      } catch (err) {
+        toast.error('Failed to delete add-on')
+      }
     })
   }
 

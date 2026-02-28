@@ -2,6 +2,7 @@
 
 import { useTransition } from 'react'
 import { PhoneCall, X, CheckCircle, Clock } from 'lucide-react'
+import { toast } from 'sonner'
 import type { ClientSuggestion } from '@/lib/goals/types'
 import { updateSuggestionStatus } from '@/lib/goals/actions'
 
@@ -28,14 +29,22 @@ export function ClientSuggestionCard({ suggestion }: ClientSuggestionCardProps) 
   function handleContact() {
     if (!suggestion.suggestionId) return
     startTransition(async () => {
-      await updateSuggestionStatus(suggestion.suggestionId!, 'contacted')
+      try {
+        await updateSuggestionStatus(suggestion.suggestionId!, 'contacted')
+      } catch (err) {
+        toast.error('Failed to update suggestion status')
+      }
     })
   }
 
   function handleDismiss() {
     if (!suggestion.suggestionId) return
     startTransition(async () => {
-      await updateSuggestionStatus(suggestion.suggestionId!, 'dismissed')
+      try {
+        await updateSuggestionStatus(suggestion.suggestionId!, 'dismissed')
+      } catch (err) {
+        toast.error('Failed to dismiss suggestion')
+      }
     })
   }
 

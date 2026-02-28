@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { submitCheckin } from '@/lib/professional/growth-checkin-actions'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 export function GrowthCheckinModal({ onClose }: { onClose: () => void }) {
   const [step, setStep] = useState(0)
@@ -16,14 +17,18 @@ export function GrowthCheckinModal({ onClose }: { onClose: () => void }) {
 
   function handleSubmit() {
     startTransition(async () => {
-      await submitCheckin({
-        satisfaction_score: satisfaction,
-        learned_this_quarter: learned || undefined,
-        draining_this_quarter: draining || undefined,
-        goal_next_quarter: goal || undefined,
-        track_request: trackRequest || undefined,
-      })
-      setDone(true)
+      try {
+        await submitCheckin({
+          satisfaction_score: satisfaction,
+          learned_this_quarter: learned || undefined,
+          draining_this_quarter: draining || undefined,
+          goal_next_quarter: goal || undefined,
+          track_request: trackRequest || undefined,
+        })
+        setDone(true)
+      } catch (err) {
+        toast.error('Failed to submit check-in')
+      }
     })
   }
 

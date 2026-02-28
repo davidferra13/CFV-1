@@ -6,6 +6,7 @@ import { Users, MessageSquare } from 'lucide-react'
 import type { SocialChannel } from '@/lib/social/chef-social-actions'
 import { joinChannel, leaveChannel } from '@/lib/social/chef-social-actions'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 // Standalone join/leave button — use this when the full card chrome is already
 // rendered by the parent (e.g. the channel detail page header).
@@ -20,11 +21,17 @@ export function ChannelJoinButton({
   const [pending, startTransition] = useTransition()
 
   function toggle() {
+    const prev = isMember
     const next = !isMember
     setIsMember(next)
     startTransition(async () => {
-      if (next) await joinChannel(channelId)
-      else await leaveChannel(channelId)
+      try {
+        if (next) await joinChannel(channelId)
+        else await leaveChannel(channelId)
+      } catch (err) {
+        setIsMember(prev)
+        toast.error('Failed to update channel membership')
+      }
     })
   }
 
@@ -46,15 +53,23 @@ export function SocialChannelCard({ channel }: { channel: SocialChannel }) {
   const [pending, startTransition] = useTransition()
 
   function toggleMembership() {
+    const prevMember = isMember
+    const prevCount = memberCount
     const next = !isMember
     setIsMember(next)
     setMemberCount((c) => (next ? c + 1 : Math.max(0, c - 1)))
 
     startTransition(async () => {
-      if (next) {
-        await joinChannel(channel.id)
-      } else {
-        await leaveChannel(channel.id)
+      try {
+        if (next) {
+          await joinChannel(channel.id)
+        } else {
+          await leaveChannel(channel.id)
+        }
+      } catch (err) {
+        setIsMember(prevMember)
+        setMemberCount(prevCount)
+        toast.error('Failed to update channel membership')
       }
     })
   }

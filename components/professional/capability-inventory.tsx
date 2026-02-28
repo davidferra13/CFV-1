@@ -2,6 +2,7 @@
 
 import { useTransition } from 'react'
 import { upsertCapability } from '@/lib/professional/capability-actions'
+import { toast } from 'sonner'
 
 interface CapabilityRow {
   capability_type: string
@@ -132,11 +133,15 @@ function CapabilityItem({
 
   function handleSelect(confidence: string) {
     startTransition(async () => {
-      await upsertCapability({
-        capability_type: capabilityType,
-        capability_key: capabilityKey,
-        confidence,
-      })
+      try {
+        await upsertCapability({
+          capability_type: capabilityType,
+          capability_key: capabilityKey,
+          confidence,
+        })
+      } catch (err) {
+        toast.error('Failed to update capability')
+      }
     })
   }
 

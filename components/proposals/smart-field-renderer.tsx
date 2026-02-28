@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { saveSmartField } from '@/lib/proposals/smart-field-actions'
 import { Braces, Plus } from 'lucide-react'
+import { toast } from 'sonner'
 
 type SmartField = {
   fieldKey: string
@@ -45,17 +46,22 @@ export function SmartFieldRenderer({ fields, previewTemplate, context }: Props) 
 
   function handleSave(key: string, value: string) {
     startTransition(async () => {
-      await saveSmartField(key, value)
-      setFieldList((prev) => {
-        const existing = prev.find((f) => f.fieldKey === key)
-        if (existing) return prev.map((f) => (f.fieldKey === key ? { ...f, fieldValue: value } : f))
-        return [...prev, { fieldKey: key, fieldValue: value }]
-      })
-      setShowAdd(false)
-      setEditingKey(null)
-      setNewKey('')
-      setNewValue('')
-      setEditValue('')
+      try {
+        await saveSmartField(key, value)
+        setFieldList((prev) => {
+          const existing = prev.find((f) => f.fieldKey === key)
+          if (existing)
+            return prev.map((f) => (f.fieldKey === key ? { ...f, fieldValue: value } : f))
+          return [...prev, { fieldKey: key, fieldValue: value }]
+        })
+        setShowAdd(false)
+        setEditingKey(null)
+        setNewKey('')
+        setNewValue('')
+        setEditValue('')
+      } catch (err) {
+        toast.error('Failed to save smart field')
+      }
     })
   }
 

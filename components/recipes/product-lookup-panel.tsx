@@ -10,6 +10,7 @@ import type { FoodProduct } from '@/lib/food/open-food-facts'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { toast } from 'sonner'
 
 interface ProductLookupPanelProps {
   /** Pre-fill the search with the ingredient name */
@@ -168,13 +169,21 @@ export function ProductLookupPanel({
 
     if (mode === 'barcode') {
       startTransition(async () => {
-        const product = await getFoodProductByBarcodeAction(query.trim())
-        setResults(product ? [product] : [])
+        try {
+          const product = await getFoodProductByBarcodeAction(query.trim())
+          setResults(product ? [product] : [])
+        } catch (err) {
+          toast.error('Failed to look up barcode')
+        }
       })
     } else {
       startTransition(async () => {
-        const products = await searchFoodProductsAction(query.trim())
-        setResults(products)
+        try {
+          const products = await searchFoodProductsAction(query.trim())
+          setResults(products)
+        } catch (err) {
+          toast.error('Failed to search products')
+        }
       })
     }
   }

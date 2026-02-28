@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ArrowRight, TrendingUp, TrendingDown, DollarSign, RefreshCw } from 'lucide-react'
 import { cascadeIngredientPrice } from '@/lib/inventory/price-cascade-actions'
+import { toast } from 'sonner'
 
 type AffectedRecipe = {
   recipeId: string
@@ -62,8 +63,12 @@ export function PriceCascadePreview({ preview }: PriceCascadePreviewProps) {
 
   function handleApply() {
     startTransition(async () => {
-      await cascadeIngredientPrice(preview.ingredientId, preview.newPriceCents)
-      setApplied(true)
+      try {
+        await cascadeIngredientPrice(preview.ingredientId, preview.newPriceCents)
+        setApplied(true)
+      } catch (err) {
+        toast.error('Failed to apply price change')
+      }
     })
   }
 

@@ -7,6 +7,7 @@ import {
 } from '@/lib/professional/creative-project-actions'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 export function CreativeProjectForm({
   project,
@@ -30,17 +31,21 @@ export function CreativeProjectForm({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     startTransition(async () => {
-      if (project) {
-        await updateCreativeProject(project.id, { dish_name: dishName, cuisine, notes, status })
-      } else {
-        await createCreativeProject({
-          dish_name: dishName,
-          cuisine: cuisine || undefined,
-          notes: notes || undefined,
-          status,
-        })
+      try {
+        if (project) {
+          await updateCreativeProject(project.id, { dish_name: dishName, cuisine, notes, status })
+        } else {
+          await createCreativeProject({
+            dish_name: dishName,
+            cuisine: cuisine || undefined,
+            notes: notes || undefined,
+            status,
+          })
+        }
+        onClose?.()
+      } catch (err) {
+        toast.error('Failed to save project')
       }
-      onClose?.()
     })
   }
 

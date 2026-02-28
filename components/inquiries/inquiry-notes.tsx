@@ -10,6 +10,7 @@ import {
 } from '@/lib/inquiries/note-actions'
 import type { InquiryNote, InquiryNoteCategory } from '@/lib/inquiries/note-actions'
 import { InquiryNoteForm } from './inquiry-note-form'
+import { toast } from 'sonner'
 
 // ============================================================
 // Category styles + filter tabs
@@ -67,12 +68,16 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
     attachment_filename: string | null
   }) => {
     startTransition(async () => {
-      const result = await addInquiryNote({
-        inquiry_id: inquiryId,
-        ...data,
-      })
-      setNotes((prev) => [result.note, ...prev])
-      setShowForm(false)
+      try {
+        const result = await addInquiryNote({
+          inquiry_id: inquiryId,
+          ...data,
+        })
+        setNotes((prev) => [result.note, ...prev])
+        setShowForm(false)
+      } catch (err) {
+        toast.error('Failed to add note')
+      }
     })
   }
 
@@ -86,23 +91,35 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
     }
   ) => {
     startTransition(async () => {
-      const result = await updateInquiryNote(noteId, data)
-      setNotes((prev) => prev.map((n) => (n.id === noteId ? result.note : n)))
-      setEditingId(null)
+      try {
+        const result = await updateInquiryNote(noteId, data)
+        setNotes((prev) => prev.map((n) => (n.id === noteId ? result.note : n)))
+        setEditingId(null)
+      } catch (err) {
+        toast.error('Failed to update note')
+      }
     })
   }
 
   const handleDelete = async (noteId: string) => {
     startTransition(async () => {
-      await deleteInquiryNote(noteId)
-      setNotes((prev) => prev.filter((n) => n.id !== noteId))
+      try {
+        await deleteInquiryNote(noteId)
+        setNotes((prev) => prev.filter((n) => n.id !== noteId))
+      } catch (err) {
+        toast.error('Failed to delete note')
+      }
     })
   }
 
   const handleTogglePin = async (noteId: string) => {
     startTransition(async () => {
-      const result = await toggleInquiryNotePinned(noteId)
-      setNotes((prev) => prev.map((n) => (n.id === noteId ? { ...n, pinned: result.pinned } : n)))
+      try {
+        const result = await toggleInquiryNotePinned(noteId)
+        setNotes((prev) => prev.map((n) => (n.id === noteId ? { ...n, pinned: result.pinned } : n)))
+      } catch (err) {
+        toast.error('Failed to toggle pin')
+      }
     })
   }
 

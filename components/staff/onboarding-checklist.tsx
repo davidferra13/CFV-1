@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { updateOnboardingItem, type OnboardingItem } from '@/lib/staff/onboarding-actions'
 import { ONBOARDING_ITEM_LABELS, ONBOARDING_ITEM_KEYS } from '@/lib/staff/onboarding-constants'
+import { toast } from 'sonner'
 
 interface OnboardingChecklistProps {
   staffMemberId: string
@@ -37,7 +38,11 @@ function ItemRow({
 
   function handleSet(newStatus: 'pending' | 'complete' | 'not_applicable') {
     startTransition(async () => {
-      await updateOnboardingItem(staffMemberId, itemKey, newStatus)
+      try {
+        await updateOnboardingItem(staffMemberId, itemKey, newStatus)
+      } catch (err) {
+        toast.error('Failed to update checklist item')
+      }
     })
   }
 

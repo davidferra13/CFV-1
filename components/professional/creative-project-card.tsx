@@ -5,6 +5,7 @@ import { deleteCreativeProject } from '@/lib/professional/creative-project-actio
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 const STATUS_VARIANTS: Record<string, 'info' | 'warning' | 'success' | 'default'> = {
   experimenting: 'info',
@@ -52,7 +53,15 @@ export function CreativeProjectCard({
               variant="ghost"
               size="sm"
               disabled={isPending}
-              onClick={() => startTransition(() => deleteCreativeProject(project.id))}
+              onClick={() =>
+                startTransition(async () => {
+                  try {
+                    await deleteCreativeProject(project.id)
+                  } catch (err) {
+                    toast.error('Failed to delete project')
+                  }
+                })
+              }
             >
               Delete
             </Button>

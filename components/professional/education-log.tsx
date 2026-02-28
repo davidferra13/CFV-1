@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
+import { toast } from 'sonner'
 
 type Entry = {
   id: string
@@ -38,15 +39,19 @@ export function EducationLog({ entries }: { entries: Entry[] }) {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     startTransition(async () => {
-      await createEducationEntry({
-        entry_type: entryType,
-        title,
-        learned: learned || undefined,
-        entry_date: entryDate,
-      })
-      setTitle('')
-      setLearned('')
-      setShowForm(false)
+      try {
+        await createEducationEntry({
+          entry_type: entryType,
+          title,
+          learned: learned || undefined,
+          entry_date: entryDate,
+        })
+        setTitle('')
+        setLearned('')
+        setShowForm(false)
+      } catch (err) {
+        toast.error('Failed to save education entry')
+      }
     })
   }
 

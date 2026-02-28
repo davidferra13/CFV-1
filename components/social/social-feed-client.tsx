@@ -13,6 +13,7 @@ import { SocialPostCard } from './social-post-card'
 import { SocialPostComposer } from './social-post-composer'
 import { SocialStoryBar } from './social-story-bar'
 import { SocialDiscoverPanel } from './social-discover-panel'
+import { toast } from 'sonner'
 
 type FeedMode = 'for_you' | 'following' | 'global'
 
@@ -55,11 +56,15 @@ export function SocialFeedClient({
   const reloadFeed = useCallback(
     (newMode?: FeedMode) => {
       startTransition(async () => {
-        const fresh = isChannelFeed
-          ? await getChannelFeed({ channelSlug: channelSlug!, limit: 30 })
-          : await getSocialFeed({ mode: newMode ?? mode, limit: 30 })
-        setPosts(fresh)
-        setHasMore(fresh.length >= 30)
+        try {
+          const fresh = isChannelFeed
+            ? await getChannelFeed({ channelSlug: channelSlug!, limit: 30 })
+            : await getSocialFeed({ mode: newMode ?? mode, limit: 30 })
+          setPosts(fresh)
+          setHasMore(fresh.length >= 30)
+        } catch (err) {
+          toast.error('Failed to load feed')
+        }
       })
     },
     [isChannelFeed, channelSlug, mode]
@@ -67,8 +72,12 @@ export function SocialFeedClient({
 
   const reloadStories = useCallback(() => {
     startTransition(async () => {
-      const fresh = await getActiveStories()
-      setStories(fresh)
+      try {
+        const fresh = await getActiveStories()
+        setStories(fresh)
+      } catch (err) {
+        toast.error('Failed to load stories')
+      }
     })
   }, [])
 

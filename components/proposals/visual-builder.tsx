@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { createProposalTemplate, type ProposalTemplate } from '@/lib/proposals/template-actions'
 import { FileText, Image, Plus } from 'lucide-react'
+import { toast } from 'sonner'
 
 type Props = {
   templates: ProposalTemplate[]
@@ -31,28 +32,32 @@ export function VisualBuilder({ templates, menus }: Props) {
 
   function handleCreate() {
     startTransition(async () => {
-      const services = form.includedServices
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean)
-      const created = await createProposalTemplate({
-        name: form.name,
-        coverPhotoUrl: form.coverPhotoUrl || undefined,
-        description: form.description || undefined,
-        defaultMenuId: form.defaultMenuId || undefined,
-        basePriceCents: form.basePriceCents,
-        includedServices: services as unknown as Record<string, unknown>,
-      })
-      setItems((prev) => [...prev, created])
-      setShowCreate(false)
-      setForm({
-        name: '',
-        coverPhotoUrl: '',
-        description: '',
-        defaultMenuId: '',
-        basePriceCents: 0,
-        includedServices: '',
-      })
+      try {
+        const services = form.includedServices
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+        const created = await createProposalTemplate({
+          name: form.name,
+          coverPhotoUrl: form.coverPhotoUrl || undefined,
+          description: form.description || undefined,
+          defaultMenuId: form.defaultMenuId || undefined,
+          basePriceCents: form.basePriceCents,
+          includedServices: services as unknown as Record<string, unknown>,
+        })
+        setItems((prev) => [...prev, created])
+        setShowCreate(false)
+        setForm({
+          name: '',
+          coverPhotoUrl: '',
+          description: '',
+          defaultMenuId: '',
+          basePriceCents: 0,
+          includedServices: '',
+        })
+      } catch (err) {
+        toast.error('Failed to create template')
+      }
     })
   }
 

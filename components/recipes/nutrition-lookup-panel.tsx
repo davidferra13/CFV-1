@@ -6,6 +6,7 @@ import type { NutritionResult } from '@/lib/nutrition/open-food-facts'
 import type { FdcNutritionResult } from '@/lib/nutrition/usda-fdc'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 interface NutritionLookupPanelProps {
   defaultQuery?: string
@@ -101,7 +102,13 @@ function OffTab({ defaultQuery }: { defaultQuery: string }) {
     if (!query.trim()) return
     setSearched(true)
     setSelected(null)
-    startTransition(async () => setResults(await searchNutritionAction(query)))
+    startTransition(async () => {
+      try {
+        setResults(await searchNutritionAction(query))
+      } catch (err) {
+        toast.error('Failed to search nutrition data')
+      }
+    })
   }
 
   return (
@@ -181,7 +188,13 @@ function UsdaTab({ defaultQuery }: { defaultQuery: string }) {
     if (!query.trim()) return
     setSearched(true)
     setSelected(null)
-    startTransition(async () => setResults(await searchFdcAction(query)))
+    startTransition(async () => {
+      try {
+        setResults(await searchFdcAction(query))
+      } catch (err) {
+        toast.error('Failed to search USDA database')
+      }
+    })
   }
 
   return (

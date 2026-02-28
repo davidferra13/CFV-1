@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { createFollowupRule, toggleFollowupRule } from '@/lib/followup/rule-actions'
 import { Zap, Plus, Power } from 'lucide-react'
+import { toast } from 'sonner'
 
 type FollowupRule = {
   id: string
@@ -50,22 +51,30 @@ export function RuleBuilder({ initialRules, templates }: Props) {
 
   function handleCreate() {
     startTransition(async () => {
-      const created = await createFollowupRule({
-        triggerType: form.triggerType as any,
-        delayDays: form.delayDays,
-        templateId: form.templateId,
-        isActive: true,
-      })
-      setRules((prev) => [...prev, created])
-      setShowCreate(false)
-      setForm({ triggerType: 'proposal_sent', delayDays: 3, templateId: '' })
+      try {
+        const created = await createFollowupRule({
+          triggerType: form.triggerType as any,
+          delayDays: form.delayDays,
+          templateId: form.templateId,
+          isActive: true,
+        })
+        setRules((prev) => [...prev, created])
+        setShowCreate(false)
+        setForm({ triggerType: 'proposal_sent', delayDays: 3, templateId: '' })
+      } catch (err) {
+        toast.error('Failed to create follow-up rule')
+      }
     })
   }
 
   function handleToggle(id: string, isActive: boolean) {
     startTransition(async () => {
-      await toggleFollowupRule(id, !isActive)
-      setRules((prev) => prev.map((r) => (r.id === id ? { ...r, isActive: !isActive } : r)))
+      try {
+        await toggleFollowupRule(id, !isActive)
+        setRules((prev) => prev.map((r) => (r.id === id ? { ...r, isActive: !isActive } : r)))
+      } catch (err) {
+        toast.error('Failed to toggle rule')
+      }
     })
   }
 

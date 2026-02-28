@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Trash2, Plus } from 'lucide-react'
 import { logWaste } from '@/lib/inventory/waste-actions'
+import { toast } from 'sonner'
 
 const WASTE_REASONS = [
   { value: 'overcooked', label: 'Overcooked' },
@@ -74,26 +75,30 @@ export function WasteLogForm({ eventId }: { eventId?: string }) {
       : null
 
     startTransition(async () => {
-      await logWaste({
-        eventId: eventId || undefined,
-        ingredientName: ingredientName.trim(),
-        quantity: parseFloat(quantity),
-        unit,
-        estimatedCostCents: costCents ?? 0,
-        reason: reason as
-          | 'overcooked'
-          | 'leftover'
-          | 'spoilage'
-          | 'overportioned'
-          | 'trim'
-          | 'mistake'
-          | 'expired'
-          | 'other',
-        notes: notes.trim() || undefined,
-      })
-      setSuccess(true)
-      resetForm()
-      setTimeout(() => setSuccess(false), 3000)
+      try {
+        await logWaste({
+          eventId: eventId || undefined,
+          ingredientName: ingredientName.trim(),
+          quantity: parseFloat(quantity),
+          unit,
+          estimatedCostCents: costCents ?? 0,
+          reason: reason as
+            | 'overcooked'
+            | 'leftover'
+            | 'spoilage'
+            | 'overportioned'
+            | 'trim'
+            | 'mistake'
+            | 'expired'
+            | 'other',
+          notes: notes.trim() || undefined,
+        })
+        setSuccess(true)
+        resetForm()
+        setTimeout(() => setSuccess(false), 3000)
+      } catch (err) {
+        toast.error('Failed to log waste entry')
+      }
     })
   }
 

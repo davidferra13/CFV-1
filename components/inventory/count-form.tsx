@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { ClipboardCheck, Package, AlertTriangle } from 'lucide-react'
 import { updateInventoryCount } from '@/lib/inventory/count-actions'
+import { toast } from 'sonner'
 
 export type InventoryCount = {
   id: string
@@ -46,13 +47,18 @@ export function InventoryCountForm({ items }: { items: InventoryCount[] }) {
     setUpdatingId(item.id)
     setSuccessId(null)
     startTransition(async () => {
-      await updateInventoryCount({
-        id: item.id,
-        newQty: counts[item.id],
-      } as any)
-      setUpdatingId(null)
-      setSuccessId(item.id)
-      setTimeout(() => setSuccessId((prev) => (prev === item.id ? null : prev)), 2000)
+      try {
+        await updateInventoryCount({
+          id: item.id,
+          newQty: counts[item.id],
+        } as any)
+        setUpdatingId(null)
+        setSuccessId(item.id)
+        setTimeout(() => setSuccessId((prev) => (prev === item.id ? null : prev)), 2000)
+      } catch (err) {
+        setUpdatingId(null)
+        toast.error('Failed to update inventory count')
+      }
     })
   }
 

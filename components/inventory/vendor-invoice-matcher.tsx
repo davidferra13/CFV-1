@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Select } from '@/components/ui/select'
 import { FileText, Link2, Unlink, AlertTriangle, Check } from 'lucide-react'
 import { matchInvoiceItems } from '@/lib/inventory/vendor-invoice-actions'
+import { toast } from 'sonner'
 
 export type VendorInvoice = {
   id: string
@@ -85,12 +86,16 @@ export function VendorInvoiceMatcher({
   function handleSave() {
     setSaved(false)
     startTransition(async () => {
-      const matchEntries = Object.entries(matches).map(([itemId, ingredientId]) => ({
-        itemId,
-        ingredientId,
-      }))
-      await matchInvoiceItems(invoice.id, matchEntries)
-      setSaved(true)
+      try {
+        const matchEntries = Object.entries(matches).map(([itemId, ingredientId]) => ({
+          itemId,
+          ingredientId,
+        }))
+        await matchInvoiceItems(invoice.id, matchEntries)
+        setSaved(true)
+      } catch (err) {
+        toast.error('Failed to save invoice matches')
+      }
     })
   }
 

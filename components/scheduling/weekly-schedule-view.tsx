@@ -9,6 +9,7 @@ import type { WeekSchedule } from '@/lib/scheduling/types'
 import { getWeekSchedule } from '@/lib/scheduling/actions'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { toast } from 'sonner'
 
 const DAY_TYPE_COLORS: Record<string, string> = {
   event: 'bg-brand-950 border-brand-700',
@@ -39,8 +40,12 @@ export function WeeklyScheduleView({ initialSchedule }: { initialSchedule: WeekS
     const newOffset = weekOffset + direction
     setWeekOffset(newOffset)
     startTransition(async () => {
-      const newSchedule = await getWeekSchedule(newOffset)
-      setSchedule(newSchedule)
+      try {
+        const newSchedule = await getWeekSchedule(newOffset)
+        setSchedule(newSchedule)
+      } catch (err) {
+        toast.error('Failed to load schedule')
+      }
     })
   }
 

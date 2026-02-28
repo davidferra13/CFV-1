@@ -28,6 +28,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { toast } from 'sonner'
 
 // ── Reaction config ──────────────────────────────────────────
 export const REACTIONS: Array<{ type: ReactionType; emoji: string; label: string }> = [
@@ -124,11 +125,17 @@ function ReactionBar({
   const [pending, startTransition] = useTransition()
 
   function handleReaction(type: ReactionType) {
+    const prevReaction = myReaction
     const next = myReaction === type ? null : type
     onReactionChange(next)
     setShowPicker(false)
     startTransition(async () => {
-      await togglePostReaction({ postId, reaction: type })
+      try {
+        await togglePostReaction({ postId, reaction: type })
+      } catch (err) {
+        onReactionChange(prevReaction)
+        toast.error('Failed to update reaction')
+      }
     })
   }
 
@@ -185,8 +192,13 @@ function CommentInput({
     const body = text.trim()
     setText('')
     startTransition(async () => {
-      await createComment({ postId, content: body, parentCommentId: parentId })
-      onAdded()
+      try {
+        await createComment({ postId, content: body, parentCommentId: parentId })
+        onAdded()
+      } catch (err) {
+        setText(body)
+        toast.error('Failed to post comment')
+      }
     })
   }
 
@@ -233,11 +245,19 @@ function CommentRow({
   const authorName = comment.author.display_name ?? comment.author.business_name
 
   function handleCommentReaction() {
+    const prevReacted = reacted
+    const prevCount = reactionCount
     const next = !reacted
     setReacted(next)
     setReactionCount((c) => (next ? c + 1 : Math.max(0, c - 1)))
     startCommentTransition(async () => {
-      await toggleCommentReaction({ commentId: comment.id, reaction: 'like' })
+      try {
+        await toggleCommentReaction({ commentId: comment.id, reaction: 'like' })
+      } catch (err) {
+        setReacted(prevReacted)
+        setReactionCount(prevCount)
+        toast.error('Failed to update reaction')
+      }
     })
   }
 
@@ -416,10 +436,18 @@ export function SocialPostCard({
   }
 
   function handleSave() {
+    const prevSaved = isSaved
+    const prevCount = savesCount
     setIsSaved((s) => !s)
     setSavesCount((c) => (isSaved ? Math.max(0, c - 1) : c + 1))
     startTransition(async () => {
-      await toggleSavePost(post.id)
+      try {
+        await toggleSavePost(post.id)
+      } catch (err) {
+        setIsSaved(prevSaved)
+        setSavesCount(prevCount)
+        toast.error('Failed to save post')
+      }
     })
   }
 
