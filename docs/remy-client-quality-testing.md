@@ -210,10 +210,34 @@ npm run test:remy-quality:client:context
 
 **Files:** `client-context-accuracy.json` + `client-context-runner.mjs`
 
+### Resilience Suite (5 tests)
+
+Tests infrastructure failure modes: rate limits, auth failures, cold model loads, max history capacity, and NAV_SUGGESTIONS JSON integrity.
+
+```bash
+npm run test:remy-quality:client:resilience
+```
+
+**Tests:**
+
+1. **Rate Limit Exhaustion** — fires 15 messages rapidly (no delay), expects the rate limiter to block at message 13 (12/min limit). Waits 65 seconds for the bucket to reset, then confirms a 13th message succeeds. Validates the rate limit error message content.
+
+2. **Bad Auth Handling** — sends 4 requests with broken authentication: no cookie, garbage cookie, expired/malformed JWT, and a chef-role cookie (wrong role for the client endpoint). All must return HTTP 401 or a clear auth error — never a 500 or model response.
+
+3. **Cold Model Load** — unloads `qwen3:30b` from Ollama (`keep_alive: 0`), waits 5 seconds, then sends a real prompt. Measures cold-start latency. Re-warms the model afterward. Passes as long as the response arrives within 3 minutes and contains real content.
+
+4. **Max History Capacity** — sends a request with 20 history messages of ~3,500 characters each (~70,000 chars total, above the 30K validation cap). Validates the endpoint doesn't crash, handles truncation gracefully, and still produces a coherent response.
+
+5. **NAV_SUGGESTIONS Stress** — sends 8 prompts designed to trigger navigation suggestions (portal page references). For any response containing `NAV_SUGGESTIONS:`, validates JSON parse-ability, array structure, and that all `href` values are valid client portal routes.
+
+**Test order:** Bad auth → NAV stress → Max history → Cold start → Rate limit (last because it exhausts the bucket and waits 65s for reset).
+
+**Files:** `client-resilience-runner.mjs` (no separate prompt file — prompts are inline)
+
 ### Run All Client Suites
 
 ```bash
 npm run test:remy-quality:client:all
 ```
 
-This runs all 5 suites sequentially: quality (100) → adversarial (40) → multi-turn (35) → edge (25) → context+consistency (20). Total: ~220 test interactions.
+This runs all 6 suites sequentially: quality (100) → adversarial (40) → multi-turn (35) → edge (25) → context+consistency (20) → resilience (5). Total: ~225 test interactions.
