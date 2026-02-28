@@ -1,6 +1,5 @@
-// @ts-nocheck
-// DEFERRED: chat_insights table defined in migration but not yet applied.
-// Once applied and types regenerated, remove this directive.
+// chat_insights table migration exists (20260220000004). Uses `as any` on supabase
+// client to bypass generated type limitations until types/database.ts is regenerated.
 
 // Chat Insights Server Actions
 // Processes AI-extracted insights and provides CRUD for chef review.
@@ -103,7 +102,7 @@ export async function processMessageInsights(messageId: string, conversationId: 
 
     const context = (recentMessages || [])
       .reverse()
-      .map((m) => m.body || '')
+      .map((m: any) => m.body || '')
       .filter(Boolean)
       .join('\n---\n')
 
