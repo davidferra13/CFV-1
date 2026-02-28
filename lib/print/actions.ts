@@ -69,6 +69,47 @@ export async function getDocumentAttribution(): Promise<string | null> {
   return chef?.business_name || user.email
 }
 
+/**
+ * Fetch all document rendering context in a single call — attribution, print mode, custom footer.
+ * Used by browser print pages and the PDF API route to avoid multiple DB round-trips.
+ */
+export async function getDocumentContext(): Promise<{
+  generatedBy: string | undefined
+  printMode: PrintPreferences['default_print_mode']
+  customFooter: string | null
+}> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data } = await supabase
+    .from('chef_preferences')
+    .select('print_preferences')
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  const prefs: PrintPreferences = { ...DEFAULT_PRINT_PREFS, ...(data?.print_preferences ?? {}) }
+
+  let generatedBy: string | undefined = undefined
+  if (prefs.show_attribution) {
+    if (prefs.attribution_name) {
+      generatedBy = prefs.attribution_name
+    } else {
+      const { data: chef } = await supabase
+        .from('chefs')
+        .select('business_name')
+        .eq('id', user.tenantId!)
+        .single()
+      generatedBy = chef?.business_name || user.email
+    }
+  }
+
+  return {
+    generatedBy,
+    printMode: prefs.default_print_mode,
+    customFooter: prefs.custom_footer,
+  }
+}
+
 // ─── Update ──────────────────────────────────────────────────────────────────
 
 export async function updatePrintPreferences(

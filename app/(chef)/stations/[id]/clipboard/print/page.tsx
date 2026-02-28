@@ -7,7 +7,7 @@ import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { PrintableDocument } from '@/components/print/printable-document'
-import { getDocumentAttribution } from '@/lib/print/actions'
+import { getDocumentContext } from '@/lib/print/actions'
 
 export const metadata: Metadata = { title: 'Print Clipboard — ChefFlow' }
 
@@ -22,11 +22,11 @@ export default async function PrintClipboardPage({
   const supabase: any = createServerClient()
 
   const date = searchParams.date ?? new Date().toISOString().split('T')[0]
-  const printMode =
-    searchParams.mode === 'thermal' ? ('thermal-80' as const) : ('standard' as const)
 
-  // Resolve attribution name (respects chef's print preferences)
-  const generatedBy = (await getDocumentAttribution()) ?? undefined
+  // Resolve all print context — attribution, default mode, custom footer
+  const { generatedBy, printMode: defaultMode, customFooter } = await getDocumentContext()
+  const printMode =
+    searchParams.mode === 'thermal' ? ('thermal-80' as const) : (defaultMode ?? 'standard')
 
   // Load station
   const { data: station } = await supabase
@@ -78,6 +78,7 @@ export default async function PrintClipboardPage({
       title={`${station.name} — Daily Clipboard`}
       subtitle={`Date: ${dateLabel}`}
       generatedBy={generatedBy}
+      footer={customFooter ?? undefined}
       mode={printMode}
     >
       {allComponents.length === 0 ? (

@@ -232,6 +232,16 @@ export class PDFLayout {
     this.doc.setTextColor(0, 0, 0)
   }
 
+  /** Custom footer — replaces the default footer text if set by chef in print preferences */
+  customFooter(text: string, size: number = 8) {
+    const s = this.scaledSize(size)
+    this.doc.setFontSize(s)
+    this.doc.setFont('helvetica', 'normal')
+    this.doc.setTextColor(120, 120, 120)
+    this.doc.text(text, LETTER_WIDTH / 2, LETTER_HEIGHT - 6, { align: 'center' })
+    this.doc.setTextColor(0, 0, 0)
+  }
+
   /** Attribution line — who generated this document and when. Sits just above the footer. */
   generatedBy(name: string, docType?: string) {
     const timestamp = new Date().toLocaleString('en-US', {

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { AllergyPicker } from '@/components/ui/allergy-picker'
 
 type ClientPreferencesValues = {
   dietary_restrictions?: string[] | null
@@ -40,7 +41,7 @@ export function ClientPreferences({
   const [dietaryRestrictions, setDietaryRestrictions] = useState(
     (initialValues.dietary_restrictions || []).join(', ')
   )
-  const [allergies, setAllergies] = useState((initialValues.allergies || []).join(', '))
+  const [allergies, setAllergies] = useState<string[]>(initialValues.allergies || [])
   const [dislikes, setDislikes] = useState((initialValues.dislikes || []).join(', '))
   const [preferredContactMethod, setPreferredContactMethod] = useState(
     initialValues.preferred_contact_method || ''
@@ -78,7 +79,7 @@ export function ClientPreferences({
         const payload = {
           clientId,
           dietary_restrictions: parseList(dietaryRestrictions),
-          allergies: parseList(allergies),
+          allergies,
           dislikes: parseList(dislikes),
           preferred_contact_method: preferredContactMethod || undefined,
           preferred_event_days: parseList(preferredEventDays),
@@ -123,15 +124,10 @@ export function ClientPreferences({
               placeholder="Vegan, gluten-free"
             />
           </label>
-          <label className="text-sm text-stone-300">
-            Allergies
-            <Input
-              className="mt-1"
-              value={allergies}
-              onChange={(event) => setAllergies(event.target.value)}
-              placeholder="Nuts, shellfish"
-            />
-          </label>
+          <div className="text-sm text-stone-300 md:col-span-2">
+            <div className="mb-1">Allergies</div>
+            <AllergyPicker value={allergies} onChange={setAllergies} compact />
+          </div>
           <label className="text-sm text-stone-300">
             Dislikes
             <Input

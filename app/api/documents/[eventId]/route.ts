@@ -5,59 +5,50 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { requireChef } from '@/lib/auth/get-user'
-import { getDocumentAttribution } from '@/lib/print/actions'
+import { getDocumentContext } from '@/lib/print/actions'
+import { fetchGroceryListData, renderGroceryList } from '@/lib/documents/generate-grocery-list'
+import { fetchTravelRouteData, renderTravelRoute } from '@/lib/documents/generate-travel-route'
+import { fetchPrepSheetData, renderPrepSheet } from '@/lib/documents/generate-prep-sheet'
 import {
-  generateGroceryList,
-  fetchGroceryListData,
-  renderGroceryList,
-} from '@/lib/documents/generate-grocery-list'
-import { generateTravelRoute } from '@/lib/documents/generate-travel-route'
-import {
-  generatePrepSheet,
-  fetchPrepSheetData,
-  renderPrepSheet,
-} from '@/lib/documents/generate-prep-sheet'
-import {
-  generateExecutionSheet,
   fetchExecutionSheetData,
   renderExecutionSheet,
 } from '@/lib/documents/generate-execution-sheet'
+import { fetchChecklistData, renderChecklist } from '@/lib/documents/generate-checklist'
 import {
-  generateChecklist,
-  fetchChecklistData,
-  renderChecklist,
-} from '@/lib/documents/generate-checklist'
-import {
-  generateFrontOfHouseMenu,
   fetchFrontOfHouseMenuData,
   renderFrontOfHouseMenu,
 } from '@/lib/documents/generate-front-of-house-menu'
+import { fetchPackingListData, renderPackingList } from '@/lib/documents/generate-packing-list'
 import {
-  generatePackingList,
-  fetchPackingListData,
-  renderPackingList,
-} from '@/lib/documents/generate-packing-list'
-import {
-  generateResetChecklist,
   fetchResetChecklistData,
   renderResetChecklist,
 } from '@/lib/documents/generate-reset-checklist'
+import { fetchEventSummaryData, renderEventSummary } from '@/lib/documents/generate-event-summary'
 import {
-  generateEventSummary,
-  fetchEventSummaryData,
-  renderEventSummary,
-} from '@/lib/documents/generate-event-summary'
-import { generateContentShotList } from '@/lib/documents/generate-content-shot-list'
+  fetchContentShotListData,
+  renderContentShotList,
+} from '@/lib/documents/generate-content-shot-list'
 import { PDFLayout } from '@/lib/documents/pdf-layout'
 import { format } from 'date-fns'
+
+/** Apply attribution + custom footer to a PDF page */
+function applyPageMeta(
+  pdf: PDFLayout,
+  generatedBy: string | undefined,
+  customFooter: string | null,
+  docType: string
+) {
+  if (generatedBy) pdf.generatedBy(generatedBy, docType)
+  if (customFooter) pdf.customFooter(customFooter)
+}
 
 export async function GET(request: NextRequest, { params }: { params: { eventId: string } }) {
   try {
     // Auth check — will throw if not a chef
     await requireChef()
 
-    // Resolve attribution name (respects chef's print preferences — undefined if disabled)
-    const generatedBy = (await getDocumentAttribution()) ?? undefined
+    // Resolve all print context in one DB call — attribution, custom footer
+    const { generatedBy, customFooter } = await getDocumentContext()
 
     const { eventId } = params
     const type = request.nextUrl.searchParams.get('type') || 'all'
@@ -68,63 +59,132 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
     // Date string for filename
     const dateSuffix = format(new Date(), 'yyyy-MM-dd')
 
+    // Helper: render a single-page PDF with attribution + custom footer
+    const renderSingle = async (
+      fetchFn: () => Promise<any>,
+      renderFn: (pdf: PDFLayout, data: any) => void,
+      docType: string,
+      fallbackTitle: string
+    ): Promise<Buffer> => {
+      const pdf = new PDFLayout()
+      const data = await fetchFn()
+      if (data) {
+        renderFn(pdf, data)
+      } else {
+        pdf.title(fallbackTitle)
+        pdf.text('Data not available for this event.', 10, 'italic')
+      }
+      applyPageMeta(pdf, generatedBy, customFooter, docType)
+      return pdf.toBuffer()
+    }
+
     switch (type) {
       case 'summary': {
-        pdfBuffer = await generateEventSummary(eventId, generatedBy)
+        pdfBuffer = await renderSingle(
+          () => fetchEventSummaryData(eventId),
+          renderEventSummary,
+          'Event Summary',
+          'EVENT SUMMARY'
+        )
         filename = `event-summary-${dateSuffix}.pdf`
         break
       }
 
       case 'grocery': {
-        pdfBuffer = await generateGroceryList(eventId, generatedBy)
+        pdfBuffer = await renderSingle(
+          () => fetchGroceryListData(eventId),
+          renderGroceryList,
+          'Grocery List',
+          'GROCERY LIST'
+        )
         filename = `grocery-list-${dateSuffix}.pdf`
         break
       }
 
       case 'foh': {
-        pdfBuffer = await generateFrontOfHouseMenu(eventId, generatedBy)
+        pdfBuffer = await renderSingle(
+          () => fetchFrontOfHouseMenuData(eventId),
+          renderFrontOfHouseMenu,
+          'FOH Menu',
+          'FRONT-OF-HOUSE MENU'
+        )
         filename = `front-of-house-menu-${dateSuffix}.pdf`
         break
       }
 
       case 'prep': {
-        pdfBuffer = await generatePrepSheet(eventId, generatedBy)
+        pdfBuffer = await renderSingle(
+          () => fetchPrepSheetData(eventId),
+          renderPrepSheet,
+          'Prep Sheet',
+          'PREP SHEET'
+        )
         filename = `prep-sheet-${dateSuffix}.pdf`
         break
       }
 
       case 'execution': {
-        pdfBuffer = await generateExecutionSheet(eventId, generatedBy)
+        pdfBuffer = await renderSingle(
+          () => fetchExecutionSheetData(eventId),
+          renderExecutionSheet,
+          'Execution Sheet',
+          'EXECUTION SHEET'
+        )
         filename = `execution-sheet-${dateSuffix}.pdf`
         break
       }
 
       case 'checklist': {
-        pdfBuffer = await generateChecklist(eventId, generatedBy)
+        pdfBuffer = await renderSingle(
+          () => fetchChecklistData(eventId),
+          renderChecklist,
+          'Non-Negotiables',
+          'NON-NEGOTIABLES'
+        )
         filename = `checklist-${dateSuffix}.pdf`
         break
       }
 
       case 'packing': {
-        pdfBuffer = await generatePackingList(eventId, generatedBy)
+        pdfBuffer = await renderSingle(
+          () => fetchPackingListData(eventId),
+          renderPackingList,
+          'Packing List',
+          'PACKING LIST'
+        )
         filename = `packing-list-${dateSuffix}.pdf`
         break
       }
 
       case 'reset': {
-        pdfBuffer = await generateResetChecklist(eventId, generatedBy)
+        pdfBuffer = await renderSingle(
+          () => fetchResetChecklistData(eventId),
+          renderResetChecklist,
+          'Reset Checklist',
+          'POST-SERVICE RESET'
+        )
         filename = `reset-checklist-${dateSuffix}.pdf`
         break
       }
 
       case 'travel': {
-        pdfBuffer = await generateTravelRoute(eventId, generatedBy)
+        pdfBuffer = await renderSingle(
+          () => fetchTravelRouteData(eventId),
+          renderTravelRoute,
+          'Travel Route',
+          'TRAVEL ROUTE'
+        )
         filename = `travel-route-${dateSuffix}.pdf`
         break
       }
 
       case 'shots': {
-        pdfBuffer = await generateContentShotList(eventId, generatedBy)
+        pdfBuffer = await renderSingle(
+          () => fetchContentShotListData(eventId),
+          renderContentShotList,
+          'Content Shot List',
+          'CONTENT SHOT LIST'
+        )
         filename = `content-shot-list-${dateSuffix}.pdf`
         break
       }
@@ -134,92 +194,74 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
         // Order: Event Summary → Grocery List → FOH Menu → Prep Sheet → Execution Sheet → Non-Negotiables → Packing List → Reset Checklist
         const pdf = new PDFLayout()
 
-        // Page 1: Event Summary (always available — adapts to available data)
-        const summaryData = await fetchEventSummaryData(eventId)
-        if (summaryData) {
-          renderEventSummary(pdf, summaryData)
-        } else {
-          pdf.title('EVENT SUMMARY')
-          pdf.text('Event data not available.', 10, 'italic')
-        }
-        if (generatedBy) pdf.generatedBy(generatedBy, 'Event Summary')
+        const pages: Array<{
+          fetch: () => Promise<any>
+          render: (p: PDFLayout, d: any) => void
+          docType: string
+          fallback: string
+        }> = [
+          {
+            fetch: () => fetchEventSummaryData(eventId),
+            render: renderEventSummary,
+            docType: 'Event Summary',
+            fallback: 'EVENT SUMMARY',
+          },
+          {
+            fetch: () => fetchGroceryListData(eventId),
+            render: renderGroceryList,
+            docType: 'Grocery List',
+            fallback: 'GROCERY LIST',
+          },
+          {
+            fetch: () => fetchFrontOfHouseMenuData(eventId),
+            render: renderFrontOfHouseMenu,
+            docType: 'FOH Menu',
+            fallback: 'FRONT-OF-HOUSE MENU',
+          },
+          {
+            fetch: () => fetchPrepSheetData(eventId),
+            render: renderPrepSheet,
+            docType: 'Prep Sheet',
+            fallback: 'PREP SHEET',
+          },
+          {
+            fetch: () => fetchExecutionSheetData(eventId),
+            render: renderExecutionSheet,
+            docType: 'Execution Sheet',
+            fallback: 'EXECUTION SHEET',
+          },
+          {
+            fetch: () => fetchChecklistData(eventId),
+            render: renderChecklist,
+            docType: 'Non-Negotiables',
+            fallback: 'NON-NEGOTIABLES',
+          },
+          {
+            fetch: () => fetchPackingListData(eventId),
+            render: renderPackingList,
+            docType: 'Packing List',
+            fallback: 'PACKING LIST',
+          },
+          {
+            fetch: () => fetchResetChecklistData(eventId),
+            render: renderResetChecklist,
+            docType: 'Reset Checklist',
+            fallback: 'POST-SERVICE RESET',
+          },
+        ]
 
-        // Page 2: Grocery List
-        pdf.newPage()
-        const groceryData = await fetchGroceryListData(eventId)
-        if (groceryData) {
-          renderGroceryList(pdf, groceryData)
-        } else {
-          pdf.title('GROCERY LIST')
-          pdf.text('Menu data not available for this event.', 10, 'italic')
+        for (let i = 0; i < pages.length; i++) {
+          if (i > 0) pdf.newPage()
+          const page = pages[i]
+          const data = await page.fetch()
+          if (data) {
+            page.render(pdf, data)
+          } else {
+            pdf.title(page.fallback)
+            pdf.text('Data not available for this event.', 10, 'italic')
+          }
+          applyPageMeta(pdf, generatedBy, customFooter, page.docType)
         }
-        if (generatedBy) pdf.generatedBy(generatedBy, 'Grocery List')
-
-        // Page 3: Front-of-House Menu
-        pdf.newPage()
-        const fohData = await fetchFrontOfHouseMenuData(eventId)
-        if (fohData) {
-          renderFrontOfHouseMenu(pdf, fohData)
-        } else {
-          pdf.title('FRONT-OF-HOUSE MENU')
-          pdf.text('Menu data not available for this event.', 10, 'italic')
-        }
-        if (generatedBy) pdf.generatedBy(generatedBy, 'FOH Menu')
-
-        // Page 4: Prep Sheet
-        pdf.newPage()
-        const prepData = await fetchPrepSheetData(eventId)
-        if (prepData) {
-          renderPrepSheet(pdf, prepData)
-        } else {
-          pdf.title('PREP SHEET')
-          pdf.text('Menu data not available for this event.', 10, 'italic')
-        }
-        if (generatedBy) pdf.generatedBy(generatedBy, 'Prep Sheet')
-
-        // Page 5: Execution Sheet
-        pdf.newPage()
-        const execData = await fetchExecutionSheetData(eventId)
-        if (execData) {
-          renderExecutionSheet(pdf, execData)
-        } else {
-          pdf.title('EXECUTION SHEET')
-          pdf.text('Menu data not available for this event.', 10, 'italic')
-        }
-        if (generatedBy) pdf.generatedBy(generatedBy, 'Execution Sheet')
-
-        // Page 6: Non-Negotiables Checklist
-        pdf.newPage()
-        const checkData = await fetchChecklistData(eventId)
-        if (checkData) {
-          renderChecklist(pdf, checkData)
-        } else {
-          pdf.title('NON-NEGOTIABLES')
-          pdf.text('Event data not available.', 10, 'italic')
-        }
-        if (generatedBy) pdf.generatedBy(generatedBy, 'Non-Negotiables')
-
-        // Page 7: Packing List
-        pdf.newPage()
-        const packingData = await fetchPackingListData(eventId)
-        if (packingData) {
-          renderPackingList(pdf, packingData)
-        } else {
-          pdf.title('PACKING LIST')
-          pdf.text('Event data not available.', 10, 'italic')
-        }
-        if (generatedBy) pdf.generatedBy(generatedBy, 'Packing List')
-
-        // Page 8: Post-Service Reset Checklist
-        pdf.newPage()
-        const resetData = await fetchResetChecklistData(eventId)
-        if (resetData) {
-          renderResetChecklist(pdf, resetData)
-        } else {
-          pdf.title('POST-SERVICE RESET')
-          pdf.text('Event data not available.', 10, 'italic')
-        }
-        if (generatedBy) pdf.generatedBy(generatedBy, 'Reset Checklist')
 
         pdfBuffer = pdf.toBuffer()
         filename = `event-documents-${dateSuffix}.pdf`

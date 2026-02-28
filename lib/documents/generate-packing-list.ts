@@ -51,6 +51,8 @@ export type PackingListData = {
   // Site info
   kitchenNotes: string | null
   houseRules: string | null
+  // Allergy alert — safety-critical
+  allergies: string[]
 }
 
 // ─── Equipment ────────────────────────────────────────────────────────────────
@@ -89,8 +91,9 @@ export async function fetchPackingListData(eventId: string): Promise<PackingList
       occasion, event_date, departure_time,
       location_address, location_city, location_state,
       access_instructions, service_style, special_requests,
+      allergies,
       client:clients(
-        full_name, equipment_must_bring, kitchen_notes, house_rules
+        full_name, equipment_must_bring, kitchen_notes, house_rules, allergies
       )
     `
     )
@@ -105,7 +108,13 @@ export async function fetchPackingListData(eventId: string): Promise<PackingList
     equipment_must_bring: string[] | null
     kitchen_notes: string | null
     house_rules: string | null
+    allergies: string[] | null
   } | null
+
+  // Merge event + client allergies
+  const allAllergies = new Set<string>()
+  for (const a of event.allergies ?? []) allAllergies.add(a.trim())
+  for (const a of clientData?.allergies ?? []) allAllergies.add(a.trim())
 
   // Format departure_time (TIMESTAMPTZ) to display string once here
   // so the PDF renderer and interactive UI both get a clean "2:00 PM" string
@@ -234,6 +243,7 @@ export async function fetchPackingListData(eventId: string): Promise<PackingList
     eventEquipment: uniqueEventEquipment,
     kitchenNotes: clientData?.kitchen_notes ?? null,
     houseRules: clientData?.house_rules ?? null,
+    allergies: Array.from(allAllergies),
   }
 }
 
@@ -292,6 +302,11 @@ export function renderPackingList(pdf: PDFLayout, data: PackingListData) {
   }
   if (event.access_instructions) {
     pdf.text(`Access: ${event.access_instructions}`, 8, 'italic')
+  }
+
+  // ─── Allergy Alert ────────────────────────────────────────────────────────
+  if (data.allergies.length > 0) {
+    pdf.warningBox(`* ALLERGY ALERT: ${data.allergies.map((a) => a.toUpperCase()).join(', ')}`)
   }
 
   pdf.space(2)

@@ -62,6 +62,8 @@ export type GroceryListData = {
   }
   totalBuyItems: number
   hasStop2: boolean
+  // Allergy alert — safety-critical
+  allergies: string[]
 }
 
 // ─── Category → Section Mapping ───────────────────────────────────────────────
@@ -101,8 +103,8 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
     .select(
       `
       occasion, event_date, serve_time, guest_count,
-      location_city, quoted_price_cents,
-      client:clients(full_name)
+      location_city, quoted_price_cents, allergies,
+      client:clients(full_name, allergies)
     `
     )
     .eq('id', eventId)
@@ -389,7 +391,15 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
   const finalProjected = showProjected ? Math.round(projectedCents) : null
 
   const totalBuyItems = [...aggregated.values()].length
-  const clientData = event.client as unknown as { full_name: string } | null
+  const clientData = event.client as unknown as {
+    full_name: string
+    allergies: string[] | null
+  } | null
+
+  // Merge event + client allergies
+  const allAllergies = new Set<string>()
+  for (const a of event.allergies ?? []) allAllergies.add(a.trim())
+  for (const a of clientData?.allergies ?? []) allAllergies.add(a.trim())
 
   return {
     event: {
@@ -409,6 +419,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
     budget: { ceilingCents, projectedCents: finalProjected },
     totalBuyItems,
     hasStop2: stop2Items.length > 0,
+    allergies: Array.from(allAllergies),
   }
 }
 
@@ -470,6 +481,12 @@ export function renderGroceryList(pdf: PDFLayout, data: GroceryListData) {
     budgetParts.push(`Projected: ~${formatCents(budget.projectedCents)}`)
   if (budgetParts.length > 0) {
     pdf.text(budgetParts.join('  |  '), 8, 'normal', 0)
+    pdf.space(1)
+  }
+
+  // ── Allergy Alert ────────────────────────────────────────────────────────
+  if (data.allergies.length > 0) {
+    pdf.warningBox(`* ALLERGY ALERT: ${data.allergies.map((a) => a.toUpperCase()).join(', ')}`)
     pdf.space(1)
   }
 
