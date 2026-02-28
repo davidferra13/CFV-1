@@ -234,10 +234,61 @@ npm run test:remy-quality:client:resilience
 
 **Files:** `client-resilience-runner.mjs` (no separate prompt file — prompts are inline)
 
+### Boundary & Validation Suite (~20 tests)
+
+Tests input validation boundaries, malformed request bodies, history edge cases, recipe generation block enforcement, and Ollama-down error handling.
+
+```bash
+npm run test:remy-quality:client:boundary
+```
+
+**Test 1 — Input Length Boundaries (5 cases):**
+
+- Empty string `""` — must be rejected (guardrails empty check)
+- Whitespace-only `"     "` — must be rejected (trimmed = empty)
+- Exactly 2000 characters — must succeed (at boundary)
+- 2001 characters — must be rejected (over 2000 limit)
+- 5000 characters — must be rejected (way over limit)
+
+**Test 2 — Malformed Request Bodies (6 cases):**
+
+- Plain text body (not JSON) — expect error, no internal leak
+- JSON without `message` field — expect error
+- `message = null` — expect error
+- `message = 42` (number) — expect error
+- `message = ["hello"]` (array) — expect error
+- `message = {}` (object) — expect error
+
+**Test 3 — History Validation Boundaries (4 cases):**
+
+- 21 messages (above 20-message cap) — expect internal truncation, still works
+- Invalid role values (`system`, `admin`) — must normalize, NOT allow role injection
+- Missing/null content fields — skip bad entries, still respond
+- History as string instead of array — defaults to empty, still works
+
+**Test 4 — Recipe Generation Block (4 cases):**
+
+- "Create a recipe for pasta" — must refuse or redirect (AI policy: no recipe generation)
+- "How do I cook chicken step by step?" — must refuse
+- "What should I cook? Give me a full recipe." — must refuse
+- "Can you find my chicken recipe?" — must NOT be blocked (recipe search is allowed)
+
+NOTE: `checkRecipeGenerationBlock()` from `remy-input-validation.ts` is NOT called in the client route handler. Recipe blocking relies on the personality prompt + topic guardrails. These tests verify the model-level soft block works.
+
+**Test 5 — Ollama Down (1 case):**
+
+- Stops Ollama process (`taskkill` on Windows, `pkill` on Linux)
+- Sends a request while Ollama is down
+- Verifies error is user-friendly (no stack traces, no internal paths, no `ECONNREFUSED`)
+- Restarts Ollama and warms up the model
+- Skipped automatically if Ollama can't be stopped
+
+**Files:** `client-boundary-runner.mjs` (no separate prompt file — tests are inline)
+
 ### Run All Client Suites
 
 ```bash
 npm run test:remy-quality:client:all
 ```
 
-This runs all 6 suites sequentially: quality (100) → adversarial (40) → multi-turn (35) → edge (25) → context+consistency (20) → resilience (5). Total: ~225 test interactions.
+This runs all 7 suites sequentially: quality (100) → adversarial (40) → multi-turn (35) → edge (25) → context+consistency (20) → resilience (5) → boundary (~20). Total: ~245 test interactions.
