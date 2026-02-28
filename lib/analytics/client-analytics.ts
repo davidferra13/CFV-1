@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -28,9 +27,9 @@ export interface RevenueConcentrationStats {
 
 export interface ClientAcquisitionStats {
   newClientsThisPeriod: number
-  totalMarketingSpendCents: number
-  cacCents: number // cost per new client
-  cacRatio: number // CAC vs avg first-event value
+  totalMarketingSpendCents: number | null // null = no spend logged yet
+  cacCents: number | null // null = no marketing spend data available
+  cacRatio: number | null // null = cannot compute without spend data
 }
 
 export interface ReferralConversionStats {
@@ -263,11 +262,12 @@ export async function getClientAcquisitionStats(
     .gte('first_event_date', startDate)
     .lte('first_event_date', endDate)
 
-  // Marketing spend in period
-  // TODO: marketing_spend_log table not yet created — stub to 0
-  const totalSpend = 0
   const newClientCount = newClients ?? 0
-  const cac = newClientCount > 0 ? Math.round(totalSpend / newClientCount) : 0
+
+  // Marketing spend tracking not yet available — marketing_spend_log table pending.
+  // Return null to signal "no data" rather than a misleading $0.
+  const totalSpend: number | null = null
+  const cac: number | null = null
 
   // Average first-event value
   const { data: firstEvents } = await supabase
@@ -279,8 +279,11 @@ export async function getClientAcquisitionStats(
 
   const avgFirstValue = firstEvents?.length
     ? Math.round(
-        (firstEvents ?? []).reduce((sum, c) => sum + (c.average_spend_cents ?? 0), 0) /
-          firstEvents.length
+        (firstEvents as { average_spend_cents: number | null }[]).reduce(
+          (sum: number, c: { average_spend_cents: number | null }) =>
+            sum + (c.average_spend_cents ?? 0),
+          0
+        ) / firstEvents.length
       )
     : 0
 
@@ -288,7 +291,8 @@ export async function getClientAcquisitionStats(
     newClientsThisPeriod: newClientCount,
     totalMarketingSpendCents: totalSpend,
     cacCents: cac,
-    cacRatio: avgFirstValue > 0 ? Math.round((cac / avgFirstValue) * 100) / 100 : 0,
+    cacRatio:
+      cac !== null && avgFirstValue > 0 ? Math.round((cac / avgFirstValue) * 100) / 100 : null,
   }
 }
 
@@ -348,24 +352,24 @@ export async function getNpsStats(): Promise<NpsStats> {
     .eq('chef_id', chef.id)
     .not('sent_at', 'is', null)
 
-  const responses = surveys ?? []
+  const responses: any[] = surveys ?? []
   const sentCount = (sent as unknown as { count: number })?.count ?? 0
 
-  const withNps = responses.filter((s) => s.nps_score != null)
-  const promoters = withNps.filter((s) => (s.nps_score ?? 0) >= 9).length
-  const detractors = withNps.filter((s) => (s.nps_score ?? 0) <= 6).length
+  const withNps = responses.filter((s: any) => s.nps_score != null)
+  const promoters = withNps.filter((s: any) => (s.nps_score ?? 0) >= 9).length
+  const detractors = withNps.filter((s: any) => (s.nps_score ?? 0) <= 6).length
   const passives = withNps.length - promoters - detractors
   const npsScore =
     withNps.length > 0 ? Math.round(((promoters - detractors) / withNps.length) * 100) : 0
 
-  const avg = (field: keyof (typeof responses)[0]) => {
-    const vals = responses.filter((s) => s[field] != null).map((s) => Number(s[field]))
+  const avg = (field: string) => {
+    const vals = responses.filter((s: any) => s[field] != null).map((s: any) => Number(s[field]))
     return vals.length > 0
-      ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10
+      ? Math.round((vals.reduce((a: number, b: number) => a + b, 0) / vals.length) * 10) / 10
       : 0
   }
 
-  const withRebook = responses.filter((s) => s.would_rebook != null)
+  const withRebook = responses.filter((s: any) => s.would_rebook != null)
 
   return {
     npsScore,

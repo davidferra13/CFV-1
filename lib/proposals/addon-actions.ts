@@ -152,8 +152,31 @@ export async function toggleAddonForQuote(
 
   if (error || !addon) throw new Error(`Failed to fetch addon: ${error?.message || 'Not found'}`)
 
-  // Placeholder: In a full implementation this would insert/remove a quote_line_item row.
-  // For now we return the addon info so the caller can compute the new total client-side.
+  if (enabled) {
+    // Insert into quote_selected_addons (upsert to handle re-enables)
+    const { error: insertError } = await supabase.from('quote_selected_addons').upsert(
+      {
+        quote_id: quoteId,
+        addon_id: addonId,
+        tenant_id: user.tenantId!,
+        price_cents_snapshot: addon.price_cents_per_person,
+      },
+      { onConflict: 'quote_id,addon_id' }
+    )
+    if (insertError) throw new Error(`Failed to enable addon: ${insertError.message}`)
+  } else {
+    // Remove from quote_selected_addons
+    const { error: deleteError } = await supabase
+      .from('quote_selected_addons')
+      .delete()
+      .eq('quote_id', quoteId)
+      .eq('addon_id', addonId)
+      .eq('tenant_id', user.tenantId!)
+    if (deleteError) throw new Error(`Failed to disable addon: ${deleteError.message}`)
+  }
+
+  revalidatePath('/proposals')
+
   return {
     addonId: addon.id,
     enabled,
@@ -162,6 +185,22 @@ export async function toggleAddonForQuote(
       ? `Addon "${addon.name}" enabled for quote ${quoteId}`
       : `Addon "${addon.name}" disabled for quote ${quoteId}`,
   }
+}
+
+/**
+ * Get addon IDs selected for a specific quote.
+ */
+export async function getSelectedAddonsForQuote(quoteId: string): Promise<string[]> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data } = await supabase
+    .from('quote_selected_addons')
+    .select('addon_id')
+    .eq('quote_id', quoteId)
+    .eq('tenant_id', user.tenantId!)
+
+  return (data ?? []).map((row: { addon_id: string }) => row.addon_id)
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────

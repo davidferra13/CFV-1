@@ -2,9 +2,10 @@
 
 // FDA Food Recall Monitoring
 // Fetches live data from the FDA openFDA enforcement API.
-// No dedicated table — recalls are fetched fresh each time.
-// TODO: Store dismissed_recall_ids per chef in a JSONB column on the chefs table
-//       (requires migration: ALTER TABLE chefs ADD COLUMN IF NOT EXISTS dismissed_recall_ids TEXT[] DEFAULT '{}')
+// Dismissed recall IDs are stored in chefs.dismissed_recall_ids (TEXT[]).
+
+import { requireChef } from '@/lib/auth/get-user'
+import { createServerClient } from '@/lib/supabase/server'
 
 export type RecallAlert = {
   id: string
@@ -71,20 +72,50 @@ export async function matchRecallsToIngredients(
 }
 
 /**
- * Dismiss a recall for the current chef session.
- * TODO: Persist dismissed IDs to chefs.dismissed_recall_ids once migration is applied.
- * For now, this is a no-op that logs the intent.
+ * Dismiss a recall for the current chef.
+ * Persists the dismissed ID to chefs.dismissed_recall_ids.
  */
 export async function dismissRecall(recallId: string): Promise<{ success: boolean }> {
-  // TODO: Persist to chefs table:
-  //   await supabase
-  //     .from('chefs')
-  //     .update({ dismissed_recall_ids: sql`array_append(dismissed_recall_ids, ${recallId})` })
-  //     .eq('id', tenantId)
-  console.warn(
-    '[recall-actions] dismissRecall called for',
-    recallId,
-    '— persistence not yet implemented'
-  )
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  // Fetch current dismissed IDs to avoid duplicates
+  const { data: chef } = await supabase
+    .from('chefs')
+    .select('dismissed_recall_ids')
+    .eq('id', user.tenantId!)
+    .single()
+
+  const current: string[] = chef?.dismissed_recall_ids ?? []
+  if (current.includes(recallId)) {
+    return { success: true } // already dismissed
+  }
+
+  const { error } = await supabase
+    .from('chefs')
+    .update({ dismissed_recall_ids: [...current, recallId] })
+    .eq('id', user.tenantId!)
+
+  if (error) {
+    console.error('[recall-actions] Failed to persist dismiss:', error.message)
+    throw new Error('Failed to dismiss recall')
+  }
+
   return { success: true }
+}
+
+/**
+ * Get the list of recall IDs the current chef has dismissed.
+ */
+export async function getDismissedRecallIds(): Promise<string[]> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data: chef } = await supabase
+    .from('chefs')
+    .select('dismissed_recall_ids')
+    .eq('id', user.tenantId!)
+    .single()
+
+  return chef?.dismissed_recall_ids ?? []
 }
