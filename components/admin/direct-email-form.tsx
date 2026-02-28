@@ -3,6 +3,7 @@
 // Admin Direct Email Form — send a one-off email to any address
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { sendAdminDirectEmail } from '@/lib/admin/email-actions'
 
 export function DirectEmailForm() {
@@ -19,14 +20,18 @@ export function DirectEmailForm() {
     }
     setFeedback(null)
     startTransition(async () => {
-      const result = await sendAdminDirectEmail(to, subject, body)
-      if (result.success) {
-        setFeedback({ ok: true, msg: `Email sent to ${to}.` })
-        setTo('')
-        setSubject('')
-        setBody('')
-      } else {
-        setFeedback({ ok: false, msg: result.error ?? 'Failed to send.' })
+      try {
+        const result = await sendAdminDirectEmail(to, subject, body)
+        if (result.success) {
+          setFeedback({ ok: true, msg: `Email sent to ${to}.` })
+          setTo('')
+          setSubject('')
+          setBody('')
+        } else {
+          setFeedback({ ok: false, msg: result.error ?? 'Failed to send.' })
+        }
+      } catch (err) {
+        toast.error('Failed to send email')
       }
     })
   }

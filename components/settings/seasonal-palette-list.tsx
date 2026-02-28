@@ -4,6 +4,7 @@
 'use client'
 
 import { useTransition } from 'react'
+import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { setActiveSeason, deactivateAllSeasons } from '@/lib/seasonal/actions'
@@ -47,15 +48,23 @@ export function SeasonalPaletteList({ palettes }: { palettes: SeasonalPalette[] 
 
   const handleSetActive = (paletteId: string) => {
     startTransition(async () => {
-      await setActiveSeason(paletteId)
-      router.refresh()
+      try {
+        await setActiveSeason(paletteId)
+        router.refresh()
+      } catch (err) {
+        toast.error('Failed to set active season')
+      }
     })
   }
 
   const handleDeactivate = () => {
     startTransition(async () => {
-      await deactivateAllSeasons()
-      router.refresh()
+      try {
+        await deactivateAllSeasons()
+        router.refresh()
+      } catch (err) {
+        toast.error('Failed to deactivate seasons')
+      }
     })
   }
 

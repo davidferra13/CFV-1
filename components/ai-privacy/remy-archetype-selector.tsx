@@ -7,6 +7,7 @@
  */
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { Check } from 'lucide-react'
 import { REMY_ARCHETYPES, DEFAULT_ARCHETYPE, type RemyArchetypeId } from '@/lib/ai/remy-archetypes'
 import { saveRemyArchetype } from '@/lib/ai/privacy-actions'
@@ -24,14 +25,20 @@ export function RemyArchetypeSelector({ currentArchetype, onSaved }: Props) {
   const [justSaved, setJustSaved] = useState(false)
 
   function handleSelect(id: RemyArchetypeId) {
+    const previous = selected
     setSelected(id)
     setJustSaved(false)
     startTransition(async () => {
-      const result = await saveRemyArchetype(id)
-      if (result.success) {
-        setJustSaved(true)
-        onSaved?.(id)
-        setTimeout(() => setJustSaved(false), 2000)
+      try {
+        const result = await saveRemyArchetype(id)
+        if (result.success) {
+          setJustSaved(true)
+          onSaved?.(id)
+          setTimeout(() => setJustSaved(false), 2000)
+        }
+      } catch (err) {
+        setSelected(previous)
+        toast.error('Failed to save personality')
       }
     })
   }

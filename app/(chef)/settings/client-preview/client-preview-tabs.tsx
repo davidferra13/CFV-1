@@ -4,6 +4,7 @@
 // and async data loading. Delegates rendering to sub-components.
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { Monitor, Smartphone, ExternalLink, Eye } from 'lucide-react'
 import { PublicProfilePreview } from './public-profile-preview'
 import { ClientPortalPreview } from './client-portal-preview'
@@ -60,12 +61,16 @@ export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
     if (!client) return
 
     startTransition(async () => {
-      const [events, quotes, loyaltyStatus] = await Promise.all([
-        getPreviewClientEvents(clientId),
-        getPreviewClientQuotes(clientId),
-        getPreviewClientLoyaltyStatus(clientId),
-      ])
-      setPortalData({ clientId, events, quotes, loyaltyStatus, clientName: client.full_name })
+      try {
+        const [events, quotes, loyaltyStatus] = await Promise.all([
+          getPreviewClientEvents(clientId),
+          getPreviewClientQuotes(clientId),
+          getPreviewClientLoyaltyStatus(clientId),
+        ])
+        setPortalData({ clientId, events, quotes, loyaltyStatus, clientName: client.full_name })
+      } catch (err) {
+        toast.error('Failed to load client preview data')
+      }
     })
   }
 

@@ -6,6 +6,7 @@
 // navigates away (e.g., to Stripe and back).
 
 import { useState, useTransition, useCallback, useEffect, useRef } from 'react'
+import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -536,8 +537,12 @@ export function OnboardingWizard({
 
   function handleFinish() {
     startTransition(async () => {
-      await markOnboardingComplete()
-      router.push('/dashboard')
+      try {
+        await markOnboardingComplete()
+        router.push('/dashboard')
+      } catch (err) {
+        toast.error('Failed to complete onboarding')
+      }
     })
   }
 

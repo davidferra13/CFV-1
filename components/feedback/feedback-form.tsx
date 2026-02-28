@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition, useEffect } from 'react'
+import { toast } from 'sonner'
 import { submitFeedback } from '@/lib/feedback/actions'
 import { Button } from '@/components/ui/button'
 
@@ -41,18 +42,22 @@ export function FeedbackForm() {
     if (!message.trim()) return
 
     startTransition(async () => {
-      const result = await submitFeedback({
-        sentiment,
-        message: message.trim(),
-        anonymous,
-        page_context: pageContext || undefined,
-      })
+      try {
+        const result = await submitFeedback({
+          sentiment,
+          message: message.trim(),
+          anonymous,
+          page_context: pageContext || undefined,
+        })
 
-      if (result.success) {
-        setStatus('success')
-      } else {
-        setStatus('error')
-        setErrorMsg(result.error ?? 'Something went wrong.')
+        if (result.success) {
+          setStatus('success')
+        } else {
+          setStatus('error')
+          setErrorMsg(result.error ?? 'Something went wrong.')
+        }
+      } catch (err) {
+        toast.error('Failed to submit feedback')
       }
     })
   }

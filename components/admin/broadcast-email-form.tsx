@@ -3,6 +3,7 @@
 // Admin Broadcast Email Form — send an email to all chefs or inactive chefs
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { sendAdminBroadcastEmail } from '@/lib/admin/email-actions'
 
 export function BroadcastEmailForm() {
@@ -18,13 +19,20 @@ export function BroadcastEmailForm() {
     }
     setFeedback(null)
     startTransition(async () => {
-      const result = await sendAdminBroadcastEmail(target, subject, body)
-      if (result.success) {
-        setFeedback({ ok: true, msg: `Sent to ${result.sentCount} recipient${result.sentCount !== 1 ? 's' : ''}.` })
-        setSubject('')
-        setBody('')
-      } else {
-        setFeedback({ ok: false, msg: result.error ?? 'Failed to send.' })
+      try {
+        const result = await sendAdminBroadcastEmail(target, subject, body)
+        if (result.success) {
+          setFeedback({
+            ok: true,
+            msg: `Sent to ${result.sentCount} recipient${result.sentCount !== 1 ? 's' : ''}.`,
+          })
+          setSubject('')
+          setBody('')
+        } else {
+          setFeedback({ ok: false, msg: result.error ?? 'Failed to send.' })
+        }
+      } catch (err) {
+        toast.error('Failed to send broadcast email')
       }
     })
   }

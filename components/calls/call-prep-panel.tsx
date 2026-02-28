@@ -3,6 +3,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { Check, Plus, X, Info } from 'lucide-react'
 import {
   addAgendaItem,
@@ -33,13 +34,21 @@ function AgendaItemRow({
 
   function handleToggle() {
     startTransition(async () => {
-      await toggleAgendaItem(callId, item.id)
+      try {
+        await toggleAgendaItem(callId, item.id)
+      } catch (err) {
+        toast.error('Failed to update agenda item')
+      }
     })
   }
 
   function handleRemove() {
     startTransition(async () => {
-      await removeAgendaItem(callId, item.id)
+      try {
+        await removeAgendaItem(callId, item.id)
+      } catch (err) {
+        toast.error('Failed to remove agenda item')
+      }
     })
   }
 
@@ -101,8 +110,12 @@ export function CallPrepPanel({ call }: { call: ScheduledCall }) {
     const text = newItem.trim()
     if (!text) return
     startAdding(async () => {
-      await addAgendaItem(call.id, text)
-      setNewItem('')
+      try {
+        await addAgendaItem(call.id, text)
+        setNewItem('')
+      } catch (err) {
+        toast.error('Failed to add agenda item')
+      }
     })
   }
 

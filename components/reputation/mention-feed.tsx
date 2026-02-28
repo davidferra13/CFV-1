@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -50,8 +51,12 @@ export function MentionFeed({ mentions: initialMentions }: MentionFeedProps) {
 
   function handleMarkReviewed(id: string) {
     startTransition(async () => {
-      await markReviewed(id)
-      setMentions((prev) => prev.map((m) => (m.id === id ? { ...m, is_reviewed: true } : m)))
+      try {
+        await markReviewed(id)
+        setMentions((prev) => prev.map((m) => (m.id === id ? { ...m, is_reviewed: true } : m)))
+      } catch (err) {
+        toast.error('Failed to mark as reviewed')
+      }
     })
   }
 

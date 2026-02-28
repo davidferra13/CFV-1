@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition, useRef } from 'react'
+import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus, Trash2, CheckCircle2, Circle } from 'lucide-react'
 import { createTodo, toggleTodo, deleteTodo, type ChefTodo } from '@/lib/todos/actions'
@@ -83,8 +84,12 @@ function AddTodoForm({
 
     setValue('')
     startTransition(async () => {
-      await onAdd(text)
-      inputRef.current?.focus()
+      try {
+        await onAdd(text)
+        inputRef.current?.focus()
+      } catch (err) {
+        toast.error('Failed to add task')
+      }
     })
   }
 
@@ -171,9 +176,14 @@ export function ChefTodoWidget({ initialTodos }: { initialTodos: ChefTodo[] }) {
     )
 
     startTransition(async () => {
-      const result = await toggleTodo(id)
-      if (!result.success) {
+      try {
+        const result = await toggleTodo(id)
+        if (!result.success) {
+          setTodos((prev) => prev.map((t) => (t.id === id ? original : t)))
+        }
+      } catch (err) {
         setTodos((prev) => prev.map((t) => (t.id === id ? original : t)))
+        toast.error('Failed to update task')
       }
     })
   }
@@ -184,15 +194,28 @@ export function ChefTodoWidget({ initialTodos }: { initialTodos: ChefTodo[] }) {
     setTodos((prev) => prev.filter((t) => t.id !== id))
 
     startTransition(async () => {
-      const result = await deleteTodo(id)
-      if (!result.success && original) {
-        setTodos((prev) =>
-          [...prev, original].sort((a, b) =>
-            a.sort_order !== b.sort_order
-              ? a.sort_order - b.sort_order
-              : a.created_at.localeCompare(b.created_at)
+      try {
+        const result = await deleteTodo(id)
+        if (!result.success && original) {
+          setTodos((prev) =>
+            [...prev, original].sort((a, b) =>
+              a.sort_order !== b.sort_order
+                ? a.sort_order - b.sort_order
+                : a.created_at.localeCompare(b.created_at)
+            )
           )
-        )
+        }
+      } catch (err) {
+        if (original) {
+          setTodos((prev) =>
+            [...prev, original].sort((a, b) =>
+              a.sort_order !== b.sort_order
+                ? a.sort_order - b.sort_order
+                : a.created_at.localeCompare(b.created_at)
+            )
+          )
+        }
+        toast.error('Failed to delete task')
       }
     })
   }

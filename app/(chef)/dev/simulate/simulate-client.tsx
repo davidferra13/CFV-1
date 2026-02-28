@@ -4,6 +4,7 @@
 // Handles module selection, run triggering, loading state, and results display.
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -44,16 +45,20 @@ export function SimulateClient({ summary, recentRuns, latestRun, latestResults }
     setRunSuccess(false)
 
     startTransition(async () => {
-      const result = await startSimulationRun({
-        modules: selectedModules,
-        scenariosPerModule,
-      })
+      try {
+        const result = await startSimulationRun({
+          modules: selectedModules,
+          scenariosPerModule,
+        })
 
-      if (result.success) {
-        setRunSuccess(true)
-        router.refresh()
-      } else {
-        setRunError(result.error ?? 'Simulation failed — check that Ollama is running.')
+        if (result.success) {
+          setRunSuccess(true)
+          router.refresh()
+        } else {
+          setRunError(result.error ?? 'Simulation failed — check that Ollama is running.')
+        }
+      } catch (err) {
+        toast.error('Simulation failed unexpectedly')
       }
     })
   }

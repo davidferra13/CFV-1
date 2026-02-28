@@ -4,6 +4,7 @@
 // Calls setAnnouncement / clearAnnouncement server actions.
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import {
   setAnnouncement,
   clearAnnouncement,
@@ -29,23 +30,31 @@ export function AnnouncementForm({ currentText, currentType }: Props) {
 
   function handleSet() {
     startTransition(async () => {
-      const result = await setAnnouncement(text, type)
-      setFeedback(
-        result.success
-          ? { ok: true, msg: text.trim() ? 'Announcement set.' : 'Announcement cleared.' }
-          : { ok: false, msg: result.error ?? 'Failed.' }
-      )
+      try {
+        const result = await setAnnouncement(text, type)
+        setFeedback(
+          result.success
+            ? { ok: true, msg: text.trim() ? 'Announcement set.' : 'Announcement cleared.' }
+            : { ok: false, msg: result.error ?? 'Failed.' }
+        )
+      } catch (err) {
+        toast.error('Failed to set announcement')
+      }
     })
   }
 
   function handleClear() {
     startTransition(async () => {
-      const result = await clearAnnouncement()
-      if (result.success) {
-        setText('')
-        setFeedback({ ok: true, msg: 'Announcement cleared.' })
-      } else {
-        setFeedback({ ok: false, msg: result.error ?? 'Failed.' })
+      try {
+        const result = await clearAnnouncement()
+        if (result.success) {
+          setText('')
+          setFeedback({ ok: true, msg: 'Announcement cleared.' })
+        } else {
+          setFeedback({ ok: false, msg: result.error ?? 'Failed.' })
+        }
+      } catch (err) {
+        toast.error('Failed to clear announcement')
       }
     })
   }

@@ -176,15 +176,19 @@ export function NotificationSettingsForm({
     setSmsError(null)
 
     startTransition(async () => {
-      const result = await updateSmsSettings({
-        sms_opt_in: smsOptIn,
-        sms_notify_phone: smsPhone.trim() || null,
-      })
-      if (result.error) {
-        setSmsError(result.error)
-      } else {
-        setSmsSaved(true)
-        setTimeout(() => setSmsSaved(false), 3000)
+      try {
+        const result = await updateSmsSettings({
+          sms_opt_in: smsOptIn,
+          sms_notify_phone: smsPhone.trim() || null,
+        })
+        if (result.error) {
+          setSmsError(result.error)
+        } else {
+          setSmsSaved(true)
+          setTimeout(() => setSmsSaved(false), 3000)
+        }
+      } catch (err) {
+        toast.error('Failed to save SMS settings')
       }
     })
   }
@@ -194,22 +198,26 @@ export function NotificationSettingsForm({
     setExperienceError(null)
 
     startTransition(async () => {
-      const parsedInterval = Number.parseInt(digestIntervalMinutes, 10)
-      const result = await updateNotificationExperienceSettings({
-        quiet_hours_enabled: quietHoursEnabled,
-        quiet_hours_start: quietStart || null,
-        quiet_hours_end: quietEnd || null,
-        digest_enabled: digestEnabled,
-        digest_interval_minutes: Number.isFinite(parsedInterval) ? parsedInterval : 15,
-      })
+      try {
+        const parsedInterval = Number.parseInt(digestIntervalMinutes, 10)
+        const result = await updateNotificationExperienceSettings({
+          quiet_hours_enabled: quietHoursEnabled,
+          quiet_hours_start: quietStart || null,
+          quiet_hours_end: quietEnd || null,
+          digest_enabled: digestEnabled,
+          digest_interval_minutes: Number.isFinite(parsedInterval) ? parsedInterval : 15,
+        })
 
-      if (result.error) {
-        setExperienceError(result.error)
-        return
+        if (result.error) {
+          setExperienceError(result.error)
+          return
+        }
+
+        setExperienceSaved(true)
+        setTimeout(() => setExperienceSaved(false), 3000)
+      } catch (err) {
+        toast.error('Failed to save attention controls')
       }
-
-      setExperienceSaved(true)
-      setTimeout(() => setExperienceSaved(false), 3000)
     })
   }
 

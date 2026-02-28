@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { generateDailyReport, getDailyReport } from '@/lib/reports/daily-report-actions'
 import type { DailyReport, DailyReportSummary } from '@/lib/reports/types'
 import {
@@ -83,11 +84,15 @@ export function DailyReportView({ report: initialReport, history }: Props) {
   function loadDate(date: string) {
     setSelectedDate(date)
     startTransition(async () => {
-      let r = await getDailyReport(date)
-      if (!r) {
-        r = await generateDailyReport(date)
+      try {
+        let r = await getDailyReport(date)
+        if (!r) {
+          r = await generateDailyReport(date)
+        }
+        setReport(r)
+      } catch (err) {
+        toast.error('Failed to load report')
       }
-      setReport(r)
     })
   }
 
@@ -99,8 +104,12 @@ export function DailyReportView({ report: initialReport, history }: Props) {
 
   function regenerate() {
     startTransition(async () => {
-      const r = await generateDailyReport(selectedDate)
-      setReport(r)
+      try {
+        const r = await generateDailyReport(selectedDate)
+        setReport(r)
+      } catch (err) {
+        toast.error('Failed to regenerate report')
+      }
     })
   }
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { ChevronRight, ChevronLeft, StickyNote, Sparkles, Pin, User, Plus } from 'lucide-react'
 import { addClientNote } from '@/lib/notes/actions'
 import { QuickNoteForm } from '@/components/clients/quick-note-form'
@@ -37,14 +38,18 @@ export function ChatSidebar({
 
   const handleAddNote = async (data: { note_text: string; category: NoteCategory }) => {
     startTransition(async () => {
-      const result = await addClientNote({
-        client_id: clientId,
-        note_text: data.note_text,
-        category: data.category,
-        pinned: true,
-      })
-      setNotes((prev) => [result.note, ...prev])
-      setShowAddForm(false)
+      try {
+        const result = await addClientNote({
+          client_id: clientId,
+          note_text: data.note_text,
+          category: data.category,
+          pinned: true,
+        })
+        setNotes((prev) => [result.note, ...prev])
+        setShowAddForm(false)
+      } catch (err) {
+        toast.error('Failed to add note')
+      }
     })
   }
 

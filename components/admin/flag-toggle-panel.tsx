@@ -4,6 +4,7 @@
 // Server action (toggleChefFlag) is called on each click.
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { toggleChefFlag } from '@/lib/admin/flag-actions'
 
 type KnownFlag = {
@@ -43,17 +44,25 @@ export function FlagTogglePanel({ chefs, flagsByChef, knownFlags }: Props) {
     setFeedback(null)
 
     startTransition(async () => {
-      const result = await toggleChefFlag(chefId, flagName, next)
-      if (!result.success) {
-        // Revert on failure
+      try {
+        const result = await toggleChefFlag(chefId, flagName, next)
+        if (!result.success) {
+          // Revert on failure
+          setLocalFlags((prev) => ({
+            ...prev,
+            [chefId]: { ...(prev[chefId] ?? {}), [flagName]: current },
+          }))
+          setFeedback(`Failed to toggle ${flagName}: ${result.error}`)
+        } else {
+          setFeedback(`Updated ${flagName} for chef.`)
+          setTimeout(() => setFeedback(null), 2000)
+        }
+      } catch (err) {
         setLocalFlags((prev) => ({
           ...prev,
           [chefId]: { ...(prev[chefId] ?? {}), [flagName]: current },
         }))
-        setFeedback(`Failed to toggle ${flagName}: ${result.error}`)
-      } else {
-        setFeedback(`Updated ${flagName} for chef.`)
-        setTimeout(() => setFeedback(null), 2000)
+        toast.error(`Failed to toggle ${flagName}`)
       }
     })
   }

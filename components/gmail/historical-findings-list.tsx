@@ -5,6 +5,7 @@
 // Per-finding cards with import and dismiss actions.
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -281,9 +282,13 @@ function BatchDismissButton({ onDone }: { onDone: () => void }) {
   function handleConfirmedDismissAll() {
     setShowDismissConfirm(false)
     startTransition(async () => {
-      const result = await dismissAllFindings({})
-      setDismissed(result.count)
-      onDone()
+      try {
+        const result = await dismissAllFindings({})
+        setDismissed(result.count)
+        onDone()
+      } catch (err) {
+        toast.error('Failed to dismiss findings')
+      }
     })
   }
 

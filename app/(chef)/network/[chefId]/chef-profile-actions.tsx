@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { followChef, unfollowChef } from '@/lib/social/chef-social-actions'
 import { sendConnectionRequest } from '@/lib/network/actions'
 import { Button } from '@/components/ui/button'
@@ -21,18 +22,29 @@ export function ChefProfileActions({
   const [pending, startTransition] = useTransition()
 
   function toggleFollow() {
+    const previous = following
     const next = !following
     setFollowing(next)
     startTransition(async () => {
-      if (next) await followChef(chefId)
-      else await unfollowChef(chefId)
+      try {
+        if (next) await followChef(chefId)
+        else await unfollowChef(chefId)
+      } catch (err) {
+        setFollowing(previous)
+        toast.error('Failed to update follow status')
+      }
     })
   }
 
   function sendRequest() {
     setRequestSent(true)
     startTransition(async () => {
-      await sendConnectionRequest({ addressee_id: chefId })
+      try {
+        await sendConnectionRequest({ addressee_id: chefId })
+      } catch (err) {
+        setRequestSent(false)
+        toast.error('Failed to send connection request')
+      }
     })
   }
 

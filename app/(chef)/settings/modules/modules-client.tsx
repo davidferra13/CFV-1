@@ -4,6 +4,7 @@
 // Each module card shows name, description, tier badge, and a toggle switch.
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import Link from 'next/link'
 import { Sparkles, Lock } from 'lucide-react'
 import { MODULES } from '@/lib/billing/modules'
@@ -21,6 +22,7 @@ export function ModulesClient({ enabledModules: initial, tier, isGrandfathered }
   const [isPending, startTransition] = useTransition()
 
   function toggle(slug: string) {
+    const previous = new Set(enabled)
     const next = new Set(enabled)
     if (next.has(slug)) {
       next.delete(slug)
@@ -29,23 +31,40 @@ export function ModulesClient({ enabledModules: initial, tier, isGrandfathered }
     }
     setEnabled(next)
     startTransition(async () => {
-      await updateEnabledModules(Array.from(next))
+      try {
+        await updateEnabledModules(Array.from(next))
+      } catch (err) {
+        setEnabled(previous)
+        toast.error('Failed to update module')
+      }
     })
   }
 
   function selectAll() {
+    const previous = new Set(enabled)
     const all = new Set(MODULES.map((m) => m.slug))
     setEnabled(all)
     startTransition(async () => {
-      await enableAllModules()
+      try {
+        await enableAllModules()
+      } catch (err) {
+        setEnabled(previous)
+        toast.error('Failed to enable all modules')
+      }
     })
   }
 
   function selectDefaults() {
+    const previous = new Set(enabled)
     const defaults = new Set(MODULES.filter((m) => m.defaultEnabled).map((m) => m.slug))
     setEnabled(defaults)
     startTransition(async () => {
-      await updateEnabledModules(Array.from(defaults))
+      try {
+        await updateEnabledModules(Array.from(defaults))
+      } catch (err) {
+        setEnabled(previous)
+        toast.error('Failed to reset modules')
+      }
     })
   }
 

@@ -4,6 +4,7 @@
 // Appends an immutable 'adjustment' entry to ledger_entries.
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { issueAdminCredit } from '@/lib/admin/chef-admin-actions'
 import { useRouter } from 'next/navigation'
 import { PlusCircle } from 'lucide-react'
@@ -36,24 +37,28 @@ export function AdminCreditForm({ chefId, eventOptions }: Props) {
     setFeedback(null)
 
     startTransition(async () => {
-      const result = await issueAdminCredit({
-        chefId,
-        eventId: eventId || undefined,
-        amountCents,
-        description,
-      })
-      if (result.success) {
-        setFeedback({
-          ok: true,
-          msg: `Adjustment of ${isDebit ? '-' : '+'}$${dollars.toFixed(2)} issued.`,
+      try {
+        const result = await issueAdminCredit({
+          chefId,
+          eventId: eventId || undefined,
+          amountCents,
+          description,
         })
-        setAmountStr('')
-        setDescription('')
-        setEventId('')
-        setIsDebit(false)
-        router.refresh()
-      } else {
-        setFeedback({ ok: false, msg: result.error ?? 'Failed.' })
+        if (result.success) {
+          setFeedback({
+            ok: true,
+            msg: `Adjustment of ${isDebit ? '-' : '+'}$${dollars.toFixed(2)} issued.`,
+          })
+          setAmountStr('')
+          setDescription('')
+          setEventId('')
+          setIsDebit(false)
+          router.refresh()
+        } else {
+          setFeedback({ ok: false, msg: result.error ?? 'Failed.' })
+        }
+      } catch (err) {
+        toast.error('Failed to issue ledger adjustment')
       }
     })
   }

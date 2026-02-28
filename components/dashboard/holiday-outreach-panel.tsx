@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import {
   Gift,
   Users,
@@ -100,18 +101,22 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
 
   function handleCreatePromo() {
     startPromoTransition(async () => {
-      const result = await createHolidayPromoCode({
-        holidayName: holiday.name,
-        code: promoCode,
-        discountPercent: parseInt(promoDiscount) || undefined,
-        maxRedemptions: 50,
-        expiresAt: promoExpiry,
-      })
-      if (result.ok) {
-        setPromoResult(result.code ?? promoCode)
-        setShowPromoForm(false)
-      } else {
-        setPromoResult(`Error: ${result.error}`)
+      try {
+        const result = await createHolidayPromoCode({
+          holidayName: holiday.name,
+          code: promoCode,
+          discountPercent: parseInt(promoDiscount) || undefined,
+          maxRedemptions: 50,
+          expiresAt: promoExpiry,
+        })
+        if (result.ok) {
+          setPromoResult(result.code ?? promoCode)
+          setShowPromoForm(false)
+        } else {
+          setPromoResult(`Error: ${result.error}`)
+        }
+      } catch (err) {
+        toast.error('Failed to create promo code')
       }
     })
   }
@@ -343,15 +348,20 @@ function ClientOutreachRow({ client, holidayName, outreachHook }: ClientOutreach
 
   function handleSend() {
     startTransition(async () => {
-      setStatus('sending')
-      const result = await sendHolidayOutreachToClient({
-        clientId: client.clientId,
-        body: message,
-        holidayName,
-        channel,
-      })
-      setStatus(result.ok ? 'sent' : 'error')
-      if (result.ok) setShowSendForm(false)
+      try {
+        setStatus('sending')
+        const result = await sendHolidayOutreachToClient({
+          clientId: client.clientId,
+          body: message,
+          holidayName,
+          channel,
+        })
+        setStatus(result.ok ? 'sent' : 'error')
+        if (result.ok) setShowSendForm(false)
+      } catch (err) {
+        setStatus('error')
+        toast.error('Failed to send outreach')
+      }
     })
   }
 

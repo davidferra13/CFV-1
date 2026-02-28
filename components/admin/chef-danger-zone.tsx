@@ -4,6 +4,7 @@
 // Requires typing the chef name to confirm before suspending.
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { suspendChef, reactivateChef } from '@/lib/admin/chef-admin-actions'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle } from 'lucide-react'
@@ -27,13 +28,17 @@ export function ChefDangerZone({ chefId, chefName, currentStatus }: Props) {
     if (!confirmMatch) return
     setFeedback(null)
     startTransition(async () => {
-      const result = await suspendChef(chefId)
-      if (result.success) {
-        setFeedback({ ok: true, msg: 'Chef account suspended. They can no longer log in.' })
-        setConfirmText('')
-        router.refresh()
-      } else {
-        setFeedback({ ok: false, msg: result.error ?? 'Failed.' })
+      try {
+        const result = await suspendChef(chefId)
+        if (result.success) {
+          setFeedback({ ok: true, msg: 'Chef account suspended. They can no longer log in.' })
+          setConfirmText('')
+          router.refresh()
+        } else {
+          setFeedback({ ok: false, msg: result.error ?? 'Failed.' })
+        }
+      } catch (err) {
+        toast.error('Failed to suspend chef account')
       }
     })
   }
@@ -41,12 +46,16 @@ export function ChefDangerZone({ chefId, chefName, currentStatus }: Props) {
   function handleReactivate() {
     setFeedback(null)
     startTransition(async () => {
-      const result = await reactivateChef(chefId)
-      if (result.success) {
-        setFeedback({ ok: true, msg: 'Chef account reactivated.' })
-        router.refresh()
-      } else {
-        setFeedback({ ok: false, msg: result.error ?? 'Failed.' })
+      try {
+        const result = await reactivateChef(chefId)
+        if (result.success) {
+          setFeedback({ ok: true, msg: 'Chef account reactivated.' })
+          router.refresh()
+        } else {
+          setFeedback({ ok: false, msg: result.error ?? 'Failed.' })
+        }
+      } catch (err) {
+        toast.error('Failed to reactivate chef account')
       }
     })
   }

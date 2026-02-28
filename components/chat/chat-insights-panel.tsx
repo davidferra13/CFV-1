@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import {
   Sparkles,
   Check,
@@ -51,15 +52,23 @@ export function ChatInsightsPanel({ initialInsights }: ChatInsightsPanelProps) {
 
   const handleAccept = async (insightId: string) => {
     startTransition(async () => {
-      await acceptInsight(insightId, { apply_to: 'note' })
-      setInsights((prev) => prev.filter((i) => i.id !== insightId))
+      try {
+        await acceptInsight(insightId, { apply_to: 'note' })
+        setInsights((prev) => prev.filter((i) => i.id !== insightId))
+      } catch (err) {
+        toast.error('Failed to save insight')
+      }
     })
   }
 
   const handleDismiss = async (insightId: string) => {
     startTransition(async () => {
-      await dismissInsight(insightId)
-      setInsights((prev) => prev.filter((i) => i.id !== insightId))
+      try {
+        await dismissInsight(insightId)
+        setInsights((prev) => prev.filter((i) => i.id !== insightId))
+      } catch (err) {
+        toast.error('Failed to dismiss insight')
+      }
     })
   }
 

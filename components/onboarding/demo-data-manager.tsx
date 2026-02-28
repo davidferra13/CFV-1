@@ -4,6 +4,7 @@
 // Buttons trigger server actions. Shows status after each operation.
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { seedDemoData, clearDemoData } from '@/lib/onboarding/demo-data'
 import { Button } from '@/components/ui/button'
 
@@ -19,17 +20,21 @@ export function DemoDataManager({ hasDemoData: initialHas }: Props) {
   function handleLoad() {
     setMessage(null)
     startTransition(async () => {
-      const result = await seedDemoData()
-      if (result.error === 'Demo data already exists') {
-        setMessage('Sample data is already loaded.')
-        setHasDemo(true)
-      } else if (result.created) {
-        setMessage(
-          `Loaded ${result.clientsCreated} sample clients, ${result.eventsCreated} events, ${result.inquiriesCreated} inquiry.`
-        )
-        setHasDemo(true)
-      } else {
-        setMessage(result.error ?? 'Something went wrong.')
+      try {
+        const result = await seedDemoData()
+        if (result.error === 'Demo data already exists') {
+          setMessage('Sample data is already loaded.')
+          setHasDemo(true)
+        } else if (result.created) {
+          setMessage(
+            `Loaded ${result.clientsCreated} sample clients, ${result.eventsCreated} events, ${result.inquiriesCreated} inquiry.`
+          )
+          setHasDemo(true)
+        } else {
+          setMessage(result.error ?? 'Something went wrong.')
+        }
+      } catch (err) {
+        toast.error('Failed to load sample data')
       }
     })
   }
@@ -37,12 +42,16 @@ export function DemoDataManager({ hasDemoData: initialHas }: Props) {
   function handleClear() {
     setMessage(null)
     startTransition(async () => {
-      const result = await clearDemoData()
-      if (result.cleared) {
-        setMessage('Sample data cleared.')
-        setHasDemo(false)
-      } else {
-        setMessage(result.error ?? 'Something went wrong.')
+      try {
+        const result = await clearDemoData()
+        if (result.cleared) {
+          setMessage('Sample data cleared.')
+          setHasDemo(false)
+        } else {
+          setMessage(result.error ?? 'Something went wrong.')
+        }
+      } catch (err) {
+        toast.error('Failed to clear sample data')
       }
     })
   }

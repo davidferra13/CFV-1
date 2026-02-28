@@ -4,6 +4,7 @@
 // Supports: checkbox complete, one-tap approve (drafts), deep link, dismiss.
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import Link from 'next/link'
 import { Check, X, ChevronDown, ChevronUp, ExternalLink, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -25,20 +26,28 @@ export function PlanItem({ item, onUpdate }: Props) {
 
   function handleComplete() {
     startTransition(async () => {
-      const result = await completeDailyPlanItem(item.id)
-      if (result.success) {
-        setCompleted(true)
-        onUpdate?.()
+      try {
+        const result = await completeDailyPlanItem(item.id)
+        if (result.success) {
+          setCompleted(true)
+          onUpdate?.()
+        }
+      } catch (err) {
+        toast.error('Failed to complete item')
       }
     })
   }
 
   function handleDismiss() {
     startTransition(async () => {
-      const result = await dismissDailyPlanItem(item.id)
-      if (result.success) {
-        setDismissed(true)
-        onUpdate?.()
+      try {
+        const result = await dismissDailyPlanItem(item.id)
+        if (result.success) {
+          setDismissed(true)
+          onUpdate?.()
+        }
+      } catch (err) {
+        toast.error('Failed to dismiss item')
       }
     })
   }

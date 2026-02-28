@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { generateShareToken, revokeShareToken } from '@/lib/scheduling/availability-share-actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -24,14 +25,22 @@ export function AvailabilityShareSettings({ tokens }: { tokens: Token[] }) {
 
   function handleGenerate() {
     startTransition(async () => {
-      await generateShareToken(label || undefined)
-      setLabel('')
+      try {
+        await generateShareToken(label || undefined)
+        setLabel('')
+      } catch (err) {
+        toast.error('Failed to generate share link')
+      }
     })
   }
 
   function handleRevoke(id: string) {
     startTransition(async () => {
-      await revokeShareToken(id)
+      try {
+        await revokeShareToken(id)
+      } catch (err) {
+        toast.error('Failed to revoke share link')
+      }
     })
   }
 

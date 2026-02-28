@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
@@ -38,11 +39,15 @@ export function OffHoursForm({
 
   function handleSave() {
     startTransition(async () => {
-      await onSave({
-        off_hours_start: start,
-        off_hours_end: end,
-        off_days: offDays,
-      })
+      try {
+        await onSave({
+          off_hours_start: start,
+          off_hours_end: end,
+          off_days: offDays,
+        })
+      } catch (err) {
+        toast.error('Failed to save off-hours settings')
+      }
     })
   }
 
