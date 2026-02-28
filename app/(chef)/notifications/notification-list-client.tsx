@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Bell,
@@ -29,6 +29,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Archive,
+  EyeOff,
 } from 'lucide-react'
 import {
   getNotifications,
@@ -36,7 +37,11 @@ import {
   markAllAsRead,
   archiveNotification,
 } from '@/lib/notifications/actions'
-import { getNotificationsByCategory, getNotificationCount } from '@/lib/notifications/check'
+import {
+  getNotificationsByCategory,
+  getNotificationCount,
+  getUnreadNotifications,
+} from '@/lib/notifications/check'
 import { useNotifications } from '@/components/notifications/notification-provider'
 import {
   NOTIFICATION_CONFIG,
@@ -146,9 +151,51 @@ const FILTER_TABS: Array<{ key: string; label: string }> = [
   { key: 'event', label: 'Events' },
   { key: 'quote', label: 'Quotes' },
   { key: 'payment', label: 'Payments' },
+  { key: 'chat', label: 'Chat' },
   { key: 'client', label: 'Clients' },
   { key: 'system', label: 'System' },
 ]
+
+// ─── Date grouping ──────────────────────────────────────────────────────
+
+type DateGroup = 'Today' | 'Yesterday' | 'This Week' | 'Older'
+
+function getDateGroup(dateStr: string): DateGroup {
+  const now = new Date()
+  const date = new Date(dateStr)
+
+  // Reset to start of day for comparison
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const yesterdayStart = new Date(todayStart)
+  yesterdayStart.setDate(yesterdayStart.getDate() - 1)
+  const weekStart = new Date(todayStart)
+  weekStart.setDate(weekStart.getDate() - 7)
+
+  if (date >= todayStart) return 'Today'
+  if (date >= yesterdayStart) return 'Yesterday'
+  if (date >= weekStart) return 'This Week'
+  return 'Older'
+}
+
+function groupNotificationsByDate(
+  notifications: Notification[]
+): Array<{ group: DateGroup; items: Notification[] }> {
+  const groups: Record<DateGroup, Notification[]> = {
+    Today: [],
+    Yesterday: [],
+    'This Week': [],
+    Older: [],
+  }
+
+  for (const n of notifications) {
+    groups[getDateGroup(n.created_at)].push(n)
+  }
+
+  const ordered: DateGroup[] = ['Today', 'Yesterday', 'This Week', 'Older']
+  return ordered
+    .filter((group) => groups[group].length > 0)
+    .map((group) => ({ group, items: groups[group] }))
+}
 
 // ─── Component ───────────────────────────────────────────────────────────
 
@@ -163,6 +210,7 @@ export function NotificationListClient() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
   const [activeFilter, setActiveFilter] = useState('all')
+  const [readFilter, setReadFilter] = useState<'all' | 'unread'>('all')
   const [page, setPage] = useState(0)
   const [totalCount, setTotalCount] = useState(0)
 
@@ -174,7 +222,10 @@ export function NotificationListClient() {
       const offset = page * PAGE_SIZE
 
       let data: Notification[]
-      if (activeFilter === 'all') {
+      if (readFilter === 'unread' && activeFilter === 'all') {
+        // Unread-only mode, no category filter — use dedicated server query
+        data = await getUnreadNotifications(PAGE_SIZE, offset)
+      } else if (activeFilter === 'all') {
         data = await getNotifications(PAGE_SIZE, offset)
       } else {
         data = await getNotificationsByCategory(
@@ -182,6 +233,12 @@ export function NotificationListClient() {
           PAGE_SIZE,
           offset
         )
+      }
+
+      // Client-side unread filter when combined with a category filter
+      // (server already handles unread-only for 'all' category)
+      if (readFilter === 'unread' && activeFilter !== 'all') {
+        data = data.filter((n) => !n.read_at)
       }
 
       const count = await getNotificationCount(
@@ -195,7 +252,7 @@ export function NotificationListClient() {
     } finally {
       setLoading(false)
     }
-  }, [activeFilter, page])
+  }, [activeFilter, readFilter, page])
 
   useEffect(() => {
     fetchNotifications()
@@ -239,11 +296,23 @@ export function NotificationListClient() {
     setPage(0)
   }
 
+  const handleReadFilterToggle = () => {
+    setReadFilter((prev) => (prev === 'all' ? 'unread' : 'all'))
+    setPage(0)
+  }
+
   // ─── Pagination ────────────────────────────────────────────────────
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE)
   const hasNext = page < totalPages - 1
   const hasPrev = page > 0
+
+  // ─── Date grouping ─────────────────────────────────────────────────
+
+  const groupedNotifications = useMemo(
+    () => groupNotificationsByDate(notifications),
+    [notifications]
+  )
 
   // ─── Render ────────────────────────────────────────────────────────
 
@@ -252,13 +321,13 @@ export function NotificationListClient() {
   return (
     <div>
       {/* Filter tabs */}
-      <div className="flex items-center gap-1 mb-4 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1 scrollbar-none">
         {FILTER_TABS.map((tab) => (
           <button
             key={tab.key}
             type="button"
             onClick={() => handleFilterChange(tab.key)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap transition-colors ${
+            className={`px-3 py-1.5 text-xs font-medium rounded-full whitespace-nowrap transition-colors ${
               activeFilter === tab.key
                 ? 'bg-brand-600 text-white'
                 : 'bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-stone-300'
@@ -267,6 +336,18 @@ export function NotificationListClient() {
             {tab.label}
           </button>
         ))}
+        <button
+          type="button"
+          onClick={handleReadFilterToggle}
+          className={`ml-auto flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-full whitespace-nowrap transition-colors ${
+            readFilter === 'unread'
+              ? 'bg-brand-600 text-white'
+              : 'bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-stone-300'
+          }`}
+        >
+          <EyeOff className="w-3 h-3" />
+          Unread
+        </button>
       </div>
 
       {/* Actions bar */}
@@ -294,100 +375,114 @@ export function NotificationListClient() {
           <div className="flex flex-col items-center justify-center py-16 px-4">
             <Bell className="w-10 h-10 text-stone-600 mb-3" />
             <p className="text-sm text-stone-500">
-              {activeFilter === 'all'
-                ? 'No notifications yet'
-                : `No ${FILTER_TABS.find((t) => t.key === activeFilter)?.label ?? activeFilter} notifications`}
+              {activeFilter === 'all' && readFilter === 'all'
+                ? "You're all caught up"
+                : `No ${readFilter === 'unread' ? 'unread ' : ''}${activeFilter !== 'all' ? (FILTER_TABS.find((t) => t.key === activeFilter)?.label ?? activeFilter) + ' ' : ''}notifications`}
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-stone-800">
-            {notifications.map((notification) => {
-              const config = NOTIFICATION_CONFIG[notification.action as NotificationAction]
-              const iconName = config?.icon || 'Bell'
-              const IconComponent = ICON_MAP[iconName] || Bell
-              const colorClass = categoryColors[notification.category] || 'text-stone-500'
-              const badgeClass =
-                categoryBadgeColors[notification.category] ||
-                'bg-stone-500/10 text-stone-400 border-stone-500/20'
-              const isUnread = !notification.read_at
-              const categoryLabel =
-                CATEGORY_LABELS[notification.category as NotificationCategory] ||
-                notification.category
+          <div>
+            {groupedNotifications.map(({ group, items }) => (
+              <div key={group}>
+                {/* Date group header */}
+                <div className="px-4 py-2 bg-stone-850 border-b border-stone-800 sticky top-0 z-10">
+                  <h3 className="text-[11px] font-semibold text-stone-400 uppercase tracking-wider">
+                    {group}
+                  </h3>
+                </div>
 
-              return (
-                <div
-                  key={notification.id}
-                  className={`flex items-start gap-3 px-4 py-3 transition-colors group ${
-                    isUnread ? 'bg-brand-950/20' : ''
-                  }`}
-                >
-                  {/* Icon */}
-                  <div className={`mt-1 flex-shrink-0 ${colorClass}`}>
-                    <IconComponent className="w-5 h-5" />
-                  </div>
+                {/* Notifications in this group */}
+                <div className="divide-y divide-stone-800">
+                  {items.map((notification) => {
+                    const config = NOTIFICATION_CONFIG[notification.action as NotificationAction]
+                    const iconName = config?.icon || 'Bell'
+                    const IconComponent = ICON_MAP[iconName] || Bell
+                    const colorClass = categoryColors[notification.category] || 'text-stone-500'
+                    const badgeClass =
+                      categoryBadgeColors[notification.category] ||
+                      'bg-stone-500/10 text-stone-400 border-stone-500/20'
+                    const isUnread = !notification.read_at
+                    const categoryLabel =
+                      CATEGORY_LABELS[notification.category as NotificationCategory] ||
+                      notification.category
 
-                  {/* Content — clickable */}
-                  <button
-                    type="button"
-                    onClick={() => handleNavigate(notification)}
-                    className="flex-1 min-w-0 text-left"
-                  >
-                    <div className="flex items-start gap-2">
-                      <p
-                        className={`text-sm ${
-                          isUnread ? 'font-medium text-stone-100' : 'text-stone-300'
+                    return (
+                      <div
+                        key={notification.id}
+                        className={`flex items-start gap-3 px-4 py-3 transition-colors group ${
+                          isUnread ? 'bg-brand-950/20' : ''
                         }`}
                       >
-                        {notification.title}
-                      </p>
-                      {isUnread && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-brand-600 mt-1.5 flex-shrink-0" />
-                      )}
-                    </div>
-                    {notification.body && (
-                      <p className="text-xs text-stone-500 mt-0.5 line-clamp-2">
-                        {notification.body}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <span
-                        className={`inline-flex items-center text-[10px] px-1.5 py-0.5 rounded border ${badgeClass}`}
-                      >
-                        {categoryLabel}
-                      </span>
-                      <span className="text-[10px] text-stone-500">
-                        {formatDate(notification.created_at)}
-                      </span>
-                      <span className="text-[10px] text-stone-600">
-                        ({getRelativeTime(notification.created_at)})
-                      </span>
-                    </div>
-                  </button>
+                        {/* Icon */}
+                        <div className={`mt-1 flex-shrink-0 ${colorClass}`}>
+                          <IconComponent className="w-5 h-5" />
+                        </div>
 
-                  {/* Action buttons */}
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                    {isUnread && (
-                      <button
-                        type="button"
-                        onClick={() => handleMarkAsRead(notification)}
-                        title="Mark as read"
-                        className="p-1 rounded hover:bg-stone-700 text-stone-500 hover:text-stone-300"
-                      >
-                        <Check className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => handleArchive(notification.id)}
-                      title="Archive"
-                      className="p-1 rounded hover:bg-stone-700 text-stone-500 hover:text-stone-300"
-                    >
-                      <Archive className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+                        {/* Content — clickable */}
+                        <button
+                          type="button"
+                          onClick={() => handleNavigate(notification)}
+                          className="flex-1 min-w-0 text-left"
+                        >
+                          <div className="flex items-start gap-2">
+                            <p
+                              className={`text-sm ${
+                                isUnread ? 'font-medium text-stone-100' : 'text-stone-300'
+                              }`}
+                            >
+                              {notification.title}
+                            </p>
+                            {isUnread && (
+                              <span className="w-1.5 h-1.5 rounded-full bg-brand-600 mt-1.5 flex-shrink-0" />
+                            )}
+                          </div>
+                          {notification.body && (
+                            <p className="text-xs text-stone-500 mt-0.5 line-clamp-2">
+                              {notification.body}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <span
+                              className={`inline-flex items-center text-[10px] px-1.5 py-0.5 rounded border ${badgeClass}`}
+                            >
+                              {categoryLabel}
+                            </span>
+                            <span className="text-[10px] text-stone-500">
+                              {formatDate(notification.created_at)}
+                            </span>
+                            <span className="text-[10px] text-stone-600">
+                              ({getRelativeTime(notification.created_at)})
+                            </span>
+                          </div>
+                        </button>
+
+                        {/* Action buttons */}
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                          {isUnread && (
+                            <button
+                              type="button"
+                              onClick={() => handleMarkAsRead(notification)}
+                              title="Mark as read"
+                              className="p-1 rounded hover:bg-stone-700 text-stone-500 hover:text-stone-300"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleArchive(notification.id)}
+                            title="Archive"
+                            className="p-1 rounded hover:bg-stone-700 text-stone-500 hover:text-stone-300"
+                          >
+                            <Archive className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
-              )
-            })}
+              </div>
+            ))}
           </div>
         )}
       </div>

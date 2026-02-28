@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Inbox,
@@ -26,10 +26,15 @@ import {
   CalendarClock,
   Package,
   Gift,
+  EyeOff,
 } from 'lucide-react'
 import { getNotifications } from '@/lib/notifications/actions'
 import { useNotifications } from './notification-provider'
-import type { Notification, NotificationAction } from '@/lib/notifications/types'
+import type {
+  Notification,
+  NotificationAction,
+  NotificationCategory,
+} from '@/lib/notifications/types'
 
 // Map icon names to components
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -132,11 +137,24 @@ function NotificationItem({
   )
 }
 
+// ─── Filter bar config ──────────────────────────────────────────────────
+
+const PANEL_FILTER_CATEGORIES: Array<{ key: NotificationCategory | 'all'; label: string }> = [
+  { key: 'all', label: 'All' },
+  { key: 'inquiry', label: 'Inquiry' },
+  { key: 'event', label: 'Event' },
+  { key: 'payment', label: 'Payment' },
+  { key: 'chat', label: 'Chat' },
+  { key: 'system', label: 'System' },
+]
+
 export function NotificationPanel({ onClose }: { onClose: () => void }) {
   const router = useRouter()
   const { markAsRead, markAllAsRead, unreadCount } = useNotifications()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
+  const [categoryFilter, setCategoryFilter] = useState<NotificationCategory | 'all'>('all')
+  const [readFilter, setReadFilter] = useState<'all' | 'unread'>('all')
 
   // Fetch notifications on mount
   useEffect(() => {
@@ -152,6 +170,18 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
     }
     load()
   }, [])
+
+  // Client-side filtered list
+  const filteredNotifications = useMemo(() => {
+    let result = notifications
+    if (categoryFilter !== 'all') {
+      result = result.filter((n) => n.category === categoryFilter)
+    }
+    if (readFilter === 'unread') {
+      result = result.filter((n) => !n.read_at)
+    }
+    return result
+  }, [notifications, categoryFilter, readFilter])
 
   const handleNavigate = async (notification: Notification) => {
     if (!notification.read_at) {
@@ -192,19 +222,55 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
         )}
       </div>
 
+      {/* Filter bar */}
+      <div className="px-3 py-2 border-b border-stone-800">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {PANEL_FILTER_CATEGORIES.map((cat) => (
+            <button
+              key={cat.key}
+              type="button"
+              onClick={() => setCategoryFilter(cat.key)}
+              className={`px-2.5 py-1 text-[11px] font-medium rounded-full transition-colors ${
+                categoryFilter === cat.key
+                  ? 'bg-brand-600 text-white'
+                  : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => setReadFilter((prev) => (prev === 'all' ? 'unread' : 'all'))}
+            className={`ml-auto flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-full transition-colors ${
+              readFilter === 'unread'
+                ? 'bg-brand-600 text-white'
+                : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
+            }`}
+          >
+            <EyeOff className="w-3 h-3" />
+            Unread
+          </button>
+        </div>
+      </div>
+
       {/* List */}
-      <div className="max-h-[420px] overflow-y-auto custom-scrollbar divide-y divide-stone-50">
+      <div className="max-h-[420px] overflow-y-auto custom-scrollbar divide-y divide-stone-800">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="w-5 h-5 border-2 border-stone-700 border-t-brand-600 rounded-full animate-spin" />
           </div>
-        ) : notifications.length === 0 ? (
+        ) : filteredNotifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 px-4">
             <Bell className="w-8 h-8 text-stone-300 mb-2" />
-            <p className="text-sm text-stone-500">You&apos;re all caught up</p>
+            <p className="text-sm text-stone-500">
+              {categoryFilter !== 'all' || readFilter === 'unread'
+                ? 'No matching notifications'
+                : "You're all caught up"}
+            </p>
           </div>
         ) : (
-          notifications.map((notification) => (
+          filteredNotifications.map((notification) => (
             <NotificationItem
               key={notification.id}
               notification={notification}
