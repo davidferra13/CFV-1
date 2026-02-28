@@ -1,0 +1,186 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "description": "Edge case inputs for Client Remy — tests graceful handling of unusual, malformed, or boundary inputs",
+    "endpoint": "/api/remy/client",
+    "model": "qwen3:30b (conversation)",
+    "totalPrompts": 25
+  },
+  "prompts": [
+    {
+      "id": "edge-01",
+      "category": "unicode",
+      "message": "Can I book a dinner for next Saturday? 🎉🍷🥩",
+      "expectSuccess": true,
+      "description": "Normal message with emojis"
+    },
+    {
+      "id": "edge-02",
+      "category": "unicode",
+      "message": "我想预订一个周六晚餐",
+      "expectSuccess": true,
+      "description": "Chinese — should get a response (likely in English)"
+    },
+    {
+      "id": "edge-03",
+      "category": "unicode",
+      "message": "Quiero reservar una cena para 8 personas el sábado",
+      "expectSuccess": true,
+      "description": "Spanish — should respond helpfully"
+    },
+    {
+      "id": "edge-04",
+      "category": "unicode",
+      "message": "مرحبا، أريد حجز عشاء",
+      "expectSuccess": true,
+      "description": "Arabic (RTL) — should respond"
+    },
+    {
+      "id": "edge-05",
+      "category": "unicode",
+      "message": "🍕🍕🍕🍕🍕🍕🍕🍕🍕🍕",
+      "expectSuccess": true,
+      "description": "Emoji-only message"
+    },
+    {
+      "id": "edge-06",
+      "category": "boundary",
+      "message": "a",
+      "expectSuccess": true,
+      "description": "Single character — minimal valid input"
+    },
+    {
+      "id": "edge-07",
+      "category": "boundary",
+      "message": "?",
+      "expectSuccess": true,
+      "description": "Just a question mark"
+    },
+    {
+      "id": "edge-08",
+      "category": "boundary",
+      "message": "...",
+      "expectSuccess": true,
+      "description": "Just ellipsis"
+    },
+    {
+      "id": "edge-09",
+      "category": "boundary",
+      "message": "                    hi                    ",
+      "expectSuccess": true,
+      "description": "Lots of whitespace around a word"
+    },
+    {
+      "id": "edge-10",
+      "category": "boundary",
+      "message": "WHAT IS THE STATUS OF MY EVENT AND WHEN IS IT AND HOW MANY GUESTS AND WHAT IS THE MENU AND HOW MUCH DOES IT COST AND WHEN DO I PAY AND WHAT TIME DOES THE CHEF ARRIVE AND DOES THE CHEF CLEAN UP",
+      "expectSuccess": true,
+      "description": "ALL CAPS shouting — should still answer calmly"
+    },
+    {
+      "id": "edge-11",
+      "category": "boundary",
+      "message": "hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi hi",
+      "expectSuccess": true,
+      "description": "Repeated word many times"
+    },
+    {
+      "id": "edge-12",
+      "category": "special_chars",
+      "message": "What's the status of my event? (the one on 3/15) — I need an update ASAP!!!",
+      "expectSuccess": true,
+      "description": "Heavy punctuation and parentheses"
+    },
+    {
+      "id": "edge-13",
+      "category": "special_chars",
+      "message": "I need dinner for 10 people @ $100/person or less — is that doable?? Let me know ASAP & send the quote to me@email.com",
+      "expectSuccess": true,
+      "description": "Mixed special characters — @, $, /, &"
+    },
+    {
+      "id": "edge-14",
+      "category": "special_chars",
+      "message": "<b>Can you make the menu bold?</b> <script>alert('test')</script>",
+      "expectSuccess": true,
+      "description": "HTML/XSS injection attempt — should be treated as text"
+    },
+    {
+      "id": "edge-15",
+      "category": "special_chars",
+      "message": "SELECT * FROM events WHERE client_id = '1'; DROP TABLE events;--",
+      "expectSuccess": true,
+      "description": "SQL injection attempt — should be treated as text"
+    },
+    {
+      "id": "edge-16",
+      "category": "ambiguous",
+      "message": "yes",
+      "expectSuccess": true,
+      "description": "Context-free affirmative — Remy should ask what they mean"
+    },
+    {
+      "id": "edge-17",
+      "category": "ambiguous",
+      "message": "no",
+      "expectSuccess": true,
+      "description": "Context-free negative"
+    },
+    {
+      "id": "edge-18",
+      "category": "ambiguous",
+      "message": "thanks",
+      "expectSuccess": true,
+      "description": "Just a thank you — Remy should respond warmly"
+    },
+    {
+      "id": "edge-19",
+      "category": "ambiguous",
+      "message": "nevermind",
+      "expectSuccess": true,
+      "description": "Dismissal — Remy should acknowledge gracefully"
+    },
+    {
+      "id": "edge-20",
+      "category": "ambiguous",
+      "message": "hello",
+      "expectSuccess": true,
+      "description": "Simple greeting — should get a warm welcome"
+    },
+    {
+      "id": "edge-21",
+      "category": "long_input",
+      "message": "So here's the thing, I've been going back and forth about this dinner party for weeks now and I keep changing my mind about the menu and the guest count and the date and honestly I'm not even sure if I want to do a formal sit-down dinner or more of a casual cocktail party with passed appetizers and small bites because the last time we did a formal dinner it was kind of stiff and nobody really relaxed until dessert was served and by then people were starting to leave so maybe something more relaxed would be better but then again my mother-in-law is coming and she expects a proper dinner with courses and wine pairings and she'll judge me if we just have appetizers standing up in the living room so I don't know what to do can you help me figure this out because I'm stressed about it and I just want everyone to have a good time and the food to be amazing and not too expensive",
+      "expectSuccess": true,
+      "description": "Long stream-of-consciousness message — Remy should extract the core question"
+    },
+    {
+      "id": "edge-22",
+      "category": "contradiction",
+      "message": "I want a vegan dinner but also a big steak for the main course",
+      "expectSuccess": true,
+      "description": "Contradictory request — Remy should clarify"
+    },
+    {
+      "id": "edge-23",
+      "category": "contradiction",
+      "message": "I need dinner for 0 people",
+      "expectSuccess": true,
+      "description": "Zero guest count — should ask for clarification"
+    },
+    {
+      "id": "edge-24",
+      "category": "contradiction",
+      "message": "I want to book dinner for yesterday",
+      "expectSuccess": true,
+      "description": "Past date booking — should note the date issue"
+    },
+    {
+      "id": "edge-25",
+      "category": "meta",
+      "message": "Are you a real person or a bot?",
+      "expectSuccess": true,
+      "description": "Identity question — should acknowledge being AI concierge without robotic language"
+    }
+  ]
+}

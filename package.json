@@ -69,7 +69,18 @@
     "test:remy-quality": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef",
     "test:remy-quality:quick": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef --category business_overview",
     "test:remy-quality:single": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef --prompt",
-    "test:remy-quality:client": "node tests/remy-quality/harness/client-quality-runner.mjs"
+    "test:remy-quality:client": "node tests/remy-quality/harness/client-quality-runner.mjs",
+    "test:remy-quality:client:adversarial": "node tests/remy-quality/harness/client-adversarial-runner.mjs",
+    "test:remy-quality:client:multiturn": "node tests/remy-quality/harness/client-multiturn-runner.mjs",
+    "test:remy-quality:client:edge": "node tests/remy-quality/harness/client-edge-runner.mjs",
+    "test:remy-quality:client:context": "node tests/remy-quality/harness/client-context-runner.mjs",
+    "test:remy-quality:client:all": "node tests/remy-quality/harness/client-quality-runner.mjs && node tests/remy-quality/harness/client-adversarial-runner.mjs && node tests/remy-quality/harness/client-multiturn-runner.mjs && node tests/remy-quality/harness/client-edge-runner.mjs && node tests/remy-quality/harness/client-context-runner.mjs",
+    "test:remy-quality:multi-turn": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite multi-turn",
+    "test:remy-quality:hallucination": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite hallucination",
+    "test:remy-quality:voice": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite voice-messy",
+    "test:remy-quality:adversarial": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite adversarial",
+    "test:remy-quality:consistency": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef --category business_overview --repeat 5",
+    "test:remy-quality:all": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef && node tests/remy-quality/harness/remy-quality-runner.mjs --suite multi-turn && node tests/remy-quality/harness/remy-quality-runner.mjs --suite hallucination && node tests/remy-quality/harness/remy-quality-runner.mjs --suite voice-messy && node tests/remy-quality/harness/remy-quality-runner.mjs --suite adversarial"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

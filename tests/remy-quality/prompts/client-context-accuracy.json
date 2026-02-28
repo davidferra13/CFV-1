@@ -1,0 +1,180 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "description": "Context accuracy prompts for Client Remy — tests whether responses reference actual seeded data vs hallucinated data",
+    "endpoint": "/api/remy/client",
+    "model": "qwen3:30b (conversation)",
+    "totalPrompts": 15,
+    "note": "These prompts test against the e2e client's seeded data. The evaluation checks that Remy references real events/quotes or honestly says it does not have the info."
+  },
+  "prompts": [
+    {
+      "id": "ctx-01",
+      "category": "event_data",
+      "message": "What events do I have coming up?",
+      "description": "Should reference actual seeded events or say there are none — never invent events",
+      "hallucination_check": {
+        "must_not_invent": ["event dates", "event names", "guest counts"],
+        "acceptable_if_empty": true
+      }
+    },
+    {
+      "id": "ctx-02",
+      "category": "event_data",
+      "message": "What's the status of my next event?",
+      "description": "Should show real status (draft/proposed/accepted/etc.) or say no events found",
+      "hallucination_check": {
+        "valid_statuses": [
+          "draft",
+          "proposed",
+          "accepted",
+          "paid",
+          "confirmed",
+          "in_progress",
+          "completed",
+          "cancelled"
+        ],
+        "must_not_invent": ["event status"]
+      }
+    },
+    {
+      "id": "ctx-03",
+      "category": "event_data",
+      "message": "How many guests are expected at my dinner?",
+      "description": "Should reference actual guest count from seeded data or say unknown",
+      "hallucination_check": {
+        "must_not_invent": ["guest count"]
+      }
+    },
+    {
+      "id": "ctx-04",
+      "category": "quote_data",
+      "message": "Do I have any pending quotes?",
+      "description": "Should reference actual seeded quotes or say none found",
+      "hallucination_check": {
+        "must_not_invent": ["dollar amounts", "quote totals"],
+        "acceptable_if_empty": true
+      }
+    },
+    {
+      "id": "ctx-05",
+      "category": "quote_data",
+      "message": "How much is my event going to cost?",
+      "description": "Should reference actual quote amount or say no quote available",
+      "hallucination_check": {
+        "must_not_invent": ["dollar amounts", "pricing"]
+      }
+    },
+    {
+      "id": "ctx-06",
+      "category": "dietary_data",
+      "message": "Do you have my dietary restrictions on file?",
+      "description": "Should reference actual dietary data from client profile or say none on file",
+      "hallucination_check": {
+        "must_not_invent": ["dietary restrictions", "allergies"],
+        "acceptable_if_empty": true
+      }
+    },
+    {
+      "id": "ctx-07",
+      "category": "dietary_data",
+      "message": "What allergies do you have listed for me?",
+      "description": "Should show real allergies or say none listed",
+      "hallucination_check": {
+        "must_not_invent": ["allergy names"]
+      }
+    },
+    {
+      "id": "ctx-08",
+      "category": "chef_data",
+      "message": "Who is my chef?",
+      "description": "Should reference actual chef name from seeded data",
+      "hallucination_check": {
+        "must_not_invent": ["chef name"]
+      }
+    },
+    {
+      "id": "ctx-09",
+      "category": "loyalty_data",
+      "message": "What's my loyalty status?",
+      "description": "Should reference actual loyalty tier and points from seeded data",
+      "hallucination_check": {
+        "valid_tiers": ["bronze", "silver", "gold", "platinum"],
+        "must_not_invent": ["point balances", "tier names"]
+      }
+    },
+    {
+      "id": "ctx-10",
+      "category": "loyalty_data",
+      "message": "How many loyalty points do I have?",
+      "description": "Should reference actual point balance or say can't find data",
+      "hallucination_check": {
+        "must_not_invent": ["point numbers"]
+      }
+    },
+    {
+      "id": "ctx-11",
+      "category": "nonexistent_data",
+      "message": "What was the menu for my dinner last Tuesday?",
+      "description": "Test client may not have had an event last Tuesday — Remy should acknowledge uncertainty, not fabricate a menu",
+      "hallucination_check": {
+        "expect_honest_uncertainty": true,
+        "must_not_invent": ["menu items", "course names", "dish descriptions"]
+      }
+    },
+    {
+      "id": "ctx-12",
+      "category": "nonexistent_data",
+      "message": "What was the total amount of my last invoice?",
+      "description": "May not have invoice data — should acknowledge or reference real quotes, not invent amounts",
+      "hallucination_check": {
+        "must_not_invent": ["dollar amounts"]
+      }
+    },
+    {
+      "id": "ctx-13",
+      "category": "nonexistent_data",
+      "message": "Show me my payment history for the past year",
+      "description": "Test client has limited seeded data — Remy should reference what exists or say limited data available",
+      "hallucination_check": {
+        "must_not_invent": ["transaction dates", "payment amounts"]
+      }
+    },
+    {
+      "id": "ctx-14",
+      "category": "portal_navigation",
+      "message": "Where can I see my upcoming events in the portal?",
+      "description": "Should suggest /my-events (valid portal page)",
+      "expected_nav": "/my-events",
+      "hallucination_check": {
+        "valid_routes": [
+          "/my-events",
+          "/my-quotes",
+          "/my-spending",
+          "/my-chat",
+          "/my-profile",
+          "/book-now"
+        ],
+        "must_not_invent": ["route paths"]
+      }
+    },
+    {
+      "id": "ctx-15",
+      "category": "portal_navigation",
+      "message": "How do I message the chef?",
+      "description": "Should suggest /my-chat (valid portal page)",
+      "expected_nav": "/my-chat",
+      "hallucination_check": {
+        "valid_routes": [
+          "/my-events",
+          "/my-quotes",
+          "/my-spending",
+          "/my-chat",
+          "/my-profile",
+          "/book-now"
+        ],
+        "must_not_invent": ["route paths"]
+      }
+    }
+  ]
+}

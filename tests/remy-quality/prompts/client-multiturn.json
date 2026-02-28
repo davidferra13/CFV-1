@@ -1,0 +1,259 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "description": "Multi-turn conversation scenarios for Client Remy — tests context retention across turns",
+    "endpoint": "/api/remy/client",
+    "model": "qwen3:30b (conversation)",
+    "totalScenarios": 10
+  },
+  "scenarios": [
+    {
+      "id": "mt-01",
+      "name": "Booking flow with dietary follow-up",
+      "description": "Client starts booking, then adds dietary info, then asks about cost",
+      "turns": [
+        {
+          "message": "I want to book a dinner for 8 people next Saturday",
+          "expectedKeywords": ["dinner", "8", "Saturday"],
+          "storeContext": ["dinner", "8 guests", "Saturday"]
+        },
+        {
+          "message": "Two of them are vegan and one has a nut allergy",
+          "expectedKeywords": ["vegan", "nut", "allergy"],
+          "mustReferTo": ["dinner", "guest"],
+          "storeContext": ["vegan", "nut allergy"]
+        },
+        {
+          "message": "Great, what would something like that cost?",
+          "expectedKeywords": ["price", "cost", "quote"],
+          "mustReferTo": ["dinner", "8"]
+        }
+      ]
+    },
+    {
+      "id": "mt-02",
+      "name": "Guest count change chain",
+      "description": "Client adjusts guest count multiple times",
+      "turns": [
+        {
+          "message": "We have 12 people coming to our dinner party",
+          "expectedKeywords": ["12", "guest"],
+          "storeContext": ["12 guests"]
+        },
+        {
+          "message": "Actually, my sister and her husband can't make it, so just 10",
+          "expectedKeywords": ["10"],
+          "mustReferTo": ["guest", "count"],
+          "storeContext": ["10 guests"]
+        },
+        {
+          "message": "Wait, they changed their mind — back to 12 please",
+          "expectedKeywords": ["12"],
+          "mustReferTo": ["guest"]
+        }
+      ]
+    },
+    {
+      "id": "mt-03",
+      "name": "Menu discussion with specifics",
+      "description": "Client discusses menu, then zooms into specific courses",
+      "turns": [
+        {
+          "message": "I want an Italian-themed dinner",
+          "expectedKeywords": ["Italian"],
+          "storeContext": ["Italian"]
+        },
+        {
+          "message": "What would you suggest for the appetizer course?",
+          "expectedKeywords": ["appetizer"],
+          "mustReferTo": ["Italian"]
+        },
+        {
+          "message": "That sounds good. And for dessert?",
+          "expectedKeywords": ["dessert"],
+          "mustReferTo": ["Italian"]
+        },
+        {
+          "message": "Can we do tiramisu instead of whatever you just suggested?",
+          "expectedKeywords": ["tiramisu"],
+          "mustReferTo": ["dessert"]
+        }
+      ]
+    },
+    {
+      "id": "mt-04",
+      "name": "Logistics chain",
+      "description": "Client asks about multiple logistics details",
+      "turns": [
+        {
+          "message": "What time will the chef arrive for our dinner?",
+          "expectedKeywords": ["time", "arrive"],
+          "storeContext": ["arrival time"]
+        },
+        {
+          "message": "And how long will the whole thing take?",
+          "expectedKeywords": ["time", "duration", "long"],
+          "mustReferTo": ["dinner"]
+        },
+        {
+          "message": "Do I need to clear my kitchen counter or will the chef work around it?",
+          "expectedKeywords": ["kitchen", "space"],
+          "mustReferTo": ["chef"]
+        }
+      ]
+    },
+    {
+      "id": "mt-05",
+      "name": "Payment conversation",
+      "description": "Client asks about costs, then deposits, then receipts",
+      "turns": [
+        {
+          "message": "How much is my event going to cost?",
+          "expectedKeywords": ["cost", "price", "quote"],
+          "storeContext": ["cost question"]
+        },
+        {
+          "message": "Do I need to pay a deposit?",
+          "expectedKeywords": ["deposit"],
+          "mustReferTo": ["event", "payment"]
+        },
+        {
+          "message": "Once I pay, will I get a receipt automatically?",
+          "expectedKeywords": ["receipt"],
+          "mustReferTo": ["pay", "deposit"]
+        }
+      ]
+    },
+    {
+      "id": "mt-06",
+      "name": "Allergy complexity escalation",
+      "description": "Client reveals allergies one at a time, each building on the last",
+      "turns": [
+        {
+          "message": "I should mention I'm gluten-free",
+          "expectedKeywords": ["gluten"],
+          "storeContext": ["gluten-free"]
+        },
+        {
+          "message": "Also dairy-free — I'm vegan actually",
+          "expectedKeywords": ["vegan", "dairy"],
+          "mustReferTo": ["dietary"],
+          "storeContext": ["vegan", "dairy-free"]
+        },
+        {
+          "message": "And one of my guests has a severe shellfish allergy, like EpiPen-level",
+          "expectedKeywords": ["shellfish", "allergy"],
+          "mustReferTo": ["dietary"]
+        },
+        {
+          "message": "So to recap, can you handle all of that at one dinner?",
+          "expectedKeywords": ["accommodate", "handle"],
+          "mustReferTo": ["gluten", "vegan", "shellfish"]
+        }
+      ]
+    },
+    {
+      "id": "mt-07",
+      "name": "Rebooking from past event",
+      "description": "Client references a past event and wants to rebook",
+      "turns": [
+        {
+          "message": "I had a great dinner with you guys a few weeks ago",
+          "expectedKeywords": ["dinner", "event"],
+          "storeContext": ["past event"]
+        },
+        {
+          "message": "I want to do the exact same thing again",
+          "expectedKeywords": ["same", "again"],
+          "mustReferTo": ["event", "dinner"]
+        },
+        {
+          "message": "But with 4 more guests this time",
+          "expectedKeywords": ["4", "guest"],
+          "mustReferTo": ["event"]
+        }
+      ]
+    },
+    {
+      "id": "mt-08",
+      "name": "Concern and resolution",
+      "description": "Client raises a concern, Remy addresses it, client follows up",
+      "turns": [
+        {
+          "message": "I'm worried the chef won't know about my daughter's peanut allergy",
+          "expectedKeywords": ["peanut", "allergy"],
+          "storeContext": ["peanut allergy concern"]
+        },
+        {
+          "message": "How can I make sure they see the allergy notes before cooking?",
+          "expectedKeywords": ["allergy", "notes"],
+          "mustReferTo": ["peanut", "chef"]
+        },
+        {
+          "message": "OK good. And what if there's a reaction — does the chef carry an EpiPen?",
+          "expectedKeywords": ["reaction", "EpiPen", "safety"],
+          "mustReferTo": ["allergy"]
+        }
+      ]
+    },
+    {
+      "id": "mt-09",
+      "name": "Venue discussion",
+      "description": "Client discusses venue logistics in detail",
+      "turns": [
+        {
+          "message": "We're doing the event at a rented beach house",
+          "expectedKeywords": ["beach", "house", "venue"],
+          "storeContext": ["beach house"]
+        },
+        {
+          "message": "The kitchen there is pretty small — will that be an issue?",
+          "expectedKeywords": ["kitchen", "small"],
+          "mustReferTo": ["beach", "venue"]
+        },
+        {
+          "message": "There's also an outdoor grill area if that helps",
+          "expectedKeywords": ["grill", "outdoor"],
+          "mustReferTo": ["kitchen", "space"]
+        },
+        {
+          "message": "Perfect. One more thing — is there parking for the chef's vehicle?",
+          "expectedKeywords": ["parking"],
+          "mustReferTo": ["beach", "venue"]
+        }
+      ]
+    },
+    {
+      "id": "mt-10",
+      "name": "Context retention stress test",
+      "description": "5-turn conversation where early details must persist",
+      "turns": [
+        {
+          "message": "I'm planning a birthday dinner for my wife",
+          "expectedKeywords": ["birthday", "dinner"],
+          "storeContext": ["birthday", "wife"]
+        },
+        {
+          "message": "She loves French food, especially duck",
+          "expectedKeywords": ["French", "duck"],
+          "storeContext": ["French", "duck"]
+        },
+        {
+          "message": "There will be 6 of us total",
+          "expectedKeywords": ["6", "guest"],
+          "storeContext": ["6 guests"]
+        },
+        {
+          "message": "Her birthday is March 22nd",
+          "expectedKeywords": ["March", "22"],
+          "storeContext": ["March 22"]
+        },
+        {
+          "message": "Can you summarize everything we've discussed so far?",
+          "expectedKeywords": ["birthday"],
+          "mustReferTo": ["wife", "French", "duck", "6", "March"]
+        }
+      ]
+    }
+  ]
+}
