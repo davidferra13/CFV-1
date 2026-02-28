@@ -23,6 +23,8 @@ const execAsync = promisify(exec)
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = join(__dirname, '..', '..')
 const PORT = 41937
+const PROJECT_TIMELINE_FILE = join(PROJECT_ROOT, 'docs', 'project-timeline.json')
+const PROJECT_EXPENSES_FILE = join(PROJECT_ROOT, 'docs', 'project-expenses.json')
 
 // Load .env.local for Supabase credentials
 try {
@@ -958,6 +960,284 @@ async function getGitHistory() {
     return { ok: true, commits, total: commits.length }
   } catch (err) {
     return { ok: false, error: err.message, commits: [], total: 0 }
+  }
+}
+
+function localDateKeyFromSeconds(seconds) {
+  const d = new Date(seconds * 1000)
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
+}
+
+function buildCommitSessions(timestampsAsc, gapSeconds) {
+  if (!timestampsAsc.length) return []
+  const sessions = []
+  let start = timestampsAsc[0]
+  let prev = timestampsAsc[0]
+
+  for (let i = 1; i < timestampsAsc.length; i += 1) {
+    const current = timestampsAsc[i]
+    if ((current - prev) > gapSeconds) {
+      sessions.push([start, prev])
+      start = current
+    }
+    prev = current
+  }
+  sessions.push([start, prev])
+  return sessions
+}
+
+function estimateSessionSeconds(sessions, { padSeconds, minSeconds, maxSeconds }) {
+  let total = 0
+  for (const [start, end] of sessions) {
+    let duration = (end - start) + padSeconds
+    if (duration < minSeconds) duration = minSeconds
+    if (duration > maxSeconds) duration = maxSeconds
+    total += duration
+  }
+  return total
+}
+
+function computeLongestStreak(dateKeysAsc) {
+  if (!dateKeysAsc.length) return 0
+  let longest = 1
+  let current = 1
+  for (let i = 1; i < dateKeysAsc.length; i += 1) {
+    const prev = new Date(`${dateKeysAsc[i - 1]}T12:00:00`)
+    const next = new Date(`${dateKeysAsc[i]}T12:00:00`)
+    const deltaDays = Math.round((next - prev) / (24 * 60 * 60 * 1000))
+    if (deltaDays === 1) {
+      current += 1
+      if (current > longest) longest = current
+    } else {
+      current = 1
+    }
+  }
+  return longest
+}
+
+function toFiniteNumber(value, fallback = 0) {
+  const n = Number(value)
+  return Number.isFinite(n) ? n : fallback
+}
+
+function roundHours(value) {
+  return Number(toFiniteNumber(value, 0).toFixed(1))
+}
+
+function normalizeHoursBlock(input = {}) {
+  const low = roundHours(input.low ?? 0)
+  const mid = roundHours(input.mid ?? input.midpoint ?? low)
+  const high = roundHours(input.high ?? input.aggressive ?? mid)
+  const upperBoundRaw = input.upperBound ?? input.upper
+  const upperBound = upperBoundRaw == null ? null : roundHours(upperBoundRaw)
+  return { low, mid, high, upperBound }
+}
+
+function defaultProjectTimelineData() {
+  return {
+    lastUpdated: null,
+    assumptions: {
+      earliestProjectWorkDate: null,
+      notes: [],
+    },
+    estimatedHours: {
+      trackedSinceTelemetry: { low: 0, mid: 0, high: 0, upperBound: null },
+      preTelemetryRestartEra: { low: 0, mid: 0, high: 0, upperBound: null },
+    },
+    milestones: [],
+  }
+}
+
+async function readProjectTimelineData() {
+  try {
+    const raw = await readFile(PROJECT_TIMELINE_FILE, 'utf-8')
+    const parsed = JSON.parse(raw)
+    const base = defaultProjectTimelineData()
+    const merged = {
+      ...base,
+      ...parsed,
+      assumptions: {
+        ...base.assumptions,
+        ...(parsed.assumptions || {}),
+      },
+      estimatedHours: {
+        ...base.estimatedHours,
+        ...(parsed.estimatedHours || {}),
+      },
+      milestones: Array.isArray(parsed.milestones) ? parsed.milestones : [],
+    }
+    return merged
+  } catch {
+    return defaultProjectTimelineData()
+  }
+}
+
+async function writeProjectTimelineData(data) {
+  await writeFile(PROJECT_TIMELINE_FILE, `${JSON.stringify(data, null, 2)}\n`)
+}
+
+function nextMilestoneId(milestones) {
+  const max = milestones.reduce((acc, item) => {
+    const raw = String(item?.id || '').replace(/^mil_/, '')
+    const n = parseInt(raw, 10)
+    return Number.isFinite(n) ? Math.max(acc, n) : acc
+  }, 0)
+  return `mil_${String(max + 1).padStart(3, '0')}`
+}
+
+function buildLifeTimelineView(timelineData, gitSummary) {
+  const trackedFromFile = normalizeHoursBlock(timelineData.estimatedHours?.trackedSinceTelemetry || {})
+  const preTelemetry = normalizeHoursBlock(timelineData.estimatedHours?.preTelemetryRestartEra || {})
+  const gitModel = gitSummary
+    ? normalizeHoursBlock({
+      low: gitSummary.estimatedHours?.conservative ?? 0,
+      mid: gitSummary.estimatedHours?.midpoint ?? 0,
+      high: gitSummary.estimatedHours?.aggressive ?? 0,
+    })
+    : normalizeHoursBlock({})
+
+  // Use the stronger tracked estimate between saved VS Code evidence and current git signal.
+  const tracked = {
+    low: roundHours(Math.max(trackedFromFile.low, gitModel.low)),
+    mid: roundHours(Math.max(trackedFromFile.mid, gitModel.mid)),
+    high: roundHours(Math.max(trackedFromFile.high, gitModel.high)),
+    upperBound: trackedFromFile.upperBound == null
+      ? null
+      : roundHours(Math.max(trackedFromFile.upperBound, trackedFromFile.high, gitModel.high)),
+  }
+
+  const combined = {
+    low: roundHours(tracked.low + preTelemetry.low),
+    mid: roundHours(tracked.mid + preTelemetry.mid),
+    high: roundHours(tracked.high + preTelemetry.high),
+    upperBound: tracked.upperBound == null
+      ? null
+      : roundHours(tracked.upperBound + preTelemetry.high),
+  }
+
+  const milestones = [...(timelineData.milestones || [])]
+    .filter(m => m && typeof m.date === 'string' && typeof m.title === 'string')
+    .sort((a, b) => String(b.date).localeCompare(String(a.date)))
+    .slice(0, 300)
+
+  return {
+    lastUpdated: timelineData.lastUpdated || null,
+    assumptions: timelineData.assumptions || {},
+    estimates: {
+      tracked,
+      preTelemetry,
+      combined,
+      gitOnly: gitModel,
+    },
+    anchors: {
+      gitFirstTimestamp: gitSummary?.firstTimestamp || null,
+      gitLastTimestamp: gitSummary?.lastTimestamp || null,
+    },
+    milestones,
+  }
+}
+
+async function getProjectTimeline() {
+  try {
+    const timelineData = await readProjectTimelineData()
+    const { stdout } = await execAsync(
+      'git log --pretty=format:"%h%x1f%ct%x1f%an%x1f%s"',
+      { cwd: PROJECT_ROOT, maxBuffer: 10 * 1024 * 1024 }
+    )
+    const lines = stdout.trim().split('\n').filter(l => l.trim())
+    const commits = lines.map(line => {
+      const [hash, tsRaw, author, ...msgParts] = line.split('\x1f')
+      const timestamp = Number(tsRaw)
+      return {
+        hash,
+        timestamp,
+        author: author || 'Unknown',
+        message: msgParts.join('\x1f'),
+        date: localDateKeyFromSeconds(timestamp),
+      }
+    }).filter(c => Number.isFinite(c.timestamp))
+
+    if (!commits.length) {
+      const life = buildLifeTimelineView(timelineData, null)
+      return {
+        ok: true,
+        summary: null,
+        commits: [],
+        days: [],
+        life,
+      }
+    }
+
+    const timestampsAsc = commits.map(c => c.timestamp).sort((a, b) => a - b)
+    const firstTimestamp = timestampsAsc[0]
+    const lastTimestamp = timestampsAsc[timestampsAsc.length - 1]
+    const activeDateSet = new Set(commits.map(c => c.date))
+    const activeDatesAsc = Array.from(activeDateSet).sort()
+    const calendarSpanDays = Math.floor((lastTimestamp - firstTimestamp) / 86400) + 1
+    const authors = Array.from(new Set(commits.map(c => c.author)))
+    const sessions45 = buildCommitSessions(timestampsAsc, 45 * 60)
+    const sessions90 = buildCommitSessions(timestampsAsc, 90 * 60)
+
+    const conservative = estimateSessionSeconds(sessions45, {
+      padSeconds: 10 * 60,
+      minSeconds: 15 * 60,
+      maxSeconds: 4 * 3600,
+    })
+    const midpoint = estimateSessionSeconds(sessions45, {
+      padSeconds: 20 * 60,
+      minSeconds: 25 * 60,
+      maxSeconds: 6 * 3600,
+    })
+    const aggressive = estimateSessionSeconds(sessions90, {
+      padSeconds: 30 * 60,
+      minSeconds: 35 * 60,
+      maxSeconds: 8 * 3600,
+    })
+
+    const dayMap = new Map()
+    for (const c of commits) {
+      if (!dayMap.has(c.date)) {
+        dayMap.set(c.date, { date: c.date, commits: 0, firstTs: c.timestamp, lastTs: c.timestamp })
+      }
+      const d = dayMap.get(c.date)
+      d.commits += 1
+      if (c.timestamp < d.firstTs) d.firstTs = c.timestamp
+      if (c.timestamp > d.lastTs) d.lastTs = c.timestamp
+    }
+    const days = Array.from(dayMap.values()).sort((a, b) => b.date.localeCompare(a.date))
+
+    const summary = {
+      totalCommits: commits.length,
+      totalAuthors: authors.length,
+      activeDays: activeDateSet.size,
+      longestStreakDays: computeLongestStreak(activeDatesAsc),
+      calendarSpanDays,
+      firstTimestamp,
+      lastTimestamp,
+      commitsPerActiveDay: Number((commits.length / Math.max(1, activeDateSet.size)).toFixed(1)),
+      sessions45m: sessions45.length,
+      sessions90m: sessions90.length,
+      estimatedHours: {
+        conservative: Number((conservative / 3600).toFixed(1)),
+        midpoint: Number((midpoint / 3600).toFixed(1)),
+        aggressive: Number((aggressive / 3600).toFixed(1)),
+      },
+    }
+
+    const life = buildLifeTimelineView(timelineData, summary)
+
+    return {
+      ok: true,
+      summary,
+      commits: commits.slice(0, 300),
+      days: days.slice(0, 180),
+      life,
+    }
+  } catch (err) {
+    return { ok: false, error: err.message, summary: null, commits: [], days: [], life: null }
   }
 }
 
@@ -1909,6 +2189,52 @@ async function handleRequest(req, res) {
   if (path === '/api/git/history' && method === 'GET') {
     return json(res, await getGitHistory())
   }
+  if (path === '/api/project/timeline' && method === 'GET') {
+    return json(res, await getProjectTimeline())
+  }
+  if (path === '/api/project/timeline/milestones' && method === 'POST') {
+    const body = await parseBody(req)
+    const date = String(body.date || '').trim()
+    const title = String(body.title || '').trim()
+    const notes = String(body.notes || '').trim()
+    const type = String(body.type || 'manual').trim()
+    const source = String(body.source || 'mission-control').trim()
+    const hoursLow = toFiniteNumber(body.hoursLow, 0)
+    const hoursMid = toFiniteNumber(body.hoursMid, 0)
+    const hoursHigh = toFiniteNumber(body.hoursHigh, 0)
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return json(res, { ok: false, error: 'date must be YYYY-MM-DD' }, 400)
+    }
+    if (!title) {
+      return json(res, { ok: false, error: 'title is required' }, 400)
+    }
+
+    try {
+      const timelineData = await readProjectTimelineData()
+      const milestones = Array.isArray(timelineData.milestones) ? timelineData.milestones : []
+      const milestone = {
+        id: nextMilestoneId(milestones),
+        date,
+        title,
+        type,
+        source,
+        notes,
+        hoursLow: roundHours(hoursLow),
+        hoursMid: roundHours(hoursMid),
+        hoursHigh: roundHours(hoursHigh),
+        createdAt: new Date().toISOString(),
+      }
+      milestones.push(milestone)
+      timelineData.milestones = milestones
+      timelineData.lastUpdated = new Date().toISOString().slice(0, 10)
+      await writeProjectTimelineData(timelineData)
+      log('timeline', `Added milestone: ${title} (${date})`, 'info')
+      return json(res, { ok: true, milestone })
+    } catch (err) {
+      return json(res, { ok: false, error: `Failed to save milestone: ${err.message}` }, 500)
+    }
+  }
 
   if (path === '/api/feedback' && method === 'GET') {
     return json(res, await getFeedback())
@@ -2046,11 +2372,9 @@ async function handleRequest(req, res) {
   }
 
   // ── Expenses endpoint ────────────────────────────────────────────
-  const EXPENSES_FILE = join(PROJECT_ROOT, 'docs', 'project-expenses.json')
-
   if (path === '/api/expenses' && method === 'GET') {
     try {
-      const raw = await readFile(EXPENSES_FILE, 'utf-8')
+      const raw = await readFile(PROJECT_EXPENSES_FILE, 'utf-8')
       return json(res, JSON.parse(raw))
     } catch (err) {
       return json(res, { error: 'Failed to read expenses file: ' + err.message }, 500)
@@ -2066,7 +2390,7 @@ async function handleRequest(req, res) {
     }
 
     try {
-      const raw = await readFile(EXPENSES_FILE, 'utf-8')
+      const raw = await readFile(PROJECT_EXPENSES_FILE, 'utf-8')
       const data = JSON.parse(raw)
 
       // Generate next ID
@@ -2089,7 +2413,7 @@ async function handleRequest(req, res) {
       data.entries.push(entry)
       data.lastUpdated = new Date().toISOString().slice(0, 10)
 
-      await writeFile(EXPENSES_FILE, JSON.stringify(data, null, 2) + '\n')
+      await writeFile(PROJECT_EXPENSES_FILE, JSON.stringify(data, null, 2) + '\n')
       log('expenses', `Added expense: ${name} ($${entry.totalSpent})`, 'info')
       return json(res, { ok: true, entry })
     } catch (err) {

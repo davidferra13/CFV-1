@@ -52,6 +52,8 @@ const SubmitRSVPSchema = z.object({
   plus_one_name: z.string().optional(),
   plus_one_allergies: z.array(z.string()).optional(),
   plus_one_dietary: z.array(z.string()).optional(),
+  data_processing_consent: z.boolean().optional(),
+  marketing_opt_in: z.boolean().optional(),
   captcha_token: z.string().max(4096).optional().or(z.literal('')),
 })
 
@@ -78,6 +80,8 @@ const UpdateRSVPSchema = z.object({
   plus_one_name: z.string().optional(),
   plus_one_allergies: z.array(z.string()).optional(),
   plus_one_dietary: z.array(z.string()).optional(),
+  data_processing_consent: z.boolean().optional(),
+  marketing_opt_in: z.boolean().optional(),
   captcha_token: z.string().max(4096).optional().or(z.literal('')),
 })
 
@@ -2503,6 +2507,10 @@ export async function submitRSVP(input: SubmitRSVPInput) {
     shouldWaitlist,
     previousQueueStatus: 'none',
   })
+  const dataProcessingConsent = validated.data_processing_consent ?? true
+  if (!dataProcessingConsent) {
+    throw new Error('Data processing consent is required to submit RSVP.')
+  }
 
   const guestToken = crypto.randomBytes(32).toString('hex')
   const nowIso = new Date().toISOString()
@@ -2528,6 +2536,9 @@ export async function submitRSVP(input: SubmitRSVPInput) {
       attendance_queue_status: writeState.attendance_queue_status,
       waitlisted_at: writeState.waitlisted ? nowIso : null,
       promoted_at: writeState.promoted ? nowIso : null,
+      data_processing_consent: dataProcessingConsent,
+      data_processing_consent_at: dataProcessingConsent ? nowIso : null,
+      marketing_opt_in: validated.marketing_opt_in || false,
     })
     .select()
     .single()
@@ -2722,6 +2733,15 @@ export async function updateRSVP(input: UpdateRSVPInput) {
     payload.plus_one_allergies = updateData.plus_one_allergies
   if (updateData.plus_one_dietary !== undefined)
     payload.plus_one_dietary = updateData.plus_one_dietary
+  if (updateData.data_processing_consent !== undefined) {
+    payload.data_processing_consent = updateData.data_processing_consent
+    payload.data_processing_consent_at = updateData.data_processing_consent
+      ? new Date().toISOString()
+      : null
+  }
+  if (updateData.marketing_opt_in !== undefined) {
+    payload.marketing_opt_in = updateData.marketing_opt_in
+  }
 
   const { data: guest, error } = await supabase
     .from('event_guests')

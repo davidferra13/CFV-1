@@ -25,6 +25,8 @@ interface RSVPFormProps {
     notes: string | null
     plus_one: boolean
     photo_consent?: boolean
+    data_processing_consent?: boolean
+    marketing_opt_in?: boolean
     plus_one_name?: string | null
     plus_one_allergies?: string[] | null
     plus_one_dietary?: string[] | null
@@ -66,6 +68,10 @@ export function RSVPForm({
     existingGuest?.plus_one_dietary?.join(', ') || ''
   )
   const [photoConsent, setPhotoConsent] = useState(existingGuest?.photo_consent || false)
+  const [dataProcessingConsent, setDataProcessingConsent] = useState(
+    existingGuest?.data_processing_consent ?? true
+  )
+  const [marketingOptIn, setMarketingOptIn] = useState(existingGuest?.marketing_opt_in ?? false)
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [waitlisted, setWaitlisted] = useState(false)
@@ -95,6 +101,12 @@ export function RSVPForm({
       .map((s) => s.trim())
       .filter(Boolean)
 
+    if (!dataProcessingConsent) {
+      setError('Data processing consent is required to submit RSVP.')
+      setLoading(false)
+      return
+    }
+
     try {
       if (isEditing && guestToken) {
         await updateRSVP({
@@ -109,6 +121,8 @@ export function RSVPForm({
           plus_one_name: plusOne ? plusOneName || undefined : undefined,
           plus_one_allergies: plusOne ? poAllergies : undefined,
           plus_one_dietary: plusOne ? poDietary : undefined,
+          data_processing_consent: dataProcessingConsent,
+          marketing_opt_in: marketingOptIn,
         })
       } else {
         const result = await submitRSVP({
@@ -124,6 +138,8 @@ export function RSVPForm({
           plus_one_name: plusOne ? plusOneName || undefined : undefined,
           plus_one_allergies: plusOne ? poAllergies : undefined,
           plus_one_dietary: plusOne ? poDietary : undefined,
+          data_processing_consent: dataProcessingConsent,
+          marketing_opt_in: marketingOptIn,
         })
 
         if (result.guestToken) {
@@ -470,6 +486,33 @@ export function RSVPForm({
           </label>
         </div>
       )}
+
+      <div className="space-y-2 rounded-lg border border-stone-700 bg-stone-900/40 p-3">
+        <div className="flex items-center gap-3">
+          <input
+            id="dataConsent"
+            type="checkbox"
+            checked={dataProcessingConsent}
+            onChange={(e) => setDataProcessingConsent(e.target.checked)}
+            className="w-4 h-4 text-brand-600 rounded border-stone-600 focus:ring-brand-500"
+          />
+          <label htmlFor="dataConsent" className="text-sm text-stone-300">
+            I consent to processing RSVP details for event planning
+          </label>
+        </div>
+        <div className="flex items-center gap-3">
+          <input
+            id="marketingOptIn"
+            type="checkbox"
+            checked={marketingOptIn}
+            onChange={(e) => setMarketingOptIn(e.target.checked)}
+            className="w-4 h-4 text-brand-600 rounded border-stone-600 focus:ring-brand-500"
+          />
+          <label htmlFor="marketingOptIn" className="text-sm text-stone-400">
+            I&apos;m open to occasional private dining updates
+          </label>
+        </div>
+      </div>
 
       {/* Submit */}
       <button

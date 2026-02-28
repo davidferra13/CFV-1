@@ -88,6 +88,10 @@
       "schedule": "0 4 * * *"
     },
     {
+      "path": "/api/scheduled/rsvp-retention",
+      "schedule": "30 4 * * *"
+    },
+    {
       "path": "/api/scheduled/monitor",
       "schedule": "30 * * * *"
     },

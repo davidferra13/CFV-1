@@ -1,0 +1,164 @@
+{
+  "lastUpdated": "2026-02-28",
+  "assumptions": {
+    "earliestProjectWorkDate": "2024-07-18",
+    "notes": [
+      "First confirmed ChefFlow prompt in ChatGPT history is dated 2024-07-18.",
+      "Additional ChatGPT history evidence shows active ChefFlow work on 2025-11-13.",
+      "Most recent confirmed ChatGPT ChefFlow thread is dated 2026-02-28 (Today in screenshot).",
+      "ChatGPT threads include deep feature design, market research, real-world scenario planning, and detailed business process documentation.",
+      "User reported roughly two years of restart cycles before regular commit cadence.",
+      "Tracked estimate blends VS Code session evidence with git commit session modeling."
+    ]
+  },
+  "estimatedHours": {
+    "trackedSinceTelemetry": {
+      "low": 188.6,
+      "mid": 218.7,
+      "high": 237.4,
+      "upperBound": 301.3,
+      "method": "VS Code log + telemetry extrapolation captured on 2026-02-28"
+    },
+    "preTelemetryRestartEra": {
+      "low": 320,
+      "mid": 980,
+      "high": 2400,
+      "upperBound": null,
+      "method": "Manual estimate for pre-telemetry restart cycles including extensive documentation, research, and scenario-design work (user-reported)"
+    }
+  },
+  "milestones": [
+    {
+      "id": "mil_001",
+      "date": "2024-07-18",
+      "title": "First confirmed ChefFlow prompt in ChatGPT history",
+      "type": "evidence",
+      "source": "chatgpt-history",
+      "notes": "Chat history search screenshot shows 'Gluten-Free Birthday Dinner' under 'chef flow' dated 7/18/24.",
+      "hoursLow": 0,
+      "hoursMid": 0,
+      "hoursHigh": 0,
+      "createdAt": "2026-02-28T00:00:00.000Z"
+    },
+    {
+      "id": "mil_002",
+      "date": "2025-05-08",
+      "title": "First recorded VS Code telemetry session in current profile",
+      "type": "evidence",
+      "source": "vscode-telemetry",
+      "notes": "telemetry.firstSessionDate = Thu, 08 May 2025 06:49:50 GMT",
+      "hoursLow": 0,
+      "hoursMid": 0,
+      "hoursHigh": 0,
+      "createdAt": "2026-02-28T00:00:00.000Z"
+    },
+    {
+      "id": "mil_003",
+      "date": "2025-11-13",
+      "title": "Confirmed active ChefFlow work in ChatGPT history",
+      "type": "evidence",
+      "source": "chatgpt-history",
+      "notes": "Screenshot midpoint scroll shows a 'Request for assistance' ChefFlow thread dated 11/13/25.",
+      "hoursLow": 0,
+      "hoursMid": 0,
+      "hoursHigh": 0,
+      "createdAt": "2026-02-28T00:00:00.000Z"
+    },
+    {
+      "id": "mil_004",
+      "date": "2026-01-22",
+      "title": "VS Code Insiders usage appears in local logs",
+      "type": "evidence",
+      "source": "vscode-insiders",
+      "notes": "Insiders log sessions detected with one meaningful runtime session.",
+      "hoursLow": 0,
+      "hoursMid": 0,
+      "hoursHigh": 0,
+      "createdAt": "2026-02-28T00:00:00.000Z"
+    },
+    {
+      "id": "mil_005",
+      "date": "2026-02-14",
+      "title": "Initial commit in this repository",
+      "type": "milestone",
+      "source": "git",
+      "notes": "Commit 1198d325 by David Ferragamo: Initial commit: ChefFlow V1 - Complete MVP.",
+      "hoursLow": 0,
+      "hoursMid": 0,
+      "hoursHigh": 0,
+      "createdAt": "2026-02-28T00:00:00.000Z"
+    },
+    {
+      "id": "mil_006",
+      "date": "2026-02-25",
+      "title": "High-intensity tracked coding window begins",
+      "type": "evidence",
+      "source": "vscode-logs",
+      "notes": "Recent logs show long sessions from Feb 25-27, 2026.",
+      "hoursLow": 31.4,
+      "hoursMid": 36.4,
+      "hoursHigh": 39.6,
+      "createdAt": "2026-02-28T00:00:00.000Z"
+    },
+    {
+      "id": "mil_007",
+      "date": "2026-02-27",
+      "title": "Most recent tracked activity in telemetry and git",
+      "type": "evidence",
+      "source": "vscode-and-git",
+      "notes": "Latest telemetry activity and latest commit currently both on 2026-02-27 local time.",
+      "hoursLow": 0,
+      "hoursMid": 0,
+      "hoursHigh": 0,
+      "createdAt": "2026-02-28T00:00:00.000Z"
+    },
+    {
+      "id": "mil_008",
+      "date": "2026-02-28",
+      "title": "Lifetime estimate baseline established in Mission Control",
+      "type": "milestone",
+      "source": "mission-control",
+      "notes": "Timeline tab now stores persistent milestones and life-of-app estimate in docs/project-timeline.json.",
+      "hoursLow": 0,
+      "hoursMid": 0,
+      "hoursHigh": 0,
+      "createdAt": "2026-02-28T00:00:00.000Z"
+    },
+    {
+      "id": "mil_009",
+      "date": "2026-02-28",
+      "title": "Most recent confirmed ChefFlow prompt in ChatGPT history",
+      "type": "evidence",
+      "source": "chatgpt-history",
+      "notes": "Screenshot shows 'Client Portal Login Design' marked Today (2026-02-28).",
+      "hoursLow": 0,
+      "hoursMid": 0,
+      "hoursHigh": 0,
+      "createdAt": "2026-02-28T00:00:00.000Z"
+    },
+    {
+      "id": "mil_010",
+      "date": "2026-02-28",
+      "title": "Documentation-heavy planning effort formally counted in timeline",
+      "type": "evidence",
+      "source": "user-report",
+      "notes": "User confirmed countless hours spent documenting real business process, feature requirements, market research, and scenario modeling before/alongside coding.",
+      "hoursLow": 140,
+      "hoursMid": 480,
+      "hoursHigh": 1200,
+      "createdAt": "2026-02-28T00:00:00.000Z"
+    },
+    {
+      "id": "mil_011",
+      "date": "2026-02-28",
+      "title": "Google Drive corpus captured as verbatim evidence artifact",
+      "type": "evidence",
+      "source": "google-drive-screenshots",
+      "notes": "Verbatim screenshot capture saved to docs/google-drive-chefflow-verbatim-capture-2026-02-28.md, including specs, checklists, admin/client/partner docs, archives, and historical private-chef records.",
+      "hoursLow": 0,
+      "hoursMid": 0,
+      "hoursHigh": 0,
+      "createdAt": "2026-02-28T00:00:00.000Z"
+    }
+  ]
+}

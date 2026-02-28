@@ -1529,6 +1529,11 @@ body {
         <span class="nav-icon">&#x1F4DC;</span>
         <span class="nav-label">Log</span>
       </a>
+      <a class="nav-item" data-section="timeline" title="Project Timeline">
+        <span class="nav-dot online" id="nd-timeline"></span>
+        <span class="nav-icon">&#x1F5D3;&#xFE0F;</span>
+        <span class="nav-label">Timeline</span>
+      </a>
       <a class="nav-item" data-section="feedback" title="User Feedback">
         <span class="nav-dot online" id="nd-feedback"></span>
         <span class="nav-icon">&#x1F4AC;</span>
@@ -1957,6 +1962,146 @@ body {
           </span>
         </div>
         <div id="history-list" style="overflow-y:auto;max-height:calc(100vh - 340px);"></div>
+      </div>
+
+      <!-- ─── Project Timeline Panel ─── -->
+      <div class="panel" id="panel-timeline">
+        <div class="panel-header">
+          <h2 class="panel-title">Project Timeline</h2>
+          <span class="status-badge online" id="badge-timeline">
+            <span class="dot online"></span>
+            <span id="timeline-status">Loading...</span>
+          </span>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+          <div style="font-size:12px;color:var(--text-muted);">
+            Best-effort reconstruction from git + VS Code evidence + manual milestones
+          </div>
+          <button class="btn btn-ghost" onclick="loadProjectTimeline(true)">↻ Refresh Timeline</button>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-label">Project Start</div>
+            <div class="info-value small" id="timeline-start">--</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Latest Activity</div>
+            <div class="info-value small" id="timeline-latest">--</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Calendar Span</div>
+            <div class="info-value" id="timeline-span">--</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Active Days</div>
+            <div class="info-value" id="timeline-active-days">--</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Longest Streak</div>
+            <div class="info-value" id="timeline-streak">--</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Total Commits</div>
+            <div class="info-value" id="timeline-total-commits">--</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Hours (Conservative)</div>
+            <div class="info-value" id="timeline-hours-cons">--</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Hours (Midpoint)</div>
+            <div class="info-value success" id="timeline-hours-mid">--</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Hours (Aggressive)</div>
+            <div class="info-value" id="timeline-hours-high">--</div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;font-size:12px;color:var(--text-muted);" id="timeline-hours-note">--</div>
+
+        <div class="divider"></div>
+        <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Entire App Lifetime Estimate</h3>
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-label">Lifetime Hours (Low)</div>
+            <div class="info-value" id="timeline-life-low">--</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Lifetime Hours (Mid)</div>
+            <div class="info-value success" id="timeline-life-mid">--</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Lifetime Hours (High)</div>
+            <div class="info-value" id="timeline-life-high">--</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Hard Upper Bound</div>
+            <div class="info-value" id="timeline-life-upper">--</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;font-size:12px;color:var(--text-muted);" id="timeline-life-note">--</div>
+
+        <div class="divider"></div>
+        <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Life Milestones (Manual + Evidence)</h3>
+        <div id="timeline-life-events" style="display:flex;flex-direction:column;gap:8px;"></div>
+
+        <div class="divider"></div>
+        <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Add Timeline Milestone</h3>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;">
+          <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;">
+            <div style="grid-column:span 2;">
+              <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">Date</label>
+              <input id="timeline-add-date" type="date" style="width:100%;padding:8px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:13px;outline:none;" />
+            </div>
+            <div style="grid-column:span 2;">
+              <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">Type</label>
+              <select id="timeline-add-type" style="width:100%;padding:8px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:13px;outline:none;">
+                <option value="manual">Manual</option>
+                <option value="evidence">Evidence</option>
+                <option value="release">Release</option>
+                <option value="rebuild">Rebuild</option>
+                <option value="milestone">Milestone</option>
+              </select>
+            </div>
+            <div style="grid-column:span 2;">
+              <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">Title</label>
+              <input id="timeline-add-title" type="text" placeholder="What happened?" style="width:100%;padding:8px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:13px;outline:none;" />
+            </div>
+            <div style="grid-column:span 2;">
+              <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">Hours Low</label>
+              <input id="timeline-add-hours-low" type="number" step="0.1" min="0" placeholder="0" style="width:100%;padding:8px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:13px;outline:none;" />
+            </div>
+            <div style="grid-column:span 2;">
+              <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">Hours Mid</label>
+              <input id="timeline-add-hours-mid" type="number" step="0.1" min="0" placeholder="0" style="width:100%;padding:8px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:13px;outline:none;" />
+            </div>
+            <div style="grid-column:span 2;">
+              <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">Hours High</label>
+              <input id="timeline-add-hours-high" type="number" step="0.1" min="0" placeholder="0" style="width:100%;padding:8px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:13px;outline:none;" />
+            </div>
+            <div style="grid-column:1/-1;">
+              <label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px;">Notes</label>
+              <input id="timeline-add-notes" type="text" placeholder="Optional context/evidence" style="width:100%;padding:8px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;color:var(--text-primary);font-size:13px;outline:none;" />
+            </div>
+            <div style="grid-column:1/-1;text-align:right;">
+              <button type="button" onclick="addTimelineMilestone()" style="padding:8px 20px;background:var(--brand);color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">Add Milestone</button>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--text-muted);">
+          Source of truth: <code style="background:var(--bg-secondary);padding:2px 6px;border-radius:4px;font-size:11px;">docs/project-timeline.json</code>
+        </div>
+
+        <div class="divider"></div>
+        <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Daily Activity</h3>
+        <div id="timeline-days" style="display:flex;flex-direction:column;gap:8px;"></div>
+
+        <div class="divider"></div>
+        <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Recent Timeline Events</h3>
+        <div class="commit-list" id="timeline-commits"></div>
       </div>
 
       <!-- ─── Feedback Panel ─── -->
@@ -3678,6 +3823,15 @@ document.querySelectorAll('.nav-item').forEach(item => {
     const panel = document.getElementById(`panel-${section}`)
     if (panel) panel.classList.add('active')
     currentSection = section
+
+    // Lazy-load heavy panel data on first open.
+    if (section === 'home') loadPromptQueue()
+    if (section === 'log') loadHistory()
+    if (section === 'timeline') loadProjectTimeline()
+    if (section === 'feedback') loadFeedback()
+    if (section === 'infra') loadInfra()
+    if (section === 'observe') observeConnect()
+    if (section === 'expenses') loadExpenses()
   })
 })
 
@@ -5729,6 +5883,247 @@ function renderHistory(commits) {
 
 // ── Feedback ──────────────────────────────────────────────────────
 
+let timelineLoaded = false
+
+function formatTimelineHours(hours) {
+  const n = Number(hours)
+  if (!Number.isFinite(n)) return '--'
+  return `${n.toFixed(1)}h`
+}
+
+function formatTimelineDateTime(timestampSeconds) {
+  return new Date(timestampSeconds * 1000).toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })
+}
+
+function formatTimelineTime(timestampSeconds) {
+  return new Date(timestampSeconds * 1000).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
+}
+
+function formatTimelineDateLabel(dateKey) {
+  return new Date(`${dateKey}T12:00:00`).toLocaleDateString('en-US', {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
+function resetTimelineSummary() {
+  setText('timeline-start', '--')
+  setText('timeline-latest', '--')
+  setText('timeline-span', '--')
+  setText('timeline-active-days', '--')
+  setText('timeline-streak', '--')
+  setText('timeline-total-commits', '--')
+  setText('timeline-hours-cons', '--')
+  setText('timeline-hours-mid', '--')
+  setText('timeline-hours-high', '--')
+  setText('timeline-hours-note', '--')
+  setText('timeline-life-low', '--')
+  setText('timeline-life-mid', '--')
+  setText('timeline-life-high', '--')
+  setText('timeline-life-upper', '--')
+  setText('timeline-life-note', '--')
+}
+
+function renderTimelineLifeSummary(life) {
+  if (!life || !life.estimates) {
+    setText('timeline-life-low', '--')
+    setText('timeline-life-mid', '--')
+    setText('timeline-life-high', '--')
+    setText('timeline-life-upper', '--')
+    setText('timeline-life-note', 'No lifetime estimate loaded yet.')
+    return
+  }
+
+  const combined = life.estimates.combined || {}
+  const tracked = life.estimates.tracked || {}
+  const preTelemetry = life.estimates.preTelemetry || {}
+  const updated = life.lastUpdated || 'unknown'
+  const assumptionStart = life.assumptions?.earliestProjectWorkDate || 'unknown'
+
+  setText('timeline-life-low', formatTimelineHours(combined.low))
+  setText('timeline-life-mid', formatTimelineHours(combined.mid))
+  setText('timeline-life-high', formatTimelineHours(combined.high))
+  setText('timeline-life-upper', combined.upperBound == null ? '--' : formatTimelineHours(combined.upperBound))
+  setText(
+    'timeline-life-note',
+    `Combined model = tracked evidence (${formatTimelineHours(tracked.low)} to ${formatTimelineHours(tracked.high)}) + restart-era estimate (${formatTimelineHours(preTelemetry.low)} to ${formatTimelineHours(preTelemetry.high)}). Earliest work date: ${assumptionStart}. Last updated: ${updated}.`
+  )
+}
+
+function renderTimelineLifeEvents(events) {
+  const el = document.getElementById('timeline-life-events')
+  if (!el) return
+  if (!events || events.length === 0) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:10px 0;">No life milestones yet. Add one below.</div>'
+    return
+  }
+
+  const html = events.slice(0, 120).map(event => {
+    const dateLabel = formatTimelineDateLabel(event.date)
+    const type = (event.type || 'manual').toUpperCase()
+    const note = event.notes ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${escapeHtml(event.notes)}</div>` : ''
+    const hoursBits = [event.hoursLow, event.hoursMid, event.hoursHigh].filter(v => Number(v) > 0)
+    const hours = hoursBits.length
+      ? `<span style="font-size:11px;color:var(--text-muted);">hours ${escapeHtml(String(event.hoursLow || 0))}/${escapeHtml(String(event.hoursMid || 0))}/${escapeHtml(String(event.hoursHigh || 0))}</span>`
+      : ''
+    return `
+      <div class="commit-item" style="display:grid;grid-template-columns:minmax(180px,1fr) minmax(260px,2fr) auto;gap:12px;align-items:start;">
+        <div style="font-size:12px;color:var(--text-muted);">${escapeHtml(dateLabel)}</div>
+        <div>
+          <div class="commit-msg" style="font-weight:600;">${escapeHtml(event.title || '')}</div>
+          ${note}
+        </div>
+        <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <span class="commit-hash">${escapeHtml(type)}</span>
+          ${hours}
+        </div>
+      </div>
+    `
+  }).join('')
+
+  el.innerHTML = html
+}
+
+async function loadProjectTimeline(force = false) {
+  if (timelineLoaded && !force) return
+  setText('timeline-status', 'Loading...')
+  const dateInput = document.getElementById('timeline-add-date')
+  if (dateInput && !dateInput.value) {
+    dateInput.value = new Date().toISOString().slice(0, 10)
+  }
+
+  try {
+    const res = await fetch(`${API}/api/project/timeline`)
+    const data = await res.json()
+    if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`)
+
+    if (!data.summary) {
+      setText('timeline-status', 'No commits yet')
+      resetTimelineSummary()
+      renderTimelineLifeSummary(data.life || null)
+      renderTimelineLifeEvents(data.life?.milestones || [])
+      renderTimelineDays([])
+      renderTimelineCommits([])
+      timelineLoaded = true
+      return
+    }
+
+    const s = data.summary
+    setText('timeline-status', `${s.totalCommits} commits`)
+    setText('timeline-start', formatTimelineDateTime(s.firstTimestamp))
+    setText('timeline-latest', formatTimelineDateTime(s.lastTimestamp))
+    setText('timeline-span', `${s.calendarSpanDays} day${s.calendarSpanDays === 1 ? '' : 's'}`)
+    setText('timeline-active-days', `${s.activeDays} days`)
+    setText('timeline-streak', `${s.longestStreakDays} days`)
+    setText('timeline-total-commits', String(s.totalCommits))
+    setText('timeline-hours-cons', `${s.estimatedHours.conservative}h`)
+    setText('timeline-hours-mid', `${s.estimatedHours.midpoint}h`)
+    setText('timeline-hours-high', `${s.estimatedHours.aggressive}h`)
+    setText(
+      'timeline-hours-note',
+      `Estimated from commit sessions (${s.sessions45m} at 45m gaps, ${s.sessions90m} at 90m gaps). Active-day average: ${s.commitsPerActiveDay} commits/day.`
+    )
+    renderTimelineLifeSummary(data.life || null)
+    renderTimelineLifeEvents(data.life?.milestones || [])
+    renderTimelineDays(data.days || [])
+    renderTimelineCommits(data.commits || [])
+    timelineLoaded = true
+  } catch (err) {
+    setText('timeline-status', 'Load failed')
+    setText('timeline-hours-note', `Could not load timeline: ${err.message}`)
+    setText('timeline-life-note', `Could not load lifetime estimate: ${err.message}`)
+    renderTimelineLifeEvents([])
+    renderTimelineDays([])
+    renderTimelineCommits([])
+  }
+}
+
+function renderTimelineDays(days) {
+  const el = document.getElementById('timeline-days')
+  if (!el) return
+  if (!days.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:10px 0;">No activity days available yet.</div>'
+    return
+  }
+
+  const rows = days.map(day => `
+    <div class="commit-item" style="display:grid;grid-template-columns:minmax(180px,1fr) auto auto;gap:12px;align-items:center;">
+      <span class="commit-msg">${escapeHtml(formatTimelineDateLabel(day.date))}</span>
+      <span style="font-size:11px;color:var(--text-muted);">${escapeHtml(formatTimelineTime(day.firstTs))} - ${escapeHtml(formatTimelineTime(day.lastTs))}</span>
+      <span class="commit-hash" style="text-align:right;">${day.commits} commit${day.commits === 1 ? '' : 's'}</span>
+    </div>
+  `).join('')
+
+  el.innerHTML = rows
+}
+
+function renderTimelineCommits(commits) {
+  const el = document.getElementById('timeline-commits')
+  if (!el) return
+  if (!commits.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:10px 0;">No commits to display.</div>'
+    return
+  }
+
+  el.innerHTML = commits.slice(0, 80).map(c => `
+    <div class="commit-item">
+      <span class="commit-hash">${escapeHtml(c.hash)}</span>
+      <span class="commit-msg">${escapeHtml(c.message)}<span style="color:var(--text-muted);font-size:11px;"> (${escapeHtml(c.author)} • ${escapeHtml(formatTimelineDateTime(c.timestamp))})</span></span>
+    </div>
+  `).join('')
+}
+
+async function addTimelineMilestone() {
+  const date = document.getElementById('timeline-add-date')?.value?.trim() || ''
+  const title = document.getElementById('timeline-add-title')?.value?.trim() || ''
+  const type = document.getElementById('timeline-add-type')?.value || 'manual'
+  const notes = document.getElementById('timeline-add-notes')?.value?.trim() || ''
+  const hoursLow = parseFloat(document.getElementById('timeline-add-hours-low')?.value || '0') || 0
+  const hoursMid = parseFloat(document.getElementById('timeline-add-hours-mid')?.value || '0') || 0
+  const hoursHigh = parseFloat(document.getElementById('timeline-add-hours-high')?.value || '0') || 0
+
+  if (!date) {
+    showToast('Timeline date is required')
+    return
+  }
+  if (!title) {
+    showToast('Timeline title is required')
+    return
+  }
+
+  try {
+    const res = await fetch(`${API}/api/project/timeline/milestones`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date, title, type, notes, hoursLow, hoursMid, hoursHigh }),
+    })
+    const data = await res.json()
+    if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`)
+
+    document.getElementById('timeline-add-title').value = ''
+    document.getElementById('timeline-add-notes').value = ''
+    document.getElementById('timeline-add-hours-low').value = ''
+    document.getElementById('timeline-add-hours-mid').value = ''
+    document.getElementById('timeline-add-hours-high').value = ''
+    showToast('Timeline milestone added')
+    await loadProjectTimeline(true)
+  } catch (err) {
+    showToast(`Failed to add milestone: ${err.message}`)
+  }
+}
+
 let feedbackLoaded = false
 
 async function loadFeedback() {
@@ -6225,11 +6620,21 @@ document.addEventListener('keydown', (e) => {
   }
   // Don't trigger tab shortcuts when typing in inputs
   const activeEl = document.activeElement
+  const timelineFormIds = new Set([
+    'timeline-add-date',
+    'timeline-add-type',
+    'timeline-add-title',
+    'timeline-add-notes',
+    'timeline-add-hours-low',
+    'timeline-add-hours-mid',
+    'timeline-add-hours-high',
+  ])
   if (activeEl === document.getElementById('chat-input') ||
       activeEl === document.getElementById('commit-msg') ||
       activeEl === document.getElementById('chat-search-input') ||
       activeEl === document.getElementById('chat-dialog-input') ||
       activeEl === document.getElementById('observe-search') ||
+      timelineFormIds.has(activeEl?.id) ||
       activeEl?.classList.contains('chat-inline-edit')) return
   if (e.key === '1') switchSection('home')
   if (e.key === '2') switchSection('dev')
@@ -6239,6 +6644,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '6') switchSection('git')
   if (e.key === '7') switchSection('build')
   if (e.key === '8') switchSection('log')
+  if (e.key === '[') switchSection('timeline')
   if (e.key === '9') switchSection('feedback')
   if (e.key === '0') switchSection('infra')
   if (e.key === '-') switchSection('blueprint')
@@ -6254,6 +6660,7 @@ function switchSection(section) {
   // Lazy-load data for heavy panels
   if (section === 'home') loadPromptQueue()
   if (section === 'log') loadHistory()
+  if (section === 'timeline') loadProjectTimeline()
   if (section === 'feedback') loadFeedback()
   if (section === 'infra') loadInfra()
   if (section === 'observe') observeConnect()
@@ -6524,7 +6931,7 @@ connectSSE()
 loadPromptQueue() // Load prompt queue on startup since Home is default
 
 addLog('info', 'system', 'Mission Control connected')
-addLog('info', 'system', 'Keyboard shortcuts: 1-9 switch panels, Ctrl+/ opens chat, = opens Observe')
+addLog('info', 'system', 'Keyboard shortcuts: 1-9 switch panels, [ opens Timeline, Ctrl+/ opens chat, = opens Observe')
 </script>
 </body>
 </html>
