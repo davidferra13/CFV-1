@@ -8,6 +8,7 @@ import { recordPayroll } from '@/lib/finance/payroll-actions'
 import type { Employee } from '@/lib/finance/payroll-actions'
 import { computePayrollTaxes } from '@/lib/finance/payroll-constants'
 import { CheckCircle } from 'lucide-react'
+import { toast } from 'sonner'
 
 function formatCurrency(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
@@ -61,22 +62,26 @@ export function PayrollEntryForm({ employees, onSaved }: Props) {
 
   function handleSave() {
     startTransition(async () => {
-      await recordPayroll({
-        employeeId: form.employeeId,
-        payPeriodStart: form.payPeriodStart,
-        payPeriodEnd: form.payPeriodEnd,
-        payDate: form.payDate,
-        regularHours: form.regularHours,
-        overtimeHours: form.overtimeHours,
-        hourlyRateCents: form.hourlyRateCents,
-        overtimeRateCents: Math.round(form.hourlyRateCents * 1.5),
-        federalIncomeTaxCents: form.federalIncomeTaxCents,
-        stateIncomeTaxCents: form.stateIncomeTaxCents,
-        ytdWagesCents: form.ytdWagesCents,
-        notes: form.notes || null,
-      })
-      setSaved(true)
-      onSaved?.()
+      try {
+        await recordPayroll({
+          employeeId: form.employeeId,
+          payPeriodStart: form.payPeriodStart,
+          payPeriodEnd: form.payPeriodEnd,
+          payDate: form.payDate,
+          regularHours: form.regularHours,
+          overtimeHours: form.overtimeHours,
+          hourlyRateCents: form.hourlyRateCents,
+          overtimeRateCents: Math.round(form.hourlyRateCents * 1.5),
+          federalIncomeTaxCents: form.federalIncomeTaxCents,
+          stateIncomeTaxCents: form.stateIncomeTaxCents,
+          ytdWagesCents: form.ytdWagesCents,
+          notes: form.notes || null,
+        })
+        setSaved(true)
+        onSaved?.()
+      } catch (err) {
+        toast.error('Failed to record payroll')
+      }
     })
   }
 

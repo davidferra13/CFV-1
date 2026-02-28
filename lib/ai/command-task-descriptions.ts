@@ -320,6 +320,50 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     inputSchema: '{ "menuName": "string — menu name to explain" }',
   },
 
+  // ─── Navigation & Awareness ───────────────────────────────────────────────
+
+  {
+    type: 'nav.go',
+    tier: 1,
+    name: 'Navigate To Page',
+    description:
+      'Navigate the chef to a specific page in ChefFlow. Use when the chef says "take me to", "show me", "go to", "open", or asks where something is. Returns the route so the UI can navigate.',
+    inputSchema:
+      '{ "route": "string — app route to navigate to, e.g. /events, /clients/new, /financials" }',
+  },
+  {
+    type: 'loyalty.status',
+    tier: 1,
+    name: 'Loyalty Status',
+    description:
+      "Look up a client's loyalty program status: tier (Bronze/Silver/Gold/Platinum), points balance, points to next tier, lifetime events, and rewards available.",
+    inputSchema: '{ "clientName": "string — client name to look up loyalty status for" }',
+  },
+  {
+    type: 'safety.event_allergens',
+    tier: 1,
+    name: 'Event Allergen Check',
+    description:
+      "Cross-reference ALL guests' allergies and dietary restrictions against the event's menu items. Flags dangerous conflicts and suggests accommodations. Use for any multi-guest event safety check.",
+    inputSchema: '{ "eventName": "string — event occasion or description to check allergens for" }',
+  },
+  {
+    type: 'waitlist.list',
+    tier: 1,
+    name: 'View Waitlist',
+    description:
+      'Show all clients currently on the waitlist — their requested dates, occasions, and status.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'quote.compare',
+    tier: 1,
+    name: 'Compare Quotes',
+    description:
+      'Show all quote versions for an event side-by-side — pricing, items, deposit, and status for each version.',
+    inputSchema: '{ "eventName": "string — event occasion or description to compare quotes for" }',
+  },
+
   // ─── Email Awareness ────────────────────────────────────────────────────────
 
   {

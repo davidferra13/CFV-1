@@ -207,6 +207,21 @@ export interface RemyContext {
   documentSummary?: { totalDocuments: number; totalFolders: number }
   /** Recent Remy artifacts */
   recentArtifacts?: Array<{ type: string; title: string; createdAt: string }>
+  /** Recipe library stats */
+  recipeStats?: { totalRecipes: number; categories: string[] }
+  /** Client vibe notes — personality and communication style insights */
+  clientVibeNotes?: Array<{ name: string; vibeNotes: string }>
+  /** Recent after-action review insights */
+  recentAARInsights?: Array<{
+    rating: number | null
+    wentWell: string
+    toImprove: string
+    lessonsLearned: string
+  }>
+  /** Pending menu approvals awaiting client response */
+  pendingMenuApprovals?: Array<{ clientName: string }>
+  /** Unread messages from inquiry leads */
+  unreadInquiryMessages?: Array<{ leadName: string }>
 }
 
 // ─── Page Entity Context ────────────────────────────────────────────────────

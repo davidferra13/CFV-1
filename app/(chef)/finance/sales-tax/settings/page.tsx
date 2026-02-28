@@ -13,6 +13,7 @@ import {
   bpsToPercent,
 } from '@/lib/finance/sales-tax-constants'
 import { CheckCircle } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function SalesTaxSettingsPage() {
   const [isPending, startTransition] = useTransition()
@@ -57,16 +58,20 @@ export default function SalesTaxSettingsPage() {
 
   function handleSave() {
     startTransition(async () => {
-      await saveSalesTaxSettings({
-        enabled: form.enabled,
-        state: form.state || null,
-        stateRateBps: form.stateRateBps,
-        localRateBps: form.localRateBps,
-        registrationNumber: form.registrationNumber || null,
-        filingFrequency: form.filingFrequency,
-        notes: form.notes || null,
-      })
-      setSaved(true)
+      try {
+        await saveSalesTaxSettings({
+          enabled: form.enabled,
+          state: form.state || null,
+          stateRateBps: form.stateRateBps,
+          localRateBps: form.localRateBps,
+          registrationNumber: form.registrationNumber || null,
+          filingFrequency: form.filingFrequency,
+          notes: form.notes || null,
+        })
+        setSaved(true)
+      } catch (err) {
+        toast.error('Failed to save sales tax settings')
+      }
     })
   }
 

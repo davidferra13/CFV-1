@@ -12,6 +12,7 @@ import {
 import type { SalesTaxSummary, SalesTaxRemittance } from '@/lib/finance/sales-tax-actions'
 import { bpsToPercent } from '@/lib/finance/sales-tax-constants'
 import { CheckCircle, AlertTriangle, DollarSign } from 'lucide-react'
+import { toast } from 'sonner'
 
 function formatCurrency(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
@@ -48,34 +49,42 @@ export function SalesTaxPanel({ summary, unremittedEvents, remittances }: Props)
 
   function handleRecordRemittance() {
     startTransition(async () => {
-      await recordSalesTaxRemittance({
-        period: remitForm.period,
-        periodStart: remitForm.periodStart,
-        periodEnd: remitForm.periodEnd,
-        amountRemittedCents: Math.round(remitForm.amountRemittedCents * 100),
-        remittedAt: remitForm.remittedAt,
-        confirmationNumber: remitForm.confirmationNumber || null,
-        notes: remitForm.notes || null,
-      })
-      setShowRemitForm(false)
-      setRemitForm({
-        period: '',
-        periodStart: '',
-        periodEnd: '',
-        amountRemittedCents: 0,
-        remittedAt: new Date().toISOString().split('T')[0],
-        confirmationNumber: '',
-        notes: '',
-      })
+      try {
+        await recordSalesTaxRemittance({
+          period: remitForm.period,
+          periodStart: remitForm.periodStart,
+          periodEnd: remitForm.periodEnd,
+          amountRemittedCents: Math.round(remitForm.amountRemittedCents * 100),
+          remittedAt: remitForm.remittedAt,
+          confirmationNumber: remitForm.confirmationNumber || null,
+          notes: remitForm.notes || null,
+        })
+        setShowRemitForm(false)
+        setRemitForm({
+          period: '',
+          periodStart: '',
+          periodEnd: '',
+          amountRemittedCents: 0,
+          remittedAt: new Date().toISOString().split('T')[0],
+          confirmationNumber: '',
+          notes: '',
+        })
+      } catch (err) {
+        toast.error('Failed to record tax remittance')
+      }
     })
   }
 
   function handleMarkRemitted(eventId: string) {
     if (!markPeriod) return
     startTransition(async () => {
-      await markEventSalesTaxRemitted({ eventId, remittancePeriod: markPeriod })
-      setMarkingEventId(null)
-      setMarkPeriod('')
+      try {
+        await markEventSalesTaxRemitted({ eventId, remittancePeriod: markPeriod })
+        setMarkingEventId(null)
+        setMarkPeriod('')
+      } catch (err) {
+        toast.error('Failed to mark event as remitted')
+      }
     })
   }
 

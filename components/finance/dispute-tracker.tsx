@@ -12,6 +12,7 @@ import {
   type PaymentDispute,
 } from '@/lib/finance/dispute-actions'
 import { ShieldAlert, Plus } from 'lucide-react'
+import { toast } from 'sonner'
 
 type Props = {
   initialDisputes: PaymentDispute[]
@@ -38,32 +39,44 @@ export function DisputeTracker({ initialDisputes }: Props) {
 
   function handleCreate() {
     startTransition(async () => {
-      const created = await createDispute({
-        amountCents: newDispute.amountCents,
-        reason: newDispute.reason || undefined,
-      })
-      setDisputes((prev) => [created, ...prev])
-      setShowCreate(false)
-      setNewDispute({ amountCents: 0, reason: '' })
+      try {
+        const created = await createDispute({
+          amountCents: newDispute.amountCents,
+          reason: newDispute.reason || undefined,
+        })
+        setDisputes((prev) => [created, ...prev])
+        setShowCreate(false)
+        setNewDispute({ amountCents: 0, reason: '' })
+      } catch (err) {
+        toast.error('Failed to create dispute')
+      }
     })
   }
 
   function handleAddEvidence(disputeId: string) {
     startTransition(async () => {
-      const updated = await updateDisputeEvidence({
-        disputeId,
-        evidenceNotes,
-      })
-      setDisputes((prev) => prev.map((d) => (d.id === disputeId ? updated : d)))
-      setEditingId(null)
-      setEvidenceNotes('')
+      try {
+        const updated = await updateDisputeEvidence({
+          disputeId,
+          evidenceNotes,
+        })
+        setDisputes((prev) => prev.map((d) => (d.id === disputeId ? updated : d)))
+        setEditingId(null)
+        setEvidenceNotes('')
+      } catch (err) {
+        toast.error('Failed to save evidence')
+      }
     })
   }
 
   function handleResolve(disputeId: string, outcome: 'won' | 'lost') {
     startTransition(async () => {
-      const updated = await resolveDispute(disputeId, outcome)
-      setDisputes((prev) => prev.map((d) => (d.id === disputeId ? updated : d)))
+      try {
+        const updated = await resolveDispute(disputeId, outcome)
+        setDisputes((prev) => prev.map((d) => (d.id === disputeId ? updated : d)))
+      } catch (err) {
+        toast.error('Failed to resolve dispute')
+      }
     })
   }
 

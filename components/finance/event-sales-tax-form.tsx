@@ -9,6 +9,7 @@ import { setEventSalesTax } from '@/lib/finance/sales-tax-actions'
 import type { EventSalesTax, SalesTaxSettings } from '@/lib/finance/sales-tax-actions'
 import { bpsToPercent, computeTaxCents } from '@/lib/finance/sales-tax-constants'
 import { CheckCircle } from 'lucide-react'
+import { toast } from 'sonner'
 
 function formatCurrency(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
@@ -38,14 +39,18 @@ export function EventSalesTaxForm({ eventId, eventPriceCents, existing, settings
 
   function handleSave() {
     startTransition(async () => {
-      await setEventSalesTax({
-        eventId,
-        taxableAmountCents: form.taxableAmountCents,
-        taxRateBps: form.taxRateBps,
-        isExempt: form.isExempt,
-        exemptionReason: form.exemptionReason || null,
-      })
-      setSaved(true)
+      try {
+        await setEventSalesTax({
+          eventId,
+          taxableAmountCents: form.taxableAmountCents,
+          taxRateBps: form.taxRateBps,
+          isExempt: form.isExempt,
+          exemptionReason: form.exemptionReason || null,
+        })
+        setSaved(true)
+      } catch (err) {
+        toast.error('Failed to save event sales tax')
+      }
     })
   }
 

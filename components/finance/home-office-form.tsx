@@ -11,6 +11,7 @@ import {
   SIMPLIFIED_MAX_DEDUCTION_CENTS,
 } from '@/lib/tax/home-office-constants'
 import { Home, Info, CheckCircle } from 'lucide-react'
+import { toast } from 'sonner'
 
 type Props = {
   taxYear: number
@@ -66,18 +67,22 @@ export function HomeOfficeForm({
 
   function handleSave() {
     startTransition(async () => {
-      await saveHomeOfficeSettings({
-        taxYear,
-        homeDeductionMethod: form.homeDeductionMethod as 'simplified' | 'actual',
-        homeOfficeSqft: form.homeOfficeSqft,
-        homeTotalSqft: form.homeTotalSqft,
-        annualRentMortgageCents: form.annualRentMortgageCents,
-        annualUtilitiesCents: form.annualUtilitiesCents,
-        annualInsuranceHomeCents: form.annualInsuranceHomeCents,
-        annualRepairsCents: form.annualRepairsCents,
-        homeOfficeNotes: form.homeOfficeNotes || null,
-      })
-      setSaved(true)
+      try {
+        await saveHomeOfficeSettings({
+          taxYear,
+          homeDeductionMethod: form.homeDeductionMethod as 'simplified' | 'actual',
+          homeOfficeSqft: form.homeOfficeSqft,
+          homeTotalSqft: form.homeTotalSqft,
+          annualRentMortgageCents: form.annualRentMortgageCents,
+          annualUtilitiesCents: form.annualUtilitiesCents,
+          annualInsuranceHomeCents: form.annualInsuranceHomeCents,
+          annualRepairsCents: form.annualRepairsCents,
+          homeOfficeNotes: form.homeOfficeNotes || null,
+        })
+        setSaved(true)
+      } catch (err) {
+        toast.error('Failed to save home office settings')
+      }
     })
   }
 

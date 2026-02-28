@@ -16,6 +16,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { getCashFlowForecast, type CashFlowForecast } from '@/lib/finance/cash-flow-actions'
 import { TrendingUp } from 'lucide-react'
+import { toast } from 'sonner'
 
 type Props = {
   initialForecast: CashFlowForecast
@@ -35,10 +36,18 @@ export function CashFlowChart({ initialForecast }: Props) {
   const [isPending, startTransition] = useTransition()
 
   function handleChangeDays(d: 30 | 60 | 90) {
+    const previousDays = days
+    const previousForecast = forecast
     setDays(d)
     startTransition(async () => {
-      const data = await getCashFlowForecast(d)
-      setForecast(data)
+      try {
+        const data = await getCashFlowForecast(d)
+        setForecast(data)
+      } catch (err) {
+        setDays(previousDays)
+        setForecast(previousForecast)
+        toast.error('Failed to load cash flow forecast')
+      }
     })
   }
 

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { saveW9Data } from '@/lib/finance/contractor-actions'
 import { CheckCircle, AlertTriangle, FileText } from 'lucide-react'
+import { toast } from 'sonner'
 
 type W9Data = {
   staffMemberId: string
@@ -93,9 +94,13 @@ export function W9FormPanel({ staffMembers }: Props) {
   function handleSave() {
     if (!selected) return
     startTransition(async () => {
-      await saveW9Data({ staffMemberId: selected, ...form })
-      setSaved((prev) => new Set([...prev, selected]))
-      setSelected(null)
+      try {
+        await saveW9Data({ staffMemberId: selected, ...form })
+        setSaved((prev) => new Set([...prev, selected]))
+        setSelected(null)
+      } catch (err) {
+        toast.error('Failed to save W-9 data')
+      }
     })
   }
 

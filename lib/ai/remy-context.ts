@@ -170,6 +170,12 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
     yearRevenueResult,
     yearExpensesResult,
     yearEventsResult,
+    // Context enrichment (2026-02-28)
+    recipeStatsResult,
+    clientVibeNotesResult,
+    recentAARsResult,
+    pendingMenuApprovalsResult,
+    unreadInquiryMsgsResult,
   ] = await Promise.all([
     // Upcoming events (next 7 days, limit 10)
     supabase
@@ -322,6 +328,47 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .eq('tenant_id', tenantId)
       .gte('event_date', yearStart.split('T')[0])
       .not('status', 'eq', 'cancelled'),
+
+    // ─── Context enrichment (2026-02-28) ─────────────────────────────────
+
+    // Recipe library stats
+    supabase.from('recipes').select('id, category').eq('tenant_id', tenantId).limit(200),
+
+    // Client vibe notes (all recent clients with notes)
+    supabase
+      .from('clients')
+      .select('full_name, vibe_notes')
+      .eq('tenant_id', tenantId)
+      .not('vibe_notes', 'is', null)
+      .order('updated_at', { ascending: false })
+      .limit(10),
+
+    // Recent after-action reviews (lessons learned)
+    supabase
+      .from('after_action_reviews')
+      .select('event_id, overall_rating, went_well, to_improve, lessons_learned, created_at')
+      .eq('tenant_id', tenantId)
+      .order('created_at', { ascending: false })
+      .limit(3),
+
+    // Pending menu approvals
+    supabase
+      .from('menu_approval_requests')
+      .select('id, status, client:clients(full_name), created_at')
+      .eq('tenant_id', tenantId)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .limit(5),
+
+    // Unread inquiry messages
+    supabase
+      .from('inquiry_messages')
+      .select('id, inquiry_id, sender_type, created_at, inquiry:inquiries(lead_name)')
+      .eq('tenant_id', tenantId)
+      .eq('sender_type', 'client')
+      .eq('read', false)
+      .order('created_at', { ascending: false })
+      .limit(10),
   ])
 
   const monthRevenueCents = (revenueResult.data ?? []).reduce(
@@ -481,6 +528,34 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       title: (a.title as string) ?? 'Untitled',
       createdAt: a.created_at as string,
     })),
+
+    // ─── Context enrichment (2026-02-28) ─────────────────────────────────
+    recipeStats: (() => {
+      const recipes = (recipeStatsResult.data ?? []) as Array<Record<string, unknown>>
+      const categories = [...new Set(recipes.map((r) => (r.category as string) ?? 'uncategorized'))]
+      return { totalRecipes: recipes.length, categories }
+    })(),
+    clientVibeNotes: (clientVibeNotesResult.data ?? []).map((c: Record<string, unknown>) => ({
+      name: (c.full_name as string) ?? 'Unknown',
+      vibeNotes: (c.vibe_notes as string) ?? '',
+    })),
+    recentAARInsights: (recentAARsResult.data ?? []).map((a: Record<string, unknown>) => ({
+      rating: (a.overall_rating as number) ?? null,
+      wentWell: (a.went_well as string) ?? '',
+      toImprove: (a.to_improve as string) ?? '',
+      lessonsLearned: (a.lessons_learned as string) ?? '',
+    })),
+    pendingMenuApprovals: (pendingMenuApprovalsResult.data ?? []).map(
+      (m: Record<string, unknown>) => ({
+        clientName:
+          ((m.client as Record<string, unknown> | null)?.full_name as string) ?? 'Unknown',
+      })
+    ),
+    unreadInquiryMessages: (unreadInquiryMsgsResult.data ?? []).map(
+      (m: Record<string, unknown>) => ({
+        leadName: ((m.inquiry as Record<string, unknown> | null)?.lead_name as string) ?? 'Unknown',
+      })
+    ),
   }
 }
 

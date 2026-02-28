@@ -15,6 +15,7 @@ import { runCommand } from '@/lib/ai/command-orchestrator'
 import { getTaskName } from '@/lib/ai/command-task-descriptions'
 import {
   REMY_PERSONALITY,
+  REMY_FEW_SHOT_EXAMPLES,
   REMY_DRAFT_INSTRUCTIONS,
   REMY_PRIVACY_NOTE,
   REMY_TOPIC_GUARDRAILS,
@@ -123,6 +124,8 @@ function buildRemySystemPrompt(
 
   // Full personality guide
   parts.push(REMY_PERSONALITY)
+  // Few-shot examples — show Remy how to respond, not just what to be
+  parts.push(REMY_FEW_SHOT_EXAMPLES)
   parts.push(REMY_DRAFT_INSTRUCTIONS)
   parts.push(REMY_PRIVACY_NOTE)
   parts.push(REMY_TOPIC_GUARDRAILS)
@@ -169,6 +172,55 @@ ${context.upcomingEvents.map((e) => `- ${e.occasion ?? 'Event'} on ${e.date ?? '
       'You can search, read, or summarize emails. Draft replies are always drafts — never auto-sent.'
     )
     parts.push(emailLines.join('\n'))
+  }
+
+  // ─── Context enrichment sections (2026-02-28) ───────────────────────────
+
+  // Recipe library stats
+  if (context.recipeStats && context.recipeStats.totalRecipes > 0) {
+    parts.push(
+      `\nRECIPE LIBRARY: ${context.recipeStats.totalRecipes} recipes across ${context.recipeStats.categories.join(', ')}`
+    )
+  }
+
+  // Client vibe notes
+  if (context.clientVibeNotes && context.clientVibeNotes.length > 0) {
+    parts.push(`\nCLIENT VIBE NOTES (personality & communication style):
+${context.clientVibeNotes.map((c) => `- ${c.name}: ${c.vibeNotes}`).join('\n')}`)
+  }
+
+  // Recent AAR insights
+  if (context.recentAARInsights && context.recentAARInsights.length > 0) {
+    const aars = context.recentAARInsights.filter(
+      (a) => a.lessonsLearned || a.wentWell || a.toImprove
+    )
+    if (aars.length > 0) {
+      parts.push(`\nRECENT LESSONS LEARNED:
+${aars
+  .map((a) => {
+    const p: string[] = []
+    if (a.wentWell) p.push(`✅ ${a.wentWell}`)
+    if (a.toImprove) p.push(`⚠️ ${a.toImprove}`)
+    if (a.lessonsLearned) p.push(`💡 ${a.lessonsLearned}`)
+    return p.join(' | ')
+  })
+  .join('\n')}`)
+    }
+  }
+
+  // Pending menu approvals
+  if (context.pendingMenuApprovals && context.pendingMenuApprovals.length > 0) {
+    parts.push(
+      `\n📋 PENDING MENU APPROVALS (${context.pendingMenuApprovals.length}): ${context.pendingMenuApprovals.map((m) => m.clientName).join(', ')}`
+    )
+  }
+
+  // Unread inquiry messages
+  if (context.unreadInquiryMessages && context.unreadInquiryMessages.length > 0) {
+    const unique = [...new Set(context.unreadInquiryMessages.map((m) => m.leadName))]
+    parts.push(
+      `\n📬 UNREAD INQUIRY MESSAGES (${context.unreadInquiryMessages.length}): from ${unique.join(', ')}`
+    )
   }
 
   // Current page context

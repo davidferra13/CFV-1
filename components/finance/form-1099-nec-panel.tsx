@@ -10,6 +10,7 @@ import {
   type FilingSummary,
 } from '@/lib/finance/1099-actions'
 import { AlertTriangle, Download, FileText, CheckCircle } from 'lucide-react'
+import { toast } from 'sonner'
 
 type Props = {
   reports: Form1099NEC[]
@@ -26,14 +27,18 @@ export function Form1099NecPanel({ reports, summary, taxYear }: Props) {
 
   function handleExportCSV() {
     startTransition(async () => {
-      const csv = await export1099NECToCSV(taxYear)
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `1099-nec-${taxYear}.csv`
-      a.click()
-      URL.revokeObjectURL(url)
+      try {
+        const csv = await export1099NECToCSV(taxYear)
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `1099-nec-${taxYear}.csv`
+        a.click()
+        URL.revokeObjectURL(url)
+      } catch (err) {
+        toast.error('Failed to export 1099-NEC CSV')
+      }
     })
   }
 

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { save941Summary, mark941Filed } from '@/lib/finance/payroll-actions'
 import type { Payroll941Summary } from '@/lib/finance/payroll-actions'
 import { QUARTER_LABELS, QUARTER_DUE_DATES } from '@/lib/finance/payroll-constants'
+import { toast } from 'sonner'
 
 function formatCurrency(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
@@ -29,21 +30,29 @@ export function Form941Panel({ taxYear, summaries }: Props) {
 
   function handleRecompute(quarter: number) {
     startTransition(async () => {
-      await save941Summary(taxYear, quarter)
+      try {
+        await save941Summary(taxYear, quarter)
+      } catch (err) {
+        toast.error('Failed to compute 941 summary')
+      }
     })
   }
 
   function handleMarkFiled(quarter: number) {
     startTransition(async () => {
-      await mark941Filed({
-        taxYear,
-        quarter,
-        confirmationNumber: confirmationNumber || null,
-        notes: notes || null,
-      })
-      setFilingQuarter(null)
-      setConfirmationNumber('')
-      setNotes('')
+      try {
+        await mark941Filed({
+          taxYear,
+          quarter,
+          confirmationNumber: confirmationNumber || null,
+          notes: notes || null,
+        })
+        setFilingQuarter(null)
+        setConfirmationNumber('')
+        setNotes('')
+      } catch (err) {
+        toast.error('Failed to mark 941 as filed')
+      }
     })
   }
 

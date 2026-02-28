@@ -10,6 +10,7 @@ import { listEmployees, terminateEmployee } from '@/lib/finance/payroll-actions'
 import type { Employee } from '@/lib/finance/payroll-actions'
 import { EMPLOYEE_STATUS_LABELS, PAY_TYPE_LABELS } from '@/lib/finance/payroll-constants'
 import { Plus, Pencil } from 'lucide-react'
+import { toast } from 'sonner'
 
 function formatCurrency(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
@@ -33,8 +34,12 @@ export default function PayrollEmployeesPage() {
   function handleTerminate(id: string) {
     const date = new Date().toISOString().split('T')[0]
     startTransition(async () => {
-      await terminateEmployee(id, date)
-      reload()
+      try {
+        await terminateEmployee(id, date)
+        reload()
+      } catch (err) {
+        toast.error('Failed to terminate employee')
+      }
     })
   }
 

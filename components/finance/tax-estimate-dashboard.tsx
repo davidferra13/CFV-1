@@ -11,6 +11,7 @@ import {
   type TaxYearSummary,
 } from '@/lib/finance/tax-estimate-actions'
 import { Calculator, DollarSign } from 'lucide-react'
+import { toast } from 'sonner'
 
 type Props = {
   summary: TaxYearSummary
@@ -39,24 +40,32 @@ export function TaxEstimateDashboard({ summary, currentYear }: Props) {
 
   function handleSaveEstimate(quarter: number) {
     startTransition(async () => {
-      await saveQuarterlyEstimate({
-        taxYear: currentYear,
-        quarter,
-        ...formData,
-      })
-      setEditingQuarter(null)
+      try {
+        await saveQuarterlyEstimate({
+          taxYear: currentYear,
+          quarter,
+          ...formData,
+        })
+        setEditingQuarter(null)
+      } catch (err) {
+        toast.error('Failed to save quarterly estimate')
+      }
     })
   }
 
   function handleRecordPayment(quarter: number) {
     startTransition(async () => {
-      await recordQuarterlyPayment({
-        taxYear: currentYear,
-        quarter,
-        amountPaidCents: Math.round(parseFloat(paymentAmount) * 100),
-      })
-      setPayingQuarter(null)
-      setPaymentAmount('')
+      try {
+        await recordQuarterlyPayment({
+          taxYear: currentYear,
+          quarter,
+          amountPaidCents: Math.round(parseFloat(paymentAmount) * 100),
+        })
+        setPayingQuarter(null)
+        setPaymentAmount('')
+      } catch (err) {
+        toast.error('Failed to record quarterly payment')
+      }
     })
   }
 

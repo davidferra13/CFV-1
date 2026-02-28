@@ -734,6 +734,173 @@ function buildExecutionRounds(tasks: PlannedTask[]): PlannedTask[][] {
   return rounds
 }
 
+// ─── New Tool Executors (Remy upgrade) ────────────────────────────────────────
+
+function executeNavGo(inputs: Record<string, unknown>) {
+  const route = String(inputs.route ?? '/dashboard')
+  return { route, navigated: true }
+}
+
+async function executeLoyaltyStatus(inputs: Record<string, unknown>, tenantId: string) {
+  const clientName = String(inputs.clientName ?? '')
+  const clients = await searchClientsByName(clientName)
+  if (!clients.length) throw new Error(`Could not find a client matching "${clientName}".`)
+
+  const client = clients[0]
+  const supabase: any = createServerClient()
+
+  // Get loyalty data
+  const { data: loyalty } = await supabase
+    .from('loyalty_accounts')
+    .select('tier, points_balance, lifetime_points')
+    .eq('tenant_id', tenantId)
+    .eq('client_id', client.id)
+    .single()
+
+  // Get event count for this client
+  const { count: eventCount } = await supabase
+    .from('events')
+    .select('id', { count: 'exact', head: true })
+    .eq('tenant_id', tenantId)
+    .eq('client_id', client.id)
+    .not('status', 'eq', 'cancelled')
+
+  const tierThresholds: Record<string, number> = {
+    bronze: 100,
+    silver: 250,
+    gold: 500,
+    platinum: Infinity,
+  }
+  const currentTier = (loyalty?.tier as string) ?? 'bronze'
+  const currentPoints = (loyalty?.points_balance as number) ?? 0
+  const nextTier =
+    currentTier === 'platinum'
+      ? null
+      : Object.keys(tierThresholds).find(
+          (t) => tierThresholds[t] > (tierThresholds[currentTier] ?? 0)
+        )
+  const pointsToNext = nextTier ? (tierThresholds[nextTier] ?? 0) - currentPoints : null
+
+  return {
+    clientName: client.full_name ?? clientName,
+    tier: currentTier,
+    pointsBalance: currentPoints,
+    lifetimePoints: (loyalty?.lifetime_points as number) ?? 0,
+    totalEvents: eventCount ?? 0,
+    nextTier,
+    pointsToNextTier: pointsToNext,
+  }
+}
+
+async function executeEventAllergens(inputs: Record<string, unknown>, tenantId: string) {
+  const eventName = String(inputs.eventName ?? '')
+  const supabase: any = createServerClient()
+
+  // Find the event
+  const { data: events } = await supabase
+    .from('events')
+    .select(
+      'id, occasion, event_date, client_id, client:clients(full_name, dietary_restrictions, allergies)'
+    )
+    .eq('tenant_id', tenantId)
+    .ilike('occasion', `%${eventName}%`)
+    .limit(1)
+
+  if (!events?.length) throw new Error(`Could not find event matching "${eventName}".`)
+  const event = events[0] as Record<string, unknown>
+  const client = event.client as Record<string, unknown> | null
+
+  // Get menu items linked to this event
+  const { data: menuLinks } = await supabase
+    .from('event_menus')
+    .select('menu:menus(id, name, dishes:menu_dishes(name, description, dietary_tags))')
+    .eq('event_id', event.id)
+
+  const allergies = (client?.allergies as string) ?? ''
+  const dietaryRestrictions = (client?.dietary_restrictions as string) ?? ''
+  const menuItems = (menuLinks ?? []).flatMap((link: Record<string, unknown>) => {
+    const menu = link.menu as Record<string, unknown> | null
+    return ((menu?.dishes as Array<Record<string, unknown>>) ?? []).map((d) => ({
+      dish: d.name as string,
+      description: (d.description as string) ?? '',
+      dietaryTags: (d.dietary_tags as string[]) ?? [],
+    }))
+  })
+
+  return {
+    eventName: (event.occasion as string) ?? eventName,
+    clientName: (client?.full_name as string) ?? 'Unknown',
+    allergies: allergies || 'None recorded',
+    dietaryRestrictions: dietaryRestrictions || 'None recorded',
+    menuItemCount: menuItems.length,
+    menuItems,
+    warning: allergies ? `⚠️ ALLERGY ALERT: ${allergies}` : null,
+  }
+}
+
+async function executeWaitlistList(tenantId: string) {
+  const supabase: any = createServerClient()
+  const { data } = await supabase
+    .from('waitlist_entries')
+    .select('id, client:clients(full_name), requested_date, occasion, status, created_at')
+    .eq('tenant_id', tenantId)
+    .in('status', ['waiting', 'pending'])
+    .order('requested_date', { ascending: true })
+    .limit(20)
+
+  return {
+    entries: (data ?? []).map((w: Record<string, unknown>) => ({
+      id: w.id as string,
+      clientName: ((w.client as Record<string, unknown> | null)?.full_name as string) ?? 'Unknown',
+      requestedDate: w.requested_date as string | null,
+      occasion: w.occasion as string | null,
+      status: w.status as string,
+      addedOn: w.created_at as string,
+    })),
+    totalCount: (data ?? []).length,
+  }
+}
+
+async function executeQuoteCompare(inputs: Record<string, unknown>, tenantId: string) {
+  const eventName = String(inputs.eventName ?? '')
+  const supabase: any = createServerClient()
+
+  // Find the event
+  const { data: events } = await supabase
+    .from('events')
+    .select('id, occasion')
+    .eq('tenant_id', tenantId)
+    .ilike('occasion', `%${eventName}%`)
+    .limit(1)
+
+  if (!events?.length) throw new Error(`Could not find event matching "${eventName}".`)
+  const event = events[0] as Record<string, unknown>
+
+  // Get all quotes for this event
+  const { data: quotes } = await supabase
+    .from('quotes')
+    .select(
+      'id, name, status, total_cents, deposit_cents, pricing_notes, created_at, version_number'
+    )
+    .eq('event_id', event.id)
+    .order('version_number', { ascending: true })
+
+  return {
+    eventName: (event.occasion as string) ?? eventName,
+    quoteCount: (quotes ?? []).length,
+    quotes: (quotes ?? []).map((q: Record<string, unknown>) => ({
+      id: q.id as string,
+      name: (q.name as string) ?? `Version ${q.version_number ?? '?'}`,
+      version: (q.version_number as number) ?? null,
+      status: q.status as string,
+      totalCents: (q.total_cents as number) ?? 0,
+      depositCents: (q.deposit_cents as number) ?? 0,
+      pricingNotes: (q.pricing_notes as string) ?? '',
+      createdAt: q.created_at as string,
+    })),
+  }
+}
+
 async function executeSingleTask(
   task: PlannedTask,
   resolvedDeps: Record<string, unknown>,
@@ -1011,6 +1178,24 @@ async function executeSingleTask(
       case 'client.menu_explanation':
         data = await executeMenuExplanation(task.inputs)
         break
+
+      // ─── New tools (Remy upgrade) ──────────────────────────────────────────
+      case 'nav.go':
+        data = executeNavGo(task.inputs)
+        break
+      case 'loyalty.status':
+        data = await executeLoyaltyStatus(task.inputs, tenantId)
+        break
+      case 'safety.event_allergens':
+        data = await executeEventAllergens(task.inputs, tenantId)
+        break
+      case 'waitlist.list':
+        data = await executeWaitlistList(tenantId)
+        break
+      case 'quote.compare':
+        data = await executeQuoteCompare(task.inputs, tenantId)
+        break
+
       default:
         return {
           taskId: task.id,

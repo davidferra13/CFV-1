@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { generateW2Summaries } from '@/lib/finance/payroll-actions'
 import type { PayrollW2Summary } from '@/lib/finance/payroll-actions'
 import { Download } from 'lucide-react'
+import { toast } from 'sonner'
 
 function formatCurrency(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
@@ -21,7 +22,11 @@ export function W2Panel({ taxYear, summaries }: Props) {
 
   function handleGenerate() {
     startTransition(async () => {
-      await generateW2Summaries(taxYear)
+      try {
+        await generateW2Summaries(taxYear)
+      } catch (err) {
+        toast.error('Failed to generate W-2 summaries')
+      }
     })
   }
 

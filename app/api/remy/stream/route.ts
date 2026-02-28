@@ -16,6 +16,7 @@ import { getEndpointSnapshot } from '@/lib/ai/cross-monitor'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import {
   REMY_PERSONALITY,
+  REMY_FEW_SHOT_EXAMPLES,
   REMY_DRAFT_INSTRUCTIONS,
   REMY_PRIVACY_NOTE,
   REMY_TOPIC_GUARDRAILS,
@@ -136,6 +137,9 @@ function buildRemySystemPrompt(
   // Inject personality archetype modifier (chef-selected or default)
   const archetype = getArchetype(archetypeId)
   parts.push(`\n${archetype.promptModifier}`)
+
+  // Few-shot examples — show Remy how to respond, not just what to be
+  parts.push(REMY_FEW_SHOT_EXAMPLES)
 
   parts.push(REMY_DRAFT_INSTRUCTIONS)
   parts.push(REMY_PRIVACY_NOTE)
@@ -318,6 +322,57 @@ ${context.upcomingCalls.map((c) => `- ${c.clientName} at ${new Date(c.scheduledA
   if (context.recentArtifacts && context.recentArtifacts.length > 0) {
     parts.push(`\nRECENT REMY WORK (what you recently created):
 ${context.recentArtifacts.map((a) => `- ${a.type.replace(/_/g, ' ')}: ${a.title} (${new Date(a.createdAt).toLocaleDateString()})`).join('\n')}`)
+  }
+
+  // ─── Context enrichment sections (2026-02-28) ───────────────────────────
+
+  // Recipe library stats
+  if (context.recipeStats && context.recipeStats.totalRecipes > 0) {
+    parts.push(
+      `\nRECIPE LIBRARY: ${context.recipeStats.totalRecipes} recipes across ${context.recipeStats.categories.join(', ')}`
+    )
+  }
+
+  // Client vibe notes — personality and communication style insights
+  if (context.clientVibeNotes && context.clientVibeNotes.length > 0) {
+    parts.push(`\nCLIENT VIBE NOTES (personality & communication style):
+${context.clientVibeNotes.map((c) => `- ${c.name}: ${c.vibeNotes}`).join('\n')}
+Use these to personalize communication — draft emails and messages that match each client's vibe.`)
+  }
+
+  // Recent after-action review insights
+  if (context.recentAARInsights && context.recentAARInsights.length > 0) {
+    const aars = context.recentAARInsights.filter(
+      (a) => a.lessonsLearned || a.wentWell || a.toImprove
+    )
+    if (aars.length > 0) {
+      parts.push(`\nRECENT LESSONS LEARNED (from after-action reviews):
+${aars
+  .map((a) => {
+    const parts: string[] = []
+    if (a.wentWell) parts.push(`✅ ${a.wentWell}`)
+    if (a.toImprove) parts.push(`⚠️ ${a.toImprove}`)
+    if (a.lessonsLearned) parts.push(`💡 ${a.lessonsLearned}`)
+    return parts.join(' | ')
+  })
+  .join('\n')}
+Reference these when relevant — help the chef avoid past mistakes and repeat successes.`)
+    }
+  }
+
+  // Pending menu approvals
+  if (context.pendingMenuApprovals && context.pendingMenuApprovals.length > 0) {
+    parts.push(
+      `\n📋 PENDING MENU APPROVALS (${context.pendingMenuApprovals.length}): ${context.pendingMenuApprovals.map((m) => m.clientName).join(', ')} — waiting for client response`
+    )
+  }
+
+  // Unread inquiry messages
+  if (context.unreadInquiryMessages && context.unreadInquiryMessages.length > 0) {
+    const unique = [...new Set(context.unreadInquiryMessages.map((m) => m.leadName))]
+    parts.push(
+      `\n📬 UNREAD INQUIRY MESSAGES (${context.unreadInquiryMessages.length}): from ${unique.join(', ')} — need a response`
+    )
   }
 
   // Navigation trail — what pages the chef visited this session

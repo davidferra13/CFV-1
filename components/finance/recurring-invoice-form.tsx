@@ -11,6 +11,7 @@ import {
   type RecurringInvoice,
 } from '@/lib/finance/recurring-invoice-actions'
 import { RefreshCw, Plus, Pause } from 'lucide-react'
+import { toast } from 'sonner'
 
 type Client = { id: string; full_name: string }
 
@@ -46,33 +47,45 @@ export function RecurringInvoiceForm({ initialInvoices, clients }: Props) {
 
   function handleCreate() {
     startTransition(async () => {
-      const created = await createRecurringInvoice({
-        clientId: form.clientId,
-        frequency: form.frequency,
-        amountCents: form.amountCents,
-        description: form.description || undefined,
-        nextSendDate: form.nextSendDate,
-        lateFeeCents: form.lateFeeCents,
-        lateFeeDays: form.lateFeeDays,
-      })
-      setInvoices((prev) => [created, ...prev])
-      setShowCreate(false)
-      setForm({
-        clientId: '',
-        frequency: 'monthly',
-        amountCents: 0,
-        description: '',
-        nextSendDate: '',
-        lateFeeCents: 0,
-        lateFeeDays: 30,
-      })
+      try {
+        const created = await createRecurringInvoice({
+          clientId: form.clientId,
+          frequency: form.frequency,
+          amountCents: form.amountCents,
+          description: form.description || undefined,
+          nextSendDate: form.nextSendDate,
+          lateFeeCents: form.lateFeeCents,
+          lateFeeDays: form.lateFeeDays,
+        })
+        setInvoices((prev) => [created, ...prev])
+        setShowCreate(false)
+        setForm({
+          clientId: '',
+          frequency: 'monthly',
+          amountCents: 0,
+          description: '',
+          nextSendDate: '',
+          lateFeeCents: 0,
+          lateFeeDays: 30,
+        })
+      } catch (err) {
+        toast.error('Failed to create recurring invoice')
+      }
     })
   }
 
   function handlePause(id: string) {
+    const previous = [...invoices]
     startTransition(async () => {
-      await pauseRecurringInvoice(id)
-      setInvoices((prev) => prev.map((inv) => (inv.id === id ? { ...inv, isActive: false } : inv)))
+      try {
+        await pauseRecurringInvoice(id)
+        setInvoices((prev) =>
+          prev.map((inv) => (inv.id === id ? { ...inv, isActive: false } : inv))
+        )
+      } catch (err) {
+        setInvoices(previous)
+        toast.error('Failed to pause invoice')
+      }
     })
   }
 

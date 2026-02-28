@@ -24,6 +24,8 @@ import { groceryAgentActions } from './grocery-actions'
 import { proactiveAgentActions } from './proactive-actions'
 // ─── Intake actions (2026-02-23) ──────────────────────────────────────────
 import { intakeAgentActions } from './intake-actions'
+// ─── Briefing & date hold actions (2026-02-28) ───────────────────────────
+import { briefingAgentActions } from './briefing-actions'
 
 let registered = false
 
@@ -54,4 +56,7 @@ export function ensureAgentActionsRegistered(): void {
 
   // ─── Intake actions (2026-02-23) ──────────────────────────────────────────
   registerAgentActions(intakeAgentActions)
+
+  // ─── Briefing & date hold actions (2026-02-28) ───────────────────────────
+  registerAgentActions(briefingAgentActions)
 }

@@ -8,6 +8,7 @@ import { createEmployee, updateEmployee, terminateEmployee } from '@/lib/finance
 import type { Employee } from '@/lib/finance/payroll-actions'
 import { FILING_STATUS_LABELS, PAY_TYPE_LABELS } from '@/lib/finance/payroll-constants'
 import { CheckCircle } from 'lucide-react'
+import { toast } from 'sonner'
 
 type Props = {
   employee?: Employee
@@ -39,44 +40,48 @@ export function EmployeeForm({ employee, onSaved, onCancel }: Props) {
 
   function handleSave() {
     startTransition(async () => {
-      if (employee) {
-        await updateEmployee(employee.id, {
-          name: form.name,
-          ssnLast4: form.ssnLast4 || null,
-          email: form.email || null,
-          phone: form.phone || null,
-          addressStreet: form.addressStreet || null,
-          addressCity: form.addressCity || null,
-          addressState: form.addressState || null,
-          addressZip: form.addressZip || null,
-          filingStatus: form.filingStatus,
-          allowances: form.allowances,
-          additionalWithholdingCents: form.additionalWithholdingCents,
-          payType: form.payType,
-          hourlyRateCents: form.payType === 'hourly' ? form.hourlyRateCents : null,
-          annualSalaryCents: form.payType === 'salary' ? form.annualSalaryCents : null,
-        })
-      } else {
-        await createEmployee({
-          name: form.name,
-          ssnLast4: form.ssnLast4 || null,
-          email: form.email || null,
-          phone: form.phone || null,
-          addressStreet: form.addressStreet || null,
-          addressCity: form.addressCity || null,
-          addressState: form.addressState || null,
-          addressZip: form.addressZip || null,
-          filingStatus: form.filingStatus,
-          allowances: form.allowances,
-          additionalWithholdingCents: form.additionalWithholdingCents,
-          hireDate: form.hireDate,
-          payType: form.payType,
-          hourlyRateCents: form.payType === 'hourly' ? form.hourlyRateCents : null,
-          annualSalaryCents: form.payType === 'salary' ? form.annualSalaryCents : null,
-        })
+      try {
+        if (employee) {
+          await updateEmployee(employee.id, {
+            name: form.name,
+            ssnLast4: form.ssnLast4 || null,
+            email: form.email || null,
+            phone: form.phone || null,
+            addressStreet: form.addressStreet || null,
+            addressCity: form.addressCity || null,
+            addressState: form.addressState || null,
+            addressZip: form.addressZip || null,
+            filingStatus: form.filingStatus,
+            allowances: form.allowances,
+            additionalWithholdingCents: form.additionalWithholdingCents,
+            payType: form.payType,
+            hourlyRateCents: form.payType === 'hourly' ? form.hourlyRateCents : null,
+            annualSalaryCents: form.payType === 'salary' ? form.annualSalaryCents : null,
+          })
+        } else {
+          await createEmployee({
+            name: form.name,
+            ssnLast4: form.ssnLast4 || null,
+            email: form.email || null,
+            phone: form.phone || null,
+            addressStreet: form.addressStreet || null,
+            addressCity: form.addressCity || null,
+            addressState: form.addressState || null,
+            addressZip: form.addressZip || null,
+            filingStatus: form.filingStatus,
+            allowances: form.allowances,
+            additionalWithholdingCents: form.additionalWithholdingCents,
+            hireDate: form.hireDate,
+            payType: form.payType,
+            hourlyRateCents: form.payType === 'hourly' ? form.hourlyRateCents : null,
+            annualSalaryCents: form.payType === 'salary' ? form.annualSalaryCents : null,
+          })
+        }
+        setSaved(true)
+        onSaved?.()
+      } catch (err) {
+        toast.error('Failed to save employee')
       }
-      setSaved(true)
-      onSaved?.()
     })
   }
 

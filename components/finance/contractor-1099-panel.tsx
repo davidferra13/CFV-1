@@ -11,6 +11,7 @@ import {
   type Contractor1099Summary,
 } from '@/lib/finance/contractor-actions'
 import { Users, AlertTriangle, Plus } from 'lucide-react'
+import { toast } from 'sonner'
 
 type StaffMember = { id: string; name: string; contractorType: string | null }
 
@@ -42,23 +43,27 @@ export function Contractor1099Panel({ summaries, recentPayments, staffMembers, t
 
   function handleRecord() {
     startTransition(async () => {
-      const payment = await recordContractorPayment({
-        staffMemberId: form.staffMemberId,
-        amountCents: form.amountCents,
-        paymentDate: form.paymentDate,
-        paymentMethod: form.paymentMethod as any,
-        description: form.description || undefined,
-        taxYear,
-      })
-      setPayments((prev) => [payment, ...prev])
-      setShowAdd(false)
-      setForm({
-        staffMemberId: '',
-        amountCents: 0,
-        paymentDate: new Date().toISOString().split('T')[0],
-        paymentMethod: 'venmo',
-        description: '',
-      })
+      try {
+        const payment = await recordContractorPayment({
+          staffMemberId: form.staffMemberId,
+          amountCents: form.amountCents,
+          paymentDate: form.paymentDate,
+          paymentMethod: form.paymentMethod as any,
+          description: form.description || undefined,
+          taxYear,
+        })
+        setPayments((prev) => [payment, ...prev])
+        setShowAdd(false)
+        setForm({
+          staffMemberId: '',
+          amountCents: 0,
+          paymentDate: new Date().toISOString().split('T')[0],
+          paymentMethod: 'venmo',
+          description: '',
+        })
+      } catch (err) {
+        toast.error('Failed to record contractor payment')
+      }
     })
   }
 

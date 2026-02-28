@@ -13,6 +13,7 @@ import {
   type ReconciliationSummary,
 } from '@/lib/finance/bank-feed-actions'
 import { Landmark, Check, X, Filter } from 'lucide-react'
+import { toast } from 'sonner'
 
 type Props = {
   connections: BankConnection[]
@@ -43,20 +44,32 @@ export function BankFeedPanel({ connections, initialTransactions, summary }: Pro
 
   function handleConfirm(txId: string) {
     if (!category) return
+    const previous = [...transactions]
     startTransition(async () => {
-      const updated = await confirmTransaction(txId, category)
-      setTransactions((prev) => prev.map((t) => (t.id === txId ? updated : t)))
-      setConfirmingId(null)
-      setCategory('')
+      try {
+        const updated = await confirmTransaction(txId, category)
+        setTransactions((prev) => prev.map((t) => (t.id === txId ? updated : t)))
+        setConfirmingId(null)
+        setCategory('')
+      } catch (err) {
+        setTransactions(previous)
+        toast.error('Failed to confirm transaction')
+      }
     })
   }
 
   function handleIgnore(txId: string) {
+    const previous = [...transactions]
     startTransition(async () => {
-      await ignoreTransaction(txId)
-      setTransactions((prev) =>
-        prev.map((t) => (t.id === txId ? { ...t, status: 'ignored' as const } : t))
-      )
+      try {
+        await ignoreTransaction(txId)
+        setTransactions((prev) =>
+          prev.map((t) => (t.id === txId ? { ...t, status: 'ignored' as const } : t))
+        )
+      } catch (err) {
+        setTransactions(previous)
+        toast.error('Failed to ignore transaction')
+      }
     })
   }
 

@@ -15,6 +15,7 @@ import {
 } from '@/lib/tax/retirement-actions'
 import { ACCOUNT_TYPE_LABELS, PREMIUM_TYPE_LABELS } from '@/lib/tax/retirement-constants'
 import { PiggyBank, Heart, Plus, Trash2, Info } from 'lucide-react'
+import { toast } from 'sonner'
 
 type Props = {
   taxYear: number
@@ -66,44 +67,69 @@ export function RetirementHealthPanel({
 
   function handleAddContrib() {
     startTransition(async () => {
-      const c = await addRetirementContribution({
-        taxYear,
-        accountType: contribForm.accountType as any,
-        contributionCents: contribForm.contributionCents,
-        contributedAt: contribForm.contributedAt || null,
-        notes: contribForm.notes || null,
-      })
-      setContributions((prev) => [...prev, c])
-      setShowAddContrib(false)
-      setContribForm({ accountType: 'sep_ira', contributionCents: 0, contributedAt: '', notes: '' })
+      try {
+        const c = await addRetirementContribution({
+          taxYear,
+          accountType: contribForm.accountType as any,
+          contributionCents: contribForm.contributionCents,
+          contributedAt: contribForm.contributedAt || null,
+          notes: contribForm.notes || null,
+        })
+        setContributions((prev) => [...prev, c])
+        setShowAddContrib(false)
+        setContribForm({
+          accountType: 'sep_ira',
+          contributionCents: 0,
+          contributedAt: '',
+          notes: '',
+        })
+      } catch (err) {
+        toast.error('Failed to add retirement contribution')
+      }
     })
   }
 
   function handleDeleteContrib(id: string) {
+    const previous = [...contributions]
     startTransition(async () => {
-      await deleteRetirementContribution(id)
-      setContributions((prev) => prev.filter((c) => c.id !== id))
+      try {
+        await deleteRetirementContribution(id)
+        setContributions((prev) => prev.filter((c) => c.id !== id))
+      } catch (err) {
+        setContributions(previous)
+        toast.error('Failed to delete contribution')
+      }
     })
   }
 
   function handleAddPremium() {
     startTransition(async () => {
-      const p = await addHealthInsurancePremium({
-        taxYear,
-        premiumType: premiumForm.premiumType as any,
-        annualPremiumCents: premiumForm.annualPremiumCents,
-        notes: premiumForm.notes || null,
-      })
-      setPremiums((prev) => [...prev, p])
-      setShowAddPremium(false)
-      setPremiumForm({ premiumType: 'self', annualPremiumCents: 0, notes: '' })
+      try {
+        const p = await addHealthInsurancePremium({
+          taxYear,
+          premiumType: premiumForm.premiumType as any,
+          annualPremiumCents: premiumForm.annualPremiumCents,
+          notes: premiumForm.notes || null,
+        })
+        setPremiums((prev) => [...prev, p])
+        setShowAddPremium(false)
+        setPremiumForm({ premiumType: 'self', annualPremiumCents: 0, notes: '' })
+      } catch (err) {
+        toast.error('Failed to add health insurance premium')
+      }
     })
   }
 
   function handleDeletePremium(id: string) {
+    const previous = [...premiums]
     startTransition(async () => {
-      await deleteHealthInsurancePremium(id)
-      setPremiums((prev) => prev.filter((p) => p.id !== id))
+      try {
+        await deleteHealthInsurancePremium(id)
+        setPremiums((prev) => prev.filter((p) => p.id !== id))
+      } catch (err) {
+        setPremiums(previous)
+        toast.error('Failed to delete premium')
+      }
     })
   }
 
