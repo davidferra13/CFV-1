@@ -169,7 +169,18 @@ function TemplateCard({ template, staff }: { template: TaskTemplate; staff: Staf
       <CardContent className="pt-4 pb-4">
         {/* Header */}
         <div className="flex items-start justify-between">
-          <div className="flex-1 cursor-pointer" onClick={() => setExpanded(!expanded)}>
+          <div
+            className="flex-1 cursor-pointer"
+            role="button"
+            tabIndex={0}
+            onClick={() => setExpanded(!expanded)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                setExpanded(!expanded)
+              }
+            }}
+          >
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-medium text-stone-100">{template.name}</span>
               <Badge variant={badgeVariant}>{categoryLabel}</Badge>

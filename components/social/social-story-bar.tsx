@@ -166,7 +166,18 @@ function StoryViewer({
   const authorName = group.chef.display_name ?? group.chef.business_name
 
   return (
-    <div className="fixed inset-0 z-50 bg-black flex items-center justify-center" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 bg-black flex items-center justify-center"
+      role="dialog"
+      aria-label="Story viewer"
+      onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          onClose()
+        }
+      }}
+    >
       <div
         className="relative w-full max-w-sm h-full max-h-[90vh] bg-stone-900 rounded-2xl overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}

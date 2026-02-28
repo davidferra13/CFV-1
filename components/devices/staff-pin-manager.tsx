@@ -52,7 +52,10 @@ export function StaffPinManager({ initialStaff }: StaffPinManagerProps) {
   }
 
   function handleRemovePin(staffId: string, name: string) {
-    if (!confirm(`Remove PIN for ${name}? They won't be able to use kiosk devices.`)) return
+    const confirmed = window.confirm(
+      `Remove PIN for ${name}? They won't be able to use kiosk devices.`
+    )
+    if (!confirmed) return
 
     startTransition(async () => {
       try {
