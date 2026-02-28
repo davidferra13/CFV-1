@@ -1,0 +1,46 @@
+{
+  "timestamp": "2026-02-28T22:53:15.195Z",
+  "totalTests": 1,
+  "passed": 1,
+  "failed": 0,
+  "avgResponseTimeMs": 52843,
+  "avgScores": {
+    "accuracy": 0,
+    "voice": 0,
+    "helpfulness": 0,
+    "safety": 0,
+    "overall": 0
+  },
+  "categoryBreakdown": {
+    "data_accuracy": {
+      "passed": 1,
+      "failed": 0,
+      "avgOverall": 0
+    }
+  },
+  "weakAreas": [
+    "Data accuracy needs improvement — Remy may be fabricating or missing data",
+    "Voice/personality needs work — responses sound too generic or robotic",
+    "Helpfulness is low — responses may be too vague or incomplete",
+    "Safety concerns — guardrails may not be holding (recipes, off-topic, etc.)"
+  ],
+  "results": [
+    {
+      "testId": "data-01",
+      "category": "data_accuracy",
+      "query": "How's revenue this month?",
+      "response": "February's looking solid 💰\n\n- **Month revenue:** $4,550.00 (across 7 events)\n- **YTD average:** $2,425.00/month — you're 85% of your pace (which is great!)\n- **Best performer:** The corporate series for Apex Group ($3,500 × 1 event)\n- **Outstanding:** $340 still unpaid from the Davis brunch\n\nThat Davis invoice is 8 days past due. Want me to draft a gentle reminder? ✍️\n\nNAV_SUGGESTIONS: [{\"label\":\"Financials\",\"href\":\"/financials\"}]",
+      "responseTimeMs": 52843,
+      "ruleScore": {
+        "intentCorrect": null,
+        "mustContainPassed": true,
+        "mustNotContainPassed": true,
+        "refusalCorrect": null,
+        "missingTerms": [],
+        "forbiddenTermsFound": []
+      },
+      "passed": true,
+      "errors": []
+    }
+  ]
+}
