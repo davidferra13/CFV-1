@@ -1503,6 +1503,7 @@ export function ChefMobileNav({
   tenantId: string
 }) {
   const pathname = usePathname() ?? ''
+  const searchParams = useSearchParams()
   const [menuOpen, setMenuOpen] = useState(false)
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
