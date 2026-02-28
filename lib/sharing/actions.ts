@@ -2316,31 +2316,59 @@ export async function getEventShareByToken(token: string) {
 export async function submitRSVP(input: SubmitRSVPInput) {
   const validated = SubmitRSVPSchema.parse(input)
   const supabase = createServerClient({ admin: true })
+  const normalizedEmail = validated.email ? validated.email.toLowerCase().trim() : null
+
+  await verifyCaptchaIfProvided(validated.captcha_token || undefined)
+  await enforcePublicActionRateLimit(
+    `rsvp-submit:${validated.shareToken.slice(0, 16)}:${normalizedEmail || validated.full_name.toLowerCase().trim()}`,
+    15,
+    60 * 60 * 1000
+  )
 
   // Validate share token
-  const { data: share, error: shareError } = await supabase
+  const { data: shareData, error: shareError } = await (supabase as any)
     .from('event_shares')
-    .select('id, event_id, tenant_id, is_active, expires_at')
+    .select(
+      'id, event_id, tenant_id, is_active, expires_at, rsvp_deadline_at, enforce_capacity, waitlist_enabled, max_capacity'
+    )
     .eq('token', validated.shareToken)
     .eq('is_active', true)
     .single()
+  const share = shareData as any
 
   if (shareError || !share) {
     throw new Error('Invalid or expired share link')
   }
 
-  if (share.expires_at && new Date(share.expires_at) < new Date()) {
+  const now = new Date()
+  if (share.expires_at && new Date(share.expires_at) < now) {
     throw new Error('This share link has expired')
+  }
+  if (share.rsvp_deadline_at && new Date(share.rsvp_deadline_at) < now) {
+    throw new Error('RSVP submissions are closed for this event.')
+  }
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('id, status, guest_count')
+    .eq('id', share.event_id)
+    .single()
+
+  if (!event) {
+    throw new Error('Event not found')
+  }
+  if (event.status === 'cancelled' || event.status === 'completed') {
+    throw new Error('This event is no longer accepting RSVPs.')
   }
 
   // Check for duplicate email if provided
-  if (validated.email) {
+  if (normalizedEmail) {
     const { data: existing } = await supabase
       .from('event_guests')
       .select('id, guest_token')
       .eq('event_share_id', share.id)
-      .eq('email', validated.email)
-      .single()
+      .eq('email', normalizedEmail)
+      .maybeSingle()
 
     if (existing) {
       // Return existing guest token so they can update instead
@@ -2353,7 +2381,23 @@ export async function submitRSVP(input: SubmitRSVPInput) {
     }
   }
 
+  const capacity = await getCapacityDecision({
+    supabase,
+    shareId: share.id,
+    shareEventId: share.event_id,
+    enforceCapacity: !!share.enforce_capacity,
+    waitlistEnabled: !!share.waitlist_enabled,
+    maxCapacity: share.max_capacity || null,
+    fallbackCapacity: event.guest_count || null,
+    requestedAttending: validated.rsvp_status === 'attending',
+  })
+  if (capacity.rejectReason) {
+    throw new Error(capacity.rejectReason)
+  }
+  const shouldWaitlist = validated.rsvp_status === 'attending' && capacity.shouldWaitlist
+
   const guestToken = crypto.randomBytes(32).toString('hex')
+  const nowIso = new Date().toISOString()
 
   const { data: guest, error } = await supabase
     .from('event_guests')
@@ -2363,8 +2407,8 @@ export async function submitRSVP(input: SubmitRSVPInput) {
       event_share_id: share.id,
       guest_token: guestToken,
       full_name: validated.full_name,
-      email: validated.email || null,
-      rsvp_status: validated.rsvp_status,
+      email: normalizedEmail,
+      rsvp_status: shouldWaitlist ? 'pending' : validated.rsvp_status,
       dietary_restrictions: validated.dietary_restrictions || [],
       allergies: validated.allergies || [],
       notes: validated.notes || null,
@@ -2373,6 +2417,9 @@ export async function submitRSVP(input: SubmitRSVPInput) {
       plus_one_name: validated.plus_one_name || null,
       plus_one_allergies: validated.plus_one_allergies || [],
       plus_one_dietary: validated.plus_one_dietary || [],
+      attendance_queue_status: shouldWaitlist ? 'waitlisted' : 'none',
+      waitlisted_at: shouldWaitlist ? nowIso : null,
+      promoted_at: null,
     })
     .select()
     .single()
@@ -2381,6 +2428,37 @@ export async function submitRSVP(input: SubmitRSVPInput) {
     console.error('[submitRSVP] Error:', error)
     throw new Error('Failed to submit RSVP')
   }
+
+  const dietaryItems = buildStructuredDietaryItems({
+    dietaryRestrictions: validated.dietary_restrictions || [],
+    allergies: validated.allergies || [],
+    plusOneDietary: validated.plus_one_dietary || [],
+    plusOneAllergies: validated.plus_one_allergies || [],
+    explicitItems: validated.dietary_items || [],
+  })
+  await syncGuestDietaryItems({
+    supabase,
+    tenantId: share.tenant_id,
+    eventId: share.event_id,
+    guestId: guest.id as string,
+    items: dietaryItems,
+  })
+  await logRsvpAudit({
+    supabase,
+    tenantId: share.tenant_id,
+    eventId: share.event_id,
+    guestId: guest.id as string,
+    guestToken,
+    action: 'submit',
+    beforeValues: null,
+    afterValues: {
+      rsvp_status: shouldWaitlist ? 'pending' : validated.rsvp_status,
+      dietary_restrictions: validated.dietary_restrictions || [],
+      allergies: validated.allergies || [],
+      attendance_queue_status: shouldWaitlist ? 'waitlisted' : 'none',
+    },
+    dietaryItems,
+  })
 
   // Non-blocking: notify chef of new RSVP
   try {
@@ -2434,6 +2512,7 @@ export async function submitRSVP(input: SubmitRSVPInput) {
     alreadyExists: false,
     guestToken,
     guestId: guest.id,
+    waitlisted: shouldWaitlist,
   }
 }
 
@@ -2446,11 +2525,86 @@ export async function updateRSVP(input: UpdateRSVPInput) {
   const supabase = createServerClient({ admin: true })
 
   const { guestToken, ...updateData } = validated
+  await verifyCaptchaIfProvided(updateData.captcha_token || undefined)
+  await enforcePublicActionRateLimit(`rsvp-update:${guestToken.slice(0, 16)}`, 25, 60 * 60 * 1000)
+
+  const { data: existingGuestData } = await (supabase as any)
+    .from('event_guests')
+    .select('*')
+    .eq('guest_token', guestToken)
+    .maybeSingle()
+  const existingGuest = existingGuestData as any
+  if (!existingGuest) {
+    throw new Error('Guest RSVP not found')
+  }
+
+  const { data: shareData } = await (supabase as any)
+    .from('event_shares')
+    .select(
+      'id, event_id, tenant_id, is_active, expires_at, rsvp_deadline_at, enforce_capacity, waitlist_enabled, max_capacity'
+    )
+    .eq('id', existingGuest.event_share_id)
+    .maybeSingle()
+  const share = shareData as any
+  if (!share || !share.is_active) {
+    throw new Error('This RSVP link is no longer active.')
+  }
+
+  const now = new Date()
+  if (share.expires_at && new Date(share.expires_at) < now) {
+    throw new Error('This RSVP link has expired.')
+  }
+  if (share.rsvp_deadline_at && new Date(share.rsvp_deadline_at) < now) {
+    throw new Error('RSVP updates are closed for this event.')
+  }
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('id, status, guest_count')
+    .eq('id', existingGuest.event_id)
+    .single()
+  if (!event) {
+    throw new Error('Event not found')
+  }
+  if (event.status === 'cancelled' || event.status === 'completed') {
+    throw new Error('This event is no longer accepting RSVP updates.')
+  }
 
   // Build update payload (only include provided fields)
   const payload: Record<string, unknown> = {}
   if (updateData.full_name !== undefined) payload.full_name = updateData.full_name
-  if (updateData.rsvp_status !== undefined) payload.rsvp_status = updateData.rsvp_status
+  if (updateData.rsvp_status !== undefined) {
+    const capacity = await getCapacityDecision({
+      supabase,
+      shareId: share.id,
+      shareEventId: share.event_id,
+      enforceCapacity: !!share.enforce_capacity,
+      waitlistEnabled: !!share.waitlist_enabled,
+      maxCapacity: share.max_capacity || null,
+      fallbackCapacity: event.guest_count || null,
+      requestedAttending: updateData.rsvp_status === 'attending',
+      excludeGuestId: existingGuest.id,
+    })
+
+    if (capacity.rejectReason) {
+      throw new Error(capacity.rejectReason)
+    }
+
+    const shouldWaitlist = updateData.rsvp_status === 'attending' && capacity.shouldWaitlist
+    payload.rsvp_status = shouldWaitlist ? 'pending' : updateData.rsvp_status
+    payload.attendance_queue_status = shouldWaitlist
+      ? 'waitlisted'
+      : updateData.rsvp_status === 'attending'
+        ? 'promoted'
+        : 'none'
+    payload.waitlisted_at = shouldWaitlist ? new Date().toISOString() : null
+    payload.promoted_at =
+      !shouldWaitlist &&
+      updateData.rsvp_status === 'attending' &&
+      (existingGuest.attendance_queue_status || 'none') === 'waitlisted'
+        ? new Date().toISOString()
+        : null
+  }
   if (updateData.dietary_restrictions !== undefined)
     payload.dietary_restrictions = updateData.dietary_restrictions
   if (updateData.allergies !== undefined) payload.allergies = updateData.allergies
@@ -2475,13 +2629,64 @@ export async function updateRSVP(input: UpdateRSVPInput) {
     throw new Error('Failed to update RSVP')
   }
 
-  // Cache invalidation — both portals read guest data
+  const dietaryItems = buildStructuredDietaryItems({
+    dietaryRestrictions:
+      (updateData.dietary_restrictions as string[] | undefined) ||
+      (existingGuest.dietary_restrictions as string[] | null) ||
+      [],
+    allergies:
+      (updateData.allergies as string[] | undefined) ||
+      (existingGuest.allergies as string[] | null) ||
+      [],
+    plusOneDietary:
+      (updateData.plus_one_dietary as string[] | undefined) ||
+      (existingGuest.plus_one_dietary as string[] | null) ||
+      [],
+    plusOneAllergies:
+      (updateData.plus_one_allergies as string[] | undefined) ||
+      (existingGuest.plus_one_allergies as string[] | null) ||
+      [],
+    explicitItems: updateData.dietary_items || [],
+  })
+  await syncGuestDietaryItems({
+    supabase,
+    tenantId: guest.tenant_id as string,
+    eventId: guest.event_id as string,
+    guestId: guest.id as string,
+    items: dietaryItems,
+  })
+  await logRsvpAudit({
+    supabase,
+    tenantId: guest.tenant_id as string,
+    eventId: guest.event_id as string,
+    guestId: guest.id as string,
+    guestToken,
+    action: 'update',
+    beforeValues: {
+      rsvp_status: existingGuest.rsvp_status,
+      dietary_restrictions: existingGuest.dietary_restrictions,
+      allergies: existingGuest.allergies,
+      attendance_queue_status: existingGuest.attendance_queue_status || 'none',
+    },
+    afterValues: {
+      rsvp_status: guest.rsvp_status,
+      dietary_restrictions: guest.dietary_restrictions,
+      allergies: guest.allergies,
+      attendance_queue_status: (guest as any).attendance_queue_status || 'none',
+    },
+    dietaryItems,
+  })
+
+  // Cache invalidation - both portals read guest data
   revalidatePath(`/events/${guest.event_id}`)
   revalidatePath(`/my-events/${guest.event_id}`)
 
-  return { success: true, guest }
+  return {
+    success: true,
+    guest,
+    waitlisted: ((guest as any).attendance_queue_status || 'none') === 'waitlisted',
+  }
 }
-
 /**
  * Get a guest's RSVP by their token (public -- no auth required).
  */
