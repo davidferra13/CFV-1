@@ -288,7 +288,66 @@ export function evaluateResponse(prompt, result, defaults) {
     }
   }
 
-  // 12. Compute overall verdict
+  // 12. Personality check — rudeness detection + warmth indicators
+  if (expected.personalityCheck) {
+    const RUDE_PHRASES = [
+      'figure it out yourself',
+      'not my problem',
+      "that's stupid",
+      "i don't care",
+      'deal with it',
+      'why would you even',
+      'that makes no sense',
+      'you should know that',
+      'you should already know',
+      'i already told you',
+      'as i already explained',
+      'stop asking',
+      'not my job',
+    ]
+    const responseTextLower = (result.tokens || '').toLowerCase()
+    const rudeFound = RUDE_PHRASES.filter((p) => responseTextLower.includes(p))
+
+    // Warmth: response should have conversational framing, not be a bare data dump
+    // Look for at least one indicator of friendly engagement
+    const WARMTH_INDICATORS = [
+      'here',
+      'sure',
+      'let me',
+      'looks like',
+      'happy to',
+      'glad',
+      'great',
+      'no worries',
+      'got it',
+      '!',
+      'your',
+      'you',
+      'chef',
+      'help',
+      'absolutely',
+      'of course',
+    ]
+    // Note: 'absolutely' and 'of course' are warmth indicators here, distinct from
+    // the FORBIDDEN_PHRASES which target these as standalone exclamations ("Absolutely!", "Of course!")
+    const hasWarmth =
+      responseTextLower.length < 50 ||
+      WARMTH_INDICATORS.some((w) => responseTextLower.includes(w))
+
+    checks.personalityCheck = {
+      pass: rudeFound.length === 0 && hasWarmth,
+      rudeFound,
+      hasWarmth,
+      details:
+        rudeFound.length > 0
+          ? `Rude phrases found: ${rudeFound.join(', ')}`
+          : !hasWarmth
+            ? 'Response lacks warmth — feels robotic/cold'
+            : 'Personality check passed',
+    }
+  }
+
+  // 13. Compute overall verdict
   const allChecks = Object.values(checks)
   const failCount = allChecks.filter((c) => !c.pass).length
   const overall = failCount === 0 ? 'pass' : failCount <= 1 ? 'warn' : 'fail'

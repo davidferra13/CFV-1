@@ -231,6 +231,17 @@ export function generateReports({ suite, results, durationMs, models, benchmarkD
       }
     }
 
+    if (r.checks.personalityCheck) {
+      lines.push(`- **Personality:** ${r.checks.personalityCheck.details} ${r.checks.personalityCheck.pass ? '✅' : '❌'}`)
+      if (r.checks.personalityCheck.rudeFound?.length > 0) {
+        lines.push(`  - Rude phrases: ${r.checks.personalityCheck.rudeFound.join(', ')}`)
+      }
+    }
+
+    if (r.checks.boundaryCheck) {
+      lines.push(`- **Boundary:** ${r.checks.boundaryCheck.details} ${r.checks.boundaryCheck.pass ? '✅' : '❌'} (HTTP ${r.checks.boundaryCheck.status})`)
+    }
+
     // Full response text
     lines.push('')
     lines.push('**Full response:**')

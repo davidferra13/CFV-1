@@ -108,7 +108,23 @@ Verifies the command orchestrator's **safety gates work correctly**: tier 1 read
 npm run test:remy-quality:tier
 ```
 
-### 9. Consistency Testing (any suite × N repeats)
+### 9. Gap Closure Suite (27 prompts, ~20-25 min)
+
+Closes the final 13 gaps from the catastrophic failure audit: missing allergy data handling (gap 4), preference vs allergy confusion (gap 5), profit/margin accuracy (gap 8), quote amounts (gap 12), break-even analysis (gap 15), duplicate creation detection (gap 21), silent data overwrites (gap 24), empty data honesty (gap 47), wrong client-event attribution (gap 48), very long input handling (gap 65), personality consistency (gap 89), rudeness resistance (gap 90), and formality matching (gap 91).
+
+```bash
+npm run test:remy-quality:gap-closure
+```
+
+### 10. Boundary Suite (12 tests, ~1-2 min)
+
+Infrastructure-level security tests that can't be tested with normal prompts. Tests auth bypass (gap 34: no cookie, invalid cookie, expired cookie on both endpoints), cross-tenant data isolation (gap 32: requesting another tenant's clients/events, SQL injection cross-tenant), and error recovery (gap 81: malformed JSON, missing fields, empty messages, 50KB payloads, binary bytes).
+
+```bash
+npm run test:remy-quality:boundary
+```
+
+### 11. Consistency Testing (any suite × N repeats)
 
 Runs each prompt N times to detect inconsistency. If the same prompt passes 3 times and fails twice, that's a reliability problem. Prints variance analysis (timing spread, verdict consistency).
 
@@ -118,7 +134,7 @@ npm run test:remy-quality:consistency   # business_overview × 5 repeats
 node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef --repeat 3
 ```
 
-### Run Everything (~4-5 hours)
+### Run Everything (~5-6 hours)
 
 ```bash
 npm run test:remy-quality:all
@@ -137,8 +153,10 @@ npm run test:remy-quality:voice        # Voice-to-text messy (25)
 npm run test:remy-quality:adversarial  # Guardrail/security (25)
 npm run test:remy-quality:data-accuracy # Data accuracy vs database (25)
 npm run test:remy-quality:tier         # Tier enforcement/safety gates (25)
+npm run test:remy-quality:gap-closure  # Gap closure audit (27)
+npm run test:remy-quality:boundary     # Auth/cross-tenant/error (12)
 npm run test:remy-quality:consistency  # Consistency (10 × 5 repeats)
-npm run test:remy-quality:all          # Everything (~4-5 hours)
+npm run test:remy-quality:all          # Everything (~5-6 hours)
 ```
 
 ## Prerequisites
@@ -165,6 +183,8 @@ All checks are deterministic — formula beats AI (CLAUDE.md rule 0b):
 | Tone check            | No forbidden phrases ("As an AI", "Certainly!", etc.)  |
 | Tier enforcement      | Correct tier/status/safety on task (done/pending/held) |
 | Data accuracy         | Response values match known database records           |
+| Personality check     | No rude phrases, warmth indicators present             |
+| Boundary check        | Auth rejection, tenant isolation, error recovery       |
 
 ## Prompt Categories (Chef Suite)
 

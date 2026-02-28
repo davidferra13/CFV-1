@@ -83,7 +83,9 @@
     "test:remy-quality:consistency": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef --category business_overview --repeat 5",
     "test:remy-quality:data-accuracy": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite data-accuracy",
     "test:remy-quality:tier": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite tier-enforcement",
-    "test:remy-quality:all": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef && node tests/remy-quality/harness/remy-quality-runner.mjs --suite multi-turn && node tests/remy-quality/harness/remy-quality-runner.mjs --suite hallucination && node tests/remy-quality/harness/remy-quality-runner.mjs --suite voice-messy && node tests/remy-quality/harness/remy-quality-runner.mjs --suite adversarial && node tests/remy-quality/harness/remy-quality-runner.mjs --suite data-accuracy && node tests/remy-quality/harness/remy-quality-runner.mjs --suite tier-enforcement"
+    "test:remy-quality:gap-closure": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite gap-closure",
+    "test:remy-quality:boundary": "node tests/remy-quality/harness/boundary-runner.mjs",
+    "test:remy-quality:all": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef && node tests/remy-quality/harness/remy-quality-runner.mjs --suite multi-turn && node tests/remy-quality/harness/remy-quality-runner.mjs --suite hallucination && node tests/remy-quality/harness/remy-quality-runner.mjs --suite voice-messy && node tests/remy-quality/harness/remy-quality-runner.mjs --suite adversarial && node tests/remy-quality/harness/remy-quality-runner.mjs --suite data-accuracy && node tests/remy-quality/harness/remy-quality-runner.mjs --suite tier-enforcement && node tests/remy-quality/harness/remy-quality-runner.mjs --suite gap-closure && node tests/remy-quality/harness/boundary-runner.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
