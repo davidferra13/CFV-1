@@ -1093,6 +1093,191 @@ async function getGitHistory() {
   }
 }
 
+// ── Retroactive Activity Log (git archaeology) ────────────────────
+let retroCache = null
+let retroCacheTime = 0
+const RETRO_CACHE_TTL = 300_000 // 5 min cache
+
+async function getRetroactiveActivity() {
+  if (retroCache && Date.now() - retroCacheTime < RETRO_CACHE_TTL) return retroCache
+
+  try {
+    const opts = { cwd: PROJECT_ROOT, maxBuffer: 20 * 1024 * 1024 }
+
+    // 1. All commits with timestamps, messages, shortstat
+    const { stdout: commitLog } = await execAsync(
+      'git log --all --format="COMMIT|%aI|%s" --shortstat --reverse',
+      opts
+    )
+
+    // 2. Hotspot files
+    const { stdout: hotspotRaw } = await execAsync(
+      'git log --all --numstat --format="COMMIT|%aI" | awk \'/^[0-9]/ {files[$3]++} END {for(f in files) print files[f] " " f}\' | sort -rn | head -30',
+      opts
+    )
+
+    // 3. Commits by hour
+    const { stdout: hourRaw } = await execAsync(
+      'git log --all --format="%aI" | awk -F\'T\' \'{split($2,a,":");print a[1]}\' | sort | uniq -c | sort -k2',
+      opts
+    )
+
+    // 4. Commits by day-of-week
+    const { stdout: dowRaw } = await execAsync(
+      'git log --all --format="%ad" --date=format:"%A" | sort | uniq -c | sort -rn',
+      opts
+    )
+
+    // 5. Co-author attribution
+    const { stdout: coauthorRaw } = await execAsync(
+      'git log --all --format="%b" | grep -i "Co-Authored-By" | sort | uniq -c | sort -rn',
+      opts
+    )
+
+    // 6. Files born per day
+    const { stdout: birthRaw } = await execAsync(
+      'git log --all --diff-filter=A --format="COMMIT|%aI" --name-only | awk \'/^COMMIT/ {d=$0; sub(/COMMIT\\|/,"",d); sub(/T.*/,"",d); next} NF>0 {days[d]++} END {for(d in days) print d " " days[d]}\' | sort',
+      opts
+    )
+
+    // Parse commits into daily summaries
+    const days = {}
+    const sessions = []
+    let currentDate = null
+    let pendingCommit = null
+
+    for (const line of commitLog.split('\n')) {
+      if (line.startsWith('COMMIT|')) {
+        const parts = line.split('|')
+        const ts = parts[1]
+        const msg = parts.slice(2).join('|')
+        const date = ts.replace(/T.*/, '')
+        const time = ts.replace(/.*T/, '').replace(/-.*/, '')
+
+        if (!days[date]) days[date] = { commits: 0, added: 0, deleted: 0, filesChanged: 0, messages: [], times: [] }
+        days[date].commits++
+        days[date].messages.push(msg)
+        days[date].times.push(time)
+        pendingCommit = date
+      } else if (line.trim() && pendingCommit) {
+        const m = line.match(/(\d+) files? changed(?:, (\d+) insertions?)?(?:, (\d+) deletions?)?/)
+        if (m) {
+          days[pendingCommit].filesChanged += parseInt(m[1]) || 0
+          days[pendingCommit].added += parseInt(m[2]) || 0
+          days[pendingCommit].deleted += parseInt(m[3]) || 0
+        }
+      }
+    }
+
+    // Build daily array sorted by date
+    const dailyLog = Object.entries(days).sort((a, b) => a[0].localeCompare(b[0])).map(([date, d]) => {
+      const times = d.times.sort()
+      return {
+        date,
+        commits: d.commits,
+        linesAdded: d.added,
+        linesDeleted: d.deleted,
+        filesChanged: d.filesChanged,
+        firstCommit: times[0] || null,
+        lastCommit: times[times.length - 1] || null,
+        messages: d.messages,
+      }
+    })
+
+    // Parse hotspots
+    const hotspots = hotspotRaw.trim().split('\n').filter(Boolean).map(line => {
+      const m = line.trim().match(/^(\d+)\s+(.+)$/)
+      return m ? { count: parseInt(m[1]), file: m[2] } : null
+    }).filter(Boolean)
+
+    // Parse commits by hour
+    const byHour = {}
+    for (let h = 0; h < 24; h++) byHour[String(h).padStart(2, '0')] = 0
+    for (const line of hourRaw.trim().split('\n').filter(Boolean)) {
+      const m = line.trim().match(/^(\d+)\s+(\d+)$/)
+      if (m) byHour[m[2]] = parseInt(m[1])
+    }
+
+    // Parse day-of-week
+    const byDayOfWeek = []
+    for (const line of dowRaw.trim().split('\n').filter(Boolean)) {
+      const m = line.trim().match(/^(\d+)\s+(\w+)$/)
+      if (m) byDayOfWeek.push({ day: m[2], count: parseInt(m[1]) })
+    }
+
+    // Parse co-authors
+    const agents = []
+    for (const line of coauthorRaw.trim().split('\n').filter(Boolean)) {
+      const m = line.trim().match(/^(\d+)\s+Co-Authored-By:\s*(.+?)\s*</)
+      if (m) agents.push({ agent: m[2].trim(), commits: parseInt(m[1]) })
+    }
+
+    // Parse files born per day
+    const filesBorn = {}
+    for (const line of birthRaw.trim().split('\n').filter(Boolean)) {
+      const m = line.trim().match(/^(\S+)\s+(\d+)$/)
+      if (m) filesBorn[m[1]] = parseInt(m[2])
+    }
+
+    // Build sessions (90-min gap)
+    const allTimes = []
+    for (const [date, d] of Object.entries(days)) {
+      for (const t of d.times) allTimes.push({ date, time: t })
+    }
+    allTimes.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))
+
+    let sessionStart = allTimes[0] || null
+    let sessionPrev = allTimes[0] || null
+    let sessionCommits = 1
+    for (let i = 1; i < allTimes.length; i++) {
+      const curr = allTimes[i]
+      const prevKey = sessionPrev.date + sessionPrev.time
+      const currKey = curr.date + curr.time
+
+      // Calculate gap in minutes (simplified)
+      let gap = 999
+      if (curr.date === sessionPrev.date) {
+        const [ph, pm] = sessionPrev.time.split(':').map(Number)
+        const [ch, cm] = curr.time.split(':').map(Number)
+        gap = (ch * 60 + cm) - (ph * 60 + pm)
+      }
+
+      if (gap > 90) {
+        sessions.push({ start: sessionStart.date + 'T' + sessionStart.time, end: sessionPrev.date + 'T' + sessionPrev.time, commits: sessionCommits })
+        sessionStart = curr
+        sessionCommits = 1
+      } else {
+        sessionCommits++
+      }
+      sessionPrev = curr
+    }
+    if (sessionStart) sessions.push({ start: sessionStart.date + 'T' + sessionStart.time, end: sessionPrev.date + 'T' + sessionPrev.time, commits: sessionCommits })
+
+    // Compute totals
+    let totalCommits = 0, totalAdded = 0, totalDeleted = 0, totalBorn = 0
+    for (const d of dailyLog) { totalCommits += d.commits; totalAdded += d.linesAdded; totalDeleted += d.linesDeleted }
+    for (const v of Object.values(filesBorn)) totalBorn += v
+
+    const result = {
+      ok: true,
+      generated: new Date().toISOString(),
+      totals: { commits: totalCommits, linesAdded: totalAdded, linesDeleted: totalDeleted, filesBorn: totalBorn, sessions: sessions.length, activeDays: dailyLog.length },
+      dailyLog,
+      sessions,
+      hotspots,
+      byHour,
+      byDayOfWeek,
+      agents,
+      filesBorn,
+    }
+    retroCache = result
+    retroCacheTime = Date.now()
+    return result
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
 function localDateKeyFromSeconds(seconds) {
   const d = new Date(seconds * 1000)
   const yyyy = d.getFullYear()
@@ -3642,6 +3827,11 @@ async function handleRequest(req, res) {
   // ── VS Code Activity Summary ──────────────────────────────────
   if (path === '/api/activity/summary' && method === 'GET') {
     return json(res, { ok: true, ...getActivitySummary() })
+  }
+
+  // ── Retroactive Activity Log (git archaeology) ─────────────────
+  if (path === '/api/activity/retroactive' && method === 'GET') {
+    return json(res, await getRetroactiveActivity())
   }
 
   // 404

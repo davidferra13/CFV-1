@@ -1910,6 +1910,11 @@ body {
         <span class="nav-icon">&#x1F511;</span>
         <span class="nav-label">Logins</span>
       </a>
+      <a class="nav-item" data-section="activity-log" title="Activity Log — Full History">
+        <span class="nav-dot online" id="nd-activity-log"></span>
+        <span class="nav-icon">&#x1F4CA;</span>
+        <span class="nav-label">Activity</span>
+      </a>
       <a class="nav-item" data-section="manual" title="App Manual">
         <span class="nav-dot online" id="nd-manual"></span>
         <span class="nav-icon">&#x1F4D5;</span>
@@ -4492,6 +4497,39 @@ body {
         </div>
       </div>
 
+      <!-- ═══ Activity Log Panel ═══ -->
+      <div class="panel" id="panel-activity-log">
+        <div class="panel-header">
+          <h2 class="panel-title">Activity Log</h2>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span id="retro-generated" style="font-size:11px;color:var(--text-muted);"></span>
+            <span class="status-badge online" style="background:var(--brand-dim);color:var(--brand);border:1px solid rgba(232,143,71,0.25);">
+              <span class="dot online" style="background:var(--brand);"></span>
+              <span id="retro-status">Git Archaeology</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Tab bar -->
+        <div id="retro-tabs" style="display:flex;gap:4px;padding:8px 24px 0;overflow-x:auto;border-bottom:1px solid var(--border);">
+          <button class="manual-tab active" onclick="renderRetroTab('overview')" style="white-space:nowrap;">Overview</button>
+          <button class="manual-tab" onclick="renderRetroTab('daily')" style="white-space:nowrap;">Day-by-Day</button>
+          <button class="manual-tab" onclick="renderRetroTab('sessions')" style="white-space:nowrap;">Sessions</button>
+          <button class="manual-tab" onclick="renderRetroTab('heatmap')" style="white-space:nowrap;">Heatmap</button>
+          <button class="manual-tab" onclick="renderRetroTab('hotspots')" style="white-space:nowrap;">Hotspots</button>
+          <button class="manual-tab" onclick="renderRetroTab('agents')" style="white-space:nowrap;">AI Agents</button>
+        </div>
+
+        <!-- Content -->
+        <div id="retro-content" style="flex:1;overflow-y:auto;padding:20px 24px;">
+          <div style="color:var(--text-muted);text-align:center;padding:60px 0;">
+            <span style="font-size:48px;">&#x1F4CA;</span>
+            <div style="margin-top:12px;font-size:14px;">Loading activity log...</div>
+            <div style="margin-top:6px;font-size:12px;">Reconstructing from 629 git commits</div>
+          </div>
+        </div>
+      </div>
+
       <!-- ═══ Console ═══ -->
       <div class="console-wrapper">
         <div class="console-header">
@@ -4693,6 +4731,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
     if (section === 'infra') loadInfra()
     if (section === 'observe') observeConnect()
     if (section === 'expenses') loadExpenses()
+    if (section === 'activity-log') loadRetroactiveActivity()
   })
 })
 
@@ -9680,6 +9719,361 @@ async function runAction(url, message) {
   } catch (err) {
     addLog('error', 'action', 'Request failed: ' + err.message)
   }
+}
+
+// ════════════════════════════════════════════════════════════════
+// RETROACTIVE ACTIVITY LOG
+// ════════════════════════════════════════════════════════════════
+
+let retroData = null
+let retroActiveTab = 'overview'
+let retroLoaded = false
+
+async function loadRetroactiveActivity() {
+  if (retroLoaded) return
+  const el = document.getElementById('retro-content')
+  try {
+    const res = await fetch(`${API}/api/activity/retroactive`)
+    retroData = await res.json()
+    if (!retroData.ok) throw new Error(retroData.error || 'Failed')
+    retroLoaded = true
+    const gen = document.getElementById('retro-generated')
+    if (gen) gen.textContent = `Generated ${new Date(retroData.generated).toLocaleTimeString()}`
+    const st = document.getElementById('retro-status')
+    if (st) st.textContent = `${retroData.totals.commits} commits / ${retroData.totals.activeDays} days`
+    renderRetroTab('overview')
+  } catch (err) {
+    el.innerHTML = `<div style="color:var(--error);text-align:center;padding:40px;">Failed to load: ${escapeHtml(err.message)}</div>`
+  }
+}
+
+function renderRetroTab(tab) {
+  retroActiveTab = tab
+  const el = document.getElementById('retro-content')
+  if (!retroData) return
+
+  // Update tab buttons
+  document.querySelectorAll('#retro-tabs .manual-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.toLowerCase().replace(/-/g, '').includes(tab.replace(/-/g, '')))
+  })
+  // More precise tab activation
+  const tabMap = { overview: 'Overview', daily: 'Day-by-Day', sessions: 'Sessions', heatmap: 'Heatmap', hotspots: 'Hotspots', agents: 'AI Agents' }
+  document.querySelectorAll('#retro-tabs .manual-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent === tabMap[tab])
+  })
+
+  switch (tab) {
+    case 'overview': renderRetroOverview(el); break
+    case 'daily': renderRetroDaily(el); break
+    case 'sessions': renderRetroSessions(el); break
+    case 'heatmap': renderRetroHeatmap(el); break
+    case 'hotspots': renderRetroHotspots(el); break
+    case 'agents': renderRetroAgents(el); break
+  }
+}
+
+function renderRetroOverview(el) {
+  const t = retroData.totals
+  const peak = retroData.dailyLog.reduce((best, d) => d.commits > best.commits ? d : best, { commits: 0 })
+  const longest = retroData.sessions.reduce((best, s) => {
+    const st = s.start.split('T'), en = s.end.split('T')
+    if (st[0] !== en[0]) return best
+    const [sh, sm] = st[1].split(':').map(Number)
+    const [eh, em] = en[1].split(':').map(Number)
+    const dur = (eh * 60 + em) - (sh * 60 + sm)
+    return dur > best.dur ? { ...s, dur } : best
+  }, { dur: 0 })
+
+  // Find peak hour
+  let peakHour = '00', peakHourCount = 0
+  for (const [h, c] of Object.entries(retroData.byHour)) {
+    if (c > peakHourCount) { peakHour = h; peakHourCount = c }
+  }
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px;">
+      ${retroStatCard('Total Commits', t.commits, '#e88f47')}
+      ${retroStatCard('Active Days', t.activeDays, '#22c55e')}
+      ${retroStatCard('Work Sessions', t.sessions, '#3b82f6')}
+      ${retroStatCard('Lines Written', t.linesAdded.toLocaleString(), '#a855f7')}
+      ${retroStatCard('Lines Deleted', t.linesDeleted.toLocaleString(), '#ef4444')}
+      ${retroStatCard('Files Created', t.filesBorn.toLocaleString(), '#06b6d4')}
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;">
+        <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:12px;">Records</div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;">
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Peak Day</span><span style="color:var(--brand);font-weight:600;">${peak.date} (${peak.commits} commits)</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Longest Session</span><span style="color:var(--brand);font-weight:600;">${Math.floor(longest.dur / 60)}h ${longest.dur % 60}m (${longest.commits} commits)</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Peak Hour</span><span style="color:var(--brand);font-weight:600;">${peakHour}:00 EST (${peakHourCount} commits)</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Most Edited File</span><span style="color:var(--brand);font-weight:600;">${retroData.hotspots[0]?.file.split('/').pop() || '—'} (${retroData.hotspots[0]?.count || 0}x)</span></div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;">
+        <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:12px;">AI Agents</div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;">
+          ${retroData.agents.map(a => `<div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">${escapeHtml(a.agent)}</span><span style="font-weight:600;">${a.commits} commits</span></div>`).join('')}
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-muted);">Untagged (early)</span><span style="font-weight:600;">${t.commits - retroData.agents.reduce((s, a) => s + a.commits, 0)} commits</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;">
+      <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:16px;">Daily Commit Volume</div>
+      <div style="display:flex;align-items:end;gap:4px;height:140px;">
+        ${retroData.dailyLog.map(d => {
+          const maxC = peak.commits
+          const h = Math.max(4, Math.round((d.commits / maxC) * 130))
+          const label = d.date.slice(5)
+          return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+            <div style="font-size:9px;color:var(--text-muted);">${d.commits}</div>
+            <div style="width:100%;max-width:40px;height:${h}px;background:linear-gradient(180deg,var(--brand),#d47530);border-radius:4px 4px 0 0;transition:height 300ms ease;" title="${d.date}: ${d.commits} commits, +${d.linesAdded.toLocaleString()} -${d.linesDeleted.toLocaleString()}"></div>
+            <div style="font-size:9px;color:var(--text-muted);transform:rotate(-45deg);white-space:nowrap;">${label}</div>
+          </div>`
+        }).join('')}
+      </div>
+    </div>
+  `
+}
+
+function retroStatCard(label, value, color) {
+  return `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+    <div style="font-size:28px;font-weight:800;color:${color};line-height:1;">${value}</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:6px;text-transform:uppercase;letter-spacing:0.5px;">${label}</div>
+  </div>`
+}
+
+function renderRetroDaily(el) {
+  let html = ''
+  for (const d of [...retroData.dailyLog].reverse()) {
+    const date = new Date(d.date + 'T12:00:00')
+    const dayName = date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })
+    const born = retroData.filesBorn[d.date] || 0
+    const span = d.firstCommit && d.lastCommit && d.firstCommit !== d.lastCommit
+      ? `${d.firstCommit.slice(0, 5)} — ${d.lastCommit.slice(0, 5)}`
+      : (d.firstCommit ? d.firstCommit.slice(0, 5) : '—')
+
+    html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-size:14px;font-weight:700;color:var(--text-primary);">${dayName}</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span style="font-size:11px;color:var(--text-muted);">${span}</span>
+          <span style="background:var(--brand-dim);color:var(--brand);padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700;">${d.commits} commits</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;font-size:12px;margin-bottom:10px;">
+        <div><span style="color:var(--text-muted);">Lines added</span><div style="font-weight:600;color:#22c55e;">+${d.linesAdded.toLocaleString()}</div></div>
+        <div><span style="color:var(--text-muted);">Lines deleted</span><div style="font-weight:600;color:#ef4444;">-${d.linesDeleted.toLocaleString()}</div></div>
+        <div><span style="color:var(--text-muted);">Files changed</span><div style="font-weight:600;">${d.filesChanged.toLocaleString()}</div></div>
+        <div><span style="color:var(--text-muted);">Files born</span><div style="font-weight:600;color:#06b6d4;">${born}</div></div>
+      </div>
+      <details style="margin-top:4px;">
+        <summary style="cursor:pointer;font-size:11px;color:var(--text-muted);user-select:none;">Show ${d.messages.length} commit messages</summary>
+        <div style="margin-top:8px;max-height:200px;overflow-y:auto;font-size:11px;line-height:1.6;">
+          ${d.messages.map(m => `<div style="padding:2px 0;color:var(--text-secondary);border-bottom:1px solid rgba(255,255,255,0.03);">${escapeHtml(m)}</div>`).join('')}
+        </div>
+      </details>
+    </div>`
+  }
+  el.innerHTML = html
+}
+
+function renderRetroSessions(el) {
+  let html = `<div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">${retroData.sessions.length} work sessions detected (90-min gap = new session)</div>`
+
+  for (const s of [...retroData.sessions].reverse()) {
+    const startParts = s.start.split('T')
+    const endParts = s.end.split('T')
+    const date = new Date(startParts[0] + 'T12:00:00')
+    const dayLabel = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+    const startTime = startParts[1]?.slice(0, 5) || '?'
+    const endTime = endParts[1]?.slice(0, 5) || '?'
+
+    // Duration
+    let durLabel = 'instant'
+    if (startParts[0] === endParts[0] && startTime !== endTime) {
+      const [sh, sm] = startTime.split(':').map(Number)
+      const [eh, em] = endTime.split(':').map(Number)
+      const mins = (eh * 60 + em) - (sh * 60 + sm)
+      if (mins > 0) {
+        const h = Math.floor(mins / 60)
+        const m = mins % 60
+        durLabel = h > 0 ? `${h}h ${m}m` : `${m}m`
+      }
+    }
+
+    // Color intensity based on commits
+    const intensity = Math.min(1, s.commits / 60)
+    const barWidth = Math.max(8, Math.round(intensity * 100))
+
+    html += `<div style="display:flex;align-items:center;gap:12px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px;">
+      <div style="width:100px;color:var(--text-muted);font-weight:500;">${dayLabel}</div>
+      <div style="width:110px;font-family:monospace;color:var(--text-secondary);">${startTime} — ${endTime}</div>
+      <div style="width:70px;color:var(--text-muted);">${durLabel}</div>
+      <div style="flex:1;display:flex;align-items:center;gap:8px;">
+        <div style="height:16px;width:${barWidth}%;background:linear-gradient(90deg,var(--brand),#d47530);border-radius:4px;min-width:8px;"></div>
+        <span style="font-weight:600;color:var(--brand);">${s.commits}</span>
+      </div>
+    </div>`
+  }
+  el.innerHTML = html
+}
+
+function renderRetroHeatmap(el) {
+  const maxHour = Math.max(...Object.values(retroData.byHour))
+
+  let hourHtml = '<div style="display:flex;align-items:end;gap:3px;height:180px;margin-bottom:24px;">'
+  for (let h = 0; h < 24; h++) {
+    const key = String(h).padStart(2, '0')
+    const count = retroData.byHour[key] || 0
+    const height = maxHour > 0 ? Math.max(2, Math.round((count / maxHour) * 160)) : 2
+    const isDeadZone = count === 0
+    const bg = isDeadZone ? 'rgba(255,255,255,0.05)' : 'linear-gradient(180deg,var(--brand),#d47530)'
+    hourHtml += `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <div style="font-size:9px;color:${isDeadZone ? 'var(--error)' : 'var(--text-muted)'};">${count || ''}</div>
+      <div style="width:100%;height:${height}px;background:${bg};border-radius:3px 3px 0 0;" title="${key}:00 — ${count} commits"></div>
+      <div style="font-size:9px;color:var(--text-muted);">${h}${h < 12 ? 'a' : 'p'}</div>
+    </div>`
+  }
+  hourHtml += '</div>'
+
+  // Day of week bars
+  const maxDow = Math.max(...retroData.byDayOfWeek.map(d => d.count))
+  let dowHtml = '<div style="display:flex;flex-direction:column;gap:6px;">'
+  for (const d of retroData.byDayOfWeek) {
+    const w = maxDow > 0 ? Math.max(4, Math.round((d.count / maxDow) * 100)) : 4
+    dowHtml += `<div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:80px;font-size:12px;color:var(--text-muted);text-align:right;">${d.day}</div>
+      <div style="flex:1;display:flex;align-items:center;gap:8px;">
+        <div style="height:22px;width:${w}%;background:linear-gradient(90deg,var(--brand),#d47530);border-radius:4px;min-width:4px;"></div>
+        <span style="font-size:12px;font-weight:600;color:var(--text-secondary);">${d.count}</span>
+      </div>
+    </div>`
+  }
+  dowHtml += '</div>'
+
+  el.innerHTML = `
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:16px;">Commits by Hour of Day (EST)</div>
+      ${hourHtml}
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:4px;">
+        <span>Peak: 4-5 PM (${retroData.byHour['16'] || 0} commits)</span>
+        <span style="color:var(--error);">Dead zone: 7-10 AM (0 commits)</span>
+        <span>Night owl pattern: two peaks, afternoon + late night</span>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;">
+      <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:16px;">Commits by Day of Week</div>
+      ${dowHtml}
+    </div>
+  `
+}
+
+function renderRetroHotspots(el) {
+  const max = retroData.hotspots[0]?.count || 1
+
+  let html = '<div style="display:flex;flex-direction:column;gap:4px;">'
+  for (let i = 0; i < retroData.hotspots.length; i++) {
+    const h = retroData.hotspots[i]
+    const w = Math.max(4, Math.round((h.count / max) * 100))
+    const parts = h.file.split('/')
+    const fileName = parts.pop()
+    const dir = parts.join('/')
+
+    // Color by category
+    let color = 'var(--brand)'
+    if (h.file.startsWith('components/')) color = '#3b82f6'
+    else if (h.file.startsWith('lib/')) color = '#a855f7'
+    else if (h.file.startsWith('app/')) color = '#22c55e'
+    else if (h.file.startsWith('scripts/')) color = '#06b6d4'
+    else if (h.file.startsWith('docs/')) color = '#f59e0b'
+
+    html += `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;${i < 3 ? 'background:rgba(232,143,71,0.06);' : ''}">
+      <div style="width:24px;font-size:11px;color:var(--text-muted);text-align:right;font-weight:600;">#${i + 1}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+          <span style="font-size:12px;font-weight:600;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(h.file)}">${escapeHtml(fileName)}</span>
+          <span style="font-size:10px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(dir)}</span>
+        </div>
+        <div style="height:6px;background:rgba(255,255,255,0.05);border-radius:3px;overflow:hidden;">
+          <div style="height:100%;width:${w}%;background:${color};border-radius:3px;"></div>
+        </div>
+      </div>
+      <div style="width:50px;text-align:right;font-size:13px;font-weight:700;color:${color};">${h.count}x</div>
+    </div>`
+  }
+  html += '</div>'
+
+  // Legend
+  html += `<div style="display:flex;gap:16px;margin-top:16px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;">
+    <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;margin-right:4px;"></span>app/</span>
+    <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3b82f6;margin-right:4px;"></span>components/</span>
+    <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#a855f7;margin-right:4px;"></span>lib/</span>
+    <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#06b6d4;margin-right:4px;"></span>scripts/</span>
+    <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:4px;"></span>docs/</span>
+    <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--brand);margin-right:4px;"></span>other</span>
+  </div>`
+
+  el.innerHTML = html
+}
+
+function renderRetroAgents(el) {
+  const totalTagged = retroData.agents.reduce((s, a) => s + a.commits, 0)
+  const untagged = retroData.totals.commits - totalTagged
+  const allAgents = [...retroData.agents, { agent: 'Untagged (early commits)', commits: untagged }]
+  const maxAgent = Math.max(...allAgents.map(a => a.commits))
+
+  const colors = { 'Claude Opus 4.6': '#e88f47', 'Claude Sonnet 4.6': '#3b82f6', 'Claude Sonnet 4.5': '#a855f7', 'Untagged (early commits)': '#6b7280' }
+
+  let html = `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;">
+    <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:16px;">Commit Attribution</div>
+    <div style="display:flex;flex-direction:column;gap:12px;">`
+
+  for (const a of allAgents) {
+    const pct = Math.round((a.commits / retroData.totals.commits) * 100)
+    const w = Math.max(4, Math.round((a.commits / maxAgent) * 100))
+    const color = colors[a.agent] || 'var(--brand)'
+
+    html += `<div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-size:13px;font-weight:600;color:var(--text-primary);">${escapeHtml(a.agent)}</span>
+        <span style="font-size:13px;color:var(--text-muted);">${a.commits} commits (${pct}%)</span>
+      </div>
+      <div style="height:24px;background:rgba(255,255,255,0.05);border-radius:6px;overflow:hidden;">
+        <div style="height:100%;width:${w}%;background:${color};border-radius:6px;transition:width 500ms ease;"></div>
+      </div>
+    </div>`
+  }
+
+  html += `</div></div>`
+
+  // Pie chart approximation
+  html += `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;">
+    <div style="font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:16px;">Agent Role Summary</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:13px;">
+      <div style="padding:16px;background:rgba(232,143,71,0.08);border-radius:8px;border-left:3px solid #e88f47;">
+        <div style="font-weight:700;color:#e88f47;margin-bottom:4px;">Claude Opus 4.6</div>
+        <div style="color:var(--text-muted);font-size:12px;">Lead engineer. Handles all complex features, architecture decisions, multi-file changes, production hardening, and Mission Control development.</div>
+      </div>
+      <div style="padding:16px;background:rgba(59,130,246,0.08);border-radius:8px;border-left:3px solid #3b82f6;">
+        <div style="font-weight:700;color:#3b82f6;margin-bottom:4px;">Claude Sonnet 4.6</div>
+        <div style="color:var(--text-muted);font-size:12px;">Parallel agent for batch work. Used in multi-agent sessions for error boundaries, loading states, accessibility, and UI hardening passes.</div>
+      </div>
+      <div style="padding:16px;background:rgba(168,85,247,0.08);border-radius:8px;border-left:3px solid #a855f7;">
+        <div style="font-weight:700;color:#a855f7;margin-bottom:4px;">Claude Sonnet 4.5</div>
+        <div style="color:var(--text-muted);font-size:12px;">Early-era model. Single commit — used briefly before Sonnet 4.6 became the standard parallel agent.</div>
+      </div>
+      <div style="padding:16px;background:rgba(107,114,128,0.08);border-radius:8px;border-left:3px solid #6b7280;">
+        <div style="font-weight:700;color:#6b7280;margin-bottom:4px;">Untagged (Feb 14–17)</div>
+        <div style="color:var(--text-muted);font-size:12px;">Early commits before the Co-Authored-By convention was established. All are AI-assisted — the convention just wasn't in place yet.</div>
+      </div>
+    </div>
+  </div>`
+
+  el.innerHTML = html
 }
 
 </script>
