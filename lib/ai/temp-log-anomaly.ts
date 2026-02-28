@@ -81,7 +81,7 @@ Return JSON: {
   "confidence": "high|medium|low"
 }`
 
-  const { result } = await withAiFallback(
+  const { result, source } = await withAiFallback(
     // Formula: deterministic FDA rules — always correct, always available
     () => analyzeTempLogFormula(tempLog),
     // AI: enhanced analysis with contextual nuance (when Ollama is online)
@@ -91,5 +91,5 @@ Return JSON: {
       })
   )
 
-  return result
+  return { ...result, _aiSource: source }
 }

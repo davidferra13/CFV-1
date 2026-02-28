@@ -9,6 +9,13 @@ import {
   type PricingIntelligenceResult,
 } from '@/lib/ai/pricing-intelligence'
 import { toast } from 'sonner'
+import { AiSourceBadge } from './ai-source-badge'
+
+const CONFIDENCE_COLORS: Record<string, string> = {
+  high: 'text-green-400',
+  medium: 'text-amber-400',
+  low: 'text-red-400',
+}
 
 function formatDollars(cents: number) {
   return (
@@ -18,7 +25,9 @@ function formatDollars(cents: number) {
 }
 
 export function PricingIntelligencePanel({ eventId }: { eventId: string }) {
-  const [result, setResult] = useState<PricingIntelligenceResult | null>(null)
+  const [result, setResult] = useState<
+    (PricingIntelligenceResult & { _aiSource?: 'formula' | 'ai' }) | null
+  >(null)
   const [loading, setLoading] = useState(false)
 
   async function run() {
@@ -114,8 +123,13 @@ export function PricingIntelligencePanel({ eventId }: { eventId: string }) {
 
       <p className="text-xs text-stone-400">{result.rationale}</p>
       <p className="text-[11px] text-stone-400">
-        Based on {result.comparableEvents} comparable events · Confidence: {result.confidence} ·
-        Suggested only
+        <AiSourceBadge source={result._aiSource} />
+        {result._aiSource ? ' · ' : ''}
+        Based on {result.comparableEvents} comparable events · Confidence:{' '}
+        <span className={CONFIDENCE_COLORS[result.confidence] ?? 'text-stone-400'}>
+          {result.confidence}
+        </span>
+        {' · '}Suggested only
       </p>
     </div>
   )

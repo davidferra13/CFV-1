@@ -171,4 +171,5 @@ export const log = {
   grocery: createLogger('grocery'),
   api: createLogger('api'),
   middleware: createLogger('middleware'),
+  ai: createLogger('ai'),
 }

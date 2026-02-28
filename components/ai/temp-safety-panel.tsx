@@ -6,9 +6,18 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { analyzeTempLog, type TempLogAnomalyResult } from '@/lib/ai/temp-log-anomaly'
 import { toast } from 'sonner'
+import { AiSourceBadge } from './ai-source-badge'
+
+const CONFIDENCE_COLORS: Record<string, string> = {
+  high: 'text-green-400',
+  medium: 'text-amber-400',
+  low: 'text-red-400',
+}
 
 export function TempSafetyPanel({ eventId }: { eventId: string }) {
-  const [result, setResult] = useState<TempLogAnomalyResult | null>(null)
+  const [result, setResult] = useState<
+    (TempLogAnomalyResult & { _aiSource?: 'formula' | 'ai' }) | null
+  >(null)
   const [loading, setLoading] = useState(false)
 
   async function run() {
@@ -107,8 +116,13 @@ export function TempSafetyPanel({ eventId }: { eventId: string }) {
       )}
 
       <p className="text-[11px] text-stone-400">
-        Analysis · Confidence: {result.confidence} · Always apply your food safety training and
-        judgment
+        <AiSourceBadge source={result._aiSource} />
+        {result._aiSource ? ' · ' : ''}
+        Confidence:{' '}
+        <span className={CONFIDENCE_COLORS[result.confidence] ?? 'text-stone-400'}>
+          {result.confidence}
+        </span>
+        {' · '}Always apply your food safety training and judgment
       </p>
     </div>
   )

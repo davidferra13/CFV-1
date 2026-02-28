@@ -102,7 +102,7 @@ ${comparables.length > 0 ? 'Avg comparable price: $' + Math.round(comparables.re
 
 Return JSON: { "suggestedMinCents": number, "suggestedMaxCents": number, "suggestedPerHeadCents": number, "rationale": "...", "underbiddingRisk": bool, "underbiddingWarning": "...or null", "marketPosition": "below_average|at_average|above_average", "comparableEvents": number, "confidence": "high|medium|low" }`
 
-  const { result } = await withAiFallback(
+  const { result, source } = await withAiFallback(
     // Formula: percentile math on historical data — deterministic
     () =>
       calculatePricingFormula(
@@ -120,5 +120,5 @@ Return JSON: { "suggestedMinCents": number, "suggestedMaxCents": number, "sugges
     () => parseWithOllama(systemPrompt, userContent, PricingIntelligenceSchema)
   )
 
-  return result
+  return { ...result, _aiSource: source }
 }

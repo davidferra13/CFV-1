@@ -147,12 +147,12 @@ Return JSON: { "rows": [{"dish":"...","guestName":"...","riskLevel":"safe|may_co
     allergenTags: m.allergen_tags as string[] | null,
   }))
 
-  const { result } = await withAiFallback(
+  const { result, source } = await withAiFallback(
     // Formula: FDA Big 9 + common allergen keyword lookup — deterministic
     () => buildAllergenMatrixFormula(formulaGuests, formulaMenuItems),
     // AI: enhanced analysis with contextual reasoning (when Ollama is online)
     () => parseWithOllama(systemPrompt, userContent, AllergenRiskResultSchema)
   )
 
-  return result
+  return { ...result, _aiSource: source }
 }

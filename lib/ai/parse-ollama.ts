@@ -11,6 +11,9 @@ import { isOllamaEnabled, getOllamaConfig, getOllamaModel } from './providers'
 import type { ModelTier } from './providers'
 import { OllamaOfflineError } from './ollama-errors'
 import { getCachedResult, setCachedResult } from './ollama-cache'
+import { log } from '@/lib/logger'
+import { incrementAiMetric, recordAiLatency, recordAiTier } from './ai-metrics'
+import { reportAppError } from '@/lib/monitoring/sentry-reporter'
 
 function extractJsonPayload(rawText: string): string {
   const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/)
@@ -100,7 +103,8 @@ export async function parseWithOllama<T>(
   if (options?.cache) {
     const cached = getCachedResult<T>(systemPrompt, userContent, model)
     if (cached !== undefined) {
-      console.log(`[ollama] Cache hit for ${model}`)
+      log.ai.info('Cache hit', { context: { model } })
+      incrementAiMetric('ai.call.cache_hit')
       return cached
     }
   }
@@ -133,7 +137,7 @@ export async function parseWithOllama<T>(
       {
         maxAttempts: 2,
         onRetry: (attempt, err) => {
-          console.warn(`[ollama] Retry attempt ${attempt} due to error:`, err)
+          log.ai.warn(`Retry attempt ${attempt}`, { error: err })
         },
         retryOn: (err) => {
           if (err instanceof OllamaOfflineError) return true
@@ -156,19 +160,40 @@ export async function parseWithOllama<T>(
       errMsg.includes('model') &&
       (errMsg.includes('not found') || errMsg.includes('does not exist'))
     ) {
-      throw new OllamaOfflineError(
+      const ollamaErr = new OllamaOfflineError(
         `Model "${model}" not found. Run: ollama pull ${model}`,
         'model_missing'
       )
+      incrementAiMetric('ai.call.failure')
+      log.ai.error('Model not found', { context: { model, baseUrl }, error: err })
+      reportAppError(ollamaErr, { category: 'ai', action: 'parseWithOllama' })
+      throw ollamaErr
     }
     if (errMsg.includes('timeout') || errMsg.includes('aborted') || errMsg.includes('AbortError')) {
-      throw new OllamaOfflineError(`Ollama timed out at ${baseUrl}`, 'timeout')
+      const ollamaErr = new OllamaOfflineError(`Ollama timed out at ${baseUrl}`, 'timeout')
+      incrementAiMetric('ai.call.timeout')
+      incrementAiMetric('ai.call.failure')
+      log.ai.error('Ollama timed out', { context: { model, baseUrl, timeoutMs }, error: err })
+      reportAppError(ollamaErr, { category: 'ai', action: 'parseWithOllama' })
+      throw ollamaErr
     }
-    throw new OllamaOfflineError(`Ollama unreachable at ${baseUrl}: ${errMsg}`, 'unreachable')
+    const ollamaErr = new OllamaOfflineError(
+      `Ollama unreachable at ${baseUrl}: ${errMsg}`,
+      'unreachable'
+    )
+    incrementAiMetric('ai.call.offline')
+    incrementAiMetric('ai.call.failure')
+    log.ai.error('Ollama unreachable', { context: { model, baseUrl }, error: err })
+    reportAppError(ollamaErr, { category: 'ai', action: 'parseWithOllama' })
+    throw ollamaErr
   }
 
   if (!rawText) {
-    throw new OllamaOfflineError('Ollama returned an empty response', 'empty_response')
+    const ollamaErr = new OllamaOfflineError('Ollama returned an empty response', 'empty_response')
+    incrementAiMetric('ai.call.failure')
+    log.ai.error('Empty response from Ollama', { context: { model, baseUrl } })
+    reportAppError(ollamaErr, { category: 'ai', action: 'parseWithOllama' })
+    throw ollamaErr
   }
 
   let jsonStr = extractJsonPayload(rawText)
@@ -176,16 +201,25 @@ export async function parseWithOllama<T>(
   try {
     parsed = JSON.parse(jsonStr)
   } catch {
-    throw new OllamaOfflineError(
+    const ollamaErr = new OllamaOfflineError(
       `Ollama response was not valid JSON. Raw: ${rawText.slice(0, 200)}`,
       'invalid_json'
     )
+    incrementAiMetric('ai.call.failure')
+    log.ai.error('Invalid JSON from Ollama', {
+      context: { model, rawSnippet: rawText.slice(0, 100) },
+    })
+    reportAppError(ollamaErr, { category: 'ai', action: 'parseWithOllama' })
+    throw ollamaErr
   }
 
   let zodResult = schema.safeParse(parsed)
   if (!zodResult.success) {
     const firstPassIssues = formatZodIssues(zodResult.error)
-    console.warn('[ollama] Zod validation failed, attempting repair pass. Issues:', firstPassIssues)
+    log.ai.warn('Zod validation failed, attempting repair pass', {
+      context: { model, issues: firstPassIssues },
+    })
+    incrementAiMetric('ai.call.repair_attempted')
 
     // Single repair pass via Ollama (still local — no privacy risk)
     try {
@@ -222,27 +256,42 @@ export async function parseWithOllama<T>(
 
       if (repairedResult.success) {
         const durationMs = Date.now() - startTime
-        console.log(`[ollama] Repair pass succeeded with ${model} (${durationMs}ms, repair=true)`)
+        log.ai.info('Repair pass succeeded', { context: { model, repair: true }, durationMs })
+        incrementAiMetric('ai.call.repair_succeeded')
+        incrementAiMetric('ai.call.success')
+        recordAiLatency(durationMs)
+        if (options?.modelTier) recordAiTier(options.modelTier)
         if (options?.cache) setCachedResult(systemPrompt, userContent, model, repairedResult.data)
         return repairedResult.data
       }
 
       const repairIssues = formatZodIssues(repairedResult.error)
-      throw new OllamaOfflineError(
+      const ollamaErr = new OllamaOfflineError(
         `Ollama repair pass failed schema validation: ${repairIssues}`,
         'validation_failed'
       )
+      incrementAiMetric('ai.call.failure')
+      log.ai.error('Repair pass failed validation', { context: { model, issues: repairIssues } })
+      reportAppError(ollamaErr, { category: 'ai', action: 'parseWithOllama' })
+      throw ollamaErr
     } catch (err) {
       if (err instanceof OllamaOfflineError) throw err
-      throw new OllamaOfflineError(
+      const ollamaErr = new OllamaOfflineError(
         `Ollama repair pass error: ${err instanceof Error ? err.message : String(err)}`,
         'validation_failed'
       )
+      incrementAiMetric('ai.call.failure')
+      log.ai.error('Repair pass crashed', { context: { model }, error: err })
+      reportAppError(ollamaErr, { category: 'ai', action: 'parseWithOllama' })
+      throw ollamaErr
     }
   }
 
   const durationMs = Date.now() - startTime
-  console.log(`[ollama] Parsed successfully with ${model} (${durationMs}ms)`)
+  log.ai.info('Parsed successfully', { context: { model }, durationMs })
+  incrementAiMetric('ai.call.success')
+  recordAiLatency(durationMs)
+  if (options?.modelTier) recordAiTier(options.modelTier)
   if (options?.cache) setCachedResult(systemPrompt, userContent, model, zodResult.data)
   return zodResult.data
 }

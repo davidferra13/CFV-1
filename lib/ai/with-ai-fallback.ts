@@ -7,6 +7,8 @@
 
 import { OllamaOfflineError } from './ollama-errors'
 import { isOllamaEnabled } from './providers'
+import { log } from '@/lib/logger'
+import { incrementAiMetric } from './ai-metrics'
 
 export type FallbackResult<T> = {
   result: T
@@ -43,10 +45,11 @@ export async function withAiFallback<T>(
   } catch (err) {
     // OllamaOfflineError or any other error — formula is the floor
     if (err instanceof OllamaOfflineError) {
-      console.log(`[with-ai-fallback] Ollama offline (${err.code}), using formula result`)
+      log.ai.info(`Ollama offline (${err.code}), using formula result`)
     } else {
-      console.warn('[with-ai-fallback] AI enhancement failed, using formula result:', err)
+      log.ai.warn('AI enhancement failed, using formula result', { error: err })
     }
+    incrementAiMetric('ai.fallback.to_formula')
     return { result: formulaResult, source: 'formula' }
   }
 }

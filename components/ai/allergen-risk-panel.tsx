@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { getEventAllergenRisk, type AllergenRiskResult } from '@/lib/ai/allergen-risk'
 import { toast } from 'sonner'
+import { AiSourceBadge } from './ai-source-badge'
 
 const RISK_COLORS: Record<string, string> = {
   safe: 'text-green-700 bg-green-950',
@@ -21,8 +22,16 @@ const RISK_LABELS: Record<string, string> = {
   unknown: 'Unknown',
 }
 
+const CONFIDENCE_COLORS: Record<string, string> = {
+  high: 'text-green-400',
+  medium: 'text-amber-400',
+  low: 'text-red-400',
+}
+
 export function AllergenRiskPanel({ eventId }: { eventId: string }) {
-  const [result, setResult] = useState<AllergenRiskResult | null>(null)
+  const [result, setResult] = useState<
+    (AllergenRiskResult & { _aiSource?: 'formula' | 'ai' }) | null
+  >(null)
   const [loading, setLoading] = useState(false)
 
   async function run() {
@@ -131,8 +140,14 @@ export function AllergenRiskPanel({ eventId }: { eventId: string }) {
       )}
 
       <p className="text-[11px] text-stone-400">
-        Auto draft · Confidence: {result.confidence} · Always verify allergens with client before
-        service
+        <AiSourceBadge source={result._aiSource} />
+        {result._aiSource ? ' · ' : ''}
+        Confidence:{' '}
+        <span className={CONFIDENCE_COLORS[result.confidence] ?? 'text-stone-400'}>
+          {result.confidence}
+        </span>
+        {result.confidence === 'low' && ' (unverified)'}
+        {' · '}Always verify allergens with client before service
       </p>
     </div>
   )
