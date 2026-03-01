@@ -12,13 +12,20 @@ export async function exportMyData(): Promise<Record<string, unknown>> {
   const tenantId = user.entityId
 
   // Helper to safely query a table — returns empty array if table doesn't exist
+  // Capped at 10 000 rows per table to prevent unbounded memory usage / DoS
+  const MAX_EXPORT_ROWS = 10_000
+
   async function safeQuery(
     table: string,
     columns: string = '*',
     fkColumn: string = 'tenant_id'
   ): Promise<Record<string, unknown>[]> {
     try {
-      const { data } = await (supabase as any).from(table).select(columns).eq(fkColumn, tenantId)
+      const { data } = await (supabase as any)
+        .from(table)
+        .select(columns)
+        .eq(fkColumn, tenantId)
+        .limit(MAX_EXPORT_ROWS)
       return (data || []) as Record<string, unknown>[]
     } catch {
       return []

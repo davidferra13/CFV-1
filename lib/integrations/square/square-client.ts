@@ -89,6 +89,7 @@ export async function exchangeSquareCode(code: string, tenantId: string): Promis
       grant_type: 'authorization_code',
       redirect_uri: getRedirectUri(),
     }),
+    signal: AbortSignal.timeout(15_000),
   })
 
   if (!response.ok) {
@@ -109,6 +110,7 @@ export async function exchangeSquareCode(code: string, tenantId: string): Promis
       Authorization: `Bearer ${tokens.access_token}`,
       'Square-Version': '2024-01-18',
     },
+    signal: AbortSignal.timeout(10_000),
   })
 
   let merchantName = `Square Merchant ${tokens.merchant_id}`
@@ -176,6 +178,7 @@ async function refreshSquareToken(tenantId: string): Promise<string> {
       refresh_token: decryptedRefreshToken,
       grant_type: 'refresh_token',
     }),
+    signal: AbortSignal.timeout(15_000),
   })
 
   if (!response.ok) {
@@ -255,6 +258,7 @@ export async function createSquarePaymentLink(
         .filter(Boolean)
         .join(' | '),
     }),
+    signal: AbortSignal.timeout(15_000),
   })
 
   if (!response.ok) {
@@ -320,6 +324,7 @@ export async function disconnectSquare() {
           client_id: getClientId(),
           access_token: decryptOAuthToken(conn.access_token),
         }),
+        signal: AbortSignal.timeout(10_000),
       })
     } catch {
       // Non-blocking — continue with disconnect even if revocation fails

@@ -110,6 +110,7 @@ async function searchWithTavily(query: string, limit: number): Promise<WebSearch
       search_depth: 'basic',
       include_answer: false,
     }),
+    signal: AbortSignal.timeout(10_000),
   })
 
   if (!response.ok) {
@@ -135,6 +136,7 @@ async function searchWithDuckDuckGo(query: string, limit: number): Promise<WebSe
     headers: {
       'User-Agent': 'Mozilla/5.0 (compatible; ChefFlow/1.0)',
     },
+    signal: AbortSignal.timeout(10_000),
   })
 
   if (!response.ok) {
@@ -174,6 +176,7 @@ async function searchWithDuckDuckGo(query: string, limit: number): Promise<WebSe
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; ChefFlow/1.0)',
         },
+        signal: AbortSignal.timeout(10_000),
       })
 
       if (liteResponse.ok) {

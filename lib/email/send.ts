@@ -56,7 +56,9 @@ export async function sendEmail({
       return false
     }
 
-    console.log('[sendEmail] Sent:', subject, '→', to)
+    // Log subject only — never log recipient email addresses (PII)
+    const recipientCount = Array.isArray(to) ? to.length : 1
+    console.log(`[sendEmail] Sent: "${subject}" → ${recipientCount} recipient(s)`)
     return true
   } catch (err) {
     console.error('[sendEmail] Failed:', err)
