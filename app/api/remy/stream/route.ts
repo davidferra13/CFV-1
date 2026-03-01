@@ -718,12 +718,29 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
     }
 
     if (task.taskType === 'client.search' && task.data) {
-      const d = task.data as { clients: Array<{ name: string }> }
+      const d = task.data as {
+        clients: Array<{
+          name: string
+          allergies?: string[]
+          dietaryRestrictions?: string[]
+          loyaltyTier?: string | null
+        }>
+      }
       if (d.clients.length === 0) summaries.push('No matching clients found.')
-      else
+      else {
+        const clientLines = d.clients.map((c) => {
+          const parts = [c.name]
+          if (c.loyaltyTier) parts.push(`(${c.loyaltyTier} tier)`)
+          if (c.allergies && c.allergies.length > 0)
+            parts.push(`\n  ⚠️ ALLERGIES: ${c.allergies.join(', ').toUpperCase()}`)
+          if (c.dietaryRestrictions && c.dietaryRestrictions.length > 0)
+            parts.push(`\n  Dietary: ${c.dietaryRestrictions.join(', ')}`)
+          return parts.join(' ')
+        })
         summaries.push(
-          `Found ${d.clients.length} client${d.clients.length > 1 ? 's' : ''}: ${d.clients.map((c) => c.name).join(', ')}`
+          `Found ${d.clients.length} client${d.clients.length > 1 ? 's' : ''}:\n${clientLines.map((l) => `• ${l}`).join('\n')}`
         )
+      }
     } else if (task.taskType === 'calendar.availability' && task.data) {
       const d = task.data as {
         date: string
@@ -1335,6 +1352,15 @@ export async function POST(req: NextRequest) {
         }),
         { headers: sseHeaders() }
       )
+    }
+
+    // ─── Safety-critical fast-path: dietary/allergy queries → command ────
+    // Allergy queries are safety-critical and MUST route through dietary.check
+    // to return structured data. The LLM classifier sometimes misroutes these
+    // as "question" intent, causing the LLM to answer without querying the DB.
+    const dietaryRegex = /(?:allerg|dietary|restriction|epipen|anaphyla|intoleran)/i
+    if (classification.intent === 'question' && dietaryRegex.test(message)) {
+      classification = { ...classification, intent: 'command' }
     }
 
     // ─── COMMAND path ────────────────────────────────────────────

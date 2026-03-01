@@ -65,13 +65,37 @@ import type { CommandRun, TaskResult, PlannedTask, ApprovalTier } from '@/lib/ai
 async function executeClientSearch(inputs: Record<string, unknown>) {
   const query = String(inputs.query ?? '')
   const clients = await searchClientsByName(query)
+  if (clients.length === 0) return { clients: [] }
+
+  // Enrich with dietary/allergy data (safety-critical)
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+  const clientIds = clients.map((c) => c.id)
+  const { data: enriched } = await supabase
+    .from('clients')
+    .select('id, dietary_restrictions, allergies, vibe_notes, loyalty_tier, loyalty_points')
+    .eq('tenant_id', user.tenantId!)
+    .in('id', clientIds)
+
+  const enrichedMap = new Map(
+    ((enriched ?? []) as Array<Record<string, unknown>>).map((e) => [e.id as string, e])
+  )
+
   return {
-    clients: clients.map((c) => ({
-      id: c.id,
-      name: c.full_name ?? '',
-      email: c.email ?? '',
-      status: c.status ?? '',
-    })),
+    clients: clients.map((c) => {
+      const extra = enrichedMap.get(c.id)
+      const allergies = (extra?.allergies as string[]) ?? []
+      const dietary = (extra?.dietary_restrictions as string[]) ?? []
+      return {
+        id: c.id,
+        name: c.full_name ?? '',
+        email: c.email ?? '',
+        status: c.status ?? '',
+        allergies,
+        dietaryRestrictions: dietary,
+        loyaltyTier: (extra?.loyalty_tier as string) ?? null,
+      }
+    }),
   }
 }
 
@@ -1243,6 +1267,32 @@ export async function runCommand(rawInput: string): Promise<CommandRun> {
   const startedAt = new Date().toISOString()
 
   try {
+    // Safety-critical fast-path: allergy/dietary queries MUST go through dietary.check
+    // The LLM classifier sometimes routes these as client.search, missing allergy data.
+    const dietaryMatch = rawInput.match(/\b(?:allerg|dietary|restriction|epipen|intoleran)\w*\b/i)
+    const nameMatch = rawInput.match(
+      /(?:for|about|does|do)\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/
+    )
+    if (dietaryMatch && nameMatch) {
+      const clientName = nameMatch[1].replace(/(?:'s|'s)\s*$/i, '')
+      const task: PlannedTask = {
+        id: 't1',
+        taskType: 'dietary.check',
+        tier: 1,
+        confidence: 1.0,
+        inputs: { clientName },
+        dependsOn: [],
+      }
+      const result = await executeSingleTask(task, {}, tenantId)
+      return {
+        runId,
+        rawInput,
+        startedAt,
+        results: [result],
+        ollamaOffline: false,
+      }
+    }
+
     const plan = await parseCommandIntent(rawInput)
     const rounds = buildExecutionRounds(plan.tasks)
 
