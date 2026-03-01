@@ -673,7 +673,7 @@ async function handlePiTest(): Promise<Response> {
         { role: 'user', content: 'Say hello and confirm you are running.' },
       ],
       options: { num_predict: 64 },
-      keep_alive: '5m',
+      keep_alive: '30m',
       think: false,
     } as any) as any)
     modelResponse = res.message?.content ?? '(no response)'
@@ -1614,7 +1614,7 @@ export async function POST(req: NextRequest) {
                 options: {
                   num_predict: OLLAMA_STREAM_MAX_TOKENS,
                 },
-                keep_alive: '5m',
+                keep_alive: '30m',
                 think: false,
               } as any)
 
@@ -1649,7 +1649,7 @@ export async function POST(req: NextRequest) {
                 options: {
                   num_predict: OLLAMA_STREAM_MAX_TOKENS,
                 },
-                keep_alive: '5m',
+                keep_alive: '30m',
                 think: false,
               } as any)
 
@@ -1774,7 +1774,7 @@ export async function POST(req: NextRequest) {
               options: {
                 num_predict: OLLAMA_STREAM_MAX_TOKENS,
               },
-              keep_alive: '5m',
+              keep_alive: '30m',
               think: false,
             } as any)
 
@@ -1809,7 +1809,7 @@ export async function POST(req: NextRequest) {
               options: {
                 num_predict: OLLAMA_STREAM_MAX_TOKENS,
               },
-              keep_alive: '5m',
+              keep_alive: '30m',
               think: false,
             } as any)
 

@@ -535,10 +535,11 @@ async function main() {
         prompt: '/no_think\nSay OK.',
         stream: false,
         options: { num_predict: 3 },
+        keep_alive: '30m',
       }),
     })
     if (warmRes.ok) {
-      console.log(`  ✅ qwen3-coder:30b warm`)
+      console.log(`  ✅ qwen3-coder:30b warm (keep_alive: 30m)`)
     } else {
       console.log(`  ⚠️ qwen3-coder:30b failed to warm: ${warmRes.status}`)
     }
