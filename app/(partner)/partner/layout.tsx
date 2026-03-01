@@ -31,7 +31,7 @@ export default async function PartnerLayout({ children }: { children: React.Reac
       <ToastProvider />
       <PartnerSidebar partnerName={partnerName} />
 
-      <main className="flex-1 pb-16 lg:pb-0">
+      <main className="flex-1 pt-14 lg:pt-0">
         <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">{children}</div>
       </main>
 

@@ -112,13 +112,13 @@ html {
   .pt-safe {
     padding-top: env(safe-area-inset-top, 0px);
   }
-  /* Mobile nav bar (56px) + safe area bottom inset */
+  /* Mobile nav bar — now at top, no bottom padding needed */
   .pb-mobile-nav {
-    padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: 0px;
   }
-  /* Mobile header (56px) + safe area top inset */
+  /* Mobile header (56px) + tab bar (44px) + safe area top inset */
   .pt-mobile-header {
-    padding-top: calc(3.5rem + env(safe-area-inset-top, 0px));
+    padding-top: calc(6.25rem + env(safe-area-inset-top, 0px));
   }
 }
 

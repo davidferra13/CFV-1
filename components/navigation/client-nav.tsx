@@ -17,6 +17,7 @@ import {
   Menu,
   MessageCircle,
   User,
+  Users,
   X,
   ChevronLeft,
   ChevronRight,
@@ -36,6 +37,7 @@ const navItems = [
   { href: '/my-inquiries', label: 'My Inquiries', icon: ClipboardList },
   { href: '/my-quotes', label: 'My Quotes', icon: FileText },
   { href: '/my-chat', label: 'Messages', icon: MessageCircle },
+  { href: '/my-hub', label: 'My Hub', icon: Users },
   { href: '/my-rewards', label: 'Rewards', icon: Gift },
   { href: '/my-spending', label: 'Spending', icon: DollarSign },
   { href: '/my-profile', label: 'Profile', icon: User },
@@ -382,8 +384,8 @@ export function ClientMobileNav({ userEmail, hasCannabisTier }: ClientNavProps) 
         </>
       )}
 
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-stone-900 border-t border-stone-700 pb-safe">
-        <div className="flex items-center justify-around h-14">
+      <nav className="lg:hidden fixed top-[calc(3.5rem+env(safe-area-inset-top,0px))] left-0 right-0 z-40 bg-stone-900 border-b border-stone-700">
+        <div className="flex items-center justify-around h-11">
           {navItems.map((item) => {
             const active = isItemActive(pathname, item.href)
             const Icon = item.icon
@@ -391,11 +393,11 @@ export function ClientMobileNav({ userEmail, hasCannabisTier }: ClientNavProps) 
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-xs font-medium transition-colors ${
+                className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-[10px] font-medium transition-colors ${
                   active ? 'text-brand-600' : 'text-stone-400'
                 }`}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="w-4 h-4" />
                 {item.label}
               </Link>
             )

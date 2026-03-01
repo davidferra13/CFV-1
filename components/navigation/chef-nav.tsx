@@ -1473,8 +1473,8 @@ function MobileBottomTabBar({
   }, [onMoreClick])
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-stone-900 border-t border-stone-700 pb-safe">
-      <div className="flex items-center justify-around h-14">
+    <nav className="lg:hidden fixed top-[calc(3.5rem+env(safe-area-inset-top,0px))] left-0 right-0 z-40 bg-stone-900 border-b border-stone-700">
+      <div className="flex items-center justify-around h-11">
         {mobileTabItems.map((item) => {
           const active = isItemActive(pathname, item.href)
           const Icon = item.icon
@@ -1484,15 +1484,15 @@ function MobileBottomTabBar({
               href={item.href}
               onClick={(e) => {
                 // Hard navigate — bypasses Next.js client router entirely.
-                // This is intentional: the bottom nav must NEVER silently fail.
+                // This is intentional: the nav must NEVER silently fail.
                 e.preventDefault()
                 window.location.href = item.href
               }}
-              className={`group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-xs font-medium transition-colors no-underline ${
+              className={`group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-[10px] font-medium transition-colors no-underline ${
                 active ? 'text-brand-600' : 'text-stone-400'
               }`}
             >
-              <Icon className="w-5 h-5 group-active:scale-110 transition-transform duration-100" />
+              <Icon className="w-4 h-4 group-active:scale-110 transition-transform duration-100" />
               {item.label}
             </a>
           )
@@ -1501,9 +1501,9 @@ function MobileBottomTabBar({
           ref={moreRef}
           type="button"
           onClick={() => onMoreClick()}
-          className="group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-xs font-medium text-stone-400"
+          className="group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-[10px] font-medium text-stone-400"
         >
-          <Menu className="w-5 h-5 group-active:scale-110 transition-transform duration-100" />
+          <Menu className="w-4 h-4 group-active:scale-110 transition-transform duration-100" />
           More
         </button>
       </div>

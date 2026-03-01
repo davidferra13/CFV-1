@@ -82,7 +82,7 @@ export function PartnerMobileNav() {
   const pathname = rawPathname ?? ''
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-stone-900 border-t border-stone-700 z-40 flex">
+    <nav className="lg:hidden fixed top-0 left-0 right-0 bg-stone-900 border-b border-stone-700 z-40 flex pt-safe">
       {NAV_ITEMS.slice(0, 4).map(({ href, label, icon: Icon }) => {
         const isActive = pathname === href || pathname.startsWith(href + '/')
         return (
