@@ -1,3 +1,4 @@
+Initialising login role...
 export type Json =
   | string
   | number
@@ -4808,6 +4809,7 @@ export type Database = {
           notification_quiet_hours_start: string | null
           owner_hourly_rate_cents: number | null
           primary_nav_hrefs: Json
+          print_preferences: Json
           revenue_goal_custom: Json
           revenue_goal_nudge_level: string
           revenue_goal_program_enabled: boolean
@@ -4860,6 +4862,7 @@ export type Database = {
           notification_quiet_hours_start?: string | null
           owner_hourly_rate_cents?: number | null
           primary_nav_hrefs?: Json
+          print_preferences?: Json
           revenue_goal_custom?: Json
           revenue_goal_nudge_level?: string
           revenue_goal_program_enabled?: boolean
@@ -4912,6 +4915,7 @@ export type Database = {
           notification_quiet_hours_start?: string | null
           owner_hourly_rate_cents?: number | null
           primary_nav_hrefs?: Json
+          print_preferences?: Json
           revenue_goal_custom?: Json
           revenue_goal_nudge_level?: string
           revenue_goal_program_enabled?: boolean
@@ -8250,6 +8254,46 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_thread_reads: {
+        Row: {
+          last_read_at: string
+          tenant_id: string
+          thread_id: string
+        }
+        Insert: {
+          last_read_at?: string
+          tenant_id: string
+          thread_id: string
+        }
+        Update: {
+          last_read_at?: string
+          tenant_id?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_thread_reads_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_thread_reads_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "communication_inbox_items"
+            referencedColumns: ["thread_id"]
+          },
+          {
+            foreignKeyName: "conversation_thread_reads_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_threads"
             referencedColumns: ["id"]
           },
         ]
@@ -11928,6 +11972,7 @@ export type Database = {
           enforce_capacity: boolean
           event_id: string
           expires_at: string | null
+          hub_group_id: string | null
           id: string
           is_active: boolean
           max_capacity: number | null
@@ -11936,6 +11981,7 @@ export type Database = {
           require_join_approval: boolean
           rsvp_deadline_at: string | null
           tenant_id: string
+          theme_id: string | null
           token: string
           updated_at: string
           visibility_settings: Json
@@ -11947,6 +11993,7 @@ export type Database = {
           enforce_capacity?: boolean
           event_id: string
           expires_at?: string | null
+          hub_group_id?: string | null
           id?: string
           is_active?: boolean
           max_capacity?: number | null
@@ -11955,6 +12002,7 @@ export type Database = {
           require_join_approval?: boolean
           rsvp_deadline_at?: string | null
           tenant_id: string
+          theme_id?: string | null
           token: string
           updated_at?: string
           visibility_settings?: Json
@@ -11966,6 +12014,7 @@ export type Database = {
           enforce_capacity?: boolean
           event_id?: string
           expires_at?: string | null
+          hub_group_id?: string | null
           id?: string
           is_active?: boolean
           max_capacity?: number | null
@@ -11974,6 +12023,7 @@ export type Database = {
           require_join_approval?: boolean
           rsvp_deadline_at?: string | null
           tenant_id?: string
+          theme_id?: string | null
           token?: string
           updated_at?: string
           visibility_settings?: Json
@@ -12023,10 +12073,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "event_shares_hub_group_id_fkey"
+            columns: ["hub_group_id"]
+            isOneToOne: false
+            referencedRelation: "hub_groups"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "event_shares_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_shares_theme_id_fkey"
+            columns: ["theme_id"]
+            isOneToOne: false
+            referencedRelation: "event_themes"
             referencedColumns: ["id"]
           },
         ]
@@ -12200,6 +12264,119 @@ export type Database = {
           },
         ]
       }
+      event_stubs: {
+        Row: {
+          adopted_at: string | null
+          adopted_event_id: string | null
+          adopted_tenant_id: string | null
+          allergies: string[] | null
+          created_at: string
+          created_by_profile_id: string
+          dietary_restrictions: string[] | null
+          event_date: string | null
+          guest_count: number | null
+          hub_group_id: string | null
+          id: string
+          location_text: string | null
+          notes: string | null
+          occasion: string | null
+          serve_time: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          adopted_at?: string | null
+          adopted_event_id?: string | null
+          adopted_tenant_id?: string | null
+          allergies?: string[] | null
+          created_at?: string
+          created_by_profile_id: string
+          dietary_restrictions?: string[] | null
+          event_date?: string | null
+          guest_count?: number | null
+          hub_group_id?: string | null
+          id?: string
+          location_text?: string | null
+          notes?: string | null
+          occasion?: string | null
+          serve_time?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          adopted_at?: string | null
+          adopted_event_id?: string | null
+          adopted_tenant_id?: string | null
+          allergies?: string[] | null
+          created_at?: string
+          created_by_profile_id?: string
+          dietary_restrictions?: string[] | null
+          event_date?: string | null
+          guest_count?: number | null
+          hub_group_id?: string | null
+          id?: string
+          location_text?: string | null
+          notes?: string | null
+          occasion?: string | null
+          serve_time?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_stubs_adopted_event_id_fkey"
+            columns: ["adopted_event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_stubs_adopted_event_id_fkey"
+            columns: ["adopted_event_id"]
+            isOneToOne: false
+            referencedRelation: "event_inventory_variance"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_stubs_adopted_event_id_fkey"
+            columns: ["adopted_event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_stubs_adopted_event_id_fkey"
+            columns: ["adopted_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_stubs_adopted_tenant_id_fkey"
+            columns: ["adopted_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_stubs_created_by_profile_id_fkey"
+            columns: ["created_by_profile_id"]
+            isOneToOne: false
+            referencedRelation: "hub_guest_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_stubs_hub_group_id_fkey"
+            columns: ["hub_group_id"]
+            isOneToOne: false
+            referencedRelation: "hub_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_surveys: {
         Row: {
           chef_id: string
@@ -12368,6 +12545,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      event_themes: {
+        Row: {
+          accent_color: string
+          background_gradient: string | null
+          category: string
+          created_at: string
+          description: string | null
+          emoji: string | null
+          font_display: string | null
+          id: string
+          is_active: boolean
+          name: string
+          primary_color: string
+          secondary_color: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          accent_color: string
+          background_gradient?: string | null
+          category: string
+          created_at?: string
+          description?: string | null
+          emoji?: string | null
+          font_display?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          primary_color: string
+          secondary_color: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          accent_color?: string
+          background_gradient?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          emoji?: string | null
+          font_display?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          primary_color?: string
+          secondary_color?: string
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
       }
       event_tips: {
         Row: {
@@ -15332,6 +15560,894 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_availability: {
+        Row: {
+          created_at: string
+          created_by_profile_id: string
+          date_range_end: string
+          date_range_start: string
+          description: string | null
+          group_id: string
+          id: string
+          is_closed: boolean
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by_profile_id: string
+          date_range_end: string
+          date_range_start: string
+          description?: string | null
+          group_id: string
+          id?: string
+          is_closed?: boolean
+          title?: string
+        }
+        Update: {
+          created_at?: string
+          created_by_profile_id?: string
+          date_range_end?: string
+          date_range_start?: string
+          description?: string | null
+          group_id?: string
+          id?: string
+          is_closed?: boolean
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_availability_created_by_profile_id_fkey"
+            columns: ["created_by_profile_id"]
+            isOneToOne: false
+            referencedRelation: "hub_guest_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_availability_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "hub_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_availability_responses: {
+        Row: {
+          availability_id: string
+          created_at: string
+          id: string
+          profile_id: string
+          response_date: string
+          status: string
+        }
+        Insert: {
+          availability_id: string
+          created_at?: string
+          id?: string
+          profile_id: string
+          response_date: string
+          status?: string
+        }
+        Update: {
+          availability_id?: string
+          created_at?: string
+          id?: string
+          profile_id?: string
+          response_date?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_availability_responses_availability_id_fkey"
+            columns: ["availability_id"]
+            isOneToOne: false
+            referencedRelation: "hub_availability"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_availability_responses_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "hub_guest_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_group_events: {
+        Row: {
+          added_at: string
+          event_id: string
+          group_id: string
+          id: string
+        }
+        Insert: {
+          added_at?: string
+          event_id: string
+          group_id: string
+          id?: string
+        }
+        Update: {
+          added_at?: string
+          event_id?: string
+          group_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_group_events_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "hub_group_events_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_inventory_variance"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "hub_group_events_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "hub_group_events_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_group_events_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "hub_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_group_members: {
+        Row: {
+          can_invite: boolean
+          can_pin: boolean
+          can_post: boolean
+          group_id: string
+          id: string
+          joined_at: string
+          last_read_at: string | null
+          notifications_muted: boolean
+          profile_id: string
+          role: string
+        }
+        Insert: {
+          can_invite?: boolean
+          can_pin?: boolean
+          can_post?: boolean
+          group_id: string
+          id?: string
+          joined_at?: string
+          last_read_at?: string | null
+          notifications_muted?: boolean
+          profile_id: string
+          role?: string
+        }
+        Update: {
+          can_invite?: boolean
+          can_pin?: boolean
+          can_post?: boolean
+          group_id?: string
+          id?: string
+          joined_at?: string
+          last_read_at?: string | null
+          notifications_muted?: boolean
+          profile_id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "hub_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_group_members_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "hub_guest_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_groups: {
+        Row: {
+          allow_anonymous_posts: boolean
+          allow_member_invites: boolean
+          cover_image_url: string | null
+          created_at: string
+          created_by_profile_id: string
+          description: string | null
+          emoji: string | null
+          event_id: string | null
+          event_stub_id: string | null
+          group_token: string
+          id: string
+          is_active: boolean
+          last_message_at: string | null
+          last_message_preview: string | null
+          message_count: number
+          name: string
+          tenant_id: string | null
+          theme_id: string | null
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          allow_anonymous_posts?: boolean
+          allow_member_invites?: boolean
+          cover_image_url?: string | null
+          created_at?: string
+          created_by_profile_id: string
+          description?: string | null
+          emoji?: string | null
+          event_id?: string | null
+          event_stub_id?: string | null
+          group_token?: string
+          id?: string
+          is_active?: boolean
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          message_count?: number
+          name: string
+          tenant_id?: string | null
+          theme_id?: string | null
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          allow_anonymous_posts?: boolean
+          allow_member_invites?: boolean
+          cover_image_url?: string | null
+          created_at?: string
+          created_by_profile_id?: string
+          description?: string | null
+          emoji?: string | null
+          event_id?: string | null
+          event_stub_id?: string | null
+          group_token?: string
+          id?: string
+          is_active?: boolean
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          message_count?: number
+          name?: string
+          tenant_id?: string | null
+          theme_id?: string | null
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_groups_created_by_profile_id_fkey"
+            columns: ["created_by_profile_id"]
+            isOneToOne: false
+            referencedRelation: "hub_guest_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_groups_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "hub_groups_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_inventory_variance"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "hub_groups_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "hub_groups_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_groups_event_stub_id_fkey"
+            columns: ["event_stub_id"]
+            isOneToOne: false
+            referencedRelation: "event_stubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_groups_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_groups_theme_id_fkey"
+            columns: ["theme_id"]
+            isOneToOne: false
+            referencedRelation: "event_themes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_guest_event_history: {
+        Row: {
+          chef_name: string | null
+          courses_served: Json | null
+          created_at: string
+          event_date: string | null
+          event_guest_id: string | null
+          event_id: string
+          id: string
+          occasion: string | null
+          profile_id: string
+          rsvp_status: string | null
+          tenant_id: string
+        }
+        Insert: {
+          chef_name?: string | null
+          courses_served?: Json | null
+          created_at?: string
+          event_date?: string | null
+          event_guest_id?: string | null
+          event_id: string
+          id?: string
+          occasion?: string | null
+          profile_id: string
+          rsvp_status?: string | null
+          tenant_id: string
+        }
+        Update: {
+          chef_name?: string | null
+          courses_served?: Json | null
+          created_at?: string
+          event_date?: string | null
+          event_guest_id?: string | null
+          event_id?: string
+          id?: string
+          occasion?: string | null
+          profile_id?: string
+          rsvp_status?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_guest_event_history_event_guest_id_fkey"
+            columns: ["event_guest_id"]
+            isOneToOne: false
+            referencedRelation: "event_guests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_guest_event_history_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "hub_guest_event_history_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_inventory_variance"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "hub_guest_event_history_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "hub_guest_event_history_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_guest_event_history_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "hub_guest_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_guest_event_history_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_guest_profiles: {
+        Row: {
+          auth_user_id: string | null
+          avatar_url: string | null
+          bio: string | null
+          client_id: string | null
+          created_at: string
+          display_name: string
+          email: string | null
+          email_normalized: string | null
+          id: string
+          known_allergies: string[] | null
+          known_dietary: string[] | null
+          notifications_enabled: boolean
+          profile_token: string
+          updated_at: string
+        }
+        Insert: {
+          auth_user_id?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          client_id?: string | null
+          created_at?: string
+          display_name: string
+          email?: string | null
+          email_normalized?: string | null
+          id?: string
+          known_allergies?: string[] | null
+          known_dietary?: string[] | null
+          notifications_enabled?: boolean
+          profile_token?: string
+          updated_at?: string
+        }
+        Update: {
+          auth_user_id?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          client_id?: string | null
+          created_at?: string
+          display_name?: string
+          email?: string | null
+          email_normalized?: string | null
+          id?: string
+          known_allergies?: string[] | null
+          known_dietary?: string[] | null
+          notifications_enabled?: boolean
+          profile_token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_guest_profiles_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "hub_guest_profiles_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_media: {
+        Row: {
+          caption: string | null
+          content_type: string | null
+          created_at: string
+          event_id: string | null
+          filename: string | null
+          group_id: string
+          id: string
+          size_bytes: number | null
+          storage_path: string
+          uploaded_by_profile_id: string
+        }
+        Insert: {
+          caption?: string | null
+          content_type?: string | null
+          created_at?: string
+          event_id?: string | null
+          filename?: string | null
+          group_id: string
+          id?: string
+          size_bytes?: number | null
+          storage_path: string
+          uploaded_by_profile_id: string
+        }
+        Update: {
+          caption?: string | null
+          content_type?: string | null
+          created_at?: string
+          event_id?: string | null
+          filename?: string | null
+          group_id?: string
+          id?: string
+          size_bytes?: number | null
+          storage_path?: string
+          uploaded_by_profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_media_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "hub_media_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_inventory_variance"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "hub_media_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "hub_media_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_media_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "hub_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_media_uploaded_by_profile_id_fkey"
+            columns: ["uploaded_by_profile_id"]
+            isOneToOne: false
+            referencedRelation: "hub_guest_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          profile_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "hub_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_message_reactions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "hub_guest_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_messages: {
+        Row: {
+          author_profile_id: string
+          body: string | null
+          created_at: string
+          deleted_at: string | null
+          edited_at: string | null
+          group_id: string
+          id: string
+          is_anonymous: boolean
+          is_pinned: boolean
+          media_captions: string[] | null
+          media_urls: string[] | null
+          message_type: string
+          pinned_at: string | null
+          pinned_by_profile_id: string | null
+          reaction_counts: Json | null
+          reply_to_message_id: string | null
+          system_event_type: string | null
+          system_metadata: Json | null
+        }
+        Insert: {
+          author_profile_id: string
+          body?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          group_id: string
+          id?: string
+          is_anonymous?: boolean
+          is_pinned?: boolean
+          media_captions?: string[] | null
+          media_urls?: string[] | null
+          message_type?: string
+          pinned_at?: string | null
+          pinned_by_profile_id?: string | null
+          reaction_counts?: Json | null
+          reply_to_message_id?: string | null
+          system_event_type?: string | null
+          system_metadata?: Json | null
+        }
+        Update: {
+          author_profile_id?: string
+          body?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          group_id?: string
+          id?: string
+          is_anonymous?: boolean
+          is_pinned?: boolean
+          media_captions?: string[] | null
+          media_urls?: string[] | null
+          message_type?: string
+          pinned_at?: string | null
+          pinned_by_profile_id?: string | null
+          reaction_counts?: Json | null
+          reply_to_message_id?: string | null
+          system_event_type?: string | null
+          system_metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_messages_author_profile_id_fkey"
+            columns: ["author_profile_id"]
+            isOneToOne: false
+            referencedRelation: "hub_guest_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "hub_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_messages_pinned_by_profile_id_fkey"
+            columns: ["pinned_by_profile_id"]
+            isOneToOne: false
+            referencedRelation: "hub_guest_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_messages_reply_to_message_id_fkey"
+            columns: ["reply_to_message_id"]
+            isOneToOne: false
+            referencedRelation: "hub_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_pinned_notes: {
+        Row: {
+          author_profile_id: string
+          body: string
+          color: string
+          created_at: string
+          group_id: string
+          id: string
+          sort_order: number
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          author_profile_id: string
+          body: string
+          color?: string
+          created_at?: string
+          group_id: string
+          id?: string
+          sort_order?: number
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          author_profile_id?: string
+          body?: string
+          color?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+          sort_order?: number
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_pinned_notes_author_profile_id_fkey"
+            columns: ["author_profile_id"]
+            isOneToOne: false
+            referencedRelation: "hub_guest_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_pinned_notes_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "hub_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_poll_options: {
+        Row: {
+          id: string
+          label: string
+          metadata: Json | null
+          poll_id: string
+          sort_order: number
+        }
+        Insert: {
+          id?: string
+          label: string
+          metadata?: Json | null
+          poll_id: string
+          sort_order?: number
+        }
+        Update: {
+          id?: string
+          label?: string
+          metadata?: Json | null
+          poll_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_poll_options_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "hub_polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_poll_votes: {
+        Row: {
+          created_at: string
+          id: string
+          option_id: string
+          poll_id: string
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          option_id: string
+          poll_id: string
+          profile_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          option_id?: string
+          poll_id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_poll_votes_option_id_fkey"
+            columns: ["option_id"]
+            isOneToOne: false
+            referencedRelation: "hub_poll_options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "hub_polls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_poll_votes_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "hub_guest_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_polls: {
+        Row: {
+          closes_at: string | null
+          created_at: string
+          created_by_profile_id: string
+          group_id: string
+          id: string
+          is_closed: boolean
+          message_id: string | null
+          poll_type: string
+          question: string
+        }
+        Insert: {
+          closes_at?: string | null
+          created_at?: string
+          created_by_profile_id: string
+          group_id: string
+          id?: string
+          is_closed?: boolean
+          message_id?: string | null
+          poll_type?: string
+          question: string
+        }
+        Update: {
+          closes_at?: string | null
+          created_at?: string
+          created_by_profile_id?: string
+          group_id?: string
+          id?: string
+          is_closed?: boolean
+          message_id?: string | null
+          poll_type?: string
+          question?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_polls_created_by_profile_id_fkey"
+            columns: ["created_by_profile_id"]
+            isOneToOne: false
+            referencedRelation: "hub_guest_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_polls_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "hub_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_polls_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "hub_messages"
             referencedColumns: ["id"]
           },
         ]
@@ -22557,6 +23673,63 @@ export type Database = {
           },
         ]
       }
+      remy_feedback: {
+        Row: {
+          archetype_id: string | null
+          chef_id: string
+          created_at: string
+          feedback_type: string | null
+          id: string
+          notes: string | null
+          rating: string
+          remy_response: string
+          response_time_ms: number | null
+          tenant_id: string
+          user_message: string
+        }
+        Insert: {
+          archetype_id?: string | null
+          chef_id: string
+          created_at?: string
+          feedback_type?: string | null
+          id?: string
+          notes?: string | null
+          rating: string
+          remy_response: string
+          response_time_ms?: number | null
+          tenant_id: string
+          user_message: string
+        }
+        Update: {
+          archetype_id?: string | null
+          chef_id?: string
+          created_at?: string
+          feedback_type?: string | null
+          id?: string
+          notes?: string | null
+          rating?: string
+          remy_response?: string
+          response_time_ms?: number | null
+          tenant_id?: string
+          user_message?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "remy_feedback_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "remy_feedback_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       remy_memories: {
         Row: {
           access_count: number
@@ -28521,6 +29694,16 @@ export type Database = {
         | "instagram"
         | "takeachef"
         | "manual_log"
+        | "yhangry"
+        | "phone"
+        | "whatsapp"
+        | "facebook"
+        | "theknot"
+        | "thumbtack"
+        | "bark"
+        | "cozymeal"
+        | "google_business"
+        | "gigsalad"
       component_category:
         | "sauce"
         | "protein"
@@ -28675,6 +29858,12 @@ export type Database = {
         | "outbound_prospecting"
         | "yhangry"
         | "kiosk"
+        | "thumbtack"
+        | "theknot"
+        | "bark"
+        | "cozymeal"
+        | "google_business"
+        | "gigsalad"
       inquiry_note_category:
         | "general"
         | "inspiration"
@@ -29222,6 +30411,16 @@ export const Constants = {
         "instagram",
         "takeachef",
         "manual_log",
+        "yhangry",
+        "phone",
+        "whatsapp",
+        "facebook",
+        "theknot",
+        "thumbtack",
+        "bark",
+        "cozymeal",
+        "google_business",
+        "gigsalad",
       ],
       component_category: [
         "sauce",
@@ -29390,6 +30589,12 @@ export const Constants = {
         "outbound_prospecting",
         "yhangry",
         "kiosk",
+        "thumbtack",
+        "theknot",
+        "bark",
+        "cozymeal",
+        "google_business",
+        "gigsalad",
       ],
       inquiry_note_category: [
         "general",

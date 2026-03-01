@@ -214,13 +214,15 @@ Ran with `--no-grade` (rules-based scoring only, no LLM grading) to avoid model 
 
 ## 5. Recommended Improvement Roadmap
 
-### Phase 1 — Quick Wins (1-2 sessions)
+### Phase 1 — Quick Wins ✅ COMPLETE (2026-02-28)
 
 1. ~~**Fix 500 errors**~~ → Was cold-start timeout, fixed with model warmup in eval harness
-2. **Increase pre-stream timeout** from 60s to 120s (accounts for model swap on 6GB VRAM)
-3. **Disable Pi fallback** when Ollama is masked on Pi (prevents `qwen3:8b not found` errors)
-4. **Add feedback UI** (thumbs up/down on Remy responses)
-5. **Create `remy_feedback` table** for storing quality signals
+2. ~~**Increase pre-stream timeout**~~ → 60s → 120s (`app/api/remy/stream/route.ts`)
+3. ~~**Disable Pi fallback**~~ → `OLLAMA_PI_DISABLED=true` in `.env.local`, router skips Pi (`lib/ai/llm-router.ts`)
+4. ~~**Add feedback UI**~~ → Thumbs up/down on hover below Remy messages (`components/ai/remy-drawer.tsx`)
+5. ~~**Create `remy_feedback` table**~~ → Migration `20260330000009`, server action `lib/ai/remy-feedback-actions.ts`
+6. ~~**Warmup classifier on drawer open**~~ → `POST /api/remy/warmup` pings qwen3:4b with 30-min keepalive
+7. ~~**Retry button on errors**~~ → One-click retry on timeout/error messages (`lib/hooks/use-remy-send.ts`)
 
 ### Phase 2 — Quality (2-4 sessions)
 
