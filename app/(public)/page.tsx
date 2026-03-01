@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { CalendarDays, CreditCard, UsersRound } from 'lucide-react'
 import { WorkflowSteps } from '@/components/public/workflow-steps'
 import { HowItWorksSection } from '@/components/public/how-it-works-section'
+import { MeetRemySection } from '@/components/public/meet-remy-section'
 import {
   OrganizationJsonLd,
   WebSiteJsonLd,
@@ -32,6 +33,8 @@ export const metadata: Metadata = {
     'private chef contract management',
     'chef scheduling software',
     'personal chef booking system',
+    'private chef AI concierge',
+    'AI assistant for private chefs',
   ],
   openGraph: {
     title: 'ChefFlow | Private Chef Business Software',
@@ -147,20 +150,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="relative border-y border-stone-700/50 overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-brand-900/30 via-transparent to-brand-800/15" />
-        <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
-              Questions? Ask Remy.
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-300">
-              Tell him what&apos;s eating your time and he&apos;ll show you how ChefFlow handles it.
-            </p>
-            <p className="mt-6 text-sm font-medium text-brand-400">Try the chat in the corner →</p>
-          </div>
-        </div>
-      </section>
+      <MeetRemySection />
 
       <HowItWorksSection />
 

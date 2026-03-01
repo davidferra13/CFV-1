@@ -1393,6 +1393,25 @@ The Remy drawer (`components/ai/remy-drawer.tsx`) has 5 views accessible via ico
 | `/beta`           | Beta signup form. Fields: name (required), email (required), phone, business name, cuisine type, years in business, referral source (all optional). Honeypot spam protection. Redirects to thank-you page on success.                                 |
 | `/beta/thank-you` | Branded confirmation page. Sections: "Welcome to the inner circle" hero, "What is the closed beta?", "What to expect" (3 numbered steps), "A few honest notes" (may break, feedback valued, free with special launch pricing). Back to ChefFlow link. |
 
+### Home Page: Meet Remy Section
+
+"Meet Remy" showcase section on `/` home page between "From inquiry to payout" workflow and "How It Works". Replaces the former 3-line "Questions? Ask Remy" text section. Contains:
+
+| Element             | Description                                                                                                                                                |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hero split layout   | Remy mascot image (left, `remy-mascot.png`, bobbing animation) + intro text (right)                                                                        |
+| Heading             | "Meet Remy." — DM Serif Display                                                                                                                            |
+| Intro copy          | AI concierge description: Ratatouille origin, 40-year veteran persona, business-side focus                                                                 |
+| Privacy trust badge | Shield icon pill: "Runs 100% locally — your client data never leaves your machine"                                                                         |
+| 4 capability cards  | Drafts Emails (`remy-pondering.png`), Analyzes Margins (`remy-aha.png`), Tracks Clients (`remy-giddy-surprise.png`), Searches Recipes (`remy-whisk-1.png`) |
+| CTA                 | "Try talking to Remy →" — points to floating concierge widget                                                                                              |
+
+Component: `components/public/meet-remy-section.tsx` (server component, no client JS).
+
+### Home Page: Pricing Page Remy Addition
+
+Pricing page (`/pricing`) feature checklist now includes "Remy AI concierge — drafts, analysis & recipe search" as a line item. Privacy callout below pricing card: shield icon + "AI runs 100% locally — your data never leaves your machine."
+
 ### Home Page CTA
 
 "Be one of the first" section added to `/` home page between "How It Works" and the final CTA. Closed Beta pill badge, heading, description, "Request early access" button linking to `/beta`.
