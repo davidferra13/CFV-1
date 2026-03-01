@@ -55,15 +55,16 @@ export async function calculatePortions(
   const originalYield = recipe.servings ?? 4
   const scaleFactor = guestCount / originalYield
 
-  // Load ingredients
+  // Load ingredients (recipe_ingredients → ingredients join for name)
   const { data: ingredients } = await supabase
     .from('recipe_ingredients')
-    .select('name, quantity, unit')
+    .select('quantity, unit, ingredient:ingredients(name)')
     .eq('recipe_id', recipe.id)
     .order('sort_order', { ascending: true })
 
   const scaled = (ingredients ?? []).map((ing: any) => {
     const origQty = parseFloat(ing.quantity) || 0
+    const ingName = ing.ingredient?.name ?? ing.name ?? 'Unknown ingredient'
     const scaledQty = origQty * scaleFactor
 
     // Format nicely — round to reasonable precision
@@ -75,7 +76,7 @@ export async function calculatePortions(
           : scaledQty.toFixed(2).replace(/0$/, '')
 
     return {
-      name: ing.name,
+      name: ingName,
       originalQty: ing.quantity?.toString() ?? '0',
       scaledQty: formatted,
       unit: ing.unit ?? '',

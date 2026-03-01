@@ -292,10 +292,12 @@ async function executeInquiryListOpen() {
     inquiries: (inquiries ?? []).slice(0, 10).map((i: Record<string, unknown>) => ({
       id: i.id as string,
       status: i.status as string,
-      eventType: i.event_type as string | null,
-      eventDate: i.event_date as string | null,
-      guestCount: i.guest_count as number | null,
-      clientName: ((i.client as Record<string, unknown> | null)?.full_name as string) ?? 'Unknown',
+      eventType: (i.confirmed_occasion as string | null) ?? (i.event_type as string | null),
+      eventDate: (i.confirmed_date as string | null) ?? (i.event_date as string | null),
+      guestCount: (i.confirmed_guest_count as number | null) ?? (i.guest_count as number | null),
+      clientName:
+        ((i.client as Record<string, unknown> | null)?.full_name as string) ??
+        (i.source_message ? `Lead: ${(i.source_message as string).slice(0, 40)}` : 'New lead'),
     })),
   }
 }
