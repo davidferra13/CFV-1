@@ -5,26 +5,11 @@
 // Routed to Gemini (creative marketing copy, not PII).
 // Output is DRAFT ONLY — chef picks and edits before posting.
 
-import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { GoogleGenAI } from '@google/genai'
 
 export type CaptionTone = 'warm_personal' | 'elegant_professional' | 'playful_casual'
-
-const SocialCaptionSchema = z.object({
-  platform: z.enum(['instagram', 'facebook', 'twitter', 'linkedin']),
-  tone: z.string(),
-  caption: z.string(),
-  hashtags: z.array(z.string()).default([]),
-  characterCount: z.number(),
-})
-
-const SocialCaptionsResponseSchema = z.object({
-  captions: z.array(SocialCaptionSchema).min(3),
-  instagramFirst: z.string(),
-  shortVersion: z.string(),
-})
 
 export interface SocialCaption {
   platform: 'instagram' | 'facebook' | 'twitter' | 'linkedin'
@@ -36,8 +21,8 @@ export interface SocialCaption {
 
 export interface SocialCaptionsResult {
   captions: SocialCaption[]
-  instagramFirst: string
-  shortVersion: string
+  instagramFirst: string // best caption for IG with hashtags
+  shortVersion: string // under 140 chars for Twitter/X
   generatedAt: string
 }
 
@@ -67,12 +52,11 @@ export async function generateSocialCaptions(
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    supabase
-      .from('menus')
-      .select('dishes(name, course_name, description)')
+    (supabase as any)
+      .from('event_menu_components')
+      .select('name, course_type, description')
       .eq('event_id', eventId)
-      .limit(1)
-      .single(),
+      .limit(8),
     supabase
       .from('chefs')
       .select('display_name, business_name, tagline')
@@ -83,17 +67,7 @@ export async function generateSocialCaptions(
   const event = eventResult.data
   if (!event) throw new Error('Event not found')
 
-  // Extract dishes from the menu join
-  const rawDishes = (menuResult.data?.dishes ?? []) as Array<{
-    name: string
-    course_name: string | null
-    description: string | null
-  }>
-  const menu: MenuComponentRow[] = rawDishes.map((d) => ({
-    name: d.name,
-    course_type: d.course_name,
-    description: d.description,
-  }))
+  const menu = (menuResult.data ?? []) as MenuComponentRow[]
   const chef = chefResult.data
 
   const toneGuide = {
@@ -148,13 +122,8 @@ Return ONLY valid JSON.`
       config: { temperature: 0.8, responseMimeType: 'application/json' },
     })
     const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const raw = JSON.parse(text)
-    const validated = SocialCaptionsResponseSchema.safeParse(raw)
-    if (!validated.success) {
-      console.error('[social-captions] Zod validation failed:', validated.error.format())
-      throw new Error('Social captions response did not match expected format. Please try again.')
-    }
-    return { ...validated.data, generatedAt: new Date().toISOString() } as SocialCaptionsResult
+    const parsed = JSON.parse(text)
+    return { ...parsed, generatedAt: new Date().toISOString() }
   } catch (err) {
     console.error('[social-captions] Failed:', err)
     throw new Error('Could not generate captions. Please try again.')

@@ -338,8 +338,21 @@ async function processMessage(
     return
   }
 
+  // Classify the email FIRST — spam/marketing should never reach the inbox
+  const classification = await classifyEmail(
+    email.subject,
+    email.body,
+    email.from.email,
+    knownClientEmails
+  )
+
   // Communication intake signal layer (non-blocking, additive)
-  if (isCommTriageEnabled()) {
+  // Only ingest emails that aren't spam/marketing — those pollute the triage inbox
+  if (
+    isCommTriageEnabled() &&
+    classification.category !== 'spam' &&
+    classification.category !== 'marketing'
+  ) {
     try {
       const { ingestCommunicationEvent } = await import('@/lib/communication/pipeline')
       await ingestCommunicationEvent({
@@ -357,14 +370,6 @@ async function processMessage(
       console.error('[processMessage] Communication intake failed (non-fatal):', intakeErr)
     }
   }
-
-  // Classify the email
-  const classification = await classifyEmail(
-    email.subject,
-    email.body,
-    email.from.email,
-    knownClientEmails
-  )
 
   // Route by classification
   switch (classification.category) {

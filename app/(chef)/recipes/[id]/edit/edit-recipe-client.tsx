@@ -14,6 +14,12 @@ import {
   removeIngredientFromRecipe,
   updateRecipeIngredient,
 } from '@/lib/recipes/actions'
+import {
+  SEASON_OPTIONS,
+  OCCASION_SUGGESTIONS,
+  CUISINE_DISPLAY,
+  MEAL_TYPE_DISPLAY,
+} from '@/lib/recipes/recipe-constants'
 import { ProductLookupPanel } from '@/components/recipes/product-lookup-panel'
 import { NutritionalCalculator } from '@/components/recipes/NutritionalCalculator'
 import { recalculateAndSaveRecipeNutrition } from '@/lib/recipes/nutritional-calculator-actions'
@@ -91,6 +97,11 @@ export function EditRecipeClient({ recipe }: Props) {
   )
   const [difficulty, setDifficulty] = useState<number>((recipe as any).difficulty || 0)
   const [equipment, setEquipment] = useState(((recipe as any).equipment || []).join(', '))
+  const [cuisine, setCuisine] = useState<string>((recipe as any).cuisine || '')
+  const [mealType, setMealType] = useState<string>((recipe as any).meal_type || '')
+  const [season, setSeason] = useState<string[]>((recipe as any).season || [])
+  const [occasionTags, setOccasionTags] = useState<string[]>((recipe as any).occasion_tags || [])
+  const [customOccasion, setCustomOccasion] = useState('')
 
   // Ingredients state
   const [existingIngredients, setExistingIngredients] = useState<ExistingIngredient[]>(
@@ -192,6 +203,10 @@ export function EditRecipeClient({ recipe }: Props) {
               .map((e: any) => e.trim())
               .filter(Boolean)
           : [],
+        cuisine: cuisine || null,
+        meal_type: mealType || null,
+        season: season,
+        occasion_tags: occasionTags,
       })
 
       // Remove deleted ingredients
@@ -274,6 +289,7 @@ export function EditRecipeClient({ recipe }: Props) {
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
+                aria-label="Category"
                 className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm bg-stone-900"
               >
                 {RECIPE_CATEGORIES.map((cat) => (
@@ -401,6 +417,148 @@ export function EditRecipeClient({ recipe }: Props) {
               onChange={(e) => setEquipment(e.target.value)}
               placeholder="stand mixer, food processor, blowtorch (comma separated)"
             />
+          </div>
+
+          {/* Organization Fields */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-stone-300 mb-1">Cuisine</label>
+              <select
+                value={cuisine}
+                onChange={(e) => setCuisine(e.target.value)}
+                aria-label="Cuisine"
+                className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm bg-stone-900"
+              >
+                <option value="">Select cuisine...</option>
+                {Object.entries(CUISINE_DISPLAY).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-stone-300 mb-1">Meal Type</label>
+              <select
+                value={mealType}
+                onChange={(e) => setMealType(e.target.value)}
+                aria-label="Meal Type"
+                className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm bg-stone-900"
+              >
+                <option value="">Select meal type...</option>
+                {Object.entries(MEAL_TYPE_DISPLAY).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Season</label>
+            <div className="flex flex-wrap gap-2">
+              {SEASON_OPTIONS.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => {
+                    if (s === 'Year-Round') {
+                      setSeason(season.includes(s) ? [] : [s])
+                    } else {
+                      setSeason((prev) => {
+                        const without = prev.filter((x) => x !== 'Year-Round')
+                        return without.includes(s)
+                          ? without.filter((x) => x !== s)
+                          : [...without, s]
+                      })
+                    }
+                  }}
+                  className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
+                    season.includes(s)
+                      ? 'border-brand-500 bg-brand-950 text-brand-400 font-medium'
+                      : 'border-stone-600 text-stone-400 hover:bg-stone-800'
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Occasion Tags</label>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {OCCASION_SUGGESTIONS.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() =>
+                    setOccasionTags((prev) =>
+                      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+                    )
+                  }
+                  className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                    occasionTags.includes(tag)
+                      ? 'border-brand-500 bg-brand-950 text-brand-400'
+                      : 'border-stone-600 text-stone-400 hover:bg-stone-800'
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={customOccasion}
+                onChange={(e) => setCustomOccasion(e.target.value)}
+                placeholder="Add custom occasion..."
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && customOccasion.trim()) {
+                    e.preventDefault()
+                    if (!occasionTags.includes(customOccasion.trim())) {
+                      setOccasionTags([...occasionTags, customOccasion.trim()])
+                    }
+                    setCustomOccasion('')
+                  }
+                }}
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  if (customOccasion.trim() && !occasionTags.includes(customOccasion.trim())) {
+                    setOccasionTags([...occasionTags, customOccasion.trim()])
+                  }
+                  setCustomOccasion('')
+                }}
+                disabled={!customOccasion.trim()}
+              >
+                Add
+              </Button>
+            </div>
+            {occasionTags.filter((t) => !OCCASION_SUGGESTIONS.includes(t as any)).length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-2">
+                {occasionTags
+                  .filter((t) => !OCCASION_SUGGESTIONS.includes(t as any))
+                  .map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center gap-1 text-xs px-2 py-1 bg-stone-800 text-stone-300 rounded-full"
+                    >
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => setOccasionTags((prev) => prev.filter((t) => t !== tag))}
+                        className="hover:text-red-400"
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  ))}
+              </div>
+            )}
           </div>
 
           <div>

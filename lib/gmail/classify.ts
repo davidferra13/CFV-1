@@ -76,6 +76,66 @@ function detectPlatformEmail(fromAddress: string): string | null {
   return null
 }
 
+/**
+ * Fast heuristic: detect obvious marketing/notification senders by domain
+ * or sender pattern. Skips Ollama entirely — zero compute cost.
+ */
+function isObviousMarketingOrNotification(fromAddress: string, subject: string): string | null {
+  const addr = fromAddress.toLowerCase()
+  const subj = subject.toLowerCase()
+
+  // noreply / no-reply / do-not-reply senders with marketing signals
+  const isNoreply =
+    /^(noreply|no-reply|do-not-reply|notifications?|alerts?|info|hello|team|support|marketing|account-services)@/.test(
+      addr
+    )
+
+  // Known marketing/notification domains
+  const marketingDomains = [
+    'turbotax.intuit.com',
+    'rocketmoney.com',
+    'email.rocketmoney.com',
+    'creditkarma.com',
+    'airbnb.com',
+    'ifttt.com',
+    'notify.cloudflare.com',
+    'mailchimpapp.com',
+    'ssa.gov',
+    'ngrok.com',
+    'smartarget.online',
+    'realnex.com',
+    'inform.bill.com',
+    'mc.bill.com',
+    'messages.wix.com',
+    'mail.replit.com',
+    'apps-scripts-notifications@google.com',
+    'forwarding-noreply@google.com',
+    'accounts.google.com',
+    'peakeventservices.com',
+    'vendors.goodfynd.com',
+  ]
+
+  // Check exact domain matches
+  for (const domain of marketingDomains) {
+    if (addr.includes(domain)) {
+      return `Known marketing/notification domain: ${domain}`
+    }
+  }
+
+  // noreply senders that mention unsubscribe in subject or have marketing patterns
+  if (
+    isNoreply &&
+    (subj.includes('unsubscribe') ||
+      subj.includes('update') ||
+      subj.includes('reminder') ||
+      subj.includes('notification'))
+  ) {
+    return `Noreply sender with marketing subject pattern`
+  }
+
+  return null
+}
+
 export async function classifyEmail(
   subject: string,
   body: string,
@@ -92,6 +152,17 @@ export async function classifyEmail(
       confidence: 'high',
       reasoning: `${platformCheck} email detected by sender domain — routed to dedicated parser`,
       is_food_related: true,
+    }
+  }
+
+  // Short-circuit: Obvious marketing/notification emails — no AI needed
+  const marketingCheck = isObviousMarketingOrNotification(fromAddress, subject)
+  if (marketingCheck) {
+    return {
+      category: 'marketing',
+      confidence: 'high',
+      reasoning: marketingCheck,
+      is_food_related: false,
     }
   }
 

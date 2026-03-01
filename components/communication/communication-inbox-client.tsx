@@ -177,6 +177,11 @@ export function CommunicationInboxClient({
 }) {
   const [viewMode, setViewMode] = useState<ViewMode>('triage')
   const [selectedTab, setSelectedTab] = useState<CommunicationTab>(initialTab)
+  // Local stats state for optimistic updates — syncs from server on refresh
+  const [localStats, setLocalStats] = useState<CommunicationInboxStats>(stats)
+  useEffect(() => {
+    setLocalStats(stats)
+  }, [stats])
   const allSources = useMemo(
     () => Array.from(new Set(items.map((item) => item.source))).sort(),
     [items]
@@ -287,43 +292,67 @@ export function CommunicationInboxClient({
 
   const selectedCount = selectedEventIds.size
 
-  const executeAction = (fn: () => Promise<unknown>) => {
+  const executeAction = (
+    fn: () => Promise<unknown>,
+    statsDelta?: Partial<CommunicationInboxStats>
+  ) => {
+    // Optimistic stats update — revert on failure
+    const prevStats = { ...localStats }
+    if (statsDelta) {
+      setLocalStats((s) => {
+        const next = { ...s }
+        for (const [k, v] of Object.entries(statsDelta)) {
+          ;(next as any)[k] = Math.max(0, ((s as any)[k] ?? 0) + (v as number))
+        }
+        return next
+      })
+    }
     startTransition(async () => {
       try {
         setActionError(null)
         await fn()
         router.refresh()
       } catch (error) {
+        if (statsDelta) setLocalStats(prevStats) // rollback
         const uiError = mapErrorToUI(error)
         setActionError(uiError.message)
       }
     })
   }
 
-  const runAction = (fn: () => Promise<unknown>, policyInput?: ConfirmPolicyInput) => {
+  const pendingStatsDeltaRef = useRef<Partial<CommunicationInboxStats> | undefined>(undefined)
+
+  const runAction = (
+    fn: () => Promise<unknown>,
+    policyInput?: ConfirmPolicyInput,
+    statsDelta?: Partial<CommunicationInboxStats>
+  ) => {
     if (!policyInput) {
-      executeAction(fn)
+      executeAction(fn, statsDelta)
       return
     }
     const decision = confirmPolicy(policyInput)
     if (decision.mode === 'none') {
-      executeAction(fn)
+      executeAction(fn, statsDelta)
       return
     }
     pendingConfirmActionRef.current = async () => {
       await fn()
     }
+    pendingStatsDeltaRef.current = statsDelta
     setConfirmInput(policyInput)
     setConfirmOpen(true)
   }
 
   const handleConfirm = async () => {
     const fn = pendingConfirmActionRef.current
+    const sd = pendingStatsDeltaRef.current
     setConfirmOpen(false)
     setConfirmInput(null)
     pendingConfirmActionRef.current = null
+    pendingStatsDeltaRef.current = undefined
     if (!fn) return
-    executeAction(fn)
+    executeAction(fn, sd)
   }
 
   // ─── Keyboard Shortcuts ─────────────────────────────────
@@ -370,9 +399,16 @@ export function CommunicationInboxClient({
           const item = filtered[focusedIndex]
           if (!item) return
           if (item.communication_status === 'resolved') {
-            executeAction(() => reopenCommunication(item.communication_event_id))
+            const fromTab = 'resolved' as CommunicationTab
+            executeAction(() => reopenCommunication(item.communication_event_id), {
+              resolved: -1,
+              [item.tab === fromTab ? 'unlinked' : item.tab]: 1,
+            })
           } else {
-            executeAction(() => markCommunicationResolved(item.communication_event_id))
+            executeAction(() => markCommunicationResolved(item.communication_event_id), {
+              [item.tab]: -1,
+              resolved: 1,
+            })
           }
           break
         }
@@ -381,9 +417,15 @@ export function CommunicationInboxClient({
           const item = filtered[focusedIndex]
           if (!item) return
           if (item.thread_state === 'snoozed') {
-            executeAction(() => unsnoozeThread(item.thread_id))
+            executeAction(() => unsnoozeThread(item.thread_id), {
+              snoozed: -1,
+              unlinked: 1,
+            })
           } else {
-            executeAction(() => snoozeThread(item.thread_id, 24))
+            executeAction(() => snoozeThread(item.thread_id, 24), {
+              [item.tab]: -1,
+              snoozed: 1,
+            })
           }
           break
         }
@@ -679,12 +721,12 @@ export function CommunicationInboxClient({
                 {TABS.map((tab) => {
                   const count =
                     tab.key === 'unlinked'
-                      ? stats.unlinked
+                      ? localStats.unlinked
                       : tab.key === 'needs_attention'
-                        ? stats.needs_attention
+                        ? localStats.needs_attention
                         : tab.key === 'snoozed'
-                          ? stats.snoozed
-                          : stats.resolved
+                          ? localStats.snoozed
+                          : localStats.resolved
 
                   const active = selectedTab === tab.key
                   return (
@@ -699,7 +741,9 @@ export function CommunicationInboxClient({
                 })}
               </div>
 
-              <div className="text-sm text-stone-400">{stats.total} total conversation threads</div>
+              <div className="text-sm text-stone-400">
+                {localStats.total} total conversation threads
+              </div>
 
               {actionError ? (
                 <Alert variant="error" title="Action failed">
@@ -1012,7 +1056,12 @@ export function CommunicationInboxClient({
                               size="sm"
                               variant="secondary"
                               disabled={isPending}
-                              onClick={() => runAction(() => unsnoozeThread(item.thread_id))}
+                              onClick={() =>
+                                runAction(() => unsnoozeThread(item.thread_id), undefined, {
+                                  snoozed: -1,
+                                  unlinked: 1,
+                                })
+                              }
                             >
                               Unsnooze
                             </Button>
@@ -1021,7 +1070,12 @@ export function CommunicationInboxClient({
                               size="sm"
                               variant="secondary"
                               disabled={isPending}
-                              onClick={() => runAction(() => snoozeThread(item.thread_id, 24))}
+                              onClick={() =>
+                                runAction(() => snoozeThread(item.thread_id, 24), undefined, {
+                                  [item.tab]: -1,
+                                  snoozed: 1,
+                                })
+                              }
                             >
                               Snooze 24h
                             </Button>
@@ -1033,7 +1087,11 @@ export function CommunicationInboxClient({
                               variant="ghost"
                               disabled={isPending}
                               onClick={() =>
-                                runAction(() => reopenCommunication(item.communication_event_id))
+                                runAction(
+                                  () => reopenCommunication(item.communication_event_id),
+                                  undefined,
+                                  { resolved: -1, unlinked: 1 }
+                                )
                               }
                             >
                               Reopen
@@ -1044,8 +1102,10 @@ export function CommunicationInboxClient({
                               variant="ghost"
                               disabled={isPending}
                               onClick={() =>
-                                runAction(() =>
-                                  markCommunicationResolved(item.communication_event_id)
+                                runAction(
+                                  () => markCommunicationResolved(item.communication_event_id),
+                                  undefined,
+                                  { [item.tab]: -1, resolved: 1 }
                                 )
                               }
                             >
@@ -1155,7 +1215,8 @@ export function CommunicationInboxClient({
                         entityName: `${selectedCount} threads`,
                         impactPreview: 'Selected items will be marked done.',
                         actionLabel: 'Bulk Mark Done',
-                      }
+                      },
+                      { [selectedTab]: -selectedCount, resolved: selectedCount }
                     )
                   }
                 >
@@ -1177,7 +1238,8 @@ export function CommunicationInboxClient({
                         entityName: `${selectedCount} threads`,
                         impactPreview: 'Selected threads will be snoozed for 24 hours.',
                         actionLabel: 'Bulk Snooze',
-                      }
+                      },
+                      { [selectedTab]: -selectedCount, snoozed: selectedCount }
                     )
                   }
                 >

@@ -15,13 +15,21 @@ import { RecipeLibraryClient } from './recipes-client'
 export default async function RecipesPage({
   searchParams,
 }: {
-  searchParams: { category?: string; search?: string; sort?: string }
+  searchParams: {
+    category?: string
+    cuisine?: string
+    meal_type?: string
+    search?: string
+    sort?: string
+  }
 }) {
   await requireChef()
 
   const [recipes, palette] = await Promise.all([
     getRecipes({
       category: searchParams.category,
+      cuisine: searchParams.cuisine,
+      meal_type: searchParams.meal_type,
       search: searchParams.search,
       sort: (searchParams.sort as 'name' | 'recent' | 'most_used') || 'name',
     }),

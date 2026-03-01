@@ -15,6 +15,7 @@ import {
   addSubRecipe,
   removeSubRecipe,
 } from '@/lib/recipes/actions'
+import { CUISINE_DISPLAY, MEAL_TYPE_DISPLAY } from '@/lib/recipes/recipe-constants'
 import { snapshotProductFromRecipe } from '@/lib/commerce/product-actions'
 import { shareRecipe, getConnectedChefsForCollaboration } from '@/lib/collaboration/actions'
 import { RecipeScalingCalculator } from '@/components/recipes/recipe-scaling-calculator'
@@ -202,6 +203,12 @@ export function RecipeDetailClient({ recipe }: Props) {
         calories_per_serving: (recipe as any).calories_per_serving || undefined,
         difficulty: (recipe as any).difficulty || undefined,
         equipment: (recipe as any).equipment?.length ? (recipe as any).equipment : undefined,
+        cuisine: (recipe as any).cuisine || undefined,
+        meal_type: (recipe as any).meal_type || undefined,
+        season: (recipe as any).season?.length ? (recipe as any).season : undefined,
+        occasion_tags: (recipe as any).occasion_tags?.length
+          ? (recipe as any).occasion_tags
+          : undefined,
       })
 
       // Copy ingredients
@@ -602,6 +609,50 @@ export function RecipeDetailClient({ recipe }: Props) {
               <div className="flex flex-wrap gap-1">
                 {recipe.dietary_tags.map((tag: any) => (
                   <Badge key={tag} variant="success">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {((recipe as any).cuisine || (recipe as any).meal_type) && (
+            <div className="mt-4 pt-4 border-t border-stone-800">
+              <p className="text-sm font-medium text-stone-500 mb-2">Organization</p>
+              <div className="flex flex-wrap gap-2">
+                {(recipe as any).cuisine && (
+                  <Badge variant="info">
+                    {CUISINE_DISPLAY[(recipe as any).cuisine] || (recipe as any).cuisine}
+                  </Badge>
+                )}
+                {(recipe as any).meal_type && (
+                  <Badge variant="default">
+                    {MEAL_TYPE_DISPLAY[(recipe as any).meal_type] || (recipe as any).meal_type}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          )}
+
+          {(recipe as any).season && (recipe as any).season.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-stone-800">
+              <p className="text-sm font-medium text-stone-500 mb-2">Season</p>
+              <div className="flex flex-wrap gap-1">
+                {(recipe as any).season.map((s: string) => (
+                  <Badge key={s} variant="warning">
+                    {s}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(recipe as any).occasion_tags && (recipe as any).occasion_tags.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-stone-800">
+              <p className="text-sm font-medium text-stone-500 mb-2">Occasion</p>
+              <div className="flex flex-wrap gap-1">
+                {(recipe as any).occasion_tags.map((tag: string) => (
+                  <Badge key={tag} variant="info">
                     {tag}
                   </Badge>
                 ))}

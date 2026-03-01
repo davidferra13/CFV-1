@@ -5,37 +5,18 @@
 // Routed to Gemini (creative scheduling, not PII).
 // Output is DRAFT ONLY — chef approves/edits before using.
 
-import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { GoogleGenAI } from '@google/genai'
 
-// ── Zod Schema ────────────────────────────────────────────────────────────
-
-const PrepTaskSchema = z.object({
-  time: z.string(),
-  task: z.string(),
-  duration: z.string(),
-  recipe: z.string(),
-  canParallelize: z.boolean(),
-  notes: z.string().nullable(),
-})
-
-const PrepTimelineResponseSchema = z.object({
-  tasks: z.array(PrepTaskSchema),
-  totalPrepHours: z.number(),
-  suggestedStartTime: z.string(),
-  criticalPath: z.array(z.string()),
-})
-
 // ── Types ─────────────────────────────────────────────────────────────────
 
 export interface PrepTask {
-  time: string
-  task: string
-  duration: string
-  recipe: string
-  canParallelize: boolean
+  time: string // e.g. "9:00 AM"
+  task: string // e.g. "Make stock base, reduce by half"
+  duration: string // e.g. "45 min"
+  recipe: string // which menu item this is for
+  canParallelize: boolean // can another task run simultaneously
   notes: string | null
 }
 
@@ -45,7 +26,7 @@ export interface PrepTimeline {
   tasks: PrepTask[]
   totalPrepHours: number
   suggestedStartTime: string
-  criticalPath: string[]
+  criticalPath: string[] // tasks that cannot be delayed
   generatedAt: string
 }
 
@@ -80,41 +61,21 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    supabase
-      .from('menus')
+    (supabase as any)
+      .from('event_menu_components')
       .select(
-        `dishes(name, course_name, description,
-          dish_components(recipe:recipes(name, prep_time_minutes, cook_time_minutes, method))
-        )`
+        `
+        name, course_type, description,
+        recipes(name, prep_time_minutes, cook_time_minutes, method)
+      `
       )
-      .eq('event_id', eventId)
-      .limit(1)
-      .single(),
+      .eq('event_id', eventId),
   ])
 
   const event = eventResult.data
   if (!event) throw new Error('Event not found')
 
-  // Extract dishes from the menu join
-  const rawDishes = (menuResult.data?.dishes ?? []) as unknown as Array<{
-    name: string
-    course_name: string | null
-    description: string | null
-    dish_components: Array<{
-      recipe: {
-        name: string
-        prep_time_minutes: number | null
-        cook_time_minutes: number | null
-        method: string | null
-      } | null
-    }>
-  }>
-  const menuItems: MenuComponentRow[] = rawDishes.map((d) => ({
-    name: d.name,
-    course_type: d.course_name,
-    description: d.description,
-    recipes: d.dish_components?.[0]?.recipe ?? null,
-  }))
+  const menuItems = (menuResult.data ?? []) as MenuComponentRow[]
   const serveTime = event.serve_time ?? '7:00 PM'
   const guestCount = event.guest_count ?? 10
 
@@ -166,16 +127,14 @@ Return ONLY valid JSON.`
       config: { temperature: 0.3, responseMimeType: 'application/json' },
     })
     const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const raw = JSON.parse(text)
-    const validated = PrepTimelineResponseSchema.safeParse(raw)
-    if (!validated.success) {
-      console.error('[prep-timeline] Zod validation failed:', validated.error.format())
-      throw new Error('Prep timeline response did not match expected format. Please try again.')
-    }
+    const parsed = JSON.parse(text)
     return {
       eventDate: event.event_date ?? '',
       serviceTime: serveTime,
-      ...validated.data,
+      tasks: parsed.tasks ?? [],
+      totalPrepHours: parsed.totalPrepHours ?? 0,
+      suggestedStartTime: parsed.suggestedStartTime ?? 'TBD',
+      criticalPath: parsed.criticalPath ?? [],
       generatedAt: new Date().toISOString(),
     }
   } catch (err) {

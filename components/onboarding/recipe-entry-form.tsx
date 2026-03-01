@@ -129,6 +129,10 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
           has_all_prices: null,
           servings: null,
           calories_per_serving: null,
+          cuisine: null,
+          meal_type: null,
+          season: [],
+          occasion_tags: [],
         }
         setRecipes((prev) => [newEntry, ...prev])
         setForm(EMPTY_FORM)

@@ -5,33 +5,17 @@
 // Routed to Gemini (quality-critical creative scheduling — not PII).
 // Output is DRAFT ONLY — chef approves before printing or sharing with staff.
 
-import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { GoogleGenAI } from '@google/genai'
 
-// ── Zod Schema ────────────────────────────────────────────────────────────
-
-const TimelineEntrySchema = z.object({
-  time: z.string(),
-  duration: z.string(),
-  task: z.string(),
-  who: z.string(),
-  notes: z.string().nullable(),
-})
-
-const ServiceTimelineResponseSchema = z.object({
-  entries: z.array(TimelineEntrySchema),
-  printReady: z.string(),
-})
-
 // ── Types ─────────────────────────────────────────────────────────────────
 
 export interface TimelineEntry {
-  time: string
-  duration: string
-  task: string
-  who: string
+  time: string // e.g. "5:30 PM"
+  duration: string // e.g. "30 min"
+  task: string // e.g. "Final mise en place, plate garnishes"
+  who: string // e.g. "Chef", "Staff", "Both"
   notes: string | null
 }
 
@@ -39,7 +23,7 @@ export interface ServiceTimeline {
   eventOccasion: string
   serviceDate: string
   entries: TimelineEntry[]
-  printReady: string
+  printReady: string // plain text version for single-page print
   generatedAt: string
 }
 
@@ -77,12 +61,10 @@ export async function generateServiceTimeline(eventId: string): Promise<ServiceT
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    supabase
-      .from('menus')
-      .select('dishes(name, course_name, description)')
-      .eq('event_id', eventId)
-      .limit(1)
-      .single(),
+    (supabase as any)
+      .from('event_menu_components')
+      .select('name, course_type, description, prep_time_minutes, cook_time_minutes')
+      .eq('event_id', eventId),
     supabase
       .from('event_staff_assignments')
       .select('role_override, staff_members(name, role)')
@@ -92,19 +74,7 @@ export async function generateServiceTimeline(eventId: string): Promise<ServiceT
   const event = eventResult.data
   if (!event) throw new Error('Event not found')
 
-  // Extract dishes from the menu join
-  const rawDishes = (menuResult.data?.dishes ?? []) as Array<{
-    name: string
-    course_name: string | null
-    description: string | null
-  }>
-  const menuItems: MenuComponentRow[] = rawDishes.map((d) => ({
-    name: d.name,
-    course_type: d.course_name,
-    description: d.description,
-    prep_time_minutes: null,
-    cook_time_minutes: null,
-  }))
+  const menuItems = (menuResult.data ?? []) as MenuComponentRow[]
   const staffRoster = staffResult.data ?? []
 
   const serveTime = event.serve_time ?? '7:00 PM'
@@ -152,16 +122,12 @@ Return ONLY valid JSON, no markdown.`
       config: { temperature: 0.4, responseMimeType: 'application/json' },
     })
     const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const raw = JSON.parse(text)
-    const validated = ServiceTimelineResponseSchema.safeParse(raw)
-    if (!validated.success) {
-      console.error('[service-timeline] Zod validation failed:', validated.error.format())
-      throw new Error('Service timeline response did not match expected format. Please try again.')
-    }
+    const parsed = JSON.parse(text)
     return {
       eventOccasion: event.occasion ?? 'Private Event',
       serviceDate: event.event_date ?? '',
-      ...validated.data,
+      entries: parsed.entries ?? [],
+      printReady: parsed.printReady ?? '',
       generatedAt: new Date().toISOString(),
     }
   } catch (err) {

@@ -100,7 +100,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-sans">
         <TestAccountBanner />
         <PostHogProvider>{children}</PostHogProvider>
-        {/* <CookieConsent /> — TEMPORARILY DISABLED for testing (re-enable when done) */}
+        <CookieConsent />
         <PresenceBeacon />
         <SwRegister />
         <HolidayOverlay />

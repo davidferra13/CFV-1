@@ -6,23 +6,15 @@
 // Routed to Gemini (quality-critical client communication).
 // Output is DRAFT ONLY — chef must approve before sending.
 
-import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { GoogleGenAI } from '@google/genai'
 
-const ReviewRequestSchema = z.object({
-  subject: z.string(),
-  body: z.string(),
-  shortVersion: z.string(),
-  reviewPlatformSuggestion: z.string(),
-})
-
 export interface ReviewRequestDraft {
   subject: string
-  body: string
-  shortVersion: string
-  reviewPlatformSuggestion: string
+  body: string // full message body
+  shortVersion: string // SMS/social version under 160 chars
+  reviewPlatformSuggestion: string // e.g. "Google", "Yelp", "Instagram"
   generatedAt: string
 }
 
@@ -60,18 +52,15 @@ export async function draftReviewRequest(eventId: string): Promise<ReviewRequest
   const clientName = client?.full_name ?? 'there'
   const firstName = clientName.split(' ')[0]
 
-  // Get event highlights (menu) — query menus → dishes (event_menu_components doesn't exist)
-  const menuResult = await supabase
-    .from('menus')
-    .select('dishes(name, course_name)')
+  // Get event highlights (menu)
+  const menuResult = await (supabase as any)
+    .from('event_menu_components')
+    .select('name, course_type')
     .eq('event_id', eventId)
-    .limit(1)
-    .single()
+    .order('created_at', { ascending: true })
+    .limit(5)
 
-  const menuItems = (menuResult.data?.dishes ?? []) as Array<{
-    name: string
-    course_name: string | null
-  }>
+  const menuItems = (menuResult.data ?? []) as Array<{ name: string; course_type: string | null }>
 
   const menuHighlight =
     menuItems.length > 0
@@ -121,13 +110,8 @@ Return ONLY valid JSON.`
       config: { temperature: 0.7, responseMimeType: 'application/json' },
     })
     const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const raw = JSON.parse(text)
-    const validated = ReviewRequestSchema.safeParse(raw)
-    if (!validated.success) {
-      console.error('[review-request] Zod validation failed:', validated.error.format())
-      throw new Error('Review request response did not match expected format. Please try again.')
-    }
-    return { ...validated.data, generatedAt: new Date().toISOString() }
+    const parsed = JSON.parse(text)
+    return { ...parsed, generatedAt: new Date().toISOString() }
   } catch (err) {
     console.error('[review-request] Failed:', err)
     throw new Error('Could not draft review request. Please try again.')

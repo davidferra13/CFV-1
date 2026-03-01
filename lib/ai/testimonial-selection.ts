@@ -5,25 +5,9 @@
 // Routed to Gemini (curating public-intended content, quality judgment needed).
 // Output is SUGGESTION ONLY — chef decides which to publish.
 
-import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { GoogleGenAI } from '@google/genai'
-
-const TestimonialHighlightSchema = z.object({
-  clientNameInitial: z.string(),
-  eventType: z.string(),
-  quote: z.string(),
-  fullContext: z.string(),
-  why: z.string(),
-  bestPlatform: z.string(),
-  score: z.number().min(0).max(100),
-})
-
-const TestimonialResponseSchema = z.object({
-  topTestimonials: z.array(TestimonialHighlightSchema),
-  summary: z.string(),
-})
 
 export interface TestimonialHighlight {
   clientNameInitial: string // e.g. "S.M." — anonymized for portfolio
@@ -68,10 +52,9 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
   const supabase = createServerClient()
 
   // Gather AAR client feedback and positive messages
-  // Note: client_surveys table does not exist — only AARs and messages are available
-  const [aarResult, messagesResult] = await Promise.all([
-    supabase
-      .from('after_action_reviews')
+  const [aarResult, messagesResult, surveysResult] = await Promise.all([
+    (supabase as any)
+      .from('aars')
       .select(
         `
         client_feedback, event_id,
@@ -93,11 +76,22 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
       .eq('tenant_id', user.tenantId!)
       .eq('direction', 'inbound')
       .limit(50),
+    (supabase as any)
+      .from('client_surveys')
+      .select(
+        `
+        overall_rating, feedback_text, event_id,
+        events(occasion, clients(full_name))
+      `
+      )
+      .eq('tenant_id', user.tenantId!)
+      .gte('overall_rating', 4)
+      .limit(20),
   ])
 
-  const aars = (aarResult.data ?? []) as unknown as AarRow[]
+  const aars = (aarResult.data ?? []) as AarRow[]
   const messages = messagesResult.data ?? []
-  const surveys: SurveyRow[] = [] // client_surveys table doesn't exist yet
+  const surveys = (surveysResult.data ?? []) as SurveyRow[]
 
   // Combine and format all feedback sources
   const feedbackItems: {
@@ -191,18 +185,13 @@ Return ONLY valid JSON.`
       config: { temperature: 0.4, responseMimeType: 'application/json' },
     })
     const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const raw = JSON.parse(text)
-    const validated = TestimonialResponseSchema.safeParse(raw)
-    if (!validated.success) {
-      console.error('[testimonial-selection] Zod validation failed:', validated.error.format())
-      throw new Error('Testimonial response did not match expected format. Please try again.')
-    }
-    const all: TestimonialHighlight[] = validated.data.topTestimonials
+    const parsed = JSON.parse(text)
+    const all: TestimonialHighlight[] = parsed.topTestimonials ?? []
     return {
       topTestimonials: all,
       portfolioReady: all.filter((t) => t.score >= 80),
       needsEditing: all.filter((t) => t.score >= 60 && t.score < 80),
-      summary: validated.data.summary,
+      summary: parsed.summary ?? '',
       generatedAt: new Date().toISOString(),
     }
   } catch (err) {

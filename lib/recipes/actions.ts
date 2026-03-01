@@ -34,6 +34,32 @@ const RECIPE_CATEGORIES: [string, ...string[]] = [
   'other',
 ]
 
+const RECIPE_CUISINES: [string, ...string[]] = [
+  'italian',
+  'french',
+  'mexican',
+  'japanese',
+  'chinese',
+  'indian',
+  'mediterranean',
+  'thai',
+  'korean',
+  'american',
+  'southern',
+  'middle_eastern',
+  'fusion',
+  'other',
+]
+
+const RECIPE_MEAL_TYPES: [string, ...string[]] = [
+  'breakfast',
+  'brunch',
+  'lunch',
+  'dinner',
+  'snack_passed',
+  'any',
+]
+
 const INGREDIENT_CATEGORIES: [string, ...string[]] = [
   'protein',
   'produce',
@@ -72,6 +98,10 @@ const CreateRecipeSchema = z.object({
   calories_per_serving: z.number().int().positive().optional(),
   difficulty: z.number().int().min(1).max(5).optional(),
   equipment: z.array(z.string()).optional(),
+  cuisine: z.enum(RECIPE_CUISINES as [string, ...string[]]).optional(),
+  meal_type: z.enum(RECIPE_MEAL_TYPES as [string, ...string[]]).optional(),
+  season: z.array(z.string()).optional(),
+  occasion_tags: z.array(z.string()).optional(),
 })
 
 export type CreateRecipeInput = z.infer<typeof CreateRecipeSchema>
@@ -95,6 +125,16 @@ const UpdateRecipeSchema = z.object({
   calories_per_serving: z.number().int().positive().nullable().optional(),
   difficulty: z.number().int().min(1).max(5).nullable().optional(),
   equipment: z.array(z.string()).optional(),
+  cuisine: z
+    .enum(RECIPE_CUISINES as [string, ...string[]])
+    .nullable()
+    .optional(),
+  meal_type: z
+    .enum(RECIPE_MEAL_TYPES as [string, ...string[]])
+    .nullable()
+    .optional(),
+  season: z.array(z.string()).optional(),
+  occasion_tags: z.array(z.string()).optional(),
 })
 
 export type UpdateRecipeInput = z.infer<typeof UpdateRecipeSchema>
@@ -179,6 +219,10 @@ export async function createRecipe(input: CreateRecipeInput) {
       calories_per_serving: validated.calories_per_serving || null,
       difficulty: validated.difficulty || null,
       equipment: validated.equipment || [],
+      cuisine: validated.cuisine || null,
+      meal_type: validated.meal_type || null,
+      season: validated.season || [],
+      occasion_tags: validated.occasion_tags || [],
       created_by: user.id,
       updated_by: user.id,
     } as any)
@@ -216,10 +260,16 @@ export type RecipeListItem = {
   ingredient_count: number | null
   total_cost_cents: number | null
   has_all_prices: boolean | null
+  cuisine: string | null
+  meal_type: string | null
+  season: string[]
+  occasion_tags: string[]
 }
 
 export async function getRecipes(filters?: {
   category?: string
+  cuisine?: string
+  meal_type?: string
   search?: string
   is_template?: boolean
   sort?: 'name' | 'recent' | 'most_used'
@@ -236,6 +286,14 @@ export async function getRecipes(filters?: {
 
   if (filters?.category) {
     query = query.eq('category', filters.category as RecipeCategory)
+  }
+
+  if (filters?.cuisine) {
+    query = query.eq('cuisine', filters.cuisine)
+  }
+
+  if (filters?.meal_type) {
+    query = query.eq('meal_type', filters.meal_type)
   }
 
   if (filters?.search) {
@@ -286,6 +344,10 @@ export async function getRecipes(filters?: {
       ingredient_count: cost?.ingredient_count ?? null,
       total_cost_cents: cost?.total_ingredient_cost_cents ?? null,
       has_all_prices: cost?.has_all_prices ?? null,
+      cuisine: r.cuisine ?? null,
+      meal_type: r.meal_type ?? null,
+      season: r.season || [],
+      occasion_tags: r.occasion_tags || [],
     }
   })
 
@@ -511,6 +573,10 @@ export async function updateRecipe(recipeId: string, input: UpdateRecipeInput) {
     updateData.calories_per_serving = validated.calories_per_serving
   if (validated.difficulty !== undefined) updateData.difficulty = validated.difficulty
   if (validated.equipment !== undefined) updateData.equipment = validated.equipment
+  if (validated.cuisine !== undefined) updateData.cuisine = validated.cuisine
+  if (validated.meal_type !== undefined) updateData.meal_type = validated.meal_type
+  if (validated.season !== undefined) updateData.season = validated.season
+  if (validated.occasion_tags !== undefined) updateData.occasion_tags = validated.occasion_tags
 
   const { data: recipe, error } = await supabase
     .from('recipes')

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import type { RecipeListItem } from '@/lib/recipes/actions'
+import { CUISINE_DISPLAY, MEAL_TYPE_DISPLAY } from '@/lib/recipes/recipe-constants'
 
 const CATEGORY_OPTIONS = [
   { value: '', label: 'All Categories' },
@@ -25,6 +26,16 @@ const CATEGORY_OPTIONS = [
   { value: 'condiment', label: 'Condiment' },
   { value: 'beverage', label: 'Beverage' },
   { value: 'other', label: 'Other' },
+]
+
+const CUISINE_OPTIONS = [
+  { value: '', label: 'All Cuisines' },
+  ...Object.entries(CUISINE_DISPLAY).map(([value, label]) => ({ value, label })),
+]
+
+const MEAL_TYPE_OPTIONS = [
+  { value: '', label: 'All Meal Types' },
+  ...Object.entries(MEAL_TYPE_DISPLAY).map(([value, label]) => ({ value, label })),
 ]
 
 const SORT_OPTIONS = [
@@ -54,6 +65,8 @@ export function RecipeLibraryClient({ recipes }: Props) {
   const [search, setSearch] = useState(searchParams.get('search') || '')
 
   const currentCategory = searchParams.get('category') || ''
+  const currentCuisine = searchParams.get('cuisine') || ''
+  const currentMealType = searchParams.get('meal_type') || ''
   const currentSort = searchParams.get('sort') || 'name'
 
   const updateFilters = (key: string, value: string) => {
@@ -115,9 +128,36 @@ export function RecipeLibraryClient({ recipes }: Props) {
         <select
           value={currentCategory}
           onChange={(e) => updateFilters('category', e.target.value)}
+          aria-label="Category"
           className="border border-stone-600 rounded-md px-3 py-2 text-sm bg-stone-900"
         >
           {CATEGORY_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={currentCuisine}
+          onChange={(e) => updateFilters('cuisine', e.target.value)}
+          aria-label="Cuisine"
+          className="border border-stone-600 rounded-md px-3 py-2 text-sm bg-stone-900"
+        >
+          {CUISINE_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={currentMealType}
+          onChange={(e) => updateFilters('meal_type', e.target.value)}
+          aria-label="Meal Type"
+          className="border border-stone-600 rounded-md px-3 py-2 text-sm bg-stone-900"
+        >
+          {MEAL_TYPE_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
             </option>
@@ -198,9 +238,21 @@ export function RecipeLibraryClient({ recipes }: Props) {
                     )}
                   </div>
 
-                  {recipe.dietary_tags && recipe.dietary_tags.length > 0 && (
+                  {(recipe.dietary_tags?.length > 0 ||
+                    recipe.cuisine ||
+                    (recipe.meal_type && recipe.meal_type !== 'any')) && (
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {recipe.dietary_tags.slice(0, 3).map((tag) => (
+                      {recipe.cuisine && (
+                        <span className="text-xs px-1.5 py-0.5 bg-blue-950 text-blue-400 rounded">
+                          {CUISINE_DISPLAY[recipe.cuisine] || recipe.cuisine}
+                        </span>
+                      )}
+                      {recipe.meal_type && recipe.meal_type !== 'any' && (
+                        <span className="text-xs px-1.5 py-0.5 bg-purple-950 text-purple-400 rounded">
+                          {MEAL_TYPE_DISPLAY[recipe.meal_type] || recipe.meal_type}
+                        </span>
+                      )}
+                      {recipe.dietary_tags?.slice(0, 3).map((tag) => (
                         <span
                           key={tag}
                           className="text-xs px-1.5 py-0.5 bg-green-950 text-green-700 rounded"
