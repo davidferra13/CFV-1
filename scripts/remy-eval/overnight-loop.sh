@@ -10,7 +10,7 @@
 #
 # This will run the eval 5 times and save all reports to scripts/remy-eval/reports/
 
-RUNS=5
+RUNS=3
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 REPORTS_DIR="$SCRIPT_DIR/reports"
