@@ -1413,7 +1413,36 @@ The Remy drawer (`components/ai/remy-drawer.tsx`) has 5 views accessible via ico
 
 ---
 
-## 23. Mission Control (Desktop Launcher)
+## 23. SOCIAL EVENT HUB (Public Guest Pages)
+
+Persistent social space for event guests — group chat, photos, polls, scheduling, dining history. Link-based access (no login). Pro feature (`social-hub` module).
+
+### Public Pages (no auth required — `/hub` in `skipAuthPaths`)
+
+| Route                    | Content                                                                                                                                                                                                        |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/hub/g/[groupToken]`    | Group view with 6 tabs: Chat (real-time feed), Events (linked events), Photos (gallery + upload), Schedule (availability polls), Notes (sticky notes), Members (list + dietary info). "My Hub" link in header. |
+| `/hub/join/[groupToken]` | Join page for first-time visitors — group name, member count, "Enter your name" input.                                                                                                                         |
+| `/hub/me/[profileToken]` | Guest profile — 3 tabs: My Dinners (event history with menus), My Groups (with unread badges), Dietary (allergies + restrictions). Edit Profile button opens inline editor.                                    |
+
+### Chef Pages (auth required)
+
+| Route                  | Content                                                                                                                              |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `/social/hub-overview` | Admin-only dashboard — 6 stat cards (profiles, groups, messages, photos, stubs, seeking chef), stubs pipeline, recent activity feed. |
+
+### Integration Points (wired into existing pages)
+
+| Page                  | Element                                                                                |
+| --------------------- | -------------------------------------------------------------------------------------- |
+| `/share/[token]`      | "Join the Hub" CTA shown after RSVP (creates/finds hub group, redirects to join page). |
+| `/events/[id]` (chef) | Hub link panel near Guests section — links to hub group or shows "No hub group yet".   |
+| RSVP submission       | Non-blocking: auto-creates hub profile, adds event history, auto-joins group.          |
+| Event completion      | Non-blocking: snapshots menu items into guest event history.                           |
+
+---
+
+## 24. Mission Control (Desktop Launcher)
 
 Local Node.js dashboard running on port 41937. Launched by `scripts/launcher/server.mjs` + `scripts/launcher/index.html`. Not part of the Next.js app — standalone tooling for the developer.
 
