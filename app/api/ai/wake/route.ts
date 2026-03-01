@@ -277,8 +277,14 @@ async function handleDiagnose(endpoint: 'pc' | 'pi' | 'all', timestamp: string):
   })
 }
 
-// GET endpoint for quick status check
+// GET endpoint for quick status check — admin only (exposes internal LAN IPs)
 export async function GET() {
+  try {
+    await requireAdmin()
+  } catch {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const config = getOllamaConfig()
   const piUrl = getOllamaPiUrl()
   const timestamp = new Date().toISOString()

@@ -14,35 +14,36 @@
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
+import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
 // Expected max interval (minutes) for each cron, derived from vercel.json schedules.
 // We alert if the last heartbeat is older than 2x this value.
 const CRON_EXPECTED_INTERVALS: Record<string, number> = {
   // 5-minute crons — alert if stale > 10 min
-  'gmail-sync':           10,
-  'integrations-pull':    10,
-  'wix-process':          10,
-  'social-publish':       10,
+  'gmail-sync': 10,
+  'integrations-pull': 10,
+  'wix-process': 10,
+  'social-publish': 10,
   // 15-minute crons — alert if stale > 30 min
-  'automations':          30,
-  'copilot':              30,
-  'email-history-scan':   30,
+  automations: 30,
+  copilot: 30,
+  'email-history-scan': 30,
   // 30-minute crons — alert if stale > 60 min
-  'call-reminders':       60,
+  'call-reminders': 60,
   // Hourly crons — alert if stale > 2 hours
-  'integrations-retry':   120,
-  'campaigns':            120,
+  'integrations-retry': 120,
+  campaigns: 120,
   // 6-hour crons — alert if stale > 12 hours
-  'revenue-goals':        720,
-  'follow-ups':           720,
-  'reviews-sync':         720,
+  'revenue-goals': 720,
+  'follow-ups': 720,
+  'reviews-sync': 720,
   // Daily crons — alert if stale > 48 hours (some may be skipped on weekends or holidays)
-  'lifecycle':            2880,
-  'sequences':            2880,
-  'activity-cleanup':     2880,
-  'loyalty-expiry':       2880,
-  'waitlist-sweep':       2880,
-  'push-cleanup':         2880,
+  lifecycle: 2880,
+  sequences: 2880,
+  'activity-cleanup': 2880,
+  'loyalty-expiry': 2880,
+  'waitlist-sweep': 2880,
+  'push-cleanup': 2880,
 }
 
 type CronStatus = {
@@ -56,19 +57,8 @@ type CronStatus = {
 }
 
 async function handleMonitor(request: NextRequest): Promise<NextResponse> {
-  const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
-
-  if (!cronSecret) {
-    return NextResponse.json(
-      { error: 'CRON_SECRET not configured' },
-      { status: 500 },
-    )
-  }
-
-  if (authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const authError = verifyCronAuth(request.headers.get('authorization'))
+  if (authError) return authError
 
   const supabase = createServerClient({ admin: true })
   const now = new Date()
@@ -85,7 +75,7 @@ async function handleMonitor(request: NextRequest): Promise<NextResponse> {
     console.error('[CronMonitor] Failed to query cron_executions:', error)
     return NextResponse.json(
       { error: 'Failed to query cron execution log', details: error.message },
-      { status: 500 },
+      { status: 500 }
     )
   }
 
@@ -150,15 +140,15 @@ async function handleMonitor(request: NextRequest): Promise<NextResponse> {
   }
 
   const overallHealthy = !hasStale && !hasMissing
-  const staleCrons = cronStatuses.filter(c => c.status === 'stale').map(c => c.cronName)
-  const missingCrons = cronStatuses.filter(c => c.status === 'missing').map(c => c.cronName)
+  const staleCrons = cronStatuses.filter((c) => c.status === 'stale').map((c) => c.cronName)
+  const missingCrons = cronStatuses.filter((c) => c.status === 'missing').map((c) => c.cronName)
 
   const result = {
     healthy: overallHealthy,
     checkedAt: now.toISOString(),
     summary: {
       total: cronStatuses.length,
-      ok: cronStatuses.filter(c => c.status === 'ok').length,
+      ok: cronStatuses.filter((c) => c.status === 'ok').length,
       stale: staleCrons.length,
       missing: missingCrons.length,
     },

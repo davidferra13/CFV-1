@@ -8,10 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { generateQuote } from '@/lib/documents/generate-quote'
 import { format } from 'date-fns'
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: { quoteId: string } }
-) {
+export async function GET(_request: NextRequest, { params }: { params: { quoteId: string } }) {
   try {
     await requireChef()
 
@@ -38,6 +35,6 @@ export async function GET(
     }
 
     console.error('[quote/route] Error:', error)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to generate quote' }, { status: 500 })
   }
 }

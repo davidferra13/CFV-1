@@ -7,22 +7,11 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { processWixSubmission } from '@/lib/wix/process'
+import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
 async function handleWixProcess(request: NextRequest): Promise<NextResponse> {
-  // Validate cron secret
-  const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
-
-  if (!cronSecret) {
-    return NextResponse.json(
-      { error: 'CRON_SECRET not configured' },
-      { status: 500 },
-    )
-  }
-
-  if (authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const authError = verifyCronAuth(request.headers.get('authorization'))
+  if (authError) return authError
 
   const supabase = createServerClient({ admin: true })
 
@@ -37,10 +26,7 @@ async function handleWixProcess(request: NextRequest): Promise<NextResponse> {
 
   if (error) {
     console.error('[Wix Process Cron] Query failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to query pending submissions' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to query pending submissions' }, { status: 500 })
   }
 
   if (!pendingSubmissions || pendingSubmissions.length === 0) {
@@ -68,10 +54,7 @@ async function handleWixProcess(request: NextRequest): Promise<NextResponse> {
       }
     } catch (err) {
       const e = err as Error
-      console.error(
-        `[Wix Process Cron] Failed for submission ${submission.id}:`,
-        e.message,
-      )
+      console.error(`[Wix Process Cron] Failed for submission ${submission.id}:`, e.message)
       failed++
     }
   }

@@ -10,29 +10,19 @@
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
+import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
 // Re-notify threshold: don't notify the same waitlist entry more than once per 7 days
 const RENOTIFY_INTERVAL_DAYS = 7
 
 async function handleWaitlistSweep(request: NextRequest): Promise<NextResponse> {
-  const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
-
-  if (!cronSecret) {
-    return NextResponse.json(
-      { error: 'CRON_SECRET not configured' },
-      { status: 500 },
-    )
-  }
-
-  if (authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const authError = verifyCronAuth(request.headers.get('authorization'))
+  if (authError) return authError
 
   const supabase = createServerClient({ admin: true })
   const now = new Date()
   const renotifyThreshold = new Date(
-    now.getTime() - RENOTIFY_INTERVAL_DAYS * 24 * 60 * 60 * 1000,
+    now.getTime() - RENOTIFY_INTERVAL_DAYS * 24 * 60 * 60 * 1000
   ).toISOString()
 
   // ── Fetch active waiting entries that are eligible for notification ───────
@@ -41,7 +31,8 @@ async function handleWaitlistSweep(request: NextRequest): Promise<NextResponse> 
   //   (b) last contacted more than RENOTIFY_INTERVAL_DAYS ago
   const { data: entries, error: fetchError } = await supabase
     .from('waitlist_entries')
-    .select(`
+    .select(
+      `
       id,
       chef_id,
       client_id,
@@ -50,7 +41,8 @@ async function handleWaitlistSweep(request: NextRequest): Promise<NextResponse> 
       occasion,
       contacted_at,
       client:clients(id, full_name, email)
-    `)
+    `
+    )
     .eq('status', 'waiting')
     .gt('requested_date', now.toISOString().split('T')[0]) // only future dates
     .or(`contacted_at.is.null,contacted_at.lt.${renotifyThreshold}`)
@@ -58,10 +50,7 @@ async function handleWaitlistSweep(request: NextRequest): Promise<NextResponse> 
 
   if (fetchError) {
     console.error('[Waitlist Sweep Cron] Failed to fetch waitlist entries:', fetchError)
-    return NextResponse.json(
-      { error: 'Failed to fetch waitlist entries' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to fetch waitlist entries' }, { status: 500 })
   }
 
   if (!entries || entries.length === 0) {

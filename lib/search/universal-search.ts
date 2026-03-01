@@ -35,7 +35,9 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
 
   const chef = await requireChef()
   const supabase: any = createServerClient()
-  const q = `%${query}%`
+  // Escape PostgREST filter metacharacters to prevent filter string injection
+  const safeQuery = query.replace(/[%_,.()"'\\]/g, '')
+  const q = `%${safeQuery}%`
   const needle = query.trim().toLowerCase()
   const results: SearchResult[] = []
   const makeId = (type: SearchResult['type'], id: string) => `${type}:${id}`

@@ -8,15 +8,13 @@ import { computeDailyReport } from '@/lib/reports/compute-daily-report'
 import { sendEmail } from '@/lib/email/send'
 import { DailyReportEmail } from '@/lib/email/templates/daily-report'
 import type { DailyReportContent } from '@/lib/reports/types'
+import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
 
 export async function GET(request: Request) {
-  // Auth check — standard cron pattern
-  const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const authError = verifyCronAuth(request.headers.get('authorization'))
+  if (authError) return authError
 
   const supabase = createServerClient({ admin: true })
   const today = new Date().toISOString().split('T')[0]

@@ -7,16 +7,14 @@ import { generateReceipt, generateReceiptForChef } from '@/lib/documents/generat
 // Client: scoped by client_id (their own event only).
 // Chef: scoped by tenant_id (their own events only).
 
-export async function GET(
-  _request: Request,
-  { params }: { params: { eventId: string } }
-) {
+export async function GET(_request: Request, { params }: { params: { eventId: string } }) {
   try {
     const user = await requireAuth()
 
-    const pdfBuffer = user.role === 'chef'
-      ? await generateReceiptForChef(params.eventId)
-      : await generateReceipt(params.eventId)
+    const pdfBuffer =
+      user.role === 'chef'
+        ? await generateReceiptForChef(params.eventId)
+        : await generateReceipt(params.eventId)
 
     const bytes = new Uint8Array(pdfBuffer)
     const dateSuffix = format(new Date(), 'yyyy-MM-dd')
@@ -40,6 +38,6 @@ export async function GET(
     }
 
     console.error('[receipt-route] Error:', error)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to generate receipt' }, { status: 500 })
   }
 }

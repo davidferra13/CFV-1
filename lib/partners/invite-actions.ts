@@ -19,7 +19,7 @@ const APP_URL =
 export async function generatePartnerInvite(
   partnerId: string
 ): Promise<{ success: true; inviteUrl: string }> {
-  await requireChef()
+  const chef = await requireChef()
 
   const supabase = createServerClient({ admin: true })
 
@@ -28,6 +28,7 @@ export async function generatePartnerInvite(
     .from('referral_partners')
     .select('id, name, claimed_at')
     .eq('id', partnerId)
+    .eq('tenant_id', chef.tenantId)
     .single()
   const partner = rawPartner1 as any
 

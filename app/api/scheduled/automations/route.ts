@@ -9,18 +9,11 @@ import { createServerClient } from '@/lib/supabase/server'
 import { evaluateAutomations } from '@/lib/automations/engine'
 import { getAutomationSettingsForTenant } from '@/lib/automations/settings-actions'
 import type { TriggerEvent } from '@/lib/automations/types'
+import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
 async function handleAutomations(request: NextRequest): Promise<NextResponse> {
-  const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
-
-  if (!cronSecret) {
-    return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 })
-  }
-
-  if (authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const authError = verifyCronAuth(request.headers.get('authorization'))
+  if (authError) return authError
 
   const supabase = createServerClient({ admin: true })
   let evaluated = 0
@@ -34,7 +27,9 @@ async function handleAutomations(request: NextRequest): Promise<NextResponse> {
   try {
     const { data: staleInquiries } = await supabase
       .from('inquiries')
-      .select('id, tenant_id, status, channel, confirmed_occasion, last_response_at, client:clients(full_name)')
+      .select(
+        'id, tenant_id, status, channel, confirmed_occasion, last_response_at, client:clients(full_name)'
+      )
       .eq('status', 'awaiting_client')
       .not('last_response_at', 'is', null)
 

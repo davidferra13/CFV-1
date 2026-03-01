@@ -9,21 +9,11 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
+import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
 async function handleLoyaltyExpiry(request: NextRequest): Promise<NextResponse> {
-  const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
-
-  if (!cronSecret) {
-    return NextResponse.json(
-      { error: 'CRON_SECRET not configured' },
-      { status: 500 },
-    )
-  }
-
-  if (authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const authError = verifyCronAuth(request.headers.get('authorization'))
+  if (authError) return authError
 
   const supabase = createServerClient({ admin: true })
   const now = new Date().toISOString()
@@ -38,10 +28,7 @@ async function handleLoyaltyExpiry(request: NextRequest): Promise<NextResponse> 
 
   if (incentiveError) {
     console.error('[Loyalty Expiry Cron] Failed to expire incentives:', incentiveError)
-    return NextResponse.json(
-      { error: 'Failed to expire incentives' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to expire incentives' }, { status: 500 })
   }
 
   // ── 2. Expire overdue waitlist entries ───────────────────────────────────
@@ -62,7 +49,7 @@ async function handleLoyaltyExpiry(request: NextRequest): Promise<NextResponse> 
 
   if (expiredIncentives > 0 || expiredWaitlist > 0) {
     console.log(
-      `[Loyalty Expiry Cron] Expired ${expiredIncentives} incentive(s), ${expiredWaitlist} waitlist entry(ies)`,
+      `[Loyalty Expiry Cron] Expired ${expiredIncentives} incentive(s), ${expiredWaitlist} waitlist entry(ies)`
     )
   }
 

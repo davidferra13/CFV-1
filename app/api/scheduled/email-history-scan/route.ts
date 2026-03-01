@@ -9,21 +9,13 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { runHistoricalScanBatch } from '@/lib/gmail/historical-scan'
+import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
 const MAX_CHEFS_PER_RUN = 5
 
 async function handleEmailHistoryScan(request: NextRequest): Promise<NextResponse> {
-  // Validate cron secret
-  const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
-
-  if (!cronSecret) {
-    return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 })
-  }
-
-  if (authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const authError = verifyCronAuth(request.headers.get('authorization'))
+  if (authError) return authError
 
   const supabase = createServerClient({ admin: true })
 
@@ -38,7 +30,8 @@ async function handleEmailHistoryScan(request: NextRequest): Promise<NextRespons
     .limit(MAX_CHEFS_PER_RUN)
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('[email-history-scan] DB query failed:', error.message)
+    return NextResponse.json({ error: 'Failed to query scan connections' }, { status: 500 })
   }
 
   if (!connections || connections.length === 0) {
@@ -56,9 +49,10 @@ async function handleEmailHistoryScan(request: NextRequest): Promise<NextRespons
       const batchResult = await runHistoricalScanBatch(conn.chef_id, conn.tenant_id)
       results.push(batchResult)
     } catch (err) {
+      console.error(`[email-history-scan] Batch failed for chef ${conn.chef_id}:`, err)
       results.push({
         chefId: conn.chef_id,
-        error: (err as Error).message,
+        error: 'Batch processing failed',
         status: 'error',
       })
     }

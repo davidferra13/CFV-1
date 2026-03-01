@@ -284,14 +284,11 @@ export function EmailBuilder({ templates: initialTemplates }: EmailBuilderProps)
                 <span className="font-medium text-stone-300">{previewTemplate.subject}</span>
               </p>
               <hr className="my-2 border-stone-800" />
-              <div
-                className="text-sm text-stone-200 prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{
-                  __html: previewTemplate.bodyHtml
-                    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-                    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
-                    .replace(/javascript:/gi, '#'),
-                }}
+              <iframe
+                title="Email template preview"
+                sandbox=""
+                className="w-full min-h-[300px] bg-white rounded"
+                srcDoc={previewTemplate.bodyHtml}
               />
             </div>
           </div>

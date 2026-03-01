@@ -380,12 +380,23 @@ export async function getConversation(conversationId: string): Promise<Conversat
 
 /**
  * Get participants of a conversation.
+ * Verifies the caller is a participant before returning data.
  */
 export async function getConversationParticipants(
   conversationId: string
 ): Promise<(ConversationParticipant & { name: string; email: string })[]> {
   const user = await requireAuth()
   const supabase: any = createServerClient()
+
+  // Verify caller is a participant in this conversation
+  const { data: self } = await supabase
+    .from('conversation_participants')
+    .select('id')
+    .eq('conversation_id', conversationId)
+    .eq('auth_user_id', user.id)
+    .single()
+
+  if (!self) return []
 
   const { data: participants, error } = await supabase
     .from('conversation_participants')
@@ -812,6 +823,18 @@ export async function getConversationMessages(input: z.infer<typeof GetMessagesS
   const user = await requireAuth()
   const validated = GetMessagesSchema.parse(input)
   const supabase: any = createServerClient()
+
+  // Verify caller is a participant in this conversation
+  const { data: self } = await supabase
+    .from('conversation_participants')
+    .select('id')
+    .eq('conversation_id', validated.conversation_id)
+    .eq('auth_user_id', user.id)
+    .single()
+
+  if (!self) {
+    return { messages: [] as ChatMessage[], nextCursor: null, hasMore: false }
+  }
 
   // Fetch one extra to determine hasMore
   let query = supabase

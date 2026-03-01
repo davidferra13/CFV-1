@@ -229,7 +229,11 @@ export async function searchPeople(query: string): Promise<{
   const myProfile = await getOrCreateClientHubProfile()
   const supabase = createServerClient({ admin: true })
 
-  const searchTerm = `%${query.trim().toLowerCase()}%`
+  const safeQuery = query
+    .trim()
+    .toLowerCase()
+    .replace(/[%_,.()"'\\]/g, '')
+  const searchTerm = `%${safeQuery}%`
 
   // Search profiles by name or email
   const { data: profiles } = await supabase

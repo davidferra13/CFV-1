@@ -5,17 +5,11 @@
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { runPublishingEngine } from '@/lib/social/publishing/engine'
+import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
 async function handle(request: NextRequest): Promise<NextResponse> {
-  const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
-
-  if (!cronSecret) {
-    return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 })
-  }
-  if (authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const authError = verifyCronAuth(request.headers.get('authorization'))
+  if (authError) return authError
 
   const start = Date.now()
 

@@ -8,10 +8,7 @@ import { format } from 'date-fns'
 import { requireClient } from '@/lib/auth/get-user'
 import { generateFrontOfHouseMenuForClient } from '@/lib/documents/generate-front-of-house-menu'
 
-export async function GET(
-  _request: Request,
-  { params }: { params: { eventId: string } }
-) {
+export async function GET(_request: Request, { params }: { params: { eventId: string } }) {
   try {
     await requireClient()
 
@@ -38,6 +35,6 @@ export async function GET(
     }
 
     console.error('[foh-menu-route] Error:', error)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to generate menu' }, { status: 500 })
   }
 }

@@ -117,10 +117,7 @@ export async function POST(request: Request) {
     } as any)
 
     if (error) {
-      return NextResponse.json(
-        { error: `Failed to record movement: ${error.message}` },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to record movement' }, { status: 500 })
     }
 
     try {

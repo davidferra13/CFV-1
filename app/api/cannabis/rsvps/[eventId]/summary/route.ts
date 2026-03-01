@@ -81,6 +81,7 @@ export async function GET(_request: Request, { params }: { params: { eventId: st
     if (message.includes('Unauthorized')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    return NextResponse.json({ error: message }, { status: 500 })
+    console.error('[rsvp-summary] Error:', error)
+    return NextResponse.json({ error: 'Failed to export RSVP summary' }, { status: 500 })
   }
 }

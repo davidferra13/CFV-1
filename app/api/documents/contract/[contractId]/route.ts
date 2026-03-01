@@ -7,10 +7,7 @@ import { generateContract } from '@/lib/documents/generate-contract'
 // Auth is resolved via requireAuth() — then ownership verified in the generator
 // by scoping the DB query to chef_id OR client_id based on the user's role.
 
-export async function GET(
-  _request: Request,
-  { params }: { params: { contractId: string } }
-) {
+export async function GET(_request: Request, { params }: { params: { contractId: string } }) {
   try {
     const user = await requireAuth()
 
@@ -42,6 +39,6 @@ export async function GET(
     }
 
     console.error('[contract-route] Error:', error)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to generate contract' }, { status: 500 })
   }
 }

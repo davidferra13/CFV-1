@@ -46,6 +46,6 @@ export async function GET(_request: Request, { params }: { params: { eventId: st
     }
 
     console.error('[invoice-pdf-route] Error:', error)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to generate invoice PDF' }, { status: 500 })
   }
 }

@@ -247,6 +247,6 @@ export async function GET(_request: Request, { params }: { params: { quoteId: st
     }
 
     console.error('[quote-client-route] Error:', error)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to generate quote' }, { status: 500 })
   }
 }

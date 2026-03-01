@@ -3,9 +3,11 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { generateFrontOfHouseMenu } from '@/lib/front-of-house/generateFrontOfHouseMenu'
+import { requireChef } from '@/lib/auth/get-user'
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ menuId: string }> }) {
   try {
+    await requireChef()
     const { menuId } = await params
     const html = await generateFrontOfHouseMenu(menuId)
 

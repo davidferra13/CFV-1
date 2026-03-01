@@ -297,6 +297,6 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
     }
 
     console.error('[documents/route] Error:', error)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to generate document' }, { status: 500 })
   }
 }

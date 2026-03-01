@@ -22,6 +22,6 @@ export async function GET(_request: Request, { params: _params }: { params: { sa
     }
 
     console.error('[commerce-receipt-route] Error:', error)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to generate receipt' }, { status: 500 })
   }
 }

@@ -55,10 +55,10 @@ export async function GET(request: Request) {
   const latencyMs: Record<string, number> = {}
   let overallStatus: 'ok' | 'degraded' | 'error' = 'ok'
 
-  // --- 1. Environment variable check ---
+  // --- 1. Environment variable check (don't leak which vars are missing) ---
   const missingVars = REQUIRED_ENV_VARS.filter((v) => !process.env[v])
   if (missingVars.length > 0) {
-    checks.env = `missing: ${missingVars.join(', ')}`
+    checks.env = 'missing'
     overallStatus = 'error'
   } else {
     checks.env = 'ok'
@@ -78,14 +78,14 @@ export async function GET(request: Request) {
 
     if (error && error.code !== 'PGRST116') {
       // PGRST116 = "no rows" — perfectly fine, DB is reachable
-      checks.database = `error: ${error.message}`
+      checks.database = 'error'
       overallStatus = 'error'
     } else {
       checks.database = 'ok'
     }
   } catch (err) {
     latencyMs.database = Date.now() - startTime
-    checks.database = `unreachable: ${err instanceof Error ? err.message : 'unknown'}`
+    checks.database = 'unreachable'
     overallStatus = 'error'
   }
 
@@ -98,7 +98,7 @@ export async function GET(request: Request) {
         signal: AbortSignal.timeout(3000),
       })
       latencyMs.redis = Date.now() - redisStart
-      checks.redis = response.ok ? 'ok' : `degraded: HTTP ${response.status}`
+      checks.redis = response.ok ? 'ok' : 'degraded'
       if (!response.ok && overallStatus === 'ok') overallStatus = 'degraded'
     } catch {
       latencyMs.redis = Date.now() - startTime
@@ -107,13 +107,11 @@ export async function GET(request: Request) {
     }
   }
 
-  // --- 4. Circuit breaker health snapshot ---
+  // --- 4. Circuit breaker health snapshot (don't leak internal service names) ---
   const circuitBreakers = getCircuitBreakerHealth()
-  const openCircuits = Object.entries(circuitBreakers)
-    .filter(([, v]) => v.state === 'OPEN')
-    .map(([name]) => name)
-  if (openCircuits.length > 0) {
-    checks.circuit_breakers = `open: ${openCircuits.join(', ')}`
+  const openCount = Object.values(circuitBreakers).filter((v) => v.state === 'OPEN').length
+  if (openCount > 0) {
+    checks.circuit_breakers = 'degraded'
     if (overallStatus === 'ok') overallStatus = 'degraded'
   } else if (Object.keys(circuitBreakers).length > 0) {
     checks.circuit_breakers = 'ok'
@@ -121,16 +119,13 @@ export async function GET(request: Request) {
 
   const httpStatus = overallStatus === 'error' ? 503 : 200
 
+  // Public response: status + high-level checks only. No internal topology, no raw errors.
   return NextResponse.json(
     {
       status: overallStatus,
       timestamp: new Date().toISOString(),
-      version: process.env.NEXT_PUBLIC_APP_VERSION ?? 'chefflow-build',
-      requestId,
       checks,
       latencyMs,
-      circuit_breakers: circuitBreakers,
-      uptimeMs: process.uptime ? Math.round(process.uptime() * 1000) : undefined,
     },
     {
       status: httpStatus,

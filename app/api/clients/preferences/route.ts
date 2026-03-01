@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
   try {
     payload = ClientPreferencesSchema.parse(await request.json())
   } catch (error) {
-    return NextResponse.json({ error: 'Invalid payload', details: String(error) }, { status: 400 })
+    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
   }
 
   try {

@@ -6,25 +6,11 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { syncGmailInbox } from '@/lib/gmail/sync'
+import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
 async function handleGmailSync(request: NextRequest): Promise<NextResponse> {
-  // Validate cron secret
-  const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
-
-  if (!cronSecret) {
-    return NextResponse.json(
-      { error: 'CRON_SECRET not configured' },
-      { status: 500 }
-    )
-  }
-
-  if (authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json(
-      { error: 'Unauthorized' },
-      { status: 401 }
-    )
-  }
+  const authError = verifyCronAuth(request.headers.get('authorization'))
+  if (authError) return authError
 
   const supabase = createServerClient({ admin: true })
 
@@ -36,10 +22,7 @@ async function handleGmailSync(request: NextRequest): Promise<NextResponse> {
 
   if (error) {
     console.error('[Gmail Cron] Failed to fetch connections:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch connections' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to fetch connections' }, { status: 500 })
   }
 
   if (!connections || connections.length === 0) {
@@ -71,7 +54,7 @@ async function handleGmailSync(request: NextRequest): Promise<NextResponse> {
         chefId: conn.chef_id,
         email: conn.connected_email,
         success: false,
-        error: error.message,
+        error: 'Sync failed',
       })
     }
   }

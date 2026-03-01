@@ -206,9 +206,7 @@ export async function POST(req: NextRequest) {
       message: `Loaded demo data: ${DEMO_CLIENTS.length} clients, ${DEMO_EVENTS.length} events, ${DEMO_MENUS.length} menus, ${DEMO_RECIPES.length} recipes, ${DEMO_QUOTES.length} quotes, ${DEMO_LEDGER_ENTRIES.length} ledger entries, ${DEMO_EXPENSES.length} expenses`,
     })
   } catch (err: unknown) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Unknown error during data load' },
-      { status: 500 }
-    )
+    console.error('[demo/data] Load failed:', err)
+    return NextResponse.json({ error: 'Demo data load failed' }, { status: 500 })
   }
 }

@@ -7,10 +7,7 @@ import { generateFinancialSummaryPDF } from '@/lib/documents/generate-financial-
 // Chef-only: financial summary PDF for a specific event.
 // Reuses getEventFinancialSummaryFull which already handles tenant scoping.
 
-export async function GET(
-  _request: Request,
-  { params }: { params: { eventId: string } }
-) {
+export async function GET(_request: Request, { params }: { params: { eventId: string } }) {
   try {
     await requireChef()
 
@@ -39,6 +36,6 @@ export async function GET(
     }
 
     console.error('[financial-summary-route] Error:', error)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to generate financial summary' }, { status: 500 })
   }
 }

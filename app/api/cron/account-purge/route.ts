@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { executeFinalPurge } from '@/lib/compliance/account-deletion-actions'
+import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,10 +14,8 @@ const supabaseAdmin = createClient(
  * then runs the full purge pipeline (anonymize financials, clean storage, delete auth user).
  */
 export async function GET(request: Request) {
-  const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const authError = verifyCronAuth(request.headers.get('authorization'))
+  if (authError) return authError
 
   try {
     const { data: pendingDeletions, error } = await supabaseAdmin
@@ -27,7 +26,8 @@ export async function GET(request: Request) {
       .not('deletion_requested_at', 'is', null)
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      console.error('[account-purge] DB query failed:', error.message)
+      return NextResponse.json({ error: 'Failed to query pending deletions' }, { status: 500 })
     }
 
     const results: Array<{ chefId: string; success: boolean; error?: string }> = []
@@ -44,9 +44,7 @@ export async function GET(request: Request) {
       results,
     })
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Unknown error' },
-      { status: 500 }
-    )
+    console.error('[account-purge] Unexpected error:', err)
+    return NextResponse.json({ error: 'Account purge failed' }, { status: 500 })
   }
 }

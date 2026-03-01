@@ -155,7 +155,7 @@ export function BillingClient({ status, upgraded }: Props) {
             </form>
           )}
 
-          {status.isActive && status.stripeCustomerId && (
+          {status.isActive && status.hasStripeCustomer && (
             <form action={redirectToBillingPortal}>
               <Button type="submit" variant="secondary">
                 Manage Subscription

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { requireChef } from '@/lib/auth/get-user'
 import {
   connectIntegrationAccount,
   disconnectIntegrationAccount,
@@ -17,11 +18,17 @@ const ConnectSchema = z.object({
 })
 
 export async function POST(request: NextRequest) {
+  try {
+    await requireChef()
+  } catch {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   let payload: z.infer<typeof ConnectSchema>
   try {
     payload = ConnectSchema.parse(await request.json())
   } catch (error) {
-    return NextResponse.json({ error: 'Invalid payload', details: String(error) }, { status: 400 })
+    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
   }
 
   try {
@@ -55,8 +62,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, account })
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to process integration request'
-    const status = message.includes('Unauthorized') ? 401 : 500
-    return NextResponse.json({ error: message }, { status })
+    console.error('[integrations-connect] Error:', error)
+    const isUnauthorized = error instanceof Error && error.message.includes('Unauthorized')
+    return NextResponse.json(
+      { error: isUnauthorized ? 'Unauthorized' : 'Failed to process integration request' },
+      { status: isUnauthorized ? 401 : 500 }
+    )
   }
 }

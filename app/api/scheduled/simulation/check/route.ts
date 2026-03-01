@@ -7,17 +7,13 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
+import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
 const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
-  const cronSecret = process.env.CRON_SECRET
-  if (!cronSecret) {
-    return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 })
-  }
-  if (req.headers.get('authorization') !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const authError = verifyCronAuth(req.headers.get('authorization'))
+  if (authError) return authError
 
   const supabase = createServerClient({ admin: true })
 

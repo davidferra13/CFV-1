@@ -73,7 +73,9 @@ export async function draftResponseForInquiry(inquiryId: string) {
   if (inquiry.client_id) {
     const { data: client } = await supabase
       .from('clients')
-      .select('*')
+      .select(
+        'id, full_name, email, phone, dietary_restrictions, allergies, notes, status, loyalty_tier, loyalty_points'
+      )
       .eq('id', inquiry.client_id)
       .eq('tenant_id', chef.tenantId!)
       .single()

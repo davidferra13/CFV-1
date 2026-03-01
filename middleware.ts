@@ -262,8 +262,9 @@ export async function middleware(request: NextRequest) {
       .map((e) => e.trim().toLowerCase())
       .filter(Boolean)
     if (
-      adminEmails.length > 0 &&
-      (!user.email || !adminEmails.includes(user.email.toLowerCase()))
+      adminEmails.length === 0 ||
+      !user.email ||
+      !adminEmails.includes(user.email.toLowerCase())
     ) {
       return redirectWithCookies(new URL('/unauthorized', request.url), response)
     }

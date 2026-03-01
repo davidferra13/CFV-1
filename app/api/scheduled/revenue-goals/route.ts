@@ -11,18 +11,11 @@ import {
   fetchTrailingExpenseRatioBp,
 } from '@/lib/goals/signal-fetchers'
 import type { RevenueGoalSnapshot } from '@/lib/revenue-goals/types'
+import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
 async function handleRevenueGoals(request: NextRequest): Promise<NextResponse> {
-  const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
-
-  if (!cronSecret) {
-    return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 })
-  }
-
-  if (authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const authError = verifyCronAuth(request.headers.get('authorization'))
+  if (authError) return authError
 
   const supabase = createServerClient({ admin: true }) as any
   const now = new Date()
@@ -66,7 +59,11 @@ async function handleRevenueGoals(request: NextRequest): Promise<NextResponse> {
 
       // ── 3. Legacy revenue-goal snapshot + notification ────────────────────────
       const snapshot = await getRevenueGoalSnapshotForTenantAdmin(tenantId, now, supabase)
-      if (!snapshot.enabled || snapshot.monthly.gapCents <= 0 || snapshot.recommendations.length === 0) {
+      if (
+        !snapshot.enabled ||
+        snapshot.monthly.gapCents <= 0 ||
+        snapshot.recommendations.length === 0
+      ) {
         skipped += 1
         continue
       }
@@ -150,7 +147,10 @@ async function writeGoalSnapshotsForTenant(
   // Pre-compute revenue snapshot once if any revenue goals exist — avoids
   // calling getRevenueGoalSnapshotForTenantAdmin once per revenue goal row.
   const hasRevenueGoal = goalList.some(
-    (g) => g.goal_type === 'revenue_monthly' || g.goal_type === 'revenue_annual' || g.goal_type === 'revenue_custom'
+    (g) =>
+      g.goal_type === 'revenue_monthly' ||
+      g.goal_type === 'revenue_annual' ||
+      g.goal_type === 'revenue_custom'
   )
   let revenueSnapshot: RevenueGoalSnapshot | null = null
   if (hasRevenueGoal) {
@@ -180,9 +180,19 @@ async function writeGoalSnapshotsForTenant(
           currentValue = snap.monthly.projectedCents
         }
       } else if (goal.goal_type === 'booking_count') {
-        currentValue = await fetchBookingCount(supabase, tenantId, goal.period_start, goal.period_end)
+        currentValue = await fetchBookingCount(
+          supabase,
+          tenantId,
+          goal.period_start,
+          goal.period_end
+        )
       } else if (goal.goal_type === 'new_clients') {
-        currentValue = await fetchNewClientCount(supabase, tenantId, goal.period_start, goal.period_end)
+        currentValue = await fetchNewClientCount(
+          supabase,
+          tenantId,
+          goal.period_start,
+          goal.period_end
+        )
       } else if (goal.goal_type === 'recipe_library') {
         currentValue = await fetchRecipeCount(supabase, tenantId)
       } else if (goal.goal_type === 'profit_margin') {
@@ -192,29 +202,28 @@ async function writeGoalSnapshotsForTenant(
       }
 
       const gapValue = Math.max(0, goal.target_value - currentValue)
-      const progressPercent = goal.target_value > 0
-        ? Math.min(999, Math.round((currentValue / goal.target_value) * 100))
-        : 0
+      const progressPercent =
+        goal.target_value > 0
+          ? Math.min(999, Math.round((currentValue / goal.target_value) * 100))
+          : 0
 
       // upsert with ignoreDuplicates: true is idempotent — re-running the cron
       // on the same day will not overwrite an existing snapshot.
-      await supabase
-        .from('goal_snapshots')
-        .upsert(
-          {
-            tenant_id: tenantId,
-            goal_id: goal.id,
-            snapshot_date: today,
-            snapshot_month: today.slice(0, 7),
-            current_value: currentValue,
-            target_value: goal.target_value,
-            gap_value: gapValue,
-            progress_percent: progressPercent,
-            realized_cents: realizedCents,
-            projected_cents: projectedCents,
-          },
-          { onConflict: 'goal_id,snapshot_date', ignoreDuplicates: true }
-        )
+      await supabase.from('goal_snapshots').upsert(
+        {
+          tenant_id: tenantId,
+          goal_id: goal.id,
+          snapshot_date: today,
+          snapshot_month: today.slice(0, 7),
+          current_value: currentValue,
+          target_value: goal.target_value,
+          gap_value: gapValue,
+          progress_percent: progressPercent,
+          realized_cents: realizedCents,
+          projected_cents: projectedCents,
+        },
+        { onConflict: 'goal_id,snapshot_date', ignoreDuplicates: true }
+      )
     } catch {
       // Non-fatal: snapshot failure for one goal should not abort the rest
     }

@@ -517,7 +517,7 @@ export async function getConnectedChefsForCollaboration(search?: string): Promis
   let query = supabase.from('chefs').select(CHEF_PROFILE_SELECT).in('id', connectedIds)
 
   if (search?.trim()) {
-    const q = `%${search.trim()}%`
+    const q = `%${search.trim().replace(/[%_,.()"'\\]/g, '')}%`
     query = query.or(`business_name.ilike.${q},display_name.ilike.${q}`)
   }
 

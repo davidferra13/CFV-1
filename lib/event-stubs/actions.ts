@@ -1,6 +1,7 @@
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
+import { requireChef } from '@/lib/auth/get-user'
 import { z } from 'zod'
 import type { Json } from '@/types/database'
 import type { EventStub } from '@/lib/hub/types'
@@ -251,6 +252,12 @@ export async function adoptEventStub(input: {
   stubId: string
   tenantId: string
 }): Promise<{ eventId: string }> {
+  const user = await requireChef()
+  // Tenant ID must come from session, never from client input
+  if (input.tenantId !== user.tenantId) {
+    throw new Error('Unauthorized')
+  }
+
   const supabase = createServerClient({ admin: true })
 
   // Get stub

@@ -5,12 +5,63 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { parseInboundWebhook } from '@/lib/sms/twilio-client'
+import { createHmac } from 'crypto'
+
+/**
+ * Validate Twilio request signature to prevent forged webhook submissions.
+ * See: https://www.twilio.com/docs/usage/security#validating-requests
+ */
+function validateTwilioSignature(
+  authToken: string,
+  url: string,
+  params: Record<string, string>,
+  signature: string
+): boolean {
+  // Build the data string: URL + sorted param key/value pairs
+  const sortedKeys = Object.keys(params).sort()
+  let data = url
+  for (const key of sortedKeys) {
+    data += key + params[key]
+  }
+
+  const expectedSignature = createHmac('sha1', authToken).update(data).digest('base64')
+
+  // Timing-safe comparison
+  if (expectedSignature.length !== signature.length) return false
+  let mismatch = 0
+  for (let i = 0; i < expectedSignature.length; i++) {
+    mismatch |= expectedSignature.charCodeAt(i) ^ signature.charCodeAt(i)
+  }
+  return mismatch === 0
+}
 
 export async function POST(request: NextRequest) {
   try {
     // Twilio sends form-encoded data
     const text = await request.text()
     const params = Object.fromEntries(new URLSearchParams(text))
+
+    // Validate Twilio signature — reject forged requests
+    const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN
+    const twilioSignature = request.headers.get('x-twilio-signature')
+    if (twilioAuthToken && twilioSignature) {
+      const webhookUrl = `${process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'}/api/webhooks/twilio`
+      if (!validateTwilioSignature(twilioAuthToken, webhookUrl, params, twilioSignature)) {
+        console.warn('[twilio-webhook] Invalid signature — rejecting forged request')
+        return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
+          headers: { 'Content-Type': 'text/xml' },
+          status: 403,
+        })
+      }
+    } else if (twilioAuthToken && !twilioSignature) {
+      // Auth token configured but no signature header — reject
+      console.warn('[twilio-webhook] Missing X-Twilio-Signature header — rejecting')
+      return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
+        headers: { 'Content-Type': 'text/xml' },
+        status: 403,
+      })
+    }
+    // If TWILIO_AUTH_TOKEN is not set, allow passthrough (dev/test mode)
     const msg = parseInboundWebhook(params)
 
     if (!msg.body && msg.numMedia === 0) {

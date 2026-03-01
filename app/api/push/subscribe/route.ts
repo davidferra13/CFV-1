@@ -3,9 +3,16 @@
 // and persists it via savePushSubscription().
 
 import { NextResponse, type NextRequest } from 'next/server'
+import { requireAuth } from '@/lib/auth/get-user'
 import { savePushSubscription } from '@/lib/push/subscriptions'
 
 export async function POST(request: NextRequest) {
+  try {
+    await requireAuth()
+  } catch {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     const body = await request.json()
     const { endpoint, p256dh, auth, deviceLabel } = body
@@ -13,7 +20,7 @@ export async function POST(request: NextRequest) {
     if (!endpoint || !p256dh || !auth) {
       return NextResponse.json(
         { error: 'Missing required fields: endpoint, p256dh, auth' },
-        { status: 400 },
+        { status: 400 }
       )
     }
 

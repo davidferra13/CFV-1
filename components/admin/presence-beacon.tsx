@@ -98,8 +98,8 @@ export function PresenceBeacon() {
 
       const payload: PresencePayload = {
         sessionId,
-        userId: info.userId,
-        email: info.email,
+        userId: null, // stripped from broadcast — admin resolves via server action
+        email: null, // stripped from broadcast — prevents PII leakage via channel
         role: info.role,
         page: pathname ?? '/',
         joinedAt,
@@ -124,8 +124,8 @@ export function PresenceBeacon() {
     const info = userInfoRef.current
     const payload: PresencePayload = {
       sessionId: sessionIdRef.current,
-      userId: info.userId,
-      email: info.email,
+      userId: null,
+      email: null,
       role: info.role,
       page: pathname ?? '/',
       joinedAt: joinedAtRef.current,

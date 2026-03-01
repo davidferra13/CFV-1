@@ -176,10 +176,7 @@ export async function POST(request: Request) {
       .single() as any)
 
     if (saleError || !sale) {
-      return NextResponse.json(
-        { error: `Failed to create sale: ${saleError?.message}` },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to create sale' }, { status: 500 })
     }
 
     const saleItems = itemRows.map((row) => ({ ...row, sale_id: (sale as any).id }))
@@ -187,10 +184,7 @@ export async function POST(request: Request) {
       .from('sale_items')
       .insert(saleItems as any)
     if (itemInsertError) {
-      return NextResponse.json(
-        { error: `Failed to save cart items: ${itemInsertError.message}` },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to save cart items' }, { status: 500 })
     }
 
     await (supabase as any)
@@ -226,10 +220,7 @@ export async function POST(request: Request) {
       .single() as any)
 
     if (paymentError || !payment) {
-      return NextResponse.json(
-        { error: `Failed to record payment: ${paymentError?.message}` },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to record payment' }, { status: 500 })
     }
 
     await (supabase as any)

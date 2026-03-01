@@ -15,7 +15,7 @@ import { logWebhookEvent } from '@/lib/webhooks/audit-log'
 async function verifyResendSignature(
   payload: string,
   signature: string | null,
-  secret: string,
+  secret: string
 ): Promise<boolean> {
   if (!signature) return false
 
@@ -25,29 +25,28 @@ async function verifyResendSignature(
       new TextEncoder().encode(secret),
       { name: 'HMAC', hash: 'SHA-256' },
       false,
-      ['verify'],
+      ['verify']
     )
 
     // Resend sends a timestamp+payload signature: "t=<ts>,v1=<sig>"
     const parts = Object.fromEntries(
       signature.split(',').map((p) => p.split('=') as [string, string])
     )
-    const svix_ts  = parts['t']
+    const svix_ts = parts['t']
     const svix_sig = parts['v1']
 
     if (!svix_ts || !svix_sig) return false
 
     const signedPayload = `${svix_ts}.${payload}`
-    const sigBytes = Uint8Array.from(
-      atob(svix_sig.replace(/-/g, '+').replace(/_/g, '/')),
-      (c) => c.charCodeAt(0),
+    const sigBytes = Uint8Array.from(atob(svix_sig.replace(/-/g, '+').replace(/_/g, '/')), (c) =>
+      c.charCodeAt(0)
     )
 
     return await crypto.subtle.verify(
       'HMAC',
       key,
       sigBytes,
-      new TextEncoder().encode(signedPayload),
+      new TextEncoder().encode(signedPayload)
     )
   } catch {
     return false
@@ -107,7 +106,7 @@ export async function POST(req: NextRequest) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } },
+    { auth: { persistSession: false } }
   )
 
   const now = data.created_at ?? new Date().toISOString()
@@ -130,7 +129,7 @@ export async function POST(req: NextRequest) {
       errorText: error.message,
       payloadSizeBytes: body.length,
     })
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
+    return NextResponse.json({ ok: false, error: 'Database update failed' }, { status: 500 })
   }
 
   await logWebhookEvent({

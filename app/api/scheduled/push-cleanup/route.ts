@@ -16,24 +16,14 @@
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
+import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
-const PUSH_INACTIVE_PURGE_DAYS = 90    // hard-delete inactive subscriptions after 90 days
-const SMS_LOG_RETENTION_HOURS = 48     // SMS rate-limit log retention window
+const PUSH_INACTIVE_PURGE_DAYS = 90 // hard-delete inactive subscriptions after 90 days
+const SMS_LOG_RETENTION_HOURS = 48 // SMS rate-limit log retention window
 
 async function handlePushCleanup(request: NextRequest): Promise<NextResponse> {
-  const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
-
-  if (!cronSecret) {
-    return NextResponse.json(
-      { error: 'CRON_SECRET not configured' },
-      { status: 500 },
-    )
-  }
-
-  if (authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const authError = verifyCronAuth(request.headers.get('authorization'))
+  if (authError) return authError
 
   const supabase = createServerClient({ admin: true })
   const now = new Date()
@@ -58,7 +48,7 @@ async function handlePushCleanup(request: NextRequest): Promise<NextResponse> {
   // ── 1b. Hard-delete old inactive subscriptions ───────────────────────────
   // Subscriptions that have been is_active = false for 90+ days are safe to remove.
   const inactiveCutoff = new Date(
-    now.getTime() - PUSH_INACTIVE_PURGE_DAYS * 24 * 60 * 60 * 1000,
+    now.getTime() - PUSH_INACTIVE_PURGE_DAYS * 24 * 60 * 60 * 1000
   ).toISOString()
 
   const { count: deleted, error: deleteError } = await supabase
@@ -74,9 +64,7 @@ async function handlePushCleanup(request: NextRequest): Promise<NextResponse> {
 
   // ── 2. SMS send log cleanup ──────────────────────────────────────────────
   // Rate-limit windows expire after 48h. Old rows are just noise after that.
-  const smsCutoff = new Date(
-    now.getTime() - SMS_LOG_RETENTION_HOURS * 60 * 60 * 1000,
-  ).toISOString()
+  const smsCutoff = new Date(now.getTime() - SMS_LOG_RETENTION_HOURS * 60 * 60 * 1000).toISOString()
 
   const { count: smsDeleted, error: smsError } = await supabase
     .from('sms_send_log')

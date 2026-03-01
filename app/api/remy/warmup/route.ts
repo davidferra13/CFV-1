@@ -5,9 +5,16 @@
 // so we warm the standard model — not the fast (4b) model.
 
 import { NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/auth/get-user'
 import { getOllamaConfig, getOllamaModel } from '@/lib/ai/providers'
 
 export async function POST() {
+  try {
+    await requireAuth()
+  } catch {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const baseUrl = getOllamaConfig().baseUrl
   const model = getOllamaModel('standard') // qwen3-coder:30b — same model used by classifier + streamer
 

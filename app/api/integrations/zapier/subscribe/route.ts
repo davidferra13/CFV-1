@@ -146,7 +146,8 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (error) {
-      throw new HttpError(400, `Subscription failed: ${error.message}`)
+      console.error('[zapier/subscribe] Insert failed:', error.message)
+      throw new HttpError(400, 'Subscription failed')
     }
 
     return NextResponse.json(data, { status: 201 })
@@ -169,7 +170,8 @@ export async function GET(req: NextRequest) {
       .order('created_at', { ascending: false })
 
     if (error) {
-      throw new HttpError(500, `Failed to list subscriptions: ${error.message}`)
+      console.error('[zapier/subscribe] List failed:', error.message)
+      throw new HttpError(500, 'Failed to list subscriptions')
     }
 
     return NextResponse.json(data || [])
@@ -211,7 +213,8 @@ export async function DELETE(req: NextRequest) {
     const { error } = await query
 
     if (error) {
-      throw new HttpError(400, `Delete failed: ${error.message}`)
+      console.error('[zapier/subscribe] Delete failed:', error.message)
+      throw new HttpError(400, 'Delete failed')
     }
 
     return NextResponse.json({ success: true })

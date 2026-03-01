@@ -11,19 +11,15 @@ import { createServerClient } from '@/lib/supabase/server'
 import { runSimulationInternal } from '@/lib/simulation/simulation-runner'
 import { ALL_SIM_MODULES } from '@/lib/simulation/types'
 import { recordCronHeartbeat, recordCronError } from '@/lib/cron/heartbeat'
+import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
 // Vercel Pro supports up to 800s; local dev has no limit.
 // 6 modules × 2 scenarios × ~15s ≈ 180s — well within budget.
 export const maxDuration = 300
 
 async function handleSimulation(req: NextRequest): Promise<NextResponse> {
-  const cronSecret = process.env.CRON_SECRET
-  if (!cronSecret) {
-    return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 })
-  }
-  if (req.headers.get('authorization') !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const authError = verifyCronAuth(req.headers.get('authorization'))
+  if (authError) return authError
 
   const started = Date.now()
   const supabase = createServerClient({ admin: true })

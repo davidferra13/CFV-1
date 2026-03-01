@@ -8,51 +8,38 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { getAutomationSettingsForTenant } from '@/lib/automations/settings-actions'
 import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
+import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
 async function handleFollowUps(request: NextRequest): Promise<NextResponse> {
-  // Validate cron secret
-  const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
-
-  if (!cronSecret) {
-    return NextResponse.json(
-      { error: 'CRON_SECRET not configured' },
-      { status: 500 },
-    )
-  }
-
-  if (authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const authError = verifyCronAuth(request.headers.get('authorization'))
+  if (authError) return authError
 
   const supabase = createServerClient({ admin: true })
 
   // Find inquiries with overdue follow-ups
   const { data: overdueInquiries, error } = await supabase
     .from('inquiries')
-    .select(`
+    .select(
+      `
       id, tenant_id, status, follow_up_due_at, confirmed_occasion,
       client:clients(id, full_name)
-    `)
+    `
+    )
     .eq('status', 'awaiting_client')
     .not('follow_up_due_at', 'is', null)
     .lte('follow_up_due_at', new Date().toISOString())
 
   if (error) {
     console.error('[Follow-ups Cron] Query failed:', error)
-    return NextResponse.json(
-      { error: 'Failed to query overdue follow-ups' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Failed to query overdue follow-ups' }, { status: 500 })
   }
 
   if (!overdueInquiries || overdueInquiries.length === 0) {
     return NextResponse.json({ message: 'No overdue follow-ups', processed: 0 })
   }
 
-  const { createNotification, getChefAuthUserId, getChefProfile } = await import(
-    '@/lib/notifications/actions'
-  )
+  const { createNotification, getChefAuthUserId, getChefProfile } =
+    await import('@/lib/notifications/actions')
 
   let notified = 0
   let skipped = 0
@@ -106,7 +93,10 @@ async function handleFollowUps(request: NextRequest): Promise<NextResponse> {
           })
         }
       } catch (emailErr) {
-        console.error(`[Follow-ups Cron] Email failed for inquiry ${inquiry.id} (non-fatal):`, emailErr)
+        console.error(
+          `[Follow-ups Cron] Email failed for inquiry ${inquiry.id} (non-fatal):`,
+          emailErr
+        )
       }
 
       // Reschedule next follow-up using the tenant's configured interval
@@ -122,10 +112,7 @@ async function handleFollowUps(request: NextRequest): Promise<NextResponse> {
       notified++
     } catch (err) {
       const error = err as Error
-      console.error(
-        `[Follow-ups Cron] Failed for inquiry ${inquiry.id}:`,
-        error.message,
-      )
+      console.error(`[Follow-ups Cron] Failed for inquiry ${inquiry.id}:`, error.message)
       errors++
     }
   }
