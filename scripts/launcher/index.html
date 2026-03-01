@@ -2670,8 +2670,6 @@ body {
           </div>
         </div>
 
-        <div style="margin-top:12px;font-size:12px;color:var(--text-muted);" id="timeline-hours-note">--</div>
-
         <div class="divider"></div>
         <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Entire App Lifetime</h3>
         <div style="display:flex;align-items:center;gap:12px;">
@@ -7720,8 +7718,7 @@ function resetTimelineSummary() {
   setText('timeline-first-day-coded', '--')
   setText('timeline-scrapped-count', '--')
   setText('timeline-hours-mid', '--')
-  setText('timeline-hours-note', '--')
-  setText('timeline-life-mid', '--')
+setText('timeline-life-mid', '--')
   setText('timeline-life-low', '--')
   setText('timeline-life-mid-detail', '--')
   setText('timeline-life-high', '--')
@@ -7922,10 +7919,6 @@ async function loadProjectTimeline(force = false) {
     setText('timeline-streak', `${s.longestStreakDays} days`)
     setText('timeline-total-commits', String(s.totalCommits))
     setText('timeline-hours-mid', `${s.estimatedHours.midpoint}h`)
-    setText(
-      'timeline-hours-note',
-      `Based on commit sessions (${s.sessions45m} at 45m gaps, ${s.sessions90m} at 90m gaps). Active-day average: ${s.commitsPerActiveDay} commits/day.`
-    )
     // First Day Coded
     const firstDayCoded = data.life?.projectStats?.firstConfirmedWork
     if (firstDayCoded) {
@@ -7948,7 +7941,6 @@ async function loadProjectTimeline(force = false) {
     timelineLoaded = true
   } catch (err) {
     setText('timeline-status', 'Load failed')
-    setText('timeline-hours-note', `Could not load timeline: ${err.message}`)
     setText('timeline-life-note', `Could not load lifetime data: ${err.message}`)
     renderTimelineStatusAndBenchmarks(null)
     timelineLinearEvents = []
