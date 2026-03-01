@@ -7,16 +7,17 @@
 
 import { redirect } from 'next/navigation'
 import { isFocusModeEnabled } from '@/lib/billing/focus-mode-actions'
-import { isAdmin } from '@/lib/auth/admin'
+import { isEffectiveAdmin } from '@/lib/auth/admin-preview'
 
 /**
  * Call at the top of any extended module page (staff, commerce, stations, tasks, travel).
  * If Focus Mode is ON and user is not admin, redirects to /dashboard.
  * Does nothing if Focus Mode is OFF or user is admin.
+ * Respects admin preview mode — when previewing as chef, admin gets redirected too.
  */
 export async function requireFocusAccess(): Promise<void> {
-  const adminCheck = await isAdmin().catch(() => false)
-  if (adminCheck) return // Admin always has access
+  const adminCheck = await isEffectiveAdmin()
+  if (adminCheck) return // Admin always has access (unless previewing as chef)
 
   const focusMode = await isFocusModeEnabled().catch(() => false)
   if (focusMode) {

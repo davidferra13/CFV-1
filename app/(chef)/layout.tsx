@@ -36,6 +36,8 @@ import {
   getCachedDeletionStatus,
   getCachedIsAdmin,
 } from '@/lib/chef/layout-data-cache'
+import { isAdminPreviewActive } from '@/lib/auth/admin-preview'
+import { AdminPreviewToggle } from '@/components/admin/admin-preview-toggle'
 
 export default async function ChefLayout({ children }: { children: React.ReactNode }) {
   // Server-side role check - happens BEFORE any client code ships
@@ -104,6 +106,10 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     return <ArchetypeSelector />
   }
 
+  // Admin preview mode: when active, sidebar/nav treat admin as regular chef
+  const previewActive = userIsAdmin && isAdminPreviewActive()
+  const effectiveAdmin = (userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true') && !previewActive
+
   const profile = layoutData
   const primaryNavHrefs = layoutData.primary_nav_hrefs
   const enabledModules =
@@ -145,6 +151,8 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                   <PlatformAnnouncementBanner text={announcement.text} type={announcement.type} />
                 )}
                 {(userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true') && <EnvironmentBadge />}
+                {/* Admin preview toggle — lets admins see the app as a regular chef */}
+                {userIsAdmin && <AdminPreviewToggle initialPreview={previewActive} />}
                 {/* Trial / subscription banner — shown when trial is expiring (≤3 days) or expired */}
                 <TrialBanner chefId={user.entityId} />
                 {/* Account deletion pending banner — shown during 30-day grace period */}
@@ -161,7 +169,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                   primaryNavHrefs={primaryNavHrefs}
                   hasCannabisTier={hasCannabisTier}
                   enabledModules={enabledModules}
-                  isAdmin={userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true'}
+                  isAdmin={effectiveAdmin}
                   focusMode={focusMode}
                   userId={user.id}
                   tenantId={user.tenantId ?? user.entityId}
@@ -171,7 +179,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                   primaryNavHrefs={primaryNavHrefs}
                   hasCannabisTier={hasCannabisTier}
                   enabledModules={enabledModules}
-                  isAdmin={userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true'}
+                  isAdmin={effectiveAdmin}
                   focusMode={focusMode}
                   userId={user.id}
                   tenantId={user.tenantId ?? user.entityId}

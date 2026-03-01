@@ -4,7 +4,7 @@
 // Note: No 'use server' — this is imported by other server files, not called from client.
 
 import { isFocusModeEnabled } from '@/lib/billing/focus-mode-actions'
-import { isAdmin } from '@/lib/auth/admin'
+import { isEffectiveAdmin } from '@/lib/auth/admin-preview'
 
 /**
  * Actions available in Focus Mode (core workflows only).
@@ -56,8 +56,8 @@ const FOCUS_MODE_ACTIONS = new Set([
  * @returns Filtered list of actions available to the current user
  */
 export async function getAvailableActions(allActions: string[]): Promise<string[]> {
-  // Admin always gets everything
-  const adminCheck = await isAdmin().catch(() => false)
+  // Admin always gets everything (unless previewing as chef)
+  const adminCheck = await isEffectiveAdmin()
   if (adminCheck) return allActions
 
   const focusMode = await isFocusModeEnabled()

@@ -3,7 +3,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getEnabledModules } from '@/lib/billing/module-actions'
 import { getTierForChef } from '@/lib/billing/tier'
 import { isFocusModeEnabled } from '@/lib/billing/focus-mode-actions'
-import { isAdmin } from '@/lib/auth/admin'
+import { isEffectiveAdmin } from '@/lib/auth/admin-preview'
 import { ModulesClient } from './modules-client'
 
 export const metadata: Metadata = { title: 'Modules - ChefFlow' }
@@ -14,7 +14,7 @@ export default async function ModulesPage() {
     getEnabledModules(),
     getTierForChef(user.entityId),
     isFocusModeEnabled(),
-    isAdmin().catch(() => false),
+    isEffectiveAdmin().catch(() => false),
   ])
 
   return (
