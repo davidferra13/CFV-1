@@ -59,6 +59,7 @@ import {
   generateFoodSafetyIncidentDraft,
 } from '@/lib/ai/draft-actions'
 import type { CommandRun, TaskResult, PlannedTask, ApprovalTier } from '@/lib/ai/command-types'
+import { getAvailableActions } from '@/lib/ai/remy-action-filter'
 
 // ─── Individual Task Executors ────────────────────────────────────────────────
 
@@ -1359,7 +1360,13 @@ export async function runCommand(rawInput: string): Promise<CommandRun> {
     }
 
     const plan = await parseCommandIntent(rawInput)
-    const rounds = buildExecutionRounds(plan.tasks)
+
+    // Focus Mode: filter tasks to only allowed actions
+    const allTaskTypes = plan.tasks.map((t) => t.taskType)
+    const allowedTypes = new Set(await getAvailableActions(allTaskTypes))
+    const filteredTasks = plan.tasks.filter((t) => allowedTypes.has(t.taskType))
+
+    const rounds = buildExecutionRounds(filteredTasks)
 
     const allResults: TaskResult[] = []
     // Accumulates result data from completed tasks for dep resolution

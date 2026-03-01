@@ -3,6 +3,7 @@
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
+import { requireFocusAccess } from '@/lib/billing/require-focus-access'
 import { listStations } from '@/lib/stations/actions'
 import { getAll86dItems } from '@/lib/stations/clipboard-actions'
 import { StationForm } from '@/components/stations/station-form'
@@ -15,6 +16,7 @@ export const metadata: Metadata = { title: 'Stations — ChefFlow' }
 
 export default async function StationsPage() {
   await requireChef()
+  await requireFocusAccess()
   const stations = await listStations()
   const eightySixedItems = await getAll86dItems()
 

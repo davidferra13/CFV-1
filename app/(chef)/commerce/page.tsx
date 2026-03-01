@@ -1,6 +1,7 @@
 // Commerce Hub — dashboard showing today's sales, active register, order queue
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
+import { requireFocusAccess } from '@/lib/billing/require-focus-access'
 import { requirePro } from '@/lib/billing/require-pro'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -24,6 +25,7 @@ async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promis
 
 export default async function CommerceDashboardPage() {
   await requireChef()
+  await requireFocusAccess()
   await requirePro('commerce')
 
   const [registerSession, salesData, productsData] = await Promise.all([

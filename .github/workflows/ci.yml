@@ -39,7 +39,30 @@ jobs:
         run: npx next lint --max-warnings 0
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 2: Unit Tests
+  # Job 2a: Critical Tests (financial, FSM, auth — must always pass)
+  # ─────────────────────────────────────────────────────────────────────────────
+  critical-tests:
+    name: Critical Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run critical tests (financial, FSM, quotes, auth)
+        run: npm run test:critical
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Job 2b: Unit Tests (all)
   # ─────────────────────────────────────────────────────────────────────────────
   unit-tests:
     name: Unit Tests
@@ -69,7 +92,7 @@ jobs:
     name: Next.js Build
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: [type-check]
+    needs: [type-check, critical-tests]
 
     env:
       # Minimal env vars required for a successful Next.js build

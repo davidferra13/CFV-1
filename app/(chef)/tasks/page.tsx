@@ -4,6 +4,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
+import { requireFocusAccess } from '@/lib/billing/require-focus-access'
 import { getTasksByDate, getActiveStaff, getActiveStations } from '@/lib/tasks/actions'
 import { generateRecurringTasks } from '@/lib/tasks/recurring-engine'
 import { Button } from '@/components/ui/button'
@@ -13,6 +14,7 @@ export const metadata: Metadata = { title: 'Tasks — ChefFlow' }
 
 export default async function TasksPage({ searchParams }: { searchParams: { date?: string } }) {
   const user = await requireChef()
+  await requireFocusAccess()
 
   const today = new Date().toISOString().split('T')[0]
   const selectedDate = searchParams.date ?? today

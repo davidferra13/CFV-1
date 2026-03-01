@@ -4,6 +4,7 @@
 
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
+import { requireFocusAccess } from '@/lib/billing/require-focus-access'
 import { getAllTravelLegs } from '@/lib/travel/actions'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -130,6 +131,7 @@ function LegRow({ leg }: { leg: TravelLegWithIngredients }) {
 
 export default async function GlobalTravelPage() {
   await requireChef()
+  await requireFocusAccess()
 
   // Load next 90 days of travel legs
   const today = new Date()

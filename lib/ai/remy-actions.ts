@@ -26,6 +26,7 @@ import {
   validateMemoryContent,
   checkRemyRateLimit,
 } from '@/lib/ai/remy-guardrails'
+import { isFocusModeEnabled } from '@/lib/billing/focus-mode'
 import { logRemyAbuse, isRemyBlocked, isRemyAdmin } from '@/lib/ai/remy-abuse-actions'
 import {
   loadRelevantMemories,
@@ -89,6 +90,32 @@ AVAILABLE PAGES (suggest these when relevant):
 /remy - Remy history (everything Remy has saved)
 `.trim()
 
+// Scoped route map for Focus Mode — only core workflows
+const NAV_ROUTE_MAP_FOCUS = `
+AVAILABLE PAGES (suggest these when relevant):
+/dashboard - Dashboard overview
+/events - All events list
+/events/new - Create a new event
+/events/upcoming - Upcoming events
+/events/board - Event kanban board
+/clients - Client directory
+/clients/new - Add a new client
+/inquiries - Inquiry pipeline
+/quotes - Quotes
+/schedule - Calendar / availability
+/calendar - Calendar views
+/recipes - Recipe library
+/recipes/new - Create a new recipe
+/menus - Menu library
+/menus/new - Create a new menu
+/financials - Financial hub
+/expenses - Expense tracker
+/expenses/new - Add an expense
+/chat - Client messaging
+/settings - Account settings
+/goals - Business goals
+`.trim()
+
 // ─── System Prompt Builder ──────────────────────────────────────────────────
 
 function formatMemoriesForPrompt(memories: RemyMemory[]): string {
@@ -118,7 +145,8 @@ function formatMemoriesForPrompt(memories: RemyMemory[]): string {
 
 function buildRemySystemPrompt(
   context: Awaited<ReturnType<typeof loadRemyContext>>,
-  memories: RemyMemory[] = []
+  memories: RemyMemory[] = [],
+  focusMode: boolean = false
 ): string {
   const parts: string[] = []
 
@@ -236,8 +264,8 @@ ${aars
     parts.push(memoryBlock)
   }
 
-  // Navigation routes
-  parts.push(`\n${NAV_ROUTE_MAP}`)
+  // Navigation routes (scoped by Focus Mode)
+  parts.push(`\n${focusMode ? NAV_ROUTE_MAP_FOCUS : NAV_ROUTE_MAP}`)
 
   // Grounding rule — critical for preventing hallucinations
   parts.push(`\nGROUNDING RULE (CRITICAL):
@@ -579,11 +607,12 @@ export async function sendRemyMessage(
     // 'delete' intent is handled client-side via deleteRemyMemory() directly
     // (the user taps the X button next to a specific memory)
 
-    // Run context loading, intent classification, and memory loading in parallel
-    const [context, classification, memories] = await Promise.all([
+    // Run context loading, intent classification, memory loading, and focus mode check in parallel
+    const [context, classification, memories, focusMode] = await Promise.all([
       loadRemyContext(currentPage),
       classifyIntent(userMessage),
       loadRelevantMemories(userMessage, undefined, undefined),
+      isFocusModeEnabled().catch(() => false),
     ])
 
     // ─── COMMAND path ─────────────────────────────────────────────────
@@ -619,7 +648,7 @@ export async function sendRemyMessage(
       const [commandRun, conversationalResult] = await Promise.all([
         runCommand(commandInput),
         (async () => {
-          const systemPrompt = buildRemySystemPrompt(context, memories)
+          const systemPrompt = buildRemySystemPrompt(context, memories, focusMode)
           const history = formatConversationHistory(conversationHistory)
           return parseWithOllama(
             systemPrompt,
@@ -652,7 +681,7 @@ export async function sendRemyMessage(
     }
 
     // ─── QUESTION path (default) ──────────────────────────────────────
-    const systemPrompt = buildRemySystemPrompt(context, memories)
+    const systemPrompt = buildRemySystemPrompt(context, memories, focusMode)
     const history = formatConversationHistory(conversationHistory)
     const result = await parseWithOllama(
       systemPrompt,
