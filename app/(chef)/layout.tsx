@@ -189,8 +189,8 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                 {/* Push notification permission prompt — appears after 5s if not subscribed */}
                 <PushPermissionPrompt />
 
-                {/* Feedback nudge — shown once, 7 days after account creation */}
-                {showFeedbackNudge && <FeedbackNudgeModal />}
+                {/* Feedback nudge — TEMPORARILY DISABLED for testing (re-enable when done) */}
+                {/* {showFeedbackNudge && <FeedbackNudgeModal />} */}
 
                 {/* Offline connectivity bar — shows status, queue count, sync progress */}
                 <OfflineStatusBar />
@@ -204,8 +204,8 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                 {/* Breadcrumb tracker — silent navigation tracking for retrace mode */}
                 <BreadcrumbTracker />
 
-                {/* Business milestone celebrations — fires once per threshold, replayable */}
-                <MilestoneOverlay />
+                {/* Business milestone celebrations — TEMPORARILY DISABLED for testing (re-enable when done) */}
+                {/* <MilestoneOverlay /> */}
 
                 {/* Analytics identity -- associates events with logged-in user */}
                 <AnalyticsIdentify userId={user.id} email={user.email} role={user.role} />

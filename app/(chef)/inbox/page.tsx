@@ -24,10 +24,6 @@ export default async function InboxPage({ searchParams }: { searchParams?: { tab
 
   const triageEnabled = isCommTriageEnabled()
   if (triageEnabled) {
-    const tab = VALID_TABS.includes(searchParams?.tab as CommunicationTab)
-      ? (searchParams?.tab as CommunicationTab)
-      : 'needs_attention'
-
     const now = new Date()
     const rangeStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
     const rangeEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
@@ -39,6 +35,15 @@ export default async function InboxPage({ searchParams }: { searchParams?: { tab
       getGoogleConnection(),
       getUnreadThreadCount(),
     ])
+
+    // Smart default: if user specified a tab use it, otherwise pick the tab with content
+    // Prefer needs_attention (actionable), fall back to unlinked (new/unsorted)
+    let tab: CommunicationTab = 'needs_attention'
+    if (VALID_TABS.includes(searchParams?.tab as CommunicationTab)) {
+      tab = searchParams!.tab as CommunicationTab
+    } else if (stats.needs_attention === 0 && stats.unlinked > 0) {
+      tab = 'unlinked'
+    }
 
     return (
       <div className="max-w-5xl mx-auto space-y-6">
