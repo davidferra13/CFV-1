@@ -2,7 +2,7 @@
 // https://resmush.it/api/
 // Unlimited requests, max 5MB per image
 
-const RESMUSH_API = 'http://api.resmush.it/ws.php'
+const RESMUSH_API = 'https://api.resmush.it/ws.php'
 const MAX_SIZE_BYTES = 5 * 1024 * 1024 // 5MB limit
 
 export interface CompressResult {
@@ -14,70 +14,8 @@ export interface CompressResult {
   error: string | null
 }
 
-/**
- * Compress an image by URL.
- * reSmush.it fetches the image, compresses it, and returns a URL to download.
- * Best for: menu photos, event photos, profile images before storing.
- *
- * @param imageUrl - Public URL of the image to compress
- * @param quality - Compression quality 0-100 (default 92, good balance)
- */
-export async function compressImageByUrl(imageUrl: string, quality = 92): Promise<CompressResult> {
-  try {
-    const params = new URLSearchParams({
-      img: imageUrl,
-      qlty: String(quality),
-    })
-
-    const res = await fetch(`${RESMUSH_API}?${params}`)
-    if (!res.ok) {
-      return {
-        success: false,
-        originalSize: 0,
-        compressedSize: 0,
-        savedPercent: 0,
-        compressedUrl: null,
-        error: `API returned ${res.status}`,
-      }
-    }
-
-    const data = await res.json()
-
-    if (data.error) {
-      return {
-        success: false,
-        originalSize: 0,
-        compressedSize: 0,
-        savedPercent: 0,
-        compressedUrl: null,
-        error: String(data.error),
-      }
-    }
-
-    const originalSize = data.src_size ?? 0
-    const compressedSize = data.dest_size ?? 0
-    const savedPercent =
-      originalSize > 0 ? Math.round(((originalSize - compressedSize) / originalSize) * 100) : 0
-
-    return {
-      success: true,
-      originalSize,
-      compressedSize,
-      savedPercent,
-      compressedUrl: data.dest ?? null,
-      error: null,
-    }
-  } catch (err) {
-    return {
-      success: false,
-      originalSize: 0,
-      compressedSize: 0,
-      savedPercent: 0,
-      compressedUrl: null,
-      error: err instanceof Error ? err.message : 'Compression failed',
-    }
-  }
-}
+// compressImageByUrl() was removed — it accepted arbitrary URLs without validation,
+// creating an SSRF vector. Use compressImageBuffer() with raw image data instead.
 
 /**
  * Compress an image from a File/Buffer (POST method).

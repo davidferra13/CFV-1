@@ -8,8 +8,12 @@ import { activityTrackPayloadSchema } from '@/lib/activity/schemas'
 import { incrementMetric, logActivityEvent } from '@/lib/activity/observability'
 import { checkAndFireIntentNotifications } from '@/lib/activity/intent-notifications'
 import { checkRateLimit } from '@/lib/rateLimit'
+import { verifyCsrfOrigin } from '@/lib/security/csrf'
 
 export async function POST(request: NextRequest) {
+  const csrfError = verifyCsrfOrigin(request)
+  if (csrfError) return csrfError
+
   try {
     // Rate limit: 120 events per minute per IP
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'

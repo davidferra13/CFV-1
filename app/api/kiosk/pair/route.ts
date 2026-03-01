@@ -1,12 +1,21 @@
 // Kiosk Pairing API — verifies pairing code, issues device token
 // No Supabase auth required — uses admin client
 
-import { NextResponse } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generateDeviceToken, hashToken } from '@/lib/devices/token'
+import { checkRateLimit } from '@/lib/rateLimit'
 import type { KioskConfig } from '@/lib/devices/types'
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Rate limit: 5 pairing attempts per IP per 5 minutes
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  try {
+    await checkRateLimit(`kiosk-pair:${ip}`, 5, 300_000)
+  } catch {
+    return NextResponse.json({ error: 'Too many pairing attempts' }, { status: 429 })
+  }
+
   try {
     const body = await request.json()
     const { pairing_code } = body

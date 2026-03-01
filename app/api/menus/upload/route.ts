@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createHash } from 'crypto'
 import { requireChef } from '@/lib/auth/get-user'
+import { verifyCsrfOrigin } from '@/lib/security/csrf'
 import { createServerClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/rateLimit'
 import {
@@ -34,6 +35,9 @@ const ALLOWED_EXTENSIONS = new Set([
 ])
 
 export async function POST(request: NextRequest) {
+  const csrfError = verifyCsrfOrigin(request)
+  if (csrfError) return csrfError
+
   // Rate limit: 10 uploads per minute per IP
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
   try {

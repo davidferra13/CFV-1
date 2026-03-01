@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
+import { verifyCsrfOrigin } from '@/lib/security/csrf'
 import {
   connectIntegrationAccount,
   disconnectIntegrationAccount,
@@ -18,6 +19,9 @@ const ConnectSchema = z.object({
 })
 
 export async function POST(request: NextRequest) {
+  const csrfError = verifyCsrfOrigin(request)
+  if (csrfError) return csrfError
+
   try {
     await requireChef()
   } catch {

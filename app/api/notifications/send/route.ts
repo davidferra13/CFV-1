@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
+import { verifyCsrfOrigin } from '@/lib/security/csrf'
 import { createServerClient } from '@/lib/supabase/server'
 import { createNotification } from '@/lib/notifications/actions'
 import { sendNotificationEmail } from '@/lib/notifications/email-service'
@@ -67,6 +68,9 @@ async function verifyRecipientScope(input: {
 }
 
 export async function POST(request: NextRequest) {
+  const csrfError = verifyCsrfOrigin(request)
+  if (csrfError) return csrfError
+
   // Rate limit: 30 notifications per minute per IP
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
   try {

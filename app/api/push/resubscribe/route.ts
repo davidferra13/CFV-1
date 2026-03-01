@@ -4,9 +4,24 @@
 // The browser silently rotates subscriptions without user interaction.
 
 import { NextResponse, type NextRequest } from 'next/server'
+import { requireAuth } from '@/lib/auth/get-user'
 import { resubscribePushSubscription } from '@/lib/push/subscriptions'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 export async function POST(request: NextRequest) {
+  try {
+    await requireAuth()
+  } catch {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  try {
+    await checkRateLimit(`push-resub:${ip}`, 10, 60_000)
+  } catch {
+    return NextResponse.json({ error: 'Rate limited' }, { status: 429 })
+  }
+
   try {
     const body = await request.json()
     // Accept both camelCase (from service worker) and snake_case field names
@@ -14,7 +29,10 @@ export async function POST(request: NextRequest) {
     const sub = body.subscription ?? body.new_subscription
 
     if (!sub?.endpoint || !sub?.p256dh || !sub?.auth) {
-      return NextResponse.json({ error: 'Missing subscription fields: endpoint, p256dh, auth' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Missing subscription fields: endpoint, p256dh, auth' },
+        { status: 400 }
+      )
     }
 
     await resubscribePushSubscription(oldEndpoint, {
