@@ -92,9 +92,10 @@ async function authenticate(): Promise<string> {
     throw new Error(`Auth failed: ${res.status} ${await res.text()}`)
   }
 
-  // Extract session cookies
+  // Extract session cookies — strip attributes (Path, HttpOnly, etc.),
+  // keep only name=value pairs for the Cookie header
   const cookies = res.headers.getSetCookie?.() ?? []
-  const cookieStr = cookies.join('; ')
+  const cookieStr = cookies.map((c) => c.split(';')[0]).join('; ')
 
   if (!cookieStr) {
     // Try extracting from the response body (some e2e auth endpoints return tokens)
@@ -470,6 +471,36 @@ async function main() {
 
   // Authenticate
   const cookies = await authenticate()
+
+  // Warm up Ollama models to avoid cold-start timeouts.
+  // Order matters: qwen3:4b (2.5GB) is loaded LAST because it's always needed first
+  // (classifier) and is small enough to coexist with a 30b model in memory.
+  // The 30b models (18GB each) compete for memory — only one can be loaded at a time.
+  // We pre-load qwen3:4b so the classifier never delays the pre-stream setup.
+  console.log('\n🔥 Warming up Ollama models...')
+  const modelsToWarm = ['qwen3:4b']
+  for (const model of modelsToWarm) {
+    try {
+      const warmRes = await fetch(`${OLLAMA_URL}/api/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model,
+          prompt: '/no_think\nSay OK.',
+          stream: false,
+          options: { num_predict: 3 },
+        }),
+      })
+      if (warmRes.ok) {
+        console.log(`  ✅ ${model} warm`)
+      } else {
+        console.log(`  ⚠️ ${model} failed to warm: ${warmRes.status}`)
+      }
+    } catch (err) {
+      console.log(`  ⚠️ ${model} warmup error: ${(err as Error).message}`)
+    }
+  }
+  console.log('  ℹ️  30b models will load on-demand (only one fits in memory at a time)')
 
   // Run tests sequentially (to avoid overwhelming Ollama)
   console.log('\n🧪 Running tests...\n')
