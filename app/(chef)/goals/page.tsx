@@ -19,7 +19,22 @@ export const metadata: Metadata = { title: 'Goals - ChefFlow' }
 
 export default async function GoalsPage() {
   await requireChef()
-  const dashboard = await getGoalsDashboard()
+
+  let dashboard
+  try {
+    dashboard = await getGoalsDashboard()
+  } catch {
+    dashboard = null
+  }
+
+  if (!dashboard) {
+    return (
+      <div className="space-y-4">
+        <h1 className="text-3xl font-bold text-stone-100">Goals</h1>
+        <p className="text-stone-400">Could not load goals data. Please try again.</p>
+      </div>
+    )
+  }
 
   return <GoalsPageClient dashboard={dashboard} />
 }

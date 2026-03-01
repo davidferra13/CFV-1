@@ -6,10 +6,10 @@ import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
 import { requireChef } from '@/lib/auth/get-user'
 import { getCalendarEvents } from '@/lib/scheduling/actions'
-
-export const metadata: Metadata = { title: 'Schedule - ChefFlow' }
 import { getActivePalette, getSeasonalPalettes } from '@/lib/seasonal/actions'
 import { SeasonalSidebar } from '@/components/seasonal/seasonal-sidebar'
+
+export const metadata: Metadata = { title: 'Schedule - ChefFlow' }
 
 const CalendarView = dynamic(
   () => import('@/components/scheduling/calendar-view').then((m) => m.CalendarView),
