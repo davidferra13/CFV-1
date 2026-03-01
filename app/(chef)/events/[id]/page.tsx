@@ -114,6 +114,8 @@ import { EntityActivityTimeline } from '@/components/activity/entity-activity-ti
 import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
 import { getQrCodeUrl } from '@/lib/qr/qr-code'
 import { shortenUrl } from '@/lib/links/url-shortener'
+import { EventHubLinkPanel } from '@/components/hub/event-hub-link-panel'
+import { getEventHubGroupToken } from '@/lib/hub/integration-actions'
 
 async function getEventFinancialSummary(eventId: string) {
   const supabase: any = createServerClient()
@@ -350,6 +352,7 @@ export default async function EventDetailPage({
     prepBlocks,
     eventCollaborators,
     packingConfirmedCount,
+    hubGroupToken,
   ] = await Promise.all([
     event.status !== 'cancelled'
       ? getEventContingencyNotes(params.id).catch(() => [])
@@ -374,6 +377,7 @@ export default async function EventDetailPage({
     ['confirmed', 'in_progress'].includes(event.status)
       ? getPackingConfirmationCount(params.id).catch(() => 0)
       : Promise.resolve(0),
+    getEventHubGroupToken(params.id).catch(() => null),
   ])
 
   // Fetch chef display name for templates
@@ -809,6 +813,11 @@ export default async function EventDetailPage({
 
         {/* AI Contract Generator */}
         {!['cancelled'].includes(event.status) && <ContractGeneratorPanel eventId={event.id} />}
+
+        {/* Social Hub Link */}
+        {event.status !== 'draft' && event.status !== 'cancelled' && (
+          <EventHubLinkPanel groupToken={hubGroupToken as string | null} />
+        )}
 
         {/* Guests & RSVPs */}
         {event.status !== 'draft' && event.status !== 'cancelled' && (

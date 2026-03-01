@@ -3,17 +3,20 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import type { HubGuestProfile, HubGuestEventHistory, HubGroup } from '@/lib/hub/types'
+import { HubProfileEditor } from '@/components/hub/hub-profile-editor'
 
 type Tab = 'dinners' | 'groups' | 'dietary'
 
 interface ProfileViewProps {
   profile: HubGuestProfile
   eventHistory: HubGuestEventHistory[]
-  groups: (HubGroup & { memberRole: string })[]
+  groups: (HubGroup & { memberRole: string; unreadCount: number })[]
 }
 
-export function ProfileView({ profile, eventHistory, groups }: ProfileViewProps) {
+export function ProfileView({ profile: initialProfile, eventHistory, groups }: ProfileViewProps) {
   const [activeTab, setActiveTab] = useState<Tab>('dinners')
+  const [profile, setProfile] = useState(initialProfile)
+  const [isEditing, setIsEditing] = useState(false)
 
   const initials = profile.display_name
     .split(' ')
@@ -54,8 +57,29 @@ export function ProfileView({ profile, eventHistory, groups }: ProfileViewProps)
               {groups.length} group{groups.length !== 1 ? 's' : ''}
             </span>
           </div>
+          <button
+            type="button"
+            onClick={() => setIsEditing(true)}
+            className="mt-3 rounded-full bg-stone-800 px-4 py-1.5 text-xs font-medium text-stone-400 hover:bg-stone-700 hover:text-stone-200"
+          >
+            Edit Profile
+          </button>
         </div>
       </div>
+
+      {/* Edit form */}
+      {isEditing && (
+        <div className="mx-auto max-w-2xl px-4 py-4">
+          <HubProfileEditor
+            profile={profile}
+            onSaved={(updated) => {
+              setProfile(updated)
+              setIsEditing(false)
+            }}
+            onCancel={() => setIsEditing(false)}
+          />
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="mx-auto max-w-2xl">
@@ -168,6 +192,11 @@ export function ProfileView({ profile, eventHistory, groups }: ProfileViewProps)
                       )}
                     </div>
                     <div className="text-right">
+                      {group.unreadCount > 0 && (
+                        <div className="mb-1 inline-block rounded-full bg-[#e88f47] px-2 py-0.5 text-xs font-bold text-white">
+                          {group.unreadCount}
+                        </div>
+                      )}
                       <div className="text-xs text-stone-500">
                         {group.message_count} msg{group.message_count !== 1 ? 's' : ''}
                       </div>

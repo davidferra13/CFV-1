@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation'
-import { getGroupByToken } from '@/lib/hub/group-actions'
-import { getGroupMembers } from '@/lib/hub/group-actions'
+import { getGroupByToken, getGroupMembers, getGroupEvents } from '@/lib/hub/group-actions'
 import { getGroupNotes } from '@/lib/hub/message-actions'
+import { getGroupMedia } from '@/lib/hub/media-actions'
+import { getGroupAvailability } from '@/lib/hub/availability-actions'
 import { HubGroupView } from './hub-group-view'
 
 interface Props {
@@ -16,9 +17,24 @@ export default async function HubGroupPage({ params }: Props) {
     notFound()
   }
 
-  const [members, notes] = await Promise.all([getGroupMembers(group.id), getGroupNotes(group.id)])
+  const [members, notes, media, availability, groupEvents] = await Promise.all([
+    getGroupMembers(group.id),
+    getGroupNotes(group.id),
+    getGroupMedia({ groupId: group.id }),
+    getGroupAvailability(group.id),
+    getGroupEvents(group.id),
+  ])
 
-  return <HubGroupView group={group} members={members} notes={notes} />
+  return (
+    <HubGroupView
+      group={group}
+      members={members}
+      notes={notes}
+      media={media}
+      availability={availability}
+      groupEvents={groupEvents}
+    />
+  )
 }
 
 export const dynamic = 'force-dynamic'

@@ -12,6 +12,7 @@ import { ExcitementWall } from '@/components/sharing/excitement-wall'
 import { GuestPhotoGallery } from '@/components/sharing/guest-photo-gallery'
 import { EventCountdown } from '@/components/sharing/event-countdown'
 import { GuestNetworkShare } from '@/components/sharing/guest-network-share'
+import { JoinHubCTA } from '@/components/hub/join-hub-cta'
 import { cookies } from 'next/headers'
 
 export default async function SharePage({ params }: { params: { token: string } }) {
@@ -277,6 +278,17 @@ export default async function SharePage({ params }: { params: { token: string } 
               <p className="text-sm text-stone-400">The RSVP deadline has passed for this event.</p>
             </CardContent>
           </Card>
+        )}
+
+        {/* Join the Hub CTA — shown after guest has RSVPed */}
+        {existingGuest?.guest_token && eventData.status !== 'completed' && (
+          <div className="mb-6">
+            <JoinHubCTA
+              eventId={eventData.eventId}
+              tenantId={eventData.tenantId}
+              eventTitle={eventData.occasion ?? eventData.title ?? 'Dinner'}
+            />
+          </div>
         )}
 
         {/* Invite Others: viewer or guest (available once the current guest has a token) */}

@@ -2624,6 +2624,22 @@ export async function submitRSVP(input: SubmitRSVPInput) {
     console.error('[submitRSVP] Non-blocking notification failed:', err)
   }
 
+  // Non-blocking: sync to hub guest profile
+  try {
+    const { syncRSVPToHubProfile } = await import('@/lib/hub/integration-actions')
+    await syncRSVPToHubProfile({
+      email: validated.email ?? null,
+      displayName: validated.full_name,
+      eventId: share.event_id,
+      tenantId: share.tenant_id,
+      rsvpStatus: writeState.rsvp_status ?? 'attending',
+      allergies: validated.allergies ?? [],
+      dietaryRestrictions: validated.dietary_restrictions ?? [],
+    })
+  } catch (err) {
+    console.error('[submitRSVP] Non-blocking hub sync failed:', err)
+  }
+
   revalidatePath(`/events/${share.event_id}`)
   revalidatePath(`/my-events/${share.event_id}`)
 

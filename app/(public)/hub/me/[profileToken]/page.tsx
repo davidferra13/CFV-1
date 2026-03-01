@@ -5,6 +5,7 @@ import {
   getProfileGroups,
 } from '@/lib/hub/profile-actions'
 import { getGroupById } from '@/lib/hub/group-actions'
+import { getHubUnreadCounts } from '@/lib/hub/notification-actions'
 import { ProfileView } from './profile-view'
 
 interface Props {
@@ -19,16 +20,25 @@ export default async function HubProfilePage({ params }: Props) {
     notFound()
   }
 
-  const [eventHistory, groupMemberships] = await Promise.all([
+  const [eventHistory, groupMemberships, unreadCounts] = await Promise.all([
     getProfileEventHistory(profileToken),
     getProfileGroups(profileToken),
+    getHubUnreadCounts(profileToken).catch(() => []),
   ])
+
+  // Build unread map by group_id
+  const unreadByGroup: Record<string, number> = {}
+  for (const u of unreadCounts) {
+    unreadByGroup[u.group_id] = u.unread_count
+  }
 
   // Load group details
   const groups = await Promise.all(
     groupMemberships.map(async (m) => {
       const group = await getGroupById(m.group_id)
-      return group ? { ...group, memberRole: m.role } : null
+      return group
+        ? { ...group, memberRole: m.role, unreadCount: unreadByGroup[m.group_id] ?? 0 }
+        : null
     })
   ).then((results) => results.filter(Boolean))
 
@@ -36,7 +46,12 @@ export default async function HubProfilePage({ params }: Props) {
     <ProfileView
       profile={profile}
       eventHistory={eventHistory}
-      groups={groups as (NonNullable<(typeof groups)[number]> & { memberRole: string })[]}
+      groups={
+        groups as (NonNullable<(typeof groups)[number]> & {
+          memberRole: string
+          unreadCount: number
+        })[]
+      }
     />
   )
 }

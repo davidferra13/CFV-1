@@ -830,6 +830,14 @@ export async function completeEvent(eventId: string) {
     // Loyalty award failure should not block event completion
     log.events.warn('Loyalty award failed (non-blocking)', { error: err })
     return { ...result, loyalty: null }
+  } finally {
+    // Non-blocking: snapshot menu to hub event history
+    try {
+      const { snapshotEventToHub } = await import('@/lib/hub/integration-actions')
+      await snapshotEventToHub({ eventId, tenantId: user.tenantId! })
+    } catch (err) {
+      console.error('[non-blocking] Hub event snapshot failed:', err)
+    }
   }
 }
 

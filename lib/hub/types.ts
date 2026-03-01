@@ -37,6 +37,8 @@ export interface HubGuestEventHistory {
 
 // ---- Groups ----
 
+export type HubGroupVisibility = 'public' | 'private' | 'secret'
+
 export interface HubGroup {
   id: string
   event_id: string | null
@@ -50,6 +52,8 @@ export interface HubGroup {
   theme_id: string | null
   is_active: boolean
   allow_member_invites: boolean
+  allow_anonymous_posts: boolean
+  visibility: HubGroupVisibility
   created_by_profile_id: string
   last_message_at: string | null
   last_message_preview: string | null
@@ -113,6 +117,7 @@ export interface HubMessage {
   system_metadata: Record<string, unknown> | null
   reply_to_message_id: string | null
   reaction_counts: Record<string, number>
+  is_anonymous: boolean
   created_at: string
   edited_at: string | null
   deleted_at: string | null

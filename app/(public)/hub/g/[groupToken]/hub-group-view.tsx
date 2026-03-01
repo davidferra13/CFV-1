@@ -1,21 +1,41 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import type { HubGroup, HubGroupMember, HubPinnedNote } from '@/lib/hub/types'
+import Link from 'next/link'
+import type {
+  HubGroup,
+  HubGroupMember,
+  HubPinnedNote,
+  HubMedia,
+  HubGroupEvent,
+} from '@/lib/hub/types'
+import type { HubAvailability } from '@/lib/hub/availability-actions'
 import { ThemedWrapper } from '@/components/hub/themed-wrapper'
 import { HubFeed } from '@/components/hub/hub-feed'
 import { HubMemberList } from '@/components/hub/hub-member-list'
 import { HubNotesBoard } from '@/components/hub/hub-notes-board'
+import { HubPhotoGallery } from '@/components/hub/hub-photo-gallery'
+import { HubAvailabilityGrid } from '@/components/hub/hub-availability-grid'
 
-type Tab = 'chat' | 'events' | 'photos' | 'notes' | 'members'
+type Tab = 'chat' | 'events' | 'photos' | 'notes' | 'schedule' | 'members'
 
 interface HubGroupViewProps {
   group: HubGroup
   members: HubGroupMember[]
   notes: HubPinnedNote[]
+  media: HubMedia[]
+  availability: HubAvailability[]
+  groupEvents: HubGroupEvent[]
 }
 
-export function HubGroupView({ group, members, notes }: HubGroupViewProps) {
+export function HubGroupView({
+  group,
+  members,
+  notes,
+  media,
+  availability,
+  groupEvents,
+}: HubGroupViewProps) {
   const [activeTab, setActiveTab] = useState<Tab>('chat')
   const [profileToken, setProfileToken] = useState<string | null>(null)
   const [currentProfileId, setCurrentProfileId] = useState<string | null>(null)
@@ -39,12 +59,13 @@ export function HubGroupView({ group, members, notes }: HubGroupViewProps) {
     }
   }, [members])
 
-  const tabs: { id: Tab; label: string; emoji: string }[] = [
+  const tabs: { id: Tab; label: string; emoji: string; count?: number }[] = [
     { id: 'chat', label: 'Chat', emoji: '💬' },
-    { id: 'events', label: 'Events', emoji: '🍽️' },
-    { id: 'photos', label: 'Photos', emoji: '📸' },
-    { id: 'notes', label: 'Notes', emoji: '📝' },
-    { id: 'members', label: 'Members', emoji: '👥' },
+    { id: 'events', label: 'Events', emoji: '🍽️', count: groupEvents.length },
+    { id: 'photos', label: 'Photos', emoji: '📸', count: media.length },
+    { id: 'schedule', label: 'Schedule', emoji: '📅', count: availability.length },
+    { id: 'notes', label: 'Notes', emoji: '📝', count: notes.length },
+    { id: 'members', label: 'Members', emoji: '👥', count: members.length },
   ]
 
   const memberAvatars = members.slice(0, 5)
@@ -62,6 +83,16 @@ export function HubGroupView({ group, members, notes }: HubGroupViewProps) {
                 <p className="truncate text-xs text-stone-500">{group.description}</p>
               )}
             </div>
+
+            {/* My Hub link */}
+            {profileToken && currentMember?.profile?.profile_token && (
+              <Link
+                href={`/hub/me/${currentMember.profile.profile_token}`}
+                className="rounded-full bg-stone-800 px-3 py-1 text-xs text-stone-400 hover:bg-stone-700 hover:text-stone-200"
+              >
+                My Hub
+              </Link>
+            )}
 
             {/* Member avatars */}
             <div className="flex -space-x-2">
@@ -86,7 +117,7 @@ export function HubGroupView({ group, members, notes }: HubGroupViewProps) {
           </div>
 
           {/* Tabs */}
-          <div className="mt-3 flex gap-1 overflow-x-auto">
+          <div className="mt-3 flex gap-1 overflow-x-auto scrollbar-none">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -99,6 +130,11 @@ export function HubGroupView({ group, members, notes }: HubGroupViewProps) {
               >
                 <span>{tab.emoji}</span>
                 <span>{tab.label}</span>
+                {tab.count !== undefined && tab.count > 0 && (
+                  <span className="ml-0.5 rounded-full bg-white/20 px-1.5 py-0.5 text-xs leading-none">
+                    {tab.count}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -117,20 +153,44 @@ export function HubGroupView({ group, members, notes }: HubGroupViewProps) {
 
         {activeTab === 'events' && (
           <div className="p-4">
-            <h3 className="mb-4 text-sm font-semibold text-stone-300">🍽️ Events</h3>
-            <div className="py-8 text-center text-sm text-stone-600">
-              Events linked to this group will appear here.
-            </div>
+            <h3 className="mb-4 text-sm font-semibold text-stone-300">Events</h3>
+            {groupEvents.length === 0 ? (
+              <div className="py-12 text-center text-sm text-stone-600">
+                No events linked yet. Events will appear here when your group plans a dinner!
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {groupEvents.map((ge) => (
+                  <div
+                    key={ge.id}
+                    className="rounded-xl border border-stone-800 bg-stone-900/50 p-4"
+                  >
+                    <p className="text-sm text-stone-300">
+                      Event linked on {new Date(ge.added_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
         {activeTab === 'photos' && (
-          <div className="p-4">
-            <h3 className="mb-4 text-sm font-semibold text-stone-300">📸 Photos</h3>
-            <div className="py-8 text-center text-sm text-stone-600">
-              Shared photos will appear here.
-            </div>
-          </div>
+          <HubPhotoGallery
+            groupId={group.id}
+            media={media}
+            profileToken={profileToken}
+            canPost={currentMember?.can_post ?? false}
+          />
+        )}
+
+        {activeTab === 'schedule' && (
+          <HubAvailabilityGrid
+            groupId={group.id}
+            availabilityPolls={availability}
+            profileToken={profileToken}
+            canPost={currentMember?.can_post ?? false}
+          />
         )}
 
         {activeTab === 'notes' && (
