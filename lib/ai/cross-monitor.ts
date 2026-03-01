@@ -411,7 +411,7 @@ async function evaluateAndAct(): Promise<void> {
           body: JSON.stringify({
             model: snapshot.configuredModel,
             prompt: '',
-            keep_alive: '5m',
+            keep_alive: '30m',
           }),
           signal: AbortSignal.timeout(30_000),
         })

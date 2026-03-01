@@ -5,12 +5,7 @@
 
 import { NextRequest } from 'next/server'
 import { Ollama } from 'ollama'
-import {
-  isOllamaEnabled,
-  getOllamaConfig,
-  getOllamaModel,
-  getOllamaContextSize,
-} from '@/lib/ai/providers'
+import { isOllamaEnabled, getOllamaConfig, getOllamaModel } from '@/lib/ai/providers'
 import { validateRemyInput } from '@/lib/ai/remy-guardrails'
 import { validateRemyRequestBody, validateHistory } from '@/lib/ai/remy-input-validation'
 import {
@@ -200,9 +195,8 @@ export async function POST(req: NextRequest) {
             options: {
               temperature: 0.7,
               num_predict: 512, // Shorter responses for public
-              num_ctx: getOllamaContextSize('public'),
             },
-            keep_alive: '5m',
+            keep_alive: '30m',
             think: false,
           } as any)
 

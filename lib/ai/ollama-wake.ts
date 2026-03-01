@@ -312,7 +312,7 @@ export async function loadModelOnEndpoint(
       body: JSON.stringify({
         model,
         prompt: '',
-        keep_alive: '5m',
+        keep_alive: '30m',
       }),
       signal: AbortSignal.timeout(60000),
     })

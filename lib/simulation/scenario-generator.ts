@@ -20,16 +20,27 @@ Each scenario should feel like a real email from a potential client.
 Return a JSON array of inquiry email strings — no other text.
 Vary: event occasions (birthday, anniversary, corporate, date night, holiday), guest counts (4–80),
 dietary restrictions (vegan, gluten-free, nut allergy, kosher, halal, shellfish allergy, none),
-budgets ($300–$5000), event dates (near future), and writing styles (formal, casual, brief, detailed).`,
+budgets ($300–$5000), event dates (near future), and writing styles (formal, casual, brief, detailed).
+
+CRITICAL RULES for generating emails — the parser has strict null extraction rules:
+- When expectedName is a non-null value, the email MUST contain the name in an EXPLICIT format:
+  "My name is [Name]", "I'm [Name]", "This is [Name]", or a signature line like "— [Name]" or "Best, [Name]".
+  A greeting like "Hi there" or "Hello" does NOT count as providing a name.
+- When expectedGuestCount is a non-null number, the email MUST contain a SPECIFIC number:
+  "12 guests", "party of 20", "dinner for 8". Vague phrases like "a few of us" or "some friends" do NOT count.
+- If you want to test null handling (parser correctly returns null), set the expected value to null
+  AND make the email genuinely ambiguous — omit the name entirely, or use only vague language for guest count.
+- At least 1 of the 5 scenarios should test null handling for name (no name in email, expectedName: null).
+- At least 1 of the 5 scenarios should test null handling for guest count (no specific number, expectedGuestCount: null).`,
         user: `Generate 5 realistic private chef inquiry emails. Each email should contain:
-- Client name (embedded in the message)
+- Client name in an explicit format ("My name is X", "I'm X", or as a signature) — or omit entirely if testing null
 - Event date (specific, within 6 months from now)
-- Guest count
+- Guest count as a specific number — or omit/use vague language if testing null
 - At least one dietary restriction or allergy (or explicitly none)
 - Budget or budget range (sometimes implied, sometimes explicit)
 - Event occasion/type
 
-Return JSON: [{"email": "...", "expectedName": "...", "expectedGuestCount": N, "expectedOccasion": "..."}]`,
+Return JSON: [{"email": "...", "expectedName": "..." or null, "expectedGuestCount": N or null, "expectedOccasion": "..."}]`,
       }
 
     case 'client_parse':
@@ -181,13 +192,40 @@ function parseGeneratedScenarios(
         }
         break
 
-      case 'quote_draft':
+      case 'quote_draft': {
+        // Recompute expectedPriceRangeCents deterministically using the same
+        // formula the pipeline uses — the LLM's guessed range is unreliable.
+        const guestCount = Number(ctx.guestCount) || 10
+        const serviceStyle = String(ctx.serviceStyle ?? 'plated').toLowerCase()
+        const travelRequired = Boolean(ctx.travelRequired)
+
+        // Per-person rates (must match pipeline-runner.ts quote_draft prompt)
+        let perPersonRate = 125 // plated default
+        if (serviceStyle === 'buffet' || serviceStyle === 'family-style') {
+          perPersonRate = 85
+        } else if (serviceStyle === 'plated') {
+          perPersonRate = 125
+        } else if (serviceStyle.includes('tasting') || serviceStyle === 'multi-course tasting') {
+          perPersonRate = 175
+        }
+
+        const serviceFee = guestCount * perPersonRate
+        // grocery = service_fee * 0.30, rounded to nearest $50
+        const groceryEstimate = Math.round((serviceFee * 0.3) / 50) * 50
+        const travelSurcharge = travelRequired ? 150 : 0
+        const total = serviceFee + groceryEstimate + travelSurcharge
+
+        // ±20% tolerance range, in cents
+        const minCents = Math.round(total * 0.8 * 100)
+        const maxCents = Math.round(total * 1.2 * 100)
+
         inputText = JSON.stringify(ctx)
         groundTruth = {
-          expectedPriceRangeCents: ctx.expectedPriceRangeCents,
-          guestCount: ctx.guestCount,
+          expectedPriceRangeCents: [minCents, maxCents],
+          guestCount,
         }
         break
+      }
     }
 
     return {

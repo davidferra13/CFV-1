@@ -2659,6 +2659,14 @@ async function listMigrations() {
 const uptimeHistory = { beta: [], prod: [], pi: [] }
 const UPTIME_MAX_ENTRIES = 1440 // 24h at 60s intervals
 
+// ── Alert state tracking (fire on state change only, not every poll) ──
+const prevUptimeState = { beta: true, prod: true, pi: true }
+
+// ── Beta auto-remediation (restart PM2 after 3 consecutive failures) ──
+let betaConsecutiveFailures = 0
+let lastBetaRemediationTs = 0
+const BETA_REMEDIATION_COOLDOWN_MS = 10 * 60 * 1000 // 10 minutes
+
 async function loadUptimeHistory() {
   try {
     const raw = await readFile(UPTIME_HISTORY_FILE, 'utf-8')
@@ -2701,10 +2709,34 @@ async function pollUptime() {
     }
   }
 
-  // Broadcast downtime notifications via SSE
-  if (!betaOk) feedEvent('system', 'ALERT: Beta server is DOWN', 'error')
-  if (!prodOk) feedEvent('system', 'ALERT: Production is DOWN', 'error')
-  if (!piOk) feedEvent('system', 'ALERT: Raspberry Pi is UNREACHABLE', 'error')
+  // Broadcast downtime notifications via SSE — only on state transitions
+  if (!betaOk && prevUptimeState.beta) feedEvent('system', 'ALERT: Beta server is DOWN', 'error')
+  if (betaOk && !prevUptimeState.beta) feedEvent('system', 'RECOVERY: Beta server is back UP', 'info')
+  if (!prodOk && prevUptimeState.prod) feedEvent('system', 'ALERT: Production is DOWN', 'error')
+  if (prodOk && !prevUptimeState.prod) feedEvent('system', 'RECOVERY: Production is back UP', 'info')
+  if (!piOk && prevUptimeState.pi) feedEvent('system', 'ALERT: Raspberry Pi is UNREACHABLE', 'error')
+  if (piOk && !prevUptimeState.pi) feedEvent('system', 'RECOVERY: Raspberry Pi is back REACHABLE', 'info')
+
+  prevUptimeState.beta = betaOk
+  prevUptimeState.prod = prodOk
+  prevUptimeState.pi = piOk
+
+  // Beta auto-remediation: restart PM2 after 3 consecutive failures
+  if (!betaOk) {
+    betaConsecutiveFailures++
+    if (betaConsecutiveFailures >= 3 && (ts - lastBetaRemediationTs) > BETA_REMEDIATION_COOLDOWN_MS) {
+      lastBetaRemediationTs = ts
+      feedEvent('system', `AUTO-REMEDIATION: Restarting beta PM2 (${betaConsecutiveFailures} consecutive failures)`, 'warn')
+      try {
+        await sshExec('source /home/davidferra/.nvm/nvm.sh && pm2 restart chefflow-beta', 30000)
+        feedEvent('system', 'AUTO-REMEDIATION: PM2 restart command sent successfully', 'info')
+      } catch (err) {
+        feedEvent('system', `AUTO-REMEDIATION: PM2 restart failed — ${err.message}`, 'error')
+      }
+    }
+  } else {
+    betaConsecutiveFailures = 0
+  }
 
   saveUptimeHistory().catch(() => {})
 }

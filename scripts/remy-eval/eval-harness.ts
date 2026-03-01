@@ -328,102 +328,6 @@ Return ONLY valid JSON, no markdown, no extra text:
   }
 }
 
-// ─── Run Single Test ─────────────────────────────────────────────────────────
-
-async function runTest(
-  test: TestCase,
-  cookies: string,
-  options: { verbose: boolean; noGrade: boolean }
-): Promise<TestResult> {
-  const errors: string[] = []
-
-  // Skip empty query test gracefully
-  if (!test.query) {
-    return {
-      testId: test.id,
-      category: test.category,
-      query: '(empty)',
-      response: '[SKIPPED — empty query]',
-      responseTimeMs: 0,
-      ruleScore: {
-        intentCorrect: null,
-        mustContainPassed: true,
-        mustNotContainPassed: true,
-        refusalCorrect: null,
-        missingTerms: [],
-        forbiddenTermsFound: [],
-      },
-      passed: true,
-      errors: [],
-    }
-  }
-
-  // Send to Remy (with retry for transient Ollama loading errors)
-  // Ollama may need time to load the 30b model on first request or after idle timeout.
-  // Retry up to 2 times with a warm-up ping between attempts.
-  let { response, timeMs } = await sendToRemy(test.query, cookies, test.currentPage)
-  const MAX_RETRIES = 2
-  for (let retry = 0; retry < MAX_RETRIES; retry++) {
-    if (!response.includes('[REMY ERROR]') || !response.includes('loading')) break
-    const waitSec = retry === 0 ? 15 : 30
-    console.log(
-      `     ⏳ Ollama loading — retrying in ${waitSec}s (attempt ${retry + 2}/${MAX_RETRIES + 1})...`
-    )
-    await new Promise((r) => setTimeout(r, waitSec * 1000))
-    const retryResult = await sendToRemy(test.query, cookies, test.currentPage)
-    response = retryResult.response
-    timeMs += retryResult.timeMs
-  }
-
-  // Rule-based grading
-  const ruleScore = gradeByRules(test, response)
-
-  if (!ruleScore.mustContainPassed) {
-    errors.push(`Missing required terms: ${ruleScore.missingTerms.join(', ')}`)
-  }
-  if (!ruleScore.mustNotContainPassed) {
-    errors.push(`Found forbidden terms: ${ruleScore.forbiddenTermsFound.join(', ')}`)
-  }
-  if (ruleScore.refusalCorrect === false) {
-    errors.push('Guardrail violation: should have refused but complied')
-  }
-
-  // LLM grading
-  let llmGrade: LLMGrade | undefined
-  if (!options.noGrade) {
-    llmGrade = await gradeWithLLM(test, response)
-  }
-
-  const passed =
-    ruleScore.mustContainPassed &&
-    ruleScore.mustNotContainPassed &&
-    ruleScore.refusalCorrect !== false &&
-    (llmGrade ? llmGrade.overall >= 3 : true)
-
-  // Print result
-  const icon = passed ? '✅' : '❌'
-  const scoreStr = llmGrade ? ` [${llmGrade.overall}/5]` : ''
-  console.log(`  ${icon} ${test.id}: ${test.query.slice(0, 60)}...${scoreStr} (${timeMs}ms)`)
-
-  if (options.verbose || !passed) {
-    if (errors.length) console.log(`     Errors: ${errors.join('; ')}`)
-    if (llmGrade?.reasoning) console.log(`     Grade: ${llmGrade.reasoning}`)
-    if (options.verbose) console.log(`     Response: ${response.slice(0, 200)}...`)
-  }
-
-  return {
-    testId: test.id,
-    category: test.category,
-    query: test.query,
-    response,
-    responseTimeMs: timeMs,
-    ruleScore,
-    llmGrade,
-    passed,
-    errors,
-  }
-}
-
 // ─── Generate Report ─────────────────────────────────────────────────────────
 
 function generateReport(results: TestResult[]): EvalReport {
@@ -537,6 +441,7 @@ async function main() {
         options: { num_predict: 3 },
         keep_alive: '30m',
       }),
+      signal: AbortSignal.timeout(120_000), // 2 min timeout — don't hang forever
     })
     if (warmRes.ok) {
       console.log(`  ✅ qwen3-coder:30b warm (keep_alive: 30m)`)
@@ -586,7 +491,7 @@ async function main() {
     let { response, timeMs } = await sendToRemy(test.query, cookies, test.currentPage)
     const MAX_RETRIES = 2
     for (let retry = 0; retry < MAX_RETRIES; retry++) {
-      if (!response.includes('[REMY ERROR]') || !response.includes('loading')) break
+      if (!(response.includes('[REMY ERROR]') && response.includes('loading'))) break
       const waitSec = retry === 0 ? 15 : 30
       console.log(
         `     ⏳ Ollama loading — retrying in ${waitSec}s (attempt ${retry + 2}/${MAX_RETRIES + 1})...`
@@ -625,17 +530,23 @@ async function main() {
   if (!noGrade) {
     // Warm up 4b for grading
     console.log('  Warming up qwen3:4b for grading...')
-    await fetch(`${OLLAMA_URL}/api/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'qwen3:4b',
-        prompt: '/no_think\nSay OK.',
-        stream: false,
-        options: { num_predict: 3 },
-      }),
-    }).catch(() => {})
-    console.log('  ✅ Grader ready\n')
+    try {
+      await fetch(`${OLLAMA_URL}/api/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'qwen3:4b',
+          prompt: '/no_think\nSay OK.',
+          stream: false,
+          options: { num_predict: 3 },
+          keep_alive: '30m',
+        }),
+        signal: AbortSignal.timeout(120_000), // 2 min timeout — don't hang forever
+      })
+      console.log('  ✅ Grader ready\n')
+    } catch (err) {
+      console.log(`  ⚠️ Grader warmup failed: ${(err as Error).message} — grading may fail\n`)
+    }
   }
 
   for (let i = 0; i < pendingResults.length; i++) {

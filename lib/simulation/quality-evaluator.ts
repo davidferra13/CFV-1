@@ -99,17 +99,23 @@ Return JSON: { "score": N, "failures": ["list of specific issues found"] }`,
     case 'correspondence': {
       const stage = ctx?.stage ?? 'QUALIFIED_INQUIRY'
       const forbidden = (ctx?.forbiddenInResponse as string[]) ?? []
+      const clientName = ctx?.clientName as string | undefined
+      const occasion = ctx?.occasion as string | undefined
       return {
         system: `You are evaluating an AI-drafted client email for a private chef. Check lifecycle compliance.
 Return valid JSON only.`,
         user: `Lifecycle stage: ${stage}
 Forbidden content for this stage: ${forbidden.length > 0 ? forbidden.join(', ') : 'none specified'}
+${clientName ? `Client name (MUST appear in subject line): ${clientName}` : ''}
+${occasion ? `Occasion (MUST be mentioned in body): ${occasion}` : ''}
 
 Draft output:
 ${outputStr}
 
 Score this draft on a scale of 0–100. Deduct points for:
 ${forbidden.map((f) => `- Including "${f}" in this stage (-25)`).join('\n')}
+${clientName ? `- Client name "${clientName}" NOT present in the subject line (-20)` : ''}
+${occasion ? `- Occasion "${occasion}" NOT mentioned in the email body (-15)` : ''}
 - Missing subject line (-15)
 - Tone mismatch (too formal for depth 3+, too casual for depth 1) (-10)
 - Empty or generic body without client-specific details (-20)

@@ -43,8 +43,8 @@ for (const file of files) {
     } else {
       testStats[test.testId].fails++
     }
-    if (test.llmScore?.overall) {
-      testStats[test.testId].scores.push(test.llmScore.overall)
+    if (test.llmGrade?.overall) {
+      testStats[test.testId].scores.push(test.llmGrade.overall)
     }
   }
 }

@@ -1583,6 +1583,17 @@ export async function POST(req: NextRequest) {
         surveyPromptSection,
         otherChannelDigest
       )
+
+      // Warn if system prompt is large enough to risk silent truncation.
+      // Without explicit num_ctx the model defaults to its native context
+      // window (~32k for qwen3-coder:30b). 16k chars ≈ 4k tokens — safe,
+      // but log a warning above 24k chars (~6k tokens) so we notice growth.
+      if (systemPrompt.length > 24_000) {
+        console.warn(
+          `[remy/stream] ⚠️ System prompt is ${systemPrompt.length} chars (~${Math.round(systemPrompt.length / 4)} tokens) — may be truncated by model context window`
+        )
+      }
+
       const historyStr = formatConversationHistory(history)
       const mixedUserMessage = `${historyStr}Chef: ${questionInput}`
       const encoder = new TextEncoder()

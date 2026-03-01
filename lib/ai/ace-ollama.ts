@@ -59,7 +59,7 @@ async function generateText(
           num_predict: 2048, // Email drafts can be longer than JSON
           temperature,
         },
-        keep_alive: '5m',
+        keep_alive: '30m',
         think: false,
       } as any) as unknown as Promise<ChatResponse>,
       DEFAULT_TIMEOUT_MS,

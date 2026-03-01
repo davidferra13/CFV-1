@@ -79,75 +79,8 @@ export function getModelForEndpoint(endpoint: 'pc' | 'pi', tier: ModelTier = 'st
   return getOllamaModel(tier)
 }
 
-/**
- * Compute a right-sized context window based on actual input length.
- * Avoids over-allocating VRAM by requesting only what's needed.
- *
- * Rough estimate: 1 token ≈ 4 characters.
- * Budget: input tokens + 512 safety buffer + 2048 response headroom.
- * Result rounded up to nearest 1024 for Ollama efficiency, clamped to [2048, max].
- */
-export function computeDynamicContext(
-  inputChars: number,
-  endpoint: 'pc' | 'pi',
-  layer: RemyLayer
-): number {
-  const maxCtx = getContextSizeForEndpoint(endpoint, layer)
-  const estimatedInputTokens = Math.ceil(inputChars / 4)
-  const needed = estimatedInputTokens + 512 + 2048 // safety buffer + response headroom
-  const rounded = Math.ceil(needed / 1024) * 1024
-  return Math.min(Math.max(rounded, 2048), maxCtx)
-}
-
-/**
- * Returns the right context window size for an endpoint + layer.
- * Pi uses smaller context windows because the 8B model has less capacity.
- */
-export function getContextSizeForEndpoint(endpoint: 'pc' | 'pi', layer: RemyLayer): number {
-  if (endpoint === 'pi') {
-    switch (layer) {
-      case 'chef':
-        return 8192
-      case 'client':
-        return 4096
-      case 'public':
-        return 2048
-    }
-  }
-  return getOllamaContextSize(layer)
-}
-
-/** Remy layer identifier for context window sizing. */
-export type RemyLayer = 'chef' | 'client' | 'public'
-
-/**
- * Returns the Ollama context window size (num_ctx) for a given Remy layer.
- * Larger windows let the model see more conversation history + system prompt,
- * but use more VRAM. These defaults are safe for a 30B model with ~16-24 GB VRAM.
- *
- * Env vars (override defaults):
- *   OLLAMA_NUM_CTX_CHEF    — chef Remy (default 12288)
- *   OLLAMA_NUM_CTX_CLIENT  — client Remy (default 8192)
- *   OLLAMA_NUM_CTX_PUBLIC  — public Remy (default 4096)
- *
- * Safe limits by model size:
- *   8B model  → up to 8192 comfortably, 16384 max
- *   14B model → up to 12288 comfortably
- *   30B model → up to 12288 comfortably, 16384 if VRAM allows
- */
-export function getOllamaContextSize(layer: RemyLayer): number {
-  switch (layer) {
-    case 'chef': {
-      const env = process.env.OLLAMA_NUM_CTX_CHEF
-      return env ? parseInt(env, 10) : 12288
-    }
-    case 'client': {
-      const env = process.env.OLLAMA_NUM_CTX_CLIENT
-      return env ? parseInt(env, 10) : 8192
-    }
-    case 'public': {
-      const env = process.env.OLLAMA_NUM_CTX_PUBLIC
-      return env ? parseInt(env, 10) : 4096
-    }
-  }
-}
+// NOTE: computeDynamicContext(), getContextSizeForEndpoint(), and getOllamaContextSize()
+// were removed as part of the num_ctx purge (2026-03-01). Setting num_ctx on ollama.chat()
+// calls caused a 170s KV cache reallocation hang on the RTX 3050 with GPU+RAM split models.
+// All Remy routes now omit num_ctx, letting Ollama use the model's native default.
+// See docs/remy-num-ctx-fix.md for full details.
