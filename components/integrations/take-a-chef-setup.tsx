@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -13,8 +12,6 @@ interface TakeAChefSetupProps {
 }
 
 export function TakeAChefSetup({ gmailConnected, lastSyncAt, tacLeadCount }: TakeAChefSetupProps) {
-  const [commissionRate, setCommissionRate] = useState(25)
-
   // --- State 1: Connected with leads captured ---
   if (gmailConnected && tacLeadCount > 0) {
     return (
@@ -42,12 +39,11 @@ export function TakeAChefSetup({ gmailConnected, lastSyncAt, tacLeadCount }: Tak
             <div className="pt-2 border-t border-stone-800">
               <button
                 type="button"
-                className="text-xs text-stone-400 hover:text-stone-400 transition-colors"
-                onClick={() => {
-                  /* placeholder — disconnect not yet implemented */
-                }}
+                disabled
+                className="text-xs text-stone-600 cursor-not-allowed"
+                title="Gmail disconnect is not yet available"
               >
-                Disconnect Gmail
+                Disconnect Gmail (coming soon)
               </button>
             </div>
           </div>
@@ -137,30 +133,18 @@ export function TakeAChefSetup({ gmailConnected, lastSyncAt, tacLeadCount }: Tak
             </div>
           </li>
 
-          {/* Step 3: Commission rate */}
+          {/* Step 3: Commission rate — not yet persisted to server */}
           <li className="flex gap-4">
             <div className="flex-shrink-0 flex items-center justify-center h-7 w-7 rounded-full bg-stone-700 text-stone-400 text-xs font-bold">
               3
             </div>
             <div className="flex-1 space-y-2">
-              <h4 className="text-sm font-semibold text-stone-100">Set commission rate</h4>
+              <h4 className="text-sm font-semibold text-stone-100">Commission rate</h4>
               <p className="text-sm text-stone-500 leading-relaxed">
-                TakeAChef takes a percentage of each booking. Set it here so ChefFlow can calculate
-                your net revenue accurately.
+                TakeAChef typically takes 25% of each booking. Commission rate settings will be
+                available once Gmail is connected.
               </p>
-              <div className="flex items-center gap-2 pt-1">
-                <input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={commissionRate}
-                  onChange={(e) =>
-                    setCommissionRate(Math.min(100, Math.max(0, Number(e.target.value))))
-                  }
-                  className="w-20 h-9 px-3 text-sm text-stone-100 bg-stone-900 border border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
-                />
-                <span className="text-sm text-stone-500">%</span>
-              </div>
+              <p className="text-xs text-stone-600 italic">Default: 25%</p>
             </div>
           </li>
         </ol>

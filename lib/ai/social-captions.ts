@@ -67,11 +67,12 @@ export async function generateSocialCaptions(
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    (supabase as any)
-      .from('event_menu_components')
-      .select('name, course_type, description')
+    supabase
+      .from('menus')
+      .select('dishes(name, course_name, description)')
       .eq('event_id', eventId)
-      .limit(8),
+      .limit(1)
+      .single(),
     supabase
       .from('chefs')
       .select('display_name, business_name, tagline')
@@ -82,7 +83,17 @@ export async function generateSocialCaptions(
   const event = eventResult.data
   if (!event) throw new Error('Event not found')
 
-  const menu = (menuResult.data ?? []) as MenuComponentRow[]
+  // Extract dishes from the menu join
+  const rawDishes = (menuResult.data?.dishes ?? []) as Array<{
+    name: string
+    course_name: string | null
+    description: string | null
+  }>
+  const menu: MenuComponentRow[] = rawDishes.map((d) => ({
+    name: d.name,
+    course_type: d.course_name,
+    description: d.description,
+  }))
   const chef = chefResult.data
 
   const toneGuide = {

@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     // Update contract record based on envelope status
     if (envelopeStatus === 'completed' || envelopeStatus === 'Completed') {
       await (supabase as any)
-        .from('contracts')
+        .from('event_contracts')
         .update({
           docusign_status: 'completed',
           docusign_signed_at: completedAt || new Date().toISOString(),
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
       // Dispatch Zapier webhook (non-blocking)
       try {
         const { data: contract } = await (supabase as any)
-          .from('contracts')
+          .from('event_contracts')
           .select('tenant_id, id, event_id, client_id')
           .eq('docusign_envelope_id', envelopeId)
           .single()
@@ -75,14 +75,14 @@ export async function POST(req: NextRequest) {
       }
     } else if (envelopeStatus === 'declined' || envelopeStatus === 'Declined') {
       await (supabase as any)
-        .from('contracts')
+        .from('event_contracts')
         .update({
           docusign_status: 'declined',
         })
         .eq('docusign_envelope_id', envelopeId)
     } else if (envelopeStatus === 'voided' || envelopeStatus === 'Voided') {
       await (supabase as any)
-        .from('contracts')
+        .from('event_contracts')
         .update({
           docusign_status: 'voided',
         })

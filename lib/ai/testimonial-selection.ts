@@ -68,9 +68,10 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
   const supabase = createServerClient()
 
   // Gather AAR client feedback and positive messages
-  const [aarResult, messagesResult, surveysResult] = await Promise.all([
-    (supabase as any)
-      .from('aars')
+  // Note: client_surveys table does not exist — only AARs and messages are available
+  const [aarResult, messagesResult] = await Promise.all([
+    supabase
+      .from('after_action_reviews')
       .select(
         `
         client_feedback, event_id,
@@ -92,22 +93,11 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
       .eq('tenant_id', user.tenantId!)
       .eq('direction', 'inbound')
       .limit(50),
-    (supabase as any)
-      .from('client_surveys')
-      .select(
-        `
-        overall_rating, feedback_text, event_id,
-        events(occasion, clients(full_name))
-      `
-      )
-      .eq('tenant_id', user.tenantId!)
-      .gte('overall_rating', 4)
-      .limit(20),
   ])
 
   const aars = (aarResult.data ?? []) as AarRow[]
   const messages = messagesResult.data ?? []
-  const surveys = (surveysResult.data ?? []) as SurveyRow[]
+  const surveys: SurveyRow[] = [] // client_surveys table doesn't exist yet
 
   // Combine and format all feedback sources
   const feedbackItems: {

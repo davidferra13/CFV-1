@@ -60,15 +60,18 @@ export async function draftReviewRequest(eventId: string): Promise<ReviewRequest
   const clientName = client?.full_name ?? 'there'
   const firstName = clientName.split(' ')[0]
 
-  // Get event highlights (menu)
-  const menuResult = await (supabase as any)
-    .from('event_menu_components')
-    .select('name, course_type')
+  // Get event highlights (menu) — query menus → dishes (event_menu_components doesn't exist)
+  const menuResult = await supabase
+    .from('menus')
+    .select('dishes(name, course_name)')
     .eq('event_id', eventId)
-    .order('created_at', { ascending: true })
-    .limit(5)
+    .limit(1)
+    .single()
 
-  const menuItems = (menuResult.data ?? []) as Array<{ name: string; course_type: string | null }>
+  const menuItems = (menuResult.data?.dishes ?? []) as Array<{
+    name: string
+    course_name: string | null
+  }>
 
   const menuHighlight =
     menuItems.length > 0

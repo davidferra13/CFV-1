@@ -77,10 +77,12 @@ export async function generateServiceTimeline(eventId: string): Promise<ServiceT
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    (supabase as any)
-      .from('event_menu_components')
-      .select('name, course_type, description, prep_time_minutes, cook_time_minutes')
-      .eq('event_id', eventId),
+    supabase
+      .from('menus')
+      .select('dishes(name, course_name, description)')
+      .eq('event_id', eventId)
+      .limit(1)
+      .single(),
     supabase
       .from('event_staff_assignments')
       .select('role_override, staff_members(name, role)')
@@ -90,7 +92,19 @@ export async function generateServiceTimeline(eventId: string): Promise<ServiceT
   const event = eventResult.data
   if (!event) throw new Error('Event not found')
 
-  const menuItems = (menuResult.data ?? []) as MenuComponentRow[]
+  // Extract dishes from the menu join
+  const rawDishes = (menuResult.data?.dishes ?? []) as Array<{
+    name: string
+    course_name: string | null
+    description: string | null
+  }>
+  const menuItems: MenuComponentRow[] = rawDishes.map((d) => ({
+    name: d.name,
+    course_type: d.course_name,
+    description: d.description,
+    prep_time_minutes: null,
+    cook_time_minutes: null,
+  }))
   const staffRoster = staffResult.data ?? []
 
   const serveTime = event.serve_time ?? '7:00 PM'

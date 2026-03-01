@@ -124,16 +124,40 @@ export async function notifyHubActivity(input: {
 
       if (!profile?.email || !profile.notifications_enabled) continue
 
-      // Rate limiting: check if we've already sent for this group in the last hour
-      // (This would be better with a separate notification_sent table, but for now
-      // we skip the rate limit and rely on email service dedup)
+      // Send notification email via Resend (non-blocking, fire-and-forget)
+      try {
+        const { sendEmail } = await import('@/lib/email/send')
+        const { createElement } = await import('react')
 
-      // TODO: Integrate with existing email service (lib/email/send.ts) when ready
-      // For now, this is a placeholder that logs the notification intent
-      console.log(
-        `[hub-notification] Would email ${profile.email}: ` +
-          `"${input.authorName} in ${input.groupName}: ${input.messagePreview.slice(0, 50)}"`
-      )
+        await sendEmail({
+          to: profile.email,
+          subject: `New message in ${input.groupName}`,
+          react: createElement(
+            'div',
+            null,
+            createElement('p', null, `${input.authorName} posted in ${input.groupName}:`),
+            createElement(
+              'blockquote',
+              {
+                style: {
+                  borderLeft: '3px solid #e88f47',
+                  paddingLeft: '12px',
+                  margin: '12px 0',
+                  color: '#666',
+                },
+              },
+              input.messagePreview.slice(0, 200)
+            ),
+            createElement(
+              'p',
+              { style: { fontSize: '14px', color: '#999' } },
+              'Log in to ChefFlow to view the full conversation.'
+            )
+          ),
+        })
+      } catch (emailErr) {
+        console.error('[non-blocking] Hub notification email failed:', emailErr)
+      }
     }
   } catch (err) {
     console.error('[non-blocking] Hub notification failed:', err)

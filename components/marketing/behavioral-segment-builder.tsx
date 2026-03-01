@@ -128,9 +128,9 @@ export function BehavioralSegmentBuilder({
   }
 
   function handleDelete(segmentId: string) {
-    // Delete action not yet available on the server; remove from local state only
+    // Delete action not yet available on the server; remove from local view only
     setSegments((prev) => prev.filter((s) => s.id !== segmentId))
-    toast.success('Segment removed')
+    toast.info('Segment hidden from view (server-side delete coming soon)')
   }
 
   function formatCriteria(criteria: FilterCriteria): string[] {

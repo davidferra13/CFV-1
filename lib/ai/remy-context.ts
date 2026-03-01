@@ -360,12 +360,12 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .order('created_at', { ascending: false })
       .limit(5),
 
-    // Unread inquiry messages
+    // Unread inbound messages (inquiry_messages table doesn't exist — use messages table)
     supabase
-      .from('inquiry_messages')
-      .select('id, inquiry_id, sender_type, created_at, inquiry:inquiries(lead_name)')
+      .from('messages')
+      .select('id, inquiry_id, direction, created_at, clients(full_name)')
       .eq('tenant_id', tenantId)
-      .eq('sender_type', 'client')
+      .eq('direction', 'inbound')
       .eq('read', false)
       .order('created_at', { ascending: false })
       .limit(10),

@@ -773,13 +773,34 @@ async function executeLoyaltyStatus(inputs: Record<string, unknown>, tenantId: s
   const client = clients[0]
   const supabase: any = createServerClient()
 
-  // Get loyalty data
-  const { data: loyalty } = await supabase
-    .from('loyalty_accounts')
-    .select('tier, points_balance, lifetime_points')
+  // Get loyalty data (loyalty_accounts doesn't exist — derive from loyalty_transactions)
+  const { data: loyaltyTxns } = await supabase
+    .from('loyalty_transactions')
+    .select('points, type')
     .eq('tenant_id', tenantId)
     .eq('client_id', client.id)
-    .single()
+
+  const lifetimePoints = (loyaltyTxns ?? [])
+    .filter((t: any) => t.type === 'earn')
+    .reduce((s: number, t: any) => s + ((t.points as number) ?? 0), 0)
+  const redeemedPoints = (loyaltyTxns ?? [])
+    .filter((t: any) => t.type === 'redeem')
+    .reduce((s: number, t: any) => s + Math.abs((t.points as number) ?? 0), 0)
+  const pointsBalance = lifetimePoints - redeemedPoints
+  // Derive tier from lifetime points
+  const derivedTier =
+    lifetimePoints >= 500
+      ? 'platinum'
+      : lifetimePoints >= 250
+        ? 'gold'
+        : lifetimePoints >= 100
+          ? 'silver'
+          : 'bronze'
+  const loyalty = {
+    tier: derivedTier,
+    points_balance: pointsBalance,
+    lifetime_points: lifetimePoints,
+  }
 
   // Get event count for this client
   const { count: eventCount } = await supabase
@@ -834,11 +855,12 @@ async function executeEventAllergens(inputs: Record<string, unknown>, tenantId: 
   const event = events[0] as Record<string, unknown>
   const client = event.client as Record<string, unknown> | null
 
-  // Get menu items linked to this event
-  const { data: menuLinks } = await supabase
-    .from('event_menus')
-    .select('menu:menus(id, name, dishes:menu_dishes(name, description, dietary_tags))')
-    .eq('event_id', event.id)
+  // Get menu items linked to this event (via menus table, not event_menus join table)
+  const { data: menuData } = await supabase
+    .from('menus')
+    .select('id, name, dishes(name, description, dietary_tags)')
+    .eq('event_id', event.id as string)
+  const menuLinks = (menuData ?? []).map((m: any) => ({ menu: m }))
 
   const allergies = (client?.allergies as string) ?? ''
   const dietaryRestrictions = (client?.dietary_restrictions as string) ?? ''

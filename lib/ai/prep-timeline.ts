@@ -80,21 +80,41 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    (supabase as any)
-      .from('event_menu_components')
+    supabase
+      .from('menus')
       .select(
-        `
-        name, course_type, description,
-        recipes(name, prep_time_minutes, cook_time_minutes, method)
-      `
+        `dishes(name, course_name, description,
+          dish_components(recipe:recipes(name, prep_time_minutes, cook_time_minutes, method))
+        )`
       )
-      .eq('event_id', eventId),
+      .eq('event_id', eventId)
+      .limit(1)
+      .single(),
   ])
 
   const event = eventResult.data
   if (!event) throw new Error('Event not found')
 
-  const menuItems = (menuResult.data ?? []) as MenuComponentRow[]
+  // Extract dishes from the menu join
+  const rawDishes = (menuResult.data?.dishes ?? []) as Array<{
+    name: string
+    course_name: string | null
+    description: string | null
+    dish_components: Array<{
+      recipe: {
+        name: string
+        prep_time_minutes: number | null
+        cook_time_minutes: number | null
+        method: string | null
+      } | null
+    }>
+  }>
+  const menuItems: MenuComponentRow[] = rawDishes.map((d) => ({
+    name: d.name,
+    course_type: d.course_name,
+    description: d.description,
+    recipes: d.dish_components?.[0]?.recipe ?? null,
+  }))
   const serveTime = event.serve_time ?? '7:00 PM'
   const guestCount = event.guest_count ?? 10
 

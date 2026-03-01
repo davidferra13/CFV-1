@@ -77,36 +77,48 @@ export async function getMenuNutritionalSummary(eventId: string): Promise<MenuNu
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    (supabase as any)
-      .from('event_menu_components')
+    supabase
+      .from('menus')
       .select(
         `
-        name, course_type, description, allergen_tags,
-        recipes(name, servings, recipe_ingredients(ingredient_name, quantity, unit))
+        dishes(name, course_name, description, allergen_flags,
+          dish_components(recipe:recipes(name, servings, recipe_ingredients(ingredient_name, quantity, unit)))
+        )
       `
       )
       .eq('event_id', eventId)
-      .order('created_at', { ascending: true }),
+      .limit(1)
+      .single(),
   ])
 
   const event = eventResult.data
   if (!event) throw new Error('Event not found')
 
-  const menuItems = (menuResult.data ?? []) as Array<{
+  // Extract dishes from the menu join — menus.dishes[] with nested dish_components.recipe
+  const rawDishes = (menuResult.data?.dishes ?? []) as Array<{
     name: string
-    course_type: string | null
+    course_name: string | null
     description: string | null
-    allergen_tags: string[] | null
-    recipes: {
-      name: string
-      servings: number | null
-      recipe_ingredients: Array<{
-        ingredient_name: string
-        quantity: number | null
-        unit: string | null
-      }>
-    } | null
+    allergen_flags: string[] | null
+    dish_components: Array<{
+      recipe: {
+        name: string
+        servings: number | null
+        recipe_ingredients: Array<{
+          ingredient_name: string
+          quantity: number | null
+          unit: string | null
+        }>
+      } | null
+    }>
   }>
+  const menuItems = rawDishes.map((d) => ({
+    name: d.name,
+    course_type: d.course_name,
+    description: d.description,
+    allergen_tags: d.allergen_flags,
+    recipes: d.dish_components?.[0]?.recipe ?? null,
+  }))
 
   if (menuItems.length === 0) {
     return {

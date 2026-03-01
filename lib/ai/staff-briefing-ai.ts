@@ -66,11 +66,12 @@ export async function generateAIStaffBriefing(eventId: string): Promise<AIStaffB
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    (supabase as any)
-      .from('event_menu_components')
-      .select('name, course_type, description, allergen_tags')
+    supabase
+      .from('menus')
+      .select('dishes(name, course_name, description, allergen_flags)')
       .eq('event_id', eventId)
-      .order('created_at', { ascending: true }),
+      .limit(1)
+      .single(),
     supabase
       .from('event_guests')
       .select('full_name, dietary_restrictions, allergies')
@@ -85,7 +86,19 @@ export async function generateAIStaffBriefing(eventId: string): Promise<AIStaffB
   const event = eventResult.data
   if (!event) throw new Error('Event not found')
 
-  const menu = (menuResult.data ?? []) as MenuComponentRow[]
+  // Extract dishes from the menu join
+  const rawDishes = (menuResult.data?.dishes ?? []) as Array<{
+    name: string
+    course_name: string | null
+    description: string | null
+    allergen_flags: string[] | null
+  }>
+  const menu: MenuComponentRow[] = rawDishes.map((d) => ({
+    name: d.name,
+    course_type: d.course_name,
+    description: d.description,
+    allergen_tags: d.allergen_flags,
+  }))
   const guests = guestsResult.data ?? []
   const staff = (staffResult.data ?? []) as StaffAssignmentRow[]
   const chef = chefResult.data
