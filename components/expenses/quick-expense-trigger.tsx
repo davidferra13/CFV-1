@@ -31,7 +31,7 @@ export function QuickExpenseTrigger() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-20 right-4 md:hidden z-40 w-12 h-12 rounded-full bg-brand-600 hover:bg-brand-500 text-white shadow-lg flex items-center justify-center transition-colors"
+        className="fixed bottom-6 right-4 md:hidden z-40 w-12 h-12 rounded-full bg-brand-600 hover:bg-brand-500 text-white shadow-lg flex items-center justify-center transition-colors"
         aria-label="Quick expense"
         title="Log expense (Ctrl+Shift+E)"
       >
