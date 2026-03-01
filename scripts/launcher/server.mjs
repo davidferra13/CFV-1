@@ -3851,6 +3851,43 @@ async function handleRequest(req, res) {
     }
   }
 
+  // ── Remy Roadmap & Eval Data ──────────────────────────────────
+  if (path === '/api/remy/roadmap' && method === 'GET') {
+    const DOCS_DIR = join(PROJECT_ROOT, 'docs')
+    const EVAL_DIR = join(PROJECT_ROOT, 'scripts', 'remy-eval', 'reports')
+    const result = { ok: true, roadmap: '', evalReports: [] }
+
+    // Read roadmap markdown
+    try {
+      result.roadmap = await readFile(join(DOCS_DIR, 'remy-roadmap.md'), 'utf-8')
+    } catch (err) {
+      result.roadmap = '# Remy Roadmap\n\n_No roadmap file found at docs/remy-roadmap.md_'
+    }
+
+    // Read all eval reports (sorted newest first)
+    try {
+      const files = (await readdir(EVAL_DIR)).filter(f => f.endsWith('.json')).sort().reverse()
+      for (const f of files.slice(0, 20)) {
+        try {
+          const raw = await readFile(join(EVAL_DIR, f), 'utf-8')
+          const data = JSON.parse(raw)
+          result.evalReports.push({
+            file: f,
+            timestamp: data.timestamp,
+            totalTests: data.totalTests,
+            passed: data.passed,
+            failed: data.failed,
+            avgResponseTimeMs: data.avgResponseTimeMs,
+            categoryBreakdown: data.categoryBreakdown,
+            weakAreas: data.weakAreas || [],
+          })
+        } catch { /* skip malformed */ }
+      }
+    } catch { /* no reports dir */ }
+
+    return json(res, result)
+  }
+
   // ── VS Code Activity Summary ──────────────────────────────────
   if (path === '/api/activity/summary' && method === 'GET') {
     return json(res, { ok: true, ...getActivitySummary() })
