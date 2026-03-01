@@ -4,6 +4,7 @@
 // All functions query across ALL chef tenants (admin-only)
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAdmin } from '@/lib/auth/admin'
 
 export type PlatformOverviewStats = {
   totalChefs: number
@@ -88,6 +89,7 @@ function startOfCurrentMonth(): string {
 }
 
 export async function getPlatformOverviewStats(): Promise<PlatformOverviewStats> {
+  await requireAdmin()
   const supabase: any = createAdminClient()
   const monthStart = startOfCurrentMonth()
 
@@ -150,6 +152,7 @@ export async function getPlatformOverviewStats(): Promise<PlatformOverviewStats>
 }
 
 export async function getPlatformChefList(): Promise<PlatformChefRow[]> {
+  await requireAdmin()
   const supabase: any = createAdminClient()
 
   const { data: chefs } = await supabase
@@ -199,6 +202,7 @@ export async function getPlatformChefList(): Promise<PlatformChefRow[]> {
 }
 
 export async function getPlatformClientList(): Promise<PlatformClientRow[]> {
+  await requireAdmin()
   const supabase: any = createAdminClient()
 
   const { data: rawClients } = await supabase
@@ -268,6 +272,7 @@ export async function getPlatformClientList(): Promise<PlatformClientRow[]> {
 }
 
 export async function getAllPlatformEvents(): Promise<PlatformEventRow[]> {
+  await requireAdmin()
   const supabase: any = createAdminClient()
 
   const { data: events } = await supabase
@@ -302,6 +307,7 @@ export async function getAllPlatformEvents(): Promise<PlatformEventRow[]> {
 }
 
 export async function getPlatformGrowthStats(): Promise<GrowthDataPoint[]> {
+  await requireAdmin()
   const supabase: any = createAdminClient()
 
   const twelveMonthsAgo = new Date()
@@ -340,6 +346,7 @@ export async function getPlatformGrowthStats(): Promise<GrowthDataPoint[]> {
 }
 
 export async function getPlatformRevenueByMonth(): Promise<RevenueDataPoint[]> {
+  await requireAdmin()
   const supabase: any = createAdminClient()
 
   const twelveMonthsAgo = new Date()
@@ -364,6 +371,7 @@ export async function getPlatformRevenueByMonth(): Promise<RevenueDataPoint[]> {
 }
 
 export async function getPlatformFinancialOverview() {
+  await requireAdmin()
   const supabase: any = createAdminClient()
   const monthStart = startOfCurrentMonth()
 
@@ -400,6 +408,7 @@ export async function getPlatformFinancialOverview() {
 }
 
 export async function getPlatformLedgerEntries(limit = 100) {
+  await requireAdmin()
   const supabase: any = createAdminClient()
 
   const { data } = await supabase
@@ -412,6 +421,7 @@ export async function getPlatformLedgerEntries(limit = 100) {
 }
 
 export async function getSystemHealthStats(): Promise<SystemHealthStats> {
+  await requireAdmin()
   const supabase: any = createAdminClient()
 
   const thirtyDaysAgo = new Date()
@@ -464,6 +474,7 @@ export async function getSystemHealthStats(): Promise<SystemHealthStats> {
 }
 
 export async function getQolMetricsSummary(days = 30): Promise<QolMetricsSummary> {
+  await requireAdmin()
   const supabase: any = createAdminClient()
   const sinceDate = new Date()
   sinceDate.setDate(sinceDate.getDate() - Math.max(1, days))
@@ -497,6 +508,7 @@ export async function getQolMetricsSummary(days = 30): Promise<QolMetricsSummary
 }
 
 export async function getPlatformAuditLog(limit = 100): Promise<Record<string, unknown>[]> {
+  await requireAdmin()
   const supabase: any = createAdminClient()
 
   const { data } = await supabase
@@ -509,6 +521,7 @@ export async function getPlatformAuditLog(limit = 100): Promise<Record<string, u
 }
 
 export async function getChefFeatureFlags(chefId: string): Promise<Record<string, boolean>> {
+  await requireAdmin()
   const supabase: any = createAdminClient()
 
   const { data } = await supabase
@@ -523,6 +536,7 @@ export async function getAllChefFlags(): Promise<{
   chefs: { id: string; business_name: string | null }[]
   flagsByChef: Record<string, Record<string, boolean>>
 }> {
+  await requireAdmin()
   const supabase: any = createAdminClient()
 
   const [chefsResult, flagsResult] = await Promise.all([

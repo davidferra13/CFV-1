@@ -4,6 +4,7 @@
 // Writes to admin_audit_log table (protected by a no-delete rule)
 
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAdmin } from '@/lib/auth/admin'
 
 export type AuditActionType =
   | 'account_created'
@@ -42,6 +43,7 @@ export async function logAdminAction({
   ipAddress?: string
 }) {
   try {
+    await requireAdmin()
     const supabase: any = createAdminClient()
     await supabase.from('admin_audit_log').insert({
       actor_email: actorEmail,

@@ -17,7 +17,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ men
         'Cache-Control': 'no-store',
       },
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[foh-preview] Error:', error)
     return NextResponse.json({ error: 'Failed to generate FOH preview' }, { status: 500 })
   }

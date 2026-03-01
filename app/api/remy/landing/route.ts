@@ -9,71 +9,13 @@ import { isOllamaEnabled, getOllamaConfig, getOllamaModel } from '@/lib/ai/provi
 import { validateRemyInput } from '@/lib/ai/remy-guardrails'
 import { validateRemyRequestBody, validateHistory } from '@/lib/ai/remy-input-validation'
 import { buildLandingSystemPrompt } from '@/lib/ai/remy-landing-personality'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 interface StreamEvent {
   type: 'token' | 'done' | 'error'
   data: unknown
-}
-
-// ─── IP-Based Rate Limiting ─────────────────────────────────────────────────
-
-const ipBuckets = new Map<string, { count: number; windowStart: number }>()
-const LANDING_RATE_LIMIT_MAX = 5
-const LANDING_RATE_LIMIT_WINDOW_MS = 60_000
-
-setInterval(() => {
-  const now = Date.now()
-  for (const [ip, bucket] of ipBuckets) {
-    if (now - bucket.windowStart > LANDING_RATE_LIMIT_WINDOW_MS * 5) {
-      ipBuckets.delete(ip)
-    }
-  }
-}, 5 * 60_000)
-
-function checkLandingRateLimit(ip: string): { allowed: boolean; refusal?: string } {
-  const now = Date.now()
-  const bucket = ipBuckets.get(ip)
-
-  if (!bucket || now - bucket.windowStart > LANDING_RATE_LIMIT_WINDOW_MS) {
-    ipBuckets.set(ip, { count: 1, windowStart: now })
-    return { allowed: true }
-  }
-
-  bucket.count++
-  if (bucket.count > LANDING_RATE_LIMIT_MAX) {
-    return {
-      allowed: false,
-      refusal:
-        "I'm getting a lot of messages — give me a moment to catch up! Try again in about a minute.",
-    }
-  }
-
-  return { allowed: true }
-}
-
-// ─── Session Message Counter ────────────────────────────────────────────────
-
-const sessionBuckets = new Map<string, number>()
-const SESSION_MAX_MESSAGES = 10
-
-setInterval(() => {
-  // Clean up session buckets every 30 minutes
-  sessionBuckets.clear()
-}, 30 * 60_000)
-
-function checkSessionLimit(ip: string): { allowed: boolean; refusal?: string } {
-  const count = sessionBuckets.get(ip) ?? 0
-  if (count >= SESSION_MAX_MESSAGES) {
-    return {
-      allowed: false,
-      refusal:
-        "I've enjoyed chatting! The best way to really see ChefFlow is to try it yourself — it's free to start, no credit card needed.",
-    }
-  }
-  sessionBuckets.set(ip, count + 1)
-  return { allowed: true }
 }
 
 // ─── SSE Helpers ────────────────────────────────────────────────────────────
@@ -111,20 +53,19 @@ export async function POST(req: NextRequest) {
       req.headers.get('x-real-ip') ||
       'unknown'
 
-    // Rate limit check
-    const rateCheck = checkLandingRateLimit(ip)
-    if (!rateCheck.allowed) {
-      return new Response(encodeSSE({ type: 'error', data: rateCheck.refusal }), {
-        headers: sseHeaders(),
-      })
-    }
-
-    // Session limit check
-    const sessionCheck = checkSessionLimit(ip)
-    if (!sessionCheck.allowed) {
-      return new Response(encodeSSE({ type: 'error', data: sessionCheck.refusal }), {
-        headers: sseHeaders(),
-      })
+    // Rate limit check (Redis-backed — survives serverless cold starts)
+    // 5 messages/min rate limit + 10 messages/30min session limit
+    try {
+      await checkRateLimit(`remy-landing:${ip}`, 5, 60_000)
+      await checkRateLimit(`remy-landing-session:${ip}`, 10, 30 * 60_000)
+    } catch {
+      return new Response(
+        encodeSSE({
+          type: 'error',
+          data: "I'm getting a lot of messages — give me a moment to catch up! Try again in about a minute.",
+        }),
+        { headers: sseHeaders() }
+      )
     }
 
     const rawBody = await req.json()

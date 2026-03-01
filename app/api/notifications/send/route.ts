@@ -90,7 +90,8 @@ export async function POST(request: NextRequest) {
   try {
     parsed = NotificationSendSchema.parse(await request.json())
   } catch (error) {
-    return NextResponse.json({ error: 'Invalid payload', details: String(error) }, { status: 400 })
+    console.warn('[notifications/send] Invalid payload:', error)
+    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
   }
 
   const recipientId = parsed.recipientAuthUserId || user.id

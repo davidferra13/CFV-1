@@ -59,13 +59,17 @@ export async function POST(req: NextRequest) {
   const body = await req.text()
   const signature = req.headers.get('svix-signature') ?? req.headers.get('resend-signature')
 
-  // Verify signature if secret is configured
-  if (webhookSecret) {
-    const valid = await verifyResendSignature(body, signature, webhookSecret)
-    if (!valid) {
-      console.warn('[resend-webhook] Invalid signature')
-      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
-    }
+  // Fail-closed: reject if signing secret is not configured
+  if (!webhookSecret) {
+    console.error('[resend-webhook] RESEND_WEBHOOK_SECRET not configured — rejecting all webhooks')
+    return NextResponse.json({ error: 'Webhook not configured' }, { status: 503 })
+  }
+
+  // Verify HMAC-SHA256 signature
+  const valid = await verifyResendSignature(body, signature, webhookSecret)
+  if (!valid) {
+    console.warn('[resend-webhook] Invalid signature')
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
   }
 
   let event: { type: string; data: { email_id?: string; created_at?: string } }

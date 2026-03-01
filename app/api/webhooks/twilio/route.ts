@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { parseInboundWebhook } from '@/lib/sms/twilio-client'
-import { createHmac } from 'crypto'
+import { createHmac, timingSafeEqual } from 'crypto'
 
 /**
  * Validate Twilio request signature to prevent forged webhook submissions.
@@ -26,13 +26,9 @@ function validateTwilioSignature(
 
   const expectedSignature = createHmac('sha1', authToken).update(data).digest('base64')
 
-  // Timing-safe comparison
+  // Timing-safe comparison using crypto.timingSafeEqual
   if (expectedSignature.length !== signature.length) return false
-  let mismatch = 0
-  for (let i = 0; i < expectedSignature.length; i++) {
-    mismatch |= expectedSignature.charCodeAt(i) ^ signature.charCodeAt(i)
-  }
-  return mismatch === 0
+  return timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(signature))
 }
 
 export async function POST(request: NextRequest) {
@@ -60,8 +56,14 @@ export async function POST(request: NextRequest) {
         headers: { 'Content-Type': 'text/xml' },
         status: 403,
       })
+    } else {
+      // Fail-closed: reject if TWILIO_AUTH_TOKEN is not configured
+      console.error('[twilio-webhook] TWILIO_AUTH_TOKEN not configured — rejecting all webhooks')
+      return new NextResponse('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', {
+        headers: { 'Content-Type': 'text/xml' },
+        status: 503,
+      })
     }
-    // If TWILIO_AUTH_TOKEN is not set, allow passthrough (dev/test mode)
     const msg = parseInboundWebhook(params)
 
     if (!msg.body && msg.numMedia === 0) {

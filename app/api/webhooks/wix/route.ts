@@ -6,9 +6,8 @@
 // Authentication note:
 // Wix Automations HTTP Action does not support HMAC payload signing (unlike Stripe).
 // We authenticate via a per-chef webhook_secret stored in wix_connections.
-// The secret should be passed in the X-Wix-Webhook-Secret header (preferred).
-// Query param ?secret= is accepted for backward compatibility but logs a security notice,
-// as query parameters can appear in server logs, CDN logs, and browser history.
+// The secret MUST be passed in the X-Wix-Webhook-Secret header.
+// Query param ?secret= was removed in security round 6 — secrets in URLs leak to logs.
 
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
@@ -36,25 +35,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Missing submission ID' }, { status: 400 })
   }
 
-  // Authenticate: find the chef connection using webhook secret.
-  // Prefer the X-Wix-Webhook-Secret header. Accept ?secret= for backward compatibility.
-  const headerSecret = req.headers.get('x-wix-webhook-secret')
-  const url = new URL(req.url)
-  const querySecret = url.searchParams.get('secret')
-
-  const secret = headerSecret ?? querySecret
+  // Authenticate: find the chef connection using webhook secret (header only).
+  // Query param ?secret= removed — secrets in URLs leak to server logs and CDN logs.
+  const secret = req.headers.get('x-wix-webhook-secret')
 
   if (!secret) {
-    console.error('[Wix Webhook] No secret provided')
+    console.error('[Wix Webhook] No X-Wix-Webhook-Secret header provided')
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  // Security notice: prefer headers over query params to keep secrets out of logs
-  if (!headerSecret && querySecret) {
-    console.warn(
-      '[Wix Webhook] Secret received via query param — prefer X-Wix-Webhook-Secret header. ' +
-      'Query params appear in server logs and reverse proxy access logs.'
-    )
   }
 
   const supabase = createServerClient({ admin: true })
@@ -77,14 +64,18 @@ export async function POST(req: Request) {
   const secretBuf = Buffer.from(secret)
   const storedBuf = Buffer.from(connection.webhook_secret ?? '')
   const secretValid =
-    secretBuf.length === storedBuf.length &&
-    crypto.timingSafeEqual(secretBuf, storedBuf)
+    secretBuf.length === storedBuf.length && crypto.timingSafeEqual(secretBuf, storedBuf)
   if (!secretValid) {
     console.error('[Wix Webhook] Constant-time secret check failed')
     return NextResponse.json({ error: 'Invalid secret' }, { status: 401 })
   }
 
-  console.log('[Wix Webhook] Received submission:', wixSubmissionId, 'for tenant:', connection.tenant_id)
+  console.log(
+    '[Wix Webhook] Received submission:',
+    wixSubmissionId,
+    'for tenant:',
+    connection.tenant_id
+  )
 
   // Idempotency check: has this submission already been received?
   const { data: existing } = await supabase

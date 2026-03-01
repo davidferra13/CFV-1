@@ -14,49 +14,13 @@ import {
   REMY_PUBLIC_ANTI_INJECTION,
 } from '@/lib/ai/remy-public-personality'
 import { loadRemyPublicContext, formatPublicContext } from '@/lib/ai/remy-public-context'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 interface StreamEvent {
   type: 'token' | 'done' | 'error'
   data: unknown
-}
-
-// ─── IP-Based Rate Limiting ─────────────────────────────────────────────────
-
-const ipBuckets = new Map<string, { count: number; windowStart: number }>()
-const PUBLIC_RATE_LIMIT_MAX = 5 // messages per window
-const PUBLIC_RATE_LIMIT_WINDOW_MS = 60_000 // 1 minute
-
-// Clean up old buckets every 5 minutes
-setInterval(() => {
-  const now = Date.now()
-  for (const [ip, bucket] of ipBuckets) {
-    if (now - bucket.windowStart > PUBLIC_RATE_LIMIT_WINDOW_MS * 5) {
-      ipBuckets.delete(ip)
-    }
-  }
-}, 5 * 60_000)
-
-function checkPublicRateLimit(ip: string): { allowed: boolean; refusal?: string } {
-  const now = Date.now()
-  const bucket = ipBuckets.get(ip)
-
-  if (!bucket || now - bucket.windowStart > PUBLIC_RATE_LIMIT_WINDOW_MS) {
-    ipBuckets.set(ip, { count: 1, windowStart: now })
-    return { allowed: true }
-  }
-
-  bucket.count++
-  if (bucket.count > PUBLIC_RATE_LIMIT_MAX) {
-    return {
-      allowed: false,
-      refusal:
-        "I'm getting a lot of messages — give me a moment to catch up! Try again in about a minute.",
-    }
-  }
-
-  return { allowed: true }
 }
 
 // ─── SSE Helpers ────────────────────────────────────────────────────────────
@@ -113,12 +77,17 @@ export async function POST(req: NextRequest) {
       req.headers.get('x-real-ip') ||
       'unknown'
 
-    // Rate limit check
-    const rateCheck = checkPublicRateLimit(ip)
-    if (!rateCheck.allowed) {
-      return new Response(encodeSSE({ type: 'error', data: rateCheck.refusal }), {
-        headers: sseHeaders(),
-      })
+    // Rate limit check (Redis-backed — survives serverless cold starts)
+    try {
+      await checkRateLimit(`remy-public:${ip}`, 5, 60_000)
+    } catch {
+      return new Response(
+        encodeSSE({
+          type: 'error',
+          data: "I'm getting a lot of messages — give me a moment to catch up! Try again in about a minute.",
+        }),
+        { headers: sseHeaders() }
+      )
     }
 
     const rawBody = await req.json()

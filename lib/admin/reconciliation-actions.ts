@@ -4,6 +4,7 @@
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/admin'
 
 export type ChefReconciliationRow = {
   tenantId: string
@@ -32,6 +33,7 @@ export type PlatformReconciliation = {
  * No tenant scoping — uses admin client.
  */
 export async function getPlatformReconciliation(): Promise<PlatformReconciliation> {
+  await requireAdmin()
   const supabase = createServerClient({ admin: true })
 
   // 1. GMV from ledger (all payments/deposits across tenants)

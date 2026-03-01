@@ -1,8 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { ingestInboundSms } from '@/lib/sms/ingest'
-import { timingSafeEqual } from 'crypto'
+import { timingSafeEqual, createHmac } from 'crypto'
 import { checkRateLimit } from '@/lib/rateLimit'
+
+/**
+ * Validate Twilio request signature (HMAC-SHA1).
+ * See: https://www.twilio.com/docs/usage/security#validating-requests
+ */
+function validateTwilioSignature(
+  authToken: string,
+  url: string,
+  params: Record<string, string>,
+  signature: string
+): boolean {
+  const sortedKeys = Object.keys(params).sort()
+  let data = url
+  for (const key of sortedKeys) {
+    data += key + params[key]
+  }
+  const expectedSignature = createHmac('sha1', authToken).update(data).digest('base64')
+  if (expectedSignature.length !== signature.length) return false
+  return timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(signature))
+}
 
 // ─── Twilio Webhook (POST) ──────────────────────────────────────────────────
 // Twilio sends incoming SMS as x-www-form-urlencoded POST requests.
@@ -33,12 +53,30 @@ export async function POST(request: NextRequest) {
       timingSafeEqual(Buffer.from(authHeader), Buffer.from(expected))
   }
 
-  // Accept bearer token OR Twilio webhook (verified by x-twilio-signature header)
+  // Accept bearer token OR Twilio webhook (cryptographically verified signature)
   const isTwilioFormat = request.headers
     .get('content-type')
     ?.includes('application/x-www-form-urlencoded')
-  const hasTwilioSignature = !!request.headers.get('x-twilio-signature')
-  const isTwilioVerified = isTwilioFormat && hasTwilioSignature && !!process.env.TWILIO_AUTH_TOKEN
+  const twilioSignature = request.headers.get('x-twilio-signature')
+  const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN
+
+  // For Twilio format: verify the HMAC-SHA1 signature cryptographically
+  let isTwilioVerified = false
+  let twilioParams: Record<string, string> = {}
+  if (isTwilioFormat && twilioSignature && twilioAuthToken) {
+    const rawText = await request.text()
+    twilioParams = Object.fromEntries(new URLSearchParams(rawText))
+    const webhookUrl = `${process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'}/api/comms/sms`
+    isTwilioVerified = validateTwilioSignature(
+      twilioAuthToken,
+      webhookUrl,
+      twilioParams,
+      twilioSignature
+    )
+    if (!isTwilioVerified) {
+      console.warn('[sms-inbound] Invalid Twilio signature — rejecting')
+    }
+  }
 
   if (!isBearerAuth && !isTwilioVerified) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -51,11 +89,10 @@ export async function POST(request: NextRequest) {
   let timestamp: string | undefined
 
   if (isTwilioFormat) {
-    // Twilio webhook format
-    const formData = await request.formData()
-    from = formData.get('From')?.toString() ?? ''
-    body = formData.get('Body')?.toString() ?? ''
-    toNumber = formData.get('To')?.toString() ?? undefined
+    // Twilio webhook format — already parsed into twilioParams above
+    from = twilioParams['From'] ?? ''
+    body = twilioParams['Body'] ?? ''
+    toNumber = twilioParams['To'] ?? undefined
     timestamp = undefined // Twilio doesn't send a timestamp field; use now
   } else {
     // JSON format (manual forward / API call)
