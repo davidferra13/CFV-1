@@ -1,6 +1,6 @@
 # Remy Improvement Roadmap
 
-**Created:** 2026-02-28 | **Last Updated:** 2026-03-01
+**Created:** 2026-02-28 | **Last Updated:** 2026-02-28
 **Owner:** Claude Code (Lead Engineer)
 
 ---
@@ -120,20 +120,17 @@ These are software improvements that cost $0 and make Remy smarter.
     - `lib/ai/remy-stream.ts` — SSE streaming utilities
   - Impact: Maintainability, testability, easier debugging
 
-### Allergy Safety (CRITICAL — 0/2 passing)
+### Allergy Safety (CRITICAL — was 0/2, now fixed)
 
-- [ ] **13. Fix allergy context surfacing**
-  - allergy-01: Found Rachel Kim but didn't include "shellfish" allergy in response
-  - allergy-02: Garcia family — "don't have any allergy notes" (data exists in seed)
-  - Root cause: Dietary restrictions exist in client records but the context loader or LLM response isn't surfacing them prominently enough
-  - This is **safety-critical** — a chef missing an allergy note could cause a medical emergency
-  - Investigation needed: Check if `remy-context.ts` includes dietary data, and if the system prompt emphasizes allergy surfacing
-  - Files: `lib/ai/remy-context.ts`, `app/api/remy/stream/route.ts` (system prompt)
+- [x] **13. Fix allergy context surfacing** ✅ (2026-02-28)
+  - **Root cause 1 (command path):** `checkDietaryByClientName()` was event-centric — only returned allergies if an event had a menu attached. Rewrote to be client-centric: always returns `allergies` and `dietary_restrictions` directly from the clients table, extracts safety notes (EpiPen, severity) from `vibe_notes` and `kitchen_notes`.
+  - **Root cause 2 (question path):** Context loader only selected `full_name, vibe_notes` for client context — did NOT include `dietary_restrictions` or `allergies` columns. Added both fields to the query and created a dedicated `⚠️ CLIENT DIETARY & ALLERGY DATA` section in the system prompt, rendered before vibe notes.
+  - Files changed: `lib/ai/dietary-check-actions.ts`, `lib/ai/remy-context.ts`, `lib/ai/remy-types.ts`, `app/api/remy/stream/route.ts`
 
-- [ ] **14. Add allergy prominence rules**
-  - When a query is about a client or event, allergies and dietary restrictions MUST be prominently flagged
-  - System prompt should instruct: "ALWAYS lead with allergy/dietary information when discussing a client or event. This is safety-critical."
-  - Add `mustContain` allergy terms to relevant test cases
+- [x] **14. Add allergy prominence rules** ✅ (2026-02-28)
+  - System prompt now includes a dedicated safety-critical allergy section with instruction: "When asked about these clients' dietary needs, ALWAYS prominently flag allergies."
+  - Clients with allergies get a separate, prominent block above general vibe notes
+  - `checkDietaryByClientName()` now always returns allergy data regardless of event/menu state
 
 ### Classifier
 
