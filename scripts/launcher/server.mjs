@@ -3408,6 +3408,18 @@ async function handleRequest(req, res) {
     }
   }
 
+  // Gustav mascot image
+  if (path === '/gustav-mascot.png') {
+    try {
+      const img = await readFile(join(__dirname, 'gustav-mascot.png'))
+      res.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=86400' })
+      return res.end(img)
+    } catch {
+      res.writeHead(404)
+      return res.end('Gustav mascot not found')
+    }
+  }
+
   // Gustav storage JS
   if (path === '/gustav-storage.js') {
     try {

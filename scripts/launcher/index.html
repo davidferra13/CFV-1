@@ -1178,34 +1178,45 @@ body {
 }
 .queue-badge.empty { background: var(--text-muted); }
 
-/* ── Chat FAB ────────────────────────────────────────────────── */
+/* ── Chat FAB (Gustav Mascot) ─────────────────────────────────── */
 .chat-fab {
   position: fixed;
-  bottom: 44px;
+  bottom: 0;
   right: 20px;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--brand-bright), var(--brand));
+  width: 80px;
+  height: 100px;
+  border-radius: 0;
+  background: transparent;
   border: none;
   cursor: pointer;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  font-size: 22px;
-  box-shadow: 0 4px 16px var(--brand-glow);
-  transition: all 300ms ease;
+  padding: 0;
+  transition: transform 300ms ease;
   z-index: 200;
 }
 .chat-fab:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 24px var(--brand-glow);
+  transform: translateY(-4px);
 }
 .chat-fab.open {
-  background: var(--bg-card);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  background: transparent;
 }
-.chat-fab-icon { line-height: 1; }
+.chat-fab-icon {
+  line-height: 1;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  height: 100%;
+}
+.chat-fab-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: bottom center;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));
+}
 .chat-fab-dot {
   position: absolute;
   top: 6px;
@@ -1227,7 +1238,7 @@ body {
 /* ── Chat Drawer ─────────────────────────────────────────────── */
 .chat-drawer {
   position: fixed;
-  bottom: 44px;
+  bottom: 104px;
   right: 20px;
   width: 400px;
   height: 520px;
@@ -1312,7 +1323,8 @@ body {
   text-align: center;
   padding: 24px 16px;
 }
-.chat-welcome-icon { font-size: 36px; margin-bottom: 8px; }
+.chat-welcome-icon { margin-bottom: 8px; }
+.chat-welcome-icon img { width: 60px; height: auto; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3)); }
 .chat-welcome-title {
   font-family: 'DM Serif Display', serif;
   font-size: 18px;
@@ -4791,7 +4803,7 @@ body {
 
 <!-- ═══ Chat Drawer ═══ -->
 <button type="button" class="chat-fab" id="chat-fab" onclick="toggleChat()" title="Gustav (Ctrl+/)">
-  <span class="chat-fab-icon" id="chat-fab-icon">&#x1F916;</span>
+  <span class="chat-fab-icon" id="chat-fab-icon"><img src="/gustav-mascot.png" alt="Gustav" /></span>
   <span class="chat-fab-dot" id="chat-fab-dot"></span>
 </button>
 
@@ -4825,15 +4837,15 @@ body {
     <div id="chat-suggest-area"></div>
     <div class="chat-messages" id="chat-messages">
       <div class="chat-welcome">
-        <div class="chat-welcome-icon">&#x1F916;</div>
+        <div class="chat-welcome-icon"><img src="/gustav-mascot.png" alt="Gustav" /></div>
         <div class="chat-welcome-title">Gustav</div>
-        <div class="chat-welcome-text">DevOps, business data, Pi monitoring, Remy bridge — I do it all. Ask me anything.</div>
+        <div class="chat-welcome-text">Mise en place. All stations ready. What do you need?</div>
         <div class="chat-quick-actions" id="chat-quick-actions">
-          <button type="button" class="chat-quick-btn" onclick="sendQuick('Show me the full system status')">Status</button>
+          <button type="button" class="chat-quick-btn" onclick="sendQuick('Show me the full system status')">All stations</button>
           <button type="button" class="chat-quick-btn" onclick="sendQuick('Show revenue summary')">Revenue</button>
           <button type="button" class="chat-quick-btn" onclick="sendQuick('Show upcoming events')">Events</button>
           <button type="button" class="chat-quick-btn" onclick="sendQuick('Check the Pi status')">Pi status</button>
-          <button type="button" class="chat-quick-btn" onclick="sendQuick('Start the dev server')">Start dev</button>
+          <button type="button" class="chat-quick-btn" onclick="sendQuick('Start the dev server')">Fire dev</button>
           <button type="button" class="chat-quick-btn" onclick="sendQuick('Deploy to beta')">Deploy beta</button>
         </div>
       </div>
@@ -5505,7 +5517,6 @@ async function toggleChat() {
 
   if (chatOpen) {
     drawer.classList.add('open')
-    fab.style.display = 'none'
     document.getElementById('chat-input')?.focus()
 
     // Load most recent conversation on first open
@@ -5526,9 +5537,6 @@ async function toggleChat() {
     }
   } else {
     drawer.classList.remove('open')
-    fab.style.display = ''
-    fab.classList.remove('open')
-    fabIcon.innerHTML = '&#x1F916;'
     closeContextMenu()
   }
 }
@@ -5554,15 +5562,15 @@ async function newConversation(projectId = null) {
 function showWelcomeScreen() {
   const messagesEl = document.getElementById('chat-messages')
   messagesEl.innerHTML = `<div class="chat-welcome">
-    <div class="chat-welcome-icon">&#x1F916;</div>
+    <div class="chat-welcome-icon"><img src="/gustav-mascot.png" alt="Gustav" /></div>
     <div class="chat-welcome-title">Gustav</div>
-    <div class="chat-welcome-text">DevOps, business data, Pi monitoring, Remy bridge — I do it all. Ask me anything.</div>
+    <div class="chat-welcome-text">Mise en place. All stations ready. What do you need?</div>
     <div class="chat-quick-actions" id="chat-quick-actions">
-      <button type="button" class="chat-quick-btn" onclick="sendQuick('Show me the full system status')">Status</button>
+      <button type="button" class="chat-quick-btn" onclick="sendQuick('Show me the full system status')">All stations</button>
       <button type="button" class="chat-quick-btn" onclick="sendQuick('Show revenue summary')">Revenue</button>
       <button type="button" class="chat-quick-btn" onclick="sendQuick('Show upcoming events')">Events</button>
       <button type="button" class="chat-quick-btn" onclick="sendQuick('Check the Pi status')">Pi status</button>
-      <button type="button" class="chat-quick-btn" onclick="sendQuick('Start the dev server')">Start dev</button>
+      <button type="button" class="chat-quick-btn" onclick="sendQuick('Start the dev server')">Fire dev</button>
       <button type="button" class="chat-quick-btn" onclick="sendQuick('Deploy to beta')">Deploy beta</button>
     </div>
   </div>`
