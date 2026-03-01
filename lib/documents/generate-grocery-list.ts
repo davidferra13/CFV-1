@@ -259,6 +259,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
       budget: { ceilingCents: null, projectedCents: null },
       totalBuyItems: 0,
       hasStop2: false,
+      allergies: event.allergies ?? [],
     }
   }
 

@@ -1689,7 +1689,8 @@ async function handleGenericPlatformEmail(
   tenantId: string,
   result: SyncResult,
   platform: PlatformChannel,
-  parseFn: (email: ParsedEmail) => GenericParseResult
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  parseFn: (email: ParsedEmail) => any
 ) {
   const parsed = parseFn(email)
   const displayName = PLATFORM_DISPLAY_NAMES[platform]
