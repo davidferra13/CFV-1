@@ -467,9 +467,12 @@ export function RemyDrawer() {
         aria-label="Attach file to Remy"
       />
 
-      {/* Collapsed sidebar strip */}
+      {/* Collapsed floating strip */}
       {open && collapsed && (
-        <div className="fixed top-0 right-0 bottom-0 z-50 w-12 bg-brand-600 shadow-2xl flex flex-col items-center py-3 gap-2 border-l border-brand-700">
+        <div
+          className="fixed bottom-4 right-4 z-50 w-12 bg-brand-600 shadow-2xl flex flex-col items-center py-3 gap-2 rounded-2xl border border-brand-700"
+          style={{ height: '180px' }}
+        >
           <button
             onClick={() => setCollapsed(false)}
             className="text-white/80 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-stone-800/10"
@@ -500,19 +503,22 @@ export function RemyDrawer() {
         </div>
       )}
 
-      {/* Drawer panel — no overlay, page remains interactive */}
+      {/* Floating chat window — positioned bottom-right, page remains interactive */}
       {open && !collapsed && (
         <div
           role="dialog"
           aria-modal="true"
           aria-label="Remy AI assistant"
-          className="fixed top-0 right-0 bottom-0 z-50 bg-stone-900 dark:bg-stone-900 shadow-2xl flex flex-col h-full border-l border-stone-700 dark:border-stone-700"
-          style={{ width: `min(${drawerWidth}px, 100vw)` }}
+          className="fixed bottom-4 right-4 z-50 bg-stone-900 shadow-2xl flex flex-col rounded-2xl border border-stone-700 overflow-hidden"
+          style={{
+            width: `min(${drawerWidth}px, calc(100vw - 2rem))`,
+            height: 'min(680px, calc(100vh - 2rem))',
+          }}
         >
           {/* Left-edge resize handle */}
           <div
             onMouseDown={startDrawerResize}
-            className="absolute left-0 top-0 bottom-0 w-1.5 z-[60] cursor-ew-resize hover:bg-brand-400/30 active:bg-brand-400/50 transition-colors"
+            className="absolute left-0 top-0 bottom-0 w-1.5 z-[60] cursor-ew-resize hover:bg-brand-400/30 active:bg-brand-400/50 transition-colors rounded-l-2xl"
             title="Drag to resize"
           />
 

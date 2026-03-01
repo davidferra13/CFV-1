@@ -54,15 +54,11 @@ export function GlobalSearch({ userId, tenantId }: { userId: string; tenantId: s
     refreshHistory()
   }, [refreshHistory])
 
+  // Listen for "/" shortcut (dispatched by KeyboardShortcutProvider as 'open-search')
   useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
-        event.preventDefault()
-        openAndFocus()
-      }
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
+    const onOpenSearch = () => openAndFocus()
+    window.addEventListener('open-search', onOpenSearch)
+    return () => window.removeEventListener('open-search', onOpenSearch)
   }, [openAndFocus])
 
   useEffect(() => {
@@ -217,7 +213,7 @@ export function GlobalSearch({ userId, tenantId }: { userId: string; tenantId: s
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Search everything... (Ctrl/Cmd+K)"
+            placeholder="Search everything... (press /)"
             className="absolute right-0 top-full mt-1 w-[280px] px-3 py-2 rounded-lg border border-stone-700 text-sm outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 bg-stone-900 shadow-lg"
             role="combobox"
             aria-controls={listboxId}

@@ -75,11 +75,9 @@ export function KeyboardShortcutProvider({ children }: { children: React.ReactNo
       return
     }
 
-    // Cmd+K or Ctrl+K — open search
+    // Cmd+K or Ctrl+K — open Remy drawer (search uses "/" shortcut)
     if (key === 'k' && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault()
-      window.dispatchEvent(new CustomEvent('open-search'))
-      lastKeyRef.current = null
+      // Let the RemyProvider's keydown handler handle this
       return
     }
 

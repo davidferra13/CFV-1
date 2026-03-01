@@ -81,7 +81,7 @@ function RemyInner() {
       {/* Mascot inline chat — quick conversations above the mascot */}
       <RemyMascotChat />
 
-      {/* Chat drawer — right side panel (Ctrl+K) */}
+      {/* Chat window — floating panel, bottom-right (Ctrl+K) */}
       <RemyDrawer />
     </>
   )
