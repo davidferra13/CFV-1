@@ -2,6 +2,7 @@
 
 import { createServerClient } from '@/lib/supabase/server'
 import { z } from 'zod'
+import type { Json } from '@/types/database'
 import type { EventStub } from '@/lib/hub/types'
 
 // ---------------------------------------------------------------------------
@@ -88,7 +89,7 @@ export async function createEventStub(input: z.infer<typeof CreateStubSchema>): 
         system_metadata: {
           title: validated.title,
           creator_name: profile.display_name,
-        },
+        } as Json,
       })
 
       stub.hub_group_id = group.id
@@ -228,7 +229,7 @@ export async function seekChef(input: { stubId: string; profileToken: string }):
         author_profile_id: profile.id,
         message_type: 'system',
         system_event_type: 'seeking_chef',
-        system_metadata: {},
+        system_metadata: {} as Json,
         body: 'Looking for a chef for this event!',
       })
     } catch {
@@ -263,16 +264,43 @@ export async function adoptEventStub(input: {
     .eq('id', input.tenantId)
     .single()
 
+  // Look up or create a client for the stub creator
+  // Stubs are created by hub guest profiles — we need a client_id for the event
+  const { data: creatorProfile } = await supabase
+    .from('hub_guest_profiles')
+    .select('email, display_name, client_id')
+    .eq('id', stub.created_by_profile_id)
+    .single()
+
+  let clientId = creatorProfile?.client_id
+  if (!clientId) {
+    // Create a minimal client record for this guest
+    const { data: newClient } = await supabase
+      .from('clients')
+      .insert({
+        tenant_id: input.tenantId,
+        full_name: creatorProfile?.display_name ?? 'Guest',
+        email: creatorProfile?.email ?? `hub-guest-${stub.created_by_profile_id}@placeholder.local`,
+      })
+      .select('id')
+      .single()
+    clientId = newClient?.id
+  }
+  if (!clientId) throw new Error('Could not resolve client for stub')
+
   // Create a real event from stub data
   const { data: event, error: eventError } = await supabase
     .from('events')
     .insert({
       tenant_id: input.tenantId,
+      client_id: clientId,
       occasion: stub.occasion ?? stub.title,
-      event_date: stub.event_date,
-      serve_time: stub.serve_time,
-      guest_count: stub.guest_count,
-      location_address: stub.location_text,
+      event_date: stub.event_date ?? new Date().toISOString().slice(0, 10),
+      serve_time: '18:00:00',
+      guest_count: stub.guest_count ?? 2,
+      location_address: stub.location_text ?? 'TBD',
+      location_city: 'TBD',
+      location_zip: '00000',
       special_requests: stub.notes,
       status: 'draft',
     })
@@ -320,7 +348,7 @@ export async function adoptEventStub(input: {
         system_metadata: {
           chef_name: chef?.business_name ?? 'A chef',
           tenant_id: input.tenantId,
-        },
+        } as Json,
         body: `${chef?.business_name ?? 'A chef'} has joined! Let's plan this dinner.`,
       })
     } catch {

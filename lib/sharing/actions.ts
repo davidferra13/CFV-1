@@ -2377,6 +2377,7 @@ export async function getEventShareByToken(token: string) {
   return {
     shareId: share.id,
     eventId: event.id,
+    tenantId: event.tenant_id,
     status: event.status,
     visibility,
     // Always shown

@@ -2,6 +2,7 @@
 
 import { createServerClient } from '@/lib/supabase/server'
 import { z } from 'zod'
+import type { Json } from '@/types/database'
 import type { HubPoll, HubPollOption } from './types'
 
 // ---------------------------------------------------------------------------
@@ -17,7 +18,7 @@ const CreatePollSchema = z.object({
     .array(
       z.object({
         label: z.string().min(1).max(200),
-        metadata: z.record(z.unknown()).optional(),
+        metadata: z.record(z.string(), z.unknown()).optional(),
       })
     )
     .min(2)
@@ -72,7 +73,7 @@ export async function createHubPoll(input: z.infer<typeof CreatePollSchema>): Pr
   const optionInserts = validated.options.map((opt, i) => ({
     poll_id: poll.id,
     label: opt.label,
-    metadata: opt.metadata ?? null,
+    metadata: (opt.metadata ?? null) as Json,
     sort_order: i,
   }))
 
@@ -91,7 +92,7 @@ export async function createHubPoll(input: z.infer<typeof CreatePollSchema>): Pr
       author_profile_id: profile.id,
       message_type: 'poll',
       body: validated.question,
-      system_metadata: { poll_id: poll.id },
+      system_metadata: { poll_id: poll.id } as Json,
     })
     .select('id')
     .single()

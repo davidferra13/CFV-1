@@ -27,6 +27,7 @@ import {
   Mail,
   MapPin,
   MessageCircle,
+  MessagesSquare,
   Package,
   Phone,
   PieChart,
@@ -746,6 +747,12 @@ export const navGroups: NavGroup[] = [
           { href: '/social/connections', label: 'Platform Connections' },
           { href: '/social/settings', label: 'Queue Settings' },
         ],
+      },
+      {
+        href: '/social/hub-overview',
+        label: 'Social Hub',
+        icon: MessagesSquare,
+        adminOnly: true,
       },
       {
         href: '/reputation/mentions',

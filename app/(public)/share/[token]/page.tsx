@@ -286,7 +286,7 @@ export default async function SharePage({ params }: { params: { token: string } 
             <JoinHubCTA
               eventId={eventData.eventId}
               tenantId={eventData.tenantId}
-              eventTitle={eventData.occasion ?? eventData.title ?? 'Dinner'}
+              eventTitle={eventData.occasion ?? 'Dinner'}
             />
           </div>
         )}

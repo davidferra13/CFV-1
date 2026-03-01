@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useRef, useTransition } from 'react'
+import { useState, useEffect, useRef, useTransition } from 'react'
 import type { HubMedia } from '@/lib/hub/types'
 import { createHubMedia, deleteHubMedia, getMediaUrl } from '@/lib/hub/media-actions'
-import { createBrowserClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 
 interface HubPhotoGalleryProps {
   groupId: string
@@ -27,7 +27,7 @@ export function HubPhotoGallery({ groupId, media, profileToken, canPost }: HubPh
 
     setUploading(true)
     try {
-      const supabase = createBrowserClient()
+      const supabase = createClient()
       const ext = file.name.split('.').pop() ?? 'jpg'
       const path = `${groupId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
 
@@ -193,10 +193,10 @@ function PhotoThumbnail({
 }) {
   const [url, setUrl] = useState<string | null>(null)
 
-  // Load URL on mount
-  useState(() => {
+  // Load signed URL on mount
+  useEffect(() => {
     getUrl(item).then(setUrl)
-  })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <button

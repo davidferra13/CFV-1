@@ -1279,7 +1279,7 @@ export async function getUnreadThreadCount(): Promise<number> {
   let unread = 0
   for (const thread of threads) {
     const lastRead = readMap.get(thread.id)
-    if (!lastRead || new Date(thread.last_activity_at) > new Date(lastRead)) {
+    if (!lastRead || new Date(thread.last_activity_at) > new Date(lastRead as string)) {
       unread++
     }
   }
@@ -1397,20 +1397,10 @@ export async function sendReplyViaChannel(input: {
 
   if (channel === 'email') {
     // Send via Gmail API
-    const { getGoogleConnection, refreshAccessToken } = await import('@/lib/google/auth')
+    const { getGoogleAccessToken } = await import('@/lib/google/auth')
     const { sendEmail } = await import('@/lib/gmail/client')
 
-    const conn = await getGoogleConnection()
-    if (!conn.gmail.connected || !conn.gmail.accessToken) {
-      throw new Error('Gmail is not connected. Connect Gmail in Settings to send emails.')
-    }
-
-    let token = conn.gmail.accessToken
-    // Refresh if expired
-    if (conn.gmail.tokenExpiresAt && new Date(conn.gmail.tokenExpiresAt) <= new Date()) {
-      const refreshed = await refreshAccessToken(conn.gmail.refreshToken!)
-      token = refreshed.accessToken
-    }
+    const token = await getGoogleAccessToken(user.tenantId!)
 
     // Get thread context for email subject
     const { data: lastInbound } = await supabase

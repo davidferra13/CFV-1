@@ -78,12 +78,11 @@ export async function syncRSVPToHubProfile(input: {
     // Get chef name
     const { data: chef } = await supabase
       .from('chefs')
-      .select('business_name, first_name, last_name')
+      .select('business_name, display_name')
       .eq('id', input.tenantId)
       .single()
 
-    const chefName =
-      chef?.business_name ?? (`${chef?.first_name ?? ''} ${chef?.last_name ?? ''}`.trim() || 'Chef')
+    const chefName = chef?.business_name ?? chef?.display_name ?? 'Chef'
 
     await supabase.from('hub_guest_event_history').upsert(
       {
@@ -161,18 +160,25 @@ export async function snapshotEventToHub(input: {
   const supabase = createServerClient({ admin: true })
 
   try {
-    // Get menu items for snapshot
-    const { data: menuItems } = await supabase
-      .from('event_menu_items')
-      .select('name, course, description')
-      .eq('event_id', input.eventId)
-      .order('course_order', { ascending: true })
+    // Get menu items for snapshot via menus → dishes
+    const { data: menus } = await supabase.from('menus').select('id').eq('event_id', input.eventId)
 
-    const coursesServed = (menuItems ?? []).map((item) => ({
-      name: item.name,
-      course: item.course,
-      description: item.description,
-    }))
+    const menuIds = (menus ?? []).map((m) => m.id)
+    let coursesServed: { name: string | null; course: string; description: string | null }[] = []
+
+    if (menuIds.length > 0) {
+      const { data: dishes } = await supabase
+        .from('dishes')
+        .select('name, course_name, description')
+        .in('menu_id', menuIds)
+        .order('course_number', { ascending: true })
+
+      coursesServed = (dishes ?? []).map((d) => ({
+        name: d.name,
+        course: d.course_name,
+        description: d.description,
+      }))
+    }
 
     // Update all history entries for this event with courses snapshot
     if (coursesServed.length > 0) {
@@ -240,12 +246,11 @@ export async function getOrCreateEventHubGroup(input: {
   // Find or create a system profile for the chef
   const { data: chef } = await supabase
     .from('chefs')
-    .select('id, business_name, first_name, last_name, auth_user_id')
+    .select('id, business_name, display_name, auth_user_id')
     .eq('id', input.tenantId)
     .single()
 
-  const chefName =
-    chef?.business_name ?? (`${chef?.first_name ?? ''} ${chef?.last_name ?? ''}`.trim() || 'Chef')
+  const chefName = chef?.business_name ?? chef?.display_name ?? 'Chef'
 
   // Check if chef already has a hub profile
   let chefProfileId: string | null = null

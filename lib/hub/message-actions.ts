@@ -2,6 +2,7 @@
 
 import { createServerClient } from '@/lib/supabase/server'
 import { z } from 'zod'
+import type { Json } from '@/types/database'
 import type { HubMessage, HubPinnedNote } from './types'
 
 // ---------------------------------------------------------------------------
@@ -85,7 +86,7 @@ export async function postSystemMessage(input: {
       author_profile_id: input.authorProfileId,
       message_type: 'system',
       system_event_type: input.systemEventType,
-      system_metadata: input.metadata ?? {},
+      system_metadata: (input.metadata ?? {}) as Json,
       body: input.body ?? null,
     })
   } catch {

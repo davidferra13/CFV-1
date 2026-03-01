@@ -149,7 +149,7 @@ export function ProfileView({ profile: initialProfile, eventHistory, groups }: P
                     </div>
 
                     {/* Courses served */}
-                    {event.courses_served && Array.isArray(event.courses_served) && (
+                    {Array.isArray(event.courses_served) && event.courses_served.length > 0 && (
                       <div className="mt-3 border-t border-stone-800 pt-3">
                         <p className="mb-1 text-xs font-medium text-stone-500">Menu</p>
                         <div className="space-y-1">
