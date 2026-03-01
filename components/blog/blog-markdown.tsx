@@ -81,8 +81,11 @@ function markdownToHtml(md: string): string {
     return `<a href="${escapeHtml(safeUrl)}" class="blog-link" target="_blank" rel="noopener">${escapeHtml(text)}</a>`
   })
 
-  // Images
-  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="blog-image" />')
+  // Images — escape alt text and sanitize src to prevent XSS via attribute breakout
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_match: string, alt: string, src: string) => {
+    const safeSrc = sanitizeUrl(src)
+    return `<img src="${escapeHtml(safeSrc)}" alt="${escapeHtml(alt)}" class="blog-image" />`
+  })
 
   // Paragraphs — wrap loose text blocks
   html = html
@@ -109,9 +112,11 @@ function escapeHtml(text: string): string {
     .replace(/"/g, '&quot;')
 }
 
-/** Only allow safe URL protocols — blocks javascript:, data:, vbscript:, etc. */
+/** Only allow safe URL protocols — whitelist approach blocks javascript:, data:, vbscript:, etc. */
 function sanitizeUrl(url: string): string {
   const trimmed = url.trim()
+  // Explicit deny-list as defense-in-depth (whitelist below is the primary gate)
+  if (/^(javascript|data|vbscript|blob):/i.test(trimmed)) return '#'
   if (/^(https?:\/\/|\/|#|mailto:)/i.test(trimmed)) return trimmed
   return '#'
 }

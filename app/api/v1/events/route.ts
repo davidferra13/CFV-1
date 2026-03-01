@@ -14,11 +14,14 @@ export async function GET(request: NextRequest) {
   const supabase = createServerClient({ admin: true })
   const url = new URL(request.url)
   const status = url.searchParams.get('status')
-  const limit = Math.min(parseInt(url.searchParams.get('limit') || '50'), 200)
+  const rawLimit = Number(url.searchParams.get('limit') ?? '50')
+  const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(Math.floor(rawLimit), 200) : 50
 
   let query = supabase
     .from('events')
-    .select('id, status, occasion, event_date, guest_count, quoted_price_cents, created_at, client:clients(id, full_name, email)')
+    .select(
+      'id, status, occasion, event_date, guest_count, quoted_price_cents, created_at, client:clients(id, full_name, email)'
+    )
     .eq('tenant_id', ctx.tenantId)
     .order('event_date', { ascending: false })
     .limit(limit)

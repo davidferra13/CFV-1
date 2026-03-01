@@ -13,7 +13,9 @@ export async function GET(request: NextRequest) {
 
   const supabase = createServerClient({ admin: true })
   const url = new URL(request.url)
-  const limit = Math.min(parseInt(url.searchParams.get('limit') || '100'), 500)
+  const rawLimit = Number(url.searchParams.get('limit') ?? '100')
+  const limit =
+    Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(Math.floor(rawLimit), 500) : 100
 
   const { data, error } = await supabase
     .from('clients')

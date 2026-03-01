@@ -43,6 +43,12 @@ export async function POST(req: NextRequest) {
     return new NextResponse('Forbidden — DEMO_MODE_ENABLED is not set', { status: 403 })
   }
 
+  // Require Origin header to match — blocks cross-origin CSRF
+  const origin = req.headers.get('origin')
+  if (origin && !origin.includes('localhost') && !origin.includes('127.0.0.1')) {
+    return new NextResponse('Forbidden — cross-origin request', { status: 403 })
+  }
+
   let action: 'load' | 'clear'
   try {
     const body = await req.json()

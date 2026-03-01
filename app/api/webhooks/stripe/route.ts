@@ -42,11 +42,11 @@ export async function POST(req: Request) {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
   } catch (err) {
     const error = err as Error
-    console.error('[Stripe Webhook] Signature verification failed:', error.message)
+    console.error('[Stripe Webhook] Signature verification failed')
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
-  console.log('[Stripe Webhook] Received event:', event.type, event.id)
+  console.log('[Stripe Webhook] Received:', event.type)
 
   // Log webhook receipt for audit trail — fire-and-forget
   logWebhookEvent({

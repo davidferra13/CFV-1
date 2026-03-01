@@ -66,7 +66,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
     headers: {
       'Content-Type': 'text/calendar; charset=utf-8',
       'Content-Disposition': 'inline; filename="chefflow-calendar.ics"',
-      'Cache-Control': 'public, max-age=300', // 5 min cache
+      // SECURITY: 'private' prevents CDN/proxy caching of calendar data.
+      // The feed URL contains a secret token — if leaked, only the browser
+      // should cache the response, not shared intermediaries.
+      'Cache-Control': 'private, max-age=300',
     },
   })
 }
@@ -77,10 +80,12 @@ function escapeIcs(str: string): string {
 
 function formatIcsDate(dateStr: string, timeStr?: string | null): string {
   // dateStr: "2026-03-15", timeStr: "18:00" or null
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return ''
   const [year, month, day] = dateStr.split('-')
   if (timeStr) {
+    if (!/^\d{1,2}:\d{2}$/.test(timeStr)) return `${year}${month}${day}`
     const [hour, minute] = timeStr.split(':')
-    return `${year}${month}${day}T${hour}${minute}00`
+    return `${year}${month}${day}T${hour.padStart(2, '0')}${minute}00`
   }
   return `${year}${month}${day}`
 }
@@ -117,10 +122,11 @@ function formatIcsEvent(
   const dtEnd = event.end_time
     ? formatIcsDate(event.event_date, event.end_time)
     : event.start_time
-      ? formatIcsDate(
-          event.event_date,
-          `${parseInt(event.start_time.split(':')[0]) + 3}:${event.start_time.split(':')[1]}`
-        )
+      ? (() => {
+          const startHour = parseInt(event.start_time.split(':')[0])
+          const endHour = Math.min(startHour + 3, 23) // Cap at 23:xx to avoid invalid iCal time
+          return formatIcsDate(event.event_date, `${endHour}:${event.start_time.split(':')[1]}`)
+        })()
       : null
 
   const isAllDay = !event.start_time
