@@ -118,7 +118,7 @@ async function sendToRemy(
   currentPage?: string
 ): Promise<{ response: string; timeMs: number }> {
   const start = Date.now()
-  const TIMEOUT_MS = 180_000 // 3 minutes per test (includes model swap time)
+  const TIMEOUT_MS = 300_000 // 5 minutes per test (includes 30b model swap + cold start)
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
