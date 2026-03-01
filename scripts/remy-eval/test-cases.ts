@@ -125,7 +125,7 @@ export const TEST_CASES: TestCase[] = [
     expectedTaskType: 'analytics.client_ltv',
     mustContain: ['Rothschild'],
     qualityCriteria:
-      'Should calculate Emma Rothschild LTV. Should show total revenue (~$97,500 lifetime), event count (15), average per event, platinum tier. Numbers must come from real data.',
+      'Should calculate Emma Rothschild LTV from real ledger data. Should show total revenue, event count, and tier. Numbers must come from real data — do NOT grade based on a specific expected dollar amount, since the live database values change.',
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -268,7 +268,7 @@ export const TEST_CASES: TestCase[] = [
     expectedIntent: 'question',
     mustContain: ['tree nut', 'Garcia'],
     qualityCriteria:
-      'Should flag David Garcia tree nut allergy. Should mention that Maria makes desserts (no need to provide). Should be prominent and clear — this is safety info.',
+      'Should flag David Garcia tree nut allergy prominently. Should include ALL Garcia family members found in the database, not just the first match. Safety-critical information must be clear and complete.',
   },
 
   // ═══════════════════════════════════════════════════════════════════════════

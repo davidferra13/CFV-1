@@ -110,14 +110,55 @@ export async function generatePackingList(eventName: string): Promise<PackingLis
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // Find event
-  const { data: events } = await supabase
+  // Find event — try occasion match first, then fuzzy match with client name
+  let { data: events } = await supabase
     .from('events')
     .select('id, occasion, event_date, guest_count, location_type, location_address, status')
     .eq('tenant_id', user.tenantId!)
     .ilike('occasion', `%${eventName}%`)
     .order('event_date', { ascending: false })
     .limit(1)
+
+  // If no match, try splitting: words might include client name + occasion keywords
+  // e.g. "Henderson spring garden party" → client "Henderson", occasion "%spring%garden%party%"
+  if (!events || events.length === 0) {
+    const words = eventName.split(/\s+/).filter((w) => w.length > 2)
+    for (const word of words) {
+      const occasionWords = words.filter((w) => w.toLowerCase() !== word.toLowerCase()).join('%')
+      if (!occasionWords) continue
+      const { data: fuzzy } = await supabase
+        .from('events')
+        .select(
+          'id, occasion, event_date, guest_count, location_type, location_address, status, client_id'
+        )
+        .eq('tenant_id', user.tenantId!)
+        .ilike('occasion', `%${occasionWords}%`)
+        .order('event_date', { ascending: false })
+        .limit(5)
+
+      // Check if any of these events belong to a client matching the word
+      if (fuzzy && fuzzy.length > 0) {
+        const clientIds = fuzzy.map((e: any) => e.client_id).filter(Boolean)
+        if (clientIds.length > 0) {
+          const { data: matchingClients } = await supabase
+            .from('clients')
+            .select('id')
+            .in('id', clientIds)
+            .ilike('full_name', `%${word}%`)
+          if (matchingClients && matchingClients.length > 0) {
+            const matchedIds = new Set(matchingClients.map((c: any) => c.id))
+            events = fuzzy.filter((e: any) => matchedIds.has(e.client_id))
+            if (events.length > 0) break
+          }
+        }
+        // Fallback: just use the occasion match without client filter
+        if (!events || events.length === 0) {
+          events = fuzzy
+          break
+        }
+      }
+    }
+  }
 
   if (!events || events.length === 0) {
     return {

@@ -56,11 +56,17 @@ async function loadClient(supabase: any, clientId: string, tenantId: string) {
 }
 
 async function findClientByName(supabase: any, name: string, tenantId: string) {
+  // Strip common suffixes that users add but aren't in the DB name
+  const cleanName = name
+    .replace(/['\u2019]s\s*$/i, '')
+    .replace(/\s+(?:family|account|household|group)$/i, '')
+    .trim()
+
   const { data } = await supabase
     .from('clients')
     .select('id, full_name, email, vibe_notes, dietary_restrictions, allergies')
     .eq('tenant_id', tenantId)
-    .ilike('full_name', `%${name}%`)
+    .ilike('full_name', `%${cleanName}%`)
     .limit(1)
   return data?.[0] ?? null
 }

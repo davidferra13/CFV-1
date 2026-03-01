@@ -1085,6 +1085,61 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
       summaries.push(
         `Here's your ${name.toLowerCase()}${label} — review and edit before sending:\n\n${d.draftText}`
       )
+    } else if (task.taskType === 'inquiry.list_open' && task.data) {
+      const d = task.data as {
+        inquiries: Array<{
+          id: string
+          status: string
+          eventType: string | null
+          eventDate: string | null
+          guestCount: number | null
+          clientName: string
+        }>
+      }
+      if (!d.inquiries || d.inquiries.length === 0) {
+        summaries.push('No open inquiries right now — your pipeline is clear!')
+      } else {
+        const lines = [
+          `You have ${d.inquiries.length} open inquir${d.inquiries.length === 1 ? 'y' : 'ies'}:\n`,
+        ]
+        for (const inq of d.inquiries) {
+          const details = [inq.clientName]
+          if (inq.eventType) details.push(inq.eventType)
+          if (inq.eventDate) details.push(inq.eventDate)
+          if (inq.guestCount) details.push(`${inq.guestCount} guests`)
+          details.push(`(${inq.status.replace(/_/g, ' ')})`)
+          lines.push(`• ${details.join(' — ')}`)
+        }
+        summaries.push(lines.join('\n'))
+      }
+    } else if (task.taskType === 'recipe.search' && task.data) {
+      const d = task.data as {
+        recipes: Array<{
+          id: string
+          name: string
+          category: string
+          prepTime: number
+          cookTime: number
+          timesCooked: number
+        }>
+      }
+      if (!d.recipes || d.recipes.length === 0) {
+        summaries.push(
+          'No recipes found matching that search. Try a different keyword or check your recipe library.'
+        )
+      } else {
+        const lines = [`Found ${d.recipes.length} recipe${d.recipes.length === 1 ? '' : 's'}:\n`]
+        for (const r of d.recipes) {
+          const totalTime = (r.prepTime || 0) + (r.cookTime || 0)
+          const timeStr = totalTime > 0 ? ` (${totalTime} min)` : ''
+          const cookedStr = r.timesCooked > 0 ? ` — cooked ${r.timesCooked}×` : ''
+          lines.push(`• **${r.name}**${r.category ? ` [${r.category}]` : ''}${timeStr}${cookedStr}`)
+        }
+        summaries.push(lines.join('\n'))
+      }
+    } else if (task.taskType === 'nav.go' && task.data) {
+      const d = task.data as { route: string; navigated: boolean }
+      summaries.push(`Navigating you to **${d.route}** now.`)
     } else {
       summaries.push(`"${name}" completed successfully.`)
     }
@@ -1391,6 +1446,16 @@ export async function POST(req: NextRequest) {
     const dietaryRegex = /(?:allerg|dietary|restriction|epipen|anaphyla|intoleran)/i
     if (classification.intent === 'question' && dietaryRegex.test(message)) {
       classification = { ...classification, intent: 'command' }
+    }
+
+    // ─── Financial context queries → question path ─────────────
+    // Payment/outstanding/invoice questions about clients are best answered by the
+    // LLM from its full financial context, not by client.search which only returns
+    // name/tier/allergies. Override command → question for these.
+    const financialQueryRegex =
+      /(?:outstanding|payment|invoice|owe|balance|paid|unpaid|overdue|past due)/i
+    if (classification.intent === 'command' && financialQueryRegex.test(message)) {
+      classification = { ...classification, intent: 'question' }
     }
 
     // ─── COMMAND path ────────────────────────────────────────────

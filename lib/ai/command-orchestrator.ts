@@ -1058,6 +1058,10 @@ async function executeSingleTask(
       'analytics.recipe_cost',
       'client.event_recap',
       'client.menu_explanation',
+      'nav.go',
+      'loyalty.status',
+      'safety.event_allergens',
+      'waitlist.list',
     ])
     if (!supportedTaskTypes.has(task.taskType)) {
       return {
