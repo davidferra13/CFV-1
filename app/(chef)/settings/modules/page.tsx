@@ -2,15 +2,19 @@ import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEnabledModules } from '@/lib/billing/module-actions'
 import { getTierForChef } from '@/lib/billing/tier'
+import { isFocusModeEnabled } from '@/lib/billing/focus-mode'
+import { isAdmin } from '@/lib/auth/admin'
 import { ModulesClient } from './modules-client'
 
 export const metadata: Metadata = { title: 'Modules - ChefFlow' }
 
 export default async function ModulesPage() {
   const user = await requireChef()
-  const [enabledModules, tierStatus] = await Promise.all([
+  const [enabledModules, tierStatus, focusMode, userIsAdmin] = await Promise.all([
     getEnabledModules(),
     getTierForChef(user.entityId),
+    isFocusModeEnabled(),
+    isAdmin().catch(() => false),
   ])
 
   return (
@@ -26,6 +30,8 @@ export default async function ModulesPage() {
         enabledModules={enabledModules}
         tier={tierStatus.tier}
         isGrandfathered={tierStatus.isGrandfathered}
+        focusMode={focusMode}
+        isAdmin={userIsAdmin}
       />
     </div>
   )
