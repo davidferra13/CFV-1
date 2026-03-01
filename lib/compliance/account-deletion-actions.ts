@@ -4,6 +4,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { log } from '@/lib/logger'
 import { revalidatePath } from 'next/cache'
+import { randomBytes } from 'crypto'
 import { runPreDeletionChecks } from './pre-deletion-checks'
 import { cleanupStorageBuckets } from './storage-cleanup'
 import { logChefActivity } from '@/lib/activity/log-chef'
@@ -90,7 +91,8 @@ export async function requestAccountDeletion(
   const email = chef?.email || authUser.email
 
   // 5. Generate reactivation token and set soft-delete columns
-  const reactivationToken = crypto.randomUUID()
+  // SECURITY: 256-bit token (vs 122-bit UUID v4) — higher entropy for security-critical recovery token
+  const reactivationToken = randomBytes(32).toString('hex')
   const scheduledFor = new Date()
   scheduledFor.setDate(scheduledFor.getDate() + 30)
 

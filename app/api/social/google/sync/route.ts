@@ -2,6 +2,7 @@
 // Uses existing external_review_sources + external_reviews tables
 
 import { NextRequest, NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
 import { requireChef } from '@/lib/auth/get-user'
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -142,8 +143,13 @@ async function syncGoogleReviews(
 }
 
 export async function POST(req: NextRequest) {
-  const internalKey = req.headers.get('x-internal-key')
-  if (internalKey !== process.env.INTERNAL_API_KEY) {
+  const internalKey = req.headers.get('x-internal-key') ?? ''
+  const expected = process.env.INTERNAL_API_KEY ?? ''
+  if (
+    !expected ||
+    internalKey.length !== expected.length ||
+    !timingSafeEqual(Buffer.from(internalKey), Buffer.from(expected))
+  ) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

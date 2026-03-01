@@ -8,10 +8,17 @@ export async function GET(request: NextRequest) {
 
   try {
     const snapshot = await getFinancialAnalytics({ start, end })
-    return NextResponse.json({ success: true, snapshot })
+    return NextResponse.json(
+      { success: true, snapshot },
+      { headers: { 'Cache-Control': 'no-store' } }
+    )
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to load financial report'
+    console.error('[financial-report] Error:', error)
+    const message = error instanceof Error ? error.message : ''
     const status = message.includes('Unauthorized') ? 401 : 500
-    return NextResponse.json({ error: message }, { status })
+    return NextResponse.json(
+      { error: status === 401 ? 'Unauthorized' : 'Failed to load financial report' },
+      { status }
+    )
   }
 }

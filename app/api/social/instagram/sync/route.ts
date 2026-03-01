@@ -2,6 +2,7 @@
 // Called POST with { chefId } from callback, or GET by chef from UI (manual sync)
 
 import { NextRequest, NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
 import { requireChef } from '@/lib/auth/get-user'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { Json } from '@/types/database'
@@ -148,8 +149,13 @@ async function syncInstagramStats(chefId: string): Promise<{ ok: boolean; error?
 
 // POST: called internally (from callback or cron)
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const internalKey = req.headers.get('x-internal-key')
-  if (internalKey !== process.env.INTERNAL_API_KEY) {
+  const internalKey = req.headers.get('x-internal-key') ?? ''
+  const expected = process.env.INTERNAL_API_KEY ?? ''
+  if (
+    !expected ||
+    internalKey.length !== expected.length ||
+    !timingSafeEqual(Buffer.from(internalKey), Buffer.from(expected))
+  ) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

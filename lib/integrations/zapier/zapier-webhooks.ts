@@ -4,6 +4,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { ZAPIER_EVENT_TYPES, type ZapierEventType } from '@/lib/integrations/zapier/zapier-events'
+import { validateWebhookUrl } from '@/lib/security/url-validation'
 
 // Zapier/Make webhook automation layer.
 // Chefs subscribe to ChefFlow events and we POST to their webhook URLs.
@@ -19,15 +20,8 @@ export async function createWebhookSubscription(input: {
   const user = await requireChef()
   const supabase: any = createServerClient({ admin: true })
 
-  // Validate URL
-  try {
-    const url = new URL(input.targetUrl)
-    if (!['http:', 'https:'].includes(url.protocol)) {
-      throw new Error('Webhook URL must use HTTPS')
-    }
-  } catch {
-    throw new Error('Invalid webhook URL')
-  }
+  // SECURITY: Validate URL to prevent SSRF — blocks private IPs, requires HTTPS
+  validateWebhookUrl(input.targetUrl)
 
   // Validate event types
   const validTypes = input.eventTypes.filter((t) =>

@@ -35,12 +35,12 @@ export async function POST(request: NextRequest) {
     const { clientId, ...input } = payload
     const result = await updateClient(clientId, input)
 
-    return NextResponse.json({
-      success: true,
-      client: result.client,
-    })
+    return NextResponse.json(
+      { success: true, client: result.client },
+      { headers: { 'Cache-Control': 'no-store' } }
+    )
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to update client preferences'
-    return NextResponse.json({ error: message }, { status: 500 })
+    console.error('[client-preferences] Error:', error)
+    return NextResponse.json({ error: 'Failed to update client preferences' }, { status: 500 })
   }
 }

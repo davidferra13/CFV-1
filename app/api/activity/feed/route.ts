@@ -60,12 +60,15 @@ export async function GET(request: NextRequest) {
         cursor: chefCursor,
         domain: domain || undefined,
       })
-      return NextResponse.json({
-        chefItems: chef.items,
-        chefNextCursor: chef.nextCursor,
-        clientItems: [],
-        clientNextCursor: null,
-      })
+      return NextResponse.json(
+        {
+          chefItems: chef.items,
+          chefNextCursor: chef.nextCursor,
+          clientItems: [],
+          clientNextCursor: null,
+        },
+        { headers: { 'Cache-Control': 'no-store' } }
+      )
     }
 
     if (tab === 'client') {
@@ -75,12 +78,15 @@ export async function GET(request: NextRequest) {
         cursor: clientCursor,
         actorType: 'client',
       })
-      return NextResponse.json({
-        chefItems: [],
-        chefNextCursor: null,
-        clientItems: client.items,
-        clientNextCursor: client.nextCursor,
-      })
+      return NextResponse.json(
+        {
+          chefItems: [],
+          chefNextCursor: null,
+          clientItems: client.items,
+          clientNextCursor: client.nextCursor,
+        },
+        { headers: { 'Cache-Control': 'no-store' } }
+      )
     }
 
     const chef = await getChefActivityFeed({
@@ -96,16 +102,17 @@ export async function GET(request: NextRequest) {
       actorType: actorFilter === 'all' ? undefined : actorFilter,
     })
 
-    return NextResponse.json({
-      chefItems: chef.items,
-      chefNextCursor: chef.nextCursor,
-      clientItems: client.items,
-      clientNextCursor: client.nextCursor,
-    })
-  } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to load activity feed' },
-      { status: 500 }
+      {
+        chefItems: chef.items,
+        chefNextCursor: chef.nextCursor,
+        clientItems: client.items,
+        clientNextCursor: client.nextCursor,
+      },
+      { headers: { 'Cache-Control': 'no-store' } }
     )
+  } catch (error) {
+    console.error('[activity-feed] Error:', error)
+    return NextResponse.json({ error: 'Failed to load activity feed' }, { status: 500 })
   }
 }

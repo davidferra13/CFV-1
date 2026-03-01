@@ -3,6 +3,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { randomBytes } from 'crypto'
+import { validateWebhookUrl } from '@/lib/security/url-validation'
 
 export async function createWebhookEndpoint(input: {
   url: string
@@ -10,6 +11,10 @@ export async function createWebhookEndpoint(input: {
   events: string[]
 }) {
   const user = await requireChef()
+
+  // SECURITY: Validate URL to prevent SSRF — blocks private IPs, requires HTTPS
+  validateWebhookUrl(input.url)
+
   const supabase: any = createServerClient()
   const secret = randomBytes(32).toString('hex')
   const { error } = await supabase.from('webhook_endpoints' as any).insert({
