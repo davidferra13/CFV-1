@@ -294,7 +294,7 @@ export function RemyConciergeSection() {
           </div>
 
           <p className="mt-2 text-center text-xs text-stone-400">
-            Powered by ChefFlow&apos;s private AI — no data stored
+            Powered by ChefFlow&apos;s AI concierge
           </p>
 
           {/* CTA after conversation */}

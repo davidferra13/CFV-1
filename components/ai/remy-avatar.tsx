@@ -31,7 +31,7 @@ export function RemyAvatar({ size = 'md', className = '' }: RemyAvatarProps) {
   const px = SIZES[size]
   return (
     <Image
-      src="/images/remy/remy-aha.png"
+      src="/images/remy/remy-idle.png"
       alt="Remy"
       width={px}
       height={px}

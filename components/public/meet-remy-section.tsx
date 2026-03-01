@@ -59,7 +59,7 @@ export function MeetRemySection() {
             </p>
             <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-brand-700/50 bg-brand-950/50 px-4 py-2 text-xs font-medium text-brand-300">
               <ShieldCheck className="h-3.5 w-3.5 text-brand-400" />
-              Runs 100% locally — your client data never leaves your machine.
+              AI assists, you decide — nothing happens without your approval.
             </div>
           </div>
         </div>
@@ -71,13 +71,13 @@ export function MeetRemySection() {
               key={cap.title}
               className="rounded-xl border border-stone-700 bg-stone-900 p-5 shadow-[var(--shadow-card)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-card-hover)]"
             >
-              <div className="mb-3">
+              <div className="mb-3 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-brand-50/10">
                 <Image
                   src={cap.image}
                   alt={cap.title}
-                  width={56}
-                  height={56}
-                  className="h-14 w-14 rounded-xl object-contain"
+                  width={48}
+                  height={48}
+                  className="h-12 w-12 rounded-lg object-contain"
                 />
               </div>
               <h3 className="text-base font-semibold text-stone-100">{cap.title}</h3>

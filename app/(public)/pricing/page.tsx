@@ -219,7 +219,7 @@ export default function PricingPage() {
           </Card>
           <p className="mt-6 flex items-center justify-center gap-1.5 text-center text-xs text-stone-400">
             <ShieldCheck className="h-3.5 w-3.5 text-brand-400" />
-            AI runs 100% locally — your data never leaves your machine.
+            AI assists, you decide — nothing happens without your approval.
           </p>
         </div>
       </section>
