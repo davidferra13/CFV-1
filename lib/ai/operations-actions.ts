@@ -123,7 +123,32 @@ export async function generatePackingList(eventName: string): Promise<PackingLis
   // If no match, try splitting: words might include client name + occasion keywords
   // e.g. "Henderson spring garden party" → client "Henderson", occasion "%spring%garden%party%"
   if (!events || events.length === 0) {
-    const words = eventName.split(/\s+/).filter((w) => w.length > 2)
+    // Filter out common stop words that appear in natural language queries but not event titles
+    const STOP_WORDS = new Set([
+      'generate',
+      'create',
+      'make',
+      'build',
+      'get',
+      'show',
+      'find',
+      'list',
+      'packing',
+      'pack',
+      'prep',
+      'preparation',
+      'the',
+      'for',
+      'and',
+      'with',
+      'from',
+      'about',
+      'that',
+      'this',
+    ])
+    const words = eventName
+      .split(/\s+/)
+      .filter((w) => w.length > 2 && !STOP_WORDS.has(w.toLowerCase()))
     for (const word of words) {
       const occasionWords = words.filter((w) => w.toLowerCase() !== word.toLowerCase()).join('%')
       if (!occasionWords) continue

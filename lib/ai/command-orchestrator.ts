@@ -205,18 +205,37 @@ async function executeClientDetails(inputs: Record<string, unknown>) {
   const matches = await searchClientsByName(clientName)
   if (matches.length === 0) return { found: false, clientName }
 
-  const client = await getClientById(matches[0].id)
+  // Load full client with all fields including dietary, loyalty, and notes
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+  const { data: client } = await supabase
+    .from('clients')
+    .select(
+      'id, full_name, email, phone, status, dietary_restrictions, allergies, vibe_notes, loyalty_tier, loyalty_points, total_events_count, lifetime_value_cents, preferred_contact_method, address'
+    )
+    .eq('id', matches[0].id)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
   if (!client) return { found: false, clientName }
 
   return {
     found: true,
     client: {
-      id: (client as Record<string, unknown>).id,
-      name: (client as Record<string, unknown>).full_name ?? 'Unknown',
-      email: (client as Record<string, unknown>).email ?? '',
-      phone: (client as Record<string, unknown>).phone ?? '',
-      status: (client as Record<string, unknown>).status ?? '',
-      dietaryRestrictions: (client as Record<string, unknown>).dietary_restrictions ?? '',
+      id: client.id,
+      name: client.full_name ?? 'Unknown',
+      email: client.email ?? '',
+      phone: client.phone ?? '',
+      status: client.status ?? '',
+      dietaryRestrictions: client.dietary_restrictions ?? [],
+      allergies: client.allergies ?? [],
+      vibeNotes: client.vibe_notes ?? '',
+      loyaltyTier: client.loyalty_tier ?? null,
+      loyaltyPoints: client.loyalty_points ?? 0,
+      totalEvents: client.total_events_count ?? 0,
+      lifetimeValueCents: client.lifetime_value_cents ?? 0,
+      preferredContact: client.preferred_contact_method ?? '',
+      address: client.address ?? '',
     },
   }
 }
@@ -289,16 +308,33 @@ async function executeInquiryListOpen() {
   })
 
   return {
-    inquiries: (inquiries ?? []).slice(0, 10).map((i: Record<string, unknown>) => ({
-      id: i.id as string,
-      status: i.status as string,
-      eventType: (i.confirmed_occasion as string | null) ?? (i.event_type as string | null),
-      eventDate: (i.confirmed_date as string | null) ?? (i.event_date as string | null),
-      guestCount: (i.confirmed_guest_count as number | null) ?? (i.guest_count as number | null),
-      clientName:
-        ((i.client as Record<string, unknown> | null)?.full_name as string) ??
-        (i.source_message ? `Lead: ${(i.source_message as string).slice(0, 40)}` : 'New lead'),
-    })),
+    inquiries: (inquiries ?? []).slice(0, 10).map((i: Record<string, unknown>) => {
+      // Resolve the best display name: linked client > unknown_fields contact > source_message excerpt
+      const linkedClientName = (i.client as Record<string, unknown> | null)?.full_name as
+        | string
+        | undefined
+      const unknownFields = i.unknown_fields as Record<string, unknown> | null
+      const unknownContactName = unknownFields?.client_name as string | undefined
+      const occasion = (i.confirmed_occasion as string | null) ?? (i.event_type as string | null)
+      const sourceMsg = i.source_message as string | null
+
+      let clientName = linkedClientName ?? unknownContactName ?? ''
+      if (!clientName && sourceMsg) {
+        clientName = `Lead: ${sourceMsg.slice(0, 40)}`
+      }
+      if (!clientName) clientName = 'New lead'
+
+      return {
+        id: i.id as string,
+        status: i.status as string,
+        eventType: occasion,
+        eventDate: (i.confirmed_date as string | null) ?? (i.event_date as string | null),
+        guestCount: (i.confirmed_guest_count as number | null) ?? (i.guest_count as number | null),
+        clientName,
+        channel: i.channel as string | null,
+        sourceMessage: sourceMsg ? sourceMsg.slice(0, 80) : null,
+      }
+    }),
   }
 }
 
@@ -599,7 +635,8 @@ async function executeMenuExplanation(inputs: Record<string, unknown>) {
 async function executeDraftThankYou(inputs: Record<string, unknown>) {
   const clientName = String(inputs.clientName ?? '')
   if (!clientName) return { draftText: '', error: 'Please specify which client to thank.' }
-  return generateThankYouDraft(clientName)
+  const eventHint = inputs.eventName ? String(inputs.eventName) : undefined
+  return generateThankYouDraft(clientName, eventHint)
 }
 
 async function executeDraftReferralRequest(inputs: Record<string, unknown>) {

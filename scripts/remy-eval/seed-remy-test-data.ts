@@ -44,6 +44,7 @@ const C = {
   morrison: 'e0a10001-0001-4000-8000-000000000013',
   sullivan: 'e0a10001-0001-4000-8000-000000000014',
   foster: 'e0a10001-0001-4000-8000-000000000015',
+  garcia_maria: 'e0a10001-0001-4000-8000-000000000016',
 } as const
 
 const E = {
@@ -124,6 +125,37 @@ const STAFF = {
   lisa: 'e0a10007-0001-4000-8000-000000000004',
 } as const
 
+// Ingredients (e0a10008-...) and recipe_ingredients (e0a10009-...)
+const ING = {
+  lobster_shell: 'e0a10008-0001-4000-8000-000000000001',
+  onion: 'e0a10008-0001-4000-8000-000000000002',
+  celery: 'e0a10008-0001-4000-8000-000000000003',
+  carrot: 'e0a10008-0001-4000-8000-000000000004',
+  brandy: 'e0a10008-0001-4000-8000-000000000005',
+  tomato_paste: 'e0a10008-0001-4000-8000-000000000006',
+  fish_stock: 'e0a10008-0001-4000-8000-000000000007',
+  heavy_cream: 'e0a10008-0001-4000-8000-000000000008',
+  sherry: 'e0a10008-0001-4000-8000-000000000009',
+  chives: 'e0a10008-0001-4000-8000-000000000010',
+  salt: 'e0a10008-0001-4000-8000-000000000011',
+  black_pepper: 'e0a10008-0001-4000-8000-000000000012',
+} as const
+
+const RI = {
+  lb_lobster: 'e0a10009-0001-4000-8000-000000000001',
+  lb_onion: 'e0a10009-0001-4000-8000-000000000002',
+  lb_celery: 'e0a10009-0001-4000-8000-000000000003',
+  lb_carrot: 'e0a10009-0001-4000-8000-000000000004',
+  lb_brandy: 'e0a10009-0001-4000-8000-000000000005',
+  lb_tomato_paste: 'e0a10009-0001-4000-8000-000000000006',
+  lb_fish_stock: 'e0a10009-0001-4000-8000-000000000007',
+  lb_heavy_cream: 'e0a10009-0001-4000-8000-000000000008',
+  lb_sherry: 'e0a10009-0001-4000-8000-000000000009',
+  lb_chives: 'e0a10009-0001-4000-8000-000000000010',
+  lb_salt: 'e0a10009-0001-4000-8000-000000000011',
+  lb_pepper: 'e0a10009-0001-4000-8000-000000000012',
+} as const
+
 // ─── Date Helpers ────────────────────────────────────────────────────────────
 
 function daysFromNow(days: number): string {
@@ -171,9 +203,11 @@ async function cleanup() {
   await supabase.from('messages').delete().in('inquiry_id', allInquiryIds)
   await supabase.from('inquiries').delete().in('id', allInquiryIds)
 
-  // Recipe ingredients → depend on recipes
+  // Recipe ingredients → depend on recipes; ingredients are standalone
   await supabase.from('recipe_ingredients').delete().in('recipe_id', allRecipeIds)
   await supabase.from('recipes').delete().in('id', allRecipeIds)
+  const allIngredientIds = Object.values(ING)
+  await supabase.from('ingredients').delete().in('id', allIngredientIds)
 
   // Menu items (station_menu_items) → cleaned via menu reference if needed
   await supabase.from('menus').delete().in('id', allMenuIds)
@@ -369,6 +403,25 @@ async function seedClients() {
       allergies: ['tree nuts'],
       vibe_notes:
         'Large family gatherings, usually 25-40 guests. Budget-conscious but always pays on time. Maria (wife) handles desserts herself — never offer to make dessert. TREE NUT ALLERGY — David.',
+      preferred_contact_method: 'text' as const,
+      address: '340 Main Street, Medford, MA 02155',
+    },
+    {
+      id: C.garcia_maria,
+      tenant_id: TENANT_ID,
+      full_name: 'Maria Garcia',
+      email: 'maria.garcia@eval.test',
+      phone: '617-555-1018',
+      status: 'active' as const,
+      loyalty_tier: 'gold' as const,
+      loyalty_points: 310,
+      total_events_count: 8,
+      total_events_completed: 7,
+      lifetime_value_cents: 2480000, // same household as David
+      dietary_restrictions: ['gluten-free'],
+      allergies: [],
+      vibe_notes:
+        "David Garcia's wife. Handles desserts herself — never offer to make dessert. Gluten-free. Always at the Garcia family events.",
       preferred_contact_method: 'text' as const,
       address: '340 Main Street, Medford, MA 02155',
     },
@@ -1402,6 +1455,211 @@ async function seedRecipes() {
   else console.log(`  ✅ ${recipes.length} recipes seeded`)
 }
 
+async function seedIngredients() {
+  console.log('🧂 Seeding ingredients...')
+
+  const ingredients = [
+    {
+      id: ING.lobster_shell,
+      tenant_id: TENANT_ID,
+      name: 'Lobster shells',
+      category: 'protein' as const,
+      default_unit: 'lb',
+    },
+    {
+      id: ING.onion,
+      tenant_id: TENANT_ID,
+      name: 'Onion',
+      category: 'produce' as const,
+      default_unit: 'each',
+    },
+    {
+      id: ING.celery,
+      tenant_id: TENANT_ID,
+      name: 'Celery',
+      category: 'produce' as const,
+      default_unit: 'stalk',
+    },
+    {
+      id: ING.carrot,
+      tenant_id: TENANT_ID,
+      name: 'Carrot',
+      category: 'produce' as const,
+      default_unit: 'each',
+    },
+    {
+      id: ING.brandy,
+      tenant_id: TENANT_ID,
+      name: 'Brandy',
+      category: 'alcohol' as const,
+      default_unit: 'oz',
+    },
+    {
+      id: ING.tomato_paste,
+      tenant_id: TENANT_ID,
+      name: 'Tomato paste',
+      category: 'canned' as const,
+      default_unit: 'tbsp',
+    },
+    {
+      id: ING.fish_stock,
+      tenant_id: TENANT_ID,
+      name: 'Fish stock',
+      category: 'pantry' as const,
+      default_unit: 'cup',
+    },
+    {
+      id: ING.heavy_cream,
+      tenant_id: TENANT_ID,
+      name: 'Heavy cream',
+      category: 'dairy' as const,
+      default_unit: 'cup',
+    },
+    {
+      id: ING.sherry,
+      tenant_id: TENANT_ID,
+      name: 'Dry sherry',
+      category: 'alcohol' as const,
+      default_unit: 'tbsp',
+    },
+    {
+      id: ING.chives,
+      tenant_id: TENANT_ID,
+      name: 'Chives',
+      category: 'fresh_herb' as const,
+      default_unit: 'tbsp',
+    },
+    {
+      id: ING.salt,
+      tenant_id: TENANT_ID,
+      name: 'Kosher salt',
+      category: 'spice' as const,
+      default_unit: 'tsp',
+    },
+    {
+      id: ING.black_pepper,
+      tenant_id: TENANT_ID,
+      name: 'Black pepper',
+      category: 'spice' as const,
+      default_unit: 'tsp',
+    },
+  ]
+
+  const { error } = await supabase.from('ingredients').upsert(ingredients, { onConflict: 'id' })
+  if (error) console.error('Ingredient seed failed:', error.message)
+  else console.log(`  ✅ ${ingredients.length} ingredients seeded`)
+}
+
+async function seedRecipeIngredients() {
+  console.log('📋 Seeding recipe ingredients (lobster bisque)...')
+
+  // Lobster bisque ingredients — realistic quantities for 6 servings
+  const recipeIngredients = [
+    {
+      id: RI.lb_lobster,
+      recipe_id: R.lobster_bisque,
+      ingredient_id: ING.lobster_shell,
+      quantity: 2,
+      unit: 'lb',
+      sort_order: 1,
+    },
+    {
+      id: RI.lb_onion,
+      recipe_id: R.lobster_bisque,
+      ingredient_id: ING.onion,
+      quantity: 1,
+      unit: 'each',
+      sort_order: 2,
+    },
+    {
+      id: RI.lb_celery,
+      recipe_id: R.lobster_bisque,
+      ingredient_id: ING.celery,
+      quantity: 2,
+      unit: 'stalk',
+      sort_order: 3,
+    },
+    {
+      id: RI.lb_carrot,
+      recipe_id: R.lobster_bisque,
+      ingredient_id: ING.carrot,
+      quantity: 2,
+      unit: 'each',
+      sort_order: 4,
+    },
+    {
+      id: RI.lb_brandy,
+      recipe_id: R.lobster_bisque,
+      ingredient_id: ING.brandy,
+      quantity: 3,
+      unit: 'oz',
+      sort_order: 5,
+    },
+    {
+      id: RI.lb_tomato_paste,
+      recipe_id: R.lobster_bisque,
+      ingredient_id: ING.tomato_paste,
+      quantity: 2,
+      unit: 'tbsp',
+      sort_order: 6,
+    },
+    {
+      id: RI.lb_fish_stock,
+      recipe_id: R.lobster_bisque,
+      ingredient_id: ING.fish_stock,
+      quantity: 4,
+      unit: 'cup',
+      sort_order: 7,
+    },
+    {
+      id: RI.lb_heavy_cream,
+      recipe_id: R.lobster_bisque,
+      ingredient_id: ING.heavy_cream,
+      quantity: 1.5,
+      unit: 'cup',
+      sort_order: 8,
+    },
+    {
+      id: RI.lb_sherry,
+      recipe_id: R.lobster_bisque,
+      ingredient_id: ING.sherry,
+      quantity: 2,
+      unit: 'tbsp',
+      sort_order: 9,
+    },
+    {
+      id: RI.lb_chives,
+      recipe_id: R.lobster_bisque,
+      ingredient_id: ING.chives,
+      quantity: 2,
+      unit: 'tbsp',
+      sort_order: 10,
+    },
+    {
+      id: RI.lb_salt,
+      recipe_id: R.lobster_bisque,
+      ingredient_id: ING.salt,
+      quantity: 1,
+      unit: 'tsp',
+      sort_order: 11,
+    },
+    {
+      id: RI.lb_pepper,
+      recipe_id: R.lobster_bisque,
+      ingredient_id: ING.black_pepper,
+      quantity: 0.5,
+      unit: 'tsp',
+      sort_order: 12,
+    },
+  ]
+
+  const { error } = await supabase
+    .from('recipe_ingredients')
+    .upsert(recipeIngredients, { onConflict: 'id' })
+  if (error) console.error('Recipe ingredients seed failed:', error.message)
+  else console.log(`  ✅ ${recipeIngredients.length} recipe ingredients seeded`)
+}
+
 async function seedInquiries() {
   console.log('📬 Seeding inquiries...')
 
@@ -1946,6 +2204,8 @@ async function main() {
   await seedExpenses()
   await seedQuotes()
   await seedRecipes()
+  await seedIngredients()
+  await seedRecipeIngredients()
   await seedMenus()
   await seedStaff()
   await seedMemories()
@@ -1956,12 +2216,12 @@ async function main() {
   console.log('\n╔══════════════════════════════════════════════════════╗')
   console.log('║         ✅ Seed Complete                            ║')
   console.log('╠══════════════════════════════════════════════════════╣')
-  console.log('║  15 clients (bronze → platinum, diverse stories)    ║')
+  console.log('║  16 clients (bronze → platinum, diverse stories)    ║')
   console.log('║  28 events (all 8 statuses, past + future)          ║')
   console.log('║  21 ledger entries (revenue, deposits, tips)        ║')
   console.log('║  13 expenses (groceries, labor, equipment, biz)     ║')
   console.log('║   5 quotes (draft → accepted)                      ║')
-  console.log('║   8 recipes (soups → desserts)                     ║')
+  console.log('║   8 recipes (soups → desserts) + 12 ingredients     ║')
   console.log('║   4 menus (draft → archived)                      ║')
   console.log('║   5 inquiries (new → declined)                     ║')
   console.log('║   6 messages (inbound/outbound threads)             ║')

@@ -116,7 +116,10 @@ function formatDraft(subject: string, body: string): string {
 // 1. THANK-YOU NOTE
 // ============================================
 
-export async function generateThankYouDraft(clientName: string): Promise<DraftResult> {
+export async function generateThankYouDraft(
+  clientName: string,
+  eventHint?: string
+): Promise<DraftResult> {
   const user = await requireChef()
   const supabase: any = createServerClient()
   const tenantId = user.tenantId!
@@ -124,24 +127,45 @@ export async function generateThankYouDraft(clientName: string): Promise<DraftRe
   const client = await findClientByName(supabase, clientName, tenantId)
   if (!client) throw new Error(`No client found matching "${clientName}".`)
 
-  const lastEvent = await loadLastEvent(supabase, client.id, tenantId)
+  // If an event hint is provided (e.g. "anniversary"), try to find a matching event by occasion
+  let event: Record<string, unknown> | null = null
+  if (eventHint) {
+    const { data } = await supabase
+      .from('events')
+      .select('id, occasion, event_date, guest_count, status, location')
+      .eq('client_id', client.id)
+      .eq('tenant_id', tenantId)
+      .ilike('occasion', `%${eventHint}%`)
+      .order('event_date', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    event = data
+  }
+  // Fall back to most recent event if no hint or no match
+  if (!event) {
+    event = await loadLastEvent(supabase, client.id, tenantId)
+  }
+
   const chefName = await loadChefName(supabase, tenantId)
 
   const templateVars: TemplateVars = {
     clientName: client.full_name,
     clientFirstName: firstName(client.full_name),
     chefName,
-    occasion: lastEvent?.occasion,
-    eventDate: lastEvent?.event_date,
-    guestCount: lastEvent?.guest_count,
+    occasion: (event as any)?.occasion,
+    eventDate: (event as any)?.event_date,
+    guestCount: (event as any)?.guest_count,
   }
+
+  // Build the event description explicitly — avoid Ollama confusing event types from vibe_notes
+  const eventOccasion = (event as any)?.occasion ?? 'recent event'
 
   const { result, source } = await withAiFallback(
     () => thankYouTemplate(templateVars),
     () =>
       parseWithOllama(
         `You are ${chefName}, a private chef writing a heartfelt thank-you note to a client after an event. First person singular "I". Warm, genuine, not generic. Reference specific details about their event. Keep it 3-4 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
-        `Write a thank-you note for:\nClient: ${client.full_name} (first name: ${firstName(client.full_name)})\nEvent: ${lastEvent?.occasion ?? 'recent event'} on ${lastEvent?.event_date ?? 'N/A'}\nGuests: ${lastEvent?.guest_count ?? 'N/A'}\nLocation: ${lastEvent?.location ?? 'N/A'}\nClient notes: ${client.vibe_notes ?? 'none'}`,
+        `Write a thank-you note for:\nClient: ${client.full_name} (first name: ${firstName(client.full_name)})\nEvent: ${eventOccasion} on ${(event as any)?.event_date ?? 'N/A'}\nIMPORTANT: This is a "${eventOccasion}" — do NOT confuse with other event types.\nGuests: ${(event as any)?.guest_count ?? 'N/A'}\nLocation: ${(event as any)?.location ?? 'N/A'}`,
         EmailDraftSchema,
         { modelTier: 'standard', maxTokens: 800 }
       )
@@ -152,7 +176,7 @@ export async function generateThankYouDraft(clientName: string): Promise<DraftRe
     draftText: formatDraft(result.subject, result.body),
     clientId: client.id,
     clientName: client.full_name,
-    eventId: lastEvent?.id,
+    eventId: (event as any)?.id,
     _aiSource: source,
   }
 }
@@ -632,9 +656,11 @@ export async function handleDraftTask(
   const reason = payload.reason ? String(payload.reason) : undefined
   const milestone = payload.milestone ? String(payload.milestone) : undefined
 
+  const eventHint = payload.eventName ? String(payload.eventName) : undefined
+
   switch (taskType) {
     case 'draft.thank_you':
-      return generateThankYouDraft(clientName)
+      return generateThankYouDraft(clientName, eventHint)
     case 'draft.referral_request':
       return generateReferralRequestDraft(clientName)
     case 'draft.testimonial_request':

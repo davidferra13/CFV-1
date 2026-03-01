@@ -119,7 +119,7 @@ export const draftEmailAgentActions: AgentActionDefinition[] = [
 
         switch (draftType) {
           case 'thank_you':
-            result = await generateThankYouDraft(clientName)
+            result = await generateThankYouDraft(clientName, eventName || undefined)
             break
           case 'referral_request':
             result = await generateReferralRequestDraft(clientName)

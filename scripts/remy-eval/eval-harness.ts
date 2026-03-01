@@ -118,62 +118,94 @@ async function sendToRemy(
   currentPage?: string
 ): Promise<{ response: string; timeMs: number }> {
   const start = Date.now()
+  const TIMEOUT_MS = 180_000 // 3 minutes per test (includes model swap time)
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
-  const res = await fetch(`${BASE_URL}/api/remy/stream`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Cookie: cookies,
-    },
-    body: JSON.stringify({
-      message: query,
-      history: [],
-      currentPage: currentPage ?? '/dashboard',
-    }),
-  })
+  let res: Response
+  try {
+    res = await fetch(`${BASE_URL}/api/remy/stream`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: cookies,
+      },
+      body: JSON.stringify({
+        message: query,
+        history: [],
+        currentPage: currentPage ?? '/dashboard',
+      }),
+      signal: controller.signal,
+    })
+  } catch (err: any) {
+    clearTimeout(timer)
+    if (err.name === 'AbortError') {
+      return {
+        response: `[REMY ERROR]: Request timed out after ${TIMEOUT_MS / 1000}s`,
+        timeMs: Date.now() - start,
+      }
+    }
+    return { response: `[REMY ERROR]: ${err.message}`, timeMs: Date.now() - start }
+  }
 
   if (!res.ok) {
+    clearTimeout(timer)
     const text = await res.text()
     return { response: `[ERROR ${res.status}]: ${text}`, timeMs: Date.now() - start }
   }
 
   // Parse SSE stream
   const reader = res.body?.getReader()
-  if (!reader) return { response: '[ERROR]: No response body', timeMs: Date.now() - start }
+  if (!reader) {
+    clearTimeout(timer)
+    return { response: '[ERROR]: No response body', timeMs: Date.now() - start }
+  }
 
   const decoder = new TextDecoder()
   let fullResponse = ''
   let buffer = ''
 
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
 
-    buffer += decoder.decode(value, { stream: true })
-    const lines = buffer.split('\n')
-    buffer = lines.pop() ?? '' // Keep incomplete line in buffer
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      buffer = lines.pop() ?? '' // Keep incomplete line in buffer
 
-    for (const line of lines) {
-      if (!line.startsWith('data: ')) continue
-      const data = line.slice(6).trim()
-      if (data === '[DONE]') continue
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue
+        const data = line.slice(6).trim()
+        if (data === '[DONE]') continue
 
-      try {
-        const parsed = JSON.parse(data)
-        if (parsed.type === 'token' && parsed.data) {
-          fullResponse += parsed.data
-        } else if (parsed.type === 'done') {
-          // Done event — use fullResponse if available, otherwise keep accumulated tokens
-          if (parsed.data) fullResponse = parsed.data
-        } else if (parsed.type === 'error') {
-          fullResponse = `[REMY ERROR]: ${parsed.data ?? parsed.message}`
+        try {
+          const parsed = JSON.parse(data)
+          if (parsed.type === 'token' && parsed.data) {
+            fullResponse += parsed.data
+          } else if (parsed.type === 'done') {
+            // Done event — use fullResponse if available, otherwise keep accumulated tokens
+            if (parsed.data) fullResponse = parsed.data
+          } else if (parsed.type === 'error') {
+            fullResponse = `[REMY ERROR]: ${parsed.data ?? parsed.message}`
+          }
+        } catch {
+          // Non-JSON SSE data, skip
         }
-      } catch {
-        // Non-JSON SSE data, skip
       }
     }
+  } catch (err: any) {
+    if (err.name === 'AbortError') {
+      clearTimeout(timer)
+      return {
+        response: fullResponse || `[REMY ERROR]: Stream timed out after ${TIMEOUT_MS / 1000}s`,
+        timeMs: Date.now() - start,
+      }
+    }
+    throw err
   }
 
+  clearTimeout(timer)
   return { response: fullResponse || '[EMPTY RESPONSE]', timeMs: Date.now() - start }
 }
 
@@ -327,13 +359,32 @@ async function runTest(
   }
 
   // Send to Remy (with retry for transient Ollama loading errors)
+  // Mixed intent and command tests trigger model swaps (4b→30b→4b) which can
+  // cause the classifier's fast model to be evicted from VRAM on the 6GB RTX 3050.
+  // Retry up to 2 times with a warm-up ping between attempts.
   let { response, timeMs } = await sendToRemy(test.query, cookies, test.currentPage)
-  if (response.includes('[REMY ERROR]') && response.includes('loading')) {
-    console.log(`     ⏳ Ollama loading — waiting 30s and retrying...`)
-    await new Promise((r) => setTimeout(r, 30_000))
-    const retry = await sendToRemy(test.query, cookies, test.currentPage)
-    response = retry.response
-    timeMs += retry.timeMs
+  const MAX_RETRIES = 2
+  for (let retry = 0; retry < MAX_RETRIES; retry++) {
+    if (!response.includes('[REMY ERROR]') || !response.includes('loading')) break
+    const waitSec = retry === 0 ? 15 : 30
+    console.log(
+      `     ⏳ Ollama loading — warming up qwen3:4b and retrying in ${waitSec}s (attempt ${retry + 2}/${MAX_RETRIES + 1})...`
+    )
+    // Pre-warm the classifier model so it's loaded before the retry
+    await fetch(`${OLLAMA_URL}/api/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'qwen3:4b',
+        prompt: '/no_think\nSay OK.',
+        stream: false,
+        options: { num_predict: 3 },
+      }),
+    }).catch(() => {})
+    await new Promise((r) => setTimeout(r, waitSec * 1000))
+    const retryResult = await sendToRemy(test.query, cookies, test.currentPage)
+    response = retryResult.response
+    timeMs += retryResult.timeMs
   }
 
   // Rule-based grading

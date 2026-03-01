@@ -1102,6 +1102,8 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
           eventDate: string | null
           guestCount: number | null
           clientName: string
+          channel?: string | null
+          sourceMessage?: string | null
         }>
       }
       if (!d.inquiries || d.inquiries.length === 0) {
@@ -1111,8 +1113,10 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
           `You have ${d.inquiries.length} open inquir${d.inquiries.length === 1 ? 'y' : 'ies'}:\n`,
         ]
         for (const inq of d.inquiries) {
-          const details = [inq.clientName]
-          if (inq.eventType) details.push(inq.eventType)
+          // Build display: occasion/event type first (most useful identifier), then contact/channel, then metadata
+          const label = inq.eventType ?? inq.clientName ?? 'New inquiry'
+          const details = [label]
+          if (inq.channel) details.push(`via ${inq.channel}`)
           if (inq.eventDate) details.push(inq.eventDate)
           if (inq.guestCount) details.push(`${inq.guestCount} guests`)
           details.push(`(${inq.status.replace(/_/g, ' ')})`)
