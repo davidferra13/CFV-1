@@ -8,6 +8,7 @@ import { RemyProvider, useRemyContext } from '@/components/ai/remy-context'
 import { RemyMascotButton } from '@/components/ai/remy-mascot-button'
 import { RemyMascotChat } from '@/components/ai/remy-mascot-chat'
 import { RemyDrawer } from '@/components/ai/remy-drawer'
+import { useRemyNudges } from '@/lib/hooks/use-remy-nudges'
 
 const MINIMIZED_KEY = 'remy-minimized'
 
@@ -20,7 +21,20 @@ function RemyInner() {
     bodyState,
     eyeState,
     dispatchBody,
+    isMascotChatOpen,
+    isDrawerOpen,
+    isMascotLoading,
+    isLoading,
   } = useRemyContext()
+
+  const { nudgeMessage, dismissNudge } = useRemyNudges({
+    bodyState,
+    dispatchBody,
+    isMascotChatOpen,
+    isDrawerOpen,
+    isMascotLoading,
+    isLoading,
+  })
 
   const [minimized, setMinimized] = useState(false)
 
@@ -59,6 +73,8 @@ function RemyInner() {
         minimized={minimized}
         onToggleMinimize={toggleMinimize}
         onAnimComplete={() => dispatchBody({ type: 'ANIM_COMPLETE' })}
+        nudgeMessage={nudgeMessage}
+        onDismissNudge={dismissNudge}
         ariaLabel="Chat with Remy"
       />
 

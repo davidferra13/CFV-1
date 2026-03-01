@@ -20,6 +20,7 @@ import {
   completeIntro,
   saveSurveyAnswer,
 } from '@/lib/ai/remy-survey-actions'
+import { getSurveyQuestion } from '@/lib/ai/remy-survey-constants'
 import type { SurveyState } from '@/lib/ai/remy-survey-constants'
 import type { RemyMessage } from '@/lib/ai/remy-types'
 
@@ -45,6 +46,11 @@ export function RemyMascotChat() {
   const panelRef = useRef<HTMLDivElement>(null)
   const surveyLoadedRef = useRef(false)
 
+  // Compute current survey question for extraction
+  const currentSurveyQuestion = surveyState
+    ? getSurveyQuestion(surveyState.currentGroup, surveyState.currentQuestion)
+    : null
+
   const { input, setInput, loading, streamingContent, handleSend, handleCancel } =
     useRemyMascotSend({
       messages,
@@ -57,6 +63,9 @@ export function RemyMascotChat() {
       setMascotLoading: setIsMascotLoading,
       drawerBusy,
       surveyActive,
+      currentSurveyQuestion: currentSurveyQuestion
+        ? { key: currentSurveyQuestion.key, prompt: currentSurveyQuestion.prompt }
+        : null,
     })
 
   // Load survey state once when panel first opens
