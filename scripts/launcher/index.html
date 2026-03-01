@@ -817,7 +817,23 @@ body {
   display: flex;
   flex-direction: column;
   height: 200px;
-  min-height: 120px;
+  min-height: 60px;
+  position: relative;
+}
+.console-resize-handle {
+  position: absolute;
+  top: -3px;
+  left: 0;
+  right: 0;
+  height: 6px;
+  cursor: ns-resize;
+  z-index: 10;
+  background: transparent;
+  transition: background 0.15s;
+}
+.console-resize-handle:hover,
+.console-resize-handle.active {
+  background: var(--brand);
 }
 .console-header {
   display: flex;
@@ -4668,7 +4684,8 @@ body {
       </div>
 
       <!-- ═══ Console ═══ -->
-      <div class="console-wrapper">
+      <div class="console-wrapper" id="console-wrapper">
+        <div class="console-resize-handle" id="console-resize-handle"></div>
         <div class="console-header">
           <span class="console-title">&#x1F4BB; Activity Log</span>
           <div class="console-actions">
@@ -4869,6 +4886,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
     if (section === 'observe') observeConnect()
     if (section === 'expenses') loadExpenses()
     if (section === 'activity-log') loadRetroactiveActivity()
+    if (section === 'manual') loadManual()
     if (section === 'remy') loadRemyPanel()
   })
 })
@@ -5217,6 +5235,45 @@ function addLog(type, source, message) {
 function clearConsole() {
   consoleEl.innerHTML = ''
 }
+
+/* ── Console Resize ─────────────────────────────────────────── */
+;(function initConsoleResize() {
+  const wrapper = document.getElementById('console-wrapper')
+  const handle = document.getElementById('console-resize-handle')
+  if (!wrapper || !handle) return
+
+  const STORAGE_KEY = 'mc-console-height'
+  const saved = localStorage.getItem(STORAGE_KEY)
+  if (saved) wrapper.style.height = saved + 'px'
+
+  let startY, startH
+
+  handle.addEventListener('mousedown', function (e) {
+    e.preventDefault()
+    startY = e.clientY
+    startH = wrapper.offsetHeight
+    handle.classList.add('active')
+    document.body.style.cursor = 'ns-resize'
+    document.body.style.userSelect = 'none'
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+  })
+
+  function onMouseMove(e) {
+    const delta = startY - e.clientY
+    const newH = Math.max(60, startH + delta)
+    wrapper.style.height = newH + 'px'
+  }
+
+  function onMouseUp() {
+    handle.classList.remove('active')
+    document.body.style.cursor = ''
+    document.body.style.userSelect = ''
+    document.removeEventListener('mousemove', onMouseMove)
+    document.removeEventListener('mouseup', onMouseUp)
+    localStorage.setItem(STORAGE_KEY, wrapper.offsetHeight)
+  }
+})()
 
 function escapeHtml(str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
