@@ -98,13 +98,19 @@ export function RemyMascotChat() {
     }
   }, [isMascotChatOpen])
 
-  // Click outside to close
+  // Click outside to close — but NOT when clicking the mascot button or the
+  // chat window toggle (both should coexist with quick chat)
   useEffect(() => {
     if (!isMascotChatOpen) return
     const handleClick = (e: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
-        closeMascotChat()
-      }
+      const target = e.target as HTMLElement
+      // Don't close if clicking inside the quick chat panel
+      if (panelRef.current && panelRef.current.contains(target)) return
+      // Don't close if clicking the mascot button itself
+      if (target.closest('[data-remy-mascot]')) return
+      // Don't close if clicking the chat window toggle button
+      if (target.closest('[data-remy-chat-toggle]')) return
+      closeMascotChat()
     }
     // Delay to prevent the opening click from immediately closing
     const timer = setTimeout(() => {
@@ -328,9 +334,7 @@ export function RemyMascotChat() {
           )}
         </div>
         <p className="mt-1 text-center text-[9px] text-stone-600">
-          {surveyActive
-            ? 'Optional — skip any question or stop anytime'
-            : 'Quick chat — use Ctrl+K for deeper conversations'}
+          {surveyActive ? 'Optional — skip any question or stop anytime' : 'Quick chat'}
         </p>
       </div>
     </div>

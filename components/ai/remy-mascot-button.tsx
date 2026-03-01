@@ -138,6 +138,7 @@ export function RemyMascotButton({
 
   return (
     <div
+      data-remy-mascot
       className={['fixed bottom-0 left-4 lg:left-64 z-40', className ?? '']
         .filter(Boolean)
         .join(' ')}
