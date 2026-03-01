@@ -324,16 +324,17 @@ export async function checkEventDietaryConflicts(
 
 /**
  * Check dietary restrictions for a client by name (for Remy command).
- * Looks up the client, finds their most recent/upcoming event, and checks the menu.
+ * Always returns the client's known restrictions/allergies first (safety-critical),
+ * then optionally cross-checks against their most recent event menu if one exists.
  */
 export async function checkDietaryByClientName(clientName: string): Promise<DietaryCheckResult> {
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // Find client
+  // Find client — include dietary fields directly
   const { data: clients } = await supabase
     .from('clients')
-    .select('id, full_name')
+    .select('id, full_name, dietary_restrictions, allergies, vibe_notes')
     .eq('tenant_id', user.tenantId!)
     .ilike('full_name', `%${clientName}%`)
     .limit(1)
@@ -350,24 +351,136 @@ export async function checkDietaryByClientName(clientName: string): Promise<Diet
 
   const client = clients[0]
 
-  // Find their most recent event with a menu
+  // Build client-level dietary summary (always returned — this is safety-critical)
+  const rawAllergies = client.allergies ?? ''
+  const rawDietary = client.dietary_restrictions ?? ''
+  const vibeNotes = client.vibe_notes ?? ''
+
+  // Parse allergies array or string
+  let allergyList: string[] = []
+  if (Array.isArray(rawAllergies)) {
+    allergyList = rawAllergies.filter(Boolean)
+  } else if (typeof rawAllergies === 'string' && rawAllergies.trim()) {
+    allergyList = rawAllergies
+      .split(/[,;]/)
+      .map((s: string) => s.trim())
+      .filter(Boolean)
+  }
+
+  // Parse dietary restrictions array or string
+  let dietaryList: string[] = []
+  if (Array.isArray(rawDietary)) {
+    dietaryList = rawDietary.filter(Boolean)
+  } else if (typeof rawDietary === 'string' && rawDietary.trim()) {
+    dietaryList = rawDietary
+      .split(/[,;]/)
+      .map((s: string) => s.trim())
+      .filter(Boolean)
+  }
+
+  // Extract safety notes from vibe_notes (allergy severity, EpiPen, cross-contamination, etc.)
+  let safetyNote = ''
+  const vibeUpper = vibeNotes.toUpperCase()
+  if (
+    vibeUpper.includes('ALLERGY') ||
+    vibeUpper.includes('EPIPEN') ||
+    vibeUpper.includes('SEVERE') ||
+    vibeUpper.includes('ANAPHYL')
+  ) {
+    // Extract the relevant sentence(s) from vibe_notes
+    const sentences = vibeNotes.split(/[.!]\s+/)
+    const safetySentences = sentences.filter((s: string) => {
+      const su = s.toUpperCase()
+      return (
+        su.includes('ALLERGY') ||
+        su.includes('EPIPEN') ||
+        su.includes('SEVERE') ||
+        su.includes('ANAPHYL') ||
+        su.includes('CROSS-CONTAM')
+      )
+    })
+    if (safetySentences.length > 0) {
+      safetyNote = safetySentences.join('. ').trim()
+    }
+  }
+
+  const allRestrictions = [...allergyList, ...dietaryList]
+
+  // Build the client-level summary (always shown, even without events/menus)
+  let clientSummary = ''
+  if (allergyList.length > 0) {
+    clientSummary += `⚠️ ALLERGIES: ${allergyList.join(', ').toUpperCase()}`
+    if (safetyNote) {
+      clientSummary += `\n🚨 ${safetyNote}`
+    }
+  }
+  if (dietaryList.length > 0) {
+    clientSummary += `${clientSummary ? '\n' : ''}Dietary restrictions: ${dietaryList.join(', ')}`
+  }
+  if (!clientSummary) {
+    clientSummary = 'No dietary restrictions or allergies on file.'
+  }
+
+  // Try to find their most recent event with a menu for cross-checking
   const { data: events } = await supabase
     .from('events')
-    .select('id')
+    .select('id, title, event_date, kitchen_notes')
     .eq('tenant_id', user.tenantId!)
     .eq('client_id', client.id)
     .not('status', 'eq', 'cancelled')
     .order('event_date', { ascending: false })
     .limit(1)
 
-  if (!events || events.length === 0) {
-    // No event — still check their restrictions exist
-    const result = await checkDietaryConflicts(client.id, [])
-    return {
-      ...result,
-      summary: `${client.full_name} has no events yet. Their restrictions: ${result.restrictions.length > 0 ? result.restrictions.join(', ') : 'none on file'}.`,
+  // Extract kitchen notes safety info if available
+  if (events && events.length > 0 && events[0].kitchen_notes) {
+    const kitchenUpper = (events[0].kitchen_notes as string).toUpperCase()
+    if (
+      kitchenUpper.includes('ALLERGY') ||
+      kitchenUpper.includes('CRITICAL') ||
+      kitchenUpper.includes('SEVERE')
+    ) {
+      clientSummary += `\n📋 Kitchen notes: ${events[0].kitchen_notes}`
     }
   }
 
-  return checkEventDietaryConflicts(events[0].id, client.id)
+  // If no events, return client-level data only
+  if (!events || events.length === 0) {
+    return {
+      clientName: client.full_name,
+      restrictions: allRestrictions,
+      flags: allergyList.map((a) => ({
+        severity: 'danger' as const,
+        item: '',
+        restriction: a,
+        message: `ALLERGY: ${client.full_name} has a ${a} allergy`,
+      })),
+      safeItems: [],
+      summary: `${client.full_name} — ${clientSummary}\n\nNo events on file to cross-check menus against.`,
+    }
+  }
+
+  // Try menu cross-check — but always include client-level data regardless
+  const menuResult = await checkEventDietaryConflicts(events[0].id, client.id)
+
+  // If menu check returned "no menus" or "no items", still return client-level restrictions
+  if (menuResult.restrictions.length === 0 && allRestrictions.length > 0) {
+    return {
+      clientName: client.full_name,
+      restrictions: allRestrictions,
+      flags: allergyList.map((a) => ({
+        severity: 'danger' as const,
+        item: '',
+        restriction: a,
+        message: `ALLERGY: ${client.full_name} has a ${a} allergy`,
+      })),
+      safeItems: menuResult.safeItems,
+      summary: `${client.full_name} — ${clientSummary}\n\nNo finalized menu to cross-check yet, but these restrictions MUST be respected.`,
+    }
+  }
+
+  // Full cross-check available — prepend client-level summary
+  return {
+    ...menuResult,
+    summary: `${client.full_name} — ${clientSummary}\n\n${menuResult.summary}`,
+  }
 }

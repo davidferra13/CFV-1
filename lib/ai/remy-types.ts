@@ -215,8 +215,13 @@ export interface RemyContext {
   recentArtifacts?: Array<{ type: string; title: string; createdAt: string }>
   /** Recipe library stats */
   recipeStats?: { totalRecipes: number; categories: string[] }
-  /** Client vibe notes — personality and communication style insights */
-  clientVibeNotes?: Array<{ name: string; vibeNotes: string }>
+  /** Client vibe notes + dietary/allergy data (safety-critical) */
+  clientVibeNotes?: Array<{
+    name: string
+    vibeNotes: string
+    dietaryRestrictions: string[]
+    allergies: string[]
+  }>
   /** Recent after-action review insights */
   recentAARInsights?: Array<{
     rating: number | null

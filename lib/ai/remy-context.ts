@@ -334,10 +334,10 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
     // Recipe library stats
     supabase.from('recipes').select('id, category').eq('tenant_id', tenantId).limit(200),
 
-    // Client vibe notes (all recent clients with notes)
+    // Client vibe notes + dietary/allergy data (safety-critical)
     supabase
       .from('clients')
-      .select('full_name, vibe_notes')
+      .select('full_name, vibe_notes, dietary_restrictions, allergies')
       .eq('tenant_id', tenantId)
       .not('vibe_notes', 'is', null)
       .order('updated_at', { ascending: false })
@@ -538,6 +538,8 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
     clientVibeNotes: (clientVibeNotesResult.data ?? []).map((c: Record<string, unknown>) => ({
       name: (c.full_name as string) ?? 'Unknown',
       vibeNotes: (c.vibe_notes as string) ?? '',
+      dietaryRestrictions: (c.dietary_restrictions as string[]) ?? [],
+      allergies: (c.allergies as string[]) ?? [],
     })),
     recentAARInsights: (recentAARsResult.data ?? []).map((a: Record<string, unknown>) => ({
       rating: (a.overall_rating as number) ?? null,

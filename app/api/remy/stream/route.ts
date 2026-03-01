@@ -333,8 +333,45 @@ ${context.recentArtifacts.map((a) => `- ${a.type.replace(/_/g, ' ')}: ${a.title}
     )
   }
 
-  // Client vibe notes — personality and communication style insights
+  // Client vibe notes + dietary/allergy data (safety-critical info first)
   if (context.clientVibeNotes && context.clientVibeNotes.length > 0) {
+    // Separate clients with allergies for prominent display
+    const clientsWithAllergies = context.clientVibeNotes.filter(
+      (c) => c.allergies.length > 0 || c.dietaryRestrictions.length > 0
+    )
+    if (clientsWithAllergies.length > 0) {
+      parts.push(`\n⚠️ CLIENT DIETARY & ALLERGY DATA (SAFETY-CRITICAL — always flag prominently):
+${clientsWithAllergies
+  .map((c) => {
+    const lines: string[] = [`- ${c.name}:`]
+    if (c.allergies.length > 0) lines.push(`  ALLERGIES: ${c.allergies.join(', ').toUpperCase()}`)
+    if (c.dietaryRestrictions.length > 0)
+      lines.push(`  Dietary: ${c.dietaryRestrictions.join(', ')}`)
+    // Extract safety notes from vibe_notes
+    const vibeUpper = c.vibeNotes.toUpperCase()
+    if (
+      vibeUpper.includes('ALLERGY') ||
+      vibeUpper.includes('EPIPEN') ||
+      vibeUpper.includes('SEVERE')
+    ) {
+      const sentences = c.vibeNotes.split(/[.!]\s+/)
+      const safetySentences = sentences.filter((s: string) => {
+        const su = s.toUpperCase()
+        return (
+          su.includes('ALLERGY') ||
+          su.includes('EPIPEN') ||
+          su.includes('SEVERE') ||
+          su.includes('CROSS-CONTAM')
+        )
+      })
+      if (safetySentences.length > 0) lines.push(`  ⚠️ ${safetySentences.join('. ')}`)
+    }
+    return lines.join('\n')
+  })
+  .join('\n')}
+When asked about these clients' dietary needs, ALWAYS prominently flag allergies. This is safety-critical.`)
+    }
+
     parts.push(`\nCLIENT VIBE NOTES (personality & communication style):
 ${context.clientVibeNotes.map((c) => `- ${c.name}: ${c.vibeNotes}`).join('\n')}
 Use these to personalize communication — draft emails and messages that match each client's vibe.`)
