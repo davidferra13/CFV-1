@@ -7868,8 +7868,8 @@ async function loadProjectTimeline(force = false) {
       'timeline-hours-note',
       `Based on commit sessions (${s.sessions45m} at 45m gaps, ${s.sessions90m} at 90m gaps). Active-day average: ${s.commitsPerActiveDay} commits/day.`
     )
-    // First Day Coded = finalVersionStartDate from project-timeline.json
-    const firstDayCoded = data.life?.projectStats?.finalVersionStartDate
+    // First Day Coded = firstConfirmedWork from project-timeline.json (July 2024)
+    const firstDayCoded = data.life?.projectStats?.firstConfirmedWork
     if (firstDayCoded) {
       const d = new Date(firstDayCoded + 'T00:00:00')
       setText('timeline-first-day-coded', d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))
