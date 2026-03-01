@@ -10,7 +10,7 @@ import { loadRemyContext, resolveMessageEntities } from '@/lib/ai/remy-context'
 import { classifyIntent } from '@/lib/ai/remy-classifier'
 import { runCommand } from '@/lib/ai/command-orchestrator'
 import { getTaskName } from '@/lib/ai/command-task-descriptions'
-import { computeDynamicContext, getOllamaPiUrl, getModelForEndpoint } from '@/lib/ai/providers'
+import { getOllamaPiUrl, getModelForEndpoint } from '@/lib/ai/providers'
 import { routeForRemy } from '@/lib/ai/llm-router'
 import { getEndpointSnapshot } from '@/lib/ai/cross-monitor'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
@@ -1378,9 +1378,8 @@ export async function POST(req: NextRequest) {
 
     // ─── MAIN PATH: classify + load context ─────────────────────
     // Hard timeout: if the entire pre-stream setup takes >120s, bail out.
-    // Classifier + context + memories usually takes 5-15s, but model swaps
-    // on 6GB VRAM (RTX 3050) can add 50-60s when qwen3:4b needs to reload
-    // after a 30b model was active. 120s accommodates the worst-case swap.
+    // Classifier + context + memories usually takes 5-15s. Cold model load
+    // on 6GB VRAM can add 30-60s. 120s accommodates worst-case cold start.
     const setupTimeout = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error('Pre-stream setup timed out after 120s')), 120_000)
     )
@@ -1586,12 +1585,6 @@ export async function POST(req: NextRequest) {
       )
       const historyStr = formatConversationHistory(history)
       const mixedUserMessage = `${historyStr}Chef: ${questionInput}`
-      const mixedNumCtx = computeDynamicContext(
-        systemPrompt.length + mixedUserMessage.length,
-        mixedEndpoint.endpointName,
-        'chef'
-      )
-
       const encoder = new TextEncoder()
       const stream = new ReadableStream({
         async start(controller) {
@@ -1620,9 +1613,8 @@ export async function POST(req: NextRequest) {
                 stream: true,
                 options: {
                   num_predict: OLLAMA_STREAM_MAX_TOKENS,
-                  num_ctx: mixedNumCtx,
                 },
-                keep_alive: '1m',
+                keep_alive: '5m',
                 think: false,
               } as any)
 
@@ -1646,11 +1638,6 @@ export async function POST(req: NextRequest) {
                 `[remy] mixed: ${mixedEndpoint.endpointName} failed — falling back to ${fallback.endpointName}`
               )
               usedMixedEndpoint = fallback
-              const fbNumCtx = computeDynamicContext(
-                systemPrompt.length + mixedUserMessage.length,
-                fallback.endpointName,
-                'chef'
-              )
               const fallbackOllama = new Ollama({ host: fallback.host })
               const response: any = await fallbackOllama.chat({
                 model: fallback.model,
@@ -1661,9 +1648,8 @@ export async function POST(req: NextRequest) {
                 stream: true,
                 options: {
                   num_predict: OLLAMA_STREAM_MAX_TOKENS,
-                  num_ctx: fbNumCtx,
                 },
-                keep_alive: '1m',
+                keep_alive: '5m',
                 think: false,
               } as any)
 
@@ -1758,11 +1744,6 @@ export async function POST(req: NextRequest) {
     )
     const historyStr = formatConversationHistory(history)
     const userMessage = `${historyStr}Chef: ${message}`
-    const numCtx = computeDynamicContext(
-      systemPrompt.length + userMessage.length,
-      endpoint.endpointName,
-      'chef'
-    )
 
     const encoder = new TextEncoder()
     const stream = new ReadableStream({
@@ -1792,9 +1773,8 @@ export async function POST(req: NextRequest) {
               stream: true,
               options: {
                 num_predict: OLLAMA_STREAM_MAX_TOKENS,
-                num_ctx: numCtx,
               },
-              keep_alive: '1m',
+              keep_alive: '5m',
               think: false,
             } as any)
 
@@ -1818,11 +1798,6 @@ export async function POST(req: NextRequest) {
               `[remy] ${endpoint.endpointName} failed — falling back to ${fallback.endpointName}`
             )
             usedEndpoint = fallback
-            const fallbackNumCtx = computeDynamicContext(
-              systemPrompt.length + userMessage.length,
-              fallback.endpointName,
-              'chef'
-            )
             const fallbackOllama = new Ollama({ host: fallback.host })
             const response: any = await fallbackOllama.chat({
               model: fallback.model,
@@ -1833,9 +1808,8 @@ export async function POST(req: NextRequest) {
               stream: true,
               options: {
                 num_predict: OLLAMA_STREAM_MAX_TOKENS,
-                num_ctx: fallbackNumCtx,
               },
-              keep_alive: '1m',
+              keep_alive: '5m',
               think: false,
             } as any)
 
@@ -1925,7 +1899,7 @@ function sseHeaders(): HeadersInit {
  * regularly takes 40-74s per response. Under load or with long context,
  * it can exceed 90s. This only fires if Ollama is truly stuck.
  */
-const OLLAMA_STREAM_TIMEOUT_MS = 180_000
+const OLLAMA_STREAM_TIMEOUT_MS = 180_000 // 3 min — 30b MoE model on 6GB VRAM can take 40-90s per response
 
 /**
  * Max tokens for streaming conversational responses.

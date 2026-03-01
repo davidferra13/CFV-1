@@ -359,8 +359,7 @@ async function runTest(
   }
 
   // Send to Remy (with retry for transient Ollama loading errors)
-  // Mixed intent and command tests trigger model swaps (4b→30b→4b) which can
-  // cause the classifier's fast model to be evicted from VRAM on the 6GB RTX 3050.
+  // Ollama may need time to load the 30b model on first request or after idle timeout.
   // Retry up to 2 times with a warm-up ping between attempts.
   let { response, timeMs } = await sendToRemy(test.query, cookies, test.currentPage)
   const MAX_RETRIES = 2
@@ -368,19 +367,8 @@ async function runTest(
     if (!response.includes('[REMY ERROR]') || !response.includes('loading')) break
     const waitSec = retry === 0 ? 15 : 30
     console.log(
-      `     ⏳ Ollama loading — warming up qwen3:4b and retrying in ${waitSec}s (attempt ${retry + 2}/${MAX_RETRIES + 1})...`
+      `     ⏳ Ollama loading — retrying in ${waitSec}s (attempt ${retry + 2}/${MAX_RETRIES + 1})...`
     )
-    // Pre-warm the classifier model so it's loaded before the retry
-    await fetch(`${OLLAMA_URL}/api/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'qwen3:4b',
-        prompt: '/no_think\nSay OK.',
-        stream: false,
-        options: { num_predict: 3 },
-      }),
-    }).catch(() => {})
     await new Promise((r) => setTimeout(r, waitSec * 1000))
     const retryResult = await sendToRemy(test.query, cookies, test.currentPage)
     response = retryResult.response
@@ -534,45 +522,156 @@ async function main() {
   // Authenticate
   const cookies = await authenticate()
 
-  // Warm up Ollama models to avoid cold-start timeouts.
-  // Order matters: qwen3:4b (2.5GB) is loaded LAST because it's always needed first
-  // (classifier) and is small enough to coexist with a 30b model in memory.
-  // The 30b models (18GB each) compete for memory — only one can be loaded at a time.
-  // We pre-load qwen3:4b so the classifier never delays the pre-stream setup.
-  console.log('\n🔥 Warming up Ollama models...')
-  const modelsToWarm = ['qwen3:4b']
-  for (const model of modelsToWarm) {
-    try {
-      const warmRes = await fetch(`${OLLAMA_URL}/api/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model,
-          prompt: '/no_think\nSay OK.',
-          stream: false,
-          options: { num_predict: 3 },
-        }),
-      })
-      if (warmRes.ok) {
-        console.log(`  ✅ ${model} warm`)
-      } else {
-        console.log(`  ⚠️ ${model} failed to warm: ${warmRes.status}`)
-      }
-    } catch (err) {
-      console.log(`  ⚠️ ${model} warmup error: ${(err as Error).message}`)
+  // Warm up the 30b model used by both classifier and streamer.
+  // Since classifier was moved to modelTier 'standard' (qwen3-coder:30b),
+  // only one model is needed for the entire Remy pipeline.
+  console.log('\n🔥 Warming up Ollama model...')
+  try {
+    const warmRes = await fetch(`${OLLAMA_URL}/api/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'qwen3-coder:30b',
+        prompt: '/no_think\nSay OK.',
+        stream: false,
+        options: { num_predict: 3 },
+      }),
+    })
+    if (warmRes.ok) {
+      console.log(`  ✅ qwen3-coder:30b warm`)
+    } else {
+      console.log(`  ⚠️ qwen3-coder:30b failed to warm: ${warmRes.status}`)
     }
+  } catch (err) {
+    console.log(`  ⚠️ qwen3-coder:30b warmup error: ${(err as Error).message}`)
   }
-  console.log('  ℹ️  30b models will load on-demand (only one fits in memory at a time)')
 
-  // Run tests sequentially (to avoid overwhelming Ollama)
-  console.log('\n🧪 Running tests...\n')
-  const results: TestResult[] = []
+  // ── Phase 1: Collect all Remy responses (keeps 30b model loaded) ──
+  console.log('\n🧪 Phase 1/2 — Collecting Remy responses...\n')
+  console.log('  (30b model stays loaded — no model swaps between tests)\n')
+  const pendingResults: Array<{
+    test: TestCase
+    response: string
+    timeMs: number
+    errors: string[]
+    ruleScore: RuleScore
+  }> = []
 
   for (let i = 0; i < tests.length; i++) {
     const test = tests[i]
     process.stdout.write(`[${i + 1}/${tests.length}] `)
-    const result = await runTest(test, cookies, { verbose, noGrade })
-    results.push(result)
+
+    // Skip empty query
+    if (!test.query) {
+      console.log(`  ⏭ ${test.id}: (empty query — skipped)`)
+      pendingResults.push({
+        test,
+        response: '[SKIPPED — empty query]',
+        timeMs: 0,
+        errors: [],
+        ruleScore: {
+          intentCorrect: null,
+          mustContainPassed: true,
+          mustNotContainPassed: true,
+          refusalCorrect: null,
+          missingTerms: [],
+          forbiddenTermsFound: [],
+        },
+      })
+      continue
+    }
+
+    // Send to Remy with retry
+    let { response, timeMs } = await sendToRemy(test.query, cookies, test.currentPage)
+    const MAX_RETRIES = 2
+    for (let retry = 0; retry < MAX_RETRIES; retry++) {
+      if (!response.includes('[REMY ERROR]') || !response.includes('loading')) break
+      const waitSec = retry === 0 ? 15 : 30
+      console.log(
+        `     ⏳ Ollama loading — retrying in ${waitSec}s (attempt ${retry + 2}/${MAX_RETRIES + 1})...`
+      )
+      await new Promise((r) => setTimeout(r, waitSec * 1000))
+      const retryResult = await sendToRemy(test.query, cookies, test.currentPage)
+      response = retryResult.response
+      timeMs += retryResult.timeMs
+    }
+
+    // Rule-based grading (no LLM needed)
+    const ruleScore = gradeByRules(test, response)
+    const errors: string[] = []
+    if (!ruleScore.mustContainPassed) {
+      errors.push(`Missing required terms: ${ruleScore.missingTerms.join(', ')}`)
+    }
+    if (!ruleScore.mustNotContainPassed) {
+      errors.push(`Found forbidden terms: ${ruleScore.forbiddenTermsFound.join(', ')}`)
+    }
+    if (ruleScore.refusalCorrect === false) {
+      errors.push('Guardrail violation: should have refused but complied')
+    }
+
+    const hasError = response.includes('[REMY ERROR]') || response.includes('[ERROR')
+    const icon = hasError ? '⚠️' : errors.length ? '❗' : '✅'
+    console.log(`  ${icon} ${test.id}: ${test.query.slice(0, 60)}... (${timeMs}ms)`)
+    if (errors.length) console.log(`     Errors: ${errors.join('; ')}`)
+
+    pendingResults.push({ test, response, timeMs, errors, ruleScore })
+  }
+
+  // ── Phase 2: Batch-grade with LLM (loads 4b model once) ──
+  console.log('\n📊 Phase 2/2 — LLM grading all responses...\n')
+  const results: TestResult[] = []
+
+  if (!noGrade) {
+    // Warm up 4b for grading
+    console.log('  Warming up qwen3:4b for grading...')
+    await fetch(`${OLLAMA_URL}/api/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'qwen3:4b',
+        prompt: '/no_think\nSay OK.',
+        stream: false,
+        options: { num_predict: 3 },
+      }),
+    }).catch(() => {})
+    console.log('  ✅ Grader ready\n')
+  }
+
+  for (let i = 0; i < pendingResults.length; i++) {
+    const { test, response, timeMs, errors, ruleScore } = pendingResults[i]
+
+    let llmGrade: LLMGrade | undefined
+    if (!noGrade && test.query) {
+      process.stdout.write(`  [${i + 1}/${pendingResults.length}] Grading ${test.id}... `)
+      llmGrade = await gradeWithLLM(test, response)
+    }
+
+    const passed =
+      ruleScore.mustContainPassed &&
+      ruleScore.mustNotContainPassed &&
+      ruleScore.refusalCorrect !== false &&
+      (llmGrade ? llmGrade.overall >= 3 : true)
+
+    const scoreStr = llmGrade ? `[${llmGrade.overall}/5]` : ''
+    const icon = passed ? '✅' : '❌'
+    if (!noGrade && test.query) {
+      console.log(`${icon} ${scoreStr}`)
+      if (!passed && llmGrade?.reasoning) {
+        console.log(`     ${llmGrade.reasoning}`)
+      }
+    }
+
+    results.push({
+      testId: test.id,
+      category: test.category,
+      query: test.query || '(empty)',
+      response,
+      responseTimeMs: timeMs,
+      ruleScore,
+      llmGrade,
+      passed,
+      errors,
+    })
   }
 
   // Generate report
