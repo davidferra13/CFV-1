@@ -4,24 +4,23 @@ import {
   FAQPageJsonLd,
   BreadcrumbJsonLd,
 } from '@/components/seo/json-ld'
+import { PRO_PRICE_MONTHLY } from '@/lib/billing/tier'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
   title: 'Pricing — ChefFlow | Private Chef Business Software',
-  description:
-    'One plan, $29/month — everything you need to run your private chef business. Events, clients, menus, payments, and kitchen ops. 14-day free trial, no credit card required.',
+  description: `One plan, $${PRO_PRICE_MONTHLY}/month — everything you need to run your private chef business. Events, clients, menus, payments, and kitchen ops. 14-day free trial, no credit card required.`,
   openGraph: {
     title: 'Pricing — ChefFlow | Private Chef Business Software',
-    description:
-      'One plan, $29/month — everything you need to run your private chef business. 14-day free trial, no credit card required.',
+    description: `One plan, $${PRO_PRICE_MONTHLY}/month — everything you need to run your private chef business. 14-day free trial, no credit card required.`,
     url: `${BASE_URL}/pricing`,
     siteName: 'ChefFlow',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ChefFlow Pricing — $29/month, Everything Included',
+    title: `ChefFlow Pricing — $${PRO_PRICE_MONTHLY}/month, Everything Included`,
     description:
       'One plan, everything included. Events, clients, menus, payments, and kitchen ops. 14-day free trial.',
   },
@@ -53,8 +52,7 @@ const PRICING_FAQS = [
   },
   {
     question: 'What happens after my free trial?',
-    answer:
-      "After your 14-day free trial, you'll be charged $29/month. You can cancel anytime before the trial ends with no charge.",
+    answer: `After your 14-day free trial, you'll be charged $${PRO_PRICE_MONTHLY}/month. You can cancel anytime before the trial ends with no charge.`,
   },
   {
     question: 'Can I switch plans later?',

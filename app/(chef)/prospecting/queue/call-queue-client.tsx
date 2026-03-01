@@ -18,21 +18,26 @@ export function CallQueueClient() {
 
   function handleBuild() {
     startTransition(async () => {
-      const prospects = await buildDailyQueue(count)
-      setQueue(prospects)
-      setBuilt(true)
+      try {
+        const prospects = await buildDailyQueue(count)
+        setQueue(prospects)
+        setBuilt(true)
 
-      // Load scripts for each unique category
-      const categories = [...new Set(prospects.map((p) => p.category))]
-      const scriptMap: Record<string, CallScript | null> = {}
-      for (const cat of categories) {
-        try {
-          scriptMap[cat] = await getScriptForCategory(cat)
-        } catch {
-          scriptMap[cat] = null
+        // Load scripts for each unique category
+        const categories = [...new Set(prospects.map((p) => p.category))]
+        const scriptMap: Record<string, CallScript | null> = {}
+        for (const cat of categories) {
+          try {
+            scriptMap[cat] = await getScriptForCategory(cat)
+          } catch {
+            scriptMap[cat] = null
+          }
         }
+        setScripts(scriptMap)
+      } catch {
+        setQueue([])
+        setBuilt(true)
       }
-      setScripts(scriptMap)
     })
   }
 

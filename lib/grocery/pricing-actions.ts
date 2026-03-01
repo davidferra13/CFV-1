@@ -652,7 +652,10 @@ async function buildResultFromRow(
     mealMeCents: item.mealme_price_cents ?? null,
     averageCents: item.average_price_cents,
     recipeBookCents: null,
-    hasNoApiData: false, // can't determine from cache; default false
+    hasNoApiData:
+      item.spoonacular_price_cents == null &&
+      item.kroger_price_cents == null &&
+      item.mealme_price_cents == null,
     isOptional: false,
   }))
 

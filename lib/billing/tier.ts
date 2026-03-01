@@ -13,6 +13,9 @@
 import { cache } from 'react'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+/** Monthly price in dollars — single source of truth for display. */
+export const PRO_PRICE_MONTHLY = 29
+
 export type Tier = 'free' | 'pro'
 
 export type TierStatus = {

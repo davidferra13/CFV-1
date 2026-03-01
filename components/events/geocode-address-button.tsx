@@ -16,13 +16,18 @@ export function GeocodeAddressButton({ eventId }: GeocodeAddressButtonProps) {
   function handleGeocode() {
     setStatus('idle')
     startTransition(async () => {
-      const result = await geocodeEventAddress(eventId)
-      if (result.success) {
-        setStatus('success')
-        setMessage('Map location set — reload to see the map.')
-      } else {
+      try {
+        const result = await geocodeEventAddress(eventId)
+        if (result.success) {
+          setStatus('success')
+          setMessage('Map location set — reload to see the map.')
+        } else {
+          setStatus('error')
+          setMessage(result.error ?? 'Could not geocode address')
+        }
+      } catch {
         setStatus('error')
-        setMessage(result.error ?? 'Could not geocode address')
+        setMessage('Could not geocode address')
       }
     })
   }

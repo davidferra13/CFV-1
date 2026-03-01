@@ -155,19 +155,19 @@ export async function getEventPaymentStatus(eventId: string) {
     .eq('event_id', eventId)
     .single()
 
-  if (summaryError) {
+  if (summaryError || !summary) {
     return { success: false as const, error: 'Could not load financial data' }
   }
 
-  const paymentStatus = summary?.payment_status ?? 'unpaid'
+  const paymentStatus = summary.payment_status ?? 'unpaid'
 
   return {
     event,
     paymentStatus,
     isDepositPaid: paymentStatus !== 'unpaid',
     isFullyPaid: paymentStatus === 'paid',
-    totalPaidCents: summary?.total_paid_cents ?? 0,
-    outstandingBalanceCents: summary?.outstanding_balance_cents ?? 0,
+    totalPaidCents: summary.total_paid_cents ?? 0,
+    outstandingBalanceCents: summary.outstanding_balance_cents ?? 0,
     quotedPriceCents: event.quoted_price_cents ?? 0,
     depositAmountCents: event.deposit_amount_cents ?? 0,
   }

@@ -126,6 +126,7 @@ types/gen-stderr.txt
 
 # Database backups (never commit — can contain real data)
 backup-*.sql
+backups/
 
 # Log files
 *.log

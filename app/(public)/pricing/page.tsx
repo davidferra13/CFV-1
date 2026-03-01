@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ShieldCheck } from 'lucide-react'
 import { useState } from 'react'
+import { PRO_PRICE_MONTHLY } from '@/lib/billing/tier'
 
 export default function PricingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
@@ -35,8 +36,7 @@ export default function PricingPage() {
     },
     {
       question: 'What happens after my free trial?',
-      answer:
-        "After your 14-day free trial, you'll be charged $29/month. You can cancel anytime before the trial ends with no charge.",
+      answer: `After your 14-day free trial, you'll be charged $${PRO_PRICE_MONTHLY}/month. You can cancel anytime before the trial ends with no charge.`,
     },
     {
       question: 'Can I switch plans later?',
@@ -64,7 +64,7 @@ export default function PricingPage() {
             <CardHeader className="text-center pb-8 pt-8">
               <CardTitle className="text-2xl mb-4">Everything You Need</CardTitle>
               <div className="mb-2">
-                <span className="text-5xl font-bold text-stone-100">$29</span>
+                <span className="text-5xl font-bold text-stone-100">${PRO_PRICE_MONTHLY}</span>
                 <span className="text-stone-300 text-lg">/month</span>
               </div>
               <p className="text-sm text-stone-300">14-day free trial included</p>

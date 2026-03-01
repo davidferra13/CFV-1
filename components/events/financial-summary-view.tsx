@@ -6,6 +6,7 @@
 // Not anxiety-inducing — neutral data presentation, no red/green grading on margins.
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import type { EventFinancialSummaryData } from '@/lib/events/financial-summary-actions'
@@ -81,9 +82,14 @@ export function FinancialSummaryView({ data }: Props) {
     const miles = parseFloat(mileageInput)
     if (isNaN(miles) || miles < 0) return
     startTransition(async () => {
-      await updateMileage(event.id, miles)
-      setMileageSaved(true)
-      setTimeout(() => setMileageSaved(false), 2000)
+      try {
+        await updateMileage(event.id, miles)
+        setMileageSaved(true)
+        setTimeout(() => setMileageSaved(false), 2000)
+      } catch (err) {
+        console.error('[non-blocking] Mileage update failed', err)
+        toast.error('Failed to save mileage')
+      }
     })
   }
 

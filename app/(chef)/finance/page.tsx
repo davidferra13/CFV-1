@@ -109,9 +109,27 @@ const SECTIONS = [
 export default async function FinancePage() {
   await requireChef()
   const [summary, carryForwardSavings] = await Promise.all([
-    getTenantFinancialSummary(),
+    getTenantFinancialSummary().catch(() => null),
     getYtdCarryForwardSavings().catch(() => 0),
   ])
+
+  if (!summary) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-stone-100">Finance</h1>
+          <p className="text-stone-500 mt-1">
+            Complete financial management — invoices, expenses, ledger, and reporting
+          </p>
+        </div>
+        <div className="rounded-xl border border-red-800 bg-red-950 p-6 text-center">
+          <p className="text-sm text-red-400">
+            Could not load financial data. Please refresh the page or try again later.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

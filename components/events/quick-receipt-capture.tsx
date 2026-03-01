@@ -47,15 +47,20 @@ export function QuickReceiptCapture({ eventId }: Props) {
     const formData = new FormData()
     formData.set('receipt', file)
     startTransition(async () => {
-      const result = await quickCaptureReceipt(eventId, formData)
-      if (result.success) {
-        setState('success')
-        setFile(null)
-        if (previewUrl) URL.revokeObjectURL(previewUrl)
-        setPreviewUrl(null)
-        if (fileInputRef.current) fileInputRef.current.value = ''
-      } else {
-        setErrorMsg(result.error)
+      try {
+        const result = await quickCaptureReceipt(eventId, formData)
+        if (result.success) {
+          setState('success')
+          setFile(null)
+          if (previewUrl) URL.revokeObjectURL(previewUrl)
+          setPreviewUrl(null)
+          if (fileInputRef.current) fileInputRef.current.value = ''
+        } else {
+          setErrorMsg(result.error)
+          setState('error')
+        }
+      } catch {
+        setErrorMsg('Upload failed — please try again')
         setState('error')
       }
     })

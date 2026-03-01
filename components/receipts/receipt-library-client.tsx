@@ -5,8 +5,9 @@
 // Includes filter bar (event, client, status) and a summary totals bar.
 // Each receipt shows its context label (event name or "Standalone", client name).
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef } from 'react'
 import Image from 'next/image'
+import { toast } from 'sonner'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { updateLineItem, approveReceiptSummary, processReceiptOCR } from '@/lib/receipts/actions'
@@ -79,14 +80,20 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
           : li
       )
     )
+    const previous = [...lineItems]
     startTransition(async () => {
-      await updateLineItem({
-        lineItemId: id,
-        ...(field === 'expenseTag' ? { expenseTag: value as any } : {}),
-        ...(field === 'ingredientCategory' ? { ingredientCategory: value as string | null } : {}),
-        ...(field === 'description' ? { description: value as string } : {}),
-        ...(field === 'priceCents' ? { priceCents: value as number | null } : {}),
-      })
+      try {
+        await updateLineItem({
+          lineItemId: id,
+          ...(field === 'expenseTag' ? { expenseTag: value as any } : {}),
+          ...(field === 'ingredientCategory' ? { ingredientCategory: value as string | null } : {}),
+          ...(field === 'description' ? { description: value as string } : {}),
+          ...(field === 'priceCents' ? { priceCents: value as number | null } : {}),
+        })
+      } catch (err) {
+        setLineItems(previous)
+        toast.error('Failed to update line item')
+      }
     })
   }
 
