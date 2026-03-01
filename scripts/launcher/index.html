@@ -2572,17 +2572,18 @@ body {
           </div>
         </div>
 
-        <!-- Bridge blurb -->
-        <div style="margin:12px 0 16px;padding:10px 14px;background:linear-gradient(135deg, rgba(232,143,71,0.08), rgba(232,143,71,0.03));border:1px solid rgba(232,143,71,0.15);border-radius:8px;display:flex;align-items:center;gap:10px;">
-          <span style="font-size:18px;">&#x1F9EA;</span>
-          <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;">
-            <span id="timeline-bridge-text" style="opacity:0.9;">21 prototypes scrapped across 19 months — ChatGPT research, Google AI Studio builds, 14 "BillyBob" codebases — before the architecture finally clicked.</span>
-          </div>
-        </div>
-
         <!-- Row 4: Current version activity stats -->
-        <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">CFv1 — The Version That Stuck</h3>
+        <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Current Version (CFv1) Activity</h3>
         <div class="info-grid">
+          <div class="info-card">
+            <div class="info-label">First Day Coded</div>
+            <div class="info-value small" id="timeline-first-day-coded">--</div>
+          </div>
+          <div class="info-card" style="background:linear-gradient(135deg, rgba(232,143,71,0.10), rgba(232,143,71,0.04));border-color:rgba(232,143,71,0.2);">
+            <div class="info-label" style="color:var(--warning);">Scrapped Builds</div>
+            <div class="info-value" style="font-size:22px;color:var(--warning);" id="timeline-scrapped-count">--</div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Research &amp; builds before CFv1</div>
+          </div>
           <div class="info-card">
             <div class="info-label">First Commit</div>
             <div class="info-value small" id="timeline-start">--</div>
@@ -7664,6 +7665,8 @@ function resetTimelineSummary() {
   setText('timeline-active-days', '--')
   setText('timeline-streak', '--')
   setText('timeline-total-commits', '--')
+  setText('timeline-first-day-coded', '--')
+  setText('timeline-scrapped-count', '--')
   setText('timeline-hours-mid', '--')
   setText('timeline-hours-note', '--')
   setText('timeline-life-mid', '--')
@@ -7871,16 +7874,15 @@ async function loadProjectTimeline(force = false) {
       'timeline-hours-note',
       `Based on commit sessions (${s.sessions45m} at 45m gaps, ${s.sessions90m} at 90m gaps). Active-day average: ${s.commitsPerActiveDay} commits/day.`
     )
-    // Bridge blurb — dynamically update with actual counts
-    const ps = data.life?.projectStats
-    if (ps) {
-      const restarts = ps.totalRestarts || 21
-      const months = ps.daysFromIdeaToFinal ? Math.floor(ps.daysFromIdeaToFinal / 30) : 19
-      const bb = ps.restartSources?.billyBobVersions || 14
-      const ai = ps.restartSources?.aiStudioSubmissions || 4
-      const el = document.getElementById('timeline-bridge-text')
-      if (el) el.textContent = `${restarts} prototypes scrapped across ${months} months — ChatGPT research, Google AI Studio builds, ${bb} "BillyBob" codebases — before the architecture finally clicked.`
+    // First Day Coded
+    const firstDayCoded = data.life?.projectStats?.firstConfirmedWork
+    if (firstDayCoded) {
+      const d = new Date(firstDayCoded + 'T00:00:00')
+      setText('timeline-first-day-coded', d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))
     }
+    // Scrapped builds count
+    const scrapped = data.life?.projectStats?.totalRestarts
+    if (scrapped != null) setText('timeline-scrapped-count', String(scrapped))
     renderProjectStats(data.life?.projectStats || null)
     renderGitActivity(data.gitActivity || null)
     renderTimelineLifeSummary(data.life || null)
