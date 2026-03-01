@@ -11,6 +11,7 @@ import {
   autoSuggestProject,
   autoTitle,
 } from '@/lib/ai/remy-local-storage'
+import { parseRemyStream } from '@/lib/ai/remy-stream-parser'
 import { approveTask } from '@/lib/ai/command-orchestrator'
 import { saveRemyMessage, saveRemyTaskResult } from '@/lib/ai/remy-artifact-actions'
 import { extractAndSaveMemories } from '@/lib/ai/remy-memory-actions'
@@ -279,64 +280,24 @@ export function useRemySend(config: UseRemySendConfig) {
         reader = response.body?.getReader()
         if (!reader) throw new Error('No response body')
 
-        const decoder = new TextDecoder()
-        let fullContent = ''
         let hasReceivedFirstToken = false
-        let isErrorResponse = false
-        let tasks: RemyTaskResult[] | undefined
-        let navSuggestions: NavigationSuggestion[] | undefined
-        let memoryItems: RemyMemoryItem[] | undefined
-        let buffer = ''
+        let streamAccum = ''
 
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
-
-          buffer += decoder.decode(value, { stream: true })
-          const lines = buffer.split('\n\n')
-          buffer = lines.pop() ?? ''
-
-          for (const line of lines) {
-            if (!line.startsWith('data: ')) continue
-            try {
-              const event = JSON.parse(line.slice(6)) as { type: string; data: unknown }
-
-              switch (event.type) {
-                case 'token':
-                  if (!hasReceivedFirstToken) {
-                    hasReceivedFirstToken = true
-                    dispatchBody({ type: 'FIRST_TOKEN' })
-                  }
-                  fullContent += event.data as string
-                  setStreamingContent(fullContent)
-                  feedText(event.data as string)
-                  break
-                case 'tasks':
-                  tasks = event.data as RemyTaskResult[]
-                  break
-                case 'nav':
-                  navSuggestions = event.data as NavigationSuggestion[]
-                  break
-                case 'memories':
-                  memoryItems = event.data as RemyMemoryItem[]
-                  break
-                case 'intent':
-                  setStreamingIntent(event.data as string)
-                  break
-                case 'error':
-                  fullContent = event.data as string
-                  isErrorResponse = true
-                  setStreamingContent('')
-                  break
-                case 'done':
-                  break
-              }
-            } catch {
-              // Skip malformed SSE lines
+        const result = await parseRemyStream(reader, {
+          onToken: (token) => {
+            if (!hasReceivedFirstToken) {
+              hasReceivedFirstToken = true
+              dispatchBody({ type: 'FIRST_TOKEN' })
             }
-          }
-        }
+            streamAccum += token
+            setStreamingContent(streamAccum)
+            feedText(token)
+          },
+          onIntent: (intent) => setStreamingIntent(intent),
+          onError: () => setStreamingContent(''),
+        })
 
+        const { fullContent, isError: isErrorResponse, tasks, navSuggestions, memoryItems } = result
         const cleanContent = fullContent.replace(/\nNAV_SUGGESTIONS:\s*\[[\s\S]*\]/, '').trim()
 
         const remyMsg: RemyMessage = {

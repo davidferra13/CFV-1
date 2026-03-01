@@ -30,7 +30,13 @@ interface RemyContextValue {
   closeDrawer: () => void
   toggleDrawer: () => void
 
-  // Lip-sync (produced by drawer streaming, consumed by mascot)
+  // Mascot chat state (separate from drawer)
+  isMascotChatOpen: boolean
+  openMascotChat: () => void
+  closeMascotChat: () => void
+  toggleMascotChat: () => void
+
+  // Lip-sync (produced by streaming, consumed by mascot)
   currentViseme: Viseme
   isSpeaking: boolean
   currentEmotion: RemyEmotion
@@ -50,9 +56,11 @@ interface RemyContextValue {
   mascotState: MascotState
   setMascotState: (s: MascotState) => void
 
-  // Loading state (so mascot can show thinking indicator)
+  // Loading state — drawer and mascot chat tracked separately
   isLoading: boolean
   setIsLoading: (l: boolean) => void
+  isMascotLoading: boolean
+  setIsMascotLoading: (l: boolean) => void
 }
 
 const RemyContext = createContext<RemyContextValue | null>(null)
@@ -99,7 +107,9 @@ function bodyStateToMascotState(s: BodyState): MascotState {
 
 export function RemyProvider({ children }: { children: React.ReactNode }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [isMascotChatOpen, setIsMascotChatOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isMascotLoading, setIsMascotLoading] = useState(false)
 
   // Body state machine — replaces the old simple mascotState
   const { bodyState, dispatchBody } = useBodyState()
@@ -128,6 +138,22 @@ export function RemyProvider({ children }: { children: React.ReactNode }) {
     })
   }, [dispatchBody])
 
+  const openMascotChat = useCallback(() => {
+    setIsMascotChatOpen(true)
+    dispatchBody({ type: 'INTERACT' })
+  }, [dispatchBody])
+
+  const closeMascotChat = useCallback(() => {
+    setIsMascotChatOpen(false)
+  }, [])
+
+  const toggleMascotChat = useCallback(() => {
+    setIsMascotChatOpen((prev) => {
+      if (!prev) dispatchBody({ type: 'INTERACT' })
+      return !prev
+    })
+  }, [dispatchBody])
+
   // Legacy bridge: setMascotState dispatches body events
   const setMascotState = useCallback(
     (s: MascotState) => {
@@ -144,13 +170,14 @@ export function RemyProvider({ children }: { children: React.ReactNode }) {
         e.preventDefault()
         toggleDrawer()
       }
-      if (e.key === 'Escape' && isDrawerOpen) {
-        closeDrawer()
+      if (e.key === 'Escape') {
+        if (isDrawerOpen) closeDrawer()
+        else if (isMascotChatOpen) closeMascotChat()
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isDrawerOpen, toggleDrawer, closeDrawer])
+  }, [isDrawerOpen, isMascotChatOpen, toggleDrawer, closeDrawer, closeMascotChat])
 
   // Listen for custom 'open-remy' event so nav buttons can open the drawer
   useEffect(() => {
@@ -164,6 +191,10 @@ export function RemyProvider({ children }: { children: React.ReactNode }) {
     openDrawer,
     closeDrawer,
     toggleDrawer,
+    isMascotChatOpen,
+    openMascotChat,
+    closeMascotChat,
+    toggleMascotChat,
     currentViseme: lipSync.currentViseme,
     isSpeaking: lipSync.isSpeaking,
     currentEmotion: lipSync.currentEmotion,
@@ -178,6 +209,8 @@ export function RemyProvider({ children }: { children: React.ReactNode }) {
     setMascotState,
     isLoading,
     setIsLoading,
+    isMascotLoading,
+    setIsMascotLoading,
   }
 
   return <RemyContext.Provider value={value}>{children}</RemyContext.Provider>

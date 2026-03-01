@@ -6,13 +6,14 @@
 import { useState, useCallback, useEffect } from 'react'
 import { RemyProvider, useRemyContext } from '@/components/ai/remy-context'
 import { RemyMascotButton } from '@/components/ai/remy-mascot-button'
+import { RemyMascotChat } from '@/components/ai/remy-mascot-chat'
 import { RemyDrawer } from '@/components/ai/remy-drawer'
 
 const MINIMIZED_KEY = 'remy-minimized'
 
 function RemyInner() {
   const {
-    toggleDrawer,
+    toggleMascotChat,
     currentViseme,
     isSpeaking,
     currentEmotion,
@@ -49,7 +50,7 @@ function RemyInner() {
     <>
       {/* Persistent Remy mascot — always visible at bottom-left */}
       <RemyMascotButton
-        onClick={toggleDrawer}
+        onClick={toggleMascotChat}
         bodyState={bodyState}
         eyeState={eyeState}
         viseme={currentViseme}
@@ -58,10 +59,13 @@ function RemyInner() {
         minimized={minimized}
         onToggleMinimize={toggleMinimize}
         onAnimComplete={() => dispatchBody({ type: 'ANIM_COMPLETE' })}
-        ariaLabel="Toggle Remy chat (Ctrl+K)"
+        ariaLabel="Chat with Remy"
       />
 
-      {/* Chat drawer — right side panel */}
+      {/* Mascot inline chat — quick conversations above the mascot */}
+      <RemyMascotChat />
+
+      {/* Chat drawer — right side panel (Ctrl+K) */}
       <RemyDrawer />
     </>
   )
