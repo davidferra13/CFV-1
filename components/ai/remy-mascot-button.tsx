@@ -132,7 +132,7 @@ export function RemyMascotButton({
 
   return (
     <div
-      className={['fixed bottom-0 left-4 lg:left-6 z-40', className ?? '']
+      className={['fixed bottom-0 left-4 lg:left-64 z-40', className ?? '']
         .filter(Boolean)
         .join(' ')}
       onMouseEnter={handleMouseEnter}
