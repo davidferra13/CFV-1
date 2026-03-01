@@ -57,12 +57,16 @@ export async function getProspects(filter?: ProspectsFilter): Promise<Prospect[]
     }
   }
   if (filter?.category) query = query.eq('category', filter.category)
-  if (filter?.region) query = query.ilike('region', `%${filter.region}%`)
+  if (filter?.region)
+    query = query.ilike('region', `%${filter.region.replace(/[%_,.()"'\\]/g, '')}%`)
   if (filter?.priority) query = query.eq('priority', filter.priority)
   if (filter?.search) {
-    query = query.or(
-      `name.ilike.%${filter.search}%,city.ilike.%${filter.search}%,contact_person.ilike.%${filter.search}%,region.ilike.%${filter.search}%`
-    )
+    const s = filter.search.replace(/[%_,.()"'\\]/g, '')
+    if (s) {
+      query = query.or(
+        `name.ilike.%${s}%,city.ilike.%${s}%,contact_person.ilike.%${s}%,region.ilike.%${s}%`
+      )
+    }
   }
 
   query = query

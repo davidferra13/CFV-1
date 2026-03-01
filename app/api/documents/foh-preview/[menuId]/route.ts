@@ -18,9 +18,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ men
       },
     })
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || 'Failed to generate FOH preview' },
-      { status: 500 }
-    )
+    console.error('[foh-preview] Error:', error)
+    return NextResponse.json({ error: 'Failed to generate FOH preview' }, { status: 500 })
   }
 }

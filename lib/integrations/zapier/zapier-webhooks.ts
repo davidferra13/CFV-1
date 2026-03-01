@@ -144,6 +144,7 @@ export async function dispatchWebhookEvent(
         },
         body: bodyStr,
         signal: AbortSignal.timeout(10000), // 10s timeout
+        redirect: 'error',
       })
 
       responseStatus = response.status
@@ -217,6 +218,7 @@ export async function testWebhookSubscription(subscriptionId: string) {
     },
     body: bodyStr,
     signal: AbortSignal.timeout(10000),
+    redirect: 'error',
   })
 
   return {

@@ -45,6 +45,7 @@ export async function deliverWebhook(
             },
             body,
             signal: AbortSignal.timeout(10000),
+            redirect: 'error',
           }),
         {
           maxAttempts: MAX_ATTEMPTS,

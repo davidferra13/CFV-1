@@ -7,10 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { disconnectCredential } from '@/lib/social/oauth/token-store'
 import { SOCIAL_PLATFORMS } from '@/lib/social/oauth/config'
 
-export async function POST(
-  _request: NextRequest,
-  { params }: { params: { platform: string } }
-) {
+export async function POST(_request: NextRequest, { params }: { params: { platform: string } }) {
   const { platform } = params
 
   if (!SOCIAL_PLATFORMS.has(platform)) {
@@ -33,6 +30,6 @@ export async function POST(
     return NextResponse.json({ success: true })
   } catch (err) {
     console.error('[social-disconnect]', err)
-    return NextResponse.json({ error: (err as Error).message }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to disconnect platform' }, { status: 500 })
   }
 }

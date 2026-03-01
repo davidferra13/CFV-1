@@ -380,7 +380,10 @@ export async function searchChefs(
     .limit(20)
 
   if (query.length > 0) {
-    chefsQuery = chefsQuery.or(`business_name.ilike.%${query}%,display_name.ilike.%${query}%`)
+    const safeQuery = query.replace(/[%_,.()"'\\]/g, '')
+    chefsQuery = chefsQuery.or(
+      `business_name.ilike.%${safeQuery}%,display_name.ilike.%${safeQuery}%`
+    )
   }
 
   const { data: chefs, error } = await chefsQuery

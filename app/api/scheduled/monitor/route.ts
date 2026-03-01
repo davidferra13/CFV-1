@@ -73,10 +73,7 @@ async function handleMonitor(request: NextRequest): Promise<NextResponse> {
 
   if (error) {
     console.error('[CronMonitor] Failed to query cron_executions:', error)
-    return NextResponse.json(
-      { error: 'Failed to query cron execution log', details: error.message },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to query cron execution log' }, { status: 500 })
   }
 
   // Build a map of cron_name → most recent execution

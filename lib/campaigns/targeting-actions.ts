@@ -45,7 +45,7 @@ export async function getClientsByOccasion(occasion: string): Promise<TargetClie
     .from('events')
     .select('client_id, occasion, event_date')
     .eq('tenant_id', chef.entityId)
-    .ilike('occasion', `%${occasion}%`)
+    .ilike('occasion', `%${occasion.replace(/[%_,.()"'\\]/g, '')}%`)
     .order('event_date', { ascending: false })
 
   if (!events || events.length === 0) return []
@@ -180,7 +180,9 @@ export async function searchClientsForCampaign(query: string): Promise<TargetCli
     .eq('tenant_id', chef.entityId)
     .eq('marketing_unsubscribed', false)
     .not('email', 'is', null)
-    .or(`full_name.ilike.%${q}%,email.ilike.%${q}%`)
+    .or(
+      `full_name.ilike.%${q.replace(/[%_,.()"'\\]/g, '')}%,email.ilike.%${q.replace(/[%_,.()"'\\]/g, '')}%`
+    )
     .limit(20)
 
   return (data ?? []).map((c) => ({

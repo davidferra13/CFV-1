@@ -19,17 +19,17 @@ function getStripe(): Stripe {
 }
 
 const InstantBookSchema = z.object({
-  chef_slug: z.string().min(1),
-  full_name: z.string().min(1, 'Name is required'),
-  email: z.string().email('Valid email required'),
-  phone: z.string().optional().or(z.literal('')),
-  occasion: z.string().min(1, 'Occasion is required'),
-  event_date: z.string().min(1, 'Event date is required'),
-  serve_time: z.string().min(1, 'Serve time is required'),
-  guest_count: z.number().int().positive(),
-  address: z.string().min(1, 'Address is required'),
-  allergies_food_restrictions: z.string().optional().or(z.literal('')),
-  additional_notes: z.string().optional().or(z.literal('')),
+  chef_slug: z.string().min(1).max(200),
+  full_name: z.string().min(1, 'Name is required').max(200),
+  email: z.string().email('Valid email required').max(320),
+  phone: z.string().max(50).optional().or(z.literal('')),
+  occasion: z.string().min(1, 'Occasion is required').max(200),
+  event_date: z.string().min(1, 'Event date is required').max(20),
+  serve_time: z.string().min(1, 'Serve time is required').max(20),
+  guest_count: z.number().int().positive().max(10000),
+  address: z.string().min(1, 'Address is required').max(500),
+  allergies_food_restrictions: z.string().max(2000).optional().or(z.literal('')),
+  additional_notes: z.string().max(5000).optional().or(z.literal('')),
 })
 
 export type InstantBookInput = z.infer<typeof InstantBookSchema>

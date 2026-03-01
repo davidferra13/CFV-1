@@ -47,6 +47,20 @@ export async function sendPushNotification(
       subscription.auth_key
     )
 
+    // SECURITY: Validate push endpoint URL to prevent SSRF — blocks private IPs
+    const parsedUrl = new URL(endpoint)
+    if (
+      parsedUrl.hostname === 'localhost' ||
+      parsedUrl.hostname === '0.0.0.0' ||
+      /^(127\.|10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.|0\.)/.test(
+        parsedUrl.hostname
+      ) ||
+      parsedUrl.hostname === '[::1]'
+    ) {
+      console.error('[sendPushNotification] Blocked SSRF attempt to private endpoint:', endpoint)
+      return 'failed'
+    }
+
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
@@ -57,6 +71,8 @@ export async function sendPushNotification(
         Urgency: payload.action_url ? 'high' : 'normal',
       },
       body: encryptedBody,
+      signal: AbortSignal.timeout(10000),
+      redirect: 'error',
     })
 
     if (response.status === 410 || response.status === 404) {

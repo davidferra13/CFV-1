@@ -107,12 +107,12 @@ export async function getCampaignByToken(token: string): Promise<PublicDinnerInf
 // ============================================================
 
 const BookingSchema = z.object({
-  full_name: z.string().min(1, 'Name is required'),
-  email: z.string().email('Valid email required'),
-  phone: z.string().optional(),
+  full_name: z.string().min(1, 'Name is required').max(200),
+  email: z.string().email('Valid email required').max(320),
+  phone: z.string().max(50).optional(),
   guest_count: z.number().int().min(1).max(50),
-  dietary_restrictions: z.string().optional(),
-  message: z.string().optional(),
+  dietary_restrictions: z.string().max(2000).optional(),
+  message: z.string().max(5000).optional(),
 })
 
 export type SubmitBookingResult =

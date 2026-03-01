@@ -107,7 +107,10 @@ export async function listGuests(search?: string) {
     .order('name', { ascending: true })
 
   if (search && search.trim()) {
-    q = q.or(`name.ilike.%${search.trim()}%,phone.ilike.%${search.trim()}%`)
+    const safeSearch = search.trim().replace(/[%_,.()"'\\]/g, '')
+    if (safeSearch) {
+      q = q.or(`name.ilike.%${safeSearch}%,phone.ilike.%${safeSearch}%`)
+    }
   }
 
   const { data, error } = await q

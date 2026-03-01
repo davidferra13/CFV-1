@@ -42,8 +42,13 @@ function isPrivateIPv6(hostname: string): boolean {
   if (raw === '::1' || raw === '::') return true
   // fc00::/7 — unique local addresses
   if (/^fc[0-9a-f]{2}:/.test(raw)) return true
+  // fd00::/8 — unique local addresses
+  if (/^fd[0-9a-f]{2}:/.test(raw)) return true
   // fe80::/10 — link-local
   if (/^fe80:/.test(raw)) return true
+  // IPv4-mapped IPv6 (::ffff:127.0.0.1, ::ffff:10.0.0.1, etc.)
+  const v4MappedMatch = raw.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/)
+  if (v4MappedMatch && isPrivateIPv4(v4MappedMatch[1])) return true
   return false
 }
 

@@ -168,7 +168,7 @@ export async function listProducts(filters?: {
     query = query.eq('category', filters.category)
   }
   if (filters?.search) {
-    query = query.ilike('name', `%${filters.search}%`)
+    query = query.ilike('name', `%${filters.search.replace(/[%_,.()"'\\]/g, '')}%`)
   }
   if (filters?.limit) {
     const from = filters.offset ?? 0
