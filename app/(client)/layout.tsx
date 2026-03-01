@@ -1,7 +1,6 @@
 // Client Portal Layout - Layer 2 of Defense in Depth
 
 import { requireClient } from '@/lib/auth/get-user'
-import { clientHasCannabisAccess } from '@/lib/clients/cannabis-client-actions'
 import { redirect } from 'next/navigation'
 import {
   ClientSidebarProvider,
@@ -23,8 +22,6 @@ export default async function ClientLayout({ children }: { children: React.React
     redirect('/auth/signin?portal=client')
   }
 
-  const hasCannabisTier = await clientHasCannabisAccess(user.id).catch(() => false)
-
   return (
     <ClientSidebarProvider>
       <NotificationProvider userId={user.id}>
@@ -36,8 +33,8 @@ export default async function ClientLayout({ children }: { children: React.React
           >
             Skip to main content
           </a>
-          <ClientSidebar userEmail={user.email} hasCannabisTier={hasCannabisTier} />
-          <ClientMobileNav userEmail={user.email} hasCannabisTier={hasCannabisTier} />
+          <ClientSidebar userEmail={user.email} />
+          <ClientMobileNav userEmail={user.email} />
           <ActivityTracker eventType="portal_login" />
           <ClientMainContent>{children}</ClientMainContent>
           <RemyClientChat />

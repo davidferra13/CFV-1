@@ -64,7 +64,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     layoutData,
     announcement,
     tierStatus,
-    hasCannabisTier,
+    _unusedCannabisTier,
     userIsAdmin,
     chefArchetype,
     deletionStatus,
@@ -79,7 +79,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
       isGrandfathered: true,
       subscriptionStatus: 'grandfathered',
     })),
-    // Cannabis tier check — cached 60s, non-fatal, fails closed
+    // Cannabis tier check — kept in Promise.all to avoid reindexing, but unused (cannabis is admin-only now)
     getCachedCannabisAccess(user.id, user.email ?? '').catch(() => false),
     // Admin check — cached 60s, env-based (no DB call)
     getCachedIsAdmin(user.email ?? '').catch(() => false),
@@ -167,7 +167,6 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                 {/* Desktop sidebar */}
                 <ChefSidebar
                   primaryNavHrefs={primaryNavHrefs}
-                  hasCannabisTier={hasCannabisTier}
                   enabledModules={enabledModules}
                   isAdmin={effectiveAdmin}
                   focusMode={focusMode}
@@ -177,7 +176,6 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                 {/* Mobile nav (top bar + bottom tabs) */}
                 <ChefMobileNav
                   primaryNavHrefs={primaryNavHrefs}
-                  hasCannabisTier={hasCannabisTier}
                   enabledModules={enabledModules}
                   isAdmin={effectiveAdmin}
                   focusMode={focusMode}
