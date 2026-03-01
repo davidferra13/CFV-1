@@ -183,9 +183,12 @@ async function checkAllEndpoints(): Promise<void> {
     latencyMs: pcHealth.latencyMs,
   })
 
-  // Pi endpoint (optional — only if OLLAMA_PI_URL is set)
+  // Pi endpoint (optional — only if OLLAMA_PI_URL is set AND not disabled)
+  // Set OLLAMA_PI_DISABLED=true when Ollama is masked on Pi to prevent
+  // fallback attempts that fail with "model not found" errors.
   const piUrl = process.env.OLLAMA_PI_URL
-  if (piUrl) {
+  const piDisabled = process.env.OLLAMA_PI_DISABLED === 'true'
+  if (piUrl && !piDisabled) {
     const piHealth = await pingEndpoint(piUrl)
     endpoints.push({
       name: 'pi',

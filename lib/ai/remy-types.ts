@@ -55,6 +55,12 @@ export interface RemyMessage {
   navSuggestions?: NavigationSuggestion[]
   /** Memory items for management UI (only on memory-related messages) */
   memoryItems?: RemyMemoryItem[]
+  /** If true, shows a retry button — set on timeout/error messages */
+  isRetryable?: boolean
+  /** The original user message that triggered this error (for retry) */
+  retryMessage?: string
+  /** Thumbs up/down feedback */
+  feedback?: 'up' | 'down'
 }
 
 export interface NavigationSuggestion {

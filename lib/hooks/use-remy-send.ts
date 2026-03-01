@@ -282,6 +282,7 @@ export function useRemySend(config: UseRemySendConfig) {
         const decoder = new TextDecoder()
         let fullContent = ''
         let hasReceivedFirstToken = false
+        let isErrorResponse = false
         let tasks: RemyTaskResult[] | undefined
         let navSuggestions: NavigationSuggestion[] | undefined
         let memoryItems: RemyMemoryItem[] | undefined
@@ -324,6 +325,7 @@ export function useRemySend(config: UseRemySendConfig) {
                   break
                 case 'error':
                   fullContent = event.data as string
+                  isErrorResponse = true
                   setStreamingContent('')
                   break
                 case 'done':
@@ -345,6 +347,7 @@ export function useRemySend(config: UseRemySendConfig) {
           tasks,
           navSuggestions,
           memoryItems,
+          ...(isErrorResponse && { isRetryable: true, retryMessage: message }),
         }
         setMessages((prev) => [...prev, remyMsg])
         setStreamingContent('')
@@ -402,8 +405,11 @@ export function useRemySend(config: UseRemySendConfig) {
           const cancelMsg: RemyMessage = {
             id: generateId(),
             role: 'remy',
-            content: "Request was cancelled or timed out. Try again when you're ready.",
+            content:
+              'Request timed out — the AI model was probably still loading. Hit retry and I should be ready!',
             timestamp: new Date().toISOString(),
+            isRetryable: true,
+            retryMessage: message,
           }
           setMessages((prev) => [...prev, cancelMsg])
           setStreamingContent('')
@@ -420,6 +426,8 @@ export function useRemySend(config: UseRemySendConfig) {
               ? "I'm offline right now — Ollama needs to be running for me to help. Start it up and try again!"
               : errMsg,
             timestamp: new Date().toISOString(),
+            isRetryable: true,
+            retryMessage: message,
           }
           setMessages((prev) => [...prev, remyErrorMsg])
           setStreamingContent('')

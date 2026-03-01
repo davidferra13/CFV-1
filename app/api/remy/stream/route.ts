@@ -1233,11 +1233,12 @@ export async function POST(req: NextRequest) {
     acquireInteractiveLock()
 
     // ─── MAIN PATH: classify + load context ─────────────────────
-    // Hard timeout: if the entire pre-stream setup takes >60s, bail out.
-    // Classifier + context + memories usually takes 5-15s, but cold model
-    // loading can add ~3-5s on top. This only fires if Ollama is truly hung.
+    // Hard timeout: if the entire pre-stream setup takes >120s, bail out.
+    // Classifier + context + memories usually takes 5-15s, but model swaps
+    // on 6GB VRAM (RTX 3050) can add 50-60s when qwen3:4b needs to reload
+    // after a 30b model was active. 120s accommodates the worst-case swap.
     const setupTimeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('Pre-stream setup timed out after 60s')), 60_000)
+      setTimeout(() => reject(new Error('Pre-stream setup timed out after 120s')), 120_000)
     )
 
     let context: Awaited<ReturnType<typeof loadRemyContext>>
@@ -1292,7 +1293,7 @@ export async function POST(req: NextRequest) {
         encodeSSE({
           type: 'error',
           data: isOllama
-            ? 'Ollama is taking too long to respond. It may be stuck — try restarting Ollama and sending your message again.'
+            ? 'Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!'
             : sanitizeErrorForClient(setupErr, 'Setup failed — please try again in a moment.'),
         }),
         { headers: sseHeaders() }

@@ -36,6 +36,9 @@ import {
   Bookmark,
   Check,
   Copy,
+  RotateCcw,
+  ThumbsUp,
+  ThumbsDown,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { RemyTaskCard } from '@/components/ai/remy-task-card'
@@ -231,6 +234,17 @@ export function RemyDrawer() {
     }
   }, [open])
 
+  // Warm up the classifier model (qwen3:4b) when drawer opens
+  // This pings Ollama to load the model into VRAM with a 30-min keepalive,
+  // so the first query doesn't suffer a cold-start delay.
+  useEffect(() => {
+    if (open) {
+      fetch('/api/remy/warmup', { method: 'POST' }).catch(() => {
+        // Non-blocking — if warmup fails, the query will still work (just slower)
+      })
+    }
+  }, [open])
+
   // Abort in-flight request when drawer closes
   useEffect(() => {
     if (!open) {
@@ -362,6 +376,41 @@ export function RemyDrawer() {
       toast.error('Failed to share conversation with support')
     }
   }, [currentConversationId, messages])
+
+  const handleFeedback = useCallback(
+    async (msgId: string, rating: 'up' | 'down') => {
+      // Find the Remy message and the user message that triggered it
+      const msgIndex = messages.findIndex((m) => m.id === msgId)
+      if (msgIndex < 0) return
+      const remyMsg = messages[msgIndex]
+      if (remyMsg.feedback === rating) return // Already rated same way
+
+      // Find the preceding user message
+      let userMessage = ''
+      for (let i = msgIndex - 1; i >= 0; i--) {
+        if (messages[i].role === 'user') {
+          userMessage = messages[i].content
+          break
+        }
+      }
+
+      // Update local state immediately
+      setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, feedback: rating } : m)))
+
+      // Save to database (non-blocking)
+      try {
+        const { saveRemyFeedback } = await import('@/lib/ai/remy-feedback-actions')
+        await saveRemyFeedback({
+          userMessage,
+          remyResponse: remyMsg.content,
+          rating,
+        })
+      } catch (err) {
+        console.error('[non-blocking] Feedback save failed:', err)
+      }
+    },
+    [messages, setMessages]
+  )
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -938,6 +987,18 @@ export function RemyDrawer() {
                         )}
                       </div>
 
+                      {/* Retry button for timeout/error messages */}
+                      {msg.role === 'remy' && msg.isRetryable && msg.retryMessage && (
+                        <button
+                          type="button"
+                          onClick={() => handleSend(msg.retryMessage)}
+                          className="flex items-center gap-1.5 text-xs bg-brand-600 hover:bg-brand-500 text-white rounded-full px-3 py-1.5 transition-colors"
+                        >
+                          <RotateCcw className="h-3 w-3" />
+                          Retry
+                        </button>
+                      )}
+
                       {/* Task result cards */}
                       {msg.role === 'remy' && msg.tasks && msg.tasks.length > 0 && (
                         <div className="space-y-2">
@@ -1014,6 +1075,40 @@ export function RemyDrawer() {
                               </div>
                             ))
                           })()}
+                        </div>
+                      )}
+
+                      {/* Thumbs up/down feedback */}
+                      {msg.role === 'remy' && !msg.isRetryable && msg.content.length > 10 && (
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={() => handleFeedback(msg.id, 'up')}
+                            className={`rounded-full p-1 transition-colors ${
+                              msg.feedback === 'up'
+                                ? 'text-green-400'
+                                : 'text-stone-500 hover:text-green-400'
+                            }`}
+                            title="Good response"
+                          >
+                            <ThumbsUp
+                              className={`h-3 w-3 ${msg.feedback === 'up' ? 'fill-current' : ''}`}
+                            />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleFeedback(msg.id, 'down')}
+                            className={`rounded-full p-1 transition-colors ${
+                              msg.feedback === 'down'
+                                ? 'text-red-400'
+                                : 'text-stone-500 hover:text-red-400'
+                            }`}
+                            title="Bad response"
+                          >
+                            <ThumbsDown
+                              className={`h-3 w-3 ${msg.feedback === 'down' ? 'fill-current' : ''}`}
+                            />
+                          </button>
                         </div>
                       )}
                     </div>
