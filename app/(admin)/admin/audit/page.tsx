@@ -24,12 +24,12 @@ export default async function AdminAuditPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-slate-100 rounded-lg">
-          <ScrollText size={18} className="text-slate-600" />
+        <div className="p-2 bg-stone-800 rounded-lg">
+          <ScrollText size={18} className="text-stone-400" />
         </div>
         <div>
           <h1 className="text-xl font-bold text-slate-900">Audit Log</h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-stone-500">
             Immutable record of every sensitive platform action
           </p>
         </div>
@@ -49,19 +49,19 @@ export default async function AdminAuditPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Time
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Actor
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Action
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Target
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Details
                   </th>
                 </tr>
@@ -72,11 +72,11 @@ export default async function AdminAuditPage() {
                     <td className="px-4 py-2.5 text-xs text-slate-400 whitespace-nowrap">
                       {entry.ts ? new Date(String(entry.ts)).toLocaleString() : '—'}
                     </td>
-                    <td className="px-4 py-2.5 text-xs text-slate-600">
+                    <td className="px-4 py-2.5 text-xs text-stone-400">
                       {String(entry.actor_email ?? '—')}
                     </td>
                     <td className="px-4 py-2.5">
-                      <span className="text-xs font-medium text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded font-mono">
+                      <span className="text-xs font-medium text-stone-300 bg-stone-800 px-1.5 py-0.5 rounded font-mono">
                         {String(entry.action_type ?? '—')}
                       </span>
                     </td>

@@ -28,9 +28,9 @@ function getContactLabel(call: Awaited<ReturnType<typeof getCall>>): string {
 const STATUS_PILL: Record<string, string> = {
   scheduled: 'bg-blue-900 text-blue-700',
   confirmed: 'bg-green-900 text-green-700',
-  completed: 'bg-gray-100 text-gray-600',
+  completed: 'bg-stone-700 text-stone-400',
   no_show: 'bg-red-900 text-red-700',
-  cancelled: 'bg-gray-100 text-gray-400',
+  cancelled: 'bg-stone-700 text-stone-500',
 }
 
 export default async function CallDetailPage({ params }: Props) {
@@ -48,7 +48,7 @@ export default async function CallDetailPage({ params }: Props) {
       {/* Back */}
       <Link
         href="/calls"
-        className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+        className="flex items-center gap-1 text-sm text-stone-500 hover:text-stone-300"
       >
         <ChevronLeft className="w-4 h-4" />
         Back to Calls
@@ -58,11 +58,11 @@ export default async function CallDetailPage({ params }: Props) {
       <div className="bg-stone-900 rounded-xl border shadow-sm p-6 space-y-4">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-xl font-bold text-gray-900 capitalize">{title}</h1>
+            <h1 className="text-xl font-bold text-stone-100 capitalize">{title}</h1>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <CallTypeBadge type={call.call_type} />
               <span
-                className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${STATUS_PILL[call.status] ?? 'bg-gray-100 text-gray-600'}`}
+                className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${STATUS_PILL[call.status] ?? 'bg-stone-700 text-stone-400'}`}
               >
                 {call.status.replace('_', ' ')}
               </span>
@@ -72,7 +72,7 @@ export default async function CallDetailPage({ params }: Props) {
           {!isTerminal && (
             <Link
               href={`/calls/${call.id}/edit`}
-              className="text-sm text-gray-500 hover:text-gray-700 border rounded-lg px-3 py-1.5"
+              className="text-sm text-stone-400 hover:text-stone-200 border border-stone-700 rounded-lg px-3 py-1.5"
             >
               Edit
             </Link>
@@ -82,33 +82,33 @@ export default async function CallDetailPage({ params }: Props) {
         {/* Meta grid */}
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <Calendar className="w-4 h-4 text-stone-500 flex-shrink-0" />
             <div>
               <dt className="sr-only">Date & time</dt>
-              <dd className="text-gray-800 font-medium">
+              <dd className="text-stone-200 font-medium">
                 {format(new Date(call.scheduled_at), 'EEEE, MMM d, yyyy')}
               </dd>
-              <dd className="text-gray-500">
+              <dd className="text-stone-400">
                 {format(new Date(call.scheduled_at), 'h:mm a')} · {call.duration_minutes} min
               </dd>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <User className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <User className="w-4 h-4 text-stone-500 flex-shrink-0" />
             <div>
               <dt className="sr-only">Contact</dt>
-              <dd className="text-gray-800 font-medium">{contact}</dd>
-              {call.contact_phone && <dd className="text-gray-500">{call.contact_phone}</dd>}
+              <dd className="text-stone-200 font-medium">{contact}</dd>
+              {call.contact_phone && <dd className="text-stone-400">{call.contact_phone}</dd>}
               {call.contact_company && !call.client && (
-                <dd className="text-gray-500">{call.contact_company}</dd>
+                <dd className="text-stone-400">{call.contact_company}</dd>
               )}
             </div>
           </div>
 
           {call.inquiry && (
             <div className="flex items-center gap-2">
-              <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <FileText className="w-4 h-4 text-stone-500 flex-shrink-0" />
               <div>
                 <dt className="sr-only">Linked inquiry</dt>
                 <dd>
@@ -125,7 +125,7 @@ export default async function CallDetailPage({ params }: Props) {
 
           {call.event && (
             <div className="flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <Building2 className="w-4 h-4 text-stone-500 flex-shrink-0" />
               <div>
                 <dt className="sr-only">Linked event</dt>
                 <dd>

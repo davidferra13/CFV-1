@@ -44,6 +44,7 @@ export function AnnouncementForm({ currentText, currentType }: Props) {
   }
 
   function handleClear() {
+    const previousText = text
     startTransition(async () => {
       try {
         const result = await clearAnnouncement()
@@ -54,6 +55,7 @@ export function AnnouncementForm({ currentText, currentType }: Props) {
           setFeedback({ ok: false, msg: result.error ?? 'Failed.' })
         }
       } catch (err) {
+        setText(previousText) // rollback
         toast.error('Failed to clear announcement')
       }
     })
@@ -69,7 +71,7 @@ export function AnnouncementForm({ currentText, currentType }: Props) {
             className={`px-3 py-1.5 text-xs font-medium rounded-md border-2 transition-colors ${
               type === opt.value
                 ? 'border-slate-400 ' + opt.color
-                : 'border-transparent bg-slate-100 text-slate-500 hover:bg-slate-200'
+                : 'border-transparent bg-stone-800 text-stone-500 hover:bg-stone-700'
             }`}
           >
             {opt.label}
@@ -113,7 +115,7 @@ export function AnnouncementForm({ currentText, currentType }: Props) {
           <button
             onClick={handleClear}
             disabled={isPending}
-            className="px-4 py-2 bg-slate-100 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-200 disabled:opacity-50 transition-colors"
+            className="px-4 py-2 bg-stone-800 text-stone-400 text-sm font-medium rounded-lg hover:bg-stone-700 disabled:opacity-50 transition-colors"
           >
             Clear
           </button>

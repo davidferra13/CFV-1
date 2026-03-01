@@ -4,6 +4,7 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { generatePartnerShareLink } from '@/lib/partners/actions'
 import { Share2 } from 'lucide-react'
@@ -23,6 +24,7 @@ export function SharePartnerReportButton({ partnerId }: { partnerId: string }) {
       setTimeout(() => setCopied(false), 3000)
     } catch (err) {
       setError('Could not generate link.')
+      toast.error('Could not generate share link')
     } finally {
       setIsPending(false)
     }

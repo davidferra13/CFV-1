@@ -54,7 +54,7 @@ function AgendaItemRow({
 
   return (
     <li
-      className={`flex items-start gap-3 group py-2 border-b border-gray-100 last:border-0 ${isPending ? 'opacity-60' : ''}`}
+      className={`flex items-start gap-3 group py-2 border-b border-stone-800 last:border-0 ${isPending ? 'opacity-60' : ''}`}
     >
       {/* Checkbox */}
       <button
@@ -64,7 +64,7 @@ function AgendaItemRow({
         className={`flex-shrink-0 mt-0.5 w-5 h-5 rounded border transition-colors flex items-center justify-center ${
           item.completed
             ? 'bg-green-500 border-green-500 text-white'
-            : 'border-gray-300 hover:border-green-400'
+            : 'border-stone-600 hover:border-green-400'
         } disabled:cursor-not-allowed`}
         aria-label={item.completed ? 'Mark incomplete' : 'Mark complete'}
       >
@@ -74,12 +74,12 @@ function AgendaItemRow({
       {/* Text + source badge */}
       <div className="flex-1 min-w-0">
         <p
-          className={`text-sm leading-snug ${item.completed ? 'line-through text-gray-400' : 'text-gray-800'}`}
+          className={`text-sm leading-snug ${item.completed ? 'line-through text-stone-500' : 'text-stone-200'}`}
         >
           {item.item}
         </p>
         {item.source !== 'manual' && (
-          <p className="text-xs text-gray-400 mt-0.5">{SOURCE_LABELS[item.source]}</p>
+          <p className="text-xs text-stone-500 mt-0.5">{SOURCE_LABELS[item.source]}</p>
         )}
       </div>
 
@@ -89,7 +89,7 @@ function AgendaItemRow({
           type="button"
           onClick={handleRemove}
           disabled={isPending}
-          className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500 disabled:cursor-not-allowed"
+          className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-stone-500 hover:text-red-500 disabled:cursor-not-allowed"
           aria-label="Remove item"
         >
           <X className="w-4 h-4" />
@@ -126,9 +126,9 @@ export function CallPrepPanel({ call }: { call: ScheduledCall }) {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-gray-900">Agenda / Prep Checklist</h3>
+        <h3 className="font-semibold text-stone-100">Agenda / Prep Checklist</h3>
         {total > 0 && (
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-stone-400">
             {completed}/{total} done
           </span>
         )}
@@ -136,7 +136,7 @@ export function CallPrepPanel({ call }: { call: ScheduledCall }) {
 
       {/* Progress bar */}
       {total > 0 && (
-        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-1.5 bg-stone-800 rounded-full overflow-hidden">
           <div
             className="h-full bg-green-400 rounded-full transition-all duration-300"
             style={{ width: `${(completed / total) * 100}%` }}
@@ -146,7 +146,7 @@ export function CallPrepPanel({ call }: { call: ScheduledCall }) {
 
       {/* Items */}
       {total === 0 ? (
-        <div className="flex items-start gap-2 text-sm text-gray-500 bg-gray-50 rounded p-3">
+        <div className="flex items-start gap-2 text-sm text-stone-400 bg-stone-800 rounded p-3">
           <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
           <span>
             No agenda items yet.
@@ -181,11 +181,11 @@ export function CallPrepPanel({ call }: { call: ScheduledCall }) {
 
       {/* Prep notes */}
       {call.prep_notes && (
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+        <div className="mt-4 pt-4 border-t border-stone-800">
+          <p className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-1">
             Prep notes
           </p>
-          <p className="text-sm text-gray-700 whitespace-pre-wrap">{call.prep_notes}</p>
+          <p className="text-sm text-stone-300 whitespace-pre-wrap">{call.prep_notes}</p>
         </div>
       )}
     </div>

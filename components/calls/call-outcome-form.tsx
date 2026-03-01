@@ -66,7 +66,9 @@ export function CallOutcomeForm({ call }: { call: ScheduledCall }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <h3 className="font-semibold text-gray-900">{isTerminal ? 'Call Outcome' : 'Log Outcome'}</h3>
+      <h3 className="font-semibold text-stone-100">
+        {isTerminal ? 'Call Outcome' : 'Log Outcome'}
+      </h3>
 
       {/* Outcome summary */}
       <div className="space-y-1.5">

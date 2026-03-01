@@ -41,14 +41,14 @@ function StatCard({
 }) {
   return (
     <div className="bg-stone-900 rounded-xl border border-slate-200 px-5 py-4">
-      <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">{label}</p>
+      <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">{label}</p>
       <p className="text-2xl font-bold text-slate-900 mt-1">{value}</p>
       {sub !== undefined && (
         <div className="flex items-center gap-1 mt-1">
           {trend === 'up' && <TrendingUp size={12} className="text-green-500" />}
           {trend === 'down' && <TrendingDown size={12} className="text-red-500" />}
           <p className="text-xs text-slate-400">
-            {subLabel}: <span className="font-medium text-slate-600">{sub}</span>
+            {subLabel}: <span className="font-medium text-stone-400">{sub}</span>
           </p>
         </div>
       )}
@@ -73,10 +73,10 @@ function QuickTile({
       className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4 hover:border-slate-300 hover:shadow-sm transition-all group"
     >
       <div className="flex items-center gap-3 mb-2">
-        <div className="p-2 bg-slate-100 rounded-lg group-hover:bg-orange-950 transition-colors">
+        <div className="p-2 bg-stone-800 rounded-lg group-hover:bg-orange-950 transition-colors">
           <Icon
             size={16}
-            className="text-slate-600 group-hover:text-orange-500 transition-colors"
+            className="text-stone-400 group-hover:text-orange-500 transition-colors"
           />
         </div>
         <span className="font-medium text-sm text-slate-900">{label}</span>
@@ -110,7 +110,7 @@ export default async function AdminOverviewPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Platform Overview</h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-sm text-stone-500 mt-1">
           Signed in as <span className="font-medium">{admin.email}</span>
         </p>
       </div>
@@ -159,7 +159,7 @@ export default async function AdminOverviewPage() {
 
       {/* Quick Actions */}
       <div>
-        <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-3">
+        <h2 className="text-sm font-semibold text-stone-300 uppercase tracking-wide mb-3">
           Quick Access
         </h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -222,7 +222,7 @@ export default async function AdminOverviewPage() {
 
       {/* System Architecture */}
       <div>
-        <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-3">
+        <h2 className="text-sm font-semibold text-stone-300 uppercase tracking-wide mb-3">
           System Architecture
         </h2>
         <SystemArchitecturePlayer />

@@ -50,7 +50,10 @@ export function LogFeedbackButton() {
     setLoading(true)
     getClients()
       .then((data) => setClients(data as Client[]))
-      .catch(() => {})
+      .catch(() => {
+        // Non-critical — client selector just won't populate
+        console.error('[non-blocking] Failed to load clients for feedback form')
+      })
       .finally(() => setLoading(false))
   }, [open])
 

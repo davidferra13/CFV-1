@@ -6,6 +6,7 @@
 // Only shown when there are unallocated leftovers available.
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { transferUnusedToEvent } from '@/lib/expenses/unused'
@@ -26,14 +27,17 @@ export function AvailableLeftovers({ eventId, items: initialItems }: Props) {
   if (items.length === 0) return null
 
   function handleUse(itemId: string) {
+    const previous = items
     setTransferring(itemId)
+    // Optimistic removal
+    setItems((prev) => prev.filter((i) => i.id !== itemId))
     startTransition(async () => {
       try {
         await transferUnusedToEvent(itemId, eventId)
-        // Remove from list after successful transfer
-        setItems((prev) => prev.filter((i) => i.id !== itemId))
       } catch (err) {
         console.error('[AvailableLeftovers] Transfer error:', err)
+        setItems(previous) // rollback
+        toast.error('Failed to apply leftover')
       } finally {
         setTransferring(null)
       }

@@ -63,7 +63,7 @@ export default async function AdminFlagsPage() {
         </div>
         <div>
           <h1 className="text-xl font-bold text-slate-900">Feature Flags</h1>
-          <p className="text-sm text-slate-500">Control which features are enabled per chef</p>
+          <p className="text-sm text-stone-500">Control which features are enabled per chef</p>
         </div>
       </div>
 
@@ -75,17 +75,17 @@ export default async function AdminFlagsPage() {
 
       {/* Flag Legend */}
       <div className="bg-stone-900 rounded-xl border border-slate-200 p-4">
-        <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+        <h2 className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-3">
           Flag Reference
         </h2>
         <div className="space-y-2">
           {KNOWN_FLAGS.map((flag) => (
             <div key={flag.key} className="flex items-start gap-3">
-              <span className="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 shrink-0 mt-0.5">
+              <span className="font-mono text-xs bg-stone-800 px-1.5 py-0.5 rounded text-stone-400 shrink-0 mt-0.5">
                 {flag.key}
               </span>
               <div>
-                <span className="text-sm font-medium text-slate-700">{flag.label}</span>
+                <span className="text-sm font-medium text-stone-300">{flag.label}</span>
                 <p className="text-xs text-slate-400">{flag.description}</p>
               </div>
             </div>

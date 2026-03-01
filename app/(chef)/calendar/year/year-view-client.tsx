@@ -34,7 +34,7 @@ function WeekCell({ week, isCurrentWeek, href }: WeekCellProps) {
   const hasEvents = week.event_count > 0
   const hasGaps = week.has_gaps
 
-  let bg = 'bg-gray-50 hover:bg-gray-100 text-gray-400'
+  let bg = 'bg-stone-900 hover:bg-stone-800 text-stone-500'
   if (hasEvents && hasGaps) {
     bg = 'bg-amber-950 hover:bg-amber-900 text-amber-900 border-red-400 border-2'
   } else if (hasEvents) {
@@ -47,7 +47,7 @@ function WeekCell({ week, isCurrentWeek, href }: WeekCellProps) {
     <Link
       href={href}
       title={`Week of ${format(parseISO(week.week_start), 'MMM d')}: ${week.event_count} event${week.event_count !== 1 ? 's' : ''}${hasGaps ? `, ${week.gap_count} gap${week.gap_count !== 1 ? 's' : ''}` : ''}`}
-      className={`rounded border border-gray-200 px-1 py-1.5 text-center cursor-pointer transition-colors text-xs block ${bg} ${ring}`}
+      className={`rounded border border-stone-700 px-1 py-1.5 text-center cursor-pointer transition-colors text-xs block ${bg} ${ring}`}
     >
       <div className="font-medium text-xs leading-tight">
         {format(parseISO(week.week_start), 'M/d')}
@@ -115,27 +115,27 @@ export function YearViewClient({ summary, year, currentYear }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Year View — {year}</h1>
-          <p className="text-sm text-gray-500">Click any week to open the planner.</p>
+          <h1 className="text-xl font-bold text-stone-100">Year View — {year}</h1>
+          <p className="text-sm text-stone-400">Click any week to open the planner.</p>
         </div>
         <div className="flex items-center gap-2">
           <Link
             href={`/calendar/year?year=${year - 1}`}
-            className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700"
+            className="px-3 py-1.5 text-sm border border-stone-700 rounded-lg hover:bg-stone-900 text-stone-300"
           >
             ← {year - 1}
           </Link>
           {year !== currentYear && (
             <Link
               href={`/calendar/year?year=${currentYear}`}
-              className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700"
+              className="px-3 py-1.5 text-sm border border-stone-700 rounded-lg hover:bg-stone-900 text-stone-300"
             >
               This Year
             </Link>
           )}
           <Link
             href={`/calendar/year?year=${year + 1}`}
-            className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700"
+            className="px-3 py-1.5 text-sm border border-stone-700 rounded-lg hover:bg-stone-900 text-stone-300"
           >
             {year + 1} →
           </Link>
@@ -150,9 +150,9 @@ export function YearViewClient({ summary, year, currentYear }: Props) {
 
       {/* Stats strip */}
       <div className="grid grid-cols-3 gap-3 text-center">
-        <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-          <div className="text-lg font-bold text-gray-900">{summary.total_events}</div>
-          <div className="text-xs text-gray-500">Events</div>
+        <div className="bg-stone-900 border border-stone-700 rounded-lg px-3 py-2">
+          <div className="text-lg font-bold text-stone-100">{summary.total_events}</div>
+          <div className="text-xs text-stone-400">Events</div>
         </div>
         <div className="bg-amber-950 border border-amber-200 rounded-lg px-3 py-2">
           <div className="text-lg font-bold text-amber-800">
@@ -178,7 +178,7 @@ export function YearViewClient({ summary, year, currentYear }: Props) {
       <div className="space-y-4">
         {monthGroups.map((group) => (
           <div key={group.month}>
-            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+            <div className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-1.5">
               {group.month}
             </div>
             <div
@@ -198,12 +198,12 @@ export function YearViewClient({ summary, year, currentYear }: Props) {
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-4 text-xs text-gray-500 pt-2 border-t border-gray-100">
+      <div className="flex flex-wrap gap-4 text-xs text-stone-400 pt-2 border-t border-stone-800">
         {[
-          { color: 'bg-gray-50 border-gray-200', label: 'No events' },
+          { color: 'bg-stone-900 border-stone-700', label: 'No events' },
           { color: 'bg-amber-950 border-amber-200', label: 'Events, fully scheduled' },
           { color: 'bg-amber-950 border-red-400 border-2', label: 'Events with gaps' },
-          { color: 'ring-2 ring-amber-500 bg-gray-50 border-gray-200', label: 'Current week' },
+          { color: 'ring-2 ring-amber-500 bg-stone-900 border-stone-700', label: 'Current week' },
         ].map(({ color, label }) => (
           <div key={label} className="flex items-center gap-1.5">
             <div className={`w-4 h-4 rounded border ${color}`} />

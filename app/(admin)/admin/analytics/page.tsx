@@ -41,7 +41,7 @@ export default async function AdminAnalyticsPage() {
         </div>
         <div>
           <h1 className="text-xl font-bold text-slate-900">Platform Analytics</h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-stone-500">
             Growth, revenue, and engagement across all tenants
           </p>
         </div>
@@ -51,14 +51,14 @@ export default async function AdminAnalyticsPage() {
       {overviewData && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
-            <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">
+            <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">
               Total Chefs
             </p>
             <p className="text-2xl font-bold text-slate-900 mt-1">{overviewData.totalChefs}</p>
             <p className="text-xs text-slate-400 mt-1">+{overviewData.chefsThisMonth} this month</p>
           </div>
           <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
-            <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">
+            <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">
               Active Rate
             </p>
             <p className="text-2xl font-bold text-slate-900 mt-1">
@@ -70,7 +70,7 @@ export default async function AdminAnalyticsPage() {
             <p className="text-xs text-slate-400 mt-1">chefs w/ events this month</p>
           </div>
           <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
-            <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">
+            <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">
               Platform GMV
             </p>
             <p className="text-2xl font-bold text-slate-900 mt-1">
@@ -81,7 +81,7 @@ export default async function AdminAnalyticsPage() {
             </p>
           </div>
           <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
-            <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">
+            <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">
               Avg GMV / Chef
             </p>
             <p className="text-2xl font-bold text-slate-900 mt-1">
@@ -94,7 +94,7 @@ export default async function AdminAnalyticsPage() {
 
       {/* Revenue by Month */}
       <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
-        <h2 className="text-sm font-semibold text-slate-700 mb-4">
+        <h2 className="text-sm font-semibold text-stone-300 mb-4">
           Platform GMV by Month (last 12 months)
         </h2>
         {revenueData.length === 0 ? (
@@ -103,14 +103,14 @@ export default async function AdminAnalyticsPage() {
           <div className="space-y-2">
             {revenueData.map((d) => (
               <div key={d.month} className="flex items-center gap-3">
-                <span className="text-xs text-slate-500 w-16 shrink-0">{d.month}</span>
-                <div className="flex-1 bg-slate-100 rounded-full h-4 overflow-hidden">
+                <span className="text-xs text-stone-500 w-16 shrink-0">{d.month}</span>
+                <div className="flex-1 bg-stone-800 rounded-full h-4 overflow-hidden">
                   <div
                     className="h-full bg-orange-400 rounded-full transition-all"
                     style={{ width: `${(d.gmvCents / maxRevenue) * 100}%` }}
                   />
                 </div>
-                <span className="text-xs font-medium text-slate-700 w-20 text-right shrink-0">
+                <span className="text-xs font-medium text-stone-300 w-20 text-right shrink-0">
                   {formatCents(d.gmvCents)}
                 </span>
               </div>
@@ -121,7 +121,7 @@ export default async function AdminAnalyticsPage() {
 
       {/* Chef + Client Growth */}
       <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
-        <h2 className="text-sm font-semibold text-slate-700 mb-4">
+        <h2 className="text-sm font-semibold text-stone-300 mb-4">
           New Signups by Month (last 12 months)
         </h2>
         {growthData.length === 0 ? (
@@ -130,28 +130,28 @@ export default async function AdminAnalyticsPage() {
           <div className="space-y-3">
             {growthData.map((d) => (
               <div key={d.month} className="space-y-1">
-                <span className="text-xs text-slate-500">{d.month}</span>
+                <span className="text-xs text-stone-500">{d.month}</span>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-blue-500 w-14 shrink-0">Chefs</span>
-                  <div className="flex-1 bg-slate-100 rounded-full h-3 overflow-hidden">
+                  <div className="flex-1 bg-stone-800 rounded-full h-3 overflow-hidden">
                     <div
                       className="h-full bg-blue-400 rounded-full"
                       style={{ width: `${(d.newChefs / maxGrowth) * 100}%` }}
                     />
                   </div>
-                  <span className="text-xs text-slate-600 w-6 text-right shrink-0">
+                  <span className="text-xs text-stone-400 w-6 text-right shrink-0">
                     {d.newChefs}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-green-500 w-14 shrink-0">Clients</span>
-                  <div className="flex-1 bg-slate-100 rounded-full h-3 overflow-hidden">
+                  <div className="flex-1 bg-stone-800 rounded-full h-3 overflow-hidden">
                     <div
                       className="h-full bg-green-400 rounded-full"
                       style={{ width: `${(d.newClients / maxGrowth) * 100}%` }}
                     />
                   </div>
-                  <span className="text-xs text-slate-600 w-6 text-right shrink-0">
+                  <span className="text-xs text-stone-400 w-6 text-right shrink-0">
                     {d.newClients}
                   </span>
                 </div>

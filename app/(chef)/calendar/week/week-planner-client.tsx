@@ -42,8 +42,8 @@ const BLOCK_COLORS: Record<PrepBlockType, string> = {
   travel_to_event: 'bg-purple-900 text-purple-800 border-purple-200',
   mental_prep: 'bg-pink-900 text-pink-800 border-pink-200',
   equipment_prep: 'bg-yellow-900 text-yellow-800 border-yellow-200',
-  admin: 'bg-gray-100 text-gray-700 border-gray-200',
-  cleanup: 'bg-slate-100 text-slate-700 border-slate-200',
+  admin: 'bg-stone-800 text-stone-300 border-stone-700',
+  cleanup: 'bg-stone-800 text-stone-300 border-stone-700',
   custom: 'bg-indigo-900 text-indigo-800 border-indigo-200',
 }
 
@@ -122,7 +122,7 @@ function SuggestionModal({
           <button
             type="button"
             aria-label="Close"
-            className="text-gray-400 hover:text-gray-600"
+            className="text-stone-500 hover:text-stone-400"
             onClick={onCancel}
           >
             ✕
@@ -132,7 +132,7 @@ function SuggestionModal({
           {suggestions.map((s, i) => (
             <div
               key={i}
-              className={`border rounded-lg p-3 text-sm ${edits[i].included ? 'border-amber-300 bg-amber-950' : 'border-gray-200 opacity-50'}`}
+              className={`border rounded-lg p-3 text-sm ${edits[i].included ? 'border-amber-300 bg-amber-950' : 'border-stone-700 opacity-50'}`}
             >
               <div className="flex items-start gap-2">
                 <input
@@ -150,7 +150,7 @@ function SuggestionModal({
                       {PREP_BLOCK_TYPE_LABELS[s.block_type]}
                     </span>
                     <span className="font-medium">{s.title}</span>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-stone-500">
                       ~{s.estimated_duration_minutes}min
                     </span>
                   </div>
@@ -158,7 +158,7 @@ function SuggestionModal({
                   <div className="flex gap-3 flex-wrap">
                     <div>
                       <label
-                        className="text-xs text-gray-400 block mb-0.5"
+                        className="text-xs text-stone-500 block mb-0.5"
                         htmlFor={`sug-date-${i}`}
                       >
                         Date
@@ -167,14 +167,14 @@ function SuggestionModal({
                         id={`sug-date-${i}`}
                         type="date"
                         title="Block date"
-                        className="text-xs border border-gray-300 rounded px-2 py-1"
+                        className="text-xs border border-stone-700 rounded px-2 py-1"
                         value={edits[i].date}
                         onChange={(e) => update(i, { date: e.target.value })}
                       />
                     </div>
                     <div>
                       <label
-                        className="text-xs text-gray-400 block mb-0.5"
+                        className="text-xs text-stone-500 block mb-0.5"
                         htmlFor={`sug-time-${i}`}
                       >
                         Time (opt.)
@@ -183,7 +183,7 @@ function SuggestionModal({
                         id={`sug-time-${i}`}
                         type="time"
                         title="Start time (optional)"
-                        className="text-xs border border-gray-300 rounded px-2 py-1"
+                        className="text-xs border border-stone-700 rounded px-2 py-1"
                         value={edits[i].startTime}
                         onChange={(e) => update(i, { startTime: e.target.value })}
                       />
@@ -252,10 +252,10 @@ function AddBlockForm({ defaultDate, eventId, onSaved, onCancel }: AddFormProps)
   }
 
   return (
-    <div className="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-2 space-y-1.5 text-xs">
+    <div className="bg-stone-900 border border-dashed border-stone-700 rounded-lg p-2 space-y-1.5 text-xs">
       <select
         title="Block type"
-        className="w-full border border-gray-300 rounded px-2 py-1 text-xs"
+        className="w-full border border-stone-700 rounded px-2 py-1 text-xs"
         value={type}
         onChange={(e) => {
           const t = e.target.value as PrepBlockType
@@ -272,7 +272,7 @@ function AddBlockForm({ defaultDate, eventId, onSaved, onCancel }: AddFormProps)
       <input
         type="text"
         placeholder="Title *"
-        className="w-full border border-gray-300 rounded px-2 py-1 text-xs"
+        className="w-full border border-stone-700 rounded px-2 py-1 text-xs"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
       />
@@ -280,14 +280,14 @@ function AddBlockForm({ defaultDate, eventId, onSaved, onCancel }: AddFormProps)
         <input
           type="date"
           title="Block date"
-          className="flex-1 border border-gray-300 rounded px-1.5 py-1 text-xs"
+          className="flex-1 border border-stone-700 rounded px-1.5 py-1 text-xs"
           value={date}
           onChange={(e) => setDate(e.target.value)}
         />
         <input
           type="time"
           title="Start time (optional)"
-          className="flex-1 border border-gray-300 rounded px-1.5 py-1 text-xs"
+          className="flex-1 border border-stone-700 rounded px-1.5 py-1 text-xs"
           value={startTime}
           onChange={(e) => setStartTime(e.target.value)}
         />
@@ -297,7 +297,7 @@ function AddBlockForm({ defaultDate, eventId, onSaved, onCancel }: AddFormProps)
         min="5"
         step="5"
         placeholder="Duration (min)"
-        className="w-full border border-gray-300 rounded px-2 py-1 text-xs"
+        className="w-full border border-stone-700 rounded px-2 py-1 text-xs"
         value={duration}
         onChange={(e) => setDuration(e.target.value)}
       />
@@ -445,7 +445,7 @@ export function WeekPlannerClient({
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Week Planner</h1>
+          <h1 className="text-xl font-bold text-stone-100">Week Planner</h1>
           <p className="text-sm text-gray-500">{weekLabel}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -568,10 +568,10 @@ export function WeekPlannerClient({
             <div key={day.date} className="flex flex-col gap-1.5 min-w-0">
               {/* Day header */}
               <div
-                className={`text-center py-1.5 rounded-lg text-xs font-semibold ${isToday ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600'}`}
+                className={`text-center py-1.5 rounded-lg text-xs font-semibold ${isToday ? 'bg-amber-500 text-white' : 'bg-stone-800 text-stone-400'}`}
               >
                 <div>{format(parseISO(day.date), 'EEE')}</div>
-                <div className={`text-xs ${isToday ? 'text-amber-100' : 'text-gray-400'}`}>
+                <div className={`text-xs ${isToday ? 'text-amber-100' : 'text-stone-500'}`}>
                   {format(parseISO(day.date), 'MMM d')}
                 </div>
                 {weatherByDate[day.date] && (
@@ -622,7 +622,7 @@ export function WeekPlannerClient({
                   <div className="flex items-start justify-between gap-0.5">
                     <div className="flex-1 min-w-0">
                       <p
-                        className={`font-medium truncate text-xs ${block.is_completed ? 'line-through text-gray-400' : ''}`}
+                        className={`font-medium truncate text-xs ${block.is_completed ? 'line-through text-stone-500' : ''}`}
                       >
                         {block.title}
                       </p>
@@ -631,7 +631,7 @@ export function WeekPlannerClient({
                     <div className="flex flex-col gap-0.5 flex-shrink-0">
                       <button
                         type="button"
-                        className="text-gray-400 hover:text-emerald-600 text-xs leading-none"
+                        className="text-stone-500 hover:text-emerald-600 text-xs leading-none"
                         onClick={() => toggleComplete(block)}
                         disabled={toggling === block.id}
                         title={block.is_completed ? 'Mark incomplete' : 'Mark complete'}
@@ -667,7 +667,7 @@ export function WeekPlannerClient({
                 <button
                   type="button"
                   title={`Add prep block for ${format(parseISO(day.date), 'EEE MMM d')}`}
-                  className="text-xs text-gray-400 hover:text-gray-600 py-1 border border-dashed border-gray-200 rounded-md hover:border-gray-300 transition-colors"
+                  className="text-xs text-stone-500 hover:text-stone-400 py-1 border border-dashed border-stone-700 rounded-md hover:border-stone-700 transition-colors"
                   onClick={() => setAddFormDay(day.date)}
                 >
                   + add

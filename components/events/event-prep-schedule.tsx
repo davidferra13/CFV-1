@@ -42,8 +42,8 @@ const BLOCK_TYPE_COLORS: Record<PrepBlockType, string> = {
   travel_to_event: 'bg-purple-900 text-purple-800',
   mental_prep: 'bg-pink-900 text-pink-800',
   equipment_prep: 'bg-yellow-900 text-yellow-800',
-  admin: 'bg-gray-100 text-gray-700',
-  cleanup: 'bg-slate-100 text-slate-700',
+  admin: 'bg-stone-800 text-stone-300',
+  cleanup: 'bg-stone-800 text-stone-300',
   custom: 'bg-indigo-900 text-indigo-800',
 }
 
@@ -145,7 +145,7 @@ function SuggestionPanel({
           <div
             key={i}
             className={`bg-stone-900 rounded border p-3 text-sm ${
-              edits[i].included ? 'border-amber-300' : 'border-gray-200 opacity-50'
+              edits[i].included ? 'border-amber-300' : 'border-stone-700 opacity-50'
             }`}
           >
             <div className="flex items-start gap-2">
@@ -162,32 +162,32 @@ function SuggestionPanel({
                   >
                     {PREP_BLOCK_TYPE_LABELS[s.block_type]}
                   </span>
-                  <span className="font-medium text-gray-900">{s.title}</span>
+                  <span className="font-medium text-stone-100">{s.title}</span>
                 </div>
-                <p className="text-xs text-gray-500">{s.reason}</p>
+                <p className="text-xs text-stone-400">{s.reason}</p>
                 <div className="flex gap-3">
                   <div>
-                    <label className="text-xs text-gray-500 block mb-0.5">Date</label>
+                    <label className="text-xs text-stone-400 block mb-0.5">Date</label>
                     <input
                       type="date"
-                      className="text-xs border border-gray-300 rounded px-1.5 py-0.5"
+                      className="text-xs border border-stone-700 rounded px-1.5 py-0.5"
                       value={edits[i].date}
                       onChange={(e) => updateEdit(i, { date: e.target.value })}
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-gray-500 block mb-0.5">
+                    <label className="text-xs text-stone-400 block mb-0.5">
                       Start time (optional)
                     </label>
                     <input
                       type="time"
-                      className="text-xs border border-gray-300 rounded px-1.5 py-0.5"
+                      className="text-xs border border-stone-700 rounded px-1.5 py-0.5"
                       value={edits[i].startTime}
                       onChange={(e) => updateEdit(i, { startTime: e.target.value })}
                     />
                   </div>
                   <div className="flex items-end">
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-stone-500">
                       ~{s.estimated_duration_minutes}min
                     </span>
                   </div>
@@ -265,13 +265,13 @@ function AddBlockForm({ eventId, defaultDate, onSaved, onCancel }: AddBlockFormP
   }
 
   return (
-    <div className="border border-gray-200 rounded-lg p-4 space-y-3 bg-gray-50">
-      <p className="text-sm font-medium text-gray-700">Add Prep Block</p>
+    <div className="border border-stone-700 rounded-lg p-4 space-y-3 bg-stone-900">
+      <p className="text-sm font-medium text-stone-300">Add Prep Block</p>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-xs text-gray-500 block mb-1">Type</label>
+          <label className="text-xs text-stone-400 block mb-1">Type</label>
           <select
-            className="w-full text-sm border border-gray-300 rounded px-2 py-1.5"
+            className="w-full text-sm border border-stone-700 rounded px-2 py-1.5"
             value={blockType}
             onChange={(e) => {
               const t = e.target.value as PrepBlockType
@@ -287,40 +287,40 @@ function AddBlockForm({ eventId, defaultDate, onSaved, onCancel }: AddBlockFormP
           </select>
         </div>
         <div>
-          <label className="text-xs text-gray-500 block mb-1">Title</label>
+          <label className="text-xs text-stone-400 block mb-1">Title</label>
           <input
             type="text"
-            className="w-full text-sm border border-gray-300 rounded px-2 py-1.5"
+            className="w-full text-sm border border-stone-700 rounded px-2 py-1.5"
             placeholder="Block title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
         </div>
         <div>
-          <label className="text-xs text-gray-500 block mb-1">Date</label>
+          <label className="text-xs text-stone-400 block mb-1">Date</label>
           <input
             type="date"
-            className="w-full text-sm border border-gray-300 rounded px-2 py-1.5"
+            className="w-full text-sm border border-stone-700 rounded px-2 py-1.5"
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
         </div>
         <div>
-          <label className="text-xs text-gray-500 block mb-1">Start time (optional)</label>
+          <label className="text-xs text-stone-400 block mb-1">Start time (optional)</label>
           <input
             type="time"
-            className="w-full text-sm border border-gray-300 rounded px-2 py-1.5"
+            className="w-full text-sm border border-stone-700 rounded px-2 py-1.5"
             value={startTime}
             onChange={(e) => setStartTime(e.target.value)}
           />
         </div>
         <div>
-          <label className="text-xs text-gray-500 block mb-1">Duration (min)</label>
+          <label className="text-xs text-stone-400 block mb-1">Duration (min)</label>
           <input
             type="number"
             min="5"
             step="5"
-            className="w-full text-sm border border-gray-300 rounded px-2 py-1.5"
+            className="w-full text-sm border border-stone-700 rounded px-2 py-1.5"
             placeholder="e.g. 60"
             value={duration}
             onChange={(e) => setDuration(e.target.value)}
@@ -328,10 +328,10 @@ function AddBlockForm({ eventId, defaultDate, onSaved, onCancel }: AddBlockFormP
         </div>
         {(blockType === 'grocery_run' || blockType === 'specialty_sourcing') && (
           <div>
-            <label className="text-xs text-gray-500 block mb-1">Store name</label>
+            <label className="text-xs text-stone-400 block mb-1">Store name</label>
             <input
               type="text"
-              className="w-full text-sm border border-gray-300 rounded px-2 py-1.5"
+              className="w-full text-sm border border-stone-700 rounded px-2 py-1.5"
               placeholder="e.g. Whole Foods"
               value={storeName}
               onChange={(e) => setStoreName(e.target.value)}
@@ -339,10 +339,10 @@ function AddBlockForm({ eventId, defaultDate, onSaved, onCancel }: AddBlockFormP
           </div>
         )}
         <div className="col-span-2">
-          <label className="text-xs text-gray-500 block mb-1">Notes (optional)</label>
+          <label className="text-xs text-stone-400 block mb-1">Notes (optional)</label>
           <input
             type="text"
-            className="w-full text-sm border border-gray-300 rounded px-2 py-1.5"
+            className="w-full text-sm border border-stone-700 rounded px-2 py-1.5"
             placeholder="Any notes…"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -398,11 +398,11 @@ function PrepBlockCard({ block, onToggleComplete, onDelete }: PrepBlockCardProps
       className={`flex items-start gap-3 p-3 rounded-lg border text-sm ${
         block.is_completed
           ? 'bg-green-950 border-green-200 opacity-75'
-          : 'bg-stone-900 border-gray-200'
+          : 'bg-stone-900 border-stone-700'
       }`}
     >
       <button
-        className="mt-0.5 w-4 h-4 rounded border border-gray-300 flex-shrink-0 flex items-center justify-center"
+        className="mt-0.5 w-4 h-4 rounded border border-stone-700 flex-shrink-0 flex items-center justify-center"
         onClick={handleToggle}
         disabled={pending}
         title={block.is_completed ? 'Mark incomplete' : 'Mark complete'}
@@ -425,20 +425,22 @@ function PrepBlockCard({ block, onToggleComplete, onDelete }: PrepBlockCardProps
           >
             {PREP_BLOCK_TYPE_LABELS[block.block_type]}
           </span>
-          <span className={`font-medium ${block.is_completed ? 'line-through text-gray-400' : ''}`}>
+          <span
+            className={`font-medium ${block.is_completed ? 'line-through text-stone-500' : ''}`}
+          >
             {block.title}
           </span>
         </div>
-        <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-2 flex-wrap">
+        <div className="text-xs text-stone-400 mt-0.5 flex items-center gap-2 flex-wrap">
           <span>{formatBlockDate(block.block_date)}</span>
           <span>{formatBlockTime(block)}</span>
           {block.store_name && <span>@ {block.store_name}</span>}
         </div>
-        {block.notes && <p className="text-xs text-gray-400 mt-0.5 truncate">{block.notes}</p>}
+        {block.notes && <p className="text-xs text-stone-500 mt-0.5 truncate">{block.notes}</p>}
       </div>
 
       <button
-        className="text-xs text-gray-400 hover:text-red-500 flex-shrink-0"
+        className="text-xs text-stone-500 hover:text-red-500 flex-shrink-0"
         onClick={handleDelete}
         disabled={pending}
         title="Delete block"
@@ -546,8 +548,8 @@ export function EventPrepSchedule({ eventId, initialBlocks }: Props) {
     <Card className="p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-gray-900">Prep Schedule</h3>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <h3 className="font-semibold text-stone-100">Prep Schedule</h3>
+          <p className="text-xs text-stone-400 mt-0.5">
             {blocks.length === 0
               ? 'No prep blocks scheduled yet'
               : `${blocks.filter((b) => b.is_completed).length} of ${blocks.length} complete`}
@@ -603,7 +605,7 @@ export function EventPrepSchedule({ eventId, initialBlocks }: Props) {
         <div className="space-y-4">
           {sortedDates.map((date) => (
             <div key={date}>
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+              <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">
                 {formatBlockDate(date)}
               </p>
               <div className="space-y-2">
@@ -622,7 +624,7 @@ export function EventPrepSchedule({ eventId, initialBlocks }: Props) {
       ) : (
         !showAddForm &&
         !suggestions && (
-          <div className="text-center py-6 text-sm text-gray-400">
+          <div className="text-center py-6 text-sm text-stone-500">
             <p>No prep blocks scheduled yet.</p>
             <p className="mt-1">
               Click <strong>Auto-schedule</strong> to generate a full prep plan for this event.

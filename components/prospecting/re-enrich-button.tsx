@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { reEnrichProspect } from '@/lib/prospecting/scrub-actions'
 import { Loader2, RefreshCw } from 'lucide-react'
@@ -24,6 +25,7 @@ export function ReEnrichButton({ prospectId }: ReEnrichButtonProps) {
         router.refresh()
       } catch (err) {
         console.error('[re-enrich] Failed:', err)
+        toast.error('Failed to re-enrich prospect')
       }
     })
   }

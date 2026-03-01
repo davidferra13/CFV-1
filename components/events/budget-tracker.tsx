@@ -115,15 +115,15 @@ export function BudgetTracker({ eventId, guardrail }: BudgetTrackerProps) {
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <h2 className="font-semibold text-gray-900">Food Cost Budget</h2>
-            <span className="text-xs text-gray-500">
+            <h2 className="font-semibold text-stone-100">Food Cost Budget</h2>
+            <span className="text-xs text-stone-400">
               {budgetSource === 'manual' ? '(custom)' : `(${targetMarginPercent}% margin formula)`}
             </span>
           </div>
 
           {editing ? (
             <div className="flex items-center gap-2 mt-2">
-              <span className="text-sm text-gray-600">$</span>
+              <span className="text-sm text-stone-400">$</span>
               <Input
                 type="number"
                 min="0"
@@ -150,7 +150,7 @@ export function BudgetTracker({ eventId, guardrail }: BudgetTrackerProps) {
                   variant="ghost"
                   onClick={handleClearManual}
                   disabled={isPending}
-                  className="text-gray-400 text-xs"
+                  className="text-stone-500 text-xs"
                 >
                   Use formula
                 </Button>
@@ -160,7 +160,7 @@ export function BudgetTracker({ eventId, guardrail }: BudgetTrackerProps) {
           ) : (
             <>
               <div className="flex items-baseline gap-3 mt-1">
-                <span className="text-2xl font-bold text-gray-900">
+                <span className="text-2xl font-bold text-stone-100">
                   {formatCurrency(maxGrocerySpendCents)}
                 </span>
                 <span className={`text-sm font-semibold ${statusColor}`}>{statusLabel}</span>
@@ -168,7 +168,7 @@ export function BudgetTracker({ eventId, guardrail }: BudgetTrackerProps) {
 
               {/* Progress bar */}
               <div className="mt-3 mb-2">
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div className="w-full bg-stone-700 rounded-full h-2.5">
                   <div
                     className={`${barColor} h-2.5 rounded-full transition-all`}
                     style={{ width: `${spentPercent}%` }}
@@ -176,7 +176,7 @@ export function BudgetTracker({ eventId, guardrail }: BudgetTrackerProps) {
                 </div>
               </div>
 
-              <div className="flex gap-4 text-sm text-gray-600">
+              <div className="flex gap-4 text-sm text-stone-400">
                 <span>
                   Spent: <strong>{formatCurrency(currentSpendCents)}</strong>
                 </span>
@@ -192,11 +192,11 @@ export function BudgetTracker({ eventId, guardrail }: BudgetTrackerProps) {
                     </>
                   )}
                 </span>
-                <span className="text-gray-400">{spentPercent}%</span>
+                <span className="text-stone-500">{spentPercent}%</span>
               </div>
 
               {historicalAvgSpendCents && (
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-stone-400 mt-2">
                   Your avg grocery spend: {formatCurrency(historicalAvgSpendCents)}
                 </p>
               )}

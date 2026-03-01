@@ -120,7 +120,7 @@ export function EventDetailPopover({
     >
       {/* Header */}
       <div
-        className={`px-4 py-3 ${isInquiry ? 'bg-gray-50 border-b border-gray-200' : isPrep ? 'bg-amber-950 border-b border-amber-200' : 'bg-stone-800 border-b border-stone-700'}`}
+        className={`px-4 py-3 ${isInquiry ? 'bg-stone-900 border-b border-stone-700' : isPrep ? 'bg-amber-950 border-b border-amber-200' : 'bg-stone-800 border-b border-stone-700'}`}
       >
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
@@ -165,7 +165,7 @@ export function EventDetailPopover({
             </span>
           )}
           {isInquiry && (
-            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-300 border-dashed">
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-stone-800 text-stone-400 border border-stone-700 border-dashed">
               Tentative Hold
             </span>
           )}

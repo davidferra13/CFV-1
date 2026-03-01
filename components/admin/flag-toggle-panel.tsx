@@ -78,23 +78,23 @@ export function FlagTogglePanel({ chefs, flagsByChef, knownFlags }: Props) {
   return (
     <div className="space-y-3">
       {feedback && (
-        <div className="text-xs text-slate-600 bg-slate-100 px-3 py-2 rounded-lg">{feedback}</div>
+        <div className="text-xs text-stone-400 bg-stone-800 px-3 py-2 rounded-lg">{feedback}</div>
       )}
 
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-700">Per-Chef Flag Controls</h2>
+          <h2 className="text-sm font-semibold text-stone-300">Per-Chef Flag Controls</h2>
           {pending && <span className="text-xs text-slate-400">Saving…</span>}
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-100">
-                <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">Chef</th>
+                <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">Chef</th>
                 {knownFlags.map((flag) => (
                   <th
                     key={flag.key}
-                    className="text-center px-3 py-2.5 text-xs font-medium text-slate-500 max-w-[90px]"
+                    className="text-center px-3 py-2.5 text-xs font-medium text-stone-500 max-w-[90px]"
                     title={flag.description}
                   >
                     <span className="font-mono">{flag.key.replace(/_/g, '_\u200B')}</span>

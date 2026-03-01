@@ -37,18 +37,20 @@ export function CallCard({ call }: { call: ScheduledCall }) {
 
   return (
     <Link href={`/calls/${call.id}`}>
-      <div className="flex items-center gap-4 p-4 rounded-lg border bg-stone-900 hover:bg-gray-50 transition-colors group">
+      <div className="flex items-center gap-4 p-4 rounded-lg border bg-stone-900 hover:bg-stone-800 transition-colors group">
         {/* Icon */}
         <div
-          className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${isTerminal ? 'bg-gray-100' : 'bg-blue-950'}`}
+          className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${isTerminal ? 'bg-stone-800' : 'bg-blue-950'}`}
         >
-          <Phone className={`w-4 h-4 ${isTerminal ? 'text-gray-400' : 'text-blue-500'}`} />
+          <Phone className={`w-4 h-4 ${isTerminal ? 'text-stone-500' : 'text-blue-500'}`} />
         </div>
 
         {/* Main content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-            <span className="font-medium text-sm text-gray-900 truncate">{getCallTitle(call)}</span>
+            <span className="font-medium text-sm text-stone-100 truncate">
+              {getCallTitle(call)}
+            </span>
             <CallTypeBadge type={call.call_type} />
             {isOverdue && (
               <span className="flex items-center gap-1 text-xs text-amber-600">
@@ -57,7 +59,7 @@ export function CallCard({ call }: { call: ScheduledCall }) {
             )}
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
+          <div className="flex items-center gap-3 text-xs text-stone-400 flex-wrap">
             {/* Date/time */}
             <span className="flex items-center gap-1">
               <Clock className="w-3 h-3" />
@@ -85,14 +87,14 @@ export function CallCard({ call }: { call: ScheduledCall }) {
         {/* Agenda progress (non-terminal) */}
         {!isTerminal && call.agenda_items.length > 0 && (
           <div className="flex-shrink-0 text-right hidden sm:block">
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-stone-500">
               {call.agenda_items.filter((i) => i.completed).length}/{call.agenda_items.length} prep
               items
             </p>
           </div>
         )}
 
-        <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0 group-hover:text-gray-500 transition-colors" />
+        <ChevronRight className="w-4 h-4 text-stone-600 flex-shrink-0 group-hover:text-stone-400 transition-colors" />
       </div>
     </Link>
   )

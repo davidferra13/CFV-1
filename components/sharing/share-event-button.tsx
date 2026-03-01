@@ -4,6 +4,7 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 import {
   createEventShare,
   createViewerInviteForEvent,
@@ -94,9 +95,13 @@ export function ShareEventButton({ eventId, existingShare }: ShareEventButtonPro
 
   async function handleCopyViewer() {
     if (!viewerUrl) return
-    await navigator.clipboard.writeText(viewerUrl)
-    setViewerCopied(true)
-    setTimeout(() => setViewerCopied(false), 2000)
+    try {
+      await navigator.clipboard.writeText(viewerUrl)
+      setViewerCopied(true)
+      setTimeout(() => setViewerCopied(false), 2000)
+    } catch {
+      toast.error('Failed to copy link')
+    }
   }
 
   if (error) {

@@ -16,10 +16,10 @@ function getContactLabel(call: ScheduledCall): string {
 export function UpcomingCallsWidget({ calls }: { calls: ScheduledCall[] }) {
   return (
     <div className="rounded-xl border bg-stone-900 shadow-sm">
-      <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-100">
+      <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-stone-800">
         <div className="flex items-center gap-2">
           <Phone className="w-4 h-4 text-blue-500" />
-          <h3 className="font-semibold text-sm text-gray-900">Upcoming Calls</h3>
+          <h3 className="font-semibold text-sm text-stone-100">Upcoming Calls</h3>
         </div>
         <Link
           href="/calls/new"
@@ -32,7 +32,7 @@ export function UpcomingCallsWidget({ calls }: { calls: ScheduledCall[] }) {
 
       {calls.length === 0 ? (
         <div className="px-5 py-8 text-center">
-          <p className="text-sm text-gray-400">No upcoming calls</p>
+          <p className="text-sm text-stone-500">No upcoming calls</p>
           <Link
             href="/calls/new"
             className="mt-2 inline-block text-sm text-blue-600 hover:underline"
@@ -41,12 +41,12 @@ export function UpcomingCallsWidget({ calls }: { calls: ScheduledCall[] }) {
           </Link>
         </div>
       ) : (
-        <ul className="divide-y divide-gray-50">
+        <ul className="divide-y divide-stone-800">
           {calls.map((call) => (
             <li key={call.id}>
               <Link
                 href={`/calls/${call.id}`}
-                className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors group"
+                className="flex items-center gap-3 px-5 py-3 hover:bg-stone-800 transition-colors group"
               >
                 {/* Time bubble */}
                 <div className="flex-shrink-0 text-center min-w-[44px]">
@@ -60,7 +60,7 @@ export function UpcomingCallsWidget({ calls }: { calls: ScheduledCall[] }) {
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <p className="text-sm font-medium text-stone-100 truncate">
                     {getContactLabel(call)}
                   </p>
                   <p className="text-xs text-gray-500">
@@ -81,7 +81,7 @@ export function UpcomingCallsWidget({ calls }: { calls: ScheduledCall[] }) {
                   </div>
                 )}
 
-                <ArrowRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 transition-colors flex-shrink-0" />
+                <ArrowRight className="w-3.5 h-3.5 text-stone-600 group-hover:text-stone-400 transition-colors flex-shrink-0" />
               </Link>
             </li>
           ))}
@@ -89,10 +89,10 @@ export function UpcomingCallsWidget({ calls }: { calls: ScheduledCall[] }) {
       )}
 
       {calls.length > 0 && (
-        <div className="px-5 py-3 border-t border-gray-50">
+        <div className="px-5 py-3 border-t border-stone-800">
           <Link
             href="/calls"
-            className="text-xs text-gray-500 hover:text-blue-600 font-medium flex items-center gap-1"
+            className="text-xs text-stone-400 hover:text-blue-500 font-medium flex items-center gap-1"
           >
             View all calls <ArrowRight className="w-3 h-3" />
           </Link>

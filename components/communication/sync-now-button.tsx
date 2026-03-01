@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { triggerGmailSync } from '@/lib/gmail/actions'
@@ -24,6 +25,7 @@ export function SyncNowButton() {
         router.refresh()
       } catch {
         setLastResult('Sync failed')
+        toast.error('Gmail sync failed')
       }
     })
   }

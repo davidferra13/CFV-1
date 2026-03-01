@@ -39,7 +39,7 @@ export function PrepTimelineView({ menuId }: Props) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12 text-neutral-400 text-sm">
+      <div className="flex items-center justify-center py-12 text-stone-500 text-sm">
         Loading prep timeline...
       </div>
     )
@@ -47,7 +47,7 @@ export function PrepTimelineView({ menuId }: Props) {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      <div className="rounded-lg border border-red-200 bg-red-950 px-4 py-3 text-sm text-red-700">
         {error}
       </div>
     )
@@ -55,7 +55,7 @@ export function PrepTimelineView({ menuId }: Props) {
 
   if (timeline.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-neutral-200 px-4 py-8 text-center text-sm text-neutral-400">
+      <div className="rounded-lg border border-dashed border-stone-700 px-4 py-8 text-center text-sm text-stone-500">
         No components have prep timeline data yet. Assign prep day and time to components to build
         the timeline.
       </div>
@@ -85,12 +85,12 @@ function DaySection({ day }: { day: PrepTimelineSlot }) {
 
   return (
     <section>
-      <h3 className="text-lg font-semibold text-neutral-900 mb-3">{day.dayLabel}</h3>
+      <h3 className="text-lg font-semibold text-stone-100 mb-3">{day.dayLabel}</h3>
 
       <div className="space-y-4">
         {timeGroups.map(([timeLabel, components]) => (
           <div key={timeLabel}>
-            <h4 className="text-sm text-neutral-500 font-medium mb-2 pl-1">{timeLabel}</h4>
+            <h4 className="text-sm text-stone-400 font-medium mb-2 pl-1">{timeLabel}</h4>
 
             <div className="space-y-1.5">
               {components.map((comp) => (
@@ -106,10 +106,10 @@ function DaySection({ day }: { day: PrepTimelineSlot }) {
 
 function ComponentItem({ component }: { component: PrepTimelineSlot['components'][number] }) {
   return (
-    <div className="flex items-center gap-3 rounded-md border border-neutral-100 bg-white px-3 py-2 text-sm">
-      <span className="font-medium text-neutral-800 truncate">{component.name}</span>
+    <div className="flex items-center gap-3 rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm">
+      <span className="font-medium text-stone-200 truncate">{component.name}</span>
 
-      <span className="shrink-0 rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-600">
+      <span className="shrink-0 rounded-full bg-stone-800 px-2 py-0.5 text-xs text-stone-400">
         {component.category}
       </span>
 
@@ -120,7 +120,7 @@ function ComponentItem({ component }: { component: PrepTimelineSlot['components'
       )}
 
       {(component.dishName || component.courseName) && (
-        <span className="ml-auto shrink-0 text-xs text-neutral-400 truncate max-w-[200px]">
+        <span className="ml-auto shrink-0 text-xs text-stone-500 truncate max-w-[200px]">
           {component.courseName && component.dishName
             ? `${component.courseName} / ${component.dishName}`
             : component.courseName || component.dishName}

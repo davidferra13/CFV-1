@@ -4,6 +4,7 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 
 type Props = {
@@ -39,7 +40,7 @@ export function CSVDownloadButton({
       window.URL.revokeObjectURL(url)
     } catch (err) {
       console.error('Export failed:', err)
-      alert('Failed to export CSV')
+      toast.error('Failed to export CSV')
     } finally {
       setExporting(false)
     }

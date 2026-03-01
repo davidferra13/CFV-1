@@ -74,20 +74,20 @@ export default async function AdminFinancialsPage() {
         </div>
         <div>
           <h1 className="text-xl font-bold text-slate-900">Financials</h1>
-          <p className="text-sm text-slate-500">Platform-wide revenue and expense overview</p>
+          <p className="text-sm text-stone-500">Platform-wide revenue and expense overview</p>
         </div>
       </div>
 
       {fin && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
-            <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">
+            <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">
               GMV All-Time
             </p>
             <p className="text-2xl font-bold text-slate-900 mt-1">{formatCents(fin.totalGMV)}</p>
           </div>
           <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
-            <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">
+            <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">
               GMV This Month
             </p>
             <p className="text-2xl font-bold text-green-600 mt-1">
@@ -95,13 +95,13 @@ export default async function AdminFinancialsPage() {
             </p>
           </div>
           <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
-            <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">
+            <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">
               Expenses All-Time
             </p>
             <p className="text-2xl font-bold text-red-500 mt-1">{formatCents(fin.totalExpenses)}</p>
           </div>
           <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
-            <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">
+            <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">
               Expenses This Month
             </p>
             <p className="text-2xl font-bold text-red-400 mt-1">
@@ -116,7 +116,7 @@ export default async function AdminFinancialsPage() {
       {/* Ledger entries */}
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
-          <h2 className="text-sm font-semibold text-slate-700">Ledger Entries (last 200)</h2>
+          <h2 className="text-sm font-semibold text-stone-300">Ledger Entries (last 200)</h2>
         </div>
         {entries.length === 0 ? (
           <p className="px-4 py-8 text-center text-sm text-slate-400">No ledger entries found.</p>
@@ -125,17 +125,17 @@ export default async function AdminFinancialsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100">
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">Type</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">Type</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">
                     Description
                   </th>
-                  <th className="text-right px-4 py-2.5 text-xs font-medium text-slate-500">
+                  <th className="text-right px-4 py-2.5 text-xs font-medium text-stone-500">
                     Amount
                   </th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">
                     Tenant
                   </th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">Date</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -143,12 +143,12 @@ export default async function AdminFinancialsPage() {
                   <tr key={entry.id} className="hover:bg-slate-50">
                     <td className="px-4 py-2.5">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${ENTRY_TYPE_COLORS[entry.entry_type] ?? 'bg-slate-100 text-slate-600'}`}
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${ENTRY_TYPE_COLORS[entry.entry_type] ?? 'bg-stone-800 text-stone-400'}`}
                       >
                         {entry.entry_type}
                       </span>
                     </td>
-                    <td className="px-4 py-2.5 text-slate-600 text-xs max-w-[200px] truncate">
+                    <td className="px-4 py-2.5 text-stone-400 text-xs max-w-[200px] truncate">
                       {entry.description ?? '—'}
                     </td>
                     <td className="px-4 py-2.5 text-right font-medium text-slate-900">

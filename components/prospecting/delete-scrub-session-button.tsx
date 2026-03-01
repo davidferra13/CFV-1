@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Trash2 } from 'lucide-react'
@@ -29,7 +30,7 @@ export function DeleteScrubSessionButton({
       await deleteScrubSession(sessionId)
       router.refresh()
     } catch {
-      alert('Failed to delete session.')
+      toast.error('Failed to delete session')
     } finally {
       setBusy(false)
     }

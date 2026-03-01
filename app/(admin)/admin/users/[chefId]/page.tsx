@@ -18,7 +18,7 @@ function formatCents(cents: number): string {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: 'bg-slate-100 text-slate-600',
+  draft: 'bg-stone-800 text-stone-400',
   proposed: 'bg-yellow-900 text-yellow-700',
   accepted: 'bg-blue-900 text-blue-700',
   paid: 'bg-indigo-900 text-indigo-700',
@@ -103,13 +103,13 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
       <div>
         <Link
           href="/admin/users"
-          className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 mb-3"
+          className="text-xs text-slate-400 hover:text-stone-400 flex items-center gap-1 mb-3"
         >
           <ArrowLeft size={12} /> Back to Chefs
         </Link>
         <div className="flex items-start gap-4">
-          <div className="p-3 bg-slate-100 rounded-xl">
-            <User size={24} className="text-slate-600" />
+          <div className="p-3 bg-stone-800 rounded-xl">
+            <User size={24} className="text-stone-400" />
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-3 flex-wrap">
@@ -131,7 +131,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
                 </span>
               )}
             </div>
-            <p className="text-sm text-slate-500 mt-0.5">{email ?? 'Email unavailable'}</p>
+            <p className="text-sm text-stone-500 mt-0.5">{email ?? 'Email unavailable'}</p>
             <p className="text-xs text-slate-400 mt-1">
               Joined{' '}
               {new Date(chef.created_at).toLocaleDateString('en-US', {
@@ -149,21 +149,21 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
         <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
           <div className="flex items-center gap-2 mb-1">
             <DollarSign size={14} className="text-green-500" />
-            <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">GMV</p>
+            <p className="text-xs text-stone-500 font-medium uppercase tracking-wide">GMV</p>
           </div>
           <p className="text-xl font-bold text-slate-900">{formatCents(totalGMV)}</p>
         </div>
         <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
           <div className="flex items-center gap-2 mb-1">
             <CalendarRange size={14} className="text-blue-500" />
-            <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">Events</p>
+            <p className="text-xs text-stone-500 font-medium uppercase tracking-wide">Events</p>
           </div>
           <p className="text-xl font-bold text-slate-900">{events.length}</p>
         </div>
         <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
           <div className="flex items-center gap-2 mb-1">
             <Users size={14} className="text-purple-500" />
-            <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">Clients</p>
+            <p className="text-xs text-stone-500 font-medium uppercase tracking-wide">Clients</p>
           </div>
           <p className="text-xl font-bold text-slate-900">{clients.length}</p>
         </div>
@@ -172,8 +172,8 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
       {/* Health Score Breakdown */}
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
-          <Activity size={14} className="text-slate-500" />
-          <h2 className="text-sm font-semibold text-slate-700">
+          <Activity size={14} className="text-stone-500" />
+          <h2 className="text-sm font-semibold text-stone-300">
             Chef Health Score — {healthScore.score}/100 ({CHEF_TIER_LABELS[healthScore.tier]})
           </h2>
         </div>
@@ -200,7 +200,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
             },
           ].map(({ label, desc, score, max }) => (
             <div key={label} className="px-4 py-4">
-              <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">{label}</p>
+              <p className="text-xs text-stone-500 font-medium uppercase tracking-wide">{label}</p>
               <p className="text-xs text-slate-400 mt-0.5 mb-2">{desc}</p>
               <div className="flex items-end gap-2">
                 <p className="text-lg font-bold text-slate-900">{score}</p>
@@ -214,7 +214,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
       {/* Events */}
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
-          <h2 className="text-sm font-semibold text-slate-700">Recent Events</h2>
+          <h2 className="text-sm font-semibold text-stone-300">Recent Events</h2>
         </div>
         {events.length === 0 ? (
           <p className="px-4 py-8 text-center text-sm text-slate-400">No events yet.</p>
@@ -223,12 +223,12 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100">
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">Name</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">Name</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">
                     Status
                   </th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">Date</th>
-                  <th className="text-right px-4 py-2.5 text-xs font-medium text-slate-500">
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">Date</th>
+                  <th className="text-right px-4 py-2.5 text-xs font-medium text-stone-500">
                     Value
                   </th>
                 </tr>
@@ -241,7 +241,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
                     </td>
                     <td className="px-4 py-2.5">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[event.status] ?? 'bg-slate-100 text-slate-600'}`}
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[event.status] ?? 'bg-stone-800 text-stone-400'}`}
                       >
                         {event.status}
                       </span>
@@ -249,7 +249,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
                     <td className="px-4 py-2.5 text-xs text-slate-400">
                       {event.event_date ? new Date(event.event_date).toLocaleDateString() : '—'}
                     </td>
-                    <td className="px-4 py-2.5 text-right text-slate-700">
+                    <td className="px-4 py-2.5 text-right text-stone-300">
                       {event.quoted_price_cents ? formatCents(event.quoted_price_cents) : '—'}
                     </td>
                   </tr>
@@ -263,7 +263,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
       {/* Clients */}
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
-          <h2 className="text-sm font-semibold text-slate-700">Clients ({clients.length})</h2>
+          <h2 className="text-sm font-semibold text-stone-300">Clients ({clients.length})</h2>
         </div>
         {clients.length === 0 ? (
           <p className="px-4 py-8 text-center text-sm text-slate-400">No clients yet.</p>
@@ -289,7 +289,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
       {/* Ledger (last 50) */}
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-700">Ledger (last 50 entries)</h2>
+          <h2 className="text-sm font-semibold text-stone-300">Ledger (last 50 entries)</h2>
           <span className="text-xs text-slate-400">Expenses: {formatCents(totalExpenses)}</span>
         </div>
         {ledger.length === 0 ? (
@@ -299,25 +299,25 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100">
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">Type</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">Type</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">
                     Description
                   </th>
-                  <th className="text-right px-4 py-2.5 text-xs font-medium text-slate-500">
+                  <th className="text-right px-4 py-2.5 text-xs font-medium text-stone-500">
                     Amount
                   </th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">Date</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {ledger.map((entry: any) => (
                   <tr key={entry.id} className="hover:bg-slate-50">
                     <td className="px-4 py-2.5">
-                      <span className="text-xs font-medium text-slate-600 uppercase">
+                      <span className="text-xs font-medium text-stone-400 uppercase">
                         {entry.entry_type}
                       </span>
                     </td>
-                    <td className="px-4 py-2.5 text-slate-600 text-xs">
+                    <td className="px-4 py-2.5 text-stone-400 text-xs">
                       {entry.description ?? '—'}
                     </td>
                     <td

@@ -297,7 +297,7 @@ export function ClientPhotoGallery({
                 className="text-sm bg-stone-900/10 border border-white/20 rounded px-2 py-1 text-white"
               >
                 {UPLOAD_CATEGORIES.map((cat) => (
-                  <option key={cat.value} value={cat.value} className="text-black">
+                  <option key={cat.value} value={cat.value} className="text-stone-100">
                     {cat.label}
                   </option>
                 ))}

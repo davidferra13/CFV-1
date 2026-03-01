@@ -24,9 +24,12 @@ export default async function CallsPage({ searchParams }: Props) {
       ...(typeFilter ? { call_type: typeFilter as CallType } : {}),
     }),
     getCalls({
-      status: statusFilter === 'no_show' ? 'no_show'
-             : statusFilter === 'cancelled' ? 'cancelled'
-             : 'completed',
+      status:
+        statusFilter === 'no_show'
+          ? 'no_show'
+          : statusFilter === 'cancelled'
+            ? 'cancelled'
+            : 'completed',
       ...(typeFilter ? { call_type: typeFilter as CallType } : {}),
       limit: 50,
     }),
@@ -39,11 +42,11 @@ export default async function CallsPage({ searchParams }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-stone-100 flex items-center gap-2">
             <Phone className="w-6 h-6 text-blue-500" />
             Calls & Meetings
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-stone-400 mt-1">
             Schedule, prep, and log outcomes for every call you have.
           </p>
         </div>
@@ -57,14 +60,14 @@ export default async function CallsPage({ searchParams }: Props) {
       </div>
 
       {/* Status filter tabs */}
-      <div className="flex gap-1 text-sm border-b border-gray-200">
+      <div className="flex gap-1 text-sm border-b border-stone-700">
         {[
           { label: 'All', href: '/calls' },
           { label: 'Upcoming', href: '/calls?status=scheduled' },
           { label: 'Completed', href: '/calls?status=completed' },
           { label: 'No-show', href: '/calls?status=no_show' },
           { label: 'Cancelled', href: '/calls?status=cancelled' },
-        ].map(tab => {
+        ].map((tab) => {
           const isActive =
             (!statusFilter && tab.href === '/calls') ||
             (statusFilter && tab.href.includes(statusFilter))
@@ -74,8 +77,8 @@ export default async function CallsPage({ searchParams }: Props) {
               href={tab.href}
               className={`px-3 py-2 border-b-2 -mb-px transition-colors ${
                 isActive
-                  ? 'border-blue-600 text-blue-700 font-medium'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-blue-600 text-blue-400 font-medium'
+                  : 'border-transparent text-stone-500 hover:text-stone-300'
               }`}
             >
               {tab.label}
@@ -87,13 +90,13 @@ export default async function CallsPage({ searchParams }: Props) {
       {/* Upcoming section */}
       {(showAll || statusFilter === 'scheduled') && (
         <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
+          <h2 className="text-sm font-semibold text-stone-400 uppercase tracking-wide">
             Upcoming ({upcoming.length})
           </h2>
           {upcoming.length === 0 ? (
-            <div className="text-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-              <Phone className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">No upcoming calls scheduled</p>
+            <div className="text-center py-10 bg-stone-900 rounded-xl border border-dashed border-stone-700">
+              <Phone className="w-8 h-8 text-stone-600 mx-auto mb-2" />
+              <p className="text-sm text-stone-500">No upcoming calls scheduled</p>
               <Link
                 href="/calls/new"
                 className="mt-2 inline-block text-sm text-blue-600 hover:underline"
@@ -103,7 +106,7 @@ export default async function CallsPage({ searchParams }: Props) {
             </div>
           ) : (
             <div className="space-y-2">
-              {upcoming.map(call => (
+              {upcoming.map((call) => (
                 <CallCard key={call.id} call={call} />
               ))}
             </div>
@@ -114,14 +117,14 @@ export default async function CallsPage({ searchParams }: Props) {
       {/* Past section */}
       {(showAll || ['completed', 'no_show', 'cancelled'].includes(statusFilter ?? '')) && (
         <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
+          <h2 className="text-sm font-semibold text-stone-400 uppercase tracking-wide">
             Past ({past.length})
           </h2>
           {past.length === 0 ? (
-            <p className="text-sm text-gray-400 py-4 text-center">No past calls yet</p>
+            <p className="text-sm text-stone-500 py-4 text-center">No past calls yet</p>
           ) : (
             <div className="space-y-2">
-              {past.map(call => (
+              {past.map((call) => (
                 <CallCard key={call.id} call={call} />
               ))}
             </div>

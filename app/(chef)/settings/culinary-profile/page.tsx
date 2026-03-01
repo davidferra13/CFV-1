@@ -62,12 +62,12 @@ export default function CulinaryProfilePage() {
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-slate-200 rounded w-1/3" />
-          <div className="h-4 bg-slate-200 rounded w-2/3" />
+          <div className="h-8 bg-stone-700 rounded w-1/3" />
+          <div className="h-4 bg-stone-700 rounded w-2/3" />
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="space-y-2">
-              <div className="h-4 bg-slate-200 rounded w-1/2" />
-              <div className="h-20 bg-slate-200 rounded" />
+              <div className="h-4 bg-stone-700 rounded w-1/2" />
+              <div className="h-20 bg-stone-700 rounded" />
             </div>
           ))}
         </div>
@@ -82,7 +82,7 @@ export default function CulinaryProfilePage() {
         <h1 className="text-2xl font-bold">Culinary Profile</h1>
       </div>
 
-      <p className="text-slate-500 mb-6">
+      <p className="text-stone-400 mb-6">
         Help Remy understand your food identity. These answers shape how Remy talks about food,
         suggests dishes, and understands your style. Answer as many or as few as you like — you can
         always come back.
@@ -90,13 +90,13 @@ export default function CulinaryProfilePage() {
 
       {/* Progress */}
       <div className="mb-8">
-        <div className="flex items-center justify-between text-sm text-slate-500 mb-1">
+        <div className="flex items-center justify-between text-sm text-stone-400 mb-1">
           <span>
             {answeredCount} of {totalCount} answered
           </span>
           <span>{Math.round((answeredCount / totalCount) * 100)}%</span>
         </div>
-        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+        <div className="h-2 bg-stone-800 rounded-full overflow-hidden">
           <div
             className="h-full bg-brand-500 rounded-full transition-all duration-500"
             style={{ width: `${(answeredCount / totalCount) * 100}%` }}
@@ -108,7 +108,7 @@ export default function CulinaryProfilePage() {
       <div className="space-y-6">
         {answers.map((a, i) => (
           <div key={a.questionKey} className="space-y-2">
-            <label htmlFor={a.questionKey} className="block text-sm font-medium text-slate-700">
+            <label htmlFor={a.questionKey} className="block text-sm font-medium text-stone-300">
               {i + 1}. {a.question}
             </label>
             <textarea
@@ -117,9 +117,9 @@ export default function CulinaryProfilePage() {
               onChange={(e) => handleChange(a.questionKey, e.target.value)}
               placeholder="Type your answer..."
               rows={3}
-              className="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm
+              className="w-full rounded-lg border border-stone-700 px-4 py-3 text-sm
                          focus:border-brand-500 focus:ring-1 focus:ring-brand-500
-                         placeholder:text-slate-400 resize-none"
+                         placeholder:text-stone-500 resize-none"
             />
           </div>
         ))}

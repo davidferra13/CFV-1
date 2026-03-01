@@ -29,7 +29,7 @@ function ChefBadge({
   }
   if (chef.eventCount === 0) {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-500">
+      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-stone-800 text-stone-500">
         No Events
       </span>
     )
@@ -63,7 +63,7 @@ export default async function AdminChefListPage() {
         </div>
         <div>
           <h1 className="text-xl font-bold text-slate-900">Chefs</h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-stone-500">
             {chefs.length} chef account{chefs.length !== 1 ? 's' : ''} · {formatCents(totalGMV)}{' '}
             total GMV
           </p>
@@ -85,28 +85,28 @@ export default async function AdminChefListPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Chef
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Email
                   </th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-right px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Events
                   </th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-right px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Clients
                   </th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-right px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     GMV
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Joined
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Status
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Health
                   </th>
                   <th className="px-4 py-3" />
@@ -118,9 +118,9 @@ export default async function AdminChefListPage() {
                     <td className="px-4 py-3 font-medium text-slate-900">
                       {chef.business_name ?? '—'}
                     </td>
-                    <td className="px-4 py-3 text-slate-500 text-xs">{chef.email ?? '—'}</td>
-                    <td className="px-4 py-3 text-right text-slate-700">{chef.eventCount}</td>
-                    <td className="px-4 py-3 text-right text-slate-700">{chef.clientCount}</td>
+                    <td className="px-4 py-3 text-stone-500 text-xs">{chef.email ?? '—'}</td>
+                    <td className="px-4 py-3 text-right text-stone-300">{chef.eventCount}</td>
+                    <td className="px-4 py-3 text-right text-stone-300">{chef.clientCount}</td>
                     <td className="px-4 py-3 text-right font-medium text-slate-900">
                       {formatCents(chef.gmvCents)}
                     </td>

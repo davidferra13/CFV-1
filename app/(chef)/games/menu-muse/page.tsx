@@ -72,7 +72,7 @@ const WORD_CATEGORY_COLORS: Record<string, string> = {
   temperature: 'bg-blue-900 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
   mouthfeel: 'bg-purple-900 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
   aroma: 'bg-green-900 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  technique: 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-300',
+  technique: 'bg-stone-800 text-stone-200 dark:bg-stone-900/30 dark:text-stone-300',
   visual: 'bg-pink-900 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300',
   composition: 'bg-indigo-900 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
   emotion: 'bg-rose-900 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300',
@@ -646,7 +646,7 @@ export default function MenuMusePage() {
                     {data.clientContext.dislikes.map((d, i) => (
                       <span
                         key={i}
-                        className="rounded-full bg-slate-500/10 px-2.5 py-0.5 text-xs font-medium text-slate-600 line-through"
+                        className="rounded-full bg-stone-500/10 px-2.5 py-0.5 text-xs font-medium text-stone-400 line-through"
                       >
                         {d}
                       </span>

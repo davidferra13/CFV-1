@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { generateAICallScript } from '@/lib/prospecting/pipeline-actions'
 import { Loader2, PhoneCall } from 'lucide-react'
@@ -22,7 +23,9 @@ export function AICallScriptButton({ prospectId }: AICallScriptButtonProps) {
         await generateAICallScript(prospectId)
         router.refresh()
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to generate script')
+        const message = err instanceof Error ? err.message : 'Failed to generate script'
+        setError(message)
+        toast.error(message)
       }
     })
   }

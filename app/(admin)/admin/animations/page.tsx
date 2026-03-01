@@ -455,11 +455,11 @@ export default function AnimationsTestPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Animation Test Lab</h1>
-        <p className="text-slate-500 text-sm mt-1">
+        <p className="text-stone-500 text-sm mt-1">
           Click any button to fire the animation full-screen. Click again mid-animation to restart.
         </p>
         {active && (
-          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-full text-sm font-medium text-slate-700">
+          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-stone-800 rounded-full text-sm font-medium text-stone-300">
             <span className={`w-2 h-2 rounded-full ${playing ? 'bg-green-500' : 'bg-slate-400'}`} />
             {playing ? 'Playing:' : 'Last played:'} {active.emoji} {active.label}
           </div>
@@ -468,7 +468,7 @@ export default function AnimationsTestPage() {
 
       {/* Holiday section */}
       <section>
-        <h2 className="text-lg font-semibold text-slate-800 mb-3">
+        <h2 className="text-lg font-semibold text-stone-200 mb-3">
           Holidays{' '}
           <span className="text-slate-400 font-normal text-sm">({HOLIDAY_CONFIGS.length})</span>
         </h2>
@@ -481,7 +481,7 @@ export default function AnimationsTestPage() {
               className="flex items-center gap-2 px-3 py-2 bg-stone-900 border border-slate-200 rounded-lg text-sm text-left hover:bg-blue-950 hover:border-blue-300 transition-colors"
             >
               <span className="text-lg leading-none">{h.emoji}</span>
-              <span className="text-slate-700 leading-tight">{h.label}</span>
+              <span className="text-stone-300 leading-tight">{h.label}</span>
             </button>
           ))}
         </div>
@@ -489,7 +489,7 @@ export default function AnimationsTestPage() {
 
       {/* Milestone section */}
       <section className="space-y-6">
-        <h2 className="text-lg font-semibold text-slate-800">
+        <h2 className="text-lg font-semibold text-stone-200">
           Milestones{' '}
           <span className="text-slate-400 font-normal text-sm">({MILESTONE_DEFS.length})</span>
         </h2>
@@ -501,7 +501,7 @@ export default function AnimationsTestPage() {
           { label: 'Business Birthdays', items: BIRTHDAY_MILESTONES },
         ].map(({ label, items }) => (
           <div key={label}>
-            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+            <h3 className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">
               {label}
             </h3>
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
@@ -513,7 +513,7 @@ export default function AnimationsTestPage() {
                   className="flex items-center gap-2 px-3 py-2 bg-stone-900 border border-slate-200 rounded-lg text-sm text-left hover:bg-emerald-950 hover:border-emerald-300 transition-colors"
                 >
                   <span className="text-lg leading-none">{def.emoji}</span>
-                  <span className="text-slate-700 leading-tight">{def.label}</span>
+                  <span className="text-stone-300 leading-tight">{def.label}</span>
                 </button>
               ))}
             </div>

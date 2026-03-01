@@ -51,10 +51,10 @@ function MetricCard({
   variant?: 'default' | 'success' | 'warning' | 'error'
 }) {
   const colors = {
-    default: 'bg-stone-50 border-stone-200',
-    success: 'bg-green-50 border-green-200',
-    warning: 'bg-amber-50 border-amber-200',
-    error: 'bg-red-50 border-red-200',
+    default: 'bg-stone-900 border-stone-200',
+    success: 'bg-green-950 border-green-200',
+    warning: 'bg-amber-950 border-amber-200',
+    error: 'bg-red-950 border-red-200',
   }
   const iconColors = {
     default: 'text-stone-500',
@@ -120,7 +120,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigateDay(-1)}
-            className="rounded-lg border border-stone-200 p-2 hover:bg-stone-50"
+            className="rounded-lg border border-stone-200 p-2 hover:bg-stone-800"
             disabled={isPending}
           >
             <ChevronLeft className="h-4 w-4" />
@@ -128,7 +128,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
           <h2 className="text-lg font-semibold text-stone-800">{formatDate(selectedDate)}</h2>
           <button
             onClick={() => navigateDay(1)}
-            className="rounded-lg border border-stone-200 p-2 hover:bg-stone-50"
+            className="rounded-lg border border-stone-200 p-2 hover:bg-stone-800"
             disabled={isPending || selectedDate >= new Date().toISOString().split('T')[0]}
           >
             <ChevronRight className="h-4 w-4" />
@@ -137,7 +137,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
         <button
           onClick={regenerate}
           disabled={isPending}
-          className="flex items-center gap-2 rounded-lg border border-stone-200 px-3 py-2 text-sm hover:bg-stone-50 disabled:opacity-50"
+          className="flex items-center gap-2 rounded-lg border border-stone-200 px-3 py-2 text-sm hover:bg-stone-800 disabled:opacity-50"
         >
           <RefreshCw className={`h-4 w-4 ${isPending ? 'animate-spin' : ''}`} />
           Regenerate
@@ -181,7 +181,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
           </div>
 
           {/* Today's Schedule */}
-          <section className="rounded-lg border border-stone-200 bg-white p-5">
+          <section className="rounded-lg border border-stone-200 bg-stone-900 p-5">
             <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-stone-500">
               <CalendarDays className="h-4 w-4" /> Today&apos;s Schedule
             </h3>
@@ -190,7 +190,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
                 {content.eventsToday.map((event) => (
                   <div
                     key={event.eventId}
-                    className="flex items-center gap-3 rounded-md border-l-4 border-amber-400 bg-amber-50 px-3 py-2"
+                    className="flex items-center gap-3 rounded-md border-l-4 border-amber-400 bg-amber-950 px-3 py-2"
                   >
                     <span className="text-sm font-semibold text-amber-800">
                       {event.serveTime || 'TBD'}
@@ -212,7 +212,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
           </section>
 
           {/* Pipeline */}
-          <section className="rounded-lg border border-stone-200 bg-white p-5">
+          <section className="rounded-lg border border-stone-200 bg-stone-900 p-5">
             <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-stone-500">
               <Target className="h-4 w-4" /> Pipeline
             </h3>
@@ -252,7 +252,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
           </section>
 
           {/* Operations */}
-          <section className="rounded-lg border border-stone-200 bg-white p-5">
+          <section className="rounded-lg border border-stone-200 bg-stone-900 p-5">
             <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-stone-500">
               <Clock className="h-4 w-4" /> Operations
             </h3>
@@ -301,7 +301,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
 
           {/* Client Activity */}
           {(content.highIntentVisits.length > 0 || content.clientLoginsYesterday > 0) && (
-            <section className="rounded-lg border border-stone-200 bg-white p-5">
+            <section className="rounded-lg border border-stone-200 bg-stone-900 p-5">
               <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-stone-500">
                 <Users className="h-4 w-4" /> Client Activity (Yesterday)
               </h3>
@@ -328,7 +328,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
 
           {/* Schedule Conflicts */}
           {content.scheduleConflicts.length > 0 && (
-            <section className="rounded-lg border border-amber-200 bg-amber-50 p-5">
+            <section className="rounded-lg border border-amber-200 bg-amber-950 p-5">
               <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-amber-700">
                 <AlertTriangle className="h-4 w-4" /> Schedule Conflicts
               </h3>
@@ -346,7 +346,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
 
           {/* Milestones */}
           {content.upcomingMilestones.length > 0 && (
-            <section className="rounded-lg border border-stone-200 bg-white p-5">
+            <section className="rounded-lg border border-stone-200 bg-stone-900 p-5">
               <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-stone-500">
                 <Gift className="h-4 w-4" /> Upcoming Milestones
               </h3>
@@ -360,7 +360,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
 
           {/* Dormant Clients */}
           {content.dormantClients.length > 0 && (
-            <section className="rounded-lg border border-stone-200 bg-white p-5">
+            <section className="rounded-lg border border-stone-200 bg-stone-900 p-5">
               <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-stone-500">
                 <UserMinus className="h-4 w-4" /> Re-engage These Clients
               </h3>
@@ -374,7 +374,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
 
           {/* Next Best Actions */}
           {content.nextBestActions.length > 0 && (
-            <section className="rounded-lg border border-stone-200 bg-white p-5">
+            <section className="rounded-lg border border-stone-200 bg-stone-900 p-5">
               <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-stone-500">
                 <Target className="h-4 w-4" /> Action Items
               </h3>
@@ -383,9 +383,9 @@ export function DailyReportView({ report: initialReport, history }: Props) {
                   <span
                     className={`mt-1 inline-block h-2 w-2 rounded-full ${
                       a.urgency === 'critical'
-                        ? 'bg-red-500'
+                        ? 'bg-red-9500'
                         : a.urgency === 'high'
-                          ? 'bg-amber-500'
+                          ? 'bg-amber-9500'
                           : 'bg-stone-300'
                     }`}
                   />
@@ -402,7 +402,7 @@ export function DailyReportView({ report: initialReport, history }: Props) {
 
           {/* History browser */}
           {history.length > 1 && (
-            <section className="rounded-lg border border-stone-200 bg-white p-5">
+            <section className="rounded-lg border border-stone-200 bg-stone-900 p-5">
               <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">
                 Past Reports
               </h3>
@@ -412,8 +412,8 @@ export function DailyReportView({ report: initialReport, history }: Props) {
                     key={h.reportDate}
                     onClick={() => loadDate(h.reportDate)}
                     disabled={isPending}
-                    className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-sm transition-colors hover:bg-stone-50 ${
-                      selectedDate === h.reportDate ? 'bg-stone-100 font-medium' : ''
+                    className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-sm transition-colors hover:bg-stone-800 ${
+                      selectedDate === h.reportDate ? 'bg-stone-800 font-medium' : ''
                     }`}
                   >
                     <span>

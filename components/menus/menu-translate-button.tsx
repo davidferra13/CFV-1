@@ -4,6 +4,7 @@
 // Uses LibreTranslate (free, no key). Non-blocking — fails gracefully.
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { translateMenuItemsBatch } from '@/lib/translate/translate-actions'
 import { MENU_LANGUAGES } from '@/lib/translate/libre-translate'
@@ -66,6 +67,7 @@ export function MenuTranslateButton({ dishes }: Props) {
       setTranslations(translated)
     } catch {
       setError('Translation failed. The service may be temporarily unavailable.')
+      toast.error('Translation failed')
     } finally {
       setLoading(false)
     }

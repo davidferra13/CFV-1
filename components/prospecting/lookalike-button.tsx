@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { lookalikeProspect } from '@/lib/prospecting/scrub-actions'
 import { Loader2, Target } from 'lucide-react'
@@ -26,7 +27,9 @@ export function LookalikeButton({ prospectId, prospectName }: LookalikeButtonPro
         )
         router.refresh()
       } catch (err) {
-        setResult(err instanceof Error ? err.message : 'Lookalike search failed')
+        const message = err instanceof Error ? err.message : 'Lookalike search failed'
+        setResult(message)
+        toast.error(message)
       }
     })
   }

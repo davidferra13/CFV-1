@@ -63,11 +63,11 @@ export function ShortcutsHelpPanel({ isOpen, onClose }: ShortcutsHelpPanelProps)
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-base font-semibold text-gray-900">Keyboard Shortcuts</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-700">
+          <h2 className="text-base font-semibold text-stone-100">Keyboard Shortcuts</h2>
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            className="p-1 rounded-md text-stone-400 hover:text-stone-200 hover:bg-stone-800 transition-colors"
             aria-label="Close shortcuts panel"
           >
             <X className="h-4 w-4" />
@@ -78,7 +78,7 @@ export function ShortcutsHelpPanel({ isOpen, onClose }: ShortcutsHelpPanelProps)
         <div className="px-6 py-4 space-y-5 max-h-[70vh] overflow-y-auto">
           {SHORTCUT_SECTIONS.map((section) => (
             <div key={section.category}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2">
                 {section.category}
               </p>
               <div className="space-y-1">
@@ -87,16 +87,16 @@ export function ShortcutsHelpPanel({ isOpen, onClose }: ShortcutsHelpPanelProps)
                     <div className="flex items-center gap-1">
                       {shortcut.keys.map((key, keyIdx) => (
                         <span key={keyIdx} className="flex items-center gap-1">
-                          <kbd className="inline-flex items-center px-2 py-0.5 rounded border border-gray-300 bg-gray-50 text-xs font-mono text-gray-700 shadow-sm">
+                          <kbd className="inline-flex items-center px-2 py-0.5 rounded border border-stone-600 bg-stone-800 text-xs font-mono text-stone-300 shadow-sm">
                             {key}
                           </kbd>
                           {keyIdx < shortcut.keys.length - 1 && (
-                            <span className="text-xs text-gray-400">then</span>
+                            <span className="text-xs text-stone-500">then</span>
                           )}
                         </span>
                       ))}
                     </div>
-                    <span className="text-sm text-gray-600 text-right ml-4">
+                    <span className="text-sm text-stone-400 text-right ml-4">
                       {shortcut.description}
                     </span>
                   </div>
@@ -107,10 +107,10 @@ export function ShortcutsHelpPanel({ isOpen, onClose }: ShortcutsHelpPanelProps)
         </div>
 
         {/* Footer hint */}
-        <div className="px-6 py-3 border-t border-gray-100 bg-gray-50">
-          <p className="text-xs text-gray-400 text-center">
+        <div className="px-6 py-3 border-t border-stone-700 bg-stone-800">
+          <p className="text-xs text-stone-500 text-center">
             Press{' '}
-            <kbd className="inline-flex items-center px-1.5 py-0.5 rounded border border-gray-300 bg-stone-900 text-xs font-mono text-gray-600">
+            <kbd className="inline-flex items-center px-1.5 py-0.5 rounded border border-stone-600 bg-stone-900 text-xs font-mono text-stone-400">
               Esc
             </kbd>{' '}
             to close

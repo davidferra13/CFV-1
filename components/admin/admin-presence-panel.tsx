@@ -24,7 +24,7 @@ function formatDuration(seconds: number): string {
 function RoleBadge({ role }: { role: 'authenticated' | 'anonymous' }) {
   if (role === 'anonymous') {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600">
+      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-stone-800 text-stone-400">
         Anonymous
       </span>
     )
@@ -115,16 +115,16 @@ export function AdminPresencePanel() {
       {/* Stats bar */}
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-stone-900 rounded-lg border border-slate-200 px-4 py-3">
-          <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">Total Active</p>
+          <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">Total Active</p>
           <p className="text-2xl font-bold text-slate-900 mt-1">{total}</p>
         </div>
         <div className="bg-stone-900 rounded-lg border border-slate-200 px-4 py-3">
-          <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">Logged In</p>
+          <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">Logged In</p>
           <p className="text-2xl font-bold text-blue-600 mt-1">{authenticated}</p>
         </div>
         <div className="bg-stone-900 rounded-lg border border-slate-200 px-4 py-3">
-          <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">Anonymous</p>
-          <p className="text-2xl font-bold text-slate-500 mt-1">{anonymous}</p>
+          <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">Anonymous</p>
+          <p className="text-2xl font-bold text-stone-500 mt-1">{anonymous}</p>
         </div>
       </div>
 
@@ -139,7 +139,7 @@ export function AdminPresencePanel() {
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                   filter === r
                     ? 'bg-slate-900 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
                 }`}
               >
                 {r === 'all' ? 'All' : r === 'authenticated' ? 'Logged In' : 'Anonymous'}
@@ -172,19 +172,19 @@ export function AdminPresencePanel() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Identity
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Status
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Current Page
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Time on Site
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Referrer
                   </th>
                 </tr>
@@ -202,7 +202,7 @@ export function AdminPresencePanel() {
                         </div>
                       ) : (
                         <div>
-                          <p className="text-slate-500 text-xs">Visitor</p>
+                          <p className="text-stone-500 text-xs">Visitor</p>
                           <p className="text-slate-400 text-xs font-mono">
                             {session.sessionId.slice(0, 8)}…
                           </p>
@@ -213,11 +213,11 @@ export function AdminPresencePanel() {
                       <RoleBadge role={session.role} />
                     </td>
                     <td className="px-4 py-3">
-                      <span className="font-mono text-xs text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
+                      <span className="font-mono text-xs text-stone-300 bg-stone-800 px-1.5 py-0.5 rounded">
                         {session.page || '/'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-slate-600">
+                    <td className="px-4 py-3 text-xs text-stone-400">
                       {formatDuration(Math.max(0, session.durationSeconds))}
                     </td>
                     <td className="px-4 py-3 text-xs text-slate-400 max-w-[200px] truncate">

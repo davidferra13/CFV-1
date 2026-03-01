@@ -66,7 +66,7 @@ export function BroadcastEmailForm() {
         <button
           onClick={() => handleBroadcast('inactive_chefs')}
           disabled={isPending || !subject || !body}
-          className="px-4 py-2 bg-slate-100 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-200 disabled:opacity-50 transition-colors"
+          className="px-4 py-2 bg-stone-800 text-stone-400 text-sm font-medium rounded-lg hover:bg-stone-700 disabled:opacity-50 transition-colors"
         >
           {isPending ? 'Sending…' : 'Email Inactive Chefs (60+ days)'}
         </button>

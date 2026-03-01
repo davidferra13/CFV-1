@@ -22,12 +22,12 @@ export default async function EditCallPage({ params }: Props) {
       <div className="max-w-2xl mx-auto px-4 py-8">
         <Link
           href={`/calls/${call.id}`}
-          className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4"
+          className="flex items-center gap-1 text-sm text-stone-500 hover:text-stone-300 mb-4"
         >
           <ChevronLeft className="w-4 h-4" />
           Back to call
         </Link>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-stone-400">
           This call cannot be edited because it is {call.status}.
         </p>
       </div>
@@ -39,12 +39,12 @@ export default async function EditCallPage({ params }: Props) {
       <div>
         <Link
           href={`/calls/${call.id}`}
-          className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4"
+          className="flex items-center gap-1 text-sm text-stone-500 hover:text-stone-300 mb-4"
         >
           <ChevronLeft className="w-4 h-4" />
           Back to call
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">Edit Call</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Edit Call</h1>
       </div>
 
       <div className="bg-stone-900 rounded-xl border shadow-sm p-6">

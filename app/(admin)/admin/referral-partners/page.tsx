@@ -17,7 +17,7 @@ const PARTNER_TYPE_LABELS: Record<string, string> = {
 
 const STATUS_COLORS: Record<string, string> = {
   active: 'bg-green-900 text-green-700',
-  inactive: 'bg-slate-100 text-slate-500',
+  inactive: 'bg-stone-800 text-stone-500',
 }
 
 export default async function AdminReferralPartnersPage() {
@@ -69,7 +69,7 @@ export default async function AdminReferralPartnersPage() {
         </div>
         <div>
           <h1 className="text-xl font-bold text-slate-900">Referral Partners</h1>
-          <p className="text-sm text-slate-500">All partners across every chef tenant</p>
+          <p className="text-sm text-stone-500">All partners across every chef tenant</p>
         </div>
       </div>
 
@@ -82,23 +82,23 @@ export default async function AdminReferralPartnersPage() {
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4">
         <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-3">
-          <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-1">
+          <p className="text-xs text-stone-500 font-medium uppercase tracking-wide mb-1">
             Total Partners
           </p>
           <p className="text-2xl font-bold text-slate-900">{partners.length}</p>
         </div>
         <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-3">
-          <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-1">Active</p>
+          <p className="text-xs text-stone-500 font-medium uppercase tracking-wide mb-1">Active</p>
           <p className="text-2xl font-bold text-green-700">{activeCount}</p>
         </div>
         <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-3">
-          <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-1">
+          <p className="text-xs text-stone-500 font-medium uppercase tracking-wide mb-1">
             In Showcase
           </p>
           <p className="text-2xl font-bold text-blue-700">{showcaseCount}</p>
         </div>
         <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-3">
-          <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-1">
+          <p className="text-xs text-stone-500 font-medium uppercase tracking-wide mb-1">
             Chef Tenants
           </p>
           <p className="text-2xl font-bold text-slate-900">{tenantIds.length}</p>
@@ -108,7 +108,7 @@ export default async function AdminReferralPartnersPage() {
       {/* Type breakdown */}
       {Object.keys(typeBreakdown).length > 0 && (
         <div className="bg-stone-900 rounded-xl border border-slate-200 p-4">
-          <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+          <h2 className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-3">
             By Type
           </h2>
           <div className="flex flex-wrap gap-2">
@@ -117,10 +117,10 @@ export default async function AdminReferralPartnersPage() {
               .map(([type, count]) => (
                 <span
                   key={type}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-medium"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-800 text-stone-300 rounded-lg text-xs font-medium"
                 >
                   {PARTNER_TYPE_LABELS[type] ?? type}
-                  <span className="bg-slate-300 text-slate-600 rounded-full px-1.5 py-0.5 text-[10px] font-bold">
+                  <span className="bg-slate-300 text-stone-400 rounded-full px-1.5 py-0.5 text-[10px] font-bold">
                     {count}
                   </span>
                 </span>
@@ -132,7 +132,7 @@ export default async function AdminReferralPartnersPage() {
       {/* Partners Table */}
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
-          <h2 className="text-sm font-semibold text-slate-700">
+          <h2 className="text-sm font-semibold text-stone-300">
             All Referral Partners ({partners.length})
           </h2>
         </div>
@@ -145,21 +145,21 @@ export default async function AdminReferralPartnersPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100">
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">
                     Partner Name
                   </th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">Chef</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">Type</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">Chef</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">Type</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">
                     Status
                   </th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">
                     Contact
                   </th>
-                  <th className="text-center px-4 py-2.5 text-xs font-medium text-slate-500">
+                  <th className="text-center px-4 py-2.5 text-xs font-medium text-stone-500">
                     Showcase
                   </th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">
                     Added
                   </th>
                 </tr>
@@ -175,14 +175,14 @@ export default async function AdminReferralPartnersPage() {
                             href={partner.website}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-slate-400 hover:text-slate-600"
+                            className="text-slate-400 hover:text-stone-400"
                           >
                             <ExternalLink size={12} />
                           </a>
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-2.5 text-xs text-slate-500">
+                    <td className="px-4 py-2.5 text-xs text-stone-500">
                       <Link
                         href={`/admin/users/${partner.tenant_id}`}
                         className="hover:text-blue-600 hover:underline"
@@ -190,12 +190,12 @@ export default async function AdminReferralPartnersPage() {
                         {chefMap[partner.tenant_id] ?? '—'}
                       </Link>
                     </td>
-                    <td className="px-4 py-2.5 text-xs text-slate-600">
+                    <td className="px-4 py-2.5 text-xs text-stone-400">
                       {PARTNER_TYPE_LABELS[partner.partner_type] ?? partner.partner_type}
                     </td>
                     <td className="px-4 py-2.5">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[partner.status] ?? 'bg-slate-100 text-slate-600'}`}
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[partner.status] ?? 'bg-stone-800 text-stone-400'}`}
                       >
                         {partner.status}
                       </span>

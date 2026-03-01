@@ -17,11 +17,11 @@ export function ShortcutHint({ keys, className = '' }: ShortcutHintProps) {
     <span className={`inline-flex items-center gap-1 ${className}`}>
       {keys.map((key, idx) => (
         <span key={idx} className="inline-flex items-center gap-1">
-          <kbd className="inline-flex items-center px-1.5 py-0.5 rounded border border-gray-300 bg-gray-100 text-xs font-mono text-gray-500 leading-none">
+          <kbd className="inline-flex items-center px-1.5 py-0.5 rounded border border-stone-600 bg-stone-800 text-xs font-mono text-stone-400 leading-none">
             {key}
           </kbd>
           {idx < keys.length - 1 && (
-            <span className="text-xs text-gray-400 leading-none">then</span>
+            <span className="text-xs text-stone-500 leading-none">then</span>
           )}
         </span>
       ))}

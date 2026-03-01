@@ -47,12 +47,14 @@ export function EquipmentRedundancyChecklist({ eventId, items: initialItems }: P
 
   function handleSave() {
     const validItems = items.filter((i) => i.name.trim())
+    const previous = items
     startTransition(async () => {
       try {
         await saveEquipmentChecklist(eventId, validItems)
         setSaved(true)
         setTimeout(() => setSaved(false), 2000)
       } catch (err) {
+        setItems(previous) // rollback to pre-filter state
         toast.error('Failed to save equipment checklist')
       }
     })

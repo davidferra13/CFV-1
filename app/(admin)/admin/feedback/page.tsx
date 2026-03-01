@@ -13,7 +13,7 @@ const SENTIMENT_DISPLAY: Record<string, { emoji: string; label: string; color: s
   frustrated: { emoji: '😤', label: 'Frustrated', color: 'bg-red-900 text-red-800' },
   suggestion: { emoji: '💡', label: 'Suggestion', color: 'bg-yellow-900 text-yellow-800' },
   bug: { emoji: '🐛', label: 'Bug', color: 'bg-orange-900 text-orange-800' },
-  other: { emoji: '💬', label: 'Other', color: 'bg-slate-100 text-slate-700' },
+  other: { emoji: '💬', label: 'Other', color: 'bg-stone-800 text-stone-300' },
 }
 
 function formatDate(iso: string) {
@@ -113,12 +113,12 @@ export default async function AdminFeedbackPage() {
                     </td>
                     <td className="px-4 py-3 text-slate-400 text-xs">
                       {row.anonymous ? (
-                        <span className="italic text-slate-500">Anonymous</span>
+                        <span className="italic text-stone-500">Anonymous</span>
                       ) : (
                         <span className="capitalize">{row.user_role ?? '—'}</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-slate-500 text-xs font-mono truncate max-w-[140px]">
+                    <td className="px-4 py-3 text-stone-500 text-xs font-mono truncate max-w-[140px]">
                       {row.page_context ?? '—'}
                     </td>
                   </tr>

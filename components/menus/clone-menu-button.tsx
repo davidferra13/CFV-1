@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { cloneMenu } from '@/lib/menus/actions'
 import { Button } from '@/components/ui/button'
 
@@ -21,7 +22,9 @@ export function CloneMenuButton({ menuId }: CloneMenuButtonProps) {
       await cloneMenu(menuId)
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to clone menu')
+      const message = err instanceof Error ? err.message : 'Failed to clone menu'
+      setError(message)
+      toast.error(message)
     } finally {
       setLoading(false)
     }
