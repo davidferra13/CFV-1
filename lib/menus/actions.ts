@@ -1644,7 +1644,7 @@ export async function applyMenuToEvent(menuId: string, eventId: string) {
 
   const { data: menu } = await supabase
     .from('menus')
-    .select('id, is_template, name')
+    .select('id, is_template, is_showcase, name, times_used')
     .eq('id', menuId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -1654,7 +1654,7 @@ export async function applyMenuToEvent(menuId: string, eventId: string) {
   let targetMenuId = menuId
   let wasDuplicated = false
 
-  if (menu.is_template) {
+  if (menu.is_template || menu.is_showcase) {
     const result = await duplicateMenu(menuId)
     targetMenuId = result.menu.id
     wasDuplicated = true
@@ -1665,10 +1665,22 @@ export async function applyMenuToEvent(menuId: string, eventId: string) {
       .update({
         name: menu.name.replace(/ \(Copy\)$/, ''),
         is_template: false,
+        is_showcase: false,
         updated_by: user.id,
       })
       .eq('id', targetMenuId)
       .eq('tenant_id', user.tenantId!)
+  }
+
+  // Increment usage count on the source menu (non-blocking, informational)
+  try {
+    await supabase
+      .from('menus')
+      .update({ times_used: (menu.times_used ?? 0) + 1 })
+      .eq('id', menuId)
+      .eq('tenant_id', user.tenantId!)
+  } catch (err) {
+    console.error('[applyMenuToEvent] Non-blocking times_used increment failed:', err)
   }
 
   await attachMenuToEvent(eventId, targetMenuId)

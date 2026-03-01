@@ -358,23 +358,129 @@ export default async function EventDetailPage({ params }: { params: { id: string
       {/* Dinner Photos — visible on completed events that have photos */}
       <ClientEventPhotoGallery photos={eventPhotos} />
 
-      {/* Attached Menus */}
-      {event.menus && event.menus.length > 0 && (
+      {/* Menu Section — smart status card */}
+      {event.status !== 'cancelled' && event.status !== 'draft' && (
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Menu</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Menu</CardTitle>
+              {(event as any).menu_approval_status === 'approved' && (
+                <Badge variant="success">Approved</Badge>
+              )}
+              {(event as any).menu_approval_status === 'sent' && (
+                <Badge variant="warning">Review Needed</Badge>
+              )}
+              {(event as any).menu_approval_status === 'revision_requested' && (
+                <Badge variant="info">Changes Sent</Badge>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              {event.menus.map((menu: any) => (
-                <div key={menu.id}>
-                  <h4 className="font-semibold text-stone-100 mb-2">{menu.name}</h4>
-                  {menu.description && (
-                    <p className="text-stone-400 text-sm mb-2">{menu.description}</p>
-                  )}
+            {/* No menu attached yet — show CTA or preference status */}
+            {(!event.menus || event.menus.length === 0) && !(event as any).menu_approval_status && (
+              <div className="text-center py-6 space-y-3">
+                <div className="w-12 h-12 rounded-full bg-brand-950 flex items-center justify-center mx-auto">
+                  <svg
+                    className="w-6 h-6 text-brand-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                    />
+                  </svg>
                 </div>
-              ))}
-            </div>
+                <p className="text-stone-400 text-sm">
+                  Help your chef create the perfect menu by sharing your preferences.
+                </p>
+                <Link href={`/my-events/${event.id}/choose-menu`}>
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-2 bg-brand-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-brand-700 transition"
+                  >
+                    Choose Your Menu
+                  </button>
+                </Link>
+              </div>
+            )}
+
+            {/* Menu is being worked on (attached but not sent for approval) */}
+            {event.menus && event.menus.length > 0 && !(event as any).menu_approval_status && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
+                    <div className="absolute inset-0 w-3 h-3 rounded-full bg-emerald-500 animate-ping opacity-50" />
+                  </div>
+                  <p className="text-sm text-stone-300">Your chef is preparing your menu</p>
+                </div>
+                {event.menus.map((menu: any) => (
+                  <div key={menu.id} className="border border-stone-700 rounded-lg p-3">
+                    <h4 className="font-medium text-stone-100">{menu.name}</h4>
+                    {menu.description && (
+                      <p className="text-stone-400 text-sm mt-1">{menu.description}</p>
+                    )}
+                    {menu.service_style && (
+                      <Badge variant="info" className="mt-2">
+                        {menu.service_style.replace('_', ' ')}
+                      </Badge>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Menu sent for approval */}
+            {event.menus &&
+              event.menus.length > 0 &&
+              (event as any).menu_approval_status === 'sent' && (
+                <div className="space-y-4">
+                  {event.menus.map((menu: any) => (
+                    <div key={menu.id} className="border border-stone-700 rounded-lg p-3">
+                      <h4 className="font-medium text-stone-100">{menu.name}</h4>
+                      {menu.description && (
+                        <p className="text-stone-400 text-sm mt-1">{menu.description}</p>
+                      )}
+                    </div>
+                  ))}
+                  <p className="text-sm text-amber-400">Your chef is waiting for your review.</p>
+                </div>
+              )}
+
+            {/* Menu approved — show the menu with celebration */}
+            {event.menus &&
+              event.menus.length > 0 &&
+              (event as any).menu_approval_status === 'approved' && (
+                <div className="space-y-4">
+                  {event.menus.map((menu: any) => (
+                    <div key={menu.id}>
+                      <h4 className="font-semibold text-stone-100 mb-1">{menu.name}</h4>
+                      {menu.description && (
+                        <p className="text-stone-400 text-sm">{menu.description}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+            {/* Revision requested */}
+            {(event as any).menu_approval_status === 'revision_requested' && (
+              <div className="space-y-3">
+                <p className="text-sm text-stone-400">
+                  You requested changes to the menu. Your chef is working on an update.
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="w-3 h-3 rounded-full bg-amber-500 animate-pulse" />
+                  </div>
+                  <p className="text-xs text-stone-500">Chef is revising the menu</p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

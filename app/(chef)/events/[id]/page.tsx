@@ -57,6 +57,8 @@ import { ContingencyPanel } from '@/components/events/contingency-panel'
 import { TempLogPanel } from '@/components/events/temp-log-panel'
 import { EventStaffPanel } from '@/components/events/event-staff-panel'
 import { MenuApprovalStatus } from '@/components/events/menu-approval-status'
+import { MenuLibraryPicker } from '@/components/events/menu-library-picker'
+import { getMenuLibraryForEvent } from '@/lib/menus/showcase-actions'
 import { EventPrepSchedule } from '@/components/events/event-prep-schedule'
 import { PrepBlockNudgeBanner } from '@/components/events/prep-block-nudge'
 import { getEventPrepBlocks } from '@/lib/scheduling/prep-block-actions'
@@ -353,6 +355,7 @@ export default async function EventDetailPage({
     eventCollaborators,
     packingConfirmedCount,
     hubGroupToken,
+    menuLibraryData,
   ] = await Promise.all([
     event.status !== 'cancelled'
       ? getEventContingencyNotes(params.id).catch(() => [])
@@ -378,6 +381,9 @@ export default async function EventDetailPage({
       ? getPackingConfirmationCount(params.id).catch(() => 0)
       : Promise.resolve(0),
     getEventHubGroupToken(params.id).catch(() => null),
+    event.status !== 'cancelled'
+      ? getMenuLibraryForEvent(params.id).catch(() => ({ menus: [], preferences: null }))
+      : Promise.resolve({ menus: [], preferences: null }),
   ])
 
   // Fetch chef display name for templates
@@ -923,6 +929,15 @@ export default async function EventDetailPage({
       {/* TAB: MONEY — Financials, payments, expenses  */}
       {/* ============================================ */}
       <EventDetailSection tab="money" activeTab={activeTab}>
+        {/* Menu Library Picker — shown when no menu is attached or to swap */}
+        {event.status !== 'cancelled' && (menuLibraryData as any)?.menus?.length > 0 && (
+          <MenuLibraryPicker
+            eventId={event.id}
+            menus={(menuLibraryData as any).menus}
+            preferences={(menuLibraryData as any).preferences}
+          />
+        )}
+
         {/* Menu Approval */}
         {eventMenus && event.status !== 'cancelled' && menuApprovalData && (
           <Card className="p-6">

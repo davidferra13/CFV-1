@@ -89,10 +89,15 @@ export async function getClientEventById(eventId: string) {
     return null
   }
 
-  // Fetch menus attached to this event (via menus.event_id FK)
+  // Fetch menus attached to this event with dish details
   const { data: menus } = await supabase
     .from('menus')
-    .select('id, name, description, service_style, status')
+    .select(
+      `
+      id, name, description, service_style, cuisine_type, status,
+      dishes (id, course_name, course_number, description, dietary_tags, allergen_flags, sort_order)
+    `
+    )
     .eq('event_id', eventId)
 
   // Fetch ledger entries (payment history)

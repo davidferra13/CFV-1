@@ -18,6 +18,7 @@ import {
   restoreMenu,
   transitionMenu,
 } from '@/lib/menus/actions'
+import { toggleShowcase } from '@/lib/menus/showcase-actions'
 import {
   searchRecipes,
   linkRecipeToComponent,
@@ -76,6 +77,7 @@ type Menu = {
   target_guest_count: number | null
   notes: string | null
   is_template: boolean
+  is_showcase: boolean
   created_at: string
   dishes: Dish[]
   [key: string]: unknown
@@ -124,6 +126,7 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
   const [error, setError] = useState('')
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [deletePolicy, setDeletePolicy] = useState<ConfirmPolicyInput | null>(null)
+  const [isShowcase, setIsShowcase] = useState(initialMenu.is_showcase)
   const undoStack = useUndoStack<string | null>(null)
 
   // Recipe link modal state
@@ -273,6 +276,19 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
     }
   }
 
+  const handleToggleShowcase = async () => {
+    const prev = isShowcase
+    setIsShowcase(!prev)
+    try {
+      await toggleShowcase(menu.id, !prev)
+      trackAction(prev ? 'Removed menu from showcase' : 'Added menu to showcase', menu.name)
+      router.refresh()
+    } catch (err) {
+      setIsShowcase(prev)
+      setMutationError(err)
+    }
+  }
+
   const handlePrintBackOfHouse = () => {
     window.print()
   }
@@ -400,6 +416,7 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
             {menu.is_template && <Badge variant="info">Template</Badge>}
+            {menu.is_showcase && <Badge variant="success">Showcase</Badge>}
             {menu.cuisine_type && <Badge variant="default">{menu.cuisine_type}</Badge>}
             {menu.target_guest_count && (
               <Badge variant="default">{menu.target_guest_count} guests</Badge>
@@ -585,13 +602,31 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
 
               <div>
                 <label className="text-sm font-medium text-stone-500">Status</label>
-                <div className="mt-1">
+                <div className="mt-1 flex items-center gap-2">
                   <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
-                  {menu.is_template && (
-                    <Badge variant="info" className="ml-2">
-                      Template
-                    </Badge>
-                  )}
+                  {menu.is_template && <Badge variant="info">Template</Badge>}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-stone-500">Client Showcase</label>
+                <div className="mt-1 flex items-center gap-3">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={isShowcase ? 'true' : 'false'}
+                    aria-label="Toggle client showcase visibility"
+                    onClick={handleToggleShowcase}
+                    disabled={loading}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 focus:ring-offset-stone-900 disabled:opacity-50 ${isShowcase ? 'bg-brand-600' : 'bg-stone-600'}`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isShowcase ? 'translate-x-5' : 'translate-x-0'}`}
+                    />
+                  </button>
+                  <span className="text-sm text-stone-400">
+                    {isShowcase ? 'Visible to your clients' : 'Hidden from clients'}
+                  </span>
                 </div>
               </div>
             </CardContent>

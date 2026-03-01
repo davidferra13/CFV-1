@@ -36,6 +36,7 @@ type Menu = {
   cuisine_type: string | null
   target_guest_count: number | null
   is_template: boolean
+  is_showcase: boolean
   event_id: string | null
 }
 
@@ -172,6 +173,7 @@ function MenuCard({
               {eventType}
             </Badge>
             {menu.is_template && <Badge variant="info">Template</Badge>}
+            {menu.is_showcase && <Badge variant="success">Showcase</Badge>}
             {menu.cuisine_type && <Badge variant="default">{menu.cuisine_type}</Badge>}
           </div>
 
@@ -581,6 +583,7 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
                     {statusLabel(selectedMenuStatus!)}
                   </Badge>
                   {selectedMenu.is_template && <Badge variant="info">Template</Badge>}
+                  {selectedMenu.is_showcase && <Badge variant="success">Showcase</Badge>}
                   {selectedMenu.cuisine_type && (
                     <Badge variant="default">{selectedMenu.cuisine_type}</Badge>
                   )}

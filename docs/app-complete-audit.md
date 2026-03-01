@@ -337,6 +337,7 @@
 
 #### Tab: Money
 
+- **Menu Library Picker:** searchable/filterable panel — tabs for All, Templates, Showcase, Recent. Shows client preferences summary (cuisine, loves/hates, adventurousness) if submitted. One-click "Use" to apply any menu to event. "Create New" link.
 - **Menu Approval:** status display + "Edit Menu" → `/menus/[id]/editor`
 - **Financial Summary:** 4 stats (Quoted, Deposit, Paid, Balance Due) + "View Invoice" → `/events/[id]/invoice` + export button
 - **AI Pricing Intelligence:** (proposed/accepted only)
@@ -646,8 +647,8 @@
 
 ### 6.1 Menus
 
-- **`/menus`** — Grid of menu cards with search + sort. "Create Menu" → `/menus/new`.
-- **`/menus/[id]`** — Menu detail with edit mode (draft only), per-component recipe linking (inline search), duplicate/delete. "Open Editor" → `/menus/[id]/editor`.
+- **`/menus`** — Grid of menu cards with search + sort. Cards show Template and **Showcase** badges. "Create Menu" → `/menus/new`.
+- **`/menus/[id]`** — Menu detail with edit mode (draft only), per-component recipe linking (inline search), duplicate/delete. **Showcase toggle** (switch to make menu visible to clients as portfolio). "Open Editor" → `/menus/[id]/editor`.
 - **`/menus/[id]/editor`** — Full document editor with auto-save (1.5s debounce), structured mode (courses/dishes with dietary toggles, allergen flags, chef notes, dish photos, hover reorder/delete) or freeform mode. Right sidebar: event/client/season/pricing/previous menus panels.
 
 ### 6.2 Recipes
@@ -1434,6 +1435,20 @@ Persistent social space for event guests — group chat, photos, polls, scheduli
 | `/my-hub/g/[groupToken]` | Full group experience wrapped in client layout — reuses existing HubGroupView (6 tabs: Chat, Events, Photos, Schedule, Notes, Members). Auto-joins group, sets profile cookie.                       |
 | `/my-hub/friends`        | Friends management — pending requests (accept/decline), friends grid (avatar, name, remove), search panel (by name/email, add friend button). Badge count on pending requests.                       |
 | `/my-hub/share-chef`     | Share a chef with friends — step 1: select chef (from your event history), step 2: select friends + optional message. Also shows chef recommendations received from friends.                         |
+
+### Client Event Pages (client auth required — `/my-events` routes)
+
+| Route                           | Content                                                                                                                                                                                                                                                                                                                                                           |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/my-events`                    | Event list — upcoming, past (capped at 5), cancelled. Cards with status badge, date, occasion.                                                                                                                                                                                                                                                                    |
+| `/my-events/[id]`               | Event detail — journey stepper, event details card, payment summary, **menu section** (smart status: CTA to choose menu, "chef is preparing" live indicator with pulsing dot, approval status badges, revision progress), photo gallery, share/RSVP, feedback form.                                                                                               |
+| `/my-events/[id]/choose-menu`   | **Menu Selection** — four-path hub: Browse Past Menus (showcase gallery with preview modal, "Use as-is" / "Use as starting point"), I Have Some Ideas (preferences form: cuisine multi-select, service style, loves/hates, adventurousness), I Know Exactly What I Want (free text), Surprise Me (one-click). Submits to `menu_preferences` table, notifies chef. |
+| `/my-events/[id]/approve-menu`  | **Rich Menu Approval** — course-grouped display with descriptions, dietary/allergen badges, per-course feedback notes. Approve or Request Changes. Backward-compatible with legacy plain-text snapshots.                                                                                                                                                          |
+| `/my-events/[id]/pay`           | Payment page                                                                                                                                                                                                                                                                                                                                                      |
+| `/my-events/[id]/proposal`      | Full proposal view                                                                                                                                                                                                                                                                                                                                                |
+| `/my-events/[id]/contract`      | Contract signing                                                                                                                                                                                                                                                                                                                                                  |
+| `/my-events/[id]/countdown`     | Event countdown                                                                                                                                                                                                                                                                                                                                                   |
+| `/my-events/[id]/event-summary` | Post-event summary                                                                                                                                                                                                                                                                                                                                                |
 
 ### Chef Pages (auth required)
 

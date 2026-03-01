@@ -48,9 +48,10 @@ export async function sendMenuForApproval(eventId: string) {
       id, occasion, event_date, menu_approval_status,
       clients (id, full_name, email),
       menus (
-        id, name,
-        menu_dishes (
-          dishes (name)
+        id, name, description, cuisine_type, service_style,
+        dishes (
+          id, course_name, course_number, description,
+          dietary_tags, allergen_flags, chef_notes, sort_order
         )
       )
     `
@@ -64,12 +65,31 @@ export async function sendMenuForApproval(eventId: string) {
   const client = (event as any).clients
   if (!client) throw new Error('No client linked to this event')
 
-  // Build menu snapshot
+  // Build rich menu snapshot (full dish details for client review)
   const menus: any[] = (event as any).menus ?? []
-  const menuSnapshot = menus.map((menu: any) => ({
-    menu_name: menu.name,
-    dishes: (menu.menu_dishes ?? []).map((md: any) => md.dishes?.name).filter(Boolean),
-  }))
+  const menuSnapshot = menus.map((menu: any) => {
+    const dishes = (menu.dishes ?? []).sort(
+      (a: any, b: any) => (a.course_number ?? 0) - (b.course_number ?? 0)
+    )
+
+    return {
+      menu_name: menu.name,
+      menu_description: menu.description || null,
+      cuisine_type: menu.cuisine_type || null,
+      service_style: menu.service_style || null,
+      // Legacy format: flat dish name array (backward compat)
+      dishes: dishes.map((d: any) => d.course_name).filter(Boolean),
+      // Rich format: full dish objects
+      courses: dishes.map((d: any) => ({
+        id: d.id,
+        courseName: d.course_name,
+        courseNumber: d.course_number,
+        description: d.description || null,
+        dietaryTags: d.dietary_tags ?? [],
+        allergenFlags: d.allergen_flags ?? [],
+      })),
+    }
+  })
 
   const now = new Date().toISOString()
 
