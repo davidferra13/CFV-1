@@ -18,8 +18,10 @@ export default async function BookNowPage() {
     .eq('id', user.tenantId!)
     .single()
 
-  const chefName = chef?.display_name ?? chef?.business_name ?? 'Your Chef'
-  const chefSlug = ((chef as Record<string, unknown>)?.public_slug as string) ?? ''
+  const chefData = chef as Record<string, unknown> | null
+  const chefName =
+    (chefData?.display_name as string) ?? (chefData?.business_name as string) ?? 'Your Chef'
+  const chefSlug = (chefData?.public_slug as string) ?? ''
 
   return (
     <div className="max-w-2xl mx-auto">

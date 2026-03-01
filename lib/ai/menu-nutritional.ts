@@ -95,7 +95,7 @@ export async function getMenuNutritionalSummary(eventId: string): Promise<MenuNu
   if (!event) throw new Error('Event not found')
 
   // Extract dishes from the menu join — menus.dishes[] with nested dish_components.recipe
-  const rawDishes = (menuResult.data?.dishes ?? []) as Array<{
+  const rawDishes = (menuResult.data?.dishes ?? []) as unknown as Array<{
     name: string
     course_name: string | null
     description: string | null

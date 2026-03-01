@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEnabledModules } from '@/lib/billing/module-actions'
 import { getTierForChef } from '@/lib/billing/tier'
-import { isFocusModeEnabled } from '@/lib/billing/focus-mode'
+import { isFocusModeEnabled } from '@/lib/billing/focus-mode-actions'
 import { isAdmin } from '@/lib/auth/admin'
 import { ModulesClient } from './modules-client'
 

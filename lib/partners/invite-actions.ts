@@ -28,7 +28,7 @@ export async function generatePartnerInvite(
     .from('referral_partners')
     .select('id, name, claimed_at')
     .eq('id', partnerId)
-    .eq('tenant_id', chef.tenantId)
+    .eq('tenant_id', chef.tenantId!)
     .single()
   const partner = rawPartner1 as any
 

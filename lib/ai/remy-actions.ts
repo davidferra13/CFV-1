@@ -26,7 +26,7 @@ import {
   validateMemoryContent,
   checkRemyRateLimit,
 } from '@/lib/ai/remy-guardrails'
-import { isFocusModeEnabled } from '@/lib/billing/focus-mode'
+import { isFocusModeEnabled } from '@/lib/billing/focus-mode-actions'
 import { logRemyAbuse, isRemyBlocked, isRemyAdmin } from '@/lib/ai/remy-abuse-actions'
 import {
   loadRelevantMemories,

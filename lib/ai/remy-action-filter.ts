@@ -1,10 +1,9 @@
 // Remy Action Filter — Focus Mode scoping
 // When Focus Mode is ON, Remy only offers actions related to core workflows.
 // When OFF, all actions are available. Nothing is deleted — just filtered.
+// Note: No 'use server' — this is imported by other server files, not called from client.
 
-'use server'
-
-import { isFocusModeEnabled } from '@/lib/billing/focus-mode'
+import { isFocusModeEnabled } from '@/lib/billing/focus-mode-actions'
 import { isAdmin } from '@/lib/auth/admin'
 
 /**

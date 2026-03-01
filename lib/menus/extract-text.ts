@@ -32,7 +32,11 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
  */
 export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
   const pdfParse = ((await import('pdf-parse')) as any).default
-  const result = await withTimeout(pdfParse(buffer), EXTRACTION_TIMEOUT_MS, 'PDF extraction')
+  const result = await withTimeout<{ text: string }>(
+    pdfParse(buffer),
+    EXTRACTION_TIMEOUT_MS,
+    'PDF extraction'
+  )
   return result.text.trim()
 }
 

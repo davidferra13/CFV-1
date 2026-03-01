@@ -12,7 +12,8 @@ import { Sparkles, Lock, Focus, Eye, EyeOff } from 'lucide-react'
 import { MODULES } from '@/lib/billing/modules'
 import type { Tier } from '@/lib/billing/tier'
 import { updateEnabledModules, enableAllModules } from '@/lib/billing/module-actions'
-import { toggleFocusMode, CORE_MODULES, EXTENDED_MODULES } from '@/lib/billing/focus-mode'
+import { CORE_MODULES, EXTENDED_MODULES } from '@/lib/billing/focus-mode'
+import { toggleFocusMode } from '@/lib/billing/focus-mode-actions'
 
 type Props = {
   enabledModules: string[]

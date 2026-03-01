@@ -6,7 +6,7 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { isFocusModeEnabled } from '@/lib/billing/focus-mode'
+import { isFocusModeEnabled } from '@/lib/billing/focus-mode-actions'
 import { isAdmin } from '@/lib/auth/admin'
 
 /**

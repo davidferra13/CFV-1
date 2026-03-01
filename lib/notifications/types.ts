@@ -95,6 +95,8 @@ export type NotificationAction =
   | 'order_status'
   | 'low_stock'
   | 'guest_comp'
+  // Menu preferences
+  | 'menu_preferences_submitted'
   // Cross-boundary gap closure
   | 'menu_approved'
   | 'menu_revision_requested'
@@ -245,6 +247,7 @@ export const NOTIFICATION_CONFIG: Record<
   guest_comp: { category: 'ops', icon: 'Gift', toastByDefault: true },
 
   // Cross-boundary gap closure
+  menu_preferences_submitted: { category: 'event', icon: 'ClipboardCheck', toastByDefault: true },
   menu_approved: { category: 'event', icon: 'CheckCircle', toastByDefault: true },
   menu_revision_requested: { category: 'event', icon: 'Edit', toastByDefault: true },
   contract_signed: { category: 'event', icon: 'FileCheck', toastByDefault: true },

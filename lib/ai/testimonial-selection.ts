@@ -95,7 +95,7 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
       .limit(50),
   ])
 
-  const aars = (aarResult.data ?? []) as AarRow[]
+  const aars = (aarResult.data ?? []) as unknown as AarRow[]
   const messages = messagesResult.data ?? []
   const surveys: SurveyRow[] = [] // client_surveys table doesn't exist yet
 

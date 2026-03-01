@@ -96,7 +96,7 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
   if (!event) throw new Error('Event not found')
 
   // Extract dishes from the menu join
-  const rawDishes = (menuResult.data?.dishes ?? []) as Array<{
+  const rawDishes = (menuResult.data?.dishes ?? []) as unknown as Array<{
     name: string
     course_name: string | null
     description: string | null
