@@ -324,9 +324,7 @@ function FallbackSummary({
     <div
       ref={ref}
       className={`${
-        inline
-          ? 'fixed bottom-4 left-4 z-[60]'
-          : 'fixed bottom-[7.5rem] left-4 lg:bottom-16 lg:left-4 z-[60]'
+        inline ? 'fixed top-10 right-4 z-[60]' : 'fixed top-10 right-4 z-[60]'
       } w-80 max-w-[calc(100vw-2rem)] bg-stone-900 dark:bg-stone-900 rounded-xl shadow-2xl border border-stone-700 dark:border-stone-700 overflow-hidden animate-scale-in`}
     >
       {/* Header */}
@@ -400,18 +398,18 @@ export function PageInfoButton() {
 
   return (
     <>
-      {/* The info button — z-50 to sit above mobile nav (z-40) and sidebar */}
+      {/* The info button — top of page, small and transparent */}
       <button
         onClick={handleToggle}
-        className={`fixed bottom-[5.5rem] left-4 lg:bottom-4 lg:left-4 z-50 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-150 ${
+        className={`fixed top-1.5 right-14 z-50 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-150 ${
           isOpen
-            ? 'bg-stone-900 text-white shadow-lg dark:bg-stone-900 dark:text-stone-100'
-            : 'bg-stone-900 dark:bg-stone-800 text-stone-500 dark:text-stone-300 hover:text-stone-300 dark:hover:text-stone-200 hover:bg-stone-800 dark:hover:bg-stone-700 border border-stone-700 dark:border-stone-700 shadow-md'
+            ? 'bg-stone-700/60 text-stone-200'
+            : 'bg-transparent text-stone-500/50 hover:text-stone-400 hover:bg-stone-700/30'
         }`}
         aria-label="Page info"
         title="What does this page do?"
       >
-        <Info className="h-4 w-4" />
+        <Info className="h-3.5 w-3.5" />
       </button>
 
       {/* The overlay */}
