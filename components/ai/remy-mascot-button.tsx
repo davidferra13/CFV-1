@@ -200,7 +200,7 @@ export function RemyMascotButton({
           ) : (
             // Static mascot image
             <Image
-              src="/images/remy/remy-aha.png"
+              src="/images/remy/remy-idle.png"
               alt="Remy"
               fill
               sizes="(max-width: 640px) 60px, (max-width: 1024px) 80px, 100px"

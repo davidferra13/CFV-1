@@ -12,7 +12,6 @@ import {
   DollarSign,
   FileText,
   Gift,
-  Leaf,
   LogOut,
   Menu,
   MessageCircle,
@@ -27,7 +26,6 @@ import { NotificationBell } from '@/components/notifications/notification-bell'
 
 interface ClientNavProps {
   userEmail: string
-  hasCannabisTier?: boolean
 }
 
 const BOOK_NOW_HREF = '/book-now'
@@ -91,7 +89,7 @@ export function ClientSidebarProvider({ children }: { children: React.ReactNode 
   )
 }
 
-export function ClientSidebar({ userEmail, hasCannabisTier }: ClientNavProps) {
+export function ClientSidebar({ userEmail }: ClientNavProps) {
   const pathname = usePathname() ?? ''
   const { collapsed, setCollapsed } = useClientSidebar()
 
@@ -196,31 +194,7 @@ export function ClientSidebar({ userEmail, hasCannabisTier }: ClientNavProps) {
               )
             })}
 
-            {/* Cannabis Tier — hidden unless client has cannabis access */}
-            {hasCannabisTier && (
-              <>
-                <div className="flex items-center gap-2 px-3 py-1 mt-1">
-                  <div className="flex-1 border-t border-green-800/30" />
-                  <span className="text-[9px] font-semibold uppercase tracking-widest text-green-700">
-                    Cannabis
-                  </span>
-                  <div className="flex-1 border-t border-green-800/30" />
-                </div>
-                <Link
-                  href="/my-cannabis"
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    isItemActive(pathname, '/my-cannabis')
-                      ? 'text-green-700 bg-green-950/60'
-                      : 'text-stone-500 hover:bg-stone-800 hover:text-stone-300'
-                  }`}
-                >
-                  <Leaf
-                    className={`w-[18px] h-[18px] flex-shrink-0 ${isItemActive(pathname, '/my-cannabis') ? 'text-green-600' : 'text-green-700/40'}`}
-                  />
-                  Cannabis Dining
-                </Link>
-              </>
-            )}
+            {/* Cannabis Tier — admin-only feature, hidden from client portal */}
           </div>
         )}
       </nav>
@@ -256,7 +230,7 @@ export function ClientSidebar({ userEmail, hasCannabisTier }: ClientNavProps) {
   )
 }
 
-export function ClientMobileNav({ userEmail, hasCannabisTier }: ClientNavProps) {
+export function ClientMobileNav({ userEmail }: ClientNavProps) {
   const pathname = usePathname() ?? ''
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -337,29 +311,7 @@ export function ClientMobileNav({ userEmail, hasCannabisTier }: ClientNavProps) 
                   </Link>
                 )
               })}
-              {/* Cannabis Tier — mobile */}
-              {hasCannabisTier && (
-                <>
-                  <div className="border-t border-green-800/30 my-2" />
-                  <div className="flex items-center gap-2 px-3 py-1">
-                    <span className="text-[9px] font-semibold uppercase tracking-widest text-green-700">
-                      Cannabis
-                    </span>
-                  </div>
-                  <Link
-                    href="/my-cannabis"
-                    onClick={closeMenu}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      isItemActive(pathname, '/my-cannabis')
-                        ? 'text-green-700 bg-green-950/60'
-                        : 'text-stone-500 hover:bg-stone-800'
-                    }`}
-                  >
-                    <Leaf className="w-[18px] h-[18px] text-green-700/50" />
-                    Cannabis Dining
-                  </Link>
-                </>
-              )}
+              {/* Cannabis Tier — admin-only feature, hidden from client portal */}
 
               <div className="pt-4 mt-4 border-t border-stone-800">
                 <p className="px-3 pb-2 text-xs text-stone-400 truncate">{userEmail}</p>

@@ -574,7 +574,6 @@ function NavGroupSection({
 // ─── Desktop Sidebar ────────────────────────────────
 export function ChefSidebar({
   primaryNavHrefs,
-  hasCannabisTier,
   enabledModules,
   isAdmin,
   focusMode,
@@ -582,7 +581,6 @@ export function ChefSidebar({
   tenantId,
 }: {
   primaryNavHrefs?: string[]
-  hasCannabisTier?: boolean
   enabledModules?: string[]
   isAdmin?: boolean
   focusMode?: boolean
@@ -683,14 +681,14 @@ export function ChefSidebar({
   }, [pathname, groupEntries, searchParams])
 
   useEffect(() => {
-    if (!hasCannabisTier) {
+    if (!isAdmin) {
       setCannabisSectionOpen(false)
       return
     }
     if (isSectionActive(pathname, cannabisSectionItems, searchParams)) {
       setCannabisSectionOpen(true)
     }
-  }, [hasCannabisTier, pathname, searchParams])
+  }, [isAdmin, pathname, searchParams])
 
   useEffect(() => {
     if (isSectionActive(pathname, communitySectionItems, searchParams)) {
@@ -703,9 +701,9 @@ export function ChefSidebar({
     setShortcutsOpen(true)
     setQuickCreateOpen(true)
     setSettingsOpen(true)
-    if (hasCannabisTier) setCannabisSectionOpen(true)
+    if (isAdmin) setCannabisSectionOpen(true)
     setCommunitySectionOpen(true)
-  }, [hasCannabisTier, navFilter])
+  }, [isAdmin, navFilter])
 
   useEffect(() => {
     for (const { group } of groupEntries) {
@@ -740,7 +738,7 @@ export function ChefSidebar({
     })
   }
 
-  const cannabisSectionActive = hasCannabisTier
+  const cannabisSectionActive = isAdmin
     ? isSectionActive(pathname, cannabisSectionItems, searchParams)
     : false
   const communitySectionActive = isSectionActive(pathname, communitySectionItems, searchParams)
@@ -1029,24 +1027,25 @@ export function ChefSidebar({
 
             <div className="border-t border-stone-800 my-2" />
 
-            <SectionAccordion
-              title="Cannabis"
-              items={filteredCannabisItems}
-              icon={Leaf}
-              isOpen={cannabisSectionOpen}
-              onToggle={() => setCannabisSectionOpen((prev) => !prev)}
-              pathname={pathname}
-              searchParams={searchParams}
-              headerActiveClass={cannabisSectionActive ? 'text-green-600' : 'text-green-700'}
-              headerInactiveClass="text-green-700 hover:bg-green-950/20 hover:text-green-600"
-              dividerClass="border-green-800/30"
-              itemActiveClass="text-emerald-700"
-              itemInactiveClass="text-stone-500 hover:text-stone-300"
-              activeBgStyle={{ background: 'rgba(74, 124, 78, 0.08)' }}
-              iconActiveColor="#4a7c4e"
-              iconInactiveColor="rgba(74, 124, 78, 0.5)"
-              locked={!hasCannabisTier}
-            />
+            {isAdmin && (
+              <SectionAccordion
+                title="Cannabis"
+                items={filteredCannabisItems}
+                icon={Leaf}
+                isOpen={cannabisSectionOpen}
+                onToggle={() => setCannabisSectionOpen((prev) => !prev)}
+                pathname={pathname}
+                searchParams={searchParams}
+                headerActiveClass={cannabisSectionActive ? 'text-green-600' : 'text-green-700'}
+                headerInactiveClass="text-green-700 hover:bg-green-950/20 hover:text-green-600"
+                dividerClass="border-green-800/30"
+                itemActiveClass="text-emerald-700"
+                itemInactiveClass="text-stone-500 hover:text-stone-300"
+                activeBgStyle={{ background: 'rgba(74, 124, 78, 0.08)' }}
+                iconActiveColor="#4a7c4e"
+                iconInactiveColor="rgba(74, 124, 78, 0.5)"
+              />
+            )}
 
             <SectionAccordion
               title="Community"
@@ -1520,7 +1519,6 @@ function MobileBottomTabBar({
 // ─── Mobile Navigation ──────────────────────────────
 export function ChefMobileNav({
   primaryNavHrefs,
-  hasCannabisTier,
   enabledModules,
   isAdmin,
   focusMode,
@@ -1528,7 +1526,6 @@ export function ChefMobileNav({
   tenantId,
 }: {
   primaryNavHrefs?: string[]
-  hasCannabisTier?: boolean
   enabledModules?: string[]
   isAdmin?: boolean
   focusMode?: boolean
@@ -1630,14 +1627,14 @@ export function ChefMobileNav({
   }, [pathname, menuOpen, groupEntries, searchParams])
 
   useEffect(() => {
-    if (!hasCannabisTier) {
+    if (!isAdmin) {
       setCannabisSectionOpen(false)
       return
     }
     if (isSectionActive(pathname, cannabisSectionItems, searchParams)) {
       setCannabisSectionOpen(true)
     }
-  }, [hasCannabisTier, pathname, searchParams])
+  }, [isAdmin, pathname, searchParams])
 
   useEffect(() => {
     if (isSectionActive(pathname, communitySectionItems, searchParams)) {
@@ -1650,9 +1647,9 @@ export function ChefMobileNav({
     setMobileShortcutsOpen(true)
     setMobileQuickCreateOpen(true)
     setMobileSettingsOpen(true)
-    if (hasCannabisTier) setCannabisSectionOpen(true)
+    if (isAdmin) setCannabisSectionOpen(true)
     setCommunitySectionOpen(true)
-  }, [hasCannabisTier, navFilter])
+  }, [isAdmin, navFilter])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -1689,7 +1686,7 @@ export function ChefMobileNav({
   }
 
   const closeMenu = () => setMenuOpen(false)
-  const cannabisSectionActive = hasCannabisTier
+  const cannabisSectionActive = isAdmin
     ? isSectionActive(pathname, cannabisSectionItems, searchParams)
     : false
   const communitySectionActive = isSectionActive(pathname, communitySectionItems, searchParams)
@@ -1852,24 +1849,25 @@ export function ChefMobileNav({
 
               <div className="border-t border-stone-800 my-2" />
 
-              <SectionAccordion
-                title="Cannabis"
-                items={filteredCannabisItems}
-                icon={Leaf}
-                isOpen={cannabisSectionOpen}
-                onToggle={() => setCannabisSectionOpen((prev) => !prev)}
-                pathname={pathname}
-                searchParams={searchParams}
-                headerActiveClass={cannabisSectionActive ? 'text-green-600' : 'text-green-700'}
-                headerInactiveClass="text-green-700 hover:bg-green-950/20 hover:text-green-600"
-                dividerClass="border-green-800/30"
-                itemActiveClass="text-green-700 bg-green-950/50"
-                itemInactiveClass="text-stone-500 hover:bg-stone-800"
-                iconActiveColor="#16a34a"
-                iconInactiveColor="rgba(21, 128, 61, 0.45)"
-                onNavigate={closeMenu}
-                locked={!hasCannabisTier}
-              />
+              {isAdmin && (
+                <SectionAccordion
+                  title="Cannabis"
+                  items={filteredCannabisItems}
+                  icon={Leaf}
+                  isOpen={cannabisSectionOpen}
+                  onToggle={() => setCannabisSectionOpen((prev) => !prev)}
+                  pathname={pathname}
+                  searchParams={searchParams}
+                  headerActiveClass={cannabisSectionActive ? 'text-green-600' : 'text-green-700'}
+                  headerInactiveClass="text-green-700 hover:bg-green-950/20 hover:text-green-600"
+                  dividerClass="border-green-800/30"
+                  itemActiveClass="text-green-700 bg-green-950/50"
+                  itemInactiveClass="text-stone-500 hover:bg-stone-800"
+                  iconActiveColor="#16a34a"
+                  iconInactiveColor="rgba(21, 128, 61, 0.45)"
+                  onNavigate={closeMenu}
+                />
+              )}
 
               <SectionAccordion
                 title="Community"

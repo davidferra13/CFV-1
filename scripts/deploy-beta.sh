@@ -35,13 +35,10 @@ echo ""
 
 # SSH options applied to ALL ssh/scp commands in this script
 # ControlMaster multiplexes all SSH connections over a single socket (~1-2s saved per step)
-SSH_OPTS="-o ConnectTimeout=10 -o ServerAliveInterval=30 -o ServerAliveCountMax=20 -o ControlMaster=auto -o ControlPath=/tmp/ssh-deploy-%r@%h -o ControlPersist=300"
+SSH_OPTS="-o ConnectTimeout=10 -o ServerAliveInterval=30 -o ServerAliveCountMax=20 -o ControlMaster=no -o ControlPath=none"
 
-# Clean up SSH multiplexed socket on exit (normal or error)
-cleanup_ssh() {
-  ssh -O exit -o ControlPath=/tmp/ssh-deploy-%r@%h "$REMOTE" 2>/dev/null || true
-}
-trap cleanup_ssh EXIT
+# No mux cleanup needed — ControlMaster disabled (unreliable on Windows/MSYS)
+trap '' EXIT
 
 # Step 0: Pre-flight — verify SSH works
 echo "[0/10] Checking Pi connectivity..."
