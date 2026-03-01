@@ -2576,6 +2576,10 @@ body {
         <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Current Version (CFv1) Activity</h3>
         <div class="info-grid">
           <div class="info-card">
+            <div class="info-label">First Day Coded</div>
+            <div class="info-value small" id="timeline-first-day-coded">--</div>
+          </div>
+          <div class="info-card">
             <div class="info-label">First Commit</div>
             <div class="info-value small" id="timeline-start">--</div>
           </div>
@@ -2600,42 +2604,43 @@ body {
             <div class="info-value" id="timeline-total-commits">--</div>
           </div>
           <div class="info-card">
-            <div class="info-label">Hours (Conservative)</div>
-            <div class="info-value" id="timeline-hours-cons">--</div>
-          </div>
-          <div class="info-card">
-            <div class="info-label">Hours (Midpoint)</div>
+            <div class="info-label">Hours Worked</div>
             <div class="info-value success" id="timeline-hours-mid">--</div>
-          </div>
-          <div class="info-card">
-            <div class="info-label">Hours (Aggressive)</div>
-            <div class="info-value" id="timeline-hours-high">--</div>
           </div>
         </div>
 
         <div style="margin-top:12px;font-size:12px;color:var(--text-muted);" id="timeline-hours-note">--</div>
 
         <div class="divider"></div>
-        <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Entire App Lifetime Estimate</h3>
-        <div class="info-grid">
-          <div class="info-card">
-            <div class="info-label">Lifetime Hours (Low)</div>
-            <div class="info-value" id="timeline-life-low">--</div>
+        <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Entire App Lifetime</h3>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="info-card" style="flex:0 0 auto;text-align:center;padding:16px 28px;">
+            <div class="info-label">Hours Worked</div>
+            <div class="info-value success" style="font-size:28px;" id="timeline-life-mid">--</div>
           </div>
-          <div class="info-card">
-            <div class="info-label">Lifetime Hours (Mid)</div>
-            <div class="info-value success" id="timeline-life-mid">--</div>
-          </div>
-          <div class="info-card">
-            <div class="info-label">Lifetime Hours (High)</div>
-            <div class="info-value" id="timeline-life-high">--</div>
-          </div>
-          <div class="info-card">
-            <div class="info-label">Hard Upper Bound</div>
-            <div class="info-value" id="timeline-life-upper">--</div>
-          </div>
+          <button onclick="document.getElementById('timeline-life-detail').style.display = document.getElementById('timeline-life-detail').style.display === 'none' ? 'block' : 'none'" style="background:none;border:1px solid var(--border);border-radius:50%;width:28px;height:28px;cursor:pointer;color:var(--text-muted);font-size:14px;display:flex;align-items:center;justify-content:center;" title="Show estimate breakdown">&#x2139;</button>
         </div>
-        <div style="margin-top:12px;font-size:12px;color:var(--text-muted);" id="timeline-life-note">--</div>
+        <div id="timeline-life-detail" style="display:none;margin-top:10px;padding:10px 12px;background:rgba(15,23,42,0.5);border:1px solid var(--border);border-radius:8px;">
+          <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Estimate Breakdown</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px;">
+            <div>
+              <div style="font-size:10px;color:var(--text-muted);">Low Estimate</div>
+              <div style="font-size:14px;font-weight:600;" id="timeline-life-low">--</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--text-muted);">Midpoint</div>
+              <div style="font-size:14px;font-weight:600;color:var(--success);" id="timeline-life-mid-detail">--</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--text-muted);">High Estimate</div>
+              <div style="font-size:14px;font-weight:600;" id="timeline-life-high">--</div>
+            </div>
+          </div>
+          <div style="font-size:10px;color:var(--text-muted);">
+            <span id="timeline-life-upper-wrap">Hard Upper Bound: <strong id="timeline-life-upper">--</strong></span>
+          </div>
+          <div style="margin-top:6px;font-size:11px;color:var(--text-muted);" id="timeline-life-note">--</div>
+        </div>
 
         <div class="divider"></div>
         <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Status Badges + Benchmarks</h3>
@@ -4489,7 +4494,7 @@ body {
           <h2 class="panel-title">Test Logins</h2>
           <span class="status-badge online" style="background:var(--brand-dim);color:var(--brand);border:1px solid rgba(232,143,71,0.25);">
             <span class="dot online" style="background:var(--brand);"></span>
-            6 Accounts
+            7 Accounts
           </span>
         </div>
 
@@ -4593,6 +4598,19 @@ body {
             </div>
             <div style="font-size:11px;color:var(--text-muted);font-family:monospace;background:var(--bg-secondary);padding:6px 10px;border-radius:6px;">e2e.chef-b.*.test</div>
             <button class="btn btn-primary" onclick="loginAs('chef-b')" id="btn-login-chef-b" style="margin-top:4px;">Open as Chef B</button>
+          </div>
+
+          <!-- Guest -->
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:24px;">&#x1F440;</span>
+              <div>
+                <div style="font-weight:600;color:var(--text-primary);">Guest</div>
+                <div style="font-size:11px;color:var(--text-muted);">No login &mdash; public landing page</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);font-family:monospace;background:var(--bg-secondary);padding:6px 10px;border-radius:6px;">unauthenticated</div>
+            <button class="btn btn-primary" onclick="loginAs('guest')" id="btn-login-guest" style="margin-top:4px;">Open as Guest</button>
           </div>
 
         </div>
@@ -7642,12 +7660,12 @@ function resetTimelineSummary() {
   setText('timeline-active-days', '--')
   setText('timeline-streak', '--')
   setText('timeline-total-commits', '--')
-  setText('timeline-hours-cons', '--')
+  setText('timeline-first-day-coded', '--')
   setText('timeline-hours-mid', '--')
-  setText('timeline-hours-high', '--')
   setText('timeline-hours-note', '--')
-  setText('timeline-life-low', '--')
   setText('timeline-life-mid', '--')
+  setText('timeline-life-low', '--')
+  setText('timeline-life-mid-detail', '--')
   setText('timeline-life-high', '--')
   setText('timeline-life-upper', '--')
   setText('timeline-life-note', '--')
@@ -7681,11 +7699,12 @@ function resetTimelineSummary() {
 
 function renderTimelineLifeSummary(life) {
   if (!life || !life.estimates) {
-    setText('timeline-life-low', '--')
     setText('timeline-life-mid', '--')
+    setText('timeline-life-low', '--')
+    setText('timeline-life-mid-detail', '--')
     setText('timeline-life-high', '--')
     setText('timeline-life-upper', '--')
-    setText('timeline-life-note', 'No lifetime estimate loaded yet.')
+    setText('timeline-life-note', 'No lifetime data loaded yet.')
     return
   }
 
@@ -7695,13 +7714,17 @@ function renderTimelineLifeSummary(life) {
   const updated = life.lastUpdated || 'unknown'
   const assumptionStart = life.assumptions?.earliestProjectWorkDate || 'unknown'
 
-  setText('timeline-life-low', formatTimelineHours(combined.low))
+  // Main display — just the midpoint
   setText('timeline-life-mid', formatTimelineHours(combined.mid))
+
+  // Detail panel (behind info button)
+  setText('timeline-life-low', formatTimelineHours(combined.low))
+  setText('timeline-life-mid-detail', formatTimelineHours(combined.mid))
   setText('timeline-life-high', formatTimelineHours(combined.high))
   setText('timeline-life-upper', combined.upperBound == null ? '--' : formatTimelineHours(combined.upperBound))
   setText(
     'timeline-life-note',
-    `Combined model = tracked evidence (${formatTimelineHours(tracked.low)} to ${formatTimelineHours(tracked.high)}) + restart-era estimate (${formatTimelineHours(preTelemetry.low)} to ${formatTimelineHours(preTelemetry.high)}). Earliest work date: ${assumptionStart}. Last updated: ${updated}.`
+    `This is an estimate. Combined model = tracked evidence (${formatTimelineHours(tracked.low)}\u2013${formatTimelineHours(tracked.high)}) + restart-era estimate (${formatTimelineHours(preTelemetry.low)}\u2013${formatTimelineHours(preTelemetry.high)}). Earliest work date: ${assumptionStart}. Last updated: ${updated}.`
   )
 }
 
@@ -7840,13 +7863,17 @@ async function loadProjectTimeline(force = false) {
     setText('timeline-active-days', `${s.activeDays} days`)
     setText('timeline-streak', `${s.longestStreakDays} days`)
     setText('timeline-total-commits', String(s.totalCommits))
-    setText('timeline-hours-cons', `${s.estimatedHours.conservative}h`)
     setText('timeline-hours-mid', `${s.estimatedHours.midpoint}h`)
-    setText('timeline-hours-high', `${s.estimatedHours.aggressive}h`)
     setText(
       'timeline-hours-note',
-      `Estimated from commit sessions (${s.sessions45m} at 45m gaps, ${s.sessions90m} at 90m gaps). Active-day average: ${s.commitsPerActiveDay} commits/day.`
+      `Based on commit sessions (${s.sessions45m} at 45m gaps, ${s.sessions90m} at 90m gaps). Active-day average: ${s.commitsPerActiveDay} commits/day.`
     )
+    // First Day Coded = finalVersionStartDate from project-timeline.json
+    const firstDayCoded = data.life?.projectStats?.finalVersionStartDate
+    if (firstDayCoded) {
+      const d = new Date(firstDayCoded + 'T00:00:00')
+      setText('timeline-first-day-coded', d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))
+    }
     renderProjectStats(data.life?.projectStats || null)
     renderGitActivity(data.gitActivity || null)
     renderTimelineLifeSummary(data.life || null)
@@ -7861,7 +7888,7 @@ async function loadProjectTimeline(force = false) {
   } catch (err) {
     setText('timeline-status', 'Load failed')
     setText('timeline-hours-note', `Could not load timeline: ${err.message}`)
-    setText('timeline-life-note', `Could not load lifetime estimate: ${err.message}`)
+    setText('timeline-life-note', `Could not load lifetime data: ${err.message}`)
     renderTimelineStatusAndBenchmarks(null)
     timelineLinearEvents = []
     hydrateTimelineFilterOptions([])
