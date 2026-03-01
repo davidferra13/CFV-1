@@ -53,6 +53,19 @@ export async function createNotification({
     metadata,
   })
 
+  // Sanitize title and body — strip control characters (newlines, tabs, carriage returns)
+  // to prevent misleading multi-line SMS/push notifications from user-controlled data
+  // (e.g., crafted event names or client names).
+  const sanitizedTitle = title
+    .replace(/[\r\n\t]/g, ' ')
+    .trim()
+    .slice(0, 200)
+  const sanitizedBody =
+    body
+      ?.replace(/[\r\n\t]/g, ' ')
+      .trim()
+      .slice(0, 500) ?? null
+
   const { data: notification, error } = await supabase
     .from('notifications')
     .insert({
@@ -60,8 +73,8 @@ export async function createNotification({
       recipient_id: recipientId,
       category,
       action,
-      title,
-      body: body ?? null,
+      title: sanitizedTitle,
+      body: sanitizedBody,
       action_url: resolvedActionUrl,
       event_id: eventId ?? null,
       inquiry_id: inquiryId ?? null,
@@ -83,8 +96,8 @@ export async function createNotification({
     tenantId,
     recipientId,
     action,
-    title,
-    body,
+    title: sanitizedTitle,
+    body: sanitizedBody ?? undefined,
     actionUrl: resolvedActionUrl,
   }).catch((err) => {
     console.error('[createNotification] routeNotification fire failed:', err)

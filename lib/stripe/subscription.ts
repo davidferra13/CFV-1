@@ -36,8 +36,8 @@ export type SubscriptionStatus = {
   isExpired: boolean // trial ended, not active
   isGrandfathered: boolean
   subscriptionCurrentPeriodEnd: string | null
-  stripeCustomerId: string | null
-  stripeSubscriptionId: string | null
+  hasStripeCustomer: boolean
+  hasStripeSubscription: boolean
 }
 
 /**
@@ -119,8 +119,8 @@ export async function getSubscriptionStatus(chefId: string): Promise<Subscriptio
       isExpired: false,
       isGrandfathered: true,
       subscriptionCurrentPeriodEnd: null,
-      stripeCustomerId: null,
-      stripeSubscriptionId: null,
+      hasStripeCustomer: false,
+      hasStripeSubscription: false,
     }
   }
 
@@ -151,8 +151,8 @@ export async function getSubscriptionStatus(chefId: string): Promise<Subscriptio
     isExpired,
     isGrandfathered,
     subscriptionCurrentPeriodEnd: chef.subscription_current_period_end,
-    stripeCustomerId: chef.stripe_customer_id,
-    stripeSubscriptionId: chef.stripe_subscription_id,
+    hasStripeCustomer: !!chef.stripe_customer_id,
+    hasStripeSubscription: !!chef.stripe_subscription_id,
   }
 }
 

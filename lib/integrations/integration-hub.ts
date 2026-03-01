@@ -34,8 +34,19 @@ function isUniqueConstraint(error: any): boolean {
   return error?.code === '23505'
 }
 
+// Dangerous keys that could pollute Object.prototype if spread into an object
+const PROTO_POLLUTION_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
+
 function mergeSettings(base: Record<string, unknown>, extra?: Record<string, unknown>) {
-  return { ...base, ...(extra || {}) }
+  if (!extra) return { ...base }
+  // Strip prototype pollution keys from user-supplied settings
+  const sanitized: Record<string, unknown> = {}
+  for (const key of Object.keys(extra)) {
+    if (!PROTO_POLLUTION_KEYS.has(key)) {
+      sanitized[key] = extra[key]
+    }
+  }
+  return { ...base, ...sanitized }
 }
 
 async function persistTenantIntegrationSettings(

@@ -9,32 +9,13 @@ import { getLedgerEntries } from '@/lib/ledger/actions'
 import { getExpenses, type ExpenseFilters } from '@/lib/expenses/actions'
 import { getCategoryLabel, EXPENSE_CATEGORY_VALUES } from '@/lib/constants/expense-categories'
 import { format } from 'date-fns'
+import { csvRowSafe as csvRow } from '@/lib/security/csv-sanitize'
 
 // --- Helpers ---
 
 function formatDollars(cents: number): string {
   const dollars = cents / 100
   return dollars < 0 ? `-$${Math.abs(dollars).toFixed(2)}` : `$${dollars.toFixed(2)}`
-}
-
-function csvEscape(value: string | null | undefined): string {
-  if (!value) return ''
-  // Escape quotes and wrap in quotes if contains comma, quote, or newline
-  const escaped = value.replace(/"/g, '""')
-  if (escaped.includes(',') || escaped.includes('"') || escaped.includes('\n')) {
-    return `"${escaped}"`
-  }
-  return escaped
-}
-
-function csvRow(cells: (string | number | null | undefined)[]): string {
-  return cells
-    .map((cell) => {
-      if (cell === null || cell === undefined) return ''
-      if (typeof cell === 'number') return cell.toString()
-      return csvEscape(cell)
-    })
-    .join(',')
 }
 
 // --- Export 1: Per-Event Financial Statement ---

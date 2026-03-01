@@ -14,9 +14,30 @@ import { Redis } from '@upstash/redis'
 
 // In-memory fallback (same behaviour as the previous implementation)
 const memoryMap = new Map<string, { count: number; resetAt: number }>()
+let lastCleanup = Date.now()
+const CLEANUP_INTERVAL_MS = 60_000 // Purge expired entries every 60 seconds
+const MAX_MAP_SIZE = 10_000 // Hard cap to prevent unbounded memory growth
+
+function cleanupExpiredEntries(): void {
+  const now = Date.now()
+  if (now - lastCleanup < CLEANUP_INTERVAL_MS) return
+  lastCleanup = now
+  for (const [key, entry] of memoryMap) {
+    if (now > entry.resetAt) memoryMap.delete(key)
+  }
+}
 
 function checkMemoryRateLimit(key: string, max: number, windowMs: number): void {
   const now = Date.now()
+
+  // Periodic cleanup of expired entries to prevent memory leak
+  cleanupExpiredEntries()
+
+  // Hard cap: if map is too large (e.g., distributed DoS with unique keys), purge all
+  if (memoryMap.size > MAX_MAP_SIZE) {
+    memoryMap.clear()
+  }
+
   const entry = memoryMap.get(key)
 
   if (!entry || now > entry.resetAt) {

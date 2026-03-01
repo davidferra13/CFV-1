@@ -2,6 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
+import { csvRowSafe } from '@/lib/security/csv-sanitize'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -139,19 +140,19 @@ export async function export1099NECToCSV(taxYear: number): Promise<string> {
   ].join(',')
 
   const rows = reports.map((r) =>
-    [
+    csvRowSafe([
       r.taxYear,
-      `"${r.recipientName}"`,
-      `"${r.recipientBusinessName ?? ''}"`,
+      r.recipientName,
+      r.recipientBusinessName ?? '',
       r.recipientTinType ?? '',
       r.recipientTinDisplay,
-      `"${r.recipientTinFull ?? ''}"`,
-      `"${r.recipientAddress}"`,
+      r.recipientTinFull ?? '',
+      r.recipientAddress,
       (r.box1NecCents / 100).toFixed(2),
       r.requiresFiling ? 'YES' : 'NO',
       r.w9OnFile ? 'YES' : 'NO',
       r.paymentCount,
-    ].join(',')
+    ])
   )
 
   const disclaimer = [

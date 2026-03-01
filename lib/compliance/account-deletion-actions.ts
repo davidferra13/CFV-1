@@ -7,6 +7,7 @@ import { revalidatePath } from 'next/cache'
 import { runPreDeletionChecks } from './pre-deletion-checks'
 import { cleanupStorageBuckets } from './storage-cleanup'
 import { logChefActivity } from '@/lib/activity/log-chef'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 // ─── Deletion Audit Helper ────────────────────────────────────────────────────
 
@@ -60,6 +61,9 @@ export async function requestAccountDeletion(
     data: { user: authUser },
   } = await supabase.auth.getUser()
   if (!authUser?.email) throw new Error('Not authenticated')
+
+  // Rate limit: 3 deletion attempts per hour per user (prevents brute-forcing password)
+  await checkRateLimit(`account-deletion:${user.id}`, 3, 60 * 60 * 1000)
 
   // 2. Verify password
   const { error: verifyError } = await supabase.auth.signInWithPassword({

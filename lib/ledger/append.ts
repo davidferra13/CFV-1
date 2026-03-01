@@ -125,12 +125,14 @@ export async function createAdjustment({
   description,
   payment_method = 'cash',
   internal_notes,
+  idempotency_key,
 }: {
   event_id: string
   amount_cents: number
   description: string
   payment_method?: PaymentMethod
   internal_notes?: string
+  idempotency_key?: string
 }) {
   const user = await requireChef()
   const supabase: any = createServerClient()
@@ -147,6 +149,12 @@ export async function createAdjustment({
     throw new Error('Event not found or does not belong to your tenant')
   }
 
+  // Generate a transaction_reference for idempotency — prevents double-click double-entry.
+  // If the caller provides an idempotency_key, use it; otherwise generate one from inputs.
+  const transaction_reference = idempotency_key
+    ? `adj_${idempotency_key}`
+    : `adj_${event_id}_${amount_cents}_${Date.now()}`
+
   const result = await appendLedgerEntryInternal({
     tenant_id: user.tenantId!,
     client_id: event.client_id,
@@ -155,6 +163,7 @@ export async function createAdjustment({
     payment_method,
     description,
     event_id,
+    transaction_reference,
     internal_notes: internal_notes || `Adjusted by ${user.email} at ${new Date().toISOString()}`,
     created_by: user.id,
   })

@@ -13,6 +13,13 @@ function hasKey(): boolean {
 
 export function encryptOAuthToken(plaintext: string): string {
   if (!hasKey()) {
+    // In production, refuse to store tokens in plaintext — fail closed
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'SOCIAL_TOKEN_ENCRYPTION_KEY is required in production. ' +
+          "Generate with: node -e \"console.log(require('crypto').randomBytes(32).toString('base64'))\""
+      )
+    }
     if (!warned) {
       console.warn(
         '[integration-crypto] SOCIAL_TOKEN_ENCRYPTION_KEY not set — tokens stored in plaintext. ' +

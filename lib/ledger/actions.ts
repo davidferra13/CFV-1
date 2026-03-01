@@ -83,10 +83,6 @@ export async function exportLedgerCSV(filters: LedgerEntryFilters = {}) {
     entry.transaction_reference || '',
   ])
 
-  const csv = [
-    headers.join(','),
-    ...rows.map((row: any) => row.map((cell: any) => `"${cell}"`).join(',')),
-  ].join('\n')
-
-  return csv
+  const { buildCsvSafe } = await import('@/lib/security/csv-sanitize')
+  return buildCsvSafe(headers, rows)
 }

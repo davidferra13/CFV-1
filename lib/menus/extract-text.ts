@@ -4,12 +4,35 @@
 
 'use server'
 
+// Max extraction time per file — prevents malicious/malformed files from hanging the server
+const EXTRACTION_TIMEOUT_MS = 30_000 // 30 seconds
+
+/**
+ * Wrap an async operation with a timeout to prevent DoS via malformed files.
+ */
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`${label} timed out after ${ms}ms`))
+    }, ms)
+    promise
+      .then((result) => {
+        clearTimeout(timer)
+        resolve(result)
+      })
+      .catch((err) => {
+        clearTimeout(timer)
+        reject(err)
+      })
+  })
+}
+
 /**
  * Extract text from a PDF buffer using pdf-parse.
  */
 export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
   const pdfParse = ((await import('pdf-parse')) as any).default
-  const result = await pdfParse(buffer)
+  const result = await withTimeout(pdfParse(buffer), EXTRACTION_TIMEOUT_MS, 'PDF extraction')
   return result.text.trim()
 }
 
@@ -18,7 +41,11 @@ export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
  */
 export async function extractTextFromDocx(buffer: Buffer): Promise<string> {
   const mammoth = await import('mammoth')
-  const result = await mammoth.extractRawText({ buffer })
+  const result = await withTimeout(
+    mammoth.extractRawText({ buffer }),
+    EXTRACTION_TIMEOUT_MS,
+    'DOCX extraction'
+  )
   return result.value.trim()
 }
 
@@ -39,7 +66,11 @@ export async function extractTextFromImage(
   const Tesseract = await import('tesseract.js')
   const worker = await Tesseract.createWorker('eng')
   try {
-    const { data } = await worker.recognize(buffer)
+    const { data } = await withTimeout(
+      worker.recognize(buffer),
+      EXTRACTION_TIMEOUT_MS,
+      'OCR extraction'
+    )
     return {
       text: data.text.trim(),
       confidence: data.confidence,

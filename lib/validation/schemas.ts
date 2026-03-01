@@ -12,15 +12,21 @@ export const UuidSchema = z.string().uuid('Must be a valid UUID')
 
 export const DateStringSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Must be YYYY-MM-DD format')
 
+// PostgreSQL INTEGER max is 2,147,483,647. Cap to 10M dollars (1,000,000,000 cents)
+// to prevent overflow in arithmetic operations (e.g., subtotal + tax + tip).
+const MAX_CENTS = 1_000_000_000 // $10,000,000 — more than any single event will ever cost
+
 export const CentsSchema = z
   .number()
   .int('Amount must be in whole cents (no decimals)')
   .nonnegative('Amount must not be negative')
+  .max(MAX_CENTS, 'Amount exceeds maximum allowed value')
 
 export const PositiveCentsSchema = z
   .number()
   .int('Amount must be in whole cents')
   .positive('Amount must be greater than zero')
+  .max(MAX_CENTS, 'Amount exceeds maximum allowed value')
 
 export const PhoneSchema = z
   .string()

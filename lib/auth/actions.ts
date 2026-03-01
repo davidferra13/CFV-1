@@ -18,7 +18,10 @@ import { BetaAccountReadyEmail } from '@/lib/email/templates/beta-account-ready'
 
 const ChefSignupSchema = z.object({
   email: z.string().email('Valid email required'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(128, 'Password must be 128 characters or fewer'),
   business_name: z.string().optional(),
   phone: z.string().optional(),
   signup_ref: z.string().optional(),
@@ -26,7 +29,10 @@ const ChefSignupSchema = z.object({
 
 const ClientSignupSchema = z.object({
   email: z.string().email('Valid email required'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(128, 'Password must be 128 characters or fewer'),
   full_name: z.string().min(1, 'Full name required'),
   phone: z.string().optional(),
   invitation_token: z.string().optional(),
@@ -43,7 +49,10 @@ const PasswordResetRequestSchema = z.object({
 })
 
 const UpdatePasswordSchema = z.object({
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(128, 'Password must be 128 characters or fewer'),
 })
 
 export type ChefSignupInput = z.infer<typeof ChefSignupSchema>
@@ -122,8 +131,11 @@ export async function signUpChef(input: ChefSignupInput) {
   })
 
   if (authError || !authData.user) {
-    log.auth.error('Chef signup auth error', { error: authError })
-    throw new Error(authError?.message || 'Failed to create account')
+    log.auth.error('Chef signup auth error', { error: authError, context: { email } })
+    // Generic message — never reveal whether the email already exists (prevents enumeration)
+    throw new Error(
+      'Account creation failed. If you already have an account, try signing in instead.'
+    )
   }
 
   try {
@@ -240,8 +252,14 @@ export async function signUpClient(input: ClientSignupInput) {
   })
 
   if (authError || !authData.user) {
-    log.auth.error('Client signup auth error', { error: authError })
-    throw new Error(authError?.message || 'Failed to create account')
+    log.auth.error('Client signup auth error', {
+      error: authError,
+      context: { email: validated.email },
+    })
+    // Generic message — never reveal whether the email already exists (prevents enumeration)
+    throw new Error(
+      'Account creation failed. If you already have an account, try signing in instead.'
+    )
   }
 
   try {
@@ -412,6 +430,9 @@ export async function signIn(input: SignInInput) {
 export async function requestPasswordReset(email: string) {
   const validated = PasswordResetRequestSchema.parse({ email })
 
+  // Rate limit: 3 resets per email per hour to prevent email bombing
+  await checkRateLimit(`password-reset:${validated.email.toLowerCase()}`, 3, 60 * 60 * 1000)
+
   const supabase: any = createServerClient()
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
@@ -494,6 +515,12 @@ export async function changePassword(currentPassword: string, newPassword: strin
   } = await supabase.auth.getUser()
   if (!user?.email) throw new Error('Not authenticated')
 
+  // Rate limit: 5 attempts per hour per user to prevent brute-forcing current password
+  await checkRateLimit(`change-password:${user.id}`, 5, 60 * 60 * 1000)
+
+  // Validate new password length
+  const validated = UpdatePasswordSchema.parse({ password: newPassword })
+
   // Verify old password by attempting sign in
   const { error: verifyError } = await supabase.auth.signInWithPassword({
     email: user.email,
@@ -502,7 +529,7 @@ export async function changePassword(currentPassword: string, newPassword: strin
   if (verifyError) throw new Error('Current password is incorrect')
 
   // Update to new password
-  const { error } = await supabase.auth.updateUser({ password: newPassword })
+  const { error } = await supabase.auth.updateUser({ password: validated.password })
   if (error) throw new Error('Failed to update password')
 
   return { success: true }

@@ -7,10 +7,7 @@ import { generateInvoicePDF } from '@/lib/documents/generate-invoice'
 // Both chef and client can download the invoice PDF.
 // Delegates to the correct scoped fetcher based on user role.
 
-export async function GET(
-  _request: Request,
-  { params }: { params: { eventId: string } }
-) {
+export async function GET(_request: Request, { params }: { params: { eventId: string } }) {
   try {
     const user = await requireAuth()
 
@@ -39,13 +36,15 @@ export async function GET(
       },
     })
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to generate invoice'
+    const message = error instanceof Error ? error.message : ''
 
     if (message.includes('Unauthorized')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Log full error server-side but return generic message to client
+    // (prevents leaking DB schema, internal paths, or service names)
     console.error('[invoice-route] Error:', error)
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to generate invoice' }, { status: 500 })
   }
 }

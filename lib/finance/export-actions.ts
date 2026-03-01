@@ -9,22 +9,7 @@ import { getLedgerEntries } from '@/lib/ledger/actions'
 import { getEvents } from '@/lib/events/actions'
 import { getExpenses } from '@/lib/expenses/actions'
 import { format, subMonths, startOfMonth } from 'date-fns'
-
-// ============================================
-// HELPERS
-// ============================================
-
-function escapeCSV(value: string | number | null | undefined): string {
-  const str = String(value ?? '')
-  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-    return `"${str.replace(/"/g, '""')}"`
-  }
-  return str
-}
-
-function buildCSV(headers: string[], rows: (string | number | null | undefined)[][]): string {
-  return [headers.join(','), ...rows.map((row) => row.map(escapeCSV).join(','))].join('\n')
-}
+import { buildCsvSafe as buildCSV } from '@/lib/security/csv-sanitize'
 
 // ============================================
 // LEDGER TRANSACTION LOG

@@ -25,9 +25,13 @@ export async function verifyTurnstileToken(
 ): Promise<TurnstileVerifyResult> {
   const secretKey = process.env.TURNSTILE_SECRET_KEY
 
-  // Graceful bypass: if no secret key configured, skip verification
-  // This allows dev/testing environments to work without Turnstile
+  // In production, missing secret key = reject (fail-closed).
+  // In dev/test, missing key = bypass (allows local development without Turnstile).
   if (!secretKey) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('[turnstile] TURNSTILE_SECRET_KEY not set in production — rejecting request')
+      return { success: false, error: 'CAPTCHA service is not configured. Please contact support.' }
+    }
     return { success: true }
   }
 
@@ -53,7 +57,11 @@ export async function verifyTurnstileToken(
     })
 
     if (!res.ok) {
-      console.warn(`[turnstile] Cloudflare API returned HTTP ${res.status} — allowing through`)
+      console.error(`[turnstile] Cloudflare API returned HTTP ${res.status}`)
+      // In production, fail closed — don't let requests through without verification
+      if (process.env.NODE_ENV === 'production') {
+        return { success: false, error: 'CAPTCHA verification unavailable. Please try again.' }
+      }
       return { success: true }
     }
 
@@ -72,9 +80,12 @@ export async function verifyTurnstileToken(
       error: 'CAPTCHA verification failed. Please refresh and try again.',
     }
   } catch (err) {
-    // Non-blocking: if the network call itself fails (DNS, timeout, etc.),
-    // log and allow through — don't block real users because Cloudflare is down
-    console.warn('[turnstile] Verification network error (allowing through):', err)
+    console.error('[turnstile] Verification network error:', err)
+    // In production, fail closed — attackers can't bypass CAPTCHA by disrupting DNS
+    if (process.env.NODE_ENV === 'production') {
+      return { success: false, error: 'CAPTCHA verification unavailable. Please try again.' }
+    }
+    // In dev, allow through — don't block local development
     return { success: true }
   }
 }

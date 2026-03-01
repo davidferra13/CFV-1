@@ -734,16 +734,10 @@ export async function exportProspectsToCSV(filters?: {
     'created_at',
   ]
 
-  const escapeCSV = (val: unknown): string => {
-    const str = String(val ?? '')
-    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-      return `"${str.replace(/"/g, '""')}"`
-    }
-    return str
-  }
+  const { escapeCsvSafe } = await import('@/lib/security/csv-sanitize')
 
   const rows = data.map((p: any) =>
-    headers.map((h) => escapeCSV((p as Record<string, unknown>)[h])).join(',')
+    headers.map((h) => escapeCsvSafe((p as Record<string, unknown>)[h] as any)).join(',')
   )
 
   return [headers.join(','), ...rows].join('\n')

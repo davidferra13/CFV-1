@@ -486,6 +486,12 @@ export async function createEventShare(eventId: string) {
   // Generate secure token
   const token = crypto.randomBytes(32).toString('hex')
 
+  // Default expiration: 90 days from now.
+  // Share tokens should not live forever — they expose guest PII (names, dietary
+  // restrictions, allergies). 90 days covers the full event lifecycle.
+  const expiresAt = new Date()
+  expiresAt.setDate(expiresAt.getDate() + 90)
+
   const { data: share, error } = await supabase
     .from('event_shares')
     .insert({
@@ -493,6 +499,7 @@ export async function createEventShare(eventId: string) {
       event_id: eventId,
       created_by_client_id: user.entityId,
       token,
+      expires_at: expiresAt.toISOString(),
     })
     .select()
     .single()

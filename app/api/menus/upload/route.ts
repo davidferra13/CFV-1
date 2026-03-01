@@ -14,7 +14,24 @@ import {
 } from '@/lib/menus/upload-actions'
 
 const MENU_UPLOADS_BUCKET = 'menu-uploads'
-const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50 MB
+const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20 MB (reduced from 50 MB to limit DoS via large file processing)
+
+// Allowed file extensions for menu uploads — reject everything else
+const ALLOWED_EXTENSIONS = new Set([
+  'pdf',
+  'doc',
+  'docx',
+  'txt',
+  'rtf', // documents
+  'jpg',
+  'jpeg',
+  'png',
+  'webp',
+  'heic', // images (for OCR)
+  'csv',
+  'xls',
+  'xlsx', // spreadsheets
+])
 
 export async function POST(request: NextRequest) {
   // Rate limit: 10 uploads per minute per IP
@@ -57,7 +74,18 @@ export async function POST(request: NextRequest) {
 
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { error: `File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum is 50 MB.` },
+        { error: `File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum is 20 MB.` },
+        { status: 400 }
+      )
+    }
+
+    // Validate file extension — reject executable, script, and unknown file types
+    const ext = file.name.split('.').pop()?.toLowerCase() || ''
+    if (!ALLOWED_EXTENSIONS.has(ext)) {
+      return NextResponse.json(
+        {
+          error: `File type ".${ext}" is not allowed. Accepted: ${[...ALLOWED_EXTENSIONS].join(', ')}`,
+        },
         { status: 400 }
       )
     }
@@ -82,7 +110,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const fileName = file.name
+    // Sanitize filename to prevent path traversal (e.g., "../../etc/passwd")
+    // Strip directory components, control chars, and non-printable characters
+    const rawName = file.name
+    const baseName = rawName.split(/[\\/]/).pop() || 'upload' // strip directory separators
+    const fileName =
+      baseName
+        .replace(/\.\./g, '') // strip parent-dir traversal
+        .replace(/[^\w.\-\s]/g, '_') // keep only safe chars
+        .slice(0, 200) || // cap length
+      'upload'
     const fileExt = fileName.split('.').pop()?.toLowerCase() || 'bin'
 
     // Create the upload job record with file hash
@@ -128,9 +165,6 @@ export async function POST(request: NextRequest) {
     })
   } catch (err) {
     console.error('[menu-upload] Error:', err)
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Upload failed' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
   }
 }

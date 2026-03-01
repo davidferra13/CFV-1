@@ -146,9 +146,17 @@ export async function GET(req: Request) {
     }
   }
 
+  // Redact internal LAN IPs from the response — expose only the endpoint name
+  // Even though this endpoint is auth-gated, defense-in-depth means we don't
+  // leak network topology if the CRON_SECRET is compromised.
+  const sanitizedEndpoints = endpoints.map((ep) => ({
+    ...ep,
+    url: `[redacted-${ep.name}]`,
+  }))
+
   const response: HealthResponse = {
     status,
-    endpoints,
+    endpoints: sanitizedEndpoints,
     dualMode: !!piUrl,
     summary: summaryParts.join(' | '),
     timestamp: new Date().toISOString(),

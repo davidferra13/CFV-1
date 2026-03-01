@@ -2,6 +2,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { computePayrollTaxes } from '@/lib/finance/payroll-constants'
+import { csvRowSafe } from '@/lib/security/csv-sanitize'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -482,8 +483,8 @@ export async function exportW2ToCSV(taxYear: number): Promise<string> {
     '',
     'Employee,Box 1 Wages,Box 2 Federal Tax,Box 3 SS Wages,Box 4 SS Tax,Box 5 Medicare Wages,Box 6 Medicare Tax,Box 17 State Tax',
     ...summaries.map((s) =>
-      [
-        `"${s.employeeName ?? s.employeeId}"`,
+      csvRowSafe([
+        s.employeeName ?? s.employeeId,
         (s.box1WagesCents / 100).toFixed(2),
         (s.box2FederalWithheldCents / 100).toFixed(2),
         (s.box3SsWagesCents / 100).toFixed(2),
@@ -491,7 +492,7 @@ export async function exportW2ToCSV(taxYear: number): Promise<string> {
         (s.box5MedicareWagesCents / 100).toFixed(2),
         (s.box6MedicareWithheldCents / 100).toFixed(2),
         (s.box17StateTaxCents / 100).toFixed(2),
-      ].join(',')
+      ])
     ),
   ]
 

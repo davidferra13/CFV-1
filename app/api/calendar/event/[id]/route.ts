@@ -57,7 +57,14 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       guestCount: event.guest_count ?? undefined,
     })
 
-    const filename = `${(event.occasion || 'event').replace(/\s+/g, '-').toLowerCase()}.ics`
+    // Sanitize filename to prevent Content-Disposition header injection.
+    // Strip control chars, quotes, backslashes, path separators, and non-ASCII.
+    const safeOccasion = (event.occasion || 'event')
+      .replace(/[^\w\s-]/g, '') // keep only word chars, spaces, hyphens
+      .replace(/\s+/g, '-')
+      .toLowerCase()
+      .slice(0, 80) // cap length to prevent oversized headers
+    const filename = `${safeOccasion || 'event'}.ics`
 
     return new NextResponse(icsString, {
       status: 200,

@@ -8,21 +8,9 @@ import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/supabase/server'
 import { SALE_STATUS_LABELS, SALE_CHANNEL_LABELS } from './constants'
 import type { SaleStatus, SaleChannel } from './constants'
+import { csvRowSafe as toCsvRow } from '@/lib/security/csv-sanitize'
 
 // ─── CSV Helpers ──────────────────────────────────────────────────
-
-function escapeCsv(value: string | number | null | undefined): string {
-  if (value === null || value === undefined) return ''
-  const str = String(value)
-  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-    return `"${str.replace(/"/g, '""')}"`
-  }
-  return str
-}
-
-function toCsvRow(values: (string | number | null | undefined)[]): string {
-  return values.map(escapeCsv).join(',')
-}
 
 function formatCents(cents: number): string {
   return (cents / 100).toFixed(2)

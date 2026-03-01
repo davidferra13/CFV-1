@@ -3,19 +3,7 @@
 import { NextResponse } from 'next/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-
-function escapeCsv(value: string | number | null | undefined): string {
-  if (value == null) return ''
-  const str = String(value)
-  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-    return `"${str.replace(/"/g, '""')}"`
-  }
-  return str
-}
-
-function row(cells: (string | number | null | undefined)[]): string {
-  return cells.map(escapeCsv).join(',')
-}
+import { csvRowSafe as row } from '@/lib/security/csv-sanitize'
 
 export async function GET() {
   const user = await requireChef()

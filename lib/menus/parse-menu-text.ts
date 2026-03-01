@@ -20,7 +20,9 @@ const ParsedDishSchema = z.object({
 })
 
 const MenuParseResultSchema = z.object({
-  dishes: z.array(ParsedDishSchema),
+  // Cap at 200 dishes — a real menu will never exceed this.
+  // Prevents Ollama from returning unbounded output on adversarial input.
+  dishes: z.array(ParsedDishSchema).max(200),
 })
 
 export type ParsedDish = z.infer<typeof ParsedDishSchema> & {

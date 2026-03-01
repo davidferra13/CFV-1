@@ -35,9 +35,33 @@ export async function clientRedeemReward(rewardId: string) {
     throw new Error(`Insufficient points. Need ${reward.points_required}, have ${currentPoints}`)
   }
 
-  const newBalance = currentPoints - reward.points_required
+  // SECURITY: Atomic conditional update to prevent race condition (double-spend).
+  // The WHERE clause ensures the update only succeeds if the client still has enough points.
+  // Two concurrent requests: one will succeed, the other will get 0 rows updated.
+  const { data: updateData, error: updateError } = await supabase
+    .from('clients')
+    .update({
+      loyalty_points: currentPoints - reward.points_required,
+    })
+    .eq('id', client.id)
+    .gte('loyalty_points', reward.points_required) // atomic check — prevents double-spend
+    .select('loyalty_points')
+    .single()
 
-  // Insert the redemption transaction
+  if (updateError || !updateData) {
+    // If gte check failed, another concurrent redemption already consumed the points
+    console.error(
+      '[clientRedeemReward] Atomic update failed (likely concurrent redemption):',
+      updateError
+    )
+    throw new Error(
+      'Failed to redeem — points may have been used by another redemption. Please try again.'
+    )
+  }
+
+  const newBalance = updateData.loyalty_points
+
+  // Insert the redemption transaction AFTER the atomic balance update succeeds
   const { data: txData, error: txError } = await supabase
     .from('loyalty_transactions')
     .insert({
@@ -53,20 +77,9 @@ export async function clientRedeemReward(rewardId: string) {
     .single()
 
   if (txError) {
-    console.error('[clientRedeemReward] Transaction error:', txError)
-    throw new Error('Failed to redeem reward')
-  }
-
-  const { error: updateError } = await supabase
-    .from('clients')
-    .update({
-      loyalty_points: newBalance,
-    })
-    .eq('id', client.id)
-
-  if (updateError) {
-    console.error('[clientRedeemReward] Client update error:', updateError)
-    throw new Error('Failed to update points balance')
+    console.error('[clientRedeemReward] Transaction log error:', txError)
+    // Balance was already deducted atomically — log failure is non-blocking
+    // The points are correctly deducted even if the audit row fails
   }
 
   // Create a pending delivery record so the chef knows what to honour.

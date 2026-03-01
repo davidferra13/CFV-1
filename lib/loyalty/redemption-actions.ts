@@ -232,25 +232,11 @@ export async function redeemIncentiveCode(
   const outstandingAfter = updated?.outstanding_balance_cents ?? null
   const eventNowFullyCovered = outstandingAfter !== null && outstandingAfter <= 0
 
-  // If fully covered, transition the event to 'paid' (no Stripe needed)
-  if (eventNowFullyCovered) {
-    try {
-      const { transitionEvent } = await import('@/lib/events/transitions')
-      await transitionEvent({
-        eventId,
-        toStatus: 'paid',
-        metadata: {
-          source: 'gift_card_full_coverage',
-          incentive_code: normalizedCode,
-          ledger_entry_id: ledgerEntryId,
-        },
-        systemTransition: true,
-      })
-    } catch (transitionErr) {
-      // Log but don't fail — the credit is already in the ledger
-      console.error('[redeemIncentiveCode] Auto-transition failed (non-blocking):', transitionErr)
-    }
-  }
+  // SECURITY: Do NOT auto-transition to 'paid' here.
+  // Gift card credits are written to the ledger, and the outstanding balance is now $0,
+  // but only the chef (or a verified Stripe webhook) should transition payment status.
+  // Auto-transitioning from a client-initiated action bypasses the payment verification path.
+  // The chef will see the $0 outstanding balance and can confirm payment manually.
 
   revalidatePath(`/my-events/${eventId}`)
   revalidatePath('/my-rewards')
@@ -270,13 +256,16 @@ export async function redeemIncentiveCode(
       const chefUserId = await getChefAuthUserId(eventData.tenant_id)
       if (chefUserId) {
         const appliedFormatted = (appliedAmountCents / 100).toFixed(2)
+        const body = eventNowFullyCovered
+          ? `$${appliedFormatted} applied — event is now fully covered. Please confirm payment.`
+          : `$${appliedFormatted} applied to an event`
         await createNotification({
           tenantId: eventData.tenant_id,
           recipientId: chefUserId,
           category: 'loyalty',
           action: 'gift_card_redeemed',
-          title: 'Gift card redeemed',
-          body: `$${appliedFormatted} applied to an event`,
+          title: eventNowFullyCovered ? 'Gift card covers full balance' : 'Gift card redeemed',
+          body,
           actionUrl: `/events/${eventId}`,
           eventId,
         })
