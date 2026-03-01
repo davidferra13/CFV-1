@@ -68,7 +68,13 @@ export async function createEventStub(input: z.infer<typeof CreateStubSchema>): 
 
     if (group) {
       // Link stub to group
-      await supabase.from('event_stubs').update({ hub_group_id: group.id }).eq('id', stub.id)
+      const { error: linkErr } = await supabase
+        .from('event_stubs')
+        .update({ hub_group_id: group.id })
+        .eq('id', stub.id)
+      if (linkErr) {
+        console.error('[createEventStub] Failed to link stub to group:', linkErr.message)
+      }
 
       // Add creator as owner of the group
       await supabase.from('hub_group_members').insert({

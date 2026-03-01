@@ -26,6 +26,7 @@ interface HubGroupViewProps {
   media: HubMedia[]
   availability: HubAvailability[]
   groupEvents: HubGroupEvent[]
+  profileToken?: string
 }
 
 export function HubGroupView({
@@ -35,20 +36,29 @@ export function HubGroupView({
   media,
   availability,
   groupEvents,
+  profileToken: profileTokenProp,
 }: HubGroupViewProps) {
   const [activeTab, setActiveTab] = useState<Tab>('chat')
-  const [profileToken, setProfileToken] = useState<string | null>(null)
+  const [profileToken, setProfileToken] = useState<string | null>(profileTokenProp ?? null)
   const [currentProfileId, setCurrentProfileId] = useState<string | null>(null)
   const [currentMember, setCurrentMember] = useState<HubGroupMember | null>(null)
 
-  // Read profile token from cookie
+  // Read profile token from prop or cookie, and sync cookie for child components
   useEffect(() => {
-    const token = document.cookie
-      .split('; ')
-      .find((c) => c.startsWith('hub_profile_token='))
-      ?.split('=')[1]
+    let token = profileTokenProp ?? null
+
+    // Fall back to cookie if no prop provided (public hub route)
+    if (!token) {
+      token =
+        document.cookie
+          .split('; ')
+          .find((c) => c.startsWith('hub_profile_token='))
+          ?.split('=')[1] ?? null
+    }
 
     if (token) {
+      // Set cookie client-side so child hub components can read it
+      document.cookie = `hub_profile_token=${token}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
       setProfileToken(token)
       // Find matching member
       const member = members.find((m) => m.profile?.profile_token === token)
@@ -57,7 +67,7 @@ export function HubGroupView({
         setCurrentMember(member)
       }
     }
-  }, [members])
+  }, [members, profileTokenProp])
 
   const tabs: { id: Tab; label: string; emoji: string; count?: number }[] = [
     { id: 'chat', label: 'Chat', emoji: '💬' },

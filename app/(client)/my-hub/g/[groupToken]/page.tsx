@@ -1,7 +1,6 @@
 // Client hub group detail — wraps existing HubGroupView in client layout
 
 import { notFound } from 'next/navigation'
-import { cookies } from 'next/headers'
 import { requireClient } from '@/lib/auth/get-user'
 import { getOrCreateClientHubProfile } from '@/lib/hub/client-hub-actions'
 import {
@@ -36,16 +35,6 @@ export default async function ClientHubGroupPage({ params }: Props) {
   // Auto-join if not already a member
   await joinHubGroup({ groupToken, profileId: profile.id })
 
-  // Set the profile token cookie so existing hub components work
-  const cookieStore = await cookies()
-  cookieStore.set('hub_profile_token', profile.profile_token, {
-    path: '/',
-    httpOnly: false,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 365, // 1 year
-  })
-
   const [members, notes, media, availability, groupEvents] = await Promise.all([
     getGroupMembers(group.id),
     getGroupNotes(group.id),
@@ -54,6 +43,7 @@ export default async function ClientHubGroupPage({ params }: Props) {
     getGroupEvents(group.id),
   ])
 
+  // Pass profileToken as a prop — the HubGroupView will set the cookie client-side
   return (
     <div className="mx-auto max-w-4xl">
       <HubGroupView
@@ -63,6 +53,7 @@ export default async function ClientHubGroupPage({ params }: Props) {
         media={media}
         availability={availability}
         groupEvents={groupEvents}
+        profileToken={profile.profile_token}
       />
     </div>
   )
