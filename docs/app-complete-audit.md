@@ -1425,6 +1425,16 @@ Persistent social space for event guests — group chat, photos, polls, scheduli
 | `/hub/join/[groupToken]` | Join page for first-time visitors — group name, member count, "Enter your name" input.                                                                                                                         |
 | `/hub/me/[profileToken]` | Guest profile — 3 tabs: My Dinners (event history with menus), My Groups (with unread badges), Dietary (allergies + restrictions). Edit Profile button opens inline editor.                                    |
 
+### Client Hub Pages (client auth required — `/my-hub` routes)
+
+| Route                    | Content                                                                                                                                                                                              |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/my-hub`                | Dashboard — dinner groups grid (cards with emoji, name, member count, unread badge, last message), friends preview (avatar chips), quick stats (groups, friends, share-a-chef), "Plan a Dinner" CTA. |
+| `/my-hub/create`         | Create dinner form — title, occasion dropdown, date, guest count, location, notes. Creates event stub + auto-creates hub group. Redirects to hub dashboard.                                          |
+| `/my-hub/g/[groupToken]` | Full group experience wrapped in client layout — reuses existing HubGroupView (6 tabs: Chat, Events, Photos, Schedule, Notes, Members). Auto-joins group, sets profile cookie.                       |
+| `/my-hub/friends`        | Friends management — pending requests (accept/decline), friends grid (avatar, name, remove), search panel (by name/email, add friend button). Badge count on pending requests.                       |
+| `/my-hub/share-chef`     | Share a chef with friends — step 1: select chef (from your event history), step 2: select friends + optional message. Also shows chef recommendations received from friends.                         |
+
 ### Chef Pages (auth required)
 
 | Route                  | Content                                                                                                                              |
