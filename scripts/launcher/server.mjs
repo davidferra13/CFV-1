@@ -1110,33 +1110,33 @@ async function getRetroactiveActivity() {
       opts
     )
 
-    // 2. Hotspot files
-    const { stdout: hotspotRaw } = await execAsync(
-      'git log --all --numstat --format="COMMIT|%aI" | awk \'/^[0-9]/ {files[$3]++} END {for(f in files) print files[f] " " f}\' | sort -rn | head -30',
+    // 2. Hotspot files (raw numstat, parsed in JS for Windows compatibility)
+    const { stdout: numstatRaw } = await execAsync(
+      'git log --all --numstat --format=""',
       opts
     )
 
-    // 3. Commits by hour
-    const { stdout: hourRaw } = await execAsync(
-      'git log --all --format="%aI" | awk -F\'T\' \'{split($2,a,":");print a[1]}\' | sort | uniq -c | sort -k2',
+    // 3. Commits by hour (raw timestamps, parsed in JS)
+    const { stdout: hourRawTs } = await execAsync(
+      'git log --all --format="%aI"',
       opts
     )
 
-    // 4. Commits by day-of-week
-    const { stdout: dowRaw } = await execAsync(
-      'git log --all --format="%ad" --date=format:"%A" | sort | uniq -c | sort -rn',
+    // 4. Commits by day-of-week (raw timestamps, parsed in JS)
+    const { stdout: dowRawTs } = await execAsync(
+      'git log --all --format="%ad" --date=format:"%A"',
       opts
     )
 
-    // 5. Co-author attribution
-    const { stdout: coauthorRaw } = await execAsync(
-      'git log --all --format="%b" | grep -i "Co-Authored-By" | sort | uniq -c | sort -rn',
+    // 5. Co-author attribution (raw bodies, parsed in JS)
+    const { stdout: bodyRaw } = await execAsync(
+      'git log --all --format="%b"',
       opts
     )
 
-    // 6. Files born per day
-    const { stdout: birthRaw } = await execAsync(
-      'git log --all --diff-filter=A --format="COMMIT|%aI" --name-only | awk \'/^COMMIT/ {d=$0; sub(/COMMIT\\|/,"",d); sub(/T.*/,"",d); next} NF>0 {days[d]++} END {for(d in days) print d " " days[d]}\' | sort',
+    // 6. Files born per day (raw output, parsed in JS)
+    const { stdout: birthRawLog } = await execAsync(
+      'git log --all --diff-filter=A --format="COMMIT|%aI" --name-only',
       opts
     )
 
@@ -1184,39 +1184,57 @@ async function getRetroactiveActivity() {
       }
     })
 
-    // Parse hotspots
-    const hotspots = hotspotRaw.trim().split('\n').filter(Boolean).map(line => {
-      const m = line.trim().match(/^(\d+)\s+(.+)$/)
-      return m ? { count: parseInt(m[1]), file: m[2] } : null
-    }).filter(Boolean)
+    // Parse hotspots from numstat (count file occurrences in JS)
+    const fileCounts = {}
+    for (const line of numstatRaw.split('\n')) {
+      const m = line.match(/^\d+\s+\d+\s+(.+)$/)
+      if (m) fileCounts[m[1]] = (fileCounts[m[1]] || 0) + 1
+    }
+    const hotspots = Object.entries(fileCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 30)
+      .map(([file, count]) => ({ count, file }))
 
-    // Parse commits by hour
+    // Parse commits by hour from timestamps
     const byHour = {}
     for (let h = 0; h < 24; h++) byHour[String(h).padStart(2, '0')] = 0
-    for (const line of hourRaw.trim().split('\n').filter(Boolean)) {
-      const m = line.trim().match(/^(\d+)\s+(\d+)$/)
-      if (m) byHour[m[2]] = parseInt(m[1])
+    for (const line of hourRawTs.trim().split('\n').filter(Boolean)) {
+      const m = line.match(/T(\d{2}):/)
+      if (m) byHour[m[1]] = (byHour[m[1]] || 0) + 1
     }
 
-    // Parse day-of-week
-    const byDayOfWeek = []
-    for (const line of dowRaw.trim().split('\n').filter(Boolean)) {
-      const m = line.trim().match(/^(\d+)\s+(\w+)$/)
-      if (m) byDayOfWeek.push({ day: m[2], count: parseInt(m[1]) })
+    // Parse day-of-week from day names
+    const dowCounts = {}
+    for (const line of dowRawTs.trim().split('\n').filter(Boolean)) {
+      const day = line.trim()
+      if (day) dowCounts[day] = (dowCounts[day] || 0) + 1
     }
+    const byDayOfWeek = Object.entries(dowCounts)
+      .map(([day, count]) => ({ day, count }))
+      .sort((a, b) => b.count - a.count)
 
-    // Parse co-authors
-    const agents = []
-    for (const line of coauthorRaw.trim().split('\n').filter(Boolean)) {
-      const m = line.trim().match(/^(\d+)\s+Co-Authored-By:\s*(.+?)\s*</)
-      if (m) agents.push({ agent: m[2].trim(), commits: parseInt(m[1]) })
+    // Parse co-authors from commit bodies
+    const agentCounts = {}
+    for (const line of bodyRaw.split('\n')) {
+      const m = line.match(/Co-Authored-By:\s*(.+?)\s*</i)
+      if (m) {
+        const name = m[1].trim()
+        agentCounts[name] = (agentCounts[name] || 0) + 1
+      }
     }
+    const agents = Object.entries(agentCounts)
+      .map(([agent, commits]) => ({ agent, commits }))
+      .sort((a, b) => b.commits - a.commits)
 
-    // Parse files born per day
+    // Parse files born per day from COMMIT|timestamp + filename lines
     const filesBorn = {}
-    for (const line of birthRaw.trim().split('\n').filter(Boolean)) {
-      const m = line.trim().match(/^(\S+)\s+(\d+)$/)
-      if (m) filesBorn[m[1]] = parseInt(m[2])
+    let currentBirthDate = null
+    for (const line of birthRawLog.split('\n')) {
+      if (line.startsWith('COMMIT|')) {
+        currentBirthDate = line.replace('COMMIT|', '').replace(/T.*/, '')
+      } else if (line.trim() && currentBirthDate) {
+        filesBorn[currentBirthDate] = (filesBorn[currentBirthDate] || 0) + 1
+      }
     }
 
     // Build sessions (90-min gap)
