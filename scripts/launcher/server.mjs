@@ -1908,6 +1908,155 @@ async function getProjectTimeline() {
   }
 }
 
+// ── Project Stats (dashboard overview) ────────────────────────────
+
+let statsCache = null
+let statsCacheTime = 0
+const STATS_CACHE_TTL = 60_000 // 1 minute
+
+async function getProjectStats() {
+  // Return cached result if fresh
+  if (statsCache && Date.now() - statsCacheTime < STATS_CACHE_TTL) return statsCache
+
+  const [devHours, remyStats, costStats] = await Promise.all([
+    getDevHoursStats(),
+    getRemyStats(),
+    getCostStats(),
+  ])
+
+  statsCache = { devHours, remy: remyStats, costs: costStats, updatedAt: Date.now() }
+  statsCacheTime = Date.now()
+  return statsCache
+}
+
+async function getDevHoursStats() {
+  try {
+    const timelineData = await readProjectTimelineData()
+
+    // Total project hours from git
+    const { stdout } = await execAsync(
+      'git log --pretty=format:"%ct"',
+      { cwd: PROJECT_ROOT, maxBuffer: 10 * 1024 * 1024 }
+    )
+    const allTimestamps = stdout.trim().split('\n')
+      .map(t => Number(t.replace(/"/g, '')))
+      .filter(Number.isFinite)
+      .sort((a, b) => a - b)
+
+    const sessions45 = buildCommitSessions(allTimestamps, 45 * 60)
+    const midpointSec = estimateSessionSeconds(sessions45, {
+      padSeconds: 20 * 60, minSeconds: 25 * 60, maxSeconds: 6 * 3600,
+    })
+    const totalHours = Number((midpointSec / 3600).toFixed(1))
+
+    // Add pre-telemetry hours from timeline file
+    const preTelemetry = timelineData.estimatedHours?.preTelemetryRestartEra || {}
+    const preMid = toFiniteNumber(preTelemetry.mid ?? preTelemetry.midpoint, 0)
+    const combinedHours = roundHours(totalHours + preMid)
+
+    const totalCommits = allTimestamps.length
+    const activeDays = new Set(allTimestamps.map(ts => localDateKeyFromSeconds(ts))).size
+
+    // Remy-specific hours from git (commits touching remy-related files)
+    const { stdout: remyLog } = await execAsync(
+      'git log --pretty=format:"%ct" -- "lib/ai/remy*" "components/ai/remy*" "scripts/remy-eval/*" "docs/remy*" "app/**/remy*"',
+      { cwd: PROJECT_ROOT, maxBuffer: 5 * 1024 * 1024 }
+    )
+    const remyTimestamps = remyLog.trim().split('\n')
+      .map(t => Number(t.replace(/"/g, '')))
+      .filter(Number.isFinite)
+      .sort((a, b) => a - b)
+
+    const remySessions = buildCommitSessions(remyTimestamps, 45 * 60)
+    const remyMidSec = estimateSessionSeconds(remySessions, {
+      padSeconds: 20 * 60, minSeconds: 25 * 60, maxSeconds: 6 * 3600,
+    })
+    const remyHours = Number((remyMidSec / 3600).toFixed(1))
+    const remyCommits = remyTimestamps.length
+
+    return {
+      totalHours: combinedHours,
+      totalCommits,
+      activeDays,
+      remyHours,
+      remyCommits,
+    }
+  } catch (err) {
+    return { totalHours: 0, totalCommits: 0, activeDays: 0, remyHours: 0, remyCommits: 0, error: err.message }
+  }
+}
+
+async function getRemyStats() {
+  const EVAL_DIR = join(PROJECT_ROOT, 'scripts', 'remy-eval', 'reports')
+  try {
+    const files = (await readdir(EVAL_DIR)).filter(f => f.endsWith('.json')).sort().reverse()
+    if (!files.length) return { totalEvals: 0, latestPassRate: 0, latestPassed: 0, latestTotal: 0, avgResponseTime: 0, trend: 'neutral' }
+
+    const latest = JSON.parse(await readFile(join(EVAL_DIR, files[0]), 'utf-8'))
+    const passRate = latest.totalTests > 0
+      ? Number(((latest.passed / latest.totalTests) * 100).toFixed(1))
+      : 0
+    const avgTime = latest.avgResponseTimeMs
+      ? Number((latest.avgResponseTimeMs / 1000).toFixed(1))
+      : 0
+
+    // Compute trend from last 2 evals
+    let trend = 'neutral'
+    if (files.length >= 2) {
+      const prev = JSON.parse(await readFile(join(EVAL_DIR, files[1]), 'utf-8'))
+      const prevRate = prev.totalTests > 0 ? (prev.passed / prev.totalTests) * 100 : 0
+      if (passRate > prevRate + 1) trend = 'up'
+      else if (passRate < prevRate - 1) trend = 'down'
+    }
+
+    // Total eval testing time (sum of all evals' avgResponseTimeMs * totalTests)
+    let totalEvalSeconds = 0
+    for (const f of files.slice(0, 20)) {
+      try {
+        const data = JSON.parse(await readFile(join(EVAL_DIR, f), 'utf-8'))
+        if (data.avgResponseTimeMs && data.totalTests) {
+          totalEvalSeconds += (data.avgResponseTimeMs / 1000) * data.totalTests
+        }
+      } catch { /* skip */ }
+    }
+    const totalEvalHours = Number((totalEvalSeconds / 3600).toFixed(2))
+
+    return {
+      totalEvals: files.length,
+      latestPassRate: passRate,
+      latestPassed: latest.passed || 0,
+      latestTotal: latest.totalTests || 0,
+      avgResponseTime: avgTime,
+      totalEvalHours,
+      trend,
+      lastEvalDate: latest.timestamp || null,
+    }
+  } catch {
+    return { totalEvals: 0, latestPassRate: 0, latestPassed: 0, latestTotal: 0, avgResponseTime: 0, totalEvalHours: 0, trend: 'neutral' }
+  }
+}
+
+async function getCostStats() {
+  try {
+    const raw = await readFile(PROJECT_EXPENSES_FILE, 'utf-8')
+    const data = JSON.parse(raw)
+    const entries = data.entries || []
+    let totalSpent = 0
+    let monthlyBurn = 0
+    for (const e of entries) {
+      totalSpent += toFiniteNumber(e.totalSpent, 0)
+      monthlyBurn += toFiniteNumber(e.monthlyRate, 0)
+    }
+    return {
+      totalSpent: Number(totalSpent.toFixed(2)),
+      monthlyBurn: Number(monthlyBurn.toFixed(2)),
+      entryCount: entries.length,
+    }
+  } catch {
+    return { totalSpent: 0, monthlyBurn: 0, entryCount: 0 }
+  }
+}
+
 async function getFeedback() {
   if (!CONFIG.supabaseUrl || !CONFIG.supabaseServiceKey) {
     return { ok: false, error: 'Supabase credentials not configured', entries: [] }
@@ -3856,6 +4005,17 @@ async function handleRequest(req, res) {
       }
     }
     return json(res, { ok: true, files: results })
+  }
+
+  // ── Project Stats (auto-refreshing dashboard stats) ─────────────
+  if (path === '/api/stats' && method === 'GET') {
+    try {
+      const stats = await getProjectStats()
+      return json(res, { ok: true, ...stats })
+    } catch (err) {
+      log('stats', `Stats fetch failed: ${err.message}`, 'error')
+      return json(res, { ok: false, error: err.message }, 500)
+    }
   }
 
   // ── Manual / Live Codebase Scan ──────────────────────────────────

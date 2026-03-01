@@ -1022,6 +1022,11 @@ body {
 .ping-result.fail { color: var(--error); }
 
 /* ── Home Panel — Mega Buttons ────────────────────────────────── */
+#project-stats-bar .stat-card:hover {
+  border-color: var(--border-bright) !important;
+  background: var(--bg-hover) !important;
+}
+
 .mega-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -1991,6 +1996,45 @@ body {
             <span class="dot online"></span>
             <span id="home-status-text">Ready</span>
           </span>
+        </div>
+
+        <!-- ── Project Stats (auto-refreshing) ── -->
+        <div id="project-stats-bar" style="
+          display:grid;grid-template-columns:repeat(4,1fr);gap:12px;
+          margin-bottom:20px;padding:0;
+        ">
+          <div class="stat-card" id="stat-dev-hours" style="
+            background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+            padding:16px;display:flex;flex-direction:column;gap:4px;transition:border-color var(--transition);
+          ">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Dev Hours</div>
+            <div style="font-size:28px;font-weight:700;color:var(--brand);line-height:1;" id="stat-val-dev-hours">--</div>
+            <div style="font-size:11px;color:var(--text-secondary);" id="stat-sub-dev-hours">loading...</div>
+          </div>
+          <div class="stat-card" id="stat-remy-hours" style="
+            background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+            padding:16px;display:flex;flex-direction:column;gap:4px;transition:border-color var(--transition);
+          ">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Remy Training</div>
+            <div style="font-size:28px;font-weight:700;color:#a78bfa;line-height:1;" id="stat-val-remy-hours">--</div>
+            <div style="font-size:11px;color:var(--text-secondary);" id="stat-sub-remy-hours">loading...</div>
+          </div>
+          <div class="stat-card" id="stat-eval" style="
+            background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+            padding:16px;display:flex;flex-direction:column;gap:4px;transition:border-color var(--transition);
+          ">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Remy Eval</div>
+            <div style="font-size:28px;font-weight:700;line-height:1;" id="stat-val-eval">--</div>
+            <div style="font-size:11px;color:var(--text-secondary);" id="stat-sub-eval">loading...</div>
+          </div>
+          <div class="stat-card" id="stat-cost" style="
+            background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+            padding:16px;display:flex;flex-direction:column;gap:4px;transition:border-color var(--transition);
+          ">
+            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Total Spent</div>
+            <div style="font-size:28px;font-weight:700;color:var(--success);line-height:1;" id="stat-val-cost">--</div>
+            <div style="font-size:11px;color:var(--text-secondary);" id="stat-sub-cost">loading...</div>
+          </div>
         </div>
 
         <!-- ── One-Click Pipelines ── -->
@@ -10028,7 +10072,63 @@ function observeRebuildDOM() {
   if (!observePaused && !observeUserScrolledUp) observeAutoScroll()
 }
 
+// ── Project Stats (auto-refreshing) ──────────────────────────────
+
+async function fetchProjectStats() {
+  try {
+    const res = await fetch('/api/stats')
+    const data = await res.json()
+    if (!data.ok) return
+
+    // Dev Hours card
+    const devH = data.devHours || {}
+    const devVal = document.getElementById('stat-val-dev-hours')
+    const devSub = document.getElementById('stat-sub-dev-hours')
+    if (devVal) devVal.textContent = `${devH.totalHours || 0}h`
+    if (devSub) devSub.textContent = `${devH.totalCommits || 0} commits \u00B7 ${devH.activeDays || 0} active days`
+
+    // Remy Training card
+    const remyVal = document.getElementById('stat-val-remy-hours')
+    const remySub = document.getElementById('stat-sub-remy-hours')
+    if (remyVal) remyVal.textContent = `${devH.remyHours || 0}h`
+    if (remySub) remySub.textContent = `${devH.remyCommits || 0} commits on Remy files`
+
+    // Eval card
+    const remy = data.remy || {}
+    const evalVal = document.getElementById('stat-val-eval')
+    const evalSub = document.getElementById('stat-sub-eval')
+    if (evalVal) {
+      const rate = remy.latestPassRate || 0
+      evalVal.textContent = `${rate}%`
+      evalVal.style.color = rate >= 90 ? 'var(--success)' : rate >= 70 ? 'var(--warning)' : 'var(--error)'
+    }
+    const trendIcon = remy.trend === 'up' ? '\u2191' : remy.trend === 'down' ? '\u2193' : '\u2192'
+    const trendColor = remy.trend === 'up' ? 'var(--success)' : remy.trend === 'down' ? 'var(--error)' : 'var(--text-muted)'
+    if (evalSub) evalSub.innerHTML = `${remy.latestPassed || 0}/${remy.latestTotal || 0} tests \u00B7 <span style="color:${trendColor}">${trendIcon}</span> ${remy.totalEvals || 0} evals`
+
+    // Cost card
+    const costs = data.costs || {}
+    const costVal = document.getElementById('stat-val-cost')
+    const costSub = document.getElementById('stat-sub-cost')
+    if (costVal) costVal.textContent = `$${(costs.totalSpent || 0).toLocaleString()}`
+    if (costSub) costSub.textContent = costs.monthlyBurn > 0
+      ? `$${costs.monthlyBurn.toFixed(2)}/mo burn \u00B7 ${costs.entryCount} items`
+      : `${costs.entryCount} items tracked`
+
+    // Pulse animation on stat cards to indicate fresh data
+    document.querySelectorAll('#project-stats-bar .stat-card').forEach(card => {
+      card.style.borderColor = 'var(--border-bright)'
+      setTimeout(() => { card.style.borderColor = 'var(--border)' }, 600)
+    })
+  } catch (err) {
+    console.warn('[stats] Failed to fetch project stats:', err)
+  }
+}
+
 // ── Init ──────────────────────────────────────────────────────────
+
+fetchProjectStats() // Load stats on startup
+setInterval(fetchProjectStats, 60000) // Refresh every 60s
 
 refreshStatus()
 setInterval(refreshStatus, 5000)
