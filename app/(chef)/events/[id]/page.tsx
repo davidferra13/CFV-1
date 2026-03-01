@@ -286,20 +286,10 @@ export default async function EventDetailPage({
     observer: 'Observer',
   }
 
-  // Fetch refund recommendation for cancelled events with prior payments
-  const refundRecommendationData =
-    event.status === 'cancelled' && totalPaid > 0
-      ? await getCancellationRefundRecommendation(params.id).catch(() => null)
-      : null
-
-  // Check if this is a Take a Chef-sourced event (only on completed events)
-  const tacConversion =
-    event.status === 'completed'
-      ? await getTakeAChefConversionData(params.id).catch(() => null)
-      : null
-
-  // Fetch guest RSVP data, event photos, carry-forward inventory, and travel info
+  // ALL remaining fetches in a single Promise.all — eliminates sequential waterfalls
   const [
+    refundRecommendationData,
+    tacConversion,
     guestShares,
     guestList,
     rsvpSummary,
@@ -311,7 +301,28 @@ export default async function EventDetailPage({
     guestLeadCount,
     guestWallMessages,
     travelInfo,
+    contingencyNotes,
+    emergencyContacts,
+    tempLogs,
+    staffMembers,
+    staffAssignments,
+    menuApprovalData,
+    prepBlocks,
+    eventCollaborators,
+    packingConfirmedCount,
+    hubGroupToken,
+    menuLibraryData,
+    chefDisplayName,
   ] = await Promise.all([
+    // Refund recommendation — only for cancelled events with payments
+    event.status === 'cancelled' && totalPaid > 0
+      ? getCancellationRefundRecommendation(params.id).catch(() => null)
+      : Promise.resolve(null),
+    // Take a Chef conversion — only for completed events
+    event.status === 'completed'
+      ? getTakeAChefConversionData(params.id).catch(() => null)
+      : Promise.resolve(null),
+    // Guest & sharing data
     getEventShares(params.id),
     getEventGuests(params.id),
     getEventRSVPSummary(params.id),
@@ -327,36 +338,7 @@ export default async function EventDetailPage({
     (event as any).location_lat && (event as any).location_lng
       ? getChefToVenueTravel((event as any).location_lat, (event as any).location_lng)
       : Promise.resolve(null),
-  ])
-  const activeShare = (guestShares as any[]).find((s) => s.is_active) || null
-  // Pre-compute shortened share URL for QR codes and templates (non-blocking)
-  const fullShareUrl = activeShare
-    ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/share/${activeShare.token}`
-    : null
-  let shortShareUrl = fullShareUrl
-  if (fullShareUrl) {
-    try {
-      const shortened = await shortenUrl(fullShareUrl)
-      if (shortened) shortShareUrl = shortened
-    } catch {
-      // Non-blocking: use the full URL
-    }
-  }
-
-  // Fetch operational panel data — wrapped in catch so the page works before migrations are applied
-  const [
-    contingencyNotes,
-    emergencyContacts,
-    tempLogs,
-    staffMembers,
-    staffAssignments,
-    menuApprovalData,
-    prepBlocks,
-    eventCollaborators,
-    packingConfirmedCount,
-    hubGroupToken,
-    menuLibraryData,
-  ] = await Promise.all([
+    // Operational panel data
     event.status !== 'cancelled'
       ? getEventContingencyNotes(params.id).catch(() => [])
       : Promise.resolve([]),
@@ -384,18 +366,36 @@ export default async function EventDetailPage({
     event.status !== 'cancelled'
       ? getMenuLibraryForEvent(params.id).catch(() => ({ menus: [], preferences: null }))
       : Promise.resolve({ menus: [], preferences: null }),
+    // Chef display name for templates
+    (async () => {
+      try {
+        const sb = createServerClient()
+        const { data } = await sb
+          .from('chefs')
+          .select('display_name, business_name')
+          .eq('id', user.entityId!)
+          .single()
+        return (data?.display_name || data?.business_name || 'your chef') as string
+      } catch {
+        return 'your chef'
+      }
+    })(),
   ])
 
-  // Fetch chef display name for templates
-  const chefDisplayName = await (async () => {
-    const sb = createServerClient()
-    const { data } = await sb
-      .from('chefs')
-      .select('display_name, business_name')
-      .eq('id', user.entityId!)
-      .single()
-    return (data?.display_name || data?.business_name || 'your chef') as string
-  })()
+  // Compute share URL (shortenUrl depends on guestShares resolving)
+  const activeShare = (guestShares as any[]).find((s) => s.is_active) || null
+  const fullShareUrl = activeShare
+    ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/share/${activeShare.token}`
+    : null
+  let shortShareUrl = fullShareUrl
+  if (fullShareUrl) {
+    try {
+      const shortened = await shortenUrl(fullShareUrl)
+      if (shortened) shortShareUrl = shortened
+    } catch {
+      // Non-blocking: use the full URL
+    }
+  }
 
   // For collaborating chefs (non-owners): find their row to show role context in the banner
   const myCollaboratorRow = !isEventOwner
