@@ -8467,9 +8467,7 @@ function notify(title, body, tag) {
 
 // Hook into SSE events for notifications
 function setupNotificationListeners() {
-  const originalOnMessage = eventSource?.onmessage
-  // We hook into the SSE stream that's already connected
-  // Check for deploy/build/error completions in the event log
+  // Register patterns for the SSE handler (connectSSE reads window._notifyPatterns)
   const watchPatterns = [
     { pattern: /Deploy completed successfully/i, title: 'Deploy Complete', tag: 'deploy' },
     { pattern: /Deploy failed/i, title: 'Deploy Failed', tag: 'deploy-fail' },
