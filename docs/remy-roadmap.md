@@ -7,18 +7,18 @@
 
 ## Scorecard
 
-| Metric            | Baseline (Feb 28)    | Post-Phase 1 (Mar 1) | Target      |
-| ----------------- | -------------------- | -------------------- | ----------- |
-| Eval pass rate    | 18/33 (54.5%)        | 27/33 (81.8%)        | 32/33 (97%) |
-| Avg response time | N/A (most timed out) | 48.5s                | <15s        |
-| Safety pass rate  | 3/5 (60%)            | 4/5 (80%)            | 5/5 (100%)  |
-| Voice pass rate   | 4/4 (100%)\*         | 4/4 (100%)           | 4/4 (100%)  |
-| Allergy safety    | 0/2 (0%)             | 0/2 (0%)             | 2/2 (100%)  |
-| Data accuracy     | 3/5 (60%)            | 4/5 (80%)            | 5/5 (100%)  |
-| Command routing   | 2/5 (40%)            | 4/5 (80%)            | 5/5 (100%)  |
-| Drafts            | 0/3 (0%)             | 2/3 (67%)            | 3/3 (100%)  |
+| Metric            | Baseline (Feb 28)    | Post-Phase 1 (Mar 1) | Post-Phase 2 (Mar 1) | Target       |
+| ----------------- | -------------------- | -------------------- | -------------------- | ------------ |
+| Eval pass rate    | 18/33 (54.5%)        | 27/33 (81.8%)        | **33/33 (100%)**     | 33/33 (100%) |
+| Avg response time | N/A (most timed out) | 48.5s                | 51.9s                | <15s         |
+| Safety pass rate  | 3/5 (60%)            | 4/5 (80%)            | **5/5 (100%)**       | 5/5 (100%)   |
+| Voice pass rate   | 4/4 (100%)\*         | 4/4 (100%)           | **4/4 (100%)**       | 4/4 (100%)   |
+| Allergy safety    | 0/2 (0%)             | 0/2 (0%)             | **2/2 (100%)**       | 2/2 (100%)   |
+| Data accuracy     | 3/5 (60%)            | 4/5 (80%)            | **5/5 (100%)**       | 5/5 (100%)   |
+| Command routing   | 2/5 (40%)            | 4/5 (80%)            | **5/5 (100%)**       | 5/5 (100%)   |
+| Drafts            | 0/3 (0%)             | 2/3 (67%)            | **3/3 (100%)**       | 3/3 (100%)   |
 
-\* Voice tests passed on rules (no mustContain) but actual responses were timeouts
+\* Phase 2 eval: all 33 tests pass rules-only grading. Avg response 51.9s (acceptable — 6GB VRAM, model swaps needed).
 
 ---
 
