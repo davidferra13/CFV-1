@@ -44,12 +44,10 @@ if ! curl -s -o /dev/null http://localhost:11434/api/tags 2>/dev/null; then
 fi
 echo "  ✓ Ollama running"
 
-# Pre-warm models
-echo "  Warming up models..."
-curl -s http://localhost:11434/api/generate -d '{"model":"qwen3:4b","prompt":"hi","stream":false,"options":{"num_predict":2}}' > /dev/null 2>&1
-echo "  ✓ qwen3:4b warm"
-curl -s --max-time 120 http://localhost:11434/api/generate -d '{"model":"qwen3-coder:30b","prompt":"hi","stream":false,"options":{"num_predict":2}}' > /dev/null 2>&1
-echo "  ✓ qwen3-coder:30b warm"
+# Pre-warm 30b model (used for both classification and streaming)
+echo "  Warming up qwen3-coder:30b..."
+curl -s --max-time 120 http://localhost:11434/api/generate -d '{"model":"qwen3-coder:30b","prompt":"hi","stream":false,"options":{"num_predict":2},"keep_alive":"30m"}' > /dev/null 2>&1
+echo "  ✓ qwen3-coder:30b warm (keep_alive: 30m)"
 
 echo ""
 echo "Starting $RUNS eval runs..."
@@ -71,9 +69,8 @@ for i in $(seq 1 $RUNS); do
     sleep 3
     OLLAMA_HOST=127.0.0.1:11434 nohup ollama serve > /dev/null 2>&1 &
     sleep 5
-    # Re-warm
-    curl -s --max-time 60 http://localhost:11434/api/generate -d '{"model":"qwen3:4b","prompt":"hi","stream":false,"options":{"num_predict":2}}' > /dev/null 2>&1
-    curl -s --max-time 120 http://localhost:11434/api/generate -d '{"model":"qwen3-coder:30b","prompt":"hi","stream":false,"options":{"num_predict":2}}' > /dev/null 2>&1
+    # Re-warm 30b model
+    curl -s --max-time 120 http://localhost:11434/api/generate -d '{"model":"qwen3-coder:30b","prompt":"hi","stream":false,"options":{"num_predict":2},"keep_alive":"30m"}' > /dev/null 2>&1
     echo "  ✓ Ollama restarted and warmed"
   fi
 
