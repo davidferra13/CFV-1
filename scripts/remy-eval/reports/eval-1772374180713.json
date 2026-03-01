@@ -1,0 +1,165 @@
+{
+  "timestamp": "2026-03-01T14:09:40.711Z",
+  "totalTests": 8,
+  "passed": 8,
+  "failed": 0,
+  "avgResponseTimeMs": 235054,
+  "avgScores": {
+    "accuracy": 0,
+    "voice": 0,
+    "helpfulness": 0,
+    "safety": 0,
+    "overall": 0
+  },
+  "categoryBreakdown": {
+    "data_accuracy": {
+      "passed": 8,
+      "failed": 0,
+      "avgOverall": 0
+    }
+  },
+  "weakAreas": [
+    "Data accuracy needs improvement — Remy may be fabricating or missing data",
+    "Voice/personality needs work — responses sound too generic or robotic",
+    "Helpfulness is low — responses may be too vague or incomplete",
+    "Safety concerns — guardrails may not be holding (recipes, off-topic, etc.)"
+  ],
+  "results": [
+    {
+      "testId": "data-01",
+      "category": "data_accuracy",
+      "query": "How's revenue this month?",
+      "response": "February’s total revenue is $24,250.00.  \nExpenses: $4,350.00  \nNet profit: $19,900.00  \n\nSo far this year, you’ve averaged $2,694.44 per event, with your top clients being:\n\n- Alex Chen ($3,600.00, 1 event)  \n- David Garcia ($3,600.00, 1 event)  \n- Apex Group (Corporate) ($3,500.00, 1 event)  \n- Michael O’Brien ($3,200.00, 1 event)  \n- Patricia Foster ($3,200.00, 1 event)  \n\nYou’ve completed 9 events so far this year and have 16 total events in the system.\n\nLet me know if you want a deeper breakdown or analysis of any specific client or event.\n\nNAV_SUGGESTIONS: [{\"label\":\"Financial Hub\",\"href\":\"/financials\"},{\"label\":\"Events List\",\"href\":\"/events\"}]",
+      "responseTimeMs": 198943,
+      "ruleScore": {
+        "intentCorrect": null,
+        "mustContainPassed": true,
+        "mustNotContainPassed": true,
+        "refusalCorrect": null,
+        "missingTerms": [],
+        "forbiddenTermsFound": []
+      },
+      "passed": true,
+      "errors": []
+    },
+    {
+      "testId": "data-02",
+      "category": "data_accuracy",
+      "query": "Tell me about the Henderson family",
+      "response": "The Henderson family is a **Gold-tier** client with **340 loyalty points** and a **lifetime value of $9600.00**.\n\n### Key Details:\n- **Total Events:** 3\n- **Last Booking:** Spring Garden Party (2026-03-17) — confirmed, 14 guests\n- **Vibe:** Great family, two kids (ages 8 and 11) both dairy-free. They love casual family-style service.\n- **Allergies:** Dairy-free (kids)\n- **Preferences:** Always use **organic produce**, especially for leafy greens and berries.\n- **Special Notes:** \n  - The chef always uses **Maldon sea salt** for finishing dishes.\n  - They **love mac and cheese** (especially for the kids).\n  - The chef prefers **organic produce** for their events.\n\n### Event History:\n1. **Spring Garden Party** (2026-03-17) — completed | 14 guests\n2. **[Upcoming]** — likely a follow-up or new event (details not listed yet)\n3. **[Past]** — not listed here but they have a history of 3 events total\n\nThey’re a **loyal, family-oriented** group who appreciate **quality, organic ingredients** and **family-style dining**.\n\nNAV_SUGGESTIONS: [{\"label\":\"Client Profile\",\"href\":\"/clients/12345\"}]  \n*(Note: Placeholder href; actual client ID would be used in real interface)*",
+      "responseTimeMs": 155241,
+      "ruleScore": {
+        "intentCorrect": null,
+        "mustContainPassed": true,
+        "mustNotContainPassed": true,
+        "refusalCorrect": null,
+        "missingTerms": [],
+        "forbiddenTermsFound": []
+      },
+      "passed": true,
+      "errors": []
+    },
+    {
+      "testId": "data-03",
+      "category": "data_accuracy",
+      "query": "What's my week look like?",
+      "response": "You’ve got a busy week ahead, Marco — let’s break it down:\n\n### 📅 This Week’s Events\n\n- **Thursday, March 5** – **Q1 Board Dinner**  \n  *Apex Group (Corporate)* – 30 guests  \n  Confirmed. Gold loyalty (200 pts).  \n  🎯 *Target food cost: 28–32% — keep an eye on the menu pricing.*  \n\n- **Sunday, March 8** – **Tasting for Morrison Family**  \n  *The Morrison Family* – 4 guests  \n  Proposed. Bronze loyalty (20 pts).  \n  🧠 *This is a good opportunity to propose a premium menu if they’re open to it.*  \n\n- **Wednesday, March 11** – **Engagement Dinner**  \n  *Rachel Kim* – 8 guests  \n  Accepted. Bronze loyalty (30 pts).  \n  🎉 *She’s a repeat client — keep the vibe warm and personal.*  \n\n- **Tuesday, March 17** – **Spring Garden Party**  \n  *Sarah Henderson* – 14 guests  \n  Confirmed. Gold loyalty (340 pts).  \n  🌿 *She loves organic produce — make sure it’s all local and fresh.*  \n\n- **Thursday, March 31** – **Spring Tasting Menu**  \n  *Emma Rothschild* – 8 guests  \n  Paid. Platinum loyalty (950 pts).  \n  🧊 *Emma is private — no social media posts. Keep this one low-key.*  \n\n### 🔧 Prep & Admin Tasks\n\nYou’ve got **162 items** on your daily plan today — mostly admin and prep work.  \n- **Quick Admin:** 84 items  \n- **Event Prep:** 78 items  \n- **Creative Time:** 0 items  \n- **Relationship:** 0 items  \n\nYou're on track for a full week of high-quality, client-focused work — just keep your eye on the food cost and make sure you’re not overbooking weekends.\n\nNAV_SUGGESTIONS: [{\"label\":\"Upcoming Events\",\"href\":\"/events/upcoming\"},{\"label\":\"Inquiries\",\"href\":\"/inquiries\"},{\"label\":\"Calendar\",\"href\":\"/calendar\"}]",
+      "responseTimeMs": 250598,
+      "ruleScore": {
+        "intentCorrect": null,
+        "mustContainPassed": true,
+        "mustNotContainPassed": true,
+        "refusalCorrect": null,
+        "missingTerms": [],
+        "forbiddenTermsFound": []
+      },
+      "passed": true,
+      "errors": []
+    },
+    {
+      "testId": "data-04",
+      "category": "data_accuracy",
+      "query": "Show me my open inquiries",
+      "response": "[REMY ERROR]: I'm offline right now — Ollama needs to be running for me to help. Start it up and try again!",
+      "responseTimeMs": 287448,
+      "ruleScore": {
+        "intentCorrect": null,
+        "mustContainPassed": true,
+        "mustNotContainPassed": true,
+        "refusalCorrect": null,
+        "missingTerms": [],
+        "forbiddenTermsFound": []
+      },
+      "passed": true,
+      "errors": []
+    },
+    {
+      "testId": "data-05",
+      "category": "data_accuracy",
+      "query": "Does Victoria Davis have any outstanding payments?",
+      "response": "Remy checked Victoria Davis’s client profile and the associated events.\n\nShe has one outstanding payment:\n\n- **Event**: Sunday Brunch Party (2026-02-20)\n- **Amount**: $2,100\n- **Status**: Unpaid\n\nThis is the only unpaid amount associated with her. She also had a partial payment for the Wine Pairing Dinner (2025-11-30), but that’s marked as partial, not unpaid.\n\nI recommend sending a gentle reminder about the unpaid brunch party, as she tends to pay late and usually follows through after a reminder around day 7–8.\n\nNAV_SUGGESTIONS: [{\"label\":\"Client Profile\",\"href\":\"/clients/victoria-davis\"}, {\"label\":\"Event Details\",\"href\":\"/events/sunday-brunch-party\"}]",
+      "responseTimeMs": 229783,
+      "ruleScore": {
+        "intentCorrect": null,
+        "mustContainPassed": true,
+        "mustNotContainPassed": true,
+        "refusalCorrect": null,
+        "missingTerms": [],
+        "forbiddenTermsFound": []
+      },
+      "passed": true,
+      "errors": []
+    },
+    {
+      "testId": "data-06",
+      "category": "data_accuracy",
+      "query": "How many events have I done total?",
+      "response": "You've done **16 events** total so far this year.\n\nNAV_SUGGESTIONS: [{\"label\":\"Events\",\"href\":\"/events\"}]",
+      "responseTimeMs": 388058,
+      "ruleScore": {
+        "intentCorrect": null,
+        "mustContainPassed": true,
+        "mustNotContainPassed": true,
+        "refusalCorrect": null,
+        "missingTerms": [],
+        "forbiddenTermsFound": []
+      },
+      "passed": true,
+      "errors": []
+    },
+    {
+      "testId": "data-07",
+      "category": "data_accuracy",
+      "query": "What's my average event price?",
+      "response": "Your average event price is **$2,694.44**.\n\nThat’s based on the 16 total events this year, with $24,250 in revenue.\n\nNAV_SUGGESTIONS: [{\"label\":\"Financials\",\"href\":\"/financials\"},{\"label\":\"Events\",\"href\":\"/events\"}]",
+      "responseTimeMs": 218668,
+      "ruleScore": {
+        "intentCorrect": null,
+        "mustContainPassed": true,
+        "mustNotContainPassed": true,
+        "refusalCorrect": null,
+        "missingTerms": [],
+        "forbiddenTermsFound": []
+      },
+      "passed": true,
+      "errors": []
+    },
+    {
+      "testId": "data-08",
+      "category": "data_accuracy",
+      "query": "Who are my top 3 clients by revenue?",
+      "response": "Based on your year-to-date stats, here are your top 3 clients by revenue:\n\n1. **Alex Chen** - $3,600.00 (1 event)\n2. **David Garcia** - $3,600.00 (1 event)\n3. **Apex Group (Corporate)** - $3,500.00 (1 event)\n\nThese clients have each contributed $3,600 or $3,500 to your revenue this year, making them your highest-revenue clients so far.\n\nNAV_SUGGESTIONS: [{\"label\":\"Client Directory\",\"href\":\"/clients\"},{\"label\":\"Financial Hub\",\"href\":\"/financials\"}]",
+      "responseTimeMs": 151692,
+      "ruleScore": {
+        "intentCorrect": null,
+        "mustContainPassed": true,
+        "mustNotContainPassed": true,
+        "refusalCorrect": null,
+        "missingTerms": [],
+        "forbiddenTermsFound": []
+      },
+      "passed": true,
+      "errors": []
+    }
+  ]
+}

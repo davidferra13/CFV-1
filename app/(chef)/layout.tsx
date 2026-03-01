@@ -108,6 +108,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
   const primaryNavHrefs = layoutData.primary_nav_hrefs
   const enabledModules =
     layoutData.enabled_modules.length > 0 ? layoutData.enabled_modules : DEFAULT_ENABLED_MODULES
+  const focusMode = layoutData.focus_mode
   const daysSinceCreation = layoutData.created_at
     ? differenceInDays(new Date(), new Date(layoutData.created_at))
     : 0
@@ -161,6 +162,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                   hasCannabisTier={hasCannabisTier}
                   enabledModules={enabledModules}
                   isAdmin={userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true'}
+                  focusMode={focusMode}
                   userId={user.id}
                   tenantId={user.tenantId ?? user.entityId}
                 />
@@ -170,6 +172,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                   hasCannabisTier={hasCannabisTier}
                   enabledModules={enabledModules}
                   isAdmin={userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true'}
+                  focusMode={focusMode}
                   userId={user.id}
                   tenantId={user.tenantId ?? user.entityId}
                 />

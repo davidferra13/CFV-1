@@ -51,7 +51,13 @@ import {
   HeartHandshake,
 } from 'lucide-react'
 
-type NavItem = { href: string; label: string; icon: LucideIcon; adminOnly?: boolean }
+type NavItem = {
+  href: string
+  label: string
+  icon: LucideIcon
+  adminOnly?: boolean
+  coreFeature?: boolean
+}
 type NavSubItem = {
   href: string
   label: string
@@ -73,23 +79,25 @@ type NavGroup = {
 type PrimaryShortcutOption = NavItem & { context: string }
 
 // Primary always-visible shortcuts (top of sidebar)
+// coreFeature: true = shown in Focus Mode. false/undefined = hidden in Focus Mode, shown when OFF.
+// adminOnly items are always hidden for non-admins regardless of Focus Mode.
 export const standaloneTop: NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/commands', label: 'Remy', icon: Bot },
-  { href: '/daily', label: 'Daily Ops', icon: ListChecks },
-  { href: '/inbox', label: 'Inbox', icon: Inbox },
-  { href: '/clients', label: 'Clients', icon: Users },
-  { href: '/inquiries', label: 'Inquiries', icon: Inbox },
-  { href: '/chat', label: 'Messaging', icon: MessageCircle },
-  { href: '/schedule', label: 'Calendar', icon: CalendarDays },
-  { href: '/events', label: 'All Events', icon: CalendarDays },
-  { href: '/menus', label: 'Menus', icon: UtensilsCrossed },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, coreFeature: true },
+  { href: '/commands', label: 'Remy', icon: Bot, coreFeature: true },
+  { href: '/daily', label: 'Daily Ops', icon: ListChecks, coreFeature: true },
+  { href: '/inbox', label: 'Inbox', icon: Inbox, coreFeature: true },
+  { href: '/clients', label: 'Clients', icon: Users, coreFeature: true },
+  { href: '/inquiries', label: 'Inquiries', icon: Inbox, coreFeature: true },
+  { href: '/chat', label: 'Messaging', icon: MessageCircle, coreFeature: true },
+  { href: '/schedule', label: 'Calendar', icon: CalendarDays, coreFeature: true },
+  { href: '/events', label: 'All Events', icon: CalendarDays, coreFeature: true },
+  { href: '/menus', label: 'Menus', icon: UtensilsCrossed, coreFeature: true },
   { href: '/travel', label: 'Travel', icon: MapPin },
   { href: '/staff', label: 'Staff', icon: Users },
   { href: '/tasks', label: 'Tasks', icon: ListChecks },
   { href: '/stations', label: 'Stations', icon: ClipboardCheck },
-  { href: '/activity', label: 'Activity', icon: Activity },
-  { href: '/goals', label: 'Goals', icon: Target },
+  { href: '/activity', label: 'Activity', icon: Activity, coreFeature: true },
+  { href: '/goals', label: 'Goals', icon: Target, coreFeature: true },
   { href: '/prospecting', label: 'Prospecting', icon: Crosshair, adminOnly: true },
   { href: '/charity', label: 'Charity Hub', icon: HeartHandshake, adminOnly: true },
   { href: '/commerce', label: 'Commerce', icon: Store },

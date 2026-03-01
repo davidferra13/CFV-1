@@ -577,6 +577,7 @@ export function ChefSidebar({
   hasCannabisTier,
   enabledModules,
   isAdmin,
+  focusMode,
   userId,
   tenantId,
 }: {
@@ -584,6 +585,7 @@ export function ChefSidebar({
   hasCannabisTier?: boolean
   enabledModules?: string[]
   isAdmin?: boolean
+  focusMode?: boolean
   userId: string
   tenantId: string
 }) {
@@ -637,10 +639,14 @@ export function ChefSidebar({
   )
   const filteredPrimaryItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
-    const items = isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)
+    let items = isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)
+    // Focus Mode: hide non-core standalone items (admins always see everything)
+    if (focusMode && !isAdmin) {
+      items = items.filter((item) => item.coreFeature)
+    }
     if (!q) return items
     return items.filter((item) => item.label.toLowerCase().includes(q))
-  }, [navFilter, primaryItems, isAdmin])
+  }, [navFilter, primaryItems, isAdmin, focusMode])
   const filteredQuickCreateItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
     if (!q) return QUICK_CREATE_ITEMS
@@ -1517,6 +1523,7 @@ export function ChefMobileNav({
   hasCannabisTier,
   enabledModules,
   isAdmin,
+  focusMode,
   userId,
   tenantId,
 }: {
@@ -1524,6 +1531,7 @@ export function ChefMobileNav({
   hasCannabisTier?: boolean
   enabledModules?: string[]
   isAdmin?: boolean
+  focusMode?: boolean
   userId: string
   tenantId: string
 }) {
@@ -1577,10 +1585,14 @@ export function ChefMobileNav({
   )
   const filteredPrimaryItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
-    const items = isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)
+    let items = isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)
+    // Focus Mode: hide non-core standalone items (admins always see everything)
+    if (focusMode && !isAdmin) {
+      items = items.filter((item) => item.coreFeature)
+    }
     if (!q) return items
     return items.filter((item) => item.label.toLowerCase().includes(q))
-  }, [navFilter, primaryItems, isAdmin])
+  }, [navFilter, primaryItems, isAdmin, focusMode])
   const filteredQuickCreateItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
     if (!q) return QUICK_CREATE_ITEMS

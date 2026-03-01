@@ -23,6 +23,7 @@ export type ChefLayoutData = {
   portal_background_image_url: string | null
   primary_nav_hrefs: string[]
   enabled_modules: string[]
+  focus_mode: boolean
   subscription_status: string | null
 }
 
@@ -41,7 +42,7 @@ export function getChefLayoutData(chefId: string): Promise<ChefLayoutData> {
           .single(),
         supabase
           .from('chef_preferences')
-          .select('primary_nav_hrefs, enabled_modules')
+          .select('primary_nav_hrefs, enabled_modules, focus_mode')
           .eq('chef_id', chefId)
           .single(),
       ])
@@ -60,6 +61,7 @@ export function getChefLayoutData(chefId: string): Promise<ChefLayoutData> {
         enabled_modules: Array.isArray((prefsResult.data as any)?.enabled_modules)
           ? ((prefsResult.data as any).enabled_modules as string[])
           : [],
+        focus_mode: (prefsResult.data as any)?.focus_mode ?? true,
         subscription_status: (chefResult.data as any)?.subscription_status ?? null,
       }
     },

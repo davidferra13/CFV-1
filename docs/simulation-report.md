@@ -1,39 +1,45 @@
 # ChefFlow AI Simulation Report
 
-_Auto-generated — last run: 2026-03-01T04:09:35.443Z_
-_Run ID: ef06972e-67a4-4a81-a349-a1593ddaf41c_
+_Auto-generated — last run: 2026-03-01T19:12:31.599Z_
+_Run ID: 989991b4-32df-4ae8-af51-4d99dd3d1c86_
 
 ---
 
 ## Summary
 
-The system is currently failing at 50% pass rate, with inquiry_parse, correspondence, and quote_draft modules performing at 0%. These modules show no improvement over recent runs. The client_parse and allergen_risk modules are now stable and passing consistently.
+The system is failing across most modules with a 33% pass rate. The inquiry_parse, client_parse, correspondence, and quote_draft modules require immediate attention. The allergen_risk and menu_suggestions modules are now passing consistently, showing recent improvement.
 
 ## Failures & Root Causes
 
 **inquiry_parse**
-The module is hallucinating client names and guest counts when none are present in input. It's not properly detecting undefined values and is generating false data. This suggests the module lacks clear rules for handling missing information.
+The module is incorrectly extracting client names and guest counts from inquiries. It's adding data that doesn't exist in the original text instead of leaving fields undefined. This suggests the prompt lacks clear instructions to avoid inventing information.
+
+**client_parse**
+The module is inconsistently handling contact details. It's including phone numbers when they were already present in the original note, and it's not properly validating phone number formats. The prompt doesn't specify to preserve original contact data exactly as written.
 
 **correspondence**
-The module fails to generate subject lines with specific client names and lacks client-specific details in the body. It's producing generic, non-personalized content that doesn't meet the required specificity standards.
+The module is failing to generate proper subject lines and is producing generic or empty email bodies. It's not incorporating client-specific information from the original inquiry, indicating a lack of clear instructions to personalize content.
 
 **quote_draft**
-The module is generating unrealistic pricing. It's producing total prices and per-person rates that exceed defined maximums. This indicates the module doesn't properly constrain its output to the expected pricing parameters.
+The module is calculating incorrect pricing. It's producing a total price outside the expected range and exceeding the per-person rate threshold. This suggests the pricing formula isn't being correctly applied or the module isn't properly parsing input parameters.
 
 ## Prompt Fix Recommendations
 
 **inquiry_parse**
-Add explicit null rules to detect missing client names and guest counts. Include examples like "Hi there" is NOT a client name, "a few of us" is NOT a guest count, and "no one" is NOT a guest count. Require the module to return undefined when no valid data is present.
+Update the prompt to explicitly state: "Only extract information that exists in the original inquiry. If a field is not mentioned, leave it undefined. Do not invent or add information that isn't present."
+
+**client_parse**
+Revise the prompt to include: "Preserve all original contact details exactly as written. Do not add, remove, or modify phone numbers or other contact information. If a phone number is present in the original note, include it in the output with the same format."
 
 **correspondence**
-Strengthen the requirement for client-specific content. Specify that the subject line must include the client's name and that the body must reference specific client details. Add explicit instructions that generic phrasing is not acceptable.
+Modify the prompt to specify: "Generate a personalized subject line using client name and event details. Create a body that includes specific client information and event details from the original inquiry. Do not use generic templates or empty content."
 
 **quote_draft**
-Replace the pricing range with a clear formula: $85/$125/$175 per person, 30% grocery cost, $150 travel fee, 50% deposit. Add explicit constraints that total price must be between $0-$10,000 and per-person rate must not exceed $500.
+Update the prompt to include: "Apply the explicit pricing formula: $85/$125/$175 per person, 30% grocery cost, $150 travel fee, 50% deposit. Verify that calculated totals fall within expected ranges and per-person rates don't exceed $500."
 
 ## What's Working Well
 
-The client_parse and allergen_risk modules are consistently passing. The menu_suggestions module also remains stable. These modules have shown improvement over recent runs, with allergen_risk particularly stabilizing after the 4-step scan protocol was implemented.
+The allergen_risk and menu_suggestions modules are consistently passing, showing that these components are functioning correctly. The recent improvement in these modules indicates that the system architecture for these functions is solid.
 
 ---
 
