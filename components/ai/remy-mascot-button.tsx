@@ -34,6 +34,10 @@ interface RemyMascotButtonProps {
   onToggleMinimize?: () => void
   /** Called when a non-looping body animation completes */
   onAnimComplete?: () => void
+  /** Proactive nudge message — overrides the hover greeting SpeechBubble */
+  nudgeMessage?: string | null
+  /** Called when the user dismisses a nudge */
+  onDismissNudge?: () => void
 
   // Legacy compat — mapped internally
   state?: 'idle' | 'thinking' | 'success' | 'nudge' | 'sleeping'
@@ -69,6 +73,8 @@ export function RemyMascotButton({
   minimized = false,
   onToggleMinimize,
   onAnimComplete,
+  nudgeMessage = null,
+  onDismissNudge,
 }: RemyMascotButtonProps) {
   const [showSpeechBubble, setShowSpeechBubble] = useState(false)
   const [greeting, setGreeting] = useState(GREETINGS[0])
@@ -167,8 +173,14 @@ export function RemyMascotButton({
         {/* Thinking bubble */}
         {!minimized && effectiveBodyState === 'thinking' && <ThinkingBubble />}
 
-        {/* Speech bubble (hover, once per session) */}
+        {/* Nudge speech bubble — proactive, takes priority over hover greeting */}
+        {!minimized && nudgeMessage && effectiveBodyState === 'nudge' && (
+          <SpeechBubble text={nudgeMessage} onClick={onDismissNudge} />
+        )}
+
+        {/* Speech bubble (hover, once per session) — hidden when nudge is active */}
         {!minimized &&
+          !nudgeMessage &&
           showSpeechBubble &&
           effectiveBodyState !== 'thinking' &&
           effectiveBodyState !== 'sleeping' && <SpeechBubble text={greeting} />}
@@ -232,10 +244,21 @@ function ThinkingBubble() {
   )
 }
 
-/** Speech bubble — small tooltip with greeting text */
-function SpeechBubble({ text }: { text: string }) {
+/** Speech bubble — small tooltip with greeting or nudge text */
+function SpeechBubble({ text, onClick }: { text: string; onClick?: () => void }) {
   return (
-    <div className="absolute -top-10 left-0 whitespace-nowrap rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-stone-700 shadow-lg animate-fade-slide-up">
+    <div
+      className={[
+        'absolute -top-10 left-0 whitespace-nowrap rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-stone-700 shadow-lg animate-fade-slide-up',
+        onClick ? 'cursor-pointer hover:bg-stone-50' : '',
+      ].join(' ')}
+      onClick={(e) => {
+        if (onClick) {
+          e.stopPropagation()
+          onClick()
+        }
+      }}
+    >
       {/* Tail */}
       <div className="absolute -bottom-1 left-4 w-2.5 h-2.5 bg-white rotate-45 rounded-sm" />
       {text}

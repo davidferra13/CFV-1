@@ -3251,7 +3251,7 @@ async function handleRequest(req, res) {
   if (path === '/' || path === '/index.html') {
     try {
       const html = await readFile(join(__dirname, 'index.html'), 'utf-8')
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache, no-store, must-revalidate' })
       return res.end(html)
     } catch {
       res.writeHead(500)
@@ -3794,7 +3794,7 @@ async function handleRequest(req, res) {
   if (path === '/api/login-as' && method === 'POST') {
     const body = await parseBody(req)
     const role = body.role
-    const validRoles = ['chef', 'client', 'staff', 'partner', 'admin', 'chef-b', 'developer']
+    const validRoles = ['chef', 'client', 'staff', 'partner', 'admin', 'chef-b', 'developer', 'guest']
     if (!role || !validRoles.includes(role)) {
       return json(res, { error: `Invalid role. Valid: ${validRoles.join(', ')}` }, 400)
     }

@@ -106,6 +106,25 @@ async function main() {
     process.exit(1)
   }
 
+  // Guest mode — no login, just open the site
+  if (role === 'guest') {
+    console.log(`[open-login] Launching Chrome incognito as Guest (no login)...`)
+    const browser = await chromium.launch({
+      headless: false,
+      channel: 'chrome',
+      args: ['--incognito'],
+    })
+    const context = browser.contexts()[0] || await browser.newContext()
+    const page = await context.newPage()
+    await page.goto(BASE_URL, { timeout: 60_000 })
+    console.log(`[open-login] ✓ Guest view open. Browser will stay open.`)
+    browser.on('disconnected', () => {
+      console.log(`[open-login] Browser closed. Exiting.`)
+      process.exit(0)
+    })
+    return
+  }
+
   const account = getAccount(role)
   if (!account) {
     console.error(`Unknown role: ${role}`)

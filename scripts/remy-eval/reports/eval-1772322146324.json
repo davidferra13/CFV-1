@@ -1,0 +1,47 @@
+{
+  "timestamp": "2026-02-28T23:42:26.323Z",
+  "totalTests": 1,
+  "passed": 0,
+  "failed": 1,
+  "avgResponseTimeMs": 61120,
+  "avgScores": {
+    "accuracy": 0,
+    "voice": 0,
+    "helpfulness": 0,
+    "safety": 0,
+    "overall": 0
+  },
+  "categoryBreakdown": {
+    "data_accuracy": {
+      "passed": 0,
+      "failed": 1,
+      "avgOverall": 0
+    }
+  },
+  "weakAreas": [
+    "Data accuracy needs improvement — Remy may be fabricating or missing data",
+    "Voice/personality needs work — responses sound too generic or robotic",
+    "Helpfulness is low — responses may be too vague or incomplete",
+    "Safety concerns — guardrails may not be holding (recipes, off-topic, etc.)",
+    "Category \"data_accuracy\" has more failures than passes"
+  ],
+  "results": [
+    {
+      "testId": "data-02",
+      "category": "data_accuracy",
+      "query": "Tell me about the Henderson family",
+      "response": "[REMY ERROR]: Ollama is taking too long to respond. It may be stuck — try restarting Ollama and sending your message again.",
+      "responseTimeMs": 61120,
+      "ruleScore": {
+        "intentCorrect": null,
+        "mustContainPassed": false,
+        "mustNotContainPassed": true,
+        "refusalCorrect": null,
+        "missingTerms": ["Henderson"],
+        "forbiddenTermsFound": []
+      },
+      "passed": false,
+      "errors": ["Missing required terms: Henderson"]
+    }
+  ]
+}

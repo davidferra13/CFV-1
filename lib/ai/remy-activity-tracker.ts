@@ -320,6 +320,74 @@ export function getActiveForm(): string | null {
   }
 }
 
+// ─── Cross-Chat Channel Digests ──────────────────────────────────────────────
+
+const DIGEST_KEY_PREFIX = 'remy-channel-digest-'
+const MAX_DIGEST_ENTRIES = 3
+
+export interface ChannelDigestEntry {
+  userExcerpt: string
+  remyExcerpt: string
+  at: string
+}
+
+/**
+ * Update the conversation digest for a chat channel.
+ * Called after each successful message exchange.
+ * Stores a rolling window of the last 3 exchanges as short excerpts.
+ */
+export function updateChannelDigest(
+  channel: 'mascot' | 'drawer',
+  userMessage: string,
+  remyResponse: string
+): void {
+  if (typeof window === 'undefined') return
+
+  try {
+    const key = DIGEST_KEY_PREFIX + channel
+    const raw = sessionStorage.getItem(key)
+    const entries: ChannelDigestEntry[] = raw ? JSON.parse(raw) : []
+
+    entries.push({
+      userExcerpt: userMessage.slice(0, 80).trim(),
+      remyExcerpt: remyResponse.slice(0, 80).trim(),
+      at: new Date().toISOString(),
+    })
+
+    const trimmed = entries.slice(-MAX_DIGEST_ENTRIES)
+    sessionStorage.setItem(key, JSON.stringify(trimmed))
+  } catch {
+    // sessionStorage full or unavailable
+  }
+}
+
+/**
+ * Get the conversation digest from the OTHER chat channel.
+ * Returns a formatted string for injection into the API request, or null if empty.
+ */
+export function getOtherChannelDigest(currentChannel: 'mascot' | 'drawer'): string | null {
+  if (typeof window === 'undefined') return null
+
+  try {
+    const otherChannel = currentChannel === 'mascot' ? 'drawer' : 'mascot'
+    const key = DIGEST_KEY_PREFIX + otherChannel
+    const raw = sessionStorage.getItem(key)
+    if (!raw) return null
+
+    const entries: ChannelDigestEntry[] = JSON.parse(raw)
+    if (entries.length === 0) return null
+
+    const channelLabel = otherChannel === 'mascot' ? 'quick chat' : 'full chat drawer'
+    const lines = entries.map(
+      (e) => `- Chef asked about "${e.userExcerpt}…" → Remy discussed "${e.remyExcerpt}…"`
+    )
+
+    return `Recent topics from the ${channelLabel}:\n${lines.join('\n')}`
+  } catch {
+    return null
+  }
+}
+
 // ─── Combined Getter (for sending with Remy messages) ────────────────────────
 
 /**

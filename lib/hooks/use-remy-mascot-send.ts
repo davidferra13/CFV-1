@@ -6,7 +6,12 @@
 import { useState, useRef, useCallback, useEffect, type Dispatch, type SetStateAction } from 'react'
 import { toast } from 'sonner'
 import { parseRemyStream } from '@/lib/ai/remy-stream-parser'
-import { getSessionActivity } from '@/lib/ai/remy-activity-tracker'
+import {
+  getSessionActivity,
+  updateChannelDigest,
+  getOtherChannelDigest,
+} from '@/lib/ai/remy-activity-tracker'
+import { extractSurveyAnswer } from '@/lib/ai/remy-survey-extraction'
 import type { BodyEvent } from '@/lib/ai/remy-body-state'
 import type { RemyMessage, RemyTaskResult, NavigationSuggestion } from '@/lib/ai/remy-types'
 
@@ -48,6 +53,8 @@ export interface UseRemyMascotSendConfig {
   drawerBusy: boolean
   /** When true, overrides activeForm to 'remy-survey' for survey mode */
   surveyActive?: boolean
+  /** Current survey question info — used for post-response extraction */
+  currentSurveyQuestion?: { key: string; prompt: string } | null
 }
 
 export function useRemyMascotSend(config: UseRemyMascotSendConfig) {
@@ -62,6 +69,7 @@ export function useRemyMascotSend(config: UseRemyMascotSendConfig) {
     setMascotLoading,
     drawerBusy,
     surveyActive = false,
+    currentSurveyQuestion = null,
   } = config
 
   const [input, setInput] = useState('')
@@ -138,6 +146,7 @@ export function useRemyMascotSend(config: UseRemyMascotSendConfig) {
         timeoutId = setTimeout(() => controller.abort(), 120_000)
 
         const activity = getSessionActivity()
+        const otherDigest = getOtherChannelDigest('mascot')
         const response = await fetch('/api/remy/stream', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -150,6 +159,7 @@ export function useRemyMascotSend(config: UseRemyMascotSendConfig) {
             recentErrors: activity.recentErrors,
             sessionMinutes: activity.sessionMinutes,
             activeForm: surveyActive ? 'remy-survey' : activity.activeForm,
+            ...(otherDigest && { otherChannelDigest: otherDigest }),
           }),
           signal: controller.signal,
         })
@@ -190,6 +200,18 @@ export function useRemyMascotSend(config: UseRemyMascotSendConfig) {
         setMessages((prev) => [...prev, remyMsg])
         setStreamingContent('')
         lipSyncStop()
+
+        // Cross-chat digest — record this exchange for the drawer to reference
+        updateChannelDigest('mascot', message, cleanContent)
+
+        // Survey answer extraction — non-blocking Ollama fast-tier extraction
+        if (surveyActive && currentSurveyQuestion) {
+          extractSurveyAnswer(
+            currentSurveyQuestion.key,
+            currentSurveyQuestion.prompt,
+            message
+          ).catch((err) => console.error('[non-blocking] Survey extraction failed:', err))
+        }
 
         const hasTasks =
           result.tasks && result.tasks.length > 0 && result.tasks.some((t) => t.status === 'done')
@@ -247,6 +269,7 @@ export function useRemyMascotSend(config: UseRemyMascotSendConfig) {
       setMessages,
       setLoading,
       surveyActive,
+      currentSurveyQuestion,
     ]
   )
 

@@ -132,7 +132,8 @@ function buildRemySystemPrompt(
   recentErrors?: Array<{ message: string; context: string; at: string }>,
   sessionMinutes?: number,
   activeForm?: string,
-  surveyPromptSection?: string | null
+  surveyPromptSection?: string | null,
+  otherChannelDigest?: string | null
 ): string {
   const parts: string[] = []
 
@@ -472,6 +473,13 @@ If the chef seems frustrated or asks about something failing, these errors are c
         `That's a long session — they're grinding. Be efficient and sharp, don't waste their time.`
       )
     }
+  }
+
+  // Cross-chat awareness — what was discussed in the other chat channel
+  if (otherChannelDigest) {
+    parts.push(`\nCONTEXT FROM OTHER CHAT CHANNEL:
+${otherChannelDigest}
+You can reference this context naturally if relevant — don't force it or repeat what was already said.`)
   }
 
   // Survey mode — conversational survey takes over prompt context
@@ -1176,6 +1184,11 @@ export async function POST(req: NextRequest) {
       sessionMinutes,
       activeForm,
     } = validated
+    // Cross-chat digest is optional — passed through without validation (plain string)
+    const otherChannelDigest =
+      typeof rawBody.otherChannelDigest === 'string'
+        ? rawBody.otherChannelDigest.slice(0, 600)
+        : null
     const history = validateHistory(rawBody.history, 10) as RemyMessage[]
 
     // ─── GUARDRAILS ──────────────────────────────────────────────
@@ -1564,7 +1577,8 @@ export async function POST(req: NextRequest) {
         recentErrors,
         sessionMinutes,
         activeForm,
-        surveyPromptSection
+        surveyPromptSection,
+        otherChannelDigest
       )
       const historyStr = formatConversationHistory(history)
       const mixedUserMessage = `${historyStr}Chef: ${questionInput}`
@@ -1735,7 +1749,8 @@ export async function POST(req: NextRequest) {
       recentErrors,
       sessionMinutes,
       activeForm,
-      surveyPromptSection
+      surveyPromptSection,
+      otherChannelDigest
     )
     const historyStr = formatConversationHistory(history)
     const userMessage = `${historyStr}Chef: ${message}`

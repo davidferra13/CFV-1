@@ -15,7 +15,11 @@ import { parseRemyStream } from '@/lib/ai/remy-stream-parser'
 import { approveTask } from '@/lib/ai/command-orchestrator'
 import { saveRemyMessage, saveRemyTaskResult } from '@/lib/ai/remy-artifact-actions'
 import { extractAndSaveMemories } from '@/lib/ai/remy-memory-actions'
-import { getSessionActivity } from '@/lib/ai/remy-activity-tracker'
+import {
+  getSessionActivity,
+  updateChannelDigest,
+  getOtherChannelDigest,
+} from '@/lib/ai/remy-activity-tracker'
 import type { BodyEvent } from '@/lib/ai/remy-body-state'
 import type {
   RemyMessage,
@@ -259,6 +263,7 @@ export function useRemySend(config: UseRemySendConfig) {
         timeoutId = setTimeout(() => controller.abort(), 120_000)
 
         const activity = getSessionActivity()
+        const otherDigest = getOtherChannelDigest('drawer')
         const response = await fetch('/api/remy/stream', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -271,6 +276,7 @@ export function useRemySend(config: UseRemySendConfig) {
             recentErrors: activity.recentErrors,
             sessionMinutes: activity.sessionMinutes,
             activeForm: activity.activeForm,
+            ...(otherDigest && { otherChannelDigest: otherDigest }),
           }),
           signal: controller.signal,
         })
@@ -314,6 +320,9 @@ export function useRemySend(config: UseRemySendConfig) {
         setStreamingContent('')
         setStreamingIntent(undefined)
         lipSyncStop()
+
+        // Cross-chat digest — record this exchange for the mascot to reference
+        updateChannelDigest('drawer', message, cleanContent)
 
         const hasTasks = tasks && tasks.length > 0 && tasks.some((t) => t.status === 'done')
         if (hasTasks) {
