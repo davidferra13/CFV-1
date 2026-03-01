@@ -24,6 +24,9 @@ import {
 } from '@/lib/ai/remy-personality'
 import { getArchetype } from '@/lib/ai/remy-archetypes'
 import { getRemyArchetype } from '@/lib/ai/privacy-actions'
+import { getSurveyState } from '@/lib/ai/remy-survey-actions'
+import { buildSurveyPromptSection } from '@/lib/ai/remy-survey-prompt'
+import type { SurveyState } from '@/lib/ai/remy-survey-constants'
 import { getCulinaryProfileForPrompt } from '@/lib/ai/chef-profile-actions'
 import { getFavoriteChefs } from '@/lib/favorite-chefs/actions'
 import { validateRemyInput, checkRemyRateLimit } from '@/lib/ai/remy-guardrails'
@@ -128,7 +131,8 @@ function buildRemySystemPrompt(
   recentActions?: Array<{ action: string; entity: string; at: string }>,
   recentErrors?: Array<{ message: string; context: string; at: string }>,
   sessionMinutes?: number,
-  activeForm?: string
+  activeForm?: string,
+  surveyPromptSection?: string | null
 ): string {
   const parts: string[] = []
 
@@ -470,8 +474,11 @@ If the chef seems frustrated or asks about something failing, these errors are c
     }
   }
 
-  // Active form — what the chef is currently working on
-  if (activeForm) {
+  // Survey mode — conversational survey takes over prompt context
+  if (activeForm === 'remy-survey' && surveyPromptSection) {
+    parts.push(`\n${surveyPromptSection}`)
+  } else if (activeForm) {
+    // Active form — what the chef is currently working on
     parts.push(
       `\nCURRENTLY WORKING ON: The chef is in the middle of "${activeForm}". If they ask a question, it's probably related to this. Keep answers contextual.`
     )
@@ -713,7 +720,18 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
       continue
     }
     if (task.status === 'pending') {
-      summaries.push(`I've drafted "${name}" for your review — check the card below.`)
+      // Inline draft content so the text stream includes the actual draft
+      const pendingData = task.data as
+        | { draftText?: string; subject?: string; clientName?: string }
+        | undefined
+      if (pendingData?.draftText) {
+        const label = pendingData.clientName ? ` for ${pendingData.clientName}` : ''
+        summaries.push(
+          `I've drafted "${name}"${label} for your review — edit before sending:\n\n${pendingData.draftText}`
+        )
+      } else {
+        summaries.push(`I've drafted "${name}" for your review — check the card below.`)
+      }
       continue
     }
 
@@ -1301,23 +1319,29 @@ export async function POST(req: NextRequest) {
     let culinaryProfile: string | undefined
     let favoriteChefsList: string | undefined
     let archetypeId: string | null = null
+    let surveyState: SurveyState | null = null
 
     try {
-      const [ctx, cls, mems, profile, favChefs, mentioned, archetype] = (await Promise.race([
-        Promise.all([
-          loadRemyContext(currentPage),
-          classifyIntent(message),
-          loadRelevantMemories(message, undefined, undefined),
-          getCulinaryProfileForPrompt(user.tenantId!).catch(() => ''),
-          getFavoriteChefs().catch(() => []),
-          resolveMessageEntities(message).catch((err) => {
-            console.error('[non-blocking] Entity resolution failed:', err)
-            return []
-          }),
-          getRemyArchetype().catch(() => null),
-        ]),
-        setupTimeout,
-      ])) as [
+      const [ctx, cls, mems, profile, favChefs, mentioned, archetype, survey] = (await Promise.race(
+        [
+          Promise.all([
+            loadRemyContext(currentPage),
+            classifyIntent(message),
+            loadRelevantMemories(message, undefined, undefined),
+            getCulinaryProfileForPrompt(user.tenantId!).catch(() => ''),
+            getFavoriteChefs().catch(() => []),
+            resolveMessageEntities(message).catch((err) => {
+              console.error('[non-blocking] Entity resolution failed:', err)
+              return []
+            }),
+            getRemyArchetype().catch(() => null),
+            activeForm === 'remy-survey'
+              ? getSurveyState().catch(() => null)
+              : Promise.resolve(null),
+          ]),
+          setupTimeout,
+        ]
+      )) as [
         Awaited<ReturnType<typeof loadRemyContext>>,
         Awaited<ReturnType<typeof classifyIntent>>,
         Awaited<ReturnType<typeof loadRelevantMemories>>,
@@ -1325,6 +1349,7 @@ export async function POST(req: NextRequest) {
         Awaited<ReturnType<typeof getFavoriteChefs>>,
         Awaited<ReturnType<typeof resolveMessageEntities>>,
         string | null,
+        SurveyState | null,
       ]
       context = ctx
       if (mentioned.length > 0) context.mentionedEntities = mentioned
@@ -1332,6 +1357,7 @@ export async function POST(req: NextRequest) {
       memories = mems
       culinaryProfile = profile || undefined
       archetypeId = archetype
+      surveyState = survey
       if (favChefs.length > 0) {
         favoriteChefsList = favChefs
           .map((c) => `- ${c.chefName}${c.reason ? `: ${c.reason}` : ''}`)
@@ -1353,6 +1379,10 @@ export async function POST(req: NextRequest) {
         { headers: sseHeaders() }
       )
     }
+
+    // Build survey prompt section if in survey mode
+    const surveyPromptSection =
+      activeForm === 'remy-survey' ? buildSurveyPromptSection(surveyState) : null
 
     // ─── Safety-critical fast-path: dietary/allergy queries → command ────
     // Allergy queries are safety-critical and MUST route through dietary.check
@@ -1468,7 +1498,8 @@ export async function POST(req: NextRequest) {
         recentActions,
         recentErrors,
         sessionMinutes,
-        activeForm
+        activeForm,
+        surveyPromptSection
       )
       const historyStr = formatConversationHistory(history)
       const mixedUserMessage = `${historyStr}Chef: ${questionInput}`
@@ -1638,7 +1669,8 @@ export async function POST(req: NextRequest) {
       recentActions,
       recentErrors,
       sessionMinutes,
-      activeForm
+      activeForm,
+      surveyPromptSection
     )
     const historyStr = formatConversationHistory(history)
     const userMessage = `${historyStr}Chef: ${message}`

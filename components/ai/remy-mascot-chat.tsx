@@ -4,14 +4,23 @@
 // Ephemeral (session-only) — no IndexedDB persistence, no conversation management.
 // The "quick chat" channel: fast, conversational, person-like.
 // For deeper work, the chef uses the full drawer (Ctrl+K).
+// Supports "Get to Know You" survey mode when activated.
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useTransition } from 'react'
 import { usePathname } from 'next/navigation'
 import { X, Send, Loader2, RotateCcw } from 'lucide-react'
 import { useRemyContext } from '@/components/ai/remy-context'
 import { useRemyMascotSend } from '@/lib/hooks/use-remy-mascot-send'
 import { RemyAvatar } from '@/components/ai/remy-avatar'
+import { SurveyProgressBar } from '@/components/ai/survey-progress-bar'
 import { getStartersForPage } from '@/lib/ai/remy-starters'
+import {
+  getSurveyState,
+  startSurvey,
+  completeIntro,
+  saveSurveyAnswer,
+} from '@/lib/ai/remy-survey-actions'
+import type { SurveyState } from '@/lib/ai/remy-survey-constants'
 import type { RemyMessage } from '@/lib/ai/remy-types'
 
 export function RemyMascotChat() {
@@ -28,9 +37,13 @@ export function RemyMascotChat() {
   } = useRemyContext()
 
   const [messages, setMessages] = useState<RemyMessage[]>([])
+  const [surveyState, setSurveyState] = useState<SurveyState | null>(null)
+  const [surveyActive, setSurveyActive] = useState(false)
+  const [, startTransition] = useTransition()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
+  const surveyLoadedRef = useRef(false)
 
   const { input, setInput, loading, streamingContent, handleSend, handleCancel } =
     useRemyMascotSend({
@@ -43,7 +56,26 @@ export function RemyMascotChat() {
       dispatchBody,
       setMascotLoading: setIsMascotLoading,
       drawerBusy,
+      surveyActive,
     })
+
+  // Load survey state once when panel first opens
+  useEffect(() => {
+    if (!isMascotChatOpen || surveyLoadedRef.current) return
+    surveyLoadedRef.current = true
+    startTransition(async () => {
+      try {
+        const state = await getSurveyState()
+        setSurveyState(state)
+        // Resume survey if it was in progress
+        if (state?.status === 'in_progress') {
+          setSurveyActive(true)
+        }
+      } catch {
+        // Non-critical — survey is optional
+      }
+    })
+  }, [isMascotChatOpen])
 
   // Auto-scroll to bottom on new messages or streaming
   useEffect(() => {
@@ -92,9 +124,37 @@ export function RemyMascotChat() {
     [handleSend]
   )
 
+  // Start the survey
+  const handleStartSurvey = useCallback(() => {
+    startTransition(async () => {
+      try {
+        const { state } = await startSurvey()
+        setSurveyState(state)
+        setSurveyActive(true)
+        // Send the trigger message to start the survey conversation
+        handleSend("Let's do the get-to-know-you survey")
+      } catch {
+        // Fall back to just sending the message
+        setSurveyActive(true)
+        handleSend("Let's do the get-to-know-you survey")
+      }
+    })
+  }, [handleSend])
+
+  // Resume an in-progress survey
+  const handleResumeSurvey = useCallback(() => {
+    setSurveyActive(true)
+    handleSend("Let's pick up where we left off on the survey")
+  }, [handleSend])
+
   if (!isMascotChatOpen) return null
 
   const starters = getStartersForPage(pathname ?? '/dashboard').slice(0, 3)
+
+  // Determine survey starter visibility
+  const showSurveyStart = !surveyState || surveyState.status === 'not_started'
+  const showSurveyResume = surveyState?.status === 'in_progress' && !surveyActive
+  const surveyCompleted = surveyState?.status === 'completed'
 
   return (
     <div
@@ -107,7 +167,9 @@ export function RemyMascotChat() {
           <RemyAvatar size="sm" />
           <div>
             <div className="text-sm font-semibold text-stone-100">Remy</div>
-            <div className="text-[10px] text-stone-400">Quick chat</div>
+            <div className="text-[10px] text-stone-400">
+              {surveyActive ? 'Getting to know you' : 'Quick chat'}
+            </div>
           </div>
         </div>
         <button
@@ -119,6 +181,9 @@ export function RemyMascotChat() {
         </button>
       </div>
 
+      {/* Survey progress bar */}
+      {surveyActive && surveyState && <SurveyProgressBar answered={surveyState.answered.length} />}
+
       {/* Messages */}
       <div
         className="flex-1 overflow-y-auto p-3 custom-scrollbar"
@@ -129,6 +194,29 @@ export function RemyMascotChat() {
           <div className="py-4 text-center">
             <p className="text-xs text-stone-400 mb-3">What can I help with?</p>
             <div className="flex flex-col gap-1.5">
+              {/* Survey starter — "Get to know me better" */}
+              {showSurveyStart && (
+                <button
+                  onClick={handleStartSurvey}
+                  disabled={loading || drawerBusy}
+                  className="text-left rounded-lg border border-brand-600/30 bg-brand-950/50 px-3 py-2 text-xs text-brand-300 transition-colors hover:bg-brand-900/50 hover:text-brand-200 disabled:opacity-40"
+                >
+                  Get to know me better
+                </button>
+              )}
+
+              {/* Resume survey */}
+              {showSurveyResume && (
+                <button
+                  onClick={handleResumeSurvey}
+                  disabled={loading || drawerBusy}
+                  className="text-left rounded-lg border border-brand-600/30 bg-brand-950/50 px-3 py-2 text-xs text-brand-300 transition-colors hover:bg-brand-900/50 hover:text-brand-200 disabled:opacity-40"
+                >
+                  Pick up where we left off
+                </button>
+              )}
+
+              {/* Regular starters */}
               {starters.map((s) => (
                 <button
                   key={s.text}
@@ -205,7 +293,7 @@ export function RemyMascotChat() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask Remy anything..."
+            placeholder={surveyActive ? 'Tell Remy about yourself...' : 'Ask Remy anything...'}
             rows={1}
             className="flex-1 resize-none rounded-xl border border-stone-600 bg-stone-800 px-3 py-2 text-sm text-stone-200 placeholder-stone-500 outline-none transition-colors focus:border-brand-400 focus:ring-1 focus:ring-brand-400"
             disabled={loading || drawerBusy}
@@ -231,7 +319,9 @@ export function RemyMascotChat() {
           )}
         </div>
         <p className="mt-1 text-center text-[9px] text-stone-600">
-          Quick chat — use Ctrl+K for deeper conversations
+          {surveyActive
+            ? 'Optional — skip any question or stop anytime'
+            : 'Quick chat — use Ctrl+K for deeper conversations'}
         </p>
       </div>
     </div>

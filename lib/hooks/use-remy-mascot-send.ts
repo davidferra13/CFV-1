@@ -46,6 +46,8 @@ export interface UseRemyMascotSendConfig {
   setMascotLoading: (v: boolean) => void
   /** Whether the drawer is currently streaming (blocks mascot send) */
   drawerBusy: boolean
+  /** When true, overrides activeForm to 'remy-survey' for survey mode */
+  surveyActive?: boolean
 }
 
 export function useRemyMascotSend(config: UseRemyMascotSendConfig) {
@@ -59,6 +61,7 @@ export function useRemyMascotSend(config: UseRemyMascotSendConfig) {
     dispatchBody,
     setMascotLoading,
     drawerBusy,
+    surveyActive = false,
   } = config
 
   const [input, setInput] = useState('')
@@ -146,7 +149,7 @@ export function useRemyMascotSend(config: UseRemyMascotSendConfig) {
             recentActions: activity.recentActions,
             recentErrors: activity.recentErrors,
             sessionMinutes: activity.sessionMinutes,
-            activeForm: activity.activeForm,
+            activeForm: surveyActive ? 'remy-survey' : activity.activeForm,
           }),
           signal: controller.signal,
         })
@@ -243,6 +246,7 @@ export function useRemyMascotSend(config: UseRemyMascotSendConfig) {
       dispatchBody,
       setMessages,
       setLoading,
+      surveyActive,
     ]
   )
 
