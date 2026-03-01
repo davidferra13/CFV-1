@@ -262,7 +262,7 @@ function RailFlyout({
         aria-expanded={open}
         className={`flex items-center justify-center w-10 h-10 rounded-lg mx-auto transition-colors ${
           active
-            ? 'bg-brand-950 text-brand-600'
+            ? 'bg-brand-950 text-brand-600 ring-1 ring-brand-800/40'
             : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
         }`}
       >
@@ -741,13 +741,13 @@ export function ChefSidebar({
 
   return (
     <aside
-      className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 bg-stone-900 border-r border-stone-700 transition-all duration-200 z-30 ${
+      className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 bg-[var(--surface-1)] sidebar-gradient border-r border-stone-800/60 transition-all duration-200 z-30 ${
         collapsed ? 'lg:w-16' : 'lg:w-60'
       }`}
     >
       {/* Logo + notification bell + collapse toggle */}
       <div
-        className={`flex items-center h-16 border-b border-stone-800 ${collapsed ? 'px-3 justify-center' : 'px-3 justify-between'}`}
+        className={`flex items-center h-16 border-b border-stone-800/60 shadow-[0_1px_8px_rgba(0,0,0,0.2)] ${collapsed ? 'px-3 justify-center' : 'px-3 justify-between'}`}
       >
         <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0">
           <AppLogo />

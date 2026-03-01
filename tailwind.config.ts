@@ -85,6 +85,14 @@ const config: Config = {
           '85%': { transform: 'translateY(1px) scaleY(0.95) scaleX(1.04)' },
           '100%': { transform: 'translateY(0) scaleY(1) scaleX(1)' },
         },
+        'slide-down-fade': {
+          from: { opacity: '0', transform: 'translateY(-8px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        'scale-fade': {
+          from: { opacity: '0', transform: 'scale(0.95)' },
+          to: { opacity: '1', transform: 'scale(1)' },
+        },
       },
       animation: {
         'fade-slide-up': 'fade-slide-up 220ms cubic-bezier(0.16, 1, 0.3, 1) both',
@@ -97,6 +105,8 @@ const config: Config = {
         'thinking-dot': 'thinking-dot 0.6s ease-in-out infinite',
         'remy-breathe': 'remy-breathe 4s ease-in-out infinite',
         'remy-hat-wobble': 'remy-hat-wobble 4.5s ease-in-out infinite',
+        'slide-down-fade': 'slide-down-fade 250ms cubic-bezier(0.16, 1, 0.3, 1) both',
+        'scale-fade': 'scale-fade 200ms cubic-bezier(0.16, 1, 0.3, 1) both',
       },
     },
   },

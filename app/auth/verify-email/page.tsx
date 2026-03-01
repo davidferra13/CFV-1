@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 
 export default function VerifyEmailPage() {
   return (
-    <div className="min-h-screen bg-stone-800 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-stone-950 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>

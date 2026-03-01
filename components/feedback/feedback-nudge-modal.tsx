@@ -29,7 +29,7 @@ export function FeedbackNudgeModal() {
     } catch {
       // localStorage unavailable — still show once this session
     }
-    const timer = setTimeout(() => setVisible(true), 1000)
+    const timer = setTimeout(() => setVisible(true), 5000)
     return () => clearTimeout(timer)
   }, [])
 
@@ -67,7 +67,7 @@ export function FeedbackNudgeModal() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] animate-in fade-in duration-200"
       onClick={dismiss}
     >
       <div

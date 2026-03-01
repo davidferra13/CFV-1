@@ -29,14 +29,20 @@ export function EmptyState({
   secondaryAction,
 }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+    <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
       {illustration ? (
-        <div className="mb-6 [&>svg]:h-24 [&>svg]:w-24">{illustration}</div>
+        <div className="relative mb-6">
+          <div className="absolute inset-0 -m-4 rounded-full bg-brand-500/5 blur-xl" />
+          <div className="relative [&>svg]:h-24 [&>svg]:w-24">{illustration}</div>
+        </div>
       ) : icon ? (
-        <div className="mb-4 text-stone-300 [&>svg]:h-12 [&>svg]:w-12">{icon}</div>
+        <div className="relative mb-6">
+          <div className="absolute inset-0 -m-4 rounded-full bg-brand-500/5 blur-xl" />
+          <div className="relative text-stone-400 [&>svg]:h-12 [&>svg]:w-12">{icon}</div>
+        </div>
       ) : null}
       <h3 className="text-lg font-semibold text-stone-100 mb-2">{title}</h3>
-      <p className="text-sm text-stone-500 max-w-sm mb-6">{description}</p>
+      <p className="text-sm text-stone-500 max-w-sm mb-8 leading-relaxed">{description}</p>
       {(action || secondaryAction) && (
         <div className="flex flex-col sm:flex-row items-center gap-3">
           {action && (

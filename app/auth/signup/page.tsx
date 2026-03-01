@@ -140,7 +140,7 @@ function SignUpForm() {
   if (token) {
     if (invitationLoading) {
       return (
-        <div className="min-h-screen bg-stone-800 flex items-center justify-center px-4">
+        <div className="min-h-screen bg-stone-950 flex items-center justify-center px-4">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mx-auto"></div>
             <p className="mt-4 text-stone-400">Loading invitation...</p>
@@ -150,7 +150,7 @@ function SignUpForm() {
     }
 
     return (
-      <div className="min-h-screen bg-stone-800 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-stone-950 flex items-center justify-center px-4">
         <div className="max-w-md w-full">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>
@@ -222,7 +222,7 @@ function SignUpForm() {
 
   // Chef signup (public)
   return (
-    <div className="min-h-screen bg-stone-800 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-stone-950 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>
@@ -336,7 +336,7 @@ export default function SignUpPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-stone-800 flex items-center justify-center">
+        <div className="min-h-screen bg-stone-950 flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600"></div>
         </div>
       }

@@ -29,7 +29,7 @@ export function CookieConsent() {
   if (!visible) return null
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-stone-900 border border-stone-700 shadow-lg rounded-xl px-6 py-4 z-50 flex flex-col md:flex-row items-center gap-4 max-w-lg w-full">
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 backdrop-blur-md bg-stone-900/90 border border-stone-700/60 shadow-lg rounded-xl px-6 py-4 z-50 flex flex-col md:flex-row items-center gap-4 max-w-lg w-full animate-slide-up-fade">
       <span className="text-stone-300 text-sm flex-1">
         This site uses cookies for basic functionality and analytics. See our{' '}
         <Link href="/privacy" className="underline hover:text-brand-400 transition-colors">
