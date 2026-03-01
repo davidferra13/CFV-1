@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
+import { requireAdmin } from '@/lib/auth/admin'
 import {
   getCharityHours,
   getRecentCharityOrgs,
@@ -16,6 +17,7 @@ export const metadata: Metadata = { title: 'Charity Hours - ChefFlow' }
 
 export default async function CharityHoursPage() {
   await requireChef()
+  await requireAdmin()
 
   const [entries, recentOrgs, summary, wfpStories] = await Promise.all([
     getCharityHours().catch(() => []),

@@ -5,6 +5,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
+import { requireAdmin } from '@/lib/auth/admin'
 import {
   getCharityEvents,
   getCharityMenus,
@@ -59,6 +60,7 @@ function formatDate(dateStr: string | null): string {
 
 export default async function CharityHubPage() {
   await requireChef()
+  await requireAdmin()
 
   const [events, menus, financials, misc, hoursSummary] = await Promise.all([
     getCharityEvents().catch(() => []),

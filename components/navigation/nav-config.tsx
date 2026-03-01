@@ -91,7 +91,7 @@ export const standaloneTop: NavItem[] = [
   { href: '/activity', label: 'Activity', icon: Activity },
   { href: '/goals', label: 'Goals', icon: Target },
   { href: '/prospecting', label: 'Prospecting', icon: Crosshair, adminOnly: true },
-  { href: '/charity', label: 'Charity Hub', icon: HeartHandshake },
+  { href: '/charity', label: 'Charity Hub', icon: HeartHandshake, adminOnly: true },
   { href: '/commerce', label: 'Commerce', icon: Store },
   { href: '/commerce/register', label: 'POS Register', icon: ShoppingCart },
 ]
