@@ -34,7 +34,7 @@ export default async function CreateDinnerPage() {
 
       <CreateEventForm profileToken={profileToken} />
 
-      <ActivityTracker eventType="create_dinner_viewed" />
+      <ActivityTracker eventType="page_viewed" />
     </div>
   )
 }

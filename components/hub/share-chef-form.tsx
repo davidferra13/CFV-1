@@ -111,7 +111,6 @@ export function ShareChefForm({
                   <p className="truncate font-medium text-stone-100">{chef.business_name}</p>
                   <p className="text-xs text-stone-400">
                     {chef.event_count} {chef.event_count === 1 ? 'event' : 'events'} together
-                    {chef.city && ` · ${chef.city}`}
                   </p>
                 </div>
                 {selectedChef === chef.id && <Check className="h-5 w-5 shrink-0 text-brand-400" />}

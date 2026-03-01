@@ -9,12 +9,12 @@ CREATE TABLE IF NOT EXISTS hub_guest_friends (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   accepted_at TIMESTAMPTZ,
   declined_at TIMESTAMPTZ,
-  CONSTRAINT no_self_friend CHECK (requester_id <> addressee_id),
-  CONSTRAINT unique_friend_pair UNIQUE (
-    LEAST(requester_id, addressee_id),
-    GREATEST(requester_id, addressee_id)
-  )
+  CONSTRAINT no_self_friend CHECK (requester_id <> addressee_id)
 );
+
+-- Unique index on ordered pair to prevent duplicate friendships regardless of direction
+CREATE UNIQUE INDEX IF NOT EXISTS idx_hub_guest_friends_unique_pair
+  ON hub_guest_friends (LEAST(requester_id, addressee_id), GREATEST(requester_id, addressee_id));
 
 -- Index for fast lookups: "all friends of profile X"
 CREATE INDEX IF NOT EXISTS idx_hub_guest_friends_requester ON hub_guest_friends(requester_id);

@@ -15656,6 +15656,61 @@ export type Database = {
           },
         ]
       }
+      hub_chef_recommendations: {
+        Row: {
+          chef_business_name: string
+          chef_id: string
+          chef_slug: string | null
+          created_at: string
+          from_profile_id: string
+          id: string
+          message: string | null
+          to_profile_id: string
+        }
+        Insert: {
+          chef_business_name: string
+          chef_id: string
+          chef_slug?: string | null
+          created_at?: string
+          from_profile_id: string
+          id?: string
+          message?: string | null
+          to_profile_id: string
+        }
+        Update: {
+          chef_business_name?: string
+          chef_id?: string
+          chef_slug?: string | null
+          created_at?: string
+          from_profile_id?: string
+          id?: string
+          message?: string | null
+          to_profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_chef_recommendations_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_chef_recommendations_from_profile_id_fkey"
+            columns: ["from_profile_id"]
+            isOneToOne: false
+            referencedRelation: "hub_guest_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_chef_recommendations_to_profile_id_fkey"
+            columns: ["to_profile_id"]
+            isOneToOne: false
+            referencedRelation: "hub_guest_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hub_group_events: {
         Row: {
           added_at: string
@@ -15981,6 +16036,51 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_guest_friends: {
+        Row: {
+          accepted_at: string | null
+          addressee_id: string
+          created_at: string
+          declined_at: string | null
+          id: string
+          requester_id: string
+          status: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          addressee_id: string
+          created_at?: string
+          declined_at?: string | null
+          id?: string
+          requester_id: string
+          status?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          addressee_id?: string
+          created_at?: string
+          declined_at?: string | null
+          id?: string
+          requester_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_guest_friends_addressee_id_fkey"
+            columns: ["addressee_id"]
+            isOneToOne: false
+            referencedRelation: "hub_guest_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_guest_friends_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "hub_guest_profiles"
             referencedColumns: ["id"]
           },
         ]

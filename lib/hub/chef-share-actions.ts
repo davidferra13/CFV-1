@@ -13,8 +13,6 @@ export interface ShareableChef {
   id: string
   business_name: string
   slug: string | null
-  city: string | null
-  specialty: string | null
   event_count: number
 }
 
@@ -56,7 +54,7 @@ export async function getMyChefsToShare(): Promise<ShareableChef[]> {
 
   const { data: chefs } = await supabase
     .from('chefs')
-    .select('id, business_name, slug, city, specialty')
+    .select('id, business_name, slug')
     .in('id', chefIds)
 
   if (!chefs?.length) return []
@@ -65,8 +63,6 @@ export async function getMyChefsToShare(): Promise<ShareableChef[]> {
     id: c.id,
     business_name: c.business_name,
     slug: c.slug,
-    city: c.city,
-    specialty: c.specialty,
     event_count: chefCounts[c.id] || 0,
   }))
 }

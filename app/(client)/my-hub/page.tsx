@@ -7,9 +7,8 @@ import { getClientHubGroups } from '@/lib/hub/client-hub-actions'
 import { getMyFriends, getPendingFriendRequests } from '@/lib/hub/friend-actions'
 import { HubGroupCard } from '@/components/hub/hub-group-card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
-import { CalendarPlus, Users, UserPlus, Utensils, Share2 } from 'lucide-react'
+import { CalendarPlus, Users, Utensils, Share2 } from 'lucide-react'
 
 export const metadata: Metadata = { title: 'My Hub - ChefFlow' }
 
@@ -144,7 +143,7 @@ export default async function MyHubPage() {
         </div>
       )}
 
-      <ActivityTracker eventType="hub_dashboard_viewed" />
+      <ActivityTracker eventType="page_viewed" />
     </div>
   )
 }

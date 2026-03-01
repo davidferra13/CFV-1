@@ -34,7 +34,7 @@ export default async function MyFriendsPage() {
 
       <FriendsList initialFriends={friends} initialRequests={pendingRequests} />
 
-      <ActivityTracker eventType="friends_page_viewed" />
+      <ActivityTracker eventType="page_viewed" />
     </div>
   )
 }

@@ -8,7 +8,7 @@ import { getMyFriends } from '@/lib/hub/friend-actions'
 import { ShareChefForm } from '@/components/hub/share-chef-form'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, ChefHat, Star } from 'lucide-react'
+import { ArrowLeft, ChefHat } from 'lucide-react'
 
 export const metadata: Metadata = { title: 'Share a Chef - ChefFlow' }
 
@@ -79,7 +79,7 @@ export default async function ShareChefPage() {
         </div>
       )}
 
-      <ActivityTracker eventType="share_chef_viewed" />
+      <ActivityTracker eventType="page_viewed" />
     </div>
   )
 }
