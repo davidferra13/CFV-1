@@ -44,7 +44,7 @@ const REPORTS_DIR = path.join(ROOT, 'reports', `overnight-${DATE}`);
 const SCREENSHOTS_DIR = path.join(REPORTS_DIR, 'screenshots');
 const TEST_RESULTS_DIR = path.join(REPORTS_DIR, 'test-results');
 const BASE_URL = 'http://localhost:3100';
-const NAV_TIMEOUT = 30_000;
+const NAV_TIMEOUT = 60_000; // 60s — dev mode compiles on-demand, 30s is too tight
 const SUITE_TIMEOUT = 45 * 60 * 1000; // 45 min per test suite
 
 const startTime = Date.now();
@@ -233,12 +233,12 @@ function phaseUnitTests() {
     const out = execSync('node --test --import tsx "tests/unit/**/*.test.ts" 2>&1', {
       cwd: ROOT, encoding: 'utf8', timeout: 300_000,
     });
-    const m = out.match(/# pass (\d+)[\s\S]*?# fail (\d+)/);
+    const m = out.match(/(?:# pass|ℹ pass|pass)\s+(\d+)[\s\S]*?(?:# fail|ℹ fail|fail)\s+(\d+)/);
     results.unit = { pass: +(m?.[1] || 0), fail: +(m?.[2] || 0), output: out.slice(-2000) };
     log(`  Unit: ${results.unit.pass} pass, ${results.unit.fail} fail`);
   } catch (err) {
     const out = (err.stdout || '') + (err.stderr || '');
-    const m = out.match(/# pass (\d+)[\s\S]*?# fail (\d+)/);
+    const m = out.match(/(?:# pass|ℹ pass|pass)\s+(\d+)[\s\S]*?(?:# fail|ℹ fail|fail)\s+(\d+)/);
     results.unit = { pass: +(m?.[1] || 0), fail: +(m?.[2] || 0), output: out.slice(-2000) };
     log(`  Unit: ${results.unit.pass} pass, ${results.unit.fail} fail`);
   }
@@ -248,12 +248,12 @@ function phaseUnitTests() {
     const out = execSync('node --test --import tsx "tests/integration/**/*.integration.test.ts" 2>&1', {
       cwd: ROOT, encoding: 'utf8', timeout: 300_000,
     });
-    const m = out.match(/# pass (\d+)[\s\S]*?# fail (\d+)/);
+    const m = out.match(/(?:# pass|ℹ pass|pass)\s+(\d+)[\s\S]*?(?:# fail|ℹ fail|fail)\s+(\d+)/);
     results.integration = { pass: +(m?.[1] || 0), fail: +(m?.[2] || 0), output: out.slice(-2000) };
     log(`  Integration: ${results.integration.pass} pass, ${results.integration.fail} fail`);
   } catch (err) {
     const out = (err.stdout || '') + (err.stderr || '');
-    const m = out.match(/# pass (\d+)[\s\S]*?# fail (\d+)/);
+    const m = out.match(/(?:# pass|ℹ pass|pass)\s+(\d+)[\s\S]*?(?:# fail|ℹ fail|fail)\s+(\d+)/);
     results.integration = { pass: +(m?.[1] || 0), fail: +(m?.[2] || 0), output: out.slice(-2000) };
     log(`  Integration: ${results.integration.pass} pass, ${results.integration.fail} fail`);
   }
@@ -284,6 +284,23 @@ async function phaseSiteCrawl(routes) {
   const allPages = [];
   const allLinks = new Set();
 
+  // Warm-up phase: hit a few key routes to trigger Next.js compilation
+  // This prevents the first visit to each route group from timing out
+  log('  Warming up dev server (pre-compiling key routes)...');
+  const warmupCtx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+  const warmupPage = await warmupCtx.newPage();
+  const warmupRoutes = ['/', '/auth/signin', '/blog'];
+  for (const route of warmupRoutes) {
+    try {
+      await warmupPage.goto(`${BASE_URL}${route}`, { waitUntil: 'domcontentloaded', timeout: 90_000 });
+      log(`    ✓ ${route} warmed up`);
+    } catch {
+      log(`    ⚠ ${route} warm-up timed out (may still be compiling)`);
+    }
+  }
+  await warmupPage.close();
+  await warmupCtx.close();
+
   // Helper: crawl a set of routes with a given auth context
   async function crawlRole(role, routeList, storageStatePath) {
     if (routeList.length === 0) return;
@@ -299,14 +316,116 @@ async function phaseSiteCrawl(routes) {
     const context = await browser.newContext(contextOpts);
     const page = await context.newPage();
 
+    // If auth role, verify session works before starting crawl
+    if (role !== 'public') {
+      try {
+        const testUrl = role === 'chef' ? `${BASE_URL}/dashboard` : `${BASE_URL}/my-events`;
+        await page.goto(testUrl, { waitUntil: 'domcontentloaded', timeout: NAV_TIMEOUT });
+        const finalUrl = page.url();
+        if (finalUrl.includes('/auth/') || finalUrl.includes('/signin')) {
+          log(`  ⚠ Auth session invalid for ${role} — attempting API re-login...`);
+          const refreshed = await refreshAuth(page, role);
+          if (!refreshed) {
+            log(`  ✗ Could not authenticate as ${role} — skipping ${routeList.length} routes`);
+            await page.close();
+            await context.close();
+            return;
+          }
+          log(`  ✓ Re-authenticated as ${role}`);
+        } else {
+          log(`  ✓ Auth verified for ${role}`);
+        }
+      } catch (err) {
+        log(`  ⚠ Auth check failed for ${role}: ${err.message.slice(0, 80)}`);
+      }
+    }
+
+    let consecutiveFailures = 0;
+    const MAX_CONSECUTIVE_FAILURES = 10;
+
     for (let i = 0; i < routeList.length; i++) {
+      // Bail out if too many consecutive failures
+      if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+        const remaining = routeList.length - i;
+        log(`  ⚠ ${MAX_CONSECUTIVE_FAILURES} consecutive failures — skipping remaining ${remaining} ${role} routes`);
+        // Record skipped routes
+        for (let j = i; j < routeList.length; j++) {
+          allPages.push({
+            route: routeList[j], role, status: 'skipped',
+            loadTime: 0, domNodes: 0, consoleErrors: ['Skipped: too many consecutive failures'],
+            consoleWarnings: [], a11yViolations: [], brokenImages: [], links: [],
+            title: '', redirectedTo: null, screenshot: { desktop: null, mobile: null },
+          });
+        }
+        break;
+      }
+
       const route = routeList[i];
       const result = await crawlPage(page, route, role, AxeBuilder, allLinks, i + 1, routeList.length);
       allPages.push(result);
+
+      if (result.status === 'error' || result.status === 'skipped') {
+        consecutiveFailures++;
+      } else {
+        consecutiveFailures = 0;
+      }
+
+      // Re-auth check every 50 pages for long crawls
+      if (role !== 'public' && i > 0 && i % 50 === 0 && result.redirectedTo?.includes('/auth/')) {
+        log(`  ⚠ Auth appears expired at page ${i}/${routeList.length} — re-authenticating...`);
+        const refreshed = await refreshAuth(page, role);
+        if (refreshed) {
+          log(`  ✓ Re-authenticated as ${role}`);
+          consecutiveFailures = 0;
+        }
+      }
     }
 
     await page.close();
     await context.close();
+  }
+
+  // Attempt to re-authenticate by signing in via the API
+  async function refreshAuth(page, role) {
+    try {
+      const seedPath = path.join(ROOT, '.auth', 'seed-ids.json');
+      if (!fs.existsSync(seedPath)) return false;
+      const seed = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
+      const email = role === 'chef' ? seed.chefEmail : seed.clientEmail;
+      const password = role === 'chef' ? seed.chefPassword : seed.clientPassword;
+      if (!email || !password) return false;
+
+      // Sign in via Supabase auth directly in the browser context
+      const result = await page.evaluate(async ({ email, password, supabaseUrl, supabaseKey }) => {
+        try {
+          const res = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': supabaseKey,
+            },
+            body: JSON.stringify({ email, password }),
+          });
+          if (!res.ok) return { ok: false, error: `HTTP ${res.status}` };
+          const data = await res.json();
+          // Set the auth cookie manually
+          const cookieValue = btoa(JSON.stringify(data));
+          document.cookie = `sb-luefkpakzvxcsqroxyhz-auth-token=base64-${cookieValue}; path=/; max-age=3600`;
+          return { ok: true };
+        } catch (e) {
+          return { ok: false, error: e.message };
+        }
+      }, {
+        email,
+        password,
+        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://luefkpakzvxcsqroxyhz.supabase.co',
+        supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+      });
+
+      return result?.ok || false;
+    } catch {
+      return false;
+    }
   }
 
   // Crawl each role
@@ -348,7 +467,12 @@ async function crawlPage(page, route, role, AxeBuilder, allLinks, idx, total) {
   try {
     const url = `${BASE_URL}${route}`;
     const t0 = Date.now();
-    const response = await page.goto(url, { waitUntil: 'networkidle', timeout: NAV_TIMEOUT });
+    // domcontentloaded is much faster than networkidle in dev mode
+    // networkidle waits for ALL network activity to stop, which in dev mode
+    // means waiting for HMR websockets, analytics pings, etc. — often forever
+    const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: NAV_TIMEOUT });
+    // Give the page a moment to render after DOM is ready
+    await page.waitForTimeout(2000);
     result.loadTime = Date.now() - t0;
     result.status = response?.status() || 0;
 
@@ -358,78 +482,89 @@ async function crawlPage(page, route, role, AxeBuilder, allLinks, idx, total) {
       result.redirectedTo = finalUrl.replace(BASE_URL, '');
     }
 
-    // Page title
-    result.title = await page.title();
-
-    // DOM node count
-    result.domNodes = await page.evaluate(() => document.querySelectorAll('*').length);
-
-    // Broken images
-    result.brokenImages = await page.evaluate(() =>
-      [...document.querySelectorAll('img')].filter(i => i.complete && i.naturalWidth === 0)
-        .map(i => ({ src: i.src?.slice(0, 200), alt: i.alt || '' }))
+    // If redirected to auth, skip all the heavy analysis — it's the signin page, not the route
+    const wasRedirectedToAuth = result.redirectedTo && (
+      result.redirectedTo.includes('/auth/') ||
+      result.redirectedTo.includes('/signin') ||
+      result.redirectedTo.includes('/sign-in')
     );
 
-    // Collect links
-    const pageLinks = await page.evaluate(() =>
-      [...document.querySelectorAll('a[href]')].map(a => a.href).filter(h => h.startsWith('http'))
-    );
-    result.links = pageLinks.slice(0, 200);
-    pageLinks.forEach(l => allLinks.add(l));
-
-    // Desktop screenshot
-    const desktopFile = path.join(SCREENSHOTS_DIR, 'desktop', `${sanitize(route)}.png`);
-    await page.screenshot({ path: desktopFile, fullPage: true, timeout: 15000 }).catch(() => {});
-    result.screenshot.desktop = path.relative(REPORTS_DIR, desktopFile).replace(/\\/g, '/');
-
-    // Mobile screenshot
-    await page.setViewportSize({ width: 375, height: 812 });
-    await page.waitForTimeout(500);
-    const mobileFile = path.join(SCREENSHOTS_DIR, 'mobile', `${sanitize(route)}.png`);
-    await page.screenshot({ path: mobileFile, fullPage: true, timeout: 15000 }).catch(() => {});
-    result.screenshot.mobile = path.relative(REPORTS_DIR, mobileFile).replace(/\\/g, '/');
-
-    // Reset viewport for next page
-    await page.setViewportSize({ width: 1280, height: 720 });
-
-    // Accessibility audit
-    if (AxeBuilder) {
-      try {
-        const axeResults = await new AxeBuilder({ page }).analyze();
-        result.a11yViolations = axeResults.violations.map(v => ({
-          id: v.id,
-          impact: v.impact,
-          description: v.description,
-          helpUrl: v.helpUrl,
-          nodes: v.nodes.length,
-          elements: v.nodes.slice(0, 3).map(n => n.html?.slice(0, 120) || ''),
-        }));
-      } catch {}
+    if (wasRedirectedToAuth) {
+      log(`  [${idx}/${total}] ${role}: ${route} → redirected to auth (${result.loadTime}ms)`);
     } else {
-      // Manual fallback
-      result.a11yViolations = await page.evaluate(() => {
-        const v = [];
-        document.querySelectorAll('img:not([alt])').forEach(i =>
-          v.push({ id: 'image-alt', impact: 'critical', description: 'Image missing alt text', nodes: 1, elements: [i.outerHTML.slice(0, 120)] })
-        );
-        document.querySelectorAll('button').forEach(b => {
-          if (!b.textContent?.trim() && !b.getAttribute('aria-label'))
-            v.push({ id: 'button-name', impact: 'critical', description: 'Button has no accessible name', nodes: 1, elements: [b.outerHTML.slice(0, 120)] });
-        });
-        document.querySelectorAll('input:not([type="hidden"]), select, textarea').forEach(el => {
-          const id = el.id;
-          if (!id || !document.querySelector(`label[for="${id}"]`))
-            if (!el.getAttribute('aria-label') && !el.getAttribute('aria-labelledby'))
-              v.push({ id: 'label', impact: 'critical', description: 'Form input missing label', nodes: 1, elements: [el.outerHTML.slice(0, 120)] });
-        });
-        return v;
-      });
-    }
+      // Page title
+      result.title = await page.title();
 
-    const errCount = result.consoleErrors.length;
-    const a11yCount = result.a11yViolations.length;
-    const status = errCount > 0 ? '✗' : '✓';
-    log(`  [${idx}/${total}] ${role}: ${route} ${status} (${result.loadTime}ms, ${errCount} errors, ${a11yCount} a11y)`);
+      // DOM node count
+      result.domNodes = await page.evaluate(() => document.querySelectorAll('*').length);
+
+      // Broken images
+      result.brokenImages = await page.evaluate(() =>
+        [...document.querySelectorAll('img')].filter(i => i.complete && i.naturalWidth === 0)
+          .map(i => ({ src: i.src?.slice(0, 200), alt: i.alt || '' }))
+      );
+
+      // Collect links
+      const pageLinks = await page.evaluate(() =>
+        [...document.querySelectorAll('a[href]')].map(a => a.href).filter(h => h.startsWith('http'))
+      );
+      result.links = pageLinks.slice(0, 200);
+      pageLinks.forEach(l => allLinks.add(l));
+
+      // Desktop screenshot
+      const desktopFile = path.join(SCREENSHOTS_DIR, 'desktop', `${sanitize(route)}.png`);
+      await page.screenshot({ path: desktopFile, fullPage: true, timeout: 15000 }).catch(() => {});
+      result.screenshot.desktop = path.relative(REPORTS_DIR, desktopFile).replace(/\\/g, '/');
+
+      // Mobile screenshot
+      await page.setViewportSize({ width: 375, height: 812 });
+      await page.waitForTimeout(500);
+      const mobileFile = path.join(SCREENSHOTS_DIR, 'mobile', `${sanitize(route)}.png`);
+      await page.screenshot({ path: mobileFile, fullPage: true, timeout: 15000 }).catch(() => {});
+      result.screenshot.mobile = path.relative(REPORTS_DIR, mobileFile).replace(/\\/g, '/');
+
+      // Reset viewport for next page
+      await page.setViewportSize({ width: 1280, height: 720 });
+
+      // Accessibility audit
+      if (AxeBuilder) {
+        try {
+          const axeResults = await new AxeBuilder({ page }).analyze();
+          result.a11yViolations = axeResults.violations.map(v => ({
+            id: v.id,
+            impact: v.impact,
+            description: v.description,
+            helpUrl: v.helpUrl,
+            nodes: v.nodes.length,
+            elements: v.nodes.slice(0, 3).map(n => n.html?.slice(0, 120) || ''),
+          }));
+        } catch {}
+      } else {
+        // Manual fallback
+        result.a11yViolations = await page.evaluate(() => {
+          const v = [];
+          document.querySelectorAll('img:not([alt])').forEach(i =>
+            v.push({ id: 'image-alt', impact: 'critical', description: 'Image missing alt text', nodes: 1, elements: [i.outerHTML.slice(0, 120)] })
+          );
+          document.querySelectorAll('button').forEach(b => {
+            if (!b.textContent?.trim() && !b.getAttribute('aria-label'))
+              v.push({ id: 'button-name', impact: 'critical', description: 'Button has no accessible name', nodes: 1, elements: [b.outerHTML.slice(0, 120)] });
+          });
+          document.querySelectorAll('input:not([type="hidden"]), select, textarea').forEach(el => {
+            const id = el.id;
+            if (!id || !document.querySelector(`label[for="${id}"]`))
+              if (!el.getAttribute('aria-label') && !el.getAttribute('aria-labelledby'))
+                v.push({ id: 'label', impact: 'critical', description: 'Form input missing label', nodes: 1, elements: [el.outerHTML.slice(0, 120)] });
+          });
+          return v;
+        });
+      }
+
+      const errCount = result.consoleErrors.length;
+      const a11yCount = result.a11yViolations.length;
+      const status = errCount > 0 ? '✗' : '✓';
+      log(`  [${idx}/${total}] ${role}: ${route} ${status} (${result.loadTime}ms, ${errCount} errors, ${a11yCount} a11y)`);
+    }
   } catch (err) {
     result.status = 'error';
     result.consoleErrors.push(`Navigation failed: ${err.message}`);
@@ -922,6 +1057,15 @@ async function main() {
   const routes = discoverRoutes();
   const totalRoutes = routes.chef.length + routes.client.length + routes.public.length;
   log(`Discovered ${totalRoutes} routes (${routes.chef.length} chef, ${routes.client.length} client, ${routes.public.length} public)`);
+
+  // Refresh E2E seed data + auth tokens before crawling
+  log('Refreshing E2E test data and auth tokens...');
+  try {
+    execSync('npm run seed:e2e 2>&1', { cwd: ROOT, encoding: 'utf8', timeout: 120_000 });
+    log('  ✓ E2E seed data refreshed (fresh auth tokens)');
+  } catch (err) {
+    log(`  ⚠ seed:e2e failed (will use existing auth): ${(err.message || '').slice(0, 100)}`);
+  }
 
   // ── Run Phases ──
   let tsResults, unitResults, crawlResults, deadLinkResults, testResults;
