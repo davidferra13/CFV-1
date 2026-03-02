@@ -459,6 +459,50 @@ const TESTS = [
     endpoint: `/api/documents/quote-client/${VICTIM_DATA.quoteDraft}`,
     expectDenied: true,
   },
+
+  // ═══ MASS ASSIGNMENT ATTACKS (tenant_id injection) ═══
+  {
+    id: 'mass-001',
+    severity: 'CRITICAL',
+    description: 'Agent creates event with explicit victim tenant_id in body',
+    method: 'POST',
+    endpoint: '/api/events',
+    body: {
+      client_id: VICTIM_DATA.clientPrimary,
+      event_date: '2026-04-01',
+      event_type: 'Corporate Event',
+      guest_count: 50,
+      tenant_id: VICTIM_CHEF.chefId, // Attempt tenant_id injection
+      chef_id: VICTIM_CHEF.chefId,
+    },
+    expectDenied: true,
+  },
+  {
+    id: 'mass-002',
+    severity: 'CRITICAL',
+    description: 'Agent updates own event, attempts to claim victim tenant via body',
+    method: 'PATCH',
+    endpoint: '/api/events/agent-event-id',
+    body: {
+      tenant_id: VICTIM_CHEF.chefId,
+      quoted_price_cents: 999999,
+    },
+    expectDenied: true,
+  },
+  {
+    id: 'mass-003',
+    severity: 'CRITICAL',
+    description: 'Agent creates client with victim tenant_id injection',
+    method: 'POST',
+    endpoint: '/api/clients',
+    body: {
+      full_name: 'Attacker Client',
+      email: 'attacker@test.com',
+      phone: '555-0000',
+      tenant_id: VICTIM_CHEF.chefId,
+    },
+    expectDenied: true,
+  },
 ]
 
 async function authenticate() {
