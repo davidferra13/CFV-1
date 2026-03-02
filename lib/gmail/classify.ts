@@ -1,14 +1,15 @@
-// Email Classification — 6-Layer Deterministic Filter + Ollama Fallback
+// Email Classification — 7-Layer Deterministic Filter + Ollama Fallback
 // PRIVACY: Processes known client email list + email body — must stay local.
 //
 // Classification order (each layer short-circuits if matched):
-//   1. Platform detection (TakeAChef, Thumbtack, Wix Forms, etc.) → dedicated parser
-//   2. Gmail label check (SPAM, CATEGORY_PROMOTIONS, etc.) → marketing/spam
-//   3. RFC header check (List-Unsubscribe, Precedence: bulk) → marketing
-//   4. Heuristic check (known domains, noreply + body patterns) → marketing
+//   1.   Platform detection (TakeAChef, Thumbtack, Wix Forms, etc.) → dedicated parser
+//   1.5. Partner/referrer detection (Ember Brand Fire, etc.) → inquiry
+//   2.   Gmail label check (SPAM, CATEGORY_PROMOTIONS, etc.) → marketing/spam
+//   3.   RFC header check (List-Unsubscribe, Precedence: bulk) → marketing
+//   4.   Heuristic check (known domains, noreply + body patterns) → marketing
 //   4.5. Inquiry heuristic (Formula > AI — Airbnb referrals, dates, guests, etc.) → inquiry
-//   5. Sender reputation (learned from chef's triage behavior) → marketing
-//   6. Ollama AI classification (fallback when deterministic layers miss)
+//   5.   Sender reputation (learned from chef's triage behavior) → marketing
+//   6.   Ollama AI classification (fallback when deterministic layers miss)
 
 'use server'
 
@@ -86,7 +87,7 @@ RESPOND WITH ONLY valid JSON (no markdown, no explanation):
  * Returns the platform name if detected, null otherwise.
  * Used to short-circuit Ollama classification — platform emails don't need AI.
  */
-function detectPlatformEmail(fromAddress: string): string | null {
+export function detectPlatformEmail(fromAddress: string): string | null {
   if (isTakeAChefEmail(fromAddress)) return 'TakeAChef/Private Chef Manager'
   if (isYhangryEmail(fromAddress)) return 'Yhangry'
   if (isThumbtackEmail(fromAddress)) return 'Thumbtack'
@@ -97,6 +98,23 @@ function detectPlatformEmail(fromAddress: string): string | null {
   if (isGoogleBusinessEmail(fromAddress)) return 'Google Business'
   if (isWixFormsEmail(fromAddress)) return 'Wix Forms'
   return null
+}
+
+/**
+ * Layer 1.5: Partner/referrer domain detection.
+ * Known business partners who refer clients (e.g., Ember Brand Fire).
+ * These emails are always leads — route as inquiry with high confidence.
+ *
+ * Learned from GOLDMINE: 19 emails from emberbrandfire.com (Colleen Hartigan,
+ * Chris Gasbarro) — event coordination, referrals, booking logistics.
+ */
+const PARTNER_DOMAINS: Record<string, string> = {
+  'emberbrandfire.com': 'Ember Brand Fire',
+}
+
+export function detectPartnerEmail(fromAddress: string): string | null {
+  const domain = fromAddress.toLowerCase().split('@')[1]
+  return domain ? PARTNER_DOMAINS[domain] || null : null
 }
 
 /**
@@ -282,7 +300,7 @@ function isObviousMarketingOrNotification(
  * Dominant patterns: Airbnb referral, date + guest count, occasion,
  * price/availability ask, dietary restrictions upfront, cannabis mention.
  */
-function detectObviousInquiry(
+export function detectObviousInquiry(
   fromAddress: string,
   subject: string,
   body: string,
@@ -405,21 +423,66 @@ function detectObviousInquiry(
     signals.push('website_followup')
   }
 
+  // ─── Negative signals (prevent false-positive inquiry classification) ───
+  // Learned from GOLDMINE: post-event feedback and logistics replies scored
+  // positively on geography/date but are NOT new inquiries.
+  let negativeScore = 0
+
+  // Subject starts with Re: — reply, not a new inquiry
+  if (/^Re:/i.test(subject)) {
+    negativeScore += 1
+  }
+
+  // Post-event praise language (strong negative — this is a thank-you, not a booking)
+  if (
+    /\b(?:remarkable|outstanding|incredible|extraordinary|amazing|wonderful)\s+(?:meal|dinner|evening|feast|experience|time)\b/i.test(
+      text
+    ) ||
+    /\b(?:every\s+single\s+bite|thought\s+about\s+(?:that|the)\s+(?:meal|dinner))\b/i.test(text)
+  ) {
+    negativeScore += 2
+    signals.push('neg:post_event_praise')
+  }
+
+  // Thank-you / follow-up gratitude
+  if (
+    /\b(?:just\s+(?:had\s+to|wanted\s+to)\s+(?:circle\s+back|say|tell\s+you)|thank\s+you\s+(?:so\s+much|again)\s+for\s+(?:the|such))\b/i.test(
+      text
+    )
+  ) {
+    negativeScore += 2
+    signals.push('neg:gratitude')
+  }
+
+  // Logistics confirmation (not a new inquiry — existing thread)
+  if (
+    /^Re:/i.test(subject) &&
+    /\b(?:sounds\s+good|works\s+for\s+(?:us|me)|(?:let'?s|we'?ll)\s+(?:do\s+(?:that|it)|go\s+with)|perfect|confirmed|see\s+you\s+(?:then|there|on|at))\b/i.test(
+      text
+    )
+  ) {
+    negativeScore += 1
+    signals.push('neg:logistics_reply')
+  }
+
+  // Apply negative signals: if they cancel out the positive score, defer to Ollama
+  const netScore = score - negativeScore
+
   // ─── Threshold check ───
-  if (score >= 3) {
+  if (netScore >= 3) {
     return {
       category: 'inquiry',
       confidence: 'high',
-      reasoning: `Deterministic inquiry detection (score ${score}): ${signals.join(', ')}`,
+      reasoning: `Deterministic inquiry detection (score ${score}, net ${netScore}): ${signals.join(', ')}`,
       is_food_related: true,
     }
   }
 
-  if (score === 2) {
+  if (netScore >= 2) {
     return {
       category: 'inquiry',
       confidence: 'medium',
-      reasoning: `Deterministic inquiry detection (score ${score}): ${signals.join(', ')}`,
+      reasoning: `Deterministic inquiry detection (score ${score}, net ${netScore}): ${signals.join(', ')}`,
       is_food_related: true,
     }
   }
@@ -449,6 +512,18 @@ export async function classifyEmail(
       category: 'inquiry',
       confidence: 'high',
       reasoning: `${platformCheck} email detected by sender domain — routed to dedicated parser`,
+      is_food_related: true,
+    }
+  }
+
+  // ─── Layer 1.5: Partner/referrer detection ───────────────────────────
+  // Known business partners who refer clients. Always ingested as leads.
+  const partnerCheck = detectPartnerEmail(fromAddress)
+  if (partnerCheck) {
+    return {
+      category: 'inquiry',
+      confidence: 'high',
+      reasoning: `Partner referral detected: ${partnerCheck} — always ingested as lead`,
       is_food_related: true,
     }
   }

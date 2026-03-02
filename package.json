@@ -85,6 +85,8 @@
     "email:build:private-reference": "tsx scripts/email-references/build-private-platform-reference.ts",
     "email:eval:private-reference": "tsx scripts/email-references/evaluate-platform-regression.ts --strict",
     "email:quality:private-reference": "tsx scripts/email-references/measure-platform-parse-quality.ts",
+    "email:build:goldmine": "tsx scripts/email-references/build-goldmine-reference.ts",
+    "email:eval:goldmine": "tsx scripts/email-references/evaluate-goldmine-regression.ts --strict",
     "test:remy-quality:multi-turn": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite multi-turn",
     "test:remy-quality:hallucination": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite hallucination",
     "test:remy-quality:voice": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite voice-messy",
