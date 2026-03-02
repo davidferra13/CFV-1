@@ -11,8 +11,6 @@
 //   5.   Sender reputation (learned from chef's triage behavior) → marketing
 //   6.   Ollama AI classification (fallback when deterministic layers miss)
 
-'use server'
-
 import { z } from 'zod'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
