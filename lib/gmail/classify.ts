@@ -1,11 +1,12 @@
-// Email Classification — 5-Layer Deterministic Filter + Ollama Fallback
+// Email Classification — 6-Layer Deterministic Filter + Ollama Fallback
 // PRIVACY: Processes known client email list + email body — must stay local.
 //
 // Classification order (each layer short-circuits if matched):
-//   1. Platform detection (TakeAChef, Thumbtack, etc.) → dedicated parser
+//   1. Platform detection (TakeAChef, Thumbtack, Wix Forms, etc.) → dedicated parser
 //   2. Gmail label check (SPAM, CATEGORY_PROMOTIONS, etc.) → marketing/spam
 //   3. RFC header check (List-Unsubscribe, Precedence: bulk) → marketing
 //   4. Heuristic check (known domains, noreply + body patterns) → marketing
+//   4.5. Inquiry heuristic (Formula > AI — Airbnb referrals, dates, guests, etc.) → inquiry
 //   5. Sender reputation (learned from chef's triage behavior) → marketing
 //   6. Ollama AI classification (fallback when deterministic layers miss)
 
@@ -22,6 +23,7 @@ import { isBarkEmail } from './bark-parser'
 import { isCozymealEmail } from './cozymeal-parser'
 import { isGigSaladEmail } from './gigsalad-parser'
 import { isGoogleBusinessEmail } from './google-business-parser'
+import { isWixFormsEmail } from './wix-forms-parser'
 import { checkSenderReputation } from './sender-reputation'
 import type { EmailClassification } from './types'
 
@@ -34,7 +36,7 @@ const EmailClassificationSchema = z.object({
   }),
 })
 
-const CLASSIFICATION_SYSTEM_PROMPT = `You are an email classifier for a private chef's business inbox. Your job is to categorize each incoming email so the chef's AI agent knows how to handle it.
+const CLASSIFICATION_SYSTEM_PROMPT = `You are an email classifier for a private chef's business inbox in Maine/New Hampshire. Your job is to categorize each incoming email so the chef's AI agent knows how to handle it.
 
 CATEGORIES:
 - "inquiry": A NEW request about booking a private dinner, catering event, or chef services. Look for: date mentions, guest counts, occasion references (birthday, anniversary, dinner party), menu questions, dietary requirements, pricing questions, availability questions, or any "I'd like to book..." language.
@@ -46,13 +48,26 @@ CATEGORIES:
 SIGNALS FOR "inquiry" (high confidence):
 - Mentions a specific date or "sometime in [month]"
 - Mentions number of guests or "dinner for X"
-- Mentions an occasion (birthday, anniversary, holiday, corporate event)
+- Mentions an occasion (birthday, anniversary, holiday, corporate event, team bonding)
 - Asks about pricing, availability, or menus
 - Mentions dietary restrictions or food allergies in context of a request
 - Uses language like "I'd love to book", "are you available", "how much for", "we're planning"
+- Mentions Airbnb, vacation rental, VRBO, or "the host recommended you" — this is the DOMINANT inquiry pattern for this chef
+- Mentions Maine/NH locations (Portland, Kennebunk, Ogunquit, Naples, Harrison, North Conway, etc.)
+- Mentions cannabis, THC, infused dining, or edibles — this chef offers cannabis-infused dining
+- References the chef's website or says "I submitted a form/request"
+
+SIGNALS FOR "existing_thread":
+- Sender is in the known client email list AND the email reads like a reply
+- Short replies: "sounds good", "works for us", "let's do that", "Wednesday works"
+- Menu selections: "We'll go with the ribeye", "Let's do the salad and the steak"
+- Logistics: parking directions, arrival time, address, "what time should you arrive"
+- Payment discussion: "venmo or zelle", "do you need a deposit", price confirmations
+- Post-event thank-you and feedback — "the meal was amazing", "thank you so much"
 
 SIGNALS AGAINST "inquiry":
 - Sender is in the known client email list AND the email reads like a reply (lean toward "existing_thread")
+- Post-event gratitude — this is existing_thread, NOT a new inquiry
 - No mention of food, events, or booking
 - Automated/template language with unsubscribe links (marketing)
 
@@ -80,6 +95,7 @@ function detectPlatformEmail(fromAddress: string): string | null {
   if (isCozymealEmail(fromAddress)) return 'Cozymeal'
   if (isGigSaladEmail(fromAddress)) return 'GigSalad'
   if (isGoogleBusinessEmail(fromAddress)) return 'Google Business'
+  if (isWixFormsEmail(fromAddress)) return 'Wix Forms'
   return null
 }
 
@@ -257,6 +273,160 @@ function isObviousMarketingOrNotification(
   return null
 }
 
+/**
+ * Layer 4.5: Deterministic inquiry heuristic.
+ * Catches obvious inquiry signals BEFORE Ollama. Formula > AI rule.
+ * Returns EmailClassification if enough signals converge, null otherwise.
+ *
+ * Based on real email data: 299 emails across 43 conversation threads.
+ * Dominant patterns: Airbnb referral, date + guest count, occasion,
+ * price/availability ask, dietary restrictions upfront, cannabis mention.
+ */
+function detectObviousInquiry(
+  fromAddress: string,
+  subject: string,
+  body: string,
+  knownClientEmails: string[]
+): EmailClassification | null {
+  const addr = fromAddress.toLowerCase()
+  const subj = subject.toLowerCase()
+  const bodyLower = body.slice(0, 5000).toLowerCase()
+  const text = `${subj} ${bodyLower}`
+
+  // If sender is already a known client, skip — let Ollama decide between
+  // existing_thread and new inquiry from a returning client
+  if (knownClientEmails.some((e) => e.toLowerCase() === addr)) {
+    return null
+  }
+
+  // ─── Signal scoring ───
+  let score = 0
+  const signals: string[] = []
+
+  // Signal: Date mention (+1)
+  const hasDate =
+    /\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+\d{1,2}/i.test(
+      text
+    ) ||
+    /\b\d{1,2}\/\d{1,2}(?:\/\d{2,4})?\b/.test(text) ||
+    /\b(?:this|next)\s+(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday|week|weekend|month)\b/i.test(
+      text
+    )
+  if (hasDate) {
+    score += 1
+    signals.push('date_mention')
+  }
+
+  // Signal: Guest count (+1)
+  const hasGuestCount =
+    /\b(?:dinner|party|event|celebration|gathering)\s+(?:for|of)\s+\d+/i.test(text) ||
+    /\b\d+\s*(?:guests?|people|persons?|adults?|couples?)\b/i.test(text) ||
+    /\b(?:just\s+)?(?:the\s+)?two\s+of\s+us\b/i.test(text) ||
+    /\bfor\s+(?:my\s+)?(?:wife|husband|partner|family)\b/i.test(text) ||
+    /\bdinner\s+for\s+(?:two|2)\b/i.test(text)
+  if (hasGuestCount) {
+    score += 1
+    signals.push('guest_count')
+  }
+
+  // Signal: Occasion (+1)
+  const hasOccasion =
+    /\b(?:birthday|anniversary|wedding|rehearsal|retirement|graduation|engagement|baby\s*shower|bridal\s*shower|holiday|thanksgiving|christmas|new\s*year|valentine|memorial\s*day|labor\s*day|4th\s+of\s+july|fourth\s+of\s+july|team\s*bonding|corporate|bachelorette|bachelor)\b/i.test(
+      text
+    )
+  if (hasOccasion) {
+    score += 1
+    signals.push('occasion')
+  }
+
+  // Signal: Price/availability/booking ask (+1)
+  const hasPriceAsk =
+    /\b(?:price|pricing|cost|rate|quote|estimate|how\s+much|what\s+(?:do\s+you|would\s+you)\s+charge|available|availability|book(?:ing)?|hire|looking\s+for\s+a\s+(?:private\s+)?chef)\b/i.test(
+      text
+    )
+  if (hasPriceAsk) {
+    score += 1
+    signals.push('price_or_booking_ask')
+  }
+
+  // Signal: Airbnb/vacation rental referral (+2 — dominant inquiry pattern)
+  const hasAirbnbRef =
+    /\b(?:airbnb|air\s*b\s*n\s*b|vrbo|vacation\s+rental)\b/i.test(text) &&
+    /\b(?:host|staying|renting|rental|property|cabin|cottage|lodge|house)\b/i.test(text)
+  if (hasAirbnbRef) {
+    score += 2
+    signals.push('airbnb_referral')
+  }
+
+  // Signal: Referral language (+1)
+  const hasReferral =
+    /\b(?:recommended\s+(?:by|you)|referred|got\s+your\s+(?:name|number|contact|info)|heard\s+about\s+you|found\s+you|host\s+(?:provided|gave|suggested))\b/i.test(
+      text
+    )
+  if (hasReferral) {
+    score += 1
+    signals.push('referral')
+  }
+
+  // Signal: Dietary/allergy mention (+1)
+  const hasDietary =
+    /\b(?:allerg(?:y|ies|ic)|gluten[- ]?free|celiac|vegan|vegetarian|dairy[- ]?free|nut[- ]?free|shellfish\s+allergy|kosher|halal|dietary|food\s+restrict|food\s+allerg|tree\s+nut)\b/i.test(
+      text
+    )
+  if (hasDietary) {
+    score += 1
+    signals.push('dietary')
+  }
+
+  // Signal: Cannabis/THC/infused mention (+1)
+  const hasCannabis = /\b(?:cannabis|thc|infused|edible|marijuana|420)\b/i.test(text)
+  if (hasCannabis) {
+    score += 1
+    signals.push('cannabis')
+  }
+
+  // Signal: Local geography — Maine/NH (+1)
+  const hasLocalGeo =
+    /\b(?:maine|new\s+hampshire|portland|kennebunk(?:port)?|ogunquit|york|scarborough|cape\s+elizabeth|freeport|camden|rockport|bar\s+harbor|acadia|kittery|naples|harrison|norway|bridgton|portsmouth|hampton|north\s+conway|conway|lincoln|loon\s+mountain|bretton\s+woods|white\s+mountains|lake\s+winnipesaukee|meredith|wolfeboro|sunapee|tuftonboro|sullivan|dracut|ipswich|pepperell)\b/i.test(
+      text
+    )
+  if (hasLocalGeo) {
+    score += 1
+    signals.push('local_geography')
+  }
+
+  // Signal: Website follow-up (+1)
+  const hasWebsiteRef =
+    /\b(?:(?:your|the)\s+website|through\s+(?:your|the)\s+(?:website|site)|(?:requested|submitted)\s+(?:a\s+)?(?:booking|inquiry|form)|(?:form|request)\s+(?:went\s+)?through)\b/i.test(
+      text
+    )
+  if (hasWebsiteRef) {
+    score += 1
+    signals.push('website_followup')
+  }
+
+  // ─── Threshold check ───
+  if (score >= 3) {
+    return {
+      category: 'inquiry',
+      confidence: 'high',
+      reasoning: `Deterministic inquiry detection (score ${score}): ${signals.join(', ')}`,
+      is_food_related: true,
+    }
+  }
+
+  if (score === 2) {
+    return {
+      category: 'inquiry',
+      confidence: 'medium',
+      reasoning: `Deterministic inquiry detection (score ${score}): ${signals.join(', ')}`,
+      is_food_related: true,
+    }
+  }
+
+  return null
+}
+
 export interface ClassifyEmailMetadata {
   labelIds?: string[]
   listUnsubscribe?: string
@@ -312,6 +482,12 @@ export async function classifyEmail(
     }
   }
 
+  // ─── Layer 4.5: Deterministic inquiry heuristic ─────────────────────
+  // Formula > AI: catch obvious inquiries before Ollama.
+  // Based on 299 real emails from Google Takeout analysis.
+  const inquiryCheck = detectObviousInquiry(fromAddress, subject, body, knownClientEmails)
+  if (inquiryCheck) return inquiryCheck
+
   // ─── Layer 5: Sender reputation ───────────────────────────────────────
   // Learned from the chef's triage behavior — domains they keep dismissing.
   if (metadata?.tenantId) {
@@ -353,11 +529,12 @@ ${body.slice(0, 3000)}`
   } catch (error) {
     if (error instanceof OllamaOfflineError) throw error
     console.error('[Gmail Classify] AI classification failed:', error)
-    // Safe fallback: classify as personal with low confidence
+    // Safe fallback: classify as personal (not ingested into triage inbox).
+    // The whitelist gate in sync.ts only ingests inquiry + existing_thread.
     return {
       category: 'personal',
       confidence: 'low',
-      reasoning: 'Classification failed — defaulting to personal',
+      reasoning: 'Classification failed (Ollama error) — not ingested into triage',
       is_food_related: false,
     }
   }

@@ -34,6 +34,7 @@ import {
   isGoogleBusinessEmailWithSubject,
   parseGoogleBusinessEmail,
 } from './google-business-parser'
+import { isWixFormsEmail, parseWixFormsEmail } from './wix-forms-parser'
 import { checkPlatformInquiryDuplicate, findPlatformInquiryByContext } from './platform-dedup'
 import type { SyncResult, ParsedEmail } from './types'
 import type { Json } from '@/types/database'
@@ -53,6 +54,7 @@ const PLATFORM_DOMAINS = [
   'bark.com',
   'cozymeal.com',
   'gigsalad.com',
+  'wix-forms.com',
 ]
 
 // ─── Main Sync Function ─────────────────────────────────────────────────────
@@ -338,6 +340,19 @@ async function processMessage(
     return
   }
 
+  if (isWixFormsEmail(email.from.email)) {
+    await handleGenericPlatformEmail(
+      supabase,
+      email,
+      chefId,
+      tenantId,
+      result,
+      'wix_forms',
+      parseWixFormsEmail
+    )
+    return
+  }
+
   // Classify the email FIRST — spam/marketing should never reach the inbox
   // Pass Gmail metadata for deterministic filtering (labels, headers) before AI
   const classification = await classifyEmail(
@@ -354,11 +369,12 @@ async function processMessage(
   )
 
   // Communication intake signal layer (non-blocking, additive)
-  // Only ingest emails that aren't spam/marketing — those pollute the triage inbox
+  // Whitelist: only actionable emails enter the triage inbox.
+  // Personal, spam, and marketing emails are logged in gmail_sync_log but
+  // never create conversation threads or follow-up timers.
   if (
     isCommTriageEnabled() &&
-    classification.category !== 'spam' &&
-    classification.category !== 'marketing'
+    (classification.category === 'inquiry' || classification.category === 'existing_thread')
   ) {
     try {
       const { ingestCommunicationEvent } = await import('@/lib/communication/pipeline')
@@ -1646,6 +1662,7 @@ type PlatformChannel =
   | 'cozymeal'
   | 'gigsalad'
   | 'google_business'
+  | 'wix_forms'
 
 // Common parsed result shape — all parsers follow this pattern
 interface GenericParseResult {
@@ -1666,6 +1683,7 @@ const PLATFORM_TO_INQUIRY_CHANNEL: Record<PlatformChannel, string> = {
   cozymeal: 'cozymeal',
   gigsalad: 'gigsalad',
   google_business: 'google_business',
+  wix_forms: 'wix',
 }
 
 // Map platform channels to display names for notifications
@@ -1676,6 +1694,7 @@ const PLATFORM_DISPLAY_NAMES: Record<PlatformChannel, string> = {
   cozymeal: 'Cozymeal',
   gigsalad: 'GigSalad',
   google_business: 'Google Business',
+  wix_forms: 'Wix Forms',
 }
 
 // Email type suffixes that indicate a new lead/inquiry
@@ -1717,7 +1736,12 @@ async function handleGenericPlatformEmail(
       const { ingestCommunicationEvent } = await import('@/lib/communication/pipeline')
       await ingestCommunicationEvent({
         tenantId,
-        source: platform === 'google_business' ? 'google_business' : platform,
+        source:
+          platform === 'google_business'
+            ? 'google_business'
+            : platform === 'wix_forms'
+              ? 'website_form'
+              : platform,
         externalId: email.messageId,
         externalThreadKey: email.threadId,
         timestamp: email.date ? new Date(email.date).toISOString() : new Date().toISOString(),
