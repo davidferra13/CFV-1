@@ -503,6 +503,96 @@ const TESTS = [
     },
     expectDenied: true,
   },
+
+  // ═══ MALFORMED REQUEST TESTS ═══
+  {
+    id: 'malform-001',
+    severity: 'MEDIUM',
+    description: 'Agent sends malformed JSON to event endpoint',
+    method: 'POST',
+    endpoint: '/api/events',
+    body: {},
+    expectDenied: true,
+  },
+  {
+    id: 'malform-002',
+    severity: 'MEDIUM',
+    description: 'Agent sends request with extra/suspicious fields',
+    method: 'POST',
+    endpoint: '/api/events',
+    body: {
+      client_id: VICTIM_DATA.clientPrimary,
+      event_date: '2026-04-01',
+      guest_count: 10,
+      admin_override: true,
+      is_system: true,
+    },
+    expectDenied: true,
+  },
+
+  // ═══ REDIRECT & OPEN REDIRECT TESTS ═══
+  // Note: /api/health is intentionally public, so redirect test removed
+
+  // ═══ EXPORT & BULK DATA DUMP TESTS ═══
+  {
+    id: 'export-001',
+    severity: 'CRITICAL',
+    description: 'Agent attempts bulk export endpoint with victim chef_id',
+    method: 'GET',
+    endpoint: `/api/exports?chef_id=${VICTIM_CHEF.chefId}&format=csv`,
+    expectDenied: true,
+  },
+
+  // ═══ COMMUNICATION/MESSAGE ENDPOINT TESTS ═══
+  {
+    id: 'comms-001',
+    severity: 'HIGH',
+    description: 'Agent attempts to send message via victim event',
+    method: 'POST',
+    endpoint: '/api/communications/send',
+    body: {
+      event_id: VICTIM_DATA.eventPaid,
+      recipient_id: VICTIM_DATA.clientPrimary,
+      message: 'Malicious message',
+    },
+    expectDenied: true,
+  },
+  {
+    id: 'comms-002',
+    severity: 'HIGH',
+    description: 'Agent creates communication template with injection',
+    method: 'POST',
+    endpoint: '/api/communications/template',
+    body: {
+      name: 'Malicious Template',
+      subject: 'Test {{chef_name}}',
+      body: '{{SYSTEM_ADMIN_COMMAND}}',
+    },
+    expectDenied: true,
+  },
+
+  // ═══ ACTIVITY LOG & AUDIT TESTS ═══
+  {
+    id: 'audit-001',
+    severity: 'HIGH',
+    description: 'Agent attempts to query all activity logs',
+    method: 'GET',
+    endpoint: '/api/activity/feed',
+    expectDenied: true,
+  },
+  {
+    id: 'audit-002',
+    severity: 'MEDIUM',
+    description: 'Agent attempts to log activity for victim chef',
+    method: 'POST',
+    endpoint: '/api/activity/track',
+    body: {
+      chef_id: VICTIM_CHEF.chefId,
+      action: 'event.modified',
+      metadata: { event_id: VICTIM_DATA.eventPaid },
+    },
+    expectDenied: true,
+  },
 ]
 
 async function authenticate() {

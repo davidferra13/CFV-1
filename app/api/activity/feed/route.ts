@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { NextResponse, type NextRequest } from 'next/server'
+import { requireChef } from '@/lib/auth/get-user'
 import { getActivityFeed } from '@/lib/activity/actions'
 import { getChefActivityFeed } from '@/lib/activity/chef-actions'
 import type { ActivityActorFilter } from '@/lib/activity/types'
@@ -21,6 +22,13 @@ const domainSchema = z.enum([
 ])
 
 export async function GET(request: NextRequest) {
+  // Require authentication — this endpoint returns sensitive activity logs
+  try {
+    await requireChef()
+  } catch (err) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const searchParams = request.nextUrl.searchParams
 
   const tabParsed = tabSchema.safeParse(searchParams.get('tab') || undefined)
