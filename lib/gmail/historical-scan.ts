@@ -91,12 +91,19 @@ export async function runHistoricalScanBatch(
     return result
   }
 
-  // ── Build Gmail search query (date-bounded) ────────────────────────────────
-  const lookbackDays = (scanConn.historical_scan_lookback_days as number) ?? 730
-  const since = new Date()
-  since.setDate(since.getDate() - lookbackDays)
-  const sinceStr = `${since.getFullYear()}/${String(since.getMonth() + 1).padStart(2, '0')}/${String(since.getDate()).padStart(2, '0')}`
-  const gmailQuery = `after:${sinceStr}`
+  // ── Build Gmail search query ──────────────────────────────────────────────
+  // lookback_days = 0 means "scan everything" (no date filter)
+  const lookbackDays = (scanConn.historical_scan_lookback_days as number) ?? 0
+  let gmailQuery: string
+  if (lookbackDays > 0) {
+    const since = new Date()
+    since.setDate(since.getDate() - lookbackDays)
+    const sinceStr = `${since.getFullYear()}/${String(since.getMonth() + 1).padStart(2, '0')}/${String(since.getDate()).padStart(2, '0')}`
+    gmailQuery = `after:${sinceStr}`
+  } else {
+    // Full scan — no date restriction, scan entire inbox history
+    gmailQuery = 'in:anywhere'
+  }
 
   // ── Fetch this batch of message IDs ───────────────────────────────────────
   let pageResult: { messages: Array<{ id: string; threadId: string }>; nextPageToken?: string }

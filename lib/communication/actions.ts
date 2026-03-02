@@ -6,6 +6,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { createInquiry } from '@/lib/inquiries/actions'
 import { addClientNote } from '@/lib/notes/actions'
 import { ingestCommunicationEvent, seedDefaultCommunicationRules } from './pipeline'
+import { recordSenderAction } from '@/lib/gmail/sender-reputation'
 import type {
   CommunicationClassificationRule,
   CommunicationInboxItem,
@@ -570,7 +571,7 @@ export async function markCommunicationResolved(communicationEventId: string) {
 
   const { data: event } = await supabase
     .from('communication_events' as any)
-    .select('id, status, thread_id')
+    .select('id, status, thread_id, sender_identity')
     .eq('id', communicationEventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -601,6 +602,13 @@ export async function markCommunicationResolved(communicationEventId: string) {
     previousState: { status: event.status, thread_state: 'active_or_snoozed' },
     newState: { status: 'resolved', thread_state: 'closed' },
   })
+
+  // Non-blocking: record sender reputation (chef dismissed this email)
+  if (event.sender_identity) {
+    recordSenderAction(user.tenantId!, event.sender_identity, 'mark_done').catch((err) =>
+      console.error('[non-blocking] Sender reputation recording failed', err)
+    )
+  }
 
   revalidatePath('/inbox')
   return { success: true }
@@ -711,10 +719,10 @@ export async function bulkMarkDone(communicationEventIds: string[]) {
   const uniqueIds = Array.from(new Set(communicationEventIds))
   if (uniqueIds.length === 0) return { success: true, count: 0 }
 
-  // Fetch all events in one query to get their thread IDs
+  // Fetch all events in one query to get their thread IDs + sender identities
   const { data: events } = await supabase
     .from('communication_events' as any)
-    .select('id, status, thread_id')
+    .select('id, status, thread_id, sender_identity')
     .eq('tenant_id', user.tenantId!)
     .in('id', uniqueIds)
 
@@ -749,6 +757,16 @@ export async function bulkMarkDone(communicationEventIds: string[]) {
     previousState: { event_ids: uniqueIds },
     newState: { status: 'resolved', thread_state: 'closed' },
   })
+
+  // Non-blocking: record sender reputation for all dismissed emails
+  const senderIdentities = (events as any[])
+    .map((e: any) => e.sender_identity)
+    .filter(Boolean) as string[]
+  for (const identity of senderIdentities) {
+    recordSenderAction(user.tenantId!, identity, 'mark_done').catch((err) =>
+      console.error('[non-blocking] Bulk sender reputation recording failed', err)
+    )
+  }
 
   revalidatePath('/inbox')
   return { success: true, count: uniqueIds.length }

@@ -183,6 +183,9 @@ export async function getFullMessage(accessToken: string, messageId: string): Pr
     body,
     date: getHeader('Date'),
     snippet: message.snippet || '',
+    labelIds: (message.labelIds as string[]) || [],
+    listUnsubscribe: getHeader('List-Unsubscribe'),
+    precedence: getHeader('Precedence'),
   }
 }
 

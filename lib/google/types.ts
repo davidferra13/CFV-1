@@ -35,6 +35,10 @@ export interface ParsedEmail {
   body: string
   date: string
   snippet: string
+  // Gmail metadata for deterministic classification (no AI needed)
+  labelIds: string[] // Gmail's own labels: SPAM, CATEGORY_PROMOTIONS, etc.
+  listUnsubscribe: string // RFC 2369 List-Unsubscribe header (mailing list signal)
+  precedence: string // "bulk", "list", "junk" — mass email indicator
 }
 
 export type EmailCategory = 'inquiry' | 'existing_thread' | 'personal' | 'spam' | 'marketing'

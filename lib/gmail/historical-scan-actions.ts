@@ -51,6 +51,7 @@ export async function enableHistoricalEmailScan(): Promise<void> {
     .update({
       historical_scan_enabled: true,
       historical_scan_status: 'idle',
+      historical_scan_lookback_days: 0, // 0 = full scan (no date limit)
     })
     .eq('chef_id', user.entityId)
 

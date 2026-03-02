@@ -339,11 +339,18 @@ async function processMessage(
   }
 
   // Classify the email FIRST — spam/marketing should never reach the inbox
+  // Pass Gmail metadata for deterministic filtering (labels, headers) before AI
   const classification = await classifyEmail(
     email.subject,
     email.body,
     email.from.email,
-    knownClientEmails
+    knownClientEmails,
+    {
+      labelIds: email.labelIds,
+      listUnsubscribe: email.listUnsubscribe,
+      precedence: email.precedence,
+      tenantId,
+    }
   )
 
   // Communication intake signal layer (non-blocking, additive)
