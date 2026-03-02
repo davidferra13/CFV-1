@@ -1,0 +1,26 @@
+{
+  "timestamp": "2026-03-02T21:28:14.572Z",
+  "test": "queue_saturation",
+  "config": {
+    "totalRequests": 250,
+    "queueDepthLimit": 200,
+    "concurrencyLevel": "max (250 concurrent)"
+  },
+  "results": {
+    "successes": 250,
+    "queued": 0,
+    "rejected": 0,
+    "timeouts": 0
+  },
+  "latency": {
+    "avgMs": 1505,
+    "minMs": 1135,
+    "maxMs": 1606
+  },
+  "verification": {
+    "queueLimitHonored": false,
+    "noAllSucceeded": false,
+    "someSucceeded": true,
+    "verdict": "WARN: Unexpected behavior, check system state"
+  }
+}
