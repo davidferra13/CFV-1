@@ -53,7 +53,14 @@ const nextConfig = {
   // _ssgManifest.js ENOENT errors from mismatched build directories.
   generateBuildId: async () => {
     if (process.env.ENABLE_PWA_BUILD === '1') return 'chefflow-build'
-    return process.env.VERCEL_GIT_COMMIT_SHA || undefined
+    // VERCEL_GIT_COMMIT_SHA is only available on Vercel.
+    // On Pi/local, fall back to git rev-parse or a timestamp.
+    if (process.env.VERCEL_GIT_COMMIT_SHA) return process.env.VERCEL_GIT_COMMIT_SHA
+    try {
+      return require('child_process').execSync('git rev-parse --short HEAD').toString().trim()
+    } catch {
+      return `build-${Date.now()}`
+    }
   },
   images: {
     remotePatterns: [
