@@ -343,6 +343,53 @@ const TESTS = [
     endpoint: `/api/documents/contract/victim-contract-id`,
     expectDenied: true,
   },
+
+  // ═══ AUTH BYPASS ATTEMPTS ═══
+  {
+    id: 'auth-001',
+    severity: 'CRITICAL',
+    description: 'Agent accesses victim data with empty auth cookie',
+    method: 'GET',
+    endpoint: `/api/events/${VICTIM_DATA.eventPaid}`,
+    expectDenied: true,
+    skipAuth: true, // Don't include auth cookie
+  },
+  {
+    id: 'auth-002',
+    severity: 'CRITICAL',
+    description: 'Agent accesses victim data with X-Forwarded-For header injection',
+    method: 'GET',
+    endpoint: `/api/events/${VICTIM_DATA.eventPaid}`,
+    expectDenied: true,
+    headers: { 'X-Forwarded-For': '127.0.0.1, attacker.com' },
+  },
+  {
+    id: 'auth-003',
+    severity: 'HIGH',
+    description: 'Agent accesses embed public inquiry endpoint without auth',
+    method: 'GET',
+    endpoint: `/embed/inquiry/${VICTIM_CHEF.chefId}`,
+    expectDenied: false, // Embed endpoints are public
+    skipAuth: true,
+  },
+
+  // ═══ ROLE-BASED ACCESS CONTROL (RBAC) TESTS ═══
+  {
+    id: 'rbac-001',
+    severity: 'CRITICAL',
+    description: 'Agent attempts to access client-only endpoints',
+    method: 'GET',
+    endpoint: '/api/clients/preferences',
+    expectDenied: true,
+  },
+  {
+    id: 'rbac-002',
+    severity: 'HIGH',
+    description: 'Agent attempts staff operations',
+    method: 'GET',
+    endpoint: '/api/staff/activity',
+    expectDenied: true,
+  },
 ]
 
 async function authenticate() {
@@ -380,9 +427,18 @@ async function runTest(cookieStr, test) {
     method: test.method,
     headers: {
       'Content-Type': 'application/json',
-      Cookie: cookieStr,
     },
     redirect: 'manual',
+  }
+
+  // Add auth cookie unless explicitly skipped
+  if (!test.skipAuth) {
+    options.headers.Cookie = cookieStr
+  }
+
+  // Merge any custom headers from test definition
+  if (test.headers) {
+    options.headers = { ...options.headers, ...test.headers }
   }
 
   if (test.body) {
@@ -418,8 +474,8 @@ async function runTest(cookieStr, test) {
     }
   }
 
-  // Expect DENIED: 403, 404, 401
-  const isDenied = [401, 403, 404].includes(response.status)
+  // Expect DENIED: 401, 403, 404, 405 (method not allowed), 307 (redirect to login)
+  const isDenied = [307, 401, 403, 404, 405].includes(response.status)
   const hasData = !!(data && typeof data === 'object' && Object.keys(data).length > 0)
   const passed = test.expectDenied ? isDenied : !isDenied
 
