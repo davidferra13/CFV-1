@@ -290,6 +290,34 @@ export function checkOutOfScopeBlock(message: string): string | null {
   return null
 }
 
+// ─── Dangerous/Protected Action Blocking ──────────────────────────────────────
+
+/** Patterns for dangerous system requests that must be blocked clearly */
+const DANGEROUS_ACTION_PATTERNS = [
+  /\b(delete|remove|destroy|wipe|clear)\s+(all\s+)?(data|clients|events|records|files|everything)\b/i,
+  /\b(show|reveal|tell|display)\s+(me\s+)?(my\s+)?(system\s+)?(prompt|instructions|internals?)\b/i,
+  /\b(developer|dev|admin|root|debug)\s+mode\b/i,
+]
+
+/** Refusal for dangerous/protected actions */
+export const DANGEROUS_ACTION_REFUSAL =
+  "I can't do that — that would require explicit confirmation and oversight. " +
+  "I'm here to help with your business: managing clients, events, finances, and recipes. " +
+  'What can I actually help you with today? 😄'
+
+/**
+ * Check if a message is requesting a dangerous or protected action.
+ * Returns the refusal message if blocked, or null if the message is safe.
+ */
+export function checkDangerousActionBlock(message: string): string | null {
+  for (const pattern of DANGEROUS_ACTION_PATTERNS) {
+    if (pattern.test(message)) {
+      return DANGEROUS_ACTION_REFUSAL
+    }
+  }
+  return null
+}
+
 // ─── Prompt Injection Sanitization ────────────────────────────────────────────
 
 /**

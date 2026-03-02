@@ -36,6 +36,7 @@ import {
   sanitizeErrorForClient,
   checkRecipeGenerationBlock,
   checkOutOfScopeBlock,
+  checkDangerousActionBlock,
 } from '@/lib/ai/remy-input-validation'
 import { isRemyBlocked, isRemyAdmin, logRemyAbuse } from '@/lib/ai/remy-abuse-actions'
 import { acquireInteractiveLock, releaseInteractiveLock, isSlotBusy } from '@/lib/ai/queue'
@@ -1249,6 +1250,16 @@ export async function POST(req: NextRequest) {
       // Return as a friendly Remy chat response, not an error
       const body =
         encodeSSE({ type: 'token', data: outOfScopeBlock }) +
+        encodeSSE({ type: 'done', data: null })
+      return new Response(body, { headers: sseHeaders() })
+    }
+
+    // ─── DANGEROUS ACTION BLOCK (delete, developer mode, system introspection) ───
+    const dangerousActionBlock = checkDangerousActionBlock(message)
+    if (dangerousActionBlock) {
+      // Return as a friendly Remy refusal, not an error
+      const body =
+        encodeSSE({ type: 'token', data: dangerousActionBlock }) +
         encodeSSE({ type: 'done', data: null })
       return new Response(body, { headers: sseHeaders() })
     }
