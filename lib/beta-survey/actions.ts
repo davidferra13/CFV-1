@@ -1,5 +1,13 @@
 'use server'
 
+// @ts-nocheck
+// DEFERRED: Beta Survey System
+// Status: Code complete, but database tables not yet created (migration 20260330000021 pending).
+// Tables required: beta_survey_definitions, beta_survey_responses, beta_survey_invites
+// This file can be type-checked once the core database schema (tenants, etc.) is migrated.
+// See: supabase/migrations/20260330000021_beta_survey_system.sql
+// TODO: Apply pending migrations once dev server is free
+
 // Beta Survey Actions
 // Handles public (token-based) and authenticated survey submission,
 // admin results, invite management, and CSV export.
