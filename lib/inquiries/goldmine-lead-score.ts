@@ -42,7 +42,7 @@ const WEIGHTS = {
 } as const
 
 // Maximum possible score (sum of all positive weights)
-const MAX_RAW = Object.values(WEIGHTS).reduce((a, b) => a + b, 0)
+const MAX_RAW = (Object.values(WEIGHTS) as number[]).reduce((a, b) => a + b, 0)
 
 // ─── Input Type ─────────────────────────────────────────────────────────
 

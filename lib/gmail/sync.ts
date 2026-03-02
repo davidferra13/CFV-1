@@ -18,6 +18,7 @@ import {
 } from './client'
 import { classifyEmail } from './classify'
 import { parseInquiryFromText } from '@/lib/ai/parse-inquiry'
+import { extractAndScoreEmail, scoreInquiryFields } from './extract-inquiry-fields'
 import { createClientFromLead } from '@/lib/clients/actions'
 import { createNotification, getChefAuthUserId, getChefProfile } from '@/lib/notifications/actions'
 import { isCommTriageEnabled } from '@/lib/features'
@@ -427,21 +428,55 @@ async function handleInquiry(
   result: SyncResult
 ) {
   try {
-    // Parse the email body into structured inquiry data
-    const parseResult = await parseInquiryFromText(email.body)
+    // ─── Phase 1: Deterministic extraction (instant, free, always works) ───
+    const { fields: detFields, score: leadScore } = extractAndScoreEmail(
+      email.subject || '',
+      email.body
+    )
+
+    // ─── Phase 2: Ollama enrichment (supplements deterministic with freeform fields) ───
+    // Ollama provides: client_name, occasion normalization, service style, notes
+    // If Ollama is offline, deterministic results still provide all structured data
+    let ollamaClientName: string | null = null
+    let ollamaOccasion: string | null = null
+    let ollamaServiceExpectations: string | null = null
+    let ollamaPhone: string | null = null
+    let ollamaNotes: string | null = null
+    let ollamaReferralSource: string | null = null
+
+    try {
+      const parseResult = await parseInquiryFromText(email.body)
+      ollamaClientName = parseResult.parsed.client_name || null
+      ollamaOccasion = parseResult.parsed.confirmed_occasion || null
+      ollamaServiceExpectations = parseResult.parsed.confirmed_service_expectations || null
+      ollamaPhone = parseResult.parsed.client_phone || null
+      ollamaNotes = parseResult.parsed.notes || null
+      ollamaReferralSource = parseResult.parsed.referral_source || null
+    } catch (ollamaErr) {
+      // Ollama offline — deterministic extraction still provides all structured fields
+      console.warn(
+        '[handleInquiry] Ollama unavailable, using deterministic extraction only:',
+        (ollamaErr as Error).message
+      )
+    }
+
+    // ─── Merge: deterministic wins for structured data, Ollama wins for freeform ───
+    const leadName = ollamaClientName || email.from.name || 'Unknown'
+    const leadEmail = email.from.email
+    const clientPhone = detFields.client_phone || ollamaPhone || null
 
     // Find or create client from lead data
     let clientId: string | null = null
-
-    const leadName = parseResult.parsed.client_name || email.from.name || 'Unknown'
-    const leadEmail = email.from.email
 
     try {
       const clientResult = await createClientFromLead(tenantId, {
         email: leadEmail,
         full_name: leadName,
-        phone: parseResult.parsed.client_phone || null,
-        dietary_restrictions: parseResult.parsed.confirmed_dietary_restrictions || null,
+        phone: clientPhone,
+        dietary_restrictions:
+          detFields.confirmed_dietary_restrictions.length > 0
+            ? detFields.confirmed_dietary_restrictions
+            : null,
         source: 'email',
       })
       clientId = clientResult.id
@@ -450,12 +485,22 @@ async function handleInquiry(
       console.error('[handleInquiry] Client creation failed:', clientErr)
     }
 
-    // Store original lead data in unknown_fields for audit trail
-    const unknownFields: Record<string, string> = {}
-    unknownFields.original_sender_name = leadName
-    unknownFields.original_sender_email = leadEmail
-    if (parseResult.parsed.client_phone) {
-      unknownFields.client_phone = parseResult.parsed.client_phone
+    // Store lead data + lead score in unknown_fields
+    const unknownFields: Record<string, unknown> = {
+      original_sender_name: leadName,
+      original_sender_email: leadEmail,
+      lead_score: leadScore.lead_score,
+      lead_tier: leadScore.lead_tier,
+      lead_score_factors: leadScore.lead_score_factors,
+    }
+    if (clientPhone) {
+      unknownFields.client_phone = clientPhone
+    }
+    if (ollamaNotes) {
+      unknownFields.notes = ollamaNotes
+    }
+    if (detFields.referral_source || ollamaReferralSource) {
+      unknownFields.referral_source = detFields.referral_source || ollamaReferralSource
     }
 
     // Create the inquiry
@@ -468,20 +513,30 @@ async function handleInquiry(
         first_contact_at: email.date
           ? new Date(email.date).toISOString()
           : new Date().toISOString(),
-        confirmed_date: parseResult.parsed.confirmed_date || null,
-        confirmed_guest_count: parseResult.parsed.confirmed_guest_count ?? null,
-        confirmed_location: parseResult.parsed.confirmed_location || null,
-        confirmed_occasion: parseResult.parsed.confirmed_occasion || null,
-        confirmed_budget_cents: parseResult.parsed.confirmed_budget_cents ?? null,
-        confirmed_dietary_restrictions: parseResult.parsed.confirmed_dietary_restrictions?.length
-          ? parseResult.parsed.confirmed_dietary_restrictions
-          : null,
-        confirmed_service_expectations: parseResult.parsed.confirmed_service_expectations || null,
-        confirmed_cannabis_preference: parseResult.parsed.confirmed_cannabis_preference || null,
+        // Deterministic fields (structured data — regex is more reliable than LLM)
+        confirmed_date: detFields.confirmed_date || null,
+        confirmed_guest_count: detFields.confirmed_guest_count ?? null,
+        confirmed_location: detFields.confirmed_location || null,
+        confirmed_budget_cents: detFields.confirmed_budget_cents ?? null,
+        confirmed_dietary_restrictions:
+          detFields.confirmed_dietary_restrictions.length > 0
+            ? detFields.confirmed_dietary_restrictions
+            : null,
+        confirmed_cannabis_preference: detFields.confirmed_cannabis_preference || null,
+        // Ollama fields (freeform interpretation — LLM is better here)
+        confirmed_occasion: ollamaOccasion || detFields.confirmed_occasion || null,
+        confirmed_service_expectations: ollamaServiceExpectations || null,
+        // Referral source from either layer
+        referral_source: detFields.referral_source || ollamaReferralSource || null,
         source_message: email.body,
         unknown_fields:
           Object.keys(unknownFields).length > 0 ? (unknownFields as unknown as Json) : null,
-        next_action_required: 'Review auto-captured email inquiry',
+        next_action_required:
+          leadScore.lead_tier === 'hot'
+            ? `🔥 HOT lead (${leadScore.lead_score}/100) — Review email inquiry from ${leadName}`
+            : leadScore.lead_tier === 'warm'
+              ? `Review email inquiry from ${leadName} (score: ${leadScore.lead_score}/100)`
+              : 'Review auto-captured email inquiry',
         next_action_by: 'chef',
       })
       .select()
@@ -521,13 +576,15 @@ async function handleInquiry(
     try {
       const chefUserId = await getChefAuthUserId(tenantId)
       if (chefUserId) {
+        const tierLabel =
+          leadScore.lead_tier === 'hot' ? '🔥 HOT' : leadScore.lead_tier === 'warm' ? 'Warm' : ''
         await createNotification({
           tenantId,
           recipientId: chefUserId,
           category: 'inquiry',
           action: 'new_inquiry',
-          title: 'New inquiry received',
-          body: `${leadName} — ${email.subject || 'No subject'}`,
+          title: tierLabel ? `${tierLabel} inquiry received` : 'New inquiry received',
+          body: `${leadName} — ${email.subject || 'No subject'} (score: ${leadScore.lead_score}/100)`,
           actionUrl: `/inquiries/${inquiry.id}`,
           inquiryId: inquiry.id,
           clientId: clientId || undefined,
@@ -547,9 +604,9 @@ async function handleInquiry(
           chefEmail: chefProfile.email,
           chefName: chefProfile.name,
           clientName: leadName,
-          occasion: parseResult.parsed.confirmed_occasion || null,
-          eventDate: parseResult.parsed.confirmed_date || null,
-          guestCount: parseResult.parsed.confirmed_guest_count ?? null,
+          occasion: ollamaOccasion || detFields.confirmed_occasion || null,
+          eventDate: detFields.confirmed_date || null,
+          guestCount: detFields.confirmed_guest_count ?? null,
           source: 'gmail',
           inquiryId: inquiry.id,
         })
@@ -559,8 +616,8 @@ async function handleInquiry(
             clientEmail: email.from.email,
             clientName: email.from.name || 'there',
             chefName: chefProfile.name,
-            occasion: parseResult.parsed.confirmed_occasion || '',
-            eventDate: parseResult.parsed.confirmed_date ?? null,
+            occasion: ollamaOccasion || detFields.confirmed_occasion || '',
+            eventDate: detFields.confirmed_date ?? null,
           })
         }
       }
@@ -841,7 +898,24 @@ async function handleTacNewInquiry(
     budgetCents = inquiry.priceMinCents * inquiry.guestCountNumber
   }
 
-  // Build unknown_fields with all TakeAChef-specific data
+  // Compute lead score from parsed platform fields
+  const tacLeadScore = scoreInquiryFields({
+    confirmed_date: inquiry.eventDate,
+    confirmed_guest_count: inquiry.guestCountNumber,
+    confirmed_budget_cents: budgetCents,
+    confirmed_location: inquiry.location,
+    confirmed_occasion: inquiry.occasion,
+    confirmed_dietary_restrictions: inquiry.dietaryRestrictions
+      ? inquiry.dietaryRestrictions
+          .split(/[\n,]/)
+          .map((s: string) => s.trim())
+          .filter(Boolean)
+      : null,
+    confirmed_cannabis_preference: null,
+    referral_source: 'take_a_chef',
+  })
+
+  // Build unknown_fields with all TakeAChef-specific data + lead score
   const unknownFields: Record<string, unknown> = {
     submission_source: 'take_a_chef_gmail_auto',
     original_sender_name: inquiry.clientName,
@@ -855,6 +929,9 @@ async function handleTacNewInquiry(
     tac_link: inquiry.ctaLink,
     price_min_cents: inquiry.priceMinCents,
     price_max_cents: inquiry.priceMaxCents,
+    lead_score: tacLeadScore.lead_score,
+    lead_tier: tacLeadScore.lead_tier,
+    lead_score_factors: tacLeadScore.lead_score_factors,
   }
 
   // Create the inquiry
@@ -1904,7 +1981,24 @@ async function handleGenericNewLead(
     console.error(`[${displayName}] Client creation failed (non-fatal):`, clientErr)
   }
 
-  // Build unknown_fields with all platform-specific data
+  // Compute lead score from parsed platform fields
+  const platformLeadScore = scoreInquiryFields({
+    confirmed_date: fields.eventDate,
+    confirmed_guest_count: fields.guestCount,
+    confirmed_budget_cents: fields.budgetCents,
+    confirmed_location: fields.location,
+    confirmed_occasion: fields.occasion,
+    confirmed_dietary_restrictions: fields.dietaryRestrictions
+      ? fields.dietaryRestrictions
+          .split(/[\n,]/)
+          .map((s: string) => s.trim())
+          .filter(Boolean)
+      : null,
+    confirmed_cannabis_preference: null,
+    referral_source: channelValue,
+  })
+
+  // Build unknown_fields with all platform-specific data + lead score
   const leadData =
     (parsed.lead as Record<string, unknown>) ||
     (parsed.inquiry as Record<string, unknown>) ||
@@ -1917,6 +2011,9 @@ async function handleGenericNewLead(
     submission_source: `${platform}_gmail_auto`,
     original_sender_name: fields.clientName,
     ...leadData,
+    lead_score: platformLeadScore.lead_score,
+    lead_tier: platformLeadScore.lead_tier,
+    lead_score_factors: platformLeadScore.lead_score_factors,
   }
 
   // Create the inquiry
@@ -1944,7 +2041,10 @@ async function handleGenericNewLead(
       external_platform: channelValue,
       external_link: fields.ctaLink,
       status: 'new',
-      next_action_required: `Review ${displayName} inquiry from ${fields.clientName}`,
+      next_action_required:
+        platformLeadScore.lead_tier === 'hot'
+          ? `🔥 HOT lead (${platformLeadScore.lead_score}/100) — Review ${displayName} inquiry from ${fields.clientName}`
+          : `Review ${displayName} inquiry from ${fields.clientName}`,
       next_action_by: 'chef',
     })
     .select('id')

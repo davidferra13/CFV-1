@@ -30,7 +30,7 @@ const WEIGHTS = {
   airbnb_referral: 0,
 } as const
 
-const MAX_RAW = Object.values(WEIGHTS).reduce((a, b) => a + b, 0)
+const MAX_RAW = (Object.values(WEIGHTS) as number[]).reduce((a, b) => a + b, 0)
 
 function scoreThread(input: {
   has_date: boolean

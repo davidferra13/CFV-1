@@ -14,7 +14,7 @@ import type {
   DateMention,
   GuestCountMention,
   BudgetMention,
-} from './extraction-types.ts'
+} from './extraction-types'
 
 // ─── Quoted Text Stripping ──────────────────────────────────────────────
 // Email replies include quoted text from previous messages. We must strip
