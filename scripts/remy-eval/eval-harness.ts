@@ -27,6 +27,10 @@ const BASE_URL = 'http://localhost:3100'
 const AGENT_EMAIL = process.env.AGENT_EMAIL ?? 'agent@chefflow.test'
 const AGENT_PASSWORD = process.env.AGENT_PASSWORD ?? 'AgentChefFlow!2026'
 const OLLAMA_URL = process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434'
+const STREAM_MODEL = process.env.REMY_EVAL_STREAM_MODEL ?? 'qwen3-coder:30b'
+const GRADER_MODEL = process.env.REMY_EVAL_GRADER_MODEL ?? 'qwen3:4b'
+const MODEL_TIMEOUT_MS = Number(process.env.REMY_EVAL_MODEL_TIMEOUT_MS ?? '180000')
+const GRADER_RETRIES = Number(process.env.REMY_EVAL_GRADER_RETRIES ?? '2')
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -262,7 +266,7 @@ function gradeByRules(test: TestCase, response: string): RuleScore {
 
 // ─── LLM-Based Grading ──────────────────────────────────────────────────────
 
-async function gradeWithLLM(test: TestCase, response: string): Promise<LLMGrade | undefined> {
+async function gradeWithLLMOnce(test: TestCase, response: string): Promise<LLMGrade | undefined> {
   // /no_think prefix prevents qwen3 from entering thinking mode which breaks JSON output
   const prompt = `/no_think
 You are grading an AI chef assistant called "Remy" that helps private chefs manage their business.
@@ -297,11 +301,13 @@ Return ONLY valid JSON, no markdown, no extra text:
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'qwen3:4b',
+        model: GRADER_MODEL,
         prompt,
         stream: false,
         options: { temperature: 0.1 },
+        keep_alive: '30m',
       }),
+      signal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
     })
 
     if (!res.ok) return undefined
@@ -322,14 +328,27 @@ Return ONLY valid JSON, no markdown, no extra text:
       overall: Math.min(5, Math.max(1, parsed.overall ?? 3)),
       reasoning: parsed.reasoning ?? '',
     }
-  } catch (err) {
-    console.error('  ⚠️ LLM grading failed:', (err as Error).message)
+  } catch {
     return undefined
   }
 }
 
 // ─── Generate Report ─────────────────────────────────────────────────────────
 
+async function gradeWithLLM(test: TestCase, response: string): Promise<LLMGrade | undefined> {
+  const totalAttempts = Math.max(1, GRADER_RETRIES + 1)
+  for (let attempt = 1; attempt <= totalAttempts; attempt++) {
+    const grade = await gradeWithLLMOnce(test, response)
+    if (grade) return grade
+    if (attempt < totalAttempts) {
+      const backoffMs = attempt * 2000
+      await new Promise((r) => setTimeout(r, backoffMs))
+    }
+  }
+
+  console.error(`  LLM grading failed after ${totalAttempts} attempt(s)`)
+  return undefined
+}
 function generateReport(results: TestResult[]): EvalReport {
   const passed = results.filter((r) => r.passed).length
   const failed = results.length - passed
@@ -417,9 +436,8 @@ async function main() {
   console.log('║         Remy Eval — Automated Test Harness          ║')
   console.log('╠══════════════════════════════════════════════════════╣')
   console.log(`║  Tests:     ${String(tests.length).padEnd(40)}║`)
-  console.log(
-    `║  Grading:   ${noGrade ? 'Rules only' : 'Rules + LLM (qwen3:4b)'}${' '.repeat(noGrade ? 29 : 16)}║`
-  )
+  const gradingLabel = noGrade ? 'Rules only' : `Rules + LLM (${GRADER_MODEL})`
+  console.log(`║  Grading:   ${gradingLabel}${' '.repeat(Math.max(0, 40 - gradingLabel.length))}║`)
   console.log(`║  Category:  ${(categoryFilter ?? 'all').padEnd(40)}║`)
   console.log('╚══════════════════════════════════════════════════════╝\n')
 
@@ -435,21 +453,21 @@ async function main() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'qwen3-coder:30b',
+        model: STREAM_MODEL,
         prompt: '/no_think\nSay OK.',
         stream: false,
         options: { num_predict: 3 },
         keep_alive: '30m',
       }),
-      signal: AbortSignal.timeout(120_000), // 2 min timeout — don't hang forever
+      signal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
     })
     if (warmRes.ok) {
-      console.log(`  ✅ qwen3-coder:30b warm (keep_alive: 30m)`)
+      console.log(`  ✅ ${STREAM_MODEL} warm (keep_alive: 30m)`)
     } else {
-      console.log(`  ⚠️ qwen3-coder:30b failed to warm: ${warmRes.status}`)
+      console.log(`  ⚠️ ${STREAM_MODEL} failed to warm: ${warmRes.status}`)
     }
   } catch (err) {
-    console.log(`  ⚠️ qwen3-coder:30b warmup error: ${(err as Error).message}`)
+    console.log(`  ⚠️ ${STREAM_MODEL} warmup error: ${(err as Error).message}`)
   }
 
   // ── Phase 1: Collect all Remy responses (keeps 30b model loaded) ──
@@ -529,19 +547,19 @@ async function main() {
 
   if (!noGrade) {
     // Warm up 4b for grading
-    console.log('  Warming up qwen3:4b for grading...')
+    console.log(`  Warming up ${GRADER_MODEL} for grading...`)
     try {
       await fetch(`${OLLAMA_URL}/api/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'qwen3:4b',
+          model: GRADER_MODEL,
           prompt: '/no_think\nSay OK.',
           stream: false,
           options: { num_predict: 3 },
           keep_alive: '30m',
         }),
-        signal: AbortSignal.timeout(120_000), // 2 min timeout — don't hang forever
+        signal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
       })
       console.log('  ✅ Grader ready\n')
     } catch (err) {
@@ -558,18 +576,27 @@ async function main() {
       llmGrade = await gradeWithLLM(test, response)
     }
 
+    const requiresLlmGrade = !noGrade && Boolean(test.query)
+    if (requiresLlmGrade && !llmGrade) {
+      errors.push(`LLM grading unavailable (${GRADER_MODEL})`)
+    }
+
     const passed =
       ruleScore.mustContainPassed &&
       ruleScore.mustNotContainPassed &&
       ruleScore.refusalCorrect !== false &&
-      (llmGrade ? llmGrade.overall >= 3 : true)
+      (!requiresLlmGrade || (llmGrade ? llmGrade.overall >= 3 : false))
 
-    const scoreStr = llmGrade ? `[${llmGrade.overall}/5]` : ''
+    const scoreStr = llmGrade ? `[${llmGrade.overall}/5]` : requiresLlmGrade ? '[ungraded]' : ''
     const icon = passed ? '✅' : '❌'
     if (!noGrade && test.query) {
       console.log(`${icon} ${scoreStr}`)
-      if (!passed && llmGrade?.reasoning) {
-        console.log(`     ${llmGrade.reasoning}`)
+      if (!passed) {
+        if (llmGrade?.reasoning) {
+          console.log(`     ${llmGrade.reasoning}`)
+        } else {
+          console.log(`     LLM grading unavailable (${GRADER_MODEL})`)
+        }
       }
     }
 

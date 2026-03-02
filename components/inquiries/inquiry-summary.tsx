@@ -5,6 +5,7 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
+import { FormattedCommunicationContent } from '@/components/communication/message-content'
 import {
   InquiryStatusBadge,
   InquiryChannelBadge,
@@ -406,9 +407,14 @@ export function InquirySummary({ data, variant }: Props) {
             </p>
           </div>
           <blockquote className="border-l-4 border-brand-700 pl-4 py-2 pr-2 bg-stone-800 rounded-r-lg">
-            <p className="text-sm text-stone-300 whitespace-pre-wrap leading-relaxed">
-              {data.source_message}
-            </p>
+            <FormattedCommunicationContent
+              content={data.source_message}
+              className="text-sm text-stone-300 whitespace-pre-wrap break-words leading-relaxed"
+              linkClassName="underline underline-offset-2 text-brand-400 hover:text-brand-300"
+              quotedContainerClassName="mt-2 rounded-md border border-stone-700/70 bg-stone-900/70"
+              quotedSummaryClassName="cursor-pointer select-none px-2 py-1 text-xs text-stone-400 hover:text-stone-300"
+              quotedContentClassName="px-2 pb-2 text-xs text-stone-400 whitespace-pre-wrap break-words leading-relaxed"
+            />
           </blockquote>
         </Card>
       )}

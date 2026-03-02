@@ -10,6 +10,7 @@ import {
   IMPORT_CHANNEL_OPTIONS,
   IMPORT_DECLINE_REASONS,
 } from '@/lib/inquiries/import-constants'
+import { getCommunicationPreviewText } from '@/components/communication/message-content'
 import type { ParsedInquiryRow } from '@/lib/ai/parse-csv-inquiries'
 
 type Props = {
@@ -146,7 +147,7 @@ export function InquiryPreviewTable({
             {/* Source message preview */}
             {!skipped && row.source_message && (
               <p className="mt-1.5 text-xs text-stone-500 line-clamp-2 italic">
-                {row.source_message}
+                {getCommunicationPreviewText(row.source_message, 220)}
               </p>
             )}
           </div>

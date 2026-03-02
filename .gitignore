@@ -149,5 +149,9 @@ null
 
 # Incident reports (local failure logs, machine-specific, no PII)
 /data/incidents/
+
+# Raw email exports (PII — never commit)
+/data/email-references/privatechefmanager-yhangry/
+/data/email-references/*.zip
 .next-dev/
 .next-staging/

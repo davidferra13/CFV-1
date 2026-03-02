@@ -5,6 +5,8 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { createInquiry } from '@/lib/inquiries/actions'
 import { addClientNote } from '@/lib/notes/actions'
+import { isTakeAChefEmail, parseTakeAChefEmail } from '@/lib/gmail/take-a-chef-parser'
+import { isYhangryEmail, parseYhangryEmail } from '@/lib/gmail/yhangry-parser'
 import { ingestCommunicationEvent, seedDefaultCommunicationRules } from './pipeline'
 import { recordSenderAction } from '@/lib/gmail/sender-reputation'
 import type {
@@ -1332,6 +1334,9 @@ export async function getRawCommunicationFeed(limit = 100): Promise<
     thread_id: string
     status: string
     linked_entity_type: string | null
+    is_dinner_opportunity: boolean
+    platform: 'takeachef' | 'yhangry' | null
+    platform_email_type: string | null
   }>
 > {
   const user = await requireChef()
@@ -1351,7 +1356,80 @@ export async function getRawCommunicationFeed(limit = 100): Promise<
     return []
   }
 
-  return (data || []) as any[]
+  const rows = ((data || []) as any[]).map((row) => {
+    const senderIdentity = String(row.sender_identity || '')
+    const rawContent = String(row.raw_content || '')
+    const source = String(row.source || '')
+
+    const emailMatch = senderIdentity.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)
+    const fromEmail = emailMatch ? emailMatch[0].toLowerCase() : ''
+
+    // Most email ingests store raw_content as "subject\n\nbody". Fall back to whole body.
+    const normalized = rawContent.replace(/\r\n/g, '\n')
+    const splitIndex = normalized.indexOf('\n\n')
+    const subject =
+      splitIndex > 0
+        ? normalized.slice(0, splitIndex).trim()
+        : normalized
+            .split('\n')
+            .find((line) => line.trim().length > 0)
+            ?.trim() || ''
+    const body = splitIndex > 0 ? normalized.slice(splitIndex + 2).trim() : normalized
+
+    const syntheticEmail: any = {
+      messageId: row.id,
+      threadId: row.thread_id,
+      from: { name: senderIdentity, email: fromEmail },
+      to: '',
+      subject,
+      body,
+      date: row.timestamp || '',
+      snippet: body.slice(0, 180),
+      labelIds: [],
+      listUnsubscribe: '',
+      precedence: '',
+    }
+
+    if (source === 'takeachef' || isTakeAChefEmail(fromEmail)) {
+      const parsed = parseTakeAChefEmail(syntheticEmail)
+      const isDinner = [
+        'tac_new_inquiry',
+        'tac_client_message',
+        'tac_booking_confirmed',
+        'tac_customer_info',
+      ].includes(parsed.emailType)
+      return {
+        ...row,
+        is_dinner_opportunity: isDinner,
+        platform: 'takeachef' as const,
+        platform_email_type: parsed.emailType,
+      }
+    }
+
+    if (source === 'yhangry' || isYhangryEmail(fromEmail)) {
+      const parsed = parseYhangryEmail(syntheticEmail)
+      const isDinner = [
+        'yhangry_new_inquiry',
+        'yhangry_client_message',
+        'yhangry_booking_confirmed',
+      ].includes(parsed.emailType)
+      return {
+        ...row,
+        is_dinner_opportunity: isDinner,
+        platform: 'yhangry' as const,
+        platform_email_type: parsed.emailType,
+      }
+    }
+
+    return {
+      ...row,
+      is_dinner_opportunity: false,
+      platform: null,
+      platform_email_type: null,
+    }
+  })
+
+  return rows
 }
 
 // ─── Send Reply via Channel ───────────────────────────────────

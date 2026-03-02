@@ -22,6 +22,10 @@ import { Alert } from '@/components/ui/alert'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ConfirmPolicyDialog } from '@/components/ui/confirm-policy-dialog'
 import { SourceBadge } from '@/components/communication/source-badge'
+import {
+  FormattedCommunicationContent,
+  getCommunicationPreviewText,
+} from '@/components/communication/message-content'
 import { getChannelMeta, channelLabel } from '@/lib/communication/channel-meta'
 import {
   addInternalNoteFromCommunication,
@@ -80,6 +84,9 @@ type RawFeedItem = {
   thread_id: string
   status: string
   linked_entity_type: string | null
+  is_dinner_opportunity: boolean
+  platform: 'takeachef' | 'yhangry' | null
+  platform_email_type: string | null
 }
 
 type ResponseTurn = 'chef_to_respond' | 'waiting_on_client' | 'no_action'
@@ -217,6 +224,7 @@ export function CommunicationInboxClient({
   // Lazy-load raw feed on demand
   const [rawFeed, setRawFeed] = useState<RawFeedItem[]>([])
   const [rawFeedLoaded, setRawFeedLoaded] = useState(false)
+  const [rawFeedDinnerOnly, setRawFeedDinnerOnly] = useState(true)
   useEffect(() => {
     if (viewMode === 'raw_feed' && !rawFeedLoaded) {
       let cancelled = false
@@ -231,6 +239,11 @@ export function CommunicationInboxClient({
       }
     }
   }, [viewMode, rawFeedLoaded])
+
+  const rawFeedFiltered = useMemo(
+    () => (rawFeedDinnerOnly ? rawFeed.filter((m) => m.is_dinner_opportunity) : rawFeed),
+    [rawFeed, rawFeedDinnerOnly]
+  )
 
   useEffect(() => {
     setActiveSources(allSources)
@@ -586,10 +599,24 @@ export function CommunicationInboxClient({
         <div className="space-y-3">
           <div className="rounded-lg border border-stone-700/50 bg-stone-900/50 px-4 py-3">
             <p className="text-sm text-stone-400">
-              This is your unfiltered, chronological feed — every message from every channel,
-              exactly as it arrived. Use this to verify that the Smart Inbox filters are working
-              correctly. No duplicates are removed, no noise is filtered.
+              Raw Feed keeps chronological order and preserves duplicates. Dinner Only mode shows
+              every detected dinner opportunity (including repeats), so you can trust what is coming
+              in without checking Gmail.
             </p>
+            <div className="mt-3 flex items-center gap-2">
+              <button
+                onClick={() => setRawFeedDinnerOnly(true)}
+                className={`rounded-full px-3 py-1.5 text-xs border transition-colors ${rawFeedDinnerOnly ? 'bg-brand-500 text-white border-brand-500' : 'text-stone-400 border-stone-600 hover:text-white'}`}
+              >
+                Dinner Only ({rawFeed.filter((m) => m.is_dinner_opportunity).length})
+              </button>
+              <button
+                onClick={() => setRawFeedDinnerOnly(false)}
+                className={`rounded-full px-3 py-1.5 text-xs border transition-colors ${!rawFeedDinnerOnly ? 'bg-brand-500 text-white border-brand-500' : 'text-stone-400 border-stone-600 hover:text-white'}`}
+              >
+                All Messages ({rawFeed.length})
+              </button>
+            </div>
           </div>
 
           {!rawFeedLoaded ? (
@@ -598,15 +625,17 @@ export function CommunicationInboxClient({
                 Loading raw feed...
               </CardContent>
             </Card>
-          ) : rawFeed.length === 0 ? (
+          ) : rawFeedFiltered.length === 0 ? (
             <Card>
               <CardContent className="py-8 text-center text-sm text-stone-500">
-                No messages yet. Connect Gmail or log a message to get started.
+                {rawFeedDinnerOnly
+                  ? 'No dinner opportunities detected in the current raw feed window.'
+                  : 'No messages yet. Connect Gmail or log a message to get started.'}
               </CardContent>
             </Card>
           ) : (
             <div className="space-y-1">
-              {rawFeed.map((msg) => (
+              {rawFeedFiltered.map((msg) => (
                 <Link
                   key={msg.id}
                   href={`/inbox/triage/${msg.thread_id}`}
@@ -627,9 +656,21 @@ export function CommunicationInboxClient({
                         <span className="text-[10px] text-indigo-400 flex-shrink-0">You</span>
                       )}
                     </div>
-                    <p className="text-xs text-stone-400 truncate mt-0.5">{msg.raw_content}</p>
+                    <p className="text-xs text-stone-400 truncate mt-0.5">
+                      {getCommunicationPreviewText(msg.raw_content, 180)}
+                    </p>
                   </div>
                   <div className="flex-shrink-0 flex items-center gap-1.5">
+                    {msg.is_dinner_opportunity && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-950 text-brand-400 border border-brand-800">
+                        dinner
+                      </span>
+                    )}
+                    {msg.platform_email_type && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-stone-800 text-stone-400">
+                        {msg.platform_email_type.replace(/^tac_/, '').replace(/^yhangry_/, '')}
+                      </span>
+                    )}
                     {msg.linked_entity_type && (
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-stone-800 text-stone-400">
                         {msg.linked_entity_type}
@@ -1026,9 +1067,7 @@ export function CommunicationInboxClient({
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-3 sm:space-y-4 px-3 sm:px-6 pb-3 sm:pb-4">
-                        <p className="text-sm text-stone-200 whitespace-pre-wrap line-clamp-3">
-                          {item.raw_content}
-                        </p>
+                        <FormattedCommunicationContent content={item.raw_content} compact />
 
                         {item.next_follow_up_due_at && (
                           <div className="text-xs text-stone-500">

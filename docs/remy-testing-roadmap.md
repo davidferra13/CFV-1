@@ -2,11 +2,28 @@
 
 > **Purpose:** This is the master testing roadmap for Remy, ChefFlow's AI concierge. It documents every capability, every test case, every phase, and every "done" criterion. When every checkbox is checked, testing is complete.
 >
-> **Last updated:** 2026-03-01
+> **Last updated:** 2026-03-02
 >
-> **Current state:** 33 eval tests, 75.8% LLM-graded pass rate, 25/33 passing
+> **Current state:** Expanded harness active (270-test suite exists). Latest full run: 218/270 (80.7% LLM-graded pass rate, 2026-03-01). Latest safety checkpoint: documented below (2026-03-02).
 >
 > **Target state:** 250+ eval tests, 90%+ LLM-graded pass rate, all 7 phases complete
+
+### Mission Control Sync (2026-03-02)
+
+- Safety-first retest completed and logged to Mission Control reports:
+  - `critical_guardrails`: `2/3`
+  - `safety`: `7/8`
+  - `security`: `7/8`
+  - `allergy_safety`: `3/4`
+  - `cross_contamination`: `0/2`
+- Blocking failures to fix next:
+  - `guard-03`, `safety-07`, `sec-08`, `allergy-04`, `contam-01`, `contam-02`
+- Reports:
+  - `scripts/remy-eval/reports/eval-1772417752210.json`
+  - `scripts/remy-eval/reports/eval-1772417987000.json`
+  - `scripts/remy-eval/reports/eval-1772418427777.json`
+  - `scripts/remy-eval/reports/eval-1772418572930.json`
+  - `scripts/remy-eval/reports/eval-1772418670417.json`
 
 ---
 

@@ -1,6 +1,6 @@
 # Remy Improvement Roadmap
 
-**Created:** 2026-02-28 | **Last Updated:** 2026-02-28
+**Created:** 2026-02-28 | **Last Updated:** 2026-03-02
 **Owner:** Claude Code (Lead Engineer)
 
 ---
@@ -237,11 +237,29 @@ Long-term quality infrastructure.
 
 ## Eval History
 
-| Date       | Phase           | Pass Rate       | Avg Time | Key Change                                        |
-| ---------- | --------------- | --------------- | -------- | ------------------------------------------------- |
-| 2026-02-28 | Baseline        | 18/33 (54.5%)   | N/A      | First eval run — most failures were timeouts      |
-| 2026-03-01 | Post-Phase 1    | 27/33 (81.8%)   | 48.5s    | Timeout 120s, Pi disabled, warmup, retry          |
-|            | Post-test-fixes | 30/33 (90.9%)\* | —        | \*Projected after fixing 3 over-strict test rules |
+| Date       | Phase                    | Pass Rate                                                                                      | Avg Time       | Key Change                                                                                   |
+| ---------- | ------------------------ | ---------------------------------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------------------------------- |
+| 2026-02-28 | Baseline                 | 18/33 (54.5%)                                                                                  | N/A            | First eval run — most failures were timeouts                                                 |
+| 2026-03-01 | Post-Phase 1             | 27/33 (81.8%)                                                                                  | 48.5s          | Timeout 120s, Pi disabled, warmup, retry                                                     |
+|            | Post-test-fixes          | 30/33 (90.9%)\*                                                                                | —              | \*Projected after fixing 3 over-strict test rules                                            |
+| 2026-03-02 | Safety checkpoint retest | critical_guardrails 2/3, safety 7/8, security 7/8, allergy_safety 3/4, cross_contamination 0/2 | 17.3s to 43.3s | Grading reliability hardened in eval harness; failures now tracked with stable judged output |
+
+### Mission Control Sync - 2026-03-02
+
+- Evaluated categories with stable grading (`REMY_EVAL_GRADER_MODEL=qwen3-coder:30b`):
+  - `critical_guardrails`: `2/3` (failed `guard-03`)
+  - `safety`: `7/8` (failed `safety-07`)
+  - `security`: `7/8` (failed `sec-08`)
+  - `allergy_safety`: `3/4` (failed `allergy-04`)
+  - `cross_contamination`: `0/2` (failed `contam-01`, `contam-02`)
+- Reports:
+  - `scripts/remy-eval/reports/eval-1772417752210.json`
+  - `scripts/remy-eval/reports/eval-1772417987000.json`
+  - `scripts/remy-eval/reports/eval-1772418427777.json`
+  - `scripts/remy-eval/reports/eval-1772418572930.json`
+  - `scripts/remy-eval/reports/eval-1772418670417.json`
+- Harness reliability update:
+  - `scripts/remy-eval/eval-harness.ts` now retries LLM grading and marks graded runs as failed when grading is unavailable.
 
 ### Detailed Results — Post-Phase 1 (2026-03-01)
 

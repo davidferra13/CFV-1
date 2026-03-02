@@ -1,5 +1,5 @@
 import { format } from 'date-fns'
-import { Badge } from '@/components/ui/badge'
+import { FormattedCommunicationContent } from '@/components/communication/message-content'
 import type { Database } from '@/types/database'
 
 type Message = Database['public']['Tables']['messages']['Row']
@@ -59,7 +59,14 @@ export function MessageThread({ messages, showEntityLinks = false }: MessageThre
             )}
 
             {/* Message body */}
-            <p className="text-sm text-stone-200 whitespace-pre-wrap">{msg.body}</p>
+            <FormattedCommunicationContent
+              content={msg.body}
+              className="text-sm text-stone-200 whitespace-pre-wrap break-words leading-relaxed"
+              linkClassName="underline underline-offset-2 text-brand-400 hover:text-brand-300"
+              quotedContainerClassName="mt-2 rounded-md border border-stone-700/70 bg-stone-900/70"
+              quotedSummaryClassName="cursor-pointer select-none px-2 py-1 text-xs text-stone-400 hover:text-stone-300"
+              quotedContentClassName="px-2 pb-2 text-xs text-stone-400 whitespace-pre-wrap break-words leading-relaxed"
+            />
 
             {/* Meta row */}
             <div className="flex items-center gap-2 mt-2 flex-wrap">

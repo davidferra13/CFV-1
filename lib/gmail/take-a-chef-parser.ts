@@ -91,7 +91,8 @@ export function isTakeAChefEmail(fromAddress: string): boolean {
   const lower = fromAddress.toLowerCase().trim()
   if (TAC_KNOWN_SENDERS.includes(lower)) return true
   const domain = lower.split('@')[1]
-  return domain ? TAC_SENDER_DOMAINS.includes(domain) : false
+  if (!domain) return false
+  return TAC_SENDER_DOMAINS.some((allowed) => domain === allowed || domain.endsWith(`.${allowed}`))
 }
 
 // ─── Email Type Detection ────────────────────────────────────────────────
@@ -139,8 +140,21 @@ function parseInquiryEmail(
   const mealType = mealMatch?.[1]?.trim() || null
 
   // Date
-  const dateMatch = body.match(/Date:\s*(.+)/i)
-  const eventDate = dateMatch?.[1]?.trim() || null
+  // Supports both:
+  // - "Date: June 23, 2026"
+  // - "Dates: Jun 6, 2026 to Jun 10, 2026"
+  const dateMatch = body.match(
+    /Date[s]?:\*?\*?\s*([A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}(?:\s+to\s+[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4})?)/i
+  )
+  const eventDateRaw = dateMatch?.[1]?.trim() || null
+  const eventDateStart = eventDateRaw ? eventDateRaw.split(/\s+to\s+/i)[0].trim() : null
+  let eventDate: string | null = eventDateStart
+  if (eventDateStart) {
+    const parsed = new Date(eventDateStart)
+    if (!isNaN(parsed.getTime())) {
+      eventDate = parsed.toISOString().split('T')[0]
+    }
+  }
 
   // Guest count — "No. of guests: Mid-size group (7 to 15 people)" or similar
   const guestMatch = body.match(/No\.\s*of\s*guests?:\s*(.+)/i)
@@ -204,9 +218,16 @@ function parseInquiryEmail(
   const partnerMatch = body.match(/(?:PARTNER|Partner)[\s\S]*?Name:\s*(.+)/i)
   const partnerName = partnerMatch?.[1]?.trim() || null
 
-  // CTA link — look for "Send proposal" href
-  const ctaMatch = body.match(/href="([^"]*)"[^>]*>(?:[^<]*?)(?:Send proposal|View request)/i)
-  const ctaLink = ctaMatch?.[1] || null
+  // CTA link
+  // Supports HTML href and markdown/plain login-check URLs used in Gmail exports.
+  const ctaHrefMatch = body.match(/href="([^"]*)"[^>]*>(?:[^<]*?)(?:Send proposal|View request)/i)
+  const ctaMarkdownMatch = body.match(
+    /\((https?:\/\/www\.privatechefmanager\.com\/en-us\/user\/login-check\?[^\s)]+)\)/i
+  )
+  const ctaDirectMatch = body.match(
+    /https?:\/\/www\.privatechefmanager\.com\/en-us\/user\/login-check\?[^\s<>"']+/i
+  )
+  const ctaLink = ctaHrefMatch?.[1] || ctaMarkdownMatch?.[1] || ctaDirectMatch?.[0] || null
 
   return {
     data: {

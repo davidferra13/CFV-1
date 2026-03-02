@@ -1,0 +1,96 @@
+{
+  "generated_at": "2026-03-02T04:21:30.686Z",
+  "source_fixture": "C:\\Users\\david\\Documents\\CFv1\\data\\email-references\\generated\\privatechefmanager-yhangry\\regression-fixtures.json",
+  "totals": {
+    "takeachef_new_inquiries": 28,
+    "yhangry_new_inquiries": 53
+  },
+  "platforms": {
+    "takeachef": {
+      "metrics": [
+        {
+          "field": "client_name",
+          "present": 28,
+          "missing": 0,
+          "present_rate": 100
+        },
+        {
+          "field": "event_date",
+          "present": 28,
+          "missing": 0,
+          "present_rate": 100
+        },
+        {
+          "field": "location",
+          "present": 28,
+          "missing": 0,
+          "present_rate": 100
+        },
+        {
+          "field": "guest_count",
+          "present": 28,
+          "missing": 0,
+          "present_rate": 100
+        },
+        {
+          "field": "cta_link",
+          "present": 28,
+          "missing": 0,
+          "present_rate": 100
+        },
+        {
+          "field": "price_per_person_range",
+          "present": 16,
+          "missing": 12,
+          "present_rate": 57.14
+        }
+      ]
+    },
+    "yhangry": {
+      "metrics": [
+        {
+          "field": "client_name",
+          "present": 15,
+          "missing": 38,
+          "present_rate": 28.3
+        },
+        {
+          "field": "event_date",
+          "present": 53,
+          "missing": 0,
+          "present_rate": 100
+        },
+        {
+          "field": "location",
+          "present": 53,
+          "missing": 0,
+          "present_rate": 100
+        },
+        {
+          "field": "event_type",
+          "present": 53,
+          "missing": 0,
+          "present_rate": 100
+        },
+        {
+          "field": "guest_count",
+          "present": 16,
+          "missing": 37,
+          "present_rate": 30.19
+        },
+        {
+          "field": "quote_id",
+          "present": 46,
+          "missing": 7,
+          "present_rate": 86.79
+        },
+        {
+          "field": "quote_url",
+          "present": 52,
+          "missing": 1,
+          "present_rate": 98.11
+        }
+      ]
+    }
+  }
+}

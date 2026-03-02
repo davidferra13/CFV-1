@@ -13,6 +13,7 @@ import {
   dismissHistoricalFinding,
   dismissAllFindings,
 } from '@/lib/gmail/historical-scan-actions'
+import { getCommunicationPreviewText } from '@/components/communication/message-content'
 import type { HistoricalFinding } from '@/lib/gmail/historical-scan-actions'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 
@@ -206,7 +207,7 @@ function FindingCard({
       {/* Body preview */}
       {finding.bodyPreview && (
         <p className="text-xs text-stone-500 leading-relaxed line-clamp-3 mb-3">
-          {finding.bodyPreview}
+          {getCommunicationPreviewText(finding.bodyPreview, 260)}
         </p>
       )}
 

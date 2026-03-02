@@ -7,6 +7,7 @@ import { Star, ArrowLeft } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { SourceBadge } from '@/components/communication/source-badge'
+import { FormattedCommunicationContent } from '@/components/communication/message-content'
 import { Send, ArrowRight } from 'lucide-react'
 import {
   markCommunicationResolved,
@@ -299,9 +300,34 @@ export function ThreadDetailClient({
                         </>
                       )}
                     </div>
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                      {event.raw_content}
-                    </p>
+                    <FormattedCommunicationContent
+                      content={event.raw_content}
+                      className={
+                        isOutbound
+                          ? 'text-sm text-white whitespace-pre-wrap break-words leading-relaxed'
+                          : 'text-sm text-stone-100 whitespace-pre-wrap break-words leading-relaxed'
+                      }
+                      linkClassName={
+                        isOutbound
+                          ? 'underline underline-offset-2 text-indigo-100 hover:text-white'
+                          : 'underline underline-offset-2 text-brand-400 hover:text-brand-300'
+                      }
+                      quotedContainerClassName={
+                        isOutbound
+                          ? 'mt-2 rounded-md border border-white/20 bg-indigo-700/50'
+                          : 'mt-2 rounded-md border border-stone-700/70 bg-stone-900/70'
+                      }
+                      quotedSummaryClassName={
+                        isOutbound
+                          ? 'cursor-pointer select-none px-2 py-1 text-xs text-indigo-100 hover:text-white'
+                          : 'cursor-pointer select-none px-2 py-1 text-xs text-stone-400 hover:text-stone-300'
+                      }
+                      quotedContentClassName={
+                        isOutbound
+                          ? 'px-2 pb-2 text-xs text-indigo-100 whitespace-pre-wrap break-words leading-relaxed'
+                          : 'px-2 pb-2 text-xs text-stone-400 whitespace-pre-wrap break-words leading-relaxed'
+                      }
+                    />
                   </div>
                 </div>
               )
