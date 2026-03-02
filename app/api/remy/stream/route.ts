@@ -35,6 +35,7 @@ import {
   validateHistory,
   sanitizeErrorForClient,
   checkRecipeGenerationBlock,
+  checkOutOfScopeBlock,
 } from '@/lib/ai/remy-input-validation'
 import { isRemyBlocked, isRemyAdmin, logRemyAbuse } from '@/lib/ai/remy-abuse-actions'
 import { acquireInteractiveLock, releaseInteractiveLock, isSlotBusy } from '@/lib/ai/queue'
@@ -1239,6 +1240,16 @@ export async function POST(req: NextRequest) {
       // Return as a friendly Remy chat response, not an error
       const body =
         encodeSSE({ type: 'token', data: recipeBlock }) + encodeSSE({ type: 'done', data: null })
+      return new Response(body, { headers: sseHeaders() })
+    }
+
+    // ─── OUT-OF-SCOPE BLOCK (non-business requests) ───
+    const outOfScopeBlock = checkOutOfScopeBlock(message)
+    if (outOfScopeBlock) {
+      // Return as a friendly Remy chat response, not an error
+      const body =
+        encodeSSE({ type: 'token', data: outOfScopeBlock }) +
+        encodeSSE({ type: 'done', data: null })
       return new Response(body, { headers: sseHeaders() })
     }
 

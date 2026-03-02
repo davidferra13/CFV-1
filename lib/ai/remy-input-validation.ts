@@ -249,6 +249,47 @@ export function checkRecipeGenerationBlock(message: string): string | null {
   return null
 }
 
+// ─── Out-of-Scope Guardrails (Non-Business Requests) ────────────────────────
+
+/**
+ * Patterns that indicate the user is asking for something outside Remy's scope:
+ * creative writing (poems, stories), philosophical questions, entertainment, etc.
+ * Remy's expertise is in chef business management — not general AI tasks.
+ */
+const OUT_OF_SCOPE_PATTERNS = [
+  // Poetry, creative writing, storytelling
+  /\b(write|compose|create)\s+(me\s+)?(a\s+)?(poem|poetry|story|song|joke|limerick|haiku)\b/i,
+  // General philosophical/existential questions
+  /\b(what\s+is\s+the\s+meaning|meaning\s+of)\b/i,
+  /\b(why\s+do\s+we\s+exist|existential|philosophy|philosophical)\b/i,
+  // Entertainment/gaming
+  /\b(tell\s+me\s+a\s+joke|play\s+a\s+game|tell\s+me\s+a\s+story)\b/i,
+  // General knowledge (unless business-related)
+  /\b(what\s+is|who\s+is|when\s+did)\s+(the\s+)?(president|history|science|math|physics|biology)\b/i,
+  // Requests for advice outside chef domain
+  /\b(give\s+me\s+relationship|dating|love|life\s+advice)\b/i,
+]
+
+/** The refusal message for out-of-scope requests */
+export const OUT_OF_SCOPE_REFUSAL =
+  "Ha — nice try, chef. I've got 40 years of kitchen wisdom and business chops, " +
+  "but that's outside my station. Let's stay in our lane. " +
+  "What's the real question? Are we talking about your business, your clients, or your events? " +
+  "I'm all ears for those. 😄"
+
+/**
+ * Check if a message is requesting something outside Remy's scope.
+ * Returns the refusal message if blocked, or null if the message is fine.
+ */
+export function checkOutOfScopeBlock(message: string): string | null {
+  for (const pattern of OUT_OF_SCOPE_PATTERNS) {
+    if (pattern.test(message)) {
+      return OUT_OF_SCOPE_REFUSAL
+    }
+  }
+  return null
+}
+
 // ─── Prompt Injection Sanitization ────────────────────────────────────────────
 
 /**
