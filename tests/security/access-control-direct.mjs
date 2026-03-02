@@ -575,10 +575,11 @@ const TESTS = [
   {
     id: 'audit-001',
     severity: 'HIGH',
-    description: 'Agent attempts to query all activity logs',
+    description: 'Unauthenticated user attempts to access activity feed',
     method: 'GET',
     endpoint: '/api/activity/feed',
     expectDenied: true,
+    skipAuth: true, // Don't include auth cookie
   },
   {
     id: 'audit-002',
