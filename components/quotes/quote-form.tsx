@@ -86,6 +86,8 @@ type QuoteFormProps = {
   clients: Client[]
   pricingHistory?: PricingHistoryEntry[]
   pricingSuggestion?: PricingSuggestion | null
+  /** GOLDMINE benchmark fallback — shown when chef has no pricing history */
+  benchmarkHint?: string | null
   prefilledClientId?: string
   prefilledInquiryId?: string
   prefilledGuestCount?: number | null
@@ -100,6 +102,7 @@ export function QuoteForm({
   clients,
   pricingHistory,
   pricingSuggestion,
+  benchmarkHint,
   prefilledClientId,
   prefilledInquiryId,
   prefilledGuestCount,
@@ -548,7 +551,10 @@ export function QuoteForm({
       )}
 
       {/* ── Pricing Benchmarks (AI suggestion, read-only) ───────────────── */}
-      <PricingSuggestionPanel suggestion={pricingSuggestion ?? null} />
+      <PricingSuggestionPanel
+        suggestion={pricingSuggestion ?? null}
+        benchmarkHint={benchmarkHint}
+      />
 
       {/* ── Pricing Calculator Panel ─────────────────────────────────────── */}
       <Card className="overflow-hidden">

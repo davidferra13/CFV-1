@@ -531,6 +531,16 @@ async function handleInquiry(
         source_message: email.body,
         unknown_fields:
           Object.keys(unknownFields).length > 0 ? (unknownFields as unknown as Json) : null,
+        // GOLDMINE: set chef_likelihood + follow_up_due_at from lead score
+        chef_likelihood: leadScore.lead_tier,
+        follow_up_due_at: new Date(
+          Date.now() +
+            (leadScore.lead_tier === 'hot'
+              ? 4 * 3600000 // 4 hours — hot leads need fast response
+              : leadScore.lead_tier === 'warm'
+                ? 24 * 3600000 // 24 hours
+                : 72 * 3600000) // 72 hours — cold leads
+        ).toISOString(),
         next_action_required:
           leadScore.lead_tier === 'hot'
             ? `🔥 HOT lead (${leadScore.lead_score}/100) — Review email inquiry from ${leadName}`
@@ -701,7 +711,9 @@ async function handleExistingThread(
         // DB trigger auto-logs to inquiry_state_transitions
         const { data: inquiry } = await supabase
           .from('inquiries')
-          .select('status')
+          .select(
+            'status, confirmed_date, confirmed_guest_count, confirmed_budget_cents, confirmed_location, confirmed_occasion, confirmed_dietary_restrictions, confirmed_cannabis_preference, unknown_fields'
+          )
           .eq('id', linkedInquiryId)
           .eq('tenant_id', tenantId)
           .single()
@@ -717,6 +729,80 @@ async function handleExistingThread(
             })
             .eq('id', linkedInquiryId)
             .eq('tenant_id', tenantId)
+        }
+
+        // ─── GOLDMINE: Extract from every thread email, fill missing fields ───
+        // Run deterministic extraction on this reply. If new fields are found
+        // that the inquiry doesn't already have, update the inquiry record.
+        if (inquiry) {
+          try {
+            const { fields: newFields, score: newScore } = extractAndScoreEmail(
+              email.subject || '',
+              email.body,
+              {
+                total_messages: 2, // At least 2 messages in thread now
+                has_pricing_quoted: false,
+              }
+            )
+
+            const updates: Record<string, unknown> = {}
+
+            // Only fill fields that are currently null/empty on the inquiry
+            if (!inquiry.confirmed_date && newFields.confirmed_date)
+              updates.confirmed_date = newFields.confirmed_date
+            if (!inquiry.confirmed_guest_count && newFields.confirmed_guest_count)
+              updates.confirmed_guest_count = newFields.confirmed_guest_count
+            if (!inquiry.confirmed_budget_cents && newFields.confirmed_budget_cents)
+              updates.confirmed_budget_cents = newFields.confirmed_budget_cents
+            if (!inquiry.confirmed_location && newFields.confirmed_location)
+              updates.confirmed_location = newFields.confirmed_location
+            if (!inquiry.confirmed_occasion && newFields.confirmed_occasion)
+              updates.confirmed_occasion = newFields.confirmed_occasion
+            if (
+              (!inquiry.confirmed_dietary_restrictions ||
+                (inquiry.confirmed_dietary_restrictions as string[]).length === 0) &&
+              newFields.confirmed_dietary_restrictions.length > 0
+            )
+              updates.confirmed_dietary_restrictions = newFields.confirmed_dietary_restrictions
+            if (!inquiry.confirmed_cannabis_preference && newFields.confirmed_cannabis_preference)
+              updates.confirmed_cannabis_preference = newFields.confirmed_cannabis_preference
+
+            // Re-score if we found new fields
+            if (Object.keys(updates).length > 0) {
+              // Merge existing unknown_fields with updated lead score
+              const existingUnknown =
+                (inquiry.unknown_fields as Record<string, unknown> | null) || {}
+              updates.unknown_fields = {
+                ...existingUnknown,
+                lead_score: newScore.lead_score,
+                lead_tier: newScore.lead_tier,
+                lead_score_factors: newScore.lead_score_factors,
+              } as unknown as Json
+
+              // Update chef_likelihood if score improved
+              if (
+                newScore.lead_tier === 'hot' ||
+                (newScore.lead_tier === 'warm' &&
+                  (existingUnknown.lead_tier === 'cold' || !existingUnknown.lead_tier))
+              ) {
+                updates.chef_likelihood = newScore.lead_tier
+              }
+
+              await supabase
+                .from('inquiries')
+                .update(updates)
+                .eq('id', linkedInquiryId)
+                .eq('tenant_id', tenantId)
+
+              console.log(
+                `[handleExistingThread] Updated inquiry ${linkedInquiryId} with new fields:`,
+                Object.keys(updates).join(', ')
+              )
+            }
+          } catch (extractErr) {
+            // Non-fatal — thread processing continues even if extraction fails
+            console.error('[handleExistingThread] Field extraction failed (non-fatal):', extractErr)
+          }
         }
       }
     }
@@ -960,6 +1046,16 @@ async function handleTacNewInquiry(
       external_platform: 'take_a_chef',
       external_link: inquiry.ctaLink,
       status: 'new',
+      // GOLDMINE: set chef_likelihood + follow_up_due_at from lead score
+      chef_likelihood: tacLeadScore.lead_tier,
+      follow_up_due_at: new Date(
+        Date.now() +
+          (tacLeadScore.lead_tier === 'hot'
+            ? 4 * 3600000
+            : tacLeadScore.lead_tier === 'warm'
+              ? 24 * 3600000
+              : 72 * 3600000)
+      ).toISOString(),
       next_action_required: `Review TakeAChef inquiry from ${inquiry.clientName}`,
       next_action_by: 'chef',
     })
@@ -1500,7 +1596,19 @@ async function handleYhangryNewInquiry(
     console.error('[Yhangry] Client creation failed (non-fatal):', clientErr)
   }
 
-  // Build unknown_fields with all Yhangry-specific data
+  // Compute lead score from parsed platform fields
+  const yhangryLeadScore = scoreInquiryFields({
+    confirmed_date: inquiry.eventDate,
+    confirmed_guest_count: null,
+    confirmed_budget_cents: null,
+    confirmed_location: inquiry.location,
+    confirmed_occasion: inquiry.eventType,
+    confirmed_dietary_restrictions: null,
+    confirmed_cannabis_preference: null,
+    referral_source: 'yhangry',
+  })
+
+  // Build unknown_fields with all Yhangry-specific data + lead score
   const unknownFields: Record<string, unknown> = {
     submission_source: 'yhangry_gmail_auto',
     original_sender_name: email.from.name || 'Yhangry',
@@ -1509,6 +1617,9 @@ async function handleYhangryNewInquiry(
     event_type: inquiry.eventType,
     quote_url: inquiry.quoteUrl,
     quote_id: inquiry.quoteId,
+    lead_score: yhangryLeadScore.lead_score,
+    lead_tier: yhangryLeadScore.lead_tier,
+    lead_score_factors: yhangryLeadScore.lead_score_factors,
   }
 
   // Create the inquiry
@@ -1529,6 +1640,16 @@ async function handleYhangryNewInquiry(
       external_link: inquiry.quoteUrl,
       external_inquiry_id: inquiry.quoteId,
       status: 'new',
+      // GOLDMINE: set chef_likelihood + follow_up_due_at from lead score
+      chef_likelihood: yhangryLeadScore.lead_tier,
+      follow_up_due_at: new Date(
+        Date.now() +
+          (yhangryLeadScore.lead_tier === 'hot'
+            ? 4 * 3600000
+            : yhangryLeadScore.lead_tier === 'warm'
+              ? 24 * 3600000
+              : 72 * 3600000)
+      ).toISOString(),
       next_action_required: `Review Yhangry inquiry — ${inquiry.eventType || 'private event'} in ${inquiry.location || 'location TBD'}`,
       next_action_by: 'chef',
     })
@@ -2041,6 +2162,16 @@ async function handleGenericNewLead(
       external_platform: channelValue,
       external_link: fields.ctaLink,
       status: 'new',
+      // GOLDMINE: set chef_likelihood + follow_up_due_at from lead score
+      chef_likelihood: platformLeadScore.lead_tier,
+      follow_up_due_at: new Date(
+        Date.now() +
+          (platformLeadScore.lead_tier === 'hot'
+            ? 4 * 3600000
+            : platformLeadScore.lead_tier === 'warm'
+              ? 24 * 3600000
+              : 72 * 3600000)
+      ).toISOString(),
       next_action_required:
         platformLeadScore.lead_tier === 'hot'
           ? `🔥 HOT lead (${platformLeadScore.lead_score}/100) — Review ${displayName} inquiry from ${fields.clientName}`

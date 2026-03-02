@@ -6,6 +6,7 @@ import { getClients } from '@/lib/clients/actions'
 import { getClientPricingHistory } from '@/lib/quotes/actions'
 import { getInquiryById } from '@/lib/inquiries/actions'
 import { getPricingSuggestion } from '@/lib/analytics/pricing-suggestions'
+import { formatBenchmarkSuggestion } from '@/lib/inquiries/goldmine-pricing-benchmarks'
 import { QuoteForm } from '@/components/quotes/quote-form'
 
 export default async function NewQuotePage({
@@ -37,7 +38,7 @@ export default async function NewQuotePage({
   }
 
   // Fetch pricing history and benchmark suggestion in parallel
-  const [pricingHistory, pricingSuggestion] = await Promise.all([
+  const [pricingHistory, rawPricingSuggestion] = await Promise.all([
     prefilledClientId ? getClientPricingHistory(prefilledClientId) : Promise.resolve([]),
     prefilledGuestCount && prefilledGuestCount > 0
       ? getPricingSuggestion({
@@ -47,6 +48,15 @@ export default async function NewQuotePage({
         }).catch(() => null)
       : Promise.resolve(null),
   ])
+
+  // If chef has no pricing history, fall back to GOLDMINE benchmarks
+  const pricingSuggestion = rawPricingSuggestion
+  const benchmarkHint =
+    (!pricingSuggestion || pricingSuggestion.status === 'insufficient_data') &&
+    prefilledGuestCount &&
+    prefilledGuestCount > 0
+      ? formatBenchmarkSuggestion(prefilledGuestCount)
+      : null
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -62,6 +72,7 @@ export default async function NewQuotePage({
         clients={clients}
         pricingHistory={pricingHistory}
         pricingSuggestion={pricingSuggestion}
+        benchmarkHint={benchmarkHint}
         prefilledClientId={prefilledClientId}
         prefilledInquiryId={prefilledInquiryId}
         prefilledGuestCount={prefilledGuestCount}

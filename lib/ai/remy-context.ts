@@ -1186,6 +1186,31 @@ async function loadInquiryEntity(
     lines.push(`Next action: ${data.next_action_required} (by ${data.next_action_by ?? '?'})`)
   if (data.follow_up_due_at) lines.push(`Follow-up due: ${data.follow_up_due_at}`)
 
+  // GOLDMINE lead score + response coaching (from unknown_fields JSONB)
+  const uf = data.unknown_fields as Record<string, unknown> | null
+  if (uf && typeof uf === 'object' && !Array.isArray(uf) && uf.lead_score != null) {
+    const score = uf.lead_score as number
+    const tier = ((uf.lead_tier as string) || 'unknown').toUpperCase()
+    const factors = Array.isArray(uf.lead_score_factors) ? (uf.lead_score_factors as string[]) : []
+    lines.push(`\nLEAD INTELLIGENCE:`)
+    lines.push(`Lead Score: ${score}/100 (${tier})`)
+    if (factors.length > 0) lines.push(`Score Factors: ${factors.join(', ')}`)
+    // Response coaching based on tier
+    if (tier === 'HOT') {
+      lines.push(
+        `Response Coaching: This is a HOT lead — prioritize. Respond within 4-24 hours for best conversion.`
+      )
+    } else if (tier === 'WARM') {
+      lines.push(
+        `Response Coaching: WARM lead — respond within 24 hours. Good potential, needs timely follow-up.`
+      )
+    } else if (tier === 'COLD') {
+      lines.push(
+        `Response Coaching: COLD lead — respond within 72 hours. Lower priority, but still worth a reply.`
+      )
+    }
+  }
+
   // Message thread
   const messages = messagesResult.data ?? []
   if (messages.length > 0) {

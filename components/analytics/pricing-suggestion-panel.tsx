@@ -7,12 +7,14 @@ import type { PricingSuggestion } from '@/lib/analytics/pricing-suggestions'
 
 interface PricingSuggestionPanelProps {
   suggestion: PricingSuggestion | null
+  /** GOLDMINE benchmark fallback — shown when chef has no pricing history */
+  benchmarkHint?: string | null
 }
 
-export function PricingSuggestionPanel({ suggestion }: PricingSuggestionPanelProps) {
+export function PricingSuggestionPanel({ suggestion, benchmarkHint }: PricingSuggestionPanelProps) {
   const [open, setOpen] = useState(false)
 
-  if (!suggestion) return null
+  if (!suggestion && !benchmarkHint) return null
 
   return (
     <Card className="overflow-hidden">
@@ -23,7 +25,7 @@ export function PricingSuggestionPanel({ suggestion }: PricingSuggestionPanelPro
       >
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-stone-100">Similar Quote Benchmarks</span>
-          {suggestion.status === 'ok' && (
+          {suggestion?.status === 'ok' && suggestion.similarQuoteCount > 0 && (
             <span className="text-xs text-stone-500">
               {suggestion.similarQuoteCount} comparable quotes
             </span>
@@ -34,10 +36,20 @@ export function PricingSuggestionPanel({ suggestion }: PricingSuggestionPanelPro
 
       {open && (
         <div className="px-5 pb-5 border-t border-stone-800 pt-4 space-y-3">
-          {suggestion.status === 'insufficient_data' ? (
-            <p className="text-sm text-stone-400 italic">
-              Need 3+ accepted quotes at this guest count range to show benchmarks.
-            </p>
+          {suggestion?.status === 'insufficient_data' || !suggestion ? (
+            benchmarkHint ? (
+              <div className="space-y-2">
+                <p className="text-sm text-stone-300">{benchmarkHint}</p>
+                <p className="text-xs text-stone-400 italic">
+                  Based on historical booking data. Your own pricing history will replace this after
+                  3+ accepted quotes.
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-stone-400 italic">
+                Need 3+ accepted quotes at this guest count range to show benchmarks.
+              </p>
+            )
           ) : (
             <>
               {/* Price tiles */}

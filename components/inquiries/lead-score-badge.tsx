@@ -1,7 +1,7 @@
-// Lead Score Badge — Hot / Warm / Cold pill with score tooltip
-// Surfaces the existing LeadScore from lib/leads/scoring.ts
+// GOLDMINE Lead Score Badge — Hot / Warm / Cold pill with score tooltip
+// Surfaces the deterministic GOLDMINE lead score stored in unknown_fields
 
-import type { LeadScore } from '@/lib/leads/scoring'
+import type { LeadScoreData } from '@/lib/gmail/extract-inquiry-fields'
 
 const LABEL_CONFIG = {
   hot: { className: 'bg-red-900 text-red-700', emoji: '🔥', label: 'Hot' },
@@ -10,20 +10,24 @@ const LABEL_CONFIG = {
 }
 
 interface LeadScoreBadgeProps {
-  score: LeadScore
+  score: LeadScoreData
   showScore?: boolean
 }
 
-export function LeadScoreBadge({ score, showScore = false }: LeadScoreBadgeProps) {
-  const cfg = LABEL_CONFIG[score.label]
+export function LeadScoreBadge({ score, showScore = true }: LeadScoreBadgeProps) {
+  const cfg = LABEL_CONFIG[score.lead_tier]
 
   return (
     <span
       className={`inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded ${cfg.className}`}
-      title={score.factors.length > 0 ? score.factors.join(' · ') : score.label}
+      title={
+        score.lead_score_factors.length > 0
+          ? `${score.lead_score}/100 — ${score.lead_score_factors.join(' · ')}`
+          : `${score.lead_score}/100`
+      }
     >
       {cfg.emoji} {cfg.label}
-      {showScore ? ` · ${score.score}` : ''}
+      {showScore ? ` · ${score.lead_score}` : ''}
     </span>
   )
 }

@@ -42,7 +42,8 @@ import { InquirySummary, type InquirySummaryData } from '@/components/inquiries/
 import { InquiryAddClientButton } from '@/components/inquiries/inquiry-add-client-button'
 import { getBookingScoreForInquiry } from '@/lib/analytics/booking-score'
 import { BookingScoreBadge } from '@/components/analytics/booking-score-badge'
-import { LeadScoreBadge } from '@/components/ai/lead-score-badge'
+import { LeadScoreBadge } from '@/components/inquiries/lead-score-badge'
+import { scoreInquiryFields, type LeadScoreData } from '@/lib/gmail/extract-inquiry-fields'
 import { TacStatusPrompt } from '@/components/inquiries/tac-status-prompt'
 import { TacAddressLead } from '@/components/inquiries/tac-address-lead'
 import { TacTranscriptPrompt } from '@/components/inquiries/tac-transcript-prompt'
@@ -188,7 +189,30 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
               <EngagementBadge level={engagementScore.level} signals={engagementScore.signals} />
             )}
             {bookingScore && <BookingScoreBadge score={bookingScore} />}
-            <LeadScoreBadge inquiryId={params.id} />
+            {(() => {
+              // Read stored GOLDMINE score, or compute deterministically
+              const uf = inquiry.unknown_fields as Record<string, unknown> | null
+              let leadScore: LeadScoreData | null = null
+              if (uf?.lead_score != null && uf?.lead_tier) {
+                leadScore = {
+                  lead_score: uf.lead_score as number,
+                  lead_tier: uf.lead_tier as 'hot' | 'warm' | 'cold',
+                  lead_score_factors: (uf.lead_score_factors as string[]) || [],
+                }
+              } else {
+                leadScore = scoreInquiryFields({
+                  confirmed_date: inquiry.confirmed_date ?? null,
+                  confirmed_guest_count: inquiry.confirmed_guest_count ?? null,
+                  confirmed_budget_cents: inquiry.confirmed_budget_cents ?? null,
+                  confirmed_location: (inquiry as any).confirmed_location ?? null,
+                  confirmed_occasion: inquiry.confirmed_occasion ?? null,
+                  confirmed_dietary_restrictions:
+                    (inquiry as any).confirmed_dietary_restrictions ?? null,
+                  confirmed_cannabis_preference: null,
+                })
+              }
+              return leadScore ? <LeadScoreBadge score={leadScore} /> : null
+            })()}
             {inquiry.channel === 'take_a_chef' && (
               <LikelihoodToggle
                 inquiryId={inquiry.id}

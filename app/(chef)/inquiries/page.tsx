@@ -9,7 +9,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getInquiries } from '@/lib/inquiries/actions'
 import { getBookingScoresForOpenInquiries } from '@/lib/analytics/booking-score'
 import { BookingScoreBadge } from '@/components/analytics/booking-score-badge'
-import { scoreInquiry, type LeadScore } from '@/lib/leads/scoring'
+import { scoreInquiryFields, type LeadScoreData } from '@/lib/gmail/extract-inquiry-fields'
 import { LeadScoreBadge } from '@/components/inquiries/lead-score-badge'
 import { getInquiryUrgencies } from '@/lib/analytics/response-time-actions'
 import { computeCompleteness } from '@/lib/leads/completeness'
@@ -67,7 +67,7 @@ function InquiryRow({
 }: {
   inquiry: any
   scoreMap: Map<string, BookingScore>
-  leadScoreMap: Map<string, LeadScore>
+  leadScoreMap: Map<string, LeadScoreData>
   urgencyMap: Map<string, InquiryUrgency>
   completenessMap: Map<string, CompletenessScore>
 }) {
@@ -219,20 +219,31 @@ async function InquiryList({
   const urgencyMap = new Map<string, InquiryUrgency>()
   for (const u of urgencies) urgencyMap.set(u.inquiryId, u)
 
-  const leadScoreMap = new Map<string, LeadScore>()
+  const leadScoreMap = new Map<string, LeadScoreData>()
   const completenessMap = new Map<string, CompletenessScore>()
   for (const inquiry of allInquiries) {
     if (OPEN_STATUSES.has(inquiry.status)) {
-      const ls = await scoreInquiry({
-        id: inquiry.id,
-        confirmed_budget_cents: inquiry.confirmed_budget_cents,
-        confirmed_guest_count: inquiry.confirmed_guest_count,
-        confirmed_date: inquiry.confirmed_date,
-        channel: inquiry.channel,
-        client_id: inquiry.client_id,
-        created_at: inquiry.created_at,
-      })
-      leadScoreMap.set(inquiry.id, ls)
+      // Read stored GOLDMINE score from unknown_fields (set by Gmail sync)
+      const uf = (inquiry as any).unknown_fields as Record<string, unknown> | null
+      if (uf?.lead_score != null && uf?.lead_tier) {
+        leadScoreMap.set(inquiry.id, {
+          lead_score: uf.lead_score as number,
+          lead_tier: uf.lead_tier as 'hot' | 'warm' | 'cold',
+          lead_score_factors: (uf.lead_score_factors as string[]) || [],
+        })
+      } else {
+        // Fallback: compute GOLDMINE score from confirmed_* fields (pre-GOLDMINE inquiries)
+        const ls = scoreInquiryFields({
+          confirmed_date: inquiry.confirmed_date ?? null,
+          confirmed_guest_count: inquiry.confirmed_guest_count ?? null,
+          confirmed_budget_cents: inquiry.confirmed_budget_cents ?? null,
+          confirmed_location: (inquiry as any).confirmed_location ?? null,
+          confirmed_occasion: inquiry.confirmed_occasion ?? null,
+          confirmed_dietary_restrictions: (inquiry as any).confirmed_dietary_restrictions ?? null,
+          confirmed_cannabis_preference: null,
+        })
+        leadScoreMap.set(inquiry.id, ls)
+      }
 
       const cs = computeCompleteness({
         id: inquiry.id,
