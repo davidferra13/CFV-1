@@ -96,3 +96,15 @@ Score tiers: **Hot** (70+), **Warm** (40-69), **Cold** (0-39)
 3. **Remy context** — "This inquiry scores 73/100 (hot) — respond within 24 hours"
 4. **Offline extraction** — Ollama down? All structured fields still extracted
 5. **Response coaching** — "Respond within 4-24 hours for best conversion" (from GOLDMINE data)
+
+## Phase 3: Risk-Gap Closure (2026-03-02)
+
+Phase 3 propagated the intelligence stored at ingestion to every screen in the app. See `docs/goldmine-phase3-risk-gap-closure.md` for full details.
+
+**Key additions:**
+
+- `chef_likelihood` + `follow_up_due_at` auto-set on all 4 inquiry creation paths
+- Inquiry list + detail read stored GOLDMINE scores (replaced crude formula + Ollama)
+- Pricing benchmarks module for new chefs with no quote history
+- Remy gets lead score + tier + factors + response coaching in inquiry context
+- Thread-level extraction: every email in a thread enriches the parent inquiry
