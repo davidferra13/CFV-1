@@ -447,6 +447,11 @@ Run these in order — stop and report any failure before continuing:
 
 - `npx tsc --noEmit --skipLibCheck` → must exit 0, zero errors
 - `npx next build --no-lint` → must exit 0
+- **Stress test AI queue** (if any AI/queue changes):
+  - `npm run test:stress:ollama` — basic load → must show ✅ PRODUCTION READY
+  - `npm run test:stress:ollama:high` — high load → must show ✅ PRODUCTION READY
+  - `npm run test:stress:ollama:failure` — failure recovery → must show ✅ PRODUCTION READY
+  - Full docs: `docs/ollama-stress-testing.md`
 - All work committed and pushed to the feature branch on GitHub
 - `types/database.ts` current with remote schema
 - Only after all of the above: merge to `main` with explicit user approval
