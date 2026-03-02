@@ -188,13 +188,13 @@ export const OLLAMA_GUARD = {
   /** Max tokens per background task response (interactive Remy has its own limit) */
   MAX_TOKENS_BACKGROUND: 1024,
   /** Seconds between worker polls (prevents busy-waiting) */
-  POLL_INTERVAL_MS: 3_000,
+  POLL_INTERVAL_MS: 250,
   /** Minimum seconds between Ollama calls (cooldown to prevent thermal throttling) */
-  COOLDOWN_MS: 1_000,
+  COOLDOWN_MS: 150,
   /** Max consecutive failures before worker backs off */
   MAX_CONSECUTIVE_FAILURES: 5,
   /** Backoff duration after max consecutive failures (ms) */
-  FAILURE_BACKOFF_MS: 60_000,
+  FAILURE_BACKOFF_MS: 30_000,
   /** Max queue depth per tenant before rejecting new tasks */
   MAX_QUEUE_DEPTH_PER_TENANT: 200,
   /** Max processing time before a task is considered hung and re-queued */
