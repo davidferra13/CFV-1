@@ -3452,6 +3452,18 @@ async function handleRequest(req, res) {
     }
   }
 
+  // Marked.js (local copy — no CDN dependency)
+  if (path === '/marked.min.js') {
+    try {
+      const js = await readFile(join(__dirname, 'marked.min.js'), 'utf-8')
+      res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8', 'Cache-Control': 'public, max-age=86400' })
+      return res.end(js)
+    } catch {
+      res.writeHead(404)
+      return res.end('marked.min.js not found')
+    }
+  }
+
   // Gustav storage JS
   if (path === '/gustav-storage.js') {
     try {

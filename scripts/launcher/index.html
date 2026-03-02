@@ -10,7 +10,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23eda86b'/%3E%3Cstop offset='100%25' stop-color='%23d47530'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Ccircle cx='32' cy='32' r='14' fill='none' stroke='white' stroke-width='2.5' opacity='0.9'/%3E%3Ccircle cx='32' cy='32' r='7' fill='none' stroke='white' stroke-width='2' opacity='0.7'/%3E%3Ccircle cx='32' cy='32' r='3' fill='white'/%3E%3Cline x1='32' y1='10' x2='32' y2='18' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='32' y1='46' x2='32' y2='54' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='10' y1='32' x2='18' y2='32' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='46' y1='32' x2='54' y2='32' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="manifest" href="/manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="/marked.min.js"></script>
 <script src="/gustav-storage.js"></script>
 <style>
 /* ── Reset & Base ─────────────────────────────────────────────── */
@@ -1553,6 +1553,17 @@ body {
   margin-left: 2px;
   vertical-align: text-bottom;
   animation: blink-cursor 0.8s step-end infinite;
+}
+/* Thinking indicator — shown while model emits actions before visible text */
+@keyframes thinking-dots { 0% { content: '.'; } 33% { content: '..'; } 66% { content: '...'; } }
+.chat-thinking {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 13px;
+}
+.chat-thinking::after {
+  content: '...';
+  animation: thinking-dots 1.2s steps(3, end) infinite;
 }
 /* File attachment */
 .chat-file-btn {
@@ -5761,7 +5772,9 @@ async function sendChat() {
   }
 
   const botMsg = appendChatMessage('bot', '', 'streaming')
+  botMsg.innerHTML = '<span class="chat-thinking">Thinking</span>'
   let fullResponse = ''
+  let hasVisibleContent = false
   let collectedActions = []
   let collectedActionResults = []
 
