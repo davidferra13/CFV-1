@@ -1,0 +1,73 @@
+{
+  "timestamp": "2026-03-02T21:06:14.300Z",
+  "mode": "basic",
+  "config": {
+    "concurrency": 5,
+    "duration": 30
+  },
+  "results": {
+    "total": 364,
+    "successes": 364,
+    "retries": 0,
+    "timeouts": 0,
+    "errors": 0,
+    "successRate": 1
+  },
+  "latency": {
+    "avgMs": 253,
+    "p50Ms": 226,
+    "p95Ms": 375,
+    "p99Ms": 686,
+    "maxMs": 686
+  },
+  "throughput": {
+    "requestsPerSecond": 12.13,
+    "successesPerSecond": 12.13
+  },
+  "byTaskType": {
+    "remy_public": {
+      "count": 106,
+      "successRate": 1,
+      "avgMs": 176
+    },
+    "remy_chef": {
+      "count": 106,
+      "successRate": 1,
+      "avgMs": 272
+    },
+    "remy_client": {
+      "count": 106,
+      "successRate": 1,
+      "avgMs": 272
+    },
+    "background": {
+      "count": 46,
+      "successRate": 1,
+      "avgMs": 344
+    }
+  },
+  "system": {
+    "avgGpuPercent": 86,
+    "maxGpuMb": 5291,
+    "ollamaHealthyPercent": 0
+  },
+  "sla": {
+    "threshold": {
+      "successRate": 0.95,
+      "p95LatencyMs": 5000,
+      "p99LatencyMs": 10000,
+      "throughputReqSec": 2
+    },
+    "met": {
+      "successRate": true,
+      "p95Latency": true,
+      "p99Latency": true,
+      "throughput": true
+    },
+    "overallCompliance": "PASS"
+  },
+  "recommendations": [
+    "✅ Success rate meets SLA",
+    "✅ Latency meets SLA"
+  ]
+}
