@@ -294,9 +294,15 @@ export function checkOutOfScopeBlock(message: string): string | null {
 
 /** Patterns for dangerous system requests that must be blocked clearly */
 const DANGEROUS_ACTION_PATTERNS = [
-  /\b(delete|remove|destroy|wipe|clear)\s+(all\s+)?(data|clients|events|records|files|everything)\b/i,
-  /\b(show|reveal|tell|display)\s+(me\s+)?(my\s+)?(system\s+)?(prompt|instructions|internals?)\b/i,
+  // Delete/destroy data
+  /\b(delete|remove|destroy|wipe|clear|drop)\b.*\b(all\s+)?(data|database|records|clients|events|everything)\b/i,
+  // Show system prompt/instructions
+  /\b(show|reveal|tell|display|list|print|give|provide)\b.*(system\s+)?(prompt|instructions|internals?|rules?|guidelines?)\b/i,
+  // Ignore previous instructions (jailbreak attempts)
+  /\b(ignore|override|bypass|skip|forget|disregard)\b.*(all\s+)?(previous|prior|above)?\b\s*(instructions?|prompts?|rules?|guidelines?)\b/i,
+  // Developer/admin/root mode activation
   /\b(developer|dev|admin|root|debug)\s+mode\b/i,
+  /\b(switch|enter|activate|enable|turn)\s+(on\s+)?(developer|dev|admin|root|debug)\b/i,
 ]
 
 /** Refusal for dangerous/protected actions */
