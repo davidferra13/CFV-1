@@ -150,6 +150,9 @@ null
 # Incident reports (local failure logs, machine-specific, no PII)
 /data/incidents/
 
+# Overnight audit reports (screenshots + test results, machine-specific)
+/reports/
+
 # Raw email exports (PII — never commit)
 /data/email-references/privatechefmanager-yhangry/
 /data/email-references/*.zip

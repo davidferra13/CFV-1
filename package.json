@@ -71,6 +71,8 @@
     "beta:build": "next build --no-lint && next start -p 3100",
     "ollama": "node scripts/ollama-control.mjs",
     "dashboard": "node --watch-path=scripts/launcher scripts/launcher/server.mjs",
+    "audit:overnight": "node scripts/overnight-audit.mjs",
+    "audit:db": "node scripts/db-integrity-audit.mjs",
     "test:remy-quality": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef",
     "test:remy-quality:quick": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef --category business_overview",
     "test:remy-quality:single": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef --prompt",
@@ -154,6 +156,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.1",
     "@playwright/test": "^1.50.0",
     "@tauri-apps/cli": "^2.10.0",
     "@types/google.maps": "^3.58.1",
