@@ -441,6 +441,7 @@ async function phaseSiteCrawl(routes) {
 }
 
 async function crawlPage(page, route, role, AxeBuilder, allLinks, idx, total) {
+  const PAGE_TIMEOUT = 120_000; // 2 min hard cap per page — prevents infinite hangs
   const result = {
     route, role,
     status: 'ok',
@@ -464,7 +465,13 @@ async function crawlPage(page, route, role, AxeBuilder, allLinks, idx, total) {
   };
   page.on('console', onConsole);
 
+  // Hard timeout wrapper — no single page can stall the entire crawl
+  const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error(`Page timeout after ${PAGE_TIMEOUT / 1000}s`)), PAGE_TIMEOUT)
+  );
+
   try {
+    await Promise.race([timeoutPromise, (async () => {
     const url = `${BASE_URL}${route}`;
     const t0 = Date.now();
     // domcontentloaded is much faster than networkidle in dev mode
@@ -526,10 +533,14 @@ async function crawlPage(page, route, role, AxeBuilder, allLinks, idx, total) {
       // Reset viewport for next page
       await page.setViewportSize({ width: 1280, height: 720 });
 
-      // Accessibility audit
+      // Accessibility audit (with 30s timeout — axe-core can hang on complex DOMs)
       if (AxeBuilder) {
         try {
-          const axeResults = await new AxeBuilder({ page }).analyze();
+          const axePromise = new AxeBuilder({ page }).analyze();
+          const axeTimeout = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('axe-core timeout')), 30_000)
+          );
+          const axeResults = await Promise.race([axePromise, axeTimeout]);
           result.a11yViolations = axeResults.violations.map(v => ({
             id: v.id,
             impact: v.impact,
@@ -565,6 +576,7 @@ async function crawlPage(page, route, role, AxeBuilder, allLinks, idx, total) {
       const status = errCount > 0 ? '✗' : '✓';
       log(`  [${idx}/${total}] ${role}: ${route} ${status} (${result.loadTime}ms, ${errCount} errors, ${a11yCount} a11y)`);
     }
+    })()]); // end Promise.race
   } catch (err) {
     result.status = 'error';
     result.consoleErrors.push(`Navigation failed: ${err.message}`);
