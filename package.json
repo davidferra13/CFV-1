@@ -73,6 +73,7 @@
     "dashboard": "node --watch-path=scripts/launcher scripts/launcher/server.mjs",
     "audit:overnight": "node scripts/overnight-audit.mjs",
     "audit:db": "node scripts/db-integrity-audit.mjs",
+    "audit:goldmine": "node --import tsx scripts/goldmine-audit.mjs",
     "test:remy-quality": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef",
     "test:remy-quality:quick": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef --category business_overview",
     "test:remy-quality:single": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef --prompt",
