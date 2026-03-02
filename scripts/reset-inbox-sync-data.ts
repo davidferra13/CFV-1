@@ -32,7 +32,10 @@ function loadDevIdentity(): DevIdentity {
   }
 }
 
-function getAdminClient() {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AdminClient = ReturnType<typeof createClient<any>>
+
+function getAdminClient(): AdminClient {
   return createClient(
     requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
     requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
@@ -42,12 +45,12 @@ function getAdminClient() {
   )
 }
 
-async function resolveTenant(admin: ReturnType<typeof createClient>, dev: DevIdentity) {
+async function resolveTenant(admin: AdminClient, dev: DevIdentity) {
   const { data: listed } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
   const authUser = listed?.users.find((u) => u.email?.toLowerCase() === dev.email.toLowerCase())
   if (!authUser) throw new Error(`No auth user found for ${dev.email}`)
 
-  const { data: chef } = await admin
+  const { data: chef } = await (admin as any)
     .from('chefs')
     .select('id')
     .eq('auth_user_id', authUser.id)
@@ -58,7 +61,7 @@ async function resolveTenant(admin: ReturnType<typeof createClient>, dev: DevIde
 }
 
 async function deleteByTenant(
-  admin: ReturnType<typeof createClient>,
+  admin: AdminClient,
   table: string,
   tenantId: string,
   extraFilters?: (q: any) => any

@@ -86,10 +86,10 @@ async function main() {
   const fixtureFile = fixturePath()
   const outDir = outputDir()
 
-  const tacRaw = await import('../../lib/gmail/take-a-chef-parser.ts')
-  const yhRaw = await import('../../lib/gmail/yhangry-parser.ts')
-  const tac = tacRaw.default ?? tacRaw
-  const yh = yhRaw.default ?? yhRaw
+  const tacRaw = await import('../../lib/gmail/take-a-chef-parser')
+  const yhRaw = await import('../../lib/gmail/yhangry-parser')
+  const tac = tacRaw as any
+  const yh = yhRaw as any
 
   if (
     typeof tac?.isTakeAChefEmail !== 'function' ||

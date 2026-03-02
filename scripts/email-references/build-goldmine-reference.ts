@@ -37,7 +37,7 @@
 
 import { mkdirSync, readFileSync, writeFileSync } from 'fs'
 import path from 'path'
-import type { ParsedEmail } from '../../lib/google/types.ts'
+import type { ParsedEmail } from '../../lib/google/types'
 import {
   splitMbox,
   parseRecord,
@@ -46,21 +46,21 @@ import {
   tokenize,
   normalizeSubjectForPattern,
   type FrequencyMap,
-} from './mbox-utils.ts'
-import { extractAllDeterministicFields } from './deterministic-extractors.ts'
+} from './mbox-utils'
+import { extractAllDeterministicFields } from './deterministic-extractors'
 import {
   ollamaExtractFirstContact,
   ollamaExtractFollowUp,
   testOllamaConnection,
-} from './ollama-extractors.ts'
-import { analyzeOutboundEmail, type OutboundContext } from './outbound-analyzer.ts'
-import { buildThreadIntelligence, type ThreadMessage } from './thread-intelligence.ts'
+} from './ollama-extractors'
+import { analyzeOutboundEmail, type OutboundContext } from './outbound-analyzer'
+import { buildThreadIntelligence, type ThreadMessage } from './thread-intelligence'
 import type {
   EmailExtraction,
   ExtractionStatus,
   OutboundAnalysis,
   ThreadIntelligence,
-} from './extraction-types.ts'
+} from './extraction-types'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 

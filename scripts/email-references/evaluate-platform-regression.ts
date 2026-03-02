@@ -114,11 +114,11 @@ function asEmail(f: Fixture): ParsedEmail {
 function main() {
   // tsx in this repo can expose different ESM wrappers per entrypoint.
   // Dynamic import + fallback avoids named-export resolution issues.
-  const tacLoader = import('../../lib/gmail/take-a-chef-parser.ts')
-  const yhLoader = import('../../lib/gmail/yhangry-parser.ts')
+  const tacLoader = import('../../lib/gmail/take-a-chef-parser')
+  const yhLoader = import('../../lib/gmail/yhangry-parser')
   return Promise.all([tacLoader, yhLoader]).then(([tacRaw, yhRaw]) => {
-    takeAChefParser = tacRaw.default ?? tacRaw
-    yhangryParser = yhRaw.default ?? yhRaw
+    takeAChefParser = tacRaw as any
+    yhangryParser = yhRaw as any
 
     if (
       typeof takeAChefParser?.isTakeAChefEmail !== 'function' ||

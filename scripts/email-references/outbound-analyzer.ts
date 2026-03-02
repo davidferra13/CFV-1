@@ -5,9 +5,9 @@
  * Ollama enrichment (menu items, tone) to analyze the chef's 146 replies.
  */
 
-import type { OutboundAnalysis } from './extraction-types.ts'
-import { extractBudgetMentions, extractGuestCounts } from './deterministic-extractors.ts'
-import { ollamaExtractOutbound } from './ollama-extractors.ts'
+import type { OutboundAnalysis } from './extraction-types'
+import { extractBudgetMentions, extractGuestCounts } from './deterministic-extractors'
+import { ollamaExtractOutbound } from './ollama-extractors'
 
 // ─── Response Latency ───────────────────────────────────────────────────
 
@@ -161,7 +161,7 @@ export async function analyzeOutboundEmail(
     if (ollamaResult) {
       menuItems = ollamaResult.menu_items
       coursesOffered = ollamaResult.courses_offered
-      tone = ollamaResult.tone
+      tone = ollamaResult.tone as OutboundAnalysis['tone']
     }
   }
 

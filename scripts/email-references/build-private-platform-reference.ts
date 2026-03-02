@@ -24,7 +24,7 @@ import {
   tokenize,
   normalizeSubjectForPattern,
   type FrequencyMap,
-} from './mbox-utils.ts'
+} from './mbox-utils'
 
 type Platform = 'takeachef' | 'yhangry' | 'unknown'
 type ParseResult = any
@@ -350,10 +350,10 @@ function findMboxFiles(inputRoot: string): string[] {
 
 async function main() {
   const { inputRoot, outDir } = parseArgs()
-  const tacModuleRaw = await import('../../lib/gmail/take-a-chef-parser.ts')
-  const yhModuleRaw = await import('../../lib/gmail/yhangry-parser.ts')
-  takeAChefParser = tacModuleRaw.default ?? tacModuleRaw
-  yhangryParser = yhModuleRaw.default ?? yhModuleRaw
+  const tacModuleRaw = await import('../../lib/gmail/take-a-chef-parser')
+  const yhModuleRaw = await import('../../lib/gmail/yhangry-parser')
+  takeAChefParser = tacModuleRaw as any
+  yhangryParser = yhModuleRaw as any
 
   if (
     typeof takeAChefParser?.isTakeAChefEmail !== 'function' ||

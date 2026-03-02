@@ -20,7 +20,7 @@ import {
   FollowUpFieldsSchema,
   type OllamaEnrichedFields,
   type FollowUpFields,
-} from './extraction-types.ts'
+} from './extraction-types'
 
 // ─── Config ─────────────────────────────────────────────────────────────
 
@@ -70,7 +70,7 @@ export async function ollamaCallWithFallback<T>(
           options: { num_predict: MAX_TOKENS },
           keep_alive: '30m',
           think: false,
-        } as any),
+        } as any) as unknown as Promise<{ message: { content: string } }>,
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error('Ollama timeout')), TIMEOUT_MS)
         ),

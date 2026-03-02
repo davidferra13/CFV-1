@@ -206,11 +206,11 @@ const nextConfig = {
               // NOTE: Do NOT add 'strict-dynamic' — it overrides 'self' and 'unsafe-inline'
               // in CSP3 browsers, requiring nonce-based script loading which Next.js 14
               // does not support. Adding it blocks ALL JS and kills hydration.
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://us-assets.i.posthog.com",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://luefkpakzvxcsqroxyhz.supabase.co",
               "font-src 'self'",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://hooks.stripe.com https://accounts.google.com",
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://hooks.stripe.com https://accounts.google.com https://us.i.posthog.com https://us-assets.i.posthog.com",
               "worker-src 'self'",
               'frame-src https://js.stripe.com',
               "frame-ancestors 'none'",
