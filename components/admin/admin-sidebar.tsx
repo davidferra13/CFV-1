@@ -24,6 +24,7 @@ import {
   LogOut,
   Leaf,
   Rocket,
+  ClipboardList,
 } from 'lucide-react'
 import { signOut } from '@/lib/auth/actions'
 
@@ -44,6 +45,7 @@ const navItems = [
   { href: '/admin/animations', label: 'Animations', icon: Sparkles },
   { href: '/admin/cannabis', label: 'Cannabis Tier', icon: Leaf },
   { href: '/admin/beta', label: 'Beta Signups', icon: Rocket },
+  { href: '/admin/beta-surveys', label: 'Beta Surveys', icon: ClipboardList },
 ]
 
 function NavLink({

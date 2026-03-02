@@ -38,6 +38,8 @@ import {
 } from '@/lib/chef/layout-data-cache'
 import { isAdminPreviewActive } from '@/lib/auth/admin-preview'
 import { AdminPreviewToggle } from '@/components/admin/admin-preview-toggle'
+import { Suspense } from 'react'
+import { BetaSurveyBannerWrapper } from '@/components/beta-survey/beta-survey-banner-wrapper'
 
 export default async function ChefLayout({ children }: { children: React.ReactNode }) {
   // Server-side role check - happens BEFORE any client code ships
@@ -155,6 +157,10 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                 {userIsAdmin && <AdminPreviewToggle initialPreview={previewActive} />}
                 {/* Trial / subscription banner — shown when trial is expiring (≤3 days) or expired */}
                 <TrialBanner chefId={user.entityId} />
+                {/* Beta survey banner — non-blocking, shows when an active survey hasn't been submitted */}
+                <Suspense fallback={null}>
+                  <BetaSurveyBannerWrapper href="/beta-survey" />
+                </Suspense>
                 {/* Account deletion pending banner — shown during 30-day grace period */}
                 {deletionStatus.isPending &&
                   deletionStatus.scheduledFor &&

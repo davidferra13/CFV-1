@@ -13,6 +13,8 @@ import { NotificationProvider } from '@/components/notifications/notification-pr
 import { ToastProvider } from '@/components/notifications/toast-provider'
 import { RemyClientChat } from '@/components/ai/remy-client-chat'
 import { PageInfoButton } from '@/components/ui/page-info'
+import { Suspense } from 'react'
+import { BetaSurveyBannerWrapper } from '@/components/beta-survey/beta-survey-banner-wrapper'
 
 export default async function ClientLayout({ children }: { children: React.ReactNode }) {
   let user
@@ -33,6 +35,10 @@ export default async function ClientLayout({ children }: { children: React.React
           >
             Skip to main content
           </a>
+          {/* Beta survey banner — non-blocking, shows when an active survey hasn't been submitted */}
+          <Suspense fallback={null}>
+            <BetaSurveyBannerWrapper href="/beta-survey" />
+          </Suspense>
           <ClientSidebar userEmail={user.email} />
           <ClientMobileNav userEmail={user.email} />
           <ActivityTracker eventType="portal_login" />

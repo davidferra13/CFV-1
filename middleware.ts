@@ -73,6 +73,7 @@ const skipAuthPaths = [
   '/reactivate-account',
   '/kiosk',
   '/beta',
+  '/beta-survey',
   '/hub',
 ]
 // Admin paths — require authentication but not a specific role (email check is in layout)
