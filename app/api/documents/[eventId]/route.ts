@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { requireChef } from '@/lib/auth/get-user'
+import { createServerClient } from '@/lib/supabase/server'
 import { getDocumentContext } from '@/lib/print/actions'
 import { fetchGroceryListData, renderGroceryList } from '@/lib/documents/generate-grocery-list'
 import { fetchTravelRouteData, renderTravelRoute } from '@/lib/documents/generate-travel-route'
@@ -45,12 +46,30 @@ function applyPageMeta(
 export async function GET(request: NextRequest, { params }: { params: { eventId: string } }) {
   try {
     // Auth check — will throw if not a chef
-    await requireChef()
+    const user = await requireChef()
+
+    // Validate eventId format — must be a valid UUID-like string, not a path segment
+    const { eventId } = params
+    if (!eventId || eventId.length < 8) {
+      return NextResponse.json({ error: 'Invalid event ID format' }, { status: 400 })
+    }
+
+    // Quick auth check: verify user has access to this event before generating documents
+    // This prevents generating PDFs for invalid/cross-tenant eventIds
+    const supabase: any = createServerClient()
+    const { count } = await supabase
+      .from('events')
+      .select('id', { count: 'exact', head: true })
+      .eq('id', eventId)
+      .eq('tenant_id', user.tenantId!)
+
+    if (!count || count === 0) {
+      return NextResponse.json({ error: 'Event not found or access denied' }, { status: 404 })
+    }
 
     // Resolve all print context in one DB call — attribution, custom footer
     const { generatedBy, customFooter } = await getDocumentContext()
 
-    const { eventId } = params
     const type = request.nextUrl.searchParams.get('type') || 'all'
 
     let pdfBuffer: Buffer
