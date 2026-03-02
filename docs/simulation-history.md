@@ -89,3 +89,8 @@ Failing: inquiry_parse (0%), correspondence (0%), quote_draft (0%)
 
 Passing: client_parse, allergen_risk, menu_suggestions
 Failing: inquiry_parse (0%), correspondence (0%), quote_draft (0%)
+
+## 2026-03-01 23:57 UTC — 50% pass rate — Run a28bcaa3
+
+Passing: client_parse, allergen_risk, menu_suggestions
+Failing: inquiry_parse (0%), correspondence (0%), quote_draft (0%)

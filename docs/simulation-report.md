@@ -1,39 +1,39 @@
 # ChefFlow AI Simulation Report
 
-_Auto-generated — last run: 2026-02-28T21:22:24.669Z_
-_Run ID: 500709dc-8f3b-483b-acc5-8b2f7e9df49e_
+_Auto-generated — last run: 2026-03-01T23:57:49.922Z_
+_Run ID: a28bcaa3-39d0-4359-8e6e-f40ef8b573b2_
 
 ---
 
 ## Summary
 
-The system's pass rate remains low at 50%, with inquiry_parse, correspondence, and quote_draft continuing to fail. All previously failing modules are still failing, and no modules have shown improvement since the last run. The core issue is that modules are hallucinating data or ignoring explicit instructions.
+The system's overall pass rate remains at 50%, with no improvement since the last run. The inquiry_parse, correspondence, and quote_draft modules are failing consistently across all test runs. The client_parse, allergen_risk, and menu_suggestions modules are now passing, showing recent improvements.
 
 ## Failures & Root Causes
 
 **inquiry_parse**
-The module is hallucinating client names and guest counts. It's generating fake data instead of returning undefined when information is missing. This happens because the system prompt doesn't clearly enforce that missing data must be undefined, not fabricated.
+The module is returning client names and guest counts when it should return undefined. This indicates the module is not properly filtering out ambiguous or incomplete input. It's likely misinterpreting natural language as structured data.
 
 **correspondence**
-The module generates generic content that doesn't include required client-specific details. The subject line fails to indicate the inquiry is about a private dinner. The module ignores explicit instructions to include client name, occasion, and guest count in the body and subject.
+The module is generating messages without required subject lines or client-specific content. It's producing generic templates instead of customizing messages based on parsed client data. The system fails to enforce mandatory fields.
 
 **quote_draft**
-The module produces prices that exceed defined limits. It's ignoring the pricing formula and range constraints. The system prompt lacks clear enforcement of the $85/$125/$175 per person pricing structure and the $150 travel fee with 50% deposit rule.
+The module is calculating prices that exceed expected ranges by more than 50%. It's not properly applying the pricing formula ($85/$125/$175 per person, 30% grocery, $150 travel, 50% deposit) or enforcing the maximum per-person rate of $500.
 
 ## Prompt Fix Recommendations
 
 **inquiry_parse**
-Add explicit rules: "If client name is not mentioned, return undefined. If guest count is not mentioned, return undefined. Never hallucinate names or numbers. Always return undefined for missing data."
+Update the prompt to explicitly state: "Return undefined for client name and guest count if not clearly specified in the input. Do not infer or assume values. Only return structured data when all fields are unambiguously present."
 
 **correspondence**
-Add explicit requirements: "Subject line must clearly state 'Private Dinner Inquiry' and include client name. Body must contain client name, occasion, and guest count. All fields are required. Do not generate generic content."
+Update the prompt to require: "Include the client name in the subject line. The body must contain specific details about the client's occasion and guest count. Do not use generic placeholders or templates."
 
 **quote_draft**
-Add explicit pricing rules: "Use exact formula: $85/$125/$175 per person based on guest count. Include $150 travel fee. Require 50% deposit. Total must be within $0-$10,000 range. Per-person rate must not exceed $500."
+Update the prompt to specify: "Calculate total using exact formula: ($85/$125/$175 per person, 30% grocery cost, $150 travel fee, 50% deposit). Ensure per-person rate does not exceed $500. Return error if calculated price exceeds expected range by more than 50%."
 
 ## What's Working Well
 
-client_parse, allergen_risk, and menu_suggestions are passing consistently. These modules have stable performance and don't require immediate attention. The system shows that when clear rules are applied, modules can function correctly.
+The client_parse, allergen_risk, and menu_suggestions modules are now consistently passing. These modules have shown improvement since the last run, indicating that recent fixes are effective. The system's ability to parse client information and generate menu suggestions has stabilized.
 
 ---
 

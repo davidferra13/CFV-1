@@ -1333,13 +1333,20 @@ export async function runCommand(rawInput: string): Promise<CommandRun> {
   const startedAt = new Date().toISOString()
 
   try {
-    // Safety-critical fast-path: allergy/dietary queries MUST go through dietary.check
-    // The LLM classifier sometimes routes these as client.search, missing allergy data.
+    // Safety-critical fast-path: explicit dietary lookup queries should bypass intent parsing.
+    // Guard against write intents (create/update/profile) so this does not hijack client creation.
     const dietaryMatch = rawInput.match(/\b(?:allerg|dietary|restriction|epipen|intoleran)\w*\b/i)
+    const hasWriteIntent =
+      /\b(?:create|add|make|set up|setup|start|update|change|edit)\b/i.test(rawInput) &&
+      /\b(?:client|profile|record)\b/i.test(rawInput)
+    const isLikelyDietaryLookup =
+      /\b(?:check|review|show|list|what|which|does|do|is|are|any)\b[\s\S]{0,120}\b(?:allerg|dietary|restriction|intoleran)\w*\b/i.test(
+        rawInput
+      ) || /\?/.test(rawInput)
     const nameMatch = rawInput.match(
       /(?:for|about|does|do)\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/
     )
-    if (dietaryMatch && nameMatch) {
+    if (dietaryMatch && nameMatch && !hasWriteIntent && isLikelyDietaryLookup) {
       const clientName = nameMatch[1].replace(/(?:'s|'s)\s*$/i, '')
       const task: PlannedTask = {
         id: 't1',
@@ -1359,7 +1366,38 @@ export async function runCommand(rawInput: string): Promise<CommandRun> {
       }
     }
 
-    const plan = await parseCommandIntent(rawInput)
+    let plan = await parseCommandIntent(rawInput)
+
+    // Recovery guard: if the parser missed an explicit client create request, inject
+    // a brain-dump intake task instead of leaving only read-only checks.
+    const requestedClientCreate =
+      /\b(?:create|add|make|set up|setup|start)\b[\s\S]{0,100}\b(?:client|profile|record)\b/i.test(
+        rawInput
+      )
+    const hasClientWriteTask = plan.tasks.some(
+      (t) =>
+        t.taskType === 'agent.create_client' ||
+        t.taskType === 'agent.intake_brain_dump' ||
+        t.taskType === 'agent.intake_transcript' ||
+        t.taskType === 'agent.intake_bulk_clients'
+    )
+    if (requestedClientCreate && !hasClientWriteTask) {
+      const nonDietaryTasks = plan.tasks.filter((t) => t.taskType !== 'dietary.check')
+      const nextId = `t${nonDietaryTasks.length + 1}`
+      nonDietaryTasks.push({
+        id: nextId,
+        taskType: 'agent.intake_brain_dump',
+        tier: 2,
+        confidence: 0.85,
+        inputs: { text: rawInput },
+        dependsOn: [],
+      })
+      plan = {
+        ...plan,
+        tasks: nonDietaryTasks,
+        overallConfidence: Math.max(plan.overallConfidence, 0.85),
+      }
+    }
 
     // Focus Mode: filter tasks to only allowed actions
     const allTaskTypes = plan.tasks.map((t) => t.taskType)

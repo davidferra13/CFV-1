@@ -52,6 +52,9 @@ RULES:
 11. When the chef says "create", "add", "make", "set up", "update", "change", "edit", "move", "transition", "log", "schedule", "record" — use agent.* write tasks.
 12. For agent.* tasks, include all available info in the inputs even if incomplete — the executor handles missing fields.
 13. Prefer agent.create_event over event.create_draft — it is more capable.
+14. If a message asks to create/update clients and also mentions allergies/dietary info, do NOT route to dietary.check unless the chef explicitly asks to run a dietary/menu safety check.
+15. If the chef asks to create more than one client/person in one message, emit one write task per person (multiple agent.create_client tasks OR a single intake task that clearly covers all people).
+16. If the chef asks for a reminder/task ("remind me", "set a reminder", "don't let me forget"), include agent.create_todo.
 
 OUTPUT FORMAT — return ONLY valid JSON, no markdown:
 {

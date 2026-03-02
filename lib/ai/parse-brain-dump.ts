@@ -51,6 +51,7 @@ The dump may contain ANY mix of:
 RULES:
 - One dump might reference multiple types: "John lives nearby, always does Valentine's Day, and his pan sauce recipe is..." → extract client info for John AND a recipe for pan sauce.
 - For CLIENTS: extract into the full client structure with all applicable fields.
+- If the text explicitly asks to create a separate profile/client for another person (e.g. "also create a profile for Tony"), include that person as a separate item in parsed.clients (not only as partner_name/household_member).
 - For RECIPES: extract into the full recipe structure with ingredients and method.
 - For NOTES: categorize as "event_idea", "site_note", "business_note", "scheduling", or "general". Include a suggestedAction field.
 - For UNSTRUCTURED: include the raw text of anything you can't categorize.
