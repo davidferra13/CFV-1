@@ -49,6 +49,7 @@ import { TacTranscriptPrompt } from '@/components/inquiries/tac-transcript-promp
 import { TacMenuNudge } from '@/components/inquiries/tac-menu-nudge'
 import { LikelihoodToggle } from '@/components/inquiries/likelihood-toggle'
 import { TacWorkflowGuide } from '@/components/inquiries/tac-workflow-guide'
+import { PlatformLinkBanner } from '@/components/inquiries/platform-link-banner'
 import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
 import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
 
@@ -257,6 +258,23 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
           hasMenu={false}
         />
       )}
+
+      {/* Platform link banner — shows "Open in {Platform}" for any platform inquiry with an external link.
+          Skipped for TAC statuses that already have their own button (new → TacAddressLead, awaiting_chef → TacStatusPrompt). */}
+      {(inquiry as any).external_link &&
+        (inquiry as any).external_platform &&
+        !(
+          inquiry.channel === 'take_a_chef' &&
+          (inquiry.status === 'new' || inquiry.status === 'awaiting_chef')
+        ) && (
+          <PlatformLinkBanner
+            platform={(inquiry as any).external_platform}
+            externalLink={(inquiry as any).external_link}
+            externalInquiryId={(inquiry as any).external_inquiry_id ?? null}
+            clientName={name}
+            status={inquiry.status}
+          />
+        )}
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
