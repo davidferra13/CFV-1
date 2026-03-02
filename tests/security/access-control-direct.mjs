@@ -594,6 +594,134 @@ const TESTS = [
     },
     expectDenied: true,
   },
+
+  // ═══ ADVANCED INJECTION & ENCODING TESTS ═══
+  {
+    id: 'inject-001',
+    severity: 'HIGH',
+    description: 'Agent attempts Unicode normalization bypass in search',
+    method: 'GET',
+    endpoint: '/api/clients?search=victim%E2%81%A0chef', // Zero-width space injection
+    expectDenied: true,
+  },
+  {
+    id: 'inject-002',
+    severity: 'HIGH',
+    description: 'Agent attempts LDAP injection in filter parameter',
+    method: 'GET',
+    endpoint: '/api/events?filter=*)(status=*))(&(status=*',
+    expectDenied: true,
+  },
+  {
+    id: 'inject-003',
+    severity: 'MEDIUM',
+    description: 'Agent attempts XML external entity injection',
+    method: 'POST',
+    endpoint: '/api/imports/xml',
+    body: '<?xml version="1.0"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd">]><data>&xxe;</data>',
+    expectDenied: true,
+  },
+
+  // ═══ NUMERIC & BOUNDARY TESTS ═══
+  {
+    id: 'boundary-001',
+    severity: 'MEDIUM',
+    description: 'Agent attempts negative pagination limit',
+    method: 'GET',
+    endpoint: '/api/events?limit=-1&offset=-999',
+    expectDenied: true,
+  },
+  {
+    id: 'boundary-002',
+    severity: 'MEDIUM',
+    description: 'Agent attempts massive pagination offset to leak data',
+    method: 'GET',
+    endpoint: '/api/events?limit=1000&offset=999999999',
+    expectDenied: true,
+  },
+  {
+    id: 'boundary-003',
+    severity: 'HIGH',
+    description: 'Agent attempts to set price to negative value',
+    method: 'PATCH',
+    endpoint: '/api/events/agent-event-id',
+    body: { quoted_price_cents: -99999999 },
+    expectDenied: true,
+  },
+
+  // ═══ CACHE POISONING & TIMING TESTS ═══
+  {
+    id: 'cache-001',
+    severity: 'HIGH',
+    description: 'Agent attempts HTTP cache poisoning via header injection',
+    method: 'GET',
+    endpoint: '/api/events/invalid-id',
+    headers: { 'X-Forwarded-Host': 'evil.com', 'X-Original-URL': 'http://evil.com/api/events' },
+    expectDenied: true,
+  },
+  {
+    id: 'cache-002',
+    severity: 'MEDIUM',
+    description: 'Agent attempts to poison CDN cache with malicious response',
+    method: 'GET',
+    endpoint: '/api/documents/test?type=../../etc/passwd',
+    expectDenied: true,
+  },
+
+  // ═══ REQUEST METHOD & CONTENT-TYPE CONFUSION ═══
+  {
+    id: 'method-001',
+    severity: 'MEDIUM',
+    description: 'Agent uses HEAD method on protected endpoint',
+    method: 'HEAD',
+    endpoint: `/api/events/${VICTIM_DATA.eventPaid}`,
+    expectDenied: true,
+  },
+  {
+    id: 'method-002',
+    severity: 'HIGH',
+    description: 'Agent attempts to use TRACE method (HTTP request smuggling)',
+    method: 'TRACE',
+    endpoint: '/api/events',
+    expectDenied: true,
+  },
+  {
+    id: 'method-003',
+    severity: 'MEDIUM',
+    description: 'Agent attempts OPTIONS enumeration',
+    method: 'OPTIONS',
+    endpoint: '/api/events',
+    expectDenied: true,
+  },
+
+  // ═══ LOGICAL VULNERABILITY TESTS ═══
+  {
+    id: 'logic-001',
+    severity: 'CRITICAL',
+    description: 'Agent attempts to transition event to invalid status',
+    method: 'PATCH',
+    endpoint: '/api/events/agent-event-id',
+    body: { status: 'INVALID_STATUS_BYPASS' },
+    expectDenied: true,
+  },
+  {
+    id: 'logic-002',
+    severity: 'HIGH',
+    description: 'Agent attempts duplicate quote acceptance (idempotency bypass)',
+    method: 'POST',
+    endpoint: '/api/quotes/accept',
+    body: { quote_id: VICTIM_DATA.quoteDraft, idempotency_key: 'same-key' },
+    expectDenied: true,
+  },
+  {
+    id: 'logic-003',
+    severity: 'CRITICAL',
+    description: 'Agent attempts to reverse ledger entry (financial manipulation)',
+    method: 'POST',
+    endpoint: '/api/ledger/reverse',
+    body: { entry_id: 'victim-entry-id', reason: 'undo' },
+    expectDenied: true,
+  },
 ]
 
 async function authenticate() {
