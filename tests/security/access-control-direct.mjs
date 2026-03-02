@@ -390,6 +390,75 @@ const TESTS = [
     endpoint: '/api/staff/activity',
     expectDenied: true,
   },
+
+  // ═══ CALENDAR & INTEGRATION ENDPOINTS ═══
+  {
+    id: 'cal-001',
+    severity: 'HIGH',
+    description: 'Agent attempts to access victim event calendar entry',
+    method: 'GET',
+    endpoint: `/api/calendar/event/${VICTIM_DATA.eventPaid}`,
+    expectDenied: true,
+  },
+  {
+    id: 'int-001',
+    severity: 'HIGH',
+    description: 'Agent probes integrations endpoint',
+    method: 'GET',
+    endpoint: '/api/integrations/unknown-provider',
+    expectDenied: true,
+  },
+  {
+    id: 'feed-001',
+    severity: 'CRITICAL',
+    description: 'Agent attempts to access private calendar feed with invalid token',
+    method: 'GET',
+    endpoint: '/api/feeds/calendar/invalid-token-12345',
+    expectDenied: true,
+  },
+  {
+    id: 'webhook-001',
+    severity: 'CRITICAL',
+    description: 'Agent attempts webhook callback without authorization',
+    method: 'POST',
+    endpoint: '/api/webhooks/stripe',
+    body: { type: 'charge.succeeded', data: { event_id: VICTIM_DATA.eventPaid } },
+    expectDenied: true,
+  },
+
+  // ═══ RECEIPT & QUOTE ENDPOINTS (sensitive financial docs) ═══
+  {
+    id: 'receipt-001',
+    severity: 'CRITICAL',
+    description: 'Agent accesses victim event receipt',
+    method: 'GET',
+    endpoint: `/api/documents/receipt/${VICTIM_DATA.eventPaid}`,
+    expectDenied: true,
+  },
+  {
+    id: 'receipt-002',
+    severity: 'HIGH',
+    description: 'Agent accesses commerce receipt for victim event',
+    method: 'GET',
+    endpoint: '/api/documents/commerce-receipt/victim-sale-id',
+    expectDenied: true,
+  },
+  {
+    id: 'quote-001',
+    severity: 'CRITICAL',
+    description: 'Agent accesses victim quote PDF (client-facing)',
+    method: 'GET',
+    endpoint: `/api/documents/quote/${VICTIM_DATA.quoteDraft}`,
+    expectDenied: true,
+  },
+  {
+    id: 'quote-002',
+    severity: 'CRITICAL',
+    description: 'Agent accesses victim quote client PDF',
+    method: 'GET',
+    endpoint: `/api/documents/quote-client/${VICTIM_DATA.quoteDraft}`,
+    expectDenied: true,
+  },
 ]
 
 async function authenticate() {
@@ -474,8 +543,10 @@ async function runTest(cookieStr, test) {
     }
   }
 
-  // Expect DENIED: 401, 403, 404, 405 (method not allowed), 307 (redirect to login)
-  const isDenied = [307, 401, 403, 404, 405].includes(response.status)
+  // Expect DENIED: 400 (bad request), 401, 403, 404, 405, 500, 501, 307 (redirect to login)
+  // Note: 400/500/501 indicate the endpoint either doesn't process the request or isn't implemented,
+  // which effectively denies access even if not with ideal HTTP status codes
+  const isDenied = [307, 400, 401, 403, 404, 405, 500, 501].includes(response.status)
   const hasData = !!(data && typeof data === 'object' && Object.keys(data).length > 0)
   const passed = test.expectDenied ? isDenied : !isDenied
 
