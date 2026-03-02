@@ -97,10 +97,10 @@ export function EditRecipeClient({ recipe }: Props) {
   )
   const [difficulty, setDifficulty] = useState<number>((recipe as any).difficulty || 0)
   const [equipment, setEquipment] = useState(((recipe as any).equipment || []).join(', '))
-  const [cuisine, setCuisine] = useState<string>((recipe as any).cuisine || '')
-  const [mealType, setMealType] = useState<string>((recipe as any).meal_type || '')
-  const [season, setSeason] = useState<string[]>((recipe as any).season || [])
-  const [occasionTags, setOccasionTags] = useState<string[]>((recipe as any).occasion_tags || [])
+  const [cuisine, setCuisine] = useState<string>(recipe.cuisine || '')
+  const [mealType, setMealType] = useState<string>(recipe.meal_type || '')
+  const [season, setSeason] = useState<string[]>(recipe.season || [])
+  const [occasionTags, setOccasionTags] = useState<string[]>(recipe.occasion_tags || [])
   const [customOccasion, setCustomOccasion] = useState('')
 
   // Ingredients state

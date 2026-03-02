@@ -451,6 +451,7 @@ export type Database = {
           onboarding_completed_at: string | null
           remy_archetype: string | null
           remy_enabled: boolean
+          survey_state: Json | null
           tenant_id: string
           updated_at: string
         }
@@ -465,6 +466,7 @@ export type Database = {
           onboarding_completed_at?: string | null
           remy_archetype?: string | null
           remy_enabled?: boolean
+          survey_state?: Json | null
           tenant_id: string
           updated_at?: string
         }
@@ -479,6 +481,7 @@ export type Database = {
           onboarding_completed_at?: string | null
           remy_archetype?: string | null
           remy_enabled?: boolean
+          survey_state?: Json | null
           tenant_id?: string
           updated_at?: string
         }
@@ -4793,6 +4796,7 @@ export type Database = {
           default_specialty_stores: Json
           enabled_goal_categories: string[]
           enabled_modules: string[] | null
+          focus_mode: boolean | null
           home_address: string | null
           home_city: string | null
           home_state: string | null
@@ -4846,6 +4850,7 @@ export type Database = {
           default_specialty_stores?: Json
           enabled_goal_categories?: string[]
           enabled_modules?: string[] | null
+          focus_mode?: boolean | null
           home_address?: string | null
           home_city?: string | null
           home_state?: string | null
@@ -4899,6 +4904,7 @@ export type Database = {
           default_specialty_stores?: Json
           enabled_goal_categories?: string[]
           enabled_modules?: string[] | null
+          focus_mode?: boolean | null
           home_address?: string | null
           home_city?: string | null
           home_state?: string | null
@@ -19157,6 +19163,113 @@ export type Database = {
           },
         ]
       }
+      menu_preferences: {
+        Row: {
+          adventurousness: string
+          chef_viewed_at: string | null
+          client_id: string
+          created_at: string
+          cuisine_preferences: string[] | null
+          customization_notes: string | null
+          event_id: string
+          foods_avoid: string | null
+          foods_love: string | null
+          id: string
+          selected_menu_id: string | null
+          selection_mode: string
+          service_style_pref: string | null
+          special_requests: string | null
+          submitted_at: string
+          tenant_id: string
+        }
+        Insert: {
+          adventurousness?: string
+          chef_viewed_at?: string | null
+          client_id: string
+          created_at?: string
+          cuisine_preferences?: string[] | null
+          customization_notes?: string | null
+          event_id: string
+          foods_avoid?: string | null
+          foods_love?: string | null
+          id?: string
+          selected_menu_id?: string | null
+          selection_mode?: string
+          service_style_pref?: string | null
+          special_requests?: string | null
+          submitted_at?: string
+          tenant_id: string
+        }
+        Update: {
+          adventurousness?: string
+          chef_viewed_at?: string | null
+          client_id?: string
+          created_at?: string
+          cuisine_preferences?: string[] | null
+          customization_notes?: string | null
+          event_id?: string
+          foods_avoid?: string | null
+          foods_love?: string | null
+          id?: string
+          selected_menu_id?: string | null
+          selection_mode?: string
+          service_style_pref?: string | null
+          special_requests?: string | null
+          submitted_at?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_preferences_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "menu_preferences_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "event_inventory_variance"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "menu_preferences_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "menu_preferences_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_preferences_selected_menu_id_fkey"
+            columns: ["selected_menu_id"]
+            isOneToOne: false
+            referencedRelation: "menu_cost_summary"
+            referencedColumns: ["menu_id"]
+          },
+          {
+            foreignKeyName: "menu_preferences_selected_menu_id_fkey"
+            columns: ["selected_menu_id"]
+            isOneToOne: false
+            referencedRelation: "menus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_preferences_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_state_transitions: {
         Row: {
           from_status: Database["public"]["Enums"]["menu_status"] | null
@@ -19365,6 +19478,7 @@ export type Database = {
           description: string | null
           event_id: string | null
           id: string
+          is_showcase: boolean
           is_template: boolean
           locked_at: string | null
           name: string
@@ -19379,6 +19493,7 @@ export type Database = {
           status: Database["public"]["Enums"]["menu_status"]
           target_guest_count: number | null
           tenant_id: string
+          times_used: number
           updated_at: string
           updated_by: string | null
         }
@@ -19392,6 +19507,7 @@ export type Database = {
           description?: string | null
           event_id?: string | null
           id?: string
+          is_showcase?: boolean
           is_template?: boolean
           locked_at?: string | null
           name: string
@@ -19406,6 +19522,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["menu_status"]
           target_guest_count?: number | null
           tenant_id: string
+          times_used?: number
           updated_at?: string
           updated_by?: string | null
         }
@@ -19419,6 +19536,7 @@ export type Database = {
           description?: string | null
           event_id?: string | null
           id?: string
+          is_showcase?: boolean
           is_template?: boolean
           locked_at?: string | null
           name?: string
@@ -19433,6 +19551,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["menu_status"]
           target_guest_count?: number | null
           tenant_id?: string
+          times_used?: number
           updated_at?: string
           updated_by?: string | null
         }
@@ -23105,6 +23224,7 @@ export type Database = {
           cook_time_minutes: number | null
           created_at: string
           created_by: string | null
+          cuisine: Database["public"]["Enums"]["recipe_cuisine"] | null
           description: string | null
           dietary_tags: string[]
           difficulty: number | null
@@ -23115,16 +23235,19 @@ export type Database = {
           fiber_total_g: number | null
           id: string
           last_cooked_at: string | null
+          meal_type: Database["public"]["Enums"]["recipe_meal_type"] | null
           method: string
           method_detailed: string | null
           name: string
           notes: string | null
           nutrition_calculated_at: string | null
           nutrition_snapshot_json: Json | null
+          occasion_tags: string[] | null
           photo_url: string | null
           prep_time_minutes: number | null
           protein_per_serving_g: number | null
           protein_total_g: number | null
+          season: string[] | null
           servings: number | null
           sodium_per_serving_mg: number | null
           sodium_total_mg: number | null
@@ -23149,6 +23272,7 @@ export type Database = {
           cook_time_minutes?: number | null
           created_at?: string
           created_by?: string | null
+          cuisine?: Database["public"]["Enums"]["recipe_cuisine"] | null
           description?: string | null
           dietary_tags?: string[]
           difficulty?: number | null
@@ -23159,16 +23283,19 @@ export type Database = {
           fiber_total_g?: number | null
           id?: string
           last_cooked_at?: string | null
+          meal_type?: Database["public"]["Enums"]["recipe_meal_type"] | null
           method: string
           method_detailed?: string | null
           name: string
           notes?: string | null
           nutrition_calculated_at?: string | null
           nutrition_snapshot_json?: Json | null
+          occasion_tags?: string[] | null
           photo_url?: string | null
           prep_time_minutes?: number | null
           protein_per_serving_g?: number | null
           protein_total_g?: number | null
+          season?: string[] | null
           servings?: number | null
           sodium_per_serving_mg?: number | null
           sodium_total_mg?: number | null
@@ -23193,6 +23320,7 @@ export type Database = {
           cook_time_minutes?: number | null
           created_at?: string
           created_by?: string | null
+          cuisine?: Database["public"]["Enums"]["recipe_cuisine"] | null
           description?: string | null
           dietary_tags?: string[]
           difficulty?: number | null
@@ -23203,16 +23331,19 @@ export type Database = {
           fiber_total_g?: number | null
           id?: string
           last_cooked_at?: string | null
+          meal_type?: Database["public"]["Enums"]["recipe_meal_type"] | null
           method?: string
           method_detailed?: string | null
           name?: string
           notes?: string | null
           nutrition_calculated_at?: string | null
           nutrition_snapshot_json?: Json | null
+          occasion_tags?: string[] | null
           photo_url?: string | null
           prep_time_minutes?: number | null
           protein_per_serving_g?: number | null
           protein_total_g?: number | null
+          season?: string[] | null
           servings?: number | null
           sodium_per_serving_mg?: number | null
           sodium_total_mg?: number | null
@@ -30149,6 +30280,28 @@ export type Database = {
         | "condiment"
         | "beverage"
         | "other"
+      recipe_cuisine:
+        | "italian"
+        | "french"
+        | "mexican"
+        | "japanese"
+        | "chinese"
+        | "indian"
+        | "mediterranean"
+        | "thai"
+        | "korean"
+        | "american"
+        | "southern"
+        | "middle_eastern"
+        | "fusion"
+        | "other"
+      recipe_meal_type:
+        | "breakfast"
+        | "brunch"
+        | "lunch"
+        | "dinner"
+        | "snack_passed"
+        | "any"
       reconciliation_flag_status: "open" | "resolved" | "ignored"
       referral_source:
         | "take_a_chef"
@@ -30896,6 +31049,30 @@ export const Constants = {
         "condiment",
         "beverage",
         "other",
+      ],
+      recipe_cuisine: [
+        "italian",
+        "french",
+        "mexican",
+        "japanese",
+        "chinese",
+        "indian",
+        "mediterranean",
+        "thai",
+        "korean",
+        "american",
+        "southern",
+        "middle_eastern",
+        "fusion",
+        "other",
+      ],
+      recipe_meal_type: [
+        "breakfast",
+        "brunch",
+        "lunch",
+        "dinner",
+        "snack_passed",
+        "any",
       ],
       reconciliation_flag_status: ["open", "resolved", "ignored"],
       referral_source: [
