@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-03-02T23:00:50.543Z",
+  "test": "queue_saturation",
+  "config": {
+    "totalRequests": 250,
+    "queueDepthLimit": 200,
+    "concurrencyLevel": "max (250 concurrent)"
+  },
+  "results": {
+    "successes": 250,
+    "queued": 0,
+    "rejected": 0,
+    "timeouts": 0
+  },
+  "latency": {
+    "avgMs": 1325,
+    "minMs": 1066,
+    "maxMs": 1416
+  },
+  "interpretation": {
+    "queueStrategy": "Queue-all (no rejections), not drop-oldest",
+    "behavior": "System queues all 250 requests and processes them sequentially"
+  },
+  "verification": {
+    "allSucceeded": true,
+    "noTimeouts": true,
+    "noRejects": true,
+    "verdict": "PASS: Queue handles saturation gracefully (buffers instead of rejecting)"
+  }
+}
