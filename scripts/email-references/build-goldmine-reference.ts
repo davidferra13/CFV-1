@@ -6,6 +6,16 @@
  * This script classifies, threads, and produces fixtures for regression testing
  * of the email classifier and future direct-inquiry parser.
  *
+ * Phases:
+ *   Phase 1: Parse MBOX, classify, thread, score heuristics (always runs)
+ *   Phase 2: Extract structured fields per email (--extract or --dry-run)
+ *   Phase 3: Build thread intelligence (--extract or --dry-run)
+ *   Phase 4: Analyze outbound patterns (--extract or --dry-run)
+ *
+ * Flags:
+ *   --extract   Enable phases 2-4 with Ollama enrichment
+ *   --dry-run   Enable phases 2-4 with deterministic extraction only (no Ollama)
+ *
  * Input:
  *   .auth/EmailGOLDMINE/Takeout/Mail/Dinner Email Export.mbox
  *
@@ -15,9 +25,14 @@
  *   data/email-references/generated/goldmine/thread-map.json
  *   data/email-references/generated/goldmine/rulepack.json
  *   data/email-references/generated/goldmine/report.md
+ *   data/email-references/generated/goldmine/extracted-fields.json    (phases 2-4)
+ *   data/email-references/generated/goldmine/thread-intelligence.json (phases 2-4)
+ *   data/email-references/generated/goldmine/outbound-patterns.json   (phases 2-4)
  *
  * Run:
  *   npx tsx scripts/email-references/build-goldmine-reference.ts
+ *   npx tsx scripts/email-references/build-goldmine-reference.ts --extract
+ *   npx tsx scripts/email-references/build-goldmine-reference.ts --dry-run
  */
 
 import { mkdirSync, readFileSync, writeFileSync } from 'fs'
@@ -32,6 +47,20 @@ import {
   normalizeSubjectForPattern,
   type FrequencyMap,
 } from './mbox-utils.ts'
+import { extractAllDeterministicFields } from './deterministic-extractors.ts'
+import {
+  ollamaExtractFirstContact,
+  ollamaExtractFollowUp,
+  testOllamaConnection,
+} from './ollama-extractors.ts'
+import { analyzeOutboundEmail, type OutboundContext } from './outbound-analyzer.ts'
+import { buildThreadIntelligence, type ThreadMessage } from './thread-intelligence.ts'
+import type {
+  EmailExtraction,
+  ExtractionStatus,
+  OutboundAnalysis,
+  ThreadIntelligence,
+} from './extraction-types.ts'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -300,11 +329,21 @@ function parseArgs() {
   return {
     inputFile: path.resolve(getArg('input') ?? DEFAULT_INPUT),
     outDir: path.resolve(getArg('out-dir') ?? DEFAULT_OUT_DIR),
+    extract: args.includes('--extract'),
+    dryRun: args.includes('--dry-run'),
   }
 }
 
-function main() {
-  const { inputFile, outDir } = parseArgs()
+async function main() {
+  const { inputFile, outDir, extract, dryRun } = parseArgs()
+  const runExtraction = extract || dryRun
+  const useOllama = extract && !dryRun
+
+  if (runExtraction) {
+    console.log(
+      `Mode: ${dryRun ? 'DRY-RUN (deterministic only)' : 'FULL EXTRACTION (deterministic + Ollama)'}`
+    )
+  }
 
   // Read & parse MBOX
   const content = readFileSync(inputFile, 'utf-8')
@@ -571,6 +610,307 @@ function main() {
     direct_email_keywords: topN(keywordFreq, 30),
   }
 
+  // ─── Phases 2-4: Extraction, Thread Intelligence, Outbound Analysis ──
+
+  let extractedFields: Record<string, any> | null = null
+  let threadIntelligenceOutput: Record<string, any> | null = null
+  let outboundPatternsOutput: Record<string, any> | null = null
+
+  if (runExtraction) {
+    // Test Ollama connection if needed
+    let ollamaAvailable = false
+    if (useOllama) {
+      console.log('\nTesting Ollama connection...')
+      ollamaAvailable = await testOllamaConnection()
+      if (ollamaAvailable) {
+        console.log('  Ollama is online')
+      } else {
+        console.log('  Ollama is offline — falling back to deterministic-only extraction')
+      }
+    }
+
+    const effectiveOllama = useOllama && ollamaAvailable
+
+    // ── Phase 2: Extract structured fields per email ──
+    console.log('\nPhase 2: Extracting structured fields...')
+    const extractions = new Map<string, EmailExtraction>()
+    let ollamaSucceeded = 0
+    let ollamaFailed = 0
+    let deterministicOnly = 0
+
+    for (let i = 0; i < records.length; i++) {
+      const r = records[i]
+      const det = extractAllDeterministicFields(r.email.subject, r.email.body)
+
+      let enriched = null
+      let followUp = null
+      let outbound: OutboundAnalysis | null = null
+      let status: ExtractionStatus = 'deterministic_only'
+
+      // First-contact or partner emails: full Ollama extraction
+      if (
+        effectiveOllama &&
+        (r.category === 'direct_first_contact' || r.category === 'partner_ember')
+      ) {
+        enriched = await ollamaExtractFirstContact(r.email.body)
+        if (enriched) {
+          status = 'complete'
+          ollamaSucceeded++
+        } else {
+          status = 'ollama_failed'
+          ollamaFailed++
+        }
+      }
+
+      // Follow-up emails: incremental extraction with thread context
+      if (effectiveOllama && r.category === 'direct_followup') {
+        // Build thread context from prior messages
+        const priorMessages = records
+          .filter((pr) => pr.threadId === r.threadId && pr.threadPosition < r.threadPosition)
+          .map((pr) => `[${pr.category}] ${pr.email.from.name}: ${pr.email.body.slice(0, 200)}`)
+          .join('\n---\n')
+
+        if (priorMessages) {
+          followUp = await ollamaExtractFollowUp(r.email.body, priorMessages)
+          if (followUp) {
+            status = 'complete'
+            ollamaSucceeded++
+          } else {
+            status = 'ollama_failed'
+            ollamaFailed++
+          }
+        }
+      }
+
+      // Outbound emails: analyze in Phase 4 (just deterministic here)
+      if (r.category === 'outbound') {
+        // Find previous inbound message in the same thread
+        const priorInbound = records
+          .filter(
+            (pr) =>
+              pr.threadId === r.threadId &&
+              pr.threadPosition < r.threadPosition &&
+              pr.category !== 'outbound'
+          )
+          .sort((a, b) => b.threadPosition - a.threadPosition)[0]
+
+        const context: OutboundContext = {
+          previousInboundDate: priorInbound?.email.date || null,
+          previousInboundMessageId: priorInbound?.email.messageId || null,
+        }
+
+        outbound = await analyzeOutboundEmail(r.email.body, r.email.date, context, effectiveOllama)
+        status = effectiveOllama ? 'complete' : 'deterministic_only'
+      }
+
+      if (status === 'deterministic_only') deterministicOnly++
+
+      extractions.set(r.email.messageId, {
+        message_id: r.email.messageId,
+        category: r.category,
+        extraction_status: status,
+        deterministic: det,
+        enriched,
+        follow_up: followUp,
+        outbound,
+      })
+
+      // Progress indicator every 50 emails
+      if ((i + 1) % 50 === 0 || i === records.length - 1) {
+        console.log(`  Processed ${i + 1}/${records.length} emails`)
+      }
+    }
+
+    console.log(
+      `  Ollama succeeded: ${ollamaSucceeded}, failed: ${ollamaFailed}, deterministic-only: ${deterministicOnly}`
+    )
+
+    // ── Phase 3: Build thread intelligence ──
+    console.log('\nPhase 3: Building thread intelligence...')
+
+    // Find the dataset end date (latest email date)
+    const allDates = records.map((r) => new Date(r.email.date).getTime()).filter((d) => !isNaN(d))
+    const datasetEndDate = new Date(Math.max(...allDates))
+
+    const threadIntelMap: Record<string, ThreadIntelligence> = {}
+    for (const [threadId, msgs] of threads) {
+      const threadMessages: ThreadMessage[] = msgs.map((m) => {
+        const rec = records.find((r) => r.email.messageId === m.messageId)
+        return {
+          message_id: m.messageId,
+          from_email: m.from.email,
+          date: m.date,
+          subject: m.subject,
+          body: m.body,
+          category: rec?.category || 'unknown',
+        }
+      })
+
+      threadIntelMap[threadId] = buildThreadIntelligence(
+        threadId,
+        threadMessages,
+        extractions,
+        CHEF_EMAIL,
+        datasetEndDate
+      )
+    }
+
+    // Aggregate stats
+    const outcomes = Object.values(threadIntelMap).map((t) => t.outcome)
+    const outcomeDist: Record<string, number> = {}
+    for (const o of outcomes) outcomeDist[o] = (outcomeDist[o] || 0) + 1
+
+    const responseTimes = Object.values(threadIntelMap)
+      .map((t) => t.first_response_minutes)
+      .filter((t): t is number => t !== null)
+    const avgResponseMinutes =
+      responseTimes.length > 0
+        ? Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length)
+        : null
+    const medianResponseMinutes =
+      responseTimes.length > 0
+        ? responseTimes.sort((a, b) => a - b)[Math.floor(responseTimes.length / 2)]
+        : null
+
+    const bookedCount = outcomeDist['booked'] || 0
+    const totalNonUnknown = outcomes.filter((o) => o !== 'unknown').length
+    const conversionRate =
+      totalNonUnknown > 0 ? Number((bookedCount / totalNonUnknown).toFixed(3)) : 0
+
+    console.log(`  Threads analyzed: ${Object.keys(threadIntelMap).length}`)
+    console.log(`  Outcomes: ${JSON.stringify(outcomeDist)}`)
+    console.log(`  Conversion rate: ${(conversionRate * 100).toFixed(1)}%`)
+
+    // ── Phase 4: Outbound pattern aggregation ──
+    console.log('\nPhase 4: Aggregating outbound patterns...')
+
+    const outboundExtractions = Array.from(extractions.values()).filter(
+      (e) => e.category === 'outbound' && e.outbound
+    )
+
+    const latencies = outboundExtractions
+      .map((e) => e.outbound!.latency_minutes)
+      .filter((l): l is number => l !== null && l > 0)
+
+    const pricingEmails = outboundExtractions.filter((e) => e.outbound!.contains_pricing)
+
+    const menuItemFreq: FrequencyMap = new Map()
+    for (const e of outboundExtractions) {
+      for (const item of e.outbound!.menu_items_mentioned) {
+        increment(menuItemFreq, item.toLowerCase())
+      }
+    }
+
+    const toneFreq: FrequencyMap = new Map()
+    for (const e of outboundExtractions) {
+      if (e.outbound!.tone) increment(toneFreq, e.outbound!.tone)
+    }
+
+    const signOffFreq: FrequencyMap = new Map()
+    for (const e of outboundExtractions) {
+      if (e.outbound!.sign_off_style) increment(signOffFreq, e.outbound!.sign_off_style)
+    }
+
+    // Latency distribution
+    const latencyDist = {
+      '<15min': latencies.filter((l) => l < 15).length,
+      '15-60min': latencies.filter((l) => l >= 15 && l < 60).length,
+      '1-4hr': latencies.filter((l) => l >= 60 && l < 240).length,
+      '4-24hr': latencies.filter((l) => l >= 240 && l < 1440).length,
+      '>24hr': latencies.filter((l) => l >= 1440).length,
+    }
+
+    const avgLatency =
+      latencies.length > 0
+        ? Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length)
+        : null
+    const medianLatency =
+      latencies.length > 0
+        ? latencies.sort((a, b) => a - b)[Math.floor(latencies.length / 2)]
+        : null
+
+    console.log(`  Outbound emails analyzed: ${outboundExtractions.length}`)
+    console.log(`  With pricing: ${pricingEmails.length}`)
+    console.log(`  Menu items found: ${menuItemFreq.size} unique`)
+
+    // Build output objects
+    extractedFields = {
+      generated_at: summary.generated_at,
+      extraction_config: {
+        ollama_available: ollamaAvailable,
+        deterministic_only: !effectiveOllama,
+      },
+      extractions: Object.fromEntries(
+        Array.from(extractions.entries()).map(([id, e]) => [
+          id,
+          {
+            category: e.category,
+            extraction_status: e.extraction_status,
+            deterministic: e.deterministic,
+            enriched: e.enriched,
+            follow_up: e.follow_up,
+            outbound: e.outbound,
+          },
+        ])
+      ),
+      stats: {
+        total: records.length,
+        ollama_succeeded: ollamaSucceeded,
+        ollama_failed: ollamaFailed,
+        deterministic_only: deterministicOnly,
+      },
+    }
+
+    threadIntelligenceOutput = {
+      generated_at: summary.generated_at,
+      threads: threadIntelMap,
+      aggregate_stats: {
+        total_threads: Object.keys(threadIntelMap).length,
+        outcome_distribution: outcomeDist,
+        avg_first_response_minutes: avgResponseMinutes,
+        median_first_response_minutes: medianResponseMinutes,
+        conversion_rate: conversionRate,
+      },
+    }
+
+    outboundPatternsOutput = {
+      generated_at: summary.generated_at,
+      total_outbound: outboundExtractions.length,
+      response_latency: {
+        avg_minutes: avgLatency,
+        median_minutes: medianLatency,
+        distribution: latencyDist,
+      },
+      pricing_patterns: {
+        emails_with_pricing: pricingEmails.length,
+        amounts: pricingEmails.slice(0, 20).map((e) => ({
+          amount_cents: e.outbound!.quoted_amount_cents,
+          per_person: e.outbound!.per_person_rate_cents !== null,
+          guest_count: e.outbound!.guest_count_for_pricing,
+        })),
+      },
+      menu_patterns: {
+        most_mentioned_items: topN(menuItemFreq, 30),
+      },
+      tone_distribution: Object.fromEntries(toneFreq),
+      sign_off_styles: topN(signOffFreq, 10),
+    }
+
+    // Enrich regression fixtures with extraction data
+    for (const f of fixtures.fixtures) {
+      const ext = extractions.get(f.message_id)
+      if (ext) {
+        ;(f as any).extracted_fields = {
+          extraction_status: ext.extraction_status,
+          deterministic: ext.deterministic,
+          enriched: ext.enriched,
+          follow_up: ext.follow_up,
+          outbound: ext.outbound,
+        }
+      }
+    }
+  }
+
   // ─── Output: report.md ──────────────────────────────────────────────
 
   const lines = [
@@ -619,6 +959,35 @@ function main() {
     '- Post-event feedback emails are detected via pattern matching to prevent false inquiry classification.',
   ]
 
+  // Add extraction report sections if phases 2-4 ran
+  if (threadIntelligenceOutput) {
+    const stats = threadIntelligenceOutput.aggregate_stats
+    lines.push(
+      '',
+      '## Thread Intelligence Summary',
+      '',
+      `- Threads analyzed: ${stats.total_threads}`,
+      `- Outcomes: ${Object.entries(stats.outcome_distribution as Record<string, number>)
+        .map(([k, v]) => `${k}=${v}`)
+        .join(', ')}`,
+      `- Conversion rate: ${((stats.conversion_rate as number) * 100).toFixed(1)}%`,
+      `- Avg first response: ${stats.avg_first_response_minutes ?? 'N/A'} min`,
+      `- Median first response: ${stats.median_first_response_minutes ?? 'N/A'} min`
+    )
+  }
+
+  if (outboundPatternsOutput) {
+    lines.push(
+      '',
+      '## Outbound Pattern Highlights',
+      '',
+      `- Outbound emails analyzed: ${outboundPatternsOutput.total_outbound}`,
+      `- Avg response latency: ${outboundPatternsOutput.response_latency.avg_minutes ?? 'N/A'} min`,
+      `- Emails with pricing: ${outboundPatternsOutput.pricing_patterns.emails_with_pricing}`,
+      `- Unique menu items: ${outboundPatternsOutput.menu_patterns.most_mentioned_items.length}`
+    )
+  }
+
   // ─── Write Files ─────────────────────────────────────────────────────
 
   mkdirSync(outDir, { recursive: true })
@@ -635,7 +1004,7 @@ function main() {
   writeFileSync(rulepackPath, JSON.stringify(rulepack, null, 2))
   writeFileSync(reportPath, lines.join('\n') + '\n')
 
-  console.log('\nBuild complete')
+  console.log('\nBuild complete — Phase 1')
   console.log(`  Summary:  ${summaryPath}`)
   console.log(`  Fixtures: ${fixturesPath}`)
   console.log(`  Threads:  ${threadMapPath}`)
@@ -645,6 +1014,25 @@ function main() {
   console.log(
     `  Heuristic catch rate (first contacts, score≥2): ${(summary.heuristic_accuracy.catch_rate_medium * 100).toFixed(0)}%`
   )
+
+  // Write extraction artifacts if phases 2-4 ran
+  if (extractedFields) {
+    const extractedPath = path.join(outDir, 'extracted-fields.json')
+    writeFileSync(extractedPath, JSON.stringify(extractedFields, null, 2))
+    console.log(`\n  Extracted: ${extractedPath}`)
+  }
+
+  if (threadIntelligenceOutput) {
+    const threadIntelPath = path.join(outDir, 'thread-intelligence.json')
+    writeFileSync(threadIntelPath, JSON.stringify(threadIntelligenceOutput, null, 2))
+    console.log(`  Thread Intel: ${threadIntelPath}`)
+  }
+
+  if (outboundPatternsOutput) {
+    const outboundPath = path.join(outDir, 'outbound-patterns.json')
+    writeFileSync(outboundPath, JSON.stringify(outboundPatternsOutput, null, 2))
+    console.log(`  Outbound: ${outboundPath}`)
+  }
 }
 
 main()

@@ -1,6 +1,6 @@
 # GOLDMINE Email Reference Build
 
-- Generated: 2026-03-02T05:16:35.505Z
+- Generated: 2026-03-02T06:39:12.894Z
 - Input: Dinner Email Export.mbox
 - Total emails: 299
 - Threads: 49 (avg 6.1 msgs, max 26)
@@ -52,3 +52,18 @@
 - This build is deterministic from the provided MBOX.
 - Outbound emails (from chef) are included for thread context but not classified as opportunities.
 - Post-event feedback emails are detected via pattern matching to prevent false inquiry classification.
+
+## Thread Intelligence Summary
+
+- Threads analyzed: 49
+- Outcomes: expired=18, declined_by_chef=4, likely_booked=8, booked=15, declined_by_client=4
+- Conversion rate: 30.6%
+- Avg first response: 2547 min
+- Median first response: 2001 min
+
+## Outbound Pattern Highlights
+
+- Outbound emails analyzed: 146
+- Avg response latency: 2655 min
+- Emails with pricing: 88
+- Unique menu items: 0

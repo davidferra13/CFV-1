@@ -2,9 +2,9 @@
  * Evaluate GOLDMINE regression fixtures against current classification logic.
  *
  * This verifies that the GOLDMINE build pipeline produces consistent results.
- * It does NOT test the full classifyEmail() (which requires Ollama) — it tests
- * the deterministic parts: category assignment, partner detection, first-contact
- * identification, and heuristic scoring.
+ * It tests the deterministic parts: category assignment, partner detection,
+ * first-contact identification, heuristic scoring, AND extraction quality
+ * (when extraction data is present in the fixtures).
  *
  * Run:
  *   npx tsx scripts/email-references/evaluate-goldmine-regression.ts --strict
@@ -29,6 +29,44 @@ type GoldmineFixture = {
   thread_position: number
   heuristic_score: number
   heuristic_signals: string[]
+  extracted_fields?: {
+    extraction_status: string
+    deterministic: {
+      phones: string[]
+      emails: string[]
+      dates: { raw: string; parsed: string | null; context: string }[]
+      guest_counts: {
+        raw: string
+        number: number | null
+        range_low: number | null
+        range_high: number | null
+      }[]
+      budget_mentions: { raw: string; amount_cents: number | null; per_person: boolean }[]
+      dietary_mentions: string[]
+      cannabis_mentions: string[]
+      occasion_keywords: string[]
+      location_mentions: string[]
+      referral_signals: string[]
+    }
+    enriched: {
+      client_name: string | null
+      occasion_normalized: string | null
+      service_style: string | null
+      referral_source: string | null
+      cannabis_preference: string | null
+      special_notes: string | null
+      confidence: string
+    } | null
+    follow_up: Record<string, unknown> | null
+    outbound: {
+      latency_minutes: number | null
+      contains_pricing: boolean
+      quoted_amount_cents: number | null
+      per_person_rate_cents: number | null
+      tone: string | null
+      sign_off_style: string | null
+    } | null
+  }
 }
 
 type FixtureDoc = {
@@ -133,6 +171,168 @@ function main() {
       console.log(`  ${m}`)
     }
   }
+
+  // ─── Extraction Validation (if extraction data exists) ─────────────────
+
+  const hasExtraction = fixtures.some((f) => f.extracted_fields)
+
+  if (hasExtraction) {
+    console.log('\n--- Extraction Validation ---')
+
+    const extractedFixtures = fixtures.filter((f) => f.extracted_fields)
+    console.log(`Fixtures with extraction data: ${extractedFixtures.length}/${fixtures.length}`)
+
+    // Every fixture should have deterministic extraction
+    const withDeterministic = extractedFixtures.filter((f) => f.extracted_fields!.deterministic)
+    console.log(`With deterministic fields: ${withDeterministic.length}`)
+    if (withDeterministic.length !== extractedFixtures.length) {
+      mismatches.push(
+        `[extraction] ${extractedFixtures.length - withDeterministic.length} fixtures missing deterministic fields`
+      )
+    }
+
+    // First contacts should have client_name (from Ollama enrichment or at least attempted)
+    const firstContacts = extractedFixtures.filter(
+      (f) => f.expected_category === 'direct_first_contact'
+    )
+    const firstContactsWithName = firstContacts.filter(
+      (f) => f.extracted_fields?.enriched?.client_name
+    )
+    const nameRate =
+      firstContacts.length > 0
+        ? ((firstContactsWithName.length / firstContacts.length) * 100).toFixed(1)
+        : '0'
+    console.log(
+      `First contacts with client_name: ${firstContactsWithName.length}/${firstContacts.length} (${nameRate}%)`
+    )
+
+    // First contacts should have dates extracted (deterministic)
+    const firstContactsWithDate = firstContacts.filter(
+      (f) => f.extracted_fields?.deterministic.dates.length! > 0
+    )
+    const dateRate =
+      firstContacts.length > 0
+        ? ((firstContactsWithDate.length / firstContacts.length) * 100).toFixed(1)
+        : '0'
+    console.log(
+      `First contacts with dates: ${firstContactsWithDate.length}/${firstContacts.length} (${dateRate}%)`
+    )
+
+    // First contacts should have guest counts
+    const firstContactsWithGuests = firstContacts.filter(
+      (f) => f.extracted_fields?.deterministic.guest_counts.length! > 0
+    )
+    const guestRate =
+      firstContacts.length > 0
+        ? ((firstContactsWithGuests.length / firstContacts.length) * 100).toFixed(1)
+        : '0'
+    console.log(
+      `First contacts with guest_count: ${firstContactsWithGuests.length}/${firstContacts.length} (${guestRate}%)`
+    )
+
+    // Outbound emails should have latency_minutes where prior inbound exists
+    const outboundFixtures = extractedFixtures.filter(
+      (f) => f.expected_category === 'outbound' && f.extracted_fields?.outbound
+    )
+    const outboundWithLatency = outboundFixtures.filter(
+      (f) => f.extracted_fields!.outbound!.latency_minutes !== null
+    )
+    console.log(
+      `Outbound with response latency: ${outboundWithLatency.length}/${outboundFixtures.length}`
+    )
+
+    // Field coverage summary
+    let totalPhones = 0,
+      totalDates = 0,
+      totalGuests = 0,
+      totalBudgets = 0
+    let totalDietary = 0,
+      totalCannabis = 0,
+      totalOccasion = 0,
+      totalLocation = 0
+    for (const f of extractedFixtures) {
+      const det = f.extracted_fields!.deterministic
+      if (det.phones.length > 0) totalPhones++
+      if (det.dates.length > 0) totalDates++
+      if (det.guest_counts.length > 0) totalGuests++
+      if (det.budget_mentions.length > 0) totalBudgets++
+      if (det.dietary_mentions.length > 0) totalDietary++
+      if (det.cannabis_mentions.length > 0) totalCannabis++
+      if (det.occasion_keywords.length > 0) totalOccasion++
+      if (det.location_mentions.length > 0) totalLocation++
+    }
+    const n = extractedFixtures.length
+    console.log(`\nField coverage (across ${n} emails):`)
+    console.log(`  phones: ${totalPhones} (${((totalPhones / n) * 100).toFixed(0)}%)`)
+    console.log(`  dates: ${totalDates} (${((totalDates / n) * 100).toFixed(0)}%)`)
+    console.log(`  guest_counts: ${totalGuests} (${((totalGuests / n) * 100).toFixed(0)}%)`)
+    console.log(`  budgets: ${totalBudgets} (${((totalBudgets / n) * 100).toFixed(0)}%)`)
+    console.log(`  dietary: ${totalDietary} (${((totalDietary / n) * 100).toFixed(0)}%)`)
+    console.log(`  cannabis: ${totalCannabis} (${((totalCannabis / n) * 100).toFixed(0)}%)`)
+    console.log(`  occasion: ${totalOccasion} (${((totalOccasion / n) * 100).toFixed(0)}%)`)
+    console.log(`  location: ${totalLocation} (${((totalLocation / n) * 100).toFixed(0)}%)`)
+  }
+
+  // ─── Thread Intelligence Validation ──────────────────────────────────────
+
+  const THREAD_INTEL_PATH = path.resolve(
+    process.cwd(),
+    'data/email-references/generated/goldmine/thread-intelligence.json'
+  )
+
+  if (existsSync(THREAD_INTEL_PATH)) {
+    console.log('\n--- Thread Intelligence Validation ---')
+    const threadIntel = JSON.parse(readFileSync(THREAD_INTEL_PATH, 'utf-8'))
+    const threadCount = Object.keys(threadIntel.threads || {}).length
+
+    console.log(`Threads in intelligence file: ${threadCount}`)
+
+    // Count outcomes
+    const outcomes: Record<string, number> = {}
+    let threadsWithStages = 0
+    let threadsWithResponseTime = 0
+    for (const t of Object.values(threadIntel.threads || {}) as any[]) {
+      outcomes[t.outcome] = (outcomes[t.outcome] || 0) + 1
+      if (t.stages && t.stages.length > 0) threadsWithStages++
+      if (t.first_response_minutes !== null) threadsWithResponseTime++
+    }
+
+    console.log(`Outcomes: ${JSON.stringify(outcomes)}`)
+    console.log(`Threads with lifecycle stages: ${threadsWithStages}/${threadCount}`)
+    console.log(`Threads with response time: ${threadsWithResponseTime}/${threadCount}`)
+
+    // At least 60% should have a determined outcome (not "unknown")
+    const determined = threadCount - (outcomes['unknown'] || 0)
+    const determinedRate = threadCount > 0 ? determined / threadCount : 0
+    console.log(
+      `Determined outcomes: ${determined}/${threadCount} (${(determinedRate * 100).toFixed(1)}%)`
+    )
+    if (determinedRate < 0.5) {
+      mismatches.push(
+        `[thread-intel] Only ${(determinedRate * 100).toFixed(1)}% of threads have determined outcomes (expected ≥50%)`
+      )
+    }
+
+    if (threadIntel.aggregate_stats) {
+      console.log(
+        `Conversion rate: ${((threadIntel.aggregate_stats.conversion_rate || 0) * 100).toFixed(1)}%`
+      )
+      console.log(
+        `Avg first response: ${threadIntel.aggregate_stats.avg_first_response_minutes ?? 'N/A'} min`
+      )
+    }
+  }
+
+  // ─── Final Report ─────────────────────────────────────────────────────────
+
+  if (mismatches.length > 0) {
+    console.log('\n=== MISMATCHES ===')
+    for (const m of mismatches.slice(0, 30)) {
+      console.log(`  ${m}`)
+    }
+  }
+
+  console.log(`\nTotal mismatches: ${mismatches.length}`)
 
   if (strict && mismatches.length > 0) {
     process.exit(1)
