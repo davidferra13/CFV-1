@@ -247,6 +247,20 @@ export default defineConfig({
     // Software aging detection — uses separate config: playwright.soak.config.ts
     // Run: npm run test:soak (full) or npm run test:soak:quick (10 iterations)
     // Soak tests use a production build (next start) instead of dev server.
+    // ── Stress Tests ─────────────────────────────────────────────────────────────
+    // AI queue concurrency testing — verifies backpressure under load
+    // Run: npm run test:stress:ollama (basic)
+    //      npm run test:stress:ollama:high (high load)
+    //      npm run test:stress:ollama:sustained (2 hours)
+    //      npm run test:stress:ollama:failure (Ollama dies mid-test)
+    {
+      name: 'stress',
+      testMatch: ['**/stress/**/*.spec.ts'],
+      use: { storageState: '.auth/agent.json' },
+      timeout: 30_000, // Per-test timeout (will be overridden by individual test durations)
+      workers: 1, // Sequential to avoid concurrent Ollama stress
+      globalSetup: undefined, // Stress tests don't need E2E seed data
+    },
   ],
   webServer: {
     command: 'npm run dev',
