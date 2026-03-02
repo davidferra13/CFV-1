@@ -28,8 +28,11 @@ export default async function AARHistoryPage() {
         </div>
         <div className="flex gap-2">
           <FileAARButton />
-          <Link href="/dashboard">
-            <Button variant="ghost">Back to Dashboard</Button>
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center justify-center font-medium h-10 px-4 py-2 text-sm rounded-lg gap-2 bg-transparent hover:bg-stone-800 hover:text-stone-100 active:bg-stone-700 text-stone-300 transition-all duration-150"
+          >
+            Back to Dashboard
           </Link>
         </div>
       </div>
@@ -144,8 +147,11 @@ export default async function AARHistoryPage() {
           </p>
           <div className="flex justify-center gap-3 mt-4">
             <FileAARButton />
-            <Link href="/events">
-              <Button variant="secondary">View Events</Button>
+            <Link
+              href="/events"
+              className="inline-flex items-center justify-center font-medium h-10 px-4 py-2 text-sm rounded-lg gap-2 bg-stone-800/80 text-stone-300 border border-stone-600/80 hover:bg-stone-700/80 hover:text-stone-100 hover:border-stone-500 transition-all duration-150 shadow-sm"
+            >
+              View Events
             </Link>
           </div>
         </Card>

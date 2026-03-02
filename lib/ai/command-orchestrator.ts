@@ -57,6 +57,7 @@ import {
   generateReEngagementDraft,
   generateMilestoneRecognitionDraft,
   generateFoodSafetyIncidentDraft,
+  generateConfirmationDraft,
 } from '@/lib/ai/draft-actions'
 import type { CommandRun, TaskResult, PlannedTask, ApprovalTier } from '@/lib/ai/command-types'
 import { getAvailableActions } from '@/lib/ai/remy-action-filter'
@@ -700,6 +701,14 @@ async function executeDraftFoodSafetyIncident(inputs: Record<string, unknown>) {
   return generateFoodSafetyIncidentDraft(description)
 }
 
+async function executeDraftConfirmation(inputs: Record<string, unknown>) {
+  const eventId = String(inputs.eventId ?? inputs.event_id ?? '')
+  const clientName = String(inputs.clientName ?? inputs.client_name ?? '')
+  if (!eventId && !clientName)
+    return { draftText: '', error: 'Please specify an event or client to confirm.' }
+  return generateConfirmationDraft(eventId || clientName)
+}
+
 async function executeEmailGeneric(inputs: Record<string, unknown>) {
   const description = String(inputs.description ?? '')
   if (!description) {
@@ -1102,6 +1111,7 @@ async function executeSingleTask(
       'loyalty.status',
       'safety.event_allergens',
       'waitlist.list',
+      'draft.confirmation',
     ])
     if (!supportedTaskTypes.has(task.taskType)) {
       return {
@@ -1110,7 +1120,13 @@ async function executeSingleTask(
         tier: 3,
         name: task.taskType,
         status: 'error',
-        error: `Task type "${task.taskType}" is not supported. No further attempts will be made.`,
+        error:
+          task.taskType.includes('system') ||
+          task.taskType.includes('prompt') ||
+          task.taskType.includes('delete') ||
+          task.taskType.includes('agent.')
+            ? 'That request is outside the scope of what I can help with.'
+            : `Task type "${task.taskType}" is not supported. No further attempts will be made.`,
       }
     }
 
@@ -1243,6 +1259,9 @@ async function executeSingleTask(
         break
       case 'draft.food_safety_incident':
         data = await executeDraftFoodSafetyIncident(task.inputs)
+        break
+      case 'draft.confirmation':
+        data = await executeDraftConfirmation(task.inputs)
         break
       case 'ops.portion_calc':
         data = await executePortionCalc(task.inputs)

@@ -640,6 +640,70 @@ Date: ${new Date().toISOString().split('T')[0]}`,
 }
 
 // ============================================
+// 11. BOOKING CONFIRMATION
+// ============================================
+
+export async function generateConfirmationDraft(eventIdOrClientName: string): Promise<DraftResult> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+  const tenantId = user.tenantId!
+  const chefName = await loadChefName(supabase, tenantId)
+
+  // Try to find by event ID first, then by client name
+  let event: any = null
+  let client: any = null
+
+  if (eventIdOrClientName.match(/^[0-9a-f-]{36}$/i)) {
+    event = await loadEvent(supabase, eventIdOrClientName, tenantId)
+    if (event?.client) client = event.client
+  }
+
+  if (!event) {
+    client = await findClientByName(supabase, eventIdOrClientName, tenantId)
+    if (client) {
+      event = await loadLastEvent(supabase, client.id, tenantId)
+    }
+  }
+
+  const clientName = client?.full_name ?? eventIdOrClientName
+  const occasion = event?.occasion ?? 'your upcoming event'
+  const eventDate = event?.event_date
+    ? new Date(event.event_date).toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      })
+    : 'TBD'
+  const guestCount = event?.guest_count ?? 'TBD'
+
+  const subject = `Booking Confirmed — ${occasion}`
+  const body = `Hi ${firstName(clientName)},
+
+Great news — your booking is confirmed! Here are the details:
+
+Event: ${occasion}
+Date: ${eventDate}
+Guests: ${guestCount}
+
+I'll be in touch soon with next steps on the menu and logistics. If you have any questions or changes in the meantime, don't hesitate to reach out.
+
+Looking forward to it!
+
+Best,
+${chefName}`
+
+  return {
+    subject,
+    draftText: formatDraft(subject, body),
+    clientId: client?.id,
+    clientName,
+    eventId: event?.id,
+    _aiSource: 'formula',
+  }
+}
+
+// ============================================
 // QUEUE HANDLER ADAPTER
 // ============================================
 // These functions adapt the above generators for the queue worker.
@@ -679,6 +743,8 @@ export async function handleDraftTask(
       return generateMilestoneRecognitionDraft(clientName, milestone)
     case 'draft.food_safety_incident':
       return generateFoodSafetyIncidentDraft(description)
+    case 'draft.confirmation':
+      return generateConfirmationDraft(eventId || clientName)
     default:
       throw new Error(`Unknown draft task type: ${taskType}`)
   }

@@ -71,6 +71,11 @@ html {
 }
 
 @layer base {
+  /* Enforce WCAG AA contrast — bump stone-500 (3.5:1) to stone-400 (5.5:1) on dark backgrounds */
+  .text-stone-500 {
+    color: #a8a29e;
+  }
+
   body {
     @apply bg-stone-950 text-stone-200 antialiased;
     /* Faint noise texture — breaks up flat digital void, adds tactile feel */
@@ -175,7 +180,7 @@ html {
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #78716c;
+    color: #d6d3d1; /* stone-300 — WCAG AA compliant on dark bg */
   }
 }
 
@@ -218,7 +223,7 @@ html {
 .calendar-container .fc .fc-col-header-cell-cushion {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #a8a29e;
+  color: #d6d3d1; /* stone-300 — WCAG AA compliant */
   text-transform: uppercase;
   letter-spacing: 0.025em;
   text-decoration: none;
@@ -297,7 +302,7 @@ html {
 }
 .calendar-container .fc .fc-timegrid-slot-label {
   font-size: 0.75rem;
-  color: #78716c;
+  color: #a8a29e; /* stone-400 — WCAG AA for large text on dark bg */
   vertical-align: top;
   padding-top: 2px;
 }

@@ -1,7 +1,7 @@
 // Select Component
 'use client'
 
-import { SelectHTMLAttributes, forwardRef } from 'react'
+import { SelectHTMLAttributes, forwardRef, useId } from 'react'
 
 export type SelectOptionGroup = {
   label: string
@@ -18,6 +18,8 @@ export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ label, error, helperText, options, groups, className = '', ...props }, ref) => {
+    const autoId = useId()
+    const selectId = props.id || autoId
     const selectClasses = `
       block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100
       focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20
@@ -29,12 +31,12 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-stone-300 mb-1.5">
+          <label htmlFor={selectId} className="block text-sm font-medium text-stone-300 mb-1.5">
             {label}
             {props.required && <span className="text-red-500 ml-1">*</span>}
           </label>
         )}
-        <select ref={ref} className={selectClasses} {...props}>
+        <select ref={ref} id={selectId} className={selectClasses} {...props}>
           <option value="">Select...</option>
           {groups
             ? groups.map((group) => (

@@ -370,8 +370,8 @@ async function phaseSiteCrawl(routes) {
         consecutiveFailures = 0;
       }
 
-      // Re-auth check every 50 pages for long crawls
-      if (role !== 'public' && i > 0 && i % 50 === 0 && result.redirectedTo?.includes('/auth/')) {
+      // Re-auth check every 20 pages for long crawls
+      if (role !== 'public' && i > 0 && i % 20 === 0 && result.redirectedTo?.includes('/auth/')) {
         log(`  ⚠ Auth appears expired at page ${i}/${routeList.length} — re-authenticating...`);
         const refreshed = await refreshAuth(page, role);
         if (refreshed) {
@@ -1077,6 +1077,39 @@ async function main() {
     log('  ✓ E2E seed data refreshed (fresh auth tokens)');
   } catch (err) {
     log(`  ⚠ seed:e2e failed (will use existing auth): ${(err.message || '').slice(0, 100)}`);
+  }
+
+  // Auth pre-flight: verify credentials actually work before spending hours crawling
+  log('Auth pre-flight: verifying credentials...');
+  try {
+    const seedPath = path.join(ROOT, '.auth', 'seed-ids.json');
+    if (!fs.existsSync(seedPath)) {
+      log('  ⚠ .auth/seed-ids.json not found — crawl will run without auth');
+    } else {
+      const seed = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://luefkpakzvxcsqroxyhz.supabase.co';
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+      for (const role of ['chef', 'client']) {
+        const email = role === 'chef' ? seed.chefEmail : seed.clientEmail;
+        const password = role === 'chef' ? seed.chefPassword : seed.clientPassword;
+        if (!email || !password) {
+          log(`  ⚠ Missing ${role} credentials in seed-ids.json`);
+          continue;
+        }
+        const res = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': supabaseKey },
+          body: JSON.stringify({ email, password }),
+        });
+        if (res.ok) {
+          log(`  ✓ ${role} auth verified (${email})`);
+        } else {
+          log(`  ✗ ${role} auth FAILED (HTTP ${res.status}) — crawl will likely have many redirects`);
+        }
+      }
+    }
+  } catch (err) {
+    log(`  ⚠ Auth pre-flight error: ${(err.message || '').slice(0, 100)}`);
   }
 
   // ── Run Phases ──

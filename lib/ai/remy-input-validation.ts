@@ -224,6 +224,10 @@ const RECIPE_GENERATION_PATTERNS = [
   /\badd\s+(a\s+|new\s+)?recipe\b/i,
   // "generate meal" / "suggest meal" / "meal plan" / "meal idea"
   /\b(generate|suggest|create|give me)\s+(a\s+)?(meal|dish|dinner|lunch|breakfast|menu item)\b/i,
+  // "suggest what I should cook for [event]" — word "suggest" before "what" breaks the simpler regex
+  /\bsuggest\s+what\s+(I|we)\s+should\s+(cook|make|prepare|serve)\s+for\b/i,
+  // "what should I cook for" (event-specific recipe generation)
+  /\bwhat\s+(should|can|could)\s+(I|we)\s+(cook|make|prepare|serve)\s+for\b/i,
 ]
 
 /** The refusal message when recipe generation is detected */
@@ -270,6 +274,10 @@ const INJECTION_PATTERNS = [
   // Delimiter injection (trying to break out of context)
   /---+\s*\n\s*(system|user|assistant)\s*\n/gi,
   /```\s*(system|instruction|prompt)/gi,
+  // Developer mode activation attempts
+  /\b(you are|switch to|enter|activate|enable)\s+(now\s+)?(in\s+)?(developer|dev|debug|admin|root)\s+mode\b/i,
+  // Context window extraction
+  /\b(output|show|display|print|reveal)\s+(your\s+)?(full\s+)?(context\s+window|context|system\s+message)\b/i,
 ]
 
 /**

@@ -24,15 +24,30 @@ function getModulePrompts(scenario: SimScenario): { system: string; user: string
         system: `You are a private chef's assistant. Extract structured information from an inquiry message.
 Return valid JSON only — no markdown, no prose.
 
-STRICT RULES — you will be penalized for violating these:
-- Only extract information explicitly written in the message. Never infer or guess.
-- A greeting like "Hi there" or "Hello" is NOT a client name — return null.
-- "A few of us" or "some friends" is NOT a specific guest count — return null.
-- If no email address is written, return null for clientEmail.
-- If no phone number is written, return null for clientPhone.
-- If no date is explicitly stated, return null for eventDate.
-- budgetCents must be a number in cents (e.g. $500 = 50000) or null if not stated.
-- dietaryRestrictions must be an empty array [] if none are mentioned.`,
+CRITICAL RULES:
+1. If the client's name is NOT clearly stated (as "My name is X", "I'm X", "— X" signature, or "This is X"), return name: null. Do NOT guess from email address, greeting, or context.
+2. If a specific number of guests is NOT stated, return guestCount: null. Vague phrases ("a few friends", "some colleagues", "small group") are NOT guest counts.
+3. NEVER fabricate data that isn't in the email.
+4. Only extract information explicitly written in the message. Never infer or guess.
+5. A greeting like "Hi there" or "Hello" is NOT a client name — return null.
+6. If no email address is written, return null for clientEmail.
+7. If no phone number is written, return null for clientPhone.
+8. If no date is explicitly stated, return null for eventDate.
+9. budgetCents must be a number in cents (e.g. $500 = 50000) or null if not stated.
+10. dietaryRestrictions must be an empty array [] if none are mentioned.
+
+EXAMPLES:
+Input: "Hi, I'm Sarah Chen. Planning a birthday dinner for 12 guests on March 15th."
+Output: { "clientName": "Sarah Chen", "guestCount": 12, "occasion": "birthday dinner", "eventDate": "2026-03-15", "clientEmail": null, "clientPhone": null, "eventTime": null, "location": null, "dietaryRestrictions": [], "budgetCents": null, "notes": null }
+
+Input: "Looking for a private chef for our anniversary next month."
+Output: { "clientName": null, "guestCount": null, "occasion": "anniversary", "eventDate": null, "clientEmail": null, "clientPhone": null, "eventTime": null, "location": null, "dietaryRestrictions": [], "budgetCents": null, "notes": null }
+
+Input: "Hey, what are your rates?"
+Output: { "clientName": null, "guestCount": null, "occasion": null, "eventDate": null, "clientEmail": null, "clientPhone": null, "eventTime": null, "location": null, "dietaryRestrictions": [], "budgetCents": null, "notes": null }
+
+Input: "We're a group of friends looking to do something fun. — Rachel"
+Output: { "clientName": "Rachel", "guestCount": null, "occasion": null, "eventDate": null, "clientEmail": null, "clientPhone": null, "eventTime": null, "location": null, "dietaryRestrictions": [], "budgetCents": null, "notes": null }`,
         user: `Extract inquiry details from this message. Return null for any field not explicitly present.
 
 ${scenario.inputText}
@@ -121,17 +136,30 @@ Return JSON with a row for every dish × guest pair:
       const guestCount = ctx?.guestCount ?? 8
       const depth = ctx?.conversationDepth ?? 1
 
+      const toneGuide: Record<string, string> = {
+        INBOUND_SIGNAL: 'Warm, excited, brief (2-3 sentences). "Thanks for reaching out!"',
+        QUALIFIED_INQUIRY:
+          'Friendly-professional. Ask clarifying questions. Show genuine interest.',
+        PRICING_PRESENTED: 'Confident, clear. No hedging. Present value, not just numbers.',
+        BOOKED: 'Celebratory. Confirm all details. Express excitement.',
+        SERVICE_COMPLETE: 'Grateful, personal. Reference specific moments. Ask for feedback.',
+      }
+
       return {
         system: `You are a private chef's AI assistant drafting a professional email response.
 Current lifecycle stage: ${stage}
 Conversation depth: ${depth} (1=first response, 2=back-and-forth, 3=logistics, 4=post-service)
 
-REQUIRED in every response:
-- subject MUST include the client's name (${clientName})
-- body MUST mention the specific occasion (${occasion}) and guest count (${guestCount})
-- Write as a specific email to this specific person — not a template
-- Do not use placeholder text like "[occasion]" or "[client name]"
-- signOff must be a real closing (e.g. "Warm regards, Chef David")
+TONE FOR THIS STAGE: ${toneGuide[String(stage)] ?? 'Professional and warm.'}
+
+MANDATORY RULES:
+1. Subject line MUST contain the client's first or full name (${clientName}).
+2. Email body MUST mention the occasion (${occasion}) and guest count (${guestCount}).
+3. Email body MUST NOT contain any placeholder text like "[occasion]" or "[client name]".
+4. Write as a specific email to this specific person — not a template.
+5. Match the tone to the stage — formal for early stages, warm for post-service.
+6. Every email must reference client-specific details.
+7. signOff must be a real closing (e.g. "Warm regards, Chef David").
 
 Stage-specific rules:
 ${stage === 'INBOUND_SIGNAL' ? '- DO NOT include pricing, deposits, or contract terms\n- Focus on discovery: what occasion, how many guests, dietary needs' : ''}
@@ -147,11 +175,11 @@ Occasion: ${occasion}
 Guest count: ${guestCount}
 Stage: ${stage}
 
-The subject line must name ${clientName}. The body must reference their ${occasion} for ${guestCount} guests.
+CRITICAL: The subject line MUST contain "${clientName}". The body MUST reference their ${occasion} for ${guestCount} guests. Do not use generic templates.
 
 Return JSON: {
-  "subject": "subject line containing client name",
-  "body": "full email body mentioning the occasion and guest count",
+  "subject": "subject line containing ${clientName}",
+  "body": "full email body mentioning ${occasion} and ${guestCount} guests",
   "signOff": "closing salutation"
 }`,
       }
@@ -222,11 +250,67 @@ Return JSON: {
   }
 }
 
+// ── Deterministic quote calculator (Formula > AI) ──────────────────────────
+
+function calculateQuoteDeterministic(scenario: SimScenario): PipelineOutput {
+  const start = Date.now()
+  const ctx = scenario.context as Record<string, unknown> | undefined
+
+  const rates: Record<string, number> = {
+    buffet: 85,
+    'family-style': 85,
+    'family style': 85,
+    plated: 125,
+    'multi-course tasting': 175,
+    tasting: 175,
+    cocktail: 125,
+  }
+
+  const style = String(ctx?.serviceStyle ?? 'plated').toLowerCase()
+  const perPerson = rates[style] || 125
+  const guestCount = Number(ctx?.guestCount) || 10
+  const travelRequired = Boolean(ctx?.travelRequired)
+
+  const serviceFee = guestCount * perPerson
+  const groceryEstimate = Math.round((serviceFee * 0.3) / 50) * 50
+  const travelSurcharge = travelRequired ? 150 : 0
+  const total = serviceFee + groceryEstimate + travelSurcharge
+  const deposit = Math.round((total * 0.5) / 50) * 50
+
+  const lineItems = [
+    {
+      description: `Private chef service — ${style} (${guestCount} guests × $${perPerson})`,
+      amountCents: serviceFee * 100,
+    },
+    { description: 'Grocery estimate (30%)', amountCents: groceryEstimate * 100 },
+  ]
+  if (travelSurcharge > 0) {
+    lineItems.push({ description: 'Travel surcharge', amountCents: travelSurcharge * 100 })
+  }
+
+  return {
+    rawOutput: {
+      lineItems,
+      totalCents: total * 100,
+      depositCents: deposit * 100,
+      validDays: 14,
+      notes: `${style} service for ${guestCount} guests. 50% deposit required to confirm.`,
+    },
+    durationMs: Date.now() - start,
+    error: null,
+  }
+}
+
 /**
  * Runs a single scenario through the corresponding AI module's prompt logic.
  * Returns raw output and timing. Never throws.
  */
 export async function runScenario(scenario: SimScenario): Promise<PipelineOutput> {
+  // Formula > AI: quote_draft uses deterministic math, not LLM
+  if (scenario.module === 'quote_draft') {
+    return calculateQuoteDeterministic(scenario)
+  }
+
   const config = getOllamaConfig()
   const ollama = makeOllamaClient()
   const start = Date.now()

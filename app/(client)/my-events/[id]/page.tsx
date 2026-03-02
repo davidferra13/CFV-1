@@ -1,5 +1,6 @@
 // Client Event Detail - View event details and accept proposals
 
+import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
 import { getClientEventById } from '@/lib/events/client-actions'
 import { getClientReviewForEvent, getGoogleReviewUrlForTenant } from '@/lib/reviews/actions'
@@ -59,6 +60,11 @@ function getStatusBadge(status: EventStatus) {
 
   const config = variants[status]
   return <Badge variant={config.variant}>{config.label}</Badge>
+}
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const event = await getClientEventById(params.id)
+  return { title: event ? `${event.occasion || 'Event'} — ChefFlow` : 'Event — ChefFlow' }
 }
 
 export default async function EventDetailPage({ params }: { params: { id: string } }) {
@@ -290,13 +296,11 @@ export default async function EventDetailPage({ params }: { params: { id: string
               </div>
               {outstandingBalanceCents > 0 && event.status === 'completed' && (
                 <div className="mt-3">
-                  <Link href={`/my-events/${event.id}/pay`}>
-                    <button
-                      type="button"
-                      className="w-full bg-red-600 text-white px-4 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition text-sm"
-                    >
-                      Pay Remaining Balance
-                    </button>
+                  <Link
+                    href={`/my-events/${event.id}/pay`}
+                    className="block w-full bg-red-600 text-white px-4 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition text-sm text-center"
+                  >
+                    Pay Remaining Balance
                   </Link>
                 </div>
               )}
@@ -397,13 +401,11 @@ export default async function EventDetailPage({ params }: { params: { id: string
                 <p className="text-stone-400 text-sm">
                   Help your chef create the perfect menu by sharing your preferences.
                 </p>
-                <Link href={`/my-events/${event.id}/choose-menu`}>
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-2 bg-brand-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-brand-700 transition"
-                  >
-                    Choose Your Menu
-                  </button>
+                <Link
+                  href={`/my-events/${event.id}/choose-menu`}
+                  className="inline-flex items-center gap-2 bg-brand-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-brand-700 transition"
+                >
+                  Choose Your Menu
                 </Link>
               </div>
             )}
@@ -530,18 +532,20 @@ export default async function EventDetailPage({ params }: { params: { id: string
         {event.status === 'proposed' && <AcceptProposalButton eventId={event.id} />}
 
         {event.status === 'accepted' && outstandingBalanceCents > 0 && (
-          <Link href={`/my-events/${event.id}/pay`} className="flex-1">
-            <button className="w-full bg-brand-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-brand-700 transition">
-              Proceed to Payment
-            </button>
+          <Link
+            href={`/my-events/${event.id}/pay`}
+            className="flex-1 block w-full bg-brand-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-brand-700 transition text-center"
+          >
+            Proceed to Payment
           </Link>
         )}
 
         {['proposed', 'accepted'].includes(event.status) && (
-          <Link href={`/my-events/${event.id}/proposal`} className="flex-1">
-            <button className="w-full border border-stone-600 bg-stone-900 text-stone-300 px-6 py-3 rounded-lg font-semibold hover:bg-stone-800 transition text-sm">
-              View Full Proposal
-            </button>
+          <Link
+            href={`/my-events/${event.id}/proposal`}
+            className="flex-1 block w-full border border-stone-600 bg-stone-900 text-stone-300 px-6 py-3 rounded-lg font-semibold hover:bg-stone-800 transition text-sm text-center"
+          >
+            View Full Proposal
           </Link>
         )}
 

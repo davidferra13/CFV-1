@@ -1,7 +1,7 @@
 // Input Component - Form inputs with consistent styling
 'use client'
 
-import { InputHTMLAttributes, forwardRef, useState } from 'react'
+import { InputHTMLAttributes, forwardRef, useId, useState } from 'react'
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string
@@ -11,6 +11,8 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, helperText, className = '', type = 'text', ...props }, ref) => {
+    const autoId = useId()
+    const inputId = props.id || autoId
     const [showPassword, setShowPassword] = useState(false)
     const isPassword = type === 'password'
 
@@ -28,7 +30,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-stone-300 mb-1.5">
+          <label htmlFor={inputId} className="block text-sm font-medium text-stone-300 mb-1.5">
             {label}
             {props.required && <span className="text-red-500 ml-1">*</span>}
           </label>
@@ -36,6 +38,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         <div className="relative">
           <input
             ref={ref}
+            id={inputId}
             type={isPassword && showPassword ? 'text' : type}
             className={inputClasses}
             {...props}

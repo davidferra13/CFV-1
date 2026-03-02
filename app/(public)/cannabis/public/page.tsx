@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function CannabisPublicPage() {
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10 sm:py-14">
+    <div id="main-content" className="max-w-4xl mx-auto px-4 py-10 sm:py-14">
       <div
         className="rounded-2xl p-6 sm:p-8"
         style={{

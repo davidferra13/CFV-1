@@ -28,7 +28,7 @@ const supabaseKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
 const projectRef = 'luefkpakzvxcsqroxyhz';
 
 const DELAY_BETWEEN_TESTS_MS = 6000; // 6s — rate limit is 12/min
-const REAUTH_INTERVAL_MS = 25 * 60 * 1000; // Re-auth every 25 minutes
+const REAUTH_INTERVAL_MS = 10 * 60 * 1000; // Re-auth every 10 minutes
 const REQUEST_TIMEOUT_MS = 300_000; // 5 minutes max per question
 
 // ─── Auth ──────────────────────────────────────────────────────────────────────
@@ -130,6 +130,12 @@ async function sendToRemy(message, currentPage, history) {
     return { error: err.message, elapsed: Date.now() - start };
   }
 
+  if (res.status === 307 || res.status === 302 || res.status === 401) {
+    clearTimeout(timer);
+    console.log('  [Auth expired — re-authenticating immediately]');
+    await authenticate();
+    return { error: `HTTP ${res.status}: Auth expired (re-authed for next question)`, elapsed: Date.now() - start };
+  }
   if (res.status !== 200) {
     clearTimeout(timer);
     const text = await res.text().catch(() => '');
@@ -1122,18 +1128,22 @@ async function main() {
   await authenticate();
   console.log('Auth OK.\n');
 
-  // Pre-warm classifier model
-  console.log('Pre-warming qwen3:4b...');
-  try {
-    await fetch('http://localhost:11434/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'qwen3:4b', prompt: 'hello', options: { num_predict: 1 } }),
-    });
-    console.log('Model warm.\n');
-  } catch (err) {
-    console.log('WARNING: Could not pre-warm model. Ollama may not be running.\n');
+  // Pre-warm all 3 Ollama models
+  const models = ['qwen3:4b', 'qwen3-coder:30b', 'qwen3:30b'];
+  for (const model of models) {
+    console.log(`Pre-warming ${model}...`);
+    try {
+      await fetch('http://localhost:11434/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model, prompt: 'hello', options: { num_predict: 1 } }),
+      });
+      console.log(`  ${model} warm.`);
+    } catch (err) {
+      console.log(`  WARNING: Could not pre-warm ${model}.`);
+    }
   }
+  console.log('All models warmed.\n');
 
   const startTime = Date.now();
   const results = [];

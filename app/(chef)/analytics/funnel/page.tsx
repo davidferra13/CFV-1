@@ -111,7 +111,11 @@ export default async function FunnelPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href="/analytics" className="text-stone-400 hover:text-stone-100 transition-colors">
+        <Link
+          href="/analytics"
+          className="text-stone-400 hover:text-stone-100 transition-colors"
+          aria-label="Back to Analytics"
+        >
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div>
