@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-03-02T23:04:43.984Z",
+  "test": "queue_saturation",
+  "config": {
+    "totalRequests": 250,
+    "queueDepthLimit": 200,
+    "concurrencyLevel": "max (250 concurrent)"
+  },
+  "results": {
+    "successes": 234,
+    "queued": 0,
+    "rejected": 0,
+    "timeouts": 16
+  },
+  "latency": {
+    "avgMs": 1800,
+    "minMs": 108,
+    "maxMs": 1920
+  },
+  "interpretation": {
+    "queueStrategy": "Queue-all (no rejections), not drop-oldest",
+    "behavior": "System queues all 250 requests and processes them sequentially"
+  },
+  "verification": {
+    "allSucceeded": false,
+    "noTimeouts": false,
+    "noRejects": true,
+    "verdict": "WARN: Unexpected behavior, check system state"
+  }
+}
