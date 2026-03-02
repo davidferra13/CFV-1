@@ -259,6 +259,90 @@ const TESTS = [
     endpoint: '/api/documents/financial-summary',
     expectDenied: true,
   },
+
+  // ═══ DOCUMENT ENDPOINT TESTS (catch-all route probing) ═══
+  {
+    id: 'doc-001',
+    severity: 'HIGH',
+    description: 'Agent accesses victim event summary PDF via catch-all route',
+    method: 'GET',
+    endpoint: `/api/documents/${VICTIM_DATA.eventPaid}?type=summary`,
+    expectDenied: true,
+  },
+  {
+    id: 'doc-002',
+    severity: 'HIGH',
+    description: 'Agent accesses victim event grocery list PDF via catch-all route',
+    method: 'GET',
+    endpoint: `/api/documents/${VICTIM_DATA.eventPaid}?type=grocery`,
+    expectDenied: true,
+  },
+  {
+    id: 'doc-003',
+    severity: 'HIGH',
+    description: 'Agent accesses victim event prep sheet via catch-all route',
+    method: 'GET',
+    endpoint: `/api/documents/${VICTIM_DATA.eventPaid}?type=prep`,
+    expectDenied: true,
+  },
+  {
+    id: 'doc-004',
+    severity: 'HIGH',
+    description: 'Agent accesses victim event ALL documents via catch-all route',
+    method: 'GET',
+    endpoint: `/api/documents/${VICTIM_DATA.eventPaid}?type=all`,
+    expectDenied: true,
+  },
+  {
+    id: 'doc-005',
+    severity: 'CRITICAL',
+    description: 'Agent accesses Chef-B financial summary PDF directly',
+    method: 'GET',
+    endpoint: `/api/documents/financial-summary/${VICTIM_DATA.chefBEventId}`,
+    expectDenied: true,
+  },
+  {
+    id: 'doc-006',
+    severity: 'HIGH',
+    description: 'Agent accesses Chef-B event documents via catch-all route',
+    method: 'GET',
+    endpoint: `/api/documents/${VICTIM_DATA.chefBEventId}`,
+    expectDenied: true,
+  },
+
+  // ═══ PARAMETER TAMPERING TESTS ═══
+  {
+    id: 'param-001',
+    severity: 'HIGH',
+    description: 'Agent attempts SQL injection in type parameter',
+    method: 'GET',
+    endpoint: `/api/documents/invalid-id?type=all' OR '1'='1`,
+    expectDenied: true,
+  },
+  {
+    id: 'param-002',
+    severity: 'HIGH',
+    description: 'Agent attempts path traversal in type parameter',
+    method: 'GET',
+    endpoint: `/api/documents/invalid-id?type=../../../../etc/passwd`,
+    expectDenied: true,
+  },
+  {
+    id: 'param-003',
+    severity: 'CRITICAL',
+    description: 'Agent attempts to access unencrypted invoice for victim event',
+    method: 'GET',
+    endpoint: `/api/documents/invoice/${VICTIM_DATA.eventPaid}`,
+    expectDenied: true,
+  },
+  {
+    id: 'param-004',
+    severity: 'CRITICAL',
+    description: 'Agent attempts to access contract for victim event',
+    method: 'GET',
+    endpoint: `/api/documents/contract/victim-contract-id`,
+    expectDenied: true,
+  },
 ]
 
 async function authenticate() {
