@@ -1,0 +1,34 @@
+{
+  "timestamp": "2026-03-03T01:04:58.824Z",
+  "test": "task_priority",
+  "summary": {
+    "totalRequests": 100,
+    "batchTasks": 50,
+    "onDemandTasks": 50,
+    "allSuccessful": true
+  },
+  "batch": {
+    "count": 50,
+    "avgMs": 13327,
+    "medianMs": 13329,
+    "minMs": 13321,
+    "maxMs": 13347,
+    "successRate": 1
+  },
+  "onDemand": {
+    "count": 50,
+    "avgMs": 13118,
+    "medianMs": 13117,
+    "minMs": 13115,
+    "maxMs": 13127,
+    "successRate": 1
+  },
+  "priorityVerification": {
+    "onDemandMedian": 13117,
+    "batchMedian": 13329,
+    "onDemandIsFasterMedian": true,
+    "onDemandBeforeLastBatch": 50,
+    "percentOnDemandBeforeLastBatch": 100,
+    "verdict": "PASS: High-priority tasks processed before low-priority"
+  }
+}
