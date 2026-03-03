@@ -76,6 +76,7 @@
     "ollama": "node scripts/ollama-control.mjs",
     "dashboard": "node --watch-path=scripts/launcher scripts/launcher/server.mjs",
     "audit:overnight": "node scripts/overnight-audit.mjs",
+    "audit:variant": "node scripts/overnight-audit-variant.mjs",
     "audit:db": "node scripts/db-integrity-audit.mjs",
     "audit:goldmine": "node --import tsx scripts/goldmine-audit.mjs",
     "test:remy-quality": "node tests/remy-quality/harness/remy-quality-runner.mjs --suite chef",
