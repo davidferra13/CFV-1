@@ -25,9 +25,11 @@
  * }
  */
 
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { getCircuitBreakerHealth } from '@/lib/resilience/circuit-breaker'
+import { Ratelimit } from '@upstash/ratelimit'
+import { Redis } from '@upstash/redis'
 
 const REQUIRED_ENV_VARS = [
   'NEXT_PUBLIC_SUPABASE_URL',
@@ -47,7 +49,34 @@ export async function HEAD() {
   })
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  // Rate limiting: allow up to 600 health checks per minute per IP (10/sec)
+  // This accommodates legitimate uptime monitors while preventing abuse
+  const clientIp =
+    request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? 'unknown'
+
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    try {
+      const limiter = new Ratelimit({
+        redis: Redis.fromEnv(),
+        limiter: Ratelimit.slidingWindow(600, '1 m'),
+        analytics: false,
+        prefix: 'chefflow:health',
+      })
+
+      const result = await limiter.limit(clientIp)
+      if (!result.success) {
+        return NextResponse.json(
+          { error: 'Rate limit exceeded', remaining: result.remaining },
+          { status: 429 }
+        )
+      }
+    } catch (err) {
+      // If rate limiting fails, allow the request but log it
+      console.warn('[health] Rate limit check failed:', err)
+    }
+  }
+
   const requestId = request.headers.get('x-request-id') ?? 'health-check'
   const startTime = Date.now()
 

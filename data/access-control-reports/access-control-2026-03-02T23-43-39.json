@@ -1,0 +1,1381 @@
+{
+  "timestamp": "2026-03-02T23-43-39",
+  "results": [
+    {
+      "id": "fin-001",
+      "severity": "CRITICAL",
+      "description": "Agent reads victim chef event financial summary",
+      "method": "GET",
+      "endpoint": "/api/documents/financial-summary/5372daa4-8b42-41d0-ad2a-047a6e6eae53",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 10385
+    },
+    {
+      "id": "cli-001",
+      "severity": "CRITICAL",
+      "description": "Agent reads victim chef primary client details",
+      "method": "GET",
+      "endpoint": "/api/clients/809a9fef-d526-45db-9018-d619783bc585",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 511
+    },
+    {
+      "id": "evt-001",
+      "severity": "HIGH",
+      "description": "Agent reads victim chef draft event",
+      "method": "GET",
+      "endpoint": "/api/events/c1aff94a-2632-407f-a051-304b44fce89f",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 512
+    },
+    {
+      "id": "evt-002",
+      "severity": "HIGH",
+      "description": "Agent reads victim chef paid event",
+      "method": "GET",
+      "endpoint": "/api/events/5372daa4-8b42-41d0-ad2a-047a6e6eae53",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 583
+    },
+    {
+      "id": "quo-001",
+      "severity": "HIGH",
+      "description": "Agent reads victim chef draft quote",
+      "method": "GET",
+      "endpoint": "/api/quotes/0ebe11ce-70b1-4549-ad82-9035afd89fd7",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 635
+    },
+    {
+      "id": "evt-006",
+      "severity": "HIGH",
+      "description": "Agent reads Chef-B event",
+      "method": "GET",
+      "endpoint": "/api/events/085a5e98-f9f1-4ea1-96d9-90a42b3a685f",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 546
+    },
+    {
+      "id": "evt-write-001",
+      "severity": "CRITICAL",
+      "description": "Agent MODIFIES victim chef event pricing",
+      "method": "PATCH",
+      "endpoint": "/api/events/5372daa4-8b42-41d0-ad2a-047a6e6eae53",
+      "body": {
+        "quoted_price_cents": 99999999
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 592
+    },
+    {
+      "id": "cli-write-001",
+      "severity": "CRITICAL",
+      "description": "Agent MODIFIES victim chef client contact info",
+      "method": "PATCH",
+      "endpoint": "/api/clients/809a9fef-d526-45db-9018-d619783bc585",
+      "body": {
+        "email": "hacked@evil.com",
+        "phone": "555-HACKED"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 657
+    },
+    {
+      "id": "quo-write-001",
+      "severity": "HIGH",
+      "description": "Agent ACCEPTS victim chef quote (binding contract)",
+      "method": "PATCH",
+      "endpoint": "/api/quotes/0ebe11ce-70b1-4549-ad82-9035afd89fd7",
+      "body": {
+        "status": "accepted"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 578
+    },
+    {
+      "id": "enum-001",
+      "severity": "HIGH",
+      "description": "Agent enumerates ALL victim chef clients",
+      "method": "GET",
+      "endpoint": "/api/chef/15cafd7c-d9d5-489c-a333-97e89c7e2ba9/clients",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 570
+    },
+    {
+      "id": "enum-002",
+      "severity": "HIGH",
+      "description": "Agent enumerates ALL victim chef events",
+      "method": "GET",
+      "endpoint": "/api/chef/15cafd7c-d9d5-489c-a333-97e89c7e2ba9/events",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 667
+    },
+    {
+      "id": "enum-003",
+      "severity": "HIGH",
+      "description": "Agent enumerates ALL victim chef quotes",
+      "method": "GET",
+      "endpoint": "/api/chef/15cafd7c-d9d5-489c-a333-97e89c7e2ba9/quotes",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 673
+    },
+    {
+      "id": "inj-001",
+      "severity": "CRITICAL",
+      "description": "Agent creates event with explicit cross-tenant tenant_id injection",
+      "method": "POST",
+      "endpoint": "/api/events",
+      "body": {
+        "client_id": "809a9fef-d526-45db-9018-d619783bc585",
+        "event_date": "2026-04-01",
+        "event_type": "Dinner Party",
+        "guest_count": 10,
+        "tenant_id": "15cafd7c-d9d5-489c-a333-97e89c7e2ba9"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 619
+    },
+    {
+      "id": "inj-002",
+      "severity": "CRITICAL",
+      "description": "Agent updates own event with cross-tenant client injection",
+      "method": "PATCH",
+      "endpoint": "/api/events/5372daa4-8b42-41d0-ad2a-047a6e6eae53",
+      "body": {
+        "client_id": "809a9fef-d526-45db-9018-d619783bc585"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 610
+    },
+    {
+      "id": "esc-001",
+      "severity": "CRITICAL",
+      "description": "Agent attempts privilege escalation to ADMIN role",
+      "method": "POST",
+      "endpoint": "/api/auth/escalate",
+      "body": {
+        "role": "admin"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 240
+    },
+    {
+      "id": "esc-002",
+      "severity": "CRITICAL",
+      "description": "Agent attempts privilege escalation to STAFF role",
+      "method": "POST",
+      "endpoint": "/api/auth/escalate",
+      "body": {
+        "role": "staff"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 477
+    },
+    {
+      "id": "api-001",
+      "severity": "HIGH",
+      "description": "Agent probes /api/admin/* for unauthorized access",
+      "method": "GET",
+      "endpoint": "/api/admin/users",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 642
+    },
+    {
+      "id": "api-002",
+      "severity": "HIGH",
+      "description": "Agent probes /api/staff/* for unauthorized access",
+      "method": "GET",
+      "endpoint": "/api/staff/activity",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 635
+    },
+    {
+      "id": "del-001",
+      "severity": "CRITICAL",
+      "description": "Agent attempts to DELETE victim chef event",
+      "method": "DELETE",
+      "endpoint": "/api/events/5372daa4-8b42-41d0-ad2a-047a6e6eae53",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 591
+    },
+    {
+      "id": "del-002",
+      "severity": "CRITICAL",
+      "description": "Agent attempts to DELETE victim chef client",
+      "method": "DELETE",
+      "endpoint": "/api/clients/809a9fef-d526-45db-9018-d619783bc585",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 580
+    },
+    {
+      "id": "lvl-001",
+      "severity": "HIGH",
+      "description": "Agent attempts bulk list of ALL chefs (ledger leak)",
+      "method": "GET",
+      "endpoint": "/api/chefs",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 669
+    },
+    {
+      "id": "lvl-002",
+      "severity": "HIGH",
+      "description": "Agent attempts bulk list of ALL financial records",
+      "method": "GET",
+      "endpoint": "/api/documents/financial-summary",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 1406
+    },
+    {
+      "id": "doc-001",
+      "severity": "HIGH",
+      "description": "Agent accesses victim event summary PDF via catch-all route",
+      "method": "GET",
+      "endpoint": "/api/documents/5372daa4-8b42-41d0-ad2a-047a6e6eae53?type=summary",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 1206
+    },
+    {
+      "id": "doc-002",
+      "severity": "HIGH",
+      "description": "Agent accesses victim event grocery list PDF via catch-all route",
+      "method": "GET",
+      "endpoint": "/api/documents/5372daa4-8b42-41d0-ad2a-047a6e6eae53?type=grocery",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 1326
+    },
+    {
+      "id": "doc-003",
+      "severity": "HIGH",
+      "description": "Agent accesses victim event prep sheet via catch-all route",
+      "method": "GET",
+      "endpoint": "/api/documents/5372daa4-8b42-41d0-ad2a-047a6e6eae53?type=prep",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 1500
+    },
+    {
+      "id": "doc-004",
+      "severity": "HIGH",
+      "description": "Agent accesses victim event ALL documents via catch-all route",
+      "method": "GET",
+      "endpoint": "/api/documents/5372daa4-8b42-41d0-ad2a-047a6e6eae53?type=all",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 1214
+    },
+    {
+      "id": "doc-005",
+      "severity": "CRITICAL",
+      "description": "Agent accesses Chef-B financial summary PDF directly",
+      "method": "GET",
+      "endpoint": "/api/documents/financial-summary/085a5e98-f9f1-4ea1-96d9-90a42b3a685f",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 1874
+    },
+    {
+      "id": "doc-006",
+      "severity": "HIGH",
+      "description": "Agent accesses Chef-B event documents via catch-all route",
+      "method": "GET",
+      "endpoint": "/api/documents/085a5e98-f9f1-4ea1-96d9-90a42b3a685f",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 1118
+    },
+    {
+      "id": "param-001",
+      "severity": "HIGH",
+      "description": "Agent attempts SQL injection in type parameter",
+      "method": "GET",
+      "endpoint": "/api/documents/invalid-id?type=all' OR '1'='1",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 1372
+    },
+    {
+      "id": "param-002",
+      "severity": "HIGH",
+      "description": "Agent attempts path traversal in type parameter",
+      "method": "GET",
+      "endpoint": "/api/documents/invalid-id?type=../../../../etc/passwd",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 1479
+    },
+    {
+      "id": "param-003",
+      "severity": "CRITICAL",
+      "description": "Agent attempts to access unencrypted invoice for victim event",
+      "method": "GET",
+      "endpoint": "/api/documents/invoice/5372daa4-8b42-41d0-ad2a-047a6e6eae53",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 19159
+    },
+    {
+      "id": "param-004",
+      "severity": "CRITICAL",
+      "description": "Agent attempts to access contract for victim event",
+      "method": "GET",
+      "endpoint": "/api/documents/contract/victim-contract-id",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 10285
+    },
+    {
+      "id": "auth-001",
+      "severity": "CRITICAL",
+      "description": "Agent accesses victim data with empty auth cookie",
+      "method": "GET",
+      "endpoint": "/api/events/5372daa4-8b42-41d0-ad2a-047a6e6eae53",
+      "expectDenied": true,
+      "skipAuth": true,
+      "passed": true,
+      "statusCode": 307,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 118
+    },
+    {
+      "id": "auth-002",
+      "severity": "CRITICAL",
+      "description": "Agent accesses victim data with X-Forwarded-For header injection",
+      "method": "GET",
+      "endpoint": "/api/events/5372daa4-8b42-41d0-ad2a-047a6e6eae53",
+      "expectDenied": true,
+      "headers": {
+        "X-Forwarded-For": "127.0.0.1, attacker.com"
+      },
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 668
+    },
+    {
+      "id": "auth-003",
+      "severity": "HIGH",
+      "description": "Agent accesses embed public inquiry endpoint without auth",
+      "method": "GET",
+      "endpoint": "/embed/inquiry/15cafd7c-d9d5-489c-a333-97e89c7e2ba9",
+      "expectDenied": false,
+      "skipAuth": true,
+      "passed": true,
+      "statusCode": 200,
+      "hasData": false,
+      "reason": "ERROR: Allowed! Status 200",
+      "elapsed": 8567
+    },
+    {
+      "id": "rbac-001",
+      "severity": "CRITICAL",
+      "description": "Agent attempts to access client-only endpoints",
+      "method": "GET",
+      "endpoint": "/api/clients/preferences",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 405,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 11422
+    },
+    {
+      "id": "rbac-002",
+      "severity": "HIGH",
+      "description": "Agent attempts staff operations",
+      "method": "GET",
+      "endpoint": "/api/staff/activity",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 9068
+    },
+    {
+      "id": "cal-001",
+      "severity": "HIGH",
+      "description": "Agent attempts to access victim event calendar entry",
+      "method": "GET",
+      "endpoint": "/api/calendar/event/5372daa4-8b42-41d0-ad2a-047a6e6eae53",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 401,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 10193
+    },
+    {
+      "id": "int-001",
+      "severity": "HIGH",
+      "description": "Agent probes integrations endpoint",
+      "method": "GET",
+      "endpoint": "/api/integrations/unknown-provider",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 9103
+    },
+    {
+      "id": "feed-001",
+      "severity": "CRITICAL",
+      "description": "Agent attempts to access private calendar feed with invalid token",
+      "method": "GET",
+      "endpoint": "/api/feeds/calendar/invalid-token-12345",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 8341
+    },
+    {
+      "id": "webhook-001",
+      "severity": "CRITICAL",
+      "description": "Agent attempts webhook callback without authorization",
+      "method": "POST",
+      "endpoint": "/api/webhooks/stripe",
+      "body": {
+        "type": "charge.succeeded",
+        "data": {
+          "event_id": "5372daa4-8b42-41d0-ad2a-047a6e6eae53"
+        }
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 400,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 11045
+    },
+    {
+      "id": "receipt-001",
+      "severity": "CRITICAL",
+      "description": "Agent accesses victim event receipt",
+      "method": "GET",
+      "endpoint": "/api/documents/receipt/5372daa4-8b42-41d0-ad2a-047a6e6eae53",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 18033
+    },
+    {
+      "id": "receipt-002",
+      "severity": "HIGH",
+      "description": "Agent accesses commerce receipt for victim event",
+      "method": "GET",
+      "endpoint": "/api/documents/commerce-receipt/victim-sale-id",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 501,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 11248
+    },
+    {
+      "id": "quote-001",
+      "severity": "CRITICAL",
+      "description": "Agent accesses victim quote PDF (client-facing)",
+      "method": "GET",
+      "endpoint": "/api/documents/quote/0ebe11ce-70b1-4549-ad82-9035afd89fd7",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 500,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 10107
+    },
+    {
+      "id": "quote-002",
+      "severity": "CRITICAL",
+      "description": "Agent accesses victim quote client PDF",
+      "method": "GET",
+      "endpoint": "/api/documents/quote-client/0ebe11ce-70b1-4549-ad82-9035afd89fd7",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 401,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 17930
+    },
+    {
+      "id": "mass-001",
+      "severity": "CRITICAL",
+      "description": "Agent creates event with explicit victim tenant_id in body",
+      "method": "POST",
+      "endpoint": "/api/events",
+      "body": {
+        "client_id": "809a9fef-d526-45db-9018-d619783bc585",
+        "event_date": "2026-04-01",
+        "event_type": "Corporate Event",
+        "guest_count": 50,
+        "tenant_id": "15cafd7c-d9d5-489c-a333-97e89c7e2ba9",
+        "chef_id": "15cafd7c-d9d5-489c-a333-97e89c7e2ba9"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 7633
+    },
+    {
+      "id": "mass-002",
+      "severity": "CRITICAL",
+      "description": "Agent updates own event, attempts to claim victim tenant via body",
+      "method": "PATCH",
+      "endpoint": "/api/events/agent-event-id",
+      "body": {
+        "tenant_id": "15cafd7c-d9d5-489c-a333-97e89c7e2ba9",
+        "quoted_price_cents": 999999
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 831
+    },
+    {
+      "id": "mass-003",
+      "severity": "CRITICAL",
+      "description": "Agent creates client with victim tenant_id injection",
+      "method": "POST",
+      "endpoint": "/api/clients",
+      "body": {
+        "full_name": "Attacker Client",
+        "email": "attacker@test.com",
+        "phone": "555-0000",
+        "tenant_id": "15cafd7c-d9d5-489c-a333-97e89c7e2ba9"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 483
+    },
+    {
+      "id": "malform-001",
+      "severity": "MEDIUM",
+      "description": "Agent sends malformed JSON to event endpoint",
+      "method": "POST",
+      "endpoint": "/api/events",
+      "body": {},
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 535
+    },
+    {
+      "id": "malform-002",
+      "severity": "MEDIUM",
+      "description": "Agent sends request with extra/suspicious fields",
+      "method": "POST",
+      "endpoint": "/api/events",
+      "body": {
+        "client_id": "809a9fef-d526-45db-9018-d619783bc585",
+        "event_date": "2026-04-01",
+        "guest_count": 10,
+        "admin_override": true,
+        "is_system": true
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 592
+    },
+    {
+      "id": "export-001",
+      "severity": "CRITICAL",
+      "description": "Agent attempts bulk export endpoint with victim chef_id",
+      "method": "GET",
+      "endpoint": "/api/exports?chef_id=15cafd7c-d9d5-489c-a333-97e89c7e2ba9&format=csv",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 593
+    },
+    {
+      "id": "comms-001",
+      "severity": "HIGH",
+      "description": "Agent attempts to send message via victim event",
+      "method": "POST",
+      "endpoint": "/api/communications/send",
+      "body": {
+        "event_id": "5372daa4-8b42-41d0-ad2a-047a6e6eae53",
+        "recipient_id": "809a9fef-d526-45db-9018-d619783bc585",
+        "message": "Malicious message"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 579
+    },
+    {
+      "id": "comms-002",
+      "severity": "HIGH",
+      "description": "Agent creates communication template with injection",
+      "method": "POST",
+      "endpoint": "/api/communications/template",
+      "body": {
+        "name": "Malicious Template",
+        "subject": "Test {{chef_name}}",
+        "body": "{{SYSTEM_ADMIN_COMMAND}}"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 722
+    },
+    {
+      "id": "audit-001",
+      "severity": "HIGH",
+      "description": "Unauthenticated user attempts to access activity feed",
+      "method": "GET",
+      "endpoint": "/api/activity/feed",
+      "expectDenied": true,
+      "skipAuth": true,
+      "passed": true,
+      "statusCode": 307,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 45
+    },
+    {
+      "id": "audit-002",
+      "severity": "MEDIUM",
+      "description": "Agent attempts to log activity for victim chef",
+      "method": "POST",
+      "endpoint": "/api/activity/track",
+      "body": {
+        "chef_id": "15cafd7c-d9d5-489c-a333-97e89c7e2ba9",
+        "action": "event.modified",
+        "metadata": {
+          "event_id": "5372daa4-8b42-41d0-ad2a-047a6e6eae53"
+        }
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 400,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 8448
+    },
+    {
+      "id": "inject-001",
+      "severity": "HIGH",
+      "description": "Agent attempts Unicode normalization bypass in search",
+      "method": "GET",
+      "endpoint": "/api/clients?search=victim%E2%81%A0chef",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 706
+    },
+    {
+      "id": "inject-002",
+      "severity": "HIGH",
+      "description": "Agent attempts LDAP injection in filter parameter",
+      "method": "GET",
+      "endpoint": "/api/events?filter=*)(status=*))(&(status=*",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 504
+    },
+    {
+      "id": "inject-003",
+      "severity": "MEDIUM",
+      "description": "Agent attempts XML external entity injection",
+      "method": "POST",
+      "endpoint": "/api/imports/xml",
+      "body": "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]><data>&xxe;</data>",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 474
+    },
+    {
+      "id": "boundary-001",
+      "severity": "MEDIUM",
+      "description": "Agent attempts negative pagination limit",
+      "method": "GET",
+      "endpoint": "/api/events?limit=-1&offset=-999",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 477
+    },
+    {
+      "id": "boundary-002",
+      "severity": "MEDIUM",
+      "description": "Agent attempts massive pagination offset to leak data",
+      "method": "GET",
+      "endpoint": "/api/events?limit=1000&offset=999999999",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 473
+    },
+    {
+      "id": "boundary-003",
+      "severity": "HIGH",
+      "description": "Agent attempts to set price to negative value",
+      "method": "PATCH",
+      "endpoint": "/api/events/agent-event-id",
+      "body": {
+        "quoted_price_cents": -99999999
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 659
+    },
+    {
+      "id": "cache-001",
+      "severity": "HIGH",
+      "description": "Agent attempts HTTP cache poisoning via header injection",
+      "method": "GET",
+      "endpoint": "/api/events/invalid-id",
+      "headers": {
+        "X-Forwarded-Host": "evil.com",
+        "X-Original-URL": "http://evil.com/api/events"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 472
+    },
+    {
+      "id": "cache-002",
+      "severity": "MEDIUM",
+      "description": "Agent attempts to poison CDN cache with malicious response",
+      "method": "GET",
+      "endpoint": "/api/documents/test?type=../../etc/passwd",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 400,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 8810
+    },
+    {
+      "id": "method-001",
+      "severity": "MEDIUM",
+      "description": "Agent uses HEAD method on protected endpoint",
+      "method": "HEAD",
+      "endpoint": "/api/events/5372daa4-8b42-41d0-ad2a-047a6e6eae53",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 605
+    },
+    {
+      "id": "method-003",
+      "severity": "MEDIUM",
+      "description": "Agent attempts OPTIONS enumeration",
+      "method": "OPTIONS",
+      "endpoint": "/api/events",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 627
+    },
+    {
+      "id": "logic-001",
+      "severity": "CRITICAL",
+      "description": "Agent attempts to transition event to invalid status",
+      "method": "PATCH",
+      "endpoint": "/api/events/agent-event-id",
+      "body": {
+        "status": "INVALID_STATUS_BYPASS"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 589
+    },
+    {
+      "id": "logic-002",
+      "severity": "HIGH",
+      "description": "Agent attempts duplicate quote acceptance (idempotency bypass)",
+      "method": "POST",
+      "endpoint": "/api/quotes/accept",
+      "body": {
+        "quote_id": "0ebe11ce-70b1-4549-ad82-9035afd89fd7",
+        "idempotency_key": "same-key"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 593
+    },
+    {
+      "id": "logic-003",
+      "severity": "CRITICAL",
+      "description": "Agent attempts to reverse ledger entry (financial manipulation)",
+      "method": "POST",
+      "endpoint": "/api/ledger/reverse",
+      "body": {
+        "entry_id": "victim-entry-id",
+        "reason": "undo"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 414
+    },
+    {
+      "id": "jwt-001",
+      "severity": "CRITICAL",
+      "description": "Agent uses expired JWT token",
+      "method": "GET",
+      "endpoint": "/api/events/5372daa4-8b42-41d0-ad2a-047a6e6eae53",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NzAwMDAwMDB9.fake"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 483
+    },
+    {
+      "id": "jwt-002",
+      "severity": "CRITICAL",
+      "description": "Agent uses tampered JWT token (modified payload)",
+      "method": "GET",
+      "endpoint": "/api/events/5372daa4-8b42-41d0-ad2a-047a6e6eae53",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJub25lIn0.eyJjaGVmX2lkIjoiZm9yZ2VkLWlkIn0."
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 701
+    },
+    {
+      "id": "jwt-003",
+      "severity": "HIGH",
+      "description": "Agent attempts JWT algorithm confusion (HS256 to none)",
+      "method": "GET",
+      "endpoint": "/api/clients/809a9fef-d526-45db-9018-d619783bc585",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJhdHRhY2tlciJ9."
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 2969
+    },
+    {
+      "id": "cookie-001",
+      "severity": "HIGH",
+      "description": "Agent uses cookie from victim chef account",
+      "method": "GET",
+      "endpoint": "/api/events/agent-event-id",
+      "skipAuth": true,
+      "headers": {
+        "Cookie": "sb-luefkpakzvxcsqroxyhz-auth-token=base64-fake-victim-session"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 500,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 13848
+    },
+    {
+      "id": "cookie-002",
+      "severity": "HIGH",
+      "description": "Agent attempts to steal session via duplicate cookie headers",
+      "method": "GET",
+      "endpoint": "/api/events/agent-event-id",
+      "headers": {
+        "X-Cookie": "sb-luefkpakzvxcsqroxyhz-auth-token=base64-forged"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 1271
+    },
+    {
+      "id": "cookie-003",
+      "severity": "MEDIUM",
+      "description": "Agent uses cookie with path manipulation",
+      "method": "GET",
+      "endpoint": "/api/events/agent-event-id",
+      "skipAuth": true,
+      "headers": {
+        "Cookie": "sb-luefkpakzvxcsqroxyhz-auth-token=base64-fake; Path=/api/admin"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 500,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 132
+    },
+    {
+      "id": "content-001",
+      "severity": "HIGH",
+      "description": "Agent submits JSON-RPC to REST API endpoint",
+      "method": "POST",
+      "endpoint": "/api/events",
+      "headers": {
+        "Content-Type": "application/json-rpc"
+      },
+      "body": {
+        "jsonrpc": "2.0",
+        "method": "events.list",
+        "params": {
+          "tenant_id": "15cafd7c-d9d5-489c-a333-97e89c7e2ba9"
+        }
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 490
+    },
+    {
+      "id": "content-002",
+      "severity": "MEDIUM",
+      "description": "Agent submits form-encoded data to JSON endpoint",
+      "method": "POST",
+      "endpoint": "/api/events",
+      "headers": {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "body": "client_id=victim&tenant_id=15cafd7c-d9d5-489c-a333-97e89c7e2ba9",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 1771
+    },
+    {
+      "id": "content-003",
+      "severity": "MEDIUM",
+      "description": "Agent submits XML to JSON-only endpoint",
+      "method": "POST",
+      "endpoint": "/api/events",
+      "headers": {
+        "Content-Type": "application/xml"
+      },
+      "body": "<event><tenant_id>15cafd7c-d9d5-489c-a333-97e89c7e2ba9</tenant_id></event>",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 17000
+    },
+    {
+      "id": "header-001",
+      "severity": "HIGH",
+      "description": "Agent injects X-API-Key header with forged key",
+      "method": "GET",
+      "endpoint": "/api/events/5372daa4-8b42-41d0-ad2a-047a6e6eae53",
+      "headers": {
+        "X-API-Key": "sk_live_forged_key_12345"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 3010
+    },
+    {
+      "id": "header-002",
+      "severity": "HIGH",
+      "description": "Agent spoofs X-User-ID header",
+      "method": "GET",
+      "endpoint": "/api/events/5372daa4-8b42-41d0-ad2a-047a6e6eae53",
+      "headers": {
+        "X-User-ID": "15cafd7c-d9d5-489c-a333-97e89c7e2ba9"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 719
+    },
+    {
+      "id": "header-003",
+      "severity": "MEDIUM",
+      "description": "Agent uses Referer header to impersonate victim domain",
+      "method": "GET",
+      "endpoint": "/api/events/5372daa4-8b42-41d0-ad2a-047a6e6eae53",
+      "headers": {
+        "Referer": "https://victim-chef-dashboard.cheflowhq.com/events"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 761
+    },
+    {
+      "id": "encode-001",
+      "severity": "HIGH",
+      "description": "Agent uses double URL encoding in path",
+      "method": "GET",
+      "endpoint": "/api/events/%252e%252e%252fetc%252fpasswd",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 8234
+    },
+    {
+      "id": "encode-002",
+      "severity": "HIGH",
+      "description": "Agent uses UTF-8 percent encoding bypass",
+      "method": "GET",
+      "endpoint": "/api/documents/5372daa4-8b42-41d0-ad2a-047a6e6eae53?type=%2e%2e%2fadmin",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 4070
+    },
+    {
+      "id": "encode-003",
+      "severity": "MEDIUM",
+      "description": "Agent uses hex encoding in search parameters",
+      "method": "GET",
+      "endpoint": "/api/search?q=%78%78%78&tenant_id=%78%78%78",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 868
+    },
+    {
+      "id": "rate-001",
+      "severity": "HIGH",
+      "description": "Agent rapid-fires identical requests (rate limit probe)",
+      "method": "GET",
+      "endpoint": "/api/health",
+      "rateTest": true,
+      "expectDenied": false,
+      "passed": false,
+      "statusCode": 200,
+      "reason": "No rate limit detected",
+      "elapsed": 9124
+    },
+    {
+      "id": "rate-002",
+      "severity": "HIGH",
+      "description": "Agent attempts to exhaust database connections",
+      "method": "POST",
+      "endpoint": "/api/events",
+      "body": {
+        "client_id": "test",
+        "event_date": "2026-04-01",
+        "guest_count": 1000
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 1162
+    },
+    {
+      "id": "idempotent-001",
+      "severity": "HIGH",
+      "description": "Agent reuses victim quote acceptance idempotency key",
+      "method": "POST",
+      "endpoint": "/api/quotes/accept",
+      "headers": {
+        "Idempotency-Key": "victim-quote-accept-key-123"
+      },
+      "body": {
+        "quote_id": "0ebe11ce-70b1-4549-ad82-9035afd89fd7"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 721
+    },
+    {
+      "id": "idempotent-002",
+      "severity": "MEDIUM",
+      "description": "Agent attempts to bypass payment idempotency",
+      "method": "POST",
+      "endpoint": "/api/payments/process",
+      "headers": {
+        "Idempotency-Key": ""
+      },
+      "body": {
+        "event_id": "5372daa4-8b42-41d0-ad2a-047a6e6eae53",
+        "amount_cents": 10000
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 667
+    },
+    {
+      "id": "null-001",
+      "severity": "MEDIUM",
+      "description": "Agent uses null byte in filename parameter",
+      "method": "GET",
+      "endpoint": "/api/documents/5372daa4-8b42-41d0-ad2a-047a6e6eae53?type=summary%00.pdf",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": true,
+      "reason": "Correctly rejected",
+      "elapsed": 5073
+    },
+    {
+      "id": "null-002",
+      "severity": "MEDIUM",
+      "description": "Agent uses null byte to truncate tenant_id",
+      "method": "POST",
+      "endpoint": "/api/events",
+      "body": {
+        "client_id": "809a9fef-d526-45db-9018-d619783bc585",
+        "tenant_id": "15cafd7c-d9d5-489c-a333-97e89c7e2ba9%00"
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 3029
+    },
+    {
+      "id": "syntax-001",
+      "severity": "MEDIUM",
+      "description": "Agent uses semicolon to inject additional filters",
+      "method": "GET",
+      "endpoint": "/api/events?chef_id=91ec0e6a-ce61-41ec-b9e5-eea3b415e5b8;admin=true",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 811
+    },
+    {
+      "id": "syntax-002",
+      "severity": "MEDIUM",
+      "description": "Agent uses SQL comment syntax in parameters",
+      "method": "GET",
+      "endpoint": "/api/events?search=test--&filter=name/**/",
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "hasData": false,
+      "reason": "Correctly rejected",
+      "elapsed": 554
+    },
+    {
+      "id": "race-001",
+      "severity": "CRITICAL",
+      "description": "Agent creates two events simultaneously (race condition in constraint)",
+      "method": "POST",
+      "endpoint": "/api/events",
+      "raceTest": true,
+      "body": {
+        "client_id": "809a9fef-d526-45db-9018-d619783bc585",
+        "event_date": "2026-05-01",
+        "guest_count": 20
+      },
+      "expectDenied": true,
+      "passed": true,
+      "statusCode": 404,
+      "reason": "All concurrent requests denied",
+      "elapsed": 711
+    }
+  ],
+  "summary": {
+    "passed": 91,
+    "failed": 1,
+    "critical": 0,
+    "high": 1
+  }
+}
