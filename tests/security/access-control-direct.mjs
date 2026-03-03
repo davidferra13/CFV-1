@@ -1082,9 +1082,108 @@ const TESTS = [
     expectDenied: true,
   },
 
-  // ═══ CROSS-PROTOCOL ATTACKS ═══
-  // (Note: HTTP/1.1 Upgrade headers are rejected by fetch library itself,
-  // not by server, so not testable from Node.js environment)
+  // ═══ PARAMETER POLLUTION & AMBIGUITY ATTACKS ═══
+  {
+    id: 'param-poll-001',
+    severity: 'CRITICAL',
+    description: 'Agent sends duplicate parameters to confuse authorization',
+    method: 'GET',
+    endpoint: `/api/events/${VICTIM_DATA.eventPaid}?chef_id=${ATTACKER.chefId}&chef_id=${VICTIM_CHEF.chefId}`,
+    expectDenied: true,
+  },
+  {
+    id: 'param-poll-002',
+    severity: 'HIGH',
+    description: 'Agent uses array parameter ambiguity to bypass filters',
+    method: 'GET',
+    endpoint: `/api/events?filter[]=${VICTIM_CHEF.chefId}&filter[]=${ATTACKER.chefId}`,
+    expectDenied: true,
+  },
+
+  // ═══ AUTHORIZATION CONTEXT CONFUSION ═══
+  {
+    id: 'context-001',
+    severity: 'CRITICAL',
+    description: 'Agent attempts to access resource via shared client context',
+    method: 'GET',
+    endpoint: `/api/clients/${VICTIM_DATA.clientPrimary}?context=shared`,
+    expectDenied: true,
+  },
+  {
+    id: 'context-002',
+    severity: 'HIGH',
+    description: 'Agent uses impersonation attempt via context parameter',
+    method: 'PATCH',
+    endpoint: `/api/clients/${VICTIM_DATA.clientPrimary}?impersonate=${VICTIM_CHEF.chefId}`,
+    expectDenied: true,
+  },
+
+  // ═══ VERSION/COMPATIBILITY ATTACKS ═══
+  {
+    id: 'version-001',
+    severity: 'HIGH',
+    description: 'Agent uses legacy API version to bypass new auth checks',
+    method: 'GET',
+    endpoint: '/api/v1/events/list',  // Old version endpoint
+    expectDenied: true,
+  },
+  {
+    id: 'version-002',
+    severity: 'MEDIUM',
+    description: 'Agent sends backward-compatibility request header',
+    method: 'GET',
+    endpoint: '/api/events',
+    headers: { 'X-API-Version': '0.1', 'X-Compat-Mode': 'legacy' },
+    expectDenied: true,
+  },
+
+  // ═══ RESPONSE MANIPULATION & REFLECTION ═══
+  {
+    id: 'reflect-001',
+    severity: 'MEDIUM',
+    description: 'Agent attempts to reflect malicious input in response',
+    method: 'GET',
+    endpoint: `/api/search?q="><script>alert(document.cookie)</script>&tenant_id=${VICTIM_CHEF.chefId}`,
+    expectDenied: true,
+  },
+  {
+    id: 'reflect-002',
+    severity: 'HIGH',
+    description: 'Agent attempts CRLF injection in response headers',
+    method: 'GET',
+    endpoint: '/api/events/test%0d%0aX-Leaked-Data:%20secret',
+    expectDenied: true,
+  },
+
+  // ═══ DATA SERIALIZATION ATTACKS ═══
+  {
+    id: 'serial-001',
+    severity: 'CRITICAL',
+    description: 'Agent sends object prototype pollution payload',
+    method: 'POST',
+    endpoint: '/api/events',
+    body: {
+      client_id: VICTIM_DATA.clientPrimary,
+      event_date: '2026-04-01',
+      guest_count: 20,
+      '__proto__': { isAdmin: true },
+    },
+    expectDenied: true,
+  },
+  {
+    id: 'serial-002',
+    severity: 'CRITICAL',
+    description: 'Agent attempts constructor manipulation in JSON payload',
+    method: 'POST',
+    endpoint: '/api/events',
+    body: {
+      client_id: VICTIM_DATA.clientPrimary,
+      event_date: '2026-04-01',
+      guest_count: 20,
+      'constructor': { 'prototype': { isAdmin: true } },
+    },
+    expectDenied: true,
+  },
 ]
 
 async function authenticate() {
