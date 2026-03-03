@@ -1184,6 +1184,95 @@ const TESTS = [
     },
     expectDenied: true,
   },
+
+  // ═══ TYPE CONFUSION ATTACKS ═══
+  {
+    id: 'type-001',
+    severity: 'CRITICAL',
+    description: 'Agent sends string instead of integer for event ID',
+    method: 'PATCH',
+    endpoint: '/api/events/not-a-uuid-string',
+    body: { quoted_price_cents: 50000 },
+    expectDenied: true,
+  },
+  {
+    id: 'type-002',
+    severity: 'HIGH',
+    description: 'Agent sends boolean as numeric value (truthy bypass)',
+    method: 'POST',
+    endpoint: '/api/events',
+    body: {
+      client_id: VICTIM_DATA.clientPrimary,
+      event_date: '2026-04-01',
+      guest_count: true,  // Boolean instead of number
+    },
+    expectDenied: true,
+  },
+
+  // ═══ NUMERIC EXTREMES & OVERFLOW ═══
+  {
+    id: 'numeric-001',
+    severity: 'CRITICAL',
+    description: 'Agent sets price to Number.MAX_VALUE causing integer overflow',
+    method: 'PATCH',
+    endpoint: '/api/events/agent-event-id',
+    body: { quoted_price_cents: Number.MAX_VALUE },
+    expectDenied: true,
+  },
+  {
+    id: 'numeric-002',
+    severity: 'MEDIUM',
+    description: 'Agent sends negative monetary amount',
+    method: 'POST',
+    endpoint: '/api/quotes',
+    body: { event_id: VICTIM_DATA.eventPaid, amount_cents: -999999 },
+    expectDenied: true,
+  },
+
+  // ═══ ADDITIONAL FINANCIAL MANIPULATION ═══
+  {
+    id: 'financial-001',
+    severity: 'CRITICAL',
+    description: 'Agent attempts to create refund for victim event without authorization',
+    method: 'POST',
+    endpoint: '/api/payments/refund',
+    body: { event_id: VICTIM_DATA.eventPaid, amount_cents: 50000 },
+    expectDenied: true,
+  },
+  {
+    id: 'financial-002',
+    severity: 'CRITICAL',
+    description: 'Agent attempts to modify payment status for victim event',
+    method: 'PATCH',
+    endpoint: '/api/payments/victim-payment-id',
+    body: { status: 'completed' },
+    expectDenied: true,
+  },
+
+  // ═══ ADDITIONAL WEBHOOK SECURITY ═══
+  {
+    id: 'webhook-002',
+    severity: 'CRITICAL',
+    description: 'Agent attempts to forge Stripe webhook with modified signature',
+    method: 'POST',
+    endpoint: '/api/webhooks/stripe',
+    headers: { 'X-Stripe-Signature': 'forged-signature-' + Date.now() },
+    body: {
+      type: 'charge.succeeded',
+      data: { object: { id: VICTIM_DATA.eventPaid } },
+    },
+    expectDenied: true,
+  },
+  {
+    id: 'webhook-003',
+    severity: 'HIGH',
+    description: 'Agent replays old webhook payload multiple times',
+    method: 'POST',
+    endpoint: '/api/webhooks/stripe',
+    headers: { 'X-Stripe-Signature': 'valid-signature-but-old' },
+    body: { type: 'charge.succeeded', id: 'replay-attack-payload-old' },
+    expectDenied: true,
+  },
 ]
 
 async function authenticate() {
