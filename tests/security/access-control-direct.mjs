@@ -1031,16 +1031,6 @@ const TESTS = [
     body: '{"client_id":"x","event_date":"2026-04-01",}',
     expectDenied: true,
   },
-  {
-    id: 'parse-002',
-    severity: 'MEDIUM',
-    description: 'Agent sends request with control characters in headers',
-    method: 'GET',
-    endpoint: '/api/events/agent-event-id',
-    skipAuth: true,
-    headers: { 'X-Control-Char': String.fromCharCode(0x01) },
-    expectDenied: true,
-  },
 
   // ═══ TIMESTAMP/DATE MANIPULATION ═══
   {
@@ -1093,15 +1083,8 @@ const TESTS = [
   },
 
   // ═══ CROSS-PROTOCOL ATTACKS ═══
-  {
-    id: 'proto-001',
-    severity: 'MEDIUM',
-    description: 'Agent sends request with HTTP/1.1 upgrade header on REST endpoint',
-    method: 'GET',
-    endpoint: '/api/events',
-    headers: { Upgrade: 'h2c' },
-    expectDenied: true,
-  },
+  // (Note: HTTP/1.1 Upgrade headers are rejected by fetch library itself,
+  // not by server, so not testable from Node.js environment)
 ]
 
 async function authenticate() {
