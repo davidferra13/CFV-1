@@ -257,8 +257,9 @@ export function checkRecipeGenerationBlock(message: string): string | null {
  * Remy's expertise is in chef business management — not general AI tasks.
  */
 const OUT_OF_SCOPE_PATTERNS = [
-  // Poetry, creative writing, storytelling
-  /\b(write|compose|create)\s+(me\s+)?(a\s+)?(poem|poetry|story|song|joke|limerick|haiku)\b/i,
+  // Poetry, creative writing, storytelling (expanded to catch all variations)
+  /\b(write|compose|create|generate|make)\s+(me\s+|up\s+)?(a\s+)?(funny\s+)?(poem|poetry|story|song|joke|limerick|haiku|narrative|tale|story)\b/i,
+  /\b(generate|compose|write)\s+(a\s+)?(short\s+)?(story|tale|narrative)\b/i,
   // General philosophical/existential questions
   /\b(what\s+is\s+the\s+meaning|meaning\s+of)\b/i,
   /\b(why\s+do\s+we\s+exist|existential|philosophy|philosophical)\b/i,
@@ -296,8 +297,11 @@ export function checkOutOfScopeBlock(message: string): string | null {
 const DANGEROUS_ACTION_PATTERNS = [
   // Delete/destroy data
   /\b(delete|remove|destroy|wipe|clear|drop)\b.*\b(all\s+)?(data|database|records|clients|events|everything)\b/i,
-  // Show system prompt/instructions
-  /\b(show|reveal|tell|display|list|print|give|provide)\b.*(system\s+)?(prompt|instructions|internals?|rules?|guidelines?)\b/i,
+  // Show system prompt/instructions/internals/guidelines (with more flexible matching)
+  /\b(show|reveal|tell|display|list|print|give|provide|explain|describe)\b.*\b(system|internal)?\s*(prompt|instructions|internals?|rules?|guidelines?|how\s+you\s+work|how\s+do\s+you|how\s+are\s+you)\b/i,
+  /\b(what|tell)\s+.*\b(your\s+)?(instructions|rules|guidelines|prompts?|internals?|system)\b/i,
+  /\bhow\s+do\s+you\s+work\b/i,
+  /\bhow\s+does\s+remy\s+work\b/i,
   // Ignore previous instructions (jailbreak attempts)
   /\b(ignore|override|bypass|skip|forget|disregard)\b.*(all\s+)?(previous|prior|above)?\b\s*(instructions?|prompts?|rules?|guidelines?)\b/i,
   // Developer/admin/root mode activation
