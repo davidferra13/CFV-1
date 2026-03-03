@@ -13,6 +13,7 @@ export function ChefMainContent({ children }: { children: React.ReactNode }) {
   return (
     <main
       id="main-content"
+      tabIndex={-1}
       className={`pt-mobile-header pb-mobile-nav lg:pt-0 lg:pb-0 transition-all duration-200 ${
         collapsed ? 'lg:pl-16' : 'lg:pl-60'
       }`}

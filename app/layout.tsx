@@ -98,6 +98,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${dmSerif.variable}`} suppressHydrationWarning>
       <body className="font-sans">
+        {/* Skip to main content link - WCAG 2.1 Level AAA requirement */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-0 focus:left-0 focus:z-50 focus:bg-stone-950 focus:text-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium"
+        >
+          Skip to main content
+        </a>
+
         <TestAccountBanner />
         <PostHogProvider>{children}</PostHogProvider>
         <CookieConsent />
