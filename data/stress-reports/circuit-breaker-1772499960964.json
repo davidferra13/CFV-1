@@ -1,0 +1,35 @@
+{
+  "timestamp": "2026-03-03T01:06:00.963Z",
+  "test": "circuit_breaker",
+  "summary": {
+    "totalPhases": 2,
+    "allPassed": true
+  },
+  "phases": [
+    {
+      "phase": "normal",
+      "timestamp": 1772499959955,
+      "requestCount": 5,
+      "failureCount": 0,
+      "successCount": 5,
+      "consecutiveFailures": 0,
+      "avgLatencyMs": 169,
+      "verdict": "pass"
+    },
+    {
+      "phase": "recovery",
+      "timestamp": 1772499960963,
+      "requestCount": 10,
+      "failureCount": 0,
+      "successCount": 10,
+      "consecutiveFailures": 0,
+      "avgLatencyMs": 101,
+      "verdict": "pass"
+    }
+  ],
+  "interpretation": {
+    "phase1Normal": "Normal operation: ✅ PASS",
+    "phase2Recovery": "Recovery after stress: ✅ PASS",
+    "verdict": "PASS: System handles stress and recovers gracefully"
+  }
+}
