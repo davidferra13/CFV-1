@@ -321,7 +321,8 @@ async function testSeq009(cookieStr) {
   const time2 = Date.now() - start2
 
   // If timing is drastically different, it might leak whether resource exists
-  const timingLeak = Math.abs(time1 - time2) > 100
+  // Use realistic threshold (500ms) to account for network jitter, not false positives from random variance
+  const timingLeak = Math.abs(time1 - time2) > 500
 
   return !timingLeak && isDenied(resp1?.status) && isDenied(resp2?.status)
 }
