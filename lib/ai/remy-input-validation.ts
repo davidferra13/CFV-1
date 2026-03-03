@@ -212,8 +212,8 @@ function validateRecentErrors(raw: unknown): RecentErrorEntry[] | undefined {
  * recipes from anywhere. This check runs before any LLM call.
  */
 const RECIPE_GENERATION_PATTERNS = [
-  // Direct creation requests
-  /\b(create|make|write|draft|generate|come up with|give me|suggest)\s+(a\s+|me\s+)?(new\s+)?recipe\b/i,
+  // Direct creation requests: "create/generate/make [adjective/ingredient] recipe"
+  /\b(create|make|write|draft|generate|come up with|give me|suggest)\s+.*(recipe|dishes?|meals?)\b/i,
   // "recipe for X" (asking AI to produce a recipe)
   /\brecipe\s+for\s+(?!search|lookup|find)/i,
   // "how to cook/make X" (recipe generation by another name)
