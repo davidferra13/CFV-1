@@ -946,6 +946,162 @@ const TESTS = [
     body: { client_id: VICTIM_DATA.clientPrimary, event_date: '2026-05-01', guest_count: 20 },
     expectDenied: true,
   },
+
+  // ═══ STATE MACHINE BYPASS ATTACKS ═══
+  {
+    id: 'state-001',
+    severity: 'CRITICAL',
+    description: 'Agent skips required event approval and moves to paid state',
+    method: 'PATCH',
+    endpoint: `/api/events/${VICTIM_DATA.eventDraft}`,
+    body: { status: 'paid', quoted_price_cents: 50000 },
+    expectDenied: true,
+  },
+  {
+    id: 'state-002',
+    severity: 'HIGH',
+    description: 'Agent reverts confirmed event back to draft',
+    method: 'PATCH',
+    endpoint: '/api/events/victim-confirmed-event',
+    body: { status: 'draft' },
+    expectDenied: true,
+  },
+  {
+    id: 'state-003',
+    severity: 'CRITICAL',
+    description: 'Agent modifies completed event pricing after service',
+    method: 'PATCH',
+    endpoint: '/api/events/victim-completed-event',
+    body: { quoted_price_cents: 1 },
+    expectDenied: true,
+  },
+
+  // ═══ TRANSACTION BOUNDARY ATTACKS ═══
+  {
+    id: 'txn-001',
+    severity: 'CRITICAL',
+    description: 'Agent attempts to create quote and accept in single request',
+    method: 'POST',
+    endpoint: '/api/quotes/batch',
+    body: {
+      quotes: [
+        { event_id: VICTIM_DATA.eventDraft, amount_cents: 500000 },
+        { action: 'accept', quote_id: 'victim-quote-id' },
+      ],
+    },
+    expectDenied: true,
+  },
+  {
+    id: 'txn-002',
+    severity: 'HIGH',
+    description: 'Agent attempts partial JSON in multi-part transaction',
+    method: 'POST',
+    endpoint: '/api/events/batch-create',
+    body: '{"events":[{"client_id":"victim"},',  // Truncated payload
+    expectDenied: true,
+  },
+
+  // ═══ PERMISSION SCOPE CONFUSION ═══
+  {
+    id: 'scope-001',
+    severity: 'HIGH',
+    description: 'Agent uses write scope on read-only endpoint',
+    method: 'POST',
+    endpoint: '/api/events/search',
+    body: { query: 'test', inject_field: 'tenant_id' },
+    expectDenied: true,
+  },
+  {
+    id: 'scope-002',
+    severity: 'MEDIUM',
+    description: 'Agent attempts to escalate read permission to write',
+    method: 'PATCH',
+    endpoint: `/api/clients/${VICTIM_DATA.clientPrimary}`,
+    body: { notes: 'read-only breach' },
+    expectDenied: true,
+  },
+
+  // ═══ RESPONSE PARSING EXPLOITS ═══
+  {
+    id: 'parse-001',
+    severity: 'MEDIUM',
+    description: 'Agent attempts JSON with trailing commas (parser confusion)',
+    method: 'POST',
+    endpoint: '/api/events',
+    body: '{"client_id":"x","event_date":"2026-04-01",}',
+    expectDenied: true,
+  },
+  {
+    id: 'parse-002',
+    severity: 'MEDIUM',
+    description: 'Agent sends request with control characters in headers',
+    method: 'GET',
+    endpoint: '/api/events/agent-event-id',
+    skipAuth: true,
+    headers: { 'X-Control-Char': String.fromCharCode(0x01) },
+    expectDenied: true,
+  },
+
+  // ═══ TIMESTAMP/DATE MANIPULATION ═══
+  {
+    id: 'time-001',
+    severity: 'HIGH',
+    description: 'Agent creates event with past date to bypass validation',
+    method: 'POST',
+    endpoint: '/api/events',
+    body: { client_id: VICTIM_DATA.clientPrimary, event_date: '2000-01-01', guest_count: 20 },
+    expectDenied: true,
+  },
+  {
+    id: 'time-002',
+    severity: 'HIGH',
+    description: 'Agent creates event with future date 50 years out',
+    method: 'POST',
+    endpoint: '/api/events',
+    body: { client_id: VICTIM_DATA.clientPrimary, event_date: '2076-01-01', guest_count: 20 },
+    expectDenied: true,
+  },
+
+  // ═══ FIELD PRESENCE/ABSENCE ATTACKS ═══
+  {
+    id: 'field-001',
+    severity: 'MEDIUM',
+    description: 'Agent omits required field from request',
+    method: 'POST',
+    endpoint: '/api/events',
+    body: { client_id: VICTIM_DATA.clientPrimary },  // Missing event_date, guest_count
+    expectDenied: true,
+  },
+  {
+    id: 'field-002',
+    severity: 'HIGH',
+    description: 'Agent sends excessive fields (NoSQL injection style)',
+    method: 'POST',
+    endpoint: '/api/events',
+    body: Object.assign(
+      {
+        client_id: VICTIM_DATA.clientPrimary,
+        event_date: '2026-04-01',
+        guest_count: 20,
+      },
+      Array.from({ length: 100 }).reduce((acc, _, i) => {
+        acc[`extra_field_${i}`] = 'x'.repeat(1000)
+        return acc
+      }, {})
+    ),
+    expectDenied: true,
+  },
+
+  // ═══ CROSS-PROTOCOL ATTACKS ═══
+  {
+    id: 'proto-001',
+    severity: 'MEDIUM',
+    description: 'Agent sends request with HTTP/1.1 upgrade header on REST endpoint',
+    method: 'GET',
+    endpoint: '/api/events',
+    headers: { Upgrade: 'h2c' },
+    expectDenied: true,
+  },
 ]
 
 async function authenticate() {
