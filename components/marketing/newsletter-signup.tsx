@@ -39,15 +39,17 @@ export function NewsletterSignup() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-2" noValidate>
       <div className="flex gap-2">
         <input
+          id="newsletter-email"
+          name="email"
           type="email"
           placeholder="your@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          required
           className="flex-1 rounded-md border border-stone-700 bg-stone-900 px-3 py-1.5 text-sm text-stone-200 placeholder-stone-500 focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
+          aria-label="Email address"
         />
         <button
           type="submit"

@@ -97,10 +97,14 @@ export function PublicPartnerSignupForm({ chefSlug, chefName, primaryColor }: Pr
           />
 
           <div>
-            <label className="block text-sm font-medium text-stone-300 mb-1.5">
+            <label
+              htmlFor="partner-type"
+              className="block text-sm font-medium text-stone-300 mb-1.5"
+            >
               Partner Type <span className="text-red-500 ml-1">*</span>
             </label>
             <select
+              id="partner-type"
               value={partnerType}
               onChange={(e) => setPartnerType(e.target.value as PartnerType)}
               className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"

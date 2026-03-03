@@ -111,10 +111,14 @@ export function BetaSignupForm() {
 
       {/* Referral source */}
       <div className="w-full">
-        <label className="block text-sm font-medium text-stone-300 mb-1.5">
+        <label
+          htmlFor="referral-source"
+          className="block text-sm font-medium text-stone-300 mb-1.5"
+        >
           How did you hear about ChefFlow?
         </label>
         <select
+          id="referral-source"
           name="referralSource"
           value={formData.referralSource}
           onChange={handleChange}
