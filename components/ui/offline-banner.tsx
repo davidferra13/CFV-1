@@ -14,12 +14,12 @@ export function OfflineBanner() {
   useEffect(() => {
     // Set initial state from browser API
     setIsOnline(navigator.onLine)
+    let timer: NodeJS.Timeout | null = null
 
     const handleOnline = () => {
       setIsOnline(true)
       setShowReconnected(true)
-      const timer = setTimeout(() => setShowReconnected(false), 3000)
-      return () => clearTimeout(timer)
+      timer = setTimeout(() => setShowReconnected(false), 3000)
     }
 
     const handleOffline = () => {
@@ -31,6 +31,7 @@ export function OfflineBanner() {
     window.addEventListener('offline', handleOffline)
 
     return () => {
+      if (timer) clearTimeout(timer)
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
     }
