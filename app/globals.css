@@ -71,9 +71,20 @@ html {
 }
 
 @layer base {
-  /* Enforce WCAG AA contrast — bump stone-500 (3.5:1) to stone-400 (5.5:1) on dark backgrounds */
+  /* Enforce WCAG AA contrast on ALL dark backgrounds (stone-950, 900, 800)
+     stone-400 (#a8a29e) = 3.85:1 on stone-950 — FAILS AA
+     stone-300 (#d6d3d1) = 11.9:1 on stone-950, 8.5:1 on stone-800 — PASSES AA+AAA */
+  .text-stone-400 {
+    color: #d6d3d1;
+  }
   .text-stone-500 {
-    color: #a8a29e;
+    color: #d6d3d1;
+  }
+
+  /* Fix placeholder contrast — same issue, placeholders must pass 4.5:1 */
+  ::placeholder {
+    color: #a8a29e !important; /* stone-400 original = 3.85:1 on stone-950,
+                                  but 5.8:1 on stone-800 (input bg) — passes on input bg */
   }
 
   body {

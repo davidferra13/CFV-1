@@ -8,12 +8,7 @@ import { RemyConciergeWidget } from '@/components/public/remy-concierge-widget'
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a1210] via-[#141110] to-stone-950 flex flex-col relative">
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-brand-500 focus:px-4 focus:py-2 focus:text-white"
-      >
-        Skip to main content
-      </a>
+      {/* Skip link removed — root layout.tsx already provides one */}
       {/* Ambient glow — warm brand radiance behind the page */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute -top-20 left-1/2 h-[400px] w-[700px] -translate-x-1/2 rounded-full bg-brand-800/30 blur-[80px]" />

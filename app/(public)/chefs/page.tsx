@@ -190,7 +190,7 @@ export default async function ChefDirectoryPage() {
   const chefs = await getDiscoverableChefs()
 
   return (
-    <main className="min-h-screen bg-stone-800">
+    <div className="min-h-screen bg-stone-800">
       {/* Hero */}
       <ChefHero />
 
@@ -242,6 +242,6 @@ export default async function ChefDirectoryPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   )
 }

@@ -4,7 +4,7 @@ import { NewsletterSignup } from '@/components/marketing/newsletter-signup'
 
 export default function BlogIndexPage() {
   return (
-    <main>
+    <div>
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-bold text-stone-100 mb-4">The ChefFlow Blog</h1>
@@ -67,6 +67,6 @@ export default function BlogIndexPage() {
           </div>
         </div>
       </section>
-    </main>
+    </div>
   )
 }

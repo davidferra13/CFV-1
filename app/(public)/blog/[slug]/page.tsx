@@ -55,7 +55,7 @@ export default function BlogPostPage({ params }: Props) {
   if (!post) notFound()
 
   return (
-    <main>
+    <div>
       <JsonLd
         data={{
           '@context': 'https://schema.org',
@@ -188,6 +188,6 @@ export default function BlogPostPage({ params }: Props) {
           })()}
         </div>
       </article>
-    </main>
+    </div>
   )
 }

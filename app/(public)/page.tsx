@@ -78,7 +78,7 @@ const FEATURES = [
 
 export default function Home() {
   return (
-    <main>
+    <div>
       {/* Structured data for Google rich results */}
       <OrganizationJsonLd />
       <WebSiteJsonLd />
@@ -194,6 +194,6 @@ export default function Home() {
           Get started free
         </Link>
       </section>
-    </main>
+    </div>
   )
 }
