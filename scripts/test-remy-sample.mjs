@@ -10,6 +10,9 @@ const getEnv = (k) => {
 const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL')
 const supabaseKey = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY')
 
+// 2 minutes per test — Ollama can be slow on complex queries
+const PER_TEST_TIMEOUT_MS = 120_000
+
 async function main() {
   const sb = createClient(supabaseUrl, supabaseKey)
   const { data, error } = await sb.auth.signInWithPassword({
@@ -81,59 +84,88 @@ async function main() {
 
     process.stdout.write(`[${test.name}] `)
 
-    const res = await fetch('http://localhost:3100/api/remy/stream', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Cookie: cookieStr },
-      body: JSON.stringify({
-        message: test.msg,
-        currentPage: '/dashboard',
-        recentPages: ['/dashboard'],
-        recentActions: [],
-        recentErrors: [],
-        sessionMinutes: 3,
-        activeForm: null,
-        history: [],
-      }),
-      redirect: 'manual',
-    }).catch(() => ({ status: 0 }))
+    try {
+      // AbortController with per-test timeout — prevents infinite hangs
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), PER_TEST_TIMEOUT_MS)
 
-    if (res.status !== 200) {
-      console.log('✗')
-      results.push({ test: test.name, cat: test.cat, pass: false })
-      continue
-    }
-
-    const reader = res.body.getReader()
-    const decoder = new TextDecoder()
-    let fullText = ''
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      fullText += decoder.decode(value)
-    }
-
-    const events = fullText
-      .split('\n\n')
-      .filter((e) => e.startsWith('data: '))
-      .map((e) => {
-        try {
-          return JSON.parse(e.replace('data: ', ''))
-        } catch {
-          return null
-        }
+      const res = await fetch('http://localhost:3100/api/remy/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Cookie: cookieStr },
+        body: JSON.stringify({
+          message: test.msg,
+          currentPage: '/dashboard',
+          recentPages: ['/dashboard'],
+          recentActions: [],
+          recentErrors: [],
+          sessionMinutes: 3,
+          activeForm: null,
+          history: [],
+        }),
+        signal: controller.signal,
+        redirect: 'manual',
       })
-      .filter(Boolean)
 
-    const tokens = events.filter((e) => e.type === 'token').map((e) => e.data).join('')
-    const errors = events.filter((e) => e.type === 'error')
-    const hasData = tokens || events.find((e) => e.type === 'tasks') || events.find((e) => e.type === 'nav')
+      if (res.status !== 200) {
+        clearTimeout(timeout)
+        console.log(`✗ (HTTP ${res.status})`)
+        results.push({ test: test.name, cat: test.cat, pass: false, reason: `HTTP ${res.status}` })
+        continue
+      }
 
-    const passed = errors.length === 0 && hasData
-    console.log(passed ? '✓' : '✗')
-    results.push({ test: test.name, cat: test.cat, pass: passed })
+      // Read body stream — wrapped in try/catch to handle mid-stream timeouts
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let fullText = ''
+      try {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          fullText += decoder.decode(value)
+        }
+      } catch (streamErr) {
+        clearTimeout(timeout)
+        const reason = streamErr.name === 'AbortError' ? 'timeout' : 'stream-error'
+        console.log(`✗ (${reason})`)
+        results.push({ test: test.name, cat: test.cat, pass: false, reason })
+        continue
+      }
 
-    if (passed) {
-      catCounts[test.cat].pass++
+      clearTimeout(timeout)
+
+      const events = fullText
+        .split('\n\n')
+        .filter((e) => e.startsWith('data: '))
+        .map((e) => {
+          try {
+            return JSON.parse(e.replace('data: ', ''))
+          } catch {
+            return null
+          }
+        })
+        .filter(Boolean)
+
+      const tokens = events.filter((e) => e.type === 'token').map((e) => e.data).join('')
+      const errors = events.filter((e) => e.type === 'error')
+      const hasData = tokens || events.find((e) => e.type === 'tasks') || events.find((e) => e.type === 'nav')
+
+      const passed = errors.length === 0 && hasData
+      console.log(passed ? '✓' : '✗')
+      results.push({ test: test.name, cat: test.cat, pass: passed })
+
+      if (passed) {
+        catCounts[test.cat].pass++
+      }
+    } catch (fetchErr) {
+      // Catches: connection refused, abort timeout, DNS failures, etc.
+      const reason =
+        fetchErr.name === 'AbortError'
+          ? 'timeout'
+          : fetchErr.code === 'ECONNREFUSED'
+            ? 'server-down'
+            : 'fetch-error'
+      console.log(`✗ (${reason})`)
+      results.push({ test: test.name, cat: test.cat, pass: false, reason })
     }
   }
 
@@ -149,6 +181,14 @@ async function main() {
       const status = c.pass === c.total ? '✓ ALL' : `${c.pass}/${c.total}`
       console.log(`  ${cat.padEnd(10)} ${status}`)
     })
+
+  // Show failures
+  const failures = results.filter((r) => !r.pass)
+  if (failures.length > 0) {
+    console.log('\nFailed tests:')
+    failures.forEach((f) => console.log(`  ${f.test} — ${f.reason || 'no data'}`))
+  }
+
   console.log('='.repeat(60))
 
   // Save report
