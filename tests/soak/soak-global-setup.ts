@@ -10,6 +10,10 @@ import { seedE2EData } from '../helpers/e2e-seed'
 dotenv.config({ path: '.env.local' })
 
 const SOAK_URL = 'http://localhost:3200'
+// Auth against dev server (port 3100) because the E2E auth endpoint
+// returns 403 in production mode (next start). Auth tokens (Supabase JWT)
+// are valid regardless of which port issued them.
+const AUTH_URL = 'http://localhost:3100'
 
 async function loginAndSaveState(
   browser: ReturnType<typeof chromium.launch> extends Promise<infer T> ? T : never,
@@ -23,7 +27,7 @@ async function loginAndSaveState(
   const page = await context.newPage()
 
   try {
-    const resp = await page.request.post(`${SOAK_URL}/api/e2e/auth`, {
+    const resp = await page.request.post(`${AUTH_URL}/api/e2e/auth`, {
       data: { email, password },
     })
 
@@ -32,9 +36,14 @@ async function loginAndSaveState(
       throw new Error(`E2E auth endpoint returned ${resp.status()}: ${body}`)
     }
 
-    await page.goto(`${SOAK_URL}/`)
-    await page.waitForURL(expectedUrlPattern, { timeout: 30_000 })
+    await page.goto(`${AUTH_URL}/`, { timeout: 60_000, waitUntil: 'domcontentloaded' })
+    await page.waitForURL(expectedUrlPattern, { timeout: 60_000 })
     await context.addCookies([
+      {
+        name: 'cookieConsent',
+        value: 'declined',
+        url: AUTH_URL,
+      },
       {
         name: 'cookieConsent',
         value: 'declined',
