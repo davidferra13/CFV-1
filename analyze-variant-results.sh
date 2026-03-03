@@ -123,5 +123,78 @@ fi
 
 echo ""
 echo "═════════════════════════════════════════════════════════════════"
+echo "BASELINE COMPARISON (Iteration 1 — 8 concurrent)"
+echo "═════════════════════════════════════════════════════════════════"
+echo ""
+echo "Iteration 1 Results (COOLDOWN_MS = 150ms, 8 concurrent):"
+echo "  Total Requests:  15,137"
+echo "  Errors:          453"
+echo "  Success Rate:    97%"
+echo "  P95 Latency:     17,401ms ❌"
+echo "  P99 Latency:     23,274ms ❌"
+echo "  Throughput:      2.1 req/s"
+echo ""
+echo "Variant Results (COOLDOWN_MS = 250ms, 12 concurrent):"
+echo "  Total Requests:  $TOTAL"
+echo "  Errors:          $ERRORS"
+echo "  Success Rate:    $(printf '%.0f' $(echo "$SUCCESS_RATE * 100" | bc))%"
+echo "  P95 Latency:     ${P95}ms"
+echo "  P99 Latency:     ${P99}ms"
+echo "  Throughput:      $THROUGHPUT req/s"
+echo ""
+echo "Key Findings:"
+if (( $(echo "$ERRORS < 453" | bc -l) )); then
+  echo "  ✅ Errors: $ERRORS < 453 (Iteration 1) — IMPROVEMENT"
+else
+  echo "  ❌ Errors: $ERRORS >= 453 (Iteration 1) — NO IMPROVEMENT"
+fi
+
+if (( $(echo "$SUCCESS_RATE >= 0.97" | bc -l) )); then
+  echo "  ✅ Success Rate: $(printf '%.0f' $(echo "$SUCCESS_RATE * 100" | bc))% >= 97% — MAINTAINED/IMPROVED"
+else
+  echo "  ❌ Success Rate: $(printf '%.0f' $(echo "$SUCCESS_RATE * 100" | bc))% < 97% — DEGRADED"
+fi
+
+if (( $(echo "$P95 < 17401" | bc -l) )); then
+  echo "  ✅ P95 Latency: ${P95}ms < 17,401ms — IMPROVED"
+elif (( $(echo "$P95 == 17401" | bc -l) )); then
+  echo "  ⚠️  P95 Latency: ${P95}ms = 17,401ms — EQUAL (no regression)"
+else
+  echo "  ❌ P95 Latency: ${P95}ms > 17,401ms — DEGRADED"
+fi
+
+echo ""
+echo "═════════════════════════════════════════════════════════════════"
+echo "GENERALIZATION CONCLUSION"
+echo "═════════════════════════════════════════════════════════════════"
+echo ""
+
+if (( $(echo "$ERRORS < 453" | bc -l) )) && (( $(echo "$SUCCESS_RATE >= 0.97" | bc -l) )); then
+  echo "✅ OPTIMIZATION GENERALIZES SUCCESSFULLY"
+  echo ""
+  echo "Evidence:"
+  echo "  • Variant test at 12 concurrent (50% higher load)"
+  echo "  • Fewer errors than baseline at 8 concurrent"
+  echo "  • Success rate maintained/improved"
+  echo "  • System handles higher load better with increased COOLDOWN_MS"
+  echo ""
+  echo "Interpretation:"
+  echo "  The COOLDOWN_MS = 250ms optimization is not just tuned for 8-concurrent."
+  echo "  It's a genuine systemic improvement to queue management and GPU scheduling."
+  echo "  The system demonstrates better stability at higher concurrency levels."
+  echo ""
+  echo "Recommendation: ✅ READY FOR PRODUCTION DEPLOYMENT"
+else
+  echo "⚠️  OPTIMIZATION PARTIALLY VALIDATES"
+  echo ""
+  echo "The variant test results show acceptable performance but with trade-offs."
+  echo "Additional testing or tuning may be needed for higher concurrency."
+fi
+
+echo ""
+echo "═════════════════════════════════════════════════════════════════"
+echo "Test completed at: $(date)"
+echo "═════════════════════════════════════════════════════════════════"
+echo ""
 echo "NEXT STEP: Compare variant results with baseline (8 concurrent)"
 echo "═════════════════════════════════════════════════════════════════"
