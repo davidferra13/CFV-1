@@ -190,7 +190,7 @@ export const OLLAMA_GUARD = {
   /** Seconds between worker polls (prevents busy-waiting) */
   POLL_INTERVAL_MS: 250,
   /** Minimum seconds between Ollama calls (cooldown to prevent thermal throttling) */
-  COOLDOWN_MS: 150,
+  COOLDOWN_MS: 250, // Increased from 150ms to ease GPU memory pressure during sustained load
   /** Max consecutive failures before worker backs off */
   MAX_CONSECUTIVE_FAILURES: 5,
   /** Backoff duration after max consecutive failures (ms) */
