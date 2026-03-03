@@ -300,6 +300,7 @@ const DANGEROUS_ACTION_PATTERNS = [
   // Show system prompt/instructions/internals/guidelines (with more flexible matching)
   /\b(show|reveal|tell|display|list|print|give|provide|explain|describe)\b.*\b(system|internal)?\s*(prompt|instructions|internals?|rules?|guidelines?|how\s+you\s+work|how\s+do\s+you|how\s+are\s+you)\b/i,
   /\b(what|tell)\s+.*\b(your\s+)?(instructions|rules|guidelines|prompts?|internals?|system)\b/i,
+  /\b(what'?s?|what\s+is)\s+(your\s+)?(prompt|instructions|rules|guidelines|internals?|system)\b/i,
   /\bhow\s+do\s+you\s+work\b/i,
   /\bhow\s+does\s+remy\s+work\b/i,
   // Ignore previous instructions (jailbreak attempts)
