@@ -54,10 +54,7 @@ test.describe('Website-first signup button hardening', () => {
     await page.goto('/auth/signup')
     await page.locator('input[type="email"]').fill('website.signup.network@chefflow.test')
     await page.locator('input[type="password"]').fill('WebsiteSignup!2026')
-    await page
-      .locator('input[type="text"]')
-      .first()
-      .fill('Website Signup Reliability')
+    await page.locator('input[type="text"]').first().fill('Website Signup Reliability')
 
     const submitButton = page.getByRole('button', { name: /create account with email/i })
     await submitButton.click()

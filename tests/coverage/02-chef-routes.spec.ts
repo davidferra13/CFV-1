@@ -7,10 +7,7 @@
 
 import { test, expect } from '../helpers/fixtures'
 
-async function gotoChefPage(
-  page: Parameters<Parameters<typeof test>[1]>[0]['page'],
-  url: string
-) {
+async function gotoChefPage(page: Parameters<Parameters<typeof test>[1]>[0]['page'], url: string) {
   let lastResponse: Awaited<ReturnType<typeof page.goto>> = null
   for (let attempt = 1; attempt <= 2; attempt += 1) {
     try {
@@ -1361,4 +1358,3 @@ test.describe('Chef â€” Misc Pages', () => {
     await assertChefPageLoads(page, '/onboarding/staff')
   })
 })
-

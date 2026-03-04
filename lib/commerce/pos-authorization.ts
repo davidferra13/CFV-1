@@ -1,9 +1,5 @@
 import type { AuthUser } from '@/lib/auth/get-user'
-import {
-  isPosManagerRole,
-  parseRoleCsv,
-  readPosManagerRoleSetFromEnv,
-} from './kiosk-policy'
+import { isPosManagerRole, parseRoleCsv, readPosManagerRoleSetFromEnv } from './kiosk-policy'
 
 function isMissingRelation(error: any) {
   return error?.code === '42P01'
@@ -117,7 +113,9 @@ async function resolvePosActorRole(ctx: { supabase: any; user: AuthUser }): Prom
     return String(byChefId.role)
   }
 
-  const normalizedEmail = String(ctx.user.email ?? '').trim().toLowerCase()
+  const normalizedEmail = String(ctx.user.email ?? '')
+    .trim()
+    .toLowerCase()
   if (!normalizedEmail) return 'unknown'
 
   const { data: byEmail, error: byEmailError } = await baseQuery

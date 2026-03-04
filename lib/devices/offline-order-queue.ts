@@ -30,8 +30,7 @@ export function enqueueOrderCheckout(token: string, payload: Record<string, unkn
   if (
     clientCheckoutId &&
     queue.some(
-      (item) =>
-        item.token === token && readClientCheckoutId(item.payload) === clientCheckoutId
+      (item) => item.token === token && readClientCheckoutId(item.payload) === clientCheckoutId
     )
   ) {
     return

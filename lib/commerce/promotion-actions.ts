@@ -73,7 +73,10 @@ function normalizeCode(raw: string) {
   return code
 }
 
-function normalizeTaxClassTargets(value: TaxClass[] | undefined, discountType: PromotionDiscountType) {
+function normalizeTaxClassTargets(
+  value: TaxClass[] | undefined,
+  discountType: PromotionDiscountType
+) {
   if (discountType === 'fixed_order' || discountType === 'percent_order') return [] as TaxClass[]
   const targets = Array.isArray(value) ? value : []
   const unique = Array.from(new Set(targets))
@@ -226,9 +229,7 @@ export async function updatePromotion(input: UpdatePromotionInput) {
     discountCents: input.discountCents ?? current.discount_cents,
     minSubtotalCents: input.minSubtotalCents ?? current.min_subtotal_cents,
     maxDiscountCents: input.maxDiscountCents ?? current.max_discount_cents,
-    targetTaxClasses: (input.targetTaxClasses ??
-      current.target_tax_classes ??
-      []) as TaxClass[],
+    targetTaxClasses: (input.targetTaxClasses ?? current.target_tax_classes ?? []) as TaxClass[],
     autoApply: input.autoApply ?? current.auto_apply,
     startsAt: input.startsAt ?? current.starts_at,
     endsAt: input.endsAt ?? current.ends_at,
@@ -303,4 +304,3 @@ export async function listPromotions(options?: { activeOnly?: boolean; limit?: n
   if (error) throw new Error(`Failed to list promotions: ${error.message}`)
   return (data ?? []).map(mapPromotionRow)
 }
-

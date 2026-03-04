@@ -10,10 +10,7 @@ import { test, expect } from '../helpers/fixtures'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-async function gotoWithRetry(
-  page: Parameters<Parameters<typeof test>[1]>[0]['page'],
-  url: string
-) {
+async function gotoWithRetry(page: Parameters<Parameters<typeof test>[1]>[0]['page'], url: string) {
   for (let attempt = 1; attempt <= 2; attempt += 1) {
     try {
       const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90_000 })

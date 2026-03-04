@@ -1,6 +1,7 @@
 # ChefFlow AI Simulation Report
-*Auto-generated — last run: 2026-03-04T02:03:57.264Z*
-*Run ID: 2a0886f2-ca33-43ca-a4bc-94b2430ee7d6*
+
+_Auto-generated — last run: 2026-03-04T02:03:57.264Z_
+_Run ID: 2a0886f2-ca33-43ca-a4bc-94b2430ee7d6_
 
 ---
 
@@ -41,4 +42,5 @@ Revise the prompt to enforce strict pricing validation within the expected range
 The allergen_risk and menu_suggestions modules are now passing, showing consistent performance. These modules demonstrate that the system can correctly process structured data when properly prompted. The improvement in these modules suggests the fixes applied to the prompt structure are effective and should be considered for other failing modules.
 
 ---
-*This report shows the latest run only. Full history: docs/simulation-history.md*
+
+_This report shows the latest run only. Full history: docs/simulation-history.md_

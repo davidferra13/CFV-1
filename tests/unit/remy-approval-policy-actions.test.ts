@@ -128,4 +128,3 @@ describe('remy approval policy internals', () => {
     assert.equal(remyApprovalPolicyInternals.isMissingTableError({ code: 'XX000' }), false)
   })
 })
-

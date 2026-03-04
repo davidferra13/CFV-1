@@ -401,7 +401,10 @@ export async function closeRegister(
   try {
     await generateDailyReconciliation({ referenceTimestamp: closedAtIso })
   } catch (error) {
-    console.error('[non-blocking] Failed to generate daily reconciliation after register close:', error)
+    console.error(
+      '[non-blocking] Failed to generate daily reconciliation after register close:',
+      error
+    )
     await emitRegisterAlert({
       tenantScopeId: user.tenantId!,
       eventType: 'reconciliation_auto_generate_failed',

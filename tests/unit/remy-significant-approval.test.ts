@@ -41,4 +41,3 @@ test('identifies legacy significant task types', () => {
   assert.equal(isLegacySignificantTaskType('EVENT.CREATE_DRAFT'), true)
   assert.equal(isLegacySignificantTaskType('client.search'), false)
 })
-

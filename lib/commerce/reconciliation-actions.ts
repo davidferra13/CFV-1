@@ -233,7 +233,9 @@ export async function generateDailyReconciliation(input: GenerateReportInput = {
 
   const { data: sessions } = await (supabase
     .from('register_sessions' as any)
-    .select('opening_cash_cents, closing_cash_cents, expected_cash_cents, cash_variance_cents, closed_at')
+    .select(
+      'opening_cash_cents, closing_cash_cents, expected_cash_cents, cash_variance_cents, closed_at'
+    )
     .eq('tenant_id', tenantId)
     .eq('status', 'closed')
     .gte('closed_at', fromIso)

@@ -7,9 +7,6 @@ export function isTaxableTaxClass(taxClass: TaxClass | null | undefined): boolea
   return !NON_TAXABLE_CLASSES.has(resolved)
 }
 
-export function hasTaxableItems(
-  items: Array<{ taxClass?: TaxClass | null | undefined }>
-): boolean {
+export function hasTaxableItems(items: Array<{ taxClass?: TaxClass | null | undefined }>): boolean {
   return items.some((item) => isTaxableTaxClass(item.taxClass))
 }
-

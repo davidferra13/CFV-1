@@ -31,14 +31,14 @@ export function isPosManagerRole(input: {
   role: string | null | undefined
   managerRoles: Set<string>
 }): boolean {
-  const normalizedRole = String(input.role ?? '').trim().toLowerCase()
+  const normalizedRole = String(input.role ?? '')
+    .trim()
+    .toLowerCase()
   if (!normalizedRole) return false
   return input.managerRoles.has(normalizedRole)
 }
 
-export function getTaxClassRateMultiplier(
-  taxClass: TaxClass | string | null | undefined
-): number {
+export function getTaxClassRateMultiplier(taxClass: TaxClass | string | null | undefined): number {
   const resolved = (taxClass ?? 'standard') as TaxClass
   return TAX_CLASS_MULTIPLIERS[resolved] ?? 1
 }

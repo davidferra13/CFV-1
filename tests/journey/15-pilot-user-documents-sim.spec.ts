@@ -8,6 +8,8 @@
 import { test, expect } from '../helpers/fixtures'
 
 test.describe('Pilot Simulation — Documents Readiness', () => {
+  test.describe.configure({ timeout: 180_000 })
+
   test('simulated pilot user can complete event documents workflow end-to-end', async ({
     page,
     seedIds,
@@ -47,7 +49,9 @@ test.describe('Pilot Simulation — Documents Readiness', () => {
         ;(summary.checks as unknown[]).push('primary_generation_action_clicked')
 
         const lastRunLocator = page.getByText(/Last run:/i).first()
-        const lastRunVisible = await lastRunLocator.isVisible({ timeout: 15_000 }).catch(() => false)
+        const lastRunVisible = await lastRunLocator
+          .isVisible({ timeout: 15_000 })
+          .catch(() => false)
         summary['primaryActionLastRunVisible'] = lastRunVisible
 
         if (lastRunVisible) {
@@ -86,7 +90,9 @@ test.describe('Pilot Simulation — Documents Readiness', () => {
       summary['bulkTotal'] = bulkJson.total ?? null
       summary['bulkFailed'] = bulkJson.failed ?? null
 
-      const exportResp = await page.request.get(`/api/documents/snapshots/export?eventId=${eventId}`)
+      const exportResp = await page.request.get(
+        `/api/documents/snapshots/export?eventId=${eventId}`
+      )
       expect(exportResp.ok()).toBeTruthy()
       expect((exportResp.headers()['content-type'] ?? '').toLowerCase()).toContain('text/csv')
       summary['archiveExportStatus'] = exportResp.status()

@@ -171,7 +171,10 @@ async function loginAndSaveState(
     } catch (err) {
       const msg = String(err)
       const isRetryable =
-        msg.includes('ECONNRESET') || msg.includes('Timeout') || msg.includes('timeout') || msg.includes('disposed')
+        msg.includes('ECONNRESET') ||
+        msg.includes('Timeout') ||
+        msg.includes('timeout') ||
+        msg.includes('disposed')
       if (!isRetryable || attempt === maxRetries) throw err
       console.log(
         `[globalSetup] ${label} attempt ${attempt}/${maxRetries} failed (retryable). Waiting 8s...`
@@ -186,7 +189,9 @@ export default async function globalSetup(config: FullConfig) {
   mkdirSync('.auth', { recursive: true })
 
   if (!needsAuthBootstrap(config)) {
-    console.log('[globalSetup] Public-only project selection detected. Skipping seed/auth bootstrap.\n')
+    console.log(
+      '[globalSetup] Public-only project selection detected. Skipping seed/auth bootstrap.\n'
+    )
     return
   }
 

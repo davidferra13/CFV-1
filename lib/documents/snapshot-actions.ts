@@ -592,7 +592,10 @@ export async function getTenantDocumentSnapshotDrilldown(
       .range(fallbackFrom, fallbackTo)
 
     if (fallbackError) {
-      console.error('[getTenantDocumentSnapshotDrilldown] Fallback page query error:', fallbackError)
+      console.error(
+        '[getTenantDocumentSnapshotDrilldown] Fallback page query error:',
+        fallbackError
+      )
     } else {
       items = (fallbackRows ?? []).map(mapTenantDocumentSnapshot)
     }

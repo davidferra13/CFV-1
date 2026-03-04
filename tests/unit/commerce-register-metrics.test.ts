@@ -53,4 +53,3 @@ describe('computeRegisterSessionTotals', () => {
     assert.equal(totals.totalTipsCents, 0)
   })
 })
-

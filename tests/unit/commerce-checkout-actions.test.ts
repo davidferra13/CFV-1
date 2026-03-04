@@ -235,7 +235,10 @@ test('counterCheckout voids sale when register closes during checkout', async ()
       if (ctx.table === 'register_sessions' && ctx.action === 'select') {
         registerChecks += 1
         return {
-          data: registerChecks === 1 ? { id: 'rs-1', status: 'open' } : { id: 'rs-1', status: 'closed' },
+          data:
+            registerChecks === 1
+              ? { id: 'rs-1', status: 'open' }
+              : { id: 'rs-1', status: 'closed' },
           error: null,
         }
       }
@@ -572,7 +575,11 @@ test('counterCheckout returns success even when register sync and audit logging 
       if (ctx.table === 'commerce_payments' && ctx.action === 'insert') {
         return { data: { id: 'pay-3' }, error: null }
       }
-      if (ctx.table === 'commerce_payments' && ctx.action === 'select' && getFilter(ctx, 'in', 'sale_id')) {
+      if (
+        ctx.table === 'commerce_payments' &&
+        ctx.action === 'select' &&
+        getFilter(ctx, 'in', 'sale_id')
+      ) {
         return {
           data: [{ sale_id: 'sale-3', amount_cents: 550, tip_cents: 0, status: 'captured' }],
           error: null,

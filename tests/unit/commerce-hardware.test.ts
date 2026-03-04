@@ -1,9 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import {
-  getPosHardwareStack,
-  resolvePosHardwareCapabilities,
-} from '@/lib/commerce/hardware'
+import { getPosHardwareStack, resolvePosHardwareCapabilities } from '@/lib/commerce/hardware'
 
 describe('commerce hardware abstraction', () => {
   it('resolves explicit capability overrides', () => {
@@ -51,4 +48,3 @@ describe('commerce hardware abstraction', () => {
     assert.equal(drawerResult.error, 'cash_drawer_disabled')
   })
 })
-

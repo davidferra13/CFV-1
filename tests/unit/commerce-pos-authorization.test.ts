@@ -72,7 +72,10 @@ describe('commerce pos authorization', () => {
   })
 
   it('checks level hierarchy correctly', () => {
-    assert.equal(canPosAccessLevelSatisfy({ actorLevel: 'manager', requiredLevel: 'cashier' }), true)
+    assert.equal(
+      canPosAccessLevelSatisfy({ actorLevel: 'manager', requiredLevel: 'cashier' }),
+      true
+    )
     assert.equal(canPosAccessLevelSatisfy({ actorLevel: 'lead', requiredLevel: 'cashier' }), true)
     assert.equal(canPosAccessLevelSatisfy({ actorLevel: 'cashier', requiredLevel: 'lead' }), false)
     assert.equal(canPosAccessLevelSatisfy({ actorLevel: null, requiredLevel: 'cashier' }), false)

@@ -1,9 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import {
-  getPaymentTerminalAdapter,
-  resolveTerminalProvider,
-} from '@/lib/commerce/terminal'
+import { getPaymentTerminalAdapter, resolveTerminalProvider } from '@/lib/commerce/terminal'
 
 describe('commerce terminal adapter', () => {
   it('resolves supported providers', () => {

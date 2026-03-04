@@ -38,11 +38,7 @@ class SupabaseQueryBuilder implements PromiseLike<QueryResult> {
   private payload: unknown = null
   private filters: QueryFilter[] = []
 
-  constructor(
-    table: string,
-    resolve: (ctx: QueryContext) => QueryResult,
-    tracker: Tracker
-  ) {
+  constructor(table: string, resolve: (ctx: QueryContext) => QueryResult, tracker: Tracker) {
     this.table = table
     this.resolve = resolve
     this.tracker = tracker

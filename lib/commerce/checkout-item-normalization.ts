@@ -108,7 +108,9 @@ export function resolveCatalogModifierSelections(input: {
     if (!modifierLabel) continue
 
     const optionLookup = new Map<string, { label: string; delta: number }>()
-    for (const option of Array.isArray((modifier as any)?.options) ? (modifier as any).options : []) {
+    for (const option of Array.isArray((modifier as any)?.options)
+      ? (modifier as any).options
+      : []) {
       const optionLabel = asTrimmedString((option as any)?.label)
       const optionDelta = asInteger((option as any)?.price_delta_cents)
       if (!optionLabel || optionDelta == null) continue

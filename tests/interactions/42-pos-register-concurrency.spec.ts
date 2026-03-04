@@ -9,7 +9,9 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 function getAdminClient() {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY for concurrency test')
+    throw new Error(
+      'Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY for concurrency test'
+    )
   }
   return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -123,7 +125,9 @@ test.describe('POS Register Concurrency', () => {
       await expect(pageB.getByRole('button', { name: 'Open Register' })).toBeVisible()
 
       await Promise.all([openRegister(pageA), openRegister(pageB)])
-      await expect.poll(async () => getActiveSessionCount(seedIds.chefId), { timeout: 45_000 }).toBe(1)
+      await expect
+        .poll(async () => getActiveSessionCount(seedIds.chefId), { timeout: 45_000 })
+        .toBe(1)
 
       await Promise.all([pageA.reload(), pageB.reload()])
       await expect(pageA.getByText('Register Open')).toBeVisible()

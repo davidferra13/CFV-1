@@ -227,4 +227,3 @@ test.describe('Client Portal - Additional Route Coverage', () => {
     expect(response?.status() ?? 0).toBeLessThan(500)
   })
 })
-

@@ -8,10 +8,7 @@
 import { test, expect } from '../helpers/fixtures'
 import { readFileSync } from 'fs'
 
-async function gotoAdminPage(
-  page: Parameters<Parameters<typeof test>[1]>[0]['page'],
-  url: string
-) {
+async function gotoAdminPage(page: Parameters<Parameters<typeof test>[1]>[0]['page'], url: string) {
   let lastResponse: Awaited<ReturnType<typeof page.goto>> = null
   for (let attempt = 1; attempt <= 2; attempt += 1) {
     try {
@@ -168,4 +165,3 @@ test.describe('Admin - Experience & Directory', () => {
     await assertAdminPageLoads(page, '/admin/directory')
   })
 })
-

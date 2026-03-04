@@ -51,11 +51,18 @@ export function computePosDailyMetricSnapshot(input: PosDailyMetricInput): PosDa
   const sessions = Array.isArray(input.sessions) ? input.sessions : []
   const alerts = Array.isArray(input.alerts) ? input.alerts : []
 
-  const paidSales = sales.filter((sale) => VALID_SALE_STATUSES.has(String(sale.status ?? '').toLowerCase()))
+  const paidSales = sales.filter((sale) =>
+    VALID_SALE_STATUSES.has(String(sale.status ?? '').toLowerCase())
+  )
   const grossRevenueCents = paidSales.reduce((sum, sale) => sum + (sale.total_cents ?? 0), 0)
   const refundsCents = refunds.reduce((sum, refund) => sum + (refund.amount_cents ?? 0), 0)
-  const voidedSalesCount = sales.filter((sale) => String(sale.status ?? '').toLowerCase() === 'voided').length
-  const cashVarianceCents = sessions.reduce((sum, session) => sum + (session.cash_variance_cents ?? 0), 0)
+  const voidedSalesCount = sales.filter(
+    (sale) => String(sale.status ?? '').toLowerCase() === 'voided'
+  ).length
+  const cashVarianceCents = sessions.reduce(
+    (sum, session) => sum + (session.cash_variance_cents ?? 0),
+    0
+  )
 
   let openAlertCount = 0
   let errorAlertCount = 0
@@ -80,4 +87,3 @@ export function computePosDailyMetricSnapshot(input: PosDailyMetricInput): PosDa
     warningAlertCount,
   }
 }
-

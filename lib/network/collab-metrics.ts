@@ -43,7 +43,9 @@ function pct(numerator: number, denominator: number): number | null {
 export function computeCollabMetrics(input: CollabMetricsInput): CollabMetrics {
   const outgoing_open = input.outgoingHandoffs.filter((row) => row.status === 'open').length
   const outgoing_closed = input.outgoingHandoffs.filter((row) => row.status === 'closed').length
-  const outgoing_cancelled = input.outgoingHandoffs.filter((row) => row.status === 'cancelled').length
+  const outgoing_cancelled = input.outgoingHandoffs.filter(
+    (row) => row.status === 'cancelled'
+  ).length
 
   const accepted = input.outgoingRecipients.filter((row) => row.status === 'accepted').length
   const rejected = input.outgoingRecipients.filter((row) => row.status === 'rejected').length
@@ -52,7 +54,9 @@ export function computeCollabMetrics(input: CollabMetricsInput): CollabMetrics {
   const positive = accepted + converted
 
   const firstResponseHours: number[] = []
-  const handoffCreatedAt = new Map(input.outgoingHandoffs.map((handoff) => [handoff.id, handoff.created_at]))
+  const handoffCreatedAt = new Map(
+    input.outgoingHandoffs.map((handoff) => [handoff.id, handoff.created_at])
+  )
   const earliestResponseByHandoff = new Map<string, string>()
   for (const row of input.outgoingRecipients) {
     if (!row.responded_at) continue
@@ -73,12 +77,15 @@ export function computeCollabMetrics(input: CollabMetricsInput): CollabMetrics {
 
   const avg_first_response_hours =
     firstResponseHours.length > 0
-      ? Math.round((firstResponseHours.reduce((sum, value) => sum + value, 0) / firstResponseHours.length) * 10) / 10
+      ? Math.round(
+          (firstResponseHours.reduce((sum, value) => sum + value, 0) / firstResponseHours.length) *
+            10
+        ) / 10
       : null
 
   const incoming_unread = input.incomingRecipients.filter((row) => row.status === 'sent').length
-  const incoming_actionable = input.incomingRecipients.filter((row) =>
-    row.status === 'sent' || row.status === 'viewed'
+  const incoming_actionable = input.incomingRecipients.filter(
+    (row) => row.status === 'sent' || row.status === 'viewed'
   ).length
 
   return {

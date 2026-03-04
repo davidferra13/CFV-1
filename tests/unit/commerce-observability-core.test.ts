@@ -39,4 +39,3 @@ test('normalizePosAlertSeverity and status fallback safely', () => {
   assert.equal(normalizePosAlertStatus('resolved'), 'resolved')
   assert.equal(normalizePosAlertStatus('weird'), 'open')
 })
-

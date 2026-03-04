@@ -15,12 +15,7 @@ import type {
   OpenDiningCheckWithTable,
 } from './table-service-types'
 
-const DINING_TABLE_STATUSES = [
-  'available',
-  'seated',
-  'reserved',
-  'out_of_service',
-] as const
+const DINING_TABLE_STATUSES = ['available', 'seated', 'reserved', 'out_of_service'] as const
 
 const DINING_CHECK_STATUSES = ['open', 'closed', 'voided'] as const
 
@@ -143,7 +138,8 @@ export async function listDiningLayout(): Promise<DiningLayoutZone[]> {
 
   if (zonesRes.error) throw new Error(`Failed to load dining zones: ${zonesRes.error.message}`)
   if (tablesRes.error) throw new Error(`Failed to load dining tables: ${tablesRes.error.message}`)
-  if (checksRes.error) throw new Error(`Failed to load open dining checks: ${checksRes.error.message}`)
+  if (checksRes.error)
+    throw new Error(`Failed to load open dining checks: ${checksRes.error.message}`)
 
   const checksByTableId = new Map<string, { id: string; guestName: string | null }>()
   for (const row of checksRes.data ?? []) {
@@ -308,10 +304,7 @@ export async function createDiningTable(input: {
   revalidatePath('/commerce/table-service')
 }
 
-export async function setDiningTableStatus(input: {
-  tableId: string
-  status: DiningTableStatus
-}) {
+export async function setDiningTableStatus(input: { tableId: string; status: DiningTableStatus }) {
   const user = await requireChef()
   await requirePro('commerce')
   const supabase: any = createServerClient()

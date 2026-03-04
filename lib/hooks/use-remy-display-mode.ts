@@ -79,8 +79,7 @@ export function useRemyDisplayMode({
     [isMobile, mobileDefault, storageKey]
   )
 
-  const effectiveMode: RemyDisplayMode =
-    isMobile && mobileDefault === 'hidden' ? 'hidden' : mode
+  const effectiveMode: RemyDisplayMode = isMobile && mobileDefault === 'hidden' ? 'hidden' : mode
 
   return {
     mode: effectiveMode,

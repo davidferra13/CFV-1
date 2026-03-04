@@ -45,16 +45,14 @@ export function hasCollabHandoffExpired(
 
 export function scoreCollabRecipientSuggestion(input: {
   trustLevel: CollabTrustLevel | null
-  signal:
-    | {
-        date_start: string
-        date_end: string
-        region_text: string | null
-        cuisines: string[]
-        max_guest_count: number | null
-        status: CollabAvailabilityStatus
-      }
-    | null
+  signal: {
+    date_start: string
+    date_end: string
+    region_text: string | null
+    cuisines: string[]
+    max_guest_count: number | null
+    status: CollabAvailabilityStatus
+  } | null
   eventDate: string | null
   guestCount: number | null
   locationText: string | null
@@ -117,7 +115,9 @@ export function scoreCollabRecipientSuggestion(input: {
   const wantedCuisineSet = toCuisineSet(input.cuisines)
   if (wantedCuisineSet.size > 0) {
     const availableCuisineSet = toCuisineSet(signal.cuisines)
-    const overlap = Array.from(wantedCuisineSet).filter((cuisine) => availableCuisineSet.has(cuisine))
+    const overlap = Array.from(wantedCuisineSet).filter((cuisine) =>
+      availableCuisineSet.has(cuisine)
+    )
     if (overlap.length > 0) {
       score += Math.min(12, overlap.length * 4)
       reasons.push(`Cuisine overlap: ${overlap.join(', ')}`)

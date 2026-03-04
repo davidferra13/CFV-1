@@ -132,10 +132,7 @@ export function scoreInquiryFields(fields: {
 
 // ─── Internal Mapping ───────────────────────────────────────────────────
 
-function resolveDatePlaceholder(
-  value: string | null,
-  observedAt?: string | null
-): string | null {
+function resolveDatePlaceholder(value: string | null, observedAt?: string | null): string | null {
   if (!value) return null
 
   // Already concrete date/time.

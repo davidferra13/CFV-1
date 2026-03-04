@@ -32,4 +32,3 @@ export interface PaymentTerminalAdapter {
   healthCheck(): Promise<TerminalHealth>
   beginCardPayment(input: TerminalPaymentRequest): Promise<TerminalPaymentResult>
 }
-

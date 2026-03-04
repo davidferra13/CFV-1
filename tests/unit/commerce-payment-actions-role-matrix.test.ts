@@ -116,7 +116,10 @@ function createMockSupabase(resolve: (ctx: QueryContext) => QueryResult, tracker
   }
 }
 
-function loadPaymentActionsWithMocks(resolve: (ctx: QueryContext) => QueryResult, tracker: Tracker) {
+function loadPaymentActionsWithMocks(
+  resolve: (ctx: QueryContext) => QueryResult,
+  tracker: Tracker
+) {
   const react = require('react')
   react.cache = react.cache || ((fn: unknown) => fn)
 
@@ -139,7 +142,11 @@ function loadPaymentActionsWithMocks(resolve: (ctx: QueryContext) => QueryResult
   const supabase = createMockSupabase(resolve, tracker)
 
   require.cache[authPath]!.exports = {
-    requireChef: async () => ({ tenantId: 'tenant-1', id: 'auth-user-1', email: 'chef@example.com' }),
+    requireChef: async () => ({
+      tenantId: 'tenant-1',
+      id: 'auth-user-1',
+      email: 'chef@example.com',
+    }),
   }
   require.cache[proPath]!.exports = { requirePro: async () => undefined }
   require.cache[supabasePath]!.exports = { createServerClient: () => supabase }
@@ -164,15 +171,12 @@ test('recordPayment blocks when POS role matrix is enabled and actor lacks cashi
   const previousRoleMatrix = process.env.POS_ENFORCE_ROLE_MATRIX
   process.env.POS_ENFORCE_ROLE_MATRIX = 'true'
 
-  const { actions, restore } = loadPaymentActionsWithMocks(
-    (ctx) => {
-      if (ctx.table === 'chef_team_members' && ctx.action === 'select') {
-        return { data: { role: 'guest' }, error: null }
-      }
-      throw new Error(`Unexpected query: ${ctx.table} ${ctx.action}`)
-    },
-    tracker
-  )
+  const { actions, restore } = loadPaymentActionsWithMocks((ctx) => {
+    if (ctx.table === 'chef_team_members' && ctx.action === 'select') {
+      return { data: { role: 'guest' }, error: null }
+    }
+    throw new Error(`Unexpected query: ${ctx.table} ${ctx.action}`)
+  }, tracker)
 
   try {
     await assert.rejects(
@@ -205,15 +209,12 @@ test('updatePaymentStatus blocks when POS role matrix is enabled and actor lacks
   const previousRoleMatrix = process.env.POS_ENFORCE_ROLE_MATRIX
   process.env.POS_ENFORCE_ROLE_MATRIX = 'true'
 
-  const { actions, restore } = loadPaymentActionsWithMocks(
-    (ctx) => {
-      if (ctx.table === 'chef_team_members' && ctx.action === 'select') {
-        return { data: { role: 'cashier' }, error: null }
-      }
-      throw new Error(`Unexpected query: ${ctx.table} ${ctx.action}`)
-    },
-    tracker
-  )
+  const { actions, restore } = loadPaymentActionsWithMocks((ctx) => {
+    if (ctx.table === 'chef_team_members' && ctx.action === 'select') {
+      return { data: { role: 'cashier' }, error: null }
+    }
+    throw new Error(`Unexpected query: ${ctx.table} ${ctx.action}`)
+  }, tracker)
 
   try {
     await assert.rejects(

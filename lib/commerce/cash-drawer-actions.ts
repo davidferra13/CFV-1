@@ -5,7 +5,11 @@ import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { appendPosAuditLog } from './pos-audit-log'
-import { assertPosManagerAccess, assertPosRoleAccess, type PosAccessLevel } from './pos-authorization'
+import {
+  assertPosManagerAccess,
+  assertPosRoleAccess,
+  type PosAccessLevel,
+} from './pos-authorization'
 
 export type CashDrawerMovementType =
   | 'sale_payment'
@@ -157,10 +161,7 @@ async function insertMovement(input: {
   const user = await requireChef()
   await requirePro('commerce')
 
-  if (
-    !Number.isInteger(input.amountCents) ||
-    (input.amountCents === 0 && !input.allowZeroAmount)
-  ) {
+  if (!Number.isInteger(input.amountCents) || (input.amountCents === 0 && !input.allowZeroAmount)) {
     throw new Error('Amount must be a non-zero integer (cents)')
   }
 
@@ -271,10 +272,7 @@ export async function recordCashAdjustment(input: {
   })
 }
 
-export async function recordCashNoSaleOpen(input: {
-  registerSessionId: string
-  notes: string
-}) {
+export async function recordCashNoSaleOpen(input: { registerSessionId: string; notes: string }) {
   const normalizedNotes = input.notes.trim()
   if (!normalizedNotes) {
     throw new Error('Notes are required for a no-sale drawer open')

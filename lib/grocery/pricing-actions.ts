@@ -365,12 +365,15 @@ async function getMealMePrice(name: string, zipCode: string | null): Promise<num
   }
 }
 
-function getLiveDraftCacheKey(item: {
-  name: string
-  quantity: number
-  unit: string
-  category: string | null
-}, zipCode: string | null): string {
+function getLiveDraftCacheKey(
+  item: {
+    name: string
+    quantity: number
+    unit: string
+    category: string | null
+  },
+  zipCode: string | null
+): string {
   return [
     zipCode ?? '',
     item.name.trim().toLowerCase(),

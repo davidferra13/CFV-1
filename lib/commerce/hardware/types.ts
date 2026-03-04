@@ -38,4 +38,3 @@ export type PosHardwareStack = {
   printer: ReceiptPrinterAdapter
   cashDrawer: CashDrawerAdapter
 }
-

@@ -28,4 +28,3 @@ export async function appendPosAuditLog(input: PosAuditInput) {
     console.error('[pos-audit] failed to append audit row:', error.message)
   }
 }
-

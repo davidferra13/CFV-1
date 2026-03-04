@@ -114,7 +114,7 @@ function addHours(time: string, hours: number): string | null {
   const m = Number.parseInt(match[2], 10)
   const s = Number.parseInt(match[3], 10)
   if ([h, m, s].some((n) => !Number.isFinite(n))) return null
-  const total = ((h + hours) % 24 + 24) % 24
+  const total = (((h + hours) % 24) + 24) % 24
   return `${String(total).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
@@ -195,8 +195,7 @@ function extractCourseOptions(conversation: string): string[] {
     const block = blockMatch[1]
     if (!block) continue
 
-    const optionRegex =
-      /([A-Z][A-Za-z0-9&'’\- ]{3,90}?)(?=\s+with\b|\s+filled with\b|$)/g
+    const optionRegex = /([A-Z][A-Za-z0-9&'’\- ]{3,90}?)(?=\s+with\b|\s+filled with\b|$)/g
     let optionMatch: RegExpExecArray | null = null
     while ((optionMatch = optionRegex.exec(block)) !== null) {
       const candidate = normalizeWhitespace(optionMatch[1])
@@ -251,8 +250,14 @@ export function inferEventTimesFromConversation(conversationText: string): {
   const conversation = normalizeWhitespace(conversationText)
 
   const explicitServe =
-    parseTimeFromPhrase(conversation, /\b(?:eat|dinner)\s+(?:around|at)\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\b/i) ??
-    parseTimeFromPhrase(conversation, /\bserve(?:\s+time)?\s+(?:around|at)\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\b/i)
+    parseTimeFromPhrase(
+      conversation,
+      /\b(?:eat|dinner)\s+(?:around|at)\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\b/i
+    ) ??
+    parseTimeFromPhrase(
+      conversation,
+      /\bserve(?:\s+time)?\s+(?:around|at)\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\b/i
+    )
 
   const explicitArrival = parseTimeFromPhrase(
     conversation,
@@ -352,4 +357,3 @@ export function buildAutoMenuCourseNamesFromConversation(conversationText: strin
 
   return padded.slice(0, 5)
 }
-

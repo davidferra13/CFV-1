@@ -780,13 +780,11 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
       tenantId: user.tenantId!,
     })
 
-    let best:
-      | {
-          promotion: PromotionRule
-          totalDiscountCents: number
-          lineDiscounts: Record<string, number>
-        }
-      | null = null
+    let best: {
+      promotion: PromotionRule
+      totalDiscountCents: number
+      lineDiscounts: Record<string, number>
+    } | null = null
 
     for (const promotion of autoPromotions) {
       const evaluation = evaluatePromotionForLines({
@@ -828,7 +826,10 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
 
   const itemRows = normalizedItems.map((item, i) => {
     const line = lineComputations[i]
-    const discountCents = Math.max(0, Math.min(line.lineSubtotalCents, lineDiscountsByKey[line.key] ?? 0))
+    const discountCents = Math.max(
+      0,
+      Math.min(line.lineSubtotalCents, lineDiscountsByKey[line.key] ?? 0)
+    )
     const lineTotalCents = line.lineSubtotalCents - discountCents
 
     return {

@@ -14,18 +14,14 @@ function normalizeProviderName(value: string | null | undefined) {
   return (value ?? '').toString().trim().toLowerCase()
 }
 
-export function resolveTerminalProvider(
-  provider?: string | null
-): TerminalProvider {
+export function resolveTerminalProvider(provider?: string | null): TerminalProvider {
   const normalized = normalizeProviderName(provider ?? process.env.POS_TERMINAL_PROVIDER ?? 'mock')
 
   if (normalized === 'stripe_terminal') return 'stripe_terminal'
   return 'mock'
 }
 
-export function getPaymentTerminalAdapter(
-  provider?: string | null
-): PaymentTerminalAdapter {
+export function getPaymentTerminalAdapter(provider?: string | null): PaymentTerminalAdapter {
   const rawProvider = provider ?? process.env.POS_TERMINAL_PROVIDER ?? 'mock'
   const normalizedProvider = normalizeProviderName(rawProvider)
   const resolved = resolveTerminalProvider(rawProvider)

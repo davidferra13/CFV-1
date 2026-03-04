@@ -105,8 +105,7 @@ function inferComponentCategoryFromDishName(
   if (/\b(steak|beef|ribeye|lobster|fish|haddock|chicken|duck|pork|shrimp|protein)\b/.test(value))
     return 'protein'
   if (/\b(potato|rice|grain|pasta|starch)\b/.test(value)) return 'starch'
-  if (/\b(salad|vegetable|veggie|squash|broccoli|tomato|pickle)\b/.test(value))
-    return 'vegetable'
+  if (/\b(salad|vegetable|veggie|squash|broccoli|tomato|pickle)\b/.test(value)) return 'vegetable'
   if (/\b(berry|fruit|peach|apple|pear|citrus)\b/.test(value)) return 'fruit'
   if (/\b(cake|mousse|dessert|cheesecake|tart|custard|gelato)\b/.test(value)) return 'dessert'
   if (/\b(garnish|herb)\b/.test(value)) return 'garnish'
@@ -778,13 +777,19 @@ export async function convertInquiryToEvent(inquiryId: string) {
     .filter((chunk: string | null | undefined) => Boolean(chunk && chunk.trim().length > 0))
     .join('\n\n')
 
-  const resolvedEventDate = resolveInquiryDateForEvent(inquiry.confirmed_date, inquiry.first_contact_at)
+  const resolvedEventDate = resolveInquiryDateForEvent(
+    inquiry.confirmed_date,
+    inquiry.first_contact_at
+  )
   if (!resolvedEventDate) {
     throw new ValidationError('Confirmed date could not be resolved to a calendar day')
   }
 
   const { serveTime, arrivalTime } = inferEventTimesFromConversation(conversationText)
-  const parsedLocation = parseCityStateFromConversation(inquiry.confirmed_location, conversationText)
+  const parsedLocation = parseCityStateFromConversation(
+    inquiry.confirmed_location,
+    conversationText
+  )
 
   // Check for accepted quote on this inquiry — use its pricing if available
   const { data: acceptedQuote } = await supabase
@@ -798,7 +803,8 @@ export async function convertInquiryToEvent(inquiryId: string) {
     .single()
 
   // Pricing: accepted quote wins over inquiry budget
-  const quotedPriceCents = acceptedQuote?.total_quoted_cents ?? inquiry.confirmed_budget_cents ?? null
+  const quotedPriceCents =
+    acceptedQuote?.total_quoted_cents ?? inquiry.confirmed_budget_cents ?? null
   const depositAmountCents = acceptedQuote?.deposit_amount_cents ?? null
   const pricingModel = acceptedQuote?.pricing_model ?? null
 
@@ -935,7 +941,9 @@ export async function convertInquiryToEvent(inquiryId: string) {
 
     if (dishError || !insertedDishes || insertedDishes.length === 0) {
       console.error('[convertInquiryToEvent] Dish scaffold creation error:', dishError)
-      throw new UnknownAppError(`Failed to scaffold dishes: ${dishError?.message || 'Unknown error'}`)
+      throw new UnknownAppError(
+        `Failed to scaffold dishes: ${dishError?.message || 'Unknown error'}`
+      )
     }
 
     const componentPayload = insertedDishes.map(
@@ -947,7 +955,8 @@ export async function convertInquiryToEvent(inquiryId: string) {
           name: label,
           category: inferComponentCategoryFromDishName(label),
           is_make_ahead: true,
-          execution_notes: 'Auto-generated from inquiry conversation. Confirm final execution details.',
+          execution_notes:
+            'Auto-generated from inquiry conversation. Confirm final execution details.',
           storage_notes: 'Review storage and transport before service.',
           sort_order: 1,
           created_by: user.id,

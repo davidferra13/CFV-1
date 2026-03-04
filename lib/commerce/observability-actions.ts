@@ -298,25 +298,23 @@ export async function captureDailyPosMetrics(input?: { date?: string }) {
     alerts: alertsRes.data ?? [],
   })
 
-  const { error } = await (supabase
-    .from('pos_metric_snapshots' as any)
-    .upsert(
-      {
-        tenant_id: user.tenantId!,
-        snapshot_date: day,
-        generated_at: new Date().toISOString(),
-        total_sales_count: snapshot.totalSalesCount,
-        gross_revenue_cents: snapshot.grossRevenueCents,
-        net_revenue_cents: snapshot.netRevenueCents,
-        refunds_cents: snapshot.refundsCents,
-        voided_sales_count: snapshot.voidedSalesCount,
-        cash_variance_cents: snapshot.cashVarianceCents,
-        open_alert_count: snapshot.openAlertCount,
-        error_alert_count: snapshot.errorAlertCount,
-        warning_alert_count: snapshot.warningAlertCount,
-      } as any,
-      { onConflict: 'tenant_id,snapshot_date' }
-    ) as any)
+  const { error } = await (supabase.from('pos_metric_snapshots' as any).upsert(
+    {
+      tenant_id: user.tenantId!,
+      snapshot_date: day,
+      generated_at: new Date().toISOString(),
+      total_sales_count: snapshot.totalSalesCount,
+      gross_revenue_cents: snapshot.grossRevenueCents,
+      net_revenue_cents: snapshot.netRevenueCents,
+      refunds_cents: snapshot.refundsCents,
+      voided_sales_count: snapshot.voidedSalesCount,
+      cash_variance_cents: snapshot.cashVarianceCents,
+      open_alert_count: snapshot.openAlertCount,
+      error_alert_count: snapshot.errorAlertCount,
+      warning_alert_count: snapshot.warningAlertCount,
+    } as any,
+    { onConflict: 'tenant_id,snapshot_date' }
+  ) as any)
 
   if (error) throw new Error(`Failed to capture POS metrics: ${error.message}`)
   revalidatePath('/commerce/observability')
@@ -327,9 +325,9 @@ export async function captureDailyPosMetrics(input?: { date?: string }) {
   }
 }
 
-export async function listPosMetricSnapshots(
-  input?: { limit?: number }
-): Promise<PosMetricSnapshotRow[]> {
+export async function listPosMetricSnapshots(input?: {
+  limit?: number
+}): Promise<PosMetricSnapshotRow[]> {
   const user = await requireChef()
   await requirePro('commerce')
   const supabase: any = createServerClient()

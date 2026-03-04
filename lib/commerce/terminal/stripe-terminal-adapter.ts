@@ -108,7 +108,8 @@ export class StripeTerminalAdapter implements PaymentTerminalAdapter {
           message: `Stripe reader ${readerLabel} is deleted`,
         }
       }
-      const status = 'status' in reader ? String(reader.status ?? 'unknown').toLowerCase() : 'unknown'
+      const status =
+        'status' in reader ? String(reader.status ?? 'unknown').toLowerCase() : 'unknown'
       if (status !== 'online') {
         return {
           provider: this.provider,

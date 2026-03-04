@@ -11,4 +11,3 @@ export function buildCheckoutPaymentIdempotencyKey(tenantId: string, requestKey?
   const normalized = safe || fallback.replace(/[^a-zA-Z0-9:_-]/g, '')
   return `checkout_${tenantId}_${normalized}`
 }
-

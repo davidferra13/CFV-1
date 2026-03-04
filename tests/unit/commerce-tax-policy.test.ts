@@ -15,7 +15,11 @@ describe('commerce tax policy', () => {
 
   it('detects taxable items in mixed carts', () => {
     assert.equal(
-      hasTaxableItems([{ taxClass: 'exempt' }, { taxClass: 'prepared_food' }, { taxClass: 'zero' }]),
+      hasTaxableItems([
+        { taxClass: 'exempt' },
+        { taxClass: 'prepared_food' },
+        { taxClass: 'zero' },
+      ]),
       true
     )
   })
@@ -24,4 +28,3 @@ describe('commerce tax policy', () => {
     assert.equal(hasTaxableItems([{ taxClass: 'exempt' }, { taxClass: 'zero' }]), false)
   })
 })
-

@@ -246,7 +246,10 @@ test('openRegister enforces lead role when POS role matrix is enabled', async ()
   )
 
   try {
-    await assert.rejects(async () => actions.openRegister({ openingCashCents: 500 }), /Lead role required/i)
+    await assert.rejects(
+      async () => actions.openRegister({ openingCashCents: 500 }),
+      /Lead role required/i
+    )
     const insertCalls = tracker.queries.filter(
       (query) => query.table === 'register_sessions' && query.action === 'insert'
     )

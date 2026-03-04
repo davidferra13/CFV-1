@@ -44,4 +44,3 @@ export function getPosHardwareStack(
 
 export type { PosHardwareCapabilities, PosHardwareStack } from './types'
 export type { BarcodeScanResult } from './types'
-
