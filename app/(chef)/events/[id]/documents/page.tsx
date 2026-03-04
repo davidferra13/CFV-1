@@ -4,19 +4,22 @@ import { format } from 'date-fns'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEventById } from '@/lib/events/actions'
 import { getBusinessDocInfo, getDocumentReadiness } from '@/lib/documents/actions'
+import { getEventFinancialSummaryFull } from '@/lib/events/financial-summary-actions'
 import { getChefArchetype } from '@/lib/archetypes/actions'
 import {
   getEventDocumentSnapshotDrilldown,
-  SNAPSHOT_DOCUMENT_LABELS,
   type SnapshotDocumentType,
   type SnapshotDrilldownOrder,
 } from '@/lib/documents/snapshot-actions'
+import { SNAPSHOT_DOCUMENT_LABELS } from '@/lib/documents/snapshot-constants'
 import { getArchetypeDocumentPack } from '@/lib/documents/archetype-packs'
 import {
   DOCUMENT_REQUEST_LABELS,
+  getEventDocumentBulkRunHistory,
   getEventDocumentGenerationHealth,
 } from '@/lib/documents/generation-jobs-actions'
 import type { OperationalDocumentType } from '@/lib/documents/template-catalog'
+import { BulkGenerateRunner } from '@/components/documents/bulk-generate-runner'
 import { DocumentSection } from '@/components/documents/document-section'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -54,10 +57,30 @@ const SNAPSHOT_TYPE_FILTERS: Array<{ value: SnapshotDocFilter; label: string }> 
   })),
 ]
 
+const CORE_PACKET_OPERATIONAL_TYPES: OperationalDocumentType[] = [
+  'summary',
+  'grocery',
+  'foh',
+  'prep',
+  'execution',
+  'checklist',
+  'packing',
+  'reset',
+]
+
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
+}
+
+function formatCurrency(cents: number | null | undefined): string {
+  const amount = Number(cents ?? 0) / 100
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+  }).format(amount)
 }
 
 function isOperationalTypeReady(type: OperationalDocumentType, readiness: any): boolean {
@@ -92,6 +115,16 @@ function normalizePage(value: string | undefined): number {
   const parsed = Number.parseInt(value, 10)
   if (!Number.isInteger(parsed) || parsed < 1) return 1
   return parsed
+}
+
+function isCorePacketOperationalType(type: OperationalDocumentType): boolean {
+  return CORE_PACKET_OPERATIONAL_TYPES.includes(type)
+}
+
+function buildOperationalDocWorkspaceHref(eventId: string, type: OperationalDocumentType): string {
+  if (type === 'travel') return `/events/${eventId}/travel`
+  if (type === 'packing') return `/events/${eventId}/pack`
+  return `/events/${eventId}/interactive?type=${type}`
 }
 
 function buildDrilldownHref(
@@ -169,23 +202,38 @@ export default async function EventDocumentsPage({
     page,
   }
 
-  const [event, readiness, businessDocs, archetype, drilldown, generationHealth] =
-    await Promise.all([
-      getEventById(params.id),
-      getDocumentReadiness(params.id),
-      getBusinessDocInfo(params.id).catch(() => null),
-      getChefArchetype(),
-      getEventDocumentSnapshotDrilldown(params.id, {
-        docType: docFilter === 'any' ? null : docFilter,
-        fromDate,
-        toDate,
-        versionNumber: versionFilter,
-        order,
-        page,
-        pageSize: 25,
-      }),
-      getEventDocumentGenerationHealth(params.id),
-    ])
+  const [
+    event,
+    readiness,
+    businessDocs,
+    archetype,
+    drilldown,
+    archiveBaseline,
+    generationHealth,
+    bulkRunHistory,
+    financialSummary,
+  ] = await Promise.all([
+    getEventById(params.id),
+    getDocumentReadiness(params.id),
+    getBusinessDocInfo(params.id).catch(() => null),
+    getChefArchetype(),
+    getEventDocumentSnapshotDrilldown(params.id, {
+      docType: docFilter === 'any' ? null : docFilter,
+      fromDate,
+      toDate,
+      versionNumber: versionFilter,
+      order,
+      page,
+      pageSize: 25,
+    }),
+    getEventDocumentSnapshotDrilldown(params.id, {
+      page: 1,
+      pageSize: 1,
+    }),
+    getEventDocumentGenerationHealth(params.id),
+    getEventDocumentBulkRunHistory(params.id),
+    getEventFinancialSummaryFull(params.id).catch(() => null),
+  ])
 
   if (!event) notFound()
 
@@ -198,6 +246,82 @@ export default async function EventDocumentsPage({
   const docVersionOptions = drilldown.versionOptions
   const nonEmptyTypeStats = drilldown.typeStats.filter((item) => item.count > 0)
   const generationTypeRows = generationHealth.byType.filter((row) => row.total > 0).slice(0, 8)
+  const exportParams = new URLSearchParams({ eventId: event.id })
+  if (docFilter !== 'any') exportParams.set('doc', docFilter)
+  if (fromDate) exportParams.set('from', fromDate)
+  if (toDate) exportParams.set('to', toDate)
+  if (order !== 'newest') exportParams.set('order', order)
+  if (versionQuery) exportParams.set('version', versionQuery)
+  const eventArchiveExportHref = `/api/documents/snapshots/export?${exportParams.toString()}`
+  const archiveStatsByType = new Map(
+    archiveBaseline.typeStats.map((item) => [item.documentType, item])
+  )
+  const packetSnapshotCount = archiveStatsByType.get('all')?.count ?? 0
+  const packetLatestSnapshot = archiveStatsByType.get('all')?.latest ?? null
+
+  const recommendedDocReadiness = pack.recommendedOperationalDocs.map((type) => {
+    const ready = isOperationalTypeReady(type, readiness)
+    const typeStat = archiveStatsByType.get(type)
+    const individualArchivedCount = typeStat?.count ?? 0
+    const coveredByPacket = isCorePacketOperationalType(type) && packetSnapshotCount > 0
+    const archived = individualArchivedCount > 0 || coveredByPacket
+    return {
+      type,
+      ready,
+      archived,
+      individualArchivedCount,
+      coveredByPacket,
+      latestSnapshotId:
+        individualArchivedCount > 0
+          ? (typeStat?.latest?.id ?? null)
+          : coveredByPacket
+            ? (packetLatestSnapshot?.id ?? null)
+            : null,
+    }
+  })
+
+  const readinessComplete = recommendedDocReadiness.every((row) => row.ready)
+  const archiveComplete = recommendedDocReadiness.every((row) => row.archived)
+  const readyRecommendedTypes = recommendedDocReadiness
+    .filter((row) => row.ready)
+    .map((row) => row.type)
+  const missingArchiveTypes = recommendedDocReadiness
+    .filter((row) => row.ready && !row.archived)
+    .map((row) => row.type)
+  const latestBulkFailedTypes =
+    bulkRunHistory[0]?.docs.filter((doc) => doc.status === 'failed').map((doc) => doc.type) ?? []
+  const historicalRetryRuns = bulkRunHistory
+    .filter((run) => run.failed > 0)
+    .slice(0, 4)
+    .map((run) => ({
+      runId: run.runId,
+      failedTypes: run.docs.filter((doc) => doc.status === 'failed').map((doc) => doc.type),
+      label: run.startedAt
+        ? format(new Date(run.startedAt), 'MMM d h:mm a')
+        : run.runId.slice(0, 8),
+    }))
+  const deliveryChecklist = [
+    {
+      label: 'Recommended docs have enough data to generate',
+      done: readinessComplete,
+      hint: `${recommendedDocReadiness.filter((row) => row.ready).length}/${recommendedDocReadiness.length} ready`,
+    },
+    {
+      label: 'Recommended docs are archived as versioned PDFs',
+      done: archiveComplete,
+      hint: `${recommendedDocReadiness.filter((row) => row.archived).length}/${recommendedDocReadiness.length} archived`,
+    },
+    {
+      label: 'Core packet snapshot exists (Print All)',
+      done: packetSnapshotCount > 0,
+      hint:
+        packetSnapshotCount > 0
+          ? `${packetSnapshotCount} packet snapshot${packetSnapshotCount === 1 ? '' : 's'}`
+          : 'No packet snapshot archived yet',
+    },
+  ]
+  const deliveryDoneCount = deliveryChecklist.filter((item) => item.done).length
+  const deliveryProgressPct = Math.round((deliveryDoneCount / deliveryChecklist.length) * 100)
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -292,6 +416,212 @@ export default async function EventDocumentsPage({
         )}
       </Card>
 
+      <Card className="p-6">
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-semibold">Delivery Readiness</h2>
+            <p className="text-sm text-stone-400 mt-1">
+              Final checklist for this event packet so nothing gets missed before service.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-stone-500">Progress</span>
+            <span
+              className={`text-sm font-semibold ${deliveryProgressPct === 100 ? 'text-emerald-400' : 'text-amber-400'}`}
+            >
+              {deliveryProgressPct}%
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-3 h-2 rounded bg-stone-800 overflow-hidden">
+          <div
+            className={
+              deliveryProgressPct === 100 ? 'h-full bg-emerald-500' : 'h-full bg-amber-500'
+            }
+            style={{ width: `${deliveryProgressPct}%` }}
+          />
+        </div>
+
+        <div className="mt-4 space-y-2">
+          {deliveryChecklist.map((item) => (
+            <div
+              key={item.label}
+              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 rounded border border-stone-800 px-3 py-2"
+            >
+              <p className="text-sm text-stone-100">{item.label}</p>
+              <p className={`text-xs ${item.done ? 'text-emerald-400' : 'text-amber-400'}`}>
+                {item.done ? 'Done' : 'Pending'} - {item.hint}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-5">
+          <p className="text-xs text-stone-500 mb-2">
+            One-click automation archives missing packet PDFs and logs every run.
+          </p>
+          <BulkGenerateRunner
+            eventId={event.id}
+            recommendedTypes={pack.recommendedOperationalDocs}
+            readyRecommendedTypes={readyRecommendedTypes}
+            missingArchiveTypes={missingArchiveTypes}
+            initialLatestFailedTypes={latestBulkFailedTypes}
+            historicalRetryRuns={historicalRetryRuns}
+          />
+        </div>
+
+        <div className="mt-5 space-y-2">
+          {recommendedDocReadiness.map((row) => (
+            <div
+              key={row.type}
+              className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 rounded border border-stone-800 px-3 py-2"
+            >
+              <div>
+                <p className="text-sm font-medium text-stone-100">
+                  {SNAPSHOT_DOCUMENT_LABELS[row.type]}
+                </p>
+                <p className="text-xs text-stone-500">
+                  Data:{' '}
+                  <span className={row.ready ? 'text-emerald-400' : 'text-amber-400'}>
+                    {row.ready ? 'Ready' : 'Needs data'}
+                  </span>
+                  {' - '}Archive:{' '}
+                  <span className={row.archived ? 'text-emerald-400' : 'text-amber-400'}>
+                    {row.archived ? 'Saved' : 'Missing'}
+                  </span>
+                  {row.coveredByPacket && !row.individualArchivedCount
+                    ? ' - Covered by packet snapshot'
+                    : ''}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {!row.ready ? (
+                  <Link href={buildOperationalDocWorkspaceHref(event.id, row.type)}>
+                    <Button variant="secondary" size="sm">
+                      Fill Data
+                    </Button>
+                  </Link>
+                ) : !row.archived ? (
+                  <a
+                    href={`/api/documents/${event.id}?type=${row.type}&archive=1`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="secondary" size="sm">
+                      Archive Now
+                    </Button>
+                  </a>
+                ) : (
+                  <a
+                    href={`/api/documents/${event.id}?type=${row.type}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="secondary" size="sm">
+                      Preview
+                    </Button>
+                  </a>
+                )}
+                {row.latestSnapshotId && (
+                  <a
+                    href={`/api/documents/snapshots/${row.latestSnapshotId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="ghost" size="sm">
+                      Latest Snapshot
+                    </Button>
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <Card className="p-6">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-semibold">Financial Snapshot</h2>
+            <p className="text-sm text-stone-400 mt-1">
+              Revenue, cost, and profit status for this event without leaving Documents Hub.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link href={`/events/${event.id}/financial`}>
+              <Button variant="secondary" size="sm">
+                Financial Hub
+              </Button>
+            </Link>
+            <a
+              href={`/api/documents/financial-summary/${event.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="ghost" size="sm">
+                Financial PDF
+              </Button>
+            </a>
+          </div>
+        </div>
+
+        {!financialSummary ? (
+          <p className="text-sm text-stone-500 mt-4">
+            Financial snapshot unavailable right now. Open Financial Hub to review event ledger and
+            expenses.
+          </p>
+        ) : (
+          <>
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
+              <div className="rounded border border-stone-800 px-3 py-2">
+                <p className="text-[11px] uppercase tracking-wide text-stone-500">Quoted</p>
+                <p className="text-sm font-semibold text-stone-100">
+                  {formatCurrency(financialSummary.revenue.quotedPriceCents)}
+                </p>
+              </div>
+              <div className="rounded border border-stone-800 px-3 py-2">
+                <p className="text-[11px] uppercase tracking-wide text-stone-500">Received</p>
+                <p className="text-sm font-semibold text-stone-100">
+                  {formatCurrency(financialSummary.revenue.totalReceivedCents)}
+                </p>
+              </div>
+              <div className="rounded border border-stone-800 px-3 py-2">
+                <p className="text-[11px] uppercase tracking-wide text-stone-500">Total Cost</p>
+                <p className="text-sm font-semibold text-stone-100">
+                  {formatCurrency(financialSummary.costs.totalCostCents)}
+                </p>
+              </div>
+              <div className="rounded border border-stone-800 px-3 py-2">
+                <p className="text-[11px] uppercase tracking-wide text-stone-500">Net Profit</p>
+                <p
+                  className={`text-sm font-semibold ${financialSummary.margins.netProfitWithTipCents >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}
+                >
+                  {formatCurrency(financialSummary.margins.netProfitWithTipCents)}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className="text-xs rounded border border-stone-700 px-2 py-1 text-stone-400">
+                Food Cost: {financialSummary.margins.foodCostPercent}%
+              </span>
+              <span className="text-xs rounded border border-stone-700 px-2 py-1 text-stone-400">
+                Gross Margin: {financialSummary.margins.grossMarginPercent}%
+              </span>
+              <span className="text-xs rounded border border-stone-700 px-2 py-1 text-stone-400">
+                Pending Items: {financialSummary.pendingItems.length}
+              </span>
+              {financialSummary.event.financialClosed && (
+                <span className="text-xs rounded border border-emerald-700/60 px-2 py-1 text-emerald-400">
+                  Financially Closed
+                </span>
+              )}
+            </div>
+          </>
+        )}
+      </Card>
+
       <DocumentSection eventId={event.id} readiness={readiness} businessDocs={businessDocs} />
 
       <Card className="p-6">
@@ -358,6 +688,68 @@ export default async function EventDocumentsPage({
                 </div>
               ))}
             </div>
+
+            {bulkRunHistory.length > 0 && (
+              <div className="pt-3 border-t border-stone-800">
+                <h3 className="text-sm font-semibold text-stone-200 mb-2">Bulk Automation Runs</h3>
+                <div className="space-y-2">
+                  {bulkRunHistory.map((run) => (
+                    <div
+                      key={run.runId}
+                      className="rounded border border-stone-800 px-3 py-2 space-y-1"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                        <p className="text-xs text-stone-400">
+                          Run {run.runId} - {run.succeeded}/{run.total} succeeded
+                          {run.failed > 0 ? `, ${run.failed} failed` : ''}
+                        </p>
+                        <p className="text-xs text-stone-500">
+                          {run.startedAt
+                            ? format(new Date(run.startedAt), 'MMM d, yyyy h:mm a')
+                            : 'Unknown start'}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {run.docs.map((doc) => {
+                          const className = `text-[11px] rounded border px-2 py-0.5 ${
+                            doc.status === 'succeeded'
+                              ? 'border-emerald-700/60 text-emerald-400'
+                              : doc.status === 'failed'
+                                ? 'border-rose-700/60 text-rose-400'
+                                : 'border-amber-700/60 text-amber-400'
+                          }`
+
+                          if (doc.snapshotId) {
+                            return (
+                              <a
+                                key={`${run.runId}-${doc.type}`}
+                                href={`/api/documents/snapshots/${doc.snapshotId}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`${className} hover:underline`}
+                                title={`${SNAPSHOT_DOCUMENT_LABELS[doc.type]} (open snapshot)`}
+                              >
+                                {SNAPSHOT_DOCUMENT_LABELS[doc.type]}
+                              </a>
+                            )
+                          }
+
+                          return (
+                            <span
+                              key={`${run.runId}-${doc.type}`}
+                              className={className}
+                              title={doc.error ?? undefined}
+                            >
+                              {SNAPSHOT_DOCUMENT_LABELS[doc.type]}
+                            </span>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </Card>
@@ -443,6 +835,11 @@ export default async function EventDocumentsPage({
                 Oldest
               </Button>
             </Link>
+            <a href={eventArchiveExportHref}>
+              <Button variant="ghost" size="sm">
+                Export CSV
+              </Button>
+            </a>
           </div>
         </div>
 

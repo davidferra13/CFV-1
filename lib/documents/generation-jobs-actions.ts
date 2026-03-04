@@ -1,16 +1,16 @@
-import { requireChef } from '@/lib/auth/get-user'
 import {
   getDocumentDefinition,
+  isOperationalDocumentType,
   type DocumentRequestType,
   type OperationalDocumentType,
   type SnapshotDocumentType,
 } from '@/lib/documents/document-definitions'
-import { createServerClient } from '@/lib/supabase/server'
 import type { Json } from '@/types/database'
 
 export type DocumentGenerationJobStatus = 'started' | 'succeeded' | 'failed'
 
 const MAX_ERROR_MESSAGE_LENGTH = 1200
+const BULK_RUN_IDEMPOTENCY_PREFIX = 'bulk:'
 
 export const DOCUMENT_REQUEST_LABELS: Record<DocumentRequestType, string> = {
   summary: getDocumentDefinition('summary').label,
@@ -89,6 +89,36 @@ export type EventDocumentGenerationHealthSummary = {
   byType: DocumentGenerationTypeHealth[]
 }
 
+type BulkRunHistoryRow = {
+  requested_type: unknown
+  status: unknown
+  error_message: string | null
+  created_at: string | null
+  completed_at: string | null
+  idempotency_key: string | null
+  result_metadata?: unknown
+}
+
+export type EventDocumentBulkRunDocSummary = {
+  type: OperationalDocumentType
+  status: DocumentGenerationJobStatus
+  createdAt: string | null
+  completedAt: string | null
+  error: string | null
+  snapshotId: string | null
+}
+
+export type EventDocumentBulkRunSummary = {
+  runId: string
+  startedAt: string | null
+  completedAt: string | null
+  total: number
+  started: number
+  succeeded: number
+  failed: number
+  docs: EventDocumentBulkRunDocSummary[]
+}
+
 function isMissingGenerationJobsTable(error: unknown): boolean {
   if (!error || typeof error !== 'object') return false
   const code = (error as { code?: string }).code
@@ -128,6 +158,124 @@ function emptyHealthSummary(): EventDocumentGenerationHealthSummary {
     latestError: null,
     byType: [],
   }
+}
+
+function minIsoDate(a: string | null, b: string | null): string | null {
+  if (!a) return b
+  if (!b) return a
+  return Date.parse(a) <= Date.parse(b) ? a : b
+}
+
+function maxIsoDate(a: string | null, b: string | null): string | null {
+  if (!a) return b
+  if (!b) return a
+  return Date.parse(a) >= Date.parse(b) ? a : b
+}
+
+function readSnapshotIdFromResultMetadata(metadata: unknown): string | null {
+  if (!metadata || typeof metadata !== 'object') return null
+  const archive = (metadata as { archive?: unknown }).archive
+  if (!archive || typeof archive !== 'object') return null
+  const archived = (archive as { archived?: unknown }).archived
+  if (archived !== true) return null
+  const snapshotId = (archive as { snapshotId?: unknown }).snapshotId
+  if (typeof snapshotId !== 'string') return null
+  const trimmed = snapshotId.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
+export function parseBulkRunIdempotencyKey(
+  idempotencyKey: string | null | undefined
+): { runId: string } | null {
+  if (!idempotencyKey) return null
+  const normalized = idempotencyKey.trim()
+  if (!normalized.startsWith(BULK_RUN_IDEMPOTENCY_PREFIX)) return null
+
+  const parts = normalized.split(':')
+  if (parts.length < 3) return null
+  const runId = parts[1]?.trim()
+  if (!runId) return null
+
+  return { runId }
+}
+
+export function buildBulkRunHistoryFromRows(
+  rows: BulkRunHistoryRow[],
+  limitRuns = 8
+): EventDocumentBulkRunSummary[] {
+  const maxRuns = Math.max(1, Math.min(50, Math.floor(limitRuns)))
+  const runMap = new Map<
+    string,
+    {
+      summary: EventDocumentBulkRunSummary
+      docsByType: Map<OperationalDocumentType, EventDocumentBulkRunDocSummary>
+    }
+  >()
+
+  for (const row of rows) {
+    const parsedRun = parseBulkRunIdempotencyKey(row.idempotency_key)
+    if (!parsedRun) continue
+    if (!isOperationalDocumentType(String(row.requested_type ?? ''))) continue
+
+    const type = row.requested_type as OperationalDocumentType
+    const status = toJobStatus(row.status)
+    let run = runMap.get(parsedRun.runId)
+
+    if (!run) {
+      run = {
+        summary: {
+          runId: parsedRun.runId,
+          startedAt: null,
+          completedAt: null,
+          total: 0,
+          started: 0,
+          succeeded: 0,
+          failed: 0,
+          docs: [],
+        },
+        docsByType: new Map<OperationalDocumentType, EventDocumentBulkRunDocSummary>(),
+      }
+      runMap.set(parsedRun.runId, run)
+    }
+
+    if (run.docsByType.has(type)) {
+      continue
+    }
+
+    const docSummary: EventDocumentBulkRunDocSummary = {
+      type,
+      status,
+      createdAt: row.created_at ?? null,
+      completedAt: row.completed_at ?? null,
+      error: row.error_message ?? null,
+      snapshotId: readSnapshotIdFromResultMetadata(row.result_metadata),
+    }
+    run.docsByType.set(type, docSummary)
+    run.summary.total += 1
+    if (status === 'started') run.summary.started += 1
+    if (status === 'succeeded') run.summary.succeeded += 1
+    if (status === 'failed') run.summary.failed += 1
+    run.summary.startedAt = minIsoDate(run.summary.startedAt, docSummary.createdAt)
+    run.summary.completedAt = maxIsoDate(run.summary.completedAt, docSummary.completedAt)
+  }
+
+  const summaries = Array.from(runMap.values()).map(({ summary, docsByType }) => {
+    summary.docs = Array.from(docsByType.values()).sort((a, b) => {
+      const aTime = a.createdAt ? Date.parse(a.createdAt) : 0
+      const bTime = b.createdAt ? Date.parse(b.createdAt) : 0
+      if (aTime !== bTime) return bTime - aTime
+      return a.type.localeCompare(b.type)
+    })
+    return summary
+  })
+
+  summaries.sort((a, b) => {
+    const aTime = a.startedAt ? Date.parse(a.startedAt) : 0
+    const bTime = b.startedAt ? Date.parse(b.startedAt) : 0
+    return bTime - aTime
+  })
+
+  return summaries.slice(0, maxRuns)
 }
 
 export async function startEventDocumentGenerationJob(
@@ -254,6 +402,10 @@ export async function getEventDocumentGenerationHealth(
   eventId: string,
   limit = 200
 ): Promise<EventDocumentGenerationHealthSummary> {
+  const [{ requireChef }, { createServerClient }] = await Promise.all([
+    import('@/lib/auth/get-user'),
+    import('@/lib/supabase/server'),
+  ])
   const user = await requireChef()
   const supabase: any = createServerClient()
 
@@ -341,4 +493,38 @@ export async function getEventDocumentGenerationHealth(
     latestError: latest.error_message,
     byType,
   }
+}
+
+export async function getEventDocumentBulkRunHistory(
+  eventId: string,
+  limitRuns = 8,
+  rowLimit = 350
+): Promise<EventDocumentBulkRunSummary[]> {
+  const [{ requireChef }, { createServerClient }] = await Promise.all([
+    import('@/lib/auth/get-user'),
+    import('@/lib/supabase/server'),
+  ])
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const safeRowLimit = Math.max(50, Math.min(1000, Math.floor(rowLimit)))
+  const { data, error } = await supabase
+    .from('event_document_generation_jobs')
+    .select(
+      'requested_type, status, error_message, created_at, completed_at, idempotency_key, result_metadata'
+    )
+    .eq('tenant_id', user.tenantId!)
+    .eq('event_id', eventId)
+    .like('idempotency_key', `${BULK_RUN_IDEMPOTENCY_PREFIX}%`)
+    .order('created_at', { ascending: false })
+    .limit(safeRowLimit)
+
+  if (error) {
+    if (!isMissingGenerationJobsTable(error)) {
+      console.error('[generation-jobs] failed to load bulk run history:', error)
+    }
+    return []
+  }
+
+  return buildBulkRunHistoryFromRows((data ?? []) as BulkRunHistoryRow[], limitRuns)
 }
