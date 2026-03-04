@@ -43,13 +43,17 @@
 
 9. **20 accepted quotes** — Backfilled `accepted_at` from `updated_at` for all 20 accepted quotes that were missing the timestamp. Audit trail restored.
 
+### E2E Infrastructure Fixes
+
+10. **Quote page "crashes" — root cause found and fixed** — `playwright.config.ts` had `03-quote-flows.spec.ts` in the `interactions-client` project (client auth), but quote routes require chef auth (`requireChef()`). Client auth → redirect → `net::ERR_ABORTED`. The fix was already in working copy: `03-quote-flows.spec.ts` is now correctly in `interactions-chef` only. **Quote pages themselves are NOT broken.**
+
+11. **Suite timeout doubled** — `scripts/overnight-audit.mjs`: `SUITE_TIMEOUT` increased from 45 min to 90 min. The `interactions-chef` suite has 38 test files and was consistently killed at 45 min, meaning ~10 suites never ran at all. Each `execSync` call triggers Playwright's `globalSetup` independently, so auth tokens are refreshed between suites.
+
 ## Not Fixed (Require Separate Investigation)
 
-- **Quote pages crashing** — 42 E2E failures with `net::ERR_ABORTED`. Needs separate investigation.
 - **Remy onboarding on agent account** — The agent test account needs manual Remy onboarding to enable chef-side testing.
 - **Rate limiting test** — The 15-message test doesn't trigger limits because sequential requests take ~20s each (Ollama response time), so only 3-4 are ever within the 60-second window. Working as designed for sequential requests.
 - **100 accessibility violations** — 31 serious color contrast issues need UI/design review.
-- **10 E2E suites timed out** — Chef/admin suites never ran (45-minute cap).
 - **AI simulation stuck at 50%** — 3 modules persistently failing (inquiry_parse, correspondence, quote_draft).
 
 ## Verification

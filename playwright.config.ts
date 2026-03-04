@@ -179,10 +179,7 @@ export default defineConfig({
     // Client-role interaction tests (quote accept/reject, menu approval, payment)
     {
       name: 'interactions-client',
-      testMatch: [
-        '**/interactions/03-quote-flows.spec.ts',
-        '**/interactions/12-client-portal-deep.spec.ts',
-      ],
+      testMatch: ['**/interactions/12-client-portal-deep.spec.ts'],
       use: { storageState: '.auth/client.json' },
     },
     // Unauthenticated interaction tests (auth signup pages, public flows)

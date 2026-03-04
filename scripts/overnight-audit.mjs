@@ -45,7 +45,8 @@ const SCREENSHOTS_DIR = path.join(REPORTS_DIR, 'screenshots');
 const TEST_RESULTS_DIR = path.join(REPORTS_DIR, 'test-results');
 const BASE_URL = 'http://localhost:3100';
 const NAV_TIMEOUT = 60_000; // 60s — dev mode compiles on-demand, 30s is too tight
-const SUITE_TIMEOUT = 45 * 60 * 1000; // 45 min per test suite
+const SUITE_TIMEOUT = 90 * 60 * 1000; // 90 min per test suite (interactions-chef has 38 files)
+const AUDIT_HEADED = ['1', 'true', 'yes'].includes(String(process.env.AUDIT_HEADED || '').toLowerCase());
 
 const startTime = Date.now();
 let serverProcess = null;
@@ -280,7 +281,7 @@ async function phaseSiteCrawl(routes) {
     log('  ⚠ axe-core not available — using manual a11y checks');
   }
 
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: !AUDIT_HEADED });
   const allPages = [];
   const allLinks = new Set();
 
@@ -621,6 +622,7 @@ async function phaseDeadLinks(links) {
 
 function phaseTestMarathon() {
   log('Phase 5/6: Playwright Test Marathon');
+  log(`  Mode: ${AUDIT_HEADED ? 'headed' : 'headless'}`);
   const t0 = Date.now();
   const results = [];
 
@@ -633,7 +635,8 @@ function phaseTestMarathon() {
     const failures = [];
 
     try {
-      execSync(`npx playwright test --project=${suite} --reporter=json`, {
+      const headedFlag = AUDIT_HEADED ? ' --headed' : '';
+      execSync(`npx playwright test --project=${suite}${headedFlag} --reporter=json`, {
         cwd: ROOT,
         encoding: 'utf8',
         maxBuffer: 100 * 1024 * 1024,
