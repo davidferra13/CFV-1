@@ -1,470 +1,431 @@
 # Remy Quality Report — Chef Suite
 
-**Date:** 2026-03-04 | **Duration:** 1 min | **Pass Rate:** 0/50 (0%)
+**Date:** 2026-03-04 | **Duration:** 5 min | **Pass Rate:** 0/50 (0%)
 
 ## Summary
 
-| Metric                  | Value |
-| ----------------------- | ----- |
-| Total prompts           | 50    |
-| Passed                  | 0     |
-| Warnings                | 0     |
-| Failed                  | 50    |
-| Pass rate               | 0%    |
-| Avg classification time | 0ms   |
-| Avg first-token time    | 0ms   |
-| Avg total response time | 1.1s  |
-| Avg tokens/sec          | 0.0   |
-| Total duration          | 1 min |
+| Metric                  | Value  |
+| ----------------------- | ------ |
+| Total prompts           | 50     |
+| Passed                  | 0      |
+| Warnings                | 2      |
+| Failed                  | 48     |
+| Pass rate               | 0%     |
+| Avg classification time | NaNs   |
+| Avg first-token time    | NaNs   |
+| Avg total response time | 282.0s |
+| Avg tokens/sec          | 9.0    |
+| Total duration          | 5 min  |
 
 ## Category Breakdown
 
 | Category          | Total | Pass | Warn | Fail | Avg Time |
 | ----------------- | ----- | ---- | ---- | ---- | -------- |
-| business_overview | 50    | 0    | 0    | 50   | 1.1s     |
+| business_overview | 50    | 0    | 2    | 48   | 282.0s   |
 
 ## Timing Distribution
 
 | Bucket  | Count |
 | ------- | ----- |
-| <10s    | 49    |
-| 10-30s  | 1     |
+| <10s    | 0     |
+| 10-30s  | 0     |
 | 30-60s  | 0     |
-| 60-120s | 0     |
-| >120s   | 0     |
+| 60-120s | 2     |
+| >120s   | 48    |
 
 ## Failures
 
-### chef-001_run1: "How's my business doing?"
-
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 22.0s
-- **Response excerpt:** [empty]
-
-### chef-001_run2: "How's my business doing?"
-
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 763ms
-- **Response excerpt:** [empty]
-
 ### chef-001_run3: "How's my business doing?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 690ms
+- **exception:** {"pass":false,"error":"terminated"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-001_run4: "How's my business doing?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 595ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-001_run5: "How's my business doing?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 611ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-002_run1: "What's my revenue this month?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 610ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-002_run2: "What's my revenue this month?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 614ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-002_run3: "What's my revenue this month?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 769ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-002_run4: "What's my revenue this month?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 607ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-002_run5: "What's my revenue this month?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 704ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-003_run1: "How many clients do I have?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 615ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-003_run2: "How many clients do I have?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 614ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-003_run3: "How many clients do I have?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 574ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-003_run4: "How many clients do I have?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 678ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-003_run5: "How many clients do I have?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 901ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-004_run1: "Give me a quick snapshot of where things stand"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 2.6s
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-004_run2: "Give me a quick snapshot of where things stand"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 976ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-004_run3: "Give me a quick snapshot of where things stand"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 784ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-004_run4: "Give me a quick snapshot of where things stand"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 637ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-004_run5: "Give me a quick snapshot of where things stand"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 592ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-005_run1: "What needs my attention today?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 641ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-005_run2: "What needs my attention today?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 655ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-005_run3: "What needs my attention today?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 635ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-005_run4: "What needs my attention today?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 608ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-005_run5: "What needs my attention today?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 661ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-006_run1: "Am I on track for my goals this month?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 637ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-006_run2: "Am I on track for my goals this month?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 664ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-006_run3: "Am I on track for my goals this month?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 763ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-006_run4: "Am I on track for my goals this month?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 595ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-006_run5: "Am I on track for my goals this month?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 620ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-007_run1: "What's my year-to-date revenue?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 720ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.0s
 - **Response excerpt:** [empty]
 
 ### chef-007_run2: "What's my year-to-date revenue?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 735ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.1s
 - **Response excerpt:** [empty]
 
 ### chef-007_run3: "What's my year-to-date revenue?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 670ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.1s
 - **Response excerpt:** [empty]
 
 ### chef-007_run4: "What's my year-to-date revenue?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 709ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.1s
 - **Response excerpt:** [empty]
 
 ### chef-007_run5: "What's my year-to-date revenue?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 617ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.1s
 - **Response excerpt:** [empty]
 
 ### chef-008_run1: "How does this month compare to last month?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 614ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.1s
 - **Response excerpt:** [empty]
 
 ### chef-008_run2: "How does this month compare to last month?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 692ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.1s
 - **Response excerpt:** [empty]
 
 ### chef-008_run3: "How does this month compare to last month?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 643ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.1s
 - **Response excerpt:** [empty]
 
 ### chef-008_run4: "How does this month compare to last month?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 611ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.1s
 - **Response excerpt:** [empty]
 
 ### chef-008_run5: "How does this month compare to last month?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 545ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.1s
 - **Response excerpt:** [empty]
 
 ### chef-009_run1: "What's my average revenue per event?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 607ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.1s
 - **Response excerpt:** [empty]
 
 ### chef-009_run2: "What's my average revenue per event?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 584ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.1s
 - **Response excerpt:** [empty]
 
 ### chef-009_run3: "What's my average revenue per event?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 602ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.1s
 - **Response excerpt:** [empty]
 
 ### chef-009_run4: "What's my average revenue per event?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 597ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.1s
 - **Response excerpt:** [empty]
 
 ### chef-009_run5: "What's my average revenue per event?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 599ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.1s
 - **Response excerpt:** [empty]
 
 ### chef-010_run1: "Who are my top clients?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 581ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.1s
 - **Response excerpt:** [empty]
 
 ### chef-010_run2: "Who are my top clients?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 548ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.1s
 - **Response excerpt:** [empty]
 
 ### chef-010_run3: "Who are my top clients?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 578ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.1s
 - **Response excerpt:** [empty]
 
 ### chef-010_run4: "Who are my top clients?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 556ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.1s
 - **Response excerpt:** [empty]
 
 ### chef-010_run5: "Who are my top clients?"
 
-- **intentCorrect:** expected "question", got "none"
-- **responseLength:** {"pass":false,"chars":0,"tokenChars":0,"minExpected":20,"maxExpected":4000}
-- **noErrors:** errors: Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.
-- **Response time:** 581ms
+- **exception:** {"pass":false,"error":"fetch failed"}
+- **Response time:** 289.1s
 - **Response excerpt:** [empty]
+
+## Warnings
+
+### chef-001_run1: "How's my business doing?"
+
+- **classificationTiming:** 28.1s (max: 8.0s)
+
+### chef-001_run2: "How's my business doing?"
+
+- **classificationTiming:** 60.5s (max: 8.0s)
 
 ## Per-Prompt Results
 
-### ❌ chef-001_run1: "How's my business doing?"
+### ⚠️ chef-001_run1: "How's my business doing?"
 
-- **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 22.0s
-- **Tokens/sec:** 0
-- **Response length:** 0 chars
+- **Verdict:** WARN
+- **Intent:** question (expected: question) ✅
+- **Classification:** 28.1s | **First token:** 63.8s | **Total:** 114.2s
+- **Tokens/sec:** 7.9
+- **Response length:** 1595 chars
 
 **Full response:**
 
 ```
-[no response text]
+You're doing great, chef! Let's break down how your business is performing:
+
+## Financial Overview
+- **Year-to-Date Revenue**: $24,250.00
+- **Expenses**: $4,350.00
+- **Net Profit**: $19,900.00
+- **Average Revenue/Event**: $2,694.44
+
+## Recent Performance
+- **16 Total Events** (9 completed)
+- **Top Clients**:
+  - Alex Chen: $3,600.00 (1 event)
+  - David Garcia: $3,600.00 (1 event)
+  - Apex Group (Corporate): $3,500.00 (1 event)
+  - Michael O'Brien: $3,200.00 (1 event)
+  - Patricia Foster: $3,200.00 (1 event)
+
+## Upcoming Events
+- **March 5**: Q1 Board Dinner (Apex Group - Corporate) - 30 guests
+- **March 8**: Tasting for Morrison Family - 4 guests
+- **March 11**: Engagement Dinner (Rachel Kim) - 8 guests
+- **March 17**: Spring Garden Party (Sarah Henderson) - 14 guests
+- **March 31**: Spring Tasting Menu (Emma Rothschild) - 8 guests
+- **April 13**: Jessica's Baby Shower (Jessica Park) - 20 guests
+- **April 28**: Product Launch Celebration (Alex Chen) - 50 guests
+
+## Business Health
+- You're maintaining strong relationships with your top clients
+- Your pricing strategy is working well (average $2,694.44 per event)
+- You're consistently booking 7-8 events per month
+
+The business is in great shape. You're generating solid revenue while maintaining your high standards. The upcoming month looks particularly busy with 7 events scheduled.
+
+Would you like me to dive deeper into any specific area of your business?
+
+NAV_SUGGESTIONS: [{"label":"Financial Hub","href":"/financials"},{"label":"Upcoming Events","href":"/events/upcoming"},{"label":"Client Directory","href":"/clients"}]
 ```
 
 ---
 
-### ❌ chef-001_run2: "How's my business doing?"
+### ⚠️ chef-001_run2: "How's my business doing?"
 
-- **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 763ms
-- **Tokens/sec:** 0
-- **Response length:** 0 chars
+- **Verdict:** WARN
+- **Intent:** question (expected: question) ✅
+- **Classification:** 60.5s | **First token:** 79.6s | **Total:** 112.6s
+- **Tokens/sec:** 9.2
+- **Response length:** 1214 chars
 
 **Full response:**
 
 ```
-[no response text]
+You're looking strong, chef — let's break down the numbers:
+
+## 📊 Year-to-Date Performance
+- **Revenue**: $24,250.00
+- **Expenses**: $4,350.00
+- **Net Profit**: $19,900.00
+- **Events Completed**: 9 out of 16 total
+
+## 🎯 Current Status
+- **Upcoming Events**: 7 (including Q1 Board Dinner tomorrow)
+- **Open Inquiries**: 3
+- **Pending Quotes**: 2
+- **Clients**: 15 total
+
+## 💼 Recent Highlights
+- **Top Clients**: Alex Chen ($3,600), David Garcia ($3,600), Apex Group ($3,500)
+- **Avg Revenue/Event**: $2,694.44
+
+## 📅 Upcoming Week
+- **Tomorrow**: Q1 Board Dinner with Apex Group (30 guests, Gold loyalty)
+- **March 8**: Tasting for Morrison Family (4 guests)
+- **March 11**: Engagement Dinner with Rachel Kim (8 guests)
+- **March 17**: Spring Garden Party with Sarah Henderson (14 guests, Gold loyalty)
+
+You're sitting at a healthy profit margin and have a solid pipeline. The Q1 Board Dinner looks like a big one — you're set to bring in $3,500 from that one.
+
+How do you feel about the upcoming week's events? Any prep you want to tackle first?
+
+NAV_SUGGESTIONS: [{"label":"Dashboard","href":"/dashboard"}, {"label":"Upcoming Events","href":"/events/upcoming"}, {"label":"Financial Hub","href":"/financials"}]
 ```
 
 ---
@@ -472,8 +433,8 @@
 ### ❌ chef-001_run3: "How's my business doing?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 690ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -488,8 +449,8 @@
 ### ❌ chef-001_run4: "How's my business doing?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 595ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -504,8 +465,8 @@
 ### ❌ chef-001_run5: "How's my business doing?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 611ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -520,8 +481,8 @@
 ### ❌ chef-002_run1: "What's my revenue this month?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 610ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -536,8 +497,8 @@
 ### ❌ chef-002_run2: "What's my revenue this month?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 614ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -552,8 +513,8 @@
 ### ❌ chef-002_run3: "What's my revenue this month?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 769ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -568,8 +529,8 @@
 ### ❌ chef-002_run4: "What's my revenue this month?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 607ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -584,8 +545,8 @@
 ### ❌ chef-002_run5: "What's my revenue this month?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 704ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -600,8 +561,8 @@
 ### ❌ chef-003_run1: "How many clients do I have?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 615ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -616,8 +577,8 @@
 ### ❌ chef-003_run2: "How many clients do I have?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 614ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -632,8 +593,8 @@
 ### ❌ chef-003_run3: "How many clients do I have?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 574ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -648,8 +609,8 @@
 ### ❌ chef-003_run4: "How many clients do I have?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 678ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -664,8 +625,8 @@
 ### ❌ chef-003_run5: "How many clients do I have?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 901ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -680,8 +641,8 @@
 ### ❌ chef-004_run1: "Give me a quick snapshot of where things stand"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 2.6s
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -696,8 +657,8 @@
 ### ❌ chef-004_run2: "Give me a quick snapshot of where things stand"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 976ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -712,8 +673,8 @@
 ### ❌ chef-004_run3: "Give me a quick snapshot of where things stand"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 784ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -728,8 +689,8 @@
 ### ❌ chef-004_run4: "Give me a quick snapshot of where things stand"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 637ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -744,8 +705,8 @@
 ### ❌ chef-004_run5: "Give me a quick snapshot of where things stand"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 592ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -760,8 +721,8 @@
 ### ❌ chef-005_run1: "What needs my attention today?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 641ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -776,8 +737,8 @@
 ### ❌ chef-005_run2: "What needs my attention today?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 655ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -792,8 +753,8 @@
 ### ❌ chef-005_run3: "What needs my attention today?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 635ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -808,8 +769,8 @@
 ### ❌ chef-005_run4: "What needs my attention today?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 608ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -824,8 +785,8 @@
 ### ❌ chef-005_run5: "What needs my attention today?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 661ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -840,8 +801,8 @@
 ### ❌ chef-006_run1: "Am I on track for my goals this month?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 637ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -856,8 +817,8 @@
 ### ❌ chef-006_run2: "Am I on track for my goals this month?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 664ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -872,8 +833,8 @@
 ### ❌ chef-006_run3: "Am I on track for my goals this month?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 763ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -888,8 +849,8 @@
 ### ❌ chef-006_run4: "Am I on track for my goals this month?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 595ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -904,8 +865,8 @@
 ### ❌ chef-006_run5: "Am I on track for my goals this month?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 620ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -920,8 +881,8 @@
 ### ❌ chef-007_run1: "What's my year-to-date revenue?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 720ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.0s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -936,8 +897,8 @@
 ### ❌ chef-007_run2: "What's my year-to-date revenue?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 735ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.1s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -952,8 +913,8 @@
 ### ❌ chef-007_run3: "What's my year-to-date revenue?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 670ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.1s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -968,8 +929,8 @@
 ### ❌ chef-007_run4: "What's my year-to-date revenue?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 709ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.1s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -984,8 +945,8 @@
 ### ❌ chef-007_run5: "What's my year-to-date revenue?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 617ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.1s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -1000,8 +961,8 @@
 ### ❌ chef-008_run1: "How does this month compare to last month?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 614ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.1s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -1016,8 +977,8 @@
 ### ❌ chef-008_run2: "How does this month compare to last month?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 692ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.1s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -1032,8 +993,8 @@
 ### ❌ chef-008_run3: "How does this month compare to last month?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 643ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.1s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -1048,8 +1009,8 @@
 ### ❌ chef-008_run4: "How does this month compare to last month?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 611ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.1s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -1064,8 +1025,8 @@
 ### ❌ chef-008_run5: "How does this month compare to last month?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 545ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.1s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -1080,8 +1041,8 @@
 ### ❌ chef-009_run1: "What's my average revenue per event?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 607ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.1s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -1096,8 +1057,8 @@
 ### ❌ chef-009_run2: "What's my average revenue per event?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 584ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.1s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -1112,8 +1073,8 @@
 ### ❌ chef-009_run3: "What's my average revenue per event?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 602ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.1s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -1128,8 +1089,8 @@
 ### ❌ chef-009_run4: "What's my average revenue per event?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 597ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.1s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -1144,8 +1105,8 @@
 ### ❌ chef-009_run5: "What's my average revenue per event?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 599ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.1s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -1160,8 +1121,8 @@
 ### ❌ chef-010_run1: "Who are my top clients?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 581ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.1s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -1176,8 +1137,8 @@
 ### ❌ chef-010_run2: "Who are my top clients?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 548ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.1s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -1192,8 +1153,8 @@
 ### ❌ chef-010_run3: "Who are my top clients?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 578ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.1s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -1208,8 +1169,8 @@
 ### ❌ chef-010_run4: "Who are my top clients?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 556ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.1s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 
@@ -1224,8 +1185,8 @@
 ### ❌ chef-010_run5: "Who are my top clients?"
 
 - **Verdict:** FAIL
-- **Intent:** none (expected: question) ❌
-- **Classification:** n/a | **First token:** n/a | **Total:** 581ms
+- **Intent:** n/a
+- **Classification:** n/a | **First token:** n/a | **Total:** 289.1s
 - **Tokens/sec:** 0
 - **Response length:** 0 chars
 

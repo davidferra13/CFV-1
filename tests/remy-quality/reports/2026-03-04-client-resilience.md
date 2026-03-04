@@ -1,8 +1,8 @@
 # Client Remy Resilience Test Report
 
 **Date:** 2026-03-04
-**Tests:** 5 | **Pass:** 2 | **Fail:** 3
-**Runtime:** 4.5 minutes
+**Tests:** 5 | **Pass:** 4 | **Fail:** 1
+**Runtime:** 7.5 minutes
 
 ---
 
@@ -12,8 +12,8 @@
 | ---------------------------- | ------ |
 | ✓ Bad Auth                   | PASS   |
 | ✓ NAV_SUGGESTIONS Validation | PASS   |
-| ✗ Max History Capacity       | FAIL   |
-| ✗ Cold Model Load            | FAIL   |
+| ✓ Max History Capacity       | PASS   |
+| ✓ Cold Model Load            | PASS   |
 | ✗ Rate Limit Exhaustion      | FAIL   |
 
 ---
@@ -31,24 +31,29 @@
 
 ### ✓ NAV_SUGGESTIONS Validation
 
-- ✓ **nav_suggestions_present:** 6/8 responses included NAV_SUGGESTIONS
+- ✓ **nav_suggestions_present:** 8/8 responses included NAV_SUGGESTIONS
 - ✓ **no_malformed_json:** All NAV_SUGGESTIONS had valid JSON
-- ✓ **all_routes_valid:** All 6 suggested routes are valid client portal paths
+- ✓ **all_routes_valid:** All 8 suggested routes are valid client portal paths
 
 ---
 
-### ✗ Max History Capacity
+### ✓ Max History Capacity
 
-- ✗ **no_crash:** Crashed: HTTP 401
-- ✗ **simple_q_with_big_history:** Failed: HTTP 401
+- ✓ **no_crash:** Request completed
+- ✓ **produced_response:** 576 chars
+- ✓ **no_internal_leak:** Clean
+- ✓ **no_think_leak:** Clean
+- ✓ **reasonable_timing:** 16503ms
+- ✓ **simple_q_with_big_history:** 402 chars in 13333ms
 
 ---
 
-### ✗ Cold Model Load
+### ✓ Cold Model Load
 
-- ✗ **cold_start_succeeds:** Failed: HTTP 401
-- ✓ **cold_start_timing:** Warm: 278ms, Cold: 9790ms, Slowdown: 35.2x
-- ✓ **within_timeout:** 9790ms < 180000ms timeout
+- ✓ **cold_start_succeeds:** Got 738 chars in 21898ms
+- ✓ **cold_start_timing:** Warm: 18098ms, Cold: 21898ms, Slowdown: 1.2x
+- ✓ **within_timeout:** 21898ms < 180000ms timeout
+- ✓ **no_think_leak:** Clean
 
 ---
 
