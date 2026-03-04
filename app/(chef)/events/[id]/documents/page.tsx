@@ -331,13 +331,13 @@ export default async function EventDocumentsPage({
     <div className="max-w-5xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-stone-100">Documents Hub</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-stone-100">Event Documents</h1>
           <p className="text-stone-400 mt-1">
             {event.occasion || 'Untitled Event'} -{' '}
             {format(new Date(event.event_date), "EEEE, MMMM d, yyyy 'at' h:mm a")}
           </p>
           <p className="text-sm text-stone-500 mt-1">
-            Auto-generated docs + blank templates for manual fill.
+            Generate event PDFs automatically or start from blank templates.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -356,15 +356,15 @@ export default async function EventDocumentsPage({
 
       <Card className="p-4 border-stone-700">
         <p className="text-sm text-stone-300">
-          Use `Blank` for manual entry from scratch. Use `Interactive` or `View PDF` for
-          auto-generated documents tied to this event.
+          Use `Blank` to fill from scratch. Use `Interactive` or `View PDF` for event-generated
+          documents.
         </p>
       </Card>
 
       <Card className="p-6 border-stone-700">
-        <h2 className="text-xl font-semibold">Do This In Order</h2>
+        <h2 className="text-xl font-semibold">Quick Start</h2>
         <p className="text-sm text-stone-400 mt-1">
-          Keep it simple: fill missing data, generate PDFs, then open the latest packet.
+          Follow these steps: fill missing info, generate PDFs, then open the latest packet.
         </p>
 
         <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -389,7 +389,7 @@ export default async function EventDocumentsPage({
 
           <div className="rounded border border-stone-800 p-3 space-y-2">
             <p className="text-[11px] uppercase tracking-wide text-stone-500">Step 2</p>
-            <p className="text-sm font-medium text-stone-100">Generate PDFs</p>
+            <p className="text-sm font-medium text-stone-100">Create PDFs</p>
             <p className="text-xs text-stone-500">
               {readyToArchiveRows.length === 0
                 ? 'No new docs waiting to archive.'
@@ -400,7 +400,7 @@ export default async function EventDocumentsPage({
 
           <div className="rounded border border-stone-800 p-3 space-y-2">
             <p className="text-[11px] uppercase tracking-wide text-stone-500">Step 3</p>
-            <p className="text-sm font-medium text-stone-100">Open and Share</p>
+            <p className="text-sm font-medium text-stone-100">Open or Share</p>
             <p className="text-xs text-stone-500">
               {archivedRows.length}/{recommendedDocReadiness.length} recommended docs archived.
             </p>
@@ -428,7 +428,7 @@ export default async function EventDocumentsPage({
 
       <details className="rounded border border-stone-800 px-4 py-3">
         <summary className="cursor-pointer text-sm text-stone-300">
-          Recommended packet details ({readyCount}/{pack.recommendedOperationalDocs.length} ready)
+          Service packet details ({readyCount}/{pack.recommendedOperationalDocs.length} ready)
         </summary>
         <Card className="p-6 mt-3">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
@@ -493,9 +493,9 @@ export default async function EventDocumentsPage({
       <Card className="p-6">
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
           <div>
-            <h2 className="text-xl font-semibold">Delivery Readiness</h2>
+            <h2 className="text-xl font-semibold">Completion Checklist</h2>
             <p className="text-sm text-stone-400 mt-1">
-              Final checklist for this event packet so nothing gets missed before service.
+              Final checks so nothing gets missed before service.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -533,7 +533,7 @@ export default async function EventDocumentsPage({
 
         <div className="mt-5">
           <p className="text-xs text-stone-500 mb-2">
-            One-click automation archives missing packet PDFs and logs every run.
+            One click generates missing packet PDFs and logs each run.
           </p>
           <BulkGenerateRunner
             eventId={event.id}
@@ -547,7 +547,7 @@ export default async function EventDocumentsPage({
 
         <details className="mt-5 rounded border border-stone-800 px-3 py-2">
           <summary className="cursor-pointer text-sm text-stone-300">
-            Document-by-document status and actions
+            Per-document status and actions
           </summary>
           <div className="mt-3 space-y-2">
             {recommendedDocReadiness.map((row) => (
@@ -621,7 +621,7 @@ export default async function EventDocumentsPage({
 
       <details className="rounded border border-stone-800 px-4 py-3">
         <summary className="cursor-pointer text-sm text-stone-300">
-          Optional: Financial snapshot for this event
+          Optional: Financial summary for this event
         </summary>
         <Card className="p-6 mt-3">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
@@ -710,14 +710,14 @@ export default async function EventDocumentsPage({
 
       <details className="rounded border border-stone-800 px-4 py-3">
         <summary className="cursor-pointer text-sm text-stone-300">
-          Advanced: run logs, archive filters, and all snapshots
+          Advanced tools: automation logs, archive filters, and all snapshots
         </summary>
 
         <div className="mt-4 space-y-6">
           <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-2">Generation Health</h2>
+            <h2 className="text-xl font-semibold mb-2">Automation Activity</h2>
             <p className="text-stone-500 text-sm mb-4">
-              Live status for auto-generated document jobs on this event.
+              Recent status for document generation jobs on this event.
             </p>
 
             {generationHealth.total === 0 ? (
@@ -762,7 +762,7 @@ export default async function EventDocumentsPage({
                           {DOCUMENT_REQUEST_LABELS[row.requestedType]}
                         </p>
                         <p className="text-xs text-stone-500">
-                          {row.succeeded} success / {row.failed} failed / {row.started} in progress
+                          {row.succeeded} succeeded / {row.failed} failed / {row.started} running
                         </p>
                       </div>
                       <div className="text-xs text-stone-500 text-right">
@@ -785,9 +785,7 @@ export default async function EventDocumentsPage({
 
                 {bulkRunHistory.length > 0 && (
                   <div className="pt-3 border-t border-stone-800">
-                    <h3 className="text-sm font-semibold text-stone-200 mb-2">
-                      Bulk Automation Runs
-                    </h3>
+                    <h3 className="text-sm font-semibold text-stone-200 mb-2">Bulk Runs</h3>
                     <div className="space-y-2">
                       {bulkRunHistory.map((run) => (
                         <div
@@ -796,7 +794,7 @@ export default async function EventDocumentsPage({
                         >
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                             <p className="text-xs text-stone-400">
-                              Run {run.runId} - {run.succeeded}/{run.total} succeeded
+                              Run {run.runId} - {run.succeeded} of {run.total} succeeded
                               {run.failed > 0 ? `, ${run.failed} failed` : ''}
                             </p>
                             <p className="text-xs text-stone-500">
@@ -851,9 +849,9 @@ export default async function EventDocumentsPage({
           </Card>
 
           <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-2">Archive Drilldown</h2>
+            <h2 className="text-xl font-semibold mb-2">Archive Filters</h2>
             <p className="text-stone-500 text-sm mb-4">
-              Filter archived PDFs by document type, date range, and version.
+              Filter saved PDFs by type, date range, and version.
             </p>
 
             <div className="flex flex-wrap gap-2 mb-4">
@@ -972,8 +970,8 @@ export default async function EventDocumentsPage({
 
             {nonEmptyTypeStats.length === 0 ? (
               <p className="text-sm text-stone-500 mt-4">
-                No archived snapshots yet. Use any `Archive` button or `Print All (8 Sheets)` to
-                save versioned PDFs.
+                No archived PDFs yet. Use any `Archive` button or `Print All (8 Sheets)` to save
+                versioned copies.
               </p>
             ) : (
               <div className="space-y-3 mt-4">
@@ -1027,9 +1025,9 @@ export default async function EventDocumentsPage({
           </Card>
 
           <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-2">Snapshot Results</h2>
+            <h2 className="text-xl font-semibold mb-2">Archive Results</h2>
             <p className="text-stone-500 text-sm mb-4">
-              Showing {filteredSnapshots.length} snapshot{filteredSnapshots.length === 1 ? '' : 's'}{' '}
+              Showing {filteredSnapshots.length} result{filteredSnapshots.length === 1 ? '' : 's'}{' '}
               on this page from {drilldown.total} matching archived record
               {drilldown.total === 1 ? '' : 's'}.
             </p>

@@ -120,11 +120,9 @@ export function BulkGenerateRunner({
       setRetryTypes(dedupeTypes(failedTypes))
 
       if (run.failed > 0) {
-        toast.error(
-          `Archived ${run.succeeded}/${run.total}. ${run.failed} failed and can be retried.`
-        )
+        toast.error(`Saved ${run.succeeded}/${run.total}. ${run.failed} need retry.`)
       } else {
-        toast.success(`Archived ${run.succeeded} document${run.succeeded === 1 ? '' : 's'}.`)
+        toast.success(`Saved ${run.succeeded} document${run.succeeded === 1 ? '' : 's'}.`)
       }
       router.refresh()
     } catch (error) {
@@ -167,8 +165,8 @@ export function BulkGenerateRunner({
       {lastRun && (
         <div className="space-y-2">
           <p className="text-xs text-stone-400">
-            Last run: {lastRun.succeeded}/{lastRun.total} done
-            {lastRun.failed > 0 ? `, ${lastRun.failed} failed` : ''}
+            Last run: {lastRun.succeeded} of {lastRun.total} completed
+            {lastRun.failed > 0 ? `, ${lastRun.failed} need retry` : ''}
           </p>
           <div className="space-y-1">
             {lastRun.results.map((row) => (
@@ -181,7 +179,7 @@ export function BulkGenerateRunner({
                   <p
                     className={`text-xs ${row.status === 'succeeded' ? 'text-emerald-400' : 'text-rose-400'}`}
                   >
-                    {row.status === 'succeeded' ? 'Archived' : (row.error ?? 'Failed')}
+                    {row.status === 'succeeded' ? 'Saved' : (row.error ?? 'Needs retry')}
                   </p>
                   {row.snapshotId && (
                     <a
@@ -201,9 +199,7 @@ export function BulkGenerateRunner({
       )}
 
       <details className="rounded border border-stone-800 px-3 py-2">
-        <summary className="cursor-pointer text-[11px] text-stone-400">
-          More automation actions
-        </summary>
+        <summary className="cursor-pointer text-[11px] text-stone-400">More options</summary>
         <div className="mt-2 space-y-2">
           <div className="flex flex-wrap gap-2">
             <Button
@@ -215,13 +211,13 @@ export function BulkGenerateRunner({
               }
               disabled={recommendedTypes.length === 0}
             >
-              Generate Recommended Set ({recommendedTypes.length})
+              Generate Full Recommended Set ({recommendedTypes.length})
             </Button>
           </div>
 
           {historicalRetryRuns.length > 0 && (
             <div className="space-y-2">
-              <p className="text-[11px] text-stone-500">Retry failures from earlier runs:</p>
+              <p className="text-[11px] text-stone-500">Retry failed items from earlier runs:</p>
               <div className="flex flex-wrap gap-2">
                 {historicalRetryRuns.map((run) => (
                   <Button
