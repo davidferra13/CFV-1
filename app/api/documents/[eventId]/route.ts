@@ -1,10 +1,11 @@
 // API Route: PDF Document Generation
-// GET /api/documents/[eventId]?type=foh|prep|execution|checklist|packing|all
+// GET /api/documents/[eventId]?type=summary|...|all|pack&types=summary,prep,...
 // Returns PDF with inline disposition for browser viewing/printing
 // Auth: requires chef with access to the event
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createHash } from 'node:crypto'
+import { format } from 'date-fns'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { getDocumentContext } from '@/lib/print/actions'
@@ -31,22 +32,137 @@ import {
   renderContentShotList,
 } from '@/lib/documents/generate-content-shot-list'
 import { PDFLayout } from '@/lib/documents/pdf-layout'
-import { format } from 'date-fns'
+import type { OperationalDocumentType } from '@/lib/documents/template-catalog'
 
 const SNAPSHOT_BUCKET = 'event-documents'
 const SNAPSHOT_MIN_INTERVAL_MS = 10 * 60 * 1000
-type SnapshotDocType =
-  | 'summary'
-  | 'grocery'
-  | 'foh'
-  | 'prep'
-  | 'execution'
-  | 'checklist'
-  | 'packing'
-  | 'reset'
-  | 'travel'
-  | 'shots'
-  | 'all'
+
+type SnapshotDocType = OperationalDocumentType | 'all'
+
+type DocRenderConfig = {
+  fetch: () => Promise<any>
+  render: (pdf: PDFLayout, data: any) => void
+  docTypeLabel: string
+  fallbackTitle: string
+  filenameBase: string
+}
+
+const ALL_PACKET_TYPES: OperationalDocumentType[] = [
+  'summary',
+  'grocery',
+  'foh',
+  'prep',
+  'execution',
+  'checklist',
+  'packing',
+  'reset',
+]
+
+function isOperationalDocumentType(value: string): value is OperationalDocumentType {
+  return [
+    'summary',
+    'grocery',
+    'foh',
+    'prep',
+    'execution',
+    'checklist',
+    'packing',
+    'reset',
+    'travel',
+    'shots',
+  ].includes(value)
+}
+
+function parseOperationalDocTypes(input: string | null): OperationalDocumentType[] {
+  if (!input) return []
+  const seen = new Set<OperationalDocumentType>()
+  const ordered: OperationalDocumentType[] = []
+
+  for (const part of input.split(',')) {
+    const normalized = part.trim().toLowerCase()
+    if (!normalized || !isOperationalDocumentType(normalized)) continue
+    if (seen.has(normalized)) continue
+    seen.add(normalized)
+    ordered.push(normalized)
+  }
+
+  return ordered
+}
+
+function getDocRenderConfigs(eventId: string): Record<OperationalDocumentType, DocRenderConfig> {
+  return {
+    summary: {
+      fetch: () => fetchEventSummaryData(eventId),
+      render: renderEventSummary,
+      docTypeLabel: 'Event Summary',
+      fallbackTitle: 'EVENT SUMMARY',
+      filenameBase: 'event-summary',
+    },
+    grocery: {
+      fetch: () => fetchGroceryListData(eventId),
+      render: renderGroceryList,
+      docTypeLabel: 'Grocery List',
+      fallbackTitle: 'GROCERY LIST',
+      filenameBase: 'grocery-list',
+    },
+    foh: {
+      fetch: () => fetchFrontOfHouseMenuData(eventId),
+      render: renderFrontOfHouseMenu,
+      docTypeLabel: 'FOH Menu',
+      fallbackTitle: 'FRONT-OF-HOUSE MENU',
+      filenameBase: 'front-of-house-menu',
+    },
+    prep: {
+      fetch: () => fetchPrepSheetData(eventId),
+      render: renderPrepSheet,
+      docTypeLabel: 'Prep Sheet',
+      fallbackTitle: 'PREP SHEET',
+      filenameBase: 'prep-sheet',
+    },
+    execution: {
+      fetch: () => fetchExecutionSheetData(eventId),
+      render: renderExecutionSheet,
+      docTypeLabel: 'Execution Sheet',
+      fallbackTitle: 'EXECUTION SHEET',
+      filenameBase: 'execution-sheet',
+    },
+    checklist: {
+      fetch: () => fetchChecklistData(eventId),
+      render: renderChecklist,
+      docTypeLabel: 'Non-Negotiables',
+      fallbackTitle: 'NON-NEGOTIABLES',
+      filenameBase: 'checklist',
+    },
+    packing: {
+      fetch: () => fetchPackingListData(eventId),
+      render: renderPackingList,
+      docTypeLabel: 'Packing List',
+      fallbackTitle: 'PACKING LIST',
+      filenameBase: 'packing-list',
+    },
+    reset: {
+      fetch: () => fetchResetChecklistData(eventId),
+      render: renderResetChecklist,
+      docTypeLabel: 'Reset Checklist',
+      fallbackTitle: 'POST-SERVICE RESET',
+      filenameBase: 'reset-checklist',
+    },
+    travel: {
+      fetch: () => fetchTravelRouteData(eventId),
+      render: renderTravelRoute,
+      docTypeLabel: 'Travel Route',
+      fallbackTitle: 'TRAVEL ROUTE',
+      filenameBase: 'travel-route',
+    },
+    shots: {
+      fetch: () => fetchContentShotListData(eventId),
+      render: renderContentShotList,
+      docTypeLabel: 'Content Shot List',
+      fallbackTitle: 'CONTENT SHOT LIST',
+      filenameBase: 'content-shot-list',
+    },
+  }
+}
 
 /** Apply attribution + custom footer to a PDF page */
 function applyPageMeta(
@@ -136,17 +252,12 @@ async function archiveGeneratedDocument(params: {
 
 export async function GET(request: NextRequest, { params }: { params: { eventId: string } }) {
   try {
-    // Auth check — will throw if not a chef
     const user = await requireChef()
-
-    // Validate eventId format — must be a valid UUID-like string, not a path segment
     const { eventId } = params
     if (!eventId || eventId.length < 8) {
       return NextResponse.json({ error: 'Invalid event ID format' }, { status: 400 })
     }
 
-    // Quick auth check: verify user has access to this event before generating documents
-    // This prevents generating PDFs for invalid/cross-tenant eventIds
     const supabase: any = createServerClient()
     const { count } = await supabase
       .from('events')
@@ -158,240 +269,77 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
       return NextResponse.json({ error: 'Event not found or access denied' }, { status: 404 })
     }
 
-    // Resolve all print context in one DB call — attribution, custom footer
     const { generatedBy, customFooter } = await getDocumentContext()
-
-    const type = request.nextUrl.searchParams.get('type') || 'all'
-
-    let pdfBuffer: Buffer
-    let filename: string
-
-    // Date string for filename
+    const requestedType = request.nextUrl.searchParams.get('type') || 'all'
+    const selectedTypes = parseOperationalDocTypes(request.nextUrl.searchParams.get('types'))
     const dateSuffix = format(new Date(), 'yyyy-MM-dd')
+    const docConfigs = getDocRenderConfigs(eventId)
 
-    // Helper: render a single-page PDF with attribution + custom footer
-    const renderSingle = async (
-      fetchFn: () => Promise<any>,
-      renderFn: (pdf: PDFLayout, data: any) => void,
-      docType: string,
-      fallbackTitle: string
-    ): Promise<Buffer> => {
+    const renderSingle = async (config: DocRenderConfig): Promise<Buffer> => {
       const pdf = new PDFLayout()
-      const data = await fetchFn()
+      const data = await config.fetch()
       if (data) {
-        renderFn(pdf, data)
+        config.render(pdf, data)
       } else {
-        pdf.title(fallbackTitle)
+        pdf.title(config.fallbackTitle)
         pdf.text('Data not available for this event.', 10, 'italic')
       }
-      applyPageMeta(pdf, generatedBy, customFooter, docType)
+      applyPageMeta(pdf, generatedBy, customFooter, config.docTypeLabel)
       return pdf.toBuffer()
     }
 
-    switch (type) {
-      case 'summary': {
-        pdfBuffer = await renderSingle(
-          () => fetchEventSummaryData(eventId),
-          renderEventSummary,
-          'Event Summary',
-          'EVENT SUMMARY'
-        )
-        filename = `event-summary-${dateSuffix}.pdf`
-        break
-      }
-
-      case 'grocery': {
-        pdfBuffer = await renderSingle(
-          () => fetchGroceryListData(eventId),
-          renderGroceryList,
-          'Grocery List',
-          'GROCERY LIST'
-        )
-        filename = `grocery-list-${dateSuffix}.pdf`
-        break
-      }
-
-      case 'foh': {
-        pdfBuffer = await renderSingle(
-          () => fetchFrontOfHouseMenuData(eventId),
-          renderFrontOfHouseMenu,
-          'FOH Menu',
-          'FRONT-OF-HOUSE MENU'
-        )
-        filename = `front-of-house-menu-${dateSuffix}.pdf`
-        break
-      }
-
-      case 'prep': {
-        pdfBuffer = await renderSingle(
-          () => fetchPrepSheetData(eventId),
-          renderPrepSheet,
-          'Prep Sheet',
-          'PREP SHEET'
-        )
-        filename = `prep-sheet-${dateSuffix}.pdf`
-        break
-      }
-
-      case 'execution': {
-        pdfBuffer = await renderSingle(
-          () => fetchExecutionSheetData(eventId),
-          renderExecutionSheet,
-          'Execution Sheet',
-          'EXECUTION SHEET'
-        )
-        filename = `execution-sheet-${dateSuffix}.pdf`
-        break
-      }
-
-      case 'checklist': {
-        pdfBuffer = await renderSingle(
-          () => fetchChecklistData(eventId),
-          renderChecklist,
-          'Non-Negotiables',
-          'NON-NEGOTIABLES'
-        )
-        filename = `checklist-${dateSuffix}.pdf`
-        break
-      }
-
-      case 'packing': {
-        pdfBuffer = await renderSingle(
-          () => fetchPackingListData(eventId),
-          renderPackingList,
-          'Packing List',
-          'PACKING LIST'
-        )
-        filename = `packing-list-${dateSuffix}.pdf`
-        break
-      }
-
-      case 'reset': {
-        pdfBuffer = await renderSingle(
-          () => fetchResetChecklistData(eventId),
-          renderResetChecklist,
-          'Reset Checklist',
-          'POST-SERVICE RESET'
-        )
-        filename = `reset-checklist-${dateSuffix}.pdf`
-        break
-      }
-
-      case 'travel': {
-        pdfBuffer = await renderSingle(
-          () => fetchTravelRouteData(eventId),
-          renderTravelRoute,
-          'Travel Route',
-          'TRAVEL ROUTE'
-        )
-        filename = `travel-route-${dateSuffix}.pdf`
-        break
-      }
-
-      case 'shots': {
-        pdfBuffer = await renderSingle(
-          () => fetchContentShotListData(eventId),
-          renderContentShotList,
-          'Content Shot List',
-          'CONTENT SHOT LIST'
-        )
-        filename = `content-shot-list-${dateSuffix}.pdf`
-        break
-      }
-
-      case 'all': {
-        // Generate all eight as a combined 8-page PDF
-        // Order: Event Summary → Grocery List → FOH Menu → Prep Sheet → Execution Sheet → Non-Negotiables → Packing List → Reset Checklist
-        const pdf = new PDFLayout()
-
-        const pages: Array<{
-          fetch: () => Promise<any>
-          render: (p: PDFLayout, d: any) => void
-          docType: string
-          fallback: string
-        }> = [
-          {
-            fetch: () => fetchEventSummaryData(eventId),
-            render: renderEventSummary,
-            docType: 'Event Summary',
-            fallback: 'EVENT SUMMARY',
-          },
-          {
-            fetch: () => fetchGroceryListData(eventId),
-            render: renderGroceryList,
-            docType: 'Grocery List',
-            fallback: 'GROCERY LIST',
-          },
-          {
-            fetch: () => fetchFrontOfHouseMenuData(eventId),
-            render: renderFrontOfHouseMenu,
-            docType: 'FOH Menu',
-            fallback: 'FRONT-OF-HOUSE MENU',
-          },
-          {
-            fetch: () => fetchPrepSheetData(eventId),
-            render: renderPrepSheet,
-            docType: 'Prep Sheet',
-            fallback: 'PREP SHEET',
-          },
-          {
-            fetch: () => fetchExecutionSheetData(eventId),
-            render: renderExecutionSheet,
-            docType: 'Execution Sheet',
-            fallback: 'EXECUTION SHEET',
-          },
-          {
-            fetch: () => fetchChecklistData(eventId),
-            render: renderChecklist,
-            docType: 'Non-Negotiables',
-            fallback: 'NON-NEGOTIABLES',
-          },
-          {
-            fetch: () => fetchPackingListData(eventId),
-            render: renderPackingList,
-            docType: 'Packing List',
-            fallback: 'PACKING LIST',
-          },
-          {
-            fetch: () => fetchResetChecklistData(eventId),
-            render: renderResetChecklist,
-            docType: 'Reset Checklist',
-            fallback: 'POST-SERVICE RESET',
-          },
-        ]
-
-        for (let i = 0; i < pages.length; i++) {
-          if (i > 0) pdf.newPage()
-          const page = pages[i]
-          const data = await page.fetch()
-          if (data) {
-            page.render(pdf, data)
-          } else {
-            pdf.title(page.fallback)
-            pdf.text('Data not available for this event.', 10, 'italic')
-          }
-          applyPageMeta(pdf, generatedBy, customFooter, page.docType)
+    const renderCombined = async (types: OperationalDocumentType[]): Promise<Buffer> => {
+      const pdf = new PDFLayout()
+      for (let i = 0; i < types.length; i++) {
+        if (i > 0) pdf.newPage()
+        const config = docConfigs[types[i]]
+        const data = await config.fetch()
+        if (data) {
+          config.render(pdf, data)
+        } else {
+          pdf.title(config.fallbackTitle)
+          pdf.text('Data not available for this event.', 10, 'italic')
         }
-
-        pdfBuffer = pdf.toBuffer()
-        filename = `event-documents-${dateSuffix}.pdf`
-        break
+        applyPageMeta(pdf, generatedBy, customFooter, config.docTypeLabel)
       }
+      return pdf.toBuffer()
+    }
 
-      default:
-        return NextResponse.json(
-          {
-            error:
-              'Invalid document type. Use: summary, grocery, foh, prep, execution, checklist, packing, reset, travel, shots, or all',
-          },
-          { status: 400 }
-        )
+    let pdfBuffer: Buffer
+    let filename: string
+    let archiveType: SnapshotDocType =
+      requestedType === 'pack' ? 'all' : (requestedType as SnapshotDocType)
+
+    if (isOperationalDocumentType(requestedType)) {
+      const config = docConfigs[requestedType]
+      pdfBuffer = await renderSingle(config)
+      filename = `${config.filenameBase}-${dateSuffix}.pdf`
+      archiveType = requestedType
+    } else if (requestedType === 'all') {
+      pdfBuffer = await renderCombined(ALL_PACKET_TYPES)
+      filename = `event-documents-${dateSuffix}.pdf`
+      archiveType = 'all'
+    } else if (requestedType === 'pack') {
+      const packTypes = selectedTypes.length > 0 ? selectedTypes : ALL_PACKET_TYPES
+      pdfBuffer = await renderCombined(packTypes)
+      filename = `event-pack-${dateSuffix}.pdf`
+      archiveType = packTypes.length === 1 ? packTypes[0] : 'all'
+    } else {
+      return NextResponse.json(
+        {
+          error:
+            'Invalid document type. Use: summary, grocery, foh, prep, execution, checklist, packing, reset, travel, shots, all, or pack (with ?types=...)',
+        },
+        { status: 400 }
+      )
     }
 
     const shouldArchive =
       ['1', 'true', 'yes'].includes(
         (request.nextUrl.searchParams.get('archive') ?? '').toLowerCase()
-      ) || type === 'all'
+      ) ||
+      requestedType === 'all' ||
+      requestedType === 'pack'
 
     if (shouldArchive) {
       await archiveGeneratedDocument({
@@ -399,14 +347,12 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
         tenantId: user.tenantId!,
         userId: user.id,
         eventId,
-        documentType: type as SnapshotDocType,
+        documentType: archiveType,
         filename,
         pdfBuffer,
       })
     }
 
-    // Return PDF with inline disposition (opens in browser PDF viewer)
-    // Convert Buffer to Uint8Array for NextResponse compatibility
     const bytes = new Uint8Array(pdfBuffer)
     return new NextResponse(bytes, {
       status: 200,
@@ -418,7 +364,6 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to generate document'
-
     if (message.includes('Unauthorized')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }

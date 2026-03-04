@@ -1,19 +1,23 @@
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { getEvents } from '@/lib/events/actions'
+import { getChefArchetype } from '@/lib/archetypes/actions'
 import { DOCUMENT_TEMPLATE_CATALOG } from '@/lib/documents/template-catalog'
 import {
   getRecentDocumentSnapshots,
   SNAPSHOT_DOCUMENT_LABELS,
 } from '@/lib/documents/snapshot-actions'
+import { getArchetypeDocumentPack } from '@/lib/documents/archetype-packs'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
 export default async function DocumentsIndexPage() {
-  const [events, recentSnapshots] = await Promise.all([
+  const [events, recentSnapshots, archetype] = await Promise.all([
     ((await getEvents().catch(() => [])) || []) as any[],
     getRecentDocumentSnapshots(40),
+    getChefArchetype(),
   ])
+  const pack = getArchetypeDocumentPack(archetype)
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -23,6 +27,21 @@ export default async function DocumentsIndexPage() {
           Open any dinner and generate every required sheet, or download blank templates.
         </p>
       </div>
+
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold mb-2">{pack.title}</h2>
+        <p className="text-sm text-stone-400 mb-3">{pack.subtitle}</p>
+        <div className="flex flex-wrap gap-2">
+          {pack.recommendedOperationalDocs.map((type) => (
+            <span
+              key={type}
+              className="text-xs rounded border border-stone-700 px-2 py-1 text-stone-300"
+            >
+              {SNAPSHOT_DOCUMENT_LABELS[type]}
+            </span>
+          ))}
+        </div>
+      </Card>
 
       <Card className="p-6">
         <h2 className="text-lg font-semibold mb-3">Blank Template Library</h2>
