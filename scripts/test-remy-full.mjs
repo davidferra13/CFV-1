@@ -46,7 +46,32 @@ async function main() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ model: 'qwen3:4b', prompt: 'hello', options: { num_predict: 1 } }),
   })
-  console.log('Ready.\n')
+  console.log('Ready.')
+
+  // Probe: verify Remy is enabled before running 100 tests
+  console.log('Checking Remy is enabled...')
+  try {
+    const probeRes = await fetch('http://localhost:3100/api/remy/stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: cookieStr },
+      body: JSON.stringify({ message: 'ping', currentPage: '/dashboard', recentPages: [], recentActions: [], recentErrors: [], sessionMinutes: 1, activeForm: null, history: [] }),
+      redirect: 'manual',
+    })
+    const probeBody = await probeRes.text()
+    if (probeBody.includes('Remy is currently disabled') || probeBody.includes('Complete AI onboarding')) {
+      console.error('\n❌ ABORT: Remy is disabled for the agent test account.')
+      console.error('   Fix: Sign in as the agent, go to Settings > Remy Control Center, and complete AI onboarding.')
+      console.error('   All 100 tests would return 0% — skipping to save time.\n')
+      process.exit(1)
+    }
+    if (probeRes.status === 307) {
+      console.error('\n❌ ABORT: Auth session was redirected (HTTP 307). Cookie may be invalid.')
+      process.exit(1)
+    }
+  } catch (err) {
+    console.error('Probe failed:', err.message, '— continuing anyway')
+  }
+  console.log('✓ Remy is enabled.\n')
 
   const tests = [
     // === CLIENT LOOKUP (10 tests) ===

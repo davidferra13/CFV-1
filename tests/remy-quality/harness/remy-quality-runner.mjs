@@ -295,7 +295,32 @@ async function main() {
   }
   console.log('')
 
-  // 4. Load prompts
+  // 4. Probe: verify Remy is enabled before running the suite
+  console.log('  Checking Remy is enabled...')
+  try {
+    const probeRes = await fetch(`http://localhost:3100/api/remy/stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: cookie },
+      body: JSON.stringify({ message: 'ping', currentPage: '/dashboard', recentPages: [], recentActions: [], recentErrors: [], sessionMinutes: 1, activeForm: null, history: [] }),
+      redirect: 'manual',
+    })
+    const probeBody = await probeRes.text()
+    if (probeBody.includes('Remy is currently disabled') || probeBody.includes('Complete AI onboarding')) {
+      console.error('\n❌ ABORT: Remy is disabled for the agent test account.')
+      console.error('   Fix: Sign in as the agent, go to Settings > Remy Control Center, and complete AI onboarding.')
+      console.error('   All tests would return 0% — skipping to save time.\n')
+      process.exit(1)
+    }
+    if (probeRes.status === 307) {
+      console.error('\n❌ ABORT: Auth session was redirected (HTTP 307). Cookie may be invalid.')
+      process.exit(1)
+    }
+    console.log('  ✓ Remy is enabled')
+  } catch (err) {
+    console.warn(`  ⚠ Remy probe failed: ${err.message} — continuing anyway`)
+  }
+
+  // 5. Load prompts
   const { prompts, defaults, endpoint } = loadPrompts(opts.suite, opts.category, opts.promptId)
 
   // Build run list — expand prompts × repeat count
@@ -323,7 +348,7 @@ async function main() {
   console.log('─'.repeat(60))
   console.log('')
 
-  // 5. Run prompts sequentially
+  // 6. Run prompts sequentially
   const results = []
   const runStartMs = Date.now()
 

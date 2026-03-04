@@ -21,6 +21,8 @@ export type OpenRegisterInput = {
   openingCashCents: number
 }
 
+const ACTIVE_REGISTER_STATUSES: RegisterSessionStatus[] = ['open', 'suspended']
+
 function isUniqueViolation(error: unknown) {
   const code = (error as { code?: string } | null)?.code
   return code === '23505'
@@ -61,6 +63,63 @@ async function emitRegisterAlert(input: {
   }
 }
 
+async function reconcileActiveRegisterSessionsAfterOpen(ctx: {
+  supabase: any
+  tenantId: string
+  openedSessionId: string
+}) {
+  const { data: activeRows, error } = await (ctx.supabase
+    .from('register_sessions' as any)
+    .select('id, opened_at, created_at')
+    .eq('tenant_id', ctx.tenantId)
+    .in('status', ACTIVE_REGISTER_STATUSES as any)
+    .order('opened_at', { ascending: true })
+    .order('created_at', { ascending: true }) as any)
+
+  if (error) {
+    throw new Error(`Failed to verify active register sessions: ${error.message}`)
+  }
+
+  const active = (activeRows ?? []).map((row: any) => String(row.id)).filter(Boolean)
+  if (active.length <= 1) {
+    return
+  }
+
+  const winnerId = active[0]
+  const closedAtIso = new Date().toISOString()
+
+  if (winnerId !== ctx.openedSessionId) {
+    await (ctx.supabase
+      .from('register_sessions' as any)
+      .update({
+        status: 'closed',
+        closed_at: closedAtIso,
+        close_notes: 'auto-closed: concurrent register open race lost',
+      } as any)
+      .eq('tenant_id', ctx.tenantId)
+      .eq('id', ctx.openedSessionId)
+      .eq('status', 'open') as any)
+
+    throw new Error('A register session is already active. Close it before opening a new one.')
+  }
+
+  const loserIds = active.slice(1).filter((id: string) => id !== winnerId)
+  if (loserIds.length === 0) {
+    return
+  }
+
+  await (ctx.supabase
+    .from('register_sessions' as any)
+    .update({
+      status: 'closed',
+      closed_at: closedAtIso,
+      close_notes: 'auto-closed: concurrent register open race reconciliation',
+    } as any)
+    .eq('tenant_id', ctx.tenantId)
+    .in('id', loserIds as any)
+    .in('status', ACTIVE_REGISTER_STATUSES as any) as any)
+}
+
 // ─── Open Register ───────────────────────────────────────────────
 
 /**
@@ -87,7 +146,7 @@ export async function openRegister(input: OpenRegisterInput) {
     .from('register_sessions' as any)
     .select('id, status')
     .eq('tenant_id', user.tenantId!)
-    .in('status', ['open', 'suspended'])
+    .in('status', ACTIVE_REGISTER_STATUSES as any)
     .limit(1) as any)
 
   if (existing && existing.length > 0) {
@@ -112,6 +171,12 @@ export async function openRegister(input: OpenRegisterInput) {
     }
     throw new Error(`Failed to open register: ${error.message}`)
   }
+
+  await reconcileActiveRegisterSessionsAfterOpen({
+    supabase,
+    tenantId: user.tenantId!,
+    openedSessionId: data.id,
+  })
 
   await appendPosAuditLog({
     tenantId: user.tenantId!,

@@ -74,9 +74,16 @@ function loadClientCredentials() {
 
 // ─── Authentication ────────────────────────────────────────────────────────
 
+/** @type {{ supabaseUrl: string, supabaseAnonKey: string } | null} */
+let _envCache = null
+/** @type {{ email: string, password: string } | null} */
+let _credsCache = null
+
 async function authenticate() {
-  const { supabaseUrl, supabaseAnonKey } = loadEnv()
-  const creds = loadClientCredentials()
+  if (!_envCache) _envCache = loadEnv()
+  if (!_credsCache) _credsCache = loadClientCredentials()
+  const { supabaseUrl, supabaseAnonKey } = _envCache
+  const creds = _credsCache
 
   console.log(`Authenticating as client: ${creds.email}`)
 
@@ -107,6 +114,9 @@ async function authenticate() {
   console.log('Client auth OK.\n')
   return cookie
 }
+
+/** How often to re-authenticate (every N prompts) to prevent mid-run session expiry */
+const AUTH_REFRESH_INTERVAL = 25
 
 // ─── SSE Stream Parser ─────────────────────────────────────────────────────
 
@@ -602,7 +612,7 @@ async function main() {
   console.log(`Loaded ${prompts.length} client prompts across ${promptData.meta.categories.length} categories\n`)
 
   // Authenticate
-  const cookie = await authenticate()
+  let cookie = await authenticate()
 
   // Pre-warm Ollama
   await prewarmOllama()
@@ -623,6 +633,12 @@ async function main() {
   const startTime = Date.now()
 
   for (let i = 0; i < prompts.length; i++) {
+    // Refresh auth token periodically to prevent mid-run session expiry
+    if (i > 0 && i % AUTH_REFRESH_INTERVAL === 0) {
+      console.log(`\n  Refreshing auth token (every ${AUTH_REFRESH_INTERVAL} prompts)...`)
+      cookie = await authenticate()
+    }
+
     const prompt = prompts[i]
     const progress = `[${i + 1}/${prompts.length}]`
 

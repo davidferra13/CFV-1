@@ -20,9 +20,10 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const initialized = useRef(false)
 
-  // Initialize PostHog once on mount
+  // Initialize PostHog once on mount (skip kiosk pages — dedicated tablets don't need analytics)
   useEffect(() => {
     if (!POSTHOG_KEY || initialized.current) return
+    if (pathname?.startsWith('/kiosk')) return
 
     async function init() {
       try {

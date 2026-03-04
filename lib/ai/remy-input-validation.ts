@@ -237,10 +237,37 @@ export const RECIPE_GENERATION_REFUSAL =
   'To add a new recipe, head to Recipes → New Recipe.'
 
 /**
+ * Patterns that indicate the user wants to SEARCH or LOOK UP existing recipes.
+ * These are legitimate read-only operations and must NOT be blocked by the
+ * recipe generation guardrail. Checked before generation patterns.
+ */
+const RECIPE_SEARCH_PATTERNS = [
+  // Explicit search/lookup intent
+  /\b(search|find|look\s*up|lookup|show|check|list|browse|pull\s*up|what)\b.*\b(recipe|recipes|menu|dishes?)\b/i,
+  // "recipe search/book/list"
+  /\brecipe\s+(search|lookup|book|list|collection|library|catalog)\b/i,
+  // Possessive — "my/our/the recipes"
+  /\b(my|our|the|your|chef'?s?)\s+recipes?\b/i,
+  // "do you/we have a recipe for X"
+  /\bdo\s+(you|we)\s+have\s+.*\b(recipe|dish)/i,
+  // "any recipes for X" / "recipes with X"
+  /\b(any|which)\s+recipes?\s+(for|with|using|that)/i,
+  // recipe.search action reference
+  /\brecipe\.search\b/i,
+]
+
+/**
  * Check if a message is asking AI to generate a recipe.
  * Returns the refusal message if blocked, or null if the message is fine.
  */
 export function checkRecipeGenerationBlock(message: string): string | null {
+  // Allow recipe SEARCH queries — these are read-only lookups, not generation
+  for (const pattern of RECIPE_SEARCH_PATTERNS) {
+    if (pattern.test(message)) {
+      return null
+    }
+  }
+
   for (const pattern of RECIPE_GENERATION_PATTERNS) {
     if (pattern.test(message)) {
       return RECIPE_GENERATION_REFUSAL

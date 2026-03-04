@@ -77,16 +77,26 @@ export async function POST(req: NextRequest) {
     // Auth — must be an authenticated client
     const user = await requireClient()
 
-    const rawBody = await req.json()
+    let rawBody: unknown
+    try {
+      rawBody = await req.json()
+    } catch {
+      return new Response(JSON.stringify({ error: 'Request body must be valid JSON' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
     const validated = validateRemyRequestBody(rawBody)
     if (!validated) {
       return new Response(
-        encodeSSE({ type: 'error', data: 'Invalid request — please try again.' }),
-        { headers: sseHeaders() }
+        JSON.stringify({
+          error: 'Invalid request body — message field is required and must be a non-empty string',
+        }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
       )
     }
     const { message } = validated
-    const history = validateHistory(rawBody.history, 8)
+    const history = validateHistory((rawBody as Record<string, unknown>)?.history, 8)
 
     // Rate limiting (reuse tenant-based rate limiter)
     const rateCheck = checkRemyRateLimit(user.tenantId!)
