@@ -5,6 +5,27 @@
 // Docs: https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation
 
 export async function register() {
+  // ── Production env validation ──
+  // Fail loud if critical keys are missing — better a startup crash than silent payment failures
+  if (process.env.NODE_ENV === 'production') {
+    const required = [
+      'NEXT_PUBLIC_SUPABASE_URL',
+      'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+      'SUPABASE_SERVICE_ROLE_KEY',
+      'STRIPE_SECRET_KEY',
+      'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY',
+      'STRIPE_WEBHOOK_SECRET',
+      'RESEND_API_KEY',
+      'CRON_SECRET',
+    ]
+    const missing = required.filter((k) => !process.env[k])
+    if (missing.length > 0) {
+      throw new Error(
+        `[ChefFlow] Missing required env vars for production:\n  ${missing.join('\n  ')}\nSee .env.example for the full list.`
+      )
+    }
+  }
+
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     // ── Sentry: Node.js server (API routes, server actions) ──
     const Sentry = await import('@sentry/nextjs')
