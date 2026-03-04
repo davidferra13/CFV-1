@@ -1,295 +1,328 @@
-'use client'
-
 import Link from 'next/link'
+import { ArrowRight, CheckCircle2, MinusCircle, ShieldCheck, Sparkles, XCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ShieldCheck } from 'lucide-react'
-import { useState } from 'react'
-import { PRO_PRICE_MONTHLY } from '@/lib/billing/tier'
+import {
+  FUNCTION_BUCKETS,
+  PRICING_COMPARISON_SECTIONS,
+  PRICING_FAQS,
+  PRICING_PLANS,
+  PRO_FEATURE_AREAS,
+  type ComparisonCell,
+  type ComparisonCellState,
+  type PricingPlanId,
+} from '@/lib/billing/pricing-catalog'
 
-export default function PricingPage() {
-  const [openFaq, setOpenFaq] = useState<number | null>(null)
+const PLAN_COLUMNS: PricingPlanId[] = ['free', 'pro', 'scale']
 
-  const toggleFaq = (index: number) => {
-    setOpenFaq(openFaq === index ? null : index)
+function getCellTone(state: ComparisonCellState) {
+  if (state === 'included') return 'text-green-400'
+  if (state === 'limited') return 'text-amber-300'
+  if (state === 'pilot') return 'text-brand-300'
+  return 'text-stone-500'
+}
+
+function ComparisonPill({ cell }: { cell: ComparisonCell }) {
+  const iconClass = `h-4 w-4 shrink-0 ${getCellTone(cell.state)}`
+
+  if (cell.state === 'included') {
+    return (
+      <span className="inline-flex items-center gap-2 text-sm text-stone-200">
+        <CheckCircle2 className={iconClass} />
+        {cell.note}
+      </span>
+    )
   }
 
-  const faqs = [
-    {
-      question: 'What payment methods do you accept?',
-      answer: 'All major credit cards.',
-    },
-    {
-      question: 'Can I cancel anytime?',
-      answer: 'Yes. Cancel anytime and keep access through your current billing cycle.',
-    },
-    {
-      question: 'Do you charge transaction fees?',
-      answer: 'We do not add platform transaction fees. Standard processor fees still apply.',
-    },
-    {
-      question: 'Is there a setup fee?',
-      answer: 'No setup fee.',
-    },
-    {
-      question: 'What happens after my free trial?',
-      answer: `After 14 days, your subscription is $${PRO_PRICE_MONTHLY}/month.`,
-    },
-    {
-      question: 'Can I switch plans later?',
-      answer: 'Right now there is one plan with full access.',
-    },
-  ]
+  if (cell.state === 'limited') {
+    return (
+      <span className="inline-flex items-center gap-2 text-sm text-stone-200">
+        <MinusCircle className={iconClass} />
+        {cell.note}
+      </span>
+    )
+  }
+
+  if (cell.state === 'pilot') {
+    return (
+      <span className="inline-flex items-center gap-2 text-sm text-stone-200">
+        <Sparkles className={iconClass} />
+        {cell.note}
+      </span>
+    )
+  }
 
   return (
+    <span className="inline-flex items-center gap-2 text-sm text-stone-200">
+      <XCircle className={iconClass} />
+      {cell.note}
+    </span>
+  )
+}
+
+export default function PricingPage() {
+  return (
     <div>
-      {/* Page Header */}
-      <section className="container mx-auto px-4 py-16 md:py-24">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-stone-100 mb-4">
-            Simple pricing for serious chefs.
-          </h1>
-          <p className="text-lg md:text-xl text-stone-300">
-            One plan. No hidden fees. Cancel anytime.
-          </p>
-        </div>
-      </section>
-
-      {/* Pricing Card */}
-      <section className="container mx-auto px-4 pb-16 md:pb-24">
-        <div className="max-w-md mx-auto">
-          <Card className="border-2 border-brand-500 shadow-xl">
-            <CardHeader className="text-center pb-8 pt-8">
-              <CardTitle className="text-2xl mb-4">Pro Plan</CardTitle>
-              <div className="mb-2">
-                <span className="text-5xl font-bold text-stone-100">${PRO_PRICE_MONTHLY}</span>
-                <span className="text-stone-300 text-lg">/month</span>
-              </div>
-              <p className="text-sm text-stone-300">14-day free trial</p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start">
-                  <svg
-                    className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="text-stone-300">Unlimited events &amp; clients</span>
-                </li>
-                <li className="flex items-start">
-                  <svg
-                    className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="text-stone-300">Full inquiry-to-payment pipeline</span>
-                </li>
-                <li className="flex items-start">
-                  <svg
-                    className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="text-stone-300">Menus, recipes &amp; food costing</span>
-                </li>
-                <li className="flex items-start">
-                  <svg
-                    className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="text-stone-300">Invoices, payments &amp; expense tracking</span>
-                </li>
-                <li className="flex items-start">
-                  <svg
-                    className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="text-stone-300">
-                    Client portal for proposals, approvals, and messaging
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <svg
-                    className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="text-stone-300">Auto-generated documents at key milestones</span>
-                </li>
-                <li className="flex items-start">
-                  <svg
-                    className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="text-stone-300">
-                    Prep lists, shopping lists, and kitchen ops tools
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <svg
-                    className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="text-stone-300">Calendar, scheduling, and support</span>
-                </li>
-                <li className="flex items-start">
-                  <svg
-                    className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="text-stone-300">
-                    Remy AI for drafting, analysis, and recipe search
-                  </span>
-                </li>
-              </ul>
-              <p className="text-xs text-stone-500 text-center mb-2">No credit card required</p>
-              <Link
-                href="/auth/signup"
-                className="block w-full bg-brand-500 text-white text-center px-8 py-3 rounded-md hover:bg-brand-600 transition-colors font-medium"
-              >
-                Sign up
-              </Link>
-            </CardContent>
-          </Card>
-          <p className="mt-6 flex items-center justify-center gap-1.5 text-center text-xs text-stone-400">
-            <ShieldCheck className="h-3.5 w-3.5 text-brand-400" />
-            AI assists, you decide — nothing happens without your approval.
-          </p>
-        </div>
-      </section>
-
-      {/* Bottom CTA */}
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl font-bold text-stone-100 mb-4">
-              Run service, not spreadsheets.
-            </h2>
-            <p className="text-lg text-stone-300 mb-8">
-              14 days free. No credit card. Cancel anytime.
+      <section className="relative overflow-hidden border-b border-stone-700/50">
+        <div className="pointer-events-none absolute left-1/2 top-0 h-[420px] w-[780px] -translate-x-1/2 rounded-full bg-brand-700/20 blur-[80px]" />
+        <div className="pointer-events-none absolute -right-16 top-8 h-[260px] w-[260px] rounded-full bg-brand-800/25 blur-[70px]" />
+        <div className="relative container mx-auto px-4 py-16 md:py-24">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="inline-flex items-center gap-2 rounded-full border border-brand-700/80 bg-stone-900/70 px-4 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
+              Plan Comparison
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                href="/auth/signup"
-                className="w-full sm:w-auto bg-brand-500 text-white px-8 py-3 rounded-md hover:bg-brand-600 transition-colors font-medium text-center"
-              >
-                Sign up
-              </Link>
-              <Link
-                href="/contact"
-                className="w-full sm:w-auto bg-stone-900 text-stone-300 px-8 py-3 rounded-md hover:bg-stone-800 transition-colors font-medium border border-stone-600 text-center"
-              >
-                Contact Us
-              </Link>
-            </div>
+            <h1 className="mt-5 text-4xl font-display tracking-tight text-stone-100 md:text-6xl">
+              Choose the tier that matches your operating stage.
+            </h1>
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-stone-300 md:text-lg">
+              Free gives every chef a full core system. Pro adds automation and growth leverage.
+              Scale is a guided pilot for teams and larger rollouts.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="bg-stone-800 py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-stone-100 mb-8 text-center">
-              Common questions
-            </h2>
-            <div className="space-y-4">
-              {faqs.map((faq, index) => (
-                <Card key={index} className="overflow-hidden">
-                  <button
-                    onClick={() => toggleFaq(index)}
-                    className="w-full text-left px-6 py-4 hover:bg-stone-800 transition-colors"
-                    aria-expanded={openFaq === index}
-                  >
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-stone-100 pr-8">{faq.question}</h3>
-                      <svg
-                        className={`w-5 h-5 text-stone-500 flex-shrink-0 transition-transform ${
-                          openFaq === index ? 'transform rotate-180' : ''
-                        }`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </div>
-                  </button>
-                  {openFaq === index && (
-                    <div className="px-6 pb-4">
-                      <p className="text-stone-300">{faq.answer}</p>
-                    </div>
+      <section className="container mx-auto px-4 py-12 md:py-16">
+        <div className="grid gap-5 lg:grid-cols-3">
+          {PRICING_PLANS.map((plan, index) => (
+            <Card
+              key={plan.id}
+              className={`animate-fade-slide-up overflow-hidden border ${
+                plan.highlighted
+                  ? 'border-brand-500 bg-gradient-to-b from-brand-950/60 to-stone-900'
+                  : 'border-stone-700'
+              }`}
+              style={{ animationDelay: `${index * 80}ms` }}
+            >
+              <CardHeader className="border-b border-stone-700/80">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-stone-400">
+                      {plan.tag}
+                    </p>
+                    <CardTitle className="mt-1 text-2xl">{plan.name}</CardTitle>
+                  </div>
+                  {plan.badge && (
+                    <span className="rounded-full border border-brand-600/70 bg-brand-950 px-2.5 py-1 text-xs font-semibold text-brand-200">
+                      {plan.badge}
+                    </span>
                   )}
-                </Card>
+                </div>
+                <p className="mt-5 flex items-end gap-2">
+                  <span className="text-4xl font-semibold text-stone-100">{plan.price}</span>
+                  <span className="pb-1 text-sm text-stone-400">{plan.cadence}</span>
+                </p>
+                <p className="mt-3 text-sm text-stone-300">{plan.summary}</p>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-5">
+                <ul className="space-y-2.5">
+                  {plan.points.map((point) => (
+                    <li key={point} className="flex items-start gap-2.5 text-sm text-stone-300">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-300" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href={plan.ctaHref}
+                  className={`inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors ${
+                    plan.highlighted
+                      ? 'bg-brand-600 text-white hover:bg-brand-700'
+                      : 'border border-stone-600 bg-stone-900 text-stone-200 hover:bg-stone-800'
+                  }`}
+                >
+                  {plan.ctaLabel}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                {plan.finePrint && <p className="text-xs text-stone-400">{plan.finePrint}</p>}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <p className="mt-5 flex items-center justify-center gap-2 text-center text-xs text-stone-400">
+          <ShieldCheck className="h-3.5 w-3.5 text-brand-300" />
+          Trial and paid users both use the same product - no hidden feature branch.
+        </p>
+      </section>
+
+      <section className="container mx-auto px-4 pb-14 md:pb-20">
+        <div className="rounded-2xl border border-stone-700 bg-stone-900/70 p-6 md:p-8">
+          <div className="max-w-3xl">
+            <h2 className="text-2xl font-display text-stone-100 md:text-3xl">
+              How we organize website functions
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-stone-300 md:text-base">
+              This model keeps tiering clear: Free for must-have weekly workflow, Pro for leverage
+              and automation, Scale for rollout services when team complexity appears.
+            </p>
+          </div>
+          <div className="mt-6 grid gap-4 lg:grid-cols-3">
+            {FUNCTION_BUCKETS.map((bucket, index) => (
+              <div
+                key={bucket.id}
+                className="animate-fade-slide-up rounded-xl border border-stone-700 bg-stone-900/80 p-5"
+                style={{ animationDelay: `${index * 70}ms` }}
+              >
+                <h3 className="text-lg font-semibold text-stone-100">{bucket.label}</h3>
+                <p className="mt-2 text-xs uppercase tracking-[0.08em] text-brand-300">
+                  Placement rule
+                </p>
+                <p className="mt-1.5 text-sm text-stone-300">{bucket.rule}</p>
+                <ul className="mt-4 space-y-2">
+                  {bucket.items.map((item) => (
+                    <li key={item} className="text-sm text-stone-300">
+                      - {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="container mx-auto px-4 pb-14 md:pb-20">
+        <h2 className="text-center text-2xl font-display text-stone-100 md:text-3xl">
+          Full feature comparison
+        </h2>
+        <p className="mx-auto mt-3 max-w-3xl text-center text-sm leading-relaxed text-stone-300 md:text-base">
+          The matrix below is the source-of-truth view for what belongs in each tier today.
+        </p>
+        <div className="mt-6 overflow-x-auto rounded-2xl border border-stone-700 bg-stone-900/70">
+          <table className="min-w-[920px] w-full border-collapse">
+            <thead>
+              <tr className="border-b border-stone-700 bg-stone-900">
+                <th className="px-5 py-4 text-left text-sm font-semibold text-stone-100">
+                  Capability
+                </th>
+                {PLAN_COLUMNS.map((planId) => {
+                  const plan = PRICING_PLANS.find((item) => item.id === planId)
+                  return (
+                    <th
+                      key={planId}
+                      className="px-5 py-4 text-left text-sm font-semibold text-stone-100"
+                    >
+                      {plan?.name}
+                    </th>
+                  )
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              {PRICING_COMPARISON_SECTIONS.map((section) => (
+                <FragmentRows key={section.label} label={section.label}>
+                  {section.rows.map((row) => (
+                    <tr key={row.capability} className="border-b border-stone-800 align-top">
+                      <td className="px-5 py-4">
+                        <p className="text-sm font-medium text-stone-100">{row.capability}</p>
+                        <p className="mt-1 text-xs text-stone-400">{row.detail}</p>
+                      </td>
+                      {PLAN_COLUMNS.map((planId) => (
+                        <td key={`${row.capability}-${planId}`} className="px-5 py-4">
+                          <ComparisonPill cell={row.values[planId]} />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </FragmentRows>
               ))}
-            </div>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="container mx-auto px-4 pb-14 md:pb-20">
+        <div className="rounded-2xl border border-stone-700 bg-stone-900/70 p-6 md:p-8">
+          <h2 className="text-2xl font-display text-stone-100 md:text-3xl">
+            Pro function map by domain
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-stone-300 md:text-base">
+            This is the current catalog of Pro domains, grouped so your team can quickly decide
+            where new features should live.
+          </p>
+          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {PRO_FEATURE_AREAS.map((area) => (
+              <div
+                key={area.label}
+                className="rounded-xl border border-stone-700 bg-stone-900/80 p-4"
+              >
+                <h3 className="text-sm font-semibold uppercase tracking-[0.08em] text-brand-300">
+                  {area.label}
+                </h3>
+                <ul className="mt-3 space-y-2">
+                  {area.features.map((feature) => (
+                    <li key={feature} className="text-sm text-stone-300">
+                      - {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="container mx-auto px-4 pb-14 md:pb-20">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="text-center text-2xl font-display text-stone-100 md:text-3xl">
+            Common questions
+          </h2>
+          <div className="mt-6 space-y-3">
+            {PRICING_FAQS.map((faq) => (
+              <details
+                key={faq.question}
+                className="group rounded-xl border border-stone-700 bg-stone-900/70 p-4"
+              >
+                <summary className="cursor-pointer list-none pr-4 text-sm font-semibold text-stone-100">
+                  {faq.question}
+                </summary>
+                <p className="mt-2 text-sm leading-relaxed text-stone-300">{faq.answer}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-stone-700/50 bg-stone-900/40">
+        <div className="container mx-auto px-4 py-14 text-center md:py-20">
+          <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
+            Start with structure, upgrade for leverage.
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-stone-300">
+            Launch on Free, move to Pro when automation becomes a bottleneck, and use Scale when
+            team rollout requires implementation support.
+          </p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link
+              href="/auth/signup"
+              className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+            >
+              Start Free
+            </Link>
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-6 py-3 text-sm font-semibold text-stone-200 transition-colors hover:bg-stone-800"
+            >
+              Talk to Sales
+            </Link>
           </div>
         </div>
       </section>
     </div>
+  )
+}
+
+function FragmentRows({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <>
+      <tr className="border-y border-stone-700 bg-stone-950/80">
+        <th
+          colSpan={4}
+          className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-[0.1em] text-brand-300"
+        >
+          {label}
+        </th>
+      </tr>
+      {children}
+    </>
   )
 }

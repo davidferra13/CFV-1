@@ -1,64 +1,63 @@
 import type { Metadata } from 'next'
-import {
-  SoftwareApplicationJsonLd,
-  FAQPageJsonLd,
-  BreadcrumbJsonLd,
-} from '@/components/seo/json-ld'
-import { PRO_PRICE_MONTHLY } from '@/lib/billing/tier'
+import { BreadcrumbJsonLd, FAQPageJsonLd, JsonLd } from '@/components/seo/json-ld'
+import { PRO_PRICE_MONTHLY, PRO_TRIAL_DAYS } from '@/lib/billing/constants'
+import { PRICING_FAQS } from '@/lib/billing/pricing-catalog'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
-  title: 'Pricing - ChefFlow | Private Chef Business Software',
-  description: `One plan at $${PRO_PRICE_MONTHLY}/month. Run events, clients, menus, and payments in one place.`,
+  title: 'Pricing - ChefFlow | Free, Pro, and Scale',
+  description: `Start free, upgrade to Pro at $${PRO_PRICE_MONTHLY}/month, or request Scale rollout support for larger teams.`,
   openGraph: {
-    title: 'Pricing - ChefFlow | Private Chef Business Software',
-    description: `One plan at $${PRO_PRICE_MONTHLY}/month with a 14-day free trial.`,
+    title: 'ChefFlow Pricing | Free, Pro, and Scale',
+    description: `Free core workflow + Pro automation for $${PRO_PRICE_MONTHLY}/month. Scale pilot available for team rollouts.`,
     url: `${BASE_URL}/pricing`,
     siteName: 'ChefFlow',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: `ChefFlow Pricing - $${PRO_PRICE_MONTHLY}/month`,
-    description: 'One plan. Full access. 14-day free trial.',
+    title: 'ChefFlow Pricing | Free + Pro',
+    description: `Start free. Pro is $${PRO_PRICE_MONTHLY}/month with a ${PRO_TRIAL_DAYS}-day free trial.`,
   },
   alternates: {
     canonical: `${BASE_URL}/pricing`,
   },
 }
 
-const PRICING_FAQS = [
-  {
-    question: 'What payment methods do you accept?',
-    answer: 'All major credit cards.',
-  },
-  {
-    question: 'Can I cancel anytime?',
-    answer: 'Yes. Cancel anytime and keep access through your current billing cycle.',
-  },
-  {
-    question: 'Do you charge transaction fees?',
-    answer: 'We do not add platform transaction fees. Standard processor fees still apply.',
-  },
-  {
-    question: 'Is there a setup fee?',
-    answer: 'No setup fee.',
-  },
-  {
-    question: 'What happens after my free trial?',
-    answer: `After 14 days, your subscription is $${PRO_PRICE_MONTHLY}/month.`,
-  },
-  {
-    question: 'Can I switch plans later?',
-    answer: 'Right now there is one plan with full access.',
-  },
-]
+const PRICING_APPLICATION_JSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'ChefFlow',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web',
+  url: `${BASE_URL}/pricing`,
+  description:
+    'Private chef business software for inquiries, events, clients, culinary operations, and finance workflows.',
+  offers: [
+    {
+      '@type': 'Offer',
+      name: 'ChefFlow Free',
+      price: '0',
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/InStock',
+      description: 'Core workflow for solo chef operations.',
+    },
+    {
+      '@type': 'Offer',
+      name: 'ChefFlow Pro',
+      price: String(PRO_PRICE_MONTHLY),
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/InStock',
+      description: `Automation, AI, and growth workflows with a ${PRO_TRIAL_DAYS}-day free trial.`,
+    },
+  ],
+}
 
 export default function PricingLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <SoftwareApplicationJsonLd />
+      <JsonLd data={PRICING_APPLICATION_JSON_LD} />
       <FAQPageJsonLd faqs={PRICING_FAQS} />
       <BreadcrumbJsonLd
         items={[

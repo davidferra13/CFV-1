@@ -12,9 +12,10 @@
 
 import { cache } from 'react'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { PRO_PRICE_MONTHLY } from '@/lib/billing/constants'
 
 /** Monthly price in dollars — single source of truth for display. */
-export const PRO_PRICE_MONTHLY = 29
+export { PRO_PRICE_MONTHLY }
 
 export type Tier = 'free' | 'pro'
 

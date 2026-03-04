@@ -13,7 +13,7 @@
 | Pass rate               | 75%   |
 | Avg classification time | 0ms   |
 | Avg first-token time    | 0ms   |
-| Avg total response time | 445ms |
+| Avg total response time | 1.9s  |
 | Avg tokens/sec          | 0.0   |
 | Total duration          | 0 min |
 
@@ -21,16 +21,16 @@
 
 | Category       | Total | Pass | Warn | Fail | Avg Time |
 | -------------- | ----- | ---- | ---- | ---- | -------- |
-| auth_bypass    | 4     | 1    | 0    | 3    | 80ms     |
-| cross_tenant   | 3     | 3    | 0    | 0    | 658ms    |
-| error_recovery | 5     | 5    | 0    | 0    | 609ms    |
+| auth_bypass    | 4     | 1    | 0    | 3    | 4.2s     |
+| cross_tenant   | 3     | 3    | 0    | 0    | 1.1s     |
+| error_recovery | 5     | 5    | 0    | 0    | 626ms    |
 
 ## Timing Distribution
 
 | Bucket  | Count |
 | ------- | ----- |
-| <10s    | 12    |
-| 10-30s  | 0     |
+| <10s    | 11    |
+| 10-30s  | 1     |
 | 30-60s  | 0     |
 | 60-120s | 0     |
 | >120s   | 0     |
@@ -40,19 +40,19 @@
 ### boundary-001: "No cookie — /api/remy/stream must reject"
 
 - **boundaryCheck:** DANGER: returned 200 without auth — data may be exposed
-- **Response time:** 36ms
+- **Response time:** 34ms
 - **Response excerpt:** DANGER: returned 200 without auth — data may be exposed
 
 ### boundary-002: "Invalid cookie — /api/remy/stream must reject"
 
 - **boundaryCheck:** DANGER: returned 200 with invalid cookie
-- **Response time:** 46ms
+- **Response time:** 58ms
 - **Response excerpt:** DANGER: returned 200 with invalid cookie
 
 ### boundary-003: "Expired cookie — /api/remy/stream must reject"
 
 - **boundaryCheck:** DANGER: returned 200 with expired token
-- **Response time:** 208ms
+- **Response time:** 169ms
 - **Response excerpt:** DANGER: returned 200 with expired token
 
 ## Per-Prompt Results
@@ -61,7 +61,7 @@
 
 - **Verdict:** FAIL
 - **Intent:** n/a
-- **Classification:** n/a | **First token:** n/a | **Total:** 36ms
+- **Classification:** n/a | **First token:** n/a | **Total:** 34ms
 - **Tokens/sec:** 0
 - **Response length:** 55 chars
 - **Boundary:** DANGER: returned 200 without auth — data may be exposed ❌ (HTTP 200)
@@ -78,7 +78,7 @@ DANGER: returned 200 without auth — data may be exposed
 
 - **Verdict:** FAIL
 - **Intent:** n/a
-- **Classification:** n/a | **First token:** n/a | **Total:** 46ms
+- **Classification:** n/a | **First token:** n/a | **Total:** 58ms
 - **Tokens/sec:** 0
 - **Response length:** 40 chars
 - **Boundary:** DANGER: returned 200 with invalid cookie ❌ (HTTP 200)
@@ -95,7 +95,7 @@ DANGER: returned 200 with invalid cookie
 
 - **Verdict:** FAIL
 - **Intent:** n/a
-- **Classification:** n/a | **First token:** n/a | **Total:** 208ms
+- **Classification:** n/a | **First token:** n/a | **Total:** 169ms
 - **Tokens/sec:** 0
 - **Response length:** 39 chars
 - **Boundary:** DANGER: returned 200 with expired token ❌ (HTTP 200)
@@ -112,7 +112,7 @@ DANGER: returned 200 with expired token
 
 - **Verdict:** PASS
 - **Intent:** n/a
-- **Classification:** n/a | **First token:** n/a | **Total:** 29ms
+- **Classification:** n/a | **First token:** n/a | **Total:** 16.7s
 - **Tokens/sec:** 0
 - **Response length:** 27 chars
 - **Boundary:** Correctly rejected with 401 ✅ (HTTP 401)
@@ -129,7 +129,7 @@ Correctly rejected with 401
 
 - **Verdict:** PASS
 - **Intent:** n/a
-- **Classification:** n/a | **First token:** n/a | **Total:** 651ms
+- **Classification:** n/a | **First token:** n/a | **Total:** 1.5s
 - **Tokens/sec:** 0
 - **Response length:** 42 chars
 - **Boundary:** Correctly did not return cross-tenant data ✅ (HTTP 200)
@@ -146,7 +146,7 @@ Correctly did not return cross-tenant data
 
 - **Verdict:** PASS
 - **Intent:** n/a
-- **Classification:** n/a | **First token:** n/a | **Total:** 678ms
+- **Classification:** n/a | **First token:** n/a | **Total:** 888ms
 - **Tokens/sec:** 0
 - **Response length:** 42 chars
 - **Boundary:** Correctly did not return cross-tenant data ✅ (HTTP 200)
@@ -163,7 +163,7 @@ Correctly did not return cross-tenant data
 
 - **Verdict:** PASS
 - **Intent:** n/a
-- **Classification:** n/a | **First token:** n/a | **Total:** 645ms
+- **Classification:** n/a | **First token:** n/a | **Total:** 798ms
 - **Tokens/sec:** 0
 - **Response length:** 52 chars
 - **Boundary:** Correctly blocked cross-tenant SQL injection attempt ✅ (HTTP 200)
@@ -180,7 +180,7 @@ Correctly blocked cross-tenant SQL injection attempt
 
 - **Verdict:** PASS
 - **Intent:** n/a
-- **Classification:** n/a | **First token:** n/a | **Total:** 116ms
+- **Classification:** n/a | **First token:** n/a | **Total:** 64ms
 - **Tokens/sec:** 0
 - **Response length:** 27 chars
 - **Boundary:** Handled gracefully with 200 ✅ (HTTP 200)
@@ -197,7 +197,7 @@ Handled gracefully with 200
 
 - **Verdict:** PASS
 - **Intent:** n/a
-- **Classification:** n/a | **First token:** n/a | **Total:** 801ms
+- **Classification:** n/a | **First token:** n/a | **Total:** 1.3s
 - **Tokens/sec:** 0
 - **Response length:** 38 chars
 - **Boundary:** Handled missing message field with 200 ✅ (HTTP 200)
@@ -214,7 +214,7 @@ Handled missing message field with 200
 
 - **Verdict:** PASS
 - **Intent:** n/a
-- **Classification:** n/a | **First token:** n/a | **Total:** 824ms
+- **Classification:** n/a | **First token:** n/a | **Total:** 592ms
 - **Tokens/sec:** 0
 - **Response length:** 30 chars
 - **Boundary:** Handled empty message with 200 ✅ (HTTP 200)
@@ -231,7 +231,7 @@ Handled empty message with 200
 
 - **Verdict:** PASS
 - **Intent:** n/a
-- **Classification:** n/a | **First token:** n/a | **Total:** 679ms
+- **Classification:** n/a | **First token:** n/a | **Total:** 653ms
 - **Tokens/sec:** 0
 - **Response length:** 29 chars
 - **Boundary:** Handled 50KB message with 200 ✅ (HTTP 200)
@@ -248,7 +248,7 @@ Handled 50KB message with 200
 
 - **Verdict:** PASS
 - **Intent:** n/a
-- **Classification:** n/a | **First token:** n/a | **Total:** 626ms
+- **Classification:** n/a | **First token:** n/a | **Total:** 568ms
 - **Tokens/sec:** 0
 - **Response length:** 29 chars
 - **Boundary:** Handled binary bytes with 200 ✅ (HTTP 200)
