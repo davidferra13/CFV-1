@@ -6,9 +6,10 @@ import { getEventById } from '@/lib/events/actions'
 import { getBusinessDocInfo, getDocumentReadiness } from '@/lib/documents/actions'
 import { getChefArchetype } from '@/lib/archetypes/actions'
 import {
-  getEventDocumentSnapshots,
+  getEventDocumentSnapshotDrilldown,
   SNAPSHOT_DOCUMENT_LABELS,
   type SnapshotDocumentType,
+  type SnapshotDrilldownOrder,
 } from '@/lib/documents/snapshot-actions'
 import { getArchetypeDocumentPack } from '@/lib/documents/archetype-packs'
 import type { OperationalDocumentType } from '@/lib/documents/template-catalog'
@@ -17,14 +18,14 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
 type SnapshotDocFilter = 'any' | SnapshotDocumentType
-type SnapshotOrder = 'newest' | 'oldest'
 
 type DrilldownQueryState = {
   doc: SnapshotDocFilter
   from: string
   to: string
-  order: SnapshotOrder
+  order: SnapshotDrilldownOrder
   version: string
+  page: number
 }
 
 const SNAPSHOT_DOCUMENT_TYPES: SnapshotDocumentType[] = [
@@ -78,8 +79,15 @@ function normalizeDateInput(value: string | undefined): string {
   return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : ''
 }
 
-function normalizeOrder(value: string | undefined): SnapshotOrder {
+function normalizeOrder(value: string | undefined): SnapshotDrilldownOrder {
   return value === 'oldest' ? 'oldest' : 'newest'
+}
+
+function normalizePage(value: string | undefined): number {
+  if (!value) return 1
+  const parsed = Number.parseInt(value, 10)
+  if (!Number.isInteger(parsed) || parsed < 1) return 1
+  return parsed
 }
 
 function buildDrilldownHref(
@@ -95,6 +103,9 @@ function buildDrilldownHref(
   if (merged.doc === 'any') {
     merged.version = ''
   }
+  if (merged.page < 1) {
+    merged.page = 1
+  }
 
   const params = new URLSearchParams()
   if (merged.doc !== 'any') params.set('doc', merged.doc)
@@ -102,6 +113,7 @@ function buildDrilldownHref(
   if (merged.to) params.set('to', merged.to)
   if (merged.order !== 'newest') params.set('order', merged.order)
   if (merged.version) params.set('version', merged.version)
+  if (merged.page > 1) params.set('page', String(merged.page))
 
   const query = params.toString()
   return query ? `/events/${eventId}/documents?${query}` : `/events/${eventId}/documents`
@@ -118,19 +130,10 @@ export default async function EventDocumentsPage({
     to?: string
     order?: string
     version?: string
+    page?: string
   }
 }) {
   await requireChef()
-
-  const [event, readiness, businessDocs, snapshots, archetype] = await Promise.all([
-    getEventById(params.id),
-    getDocumentReadiness(params.id),
-    getBusinessDocInfo(params.id).catch(() => null),
-    getEventDocumentSnapshots(params.id, 500),
-    getChefArchetype(),
-  ])
-
-  if (!event) notFound()
 
   const rawDoc = (searchParams?.doc ?? 'any').trim().toLowerCase()
   const docFilter: SnapshotDocFilter =
@@ -138,6 +141,7 @@ export default async function EventDocumentsPage({
   let fromDate = normalizeDateInput(searchParams?.from)
   let toDate = normalizeDateInput(searchParams?.to)
   const order = normalizeOrder(searchParams?.order)
+  const page = normalizePage(searchParams?.page)
   const rawVersion = (searchParams?.version ?? '').trim()
   const parsedVersion = Number.parseInt(rawVersion, 10)
   const versionFilter =
@@ -146,10 +150,9 @@ export default async function EventDocumentsPage({
       : null
   const versionQuery = versionFilter ? String(versionFilter) : ''
 
-  let rangeStart = fromDate ? new Date(`${fromDate}T00:00:00.000`).getTime() : null
-  let rangeEnd = toDate ? new Date(`${toDate}T23:59:59.999`).getTime() : null
+  const rangeStart = fromDate ? new Date(`${fromDate}T00:00:00.000`).getTime() : null
+  const rangeEnd = toDate ? new Date(`${toDate}T23:59:59.999`).getTime() : null
   if (rangeStart !== null && rangeEnd !== null && rangeStart > rangeEnd) {
-    ;[rangeStart, rangeEnd] = [rangeEnd, rangeStart]
     ;[fromDate, toDate] = [toDate, fromDate]
   }
 
@@ -159,76 +162,35 @@ export default async function EventDocumentsPage({
     to: toDate,
     order,
     version: versionQuery,
+    page,
   }
+
+  const [event, readiness, businessDocs, archetype, drilldown] = await Promise.all([
+    getEventById(params.id),
+    getDocumentReadiness(params.id),
+    getBusinessDocInfo(params.id).catch(() => null),
+    getChefArchetype(),
+    getEventDocumentSnapshotDrilldown(params.id, {
+      docType: docFilter === 'any' ? null : docFilter,
+      fromDate,
+      toDate,
+      versionNumber: versionFilter,
+      order,
+      page,
+      pageSize: 25,
+    }),
+  ])
+
+  if (!event) notFound()
 
   const pack = getArchetypeDocumentPack(archetype)
   const readyCount = pack.recommendedOperationalDocs.filter((type) =>
     isOperationalTypeReady(type, readiness)
   ).length
   const packTypesParam = pack.recommendedOperationalDocs.join(',')
-
-  const statsByType = new Map<
-    SnapshotDocumentType,
-    {
-      count: number
-      latest: (typeof snapshots)[number] | null
-      oldest: (typeof snapshots)[number] | null
-    }
-  >()
-
-  for (const type of SNAPSHOT_DOCUMENT_TYPES) {
-    statsByType.set(type, { count: 0, latest: null, oldest: null })
-  }
-
-  for (const snapshot of snapshots) {
-    const stats = statsByType.get(snapshot.documentType)
-    if (!stats) continue
-
-    stats.count += 1
-    if (
-      !stats.latest ||
-      new Date(snapshot.generatedAt).getTime() > new Date(stats.latest.generatedAt).getTime()
-    ) {
-      stats.latest = snapshot
-    }
-    if (
-      !stats.oldest ||
-      new Date(snapshot.generatedAt).getTime() < new Date(stats.oldest.generatedAt).getTime()
-    ) {
-      stats.oldest = snapshot
-    }
-  }
-
-  const filteredSnapshots = snapshots
-    .filter((snapshot) => {
-      if (docFilter !== 'any' && snapshot.documentType !== docFilter) return false
-      if (versionFilter && snapshot.versionNumber !== versionFilter) return false
-      const generatedAt = new Date(snapshot.generatedAt).getTime()
-      if (rangeStart !== null && generatedAt < rangeStart) return false
-      if (rangeEnd !== null && generatedAt > rangeEnd) return false
-      return true
-    })
-    .sort((a, b) => {
-      const aTime = new Date(a.generatedAt).getTime()
-      const bTime = new Date(b.generatedAt).getTime()
-      return order === 'oldest' ? aTime - bTime : bTime - aTime
-    })
-
-  const docVersionOptions =
-    docFilter === 'any'
-      ? []
-      : Array.from(
-          new Set(
-            snapshots
-              .filter((snapshot) => snapshot.documentType === docFilter)
-              .map((snapshot) => snapshot.versionNumber)
-          )
-        ).sort((a, b) => b - a)
-
-  const nonEmptyTypeStats = SNAPSHOT_DOCUMENT_TYPES.map((type) => ({
-    type,
-    stats: statsByType.get(type)!,
-  })).filter((item) => item.stats.count > 0)
+  const filteredSnapshots = drilldown.items
+  const docVersionOptions = drilldown.versionOptions
+  const nonEmptyTypeStats = drilldown.typeStats.filter((item) => item.count > 0)
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -338,6 +300,7 @@ export default async function EventDocumentsPage({
               href={buildDrilldownHref(event.id, queryState, {
                 doc: filterOption.value,
                 version: '',
+                page: 1,
               })}
             >
               <Button
@@ -379,7 +342,13 @@ export default async function EventDocumentsPage({
               Apply Range
             </Button>
             {(fromDate || toDate) && (
-              <Link href={buildDrilldownHref(event.id, queryState, { from: '', to: '' })}>
+              <Link
+                href={buildDrilldownHref(event.id, queryState, {
+                  from: '',
+                  to: '',
+                  page: 1,
+                })}
+              >
                 <Button variant="ghost" size="sm">
                   Clear Range
                 </Button>
@@ -389,12 +358,12 @@ export default async function EventDocumentsPage({
 
           <div className="flex items-center gap-2">
             <p className="text-xs text-stone-500">Order</p>
-            <Link href={buildDrilldownHref(event.id, queryState, { order: 'newest' })}>
+            <Link href={buildDrilldownHref(event.id, queryState, { order: 'newest', page: 1 })}>
               <Button variant={order === 'newest' ? 'primary' : 'secondary'} size="sm">
                 Newest
               </Button>
             </Link>
-            <Link href={buildDrilldownHref(event.id, queryState, { order: 'oldest' })}>
+            <Link href={buildDrilldownHref(event.id, queryState, { order: 'oldest', page: 1 })}>
               <Button variant={order === 'oldest' ? 'primary' : 'secondary'} size="sm">
                 Oldest
               </Button>
@@ -408,7 +377,7 @@ export default async function EventDocumentsPage({
               Version filter for {SNAPSHOT_DOCUMENT_LABELS[docFilter]}
             </p>
             <div className="flex flex-wrap gap-2">
-              <Link href={buildDrilldownHref(event.id, queryState, { version: '' })}>
+              <Link href={buildDrilldownHref(event.id, queryState, { version: '', page: 1 })}>
                 <Button variant={!versionQuery ? 'primary' : 'secondary'} size="sm">
                   All Versions
                 </Button>
@@ -418,6 +387,7 @@ export default async function EventDocumentsPage({
                   key={versionNumber}
                   href={buildDrilldownHref(event.id, queryState, {
                     version: String(versionNumber),
+                    page: 1,
                   })}
                 >
                   <Button
@@ -439,35 +409,40 @@ export default async function EventDocumentsPage({
           </p>
         ) : (
           <div className="space-y-3 mt-4">
-            {nonEmptyTypeStats.map(({ type, stats }) => {
-              const latest = stats.latest
-              if (!latest) return null
+            {nonEmptyTypeStats.map((entry) => {
+              if (!entry.latest) return null
               return (
                 <div
-                  key={type}
+                  key={entry.documentType}
                   className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 border-b border-stone-800 pb-3 last:border-b-0 last:pb-0"
                 >
                   <div>
-                    <p className="font-medium text-stone-100">{SNAPSHOT_DOCUMENT_LABELS[type]}</p>
+                    <p className="font-medium text-stone-100">
+                      {SNAPSHOT_DOCUMENT_LABELS[entry.documentType]}
+                    </p>
                     <p className="text-xs text-stone-500">
-                      {stats.count} version{stats.count === 1 ? '' : 's'} - latest v
-                      {latest.versionNumber} on{' '}
-                      {format(new Date(latest.generatedAt), 'MMM d, yyyy h:mm a')}
+                      {entry.count} version{entry.count === 1 ? '' : 's'} - latest v
+                      {entry.latest.versionNumber} on{' '}
+                      {format(new Date(entry.latest.generatedAt), 'MMM d, yyyy h:mm a')}
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <Link
                       href={buildDrilldownHref(event.id, queryState, {
-                        doc: type,
+                        doc: entry.documentType,
                         version: '',
+                        page: 1,
                       })}
                     >
-                      <Button variant={docFilter === type ? 'primary' : 'secondary'} size="sm">
+                      <Button
+                        variant={docFilter === entry.documentType ? 'primary' : 'secondary'}
+                        size="sm"
+                      >
                         Drill In
                       </Button>
                     </Link>
                     <a
-                      href={`/api/documents/snapshots/${latest.id}`}
+                      href={`/api/documents/snapshots/${entry.latest.id}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -486,8 +461,9 @@ export default async function EventDocumentsPage({
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-2">Snapshot Results</h2>
         <p className="text-stone-500 text-sm mb-4">
-          Showing {filteredSnapshots.length} snapshot{filteredSnapshots.length === 1 ? '' : 's'}{' '}
-          from {snapshots.length} archived records.
+          Showing {filteredSnapshots.length} snapshot{filteredSnapshots.length === 1 ? '' : 's'} on
+          this page from {drilldown.total} matching archived record
+          {drilldown.total === 1 ? '' : 's'}.
         </p>
         {filteredSnapshots.length === 0 ? (
           <p className="text-sm text-stone-500">
@@ -515,6 +491,7 @@ export default async function EventDocumentsPage({
                       href={buildDrilldownHref(event.id, queryState, {
                         doc: snapshot.documentType,
                         version: '',
+                        page: 1,
                       })}
                     >
                       <Button variant="secondary" size="sm">
@@ -536,10 +513,33 @@ export default async function EventDocumentsPage({
             ))}
           </div>
         )}
-        {snapshots.length >= 500 && (
-          <p className="text-xs text-stone-500 mt-4">
-            Showing the most recent 500 archives for performance.
-          </p>
+
+        {drilldown.totalPages > 1 && (
+          <div className="mt-4 pt-4 border-t border-stone-800 flex items-center justify-between">
+            <div className="text-xs text-stone-500">
+              Page {drilldown.page} of {drilldown.totalPages}
+            </div>
+            <div className="flex items-center gap-2">
+              <Link
+                href={buildDrilldownHref(event.id, queryState, {
+                  page: Math.max(1, drilldown.page - 1),
+                })}
+              >
+                <Button variant="secondary" size="sm" disabled={!drilldown.hasPreviousPage}>
+                  Previous
+                </Button>
+              </Link>
+              <Link
+                href={buildDrilldownHref(event.id, queryState, {
+                  page: Math.min(drilldown.totalPages, drilldown.page + 1),
+                })}
+              >
+                <Button variant="secondary" size="sm" disabled={!drilldown.hasNextPage}>
+                  Next
+                </Button>
+              </Link>
+            </div>
+          </div>
         )}
       </Card>
     </div>
