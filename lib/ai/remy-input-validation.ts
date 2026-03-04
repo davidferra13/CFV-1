@@ -247,7 +247,10 @@ export const RECIPE_GENERATION_REFUSAL =
  */
 const RECIPE_SEARCH_PATTERNS = [
   // Explicit search/lookup intent
-  /\b(search|find|look\s*up|lookup|show|check|list|browse|pull\s*up|what)\b.*\b(recipe|recipes|menu|dishes?)\b/i,
+  /\b(search|find|look\s*up|lookup|show|check|list|browse|pull\s*up)\b.*\b(recipe|recipes|menu|dishes?)\b/i,
+  // "what recipes do we have" style inventory queries
+  /\bwhat\s+recipes?\s+do\s+(i|we|you)\s+have\b/i,
+  /\bwhat\s+recipes?\s+are\s+(in|on)\s+(my|our|the)\s+(recipe\s+book|library|list|collection)\b/i,
   // "recipe search/book/list"
   /\brecipe\s+(search|lookup|book|list|collection|library|catalog)\b/i,
   // Possessive — "my/our/the recipes"

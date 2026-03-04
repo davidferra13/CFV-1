@@ -8,7 +8,11 @@ import { Ollama } from 'ollama'
 import { requireClient } from '@/lib/auth/get-user'
 import { isOllamaEnabled, getOllamaConfig, getOllamaModel } from '@/lib/ai/providers'
 import { validateRemyInput, checkRemyRateLimit } from '@/lib/ai/remy-guardrails'
-import { validateRemyRequestBody, validateHistory } from '@/lib/ai/remy-input-validation'
+import {
+  validateRemyRequestBody,
+  validateHistory,
+  checkRecipeGenerationBlock,
+} from '@/lib/ai/remy-input-validation'
 import {
   REMY_CLIENT_PERSONALITY,
   REMY_CLIENT_TOPIC_GUARDRAILS,
@@ -98,14 +102,6 @@ export async function POST(req: NextRequest) {
     const { message } = validated
     const history = validateHistory((rawBody as Record<string, unknown>)?.history, 8)
 
-    // Rate limiting (reuse tenant-based rate limiter)
-    const rateCheck = checkRemyRateLimit(user.tenantId!)
-    if (!rateCheck.allowed) {
-      return new Response(encodeSSE({ type: 'error', data: rateCheck.refusal }), {
-        headers: sseHeaders(),
-      })
-    }
-
     // Input validation
     const inputCheck = validateRemyInput(message)
     if (!inputCheck.allowed) {
@@ -114,6 +110,22 @@ export async function POST(req: NextRequest) {
           ? "I'm here to help with your events and dining — let's keep it on topic!"
           : inputCheck.refusal
       return new Response(encodeSSE({ type: 'error', data: clientRefusal }), {
+        headers: sseHeaders(),
+      })
+    }
+
+    // Hard block recipe generation requests in client lane before any model call.
+    const recipeBlock = checkRecipeGenerationBlock(message)
+    if (recipeBlock) {
+      return new Response(encodeSSE({ type: 'error', data: recipeBlock }), {
+        headers: sseHeaders(),
+      })
+    }
+
+    // Rate limiting (reuse tenant-based rate limiter)
+    const rateCheck = checkRemyRateLimit(user.tenantId!)
+    if (!rateCheck.allowed) {
+      return new Response(encodeSSE({ type: 'error', data: rateCheck.refusal }), {
         headers: sseHeaders(),
       })
     }

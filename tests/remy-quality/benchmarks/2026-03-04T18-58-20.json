@@ -1,0 +1,3323 @@
+{
+  "runId": "80e9781f-455f-4e07-9193-baa0755d5080",
+  "timestamp": "2026-03-04T18:58:20.670Z",
+  "suite": "chef",
+  "ollamaModels": {
+    "fast": "qwen3:4b",
+    "standard": "qwen3-coder:30b"
+  },
+  "totalPrompts": 50,
+  "passed": 16,
+  "warned": 15,
+  "failed": 19,
+  "passRate": 32,
+  "durationMinutes": 52,
+  "averages": {
+    "classificationMs": 19709,
+    "firstTokenMs": 55322,
+    "totalMs": 62197,
+    "tokensPerSec": 9
+  },
+  "categoryBreakdown": {
+    "business_overview": {
+      "total": 50,
+      "passed": 16,
+      "warned": 15,
+      "failed": 19,
+      "totalMs": 3109846,
+      "avgMs": 62197
+    }
+  },
+  "results": [
+    {
+      "promptId": "chef-001_run1",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 36761,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 112920,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1927,
+          "tokenChars": 1927,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 36761,
+        "intentEventMs": 36761,
+        "firstTokenMs": 51585,
+        "totalMs": 112920,
+        "tokenCount": 545,
+        "approxTokens": 482,
+        "tokensPerSec": 7.9
+      },
+      "responseLength": 1927,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-001_run2",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 46431,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": false,
+          "actualMs": 120450,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1668,
+          "tokenChars": 1668,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 46431,
+        "intentEventMs": 46431,
+        "firstTokenMs": 64151,
+        "totalMs": 120450,
+        "tokenCount": 492,
+        "approxTokens": 417,
+        "tokensPerSec": 7.4
+      },
+      "responseLength": 1668,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-001_run3",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 54605,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": false,
+          "actualMs": 126688,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1810,
+          "tokenChars": 1810,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 54605,
+        "intentEventMs": 54605,
+        "firstTokenMs": 68445,
+        "totalMs": 126688,
+        "tokenCount": 513,
+        "approxTokens": 453,
+        "tokensPerSec": 7.8
+      },
+      "responseLength": 1810,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-001_run4",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 45199,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": false,
+          "actualMs": 135536,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 2658,
+          "tokenChars": 2658,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 45199,
+        "intentEventMs": 45199,
+        "firstTokenMs": 59988,
+        "totalMs": 135536,
+        "tokenCount": 661,
+        "approxTokens": 665,
+        "tokensPerSec": 8.8
+      },
+      "responseLength": 2658,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-001_run5",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 36636,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 117926,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1925,
+          "tokenChars": 1925,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 36636,
+        "intentEventMs": 36636,
+        "firstTokenMs": 53900,
+        "totalMs": 117926,
+        "tokenCount": 558,
+        "approxTokens": 481,
+        "tokensPerSec": 7.5
+      },
+      "responseLength": 1925,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-002_run1",
+      "category": "business_overview",
+      "prompt": "What's my revenue this month?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 43269,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 67108,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 151,
+          "tokenChars": 151,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 43269,
+        "intentEventMs": 43269,
+        "firstTokenMs": 62384,
+        "totalMs": 67108,
+        "tokenCount": 51,
+        "approxTokens": 38,
+        "tokensPerSec": 8
+      },
+      "responseLength": 151,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-002_run2",
+      "category": "business_overview",
+      "prompt": "What's my revenue this month?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 37587,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 67907,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 496,
+          "tokenChars": 496,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 37587,
+        "intentEventMs": 37587,
+        "firstTokenMs": 51415,
+        "totalMs": 67907,
+        "tokenCount": 154,
+        "approxTokens": 124,
+        "tokensPerSec": 7.5
+      },
+      "responseLength": 496,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-002_run3",
+      "category": "business_overview",
+      "prompt": "What's my revenue this month?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 29153,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 85276,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 819,
+          "tokenChars": 819,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 29153,
+        "intentEventMs": 29153,
+        "firstTokenMs": 63543,
+        "totalMs": 85276,
+        "tokenCount": 202,
+        "approxTokens": 205,
+        "tokensPerSec": 9.4
+      },
+      "responseLength": 819,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-002_run4",
+      "category": "business_overview",
+      "prompt": "What's my revenue this month?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 11198,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 54772,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 439,
+          "tokenChars": 439,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 11198,
+        "intentEventMs": 11198,
+        "firstTokenMs": 44670,
+        "totalMs": 54772,
+        "tokenCount": 105,
+        "approxTokens": 110,
+        "tokensPerSec": 10.9
+      },
+      "responseLength": 439,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-002_run5",
+      "category": "business_overview",
+      "prompt": "What's my revenue this month?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 6536,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": false,
+          "actualMs": 130322,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1124,
+          "tokenChars": 1124,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 6536,
+        "intentEventMs": 6536,
+        "firstTokenMs": 94684,
+        "totalMs": 130322,
+        "tokenCount": 343,
+        "approxTokens": 281,
+        "tokensPerSec": 7.9
+      },
+      "responseLength": 1124,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-003_run1",
+      "category": "business_overview",
+      "prompt": "How many clients do I have?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 42384,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 59662,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 110,
+          "tokenChars": 110,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 42384,
+        "intentEventMs": 42384,
+        "firstTokenMs": 56449,
+        "totalMs": 59662,
+        "tokenCount": 28,
+        "approxTokens": 28,
+        "tokensPerSec": 8.7
+      },
+      "responseLength": 110,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-003_run2",
+      "category": "business_overview",
+      "prompt": "How many clients do I have?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 35445,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 53420,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 100,
+          "tokenChars": 100,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 35445,
+        "intentEventMs": 35445,
+        "firstTokenMs": 50867,
+        "totalMs": 53420,
+        "tokenCount": 27,
+        "approxTokens": 25,
+        "tokensPerSec": 9.8
+      },
+      "responseLength": 100,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-003_run3",
+      "category": "business_overview",
+      "prompt": "How many clients do I have?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 35970,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 55192,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 101,
+          "tokenChars": 101,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 35970,
+        "intentEventMs": 35970,
+        "firstTokenMs": 50235,
+        "totalMs": 55192,
+        "tokenCount": 27,
+        "approxTokens": 25,
+        "tokensPerSec": 5
+      },
+      "responseLength": 101,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-003_run4",
+      "category": "business_overview",
+      "prompt": "How many clients do I have?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 58756,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 104606,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 91,
+          "tokenChars": 91,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 58756,
+        "intentEventMs": 58756,
+        "firstTokenMs": 102441,
+        "totalMs": 104606,
+        "tokenCount": 26,
+        "approxTokens": 23,
+        "tokensPerSec": 10.6
+      },
+      "responseLength": 91,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-003_run5",
+      "category": "business_overview",
+      "prompt": "How many clients do I have?",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 3896,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 72439,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 91,
+          "tokenChars": 91,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 3896,
+        "intentEventMs": 3896,
+        "firstTokenMs": 70229,
+        "totalMs": 72439,
+        "tokenCount": 26,
+        "approxTokens": 23,
+        "tokensPerSec": 10.4
+      },
+      "responseLength": 91,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-004_run1",
+      "category": "business_overview",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 33062,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": false,
+          "actualMs": 150207,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1404,
+          "tokenChars": 1404,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 33062,
+        "intentEventMs": 33062,
+        "firstTokenMs": 107925,
+        "totalMs": 150207,
+        "tokenCount": 414,
+        "approxTokens": 351,
+        "tokensPerSec": 8.3
+      },
+      "responseLength": 1404,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-004_run2",
+      "category": "business_overview",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 4528,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 82968,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1454,
+          "tokenChars": 1454,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 4528,
+        "intentEventMs": 4528,
+        "firstTokenMs": 41502,
+        "totalMs": 82968,
+        "tokenCount": 397,
+        "approxTokens": 364,
+        "tokensPerSec": 8.8
+      },
+      "responseLength": 1454,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-004_run3",
+      "category": "business_overview",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 4498,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": false,
+          "actualMs": 139946,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1553,
+          "tokenChars": 1553,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 4498,
+        "intentEventMs": 4498,
+        "firstTokenMs": 94997,
+        "totalMs": 139946,
+        "tokenCount": 420,
+        "approxTokens": 388,
+        "tokensPerSec": 8.6
+      },
+      "responseLength": 1553,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-004_run4",
+      "category": "business_overview",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 45872,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": false,
+          "actualMs": 147149,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1288,
+          "tokenChars": 1288,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 45872,
+        "intentEventMs": 45872,
+        "firstTokenMs": 107997,
+        "totalMs": 147149,
+        "tokenCount": 370,
+        "approxTokens": 322,
+        "tokensPerSec": 8.2
+      },
+      "responseLength": 1288,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-004_run5",
+      "category": "business_overview",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 6173,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 44823,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": ["fetch failed"]
+        }
+      },
+      "timing": {
+        "firstEventMs": 6173,
+        "intentEventMs": 6173,
+        "firstTokenMs": null,
+        "totalMs": 44823,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-005_run1",
+      "category": "business_overview",
+      "prompt": "What needs my attention today?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 817,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!"
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 817,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 817,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-005_run2",
+      "category": "business_overview",
+      "prompt": "What needs my attention today?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 826,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!"
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 826,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 826,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-005_run3",
+      "category": "business_overview",
+      "prompt": "What needs my attention today?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 911,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!"
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 911,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 911,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-005_run4",
+      "category": "business_overview",
+      "prompt": "What needs my attention today?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 717,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!"
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 717,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 717,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-005_run5",
+      "category": "business_overview",
+      "prompt": "What needs my attention today?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 741,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!"
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 741,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 741,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-006_run1",
+      "category": "business_overview",
+      "prompt": "Am I on track for my goals this month?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 29673,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 115506,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1664,
+          "tokenChars": 1664,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 29673,
+        "intentEventMs": 29673,
+        "firstTokenMs": 71762,
+        "totalMs": 115506,
+        "tokenCount": 420,
+        "approxTokens": 416,
+        "tokensPerSec": 9.5
+      },
+      "responseLength": 1664,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-006_run2",
+      "category": "business_overview",
+      "prompt": "Am I on track for my goals this month?",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 4547,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 92480,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1551,
+          "tokenChars": 1551,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 4547,
+        "intentEventMs": 4547,
+        "firstTokenMs": 44614,
+        "totalMs": 92480,
+        "tokenCount": 470,
+        "approxTokens": 388,
+        "tokensPerSec": 8.1
+      },
+      "responseLength": 1551,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-006_run3",
+      "category": "business_overview",
+      "prompt": "Am I on track for my goals this month?",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 4197,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 96402,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1452,
+          "tokenChars": 1452,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 4197,
+        "intentEventMs": 4197,
+        "firstTokenMs": 50841,
+        "totalMs": 96402,
+        "tokenCount": 440,
+        "approxTokens": 363,
+        "tokensPerSec": 8
+      },
+      "responseLength": 1452,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-006_run4",
+      "category": "business_overview",
+      "prompt": "Am I on track for my goals this month?",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5799,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 79827,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1609,
+          "tokenChars": 1609,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 5799,
+        "intentEventMs": 5799,
+        "firstTokenMs": 38628,
+        "totalMs": 79827,
+        "tokenCount": 395,
+        "approxTokens": 402,
+        "tokensPerSec": 9.8
+      },
+      "responseLength": 1609,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-006_run5",
+      "category": "business_overview",
+      "prompt": "Am I on track for my goals this month?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 22605,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 25145,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": ["fetch failed"]
+        }
+      },
+      "timing": {
+        "firstEventMs": 22605,
+        "intentEventMs": 22605,
+        "firstTokenMs": null,
+        "totalMs": 25145,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-007_run1",
+      "category": "business_overview",
+      "prompt": "What's my year-to-date revenue?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 794,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!"
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 794,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 794,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-007_run2",
+      "category": "business_overview",
+      "prompt": "What's my year-to-date revenue?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 789,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!"
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 789,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 789,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-007_run3",
+      "category": "business_overview",
+      "prompt": "What's my year-to-date revenue?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 732,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!"
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 731,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 732,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-007_run4",
+      "category": "business_overview",
+      "prompt": "What's my year-to-date revenue?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 701,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!"
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 701,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 701,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-007_run5",
+      "category": "business_overview",
+      "prompt": "What's my year-to-date revenue?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 793,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!"
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 793,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 793,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-008_run1",
+      "category": "business_overview",
+      "prompt": "How does this month compare to last month?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 11131,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 44725,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 407,
+          "tokenChars": 407,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 11131,
+        "intentEventMs": 11131,
+        "firstTokenMs": 33774,
+        "totalMs": 44725,
+        "tokenCount": 117,
+        "approxTokens": 102,
+        "tokensPerSec": 9.3
+      },
+      "responseLength": 407,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-008_run2",
+      "category": "business_overview",
+      "prompt": "How does this month compare to last month?",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 3912,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 70399,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1542,
+          "tokenChars": 1542,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 3912,
+        "intentEventMs": 3912,
+        "firstTokenMs": 16890,
+        "totalMs": 70399,
+        "tokenCount": 517,
+        "approxTokens": 386,
+        "tokensPerSec": 7.2
+      },
+      "responseLength": 1542,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-008_run3",
+      "category": "business_overview",
+      "prompt": "How does this month compare to last month?",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5782,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 77147,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1581,
+          "tokenChars": 1581,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 5782,
+        "intentEventMs": 5782,
+        "firstTokenMs": 28236,
+        "totalMs": 77147,
+        "tokenCount": 462,
+        "approxTokens": 395,
+        "tokensPerSec": 8.1
+      },
+      "responseLength": 1581,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-008_run4",
+      "category": "business_overview",
+      "prompt": "How does this month compare to last month?",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 4274,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 55183,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 851,
+          "tokenChars": 851,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 4274,
+        "intentEventMs": 4274,
+        "firstTokenMs": 30064,
+        "totalMs": 55183,
+        "tokenCount": 255,
+        "approxTokens": 213,
+        "tokensPerSec": 8.5
+      },
+      "responseLength": 851,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-008_run5",
+      "category": "business_overview",
+      "prompt": "How does this month compare to last month?",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 4759,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 58850,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 939,
+          "tokenChars": 939,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 4759,
+        "intentEventMs": 4759,
+        "firstTokenMs": 30178,
+        "totalMs": 58850,
+        "tokenCount": 291,
+        "approxTokens": 235,
+        "tokensPerSec": 8.2
+      },
+      "responseLength": 939,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-009_run1",
+      "category": "business_overview",
+      "prompt": "What's my average revenue per event?",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5236,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 24348,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 267,
+          "tokenChars": 267,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 5236,
+        "intentEventMs": 5236,
+        "firstTokenMs": 17898,
+        "totalMs": 24348,
+        "tokenCount": 75,
+        "approxTokens": 67,
+        "tokensPerSec": 10.4
+      },
+      "responseLength": 267,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-009_run2",
+      "category": "business_overview",
+      "prompt": "What's my average revenue per event?",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 4573,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 49308,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 239,
+          "tokenChars": 239,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 4573,
+        "intentEventMs": 4573,
+        "firstTokenMs": 42675,
+        "totalMs": 49308,
+        "tokenCount": 75,
+        "approxTokens": 60,
+        "tokensPerSec": 9
+      },
+      "responseLength": 239,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-009_run3",
+      "category": "business_overview",
+      "prompt": "What's my average revenue per event?",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 5087,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 47418,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 214,
+          "tokenChars": 214,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 5087,
+        "intentEventMs": 5087,
+        "firstTokenMs": 41125,
+        "totalMs": 47418,
+        "tokenCount": 68,
+        "approxTokens": 54,
+        "tokensPerSec": 8.6
+      },
+      "responseLength": 214,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-009_run4",
+      "category": "business_overview",
+      "prompt": "What's my average revenue per event?",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 3925,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 45191,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 200,
+          "tokenChars": 200,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 3925,
+        "intentEventMs": 3925,
+        "firstTokenMs": 39150,
+        "totalMs": 45191,
+        "tokenCount": 64,
+        "approxTokens": 50,
+        "tokensPerSec": 8.3
+      },
+      "responseLength": 200,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-009_run5",
+      "category": "business_overview",
+      "prompt": "What's my average revenue per event?",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 6396,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 41815,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 239,
+          "tokenChars": 239,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 6396,
+        "intentEventMs": 6396,
+        "firstTokenMs": 34794,
+        "totalMs": 41815,
+        "tokenCount": 75,
+        "approxTokens": 60,
+        "tokensPerSec": 8.5
+      },
+      "responseLength": 239,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-010_run1",
+      "category": "business_overview",
+      "prompt": "Who are my top clients?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 31213,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 108486,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 507,
+          "tokenChars": 507,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 31213,
+        "intentEventMs": 31213,
+        "firstTokenMs": 92282,
+        "totalMs": 108486,
+        "tokenCount": 164,
+        "approxTokens": 127,
+        "tokensPerSec": 7.8
+      },
+      "responseLength": 507,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-010_run2",
+      "category": "business_overview",
+      "prompt": "Who are my top clients?",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 4839,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 56075,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 479,
+          "tokenChars": 479,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 4839,
+        "intentEventMs": 4839,
+        "firstTokenMs": 41646,
+        "totalMs": 56075,
+        "tokenCount": 155,
+        "approxTokens": 120,
+        "tokensPerSec": 8.3
+      },
+      "responseLength": 479,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-010_run3",
+      "category": "business_overview",
+      "prompt": "Who are my top clients?",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 4264,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 53677,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 444,
+          "tokenChars": 444,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 4264,
+        "intentEventMs": 4264,
+        "firstTokenMs": 39613,
+        "totalMs": 53677,
+        "tokenCount": 153,
+        "approxTokens": 111,
+        "tokensPerSec": 7.9
+      },
+      "responseLength": 444,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-010_run4",
+      "category": "business_overview",
+      "prompt": "Who are my top clients?",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 4399,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 26921,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": ["fetch failed"]
+        }
+      },
+      "timing": {
+        "firstEventMs": 4399,
+        "intentEventMs": 4399,
+        "firstTokenMs": null,
+        "totalMs": 26921,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-010_run5",
+      "category": "business_overview",
+      "prompt": "Who are my top clients?",
+      "overall": "fail",
+      "failCount": 2,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 3803,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 3805,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": ["fetch failed"]
+        }
+      },
+      "timing": {
+        "firstEventMs": 3803,
+        "intentEventMs": 3803,
+        "firstTokenMs": null,
+        "totalMs": 3805,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    }
+  ],
+  "failedPrompts": [
+    {
+      "promptId": "chef-001_run2",
+      "prompt": "How's my business doing?",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 46431,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": false,
+          "actualMs": 120450,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1668,
+          "tokenChars": 1668,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-001_run3",
+      "prompt": "How's my business doing?",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 54605,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": false,
+          "actualMs": 126688,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1810,
+          "tokenChars": 1810,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-001_run4",
+      "prompt": "How's my business doing?",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 45199,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": false,
+          "actualMs": 135536,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 2658,
+          "tokenChars": 2658,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-004_run1",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 33062,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": false,
+          "actualMs": 150207,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1404,
+          "tokenChars": 1404,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-004_run4",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 45872,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": false,
+          "actualMs": 147149,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1288,
+          "tokenChars": 1288,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      }
+    },
+    {
+      "promptId": "chef-004_run5",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 6173,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 44823,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": ["fetch failed"]
+        }
+      }
+    },
+    {
+      "promptId": "chef-005_run1",
+      "prompt": "What needs my attention today?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 817,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!"
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-005_run2",
+      "prompt": "What needs my attention today?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 826,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!"
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-005_run3",
+      "prompt": "What needs my attention today?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 911,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!"
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-005_run4",
+      "prompt": "What needs my attention today?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 717,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!"
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-005_run5",
+      "prompt": "What needs my attention today?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 741,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!"
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-006_run5",
+      "prompt": "Am I on track for my goals this month?",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 22605,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 25145,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": ["fetch failed"]
+        }
+      }
+    },
+    {
+      "promptId": "chef-007_run1",
+      "prompt": "What's my year-to-date revenue?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 794,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!"
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-007_run2",
+      "prompt": "What's my year-to-date revenue?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 789,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!"
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-007_run3",
+      "prompt": "What's my year-to-date revenue?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 732,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!"
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-007_run4",
+      "prompt": "What's my year-to-date revenue?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 701,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!"
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-007_run5",
+      "prompt": "What's my year-to-date revenue?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 793,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Ollama is loading the AI model — this can take a minute on the first request. Hit retry and I should be ready!"
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-010_run4",
+      "prompt": "Who are my top clients?",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 4399,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 26921,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": ["fetch failed"]
+        }
+      }
+    },
+    {
+      "promptId": "chef-010_run5",
+      "prompt": "Who are my top clients?",
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": true,
+          "actualMs": 3803,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 3805,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": ["fetch failed"]
+        }
+      }
+    }
+  ]
+}
