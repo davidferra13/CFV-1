@@ -1,45 +1,45 @@
 # ChefFlow AI Simulation Report
 
-_Auto-generated — last run: 2026-03-04T02:03:57.264Z_
-_Run ID: 2a0886f2-ca33-43ca-a4bc-94b2430ee7d6_
+_Auto-generated — last run: 2026-03-04T06:16:45.496Z_
+_Run ID: f28bdd74-8c7e-4671-b156-2048f3158c41_
 
 ---
 
 ## Summary
 
-The system's overall pass rate remains low at 33%, with three modules failing consistently: inquiry_parse, client_parse, and correspondence. The quote_draft module also continues to fail. The allergen_risk and menu_suggestions modules are now passing, showing improvement from prior runs. These failures indicate persistent parsing and tone issues that need targeted fixes.
+The system's overall pass rate remains at 50%, with three modules failing: inquiry_parse, correspondence, and quote_draft. These modules show persistent issues that need immediate attention. The client_parse, allergen_risk, and menu_suggestions modules continue to perform well, with no regression in their performance.
 
 ## Failures & Root Causes
 
-**inquiry_parse**
-The module is returning incorrect data that doesn't match expected ground truth. It's providing client names and guest counts when they should be undefined, suggesting the parser is over-optimistically extracting information from vague prompts. This likely stems from insufficient constraints on what data to extract.
+### inquiry_parse
 
-**client_parse**
-The module fails to extract essential client details like phone numbers and dietary restrictions. It's missing critical fields from the input data, indicating the parser isn't properly configured to identify and extract all required information from client profiles.
+The module fails to extract required client information from inquiry text. It consistently returns undefined for client name and guest count. This suggests the parsing logic cannot reliably identify or extract these key data points from natural language input, likely due to insufficient training on varied inquiry formats or ambiguous extraction patterns.
 
-**correspondence**
-The module generates emails that don't match the expected tone for the inquiry stage. It's producing overly formal messages instead of friendly, approachable ones. Additionally, it's not personalizing the email body with client-specific details, which suggests a lack of proper context injection in the prompt.
+### correspondence
 
-**quote_draft**
-The module produces quotes with incorrect pricing and missing deposit information. The total price exceeds the expected range, and the deposit field is omitted, indicating the prompt doesn't properly enforce required fields or pricing validation.
+The generated correspondence lacks professionalism and personalization. The subject line is awkward and the body content is generic, indicating the module doesn't properly incorporate client-specific details or follow established communication standards for private chef inquiries. The module appears to generate boilerplate responses instead of tailored content.
+
+### quote_draft
+
+The quote draft module produces inaccurate pricing and incomplete line items. The total price exceeds the expected range, and essential cost breakdowns are missing. This suggests either flawed pricing calculation logic or insufficient data input to the quote generation process, resulting in an unprofessional and potentially incorrect quote.
 
 ## Prompt Fix Recommendations
 
-**inquiry_parse**
-Add explicit constraints to only extract data when clearly specified in the input. Require that fields like client name and guest count are only populated if explicitly mentioned. Add a "return undefined" instruction when data is ambiguous or absent.
+### inquiry_parse
 
-**client_parse**
-Modify the prompt to explicitly list required fields (phone number, dietary restrictions) and require extraction of all specified elements. Add a validation step that checks for presence of each required field before considering the parse complete.
+Update the prompt to explicitly require extraction of "client_name" and "guest_count" fields. Add examples showing various inquiry formats and specify that these fields must be extracted even when not in standard positions. Include clear instructions that undefined values should not be returned for required fields.
 
-**correspondence**
-Update the prompt to specify tone requirements for each inquiry stage and require inclusion of client-specific details like name and previous interactions. Add a step to verify that personalization elements are present in the generated text.
+### correspondence
 
-**quote_draft**
-Revise the prompt to enforce strict pricing validation within the expected range and require inclusion of all required fields including deposit amount. Add a final check that verifies all required fields are populated before outputting the quote.
+Revise the prompt to mandate specific communication standards: include client name in subject line, use direct and professional language, and incorporate at least two client-specific details from the inquiry. Require the response to demonstrate understanding of client needs and show personalized engagement rather than generic templates.
+
+### quote_draft
+
+Modify the prompt to require complete cost breakdown including service fee and grocery estimates. Specify that pricing must fall within the expected range of $1,320-$1,980. Add explicit instructions that total price calculation must be verified against line items and that any price outside the acceptable range requires additional validation.
 
 ## What's Working Well
 
-The allergen_risk and menu_suggestions modules are now passing, showing consistent performance. These modules demonstrate that the system can correctly process structured data when properly prompted. The improvement in these modules suggests the fixes applied to the prompt structure are effective and should be considered for other failing modules.
+The client_parse, allergen_risk, and menu_suggestions modules maintain 100% pass rates. These modules show no regression and continue to produce reliable outputs. The consistent performance of these modules indicates that the core parsing and recommendation logic remains sound and properly implemented.
 
 ---
 

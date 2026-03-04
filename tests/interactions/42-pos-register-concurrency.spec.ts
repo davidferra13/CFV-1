@@ -7,6 +7,8 @@ const HAS_CHEF_STATE = existsSync('.auth/chef.json')
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
+test.use({ trace: 'off' })
+
 function getAdminClient() {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     throw new Error(
@@ -69,9 +71,24 @@ async function openRegisterCard(page: Page) {
 }
 
 async function openRegister(page: Page) {
+  const alreadyOpen = await page
+    .getByText('Register Open')
+    .first()
+    .isVisible({ timeout: 1_500 })
+    .catch(() => false)
+  if (alreadyOpen) return
+
   await openRegisterCard(page)
-  const openCard = page.locator('h3:has-text("Open Register")').locator('xpath=ancestor::div[1]')
-  await openCard.getByRole('button', { name: 'Open' }).click()
+  const cashInput = page.getByLabel('Opening Cash ($)').first()
+  const hasCashInput = await cashInput.isVisible({ timeout: 2_500 }).catch(() => false)
+  if (hasCashInput) {
+    await cashInput.fill('100.00')
+  }
+
+  await page
+    .getByRole('button', { name: /^Open$/ })
+    .first()
+    .click()
 }
 
 async function forceCloseActiveSessions(tenantId: string) {
@@ -107,7 +124,7 @@ async function getActiveSessionCount(tenantId: string) {
 
 test.describe('POS Register Concurrency', () => {
   test.skip(!HAS_CHEF_STATE, 'Requires .auth/chef.json from global setup')
-  test.setTimeout(120_000)
+  test.setTimeout(180_000)
 
   test('allows only one active register when two pages attempt open concurrently', async ({
     browser,

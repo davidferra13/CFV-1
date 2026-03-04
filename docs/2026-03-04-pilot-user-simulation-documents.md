@@ -10,7 +10,7 @@ This simulation validates the exact path a private chef follows:
 2. Follow quick-start steps
 3. Generate PDFs
 4. Export archive
-5. Access blank template fallback
+5. Access blank template fallback (markdown download)
 
 ## Command
 
@@ -36,7 +36,7 @@ npm run test:pilot:documents
 
 - Test suite exits with zero failures.
 - No auth redirect for pilot paths.
-- PDF and CSV routes return expected content types.
+- PDF, CSV, and template-download routes return expected content types.
 - Attached simulation summary includes successful check markers.
 
 ## Fail Criteria

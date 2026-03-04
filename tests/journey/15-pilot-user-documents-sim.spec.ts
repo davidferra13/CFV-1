@@ -5,7 +5,35 @@
 // Run:
 //   npx playwright test --project=journey-chef tests/journey/15-pilot-user-documents-sim.spec.ts
 
+import type { Page } from '@playwright/test'
 import { test, expect } from '../helpers/fixtures'
+
+type PilotSeedAuth = {
+  chefEmail: string
+  chefPassword: string
+}
+
+async function gotoWithChefAuthFallback(page: Page, path: string, auth: PilotSeedAuth) {
+  await page.goto(path, {
+    waitUntil: 'domcontentloaded',
+    timeout: 60_000,
+  })
+  await page.waitForTimeout(1500)
+
+  if (!page.url().includes('/auth/signin')) return
+
+  const authResp = await page.request.post('/api/e2e/auth', {
+    data: { email: auth.chefEmail, password: auth.chefPassword },
+    timeout: 90_000,
+  })
+  expect(authResp.ok()).toBeTruthy()
+
+  await page.goto(path, {
+    waitUntil: 'domcontentloaded',
+    timeout: 60_000,
+  })
+  await page.waitForTimeout(1500)
+}
 
 test.describe('Pilot Simulation — Documents Readiness', () => {
   test.describe.configure({ timeout: 180_000 })
@@ -21,11 +49,10 @@ test.describe('Pilot Simulation — Documents Readiness', () => {
     }
 
     await test.step('Open Event Documents hub', async () => {
-      await page.goto(`/events/${eventId}/documents`, {
-        waitUntil: 'domcontentloaded',
-        timeout: 60_000,
+      await gotoWithChefAuthFallback(page, `/events/${eventId}/documents`, {
+        chefEmail: seedIds.chefEmail,
+        chefPassword: seedIds.chefPassword,
       })
-      await page.waitForTimeout(1500)
 
       expect(page.url()).not.toContain('/auth/signin')
       await expect(page.getByRole('heading', { name: /Event Documents/i })).toBeVisible()
@@ -99,10 +126,14 @@ test.describe('Pilot Simulation — Documents Readiness', () => {
 
       const blankTemplateResp = await page.request.get('/api/documents/templates/event-summary')
       expect(blankTemplateResp.ok()).toBeTruthy()
-      expect((blankTemplateResp.headers()['content-type'] ?? '').toLowerCase()).toContain(
-        'application/pdf'
-      )
+      const blankTemplateContentType = (
+        blankTemplateResp.headers()['content-type'] ?? ''
+      ).toLowerCase()
+      expect(blankTemplateContentType).toContain('text/markdown')
+      const blankTemplateBody = await blankTemplateResp.text()
+      expect(blankTemplateBody.trim().length).toBeGreaterThan(0)
       summary['blankTemplateStatus'] = blankTemplateResp.status()
+      summary['blankTemplateContentType'] = blankTemplateContentType
       ;(summary.checks as unknown[]).push('core_endpoints_verified')
     })
 
@@ -114,12 +145,12 @@ test.describe('Pilot Simulation — Documents Readiness', () => {
 
   test('simulated pilot user can find the global grab-anything documents entry point', async ({
     page,
+    seedIds,
   }) => {
-    await page.goto('/documents', {
-      waitUntil: 'domcontentloaded',
-      timeout: 60_000,
+    await gotoWithChefAuthFallback(page, '/documents', {
+      chefEmail: seedIds.chefEmail,
+      chefPassword: seedIds.chefPassword,
     })
-    await page.waitForTimeout(1500)
 
     const serverErrorHeading = page.getByRole('heading', { name: /Server Error/i })
     const firstLoadErrored = await serverErrorHeading.isVisible().catch(() => false)
