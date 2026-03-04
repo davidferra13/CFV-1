@@ -1,0 +1,277 @@
+{
+  "event": {
+    "title": "Private Dinner - Generic Example",
+    "guest_count": 8,
+    "date_label": "Saturday, April 18, 2026",
+    "address_label": "Client Residence (Address Withheld)",
+    "arrive_time": "4:30 PM",
+    "serve_time": "6:30 PM",
+    "leave_time": "3:30 PM",
+    "shop_date": "Friday, April 17, 2026",
+    "service_end_time": "8:45 PM",
+    "closeout_complete_time": "9:30 PM"
+  },
+  "service_style": "plated",
+  "menu": {
+    "courses": [
+      {
+        "course_label": "Course 1",
+        "title": "Seasonal Starter",
+        "foh_description": "Light starter with fresh herb finish",
+        "components": [
+          {
+            "name": "Starter base",
+            "method": "batch prep and rewarm",
+            "where_done": "both"
+          },
+          {
+            "name": "Crisp garnish",
+            "method": "oven finish",
+            "where_done": "on site"
+          }
+        ]
+      },
+      {
+        "course_label": "Course 2",
+        "title": "Main Plate",
+        "foh_description": "Protein, sauce, and two composed sides",
+        "components": [
+          {
+            "name": "Primary protein",
+            "method": "pre-cook and final sear",
+            "where_done": "both"
+          },
+          {
+            "name": "Pan sauce",
+            "method": "reduce and mount",
+            "where_done": "on site"
+          },
+          {
+            "name": "Vegetable side",
+            "method": "steam and reheat",
+            "where_done": "both"
+          }
+        ]
+      },
+      {
+        "course_label": "Course 3",
+        "title": "Dessert Plate",
+        "foh_description": "Two textures with one cold element",
+        "components": [
+          {
+            "name": "Cake portion",
+            "method": "portion and hold",
+            "where_done": "at home"
+          },
+          {
+            "name": "Cold element",
+            "method": "frozen hold and scoop",
+            "where_done": "both"
+          }
+        ]
+      }
+    ]
+  },
+  "dietary_matrix": [
+    {
+      "guest": "Guest A",
+      "hard_no": "None",
+      "allergy": "Tree nuts",
+      "plate_notes": "Use nut-free garnish set"
+    },
+    {
+      "guest": "Guest B",
+      "hard_no": "Cilantro",
+      "allergy": "None",
+      "plate_notes": "No cilantro in any course"
+    }
+  ],
+  "grocery": {
+    "stops": [
+      {
+        "name": "Primary Market",
+        "items": [
+          {
+            "section": "PROTEINS",
+            "item": "Primary protein",
+            "qty": "8 portions",
+            "course": "Course 2",
+            "backup": "Secondary cut"
+          },
+          {
+            "section": "PRODUCE",
+            "item": "Leafy greens",
+            "qty": "2 lb",
+            "course": "Course 1",
+            "backup": "Alternative greens"
+          },
+          {
+            "section": "DAIRY / FATS",
+            "item": "Heavy cream",
+            "qty": "1 qt",
+            "course": "Course 2",
+            "backup": "Half-and-half"
+          }
+        ]
+      },
+      {
+        "name": "Specialty Store",
+        "items": [
+          {
+            "section": "SPECIALTY",
+            "item": "Cold dessert component",
+            "qty": "2 qt",
+            "course": "Course 3",
+            "backup": "Alt flavor"
+          }
+        ]
+      }
+    ],
+    "presourced_items": [
+      {
+        "item": "Special garnish",
+        "qty": "1 tray",
+        "source": "Specialty pickup"
+      }
+    ],
+    "on_hand": ["Salt", "Pepper", "Neutral oil"],
+    "buying_notes": {
+      "allergy_checks": "Verify labels for all nut-containing SKUs",
+      "brand_constraints": "Use approved butter and cream brands only",
+      "budget_ceiling": "$320"
+    }
+  },
+  "prep_service": {
+    "prep_tasks": [
+      {
+        "task": "Prep starter base",
+        "target_finish": "D-1 5:00 PM"
+      },
+      {
+        "task": "Pre-cook main protein",
+        "target_finish": "D-1 7:00 PM"
+      },
+      {
+        "task": "Portion dessert",
+        "target_finish": "D-1 8:00 PM"
+      }
+    ],
+    "day_of_tasks": [
+      {
+        "task": "Relabel and verify all containers",
+        "target_finish": "2:00 PM"
+      },
+      {
+        "task": "Pack by transport zone",
+        "target_finish": "2:45 PM"
+      }
+    ],
+    "arrival_tasks": [
+      "Kitchen scan and station setup",
+      "Start long-lead heat path",
+      "Set plating lane and sanitation station"
+    ],
+    "course_fire_actions": [
+      {
+        "course_label": "Course 1",
+        "actions": ["Warm base and final season", "Finish garnish at pass"]
+      },
+      {
+        "course_label": "Course 2",
+        "actions": ["Sear protein and rest", "Finish sauce and sides"]
+      },
+      {
+        "course_label": "Course 3",
+        "actions": ["Plate cake and cold element", "Final wipe and deliver"]
+      }
+    ],
+    "run_of_show": [
+      {
+        "time": "4:30 PM",
+        "action": "Arrive and station setup",
+        "owner": "Chef"
+      },
+      {
+        "time": "5:10 PM",
+        "action": "Long-lead items in motion",
+        "owner": "Chef"
+      },
+      {
+        "time": "6:30 PM",
+        "action": "Course 1 out",
+        "owner": "Chef"
+      },
+      {
+        "time": "7:05 PM",
+        "action": "Course 2 out",
+        "owner": "Chef"
+      },
+      {
+        "time": "7:40 PM",
+        "action": "Course 3 out",
+        "owner": "Chef"
+      }
+    ],
+    "contingencies": [
+      "If key item missing, use approved backup from grocery sheet",
+      "If burner fails, move sauce finish to secondary heat source",
+      "Clean as you go; reset kitchen before dessert fire"
+    ]
+  },
+  "packing": {
+    "cold": ["Protein pan (covered)", "Sauce container", "Vegetable side hotel pan"],
+    "frozen": ["Dessert cold element"],
+    "room_temp": ["Dry garnish", "Service disposables"],
+    "fragile": ["Plating garnish box"],
+    "equipment_bring": ["Knife roll", "Thermometer", "Sheet pans"],
+    "equipment_venue": ["Range", "Oven", "Large stockpot"],
+    "load_order": ["Heavy base", "Cold coolers", "Dry bag", "Fragile top", "Frozen last"],
+    "route": ["Home Base", "Primary Market", "Specialty Store", "Client Residence"],
+    "parking_access": "Use service entrance and keep driveway lane clear.",
+    "final_car_check": [
+      "Count by zone complete",
+      "Temperature-sensitive items confirmed",
+      "Critical tools confirmed"
+    ]
+  },
+  "closeout": {
+    "food_safety_rows": [
+      {
+        "checkpoint": "Cold hold",
+        "target": "<= 41F"
+      },
+      {
+        "checkpoint": "Hot hold",
+        "target": ">= 135F"
+      },
+      {
+        "checkpoint": "Reheat",
+        "target": ">= 165F"
+      }
+    ],
+    "leftover_actions": [
+      "Label leftovers with date and reheat notes",
+      "Confirm storage locations with client",
+      "Discard out-of-window items"
+    ],
+    "left_with_client": [
+      {
+        "item": "Main portions",
+        "storage": "Refrigerated",
+        "reheat": "325F covered until hot"
+      },
+      {
+        "item": "Dessert portions",
+        "storage": "Refrigerated",
+        "reheat": "Serve chilled"
+      }
+    ],
+    "reset_and_admin": [
+      "Kitchen reset complete",
+      "Equipment counted and packed",
+      "Receipts captured",
+      "Post-event notes logged",
+      "Client follow-up sent"
+    ]
+  }
+}
