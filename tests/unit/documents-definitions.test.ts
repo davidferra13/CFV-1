@@ -54,6 +54,28 @@ describe('parseDocumentRequestQuery', () => {
     assert.equal(result.value.archiveRequested, true)
     assert.deepEqual(CORE_PACKET_DOCUMENT_TYPES.slice(0, 2), ['summary', 'grocery'])
   })
+
+  it('accepts idempotency key from query params', () => {
+    const params = new URLSearchParams({
+      type: 'summary',
+      idempotencyKey: 'docgen_2026-03-04_12345',
+    })
+    const result = parseDocumentRequestQuery(params)
+    assert.equal(result.success, true)
+    if (!result.success) return
+    assert.equal(result.value.idempotencyKey, 'docgen_2026-03-04_12345')
+  })
+
+  it('rejects malformed idempotency key query params', () => {
+    const params = new URLSearchParams({
+      type: 'summary',
+      idempotency_key: 'bad key with spaces',
+    })
+    const result = parseDocumentRequestQuery(params)
+    assert.equal(result.success, false)
+    if (result.success) return
+    assert.match(result.error, /idempotency key/i)
+  })
 })
 
 describe('snapshot archive validation', () => {

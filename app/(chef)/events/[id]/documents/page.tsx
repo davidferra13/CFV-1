@@ -12,6 +12,10 @@ import {
   type SnapshotDrilldownOrder,
 } from '@/lib/documents/snapshot-actions'
 import { getArchetypeDocumentPack } from '@/lib/documents/archetype-packs'
+import {
+  DOCUMENT_REQUEST_LABELS,
+  getEventDocumentGenerationHealth,
+} from '@/lib/documents/generation-jobs-actions'
 import type { OperationalDocumentType } from '@/lib/documents/template-catalog'
 import { DocumentSection } from '@/components/documents/document-section'
 import { Button } from '@/components/ui/button'
@@ -165,21 +169,23 @@ export default async function EventDocumentsPage({
     page,
   }
 
-  const [event, readiness, businessDocs, archetype, drilldown] = await Promise.all([
-    getEventById(params.id),
-    getDocumentReadiness(params.id),
-    getBusinessDocInfo(params.id).catch(() => null),
-    getChefArchetype(),
-    getEventDocumentSnapshotDrilldown(params.id, {
-      docType: docFilter === 'any' ? null : docFilter,
-      fromDate,
-      toDate,
-      versionNumber: versionFilter,
-      order,
-      page,
-      pageSize: 25,
-    }),
-  ])
+  const [event, readiness, businessDocs, archetype, drilldown, generationHealth] =
+    await Promise.all([
+      getEventById(params.id),
+      getDocumentReadiness(params.id),
+      getBusinessDocInfo(params.id).catch(() => null),
+      getChefArchetype(),
+      getEventDocumentSnapshotDrilldown(params.id, {
+        docType: docFilter === 'any' ? null : docFilter,
+        fromDate,
+        toDate,
+        versionNumber: versionFilter,
+        order,
+        page,
+        pageSize: 25,
+      }),
+      getEventDocumentGenerationHealth(params.id),
+    ])
 
   if (!event) notFound()
 
@@ -191,6 +197,7 @@ export default async function EventDocumentsPage({
   const filteredSnapshots = drilldown.items
   const docVersionOptions = drilldown.versionOptions
   const nonEmptyTypeStats = drilldown.typeStats.filter((item) => item.count > 0)
+  const generationTypeRows = generationHealth.byType.filter((row) => row.total > 0).slice(0, 8)
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -286,6 +293,74 @@ export default async function EventDocumentsPage({
       </Card>
 
       <DocumentSection eventId={event.id} readiness={readiness} businessDocs={businessDocs} />
+
+      <Card className="p-6">
+        <h2 className="text-xl font-semibold mb-2">Generation Health</h2>
+        <p className="text-stone-500 text-sm mb-4">
+          Live status for auto-generated document jobs on this event.
+        </p>
+
+        {generationHealth.total === 0 ? (
+          <p className="text-sm text-stone-500">
+            No generation jobs recorded yet. Generate any document to start tracking health.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <div className="rounded border border-stone-800 px-3 py-2">
+                <p className="text-[11px] uppercase tracking-wide text-stone-500">Total</p>
+                <p className="text-lg font-semibold text-stone-100">{generationHealth.total}</p>
+              </div>
+              <div className="rounded border border-stone-800 px-3 py-2">
+                <p className="text-[11px] uppercase tracking-wide text-stone-500">Succeeded</p>
+                <p className="text-lg font-semibold text-emerald-500">
+                  {generationHealth.succeeded}
+                </p>
+              </div>
+              <div className="rounded border border-stone-800 px-3 py-2">
+                <p className="text-[11px] uppercase tracking-wide text-stone-500">Failed</p>
+                <p className="text-lg font-semibold text-rose-500">{generationHealth.failed}</p>
+              </div>
+              <div className="rounded border border-stone-800 px-3 py-2">
+                <p className="text-[11px] uppercase tracking-wide text-stone-500">In Progress</p>
+                <p className="text-lg font-semibold text-amber-500">{generationHealth.started}</p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              {generationTypeRows.map((row) => (
+                <div
+                  key={row.requestedType}
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded border border-stone-800 px-3 py-2"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-stone-100">
+                      {DOCUMENT_REQUEST_LABELS[row.requestedType]}
+                    </p>
+                    <p className="text-xs text-stone-500">
+                      {row.succeeded} success / {row.failed} failed / {row.started} in progress
+                    </p>
+                  </div>
+                  <div className="text-xs text-stone-500 text-right">
+                    <p>
+                      Last status:{' '}
+                      <span className="text-stone-300">{row.lastStatus ?? 'unknown'}</span>
+                    </p>
+                    {row.lastCreatedAt && (
+                      <p>{format(new Date(row.lastCreatedAt), 'MMM d, yyyy h:mm a')}</p>
+                    )}
+                    {row.lastError && row.lastStatus === 'failed' && (
+                      <p className="text-rose-400 max-w-[340px] truncate" title={row.lastError}>
+                        {row.lastError}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </Card>
 
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-2">Archive Drilldown</h2>

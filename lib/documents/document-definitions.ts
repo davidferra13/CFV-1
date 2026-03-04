@@ -210,10 +210,18 @@ const archiveParamSchema = z
     message: 'archive must be one of: 1, true, yes, 0, false, no',
   })
 
+const idempotencyKeyParamSchema = z
+  .string()
+  .trim()
+  .min(8, 'idempotency key must be at least 8 characters')
+  .max(160, 'idempotency key must be at most 160 characters')
+  .regex(/^[a-zA-Z0-9:_\-.]+$/, 'idempotency key contains invalid characters')
+
 export type ParsedDocumentRequestQuery = {
   requestedType: DocumentRequestType
   selectedTypes: OperationalDocumentType[]
   archiveRequested: boolean
+  idempotencyKey: string | null
 }
 
 export type DocumentRequestValidationResult =
@@ -260,12 +268,28 @@ export function parseDocumentRequestQuery(
     requestedType.data === 'all' ||
     requestedType.data === 'pack'
 
+  const idempotencyRaw = searchParams.get('idempotencyKey') ?? searchParams.get('idempotency_key')
+  const idempotencyParsed = idempotencyRaw
+    ? idempotencyKeyParamSchema.safeParse(idempotencyRaw)
+    : null
+  if (idempotencyRaw && (!idempotencyParsed || !idempotencyParsed.success)) {
+    return {
+      success: false,
+      error: 'Invalid value for idempotency key query parameter.',
+      details: [
+        idempotencyParsed?.error.issues[0]?.message ??
+          'idempotencyKey must be 8-160 chars using letters, numbers, :, _, -, .',
+      ],
+    }
+  }
+
   return {
     success: true,
     value: {
       requestedType: requestedType.data,
       selectedTypes: parsedTypes.types,
       archiveRequested,
+      idempotencyKey: idempotencyParsed?.data ?? null,
     },
   }
 }

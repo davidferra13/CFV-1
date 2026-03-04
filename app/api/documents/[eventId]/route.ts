@@ -42,9 +42,16 @@ import {
   type SnapshotDocumentType,
   type SnapshotMetadata,
 } from '@/lib/documents/document-definitions'
+import {
+  markEventDocumentGenerationJobFailed,
+  markEventDocumentGenerationJobSucceeded,
+  startEventDocumentGenerationJob,
+} from '@/lib/documents/generation-jobs-actions'
+import { isTransientError, withRetry } from '@/lib/resilience/retry'
 
 const SNAPSHOT_BUCKET = 'event-documents'
 const SNAPSHOT_MIN_INTERVAL_MS = 10 * 60 * 1000
+const DOCUMENT_GENERATION_MAX_ATTEMPTS = 3
 
 type DocRenderConfig = {
   fetch: () => Promise<any>
@@ -53,6 +60,24 @@ type DocRenderConfig = {
   fallbackTitle: string
   filenameBase: string
 }
+
+type SnapshotArchiveOutcome =
+  | {
+      archived: true
+      snapshotId: string
+      storagePath: string
+      versionNumber: number
+    }
+  | {
+      archived: false
+      reason:
+        | 'duplicate_hash'
+        | 'rate_limited'
+        | 'upload_failed'
+        | 'validation_failed'
+        | 'insert_failed'
+        | 'unknown_error'
+    }
 
 function getDocRenderConfigs(eventId: string): Record<OperationalDocumentType, DocRenderConfig> {
   const summary = getDocumentDefinition('summary')
@@ -160,7 +185,7 @@ async function archiveGeneratedDocument(params: {
   filename: string
   pdfBuffer: Buffer
   metadata: SnapshotMetadata
-}) {
+}): Promise<SnapshotArchiveOutcome> {
   const { supabase, tenantId, userId, eventId, documentType, filename, pdfBuffer, metadata } =
     params
 
@@ -176,14 +201,16 @@ async function archiveGeneratedDocument(params: {
       .limit(1)
       .maybeSingle()
 
-    if (latest?.content_hash === contentHash) return
+    if (latest?.content_hash === contentHash) {
+      return { archived: false, reason: 'duplicate_hash' }
+    }
 
     const latestGeneratedAt = latest?.generated_at ? Date.parse(latest.generated_at) : NaN
     if (
       Number.isFinite(latestGeneratedAt) &&
       Date.now() - latestGeneratedAt < SNAPSHOT_MIN_INTERVAL_MS
     ) {
-      return
+      return { archived: false, reason: 'rate_limited' }
     }
 
     const nextVersion = Number(latest?.version_number ?? 0) + 1
@@ -203,7 +230,7 @@ async function archiveGeneratedDocument(params: {
 
     if (uploadError) {
       console.error('[documents/route] snapshot upload failed:', uploadError)
-      return
+      return { archived: false, reason: 'upload_failed' }
     }
 
     const recordValidation = validateSnapshotArchiveInsert({
@@ -221,28 +248,41 @@ async function archiveGeneratedDocument(params: {
     if (!recordValidation.success) {
       await supabase.storage.from(SNAPSHOT_BUCKET).remove([storagePath])
       console.error('[documents/route] snapshot insert validation failed:', recordValidation.error)
-      return
+      return { archived: false, reason: 'validation_failed' }
     }
 
-    const { error: insertError } = await supabase.from('event_document_snapshots').insert({
-      tenant_id: tenantId,
-      event_id: eventId,
-      document_type: documentType,
-      version_number: nextVersion,
-      filename,
-      storage_path: storagePath,
-      content_hash: contentHash,
-      size_bytes: pdfBuffer.length,
-      generated_by: userId,
-      metadata,
-    })
+    const { data: insertedSnapshot, error: insertError } = await supabase
+      .from('event_document_snapshots')
+      .insert({
+        tenant_id: tenantId,
+        event_id: eventId,
+        document_type: documentType,
+        version_number: nextVersion,
+        filename,
+        storage_path: storagePath,
+        content_hash: contentHash,
+        size_bytes: pdfBuffer.length,
+        generated_by: userId,
+        metadata,
+      })
+      .select('id')
+      .single()
 
     if (insertError) {
       await supabase.storage.from(SNAPSHOT_BUCKET).remove([storagePath])
       console.error('[documents/route] snapshot insert failed:', insertError)
+      return { archived: false, reason: 'insert_failed' }
+    }
+
+    return {
+      archived: true,
+      snapshotId: insertedSnapshot.id as string,
+      storagePath,
+      versionNumber: nextVersion,
     }
   } catch (error) {
     console.error('[documents/route] snapshot archive failed:', error)
+    return { archived: false, reason: 'unknown_error' }
   }
 }
 
@@ -273,10 +313,24 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
       )
     }
 
-    const { requestedType, selectedTypes, archiveRequested } = parsedRequest.value
+    const { requestedType, selectedTypes, archiveRequested, idempotencyKey } = parsedRequest.value
     const { generatedBy, customFooter } = await getDocumentContext()
     const dateSuffix = format(new Date(), 'yyyy-MM-dd')
     const docConfigs = getDocRenderConfigs(eventId)
+    const generationJob = await startEventDocumentGenerationJob({
+      supabase,
+      tenantId: user.tenantId!,
+      eventId,
+      requestedType,
+      selectedTypes,
+      archiveRequested,
+      idempotencyKey,
+      maxAttempts: DOCUMENT_GENERATION_MAX_ATTEMPTS,
+    })
+    const shouldUpdateJobOutcome =
+      !!generationJob?.jobId && !(generationJob.reused && generationJob.status === 'succeeded')
+    const maxAttempts = generationJob?.maxAttempts ?? DOCUMENT_GENERATION_MAX_ATTEMPTS
+    let attemptsUsed = 0
 
     const renderSingle = async (config: DocRenderConfig): Promise<Buffer> => {
       const pdf = new PDFLayout()
@@ -308,60 +362,149 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
       return pdf.toBuffer()
     }
 
-    let pdfBuffer: Buffer
-    let filename: string
-    let archiveType: SnapshotDocumentType = requestedType === 'pack' ? 'all' : requestedType
-
-    if (requestedType in docConfigs) {
-      const operationalType = requestedType as OperationalDocumentType
-      const config = docConfigs[operationalType]
-      pdfBuffer = await renderSingle(config)
-      filename = `${config.filenameBase}-${dateSuffix}.pdf`
-      archiveType = operationalType
-    } else if (requestedType === 'all') {
-      pdfBuffer = await renderCombined(CORE_PACKET_DOCUMENT_TYPES)
-      filename = `event-documents-${dateSuffix}.pdf`
-      archiveType = 'all'
-    } else if (requestedType === 'pack') {
-      const packTypes = selectedTypes.length > 0 ? selectedTypes : CORE_PACKET_DOCUMENT_TYPES
-      pdfBuffer = await renderCombined(packTypes)
-      filename = `event-pack-${dateSuffix}.pdf`
-      archiveType = packTypes.length === 1 ? packTypes[0] : 'all'
-    } else {
-      return NextResponse.json(
-        { error: 'Invalid document request configuration.' },
-        { status: 400 }
-      )
+    let generationResult: {
+      pdfBuffer: Buffer
+      filename: string
+      archiveType: SnapshotDocumentType
+      snapshotMetadata: SnapshotMetadata
+      archiveOutcome: SnapshotArchiveOutcome | null
     }
 
-    const shouldArchive = archiveRequested
-    const snapshotMetadata = buildSnapshotMetadata({
-      requestedType,
-      selectedTypes,
-      archiveRequested: shouldArchive,
-    })
+    try {
+      generationResult = await withRetry(
+        async () => {
+          attemptsUsed += 1
+          let pdfBuffer: Buffer
+          let filename: string
+          let archiveType: SnapshotDocumentType = requestedType === 'pack' ? 'all' : requestedType
 
-    if (shouldArchive) {
-      await archiveGeneratedDocument({
+          if (requestedType in docConfigs) {
+            const operationalType = requestedType as OperationalDocumentType
+            const config = docConfigs[operationalType]
+            pdfBuffer = await renderSingle(config)
+            filename = `${config.filenameBase}-${dateSuffix}.pdf`
+            archiveType = operationalType
+          } else if (requestedType === 'all') {
+            pdfBuffer = await renderCombined(CORE_PACKET_DOCUMENT_TYPES)
+            filename = `event-documents-${dateSuffix}.pdf`
+            archiveType = 'all'
+          } else if (requestedType === 'pack') {
+            const packTypes = selectedTypes.length > 0 ? selectedTypes : CORE_PACKET_DOCUMENT_TYPES
+            pdfBuffer = await renderCombined(packTypes)
+            filename = `event-pack-${dateSuffix}.pdf`
+            archiveType = packTypes.length === 1 ? packTypes[0] : 'all'
+          } else {
+            throw new Error('Invalid document request configuration.')
+          }
+
+          const snapshotMetadata = buildSnapshotMetadata({
+            requestedType,
+            selectedTypes,
+            archiveRequested,
+          })
+
+          let archiveOutcome: SnapshotArchiveOutcome | null = null
+          if (archiveRequested) {
+            archiveOutcome = await archiveGeneratedDocument({
+              supabase,
+              tenantId: user.tenantId!,
+              userId: user.id,
+              eventId,
+              documentType: archiveType,
+              filename,
+              pdfBuffer,
+              metadata: snapshotMetadata,
+            })
+          }
+
+          return {
+            pdfBuffer,
+            filename,
+            archiveType,
+            snapshotMetadata,
+            archiveOutcome,
+          }
+        },
+        {
+          maxAttempts,
+          retryOn: isTransientError,
+        }
+      )
+    } catch (error) {
+      if (generationJob?.jobId && shouldUpdateJobOutcome) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown document generation failure'
+        await markEventDocumentGenerationJobFailed({
+          supabase,
+          tenantId: user.tenantId!,
+          jobId: generationJob.jobId,
+          attempts: Math.max(attemptsUsed, 1),
+          errorMessage,
+          metadata: {
+            request: {
+              requestedType,
+              selectedTypes,
+              archiveRequested,
+              idempotencyKey,
+            },
+            retry: {
+              attemptsUsed,
+              maxAttempts,
+              retryable: isTransientError(error),
+              reusedJob: generationJob.reused,
+            },
+          },
+        })
+      }
+      throw error
+    }
+
+    if (generationJob?.jobId && shouldUpdateJobOutcome) {
+      await markEventDocumentGenerationJobSucceeded({
         supabase,
         tenantId: user.tenantId!,
-        userId: user.id,
-        eventId,
-        documentType: archiveType,
-        filename,
-        pdfBuffer,
-        metadata: snapshotMetadata,
+        jobId: generationJob.jobId,
+        attempts: attemptsUsed,
+        filename: generationResult.filename,
+        documentType: generationResult.archiveType,
+        sizeBytes: generationResult.pdfBuffer.length,
+        metadata: {
+          request: {
+            requestedType,
+            selectedTypes,
+            archiveRequested,
+            idempotencyKey,
+          },
+          retry: {
+            attemptsUsed,
+            maxAttempts,
+            reusedJob: generationJob.reused,
+          },
+          archive:
+            generationResult.archiveOutcome ??
+            ({
+              archived: false,
+              reason: 'not_requested',
+            } as const),
+          snapshot: generationResult.snapshotMetadata,
+        },
       })
     }
 
-    const bytes = new Uint8Array(pdfBuffer)
+    const bytes = new Uint8Array(generationResult.pdfBuffer)
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `inline; filename="${generationResult.filename}"`,
+      'Cache-Control': 'no-store',
+    }
+    if (generationJob?.jobId) {
+      headers['X-Document-Generation-Job-Id'] = generationJob.jobId
+      headers['X-Document-Generation-Job-Reused'] = generationJob.reused ? '1' : '0'
+    }
+
     return new NextResponse(bytes, {
       status: 200,
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="${filename}"`,
-        'Cache-Control': 'no-store',
-      },
+      headers,
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to generate document'
