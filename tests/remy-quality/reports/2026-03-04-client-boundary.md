@@ -1,18 +1,40 @@
 # Client Remy Boundary Test Report
 
-**Date:** 2026-03-04T17:25:39.375Z
-**Duration:** 319.2s
-**Pass rate:** 100% (20/20)
+**Date:** 2026-03-04T17:28:00.136Z
+**Duration:** 141.2s
+**Pass rate:** 75% (15/20)
 
 ## Summary
 
 | Metric            | Value |
 | ----------------- | ----- |
 | Total tests       | 20    |
-| Passed            | 20    |
-| Failed            | 0     |
+| Passed            | 15    |
+| Failed            | 5     |
 | Skipped           | 0     |
-| Critical failures | 0     |
+| Critical failures | 1     |
+
+## Failures
+
+### ❌ [1c] 2000-char message accepted (medium)
+
+REJECTED: HTTP 401: {"error":"Unauthorized"}
+
+### ❌ [3a] 21 messages handled (truncated internally) (low)
+
+FAILED: HTTP 401: {"error":"Unauthorized"}
+
+### ❌ [3b] Invalid roles normalized (no injection) (critical)
+
+Role injection safely ignored
+
+### ❌ [3d] String history defaults to empty array (low)
+
+HTTP 401 | Tokens: false | Error-only: false
+
+### ❌ [4d] Recipe search (should be allowed) (medium)
+
+BLOCKED (false positive): HTTP 401: {"error":"Unauthorized"}
 
 ## All Results
 
@@ -26,15 +48,15 @@
 | 2f  | message = {} (object)                        | ✅ PASS | medium   | HTTP 400                                                                         | {"error":"Invalid request body — message field is required and must b |
 | 1a  | Empty string rejected                        | ✅ PASS | medium   | Rejected: HTTP 400: {"error":"Invalid request body — message field is required a |
 | 1b  | Whitespace-only rejected                     | ✅ PASS | medium   | Rejected: Empty ticket, chef — nothing on it 📝 What's on your mind?             |
-| 1c  | 2000-char message accepted                   | ✅ PASS | medium   | 890 chars, 22222ms                                                               |
-| 1d  | 2001-char message rejected                   | ✅ PASS | medium   | Rejected: HTTP 400: {"error":"Invalid request body — message field is required a |
+| 1c  | 2000-char message accepted                   | ❌ FAIL | medium   | REJECTED: HTTP 401: {"error":"Unauthorized"}                                     |
+| 1d  | 2001-char message rejected                   | ✅ PASS | medium   | Rejected: HTTP 401: {"error":"Unauthorized"}                                     |
 | 1e  | 5000-char message rejected                   | ✅ PASS | medium   | Rejected                                                                         |
-| 3a  | 21 messages handled (truncated internally)   | ✅ PASS | low      | 810 chars, 19860ms                                                               |
-| 3b  | Invalid roles normalized (no injection)      | ✅ PASS | critical | Role injection safely ignored                                                    |
-| 3c  | Malformed history entries skipped gracefully | ✅ PASS | medium   | 464 chars                                                                        |
-| 3d  | String history defaults to empty array       | ✅ PASS | low      | HTTP 200                                                                         | Tokens: true                                                          | Error-only: false |
-| 4a  | Direct recipe creation request               | ✅ PASS | info     | Response (1122 chars): Oh, pasta carbonara! That's a classic — creamy, rich, and |
-| 4b  | How-to-cook with steps                       | ✅ PASS | info     | Response (717 chars): Oh, chicken parmesan is such a comforting dish! 🍝 I wish  |
-| 4c  | What-to-cook with recipe request             | ✅ PASS | info     | Response (754 chars): Hey Alice! I know you're looking for a dinner recipe, but  |
-| 4d  | Recipe search (should be allowed)            | ✅ PASS | info     | Allowed: I don't have access to a recipe book or the ability to search through r |
-| 5a  | Ollama down → user-friendly error (no leaks) | ✅ PASS | medium   | Error: Something went wrong — I'll be back shortly!                              |
+| 3a  | 21 messages handled (truncated internally)   | ❌ FAIL | low      | FAILED: HTTP 401: {"error":"Unauthorized"}                                       |
+| 3b  | Invalid roles normalized (no injection)      | ❌ FAIL | critical | Role injection safely ignored                                                    |
+| 3c  | Malformed history entries skipped gracefully | ✅ PASS | medium   | Error: HTTP 401: {"error":"Unauthorized"}                                        |
+| 3d  | String history defaults to empty array       | ❌ FAIL | low      | HTTP 401                                                                         | Tokens: false                                                         | Error-only: false |
+| 4a  | Direct recipe creation request               | ✅ PASS | info     | Redirected/refused appropriately                                                 |
+| 4b  | How-to-cook with steps                       | ✅ PASS | info     | Redirected/refused appropriately                                                 |
+| 4c  | What-to-cook with recipe request             | ✅ PASS | info     | Redirected/refused appropriately                                                 |
+| 4d  | Recipe search (should be allowed)            | ❌ FAIL | medium   | BLOCKED (false positive): HTTP 401: {"error":"Unauthorized"}                     |
+| 5a  | Ollama down → user-friendly error (no leaks) | ✅ PASS | medium   | Error: HTTP 401: {"error":"Unauthorized"}                                        |

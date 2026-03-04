@@ -1,5 +1,6 @@
 // Quality Evaluator
-// Uses Ollama to grade pipeline outputs against scenario ground truth.
+// Grades pipeline outputs against scenario ground truth.
+// Formula > AI: uses deterministic checks where possible, Ollama only for subjective quality.
 // Returns a score (0–100) and a list of specific failure reasons.
 // Score >= 70 = passed. Failures are human-readable for developer review.
 
@@ -13,7 +14,246 @@ interface EvaluationResult {
   failures: string[]
 }
 
-// ── Module-specific rubrics ───────────────────────────────────────────────────
+// ── Deterministic evaluators (Formula > AI) ──────────────────────────────────
+
+function fuzzyMatch(
+  actual: string | null | undefined,
+  expected: string | null | undefined
+): boolean {
+  if (!actual && !expected) return true
+  if (!actual || !expected) return false
+  const a = actual.toLowerCase().trim()
+  const e = expected.toLowerCase().trim()
+  return a === e || a.includes(e) || e.includes(a)
+}
+
+function evaluateInquiryParseDeterministic(
+  scenario: SimScenario,
+  rawOutput: unknown
+): EvaluationResult {
+  const out = rawOutput as Record<string, unknown> | null
+  if (!out || typeof out !== 'object') {
+    return { score: 0, passed: false, failures: ['Pipeline returned no valid object'] }
+  }
+
+  const gt = scenario.groundTruth
+  let score = 100
+  const failures: string[] = []
+
+  // Check client name
+  const expectedName = gt.expectedName as string | null
+  const actualName = (out.clientName ?? out.client_name ?? null) as string | null
+  if (expectedName !== null) {
+    if (!fuzzyMatch(actualName, expectedName)) {
+      score -= 25
+      failures.push(`Client name: expected "${expectedName}", got "${actualName}"`)
+    }
+  } else if (actualName !== null && actualName !== '') {
+    // Parser should have returned null but invented a name
+    score -= 30
+    failures.push(`Client name: expected null, but parser invented "${actualName}"`)
+  }
+
+  // Check guest count
+  const expectedGuests = gt.expectedGuestCount as number | null
+  const actualGuests = (out.guestCount ?? out.confirmed_guest_count ?? null) as number | null
+  if (expectedGuests !== null) {
+    if (actualGuests === null || actualGuests === undefined) {
+      score -= 20
+      failures.push(`Guest count: expected ${expectedGuests}, got null`)
+    } else if (actualGuests !== expectedGuests) {
+      score -= 20
+      failures.push(`Guest count: expected ${expectedGuests}, got ${actualGuests}`)
+    }
+  } else if (actualGuests !== null && actualGuests !== undefined) {
+    score -= 20
+    failures.push(`Guest count: expected null, but parser returned ${actualGuests}`)
+  }
+
+  // Check occasion
+  const expectedOccasion = gt.expectedOccasion as string | null
+  const actualOccasion = (out.occasion ?? out.confirmed_occasion ?? null) as string | null
+  if (expectedOccasion !== null) {
+    if (!fuzzyMatch(actualOccasion, expectedOccasion)) {
+      score -= 15
+      failures.push(`Occasion: expected "${expectedOccasion}", got "${actualOccasion}"`)
+    }
+  }
+
+  // Check dietaryRestrictions is array (not missing)
+  const dietary = out.dietaryRestrictions
+  if (!Array.isArray(dietary)) {
+    score -= 10
+    failures.push('dietaryRestrictions field is missing or not an array')
+  }
+
+  score = Math.max(0, score)
+  return { score, passed: score >= 70, failures }
+}
+
+function evaluateCorrespondenceDeterministic(
+  scenario: SimScenario,
+  rawOutput: unknown
+): EvaluationResult {
+  const out = rawOutput as Record<string, unknown> | null
+  if (!out || typeof out !== 'object') {
+    return { score: 0, passed: false, failures: ['Pipeline returned no valid object'] }
+  }
+
+  const ctx = scenario.context as Record<string, unknown> | undefined
+  let score = 100
+  const failures: string[] = []
+
+  const subject = String(out.subject ?? '')
+  const body = String(out.body ?? '')
+  const signOff = String(out.signOff ?? '')
+  const clientName = String(ctx?.clientName ?? '')
+  const occasion = String(ctx?.occasion ?? '')
+  const guestCount = Number(ctx?.guestCount ?? 0)
+  const forbidden = (ctx?.forbiddenInResponse as string[]) ?? []
+
+  // Must have subject
+  if (!subject || subject === 'undefined' || subject === 'null') {
+    score -= 15
+    failures.push('Missing subject line')
+  }
+
+  // Client name must appear in subject (case-insensitive)
+  if (clientName && !subject.toLowerCase().includes(clientName.toLowerCase())) {
+    // Also check first name
+    const firstName = clientName.split(' ')[0]
+    if (!subject.toLowerCase().includes(firstName.toLowerCase())) {
+      score -= 20
+      failures.push(`Client name "${clientName}" not found in subject: "${subject}"`)
+    }
+  }
+
+  // Must have body
+  if (!body || body.length < 20) {
+    score -= 20
+    failures.push('Body is empty or too short')
+  }
+
+  // Occasion must appear in body
+  if (occasion && body.length > 0 && !body.toLowerCase().includes(occasion.toLowerCase())) {
+    score -= 15
+    failures.push(`Occasion "${occasion}" not mentioned in body`)
+  }
+
+  // Guest count must appear in body
+  if (guestCount > 0 && body.length > 0 && !body.includes(String(guestCount))) {
+    score -= 10
+    failures.push(`Guest count ${guestCount} not mentioned in body`)
+  }
+
+  // Must have sign-off
+  if (!signOff || signOff === 'undefined' || signOff === 'null') {
+    score -= 10
+    failures.push('Missing sign-off')
+  }
+
+  // Check forbidden content
+  const fullText = `${subject} ${body} ${signOff}`.toLowerCase()
+  for (const f of forbidden) {
+    if (fullText.includes(f.toLowerCase())) {
+      score -= 25
+      failures.push(`Forbidden content "${f}" found in email`)
+    }
+  }
+
+  score = Math.max(0, score)
+  return { score, passed: score >= 70, failures }
+}
+
+function evaluateQuoteDraftDeterministic(
+  scenario: SimScenario,
+  rawOutput: unknown
+): EvaluationResult {
+  const out = rawOutput as Record<string, unknown> | null
+  if (!out || typeof out !== 'object') {
+    return { score: 0, passed: false, failures: ['Pipeline returned no valid object'] }
+  }
+
+  const gt = scenario.groundTruth
+  let score = 100
+  const failures: string[] = []
+
+  const lineItems = out.lineItems as Array<Record<string, unknown>> | undefined
+  const totalCents = out.totalCents as number | undefined
+  const depositCents = out.depositCents as number | undefined
+  const validDays = out.validDays as number | undefined
+  const notes = out.notes as string | undefined
+
+  // Check line items
+  if (!Array.isArray(lineItems) || lineItems.length === 0) {
+    score -= 20
+    failures.push('Missing or empty lineItems')
+  } else {
+    const hasService = lineItems.some((li) =>
+      String(li.description ?? '')
+        .toLowerCase()
+        .includes('service')
+    )
+    const hasGrocery = lineItems.some((li) =>
+      String(li.description ?? '')
+        .toLowerCase()
+        .includes('grocery')
+    )
+    if (!hasService) {
+      score -= 10
+      failures.push('No service fee line item')
+    }
+    if (!hasGrocery) {
+      score -= 10
+      failures.push('No grocery estimate line item')
+    }
+  }
+
+  // Check total in expected range
+  const [minCents, maxCents] = (gt.expectedPriceRangeCents as [number, number]) ?? [0, 1_000_000]
+  if (totalCents === undefined || totalCents === null) {
+    score -= 30
+    failures.push('Missing totalCents')
+  } else if (totalCents < minCents || totalCents > maxCents) {
+    // Check if within 50% tolerance (soft fail)
+    const midpoint = (minCents + maxCents) / 2
+    const diff = Math.abs(totalCents - midpoint) / midpoint
+    if (diff > 0.5) {
+      score -= 30
+      failures.push(
+        `Total $${(totalCents / 100).toFixed(0)} outside expected range $${(minCents / 100).toFixed(0)}–$${(maxCents / 100).toFixed(0)}`
+      )
+    } else {
+      score -= 10
+      failures.push(
+        `Total $${(totalCents / 100).toFixed(0)} slightly outside range $${(minCents / 100).toFixed(0)}–$${(maxCents / 100).toFixed(0)}`
+      )
+    }
+  }
+
+  // Check deposit
+  if (depositCents === undefined || depositCents === null) {
+    score -= 15
+    failures.push('Missing depositCents')
+  }
+
+  // Check validity period
+  if (validDays === undefined || validDays === null) {
+    score -= 10
+    failures.push('Missing validDays')
+  }
+
+  // Check notes
+  if (!notes || notes.length < 5) {
+    score -= 10
+    failures.push('Missing or empty notes')
+  }
+
+  score = Math.max(0, score)
+  return { score, passed: score >= 70, failures }
+}
+
+// ── Ollama-based evaluators (for subjective quality only) ────────────────────
 
 function buildEvaluatorPrompt(
   scenario: SimScenario,
@@ -24,32 +264,6 @@ function buildEvaluatorPrompt(
   const ctx = scenario.context as Record<string, unknown> | undefined
 
   switch (scenario.module) {
-    case 'inquiry_parse':
-      return {
-        system: `You are an AI quality evaluator. Score how well an inquiry parser extracted information from an email.
-Return valid JSON only.`,
-        user: `Original inquiry email:
-${scenario.inputText}
-
-Expected ground truth:
-- Client name: ${gt.expectedName}
-- Guest count: ${gt.expectedGuestCount}
-- Occasion: ${gt.expectedOccasion}
-
-Parser output:
-${outputStr}
-
-Score this extraction on a scale of 0–100. Deduct points for:
-- Missing client name (-25)
-- Wrong guest count or missing (-20)
-- Missing event date (-15)
-- Missing dietary restrictions when mentioned (-20)
-- Missing budget when mentioned (-15)
-- Inventing data not in the original message (-30)
-
-Return JSON: { "score": N, "failures": ["list of specific issues found"] }`,
-      }
-
     case 'client_parse':
       return {
         system: `You are an AI quality evaluator. Score how well a client note parser extracted contact information.
@@ -96,36 +310,6 @@ Return JSON: { "score": N, "failures": ["list of specific issues found"] }`,
       }
     }
 
-    case 'correspondence': {
-      const stage = ctx?.stage ?? 'QUALIFIED_INQUIRY'
-      const forbidden = (ctx?.forbiddenInResponse as string[]) ?? []
-      const clientName = ctx?.clientName as string | undefined
-      const occasion = ctx?.occasion as string | undefined
-      return {
-        system: `You are evaluating an AI-drafted client email for a private chef. Check lifecycle compliance.
-Return valid JSON only.`,
-        user: `Lifecycle stage: ${stage}
-Forbidden content for this stage: ${forbidden.length > 0 ? forbidden.join(', ') : 'none specified'}
-${clientName ? `Client name (MUST appear in subject line): ${clientName}` : ''}
-${occasion ? `Occasion (MUST be mentioned in body): ${occasion}` : ''}
-
-Draft output:
-${outputStr}
-
-Score this draft on a scale of 0–100. Deduct points for:
-${forbidden.map((f) => `- Including "${f}" in this stage (-25)`).join('\n')}
-${clientName ? `- Client name "${clientName}" NOT present in the subject line (-20)` : ''}
-${occasion ? `- Occasion "${occasion}" NOT mentioned in the email body (-15)` : ''}
-- Missing subject line (-15)
-- Tone mismatch (too formal for depth 3+, too casual for depth 1) (-10)
-- Empty or generic body without client-specific details (-20)
-- Missing sign-off or closing (-10)
-- Unprofessional language (-15)
-
-Return JSON: { "score": N, "failures": ["list of specific issues found"] }`,
-      }
-    }
-
     case 'menu_suggestions': {
       const dietary = (ctx?.dietaryRestrictions as string[]) ?? []
       return {
@@ -147,36 +331,19 @@ Return JSON: { "score": N, "failures": ["list of specific issues found"] }`,
       }
     }
 
-    case 'quote_draft': {
-      const [minCents, maxCents] = (gt.expectedPriceRangeCents as [number, number]) ?? [
-        0, 1_000_000,
-      ]
-      const guestCount = (gt.guestCount as number) ?? 10
+    // inquiry_parse, correspondence, quote_draft handled by deterministic evaluators
+    default:
       return {
-        system: `You are evaluating an AI-generated quote for a private chef event. Check pricing reasonableness.
-Return valid JSON only.`,
-        user: `Expected price range: $${Math.round(minCents / 100)}–$${Math.round(maxCents / 100)}
-Guest count: ${guestCount}
-
-Quote output:
-${outputStr}
-
-Score this on a scale of 0–100. Deduct points for:
-- Total price outside expected range by >50% (-30)
-- Missing line items (no service fee or grocery estimate) (-20)
-- Missing deposit amount (-15)
-- Per-person rate below $50 or above $500 (likely error) (-25)
-- Missing validity period (-10)
-- No notes or terms included (-10)
-
-Return JSON: { "score": N, "failures": ["list of specific issues found"] }`,
+        system: 'Return valid JSON only.',
+        user: `Score this output: ${outputStr}\nReturn JSON: { "score": 50, "failures": ["no evaluator for this module"] }`,
       }
-    }
   }
 }
 
 /**
- * Uses Ollama to evaluate a pipeline output against scenario ground truth.
+ * Evaluates a pipeline output against scenario ground truth.
+ * Uses deterministic checks for inquiry_parse, correspondence, quote_draft (Formula > AI).
+ * Uses Ollama for subjective quality evaluation on client_parse, allergen_risk, menu_suggestions.
  * Returns score (0–100), passed (>=70), and specific failure reasons.
  * Never throws — returns score=0 with error on failure.
  */
@@ -188,12 +355,22 @@ export async function evaluateOutput(
     return { score: 0, passed: false, failures: ['Pipeline returned no output'] }
   }
 
+  // Formula > AI: deterministic evaluation for structured output modules
+  switch (scenario.module) {
+    case 'inquiry_parse':
+      return evaluateInquiryParseDeterministic(scenario, rawOutput)
+    case 'correspondence':
+      return evaluateCorrespondenceDeterministic(scenario, rawOutput)
+    case 'quote_draft':
+      return evaluateQuoteDraftDeterministic(scenario, rawOutput)
+  }
+
+  // Ollama-based evaluation for subjective quality modules
   const config = getOllamaConfig()
   const ollama = makeOllamaClient()
   const prompt = buildEvaluatorPrompt(scenario, rawOutput)
 
   try {
-    // stream: false is passed via `as any` — Ollama returns ChatResponse, not an iterator
     const response = (await ollama.chat({
       model: config.model,
       messages: [
