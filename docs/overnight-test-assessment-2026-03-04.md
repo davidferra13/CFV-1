@@ -63,13 +63,17 @@
 
 16. **Kiosk viewport** — Left as-is. `maximumScale: 1` and `userScalable: false` are intentional for dedicated kiosk tablets. WCAG flags it but it's the correct design for fixed-hardware kiosk mode.
 
-## Not Fixed (Require Separate Investigation)
+### Agent Account Fix
 
-- **Remy onboarding on agent account** — The agent test account needs manual Remy onboarding to enable chef-side testing.
+17. **Remy onboarding on agent account** — Inserted `ai_preferences` row for agent tenant (`91ec0e6a-ce61-41ec-b9e5-eea3b415e5b8`) with `remy_enabled = true`, `onboarding_completed = true`, all permissions enabled. Probe verified Remy responds on agent account. Chef-side Remy testing is now unblocked.
+
+## Not Fixed (Working As Designed)
+
 - **Rate limiting test** — The 15-message test doesn't trigger limits because sequential requests take ~20s each (Ollama response time), so only 3-4 are ever within the 60-second window. Working as designed for sequential requests.
 
 ## Verification
 
 - `npx tsc --noEmit --skipLibCheck` — 0 errors
 - Unit tests: 719/719 pass
+- Remy probe: 200 OK with streaming tokens on agent account
 - All code changes are additive and backward-compatible
