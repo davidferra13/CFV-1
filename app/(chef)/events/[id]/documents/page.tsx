@@ -282,6 +282,10 @@ export default async function EventDocumentsPage({
 
   const readinessComplete = recommendedDocReadiness.every((row) => row.ready)
   const archiveComplete = recommendedDocReadiness.every((row) => row.archived)
+  const missingDataRows = recommendedDocReadiness.filter((row) => !row.ready)
+  const readyToArchiveRows = recommendedDocReadiness.filter((row) => row.ready && !row.archived)
+  const archivedRows = recommendedDocReadiness.filter((row) => row.archived)
+  const firstMissingDataType = missingDataRows[0]?.type ?? null
   const readyRecommendedTypes = recommendedDocReadiness
     .filter((row) => row.ready)
     .map((row) => row.type)
@@ -357,64 +361,134 @@ export default async function EventDocumentsPage({
         </p>
       </Card>
 
-      <Card className="p-6">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-semibold">{pack.title}</h2>
-            <p className="text-sm text-stone-400 mt-1">{pack.subtitle}</p>
-            <p className="text-xs text-stone-500 mt-2">
-              Ready now: {readyCount}/{pack.recommendedOperationalDocs.length} recommended docs
+      <Card className="p-6 border-stone-700">
+        <h2 className="text-xl font-semibold">Do This In Order</h2>
+        <p className="text-sm text-stone-400 mt-1">
+          Keep it simple: fill missing data, generate PDFs, then open the latest packet.
+        </p>
+
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="rounded border border-stone-800 p-3 space-y-2">
+            <p className="text-[11px] uppercase tracking-wide text-stone-500">Step 1</p>
+            <p className="text-sm font-medium text-stone-100">Fill Missing Data</p>
+            <p className="text-xs text-stone-500">
+              {missingDataRows.length === 0
+                ? 'All recommended docs are data-ready.'
+                : `${missingDataRows.length} doc${missingDataRows.length === 1 ? '' : 's'} still need data.`}
             </p>
+            {firstMissingDataType ? (
+              <Link href={buildOperationalDocWorkspaceHref(event.id, firstMissingDataType)}>
+                <Button variant="secondary" size="sm">
+                  Open First Missing Doc
+                </Button>
+              </Link>
+            ) : (
+              <span className="text-xs text-emerald-400">Done</span>
+            )}
           </div>
-          <div className="flex flex-wrap gap-2">
-            <a
-              href={`/api/documents/${event.id}?type=pack&types=${encodeURIComponent(packTypesParam)}&archive=1`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button variant="primary" size="sm">
-                Print Recommended Pack
-              </Button>
-            </a>
+
+          <div className="rounded border border-stone-800 p-3 space-y-2">
+            <p className="text-[11px] uppercase tracking-wide text-stone-500">Step 2</p>
+            <p className="text-sm font-medium text-stone-100">Generate PDFs</p>
+            <p className="text-xs text-stone-500">
+              {readyToArchiveRows.length === 0
+                ? 'No new docs waiting to archive.'
+                : `${readyToArchiveRows.length} ready doc${readyToArchiveRows.length === 1 ? '' : 's'} can be archived now.`}
+            </p>
+            <span className="text-xs text-stone-400">Use the automation buttons below.</span>
           </div>
-        </div>
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2">
-          {pack.recommendedOperationalDocs.map((type) => (
-            <div
-              key={type}
-              className="flex items-center justify-between rounded border border-stone-800 px-3 py-2"
-            >
-              <p className="text-sm text-stone-200">{SNAPSHOT_DOCUMENT_LABELS[type]}</p>
-              <span
-                className={
-                  isOperationalTypeReady(type, readiness)
-                    ? 'text-xs text-emerald-500'
-                    : 'text-xs text-amber-500'
-                }
-              >
-                {isOperationalTypeReady(type, readiness) ? 'Ready' : 'Needs data'}
-              </span>
-            </div>
-          ))}
-        </div>
-        {pack.futureDocs.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-stone-800">
-            <p className="text-xs text-stone-500 mb-2">
-              Next archetype-specific docs planned for this business type:
+
+          <div className="rounded border border-stone-800 p-3 space-y-2">
+            <p className="text-[11px] uppercase tracking-wide text-stone-500">Step 3</p>
+            <p className="text-sm font-medium text-stone-100">Open and Share</p>
+            <p className="text-xs text-stone-500">
+              {archivedRows.length}/{recommendedDocReadiness.length} recommended docs archived.
             </p>
             <div className="flex flex-wrap gap-2">
-              {pack.futureDocs.map((item) => (
-                <span
-                  key={item}
-                  className="text-xs rounded border border-stone-700 px-2 py-1 text-stone-400"
+              {packetLatestSnapshot ? (
+                <a
+                  href={`/api/documents/snapshots/${packetLatestSnapshot.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  {item}
-                </span>
-              ))}
+                  <Button variant="ghost" size="sm">
+                    Open Latest Packet
+                  </Button>
+                </a>
+              ) : null}
+              <a href={eventArchiveExportHref}>
+                <Button variant="ghost" size="sm">
+                  Export Archive CSV
+                </Button>
+              </a>
             </div>
           </div>
-        )}
+        </div>
       </Card>
+
+      <details className="rounded border border-stone-800 px-4 py-3">
+        <summary className="cursor-pointer text-sm text-stone-300">
+          Recommended packet details ({readyCount}/{pack.recommendedOperationalDocs.length} ready)
+        </summary>
+        <Card className="p-6 mt-3">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-semibold">{pack.title}</h2>
+              <p className="text-sm text-stone-400 mt-1">{pack.subtitle}</p>
+              <p className="text-xs text-stone-500 mt-2">
+                Ready now: {readyCount}/{pack.recommendedOperationalDocs.length} recommended docs
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <a
+                href={`/api/documents/${event.id}?type=pack&types=${encodeURIComponent(packTypesParam)}&archive=1`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button variant="primary" size="sm">
+                  Print Recommended Pack
+                </Button>
+              </a>
+            </div>
+          </div>
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2">
+            {pack.recommendedOperationalDocs.map((type) => (
+              <div
+                key={type}
+                className="flex items-center justify-between rounded border border-stone-800 px-3 py-2"
+              >
+                <p className="text-sm text-stone-200">{SNAPSHOT_DOCUMENT_LABELS[type]}</p>
+                <span
+                  className={
+                    isOperationalTypeReady(type, readiness)
+                      ? 'text-xs text-emerald-500'
+                      : 'text-xs text-amber-500'
+                  }
+                >
+                  {isOperationalTypeReady(type, readiness) ? 'Ready' : 'Needs data'}
+                </span>
+              </div>
+            ))}
+          </div>
+          {pack.futureDocs.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-stone-800">
+              <p className="text-xs text-stone-500 mb-2">
+                Next archetype-specific docs planned for this business type:
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {pack.futureDocs.map((item) => (
+                  <span
+                    key={item}
+                    className="text-xs rounded border border-stone-700 px-2 py-1 text-stone-400"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </Card>
+      </details>
 
       <Card className="p-6">
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
@@ -471,549 +545,574 @@ export default async function EventDocumentsPage({
           />
         </div>
 
-        <div className="mt-5 space-y-2">
-          {recommendedDocReadiness.map((row) => (
-            <div
-              key={row.type}
-              className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 rounded border border-stone-800 px-3 py-2"
-            >
-              <div>
-                <p className="text-sm font-medium text-stone-100">
-                  {SNAPSHOT_DOCUMENT_LABELS[row.type]}
-                </p>
-                <p className="text-xs text-stone-500">
-                  Data:{' '}
-                  <span className={row.ready ? 'text-emerald-400' : 'text-amber-400'}>
-                    {row.ready ? 'Ready' : 'Needs data'}
-                  </span>
-                  {' - '}Archive:{' '}
-                  <span className={row.archived ? 'text-emerald-400' : 'text-amber-400'}>
-                    {row.archived ? 'Saved' : 'Missing'}
-                  </span>
-                  {row.coveredByPacket && !row.individualArchivedCount
-                    ? ' - Covered by packet snapshot'
-                    : ''}
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                {!row.ready ? (
-                  <Link href={buildOperationalDocWorkspaceHref(event.id, row.type)}>
-                    <Button variant="secondary" size="sm">
-                      Fill Data
-                    </Button>
-                  </Link>
-                ) : !row.archived ? (
-                  <a
-                    href={`/api/documents/${event.id}?type=${row.type}&archive=1`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Button variant="secondary" size="sm">
-                      Archive Now
-                    </Button>
-                  </a>
-                ) : (
-                  <a
-                    href={`/api/documents/${event.id}?type=${row.type}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Button variant="secondary" size="sm">
-                      Preview
-                    </Button>
-                  </a>
-                )}
-                {row.latestSnapshotId && (
-                  <a
-                    href={`/api/documents/snapshots/${row.latestSnapshotId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Button variant="ghost" size="sm">
-                      Latest Snapshot
-                    </Button>
-                  </a>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-semibold">Financial Snapshot</h2>
-            <p className="text-sm text-stone-400 mt-1">
-              Revenue, cost, and profit status for this event without leaving Documents Hub.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Link href={`/events/${event.id}/financial`}>
-              <Button variant="secondary" size="sm">
-                Financial Hub
-              </Button>
-            </Link>
-            <a
-              href={`/api/documents/financial-summary/${event.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button variant="ghost" size="sm">
-                Financial PDF
-              </Button>
-            </a>
-          </div>
-        </div>
-
-        {!financialSummary ? (
-          <p className="text-sm text-stone-500 mt-4">
-            Financial snapshot unavailable right now. Open Financial Hub to review event ledger and
-            expenses.
-          </p>
-        ) : (
-          <>
-            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
-              <div className="rounded border border-stone-800 px-3 py-2">
-                <p className="text-[11px] uppercase tracking-wide text-stone-500">Quoted</p>
-                <p className="text-sm font-semibold text-stone-100">
-                  {formatCurrency(financialSummary.revenue.quotedPriceCents)}
-                </p>
-              </div>
-              <div className="rounded border border-stone-800 px-3 py-2">
-                <p className="text-[11px] uppercase tracking-wide text-stone-500">Received</p>
-                <p className="text-sm font-semibold text-stone-100">
-                  {formatCurrency(financialSummary.revenue.totalReceivedCents)}
-                </p>
-              </div>
-              <div className="rounded border border-stone-800 px-3 py-2">
-                <p className="text-[11px] uppercase tracking-wide text-stone-500">Total Cost</p>
-                <p className="text-sm font-semibold text-stone-100">
-                  {formatCurrency(financialSummary.costs.totalCostCents)}
-                </p>
-              </div>
-              <div className="rounded border border-stone-800 px-3 py-2">
-                <p className="text-[11px] uppercase tracking-wide text-stone-500">Net Profit</p>
-                <p
-                  className={`text-sm font-semibold ${financialSummary.margins.netProfitWithTipCents >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}
-                >
-                  {formatCurrency(financialSummary.margins.netProfitWithTipCents)}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-3 flex flex-wrap gap-2">
-              <span className="text-xs rounded border border-stone-700 px-2 py-1 text-stone-400">
-                Food Cost: {financialSummary.margins.foodCostPercent}%
-              </span>
-              <span className="text-xs rounded border border-stone-700 px-2 py-1 text-stone-400">
-                Gross Margin: {financialSummary.margins.grossMarginPercent}%
-              </span>
-              <span className="text-xs rounded border border-stone-700 px-2 py-1 text-stone-400">
-                Pending Items: {financialSummary.pendingItems.length}
-              </span>
-              {financialSummary.event.financialClosed && (
-                <span className="text-xs rounded border border-emerald-700/60 px-2 py-1 text-emerald-400">
-                  Financially Closed
-                </span>
-              )}
-            </div>
-          </>
-        )}
-      </Card>
-
-      <DocumentSection eventId={event.id} readiness={readiness} businessDocs={businessDocs} />
-
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-2">Generation Health</h2>
-        <p className="text-stone-500 text-sm mb-4">
-          Live status for auto-generated document jobs on this event.
-        </p>
-
-        {generationHealth.total === 0 ? (
-          <p className="text-sm text-stone-500">
-            No generation jobs recorded yet. Generate any document to start tracking health.
-          </p>
-        ) : (
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              <div className="rounded border border-stone-800 px-3 py-2">
-                <p className="text-[11px] uppercase tracking-wide text-stone-500">Total</p>
-                <p className="text-lg font-semibold text-stone-100">{generationHealth.total}</p>
-              </div>
-              <div className="rounded border border-stone-800 px-3 py-2">
-                <p className="text-[11px] uppercase tracking-wide text-stone-500">Succeeded</p>
-                <p className="text-lg font-semibold text-emerald-500">
-                  {generationHealth.succeeded}
-                </p>
-              </div>
-              <div className="rounded border border-stone-800 px-3 py-2">
-                <p className="text-[11px] uppercase tracking-wide text-stone-500">Failed</p>
-                <p className="text-lg font-semibold text-rose-500">{generationHealth.failed}</p>
-              </div>
-              <div className="rounded border border-stone-800 px-3 py-2">
-                <p className="text-[11px] uppercase tracking-wide text-stone-500">In Progress</p>
-                <p className="text-lg font-semibold text-amber-500">{generationHealth.started}</p>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              {generationTypeRows.map((row) => (
-                <div
-                  key={row.requestedType}
-                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded border border-stone-800 px-3 py-2"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-stone-100">
-                      {DOCUMENT_REQUEST_LABELS[row.requestedType]}
-                    </p>
-                    <p className="text-xs text-stone-500">
-                      {row.succeeded} success / {row.failed} failed / {row.started} in progress
-                    </p>
-                  </div>
-                  <div className="text-xs text-stone-500 text-right">
-                    <p>
-                      Last status:{' '}
-                      <span className="text-stone-300">{row.lastStatus ?? 'unknown'}</span>
-                    </p>
-                    {row.lastCreatedAt && (
-                      <p>{format(new Date(row.lastCreatedAt), 'MMM d, yyyy h:mm a')}</p>
-                    )}
-                    {row.lastError && row.lastStatus === 'failed' && (
-                      <p className="text-rose-400 max-w-[340px] truncate" title={row.lastError}>
-                        {row.lastError}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {bulkRunHistory.length > 0 && (
-              <div className="pt-3 border-t border-stone-800">
-                <h3 className="text-sm font-semibold text-stone-200 mb-2">Bulk Automation Runs</h3>
-                <div className="space-y-2">
-                  {bulkRunHistory.map((run) => (
-                    <div
-                      key={run.runId}
-                      className="rounded border border-stone-800 px-3 py-2 space-y-1"
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-                        <p className="text-xs text-stone-400">
-                          Run {run.runId} - {run.succeeded}/{run.total} succeeded
-                          {run.failed > 0 ? `, ${run.failed} failed` : ''}
-                        </p>
-                        <p className="text-xs text-stone-500">
-                          {run.startedAt
-                            ? format(new Date(run.startedAt), 'MMM d, yyyy h:mm a')
-                            : 'Unknown start'}
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {run.docs.map((doc) => {
-                          const className = `text-[11px] rounded border px-2 py-0.5 ${
-                            doc.status === 'succeeded'
-                              ? 'border-emerald-700/60 text-emerald-400'
-                              : doc.status === 'failed'
-                                ? 'border-rose-700/60 text-rose-400'
-                                : 'border-amber-700/60 text-amber-400'
-                          }`
-
-                          if (doc.snapshotId) {
-                            return (
-                              <a
-                                key={`${run.runId}-${doc.type}`}
-                                href={`/api/documents/snapshots/${doc.snapshotId}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className={`${className} hover:underline`}
-                                title={`${SNAPSHOT_DOCUMENT_LABELS[doc.type]} (open snapshot)`}
-                              >
-                                {SNAPSHOT_DOCUMENT_LABELS[doc.type]}
-                              </a>
-                            )
-                          }
-
-                          return (
-                            <span
-                              key={`${run.runId}-${doc.type}`}
-                              className={className}
-                              title={doc.error ?? undefined}
-                            >
-                              {SNAPSHOT_DOCUMENT_LABELS[doc.type]}
-                            </span>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </Card>
-
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-2">Archive Drilldown</h2>
-        <p className="text-stone-500 text-sm mb-4">
-          Filter archived PDFs by document type, date range, and version.
-        </p>
-
-        <div className="flex flex-wrap gap-2 mb-4">
-          {SNAPSHOT_TYPE_FILTERS.map((filterOption) => (
-            <Link
-              key={filterOption.value}
-              href={buildDrilldownHref(event.id, queryState, {
-                doc: filterOption.value,
-                version: '',
-                page: 1,
-              })}
-            >
-              <Button
-                variant={docFilter === filterOption.value ? 'primary' : 'secondary'}
-                size="sm"
+        <details className="mt-5 rounded border border-stone-800 px-3 py-2">
+          <summary className="cursor-pointer text-sm text-stone-300">
+            Document-by-document status and actions
+          </summary>
+          <div className="mt-3 space-y-2">
+            {recommendedDocReadiness.map((row) => (
+              <div
+                key={row.type}
+                className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 rounded border border-stone-800 px-3 py-2"
               >
-                {filterOption.label}
-              </Button>
-            </Link>
-          ))}
-        </div>
-
-        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3 border border-stone-800 rounded p-3">
-          <form method="get" className="flex flex-wrap items-end gap-2">
-            {docFilter !== 'any' && <input type="hidden" name="doc" value={docFilter} />}
-            {order !== 'newest' && <input type="hidden" name="order" value={order} />}
-            {versionQuery && docFilter !== 'any' && (
-              <input type="hidden" name="version" value={versionQuery} />
-            )}
-            <div>
-              <p className="text-[11px] text-stone-500 mb-1">From</p>
-              <input
-                type="date"
-                name="from"
-                defaultValue={fromDate}
-                className="h-9 rounded border border-stone-700 bg-stone-900 px-2 text-xs text-stone-200"
-              />
-            </div>
-            <div>
-              <p className="text-[11px] text-stone-500 mb-1">To</p>
-              <input
-                type="date"
-                name="to"
-                defaultValue={toDate}
-                className="h-9 rounded border border-stone-700 bg-stone-900 px-2 text-xs text-stone-200"
-              />
-            </div>
-            <Button type="submit" variant="secondary" size="sm">
-              Apply Range
-            </Button>
-            {(fromDate || toDate) && (
-              <Link
-                href={buildDrilldownHref(event.id, queryState, {
-                  from: '',
-                  to: '',
-                  page: 1,
-                })}
-              >
-                <Button variant="ghost" size="sm">
-                  Clear Range
-                </Button>
-              </Link>
-            )}
-          </form>
-
-          <div className="flex items-center gap-2">
-            <p className="text-xs text-stone-500">Order</p>
-            <Link href={buildDrilldownHref(event.id, queryState, { order: 'newest', page: 1 })}>
-              <Button variant={order === 'newest' ? 'primary' : 'secondary'} size="sm">
-                Newest
-              </Button>
-            </Link>
-            <Link href={buildDrilldownHref(event.id, queryState, { order: 'oldest', page: 1 })}>
-              <Button variant={order === 'oldest' ? 'primary' : 'secondary'} size="sm">
-                Oldest
-              </Button>
-            </Link>
-            <a href={eventArchiveExportHref}>
-              <Button variant="ghost" size="sm">
-                Export CSV
-              </Button>
-            </a>
-          </div>
-        </div>
-
-        {docFilter !== 'any' && docVersionOptions.length > 0 && (
-          <div className="mt-3 p-3 rounded border border-stone-800">
-            <p className="text-xs text-stone-500 mb-2">
-              Version filter for {SNAPSHOT_DOCUMENT_LABELS[docFilter]}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <Link href={buildDrilldownHref(event.id, queryState, { version: '', page: 1 })}>
-                <Button variant={!versionQuery ? 'primary' : 'secondary'} size="sm">
-                  All Versions
-                </Button>
-              </Link>
-              {docVersionOptions.map((versionNumber) => (
-                <Link
-                  key={versionNumber}
-                  href={buildDrilldownHref(event.id, queryState, {
-                    version: String(versionNumber),
-                    page: 1,
-                  })}
-                >
-                  <Button
-                    variant={versionQuery === String(versionNumber) ? 'primary' : 'secondary'}
-                    size="sm"
-                  >
-                    v{versionNumber}
-                  </Button>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {nonEmptyTypeStats.length === 0 ? (
-          <p className="text-sm text-stone-500 mt-4">
-            No archived snapshots yet. Use any `Archive` button or `Print All (8 Sheets)` to save
-            versioned PDFs.
-          </p>
-        ) : (
-          <div className="space-y-3 mt-4">
-            {nonEmptyTypeStats.map((entry) => {
-              if (!entry.latest) return null
-              return (
-                <div
-                  key={entry.documentType}
-                  className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 border-b border-stone-800 pb-3 last:border-b-0 last:pb-0"
-                >
-                  <div>
-                    <p className="font-medium text-stone-100">
-                      {SNAPSHOT_DOCUMENT_LABELS[entry.documentType]}
-                    </p>
-                    <p className="text-xs text-stone-500">
-                      {entry.count} version{entry.count === 1 ? '' : 's'} - latest v
-                      {entry.latest.versionNumber} on{' '}
-                      {format(new Date(entry.latest.generatedAt), 'MMM d, yyyy h:mm a')}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Link
-                      href={buildDrilldownHref(event.id, queryState, {
-                        doc: entry.documentType,
-                        version: '',
-                        page: 1,
-                      })}
-                    >
-                      <Button
-                        variant={docFilter === entry.documentType ? 'primary' : 'secondary'}
-                        size="sm"
-                      >
-                        Drill In
+                <div>
+                  <p className="text-sm font-medium text-stone-100">
+                    {SNAPSHOT_DOCUMENT_LABELS[row.type]}
+                  </p>
+                  <p className="text-xs text-stone-500">
+                    Data:{' '}
+                    <span className={row.ready ? 'text-emerald-400' : 'text-amber-400'}>
+                      {row.ready ? 'Ready' : 'Needs data'}
+                    </span>
+                    {' - '}Archive:{' '}
+                    <span className={row.archived ? 'text-emerald-400' : 'text-amber-400'}>
+                      {row.archived ? 'Saved' : 'Missing'}
+                    </span>
+                    {row.coveredByPacket && !row.individualArchivedCount
+                      ? ' - Covered by packet snapshot'
+                      : ''}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {!row.ready ? (
+                    <Link href={buildOperationalDocWorkspaceHref(event.id, row.type)}>
+                      <Button variant="secondary" size="sm">
+                        Fill Data
                       </Button>
                     </Link>
+                  ) : !row.archived ? (
                     <a
-                      href={`/api/documents/snapshots/${entry.latest.id}`}
+                      href={`/api/documents/${event.id}?type=${row.type}&archive=1`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button variant="secondary" size="sm">
+                        Archive Now
+                      </Button>
+                    </a>
+                  ) : (
+                    <a
+                      href={`/api/documents/${event.id}?type=${row.type}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button variant="secondary" size="sm">
+                        Preview
+                      </Button>
+                    </a>
+                  )}
+                  {row.latestSnapshotId && (
+                    <a
+                      href={`/api/documents/snapshots/${row.latestSnapshotId}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
                       <Button variant="ghost" size="sm">
-                        Open Latest
+                        Latest Snapshot
                       </Button>
                     </a>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </Card>
-
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-2">Snapshot Results</h2>
-        <p className="text-stone-500 text-sm mb-4">
-          Showing {filteredSnapshots.length} snapshot{filteredSnapshots.length === 1 ? '' : 's'} on
-          this page from {drilldown.total} matching archived record
-          {drilldown.total === 1 ? '' : 's'}.
-        </p>
-        {filteredSnapshots.length === 0 ? (
-          <p className="text-sm text-stone-500">
-            No snapshots match the current filters. Adjust type, date, or version filters.
-          </p>
-        ) : (
-          <div className="space-y-2">
-            {filteredSnapshots.map((snapshot) => (
-              <div
-                key={snapshot.id}
-                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded border border-stone-800 px-3 py-2"
-              >
-                <div>
-                  <p className="text-sm font-medium text-stone-100">
-                    {SNAPSHOT_DOCUMENT_LABELS[snapshot.documentType]} - v{snapshot.versionNumber}
-                  </p>
-                  <p className="text-xs text-stone-500">
-                    {format(new Date(snapshot.generatedAt), 'MMM d, yyyy h:mm a')} -{' '}
-                    {formatBytes(snapshot.sizeBytes)}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {docFilter === 'any' && (
-                    <Link
-                      href={buildDrilldownHref(event.id, queryState, {
-                        doc: snapshot.documentType,
-                        version: '',
-                        page: 1,
-                      })}
-                    >
-                      <Button variant="secondary" size="sm">
-                        Type View
-                      </Button>
-                    </Link>
                   )}
-                  <a
-                    href={`/api/documents/snapshots/${snapshot.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Button variant="ghost" size="sm">
-                      Open
-                    </Button>
-                  </a>
                 </div>
               </div>
             ))}
           </div>
-        )}
+        </details>
+      </Card>
 
-        {drilldown.totalPages > 1 && (
-          <div className="mt-4 pt-4 border-t border-stone-800 flex items-center justify-between">
-            <div className="text-xs text-stone-500">
-              Page {drilldown.page} of {drilldown.totalPages}
+      <details className="rounded border border-stone-800 px-4 py-3">
+        <summary className="cursor-pointer text-sm text-stone-300">
+          Optional: Financial snapshot for this event
+        </summary>
+        <Card className="p-6 mt-3">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-semibold">Financial Snapshot</h2>
+              <p className="text-sm text-stone-400 mt-1">
+                Revenue, cost, and profit status for this event without leaving Documents Hub.
+              </p>
             </div>
-            <div className="flex items-center gap-2">
-              <Link
-                href={buildDrilldownHref(event.id, queryState, {
-                  page: Math.max(1, drilldown.page - 1),
-                })}
-              >
-                <Button variant="secondary" size="sm" disabled={!drilldown.hasPreviousPage}>
-                  Previous
+            <div className="flex flex-wrap gap-2">
+              <Link href={`/events/${event.id}/financial`}>
+                <Button variant="secondary" size="sm">
+                  Financial Hub
                 </Button>
               </Link>
-              <Link
-                href={buildDrilldownHref(event.id, queryState, {
-                  page: Math.min(drilldown.totalPages, drilldown.page + 1),
-                })}
+              <a
+                href={`/api/documents/financial-summary/${event.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <Button variant="secondary" size="sm" disabled={!drilldown.hasNextPage}>
-                  Next
+                <Button variant="ghost" size="sm">
+                  Financial PDF
                 </Button>
-              </Link>
+              </a>
             </div>
           </div>
-        )}
-      </Card>
+
+          {!financialSummary ? (
+            <p className="text-sm text-stone-500 mt-4">
+              Financial snapshot unavailable right now. Open Financial Hub to review event ledger
+              and expenses.
+            </p>
+          ) : (
+            <>
+              <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
+                <div className="rounded border border-stone-800 px-3 py-2">
+                  <p className="text-[11px] uppercase tracking-wide text-stone-500">Quoted</p>
+                  <p className="text-sm font-semibold text-stone-100">
+                    {formatCurrency(financialSummary.revenue.quotedPriceCents)}
+                  </p>
+                </div>
+                <div className="rounded border border-stone-800 px-3 py-2">
+                  <p className="text-[11px] uppercase tracking-wide text-stone-500">Received</p>
+                  <p className="text-sm font-semibold text-stone-100">
+                    {formatCurrency(financialSummary.revenue.totalReceivedCents)}
+                  </p>
+                </div>
+                <div className="rounded border border-stone-800 px-3 py-2">
+                  <p className="text-[11px] uppercase tracking-wide text-stone-500">Total Cost</p>
+                  <p className="text-sm font-semibold text-stone-100">
+                    {formatCurrency(financialSummary.costs.totalCostCents)}
+                  </p>
+                </div>
+                <div className="rounded border border-stone-800 px-3 py-2">
+                  <p className="text-[11px] uppercase tracking-wide text-stone-500">Net Profit</p>
+                  <p
+                    className={`text-sm font-semibold ${financialSummary.margins.netProfitWithTipCents >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}
+                  >
+                    {formatCurrency(financialSummary.margins.netProfitWithTipCents)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span className="text-xs rounded border border-stone-700 px-2 py-1 text-stone-400">
+                  Food Cost: {financialSummary.margins.foodCostPercent}%
+                </span>
+                <span className="text-xs rounded border border-stone-700 px-2 py-1 text-stone-400">
+                  Gross Margin: {financialSummary.margins.grossMarginPercent}%
+                </span>
+                <span className="text-xs rounded border border-stone-700 px-2 py-1 text-stone-400">
+                  Pending Items: {financialSummary.pendingItems.length}
+                </span>
+                {financialSummary.event.financialClosed && (
+                  <span className="text-xs rounded border border-emerald-700/60 px-2 py-1 text-emerald-400">
+                    Financially Closed
+                  </span>
+                )}
+              </div>
+            </>
+          )}
+        </Card>
+      </details>
+
+      <DocumentSection eventId={event.id} readiness={readiness} businessDocs={businessDocs} />
+
+      <details className="rounded border border-stone-800 px-4 py-3">
+        <summary className="cursor-pointer text-sm text-stone-300">
+          Advanced: run logs, archive filters, and all snapshots
+        </summary>
+
+        <div className="mt-4 space-y-6">
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-2">Generation Health</h2>
+            <p className="text-stone-500 text-sm mb-4">
+              Live status for auto-generated document jobs on this event.
+            </p>
+
+            {generationHealth.total === 0 ? (
+              <p className="text-sm text-stone-500">
+                No generation jobs recorded yet. Generate any document to start tracking health.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  <div className="rounded border border-stone-800 px-3 py-2">
+                    <p className="text-[11px] uppercase tracking-wide text-stone-500">Total</p>
+                    <p className="text-lg font-semibold text-stone-100">{generationHealth.total}</p>
+                  </div>
+                  <div className="rounded border border-stone-800 px-3 py-2">
+                    <p className="text-[11px] uppercase tracking-wide text-stone-500">Succeeded</p>
+                    <p className="text-lg font-semibold text-emerald-500">
+                      {generationHealth.succeeded}
+                    </p>
+                  </div>
+                  <div className="rounded border border-stone-800 px-3 py-2">
+                    <p className="text-[11px] uppercase tracking-wide text-stone-500">Failed</p>
+                    <p className="text-lg font-semibold text-rose-500">{generationHealth.failed}</p>
+                  </div>
+                  <div className="rounded border border-stone-800 px-3 py-2">
+                    <p className="text-[11px] uppercase tracking-wide text-stone-500">
+                      In Progress
+                    </p>
+                    <p className="text-lg font-semibold text-amber-500">
+                      {generationHealth.started}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  {generationTypeRows.map((row) => (
+                    <div
+                      key={row.requestedType}
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded border border-stone-800 px-3 py-2"
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-stone-100">
+                          {DOCUMENT_REQUEST_LABELS[row.requestedType]}
+                        </p>
+                        <p className="text-xs text-stone-500">
+                          {row.succeeded} success / {row.failed} failed / {row.started} in progress
+                        </p>
+                      </div>
+                      <div className="text-xs text-stone-500 text-right">
+                        <p>
+                          Last status:{' '}
+                          <span className="text-stone-300">{row.lastStatus ?? 'unknown'}</span>
+                        </p>
+                        {row.lastCreatedAt && (
+                          <p>{format(new Date(row.lastCreatedAt), 'MMM d, yyyy h:mm a')}</p>
+                        )}
+                        {row.lastError && row.lastStatus === 'failed' && (
+                          <p className="text-rose-400 max-w-[340px] truncate" title={row.lastError}>
+                            {row.lastError}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {bulkRunHistory.length > 0 && (
+                  <div className="pt-3 border-t border-stone-800">
+                    <h3 className="text-sm font-semibold text-stone-200 mb-2">
+                      Bulk Automation Runs
+                    </h3>
+                    <div className="space-y-2">
+                      {bulkRunHistory.map((run) => (
+                        <div
+                          key={run.runId}
+                          className="rounded border border-stone-800 px-3 py-2 space-y-1"
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                            <p className="text-xs text-stone-400">
+                              Run {run.runId} - {run.succeeded}/{run.total} succeeded
+                              {run.failed > 0 ? `, ${run.failed} failed` : ''}
+                            </p>
+                            <p className="text-xs text-stone-500">
+                              {run.startedAt
+                                ? format(new Date(run.startedAt), 'MMM d, yyyy h:mm a')
+                                : 'Unknown start'}
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {run.docs.map((doc) => {
+                              const className = `text-[11px] rounded border px-2 py-0.5 ${
+                                doc.status === 'succeeded'
+                                  ? 'border-emerald-700/60 text-emerald-400'
+                                  : doc.status === 'failed'
+                                    ? 'border-rose-700/60 text-rose-400'
+                                    : 'border-amber-700/60 text-amber-400'
+                              }`
+
+                              if (doc.snapshotId) {
+                                return (
+                                  <a
+                                    key={`${run.runId}-${doc.type}`}
+                                    href={`/api/documents/snapshots/${doc.snapshotId}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={`${className} hover:underline`}
+                                    title={`${SNAPSHOT_DOCUMENT_LABELS[doc.type]} (open snapshot)`}
+                                  >
+                                    {SNAPSHOT_DOCUMENT_LABELS[doc.type]}
+                                  </a>
+                                )
+                              }
+
+                              return (
+                                <span
+                                  key={`${run.runId}-${doc.type}`}
+                                  className={className}
+                                  title={doc.error ?? undefined}
+                                >
+                                  {SNAPSHOT_DOCUMENT_LABELS[doc.type]}
+                                </span>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </Card>
+
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-2">Archive Drilldown</h2>
+            <p className="text-stone-500 text-sm mb-4">
+              Filter archived PDFs by document type, date range, and version.
+            </p>
+
+            <div className="flex flex-wrap gap-2 mb-4">
+              {SNAPSHOT_TYPE_FILTERS.map((filterOption) => (
+                <Link
+                  key={filterOption.value}
+                  href={buildDrilldownHref(event.id, queryState, {
+                    doc: filterOption.value,
+                    version: '',
+                    page: 1,
+                  })}
+                >
+                  <Button
+                    variant={docFilter === filterOption.value ? 'primary' : 'secondary'}
+                    size="sm"
+                  >
+                    {filterOption.label}
+                  </Button>
+                </Link>
+              ))}
+            </div>
+
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3 border border-stone-800 rounded p-3">
+              <form method="get" className="flex flex-wrap items-end gap-2">
+                {docFilter !== 'any' && <input type="hidden" name="doc" value={docFilter} />}
+                {order !== 'newest' && <input type="hidden" name="order" value={order} />}
+                {versionQuery && docFilter !== 'any' && (
+                  <input type="hidden" name="version" value={versionQuery} />
+                )}
+                <div>
+                  <p className="text-[11px] text-stone-500 mb-1">From</p>
+                  <input
+                    type="date"
+                    name="from"
+                    defaultValue={fromDate}
+                    className="h-9 rounded border border-stone-700 bg-stone-900 px-2 text-xs text-stone-200"
+                  />
+                </div>
+                <div>
+                  <p className="text-[11px] text-stone-500 mb-1">To</p>
+                  <input
+                    type="date"
+                    name="to"
+                    defaultValue={toDate}
+                    className="h-9 rounded border border-stone-700 bg-stone-900 px-2 text-xs text-stone-200"
+                  />
+                </div>
+                <Button type="submit" variant="secondary" size="sm">
+                  Apply Range
+                </Button>
+                {(fromDate || toDate) && (
+                  <Link
+                    href={buildDrilldownHref(event.id, queryState, {
+                      from: '',
+                      to: '',
+                      page: 1,
+                    })}
+                  >
+                    <Button variant="ghost" size="sm">
+                      Clear Range
+                    </Button>
+                  </Link>
+                )}
+              </form>
+
+              <div className="flex items-center gap-2">
+                <p className="text-xs text-stone-500">Order</p>
+                <Link href={buildDrilldownHref(event.id, queryState, { order: 'newest', page: 1 })}>
+                  <Button variant={order === 'newest' ? 'primary' : 'secondary'} size="sm">
+                    Newest
+                  </Button>
+                </Link>
+                <Link href={buildDrilldownHref(event.id, queryState, { order: 'oldest', page: 1 })}>
+                  <Button variant={order === 'oldest' ? 'primary' : 'secondary'} size="sm">
+                    Oldest
+                  </Button>
+                </Link>
+                <a href={eventArchiveExportHref}>
+                  <Button variant="ghost" size="sm">
+                    Export CSV
+                  </Button>
+                </a>
+              </div>
+            </div>
+
+            {docFilter !== 'any' && docVersionOptions.length > 0 && (
+              <div className="mt-3 p-3 rounded border border-stone-800">
+                <p className="text-xs text-stone-500 mb-2">
+                  Version filter for {SNAPSHOT_DOCUMENT_LABELS[docFilter]}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Link href={buildDrilldownHref(event.id, queryState, { version: '', page: 1 })}>
+                    <Button variant={!versionQuery ? 'primary' : 'secondary'} size="sm">
+                      All Versions
+                    </Button>
+                  </Link>
+                  {docVersionOptions.map((versionNumber) => (
+                    <Link
+                      key={versionNumber}
+                      href={buildDrilldownHref(event.id, queryState, {
+                        version: String(versionNumber),
+                        page: 1,
+                      })}
+                    >
+                      <Button
+                        variant={versionQuery === String(versionNumber) ? 'primary' : 'secondary'}
+                        size="sm"
+                      >
+                        v{versionNumber}
+                      </Button>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {nonEmptyTypeStats.length === 0 ? (
+              <p className="text-sm text-stone-500 mt-4">
+                No archived snapshots yet. Use any `Archive` button or `Print All (8 Sheets)` to
+                save versioned PDFs.
+              </p>
+            ) : (
+              <div className="space-y-3 mt-4">
+                {nonEmptyTypeStats.map((entry) => {
+                  if (!entry.latest) return null
+                  return (
+                    <div
+                      key={entry.documentType}
+                      className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 border-b border-stone-800 pb-3 last:border-b-0 last:pb-0"
+                    >
+                      <div>
+                        <p className="font-medium text-stone-100">
+                          {SNAPSHOT_DOCUMENT_LABELS[entry.documentType]}
+                        </p>
+                        <p className="text-xs text-stone-500">
+                          {entry.count} version{entry.count === 1 ? '' : 's'} - latest v
+                          {entry.latest.versionNumber} on{' '}
+                          {format(new Date(entry.latest.generatedAt), 'MMM d, yyyy h:mm a')}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Link
+                          href={buildDrilldownHref(event.id, queryState, {
+                            doc: entry.documentType,
+                            version: '',
+                            page: 1,
+                          })}
+                        >
+                          <Button
+                            variant={docFilter === entry.documentType ? 'primary' : 'secondary'}
+                            size="sm"
+                          >
+                            Drill In
+                          </Button>
+                        </Link>
+                        <a
+                          href={`/api/documents/snapshots/${entry.latest.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Button variant="ghost" size="sm">
+                            Open Latest
+                          </Button>
+                        </a>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </Card>
+
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-2">Snapshot Results</h2>
+            <p className="text-stone-500 text-sm mb-4">
+              Showing {filteredSnapshots.length} snapshot{filteredSnapshots.length === 1 ? '' : 's'}{' '}
+              on this page from {drilldown.total} matching archived record
+              {drilldown.total === 1 ? '' : 's'}.
+            </p>
+            {filteredSnapshots.length === 0 ? (
+              <p className="text-sm text-stone-500">
+                No snapshots match the current filters. Adjust type, date, or version filters.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {filteredSnapshots.map((snapshot) => (
+                  <div
+                    key={snapshot.id}
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded border border-stone-800 px-3 py-2"
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-stone-100">
+                        {SNAPSHOT_DOCUMENT_LABELS[snapshot.documentType]} - v
+                        {snapshot.versionNumber}
+                      </p>
+                      <p className="text-xs text-stone-500">
+                        {format(new Date(snapshot.generatedAt), 'MMM d, yyyy h:mm a')} -{' '}
+                        {formatBytes(snapshot.sizeBytes)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {docFilter === 'any' && (
+                        <Link
+                          href={buildDrilldownHref(event.id, queryState, {
+                            doc: snapshot.documentType,
+                            version: '',
+                            page: 1,
+                          })}
+                        >
+                          <Button variant="secondary" size="sm">
+                            Type View
+                          </Button>
+                        </Link>
+                      )}
+                      <a
+                        href={`/api/documents/snapshots/${snapshot.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Button variant="ghost" size="sm">
+                          Open
+                        </Button>
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {drilldown.totalPages > 1 && (
+              <div className="mt-4 pt-4 border-t border-stone-800 flex items-center justify-between">
+                <div className="text-xs text-stone-500">
+                  Page {drilldown.page} of {drilldown.totalPages}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={buildDrilldownHref(event.id, queryState, {
+                      page: Math.max(1, drilldown.page - 1),
+                    })}
+                  >
+                    <Button variant="secondary" size="sm" disabled={!drilldown.hasPreviousPage}>
+                      Previous
+                    </Button>
+                  </Link>
+                  <Link
+                    href={buildDrilldownHref(event.id, queryState, {
+                      page: Math.min(drilldown.totalPages, drilldown.page + 1),
+                    })}
+                  >
+                    <Button variant="secondary" size="sm" disabled={!drilldown.hasNextPage}>
+                      Next
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            )}
+          </Card>
+        </div>
+      </details>
     </div>
   )
 }

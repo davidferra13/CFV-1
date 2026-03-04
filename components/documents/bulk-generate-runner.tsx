@@ -77,6 +77,8 @@ export function BulkGenerateRunner({
     if (readyRecommendedTypes.length > 0) return dedupeTypes(readyRecommendedTypes)
     return dedupeTypes(recommendedTypes)
   }, [missingArchiveTypes, readyRecommendedTypes, recommendedTypes])
+  const primaryLabel =
+    missingArchiveTypes.length > 0 ? 'Generate Missing PDFs' : 'Generate Ready PDFs'
 
   async function runBulk(types: OperationalDocumentType[]) {
     const normalizedTypes = dedupeTypes(types)
@@ -142,34 +144,30 @@ export function BulkGenerateRunner({
           onClick={() => runBulk(defaultTypes)}
           disabled={defaultTypes.length === 0}
         >
-          Auto-Archive Missing ({defaultTypes.length})
+          {primaryLabel} ({defaultTypes.length})
         </Button>
-        <Button
-          variant="secondary"
-          size="sm"
-          loading={isRunning}
-          onClick={() =>
-            runBulk(readyRecommendedTypes.length > 0 ? readyRecommendedTypes : recommendedTypes)
-          }
-          disabled={recommendedTypes.length === 0}
-        >
-          Archive Recommended ({recommendedTypes.length})
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          loading={isRunning}
-          onClick={() => runBulk(retryTypes)}
-          disabled={retryTypes.length === 0}
-        >
-          Retry Failed ({retryTypes.length})
-        </Button>
+        {retryTypes.length > 0 && (
+          <Button
+            variant="secondary"
+            size="sm"
+            loading={isRunning}
+            onClick={() => runBulk(retryTypes)}
+            disabled={retryTypes.length === 0}
+          >
+            Retry Failed ({retryTypes.length})
+          </Button>
+        )}
       </div>
+      <p className="text-[11px] text-stone-500">
+        {defaultTypes.length > 0
+          ? `${defaultTypes.length} document${defaultTypes.length === 1 ? '' : 's'} queued in the main run.`
+          : 'No documents ready to generate yet.'}
+      </p>
 
       {lastRun && (
         <div className="space-y-2">
           <p className="text-xs text-stone-400">
-            Last run {lastRun.runId}: {lastRun.succeeded}/{lastRun.total} succeeded
+            Last run: {lastRun.succeeded}/{lastRun.total} done
             {lastRun.failed > 0 ? `, ${lastRun.failed} failed` : ''}
           </p>
           <div className="space-y-1">
@@ -202,25 +200,46 @@ export function BulkGenerateRunner({
         </div>
       )}
 
-      {historicalRetryRuns.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-[11px] text-stone-500">Retry failed docs from previous runs:</p>
+      <details className="rounded border border-stone-800 px-3 py-2">
+        <summary className="cursor-pointer text-[11px] text-stone-400">
+          More automation actions
+        </summary>
+        <div className="mt-2 space-y-2">
           <div className="flex flex-wrap gap-2">
-            {historicalRetryRuns.map((run) => (
-              <Button
-                key={run.runId}
-                variant="ghost"
-                size="sm"
-                loading={isRunning}
-                disabled={run.failedTypes.length === 0}
-                onClick={() => runBulk(run.failedTypes)}
-              >
-                Retry {run.label} ({run.failedTypes.length})
-              </Button>
-            ))}
+            <Button
+              variant="ghost"
+              size="sm"
+              loading={isRunning}
+              onClick={() =>
+                runBulk(readyRecommendedTypes.length > 0 ? readyRecommendedTypes : recommendedTypes)
+              }
+              disabled={recommendedTypes.length === 0}
+            >
+              Generate Recommended Set ({recommendedTypes.length})
+            </Button>
           </div>
+
+          {historicalRetryRuns.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-[11px] text-stone-500">Retry failures from earlier runs:</p>
+              <div className="flex flex-wrap gap-2">
+                {historicalRetryRuns.map((run) => (
+                  <Button
+                    key={run.runId}
+                    variant="ghost"
+                    size="sm"
+                    loading={isRunning}
+                    disabled={run.failedTypes.length === 0}
+                    onClick={() => runBulk(run.failedTypes)}
+                  >
+                    Retry {run.label} ({run.failedTypes.length})
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </details>
     </div>
   )
 }
