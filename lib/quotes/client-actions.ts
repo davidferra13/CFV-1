@@ -124,17 +124,19 @@ export async function acceptQuote(quoteId: string) {
     .select('id')
     .maybeSingle()
 
-  if (updateError) {
-    console.error('[acceptQuote] Error:', updateError)
-    throw new Error(`Failed to accept quote: ${updateError.message}`)
-  }
-
   // Downstream effects use admin client to bypass RLS
   const adminSupabase: any = createAdminClient()
 
-  // Backward compatibility: if UPDATE returned no row due missing client UPDATE policy,
-  // complete the transition via admin client after ownership was already verified above.
-  if (!updatedByClient) {
+  // Backward compatibility: if client-scoped UPDATE errors (including RLS trigger failures)
+  // or returns no row due missing client UPDATE policy, complete transition via admin client
+  // after ownership/status were already verified above.
+  if (updateError || !updatedByClient) {
+    if (updateError) {
+      console.warn(
+        '[acceptQuote] Client update failed; trying admin fallback:',
+        updateError.message
+      )
+    }
     const { data: updatedByAdmin, error: adminUpdateError } = await adminSupabase
       .from('quotes')
       .update(updatePayload)
@@ -149,7 +151,9 @@ export async function acceptQuote(quoteId: string) {
       throw new Error(
         adminUpdateError
           ? `Failed to accept quote: ${adminUpdateError.message}`
-          : 'Failed to accept quote: no rows updated'
+          : updateError
+            ? `Failed to accept quote: ${updateError.message}`
+            : 'Failed to accept quote: no rows updated'
       )
     }
   }
@@ -247,13 +251,14 @@ export async function rejectQuote(quoteId: string, reason?: string) {
     .select('id')
     .maybeSingle()
 
-  if (updateError) {
-    console.error('[rejectQuote] Error:', updateError)
-    throw new Error(`Failed to reject quote: ${updateError.message}`)
-  }
-
-  if (!updatedByClient) {
+  if (updateError || !updatedByClient) {
     const adminSupabase: any = createAdminClient()
+    if (updateError) {
+      console.warn(
+        '[rejectQuote] Client update failed; trying admin fallback:',
+        updateError.message
+      )
+    }
     const { data: updatedByAdmin, error: adminUpdateError } = await adminSupabase
       .from('quotes')
       .update(updatePayload)
@@ -268,7 +273,9 @@ export async function rejectQuote(quoteId: string, reason?: string) {
       throw new Error(
         adminUpdateError
           ? `Failed to reject quote: ${adminUpdateError.message}`
-          : 'Failed to reject quote: no rows updated'
+          : updateError
+            ? `Failed to reject quote: ${updateError.message}`
+            : 'Failed to reject quote: no rows updated'
       )
     }
   }

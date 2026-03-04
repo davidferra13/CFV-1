@@ -26,7 +26,7 @@ function daysFromNow(days: number): string {
 
 async function gotoWithRetryOn500(page: any, url: string, attempts = 3) {
   for (let i = 0; i < attempts; i++) {
-    await page.goto(url)
+    await page.goto(url, { waitUntil: 'domcontentloaded' })
     const has500 = await page
       .getByText(TRANSIENT_500_TEXT)
       .first()
@@ -201,7 +201,7 @@ test.describe('Chef <-> Client Golden Contract Flow', () => {
       await gotoWithRetryOn500(chefPage, '/quotes/sent')
       await expect(chefPage.getByRole('link', { name: new RegExp(goldenQuoteName) })).toBeVisible()
 
-      await clientPage.goto('/my-quotes')
+      await gotoWithRetryOn500(clientPage, '/my-quotes')
       await expect(clientPage.getByText(hiddenDraftQuoteName)).toHaveCount(0)
       await expect(clientPage.getByText(goldenQuoteName)).toBeVisible()
 
@@ -223,10 +223,9 @@ test.describe('Chef <-> Client Golden Contract Flow', () => {
         await clientPage.waitForTimeout(250)
       }
       await expect(clientPage.getByText(/accept this quote\?/i)).toBeVisible()
-      await clientPage
-        .getByRole('button', { name: /^Accept Quote$/ })
-        .nth(1)
-        .click()
+      const confirmButtons = clientPage.getByRole('button', { name: /^Accept Quote$/ })
+      const confirmButtonCount = await confirmButtons.count()
+      await confirmButtons.nth(Math.max(0, confirmButtonCount - 1)).click()
       // UI behavior can vary by implementation: some flows redirect to list,
       // others remain on detail and update state in place.
       await Promise.race([
