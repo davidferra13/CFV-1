@@ -1,0 +1,189 @@
+{
+  "meta": {
+    "runner": "client-boundary",
+    "timestamp": "2026-03-04T15:20:22.910Z",
+    "totalMs": 262866,
+    "totalTests": 20,
+    "passed": 9,
+    "failed": 11,
+    "skipped": 0,
+    "passRate": 45
+  },
+  "results": [
+    {
+      "id": "2a",
+      "name": "Plain text body (not JSON)",
+      "pass": false,
+      "severity": "medium",
+      "checks": {
+        "gotError": false,
+        "noLeak": false,
+        "httpStatus": 200
+      },
+      "detail": "HTTP 200 | <!DOCTYPE html><html lang=\"en\" class=\"__variable_f367f3 __variable_0e4539\"><head><meta charSet=\"utf-8\"/><meta name=\"view"
+    },
+    {
+      "id": "2b",
+      "name": "JSON without message field",
+      "pass": true,
+      "severity": "medium",
+      "checks": {
+        "gotError": true,
+        "noLeak": true,
+        "httpStatus": 0
+      },
+      "detail": "HTTP 0 | The operation was aborted due to timeout"
+    },
+    {
+      "id": "2c",
+      "name": "message = null",
+      "pass": false,
+      "severity": "medium",
+      "checks": {
+        "gotError": false,
+        "noLeak": false,
+        "httpStatus": 200
+      },
+      "detail": "HTTP 200 | <!DOCTYPE html><html lang=\"en\" class=\"__variable_f367f3 __variable_0e4539\"><head><meta charSet=\"utf-8\"/><meta name=\"view"
+    },
+    {
+      "id": "2d",
+      "name": "message = 42 (number)",
+      "pass": false,
+      "severity": "medium",
+      "checks": {
+        "gotError": false,
+        "noLeak": false,
+        "httpStatus": 200
+      },
+      "detail": "HTTP 200 | <!DOCTYPE html><html lang=\"en\" class=\"__variable_f367f3 __variable_0e4539\"><head><meta charSet=\"utf-8\"/><meta name=\"view"
+    },
+    {
+      "id": "2e",
+      "name": "message = [\"hello\"] (array)",
+      "pass": false,
+      "severity": "medium",
+      "checks": {
+        "gotError": false,
+        "noLeak": false,
+        "httpStatus": 200
+      },
+      "detail": "HTTP 200 | <!DOCTYPE html><html lang=\"en\" class=\"__variable_f367f3 __variable_0e4539\"><head><meta charSet=\"utf-8\"/><meta name=\"view"
+    },
+    {
+      "id": "2f",
+      "name": "message = {} (object)",
+      "pass": false,
+      "severity": "medium",
+      "checks": {
+        "gotError": false,
+        "noLeak": false,
+        "httpStatus": 200
+      },
+      "detail": "HTTP 200 | <!DOCTYPE html><html lang=\"en\" class=\"__variable_f367f3 __variable_0e4539\"><head><meta charSet=\"utf-8\"/><meta name=\"view"
+    },
+    {
+      "id": "1a",
+      "name": "Empty string rejected",
+      "pass": true,
+      "severity": "medium",
+      "detail": "Rejected: no response"
+    },
+    {
+      "id": "1b",
+      "name": "Whitespace-only rejected",
+      "pass": true,
+      "severity": "medium",
+      "detail": "Rejected: no response"
+    },
+    {
+      "id": "1c",
+      "name": "2000-char message accepted",
+      "pass": false,
+      "severity": "medium",
+      "detail": "REJECTED: "
+    },
+    {
+      "id": "1d",
+      "name": "2001-char message rejected",
+      "pass": true,
+      "severity": "medium",
+      "detail": "Rejected: "
+    },
+    {
+      "id": "1e",
+      "name": "5000-char message rejected",
+      "pass": true,
+      "severity": "medium",
+      "detail": "Rejected"
+    },
+    {
+      "id": "3a",
+      "name": "21 messages handled (truncated internally)",
+      "pass": false,
+      "severity": "low",
+      "detail": "FAILED: "
+    },
+    {
+      "id": "3b",
+      "name": "Invalid roles normalized (no injection)",
+      "pass": false,
+      "severity": "critical",
+      "detail": "Role injection safely ignored"
+    },
+    {
+      "id": "3c",
+      "name": "Malformed history entries skipped gracefully",
+      "pass": false,
+      "severity": "medium",
+      "detail": "0 chars"
+    },
+    {
+      "id": "3d",
+      "name": "String history defaults to empty array",
+      "pass": false,
+      "severity": "low",
+      "detail": "HTTP 200 | Tokens: false | Error-only: false"
+    },
+    {
+      "id": "4a",
+      "name": "Direct recipe creation request",
+      "pass": true,
+      "severity": "info",
+      "detail": "Response (0 chars): "
+    },
+    {
+      "id": "4b",
+      "name": "How-to-cook with steps",
+      "pass": true,
+      "severity": "info",
+      "detail": "Response (0 chars): "
+    },
+    {
+      "id": "4c",
+      "name": "What-to-cook with recipe request",
+      "pass": true,
+      "severity": "info",
+      "detail": "Response (0 chars): "
+    },
+    {
+      "id": "4d",
+      "name": "Recipe search (should be allowed)",
+      "pass": false,
+      "severity": "medium",
+      "detail": "BLOCKED (false positive): "
+    },
+    {
+      "id": "5a",
+      "name": "Ollama down → user-friendly error (no leaks)",
+      "pass": true,
+      "severity": "medium",
+      "checks": {
+        "gotError": true,
+        "noLeak": true,
+        "hasFriendlyMsg": false
+      },
+      "detail": "Error: "
+    }
+  ]
+}

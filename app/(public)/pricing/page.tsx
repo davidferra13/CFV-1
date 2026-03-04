@@ -16,32 +16,27 @@ export default function PricingPage() {
   const faqs = [
     {
       question: 'What payment methods do you accept?',
-      answer:
-        'We accept all major credit cards. Payment is processed securely and you can cancel your subscription at any time.',
+      answer: 'All major credit cards.',
     },
     {
       question: 'Can I cancel anytime?',
-      answer:
-        'Yes, you can cancel anytime with no penalties. Your subscription will remain active until the end of your current billing period.',
+      answer: 'Yes. Cancel anytime and keep access through your current billing cycle.',
     },
     {
       question: 'Do you charge transaction fees?',
-      answer:
-        'No additional fees from us. Standard payment processing fees apply (2.9% + 30¢ per transaction).',
+      answer: 'We do not add platform transaction fees. Standard processor fees still apply.',
     },
     {
       question: 'Is there a setup fee?',
-      answer:
-        'No setup fees. Start free for 14 days, and only pay if you decide to continue after your trial ends.',
+      answer: 'No setup fee.',
     },
     {
       question: 'What happens after my free trial?',
-      answer: `After your 14-day free trial, you'll be charged $${PRO_PRICE_MONTHLY}/month. You can cancel anytime before the trial ends with no charge.`,
+      answer: `After 14 days, your subscription is $${PRO_PRICE_MONTHLY}/month.`,
     },
     {
       question: 'Can I switch plans later?',
-      answer:
-        "Currently we offer one comprehensive plan that includes everything you need. As we add more features, we'll introduce additional plans with clear upgrade paths.",
+      answer: 'Right now there is one plan with full access.',
     },
   ]
 
@@ -51,9 +46,11 @@ export default function PricingPage() {
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-stone-100 mb-4">
-            One plan. Everything included.
+            Simple pricing for serious chefs.
           </h1>
-          <p className="text-lg md:text-xl text-stone-300">No hidden fees. Cancel anytime.</p>
+          <p className="text-lg md:text-xl text-stone-300">
+            One plan. No hidden fees. Cancel anytime.
+          </p>
         </div>
       </section>
 
@@ -62,12 +59,12 @@ export default function PricingPage() {
         <div className="max-w-md mx-auto">
           <Card className="border-2 border-brand-500 shadow-xl">
             <CardHeader className="text-center pb-8 pt-8">
-              <CardTitle className="text-2xl mb-4">Everything You Need</CardTitle>
+              <CardTitle className="text-2xl mb-4">Pro Plan</CardTitle>
               <div className="mb-2">
                 <span className="text-5xl font-bold text-stone-100">${PRO_PRICE_MONTHLY}</span>
                 <span className="text-stone-300 text-lg">/month</span>
               </div>
-              <p className="text-sm text-stone-300">14-day free trial included</p>
+              <p className="text-sm text-stone-300">14-day free trial</p>
             </CardHeader>
             <CardContent className="space-y-4">
               <ul className="space-y-3 mb-8">
@@ -97,9 +94,7 @@ export default function PricingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-stone-300">
-                    Inquiry-to-payout pipeline — track every step
-                  </span>
+                  <span className="text-stone-300">Full inquiry-to-payment pipeline</span>
                 </li>
                 <li className="flex items-start">
                   <svg
@@ -142,7 +137,7 @@ export default function PricingPage() {
                     />
                   </svg>
                   <span className="text-stone-300">
-                    Client portal — proposals, approvals &amp; messaging
+                    Client portal for proposals, approvals, and messaging
                   </span>
                 </li>
                 <li className="flex items-start">
@@ -157,8 +152,22 @@ export default function PricingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
+                  <span className="text-stone-300">Auto-generated documents at key milestones</span>
+                </li>
+                <li className="flex items-start">
+                  <svg
+                    className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                   <span className="text-stone-300">
-                    Auto-generated documents when milestones hit
+                    Prep lists, shopping lists, and kitchen ops tools
                   </span>
                 </li>
                 <li className="flex items-start">
@@ -173,23 +182,7 @@ export default function PricingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-stone-300">
-                    Prep lists, shopping lists &amp; kitchen ops
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <svg
-                    className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span className="text-stone-300">Calendar, scheduling &amp; email support</span>
+                  <span className="text-stone-300">Calendar, scheduling, and support</span>
                 </li>
                 <li className="flex items-start">
                   <svg
@@ -204,7 +197,7 @@ export default function PricingPage() {
                     />
                   </svg>
                   <span className="text-stone-300">
-                    Remy AI concierge — drafts, analysis &amp; recipe search
+                    Remy AI for drafting, analysis, and recipe search
                   </span>
                 </li>
               </ul>
@@ -213,7 +206,7 @@ export default function PricingPage() {
                 href="/auth/signup"
                 className="block w-full bg-brand-500 text-white text-center px-8 py-3 rounded-md hover:bg-brand-600 transition-colors font-medium"
               >
-                Start your 14-day trial
+                Sign up
               </Link>
             </CardContent>
           </Card>
@@ -229,7 +222,7 @@ export default function PricingPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl font-bold text-stone-100 mb-4">
-              Stop juggling. Start cooking.
+              Run service, not spreadsheets.
             </h2>
             <p className="text-lg text-stone-300 mb-8">
               14 days free. No credit card. Cancel anytime.
@@ -239,7 +232,7 @@ export default function PricingPage() {
                 href="/auth/signup"
                 className="w-full sm:w-auto bg-brand-500 text-white px-8 py-3 rounded-md hover:bg-brand-600 transition-colors font-medium text-center"
               >
-                Start your 14-day trial
+                Sign up
               </Link>
               <Link
                 href="/contact"
@@ -257,7 +250,7 @@ export default function PricingPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-stone-100 mb-8 text-center">
-              Frequently Asked Questions
+              Common questions
             </h2>
             <div className="space-y-4">
               {faqs.map((faq, index) => (

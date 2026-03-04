@@ -100,8 +100,10 @@ export default function ContactPage() {
       {/* Page Header */}
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-stone-100 mb-4">Talk to us</h1>
-          <p className="text-lg md:text-xl text-stone-300">We respond within 1 business day.</p>
+          <h1 className="text-4xl md:text-5xl font-bold text-stone-100 mb-4">Talk with ChefFlow</h1>
+          <p className="text-lg md:text-xl text-stone-300">
+            Questions on setup, pricing, or workflow? We respond within 1 business day.
+          </p>
         </div>
       </section>
 
@@ -113,7 +115,7 @@ export default function ContactPage() {
             <div className="lg:col-span-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Send us a message</CardTitle>
+                  <CardTitle>Send a message</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {showSuccess && (
@@ -207,7 +209,7 @@ export default function ContactPage() {
             <div className="lg:col-span-1">
               <Card>
                 <CardHeader>
-                  <CardTitle>Contact Information</CardTitle>
+                  <CardTitle>Contact</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
@@ -257,9 +259,9 @@ export default function ContactPage() {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-stone-100 mb-1">Response Time</h4>
+                        <h4 className="font-semibold text-stone-100 mb-1">Response time</h4>
                         <p className="text-stone-300 text-sm">
-                          We typically respond within 24 hours during business days
+                          Typical response: within 24 hours on business days
                         </p>
                       </div>
                     </div>
@@ -283,11 +285,11 @@ export default function ContactPage() {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-stone-100 mb-1">Support Hours</h4>
+                        <h4 className="font-semibold text-stone-100 mb-1">Support hours</h4>
                         <p className="text-stone-300 text-sm">
-                          Monday - Friday
+                          Monday to Friday
                           <br />
-                          9:00 AM - 5:00 PM PST
+                          9:00 AM to 5:00 PM PT
                         </p>
                       </div>
                     </div>

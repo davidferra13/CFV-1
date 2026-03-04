@@ -1,6 +1,6 @@
-// Public Gift Card Store — /chef/[slug]/gift-cards
+// Public Gift Card Store - /chef/[slug]/gift-cards
 // Server component: resolves chef from slug, renders client form.
-// No authentication required — open to anyone.
+// No authentication required - open to anyone.
 
 import { getPublicChefProfile } from '@/lib/profile/actions'
 import { notFound } from 'next/navigation'
@@ -12,7 +12,7 @@ type Props = { params: { slug: string } }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getPublicChefProfile(params.slug)
   if (!data) return { title: 'Gift Cards' }
-  return { title: `Gift Cards — ${data.chef.display_name}` }
+  return { title: `Gift Cards - ${data.chef.display_name}` }
 }
 
 export default async function GiftCardStorePage({ params }: Props) {
@@ -34,15 +34,15 @@ export default async function GiftCardStorePage({ params }: Props) {
               className="w-16 h-16 rounded-full object-cover mx-auto mb-4 ring-4 ring-white shadow"
             />
           )}
-          <h1 className="text-3xl font-bold text-stone-100">Gift a Private Chef Experience</h1>
+          <h1 className="text-3xl font-bold text-stone-100">Gift a private chef experience</h1>
           <p className="text-stone-300 mt-2">
-            Send someone a gift card redeemable for {chef.display_name}&apos;s services.
+            Send a gift card for {chef.display_name}&apos;s services.
           </p>
           <a
             href={`/chef/${params.slug}`}
             className="text-sm text-brand-600 hover:text-brand-400 mt-2 inline-block"
           >
-            ← Back to chef profile
+            Back to chef profile
           </a>
         </div>
 

@@ -299,10 +299,9 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
               />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-stone-100 mb-2">Inquiry Submitted!</h2>
+          <h2 className="text-2xl font-bold text-stone-100 mb-2">Inquiry sent</h2>
           <p className="text-stone-400 mb-6">
-            Thank you for your interest. {chefName} will review your inquiry and get back to you
-            within 24 hours.
+            {chefName} will review your details and reply within 24 hours.
           </p>
           <button
             type="button"
@@ -328,9 +327,9 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="text-center">
-            <h2 className="text-3xl font-semibold text-stone-100">Book Now</h2>
+            <h2 className="text-3xl font-semibold text-stone-100">Send inquiry</h2>
             <p className="text-base text-stone-500 mt-2">
-              Fill out the details below and we&apos;ll be in touch.
+              Share the basics and we&apos;ll follow up.
             </p>
           </div>
 
@@ -397,7 +396,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
                 placeholder="HH:MM AM"
               />
             </div>
-            <p className="text-sm text-amber-700">Chef will arrive 2hr prior.</p>
+            <p className="text-sm text-amber-700">Chef typically arrives 2 hours before service.</p>
           </div>
 
           <Input
@@ -441,7 +440,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
           />
 
           <Select
-            label="Approximate Budget *"
+            label="Budget range *"
             name="budget_range"
             value={formData.budget_range}
             onChange={handleChange}
@@ -458,7 +457,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
           />
 
           <Select
-            label="Allergies or Dietary Restrictions? *"
+            label="Allergies or dietary restrictions? *"
             name="allergy_flag"
             value={formData.allergy_flag}
             onChange={handleChange}
@@ -484,7 +483,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
             value={formData.additional_notes}
             onChange={handleChange}
             placeholder="Additional Notes"
-            helperText="* Anything else you'd like to share?"
+            helperText="* Optional: anything else to know?"
           />
 
           <Button
@@ -494,7 +493,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
             className="w-full text-white hover:opacity-90"
             style={{ backgroundColor: primaryColor }}
           >
-            {isSubmitting ? 'Sending...' : 'Send'}
+            {isSubmitting ? 'Sending...' : 'Send inquiry'}
           </Button>
 
           <p className="text-xs text-stone-400 text-center">

@@ -120,7 +120,11 @@ export function validateRemyRequestBody(raw: unknown): ValidatedRemyBody | null 
   // message is required and must be a string
   if (typeof body.message !== 'string') return null
 
-  const message = body.message.slice(0, MAX_MESSAGE_LENGTH)
+  // Hard reject oversized messages instead of truncating them.
+  // This keeps request semantics explicit and lets clients/tests verify the limit.
+  if (body.message.length > MAX_MESSAGE_LENGTH) return null
+
+  const message = body.message
   if (message.length === 0) return null
 
   const history = validateHistory(body.history)

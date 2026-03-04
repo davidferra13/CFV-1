@@ -5,15 +5,13 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
   title: {
-    default: 'Blog — ChefFlow',
+    default: 'Blog - ChefFlow',
     template: '%s | ChefFlow Blog',
   },
-  description:
-    'Tips, guides, and insights for private chefs — pricing strategies, client management, menu planning, and growing your business.',
+  description: 'Practical guides for private chef operations, pricing, and client management.',
   openGraph: {
-    title: 'ChefFlow Blog — Tips for Private Chefs',
-    description:
-      'Tips, guides, and insights for private chefs — pricing, client management, menu planning, and business growth.',
+    title: 'ChefFlow Blog - Tips for Private Chefs',
+    description: 'Practical guides for private chef operations, pricing, and client management.',
     url: `${BASE_URL}/blog`,
     siteName: 'ChefFlow',
     type: 'website',

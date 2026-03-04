@@ -24,21 +24,36 @@ type Pos = { x: number; y: number }
 type GamePhase = 'running' | 'paused' | 'over'
 type ControlMode = 'swipe' | 'tap-turn'
 
+const FOOD_TOMATO = '\u{1F345}'
+const FOOD_ONION = '\u{1F9C5}'
+const FOOD_MEAT = '\u{1F969}'
+const FOOD_PEPPER = '\u{1F336}\u{FE0F}'
+const FOOD_GARLIC = '\u{1F9C4}'
+const FOOD_CARROT = '\u{1F955}'
+const FOOD_LEMON = '\u{1F34B}'
+const FOOD_CHEESE = '\u{1F9C0}'
+const FOOD_BROCCOLI = '\u{1F966}'
+const FOOD_CHICKEN = '\u{1F357}'
+const FOOD_EGG = '\u{1F95A}'
+const FOOD_BELL_PEPPER = '\u{1FAD1}'
+const FOOD_MUSHROOM = '\u{1F344}'
+const FOOD_CORN = '\u{1F33D}'
+
 const FOODS = [
-  'Ã°Å¸Ââ€¦',
-  'Ã°Å¸Â§â€¦',
-  'Ã°Å¸Â¥Â©',
-  'Ã°Å¸Å’Â¶Ã¯Â¸Â',
-  'Ã°Å¸Â§â€ž',
-  'Ã°Å¸Â¥â€¢',
-  'Ã°Å¸Ââ€¹',
-  'Ã°Å¸Â§â‚¬',
-  'Ã°Å¸Â¥Â¦',
-  'Ã°Å¸Ââ€”',
-  'Ã°Å¸Â¥Å¡',
-  'Ã°Å¸Â«â€™',
-  'Ã°Å¸Ââ€ž',
-  'Ã°Å¸Å’Â½',
+  FOOD_TOMATO,
+  FOOD_ONION,
+  FOOD_MEAT,
+  FOOD_PEPPER,
+  FOOD_GARLIC,
+  FOOD_CARROT,
+  FOOD_LEMON,
+  FOOD_CHEESE,
+  FOOD_BROCCOLI,
+  FOOD_CHICKEN,
+  FOOD_EGG,
+  FOOD_BELL_PEPPER,
+  FOOD_MUSHROOM,
+  FOOD_CORN,
 ]
 
 type Props = {
@@ -548,25 +563,25 @@ export function RaffleGameModal({ roundId, onClose, onEntryEarned }: Props) {
             onClick={() => queueTurn('UP')}
             className="col-start-2 flex min-h-14 items-center justify-center rounded-xl border border-stone-700 text-base font-bold text-stone-200"
           >
-            Ã¢â€ â€˜
+            {'\u2191'}
           </button>
           <button
             onClick={() => queueTurn('LEFT')}
             className="flex min-h-14 items-center justify-center rounded-xl border border-stone-700 text-base font-bold text-stone-200"
           >
-            Ã¢â€ Â
+            {'\u2190'}
           </button>
           <button
             onClick={() => queueTurn('DOWN')}
             className="flex min-h-14 items-center justify-center rounded-xl border border-stone-700 text-base font-bold text-stone-200"
           >
-            Ã¢â€ â€œ
+            {'\u2193'}
           </button>
           <button
             onClick={() => queueTurn('RIGHT')}
             className="flex min-h-14 items-center justify-center rounded-xl border border-stone-700 text-base font-bold text-stone-200"
           >
-            Ã¢â€ â€™
+            {'\u2192'}
           </button>
         </div>
 

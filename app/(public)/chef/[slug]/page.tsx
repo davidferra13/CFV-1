@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description =
     data.chef.tagline ||
     data.chef.bio ||
-    `Book ${data.chef.display_name} for your next private dining experience. View menus, reviews, and availability on ChefFlow.`
+    `Book ${data.chef.display_name}. View profile details, reviews, and availability on ChefFlow.`
   const profileUrl = `${BASE_URL}/chef/${params.slug}`
   const imageUrl = (data.chef as any).profile_image_url as string | undefined
 
@@ -186,8 +186,7 @@ export default async function ChefProfilePage({ params }: Props) {
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-stone-100">Where I Cook</h2>
               <p className="text-stone-300 mt-3 max-w-xl mx-auto">
-                Book one of these amazing venues and enjoy a private dining experience with a
-                personal chef
+                Venues where {chef.display_name} is available for service.
               </p>
             </div>
 
@@ -196,14 +195,14 @@ export default async function ChefProfilePage({ params }: Props) {
         </section>
       )}
 
-      {/* Reviews & Testimonials */}
+      {/* Reviews */}
       {reviewFeed.reviews.length > 0 && (
         <section className="py-16 px-6 bg-stone-900/70">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-stone-100">Reviews & Testimonials</h2>
+              <h2 className="text-3xl font-bold text-stone-100">Client Reviews</h2>
               <p className="text-stone-300 mt-3 max-w-xl mx-auto">
-                What clients and guests are saying about {chef.display_name}
+                Feedback from recent clients and guests.
               </p>
             </div>
 
@@ -212,14 +211,14 @@ export default async function ChefProfilePage({ params }: Props) {
         </section>
       )}
 
-      {/* Available Dates (public availability signals) */}
+      {/* Available Dates */}
       {availabilitySignals.length > 0 && (
         <section className="py-12 px-6 bg-stone-900/70">
           <div className="max-w-2xl mx-auto">
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold text-stone-100">Available Dates</h2>
               <p className="text-stone-300 mt-2 text-sm">
-                {chef.display_name} is actively seeking bookings for these dates.
+                Open dates currently available for booking.
               </p>
             </div>
             <div className="space-y-3">
@@ -262,10 +261,10 @@ export default async function ChefProfilePage({ params }: Props) {
       {/* CTA Section */}
       <section className="py-16 px-6 bg-stone-900/75">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-2xl font-bold text-stone-100">Ready to Book?</h2>
+          <h2 className="text-2xl font-bold text-stone-100">Ready to book?</h2>
           <p className="text-stone-300 mt-3">
             {partners.length > 0
-              ? `Choose a venue above and hire ${chef.display_name} for an unforgettable dining experience, or submit a custom inquiry below.`
+              ? `Choose a venue above or send a custom inquiry below.`
               : `Tell us about your event and ${chef.display_name} will be in touch.`}
           </p>
 
@@ -277,7 +276,7 @@ export default async function ChefProfilePage({ params }: Props) {
                   className="inline-block flex-1 px-6 py-3 text-white rounded-lg font-medium text-center transition-opacity hover:opacity-90"
                   style={{ backgroundColor: primaryColor }}
                 >
-                  Start your booking
+                  Start inquiry
                 </a>
               )}
               <a
@@ -289,7 +288,7 @@ export default async function ChefProfilePage({ params }: Props) {
                   backgroundColor: 'rgba(255,255,255,0.9)',
                 }}
               >
-                Give the gift of a private chef
+                Gift cards
               </a>
             </div>
             {hasWebsiteLink && (
@@ -304,18 +303,18 @@ export default async function ChefProfilePage({ params }: Props) {
                   backgroundColor: 'rgba(255,255,255,0.9)',
                 }}
               >
-                Visit Official Website
+                Visit website
               </a>
             )}
             {preferWebsite && hasWebsiteLink && !preferChefFlow && (
               <p className="text-xs text-stone-500">
-                Prefer ChefFlow?{' '}
+                Want to use ChefFlow instead?{' '}
                 <a
                   href={`/chef/${params.slug}/inquire`}
                   className="font-medium underline"
                   style={{ color: primaryColor }}
                 >
-                  Submit an inquiry here
+                  Send inquiry here
                 </a>
               </p>
             )}
@@ -327,7 +326,7 @@ export default async function ChefProfilePage({ params }: Props) {
               className="font-medium hover:opacity-80"
               style={{ color: primaryColor }}
             >
-              Create client account
+              Client account
             </a>
             <span className="text-stone-300">&middot;</span>
             <a
@@ -335,7 +334,7 @@ export default async function ChefProfilePage({ params }: Props) {
               className="font-medium hover:opacity-80"
               style={{ color: primaryColor }}
             >
-              Become a partner
+              Partner signup
             </a>
           </div>
         </div>

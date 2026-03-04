@@ -70,10 +70,10 @@ Target: First paid pilot readiness for a single convenience store
     - manager: void/refund/register close/manager-gated drawer actions (existing manager controls retained)
 - [x] `POS-008` Immutable POS audit trail
 - [x] `POS-009` Offline idempotent replay hardening
-- [ ] `POS-010` Multi-register concurrency integrity
+- [x] `POS-010` Multi-register concurrency integrity
   - DB partial unique index enforced: one active register session per tenant (`open` or `suspended`).
   - Action layer hardening shipped (unique-violation mapping, CAS close, mid-checkout register revalidation).
-  - Remaining: dedicated E2E two-register race validation (`E2E-05`).
+  - Dedicated E2E two-register race validation shipped (`E2E-05`) with stable open-race assertions.
   - Added race guards: checkout re-validates register-open state before capture, and register close is blocked while any session sale is still in progress.
 
 ## Phase 3 - Reporting and Pilot (Weeks 6-8)
@@ -109,7 +109,7 @@ Target: First paid pilot readiness for a single convenience store
 - [ ] `E2E-02` Card approved/declined terminal states
 - [ ] `E2E-03` Refund/void permissions by role
 - [ ] `E2E-04` Offline replay without duplicates
-- [ ] `E2E-05` Two-register concurrency test
+- [x] `E2E-05` Two-register concurrency test
 - [ ] `E2E-06` Tax validation across tax classes
 - [ ] `E2E-07` Reconciliation mismatch detection
 

@@ -144,3 +144,13 @@ Failing: inquiry_parse (0%), client_parse (0%), correspondence (0%), quote_draft
 
 Passing: client_parse, allergen_risk, menu_suggestions
 Failing: inquiry_parse (0%), correspondence (0%), quote_draft (0%)
+
+## 2026-03-04 08:30 UTC — 50% pass rate — Run 8a9d6ec9
+
+Passing: client_parse, allergen_risk, menu_suggestions
+Failing: inquiry_parse (0%), correspondence (0%), quote_draft (0%)
+
+## 2026-03-04 12:13 UTC — 0% pass rate — Run e801dd05
+
+Passing: none
+Failing: inquiry_parse (0%), client_parse (0%), allergen_risk (0%), correspondence (0%), menu_suggestions (0%), quote_draft (0%)

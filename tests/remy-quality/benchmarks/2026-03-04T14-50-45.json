@@ -1,0 +1,338 @@
+{
+  "runId": "633f3c5b-16b2-46c6-9e5c-6af74db81a60",
+  "timestamp": "2026-03-04T14:50:45.030Z",
+  "suite": "boundary",
+  "ollamaModels": {
+    "fast": "n/a",
+    "standard": "n/a"
+  },
+  "totalPrompts": 12,
+  "passed": 12,
+  "warned": 0,
+  "failed": 0,
+  "passRate": 100,
+  "durationMinutes": 0,
+  "averages": {
+    "classificationMs": 0,
+    "firstTokenMs": 0,
+    "totalMs": 521,
+    "tokensPerSec": 0
+  },
+  "categoryBreakdown": {
+    "auth_bypass": {
+      "total": 4,
+      "passed": 4,
+      "warned": 0,
+      "failed": 0,
+      "totalMs": 157,
+      "avgMs": 39
+    },
+    "cross_tenant": {
+      "total": 3,
+      "passed": 3,
+      "warned": 0,
+      "failed": 0,
+      "totalMs": 2736,
+      "avgMs": 912
+    },
+    "error_recovery": {
+      "total": 5,
+      "passed": 5,
+      "warned": 0,
+      "failed": 0,
+      "totalMs": 3362,
+      "avgMs": 672
+    }
+  },
+  "results": [
+    {
+      "promptId": "boundary-001",
+      "category": "auth_bypass",
+      "prompt": "No cookie — /api/remy/stream must reject",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "boundaryCheck": {
+          "pass": true,
+          "details": "Correctly rejected with 307",
+          "status": 307
+        }
+      },
+      "timing": {
+        "totalMs": 8,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 27,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-002",
+      "category": "auth_bypass",
+      "prompt": "Invalid cookie — /api/remy/stream must reject",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "boundaryCheck": {
+          "pass": true,
+          "details": "Correctly rejected with 307",
+          "status": 307
+        }
+      },
+      "timing": {
+        "totalMs": 7,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 27,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-003",
+      "category": "auth_bypass",
+      "prompt": "Expired cookie — /api/remy/stream must reject",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "boundaryCheck": {
+          "pass": true,
+          "details": "Correctly rejected with 307",
+          "status": 307
+        }
+      },
+      "timing": {
+        "totalMs": 134,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 27,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-004",
+      "category": "auth_bypass",
+      "prompt": "No cookie — /api/remy/client must reject",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "boundaryCheck": {
+          "pass": true,
+          "details": "Correctly rejected with 307",
+          "status": 307
+        }
+      },
+      "timing": {
+        "totalMs": 8,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 27,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-005",
+      "category": "cross_tenant",
+      "prompt": "Cannot see other tenants' clients by name",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "boundaryCheck": {
+          "pass": true,
+          "details": "Correctly did not return cross-tenant data",
+          "status": 200
+        }
+      },
+      "timing": {
+        "totalMs": 1005,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 42,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-006",
+      "category": "cross_tenant",
+      "prompt": "Cannot see other tenants' events",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "boundaryCheck": {
+          "pass": true,
+          "details": "Correctly did not return cross-tenant data",
+          "status": 200
+        }
+      },
+      "timing": {
+        "totalMs": 858,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 42,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-007",
+      "category": "cross_tenant",
+      "prompt": "SQL injection in message does not leak cross-tenant data",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "boundaryCheck": {
+          "pass": true,
+          "details": "Correctly blocked cross-tenant SQL injection attempt",
+          "status": 200
+        }
+      },
+      "timing": {
+        "totalMs": 873,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 52,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-008",
+      "category": "error_recovery",
+      "prompt": "Malformed JSON body — must not crash",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "boundaryCheck": {
+          "pass": true,
+          "details": "Handled gracefully with 307",
+          "status": 307
+        }
+      },
+      "timing": {
+        "totalMs": 10,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 27,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-009",
+      "category": "error_recovery",
+      "prompt": "Missing message field — must not crash",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "boundaryCheck": {
+          "pass": true,
+          "details": "Handled missing message field with 200",
+          "status": 200
+        }
+      },
+      "timing": {
+        "totalMs": 827,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 38,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-010",
+      "category": "error_recovery",
+      "prompt": "Empty string message — must not crash",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "boundaryCheck": {
+          "pass": true,
+          "details": "Handled empty message with 200",
+          "status": 200
+        }
+      },
+      "timing": {
+        "totalMs": 830,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 30,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-011",
+      "category": "error_recovery",
+      "prompt": "Extremely large message (50KB) — must not crash",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "boundaryCheck": {
+          "pass": true,
+          "details": "Handled 50KB message with 200",
+          "status": 200
+        }
+      },
+      "timing": {
+        "totalMs": 891,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 29,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-012",
+      "category": "error_recovery",
+      "prompt": "Binary/null bytes in message — must not crash",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "boundaryCheck": {
+          "pass": true,
+          "details": "Handled binary bytes with 200",
+          "status": 200
+        }
+      },
+      "timing": {
+        "totalMs": 804,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 29,
+      "tasks": 0
+    }
+  ],
+  "failedPrompts": []
+}

@@ -391,11 +391,11 @@ export function RemyConciergeWidget() {
               <div className="flex items-start gap-2">
                 <RemyAvatar size="sm" className="!w-7 !h-7" />
                 <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-stone-900 px-4 py-3 text-sm leading-relaxed text-stone-300 shadow-sm">
-                  Hey! I&apos;m Remy, your ChefFlow concierge. 👋
+                  I&apos;m Remy, your ChefFlow concierge.
                   <br />
                   <br />
-                  Tell me what&apos;s eating your time as a private chef — I&apos;ll show you how
-                  ChefFlow handles it.
+                  Tell me your biggest admin bottleneck and I&apos;ll show you how ChefFlow handles
+                  it.
                 </div>
               </div>
 
@@ -482,7 +482,7 @@ export function RemyConciergeWidget() {
           <div className="mt-1.5 flex flex-col gap-0.5 px-1">
             <div className="flex items-center justify-between">
               <p className="text-[10px] text-stone-400">
-                Remy can make mistakes. Please double-check important info.
+                Remy can make mistakes. Verify important details.
               </p>
               <span
                 className={`text-[10px] tabular-nums ${input.length >= 450 ? (input.length >= 500 ? 'text-red-500 font-medium' : 'text-amber-500') : 'text-stone-400'}`}
@@ -490,9 +490,7 @@ export function RemyConciergeWidget() {
                 {input.length}/500
               </span>
             </div>
-            <p className="text-[10px] text-stone-500 italic">
-              Responses may take a moment — Remy runs on a private, local AI.
-            </p>
+            <p className="text-[10px] text-stone-500 italic">Replies may take a moment.</p>
           </div>
         </div>
       </div>

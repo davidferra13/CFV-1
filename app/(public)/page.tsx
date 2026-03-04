@@ -15,7 +15,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 export const metadata: Metadata = {
   title: 'ChefFlow | Private Chef Business Software — Ops for Artists',
   description:
-    'The business operating system built by a chef, for chefs. Manage events, clients, menus, quotes, payments, and kitchen ops from one calm workspace. 14-day free trial.',
+    'Run your private chef business in one place. Manage inquiries, events, menus, and payments with less admin and more clarity.',
   keywords: [
     'private chef software',
     'personal chef business management',
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'ChefFlow | Private Chef Business Software',
     description:
-      'The business operating system built by a chef, for chefs. Events, clients, menus, and payments — finally in one calm workspace.',
+      'Run your private chef business in one place. Events, clients, menus, and payments in one system.',
     url: BASE_URL,
     siteName: 'ChefFlow',
     type: 'website',
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'ChefFlow | Ops for Artists',
     description:
-      'The business OS built by a chef, for chefs. Events, clients, menus, and payments in one workspace. Free trial.',
+      'Private chef software for events, clients, menus, and payments. 14-day free trial.',
   },
   alternates: {
     canonical: BASE_URL,
@@ -91,19 +91,18 @@ export default function Home() {
             The business OS built by a chef, for chefs.
           </h1>
           <p className="mt-4 rounded-full border border-brand-700 bg-stone-900 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
-            Designed by Someone Who Gets It
+            Built by chefs for chefs
           </p>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-stone-300 md:text-lg">
-            Private dinners, grazing tables, meal prep, catering — whatever your craft, manage every
-            inquiry, event, menu, recipe, and payment from one calm workspace. The all-in-one
-            private chef software for solo operators and growing teams.
+            Manage inquiries, events, menus, recipes, and payments in one clean workspace.
+            Professional, fast, and built for solo chefs and growing teams.
           </p>
           <div className="mt-8 flex w-full max-w-md flex-col gap-3 sm:flex-row">
             <Link
               href="/auth/signup"
               className="inline-flex flex-1 items-center justify-center rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
             >
-              Start for free
+              Sign up
             </Link>
             <Link
               href="/pricing"
@@ -142,8 +141,7 @@ export default function Home() {
               From inquiry to payout in one flow.
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-300">
-              Keep the full client lifecycle in one system, with less back-and-forth and no
-              fragmented spreadsheets.
+              Keep the full client journey in one system with less back-and-forth.
             </p>
           </div>
           <WorkflowSteps />
@@ -191,7 +189,7 @@ export default function Home() {
           href="/auth/signup"
           className="relative mt-8 inline-flex items-center justify-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
         >
-          Get started free
+          Sign up
         </Link>
       </section>
     </div>

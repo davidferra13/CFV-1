@@ -1,0 +1,4035 @@
+{
+  "runId": "60b17857-c6fc-42d7-a95c-269a64bf8fef",
+  "timestamp": "2026-03-04T16:11:48.943Z",
+  "suite": "chef",
+  "ollamaModels": {
+    "fast": "qwen3:4b",
+    "standard": "qwen3-coder:30b"
+  },
+  "totalPrompts": 50,
+  "passed": 0,
+  "warned": 0,
+  "failed": 50,
+  "passRate": 0,
+  "durationMinutes": 10,
+  "averages": {
+    "classificationMs": 0,
+    "firstTokenMs": 0,
+    "totalMs": 12517,
+    "tokensPerSec": 0
+  },
+  "categoryBreakdown": {
+    "business_overview": {
+      "total": 50,
+      "passed": 0,
+      "warned": 0,
+      "failed": 50,
+      "totalMs": 625872,
+      "avgMs": 12517
+    }
+  },
+  "results": [
+    {
+      "promptId": "chef-001_run1",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 23477,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 23477,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 23477,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-001_run2",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1101,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 1101,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1101,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-001_run3",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 15813,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 15812,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 15813,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-001_run4",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1207,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 1207,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1207,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-001_run5",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 950,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 950,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 950,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-002_run1",
+      "category": "business_overview",
+      "prompt": "What's my revenue this month?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 865,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 865,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 865,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-002_run2",
+      "category": "business_overview",
+      "prompt": "What's my revenue this month?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 44179,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 44179,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 44179,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-002_run3",
+      "category": "business_overview",
+      "prompt": "What's my revenue this month?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 41650,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 41650,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 41650,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-002_run4",
+      "category": "business_overview",
+      "prompt": "What's my revenue this month?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 18706,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 18706,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 18706,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-002_run5",
+      "category": "business_overview",
+      "prompt": "What's my revenue this month?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1065,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 1065,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1065,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-003_run1",
+      "category": "business_overview",
+      "prompt": "How many clients do I have?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 876,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 876,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 876,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-003_run2",
+      "category": "business_overview",
+      "prompt": "How many clients do I have?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 41328,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 41328,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 41328,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-003_run3",
+      "category": "business_overview",
+      "prompt": "How many clients do I have?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 886,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 886,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 886,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-003_run4",
+      "category": "business_overview",
+      "prompt": "How many clients do I have?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 864,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 864,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 864,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-003_run5",
+      "category": "business_overview",
+      "prompt": "How many clients do I have?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 894,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 894,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 894,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-004_run1",
+      "category": "business_overview",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 850,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 850,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 850,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-004_run2",
+      "category": "business_overview",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 839,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 839,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 839,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-004_run3",
+      "category": "business_overview",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 22821,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 22821,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 22821,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-004_run4",
+      "category": "business_overview",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 921,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 921,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 921,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-004_run5",
+      "category": "business_overview",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 2138,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 2138,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2138,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-005_run1",
+      "category": "business_overview",
+      "prompt": "What needs my attention today?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 811,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 811,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 811,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-005_run2",
+      "category": "business_overview",
+      "prompt": "What needs my attention today?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1217,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 1217,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1217,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-005_run3",
+      "category": "business_overview",
+      "prompt": "What needs my attention today?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 43226,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 43225,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 43226,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-005_run4",
+      "category": "business_overview",
+      "prompt": "What needs my attention today?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 57709,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 57709,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 57709,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-005_run5",
+      "category": "business_overview",
+      "prompt": "What needs my attention today?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 7617,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 7617,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 7617,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-006_run1",
+      "category": "business_overview",
+      "prompt": "Am I on track for my goals this month?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 3799,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 3799,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 3799,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-006_run2",
+      "category": "business_overview",
+      "prompt": "Am I on track for my goals this month?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 44364,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 44364,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 44364,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-006_run3",
+      "category": "business_overview",
+      "prompt": "Am I on track for my goals this month?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 39804,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 39804,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 39804,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-006_run4",
+      "category": "business_overview",
+      "prompt": "Am I on track for my goals this month?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 8366,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 8366,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 8366,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-006_run5",
+      "category": "business_overview",
+      "prompt": "Am I on track for my goals this month?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 8534,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 8534,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 8534,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-007_run1",
+      "category": "business_overview",
+      "prompt": "What's my year-to-date revenue?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 937,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 937,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 937,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-007_run2",
+      "category": "business_overview",
+      "prompt": "What's my year-to-date revenue?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 925,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 925,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 925,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-007_run3",
+      "category": "business_overview",
+      "prompt": "What's my year-to-date revenue?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 32257,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 32257,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 32257,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-007_run4",
+      "category": "business_overview",
+      "prompt": "What's my year-to-date revenue?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 38424,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 38424,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 38424,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-007_run5",
+      "category": "business_overview",
+      "prompt": "What's my year-to-date revenue?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 33575,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 33575,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 33575,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-008_run1",
+      "category": "business_overview",
+      "prompt": "How does this month compare to last month?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 7182,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 7182,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 7182,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-008_run2",
+      "category": "business_overview",
+      "prompt": "How does this month compare to last month?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1110,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 1110,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1110,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-008_run3",
+      "category": "business_overview",
+      "prompt": "How does this month compare to last month?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 984,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 984,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 984,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-008_run4",
+      "category": "business_overview",
+      "prompt": "How does this month compare to last month?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 846,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 846,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 846,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-008_run5",
+      "category": "business_overview",
+      "prompt": "How does this month compare to last month?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 42218,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 42218,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 42218,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-009_run1",
+      "category": "business_overview",
+      "prompt": "What's my average revenue per event?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 8174,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 8174,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 8174,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-009_run2",
+      "category": "business_overview",
+      "prompt": "What's my average revenue per event?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 13928,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 13928,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 13928,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-009_run3",
+      "category": "business_overview",
+      "prompt": "What's my average revenue per event?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 987,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 987,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 987,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-009_run4",
+      "category": "business_overview",
+      "prompt": "What's my average revenue per event?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1284,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 1284,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1284,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-009_run5",
+      "category": "business_overview",
+      "prompt": "What's my average revenue per event?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 848,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 848,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 848,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-010_run1",
+      "category": "business_overview",
+      "prompt": "Who are my top clients?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 802,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 802,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 802,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-010_run2",
+      "category": "business_overview",
+      "prompt": "Who are my top clients?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1264,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 1264,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1264,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-010_run3",
+      "category": "business_overview",
+      "prompt": "Who are my top clients?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1056,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 1056,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1056,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-010_run4",
+      "category": "business_overview",
+      "prompt": "Who are my top clients?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1068,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 1068,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1068,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-010_run5",
+      "category": "business_overview",
+      "prompt": "Who are my top clients?",
+      "overall": "fail",
+      "failCount": 3,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1126,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 1126,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1126,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    }
+  ],
+  "failedPrompts": [
+    {
+      "promptId": "chef-001_run1",
+      "prompt": "How's my business doing?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 23477,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-001_run2",
+      "prompt": "How's my business doing?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1101,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-001_run3",
+      "prompt": "How's my business doing?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 15813,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-001_run4",
+      "prompt": "How's my business doing?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1207,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-001_run5",
+      "prompt": "How's my business doing?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 950,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-002_run1",
+      "prompt": "What's my revenue this month?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 865,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-002_run2",
+      "prompt": "What's my revenue this month?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 44179,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-002_run3",
+      "prompt": "What's my revenue this month?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 41650,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-002_run4",
+      "prompt": "What's my revenue this month?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 18706,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-002_run5",
+      "prompt": "What's my revenue this month?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1065,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-003_run1",
+      "prompt": "How many clients do I have?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 876,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-003_run2",
+      "prompt": "How many clients do I have?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 41328,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-003_run3",
+      "prompt": "How many clients do I have?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 886,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-003_run4",
+      "prompt": "How many clients do I have?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 864,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-003_run5",
+      "prompt": "How many clients do I have?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 894,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-004_run1",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 850,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-004_run2",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 839,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-004_run3",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 22821,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-004_run4",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 921,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-004_run5",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 2138,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-005_run1",
+      "prompt": "What needs my attention today?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 811,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-005_run2",
+      "prompt": "What needs my attention today?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1217,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-005_run3",
+      "prompt": "What needs my attention today?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 43226,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-005_run4",
+      "prompt": "What needs my attention today?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 57709,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-005_run5",
+      "prompt": "What needs my attention today?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 7617,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-006_run1",
+      "prompt": "Am I on track for my goals this month?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 3799,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-006_run2",
+      "prompt": "Am I on track for my goals this month?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 44364,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-006_run3",
+      "prompt": "Am I on track for my goals this month?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 39804,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-006_run4",
+      "prompt": "Am I on track for my goals this month?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 8366,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-006_run5",
+      "prompt": "Am I on track for my goals this month?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 8534,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-007_run1",
+      "prompt": "What's my year-to-date revenue?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 937,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-007_run2",
+      "prompt": "What's my year-to-date revenue?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 925,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-007_run3",
+      "prompt": "What's my year-to-date revenue?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 32257,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-007_run4",
+      "prompt": "What's my year-to-date revenue?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 38424,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-007_run5",
+      "prompt": "What's my year-to-date revenue?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 33575,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-008_run1",
+      "prompt": "How does this month compare to last month?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 7182,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-008_run2",
+      "prompt": "How does this month compare to last month?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1110,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-008_run3",
+      "prompt": "How does this month compare to last month?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 984,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-008_run4",
+      "prompt": "How does this month compare to last month?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 846,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-008_run5",
+      "prompt": "How does this month compare to last month?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 42218,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-009_run1",
+      "prompt": "What's my average revenue per event?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 8174,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-009_run2",
+      "prompt": "What's my average revenue per event?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 13928,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-009_run3",
+      "prompt": "What's my average revenue per event?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 987,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-009_run4",
+      "prompt": "What's my average revenue per event?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1284,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-009_run5",
+      "prompt": "What's my average revenue per event?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 848,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-010_run1",
+      "prompt": "Who are my top clients?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 802,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-010_run2",
+      "prompt": "Who are my top clients?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1264,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-010_run3",
+      "prompt": "Who are my top clients?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1056,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-010_run4",
+      "prompt": "Who are my top clients?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1068,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "chef-010_run5",
+      "prompt": "Who are my top clients?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1126,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    }
+  ]
+}

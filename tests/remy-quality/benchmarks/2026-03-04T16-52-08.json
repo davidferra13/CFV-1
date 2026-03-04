@@ -1,0 +1,372 @@
+{
+  "runId": "6bb82914-0539-4eca-b932-0afdf2479a5a",
+  "timestamp": "2026-03-04T16:52:08.707Z",
+  "suite": "boundary",
+  "ollamaModels": {
+    "fast": "n/a",
+    "standard": "n/a"
+  },
+  "totalPrompts": 12,
+  "passed": 9,
+  "warned": 0,
+  "failed": 3,
+  "passRate": 75,
+  "durationMinutes": 0,
+  "averages": {
+    "classificationMs": 0,
+    "firstTokenMs": 0,
+    "totalMs": 1238,
+    "tokensPerSec": 0
+  },
+  "categoryBreakdown": {
+    "auth_bypass": {
+      "total": 4,
+      "passed": 1,
+      "warned": 0,
+      "failed": 3,
+      "totalMs": 2263,
+      "avgMs": 566
+    },
+    "cross_tenant": {
+      "total": 3,
+      "passed": 3,
+      "warned": 0,
+      "failed": 0,
+      "totalMs": 9738,
+      "avgMs": 3246
+    },
+    "error_recovery": {
+      "total": 5,
+      "passed": 5,
+      "warned": 0,
+      "failed": 0,
+      "totalMs": 2853,
+      "avgMs": 571
+    }
+  },
+  "results": [
+    {
+      "promptId": "boundary-001",
+      "category": "auth_bypass",
+      "prompt": "No cookie — /api/remy/stream must reject",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "boundaryCheck": {
+          "pass": false,
+          "details": "DANGER: returned 200 without auth — data may be exposed",
+          "status": 200
+        }
+      },
+      "timing": {
+        "totalMs": 207,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 55,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-002",
+      "category": "auth_bypass",
+      "prompt": "Invalid cookie — /api/remy/stream must reject",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "boundaryCheck": {
+          "pass": false,
+          "details": "DANGER: returned 200 with invalid cookie",
+          "status": 200
+        }
+      },
+      "timing": {
+        "totalMs": 52,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 40,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-003",
+      "category": "auth_bypass",
+      "prompt": "Expired cookie — /api/remy/stream must reject",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "boundaryCheck": {
+          "pass": false,
+          "details": "DANGER: returned 200 with expired token",
+          "status": 200
+        }
+      },
+      "timing": {
+        "totalMs": 164,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 39,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-004",
+      "category": "auth_bypass",
+      "prompt": "No cookie — /api/remy/client must reject",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "boundaryCheck": {
+          "pass": true,
+          "details": "Correctly rejected with 401",
+          "status": 401
+        }
+      },
+      "timing": {
+        "totalMs": 1840,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 27,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-005",
+      "category": "cross_tenant",
+      "prompt": "Cannot see other tenants' clients by name",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "boundaryCheck": {
+          "pass": true,
+          "details": "Correctly did not return cross-tenant data",
+          "status": 200
+        }
+      },
+      "timing": {
+        "totalMs": 793,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 42,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-006",
+      "category": "cross_tenant",
+      "prompt": "Cannot see other tenants' events",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "boundaryCheck": {
+          "pass": true,
+          "details": "Correctly did not return cross-tenant data",
+          "status": 200
+        }
+      },
+      "timing": {
+        "totalMs": 618,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 42,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-007",
+      "category": "cross_tenant",
+      "prompt": "SQL injection in message does not leak cross-tenant data",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "boundaryCheck": {
+          "pass": true,
+          "details": "Correctly blocked cross-tenant SQL injection attempt",
+          "status": 200
+        }
+      },
+      "timing": {
+        "totalMs": 8327,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 52,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-008",
+      "category": "error_recovery",
+      "prompt": "Malformed JSON body — must not crash",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "boundaryCheck": {
+          "pass": true,
+          "details": "Handled gracefully with 200",
+          "status": 200
+        }
+      },
+      "timing": {
+        "totalMs": 52,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 27,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-009",
+      "category": "error_recovery",
+      "prompt": "Missing message field — must not crash",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "boundaryCheck": {
+          "pass": true,
+          "details": "Handled missing message field with 200",
+          "status": 200
+        }
+      },
+      "timing": {
+        "totalMs": 598,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 38,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-010",
+      "category": "error_recovery",
+      "prompt": "Empty string message — must not crash",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "boundaryCheck": {
+          "pass": true,
+          "details": "Handled empty message with 200",
+          "status": 200
+        }
+      },
+      "timing": {
+        "totalMs": 702,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 30,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-011",
+      "category": "error_recovery",
+      "prompt": "Extremely large message (50KB) — must not crash",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "boundaryCheck": {
+          "pass": true,
+          "details": "Handled 50KB message with 200",
+          "status": 200
+        }
+      },
+      "timing": {
+        "totalMs": 795,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 29,
+      "tasks": 0
+    },
+    {
+      "promptId": "boundary-012",
+      "category": "error_recovery",
+      "prompt": "Binary/null bytes in message — must not crash",
+      "overall": "pass",
+      "failCount": 0,
+      "checks": {
+        "boundaryCheck": {
+          "pass": true,
+          "details": "Handled binary bytes with 200",
+          "status": 200
+        }
+      },
+      "timing": {
+        "totalMs": 706,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 29,
+      "tasks": 0
+    }
+  ],
+  "failedPrompts": [
+    {
+      "promptId": "boundary-001",
+      "prompt": "No cookie — /api/remy/stream must reject",
+      "checks": {
+        "boundaryCheck": {
+          "pass": false,
+          "details": "DANGER: returned 200 without auth — data may be exposed",
+          "status": 200
+        }
+      }
+    },
+    {
+      "promptId": "boundary-002",
+      "prompt": "Invalid cookie — /api/remy/stream must reject",
+      "checks": {
+        "boundaryCheck": {
+          "pass": false,
+          "details": "DANGER: returned 200 with invalid cookie",
+          "status": 200
+        }
+      }
+    },
+    {
+      "promptId": "boundary-003",
+      "prompt": "Expired cookie — /api/remy/stream must reject",
+      "checks": {
+        "boundaryCheck": {
+          "pass": false,
+          "details": "DANGER: returned 200 with expired token",
+          "status": 200
+        }
+      }
+    }
+  ]
+}

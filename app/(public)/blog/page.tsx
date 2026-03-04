@@ -7,10 +7,9 @@ export default function BlogIndexPage() {
     <div>
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold text-stone-100 mb-4">The ChefFlow Blog</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-stone-100 mb-4">ChefFlow Blog</h1>
           <p className="text-lg text-stone-300 mb-2">
-            Tips, guides, and insights for private chefs — pricing, client management, and growing
-            your business.
+            Short, practical guides for private chef operations.
           </p>
           <p className="text-sm text-stone-500 mb-12">{BLOG_POSTS.length} articles published</p>
 
@@ -55,11 +54,9 @@ export default function BlogIndexPage() {
 
           {/* Newsletter CTA */}
           <div className="mt-16 rounded-xl border border-brand-700/50 bg-brand-950/40 p-8 text-center">
-            <h2 className="text-xl font-bold text-stone-100 mb-2">
-              Get chef business tips in your inbox
-            </h2>
+            <h2 className="text-xl font-bold text-stone-100 mb-2">Get updates in your inbox</h2>
             <p className="text-stone-400 text-sm mb-4">
-              Practical guides on pricing, clients, and growing your private chef business. No spam.
+              Practical articles on pricing, clients, and operations. No spam.
             </p>
             <div className="max-w-sm mx-auto">
               <NewsletterSignup />

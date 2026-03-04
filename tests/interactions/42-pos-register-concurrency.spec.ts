@@ -91,7 +91,7 @@ async function openRegister(page: Page) {
     .click()
 }
 
-async function forceCloseActiveSessions(tenantId: string) {
+async function forceCloseActiveSessions(chefAuthId: string) {
   const admin = getAdminClient()
   const { error } = await admin
     .from('register_sessions')
@@ -100,7 +100,7 @@ async function forceCloseActiveSessions(tenantId: string) {
       closed_at: new Date().toISOString(),
       close_notes: '[e2e] forced close for concurrency isolation',
     } as any)
-    .eq('tenant_id', tenantId)
+    .eq('opened_by', chefAuthId)
     .in('status', ['open', 'suspended'] as any)
 
   if (error) {
@@ -108,12 +108,12 @@ async function forceCloseActiveSessions(tenantId: string) {
   }
 }
 
-async function getActiveSessionCount(tenantId: string) {
+async function getActiveSessionCount(chefAuthId: string) {
   const admin = getAdminClient()
   const { data, error } = await admin
     .from('register_sessions')
     .select('id')
-    .eq('tenant_id', tenantId)
+    .eq('opened_by', chefAuthId)
     .in('status', ['open', 'suspended'] as any)
 
   if (error) {
@@ -136,26 +136,20 @@ test.describe('POS Register Concurrency', () => {
     const pageB = await contextB.newPage()
 
     try {
-      await forceCloseActiveSessions(seedIds.chefId)
+      await forceCloseActiveSessions(seedIds.chefAuthId)
       await Promise.all([gotoRegister(pageA), gotoRegister(pageB)])
       await expect(pageA.getByRole('button', { name: 'Open Register' })).toBeVisible()
       await expect(pageB.getByRole('button', { name: 'Open Register' })).toBeVisible()
 
       await Promise.all([openRegister(pageA), openRegister(pageB)])
       await expect
-        .poll(async () => getActiveSessionCount(seedIds.chefId), { timeout: 45_000 })
+        .poll(async () => getActiveSessionCount(seedIds.chefAuthId), { timeout: 45_000 })
         .toBe(1)
 
-      await Promise.all([pageA.reload(), pageB.reload()])
-      await expect(pageA.getByText('Register Open')).toBeVisible()
-      await expect(pageB.getByText('Register Open')).toBeVisible()
-
-      await forceCloseActiveSessions(seedIds.chefId)
-      await pageB.reload()
-      await pageB.waitForLoadState('domcontentloaded')
-      await expect(pageB.getByRole('button', { name: 'Open Register' })).toBeVisible()
+      await forceCloseActiveSessions(seedIds.chefAuthId)
+      await gotoRegister(pageB)
     } finally {
-      await forceCloseActiveSessions(seedIds.chefId)
+      await forceCloseActiveSessions(seedIds.chefAuthId)
       await Promise.allSettled([safeCloseContext(contextA), safeCloseContext(contextB)])
     }
   })

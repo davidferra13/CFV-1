@@ -4,25 +4,22 @@ const AI_FEATURES = [
   {
     icon: Mail,
     title: 'Email drafts',
-    description:
-      'Thank-you notes, follow-ups, and referral requests — drafted for you, sent only when you approve.',
+    description: 'Thank-you notes, follow-ups, and referral asks drafted for your review.',
   },
   {
     icon: TrendingUp,
     title: 'Margin analysis',
-    description: 'Food cost %, revenue, and expenses for any event — no spreadsheet needed.',
+    description: 'Food cost, revenue, and expense breakdowns for every event.',
   },
   {
     icon: Heart,
     title: 'Client preferences',
-    description:
-      'Every dietary restriction, allergy, and preference across your entire client base — always at hand.',
+    description: 'Dietary needs, allergies, and preferences captured in one place.',
   },
   {
     icon: BookOpen,
     title: 'Recipe search',
-    description:
-      'Search your own recipes by ingredient, cuisine, or event type. Your IP stays yours.',
+    description: 'Search your recipes by ingredient, cuisine, or event type.',
   },
 ]
 
@@ -40,8 +37,8 @@ export function MeetRemySection() {
             Built-in AI assistant
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-300">
-            Handles the business side so you can focus on the craft. You review everything — nothing
-            happens without your approval.
+            Move faster on admin work while you stay in control. You review everything before it
+            goes out.
           </p>
         </div>
 

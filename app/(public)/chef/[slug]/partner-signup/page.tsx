@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `Partner With ${data.chef.display_name}`,
-    description: `Create your partner profile with ${data.chef.display_name}.`,
+    description: `Create a partner profile with ${data.chef.display_name}.`,
   }
 }
 
@@ -39,7 +39,7 @@ export default async function PartnerSignupPage({ params }: Props) {
           <div className="text-center">
             <h1 className="text-3xl font-bold text-stone-100">Create Partner Profile</h1>
             <p className="text-stone-300 mt-2">
-              Submit your profile to be listed as a referral partner for {data.chef.display_name}.
+              Submit your profile to be listed as a partner for {data.chef.display_name}.
             </p>
           </div>
 

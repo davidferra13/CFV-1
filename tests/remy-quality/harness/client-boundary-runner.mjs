@@ -116,7 +116,7 @@ async function authenticate() {
     .replace(/=+$/, '')
 
   const cookieName = `sb-${projectRef}-auth-token`
-  const cookie = `${cookieName}=${b64}`
+  const cookie = `${cookieName}=base64-${b64}`
 
   console.log(`  ✅ Authenticated as ${seeds.clientEmail}`)
   return { cookie, seeds }
@@ -153,7 +153,7 @@ async function getChefCookie() {
     .replace(/\//g, '_')
     .replace(/=+$/, '')
 
-  return `sb-${projectRef}-auth-token=${b64}`
+  return `sb-${projectRef}-auth-token=base64-${b64}`
 }
 
 // ─── Request Helpers ────────────────────────────────────────────────────────

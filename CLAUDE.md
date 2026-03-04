@@ -822,3 +822,5 @@ The deploy script: pushes to GitHub → pulls on Pi → installs deps → builds
 - **Ollama Loop Bug Fix (2026-02-22):** `lib/ai/command-orchestrator.ts` fail-fast for unsupported task types. `lib/ai/parse-ollama.ts` retry max 2 attempts. No infinite loops.
 
 ---
+
+Tell me last.

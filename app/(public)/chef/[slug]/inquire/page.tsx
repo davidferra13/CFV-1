@@ -14,8 +14,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!data) return { title: 'Chef Not Found' }
 
   return {
-    title: `Book ${data.chef.display_name} — Private Chef Inquiry`,
-    description: `Tell ${data.chef.display_name} about your event.`,
+    title: `Inquire with ${data.chef.display_name}`,
+    description: `Share your event details with ${data.chef.display_name}.`,
   }
 }
 

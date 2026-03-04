@@ -20,7 +20,7 @@ export default async function PartnerSignupPage({ searchParams }: Props) {
           <div className="max-w-xl mx-auto text-center space-y-6">
             <h1 className="text-3xl font-bold text-stone-100">Partner Sign Up</h1>
             <p className="text-stone-300">
-              Use your chef&apos;s public partner link, or add their profile slug to continue.
+              Use your chef&apos;s partner link, or enter their profile slug to continue.
             </p>
 
             <form
@@ -50,8 +50,7 @@ export default async function PartnerSignupPage({ searchParams }: Props) {
             )}
 
             <p className="text-sm text-stone-500">
-              Preferred URL format:{' '}
-              <span className="font-mono">/chef/your-slug/partner-signup</span>
+              Preferred format: <span className="font-mono">/chef/your-slug/partner-signup</span>
             </p>
           </div>
         </section>
@@ -79,7 +78,7 @@ export default async function PartnerSignupPage({ searchParams }: Props) {
           <div className="text-center">
             <h1 className="text-3xl font-bold text-stone-100">Create Partner Profile</h1>
             <p className="text-stone-300 mt-2">
-              Submit your profile to be listed as a referral partner for {data.chef.display_name}.
+              Submit your profile to be listed as a partner for {data.chef.display_name}.
             </p>
             <p className="text-sm mt-3">
               <Link href={`/chef/${chefSlug}`} className="text-brand-600 hover:underline">

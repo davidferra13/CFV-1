@@ -10,16 +10,15 @@ export function ChefHero() {
 
       <div className="relative mx-auto flex max-w-4xl flex-col items-center px-4 py-20 text-center sm:px-6 md:py-28 lg:px-8">
         <p className="mb-4 rounded-full border border-brand-400/30 bg-brand-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-brand-300">
-          Private Dining Experiences
+          Private Chef Directory
         </p>
 
         <h1 className="max-w-3xl text-4xl font-display tracking-tight text-white md:text-5xl lg:text-6xl">
-          Your next dinner party, <span className="text-brand-400">elevated.</span>
+          Find the right chef for your event.
         </h1>
 
         <p className="mt-6 max-w-xl text-base leading-relaxed text-stone-300 md:text-lg">
-          Browse our curated roster of private chefs, pick the one who matches your style, and book
-          an unforgettable experience — all in under two minutes.
+          Browse vetted chefs, compare styles, and send an inquiry in minutes.
         </p>
 
         <div className="mt-8 flex items-center gap-6 text-sm text-stone-300">
@@ -51,7 +50,7 @@ export function ChefHero() {
                 clipRule="evenodd"
               />
             </svg>
-            In-home or venue
+            Home or venue
           </span>
         </div>
       </div>

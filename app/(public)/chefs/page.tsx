@@ -13,8 +13,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
   title: 'Hire a Private Chef Near You — ChefFlow Chef Directory',
-  description:
-    'Book an unforgettable private dining experience. Browse curated private chefs, view their menus and reviews, and start your inquiry in seconds.',
+  description: 'Browse vetted private chefs, review profiles, and send an inquiry in minutes.',
   keywords: [
     'hire private chef',
     'private chef near me',
@@ -26,8 +25,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: 'Hire a Private Chef | ChefFlow',
-    description:
-      'Book an unforgettable private dining experience. Browse curated private chefs and start your inquiry in seconds.',
+    description: 'Browse vetted private chefs and send an inquiry in minutes.',
     url: `${APP_URL}/chefs`,
     type: 'website',
   },
@@ -172,7 +170,7 @@ function ChefTile({ chef }: { chef: DirectoryChef }) {
             href={`/chef/${chef.slug}/inquire`}
             className="flex-1 rounded-xl bg-brand-600 px-4 py-3 text-center text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-700 hover:shadow-md active:scale-[0.98]"
           >
-            Book Now
+            Inquire
           </Link>
           <Link
             href={`/chef/${chef.slug}`}
@@ -203,7 +201,7 @@ export default async function ChefDirectoryPage() {
             </div>
             <h2 className="text-xl font-semibold text-stone-300">Our chef roster is coming soon</h2>
             <p className="mt-2 text-stone-500 max-w-md mx-auto">
-              We&apos;re hand-selecting the best private chefs in the area. Check back soon or{' '}
+              We&apos;re adding chefs now. Check back soon or{' '}
               <Link
                 href="/contact"
                 className="font-medium text-brand-600 hover:text-brand-400 underline"
@@ -217,7 +215,7 @@ export default async function ChefDirectoryPage() {
           <>
             <div className="text-center mb-10">
               <p className="text-sm font-medium uppercase tracking-widest text-brand-600">
-                {chefs.length} curated chef{chefs.length !== 1 ? 's' : ''} available
+                {chefs.length} chef{chefs.length !== 1 ? 's' : ''} available
               </p>
             </div>
 
@@ -232,12 +230,9 @@ export default async function ChefDirectoryPage() {
         {/* Trust footer */}
         <div className="mt-16 text-center">
           <div className="mx-auto max-w-lg rounded-2xl border border-stone-700 bg-stone-900 p-6 shadow-sm">
-            <p className="text-sm font-semibold text-stone-200">
-              Every chef on ChefFlow is personally vetted
-            </p>
+            <p className="text-sm font-semibold text-stone-200">Every chef on ChefFlow is vetted</p>
             <p className="mt-1.5 text-xs leading-relaxed text-stone-500">
-              We work with experienced private chefs who have been hand-selected for their craft,
-              professionalism, and commitment to creating unforgettable dining experiences.
+              We only list experienced chefs with strong service standards.
             </p>
           </div>
         </div>

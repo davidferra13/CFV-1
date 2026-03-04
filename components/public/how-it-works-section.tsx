@@ -8,25 +8,24 @@ const REASONS = [
     icon: Flame,
     title: 'Built by a Chef',
     description:
-      '15 years of private dinners, catering, and grazing tables. Every feature exists because a working chef needed it.',
+      'Built from real kitchen and client workflows. Every feature solves a daily pain point.',
   },
   {
     icon: Clock,
     title: 'Less Admin, More Cooking',
     description:
-      'Inquiries, quotes, invoices, and follow-ups — handled. Spend your time on the craft, not the paperwork.',
+      'Inquiries, quotes, invoices, and follow-ups stay organized so you can stay on the craft.',
   },
   {
     icon: TrendingUp,
     title: 'Know Your Numbers',
-    description:
-      'See what every event costs, what it earns, and where your business is headed — without a spreadsheet in sight.',
+    description: 'Track event costs, revenue, and margins without living in spreadsheets.',
   },
   {
     icon: Heart,
     title: 'Clients Notice the Difference',
     description:
-      'Professional proposals, easy approvals, and seamless payments. Your clients get a polished experience from first inquiry to final bite.',
+      'Polished proposals, easy approvals, and smooth payments from first message to final service.',
   },
 ]
 
@@ -35,10 +34,10 @@ export function HowItWorksSection() {
     <section className="relative mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
       <div className="mb-12 text-center">
         <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
-          Why chefs switch to ChefFlow.
+          Why chefs choose ChefFlow.
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-stone-400">
-          You didn&apos;t start cooking to chase invoices. Get back to what you&apos;re great at.
+          Spend less time on admin and more time on service.
         </p>
       </div>
 

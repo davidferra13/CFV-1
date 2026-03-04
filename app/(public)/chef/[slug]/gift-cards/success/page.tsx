@@ -33,17 +33,17 @@ export default async function GiftCardSuccessPage({
           </svg>
         </div>
 
-        <h1 className="text-3xl font-bold text-stone-100 mb-3">Your gift is on its way!</h1>
+        <h1 className="text-3xl font-bold text-stone-100 mb-3">Gift sent</h1>
 
         {purchase ? (
           <div className="space-y-2">
             <p className="text-stone-300">
               A <strong>${((purchase.amount_cents as number) / 100).toFixed(2)} gift card</strong>{' '}
-              has been sent to <strong>{purchase.recipient_email as string}</strong>.
+              was sent to <strong>{purchase.recipient_email as string}</strong>.
             </p>
             {purchase.recipient_name && (
               <p className="text-stone-500 text-sm">
-                {purchase.recipient_name as string} will receive an email with their gift card code.
+                {purchase.recipient_name as string} will receive an email with the gift card code.
               </p>
             )}
             {purchase.incentive && (
@@ -66,8 +66,7 @@ export default async function GiftCardSuccessPage({
 
         <div className="mt-8 space-y-3">
           <p className="text-sm text-stone-500">
-            Check your email for a purchase confirmation. The recipient will receive their gift card
-            code immediately.
+            Check your email for confirmation. The recipient should get the code right away.
           </p>
 
           <Link

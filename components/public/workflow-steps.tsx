@@ -5,31 +5,31 @@ import Link from 'next/link'
 
 const STEPS = [
   {
-    icon: '📬',
+    icon: '1',
     label: 'Inquiry',
-    title: 'A client reaches out',
-    description: 'Inquiry captured with all the details — date, guests, dietary needs.',
+    title: 'Receive inquiry',
+    description: 'Capture date, guest count, and dietary details in one record.',
     href: '/auth/signup',
   },
   {
-    icon: '📅',
+    icon: '2',
     label: 'Event',
-    title: 'Plan the event',
-    description: 'Build your menu, set pricing, and organize prep in one place.',
+    title: 'Plan service',
+    description: 'Build the menu, set pricing, and prep with a clear workflow.',
     href: '/auth/signup',
   },
   {
-    icon: '📄',
+    icon: '3',
     label: 'Quote',
-    title: 'Send the proposal',
-    description: 'Client gets a professional link — review, approve, done.',
+    title: 'Send proposal',
+    description: 'Share one polished link for review and approval.',
     href: '/auth/signup',
   },
   {
-    icon: '💳',
+    icon: '4',
     label: 'Payment',
-    title: 'Collect payment',
-    description: 'Stripe-powered invoicing. Payment lands, you start cooking.',
+    title: 'Get paid',
+    description: 'Invoice and collect payment before service starts.',
     href: '/auth/signup',
   },
 ]
@@ -82,7 +82,7 @@ export function WorkflowSteps() {
 
           return (
             <div key={step.label} className="flex items-center">
-              {/* Step node — real link to signup */}
+              {/* Step node - real link to signup */}
               <Link
                 href={step.href}
                 className="group relative flex flex-col items-center gap-2 rounded-lg px-3 py-2 no-underline outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
@@ -98,7 +98,7 @@ export function WorkflowSteps() {
               >
                 {/* Circle */}
                 <div
-                  className={`flex h-11 w-11 items-center justify-center rounded-full text-lg transition-all duration-300 ${
+                  className={`flex h-11 w-11 items-center justify-center rounded-full text-lg font-semibold transition-all duration-300 ${
                     isActive
                       ? 'bg-brand-500 ring-4 ring-brand-700 scale-110'
                       : revealed
@@ -140,7 +140,7 @@ export function WorkflowSteps() {
         })}
       </div>
 
-      {/* Blurb area — shows on hover/focus */}
+      {/* Blurb area - shows on hover/focus */}
       <div className="relative mt-8 flex min-h-[100px] items-start justify-center">
         {activeStep !== null ? (
           <div
@@ -152,7 +152,7 @@ export function WorkflowSteps() {
               {STEPS[activeStep].description}
             </p>
             <span className="mt-3 text-xs font-medium text-brand-600 group-hover:underline">
-              Get started free &rarr;
+              Sign up &rarr;
             </span>
           </div>
         ) : (
@@ -161,7 +161,7 @@ export function WorkflowSteps() {
               entranceStep >= STEPS.length - 1 ? 'opacity-100' : 'opacity-0'
             }`}
           >
-            Hover a step to learn more
+            Hover each step for details
           </p>
         )}
       </div>

@@ -1,7 +1,7 @@
 'use client'
 
 // Remy Concierge Section — Inline chat on the landing page
-// The marketing hook: "Tell me what's eating your time."
+// The marketing hook: "Tell me your bottleneck."
 // Visitors type their pain point → Remy maps it to a ChefFlow feature → aha moment.
 // Falls back to a static FAQ accordion if Ollama is offline.
 
@@ -150,7 +150,7 @@ export function RemyConciergeSection() {
               What do you need done?
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-400">
-              Here are the most common things private chefs ask about.
+              Common workflows private chefs ask about.
             </p>
           </div>
           <div className="mx-auto max-w-2xl space-y-3">
@@ -184,7 +184,7 @@ export function RemyConciergeSection() {
               href="/auth/signup"
               className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
             >
-              Try it free
+              Sign up
             </Link>
           </div>
         </div>
@@ -200,11 +200,10 @@ export function RemyConciergeSection() {
             <MessageCircle className="h-7 w-7" />
           </div>
           <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
-            Tell me what&apos;s eating your time.
+            Tell me your bottleneck.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-400">
-            Skeptical? Good. Ask Remy if ChefFlow can handle your specific problem — and he&apos;ll
-            show you exactly how.
+            Ask Remy about your workflow and get a direct answer.
           </p>
         </div>
 
@@ -273,7 +272,7 @@ export function RemyConciergeSection() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="What's your biggest challenge as a private chef?"
+              placeholder="What workflow do you want to fix?"
               rows={1}
               className="flex-1 resize-none rounded-xl border border-stone-600 bg-stone-900 px-4 py-3 text-sm text-stone-200 placeholder-stone-400 outline-none transition-all focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20"
               disabled={isStreaming}
@@ -293,9 +292,7 @@ export function RemyConciergeSection() {
             </button>
           </div>
 
-          <p className="mt-2 text-center text-xs text-stone-400">
-            Powered by ChefFlow&apos;s AI concierge
-          </p>
+          <p className="mt-2 text-center text-xs text-stone-400">Powered by ChefFlow AI</p>
 
           {/* CTA after conversation */}
           {messages.length >= 4 && !isStreaming && (
@@ -304,7 +301,7 @@ export function RemyConciergeSection() {
                 href="/auth/signup"
                 className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
               >
-                Try it free — no credit card needed
+                Sign up
               </Link>
             </div>
           )}

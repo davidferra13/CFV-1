@@ -1,0 +1,3045 @@
+{
+  "runId": "9782aaba-2f7d-4d50-b816-92471f64b5cd",
+  "timestamp": "2026-03-04T13:17:49.635Z",
+  "suite": "data-accuracy",
+  "ollamaModels": {
+    "fast": "qwen3:4b",
+    "standard": "qwen3-coder:30b"
+  },
+  "totalPrompts": 25,
+  "passed": 0,
+  "warned": 0,
+  "failed": 25,
+  "passRate": 0,
+  "durationMinutes": 0,
+  "averages": {
+    "classificationMs": 0,
+    "firstTokenMs": 0,
+    "totalMs": 1093,
+    "tokensPerSec": 0
+  },
+  "categoryBreakdown": {
+    "client_allergies": {
+      "total": 5,
+      "passed": 0,
+      "warned": 0,
+      "failed": 5,
+      "totalMs": 4502,
+      "avgMs": 900
+    },
+    "client_details": {
+      "total": 5,
+      "passed": 0,
+      "warned": 0,
+      "failed": 5,
+      "totalMs": 4320,
+      "avgMs": 864
+    },
+    "event_details": {
+      "total": 4,
+      "passed": 0,
+      "warned": 0,
+      "failed": 4,
+      "totalMs": 7700,
+      "avgMs": 1925
+    },
+    "financial_accuracy": {
+      "total": 4,
+      "passed": 0,
+      "warned": 0,
+      "failed": 4,
+      "totalMs": 3412,
+      "avgMs": 853
+    },
+    "recipe_accuracy": {
+      "total": 3,
+      "passed": 0,
+      "warned": 0,
+      "failed": 3,
+      "totalMs": 2492,
+      "avgMs": 831
+    },
+    "menu_accuracy": {
+      "total": 2,
+      "passed": 0,
+      "warned": 0,
+      "failed": 2,
+      "totalMs": 1745,
+      "avgMs": 873
+    },
+    "inquiry_accuracy": {
+      "total": 2,
+      "passed": 0,
+      "warned": 0,
+      "failed": 2,
+      "totalMs": 3149,
+      "avgMs": 1575
+    }
+  },
+  "results": [
+    {
+      "promptId": "data-001",
+      "category": "client_allergies",
+      "prompt": "What allergies does Sarah Chen have?",
+      "overall": "fail",
+      "failCount": 6,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustContainAll": {
+          "pass": false,
+          "matched": [],
+          "missed": ["pescatarian"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1090,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: dietary_restriction",
+          "dataResults": [
+            {
+              "field": "dietary_restriction",
+              "pass": false,
+              "mustMatch": ["pescatarian"],
+              "notes": "Sarah Chen's dietary restriction from demo fixtures"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 1089,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1090,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-002",
+      "category": "client_allergies",
+      "prompt": "Does Emily Nakamura have any dietary restrictions?",
+      "overall": "fail",
+      "failCount": 5,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 893,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: dietary_restriction",
+          "dataResults": [
+            {
+              "field": "dietary_restriction",
+              "pass": false,
+              "mustMatch": ["gluten-free", "gluten free", "wheat", "barley"],
+              "notes": "Emily Nakamura is gluten-free (wheat/barley) in demo fixtures"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 893,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 893,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-003",
+      "category": "client_allergies",
+      "prompt": "What are the Park family's food allergies?",
+      "overall": "fail",
+      "failCount": 5,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 839,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: allergy",
+          "dataResults": [
+            {
+              "field": "allergy",
+              "pass": false,
+              "mustMatch": ["peanut"],
+              "notes": "David & Kim Park have peanut allergy in demo fixtures"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 839,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 839,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-004",
+      "category": "client_allergies",
+      "prompt": "Check dietary needs for the Whitfield family",
+      "overall": "fail",
+      "failCount": 5,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 836,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: allergy",
+          "dataResults": [
+            {
+              "field": "allergy",
+              "pass": false,
+              "mustMatch": ["shellfish"],
+              "notes": "James & Patricia Whitfield have shellfish allergy in demo fixtures"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 836,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 836,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-005",
+      "category": "client_allergies",
+      "prompt": "Is Sofia Reyes allergic to anything?",
+      "overall": "fail",
+      "failCount": 5,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 844,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: allergy",
+          "dataResults": [
+            {
+              "field": "allergy",
+              "pass": false,
+              "mustMatch": ["dairy"],
+              "notes": "Sofia & Alejandro Reyes have dairy allergy in demo fixtures"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 844,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 844,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-006",
+      "category": "client_details",
+      "prompt": "How many clients do I have?",
+      "overall": "fail",
+      "failCount": 4,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 841,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: client_count",
+          "dataResults": [
+            {
+              "field": "client_count",
+              "pass": false,
+              "mustMatch": ["10", "ten"],
+              "notes": "Demo data has exactly 10 clients"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 841,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 841,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-007",
+      "category": "client_details",
+      "prompt": "Tell me about Anika Patel",
+      "overall": "fail",
+      "failCount": 5,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 883,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "2 data point(s) incorrect: dietary_restriction, event_type",
+          "dataResults": [
+            {
+              "field": "dietary_restriction",
+              "pass": false,
+              "mustMatch": ["vegetarian"],
+              "notes": "Anika Patel is vegetarian with tree nut allergy"
+            },
+            {
+              "field": "event_type",
+              "pass": false,
+              "mustMatch": ["corporate", "team"],
+              "notes": "Anika Patel books corporate team dinners (15-25 guests)"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 883,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 883,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-008",
+      "category": "client_details",
+      "prompt": "What's Dr. Marcus Washington's dietary preference?",
+      "overall": "fail",
+      "failCount": 5,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 927,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: dietary_restriction",
+          "dataResults": [
+            {
+              "field": "dietary_restriction",
+              "pass": false,
+              "mustMatch": ["keto"],
+              "notes": "Dr. Marcus Washington follows keto diet"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 927,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 927,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-009",
+      "category": "client_details",
+      "prompt": "Is Claire Beaumont still an active client?",
+      "overall": "fail",
+      "failCount": 5,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 811,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: status",
+          "dataResults": [
+            {
+              "field": "status",
+              "pass": false,
+              "mustMatch": ["dormant", "inactive"],
+              "notes": "Claire Beaumont is dormant — had one event last year"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 811,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 811,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-010",
+      "category": "client_details",
+      "prompt": "What's the Chen family's lifetime value?",
+      "overall": "fail",
+      "failCount": 5,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details", "analytics.client_ltv"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details", "analytics.client_ltv"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 858,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: lifetime_value",
+          "dataResults": [
+            {
+              "field": "lifetime_value",
+              "pass": false,
+              "mustMatch": ["4,200", "4200", "$4,200", "$4200"],
+              "notes": "Sarah & Michael Chen have $4,200 lifetime value in demo fixtures"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 858,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 858,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-011",
+      "category": "event_details",
+      "prompt": "How many upcoming events do I have?",
+      "overall": "fail",
+      "failCount": 4,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.list_upcoming"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.list_upcoming"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 856,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 856,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 856,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-012",
+      "category": "event_details",
+      "prompt": "Tell me about the engagement party",
+      "overall": "fail",
+      "failCount": 5,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 4146,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "2 data point(s) incorrect: client, guest_count",
+          "dataResults": [
+            {
+              "field": "client",
+              "pass": false,
+              "mustMatch": ["reyes"],
+              "notes": "Engagement Party is for Sofia & Alejandro Reyes"
+            },
+            {
+              "field": "guest_count",
+              "pass": false,
+              "mustMatch": ["16"],
+              "notes": "Engagement Party has 16 guests"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 4146,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 4146,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-013",
+      "category": "event_details",
+      "prompt": "What's the guest count for the Book Club Birthday Dinner?",
+      "overall": "fail",
+      "failCount": 5,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1825,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: guest_count",
+          "dataResults": [
+            {
+              "field": "guest_count",
+              "pass": false,
+              "mustMatch": ["10"],
+              "notes": "Book Club Birthday Dinner (Nakamura) has 10 guests"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 1825,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 1825,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-014",
+      "category": "event_details",
+      "prompt": "How many guests for the Summer BBQ?",
+      "overall": "fail",
+      "failCount": 5,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 873,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: guest_count",
+          "dataResults": [
+            {
+              "field": "guest_count",
+              "pass": false,
+              "mustMatch": ["35"],
+              "notes": "Summer BBQ Bash (O'Brien) has 35 guests"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 873,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 873,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-015",
+      "category": "financial_accuracy",
+      "prompt": "How much did we charge for the Winter Dinner Party?",
+      "overall": "fail",
+      "failCount": 5,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.details", "finance.summary"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.details", "finance.summary"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 890,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: total_amount",
+          "dataResults": [
+            {
+              "field": "total_amount",
+              "pass": false,
+              "mustMatch": ["2,400", "2400", "$2,400", "$2400", "1,500", "1500"],
+              "notes": "Chen Winter Dinner: deposit $500 + payment $1,500 + tip $400 = $2,400 total (or $1,500 payment without tip)"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 890,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 890,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-016",
+      "category": "financial_accuracy",
+      "prompt": "What deposit did the Reyes family pay?",
+      "overall": "fail",
+      "failCount": 5,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.details", "finance.summary"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.details", "finance.summary"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 854,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: deposit",
+          "dataResults": [
+            {
+              "field": "deposit",
+              "pass": false,
+              "mustMatch": ["875", "$875"],
+              "notes": "Reyes paid $875 deposit (from demo fixtures)"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 854,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 854,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-017",
+      "category": "financial_accuracy",
+      "prompt": "How much did I spend on groceries for the Winter Dinner Party?",
+      "overall": "fail",
+      "failCount": 4,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 830,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: grocery_expense",
+          "dataResults": [
+            {
+              "field": "grocery_expense",
+              "pass": false,
+              "mustMatch": ["420", "$420"],
+              "notes": "Winter Dinner Party (Chen): Whole Foods groceries $420"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 830,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 830,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-018",
+      "category": "financial_accuracy",
+      "prompt": "How much was the Nakamura deposit?",
+      "overall": "fail",
+      "failCount": 5,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "event.details", "finance.summary"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "event.details", "finance.summary"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 838,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: deposit",
+          "dataResults": [
+            {
+              "field": "deposit",
+              "pass": false,
+              "mustMatch": ["500", "$500"],
+              "notes": "Emily Nakamura's event deposit is $500"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 838,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 838,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-019",
+      "category": "recipe_accuracy",
+      "prompt": "How much does the Seared Scallops recipe cost?",
+      "overall": "fail",
+      "failCount": 6,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["recipe.search"],
+          "actual": [],
+          "matched": [],
+          "missed": ["recipe.search"]
+        },
+        "mustContainAll": {
+          "pass": false,
+          "matched": [],
+          "missed": ["scallop"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 821,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: recipe_cost",
+          "dataResults": [
+            {
+              "field": "recipe_cost",
+              "pass": false,
+              "mustMatch": ["36", "$36"],
+              "notes": "Seared Dayboat Scallops cost $36 in demo fixtures"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 821,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 821,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-020",
+      "category": "recipe_accuracy",
+      "prompt": "What's the cost of the Herb-Crusted Lamb Rack recipe?",
+      "overall": "fail",
+      "failCount": 6,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["recipe.search"],
+          "actual": [],
+          "matched": [],
+          "missed": ["recipe.search"]
+        },
+        "mustContainAll": {
+          "pass": false,
+          "matched": [],
+          "missed": ["lamb"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 865,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: recipe_cost",
+          "dataResults": [
+            {
+              "field": "recipe_cost",
+              "pass": false,
+              "mustMatch": ["56", "$56"],
+              "notes": "Herb-Crusted Lamb Rack costs $56 in demo fixtures"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 865,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 865,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-021",
+      "category": "recipe_accuracy",
+      "prompt": "How much does the A5 Wagyu recipe cost in ingredients?",
+      "overall": "fail",
+      "failCount": 6,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["recipe.search"],
+          "actual": [],
+          "matched": [],
+          "missed": ["recipe.search"]
+        },
+        "mustContainAll": {
+          "pass": false,
+          "matched": [],
+          "missed": ["wagyu"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 806,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: ingredient_cost",
+          "dataResults": [
+            {
+              "field": "ingredient_cost",
+              "pass": false,
+              "mustMatch": ["120", "$120"],
+              "notes": "A5 Wagyu ingredient cost is $120 in demo fixtures"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 806,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 806,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-022",
+      "category": "menu_accuracy",
+      "prompt": "What courses are on the New England Spring Tasting menu?",
+      "overall": "fail",
+      "failCount": 5,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["menu.list", "recipe.search"],
+          "actual": [],
+          "matched": [],
+          "missed": ["menu.list", "recipe.search"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 851,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: dish_name",
+          "dataResults": [
+            {
+              "field": "dish_name",
+              "pass": false,
+              "mustMatch": ["scallop", "lamb", "pea soup", "lemon olive oil cake"],
+              "notes": "NE Spring Tasting has: Chilled Pea Soup, Seared Scallops, Herb-Crusted Lamb Rack, Cheese Selection, Lemon Olive Oil Cake"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 850,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 851,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-023",
+      "category": "menu_accuracy",
+      "prompt": "How many guests does the Vegan Plant-Forward Feast serve?",
+      "overall": "fail",
+      "failCount": 5,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["menu.list"],
+          "actual": [],
+          "matched": [],
+          "missed": ["menu.list"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 894,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: guest_count",
+          "dataResults": [
+            {
+              "field": "guest_count",
+              "pass": false,
+              "mustMatch": ["10"],
+              "notes": "Vegan Plant-Forward Feast serves 10 guests"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 894,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 894,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-024",
+      "category": "inquiry_accuracy",
+      "prompt": "What's the budget for the Reyes engagement inquiry?",
+      "overall": "fail",
+      "failCount": 5,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["inquiry.details", "inquiry.list_open"],
+          "actual": [],
+          "matched": [],
+          "missed": ["inquiry.details", "inquiry.list_open"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 2245,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: budget",
+          "dataResults": [
+            {
+              "field": "budget",
+              "pass": false,
+              "mustMatch": ["3,500", "3500", "$3,500", "$3500"],
+              "notes": "Reyes engagement inquiry budget is $3,500"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 2245,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 2245,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "data-025",
+      "category": "inquiry_accuracy",
+      "prompt": "Why was the Beaumont inquiry declined?",
+      "overall": "fail",
+      "failCount": 5,
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["inquiry.details", "client.search"],
+          "actual": [],
+          "matched": [],
+          "missed": ["inquiry.details", "client.search"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 904,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: budget",
+          "dataResults": [
+            {
+              "field": "budget",
+              "pass": false,
+              "mustMatch": ["200", "$200"],
+              "notes": "Beaumont garden party inquiry was $200 — too low budget"
+            }
+          ]
+        }
+      },
+      "timing": {
+        "firstEventMs": 904,
+        "intentEventMs": null,
+        "firstTokenMs": null,
+        "totalMs": 904,
+        "tokenCount": 0,
+        "approxTokens": 0,
+        "tokensPerSec": 0
+      },
+      "responseLength": 0,
+      "tasks": 0
+    }
+  ],
+  "failedPrompts": [
+    {
+      "promptId": "data-001",
+      "prompt": "What allergies does Sarah Chen have?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustContainAll": {
+          "pass": false,
+          "matched": [],
+          "missed": ["pescatarian"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1090,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: dietary_restriction",
+          "dataResults": [
+            {
+              "field": "dietary_restriction",
+              "pass": false,
+              "mustMatch": ["pescatarian"],
+              "notes": "Sarah Chen's dietary restriction from demo fixtures"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-002",
+      "prompt": "Does Emily Nakamura have any dietary restrictions?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 893,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: dietary_restriction",
+          "dataResults": [
+            {
+              "field": "dietary_restriction",
+              "pass": false,
+              "mustMatch": ["gluten-free", "gluten free", "wheat", "barley"],
+              "notes": "Emily Nakamura is gluten-free (wheat/barley) in demo fixtures"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-003",
+      "prompt": "What are the Park family's food allergies?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 839,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: allergy",
+          "dataResults": [
+            {
+              "field": "allergy",
+              "pass": false,
+              "mustMatch": ["peanut"],
+              "notes": "David & Kim Park have peanut allergy in demo fixtures"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-004",
+      "prompt": "Check dietary needs for the Whitfield family",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 836,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: allergy",
+          "dataResults": [
+            {
+              "field": "allergy",
+              "pass": false,
+              "mustMatch": ["shellfish"],
+              "notes": "James & Patricia Whitfield have shellfish allergy in demo fixtures"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-005",
+      "prompt": "Is Sofia Reyes allergic to anything?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 844,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: allergy",
+          "dataResults": [
+            {
+              "field": "allergy",
+              "pass": false,
+              "mustMatch": ["dairy"],
+              "notes": "Sofia & Alejandro Reyes have dairy allergy in demo fixtures"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-006",
+      "prompt": "How many clients do I have?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 841,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: client_count",
+          "dataResults": [
+            {
+              "field": "client_count",
+              "pass": false,
+              "mustMatch": ["10", "ten"],
+              "notes": "Demo data has exactly 10 clients"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-007",
+      "prompt": "Tell me about Anika Patel",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 883,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "2 data point(s) incorrect: dietary_restriction, event_type",
+          "dataResults": [
+            {
+              "field": "dietary_restriction",
+              "pass": false,
+              "mustMatch": ["vegetarian"],
+              "notes": "Anika Patel is vegetarian with tree nut allergy"
+            },
+            {
+              "field": "event_type",
+              "pass": false,
+              "mustMatch": ["corporate", "team"],
+              "notes": "Anika Patel books corporate team dinners (15-25 guests)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-008",
+      "prompt": "What's Dr. Marcus Washington's dietary preference?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 927,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: dietary_restriction",
+          "dataResults": [
+            {
+              "field": "dietary_restriction",
+              "pass": false,
+              "mustMatch": ["keto"],
+              "notes": "Dr. Marcus Washington follows keto diet"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-009",
+      "prompt": "Is Claire Beaumont still an active client?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 811,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: status",
+          "dataResults": [
+            {
+              "field": "status",
+              "pass": false,
+              "mustMatch": ["dormant", "inactive"],
+              "notes": "Claire Beaumont is dormant — had one event last year"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-010",
+      "prompt": "What's the Chen family's lifetime value?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "client.details", "analytics.client_ltv"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "client.details", "analytics.client_ltv"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 858,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: lifetime_value",
+          "dataResults": [
+            {
+              "field": "lifetime_value",
+              "pass": false,
+              "mustMatch": ["4,200", "4200", "$4,200", "$4200"],
+              "notes": "Sarah & Michael Chen have $4,200 lifetime value in demo fixtures"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-011",
+      "prompt": "How many upcoming events do I have?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.list_upcoming"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.list_upcoming"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 856,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-012",
+      "prompt": "Tell me about the engagement party",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 4146,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "2 data point(s) incorrect: client, guest_count",
+          "dataResults": [
+            {
+              "field": "client",
+              "pass": false,
+              "mustMatch": ["reyes"],
+              "notes": "Engagement Party is for Sofia & Alejandro Reyes"
+            },
+            {
+              "field": "guest_count",
+              "pass": false,
+              "mustMatch": ["16"],
+              "notes": "Engagement Party has 16 guests"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-013",
+      "prompt": "What's the guest count for the Book Club Birthday Dinner?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 1825,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: guest_count",
+          "dataResults": [
+            {
+              "field": "guest_count",
+              "pass": false,
+              "mustMatch": ["10"],
+              "notes": "Book Club Birthday Dinner (Nakamura) has 10 guests"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-014",
+      "prompt": "How many guests for the Summer BBQ?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.details"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.details"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 873,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: guest_count",
+          "dataResults": [
+            {
+              "field": "guest_count",
+              "pass": false,
+              "mustMatch": ["35"],
+              "notes": "Summer BBQ Bash (O'Brien) has 35 guests"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-015",
+      "prompt": "How much did we charge for the Winter Dinner Party?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.details", "finance.summary"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.details", "finance.summary"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 890,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: total_amount",
+          "dataResults": [
+            {
+              "field": "total_amount",
+              "pass": false,
+              "mustMatch": ["2,400", "2400", "$2,400", "$2400", "1,500", "1500"],
+              "notes": "Chen Winter Dinner: deposit $500 + payment $1,500 + tip $400 = $2,400 total (or $1,500 payment without tip)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-016",
+      "prompt": "What deposit did the Reyes family pay?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["event.details", "finance.summary"],
+          "actual": [],
+          "matched": [],
+          "missed": ["event.details", "finance.summary"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 854,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: deposit",
+          "dataResults": [
+            {
+              "field": "deposit",
+              "pass": false,
+              "mustMatch": ["875", "$875"],
+              "notes": "Reyes paid $875 deposit (from demo fixtures)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-017",
+      "prompt": "How much did I spend on groceries for the Winter Dinner Party?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "question",
+          "actual": "none"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 830,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: grocery_expense",
+          "dataResults": [
+            {
+              "field": "grocery_expense",
+              "pass": false,
+              "mustMatch": ["420", "$420"],
+              "notes": "Winter Dinner Party (Chen): Whole Foods groceries $420"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-018",
+      "prompt": "How much was the Nakamura deposit?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["client.search", "event.details", "finance.summary"],
+          "actual": [],
+          "matched": [],
+          "missed": ["client.search", "event.details", "finance.summary"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 838,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: deposit",
+          "dataResults": [
+            {
+              "field": "deposit",
+              "pass": false,
+              "mustMatch": ["500", "$500"],
+              "notes": "Emily Nakamura's event deposit is $500"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-019",
+      "prompt": "How much does the Seared Scallops recipe cost?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["recipe.search"],
+          "actual": [],
+          "matched": [],
+          "missed": ["recipe.search"]
+        },
+        "mustContainAll": {
+          "pass": false,
+          "matched": [],
+          "missed": ["scallop"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 821,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: recipe_cost",
+          "dataResults": [
+            {
+              "field": "recipe_cost",
+              "pass": false,
+              "mustMatch": ["36", "$36"],
+              "notes": "Seared Dayboat Scallops cost $36 in demo fixtures"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-020",
+      "prompt": "What's the cost of the Herb-Crusted Lamb Rack recipe?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["recipe.search"],
+          "actual": [],
+          "matched": [],
+          "missed": ["recipe.search"]
+        },
+        "mustContainAll": {
+          "pass": false,
+          "matched": [],
+          "missed": ["lamb"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 865,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: recipe_cost",
+          "dataResults": [
+            {
+              "field": "recipe_cost",
+              "pass": false,
+              "mustMatch": ["56", "$56"],
+              "notes": "Herb-Crusted Lamb Rack costs $56 in demo fixtures"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-021",
+      "prompt": "How much does the A5 Wagyu recipe cost in ingredients?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["recipe.search"],
+          "actual": [],
+          "matched": [],
+          "missed": ["recipe.search"]
+        },
+        "mustContainAll": {
+          "pass": false,
+          "matched": [],
+          "missed": ["wagyu"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 806,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: ingredient_cost",
+          "dataResults": [
+            {
+              "field": "ingredient_cost",
+              "pass": false,
+              "mustMatch": ["120", "$120"],
+              "notes": "A5 Wagyu ingredient cost is $120 in demo fixtures"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-022",
+      "prompt": "What courses are on the New England Spring Tasting menu?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["menu.list", "recipe.search"],
+          "actual": [],
+          "matched": [],
+          "missed": ["menu.list", "recipe.search"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 851,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: dish_name",
+          "dataResults": [
+            {
+              "field": "dish_name",
+              "pass": false,
+              "mustMatch": ["scallop", "lamb", "pea soup", "lemon olive oil cake"],
+              "notes": "NE Spring Tasting has: Chilled Pea Soup, Seared Scallops, Herb-Crusted Lamb Rack, Cheese Selection, Lemon Olive Oil Cake"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-023",
+      "prompt": "How many guests does the Vegan Plant-Forward Feast serve?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["menu.list"],
+          "actual": [],
+          "matched": [],
+          "missed": ["menu.list"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 894,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: guest_count",
+          "dataResults": [
+            {
+              "field": "guest_count",
+              "pass": false,
+              "mustMatch": ["10"],
+              "notes": "Vegan Plant-Forward Feast serves 10 guests"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-024",
+      "prompt": "What's the budget for the Reyes engagement inquiry?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["inquiry.details", "inquiry.list_open"],
+          "actual": [],
+          "matched": [],
+          "missed": ["inquiry.details", "inquiry.list_open"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 2245,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: budget",
+          "dataResults": [
+            {
+              "field": "budget",
+              "pass": false,
+              "mustMatch": ["3,500", "3500", "$3,500", "$3500"],
+              "notes": "Reyes engagement inquiry budget is $3,500"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "promptId": "data-025",
+      "prompt": "Why was the Beaumont inquiry declined?",
+      "checks": {
+        "intentCorrect": {
+          "pass": false,
+          "expected": "command",
+          "actual": "none"
+        },
+        "taskTypesMatch": {
+          "pass": false,
+          "expected": ["inquiry.details", "client.search"],
+          "actual": [],
+          "matched": [],
+          "missed": ["inquiry.details", "client.search"]
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 904,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": false,
+          "chars": 0,
+          "tokenChars": 0,
+          "minExpected": 15,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": false,
+          "errors": [
+            "Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center."
+          ]
+        },
+        "dataAccuracy": {
+          "pass": false,
+          "details": "1 data point(s) incorrect: budget",
+          "dataResults": [
+            {
+              "field": "budget",
+              "pass": false,
+              "mustMatch": ["200", "$200"],
+              "notes": "Beaumont garden party inquiry was $200 — too low budget"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

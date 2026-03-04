@@ -4,12 +4,12 @@ import { BreadcrumbJsonLd, JsonLd } from '@/components/seo/json-ld'
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
-  title: 'Contact Us — ChefFlow | Private Chef Software Support',
+  title: 'Contact ChefFlow | Private Chef Software Support',
   description:
-    'Questions about ChefFlow? Get in touch — we respond within 1 business day. Email support@cheflowhq.com or use our contact form.',
+    'Questions about ChefFlow? Contact support@cheflowhq.com or use the form. We respond within 1 business day.',
   openGraph: {
-    title: 'Contact Us — ChefFlow',
-    description: 'Questions about ChefFlow? Get in touch — we respond within 1 business day.',
+    title: 'Contact ChefFlow',
+    description: 'Questions about ChefFlow? We respond within 1 business day.',
     url: `${BASE_URL}/contact`,
     siteName: 'ChefFlow',
     type: 'website',
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary',
     title: 'Contact ChefFlow',
-    description: 'Get in touch — we respond within 1 business day.',
+    description: 'Questions about ChefFlow? We respond within 1 business day.',
   },
   alternates: {
     canonical: `${BASE_URL}/contact`,

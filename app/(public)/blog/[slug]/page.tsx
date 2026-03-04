@@ -105,7 +105,7 @@ export default function BlogPostPage({ params }: Props) {
                 d="M15 19l-7-7 7-7"
               />
             </svg>
-            Back to Blog
+            Back to blog
           </Link>
 
           {/* Tags */}
@@ -144,16 +144,16 @@ export default function BlogPostPage({ params }: Props) {
           {/* CTA */}
           <div className="mt-16 rounded-xl border border-brand-700/50 bg-brand-950/40 p-8 text-center">
             <h2 className="text-2xl font-bold text-stone-100 mb-2">
-              Ready to streamline your business?
+              Ready to run smoother service?
             </h2>
             <p className="text-stone-300 mb-6">
-              ChefFlow manages events, clients, menus, and payments — so you can focus on cooking.
+              ChefFlow keeps events, clients, menus, and payments in one place.
             </p>
             <Link
               href="/auth/signup"
               className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
             >
-              Start your free trial
+              Sign up
             </Link>
           </div>
 
@@ -165,7 +165,7 @@ export default function BlogPostPage({ params }: Props) {
             if (related.length === 0) return null
             return (
               <div className="mt-12 pt-12 border-t border-stone-700">
-                <h2 className="text-2xl font-bold text-stone-100 mb-6">Related Articles</h2>
+                <h2 className="text-2xl font-bold text-stone-100 mb-6">Related articles</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {related.map((relatedPost) => (
                     <Link

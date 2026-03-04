@@ -136,6 +136,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/api/gmail') ||
     pathname.startsWith('/api/scheduled') ||
     pathname.startsWith('/api/e2e') ||
+    pathname.startsWith('/api/remy/client') ||
+    pathname.startsWith('/api/remy/stream') ||
     pathname.startsWith('/api/remy/public') ||
     pathname.startsWith('/api/remy/landing') ||
     pathname.startsWith('/api/ollama-status') ||

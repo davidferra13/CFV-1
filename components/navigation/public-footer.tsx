@@ -12,7 +12,7 @@ const FOOTER_LINKS = {
   resources: [
     { href: '/blog', label: 'Blog' },
     { href: '/partner-signup', label: 'Become a Partner' },
-    { href: '/auth/signup', label: 'Start Free Trial' },
+    { href: '/auth/signup', label: 'Sign up' },
   ],
   legal: [
     { href: '/privacy', label: 'Privacy Policy' },
@@ -32,8 +32,8 @@ export function PublicFooter() {
             <span className="text-base font-display tracking-tight text-stone-100">ChefFlow</span>
           </Link>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-stone-400">
-            The business OS for private chefs. Manage events, clients, menus, and payments from one
-            calm workspace.
+            The operating system for private chefs. Manage events, clients, menus, and payments in
+            one workspace.
           </p>
           <p className="mt-3 text-xs font-medium uppercase tracking-wider text-brand-500/80">
             Ops for Artists
@@ -74,7 +74,9 @@ export function PublicFooter() {
 
         <div>
           <p className="text-sm font-semibold text-stone-100">Stay Updated</p>
-          <p className="mt-4 mb-3 text-sm text-stone-400">Tips &amp; guides for private chefs.</p>
+          <p className="mt-4 mb-3 text-sm text-stone-400">
+            Short guides for private chef operations.
+          </p>
           <NewsletterSignup />
 
           <p className="mt-6 text-sm font-semibold text-stone-100">Legal</p>
@@ -96,7 +98,7 @@ export function PublicFooter() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 sm:flex-row">
           <p className="text-xs text-stone-500">&copy; {year} ChefFlow. All rights reserved.</p>
           <p className="text-xs text-stone-600">
-            Private chef software for events, clients, menus &amp; payments.
+            Private chef software for events, clients, menus, and payments.
           </p>
         </div>
       </div>
