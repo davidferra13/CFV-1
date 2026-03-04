@@ -11,6 +11,7 @@
 // otherwise accumulate counts across test runs while reuseExistingServer is true.
 
 import { chromium } from '@playwright/test'
+import type { FullConfig } from '@playwright/test'
 import { mkdirSync, writeFileSync } from 'fs'
 import dotenv from 'dotenv'
 import { seedE2EData } from './e2e-seed'
@@ -18,6 +19,82 @@ import { seedE2EData } from './e2e-seed'
 dotenv.config({ path: '.env.local' })
 
 const BASE_URL = 'http://localhost:3100'
+const PUBLIC_ONLY_PROJECTS = new Set([
+  'smoke',
+  'public',
+  'coverage-public',
+  'interactions-public',
+  'launch-public',
+])
+
+function needsAuthBootstrap(config: FullConfig): boolean {
+  const selectedProjects: string[] = []
+  for (let i = 0; i < process.argv.length; i += 1) {
+    const arg = process.argv[i]
+    if (arg.startsWith('--project=')) {
+      selectedProjects.push(arg.slice('--project='.length))
+      continue
+    }
+    if (arg === '--project') {
+      const next = process.argv[i + 1]
+      if (next) selectedProjects.push(next)
+    }
+  }
+
+  if (selectedProjects.length > 0) {
+    return selectedProjects.some((name) => !PUBLIC_ONLY_PROJECTS.has(name))
+  }
+
+  return config.projects.some((project) => !PUBLIC_ONLY_PROJECTS.has(project.name))
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+async function waitForServerReady(maxAttempts = 20): Promise<void> {
+  const readinessPaths = ['/api/health', '/auth/signin', '/']
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    for (const path of readinessPaths) {
+      try {
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), 3_000)
+        const resp = await fetch(`${BASE_URL}${path}`, {
+          method: path === '/api/health' ? 'HEAD' : 'GET',
+          redirect: 'manual',
+          signal: controller.signal,
+        })
+        clearTimeout(timeout)
+        if (resp.status < 500) {
+          console.log(`[globalSetup] Dev server is ready (${BASE_URL}) via ${path}`)
+          return
+        }
+      } catch {
+        // Probe next endpoint.
+      }
+    }
+    console.log(`[globalSetup] Waiting for dev server (${attempt}/${maxAttempts})...`)
+    await sleep(2_000)
+  }
+
+  throw new Error(`[globalSetup] Dev server did not become ready at ${BASE_URL} in time.`)
+}
+
+async function warmE2EAuthEndpoint(): Promise<void> {
+  try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 10_000)
+    await fetch(`${BASE_URL}/api/e2e/auth`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: '{}',
+      signal: controller.signal,
+    })
+    clearTimeout(timeout)
+  } catch {
+    // Warm-up probe is best-effort.
+  }
+}
 
 async function loginAndSaveStateOnce(
   browser: ReturnType<typeof chromium.launch> extends Promise<infer T> ? T : never,
@@ -35,6 +112,7 @@ async function loginAndSaveStateOnce(
     // POST to the test-only auth endpoint — no rate limiter, sets SSR auth cookies
     const resp = await page.request.post(`${BASE_URL}/api/e2e/auth`, {
       data: { email, password },
+      timeout: 90_000,
     })
 
     if (!resp.ok()) {
@@ -93,19 +171,26 @@ async function loginAndSaveState(
     } catch (err) {
       const msg = String(err)
       const isRetryable =
-        msg.includes('ECONNRESET') || msg.includes('Timeout') || msg.includes('timeout')
+        msg.includes('ECONNRESET') || msg.includes('Timeout') || msg.includes('timeout') || msg.includes('disposed')
       if (!isRetryable || attempt === maxRetries) throw err
       console.log(
-        `[globalSetup] ${label} attempt ${attempt}/${maxRetries} failed (retryable). Waiting 5s...`
+        `[globalSetup] ${label} attempt ${attempt}/${maxRetries} failed (retryable). Waiting 8s...`
       )
-      await new Promise((r) => setTimeout(r, 5_000))
+      await sleep(8_000)
     }
   }
 }
 
-export default async function globalSetup() {
+export default async function globalSetup(config: FullConfig) {
   // Ensure .auth/ directory exists
   mkdirSync('.auth', { recursive: true })
+
+  if (!needsAuthBootstrap(config)) {
+    console.log('[globalSetup] Public-only project selection detected. Skipping seed/auth bootstrap.\n')
+    return
+  }
+
+  await waitForServerReady()
 
   // Seed test data — idempotent, safe to call on every run
   console.log('\n[globalSetup] Seeding E2E test data...')
@@ -114,6 +199,8 @@ export default async function globalSetup() {
   // Write seed IDs to disk so test fixtures can read them across worker boundaries
   writeFileSync('.auth/seed-ids.json', JSON.stringify(seedResult, null, 2), 'utf-8')
   console.log('[globalSetup] Seed IDs written to .auth/seed-ids.json')
+
+  await warmE2EAuthEndpoint()
 
   const browser = await chromium.launch()
 
@@ -125,6 +212,9 @@ export default async function globalSetup() {
     '.auth/chef.json',
     'Chef'
   )
+
+  // Small delay between logins — dev server auth endpoint takes ~25s under cold start
+  await sleep(2_000)
 
   await loginAndSaveState(
     browser,

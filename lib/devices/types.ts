@@ -81,6 +81,8 @@ export interface KioskConfig {
 export interface StaffPinSession {
   staff_member_id: string
   staff_name: string
+  staff_role: string | null
+  is_manager: boolean
   session_id: string
 }
 

@@ -8,12 +8,57 @@ import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { RegisterSessionStatus } from './constants'
+import { computeRegisterSessionTotals } from './register-metrics'
+import { appendPosAuditLog } from './pos-audit-log'
+import { assertPosManagerAccess, assertPosRoleAccess } from './pos-authorization'
+import { generateDailyReconciliation } from './reconciliation-actions'
+import { captureDailyPosMetrics, recordPosAlert } from './observability-actions'
 
 // ─── Types ────────────────────────────────────────────────────────
 
 export type OpenRegisterInput = {
   sessionName?: string
   openingCashCents: number
+}
+
+function isUniqueViolation(error: unknown) {
+  const code = (error as { code?: string } | null)?.code
+  return code === '23505'
+}
+
+function readPositiveInt(value: string | undefined, fallback: number) {
+  if (value == null) return fallback
+  const parsed = Number.parseInt(value, 10)
+  if (!Number.isInteger(parsed) || parsed <= 0) return fallback
+  return parsed
+}
+
+const CLOSE_VARIANCE_REASON_THRESHOLD_CENTS = readPositiveInt(
+  process.env.POS_CLOSE_REASON_THRESHOLD_CENTS,
+  500
+)
+
+async function emitRegisterAlert(input: {
+  tenantScopeId: string
+  eventType: string
+  severity: 'info' | 'warning' | 'error' | 'critical'
+  message: string
+  dedupeKey?: string
+  context?: Record<string, unknown>
+}) {
+  try {
+    await recordPosAlert({
+      tenantId: input.tenantScopeId,
+      source: 'register',
+      eventType: input.eventType,
+      severity: input.severity,
+      message: input.message,
+      dedupeKey: input.dedupeKey,
+      context: input.context ?? {},
+    })
+  } catch (error) {
+    console.error('[non-blocking] Failed to emit register alert:', error)
+  }
 }
 
 // ─── Open Register ───────────────────────────────────────────────
@@ -26,6 +71,13 @@ export async function openRegister(input: OpenRegisterInput) {
   await requirePro('commerce')
   const supabase: any = createServerClient()
 
+  await assertPosRoleAccess({
+    supabase,
+    user,
+    action: 'open the register',
+    requiredLevel: 'lead',
+  })
+
   if (!Number.isInteger(input.openingCashCents) || input.openingCashCents < 0) {
     throw new Error('Opening cash must be a non-negative integer (cents)')
   }
@@ -33,13 +85,13 @@ export async function openRegister(input: OpenRegisterInput) {
   // Check for existing open session
   const { data: existing } = await (supabase
     .from('register_sessions' as any)
-    .select('id')
+    .select('id, status')
     .eq('tenant_id', user.tenantId!)
-    .eq('status', 'open')
+    .in('status', ['open', 'suspended'])
     .limit(1) as any)
 
   if (existing && existing.length > 0) {
-    throw new Error('A register session is already open. Close or suspend it first.')
+    throw new Error('A register session is already active. Close it before opening a new one.')
   }
 
   const { data, error } = await (supabase
@@ -54,7 +106,26 @@ export async function openRegister(input: OpenRegisterInput) {
     .select('id, session_name, opened_at')
     .single() as any)
 
-  if (error) throw new Error(`Failed to open register: ${error.message}`)
+  if (error) {
+    if (isUniqueViolation(error)) {
+      throw new Error('A register session is already active. Close it before opening a new one.')
+    }
+    throw new Error(`Failed to open register: ${error.message}`)
+  }
+
+  await appendPosAuditLog({
+    tenantId: user.tenantId!,
+    action: 'register_opened',
+    tableName: 'register_sessions',
+    recordId: data.id,
+    changedBy: user.id,
+    summary: 'POS register opened',
+    afterValues: {
+      opening_cash_cents: input.openingCashCents,
+      session_name: input.sessionName ?? null,
+      status: 'open',
+    },
+  })
 
   revalidatePath('/commerce')
   return data
@@ -67,7 +138,14 @@ export async function suspendRegister(sessionId: string, notes?: string) {
   await requirePro('commerce')
   const supabase: any = createServerClient()
 
-  const { error } = await (supabase
+  await assertPosRoleAccess({
+    supabase,
+    user,
+    action: 'suspend the register',
+    requiredLevel: 'lead',
+  })
+
+  const { data: updated, error } = await (supabase
     .from('register_sessions' as any)
     .update({
       status: 'suspended',
@@ -76,9 +154,25 @@ export async function suspendRegister(sessionId: string, notes?: string) {
     } as any)
     .eq('id', sessionId)
     .eq('tenant_id', user.tenantId!)
-    .eq('status', 'open') as any)
+    .eq('status', 'open')
+    .select('id')
+    .maybeSingle() as any)
 
   if (error) throw new Error(`Failed to suspend register: ${error.message}`)
+  if (!updated) throw new Error('Register session is not open or no longer available')
+
+  await appendPosAuditLog({
+    tenantId: user.tenantId!,
+    action: 'register_suspended',
+    tableName: 'register_sessions',
+    recordId: sessionId,
+    changedBy: user.id,
+    summary: 'POS register suspended',
+    afterValues: {
+      status: 'suspended',
+      notes: notes ?? null,
+    },
+  })
 
   revalidatePath('/commerce')
 }
@@ -90,7 +184,27 @@ export async function resumeRegister(sessionId: string) {
   await requirePro('commerce')
   const supabase: any = createServerClient()
 
-  const { error } = await (supabase
+  await assertPosRoleAccess({
+    supabase,
+    user,
+    action: 'resume the register',
+    requiredLevel: 'lead',
+  })
+
+  const { data: openSession } = await (supabase
+    .from('register_sessions' as any)
+    .select('id')
+    .eq('tenant_id', user.tenantId!)
+    .eq('status', 'open')
+    .neq('id', sessionId)
+    .limit(1)
+    .maybeSingle() as any)
+
+  if (openSession) {
+    throw new Error('Another register session is already open. Close or suspend it first.')
+  }
+
+  const { data: updated, error } = await (supabase
     .from('register_sessions' as any)
     .update({
       status: 'open',
@@ -98,9 +212,29 @@ export async function resumeRegister(sessionId: string) {
     } as any)
     .eq('id', sessionId)
     .eq('tenant_id', user.tenantId!)
-    .eq('status', 'suspended') as any)
+    .eq('status', 'suspended')
+    .select('id')
+    .maybeSingle() as any)
 
-  if (error) throw new Error(`Failed to resume register: ${error.message}`)
+  if (error) {
+    if (isUniqueViolation(error)) {
+      throw new Error('Another register session is already open. Close or suspend it first.')
+    }
+    throw new Error(`Failed to resume register: ${error.message}`)
+  }
+  if (!updated) throw new Error('Register session is not suspended or no longer available')
+
+  await appendPosAuditLog({
+    tenantId: user.tenantId!,
+    action: 'register_resumed',
+    tableName: 'register_sessions',
+    recordId: sessionId,
+    changedBy: user.id,
+    summary: 'POS register resumed',
+    afterValues: {
+      status: 'open',
+    },
+  })
 
   revalidatePath('/commerce')
 }
@@ -115,6 +249,12 @@ export async function closeRegister(
   const user = await requireChef()
   await requirePro('commerce')
   const supabase: any = createServerClient()
+
+  await assertPosManagerAccess({
+    supabase,
+    user,
+    action: 'close the register',
+  })
 
   if (!Number.isInteger(closingCashCents) || closingCashCents < 0) {
     throw new Error('Closing cash must be a non-negative integer (cents)')
@@ -132,22 +272,50 @@ export async function closeRegister(
   if ((session as any).status === 'closed') {
     throw new Error('Register session is already closed')
   }
+  if (!['open', 'suspended'].includes(String((session as any).status ?? ''))) {
+    throw new Error('Register session must be open or suspended before closing')
+  }
 
-  // Get sales linked to this session to filter payments
+  // Get sales linked to this session
   const { data: sessionSales } = await (supabase
     .from('sales')
-    .select('id')
+    .select('id, status')
     .eq('register_session_id', sessionId)
     .eq('tenant_id', user.tenantId!) as any)
 
-  const sessionSaleIds = new Set((sessionSales ?? []).map((s: any) => s.id))
+  const inFlightStatuses = new Set(['draft', 'pending_payment', 'authorized'])
+  const inFlightSales = (sessionSales ?? []).filter((sale: any) =>
+    inFlightStatuses.has(String(sale.status ?? ''))
+  )
+  if (inFlightSales.length > 0) {
+    await emitRegisterAlert({
+      tenantScopeId: user.tenantId!,
+      eventType: 'register_close_blocked_in_flight',
+      severity: 'warning',
+      message: `Register close blocked because ${inFlightSales.length} sale(s) are still in progress`,
+      dedupeKey: `register_close_blocked_${sessionId}`,
+      context: {
+        register_session_id: sessionId,
+        in_flight_sales_count: inFlightSales.length,
+      },
+    })
+    throw new Error(
+      `Cannot close register while ${inFlightSales.length} sale${inFlightSales.length === 1 ? '' : 's'} are still in progress`
+    )
+  }
 
-  // Filter to only payments for this session's sales
-  const { data: sessionPayments } = await (supabase
-    .from('commerce_payments')
-    .select('amount_cents, tip_cents, payment_method, sale_id')
-    .eq('tenant_id', user.tenantId!)
-    .in('status', ['captured', 'settled']) as any)
+  const saleIds = (sessionSales ?? []).map((sale: any) => sale.id).filter(Boolean)
+
+  // Pull payments only for this session's sales
+  let sessionPayments: any[] = []
+  if (saleIds.length > 0) {
+    const { data } = await (supabase
+      .from('commerce_payments')
+      .select('sale_id, amount_cents, tip_cents, status')
+      .eq('tenant_id', user.tenantId!)
+      .in('sale_id', saleIds) as any)
+    sessionPayments = data ?? []
+  }
 
   // Expected cash is now derived from itemized drawer movements.
   const { data: movements } = await (supabase
@@ -159,40 +327,117 @@ export async function closeRegister(
   const movementNet = (movements ?? []).reduce((sum: number, m: any) => sum + m.amount_cents, 0)
   const expectedCash = (session as any).opening_cash_cents + movementNet
   const variance = closingCashCents - expectedCash
+  const normalizedCloseNotes = closeNotes?.trim() ?? ''
 
-  // Compute session totals from all session sales
-  let totalRevenue = 0
-  let totalTips = 0
-  let totalSales = 0
-  for (const p of sessionPayments ?? []) {
-    if (sessionSaleIds.has((p as any).sale_id)) {
-      totalRevenue += (p as any).amount_cents
-      totalTips += (p as any).tip_cents ?? 0
-      totalSales++
-    }
+  if (Math.abs(variance) > CLOSE_VARIANCE_REASON_THRESHOLD_CENTS && !normalizedCloseNotes) {
+    throw new Error(
+      `Close note is required when cash variance exceeds ${CLOSE_VARIANCE_REASON_THRESHOLD_CENTS / 100} dollars`
+    )
   }
 
-  const { error } = await (supabase
+  const totals = computeRegisterSessionTotals({
+    sales: sessionSales ?? [],
+    payments: sessionPayments,
+  })
+  const closedAtIso = new Date().toISOString()
+
+  const { data: updated, error } = await (supabase
     .from('register_sessions' as any)
     .update({
       status: 'closed',
-      closed_at: new Date().toISOString(),
+      closed_at: closedAtIso,
       closed_by: user.id,
       closing_cash_cents: closingCashCents,
       expected_cash_cents: expectedCash,
       cash_variance_cents: variance,
-      total_sales_count: totalSales,
-      total_revenue_cents: totalRevenue,
-      total_tips_cents: totalTips,
-      close_notes: closeNotes ?? null,
+      total_sales_count: totals.totalSalesCount,
+      total_revenue_cents: totals.totalRevenueCents,
+      total_tips_cents: totals.totalTipsCents,
+      close_notes: normalizedCloseNotes || null,
     } as any)
     .eq('id', sessionId)
-    .eq('tenant_id', user.tenantId!) as any)
+    .eq('tenant_id', user.tenantId!)
+    .eq('status', (session as any).status)
+    .select('id')
+    .maybeSingle() as any)
 
   if (error) throw new Error(`Failed to close register: ${error.message}`)
+  if (!updated) {
+    throw new Error('Register session state changed while closing. Refresh and try again.')
+  }
+
+  await appendPosAuditLog({
+    tenantId: user.tenantId!,
+    action: 'register_closed',
+    tableName: 'register_sessions',
+    recordId: sessionId,
+    changedBy: user.id,
+    summary: 'POS register closed',
+    afterValues: {
+      closing_cash_cents: closingCashCents,
+      expected_cash_cents: expectedCash,
+      cash_variance_cents: variance,
+      close_notes: normalizedCloseNotes || null,
+      status: 'closed',
+    },
+  })
+
+  if (Math.abs(variance) > CLOSE_VARIANCE_REASON_THRESHOLD_CENTS) {
+    await emitRegisterAlert({
+      tenantScopeId: user.tenantId!,
+      eventType: 'register_close_high_variance',
+      severity: Math.abs(variance) >= 2500 ? 'error' : 'warning',
+      message: `Register closed with cash variance ${variance >= 0 ? '+' : ''}$${(variance / 100).toFixed(2)}`,
+      dedupeKey: `register_close_variance_${sessionId}_${closedAtIso.slice(0, 10)}`,
+      context: {
+        register_session_id: sessionId,
+        expected_cash_cents: expectedCash,
+        closing_cash_cents: closingCashCents,
+        cash_variance_cents: variance,
+      },
+    })
+  }
+
+  try {
+    await generateDailyReconciliation({ referenceTimestamp: closedAtIso })
+  } catch (error) {
+    console.error('[non-blocking] Failed to generate daily reconciliation after register close:', error)
+    await emitRegisterAlert({
+      tenantScopeId: user.tenantId!,
+      eventType: 'reconciliation_auto_generate_failed',
+      severity: 'error',
+      message: 'Register closed but daily reconciliation auto-generation failed',
+      dedupeKey: `reconciliation_auto_generate_failed_${closedAtIso.slice(0, 10)}`,
+      context: {
+        register_session_id: sessionId,
+      },
+    })
+  }
+
+  try {
+    await captureDailyPosMetrics({ date: closedAtIso.slice(0, 10) })
+  } catch (error) {
+    console.error('[non-blocking] Failed to capture daily POS metrics after register close:', error)
+    await emitRegisterAlert({
+      tenantScopeId: user.tenantId!,
+      eventType: 'pos_metrics_capture_failed',
+      severity: 'warning',
+      message: 'Register closed but daily POS metrics capture failed',
+      dedupeKey: `pos_metrics_capture_failed_${closedAtIso.slice(0, 10)}`,
+      context: {
+        register_session_id: sessionId,
+      },
+    })
+  }
 
   revalidatePath('/commerce')
-  return { expectedCash, closingCashCents, variance, totalSales, totalRevenue }
+  return {
+    expectedCash,
+    closingCashCents,
+    variance,
+    totalSales: totals.totalSalesCount,
+    totalRevenue: totals.totalRevenueCents,
+  }
 }
 
 // ─── Get Current Session ─────────────────────────────────────────

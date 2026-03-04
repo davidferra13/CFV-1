@@ -5,9 +5,10 @@
 // Compact design: floating button → expandable card (not a full drawer).
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { X, Send, Loader2 } from 'lucide-react'
+import { X, Send, Loader2, Minus } from 'lucide-react'
 import { RemyMascotButton } from '@/components/ai/remy-mascot-button'
 import { RemyAvatar } from '@/components/ai/remy-avatar'
+import { useRemyDisplayMode } from '@/lib/hooks/use-remy-display-mode'
 
 interface Message {
   id: string
@@ -24,11 +25,16 @@ interface RemyPublicWidgetProps {
 }
 
 export function RemyPublicWidget({ tenantId, chefName }: RemyPublicWidgetProps) {
-  const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { mode, isHydrated, isMobile, setMode } = useRemyDisplayMode({
+    storageKey: 'cf:remy:public-chef-profile:display-mode',
+    desktopDefault: 'docked',
+    mobileDefault: 'hidden',
+  })
+  const isOpen = mode === 'expanded'
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const abortRef = useRef<AbortController | null>(null)
@@ -138,11 +144,26 @@ export function RemyPublicWidget({ tenantId, chefName }: RemyPublicWidgetProps) 
   }
 
   if (!isOpen) {
-    return <RemyMascotButton onClick={() => setIsOpen(true)} ariaLabel="Chat with Remy" />
+    if (!isHydrated || mode === 'hidden') return null
+
+    return (
+      <RemyMascotButton
+        onClick={() => setMode('expanded')}
+        variant="docked"
+        className={isMobile ? 'bottom-3 right-3' : 'bottom-6 right-6'}
+        ariaLabel="Open Remy chat"
+      />
+    )
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex w-[380px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-stone-700 bg-stone-900 shadow-2xl">
+    <div
+      className={`fixed z-50 flex flex-col overflow-hidden rounded-2xl border border-stone-700 bg-stone-900 shadow-2xl ${
+        isMobile
+          ? 'inset-x-2 bottom-2 top-20'
+          : 'bottom-6 right-6 w-[380px] max-w-[calc(100vw-2rem)]'
+      }`}
+    >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-stone-700 bg-brand-950 px-4 py-3">
         <div className="flex items-center gap-2">
@@ -154,19 +175,28 @@ export function RemyPublicWidget({ tenantId, chefName }: RemyPublicWidgetProps) 
             </div>
           </div>
         </div>
-        <button
-          onClick={() => setIsOpen(false)}
-          className="rounded-lg p-1.5 text-stone-400 transition-colors hover:bg-stone-800 hover:text-stone-300"
-          aria-label="Close chat"
-        >
-          <X className="h-4 w-4" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setMode('docked')}
+            className="rounded-lg p-1.5 text-stone-400 transition-colors hover:bg-stone-800 hover:text-stone-300"
+            aria-label="Minimize chat"
+          >
+            <Minus className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setMode('docked')}
+            className="rounded-lg p-1.5 text-stone-400 transition-colors hover:bg-stone-800 hover:text-stone-300"
+            aria-label="Close chat"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       {/* Messages */}
       <div
         className="flex-1 overflow-y-auto p-4"
-        style={{ maxHeight: '400px', minHeight: '200px' }}
+        style={{ maxHeight: isMobile ? 'none' : '400px', minHeight: '200px' }}
       >
         {messages.length === 0 && (
           <div className="py-8 text-center">

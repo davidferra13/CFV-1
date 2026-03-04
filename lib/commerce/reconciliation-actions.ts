@@ -1,14 +1,15 @@
-// Commerce Engine V1 — Reconciliation Actions
-// Generate daily reconciliation reports, review flags, ledger cross-checks.
-
+// Commerce reconciliation actions.
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { recordPosAlert } from './observability-actions'
+import type { PosAlertSeverity } from './observability-core'
 
-// ─── Types ────────────────────────────────────────────────────────
+const DEFAULT_TIME_ZONE = 'America/New_York'
+const REPORT_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 
 export type ReconciliationFlag = {
   type: string
@@ -20,79 +21,211 @@ export type ReconciliationFlag = {
 }
 
 export type GenerateReportInput = {
-  reportDate: string // YYYY-MM-DD
+  reportDate?: string
+  referenceTimestamp?: string
 }
 
-// ─── Generate Daily Reconciliation Report ─────────────────────────
+function mapReconciliationSeverityToAlert(value: ReconciliationFlag['severity']): PosAlertSeverity {
+  if (value === 'error') return 'error'
+  if (value === 'warning') return 'warning'
+  return 'info'
+}
 
-/**
- * Generate (or regenerate) the daily reconciliation report for a given date.
- * Aggregates sales, payments, refunds, cash drawer, and cross-checks with the ledger.
- */
-export async function generateDailyReconciliation(input: GenerateReportInput) {
+function buildReconciliationAlertDedupeKey(reportDate: string, flagType: string) {
+  return `reconciliation_${reportDate}_${flagType}`
+}
+
+async function syncReconciliationFlagsToAlerts(input: {
+  tenantScopeId: string
+  reportDate: string
+  flags: ReconciliationFlag[]
+}) {
+  for (const flag of input.flags) {
+    if (flag.status !== 'open') continue
+    try {
+      await recordPosAlert({
+        tenantId: input.tenantScopeId,
+        source: 'reconciliation',
+        eventType: `reconciliation_${flag.type}`,
+        severity: mapReconciliationSeverityToAlert(flag.severity),
+        message: flag.message,
+        dedupeKey: buildReconciliationAlertDedupeKey(input.reportDate, flag.type),
+        context: {
+          report_date: input.reportDate,
+          flag_type: flag.type,
+          flag_status: flag.status,
+        },
+      })
+    } catch (error) {
+      console.error('[non-blocking] Failed to sync reconciliation flag to POS alerts:', error)
+    }
+  }
+}
+
+function isValidReportDate(value: string | null | undefined): value is string {
+  return !!value && REPORT_DATE_PATTERN.test(value)
+}
+
+function normalizeTimeZone(value: unknown): string {
+  const raw = typeof value === 'string' ? value.trim() : ''
+  if (!raw) return DEFAULT_TIME_ZONE
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: raw })
+    return raw
+  } catch {
+    return DEFAULT_TIME_ZONE
+  }
+}
+
+function getLocalDateString(input: string | Date, timeZone: string): string {
+  const date = input instanceof Date ? input : new Date(input)
+  if (Number.isNaN(date.getTime())) throw new Error('Invalid timestamp for report date generation')
+
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date)
+
+  const year = parts.find((part) => part.type === 'year')?.value
+  const month = parts.find((part) => part.type === 'month')?.value
+  const day = parts.find((part) => part.type === 'day')?.value
+
+  if (!year || !month || !day) {
+    throw new Error('Failed to compute local report date')
+  }
+
+  return `${year}-${month}-${day}`
+}
+
+function shiftReportDate(reportDate: string, deltaDays: number): string {
+  const [year, month, day] = reportDate.split('-').map((value) => Number.parseInt(value, 10))
+  const shifted = new Date(Date.UTC(year, month - 1, day + deltaDays, 12, 0, 0))
+  return shifted.toISOString().slice(0, 10)
+}
+
+function getWideUtcWindow(reportDate: string) {
+  return {
+    fromIso: `${shiftReportDate(reportDate, -1)}T00:00:00.000Z`,
+    toIso: `${shiftReportDate(reportDate, 1)}T23:59:59.999Z`,
+  }
+}
+
+function isIsoOnReportDate(value: unknown, reportDate: string, timeZone: string) {
+  if (typeof value !== 'string' || value.length === 0) return false
+  try {
+    return getLocalDateString(value, timeZone) === reportDate
+  } catch {
+    return false
+  }
+}
+
+function parseFlags(raw: unknown): ReconciliationFlag[] {
+  if (Array.isArray(raw)) return raw as ReconciliationFlag[]
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw)
+      return Array.isArray(parsed) ? (parsed as ReconciliationFlag[]) : []
+    } catch {
+      return []
+    }
+  }
+  return []
+}
+
+function resolveReportDate(input: GenerateReportInput, timeZone: string): string {
+  if (isValidReportDate(input.reportDate)) {
+    return input.reportDate
+  }
+  if (input.reportDate) {
+    throw new Error('reportDate must be in YYYY-MM-DD format')
+  }
+
+  if (input.referenceTimestamp) {
+    return getLocalDateString(input.referenceTimestamp, timeZone)
+  }
+
+  return getLocalDateString(new Date(), timeZone)
+}
+
+export async function generateDailyReconciliation(input: GenerateReportInput = {}) {
   const user = await requireChef()
   await requirePro('commerce')
   const supabase: any = createServerClient()
   const tenantId = user.tenantId!
-  const { reportDate } = input
 
-  // Date range for the report day
-  const dayStart = `${reportDate}T00:00:00.000Z`
-  const dayEnd = `${reportDate}T23:59:59.999Z`
+  const { data: tenant } = await (supabase
+    .from('chefs')
+    .select('timezone')
+    .eq('id', tenantId)
+    .maybeSingle() as any)
 
-  // ─── 1. Sales totals ─────────────────────────────────────────
+  const timeZone = normalizeTimeZone((tenant as any)?.timezone)
+  const reportDate = resolveReportDate(input, timeZone)
+  const { fromIso, toIso } = getWideUtcWindow(reportDate)
+
   const { data: sales } = await (supabase
     .from('sales')
-    .select('id, subtotal_cents, tax_cents, total_cents, tip_cents, discount_cents, status')
+    .select('id, tax_cents, total_cents, tip_cents, status, created_at')
     .eq('tenant_id', tenantId)
-    .gte('created_at', dayStart)
-    .lte('created_at', dayEnd) as any)
+    .gte('created_at', fromIso)
+    .lte('created_at', toIso) as any)
 
-  const validSales = (sales ?? []).filter((s: any) => s.status !== 'voided' && s.status !== 'draft')
+  const localDaySales = (sales ?? []).filter((row: any) =>
+    isIsoOnReportDate(row.created_at, reportDate, timeZone)
+  )
+  const validSales = localDaySales.filter(
+    (row: any) => row.status !== 'voided' && row.status !== 'draft'
+  )
   const totalSalesCount = validSales.length
   const totalRevenueCents = validSales.reduce(
-    (sum: number, s: any) => sum + (s.total_cents ?? 0),
+    (sum: number, row: any) => sum + (row.total_cents ?? 0),
     0
   )
-  const totalTipsCents = validSales.reduce((sum: number, s: any) => sum + (s.tip_cents ?? 0), 0)
-  const totalTaxCents = validSales.reduce((sum: number, s: any) => sum + (s.tax_cents ?? 0), 0)
+  const totalTipsCents = validSales.reduce((sum: number, row: any) => sum + (row.tip_cents ?? 0), 0)
+  const totalTaxCents = validSales.reduce((sum: number, row: any) => sum + (row.tax_cents ?? 0), 0)
 
-  // ─── 2. Payment method breakdown ─────────────────────────────
   const { data: payments } = await (supabase
     .from('commerce_payments')
-    .select('amount_cents, payment_method, status')
+    .select('amount_cents, payment_method, status, created_at')
     .eq('tenant_id', tenantId)
     .in('status', ['captured', 'settled'])
-    .gte('created_at', dayStart)
-    .lte('created_at', dayEnd) as any)
+    .gte('created_at', fromIso)
+    .lte('created_at', toIso) as any)
+
+  const localDayPayments = (payments ?? []).filter((row: any) =>
+    isIsoOnReportDate(row.created_at, reportDate, timeZone)
+  )
 
   let cashTotalCents = 0
   let cardTotalCents = 0
   let otherTotalCents = 0
 
-  for (const p of (payments ?? []) as any[]) {
-    if (p.payment_method === 'cash') cashTotalCents += p.amount_cents
-    else if (p.payment_method === 'card') cardTotalCents += p.amount_cents
-    else otherTotalCents += p.amount_cents
+  for (const payment of localDayPayments as any[]) {
+    if (payment.payment_method === 'cash') cashTotalCents += payment.amount_cents ?? 0
+    else if (payment.payment_method === 'card') cardTotalCents += payment.amount_cents ?? 0
+    else otherTotalCents += payment.amount_cents ?? 0
   }
 
-  // ─── 3. Refunds ──────────────────────────────────────────────
   const { data: refunds } = await (supabase
     .from('commerce_refunds')
-    .select('amount_cents, status')
+    .select('amount_cents, status, created_at')
     .eq('tenant_id', tenantId)
     .eq('status', 'processed')
-    .gte('created_at', dayStart)
-    .lte('created_at', dayEnd) as any)
+    .gte('created_at', fromIso)
+    .lte('created_at', toIso) as any)
 
-  const totalRefundsCents = (refunds ?? []).reduce(
-    (sum: number, r: any) => sum + (r.amount_cents ?? 0),
+  const localDayRefunds = (refunds ?? []).filter((row: any) =>
+    isIsoOnReportDate(row.created_at, reportDate, timeZone)
+  )
+  const totalRefundsCents = localDayRefunds.reduce(
+    (sum: number, row: any) => sum + (row.amount_cents ?? 0),
     0
   )
 
   const netRevenueCents = totalRevenueCents - totalRefundsCents
 
-  // ─── 4. Cash drawer (from register sessions closed today) ────
   let openingCashCents: number | null = null
   let closingCashCents: number | null = null
   let expectedCashCents: number | null = null
@@ -100,46 +233,55 @@ export async function generateDailyReconciliation(input: GenerateReportInput) {
 
   const { data: sessions } = await (supabase
     .from('register_sessions' as any)
-    .select('opening_cash_cents, closing_cash_cents, expected_cash_cents, cash_variance_cents')
+    .select('opening_cash_cents, closing_cash_cents, expected_cash_cents, cash_variance_cents, closed_at')
     .eq('tenant_id', tenantId)
     .eq('status', 'closed')
-    .gte('closed_at', dayStart)
-    .lte('closed_at', dayEnd) as any)
+    .gte('closed_at', fromIso)
+    .lte('closed_at', toIso) as any)
 
-  if (sessions && sessions.length > 0) {
-    openingCashCents = (sessions as any[]).reduce((sum, s) => sum + (s.opening_cash_cents ?? 0), 0)
-    closingCashCents = (sessions as any[]).reduce((sum, s) => sum + (s.closing_cash_cents ?? 0), 0)
-    expectedCashCents = (sessions as any[]).reduce(
-      (sum, s) => sum + (s.expected_cash_cents ?? 0),
+  const localDaySessions = (sessions ?? []).filter((row: any) =>
+    isIsoOnReportDate(row.closed_at, reportDate, timeZone)
+  )
+  if (localDaySessions.length > 0) {
+    openingCashCents = localDaySessions.reduce(
+      (sum: number, row: any) => sum + (row.opening_cash_cents ?? 0),
       0
     )
-    cashVarianceCents = (sessions as any[]).reduce(
-      (sum, s) => sum + (s.cash_variance_cents ?? 0),
+    closingCashCents = localDaySessions.reduce(
+      (sum: number, row: any) => sum + (row.closing_cash_cents ?? 0),
+      0
+    )
+    expectedCashCents = localDaySessions.reduce(
+      (sum: number, row: any) => sum + (row.expected_cash_cents ?? 0),
+      0
+    )
+    cashVarianceCents = localDaySessions.reduce(
+      (sum: number, row: any) => sum + (row.cash_variance_cents ?? 0),
       0
     )
   }
 
-  // ─── 5. Ledger cross-check ───────────────────────────────────
   const { data: ledgerEntries } = await (supabase
     .from('ledger_entries')
-    .select('amount_cents, entry_type, is_refund')
+    .select('amount_cents, entry_type, is_refund, created_at')
     .eq('tenant_id', tenantId)
-    .gte('created_at', dayStart)
-    .lte('created_at', dayEnd) as any)
+    .gte('created_at', fromIso)
+    .lte('created_at', toIso) as any)
 
-  const ledgerTotalCents = (ledgerEntries ?? []).reduce((sum: number, e: any) => {
-    if (e.is_refund) return sum - (e.amount_cents ?? 0)
-    if (e.entry_type === 'expense') return sum - (e.amount_cents ?? 0)
-    return sum + (e.amount_cents ?? 0)
+  const localDayLedgerEntries = (ledgerEntries ?? []).filter((row: any) =>
+    isIsoOnReportDate(row.created_at, reportDate, timeZone)
+  )
+
+  const ledgerTotalCents = localDayLedgerEntries.reduce((sum: number, row: any) => {
+    if (row.is_refund) return sum - (row.amount_cents ?? 0)
+    if (row.entry_type === 'expense') return sum - (row.amount_cents ?? 0)
+    return sum + (row.amount_cents ?? 0)
   }, 0)
 
   const paymentLedgerDiffCents =
     cashTotalCents + cardTotalCents + otherTotalCents - ledgerTotalCents
 
-  // ─── 6. Generate flags ───────────────────────────────────────
   const flags: ReconciliationFlag[] = []
-
-  // Cash variance flag
   if (cashVarianceCents !== null && Math.abs(cashVarianceCents) > 100) {
     flags.push({
       type: 'cash_variance',
@@ -149,7 +291,6 @@ export async function generateDailyReconciliation(input: GenerateReportInput) {
     })
   }
 
-  // Payment-ledger mismatch flag
   if (Math.abs(paymentLedgerDiffCents) > 0) {
     flags.push({
       type: 'payment_ledger_mismatch',
@@ -159,7 +300,6 @@ export async function generateDailyReconciliation(input: GenerateReportInput) {
     })
   }
 
-  // High refund ratio flag
   if (totalRevenueCents > 0 && totalRefundsCents / totalRevenueCents > 0.15) {
     flags.push({
       type: 'high_refund_ratio',
@@ -169,7 +309,6 @@ export async function generateDailyReconciliation(input: GenerateReportInput) {
     })
   }
 
-  // ─── 7. Upsert the report ───────────────────────────────────
   const { data: report, error } = await (supabase
     .from('daily_reconciliation_reports' as any)
     .upsert(
@@ -191,7 +330,7 @@ export async function generateDailyReconciliation(input: GenerateReportInput) {
         cash_variance_cents: cashVarianceCents,
         ledger_total_cents: ledgerTotalCents,
         payment_ledger_diff_cents: paymentLedgerDiffCents,
-        flags: JSON.stringify(flags),
+        flags,
         reviewed: false,
         reviewed_by: null,
         reviewed_at: null,
@@ -203,11 +342,15 @@ export async function generateDailyReconciliation(input: GenerateReportInput) {
 
   if (error) throw new Error(`Failed to generate reconciliation report: ${error.message}`)
 
-  revalidatePath('/commerce/reconciliation')
-  return { reportId: (report as any)?.id, flags }
-}
+  await syncReconciliationFlagsToAlerts({
+    tenantScopeId: tenantId,
+    reportDate,
+    flags,
+  })
 
-// ─── List Reconciliation Reports ──────────────────────────────────
+  revalidatePath('/commerce/reconciliation')
+  return { reportId: (report as any)?.id, reportDate, flags }
+}
 
 export async function listReconciliationReports(opts?: { limit?: number; offset?: number }) {
   const user = await requireChef()
@@ -228,8 +371,6 @@ export async function listReconciliationReports(opts?: { limit?: number; offset?
   return { reports: data ?? [], total: count ?? 0 }
 }
 
-// ─── Get Single Report ────────────────────────────────────────────
-
 export async function getReconciliationReport(reportId: string) {
   const user = await requireChef()
   await requirePro('commerce')
@@ -245,8 +386,6 @@ export async function getReconciliationReport(reportId: string) {
   if (error || !data) throw new Error('Report not found')
   return data
 }
-
-// ─── Mark Report as Reviewed ──────────────────────────────────────
 
 export async function reviewReconciliationReport(reportId: string, notes?: string) {
   const user = await requireChef()
@@ -268,8 +407,6 @@ export async function reviewReconciliationReport(reportId: string, notes?: strin
   revalidatePath('/commerce/reconciliation')
 }
 
-// ─── Resolve a Flag ───────────────────────────────────────────────
-
 export async function resolveReconciliationFlag(
   reportId: string,
   flagIndex: number,
@@ -279,36 +416,50 @@ export async function resolveReconciliationFlag(
   await requirePro('commerce')
   const supabase: any = createServerClient()
 
-  // Fetch current flags
   const { data: report, error: fetchErr } = await (supabase
     .from('daily_reconciliation_reports' as any)
-    .select('flags')
+    .select('flags, report_date')
     .eq('id', reportId)
     .eq('tenant_id', user.tenantId!)
     .single() as any)
 
   if (fetchErr || !report) throw new Error('Report not found')
 
-  const flags: ReconciliationFlag[] = JSON.parse(
-    typeof (report as any).flags === 'string'
-      ? (report as any).flags
-      : JSON.stringify((report as any).flags)
-  )
-
+  const flags = parseFlags((report as any).flags)
   if (flagIndex < 0 || flagIndex >= flags.length) {
     throw new Error('Invalid flag index')
   }
 
+  const targetFlag = flags[flagIndex]
   flags[flagIndex].status = resolution
   flags[flagIndex].resolvedAt = new Date().toISOString()
   flags[flagIndex].resolvedBy = user.id
 
   const { error } = await (supabase
     .from('daily_reconciliation_reports' as any)
-    .update({ flags: JSON.stringify(flags) } as any)
+    .update({ flags } as any)
     .eq('id', reportId)
     .eq('tenant_id', user.tenantId!) as any)
 
   if (error) throw new Error(`Failed to resolve flag: ${error.message}`)
+
+  const dedupeKey = buildReconciliationAlertDedupeKey(
+    String((report as any).report_date ?? '').slice(0, 10),
+    targetFlag.type
+  )
+  await (supabase
+    .from('pos_alert_events' as any)
+    .update({
+      status: 'resolved',
+      resolved_at: new Date().toISOString(),
+      resolved_by: user.id,
+      acknowledged_at: new Date().toISOString(),
+      acknowledged_by: user.id,
+    } as any)
+    .eq('tenant_id', user.tenantId!)
+    .eq('dedupe_key', dedupeKey)
+    .in('status', ['open', 'acknowledged']) as any)
+
   revalidatePath('/commerce/reconciliation')
+  revalidatePath('/commerce/observability')
 }

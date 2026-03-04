@@ -1,10 +1,20 @@
-﻿import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { extractBearerToken, validateDeviceToken } from '@/lib/devices/token'
 import { hasProAccess } from '@/lib/billing/tier'
+import { computeRegisterSessionTotals } from '@/lib/commerce/register-metrics'
+import { isPosManagerRole, readPosManagerRoleSetFromEnv } from '@/lib/commerce/kiosk-policy'
 
 type DeviceAuthContext = {
   supabase: any
   device: NonNullable<Awaited<ReturnType<typeof validateDeviceToken>>>
+}
+
+export type KioskStaffSession = {
+  id: string
+  staff_member_id: string
+  staff_role: string | null
+  staff_name: string | null
+  status: string
 }
 
 export class KioskApiError extends Error {
@@ -45,9 +55,10 @@ export async function authenticateOrderKioskRequest(request: Request): Promise<D
 export async function assertStaffSession(input: {
   supabase: any
   deviceId: string
+  tenantId: string
   requireStaffPin: boolean
   sessionId?: string
-}) {
+}): Promise<KioskStaffSession | null> {
   if (!input.requireStaffPin) {
     return null
   }
@@ -68,7 +79,51 @@ export async function assertStaffSession(input: {
     throw new KioskApiError('Staff session not found or expired', 401)
   }
 
-  return session
+  const { data: staffMember, error: staffMemberError } = await (input.supabase
+    .from('staff_members' as any)
+    .select('id, role, name, status')
+    .eq('id', (session as any).staff_member_id)
+    .eq('chef_id', input.tenantId)
+    .maybeSingle() as any)
+
+  if (staffMemberError || !staffMember) {
+    throw new KioskApiError('Staff member not found for active session', 401)
+  }
+
+  if ((staffMember as any).status !== 'active') {
+    throw new KioskApiError('Staff member is not active', 401)
+  }
+
+  return {
+    id: (session as any).id,
+    staff_member_id: (session as any).staff_member_id,
+    staff_role: (staffMember as any).role ?? null,
+    staff_name: (staffMember as any).name ?? null,
+    status: (session as any).status ?? 'active',
+  }
+}
+
+export function assertManagerDrawerPermission(input: {
+  staffSession: KioskStaffSession | null
+  action: 'paid_in' | 'paid_out' | 'adjustment' | 'no_sale'
+}) {
+  if (input.action === 'paid_in') {
+    return
+  }
+
+  if (!input.staffSession) {
+    throw new KioskApiError('Active manager session is required', 401)
+  }
+
+  const managerRoles = readPosManagerRoleSetFromEnv()
+  const isManager = isPosManagerRole({
+    role: input.staffSession.staff_role,
+    managerRoles,
+  })
+
+  if (!isManager) {
+    throw new KioskApiError('Manager role required for this drawer action', 403)
+  }
 }
 
 export async function getOpenRegisterSession(input: { supabase: any; tenantId: string }) {
@@ -133,4 +188,45 @@ export async function getDrawerSummary(input: {
     status: (session as any)?.status ?? 'open',
     breakdown,
   }
+}
+
+export async function syncRegisterSessionTotals(input: {
+  supabase: any
+  tenantId: string
+  registerSessionId: string
+}) {
+  const { data: sales } = await (input.supabase
+    .from('sales' as any)
+    .select('id, status')
+    .eq('tenant_id', input.tenantId)
+    .eq('register_session_id', input.registerSessionId) as any)
+
+  const saleIds = (sales ?? []).map((sale: any) => sale.id).filter(Boolean)
+
+  let payments: any[] = []
+  if (saleIds.length > 0) {
+    const { data } = await (input.supabase
+      .from('commerce_payments' as any)
+      .select('sale_id, amount_cents, tip_cents, status')
+      .eq('tenant_id', input.tenantId)
+      .in('sale_id', saleIds) as any)
+    payments = data ?? []
+  }
+
+  const totals = computeRegisterSessionTotals({
+    sales: sales ?? [],
+    payments,
+  })
+
+  await (input.supabase
+    .from('register_sessions' as any)
+    .update({
+      total_sales_count: totals.totalSalesCount,
+      total_revenue_cents: totals.totalRevenueCents,
+      total_tips_cents: totals.totalTipsCents,
+    } as any)
+    .eq('id', input.registerSessionId)
+    .eq('tenant_id', input.tenantId) as any)
+
+  return totals
 }

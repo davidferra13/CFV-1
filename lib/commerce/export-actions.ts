@@ -16,6 +16,24 @@ function formatCents(cents: number): string {
   return (cents / 100).toFixed(2)
 }
 
+function formatNullableCents(cents: number | null | undefined): string {
+  if (typeof cents !== 'number') return ''
+  return formatCents(cents)
+}
+
+function parseReconciliationFlags(raw: unknown): Array<{ status?: string; message?: string }> {
+  if (Array.isArray(raw)) return raw as Array<{ status?: string; message?: string }>
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw)
+      return Array.isArray(parsed) ? (parsed as Array<{ status?: string; message?: string }>) : []
+    } catch {
+      return []
+    }
+  }
+  return []
+}
+
 // ─── Export Sales ─────────────────────────────────────────────────
 
 export async function exportSalesCsv(from: string, to: string): Promise<string> {
@@ -187,6 +205,129 @@ export async function exportTaxSummaryCsv(from: string, to: string): Promise<str
       formatCents(t.county_tax_cents ?? 0),
       formatCents(t.city_tax_cents ?? 0),
       t.transaction_count,
+    ])
+  )
+
+  return [toCsvRow(header), ...rows].join('\n')
+}
+
+export async function exportReconciliationCsv(from: string, to: string): Promise<string> {
+  const user = await requireChef()
+  await requirePro('commerce')
+  const supabase: any = createServerClient()
+
+  const { data: reports } = await (supabase
+    .from('daily_reconciliation_reports' as any)
+    .select('*')
+    .eq('tenant_id', user.tenantId!)
+    .gte('report_date', from)
+    .lte('report_date', to)
+    .order('report_date', { ascending: false }) as any)
+
+  const header = [
+    'Report Date',
+    'Sales Count',
+    'Revenue',
+    'Tips',
+    'Tax',
+    'Refunds',
+    'Net Revenue',
+    'Cash',
+    'Card',
+    'Other',
+    'Opening Cash',
+    'Expected Cash',
+    'Closing Cash',
+    'Cash Variance',
+    'Ledger Total',
+    'Payment-Ledger Diff',
+    'Open Flag Count',
+    'Open Flag Messages',
+    'Reviewed',
+    'Reviewed At',
+  ]
+
+  const rows = (reports ?? []).map((report: any) => {
+    const flags = parseReconciliationFlags(report.flags)
+    const openFlags = flags.filter((flag) => flag?.status === 'open')
+    return toCsvRow([
+      report.report_date,
+      report.total_sales_count ?? 0,
+      formatCents(report.total_revenue_cents ?? 0),
+      formatCents(report.total_tips_cents ?? 0),
+      formatCents(report.total_tax_cents ?? 0),
+      formatCents(report.total_refunds_cents ?? 0),
+      formatCents(report.net_revenue_cents ?? 0),
+      formatCents(report.cash_total_cents ?? 0),
+      formatCents(report.card_total_cents ?? 0),
+      formatCents(report.other_total_cents ?? 0),
+      formatNullableCents(report.opening_cash_cents),
+      formatNullableCents(report.expected_cash_cents),
+      formatNullableCents(report.closing_cash_cents),
+      formatNullableCents(report.cash_variance_cents),
+      formatNullableCents(report.ledger_total_cents),
+      formatNullableCents(report.payment_ledger_diff_cents),
+      openFlags.length,
+      openFlags
+        .map((flag) => String(flag.message ?? '').trim())
+        .filter(Boolean)
+        .join(' | '),
+      report.reviewed ? 'yes' : 'no',
+      report.reviewed_at ? new Date(report.reviewed_at).toISOString() : '',
+    ])
+  })
+
+  return [toCsvRow(header), ...rows].join('\n')
+}
+
+export async function exportShiftSessionsCsv(from: string, to: string): Promise<string> {
+  const user = await requireChef()
+  await requirePro('commerce')
+  const supabase: any = createServerClient()
+
+  const fromIso = `${from}T00:00:00.000Z`
+  const toIso = `${to}T23:59:59.999Z`
+
+  const { data: sessions } = await (supabase
+    .from('register_sessions' as any)
+    .select(
+      'id, session_name, status, opened_at, closed_at, opening_cash_cents, expected_cash_cents, closing_cash_cents, cash_variance_cents, total_sales_count, total_revenue_cents, total_tips_cents, close_notes'
+    )
+    .eq('tenant_id', user.tenantId!)
+    .eq('status', 'closed')
+    .gte('closed_at', fromIso)
+    .lte('closed_at', toIso)
+    .order('closed_at', { ascending: false }) as any)
+
+  const header = [
+    'Session ID',
+    'Session Name',
+    'Opened At',
+    'Closed At',
+    'Sales Count',
+    'Revenue',
+    'Tips',
+    'Opening Cash',
+    'Expected Cash',
+    'Closing Cash',
+    'Cash Variance',
+    'Close Notes',
+  ]
+
+  const rows = (sessions ?? []).map((session: any) =>
+    toCsvRow([
+      session.id,
+      session.session_name ?? 'Shift',
+      session.opened_at ? new Date(session.opened_at).toISOString() : '',
+      session.closed_at ? new Date(session.closed_at).toISOString() : '',
+      session.total_sales_count ?? 0,
+      formatCents(session.total_revenue_cents ?? 0),
+      formatCents(session.total_tips_cents ?? 0),
+      formatCents(session.opening_cash_cents ?? 0),
+      formatNullableCents(session.expected_cash_cents),
+      formatNullableCents(session.closing_cash_cents),
+      formatNullableCents(session.cash_variance_cents),
+      session.close_notes ?? '',
     ])
   )
 

@@ -47,7 +47,7 @@ import {
   markEventDocumentGenerationJobSucceeded,
   startEventDocumentGenerationJob,
 } from '@/lib/documents/generation-jobs-actions'
-import { isTransientError, withRetry } from '@/lib/resilience/retry'
+import { isTransientError, pushToDLQ, withRetry } from '@/lib/resilience/retry'
 
 const SNAPSHOT_BUCKET = 'event-documents'
 const SNAPSHOT_MIN_INTERVAL_MS = 10 * 60 * 1000
@@ -431,9 +431,11 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
         }
       )
     } catch (error) {
+      const retryable = isTransientError(error)
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown document generation failure'
+
       if (generationJob?.jobId && shouldUpdateJobOutcome) {
-        const errorMessage =
-          error instanceof Error ? error.message : 'Unknown document generation failure'
         await markEventDocumentGenerationJobFailed({
           supabase,
           tenantId: user.tenantId!,
@@ -450,10 +452,31 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
             retry: {
               attemptsUsed,
               maxAttempts,
-              retryable: isTransientError(error),
+              retryable,
               reusedJob: generationJob.reused,
             },
           },
+        })
+      }
+
+      if (attemptsUsed >= maxAttempts || !retryable) {
+        await pushToDLQ(supabase, {
+          tenantId: user.tenantId!,
+          jobType: 'event_document_generation',
+          jobId: generationJob?.jobId ?? `${eventId}:${requestedType}:${Date.now()}`,
+          payload: {
+            eventId,
+            requestedType,
+            selectedTypes,
+            archiveRequested,
+            idempotencyKey,
+            generationJobId: generationJob?.jobId ?? null,
+            attemptsUsed,
+            maxAttempts,
+            retryable,
+          },
+          errorMessage,
+          attempts: Math.max(attemptsUsed, 1),
         })
       }
       throw error

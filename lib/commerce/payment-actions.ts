@@ -10,7 +10,8 @@ import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { PaymentMethod } from '@/lib/ledger/append'
 import type { CommercePaymentStatus } from './constants'
-import { computeSaleStatus } from './sale-fsm'
+import { canTransition, computeSaleStatus } from './sale-fsm'
+import { assertPosRoleAccess } from './pos-authorization'
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -39,6 +40,13 @@ export async function recordPayment(input: RecordPaymentInput) {
   const user = await requireChef()
   await requirePro('commerce')
   const supabase: any = createServerClient()
+
+  await assertPosRoleAccess({
+    supabase,
+    user,
+    action: 'record a payment',
+    requiredLevel: 'cashier',
+  })
 
   if (!Number.isInteger(input.amountCents) || input.amountCents <= 0) {
     throw new Error('Amount must be a positive integer (cents)')
@@ -140,6 +148,13 @@ export async function updatePaymentStatus(paymentId: string, status: CommercePay
   await requirePro('commerce')
   const supabase: any = createServerClient()
 
+  await assertPosRoleAccess({
+    supabase,
+    user,
+    action: 'update payment status',
+    requiredLevel: 'lead',
+  })
+
   const updates: Record<string, any> = { status }
   if (status === 'captured') updates.captured_at = new Date().toISOString()
   if (status === 'settled') updates.settled_at = new Date().toISOString()
@@ -199,18 +214,40 @@ async function updateSaleStatusAfterPayment(saleId: string, tenantId: string) {
     .filter((r: any) => r.status === 'processed')
     .reduce((sum: number, r: any) => sum + r.amount_cents, 0)
 
-  const newStatus = computeSaleStatus({
+  const desiredStatus = computeSaleStatus({
     currentStatus: (sale as any).status,
     totalCents: (sale as any).total_cents,
     totalPaidCents: totalPaid,
     totalRefundedCents: totalRefunded,
   })
 
-  if (newStatus !== (sale as any).status) {
+  const currentStatus = (sale as any).status
+  if (desiredStatus === currentStatus) return
+
+  // Respect the DB FSM trigger: draft cannot transition directly to captured.
+  if (
+    currentStatus === 'draft' &&
+    desiredStatus === 'captured' &&
+    canTransition('draft', 'pending_payment')
+  ) {
     await supabase
       .from('sales')
-      .update({ status: newStatus } as any)
+      .update({ status: 'pending_payment' } as any)
       .eq('id', saleId)
       .eq('tenant_id', tenantId)
+    await supabase
+      .from('sales')
+      .update({ status: 'captured' } as any)
+      .eq('id', saleId)
+      .eq('tenant_id', tenantId)
+    return
   }
+
+  if (!canTransition(currentStatus, desiredStatus as any)) return
+
+  await supabase
+    .from('sales')
+    .update({ status: desiredStatus } as any)
+    .eq('id', saleId)
+    .eq('tenant_id', tenantId)
 }

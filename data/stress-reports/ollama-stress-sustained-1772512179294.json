@@ -1,0 +1,78 @@
+{
+  "timestamp": "2026-03-03T04:29:39.293Z",
+  "mode": "sustained",
+  "config": {
+    "concurrency": 12,
+    "duration": 7200
+  },
+  "results": {
+    "total": 8989,
+    "successes": 7617,
+    "retries": 115,
+    "timeouts": 0,
+    "errors": 1372,
+    "successRate": 0.85
+  },
+  "latency": {
+    "avgMs": 10487,
+    "p50Ms": 1131,
+    "p95Ms": 37446,
+    "p99Ms": 77957,
+    "maxMs": 177284
+  },
+  "throughput": {
+    "requestsPerSecond": 1.25,
+    "successesPerSecond": 1.06
+  },
+  "byTaskType": {
+    "remy_public": {
+      "count": 2539,
+      "successRate": 0.85,
+      "avgMs": 10120
+    },
+    "remy_chef": {
+      "count": 2381,
+      "successRate": 0.85,
+      "avgMs": 10589
+    },
+    "remy_client": {
+      "count": 2116,
+      "successRate": 0.85,
+      "avgMs": 10726
+    },
+    "background": {
+      "count": 1953,
+      "successRate": 0.85,
+      "avgMs": 10578
+    }
+  },
+  "system": {
+    "avgGpuPercent": 93,
+    "maxGpuMb": 5900,
+    "ollamaHealthyPercent": 0
+  },
+  "sla": {
+    "threshold": {
+      "successRate": 0.95,
+      "p95LatencyMs": 5000,
+      "p99LatencyMs": 10000,
+      "throughputReqSec": 2
+    },
+    "met": {
+      "successRate": false,
+      "p95Latency": false,
+      "p99Latency": false,
+      "throughput": false
+    },
+    "overallCompliance": "FAIL"
+  },
+  "recommendations": [
+    "❌ Success rate 84.7% is below SLA 95%",
+    "   → Check Ollama health: curl http://localhost:11434/api/tags",
+    "   → Increase CALL_TIMEOUT_MS in lib/ai/queue/types.ts",
+    "   → Consider reducing max concurrency or upgrading model",
+    "⚠️ P95 latency 37446ms exceeds SLA 5000ms",
+    "   → Users on 95th percentile will wait. Consider model optimization.",
+    "⚠️ 1372 non-timeout errors. Check error logs in report details."
+  ]
+}

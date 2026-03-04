@@ -1,163 +1,184 @@
 {
-  "timestamp": "2026-03-03T02:28:58.714Z",
+  "timestamp": "2026-03-03T03:45:41.299Z",
   "total": 30,
-  "pass": 29,
-  "passRate": 96.7,
+  "pass": 9,
+  "passRate": 30,
   "categories": {
     "Client": {
       "total": 2,
-      "pass": 2
+      "pass": 0
     },
     "Event": {
       "total": 2,
-      "pass": 2
+      "pass": 0
     },
     "Financial": {
       "total": 2,
-      "pass": 2
+      "pass": 0
     },
     "Calendar": {
       "total": 2,
-      "pass": 2
+      "pass": 0
     },
     "Recipe": {
       "total": 2,
-      "pass": 2
+      "pass": 0
     },
     "Dietary": {
       "total": 2,
-      "pass": 2
+      "pass": 0
     },
     "Inquiry": {
       "total": 2,
-      "pass": 2
+      "pass": 0
     },
     "Nav": {
       "total": 2,
-      "pass": 2
+      "pass": 0
     },
     "Email": {
       "total": 2,
-      "pass": 2
+      "pass": 0
     },
     "Loyalty": {
       "total": 2,
-      "pass": 2
+      "pass": 0
     },
     "Chat": {
       "total": 2,
-      "pass": 2
+      "pass": 1
     },
     "Guard": {
       "total": 8,
-      "pass": 7
+      "pass": 8
     }
   },
   "results": [
     {
       "test": "c1",
       "cat": "Client",
-      "pass": "Found 1 client:\n• Rachel Kim (bronze tier) \n  ⚠️ ALLERGIES: SHELLFISH"
+      "pass": false,
+      "reason": "timeout"
     },
     {
       "test": "c2",
       "cat": "Client",
-      "pass": "\"Client Details\" completed successfully."
+      "pass": false,
+      "reason": "timeout"
     },
     {
       "test": "e1",
       "cat": "Event",
-      "pass": "Chef, you've got a solid lineup of upcoming events this month — let's break it down:\n\n### 📅 **Upcoming Events (7)**\n\n1. **Q1 Board Dinner**  \n   - **Date:** 2026-03-05  \n   - **Client:** Apex Group (Corporate)  \n   - **Guests:** 30  \n   - **Status:** Confirmed  \n   - **Loyalty:** Gold (200 pts)  \n\n2. **Tasting for Morrison Family**  \n   - **Date:** 2026-03-08  \n   - **Client:** The Morrison Family  \n   - **Guests:** 4  \n   - **Status:** Proposed  \n   - **Loyalty:** Bronze (20 pts)  \n\n3. **Engagement Dinner**  \n   - **Date:** 2026-03-11  \n   - **Client:** Rachel Kim  \n   - **Guests:** 8  \n   - **Status:** Accepted  \n   - **Loyalty:** Bronze (30 pts)  \n\n4. **Spring Garden Party**  \n   - **Date:** 2026-03-17  \n   - **Client:** Sarah Henderson  \n   - **Guests:** 14  \n   - **Status:** Confirmed  \n   - **Loyalty:** Gold (340 pts)  \n   - **Note:** Always use organic produce for this event  \n\n5. **Spring Tasting Menu**  \n   - **Date:** 2026-03-31  \n   - **Client:** Emma Rothschild  \n   - **Guests:** 8  \n   - **Status:** Paid  \n   - **Loyalty:** Platinum (950 pts)  \n   - **Note:** Extremely private — no social media posts  \n\n6. **Jessica's Baby Shower**  \n   - **Date:** 2026-04-13  \n   - **Client:** Jessica Park  \n   - **Guests:** 20  \n   - **Status:** Proposed  \n   - **Loyalty:** Bronze (60 pts)  \n\n7. **Product Launch Celebration**  \n   - **Date:** 2026-04-28  \n   - **Client:** Alex Chen  \n   - **Guests:** 50  \n   - **Status:** Draft  \n   - **Loyalty:** Bronze (60 pts)  \n   - **Note:** This is a big one — plan for at least 2 staff  \n\n---\n\nNAV_SUGGESTIONS: [{\"label\":\"Events Overview\",\"href\":\"/events/upcoming\"},{\"label\":\"Calendar View\",\"href\":\"/calendar\"}]"
+      "pass": false,
+      "reason": "timeout"
     },
     {
       "test": "e2",
       "cat": "Event",
-      "pass": "Chef Marco, I see you're asking about the Garcia family events — let me pull that up for you.\n\nI don't see any active or completed events listed for the Garcia family in your upcoming events or event history. The only reference to a Garcia family is in your recent clients list, where David Garcia is listed as a top client with a completed event (likely the one you're referring to).\n\nLet me check if there's any additional information on this family in your system.\n\nNAV_SUGGESTIONS: [{\"label\":\"Clients\",\"href\":\"/clients\"}, {\"label\":\"Events\",\"href\":\"/events\"}]"
+      "pass": false,
+      "reason": "timeout"
     },
     {
       "test": "f1",
       "cat": "Financial",
-      "pass": "Chef, your **year-to-date revenue** is **$24,250.00**.\n\nThat’s a strong start to the year — you're sitting at about **$1,515 per event** on average, which is solid for a farm-to-table chef with that level of client loyalty and event size.\n\nWant a deeper breakdown by client or event type? I can pull that up for you.\n\nNAV_SUGGESTIONS: [{\"label\":\"Financials\",\"href\":\"/financials\"}, {\"label\":\"Events\",\"href\":\"/events\"}]"
+      "pass": false,
+      "reason": "timeout"
     },
     {
       "test": "f2",
       "cat": "Financial",
-      "pass": "Chef, you're looking at the monthly expenses — let's break it down.\n\nYou've got **$4,350.00** in expenses so far this year, which is your **Year-to-Date (YTD) total**.\n\nThat’s a solid baseline, but we should keep an eye on your food cost percentage. With a YTD revenue of **$24,250.00**, your current food cost percentage is around **17.9%**, which is well within your target of 28-32%. That’s excellent — you’re keeping costs lean while maintaining quality.\n\n### Quick Breakdown:\n- **Total Expenses (YTD):** $4,350.00\n- **Total Revenue (YTD):** $24,250.00\n- **Food Cost %:** ~17.9%\n- **Net Profit (YTD):** $19,900.00\n\nYou’re in great shape financially, and your margins are strong. Keep up the good work with organic produce and quality sourcing — it's clearly paying off.\n\nIf you'd like to review specific expense categories or dive into a detailed report, I can pull that up for you.\n\nNAV_SUGGESTIONS: [{\"label\":\"Financial Hub\",\"href\":\"/financials\"},{\"label\":\"Expense Tracker\",\"href\":\"/expenses\"}]"
+      "pass": false,
+      "reason": "timeout"
     },
     {
       "test": "cal1",
       "cat": "Calendar",
-      "pass": "Navigating you to **/calendar** now."
+      "pass": false,
+      "reason": "timeout"
     },
     {
       "test": "cal2",
       "cat": "Calendar",
-      "pass": "You’ve got a full day ahead, chef. Here’s what’s scheduled for today:\n\n### 📅 Today’s Schedule\n\n- **No events** scheduled for today.\n- However, you’ve got a **busy day of prep and admin** planned with **164 items** in your daily plan — that’s **~1174 minutes** of work.\n\n---\n\n### 🔧 Daily Plan Overview (164 items)\n- **Quick Admin:** 84 items  \n- **Event Prep:** 80 items  \n- **Creative Time:** 0 items  \n- **Relationship:** 0 items  \n\nYou’re in the middle of a **big prep push**, so you’ve got your hands full. If you want to focus on one area, I can help prioritize or suggest what to tackle first.\n\nWould you like a breakdown of what’s in your prep or admin list?\n\nNAV_SUGGESTIONS: [{\"label\":\"Dashboard\",\"href\":\"/dashboard\"}, {\"label\":\"Daily Plan\",\"href\":\"/daily\"}]"
+      "pass": false,
+      "reason": "timeout"
     },
     {
       "test": "r1",
       "cat": "Recipe",
-      "pass": "Found 8 recipes:\n\n• **Beef Wellington** [protein] (95 min)\n• **Braised Pork Belly** [protein] (215 min)\n• **Classic Tiramisu** [dessert] (30 min)\n• **Crudo Bar Selection** [appetizer] (45 min)\n• **Lobster Bisque** [soup] (105 min)\n• **Mole Negro** [sauce] (165 min)\n• **Peruvian Ceviche** [appetizer] (25 min)\n• **Saffron Risotto** [starch] (35 min)"
+      "pass": false,
+      "reason": "timeout"
     },
     {
       "test": "r2",
       "cat": "Recipe",
-      "pass": "Chef, I've got 40 years of kitchen wisdom and business chops — but that's outside my station 😄\n\nLet's stay in our lane. What's cooking on the business side?\n\nNAV_SUGGESTIONS: [{\"label\":\"Recipes\",\"href\":\"/recipes\"}]"
+      "pass": false,
+      "reason": "timeout"
     },
     {
       "test": "d1",
       "cat": "Dietary",
-      "pass": "Found 1 client:\n• Rachel Kim (bronze tier) \n  ⚠️ ALLERGIES: SHELLFISH\n\nRachel Kim — ⚠️ ALLERGIES: SHELLFISH\n🚨 SHELLFISH ALLERGY IS SEVERE — carries EpiPen\n\nNo finalized menu to cross-check yet, but these restrictions MUST be respected.\n\n- **DANGER**: ALLERGY: Rachel Kim has a shellfish allergy"
+      "pass": false,
+      "reason": "timeout"
     },
     {
       "test": "d2",
       "cat": "Dietary",
-      "pass": "Found 1 client:\n• Patricia Foster (bronze tier) \n  Dietary: low-sodium\n\n\"Client Details\" completed successfully."
+      "pass": false,
+      "reason": "timeout"
     },
     {
       "test": "i1",
       "cat": "Inquiry",
-      "pass": "You have 3 open inquiries:\n\n• Birthday dinner for 12 — via website — 2026-03-29T00:00:00+00:00 — 12 guests — (new)\n• Corporate retreat dinner — via referral — 2026-04-13T00:00:00+00:00 — 25 guests — (new)\n• Rehearsal dinner — via email — 2026-04-28T00:00:00+00:00 — 30 guests — (awaiting chef)"
+      "pass": false,
+      "reason": "timeout"
     },
     {
       "test": "i2",
       "cat": "Inquiry",
-      "pass": "You've got 3 open inquiries in the pipeline — let's prioritize those for follow-up. Here's the breakdown:\n\n**Open Inquiries:**\n1. **Alex Chen** (Product Launch Celebration) - 2026-04-28 (50 guests) - Loyalty: Bronze (60 pts)\n2. **Jessica Park** (Baby Shower) - 2026-04-13 (20 guests) - Loyalty: Bronze (60 pts)\n3. **The Morrison Family** (Tasting Menu) - 2026-03-08 (4 guests) - Loyalty: Bronze (20 pts)\n\nI recommend following up with **The Morrison Family** first — they’re already in the proposed stage and have a short window to confirm.  \nAlso, since you're planning to send out quotes soon, consider preparing a quick follow-up message for **Alex Chen** and **Jessica Park** to confirm their interest or ask if they'd like to schedule a consultation.\n\nNAV_SUGGESTIONS: [{\"label\":\"Inquiries\",\"href\":\"/inquiries\"},{\"label\":\"Quotes\",\"href\":\"/quotes\"}]"
+      "pass": false,
+      "reason": "timeout"
     },
     {
       "test": "n1",
       "cat": "Nav",
-      "pass": "Navigating you to **/dashboard** now."
+      "pass": false,
+      "reason": "timeout"
     },
     {
       "test": "n2",
       "cat": "Nav",
-      "pass": "Navigating you to **/recipes** now."
+      "pass": false,
+      "reason": "timeout"
     },
     {
       "test": "em1",
       "cat": "Email",
-      "pass": "You have 2 unread emails in your inbox.\n\n**Recent Emails:**\n1. **From:** Victoria Davis  \n   **Subject:** Payment reminder for March 1st event  \n   **Status:** Unread  \n   **Preview:** \"Hi Marco, just checking in about the payment for your event on March 1st. I know you're busy, but wanted to make sure it's on track.\"\n\n2. **From:** Alex Chen  \n   **Subject:** Final confirmation for April 28th event  \n   **Status:** Unread  \n   **Preview:** \"Hi Marco, I wanted to confirm that we're all set for the product launch celebration on April 28th. Please let me know if there's anything else you need from my side.\"\n\nNAV_SUGGESTIONS: [{\"label\":\"Inbox\",\"href\":\"/chat\"}]"
+      "pass": false,
+      "reason": "timeout"
     },
     {
       "test": "em2",
       "cat": "Email",
-      "pass": "You have **3 open inquiries** and **2 pending quotes** that need attention.\n\nHere’s a quick breakdown of what’s pending:\n\n### 📩 Open Inquiries:\n1. **Jessica Park** – Baby Shower (April 13) – Proposed\n2. **Alex Chen** – Product Launch (April 28) – Draft\n3. **Sofia Martinez** – Follow-up on wedding menu recreation\n\n### 📄 Pending Quotes:\n1. **Morrison Family** – Tasting (March 8)\n2. **Rachel Kim** – Engagement Dinner (March 11)\n\nNAV_SUGGESTIONS: [{\"label\":\"Inquiries\",\"href\":\"/inquiries\"},{\"label\":\"Quotes\",\"href\":\"/quotes\"}]"
+      "pass": false,
+      "reason": "timeout"
     },
     {
       "test": "l1",
       "cat": "Loyalty",
-      "pass": "Chef, your loyalty program is looking strong — here's the status at a glance:\n\n**Top Clients by Loyalty Points:**\n- **Alex Chen** – Platinum (950 pts)\n- **David Garcia** – Platinum (950 pts)\n- **Apex Group (Corporate)** – Gold (200 pts)\n- **Michael O'Brien** – Silver (150 pts)\n- **Patricia Foster** – Silver (150 pts)\n\n**Recent Client Activity:**\n- **Rachel Kim** – Bronze (30 pts)\n- **The Morrison Family** – Bronze (20 pts)\n- **Sarah Henderson** – Gold (340 pts)\n- **Sofia Martinez** – Platinum (820 pts)\n- **The Thompson Family** – Silver (150 pts)\n\nYou're doing a great job building relationships with high-value clients, especially the Platinum tier. Would you like me to pull up a detailed view of any specific client’s loyalty history or benefits?\n\nNAV_SUGGESTIONS: [{\"label\":\"Loyalty Program\",\"href\":\"/loyalty\"}, {\"label\":\"Client Directory\",\"href\":\"/clients\"}]"
+      "pass": false,
+      "reason": "timeout"
     },
     {
       "test": "l2",
       "cat": "Loyalty",
-      "pass": "Chef, you’ve got a solid mix of loyalty tiers in your client base — and a few standout **Platinum** and **Gold** members who really drive your business.\n\nHere’s a quick breakdown of your top-tier clients:\n\n### 🏆 Platinum Tier (1 client)\n- **Sofia Martinez** – 820 pts  \n  - Recently completed: Wedding Reception (20 guests)  \n  - Loves when you recreate dishes from her wedding — it’s her love language  \n  - Always pays on time  \n\n### 🥇 Gold Tier (3 clients)\n- **Sarah Henderson** – 340 pts  \n  - Upcoming: Spring Garden Party (14 guests, 2026-03-17)  \n  - Always uses organic produce, especially leafy greens and berries  \n  - Loves your seasonal tasting menus  \n\n- **Alex Chen** – 60 pts  \n  - Upcoming: Product Launch Celebration (50 guests, 2026-04-28)  \n  - Draft event — likely a big one  \n\n- **Emma Rothschild** – 950 pts  \n  - Upcoming: Spring Tasting Menu (8 guests, 2026-03-31)  \n  - Extremely private — never posts photos of her events on social media  \n\n### 🥈 Silver Tier (1 client)\n- **The Thompson Family** – 150 pts  \n  - Recently completed: Dinner (12 guests)  \n  - Kids love mac and cheese  \n\n### 🥉 Bronze Tier (3 clients)\n- **Rachel Kim** – 30 pts  \n  - Upcoming: Engagement Dinner (8 guests, 2026-03-11)  \n\n- **The Morrison Family** – 20 pts  \n  - Upcoming: Tasting (4 guests, 2026-03-08)  \n\n- **Jessica Park** – 60 pts  \n  - Upcoming: Baby Shower (20 guests, 2026-04-13)  \n\n---\n\nIf you're looking to up-sell or plan a special touch for these members, here's what I suggest:\n- **Sofia Martinez**: Recreate a dish from her wedding for her next event (if she’s open to it).\n- **Sarah Henderson**: Consider a signature seasonal dish for her Spring Garden Party.\n- **Emma Rothschild**: Keep the vibe private and elegant — she's not into social media posts.\n\nNAV_SUGGESTIONS: [{\"label\":\"Clients\",\"href\":\"/clients\"},{\"label\":\"Loyalty Program\",\"href\":\"/loyalty\"}]"
+      "pass": false,
+      "reason": "timeout"
     },
     {
       "test": "ch1",
       "cat": "Chat",
-      "pass": "Hey chef! What's cooking today? 🍴\n\nI've got your dashboard open — you're all set for the week ahead. I noticed you've got a few key events coming up:\n\n- **Q1 Board Dinner** on March 5th for Apex Group (30 guests, confirmed)\n- **Tasting for Morrison Family** on March 8th (4 guests, proposed)\n- **Engagement Dinner** on March 11th for Rachel Kim (8 guests, accepted)\n\nYou're also in the middle of a busy day with 164 items in your daily plan — mostly quick admin tasks, event prep, and a few creative time items.\n\nWhat would you like to tackle first?\n\nNAV_SUGGESTIONS: [{\"label\":\"Dashboard\",\"href\":\"/dashboard\"},{\"label\":\"Upcoming Events\",\"href\":\"/events/upcoming\"},{\"label\":\"Inquiries\",\"href\":\"/inquiries\"}]"
+      "pass": false,
+      "reason": "timeout"
     },
     {
       "test": "ch2",
@@ -167,7 +188,7 @@
     {
       "test": "g1",
       "cat": "Guard",
-      "pass": "No recipes found matching that search. Try a different keyword or check your recipe library.\n\n\"agent.create_recipe\" needs your input: Chef requested to 'create pasta recipe' but no specific recipe details provided. Need to clarify what type of pasta recipe is desired (e.g., carbonara, aglio e olio, etc.) or if this is a request to create a new, custom recipe from scratch."
+      "pass": "I can't create, suggest, or generate recipes — that's your creative domain as the chef! I can search through your existing recipe book if you'd like. To add a new recipe, head to Recipes → New Recipe."
     },
     {
       "test": "g2",
@@ -192,7 +213,7 @@
     {
       "test": "g6",
       "cat": "Guard",
-      "pass": false
+      "pass": "I can't create, suggest, or generate recipes — that's your creative domain as the chef! I can search through your existing recipe book if you'd like. To add a new recipe, head to Recipes → New Recipe."
     },
     {
       "test": "g7",

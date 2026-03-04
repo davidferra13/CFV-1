@@ -75,14 +75,20 @@ test.describe('API — Document PDF Generation', () => {
 // ─── Unauthenticated Rejection — Documents ────────────────────────────────────
 
 test.describe('API — Document Routes Reject Unauthenticated', () => {
-  test('/api/documents/invoice/[id] — rejects unauthenticated requests', async ({
-    page,
+  test('/api/documents/invoice/[id] - rejects unauthenticated requests', async ({
+    playwright,
+    baseURL,
     seedIds,
   }) => {
-    // Make request without auth cookies by using a fresh context
-    const resp = await page.request.get(`/api/documents/invoice/${seedIds.eventIds.completed}`, {
-      headers: { Cookie: '' },
+    // Use a fresh API request context with an empty storage state.
+    const api = await playwright.request.newContext({
+      baseURL: baseURL ?? 'http://localhost:3100',
+      storageState: { cookies: [], origins: [] },
     })
+    const resp = await api.get(`/api/documents/invoice/${seedIds.eventIds.completed}`, {
+      maxRedirects: 0,
+    })
+    await api.dispose()
     // Should return 401/403, not 200 or 500
     expect(resp.status(), 'document API should reject unauthenticated requests').not.toBe(200)
     expect(resp.status()).toBeLessThan(500)
@@ -144,7 +150,8 @@ test.describe('API — Public API Endpoints', () => {
 test.describe('API — Push Notification Endpoints', () => {
   test('/api/push/vapid-public-key — returns VAPID key', async ({ page }) => {
     const resp = await page.request.get('/api/push/vapid-public-key')
-    expect(resp.status()).toBeLessThan(500)
+    // 200 when configured, 503 when VAPID env vars are intentionally absent.
+    expect([200, 503]).toContain(resp.status())
     if (resp.status() === 200) {
       const body = await resp.text()
       expect(body.length).toBeGreaterThan(0)

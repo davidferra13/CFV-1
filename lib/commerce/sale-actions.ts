@@ -9,6 +9,8 @@ import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { SaleChannel, TaxClass } from './constants'
 import { canVoid } from './sale-fsm'
+import { appendPosAuditLog } from './pos-audit-log'
+import { assertPosManagerAccess, assertPosRoleAccess } from './pos-authorization'
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -43,6 +45,13 @@ export async function createSale(input: CreateSaleInput) {
   await requirePro('commerce')
   const supabase: any = createServerClient()
 
+  await assertPosRoleAccess({
+    supabase,
+    user,
+    action: 'create a sale',
+    requiredLevel: 'cashier',
+  })
+
   const { data, error } = await (supabase
     .from('sales')
     .insert({
@@ -70,6 +79,13 @@ export async function addSaleItem(input: AddSaleItemInput) {
   const user = await requireChef()
   await requirePro('commerce')
   const supabase: any = createServerClient()
+
+  await assertPosRoleAccess({
+    supabase,
+    user,
+    action: 'add items to a sale',
+    requiredLevel: 'cashier',
+  })
 
   if (!Number.isInteger(input.unitPriceCents) || input.unitPriceCents < 0) {
     throw new Error('Unit price must be a non-negative integer (cents)')
@@ -135,6 +151,13 @@ export async function removeSaleItem(saleId: string, itemId: string) {
   await requirePro('commerce')
   const supabase: any = createServerClient()
 
+  await assertPosRoleAccess({
+    supabase,
+    user,
+    action: 'remove items from a sale',
+    requiredLevel: 'cashier',
+  })
+
   const { error } = await (supabase
     .from('sale_items')
     .delete()
@@ -154,6 +177,13 @@ export async function updateSaleItemQuantity(saleId: string, itemId: string, qua
   const user = await requireChef()
   await requirePro('commerce')
   const supabase: any = createServerClient()
+
+  await assertPosRoleAccess({
+    supabase,
+    user,
+    action: 'update sale item quantities',
+    requiredLevel: 'cashier',
+  })
 
   if (!Number.isInteger(quantity) || quantity < 1) {
     throw new Error('Quantity must be a positive integer')
@@ -196,11 +226,18 @@ export async function voidSale(saleId: string, reason: string) {
   const user = await requireChef()
   await requirePro('commerce')
   const supabase: any = createServerClient()
+  const normalizedReason = reason.trim() || 'Voided by chef'
+
+  await assertPosManagerAccess({
+    supabase,
+    user,
+    action: 'void this sale',
+  })
 
   // Fetch current status
   const { data: sale, error: fetchErr } = await (supabase
     .from('sales')
-    .select('status')
+    .select('status, sale_number')
     .eq('id', saleId)
     .eq('tenant_id', user.tenantId!)
     .single() as any)
@@ -217,12 +254,29 @@ export async function voidSale(saleId: string, reason: string) {
       status: 'voided',
       voided_at: new Date().toISOString(),
       voided_by: user.id,
-      void_reason: reason,
+      void_reason: normalizedReason,
     } as any)
     .eq('id', saleId)
     .eq('tenant_id', user.tenantId!) as any)
 
   if (error) throw new Error(`Failed to void sale: ${error.message}`)
+
+  await appendPosAuditLog({
+    tenantId: user.tenantId!,
+    action: 'sale_voided',
+    tableName: 'sales',
+    recordId: saleId,
+    changedBy: user.id,
+    summary: 'Sale voided from POS',
+    beforeValues: {
+      status: (sale as any).status,
+    },
+    afterValues: {
+      status: 'voided',
+      void_reason: normalizedReason,
+      sale_number: (sale as any).sale_number ?? null,
+    },
+  })
 
   revalidatePath('/commerce')
 }

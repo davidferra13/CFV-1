@@ -6,6 +6,10 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { signIn, type SignInInput } from '@/lib/auth/actions'
 import { signInWithGoogle } from '@/lib/supabase/client'
+import {
+  isGoogleAuthButtonEnabled,
+  normalizeGoogleOAuthErrorMessage,
+} from '@/lib/auth/google-oauth-errors'
 import { Chrome } from 'lucide-react'
 
 import { Input } from '@/components/ui/input'
@@ -54,6 +58,7 @@ function SignInForm() {
     password: '',
     rememberMe: true,
   })
+  const showGoogleAuth = isGoogleAuthButtonEnabled()
   const redirectPath = safeRedirectPath(searchParams.get('redirect'))
   useEffect(() => {
     const callbackError = searchParams.get('error')
@@ -89,7 +94,7 @@ function SignInForm() {
       // signInWithGoogle redirects, so no navigation or state change is needed here on success
     } catch (err) {
       const error = err as Error
-      setError(normalizeAuthErrorMessage(error.message))
+      setError(normalizeGoogleOAuthErrorMessage(normalizeAuthErrorMessage(error.message)))
       setGoogleLoading(false)
     }
   }
@@ -164,25 +169,29 @@ function SignInForm() {
                 Sign In
               </Button>
 
-              <div className="relative my-2">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-stone-900 px-2 text-stone-500">Or continue with</span>
-                </div>
-              </div>
+              {showGoogleAuth && (
+                <>
+                  <div className="relative my-2">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-stone-900 px-2 text-stone-500">Or continue with</span>
+                    </div>
+                  </div>
 
-              <Button
-                type="button"
-                variant="secondary"
-                className="w-full"
-                onClick={handleGoogleSignIn}
-                loading={googleLoading}
-              >
-                <Chrome className="mr-2 h-4 w-4" />
-                Sign in with Google
-              </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="w-full"
+                    onClick={handleGoogleSignIn}
+                    loading={googleLoading}
+                  >
+                    <Chrome className="mr-2 h-4 w-4" />
+                    Sign in with Google
+                  </Button>
+                </>
+              )}
 
               <div className="text-sm text-center text-stone-400">
                 Don&apos;t have an account?{' '}

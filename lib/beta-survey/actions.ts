@@ -1,6 +1,5 @@
 'use server'
 
-// @ts-nocheck
 // DEFERRED: Beta Survey System
 // Status: Code complete, but database tables not yet created (migration 20260330000021 pending).
 // Tables required: beta_survey_definitions, beta_survey_responses, beta_survey_invites
@@ -50,6 +49,16 @@ function checkRateLimit(ip: string): boolean {
   return bucket.count <= RATE_LIMIT_MAX
 }
 
+type SupabaseErrorLike = { code?: string; message?: string } | null | undefined
+
+function isMissingBetaSurveyTableError(error: SupabaseErrorLike): boolean {
+  return error?.code === 'PGRST205' && /beta_survey_/i.test(error?.message ?? '')
+}
+
+function shouldLogBetaSurveyError(error: SupabaseErrorLike): boolean {
+  return !!error && !isMissingBetaSurveyTableError(error)
+}
+
 // ─── Get Active Survey ──────────────────────────────────────────────────────
 
 /**
@@ -57,7 +66,7 @@ function checkRateLimit(ip: string): boolean {
  * Returns null if no active survey exists.
  */
 export async function getActiveSurvey(type: SurveyType): Promise<BetaSurveyDefinition | null> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data, error } = await supabase
     .from('beta_survey_definitions')
@@ -67,7 +76,9 @@ export async function getActiveSurvey(type: SurveyType): Promise<BetaSurveyDefin
     .maybeSingle()
 
   if (error) {
-    console.error('[getActiveSurvey]', error)
+    if (shouldLogBetaSurveyError(error)) {
+      console.error('[getActiveSurvey]', error)
+    }
     return null
   }
 
@@ -83,7 +94,7 @@ export async function getActiveSurvey(type: SurveyType): Promise<BetaSurveyDefin
  * Fetch a survey definition by slug.
  */
 export async function getSurveyBySlug(slug: string): Promise<BetaSurveyDefinition | null> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data, error } = await supabase
     .from('beta_survey_definitions')
@@ -92,7 +103,9 @@ export async function getSurveyBySlug(slug: string): Promise<BetaSurveyDefinitio
     .maybeSingle()
 
   if (error) {
-    console.error('[getSurveyBySlug]', error)
+    if (shouldLogBetaSurveyError(error)) {
+      console.error('[getSurveyBySlug]', error)
+    }
     return null
   }
 
@@ -115,7 +128,7 @@ export async function getSurveyByInviteToken(token: string): Promise<{
   invite: { id: string; name: string | null; email: string | null; role: string }
   alreadySubmitted: boolean
 } | null> {
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data: invite, error } = await supabase
     .from('beta_survey_invites')
@@ -124,7 +137,9 @@ export async function getSurveyByInviteToken(token: string): Promise<{
     .maybeSingle()
 
   if (error || !invite) {
-    console.error('[getSurveyByInviteToken]', error)
+    if (shouldLogBetaSurveyError(error)) {
+      console.error('[getSurveyByInviteToken]', error)
+    }
     return null
   }
 
@@ -173,7 +188,7 @@ export async function submitBetaSurveyAuthenticated(
   answers: Record<string, unknown>
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireAuth()
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Look up the survey
   const { data: survey } = await supabase
@@ -261,7 +276,7 @@ export async function submitBetaSurveyPublic(
     return { success: false, error: 'Too many submissions. Please try again later.' }
   }
 
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Validate invite
   const { data: invite } = await supabase
@@ -328,7 +343,7 @@ export async function getMyBetaSurveyStatus(
 ): Promise<{ hasSubmitted: boolean; surveySlug: string | null }> {
   try {
     const user = await requireAuth()
-    const supabase = createAdminClient()
+    const supabase: any = createAdminClient()
 
     // Get active survey for this type
     const { data: survey } = await supabase
@@ -367,7 +382,7 @@ export async function getMyBetaSurveyStatus(
  */
 export async function getBetaSurveyResults(surveyId: string) {
   await requireAdmin()
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data: responses, error } = await supabase
     .from('beta_survey_responses')
@@ -392,7 +407,7 @@ export async function getBetaSurveyResults(surveyId: string) {
  */
 export async function getAllBetaSurveys() {
   await requireAdmin()
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data: surveys, error } = await supabase
     .from('beta_survey_definitions')
@@ -406,7 +421,7 @@ export async function getAllBetaSurveys() {
 
   // Get response counts per survey
   const result = await Promise.all(
-    (surveys || []).map(async (s) => {
+    (surveys || []).map(async (s: any) => {
       const { count: totalCount } = await supabase
         .from('beta_survey_responses')
         .select('*', { count: 'exact', head: true })
@@ -449,7 +464,7 @@ export async function createBetaSurveyInvites(
   sendEmails = false
 ): Promise<{ success: boolean; tokens: string[]; error?: string }> {
   await requireAdmin()
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Get survey for context
   const { data: survey } = await supabase
@@ -517,7 +532,7 @@ export async function toggleBetaSurveyActive(
   active: boolean
 ): Promise<{ success: boolean; error?: string }> {
   await requireAdmin()
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   if (active) {
     // Get the survey type to deactivate others
@@ -560,7 +575,7 @@ export async function exportBetaSurveyResultsCsv(
   surveyId: string
 ): Promise<{ success: boolean; csv?: string; error?: string }> {
   await requireAdmin()
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   // Get survey definition for question labels
   const { data: survey } = await supabase
@@ -598,7 +613,7 @@ export async function exportBetaSurveyResultsCsv(
     ...questions.map((q) => q.label),
   ]
 
-  const rows = (responses || []).map((r: any) => {
+  const rows: Array<Array<string | number | boolean | null>> = (responses || []).map((r: any) => {
     const answers = (r.answers as Record<string, unknown>) || {}
     return [
       r.submitted_at || 'In progress',
@@ -621,7 +636,9 @@ export async function exportBetaSurveyResultsCsv(
   const escape = (v: string) => `"${v.replace(/"/g, '""')}"`
   const csv = [
     headers.map(escape).join(','),
-    ...rows.map((r) => r.map((v) => escape(String(v))).join(',')),
+    ...rows.map((r: Array<string | number | boolean | null>) =>
+      r.map((v: string | number | boolean | null) => escape(String(v))).join(',')
+    ),
   ].join('\n')
 
   return { success: true, csv }
@@ -635,7 +652,7 @@ export async function exportBetaSurveyResultsCsv(
  */
 export async function getBetaSurveyInvites(surveyId: string) {
   await requireAdmin()
-  const supabase = createAdminClient()
+  const supabase: any = createAdminClient()
 
   const { data, error } = await supabase
     .from('beta_survey_invites')

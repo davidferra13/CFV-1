@@ -1,3 +1,16 @@
 {
-  "extends": "next/core-web-vitals"
+  "extends": "next/core-web-vitals",
+  "plugins": ["@typescript-eslint"],
+  "rules": {
+    "react/no-unescaped-entities": "off",
+    "@next/next/no-assign-module-variable": "off"
+  },
+  "overrides": [
+    {
+      "files": ["lib/remotion/**/*.{ts,tsx}", "app/(chef)/games/menu-muse/page.tsx"],
+      "rules": {
+        "react-hooks/rules-of-hooks": "off"
+      }
+    }
+  ]
 }

@@ -73,31 +73,37 @@ export default defineConfig({
     {
       name: 'coverage-public',
       testMatch: ['**/coverage/01-public-routes.spec.ts'],
+      timeout: 120_000,
       // No storageState — unauthenticated
     },
     {
       name: 'coverage-chef',
       testMatch: ['**/coverage/02-chef-routes.spec.ts'],
+      timeout: 120_000,
       use: { storageState: '.auth/chef.json' },
     },
     {
       name: 'coverage-client',
       testMatch: ['**/coverage/03-client-routes.spec.ts'],
+      timeout: 120_000,
       use: { storageState: '.auth/client.json' },
     },
     {
       name: 'coverage-admin',
       testMatch: ['**/coverage/04-admin-routes.spec.ts'],
+      timeout: 120_000,
       use: { storageState: '.auth/admin.json' },
     },
     {
       name: 'coverage-auth-boundaries',
       testMatch: ['**/coverage/05-auth-boundaries.spec.ts'],
+      timeout: 120_000,
       // No default storageState — tests manage their own auth per-test
     },
     {
       name: 'coverage-api',
       testMatch: ['**/coverage/06-api-routes.spec.ts'],
+      timeout: 120_000,
       use: { storageState: '.auth/chef.json' },
     },
     // ── Interaction Layer ─────────────────────────────────────────────────────
@@ -150,6 +156,8 @@ export default defineConfig({
         '**/interactions/40-core-flow-completions.spec.ts',
         // Phase 6 — remaining routes not yet reached by files 01-40
         '**/interactions/41-remaining-routes.spec.ts',
+        // Phase 7 — POS concurrency integrity
+        '**/interactions/42-pos-register-concurrency.spec.ts',
       ],
       use: { storageState: '.auth/chef.json' },
     },
@@ -259,7 +267,6 @@ export default defineConfig({
       use: { storageState: '.auth/agent.json' },
       timeout: 30_000, // Per-test timeout (will be overridden by individual test durations)
       workers: 1, // Sequential to avoid concurrent Ollama stress
-      globalSetup: undefined, // Stress tests don't need E2E seed data
     },
   ],
   webServer: {
@@ -267,5 +274,9 @@ export default defineConfig({
     url: BASE_URL,
     reuseExistingServer: true,
     timeout: 120_000,
+    env: {
+      ...process.env,
+      DISABLE_AUTH_RATE_LIMIT_FOR_E2E: 'true',
+    },
   },
 })

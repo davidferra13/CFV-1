@@ -37,6 +37,22 @@ export type CreateProductInput = {
 
 export type UpdateProductInput = Partial<CreateProductInput> & { id: string }
 
+export type CreateQuickBarcodeProductInput = {
+  barcode: string
+  name: string
+  priceCents: number
+  category?: string
+  taxClass?: TaxClass
+}
+
+function normalizeBarcode(raw: string) {
+  return raw.trim()
+}
+
+function isValidBarcode(code: string) {
+  return /^\d{8,14}$/.test(code)
+}
+
 // ─── Create ───────────────────────────────────────────────────────
 
 export async function createProduct(input: CreateProductInput) {
@@ -78,6 +94,74 @@ export async function createProduct(input: CreateProductInput) {
 
   revalidatePath('/commerce/products')
   return { id: data.id }
+}
+
+// ─── Quick Create from Unknown Barcode ───────────────────────────
+
+export async function createQuickBarcodeProduct(input: CreateQuickBarcodeProductInput) {
+  const user = await requireChef()
+  await requirePro('commerce')
+  const supabase: any = createServerClient()
+
+  const barcode = normalizeBarcode(input.barcode)
+  const name = input.name.trim()
+
+  if (!isValidBarcode(barcode)) {
+    throw new Error('Barcode must be 8 to 14 digits')
+  }
+  if (!name) {
+    throw new Error('Product name is required')
+  }
+  if (!Number.isInteger(input.priceCents) || input.priceCents <= 0) {
+    throw new Error('Price must be a positive integer (cents)')
+  }
+
+  const { data: existing } = await (supabase
+    .from('product_projections')
+    .select(
+      'id, name, barcode, price_cents, category, image_url, is_active, modifiers, tax_class, cost_cents, track_inventory, available_qty, low_stock_threshold'
+    )
+    .eq('tenant_id', user.tenantId!)
+    .eq('barcode', barcode)
+    .maybeSingle() as any)
+
+  if (existing) {
+    return {
+      created: false,
+      product: existing,
+    }
+  }
+
+  const { data, error } = await (supabase
+    .from('product_projections')
+    .insert({
+      tenant_id: user.tenantId!,
+      name,
+      barcode,
+      price_cents: input.priceCents,
+      category: input.category ?? null,
+      tax_class: input.taxClass ?? 'standard',
+      track_inventory: false,
+      modifiers: [],
+      tags: [],
+      dietary_tags: [],
+      allergen_flags: [],
+      is_active: true,
+    } as any)
+    .select(
+      'id, name, barcode, price_cents, category, image_url, is_active, modifiers, tax_class, cost_cents, track_inventory, available_qty, low_stock_threshold'
+    )
+    .single() as any)
+
+  if (error || !data) {
+    throw new Error(`Failed to create barcode product: ${error?.message ?? 'unknown error'}`)
+  }
+
+  revalidatePath('/commerce/products')
+  return {
+    created: true,
+    product: data,
+  }
 }
 
 // ─── Update ───────────────────────────────────────────────────────

@@ -45,8 +45,8 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    // Type-check separately via `tsc --noEmit`; skip during build for speed.
-    ignoreBuildErrors: true,
+    // Enforce TypeScript correctness during production builds.
+    ignoreBuildErrors: false,
   },
   // Use git SHA for build ID (Vercel provides VERCEL_GIT_COMMIT_SHA).
   // When PWA dual-pass build is active, pin to a static ID to prevent

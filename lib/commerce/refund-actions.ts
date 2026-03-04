@@ -9,6 +9,8 @@ import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { canRefund } from './sale-fsm'
+import { appendPosAuditLog } from './pos-audit-log'
+import { assertPosManagerAccess } from './pos-authorization'
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -33,9 +35,19 @@ export async function createRefund(input: CreateRefundInput) {
   const user = await requireChef()
   await requirePro('commerce')
   const supabase: any = createServerClient()
+  const normalizedReason = input.reason.trim()
+
+  await assertPosManagerAccess({
+    supabase,
+    user,
+    action: 'issue a refund',
+  })
 
   if (!Number.isInteger(input.amountCents) || input.amountCents <= 0) {
     throw new Error('Refund amount must be a positive integer (cents)')
+  }
+  if (!normalizedReason) {
+    throw new Error('Refund reason is required')
   }
 
   // Fetch the original payment
@@ -100,7 +112,7 @@ export async function createRefund(input: CreateRefundInput) {
       payment_id: input.paymentId,
       sale_id: saleId ?? null,
       amount_cents: input.amountCents,
-      reason: input.reason,
+      reason: normalizedReason,
       status: refundStatus,
       stripe_refund_id: input.stripeRefundId ?? null,
       idempotency_key: input.idempotencyKey,
@@ -123,10 +135,35 @@ export async function createRefund(input: CreateRefundInput) {
     throw new Error(`Failed to create refund: ${error.message}`)
   }
 
+  let postRefundSaleStatus: string | null = null
   // Update sale status if this is a processed refund
   if (refundStatus === 'processed' && saleId) {
     await updateSaleStatusAfterRefund(saleId, user.tenantId!)
+    const { data: updatedSale } = await supabase
+      .from('sales')
+      .select('status')
+      .eq('id', saleId)
+      .eq('tenant_id', user.tenantId!)
+      .maybeSingle()
+    postRefundSaleStatus = updatedSale?.status ?? null
   }
+
+  await appendPosAuditLog({
+    tenantId: user.tenantId!,
+    action: 'refund_created',
+    tableName: 'commerce_refunds',
+    recordId: refund.id,
+    changedBy: user.id,
+    summary: 'Refund created from commerce flow',
+    afterValues: {
+      sale_id: saleId ?? null,
+      payment_id: input.paymentId,
+      amount_cents: input.amountCents,
+      reason: normalizedReason,
+      status: refundStatus,
+      sale_status_after_refund: postRefundSaleStatus,
+    },
+  })
 
   revalidatePath('/commerce')
   return refund

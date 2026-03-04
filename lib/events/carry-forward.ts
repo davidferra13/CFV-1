@@ -43,7 +43,7 @@ export async function getAvailableCarryForwardItems(
       storage_location,
       use_by_date,
       event_id,
-      events!inner(id, occasion, event_date)
+      events!unused_ingredients_event_id_fkey!inner(id, occasion, event_date)
     `
     )
     .eq('tenant_id', user.tenantId!)

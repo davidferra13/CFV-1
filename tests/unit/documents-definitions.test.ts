@@ -66,6 +66,17 @@ describe('parseDocumentRequestQuery', () => {
     assert.equal(result.value.idempotencyKey, 'docgen_2026-03-04_12345')
   })
 
+  it('accepts legacy idempotency_key query param alias', () => {
+    const params = new URLSearchParams({
+      type: 'summary',
+      idempotency_key: 'docgen_2026-03-04_legacy',
+    })
+    const result = parseDocumentRequestQuery(params)
+    assert.equal(result.success, true)
+    if (!result.success) return
+    assert.equal(result.value.idempotencyKey, 'docgen_2026-03-04_legacy')
+  })
+
   it('rejects malformed idempotency key query params', () => {
     const params = new URLSearchParams({
       type: 'summary',

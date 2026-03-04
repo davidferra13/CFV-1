@@ -4,6 +4,8 @@ import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { appendPosAuditLog } from './pos-audit-log'
+import { assertPosManagerAccess, assertPosRoleAccess, type PosAccessLevel } from './pos-authorization'
 
 export type CashDrawerMovementType =
   | 'sale_payment'
@@ -147,30 +149,71 @@ async function insertMovement(input: {
   movementType: 'paid_in' | 'paid_out' | 'adjustment'
   amountCents: number
   notes?: string
+  metadata?: Record<string, any>
+  allowZeroAmount?: boolean
+  requireManager?: boolean
+  requiredLevel?: PosAccessLevel
 }) {
   const user = await requireChef()
   await requirePro('commerce')
 
-  if (!Number.isInteger(input.amountCents) || input.amountCents === 0) {
+  if (
+    !Number.isInteger(input.amountCents) ||
+    (input.amountCents === 0 && !input.allowZeroAmount)
+  ) {
     throw new Error('Amount must be a non-zero integer (cents)')
   }
 
+  const supabase: any = createServerClient()
   await assertOpenRegisterSession(user.tenantId!, input.registerSessionId)
 
-  const supabase: any = createServerClient()
-  const { error } = await (supabase.from('cash_drawer_movements' as any).insert({
-    tenant_id: user.tenantId!,
-    register_session_id: input.registerSessionId,
-    movement_type: input.movementType,
-    amount_cents: input.amountCents,
-    notes: input.notes ?? null,
-    metadata: {
-      source: 'manual',
-    },
-    created_by: user.id,
-  } as any) as any)
+  if (input.requireManager) {
+    await assertPosManagerAccess({
+      supabase,
+      user,
+      action: `record ${input.movementType.replace('_', ' ')} drawer movement`,
+    })
+  }
+  if (input.requiredLevel) {
+    await assertPosRoleAccess({
+      supabase,
+      user,
+      action: `record ${input.movementType.replace('_', ' ')} drawer movement`,
+      requiredLevel: input.requiredLevel,
+    })
+  }
 
-  if (error) throw new Error(`Failed to record cash movement: ${error.message}`)
+  const { data: inserted, error } = await (supabase
+    .from('cash_drawer_movements' as any)
+    .insert({
+      tenant_id: user.tenantId!,
+      register_session_id: input.registerSessionId,
+      movement_type: input.movementType,
+      amount_cents: input.amountCents,
+      notes: input.notes ?? null,
+      metadata: input.metadata ?? { source: 'manual' },
+      created_by: user.id,
+    } as any)
+    .select('id')
+    .single() as any)
+
+  if (error || !inserted) throw new Error(`Failed to record cash movement: ${error?.message}`)
+
+  await appendPosAuditLog({
+    tenantId: user.tenantId!,
+    action: 'cash_drawer_movement_recorded',
+    tableName: 'cash_drawer_movements',
+    recordId: inserted.id,
+    changedBy: user.id,
+    summary: `Drawer movement: ${input.movementType}`,
+    afterValues: {
+      register_session_id: input.registerSessionId,
+      movement_type: input.movementType,
+      amount_cents: input.amountCents,
+      notes: input.notes ?? null,
+      metadata: input.metadata ?? { source: 'manual' },
+    },
+  })
 
   revalidatePath('/commerce')
   revalidatePath('/commerce/register')
@@ -192,6 +235,7 @@ export async function recordCashPaidIn(input: {
     movementType: 'paid_in',
     amountCents: input.amountCents,
     notes: input.notes,
+    requiredLevel: 'lead',
   })
 }
 
@@ -209,6 +253,7 @@ export async function recordCashPaidOut(input: {
     movementType: 'paid_out',
     amountCents: -1 * input.amountCents,
     notes: input.notes,
+    requireManager: true,
   })
 }
 
@@ -222,5 +267,28 @@ export async function recordCashAdjustment(input: {
     movementType: 'adjustment',
     amountCents: input.amountCents,
     notes: input.notes,
+    requireManager: true,
+  })
+}
+
+export async function recordCashNoSaleOpen(input: {
+  registerSessionId: string
+  notes: string
+}) {
+  const normalizedNotes = input.notes.trim()
+  if (!normalizedNotes) {
+    throw new Error('Notes are required for a no-sale drawer open')
+  }
+
+  return insertMovement({
+    registerSessionId: input.registerSessionId,
+    movementType: 'adjustment',
+    amountCents: 0,
+    notes: normalizedNotes,
+    allowZeroAmount: true,
+    requireManager: true,
+    metadata: {
+      source: 'no_sale',
+    },
   })
 }

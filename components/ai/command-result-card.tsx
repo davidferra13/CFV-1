@@ -14,6 +14,12 @@ import {
 import { Button } from '@/components/ui/button'
 import { approveTask } from '@/lib/ai/command-orchestrator'
 import type { TaskResult } from '@/lib/ai/command-types'
+import { toast } from 'sonner'
+import {
+  buildSignificantApprovalPhrase,
+  isLegacySignificantTaskType,
+  normalizeSignificantApprovalInput,
+} from '@/lib/ai/remy-significant-approval'
 
 interface CommandResultCardProps {
   result: TaskResult
@@ -236,15 +242,34 @@ export function CommandResultCard({ result, onStatusChange }: CommandResultCardP
   const [localStatus, setLocalStatus] = useState(result.status)
   const [approving, setApproving] = useState(false)
   const [expanded, setExpanded] = useState(true)
+  const [approvalText, setApprovalText] = useState('')
+  const isSignificantDraft =
+    result.tier === 2 &&
+    localStatus === 'pending' &&
+    (result.preview?.safety === 'significant' ||
+      (!result.preview && isLegacySignificantTaskType(result.taskType)))
+  const expectedApprovalPhrase = isSignificantDraft
+    ? buildSignificantApprovalPhrase(result.taskType)
+    : ''
+  const confirmationMatches =
+    !isSignificantDraft ||
+    normalizeSignificantApprovalInput(approvalText) === expectedApprovalPhrase
+  const showPhraseMismatch =
+    isSignificantDraft && approvalText.trim().length > 0 && !confirmationMatches
 
   const handleApprove = async () => {
     setApproving(true)
     try {
-      await approveTask(result.taskType, result.data)
+      const approval = await approveTask(result.taskType, result.data, approvalText)
+      if (!approval.success) {
+        toast.error(approval.message)
+        return
+      }
       setLocalStatus('approved')
       onStatusChange(result.taskId, 'approved')
-    } catch {
-      // non-blocking — approval failing doesn't break anything
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Approval failed'
+      toast.error(message)
     } finally {
       setApproving(false)
     }
@@ -306,13 +331,39 @@ export function CommandResultCard({ result, onStatusChange }: CommandResultCardP
 
           {/* Tier 2 approval actions */}
           {isDraft && (
-            <div className="mt-3 flex items-center gap-2">
-              <Button variant="primary" onClick={handleApprove} disabled={approving}>
-                {approving ? 'Approving…' : 'Approve'}
-              </Button>
-              <Button variant="ghost" onClick={handleReject}>
-                <X className="w-3.5 h-3.5 mr-1" /> Dismiss
-              </Button>
+            <div className="mt-3 space-y-2">
+              {isSignificantDraft && (
+                <div className="rounded-md border border-amber-800/70 bg-amber-950/40 p-2">
+                  <p className="text-xs text-amber-200">
+                    This is a significant action. Type{' '}
+                    <span className="font-mono text-amber-100">{expectedApprovalPhrase}</span> to
+                    confirm.
+                  </p>
+                  <input
+                    type="text"
+                    value={approvalText}
+                    onChange={(event) => setApprovalText(event.target.value)}
+                    className="mt-1.5 w-full rounded-md border border-amber-700 bg-stone-900 px-2 py-1.5 text-xs text-stone-100 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    placeholder={expectedApprovalPhrase}
+                    aria-label="Approval confirmation phrase"
+                  />
+                  {showPhraseMismatch && (
+                    <p className="mt-1 text-[11px] text-amber-300">Phrase does not match yet.</p>
+                  )}
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="primary"
+                  onClick={handleApprove}
+                  disabled={approving || !confirmationMatches}
+                >
+                  {approving ? 'Approving...' : 'Approve'}
+                </Button>
+                <Button variant="ghost" onClick={handleReject}>
+                  <X className="w-3.5 h-3.5 mr-1" /> Dismiss
+                </Button>
+              </div>
             </div>
           )}
 

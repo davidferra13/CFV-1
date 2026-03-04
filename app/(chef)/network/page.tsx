@@ -14,6 +14,7 @@ import {
   getTrendingHashtags,
   getTrendingPosts,
   getPublicChefSocialProfile,
+  markSocialNotificationsRead,
 } from '@/lib/social/chef-social-actions'
 import {
   getMyConnections,
@@ -21,6 +22,13 @@ import {
   getNetworkDiscoverable,
   getNetworkContactShares,
 } from '@/lib/network/actions'
+import {
+  getCollabAvailabilitySignals,
+  getCollabInbox,
+  getCollabMetrics,
+  getCollabUnreadCount,
+  getTrustedCircle,
+} from '@/lib/network/collab-actions'
 import { createServerClient } from '@/lib/supabase/server'
 import { SocialFeedClient } from '@/components/social/social-feed-client'
 import { SocialChannelGrid } from '@/components/social/social-channel-card'
@@ -30,20 +38,42 @@ import { ChefSearch } from './chef-search'
 import { PendingRequests } from './pending-requests'
 import { FriendsList } from './friends-list'
 import { ContactShares } from './contact-shares'
-import { Rss, Hash, Compass, Users, ShieldOff, Settings, Bell, Bookmark } from 'lucide-react'
+import { TrustedCircle } from './trusted-circle'
+import { CollabInboxPanel } from './collab-inbox'
+import {
+  Rss,
+  Hash,
+  Compass,
+  Users,
+  ShieldOff,
+  Settings,
+  Bell,
+  Bookmark,
+  Handshake,
+} from 'lucide-react'
 
 export const metadata: Metadata = { title: 'Chef Community — ChefFlow' }
 
-type Tab = 'feed' | 'channels' | 'discover' | 'connections'
+type Tab = 'feed' | 'channels' | 'discover' | 'connections' | 'collab'
 
 export default async function NetworkPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>
+  searchParams: Promise<{ tab?: string; handoff?: string; notif?: string }>
 }) {
   const user = await requireChef()
   const params = await searchParams
   const tab = (params.tab as Tab) ?? 'feed'
+  const focusHandoffId = typeof params.handoff === 'string' ? params.handoff : null
+  const focusNotificationId = typeof params.notif === 'string' ? params.notif : null
+
+  if (focusNotificationId) {
+    try {
+      await markSocialNotificationsRead([focusNotificationId])
+    } catch (error) {
+      console.error('[NetworkPage] Failed to mark notification as read:', error)
+    }
+  }
 
   // Get chef's own profile info for composer
   const supabase = createServerClient({ admin: true })
@@ -57,9 +87,10 @@ export default async function NetworkPage({
   const myAvatar = (myChef as any)?.profile_image_url ?? null
 
   // Load tab-specific data
-  const [discoverable, pending] = await Promise.all([
+  const [discoverable, pending, collabUnreadCount] = await Promise.all([
     getNetworkDiscoverable(),
     getPendingRequests(),
+    getCollabUnreadCount(),
   ])
 
   return (
@@ -135,11 +166,12 @@ export default async function NetworkPage({
       <div className="bg-stone-900 rounded-2xl border border-stone-700 shadow-sm overflow-hidden">
         <nav className="flex border-b border-stone-800">
           {[
-            { id: 'feed', label: 'Feed', icon: Rss },
-            { id: 'channels', label: 'Channels', icon: Hash },
-            { id: 'discover', label: 'Discover', icon: Compass },
-            { id: 'connections', label: 'Connections', icon: Users },
-          ].map(({ id, label, icon: Icon }) => (
+            { id: 'feed', label: 'Feed', icon: Rss, badge: 0 },
+            { id: 'channels', label: 'Channels', icon: Hash, badge: 0 },
+            { id: 'discover', label: 'Discover', icon: Compass, badge: 0 },
+            { id: 'connections', label: 'Connections', icon: Users, badge: 0 },
+            { id: 'collab', label: 'Collab', icon: Handshake, badge: collabUnreadCount },
+          ].map(({ id, label, icon: Icon, badge }) => (
             <Link
               key={id}
               href={`?tab=${id}`}
@@ -151,6 +183,11 @@ export default async function NetworkPage({
             >
               <Icon className="h-4 w-4" />
               <span className="hidden sm:inline">{label}</span>
+              {badge > 0 && (
+                <span className="inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-amber-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                  {badge > 99 ? '99+' : badge}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
@@ -160,6 +197,7 @@ export default async function NetworkPage({
           {tab === 'channels' && <ChannelsTab />}
           {tab === 'discover' && <DiscoverTab />}
           {tab === 'connections' && <ConnectionsTab chefId={user.entityId} />}
+          {tab === 'collab' && <CollabTab focusHandoffId={focusHandoffId} />}
         </div>
       </div>
     </div>
@@ -295,10 +333,11 @@ async function DiscoverTab() {
 
 // ── Connections Tab ──────────────────────────────────────────
 async function ConnectionsTab({ chefId }: { chefId: string }) {
-  const [friends, pending, contactShares] = await Promise.all([
+  const [friends, pending, contactShares, trustedCircle] = await Promise.all([
     getMyConnections(),
     getPendingRequests(),
     getNetworkContactShares(),
+    getTrustedCircle(),
   ])
 
   return (
@@ -344,6 +383,41 @@ async function ConnectionsTab({ chefId }: { chefId: string }) {
           <ContactShares connections={friends} shares={contactShares} />
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Trusted Circle</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TrustedCircle connections={friends} initialTrusted={trustedCircle} />
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// —— Collaboration Tab ————————————————————————————————————————————
+async function CollabTab({ focusHandoffId }: { focusHandoffId: string | null }) {
+  const [trustedCircle, collabInbox, availabilitySignals, collabMetrics] = await Promise.all([
+    getTrustedCircle(),
+    getCollabInbox(80),
+    getCollabAvailabilitySignals(),
+    getCollabMetrics(90),
+  ])
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-stone-500">
+        Structured handoffs for lead swaps, backup coverage, and referrals. Built for fast,
+        low-friction chef collaboration.
+      </p>
+      <CollabInboxPanel
+        trustedCircle={trustedCircle}
+        initialInbox={collabInbox}
+        initialSignals={availabilitySignals}
+        initialMetrics={collabMetrics}
+        initialFocusHandoffId={focusHandoffId}
+      />
     </div>
   )
 }

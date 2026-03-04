@@ -7,7 +7,7 @@ import { redirect } from 'next/navigation'
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? '')
   .split(',')
-  .map((e) => e.trim())
+  .map((e) => e.trim().toLowerCase())
   .filter(Boolean)
 
 export type AdminUser = {
@@ -20,7 +20,7 @@ export type AdminUser = {
  * Use in app/(admin)/layout.tsx and admin server actions.
  */
 export async function requireAdmin(): Promise<AdminUser> {
-  const supabase: any = createServerClient()
+  const supabase = createServerClient()
   const {
     data: { user },
     error,
@@ -30,11 +30,12 @@ export async function requireAdmin(): Promise<AdminUser> {
     redirect('/auth/signin?redirect=/admin')
   }
 
-  if (ADMIN_EMAILS.length === 0 || !ADMIN_EMAILS.includes(user.email)) {
+  const normalizedEmail = user.email.toLowerCase()
+  if (ADMIN_EMAILS.length === 0 || !ADMIN_EMAILS.includes(normalizedEmail)) {
     redirect('/unauthorized')
   }
 
-  return { id: user.id, email: user.email }
+  return { id: user.id, email: normalizedEmail }
 }
 
 /**
@@ -42,12 +43,12 @@ export async function requireAdmin(): Promise<AdminUser> {
  */
 export async function isAdmin(): Promise<boolean> {
   try {
-    const supabase: any = createServerClient()
+    const supabase = createServerClient()
     const {
       data: { user },
     } = await supabase.auth.getUser()
     if (!user?.email) return false
-    return ADMIN_EMAILS.length > 0 && ADMIN_EMAILS.includes(user.email)
+    return ADMIN_EMAILS.length > 0 && ADMIN_EMAILS.includes(user.email.toLowerCase())
   } catch {
     return false
   }

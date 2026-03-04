@@ -4,13 +4,22 @@ import { Check, X, Pencil, AlertTriangle, ShieldX, ChevronDown, ChevronUp } from
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import type { AgentActionPreview } from '@/lib/ai/command-types'
+import {
+  buildSignificantApprovalPhrase,
+  normalizeSignificantApprovalInput,
+} from '@/lib/ai/remy-significant-approval'
 
 interface AgentConfirmationCardProps {
   preview: AgentActionPreview
   taskId: string
   taskType: string
   data: unknown
-  onApprove?: (taskId: string, taskType: string, data: unknown) => void
+  onApprove?: (
+    taskId: string,
+    taskType: string,
+    data: unknown,
+    approvalConfirmation?: string
+  ) => void
   onReject?: (taskId: string) => void
 }
 
@@ -25,6 +34,7 @@ export function AgentConfirmationCard({
   const [editing, setEditing] = useState(false)
   const [editValues, setEditValues] = useState<Record<string, string>>({})
   const [showAllFields, setShowAllFields] = useState(preview.fields.length <= 5)
+  const [approvalText, setApprovalText] = useState('')
 
   const safetyColors = {
     reversible:
@@ -46,6 +56,13 @@ export function AgentConfirmationCard({
   }
 
   const isRestricted = preview.safety === 'restricted'
+  const requiresTypedApproval = preview.safety === 'significant'
+  const expectedApprovalPhrase = buildSignificantApprovalPhrase(taskType)
+  const confirmationMatches =
+    !requiresTypedApproval ||
+    normalizeSignificantApprovalInput(approvalText) === expectedApprovalPhrase
+  const showPhraseMismatch =
+    requiresTypedApproval && approvalText.trim().length > 0 && !confirmationMatches
   const isBatch = preview.fields.length > 10
   const displayFields = showAllFields
     ? preview.fields
@@ -63,9 +80,9 @@ export function AgentConfirmationCard({
         const key = label.toLowerCase().replace(/\s+/g, '_')
         updatedData[key] = value
       }
-      onApprove(taskId, taskType, updatedData)
+      onApprove(taskId, taskType, updatedData, approvalText)
     } else {
-      onApprove(taskId, taskType, data)
+      onApprove(taskId, taskType, data, approvalText)
     }
   }
 
@@ -149,7 +166,38 @@ export function AgentConfirmationCard({
       {/* Action Buttons */}
       {!isRestricted && (
         <div className="flex items-center gap-2">
-          <Button variant="primary" size="sm" onClick={handleApprove} className="text-xs">
+          {requiresTypedApproval && (
+            <div className="w-full rounded-md border border-amber-800/70 bg-amber-950/40 p-2">
+              <p className="text-xs text-amber-200">
+                This is a significant action. Type{' '}
+                <span className="font-mono text-amber-100">{expectedApprovalPhrase}</span> to
+                confirm.
+              </p>
+              <input
+                type="text"
+                value={approvalText}
+                onChange={(event) => setApprovalText(event.target.value)}
+                className="mt-1.5 w-full rounded-md border border-amber-700 bg-stone-900 px-2 py-1.5 text-xs text-stone-100 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                placeholder={expectedApprovalPhrase}
+                aria-label="Approval confirmation phrase"
+              />
+              {showPhraseMismatch && (
+                <p className="mt-1 text-[11px] text-amber-300">Phrase does not match yet.</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {!isRestricted && (
+        <div className="mt-2 flex items-center gap-2">
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleApprove}
+            disabled={!confirmationMatches}
+            className="text-xs"
+          >
             <Check className="h-3 w-3 mr-1" />
             {editing ? 'Save & Approve' : isBatch ? 'Approve All' : 'Approve'}
           </Button>

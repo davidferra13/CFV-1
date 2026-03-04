@@ -10,6 +10,28 @@ import { test, expect } from '../helpers/fixtures'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+async function gotoWithRetry(
+  page: Parameters<Parameters<typeof test>[1]>[0]['page'],
+  url: string
+) {
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90_000 })
+      if ((response?.status() ?? 0) >= 500 && attempt < 2) {
+        await page.waitForTimeout(400)
+        continue
+      }
+      return response
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      const retryable = /ERR_ABORTED|ERR_CONNECTION|timeout|frame was detached/i.test(message)
+      if (!retryable || attempt === 2) throw error
+      await page.waitForTimeout(400)
+    }
+  }
+  return null
+}
+
 async function assertPageLoads(
   page: Parameters<Parameters<typeof test>[1]>[0]['page'],
   url: string
@@ -17,7 +39,7 @@ async function assertPageLoads(
   const errors: string[] = []
   page.on('pageerror', (err) => errors.push(err.message))
 
-  const response = await page.goto(url, { waitUntil: 'domcontentloaded' })
+  const response = await gotoWithRetry(page, url)
   const status = response?.status() ?? 0
 
   // Accept 200, 304 — reject 4xx/5xx (but not 404 for token-based routes tested separately)
@@ -87,7 +109,9 @@ test.describe('Public — Chef Profile Pages', () => {
     await assertPageLoads(page, `/chef/${seedIds.chefSlug}`)
     // The profile should show the chef's business name
     await page.waitForLoadState('networkidle')
-    await expect(page.getByText(/E2E Kitchen|E2E Test Chef/i)).toBeVisible({ timeout: 10_000 })
+    await expect(
+      page.getByRole('heading', { name: /E2E Kitchen|E2E Test Chef/i }).first()
+    ).toBeVisible({ timeout: 10_000 })
   })
 
   test('/chef/[slug]/inquire — inquiry form loads', async ({ page, seedIds }) => {

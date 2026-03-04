@@ -1,24 +1,37 @@
 import { NextResponse } from 'next/server'
 import { requireChef } from '@/lib/auth/get-user'
+import { requirePro } from '@/lib/billing/require-pro'
+import { generateReceipt } from '@/lib/commerce/receipt-actions'
 
-// DEFERRED: Commerce receipt PDF generation.
-// The commerce_sales, commerce_sale_items, and commerce_payments tables
-// do not exist in the current schema. This route returns 501 until the
-// POS/Commerce schema is deployed.
-
-export async function GET(_request: Request, { params: _params }: { params: { saleId: string } }) {
+export async function GET(_request: Request, { params }: { params: { saleId: string } }) {
   try {
     await requireChef()
+    await requirePro('commerce')
 
-    return NextResponse.json(
-      { error: 'Commerce receipts are not yet available — POS schema not deployed' },
-      { status: 501 }
-    )
+    if (!params.saleId) {
+      return NextResponse.json({ error: 'Sale ID is required' }, { status: 400 })
+    }
+
+    const { pdf, filename } = await generateReceipt(params.saleId)
+    const buffer = Buffer.from(pdf, 'base64')
+
+    return new NextResponse(buffer, {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `inline; filename=\"${filename}\"`,
+      },
+    })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to generate receipt'
 
     if (message.includes('Unauthorized')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    if (message.includes('Sale not found')) {
+      return NextResponse.json({ error: 'Sale not found' }, { status: 404 })
+    }
+    if (message.includes('commerce')) {
+      return NextResponse.json({ error: message }, { status: 403 })
     }
 
     console.error('[commerce-receipt-route] Error:', error)

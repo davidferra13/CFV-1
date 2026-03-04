@@ -4,6 +4,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { extractBearerToken, validateDeviceToken, validateStaffPin } from '@/lib/devices/token'
+import { isPosManagerRole, readPosManagerRoleSetFromEnv } from '@/lib/commerce/kiosk-policy'
 
 const MAX_PIN_ATTEMPTS = 5
 const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000 // 5 minutes
@@ -105,9 +106,16 @@ export async function POST(request: Request) {
       console.error('[kiosk/verify-pin] Event log failed (non-blocking):', e)
     }
 
+    const isManager = isPosManagerRole({
+      role: staff.role,
+      managerRoles: readPosManagerRoleSetFromEnv(),
+    })
+
     return NextResponse.json({
       staff_member_id: staff.id,
       staff_name: staff.name,
+      staff_role: staff.role ?? null,
+      is_manager: isManager,
       session_id: session.id,
     })
   } catch (err) {

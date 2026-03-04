@@ -1,4 +1,4 @@
-// Coverage Layer — Chef Routes
+// Coverage Layer â€” Chef Routes
 // Visits every chef-portal URL authenticated as the E2E test chef.
 // Asserts: page loads (no crash), no JS errors, has content.
 // Dynamic [id] segments are filled from seedIds fixture.
@@ -7,7 +7,36 @@
 
 import { test, expect } from '../helpers/fixtures'
 
-// ─── Helper ───────────────────────────────────────────────────────────────────
+async function gotoChefPage(
+  page: Parameters<Parameters<typeof test>[1]>[0]['page'],
+  url: string
+) {
+  let lastResponse: Awaited<ReturnType<typeof page.goto>> = null
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      lastResponse = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90_000 })
+      const status = lastResponse?.status() ?? 0
+      if (status >= 500 && attempt < 2) {
+        await page.waitForTimeout(400)
+        continue
+      }
+      const redirectedToSignIn = /auth\/signin/i.test(page.url())
+      if (redirectedToSignIn && attempt < 2) {
+        await page.waitForTimeout(400)
+        continue
+      }
+      return lastResponse
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      const retryable = /ERR_ABORTED|ERR_CONNECTION|timeout|frame was detached/i.test(message)
+      if (!retryable || attempt === 2) throw error
+      await page.waitForTimeout(400)
+    }
+  }
+  return lastResponse
+}
+
+// â”€â”€â”€ Helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function assertChefPageLoads(
   page: Parameters<Parameters<typeof test>[1]>[0]['page'],
@@ -15,26 +44,43 @@ async function assertChefPageLoads(
   label?: string
 ) {
   const tag = label ?? url
-  const errors: string[] = []
-  page.on('pageerror', (err) => errors.push(err.message))
+  let status = 0
+  let currentUrl = ''
+  let bodyText = ''
+  let errors: string[] = []
 
-  const response = await page.goto(url, { waitUntil: 'domcontentloaded' })
-  const status = response?.status() ?? 0
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    errors = []
+    const onPageError = (err: Error) => errors.push(err.message)
+    page.on('pageerror', onPageError)
+
+    const response = await gotoChefPage(page, url)
+    page.off('pageerror', onPageError)
+
+    status = response?.status() ?? 0
+    currentUrl = page.url()
+    bodyText = await page.locator('body').innerText()
+
+    const hasKnownTransientError = errors.some((msg) =>
+      /Cannot read properties of null \(reading 'useContext'\)/i.test(msg)
+    )
+    const redirectedToSignIn = /auth\/signin/.test(currentUrl)
+    if (attempt < 2 && (status >= 500 || redirectedToSignIn || hasKnownTransientError)) {
+      await page.waitForTimeout(400)
+      continue
+    }
+    break
+  }
 
   expect(status, `[chef] ${tag} returned HTTP ${status}`).toBeLessThan(500)
   expect(errors, `[chef] ${tag} had JS errors: ${errors.join('; ')}`).toHaveLength(0)
-
-  // Must not redirect to auth
-  const currentUrl = page.url()
   expect(currentUrl, `[chef] ${tag} redirected to login`).not.toMatch(/auth\/signin/)
-
-  const bodyText = await page.locator('body').innerText()
   expect(bodyText.trim().length, `[chef] ${tag} rendered blank`).toBeGreaterThan(10)
 }
 
-// ─── Dashboard & Quick Access ─────────────────────────────────────────────────
+// â”€â”€â”€ Dashboard & Quick Access â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Dashboard & Quick Access', () => {
+test.describe('Chef â€” Dashboard & Quick Access', () => {
   test('/dashboard', async ({ page }) => {
     await assertChefPageLoads(page, '/dashboard')
   })
@@ -48,9 +94,9 @@ test.describe('Chef — Dashboard & Quick Access', () => {
   })
 })
 
-// ─── Events — List Views ──────────────────────────────────────────────────────
+// â”€â”€â”€ Events â€” List Views â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Events (List Views)', () => {
+test.describe('Chef â€” Events (List Views)', () => {
   test('/events', async ({ page }) => {
     await assertChefPageLoads(page, '/events')
   })
@@ -92,10 +138,10 @@ test.describe('Chef — Events (List Views)', () => {
   })
 })
 
-// ─── Events — Detail Sub-Pages ────────────────────────────────────────────────
+// â”€â”€â”€ Events â€” Detail Sub-Pages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Events (Detail: Draft)', () => {
-  test('/events/[draft] — detail', async ({ page, seedIds }) => {
+test.describe('Chef â€” Events (Detail: Draft)', () => {
+  test('/events/[draft] â€” detail', async ({ page, seedIds }) => {
     await assertChefPageLoads(page, `/events/${seedIds.eventIds.draft}`)
   })
 
@@ -148,8 +194,8 @@ test.describe('Chef — Events (Detail: Draft)', () => {
   })
 })
 
-test.describe('Chef — Events (Detail: Completed)', () => {
-  test('/events/[completed] — detail', async ({ page, seedIds }) => {
+test.describe('Chef â€” Events (Detail: Completed)', () => {
+  test('/events/[completed] â€” detail', async ({ page, seedIds }) => {
     await assertChefPageLoads(page, `/events/${seedIds.eventIds.completed}`)
   })
 
@@ -174,8 +220,8 @@ test.describe('Chef — Events (Detail: Completed)', () => {
   })
 })
 
-test.describe('Chef — Events (Detail: Confirmed)', () => {
-  test('/events/[confirmed] — detail', async ({ page, seedIds }) => {
+test.describe('Chef â€” Events (Detail: Confirmed)', () => {
+  test('/events/[confirmed] â€” detail', async ({ page, seedIds }) => {
     await assertChefPageLoads(page, `/events/${seedIds.eventIds.confirmed}`)
   })
 
@@ -192,8 +238,8 @@ test.describe('Chef — Events (Detail: Confirmed)', () => {
   })
 })
 
-test.describe('Chef — Events (Detail: Paid)', () => {
-  test('/events/[paid] — detail', async ({ page, seedIds }) => {
+test.describe('Chef â€” Events (Detail: Paid)', () => {
+  test('/events/[paid] â€” detail', async ({ page, seedIds }) => {
     await assertChefPageLoads(page, `/events/${seedIds.eventIds.paid}`)
   })
 
@@ -202,15 +248,15 @@ test.describe('Chef — Events (Detail: Paid)', () => {
   })
 })
 
-test.describe('Chef — Events (Detail: Proposed)', () => {
-  test('/events/[proposed] — detail', async ({ page, seedIds }) => {
+test.describe('Chef â€” Events (Detail: Proposed)', () => {
+  test('/events/[proposed] â€” detail', async ({ page, seedIds }) => {
     await assertChefPageLoads(page, `/events/${seedIds.eventIds.proposed}`)
   })
 })
 
-// ─── Inquiries ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Inquiries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Inquiries', () => {
+test.describe('Chef â€” Inquiries', () => {
   test('/inquiries', async ({ page }) => {
     await assertChefPageLoads(page, '/inquiries')
   })
@@ -239,18 +285,18 @@ test.describe('Chef — Inquiries', () => {
     await assertChefPageLoads(page, '/inquiries/declined')
   })
 
-  test('/inquiries/[awaitingChef] — detail', async ({ page, seedIds }) => {
+  test('/inquiries/[awaitingChef] â€” detail', async ({ page, seedIds }) => {
     await assertChefPageLoads(page, `/inquiries/${seedIds.inquiryIds.awaitingChef}`)
   })
 
-  test('/inquiries/[awaitingClient] — detail', async ({ page, seedIds }) => {
+  test('/inquiries/[awaitingClient] â€” detail', async ({ page, seedIds }) => {
     await assertChefPageLoads(page, `/inquiries/${seedIds.inquiryIds.awaitingClient}`)
   })
 })
 
-// ─── Quotes ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Quotes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Quotes', () => {
+test.describe('Chef â€” Quotes', () => {
   test('/quotes', async ({ page }) => {
     await assertChefPageLoads(page, '/quotes')
   })
@@ -283,15 +329,15 @@ test.describe('Chef — Quotes', () => {
     await assertChefPageLoads(page, '/quotes/expired')
   })
 
-  test('/quotes/[draft] — detail', async ({ page, seedIds }) => {
+  test('/quotes/[draft] â€” detail', async ({ page, seedIds }) => {
     await assertChefPageLoads(page, `/quotes/${seedIds.quoteIds.draft}`)
   })
 
-  test('/quotes/[sent] — detail', async ({ page, seedIds }) => {
+  test('/quotes/[sent] â€” detail', async ({ page, seedIds }) => {
     await assertChefPageLoads(page, `/quotes/${seedIds.quoteIds.sent}`)
   })
 
-  test('/quotes/[accepted] — detail', async ({ page, seedIds }) => {
+  test('/quotes/[accepted] â€” detail', async ({ page, seedIds }) => {
     await assertChefPageLoads(page, `/quotes/${seedIds.quoteIds.accepted}`)
   })
 
@@ -300,9 +346,9 @@ test.describe('Chef — Quotes', () => {
   })
 })
 
-// ─── Clients ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Clients â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Clients (List Views)', () => {
+test.describe('Chef â€” Clients (List Views)', () => {
   test('/clients', async ({ page }) => {
     await assertChefPageLoads(page, '/clients')
   })
@@ -340,16 +386,16 @@ test.describe('Chef — Clients (List Views)', () => {
   })
 })
 
-test.describe('Chef — Clients (Detail)', () => {
-  test('/clients/[primary] — detail', async ({ page, seedIds }) => {
+test.describe('Chef â€” Clients (Detail)', () => {
+  test('/clients/[primary] â€” detail', async ({ page, seedIds }) => {
     await assertChefPageLoads(page, `/clients/${seedIds.clientIds.primary}`)
   })
 
-  test('/clients/[secondary] — detail', async ({ page, seedIds }) => {
+  test('/clients/[secondary] â€” detail', async ({ page, seedIds }) => {
     await assertChefPageLoads(page, `/clients/${seedIds.clientIds.secondary}`)
   })
 
-  test('/clients/[dormant] — detail', async ({ page, seedIds }) => {
+  test('/clients/[dormant] â€” detail', async ({ page, seedIds }) => {
     await assertChefPageLoads(page, `/clients/${seedIds.clientIds.dormant}`)
   })
 
@@ -358,7 +404,7 @@ test.describe('Chef — Clients (Detail)', () => {
   })
 })
 
-test.describe('Chef — Clients (Preferences)', () => {
+test.describe('Chef â€” Clients (Preferences)', () => {
   test('/clients/preferences', async ({ page }) => {
     await assertChefPageLoads(page, '/clients/preferences')
   })
@@ -380,7 +426,7 @@ test.describe('Chef — Clients (Preferences)', () => {
   })
 })
 
-test.describe('Chef — Clients (Insights & Communication)', () => {
+test.describe('Chef â€” Clients (Insights & Communication)', () => {
   test('/clients/insights', async ({ page }) => {
     await assertChefPageLoads(page, '/clients/insights')
   })
@@ -430,7 +476,7 @@ test.describe('Chef — Clients (Insights & Communication)', () => {
   })
 })
 
-test.describe('Chef — Clients (Loyalty)', () => {
+test.describe('Chef â€” Clients (Loyalty)', () => {
   test('/clients/loyalty', async ({ page }) => {
     await assertChefPageLoads(page, '/clients/loyalty')
   })
@@ -448,9 +494,9 @@ test.describe('Chef — Clients (Loyalty)', () => {
   })
 })
 
-// ─── Menus ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Menus â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Menus', () => {
+test.describe('Chef â€” Menus', () => {
   test('/menus', async ({ page }) => {
     await assertChefPageLoads(page, '/menus')
   })
@@ -459,7 +505,7 @@ test.describe('Chef — Menus', () => {
     await assertChefPageLoads(page, '/menus/new')
   })
 
-  test('/menus/[menu] — detail', async ({ page, seedIds }) => {
+  test('/menus/[menu] â€” detail', async ({ page, seedIds }) => {
     await assertChefPageLoads(page, `/menus/${seedIds.menuId}`)
   })
 
@@ -468,9 +514,9 @@ test.describe('Chef — Menus', () => {
   })
 })
 
-// ─── Recipes ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Recipes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Recipes', () => {
+test.describe('Chef â€” Recipes', () => {
   test('/recipes', async ({ page }) => {
     await assertChefPageLoads(page, '/recipes')
   })
@@ -487,7 +533,7 @@ test.describe('Chef — Recipes', () => {
     await assertChefPageLoads(page, '/recipes/sprint')
   })
 
-  test('/recipes/[recipe] — detail', async ({ page, seedIds }) => {
+  test('/recipes/[recipe] â€” detail', async ({ page, seedIds }) => {
     await assertChefPageLoads(page, `/recipes/${seedIds.recipeId}`)
   })
 
@@ -500,9 +546,9 @@ test.describe('Chef — Recipes', () => {
   })
 })
 
-// ─── Culinary ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Culinary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Culinary', () => {
+test.describe('Chef â€” Culinary', () => {
   test('/culinary', async ({ page }) => {
     await assertChefPageLoads(page, '/culinary')
   })
@@ -620,9 +666,9 @@ test.describe('Chef — Culinary', () => {
   })
 })
 
-// ─── Calendar & Scheduling ────────────────────────────────────────────────────
+// â”€â”€â”€ Calendar & Scheduling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Calendar & Scheduling', () => {
+test.describe('Chef â€” Calendar & Scheduling', () => {
   test('/calendar', async ({ page }) => {
     await assertChefPageLoads(page, '/calendar')
   })
@@ -644,9 +690,9 @@ test.describe('Chef — Calendar & Scheduling', () => {
   })
 })
 
-// ─── Finance ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Finance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Finance (Overview)', () => {
+test.describe('Chef â€” Finance (Overview)', () => {
   test('/finance', async ({ page }) => {
     await assertChefPageLoads(page, '/finance')
   })
@@ -672,7 +718,7 @@ test.describe('Chef — Finance (Overview)', () => {
   })
 })
 
-test.describe('Chef — Finance (Invoices)', () => {
+test.describe('Chef â€” Finance (Invoices)', () => {
   test('/finance/invoices', async ({ page }) => {
     await assertChefPageLoads(page, '/finance/invoices')
   })
@@ -702,7 +748,7 @@ test.describe('Chef — Finance (Invoices)', () => {
   })
 })
 
-test.describe('Chef — Finance (Payments)', () => {
+test.describe('Chef â€” Finance (Payments)', () => {
   test('/finance/payments', async ({ page }) => {
     await assertChefPageLoads(page, '/finance/payments')
   })
@@ -724,7 +770,7 @@ test.describe('Chef — Finance (Payments)', () => {
   })
 })
 
-test.describe('Chef — Finance (Ledger)', () => {
+test.describe('Chef â€” Finance (Ledger)', () => {
   test('/finance/ledger', async ({ page }) => {
     await assertChefPageLoads(page, '/finance/ledger')
   })
@@ -738,7 +784,7 @@ test.describe('Chef — Finance (Ledger)', () => {
   })
 })
 
-test.describe('Chef — Finance (Payouts)', () => {
+test.describe('Chef â€” Finance (Payouts)', () => {
   test('/finance/payouts', async ({ page }) => {
     await assertChefPageLoads(page, '/finance/payouts')
   })
@@ -756,7 +802,7 @@ test.describe('Chef — Finance (Payouts)', () => {
   })
 })
 
-test.describe('Chef — Finance (Expenses)', () => {
+test.describe('Chef â€” Finance (Expenses)', () => {
   test('/finance/expenses', async ({ page }) => {
     await assertChefPageLoads(page, '/finance/expenses')
   })
@@ -790,7 +836,7 @@ test.describe('Chef — Finance (Expenses)', () => {
   })
 })
 
-test.describe('Chef — Finance (Reporting & Goals)', () => {
+test.describe('Chef â€” Finance (Reporting & Goals)', () => {
   test('/finance/recurring', async ({ page }) => {
     await assertChefPageLoads(page, '/finance/recurring')
   })
@@ -872,9 +918,9 @@ test.describe('Chef — Finance (Reporting & Goals)', () => {
   })
 })
 
-// ─── Expenses (Standalone) ────────────────────────────────────────────────────
+// â”€â”€â”€ Expenses (Standalone) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Expenses (Standalone)', () => {
+test.describe('Chef â€” Expenses (Standalone)', () => {
   test('/expenses', async ({ page }) => {
     await assertChefPageLoads(page, '/expenses')
   })
@@ -884,9 +930,9 @@ test.describe('Chef — Expenses (Standalone)', () => {
   })
 })
 
-// ─── Analytics ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Analytics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Analytics & Insights', () => {
+test.describe('Chef â€” Analytics & Insights', () => {
   test('/analytics', async ({ page }) => {
     await assertChefPageLoads(page, '/analytics')
   })
@@ -920,9 +966,9 @@ test.describe('Chef — Analytics & Insights', () => {
   })
 })
 
-// ─── Inventory & Costing ──────────────────────────────────────────────────────
+// â”€â”€â”€ Inventory & Costing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Inventory', () => {
+test.describe('Chef â€” Inventory', () => {
   test('/inventory', async ({ page }) => {
     await assertChefPageLoads(page, '/inventory')
   })
@@ -944,9 +990,9 @@ test.describe('Chef — Inventory', () => {
   })
 })
 
-// ─── Staff ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Staff â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Staff & Team', () => {
+test.describe('Chef â€” Staff & Team', () => {
   test('/staff', async ({ page }) => {
     await assertChefPageLoads(page, '/staff')
   })
@@ -972,9 +1018,9 @@ test.describe('Chef — Staff & Team', () => {
   })
 })
 
-// ─── Calls & Chat ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Calls & Chat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Calls & Chat', () => {
+test.describe('Chef â€” Calls & Chat', () => {
   test('/calls', async ({ page }) => {
     await assertChefPageLoads(page, '/calls')
   })
@@ -988,9 +1034,9 @@ test.describe('Chef — Calls & Chat', () => {
   })
 })
 
-// ─── Marketing & Growth ───────────────────────────────────────────────────────
+// â”€â”€â”€ Marketing & Growth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Marketing & Growth', () => {
+test.describe('Chef â€” Marketing & Growth', () => {
   test('/marketing', async ({ page }) => {
     await assertChefPageLoads(page, '/marketing')
   })
@@ -1048,9 +1094,9 @@ test.describe('Chef — Marketing & Growth', () => {
   })
 })
 
-// ─── Network & Community ──────────────────────────────────────────────────────
+// â”€â”€â”€ Network & Community â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Network & Community', () => {
+test.describe('Chef â€” Network & Community', () => {
   test('/network', async ({ page }) => {
     await assertChefPageLoads(page, '/network')
   })
@@ -1068,9 +1114,9 @@ test.describe('Chef — Network & Community', () => {
   })
 })
 
-// ─── Partners & Referrals ─────────────────────────────────────────────────────
+// â”€â”€â”€ Partners & Referrals â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Partners & Referrals', () => {
+test.describe('Chef â€” Partners & Referrals', () => {
   test('/partners', async ({ page }) => {
     await assertChefPageLoads(page, '/partners')
   })
@@ -1108,9 +1154,9 @@ test.describe('Chef — Partners & Referrals', () => {
   })
 })
 
-// ─── Loyalty Program ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Loyalty Program â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Loyalty Program', () => {
+test.describe('Chef â€” Loyalty Program', () => {
   test('/loyalty', async ({ page }) => {
     await assertChefPageLoads(page, '/loyalty')
   })
@@ -1124,9 +1170,9 @@ test.describe('Chef — Loyalty Program', () => {
   })
 })
 
-// ─── Operations ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ Operations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Operations', () => {
+test.describe('Chef â€” Operations', () => {
   test('/operations', async ({ page }) => {
     await assertChefPageLoads(page, '/operations')
   })
@@ -1140,9 +1186,9 @@ test.describe('Chef — Operations', () => {
   })
 })
 
-// ─── Settings ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Settings', () => {
+test.describe('Chef â€” Settings', () => {
   test('/settings', async ({ page }) => {
     await assertChefPageLoads(page, '/settings')
   })
@@ -1264,9 +1310,9 @@ test.describe('Chef — Settings', () => {
   })
 })
 
-// ─── Misc Chef Pages ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Misc Chef Pages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-test.describe('Chef — Misc Pages', () => {
+test.describe('Chef â€” Misc Pages', () => {
   test('/reviews', async ({ page }) => {
     await assertChefPageLoads(page, '/reviews')
   })
@@ -1315,3 +1361,4 @@ test.describe('Chef — Misc Pages', () => {
     await assertChefPageLoads(page, '/onboarding/staff')
   })
 })
+

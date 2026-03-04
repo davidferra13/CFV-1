@@ -124,3 +124,15 @@ Failing: inquiry_parse (0%), correspondence (0%), quote_draft (0%)
 
 Passing: client_parse, menu_suggestions
 Failing: inquiry_parse (0%), allergen_risk (0%), correspondence (0%), quote_draft (0%)
+
+## 2026-03-03 20:56 UTC — 50% pass rate — Run eb3a5d54
+Passing: client_parse, allergen_risk, menu_suggestions
+Failing: inquiry_parse (0%), correspondence (0%), quote_draft (0%)
+
+## 2026-03-03 22:37 UTC — 50% pass rate — Run 775e5fd9
+Passing: client_parse, allergen_risk, menu_suggestions
+Failing: inquiry_parse (0%), correspondence (0%), quote_draft (0%)
+
+## 2026-03-04 02:03 UTC — 33% pass rate — Run 2a0886f2
+Passing: allergen_risk, menu_suggestions
+Failing: inquiry_parse (0%), client_parse (0%), correspondence (0%), quote_draft (0%)

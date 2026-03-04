@@ -1,11 +1,18 @@
-﻿import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { buildCheckoutPaymentIdempotencyKey } from '@/lib/commerce/checkout-idempotency'
+import { getSalesTaxRate } from '@/lib/tax/api-ninjas'
+import { hasTaxableItems } from '@/lib/commerce/tax-policy'
+import { computeLineTaxCents } from '@/lib/commerce/kiosk-policy'
 import {
   authenticateOrderKioskRequest,
   assertStaffSession,
   getOpenRegisterSession,
   KioskApiError,
+  syncRegisterSessionTotals,
 } from '../_helpers'
+
+const CLIENT_CHECKOUT_ID_MAX = 96
 
 const CheckoutItemSchema = z.object({
   product_projection_id: z.string().uuid(),
@@ -27,6 +34,13 @@ const CheckoutSchema = z.object({
   tip_cents: z.number().int().nonnegative().default(0),
   notes: z.string().max(1000).optional().or(z.literal('')),
   session_id: z.string().uuid().optional(),
+  client_checkout_id: z
+    .string()
+    .trim()
+    .min(1)
+    .max(CLIENT_CHECKOUT_ID_MAX)
+    .regex(/^[a-zA-Z0-9:_-]+$/)
+    .optional(),
 })
 
 type ProductRow = {
@@ -36,6 +50,109 @@ type ProductRow = {
   tax_class: string
   cost_cents: number | null
   modifiers: any
+}
+
+type ExistingCheckoutResult = {
+  saleId: string
+  saleNumber: string
+  paymentId: string
+  totalCents: number
+  changeDueCents: number
+  registerSessionId: string | null
+}
+
+function buildCheckoutAttemptKey(raw?: string) {
+  const fallback =
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}_${Math.random().toString(36).slice(2)}`
+  const normalized = (raw ?? fallback).trim()
+  const safe = normalized.replace(/[^a-zA-Z0-9:_-]/g, '').slice(0, CLIENT_CHECKOUT_ID_MAX)
+  return safe || fallback.replace(/[^a-zA-Z0-9:_-]/g, '').slice(0, CLIENT_CHECKOUT_ID_MAX)
+}
+
+function computeChangeDueCents(input: {
+  paymentMethod: 'cash' | 'card'
+  amountTenderedCents: number
+  totalChargedCents: number
+}) {
+  return input.paymentMethod === 'cash'
+    ? Math.max(0, input.amountTenderedCents - input.totalChargedCents)
+    : 0
+}
+
+async function findExistingCheckoutResult(ctx: {
+  supabase: any
+  tenantId: string
+  idempotencyKey: string
+  amountTenderedCents: number
+}): Promise<ExistingCheckoutResult | null> {
+  const { data: payment, error: paymentLookupError } = await (ctx.supabase
+    .from('commerce_payments' as any)
+    .select('id, sale_id, amount_cents, tip_cents, status, payment_method')
+    .eq('tenant_id', ctx.tenantId)
+    .eq('idempotency_key', ctx.idempotencyKey)
+    .maybeSingle() as any)
+
+  if (paymentLookupError) {
+    throw new Error(`Failed to load existing payment: ${paymentLookupError.message}`)
+  }
+  if (!payment || !payment.sale_id) return null
+
+  if (!['captured', 'settled', 'authorized'].includes(String(payment.status ?? ''))) {
+    throw new Error('Existing checkout is not finalized yet. Try again in a moment.')
+  }
+
+  const { data: sale, error: saleLookupError } = await (ctx.supabase
+    .from('sales' as any)
+    .select('id, sale_number, register_session_id')
+    .eq('tenant_id', ctx.tenantId)
+    .eq('id', payment.sale_id)
+    .maybeSingle() as any)
+
+  if (saleLookupError) {
+    throw new Error(`Failed to load existing sale: ${saleLookupError.message}`)
+  }
+  if (!sale) {
+    throw new Error('Checkout payment exists but sale record was not found')
+  }
+
+  const totalCents = (payment.amount_cents ?? 0) + (payment.tip_cents ?? 0)
+  const paymentMethod = payment.payment_method === 'cash' ? 'cash' : 'card'
+  return {
+    saleId: sale.id,
+    saleNumber: sale.sale_number ?? 'Sale',
+    paymentId: payment.id,
+    totalCents,
+    changeDueCents: computeChangeDueCents({
+      paymentMethod,
+      amountTenderedCents: ctx.amountTenderedCents,
+      totalChargedCents: totalCents,
+    }),
+    registerSessionId: sale.register_session_id ?? null,
+  }
+}
+
+async function markSaleAsCheckoutFailed(ctx: {
+  supabase: any
+  tenantId: string
+  saleId: string
+  reason: string
+}) {
+  try {
+    await (ctx.supabase
+      .from('sales' as any)
+      .update({
+        status: 'voided',
+        void_reason: 'checkout_failed',
+        voided_at: new Date().toISOString(),
+        notes: `[checkout_failed] ${ctx.reason}`,
+      } as any)
+      .eq('id', ctx.saleId)
+      .eq('tenant_id', ctx.tenantId) as any)
+  } catch (err) {
+    console.error('[kiosk/order/checkout] failed to mark sale as checkout_failed:', err)
+  }
 }
 
 function canonicalizeModifiers(
@@ -48,8 +165,14 @@ function canonicalizeModifiers(
 
   const available = Array.isArray(productModifiers) ? productModifiers : []
   const normalized: Array<{ name: string; option: string; price_delta_cents: number }> = []
+  const usedModifierNames = new Set<string>()
 
   for (const picked of selected) {
+    if (usedModifierNames.has(picked.name)) {
+      throw new KioskApiError(`Duplicate modifier: ${picked.name}`, 400)
+    }
+    usedModifierNames.add(picked.name)
+
     const modifier = available.find((m: any) => m?.name === picked.name)
     if (!modifier) {
       throw new KioskApiError(`Invalid modifier: ${picked.name}`, 400)
@@ -82,13 +205,37 @@ export async function POST(request: Request) {
 
     const body = await request.json()
     const parsed = CheckoutSchema.parse(body)
+    const checkoutAttemptKey = buildCheckoutAttemptKey(parsed.client_checkout_id)
+    const paymentIdempotencyKey = buildCheckoutPaymentIdempotencyKey(
+      device.tenantId,
+      `kiosk_${device.deviceId}_${checkoutAttemptKey}`
+    )
 
     const staffSession = await assertStaffSession({
       supabase,
       deviceId: device.deviceId,
+      tenantId: device.tenantId,
       requireStaffPin: device.requireStaffPin,
       sessionId: parsed.session_id,
     })
+
+    const existing = await findExistingCheckoutResult({
+      supabase,
+      tenantId: device.tenantId,
+      idempotencyKey: paymentIdempotencyKey,
+      amountTenderedCents: parsed.amount_tendered_cents,
+    })
+    if (existing) {
+      return NextResponse.json({
+        success: true,
+        sale_id: existing.saleId,
+        sale_number: existing.saleNumber,
+        payment_id: existing.paymentId,
+        register_session_id: existing.registerSessionId,
+        total_cents: existing.totalCents,
+        change_due_cents: existing.changeDueCents,
+      })
+    }
 
     const registerSession = await getOpenRegisterSession({
       supabase,
@@ -146,8 +293,56 @@ export async function POST(request: Request) {
       }
     })
 
-    const subtotalCents = itemRows.reduce((sum, row) => sum + row.line_total_cents, 0)
-    const taxCents = 0
+    const hasTaxableCheckoutItems = hasTaxableItems(
+      itemRows.map((item) => ({
+        taxClass: (item.tax_class as any) ?? 'standard',
+      }))
+    )
+
+    let taxZipCode: string | null = null
+    let combinedTaxRate = 0
+
+    if (hasTaxableCheckoutItems) {
+      const { data: chef, error: chefError } = await (supabase
+        .from('chefs' as any)
+        .select('zip')
+        .eq('id', device.tenantId)
+        .maybeSingle() as any)
+
+      if (chefError) {
+        return NextResponse.json({ error: 'Failed to load business tax ZIP' }, { status: 500 })
+      }
+
+      taxZipCode = String((chef as any)?.zip ?? '').trim() || null
+      if (!taxZipCode) {
+        return NextResponse.json(
+          { error: 'Business ZIP is required for taxable items before checkout' },
+          { status: 409 }
+        )
+      }
+
+      const taxRates = await getSalesTaxRate(taxZipCode)
+      if (!taxRates) {
+        return NextResponse.json(
+          { error: 'Tax service unavailable. Unable to calculate sales tax right now' },
+          { status: 503 }
+        )
+      }
+
+      combinedTaxRate = taxRates.combined_rate
+    }
+
+    const finalizedItemRows = itemRows.map((item) => ({
+      ...item,
+      tax_cents: computeLineTaxCents({
+        lineTotalCents: item.line_total_cents,
+        combinedRate: combinedTaxRate,
+        taxClass: item.tax_class,
+      }),
+    }))
+
+    const subtotalCents = finalizedItemRows.reduce((sum, row) => sum + row.line_total_cents, 0)
+    const taxCents = finalizedItemRows.reduce((sum, row) => sum + (row.tax_cents ?? 0), 0)
     const totalCents = subtotalCents + taxCents
     const tipCents = parsed.tip_cents ?? 0
     const totalChargedCents = totalCents + tipCents
@@ -162,12 +357,14 @@ export async function POST(request: Request) {
         tenant_id: device.tenantId,
         channel: 'counter',
         register_session_id: registerSession.id,
-        status: 'draft',
+        tax_zip_code: taxZipCode,
+        status: 'pending_payment',
         notes: parsed.notes?.trim() ? `[kiosk] ${parsed.notes.trim()}` : '[kiosk] order checkout',
         metadata: {
           source: 'kiosk',
           device_id: device.deviceId,
           device_session_id: parsed.session_id || null,
+          checkout_request_key: checkoutAttemptKey,
           staff_member_id: (staffSession as any)?.staff_member_id ?? null,
         },
         created_by: null,
@@ -179,15 +376,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to create sale' }, { status: 500 })
     }
 
-    const saleItems = itemRows.map((row) => ({ ...row, sale_id: (sale as any).id }))
+    const saleItems = finalizedItemRows.map((row) => ({ ...row, sale_id: (sale as any).id }))
     const { error: itemInsertError } = await (supabase as any)
       .from('sale_items')
       .insert(saleItems as any)
     if (itemInsertError) {
+      await markSaleAsCheckoutFailed({
+        supabase,
+        tenantId: device.tenantId,
+        saleId: (sale as any).id,
+        reason: `sale_items_insert_failed:${itemInsertError.message}`,
+      })
       return NextResponse.json({ error: 'Failed to save cart items' }, { status: 500 })
     }
 
-    await (supabase as any)
+    const { error: saleTotalsError } = await (supabase as any)
       .from('sales')
       .update({
         subtotal_cents: subtotalCents,
@@ -197,8 +400,15 @@ export async function POST(request: Request) {
       } as any)
       .eq('id', (sale as any).id)
       .eq('tenant_id', device.tenantId)
-
-    const idempotencyKey = `kiosk_checkout_${device.deviceId}_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`
+    if (saleTotalsError) {
+      await markSaleAsCheckoutFailed({
+        supabase,
+        tenantId: device.tenantId,
+        saleId: (sale as any).id,
+        reason: `sale_totals_update_failed:${saleTotalsError.message}`,
+      })
+      return NextResponse.json({ error: 'Failed to update sale totals' }, { status: 500 })
+    }
 
     const { data: payment, error: paymentError } = await (supabase
       .from('commerce_payments')
@@ -210,8 +420,8 @@ export async function POST(request: Request) {
         payment_method: parsed.payment_method,
         status: 'captured',
         processor_type: 'manual_kiosk',
-        idempotency_key: idempotencyKey,
-        transaction_reference: `commerce_${idempotencyKey}`,
+        idempotency_key: paymentIdempotencyKey,
+        transaction_reference: `commerce_${paymentIdempotencyKey}`,
         captured_at: new Date().toISOString(),
         created_by: null,
         notes: parsed.notes?.trim() || null,
@@ -220,32 +430,53 @@ export async function POST(request: Request) {
       .single() as any)
 
     if (paymentError || !payment) {
+      const idempotentRetry = await findExistingCheckoutResult({
+        supabase,
+        tenantId: device.tenantId,
+        idempotencyKey: paymentIdempotencyKey,
+        amountTenderedCents: parsed.amount_tendered_cents,
+      })
+      if (idempotentRetry) {
+        return NextResponse.json({
+          success: true,
+          sale_id: idempotentRetry.saleId,
+          sale_number: idempotentRetry.saleNumber,
+          payment_id: idempotentRetry.paymentId,
+          register_session_id: idempotentRetry.registerSessionId,
+          total_cents: idempotentRetry.totalCents,
+          change_due_cents: idempotentRetry.changeDueCents,
+        })
+      }
+
+      await markSaleAsCheckoutFailed({
+        supabase,
+        tenantId: device.tenantId,
+        saleId: (sale as any).id,
+        reason: paymentError?.message ?? 'payment_insert_failed',
+      })
       return NextResponse.json({ error: 'Failed to record payment' }, { status: 500 })
     }
 
-    await (supabase as any)
+    const { error: saleStatusError } = await (supabase as any)
       .from('sales')
       .update({ status: 'captured' } as any)
       .eq('id', (sale as any).id)
       .eq('tenant_id', device.tenantId)
+    if (saleStatusError) {
+      console.error(
+        '[kiosk/order/checkout] Sale status update failed (non-blocking):',
+        saleStatusError
+      )
+    }
 
-    const { data: registerTotals } = await (supabase
-      .from('register_sessions' as any)
-      .select('total_sales_count, total_revenue_cents, total_tips_cents')
-      .eq('id', registerSession.id)
-      .eq('tenant_id', device.tenantId)
-      .single() as any)
-
-    if (registerTotals) {
-      await (supabase as any)
-        .from('register_sessions')
-        .update({
-          total_sales_count: (registerTotals as any).total_sales_count + 1,
-          total_revenue_cents: (registerTotals as any).total_revenue_cents + totalCents,
-          total_tips_cents: (registerTotals as any).total_tips_cents + tipCents,
-        } as any)
-        .eq('id', registerSession.id)
-        .eq('tenant_id', device.tenantId)
+    try {
+      await syncRegisterSessionTotals({
+        supabase,
+        tenantId: device.tenantId,
+        registerSessionId: registerSession.id,
+      })
+    } catch (syncError) {
+      console.error('[kiosk/order/checkout] Register total sync failed (non-blocking):', syncError)
     }
 
     try {
@@ -259,17 +490,20 @@ export async function POST(request: Request) {
           sale_number: (sale as any).sale_number,
           payment_method: parsed.payment_method,
           total_cents: totalChargedCents,
+          tax_cents: taxCents,
           register_session_id: registerSession.id,
+          checkout_request_key: checkoutAttemptKey,
         },
       })
     } catch (eventError) {
       console.error('[kiosk/order/checkout] Device event log failed (non-blocking):', eventError)
     }
 
-    const changeDueCents =
-      parsed.payment_method === 'cash'
-        ? Math.max(0, parsed.amount_tendered_cents - totalChargedCents)
-        : 0
+    const changeDueCents = computeChangeDueCents({
+      paymentMethod: parsed.payment_method,
+      amountTenderedCents: parsed.amount_tendered_cents,
+      totalChargedCents,
+    })
 
     return NextResponse.json({
       success: true,
@@ -278,6 +512,7 @@ export async function POST(request: Request) {
       payment_id: (payment as any).id,
       register_session_id: registerSession.id,
       total_cents: totalChargedCents,
+      tax_cents: taxCents,
       change_due_cents: changeDueCents,
     })
   } catch (err) {

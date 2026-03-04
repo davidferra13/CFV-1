@@ -1,23 +1,24 @@
 'use client'
 
+import Image from 'next/image'
+import Link from 'next/link'
 import { useState, useTransition } from 'react'
-import { UserMinus, Search, UserPlus, Check, X, Loader2 } from 'lucide-react'
+import { Check, Copy, ExternalLink, Loader2, UserMinus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  removeFriend,
-  acceptFriendRequest,
-  declineFriendRequest,
-  sendFriendRequest,
-  searchPeople,
-} from '@/lib/hub/friend-actions'
+import { acceptFriendRequest, declineFriendRequest, removeFriend } from '@/lib/hub/friend-actions'
 import type { HubFriend } from '@/lib/hub/friend-actions'
-import type { HubGuestProfile } from '@/lib/hub/types'
 
 // ---------------------------------------------------------------------------
 // Friend Card
 // ---------------------------------------------------------------------------
 
-function FriendCard({ friend, onRemoved }: { friend: HubFriend; onRemoved: () => void }) {
+function FriendCard({
+  friend,
+  onRemoved,
+}: {
+  friend: HubFriend
+  onRemoved: (friendshipId: string) => void
+}) {
   const [isPending, startTransition] = useTransition()
 
   function handleRemove() {
@@ -25,7 +26,7 @@ function FriendCard({ friend, onRemoved }: { friend: HubFriend; onRemoved: () =>
     startTransition(async () => {
       try {
         await removeFriend(friend.friendship_id)
-        onRemoved()
+        onRemoved(friend.friendship_id)
       } catch (err) {
         alert(err instanceof Error ? err.message : 'Failed to remove friend')
       }
@@ -36,9 +37,11 @@ function FriendCard({ friend, onRemoved }: { friend: HubFriend; onRemoved: () =>
     <div className="flex items-center gap-3 rounded-lg border border-stone-800 bg-stone-900/60 p-3">
       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-500/20 text-sm font-semibold text-brand-400">
         {friend.profile.avatar_url ? (
-          <img
+          <Image
             src={friend.profile.avatar_url}
             alt=""
+            width={40}
+            height={40}
             className="h-10 w-10 rounded-full object-cover"
           />
         ) : (
@@ -72,14 +75,22 @@ function FriendCard({ friend, onRemoved }: { friend: HubFriend; onRemoved: () =>
 // Pending Request Card
 // ---------------------------------------------------------------------------
 
-function PendingRequestCard({ request, onHandled }: { request: HubFriend; onHandled: () => void }) {
+function PendingRequestCard({
+  request,
+  onAccepted,
+  onDeclined,
+}: {
+  request: HubFriend
+  onAccepted: (request: HubFriend) => void
+  onDeclined: (friendshipId: string) => void
+}) {
   const [isPending, startTransition] = useTransition()
 
   function handleAccept() {
     startTransition(async () => {
       try {
         await acceptFriendRequest(request.friendship_id)
-        onHandled()
+        onAccepted(request)
       } catch (err) {
         alert(err instanceof Error ? err.message : 'Failed')
       }
@@ -90,7 +101,7 @@ function PendingRequestCard({ request, onHandled }: { request: HubFriend; onHand
     startTransition(async () => {
       try {
         await declineFriendRequest(request.friendship_id)
-        onHandled()
+        onDeclined(request.friendship_id)
       } catch (err) {
         alert(err instanceof Error ? err.message : 'Failed')
       }
@@ -106,7 +117,7 @@ function PendingRequestCard({ request, onHandled }: { request: HubFriend; onHand
         <p className="truncate text-sm font-medium text-stone-100">
           {request.profile.display_name}
         </p>
-        <p className="text-xs text-stone-400">wants to be your friend</p>
+        <p className="text-xs text-stone-400">invited you to join their dinner circle</p>
       </div>
       <div className="flex gap-1.5">
         <button
@@ -133,197 +144,141 @@ function PendingRequestCard({ request, onHandled }: { request: HubFriend; onHand
 }
 
 // ---------------------------------------------------------------------------
-// Search Result Card
-// ---------------------------------------------------------------------------
-
-function SearchResultCard({
-  profile,
-  isFriend,
-  isPendingRequest,
-  onSent,
-}: {
-  profile: HubGuestProfile
-  isFriend: boolean
-  isPendingRequest: boolean
-  onSent: () => void
-}) {
-  const [isPending, startTransition] = useTransition()
-  const [sent, setSent] = useState(false)
-
-  function handleAdd() {
-    startTransition(async () => {
-      try {
-        await sendFriendRequest(profile.id)
-        setSent(true)
-        onSent()
-      } catch (err) {
-        alert(err instanceof Error ? err.message : 'Failed to send request')
-      }
-    })
-  }
-
-  return (
-    <div className="flex items-center gap-3 rounded-lg border border-stone-800 bg-stone-900/60 p-3">
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-700 text-sm font-semibold text-stone-300">
-        {profile.avatar_url ? (
-          <img src={profile.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" />
-        ) : (
-          profile.display_name.charAt(0).toUpperCase()
-        )}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-stone-100">{profile.display_name}</p>
-      </div>
-      {isFriend ? (
-        <span className="text-xs text-stone-400">Already friends</span>
-      ) : isPendingRequest || sent ? (
-        <span className="text-xs text-brand-400">Request sent</span>
-      ) : (
-        <button
-          type="button"
-          onClick={handleAdd}
-          disabled={isPending}
-          className="rounded-lg bg-brand-600 p-2 text-white hover:bg-brand-700 transition-colors"
-          title="Add friend"
-        >
-          {isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <UserPlus className="h-4 w-4" />
-          )}
-        </button>
-      )}
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
 // Main Friends List Component
 // ---------------------------------------------------------------------------
 
 export function FriendsList({
   initialFriends,
   initialRequests,
+  inviteProfileToken,
 }: {
   initialFriends: HubFriend[]
   initialRequests: HubFriend[]
+  inviteProfileToken: string
 }) {
   const [friends, setFriends] = useState(initialFriends)
   const [requests, setRequests] = useState(initialRequests)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<HubGuestProfile[]>([])
-  const [existingFriendIds, setExistingFriendIds] = useState<string[]>([])
-  const [pendingIds, setPendingIds] = useState<string[]>([])
-  const [isSearching, setIsSearching] = useState(false)
-  const [showSearch, setShowSearch] = useState(false)
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle')
 
-  async function handleSearch(query: string) {
-    setSearchQuery(query)
-    if (query.trim().length < 2) {
-      setSearchResults([])
-      return
-    }
+  const invitePath = `/my-hub/friends/invite/${inviteProfileToken}`
+  const inviteUrl =
+    typeof window === 'undefined' ? invitePath : `${window.location.origin}${invitePath}`
 
-    setIsSearching(true)
-    try {
-      const result = await searchPeople(query)
-      setSearchResults(result.profiles)
-      setExistingFriendIds(result.existing_friend_ids)
-      setPendingIds(result.pending_request_ids)
-    } catch {
-      setSearchResults([])
-    } finally {
-      setIsSearching(false)
-    }
+  function handleFriendRemoved(friendshipId: string) {
+    setFriends((prev) => prev.filter((item) => item.friendship_id !== friendshipId))
   }
 
-  function refreshData() {
-    // Force page refresh to get fresh data
-    window.location.reload()
+  function handleRequestAccepted(request: HubFriend) {
+    const acceptedAt = new Date().toISOString()
+    setRequests((prev) => prev.filter((item) => item.friendship_id !== request.friendship_id))
+    setFriends((prev) => [
+      {
+        ...request,
+        status: 'accepted',
+        accepted_at: acceptedAt,
+      },
+      ...prev,
+    ])
+  }
+
+  function handleRequestDeclined(friendshipId: string) {
+    setRequests((prev) => prev.filter((item) => item.friendship_id !== friendshipId))
+  }
+
+  async function handleCopyInviteLink() {
+    setCopyState('idle')
+    try {
+      if (!navigator?.clipboard?.writeText) {
+        throw new Error('Clipboard unavailable')
+      }
+      await navigator.clipboard.writeText(inviteUrl)
+      setCopyState('copied')
+    } catch {
+      setCopyState('error')
+    }
   }
 
   return (
     <div className="space-y-6">
+      <div className="rounded-xl border border-stone-700 bg-stone-900/80 p-4">
+        <h2 className="text-lg font-semibold text-stone-100">Invite to Dinner Circle</h2>
+        <p className="mt-1 text-sm text-stone-400">
+          This is private and invite-only. Share this link only with people you trust.
+        </p>
+        <p className="mt-1 text-xs text-stone-500">
+          There is no public client directory and no client-to-client browsing.
+        </p>
+
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <input
+            readOnly
+            value={inviteUrl}
+            className="flex-1 rounded-lg border border-stone-700 bg-stone-800 px-3 py-2 text-sm text-stone-200"
+          />
+          <Button type="button" variant="secondary" onClick={handleCopyInviteLink}>
+            <Copy className="mr-1.5 h-4 w-4" />
+            Copy Link
+          </Button>
+          <Link href={invitePath}>
+            <Button type="button" variant="ghost">
+              <ExternalLink className="mr-1.5 h-4 w-4" />
+              Open
+            </Button>
+          </Link>
+        </div>
+
+        {copyState === 'copied' && (
+          <p className="mt-2 text-xs text-emerald-400">Invite link copied.</p>
+        )}
+        {copyState === 'error' && (
+          <p className="mt-2 text-xs text-red-400">
+            Could not copy automatically. Copy the URL above.
+          </p>
+        )}
+      </div>
+
       {/* Pending Requests */}
       {requests.length > 0 && (
         <div>
           <h2 className="mb-3 text-lg font-semibold text-stone-100">
-            Friend Requests ({requests.length})
+            Circle Invites ({requests.length})
           </h2>
           <div className="space-y-2">
             {requests.map((req) => (
-              <PendingRequestCard key={req.friendship_id} request={req} onHandled={refreshData} />
+              <PendingRequestCard
+                key={req.friendship_id}
+                request={req}
+                onAccepted={handleRequestAccepted}
+                onDeclined={handleRequestDeclined}
+              />
             ))}
           </div>
         </div>
       )}
 
-      {/* Add Friends */}
+      {/* Friends */}
       <div>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-stone-100">
-            Friends {friends.length > 0 && `(${friends.length})`}
-          </h2>
-          <Button variant="ghost" onClick={() => setShowSearch(!showSearch)} className="text-sm">
-            <UserPlus className="mr-1.5 h-4 w-4" />
-            Add Friend
-          </Button>
-        </div>
-
-        {/* Search Panel */}
-        {showSearch && (
-          <div className="mb-4 rounded-xl border border-stone-700 bg-stone-900/80 p-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-500" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                placeholder="Search by name or email..."
-                className="w-full rounded-lg border border-stone-700 bg-stone-800 py-2.5 pl-10 pr-4 text-sm text-stone-100 placeholder-stone-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-                autoFocus
-              />
-            </div>
-            {isSearching && (
-              <div className="mt-3 flex items-center justify-center py-4 text-sm text-stone-400">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Searching...
-              </div>
-            )}
-            {!isSearching && searchResults.length > 0 && (
-              <div className="mt-3 space-y-2">
-                {searchResults.map((profile) => (
-                  <SearchResultCard
-                    key={profile.id}
-                    profile={profile}
-                    isFriend={existingFriendIds.includes(profile.id)}
-                    isPendingRequest={pendingIds.includes(profile.id)}
-                    onSent={() => setPendingIds((prev) => [...prev, profile.id])}
-                  />
-                ))}
-              </div>
-            )}
-            {!isSearching && searchQuery.length >= 2 && searchResults.length === 0 && (
-              <p className="mt-3 text-center text-sm text-stone-400">No people found</p>
-            )}
-          </div>
-        )}
+        <h2 className="mb-3 text-lg font-semibold text-stone-100">
+          Dinner Circle {friends.length > 0 && `(${friends.length})`}
+        </h2>
 
         {/* Friends Grid */}
         {friends.length > 0 ? (
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {friends.map((friend) => (
-              <FriendCard key={friend.friendship_id} friend={friend} onRemoved={refreshData} />
+              <FriendCard
+                key={friend.friendship_id}
+                friend={friend}
+                onRemoved={handleFriendRemoved}
+              />
             ))}
           </div>
         ) : (
-          !showSearch && (
-            <div className="rounded-xl border border-dashed border-stone-700 bg-stone-900/30 py-10 text-center">
-              <p className="text-sm text-stone-400">
-                No friends yet. Click &quot;Add Friend&quot; to find people you know!
-              </p>
-            </div>
-          )
+          <div className="rounded-xl border border-dashed border-stone-700 bg-stone-900/30 py-10 text-center">
+            <p className="text-sm text-stone-400">
+              No circle members yet. Share your private invite link above.
+            </p>
+          </div>
         )}
       </div>
     </div>

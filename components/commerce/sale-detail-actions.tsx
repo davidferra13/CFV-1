@@ -21,9 +21,16 @@ type Props = {
   saleStatus: SaleStatus
   totalCents: number
   payments: Array<{ id: string; amount_cents: number; tip_cents: number; status: string }>
+  managerApprovalRequired?: boolean
 }
 
-export function SaleDetailActions({ saleId, saleStatus, totalCents, payments }: Props) {
+export function SaleDetailActions({
+  saleId,
+  saleStatus,
+  totalCents,
+  payments,
+  managerApprovalRequired = false,
+}: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
@@ -208,6 +215,11 @@ export function SaleDetailActions({ saleId, saleStatus, totalCents, payments }: 
           </Button>
         )}
       </div>
+      {managerApprovalRequired && (
+        <p className="text-xs text-amber-400">
+          Manager approval is required for refund and void actions.
+        </p>
+      )}
 
       {/* Void confirmation */}
       {showVoidConfirm && (

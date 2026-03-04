@@ -25,6 +25,11 @@ const NOTIF_LABELS: Record<string, string> = {
   story_reaction: 'reacted to your story',
   story_view: 'viewed your story',
   connection_accepted: 'accepted your connection request',
+  collab_handoff_received: 'sent you a collaboration handoff',
+  collab_handoff_accepted: 'accepted your collaboration handoff',
+  collab_handoff_rejected: 'passed on your collaboration handoff',
+  collab_handoff_converted: 'converted your collaboration handoff',
+  collab_handoff_cancelled: 'cancelled a collaboration handoff',
 }
 
 export default async function NotificationsPage() {
@@ -68,6 +73,10 @@ export default async function NotificationsPage() {
               ? (notif.actor.display_name ?? notif.actor.business_name)
               : 'Someone'
             const label = NOTIF_LABELS[notif.notification_type] ?? notif.notification_type
+            const actionHref =
+              notif.entity_type === 'handoff'
+                ? `/network?tab=collab&handoff=${encodeURIComponent(notif.entity_id)}&notif=${encodeURIComponent(notif.id)}`
+                : null
 
             return (
               <div
@@ -120,6 +129,14 @@ export default async function NotificationsPage() {
 
                 {!notif.is_read && (
                   <div className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0 mt-2" />
+                )}
+                {actionHref && (
+                  <Link
+                    href={actionHref}
+                    className="text-xs text-amber-700 font-medium hover:underline mt-1"
+                  >
+                    Open
+                  </Link>
                 )}
               </div>
             )

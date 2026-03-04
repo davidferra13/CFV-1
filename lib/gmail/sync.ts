@@ -431,7 +431,9 @@ async function handleInquiry(
     // ─── Phase 1: Deterministic extraction (instant, free, always works) ───
     const { fields: detFields, score: leadScore } = extractAndScoreEmail(
       email.subject || '',
-      email.body
+      email.body,
+      undefined,
+      { observedAt: email.date ?? null }
     )
 
     // ─── Phase 2: Ollama enrichment (supplements deterministic with freeform fields) ───
@@ -742,7 +744,8 @@ async function handleExistingThread(
               {
                 total_messages: 2, // At least 2 messages in thread now
                 has_pricing_quoted: false,
-              }
+              },
+              { observedAt: email.date ?? null }
             )
 
             const updates: Record<string, unknown> = {}

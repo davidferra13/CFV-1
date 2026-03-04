@@ -470,6 +470,7 @@ export function RemyDrawer() {
       {/* Collapsed floating strip */}
       {open && collapsed && (
         <div
+          data-remy-root
           className="fixed bottom-4 right-4 z-50 w-12 bg-brand-600 shadow-2xl flex flex-col items-center py-3 gap-2 rounded-2xl border border-brand-700"
           style={{ height: '180px' }}
         >
@@ -506,6 +507,7 @@ export function RemyDrawer() {
       {/* Floating chat window — positioned bottom-right, page remains interactive */}
       {open && !collapsed && (
         <div
+          data-remy-root
           role="dialog"
           aria-modal="true"
           aria-label="Remy AI assistant"

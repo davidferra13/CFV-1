@@ -1,11 +1,13 @@
 ﻿'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Search, Minus, Plus, CreditCard, Banknote, Wallet, X } from 'lucide-react'
 import type { StaffPinSession } from '@/lib/devices/types'
 import { formatCurrency, parseCurrencyToCents } from '@/lib/utils/currency'
 import { PRODUCT_CATEGORY_LABELS } from '@/lib/commerce/constants'
 import type { ProductCategory } from '@/lib/commerce/constants'
+import { hasTaxableItems } from '@/lib/commerce/tax-policy'
+import { computeLineTaxCents } from '@/lib/commerce/kiosk-policy'
 import {
   enqueueOrderCheckout,
   getOrderQueueSize,
@@ -64,6 +66,13 @@ function modifierSignature(modifiers: Array<{ name: string; option: string }>) {
     .join('|')
 }
 
+function buildCheckoutAttemptId() {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID()
+  }
+  return `${Date.now()}_${Math.random().toString(36).slice(2)}`
+}
+
 export function KioskOrderRegister({ token, staffSession }: KioskOrderRegisterProps) {
   const [products, setProducts] = useState<Product[]>([])
   const [cart, setCart] = useState<CartItem[]>([])
@@ -77,6 +86,9 @@ export function KioskOrderRegister({ token, staffSession }: KioskOrderRegisterPr
   const [cashTendered, setCashTendered] = useState('')
   const [tipInput, setTipInput] = useState('0.00')
   const [queuedCount, setQueuedCount] = useState(0)
+  const [taxRate, setTaxRate] = useState(0)
+  const [taxZipConfigured, setTaxZipConfigured] = useState(false)
+  const [taxServiceAvailable, setTaxServiceAvailable] = useState(true)
 
   const [lastSale, setLastSale] = useState<{
     saleNumber: string
@@ -87,11 +99,13 @@ export function KioskOrderRegister({ token, staffSession }: KioskOrderRegisterPr
   const [customizingProduct, setCustomizingProduct] = useState<Product | null>(null)
   const [modifierSelections, setModifierSelections] = useState<Record<string, string>>({})
 
-  const [drawerAction, setDrawerAction] = useState<'paid_in' | 'paid_out' | 'adjustment' | null>(
-    null
-  )
+  const [drawerAction, setDrawerAction] = useState<
+    'paid_in' | 'paid_out' | 'adjustment' | 'no_sale' | null
+  >(null)
   const [drawerAmount, setDrawerAmount] = useState('')
   const [drawerNotes, setDrawerNotes] = useState('')
+  const checkoutRequestIdRef = useRef<string | null>(null)
+  const hasManagerDrawerAccess = !!staffSession?.is_manager
 
   useEffect(() => {
     try {
@@ -114,9 +128,46 @@ export function KioskOrderRegister({ token, staffSession }: KioskOrderRegisterPr
     () => cart.reduce((sum, item) => sum + item.unitPriceCents * item.quantity, 0),
     [cart]
   )
+  const cartHasTaxableItems = useMemo(
+    () =>
+      hasTaxableItems(
+        cart.map((item) => ({
+          taxClass: (item.product.tax_class as any) ?? 'standard',
+        }))
+      ),
+    [cart]
+  )
+  const estimatedTaxCents = useMemo(() => {
+    if (!taxZipConfigured || taxRate <= 0) return 0
+
+    return cart.reduce(
+      (sum, item) =>
+        sum +
+        computeLineTaxCents({
+          lineTotalCents: item.unitPriceCents * item.quantity,
+          combinedRate: taxRate,
+          taxClass: item.product.tax_class,
+        }),
+      0
+    )
+  }, [cart, taxRate, taxZipConfigured])
+  const taxBlockingMessage = useMemo(() => {
+    if (!cartHasTaxableItems) return null
+    if (!taxZipConfigured) {
+      return 'Business ZIP is required for taxable items before checkout.'
+    }
+    if (!taxServiceAvailable) {
+      return 'Tax service unavailable. Unable to calculate sales tax right now.'
+    }
+    return null
+  }, [cartHasTaxableItems, taxServiceAvailable, taxZipConfigured])
+  const checkoutBlockedByTax = !!taxBlockingMessage
 
   const tipCents = useMemo(() => parseCurrencyToCents(tipInput || '0'), [tipInput])
-  const totalDueCents = subtotalCents + tipCents
+  const totalDueCents = subtotalCents + estimatedTaxCents + tipCents
+  const cashTenderedCents = useMemo(() => parseCurrencyToCents(cashTendered || '0'), [cashTendered])
+  const insufficientCashTendered = totalDueCents > 0 && cashTenderedCents < totalDueCents
+  const cashPaymentBlocked = checkoutBlockedByTax || insufficientCashTendered
 
   useEffect(() => {
     if (totalDueCents <= 0) {
@@ -139,6 +190,9 @@ export function KioskOrderRegister({ token, staffSession }: KioskOrderRegisterPr
     }
 
     setProducts(data.products || [])
+    setTaxRate(typeof data.tax_rate === 'number' ? data.tax_rate : 0)
+    setTaxZipConfigured(!!data.tax_zip_configured)
+    setTaxServiceAvailable(data.tax_zip_configured ? !!data.tax_service_available : true)
   }, [token])
 
   const loadDrawer = useCallback(async () => {
@@ -255,6 +309,7 @@ export function KioskOrderRegister({ token, staffSession }: KioskOrderRegisterPr
 
   function clearCart() {
     setCart([])
+    checkoutRequestIdRef.current = null
     localStorage.removeItem(CART_STORAGE_KEY)
   }
 
@@ -299,10 +354,19 @@ export function KioskOrderRegister({ token, staffSession }: KioskOrderRegisterPr
   }
 
   async function submitCheckout(paymentMethod: 'cash' | 'card') {
-    if (cart.length === 0) return
+    if (cart.length === 0 || submitting) return
+    if (checkoutBlockedByTax) {
+      setError(taxBlockingMessage ?? 'Unable to checkout taxable items right now')
+      return
+    }
 
     setSubmitting(true)
     setError('')
+
+    if (!checkoutRequestIdRef.current) {
+      checkoutRequestIdRef.current = buildCheckoutAttemptId()
+    }
+    const checkoutRequestId = checkoutRequestIdRef.current
 
     const payload = {
       items: cart.map((item) => ({
@@ -311,10 +375,10 @@ export function KioskOrderRegister({ token, staffSession }: KioskOrderRegisterPr
         selected_modifiers: item.modifiersApplied.map((m) => ({ name: m.name, option: m.option })),
       })),
       payment_method: paymentMethod,
-      amount_tendered_cents:
-        paymentMethod === 'cash' ? parseCurrencyToCents(cashTendered || '0') : totalDueCents,
+      amount_tendered_cents: paymentMethod === 'cash' ? cashTenderedCents : totalDueCents,
       tip_cents: tipCents,
       session_id: staffSession?.session_id,
+      client_checkout_id: checkoutRequestId,
     }
 
     try {
@@ -342,6 +406,7 @@ export function KioskOrderRegister({ token, staffSession }: KioskOrderRegisterPr
       clearCart()
       setTipInput('0.00')
       setCashTendered('')
+      setQueuedCount(getOrderQueueSize())
       await loadDrawer().catch(() => {})
     } catch {
       enqueueOrderCheckout(token, payload)
@@ -361,16 +426,26 @@ export function KioskOrderRegister({ token, staffSession }: KioskOrderRegisterPr
 
   async function submitDrawerAction() {
     if (!drawerAction) return
+    if (drawerAction !== 'paid_in' && !hasManagerDrawerAccess) {
+      setError('Manager role required for this drawer action')
+      return
+    }
 
     const amountCents = parseCurrencyToCents(drawerAmount || '0')
-    if (amountCents <= 0 && drawerAction !== 'adjustment') {
+    if (drawerAction === 'no_sale' && !drawerNotes.trim()) {
+      setError('Notes are required for no-sale drawer opens')
+      return
+    }
+    if (drawerAction !== 'no_sale' && amountCents <= 0 && drawerAction !== 'adjustment') {
       setError('Enter a positive amount')
       return
     }
 
     const payload = {
       action: drawerAction,
-      amount_cents: drawerAction === 'adjustment' ? amountCents : Math.abs(amountCents),
+      ...(drawerAction === 'no_sale'
+        ? {}
+        : { amount_cents: drawerAction === 'adjustment' ? amountCents : Math.abs(amountCents) }),
       notes: drawerNotes,
       session_id: staffSession?.session_id,
     }
@@ -517,7 +592,7 @@ export function KioskOrderRegister({ token, staffSession }: KioskOrderRegisterPr
               <p className="text-sm text-stone-500">No open register session</p>
             )}
 
-            <div className="mt-3 grid grid-cols-3 gap-2">
+            <div className="mt-3 grid grid-cols-2 gap-2">
               <button
                 onClick={() => setDrawerAction('paid_in')}
                 className="rounded-lg bg-stone-800 px-2 py-2 text-xs text-stone-200 hover:bg-stone-700"
@@ -526,17 +601,31 @@ export function KioskOrderRegister({ token, staffSession }: KioskOrderRegisterPr
               </button>
               <button
                 onClick={() => setDrawerAction('paid_out')}
+                disabled={!hasManagerDrawerAccess}
                 className="rounded-lg bg-stone-800 px-2 py-2 text-xs text-stone-200 hover:bg-stone-700"
               >
                 Paid Out
               </button>
               <button
                 onClick={() => setDrawerAction('adjustment')}
+                disabled={!hasManagerDrawerAccess}
                 className="rounded-lg bg-stone-800 px-2 py-2 text-xs text-stone-200 hover:bg-stone-700"
               >
                 Adjust
               </button>
+              <button
+                onClick={() => setDrawerAction('no_sale')}
+                disabled={!hasManagerDrawerAccess}
+                className="rounded-lg bg-stone-800 px-2 py-2 text-xs text-stone-200 hover:bg-stone-700"
+              >
+                No Sale
+              </button>
             </div>
+            {!hasManagerDrawerAccess && (
+              <p className="mt-2 text-xs text-amber-400">
+                Manager role required for paid out, adjustment, and no-sale.
+              </p>
+            )}
           </div>
 
           <div className="rounded-xl border border-stone-800 bg-stone-900 p-4">
@@ -606,6 +695,10 @@ export function KioskOrderRegister({ token, staffSession }: KioskOrderRegisterPr
                     <span>Subtotal</span>
                     <span>{formatCurrency(subtotalCents)}</span>
                   </div>
+                  <div className="flex justify-between text-sm text-stone-400">
+                    <span>Estimated tax</span>
+                    <span>{formatCurrency(estimatedTaxCents)}</span>
+                  </div>
 
                   <div className="space-y-1">
                     <label className="text-xs text-stone-500">Tip ($)</label>
@@ -639,19 +732,25 @@ export function KioskOrderRegister({ token, staffSession }: KioskOrderRegisterPr
                   <div className="grid grid-cols-2 gap-2 pt-1">
                     <button
                       onClick={() => submitCheckout('cash')}
-                      disabled={submitting}
+                      disabled={submitting || cashPaymentBlocked}
                       className="flex items-center justify-center gap-1 rounded-lg bg-emerald-600 py-2.5 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-60"
                     >
                       <Banknote className="h-4 w-4" /> Cash
                     </button>
                     <button
                       onClick={() => submitCheckout('card')}
-                      disabled={submitting}
+                      disabled={submitting || checkoutBlockedByTax}
                       className="flex items-center justify-center gap-1 rounded-lg bg-brand-500 py-2.5 text-sm font-medium text-white hover:bg-brand-400 disabled:opacity-60"
                     >
                       <CreditCard className="h-4 w-4" /> Card
                     </button>
                   </div>
+                  {taxBlockingMessage && (
+                    <p className="text-xs text-amber-400">{taxBlockingMessage}</p>
+                  )}
+                  {insufficientCashTendered && (
+                    <p className="text-xs text-amber-400">Cash tendered must cover total due.</p>
+                  )}
                 </div>
               </div>
             )}
@@ -762,24 +861,28 @@ export function KioskOrderRegister({ token, staffSession }: KioskOrderRegisterPr
               {drawerAction.replace('_', ' ')}
             </h3>
             <div className="mt-3 space-y-2">
+              {drawerAction !== 'no_sale' && (
+                <div>
+                  <label className="mb-1 block text-xs text-stone-400">Amount ($)</label>
+                  <input
+                    value={drawerAmount}
+                    onChange={(e) => setDrawerAmount(e.target.value)}
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    className="w-full rounded-lg border border-stone-700 bg-stone-800 px-3 py-2 text-sm text-stone-100"
+                  />
+                </div>
+              )}
               <div>
-                <label className="mb-1 block text-xs text-stone-400">Amount ($)</label>
-                <input
-                  value={drawerAmount}
-                  onChange={(e) => setDrawerAmount(e.target.value)}
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  className="w-full rounded-lg border border-stone-700 bg-stone-800 px-3 py-2 text-sm text-stone-100"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs text-stone-400">Notes (optional)</label>
+                <label className="mb-1 block text-xs text-stone-400">
+                  {drawerAction === 'no_sale' ? 'Notes (required)' : 'Notes (optional)'}
+                </label>
                 <input
                   value={drawerNotes}
                   onChange={(e) => setDrawerNotes(e.target.value)}
                   className="w-full rounded-lg border border-stone-700 bg-stone-800 px-3 py-2 text-sm text-stone-100"
-                  placeholder="Reason"
+                  placeholder={drawerAction === 'no_sale' ? 'Reason for drawer open' : 'Reason'}
                 />
               </div>
             </div>

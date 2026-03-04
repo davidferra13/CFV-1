@@ -90,8 +90,18 @@ type QuoteFormProps = {
   benchmarkHint?: string | null
   prefilledClientId?: string
   prefilledInquiryId?: string
+  prefilledSource?: string | null
+  prefilledQuoteName?: string | null
+  prefilledPricingModel?: 'flat_rate' | 'per_person' | 'custom' | null
   prefilledGuestCount?: number | null
   prefilledBudgetCents?: number | null
+  prefilledPricePerPersonCents?: number | null
+  prefilledDepositRequired?: boolean
+  prefilledDepositAmountCents?: number | null
+  prefilledDepositPercentage?: number | null
+  prefilledValidUntil?: string | null
+  prefilledPricingNotes?: string | null
+  prefilledInternalNotes?: string | null
   prefilledOccasion?: string | null
   prefilledEventDate?: string | null
   existingQuote?: ExistingQuote
@@ -105,8 +115,18 @@ export function QuoteForm({
   benchmarkHint,
   prefilledClientId,
   prefilledInquiryId,
+  prefilledSource,
+  prefilledQuoteName,
+  prefilledPricingModel,
   prefilledGuestCount,
   prefilledBudgetCents,
+  prefilledPricePerPersonCents,
+  prefilledDepositRequired,
+  prefilledDepositAmountCents,
+  prefilledDepositPercentage,
+  prefilledValidUntil,
+  prefilledPricingNotes,
+  prefilledInternalNotes,
   prefilledOccasion,
   prefilledEventDate,
   existingQuote,
@@ -125,8 +145,12 @@ export function QuoteForm({
 
   // Form state
   const [clientId, setClientId] = useState(prefilledClientId || '')
-  const [quoteName, setQuoteName] = useState(existingQuote?.quote_name || prefilledOccasion || '')
-  const [pricingModel, setPricingModel] = useState(existingQuote?.pricing_model || 'flat_rate')
+  const [quoteName, setQuoteName] = useState(
+    existingQuote?.quote_name || prefilledQuoteName || prefilledOccasion || ''
+  )
+  const [pricingModel, setPricingModel] = useState(
+    existingQuote?.pricing_model || prefilledPricingModel || 'flat_rate'
+  )
   const [totalAmount, setTotalAmount] = useState(
     existingQuote
       ? (existingQuote.total_quoted_cents / 100).toFixed(2)
@@ -137,21 +161,36 @@ export function QuoteForm({
   const [pricePerPerson, setPricePerPerson] = useState(
     existingQuote?.price_per_person_cents
       ? (existingQuote.price_per_person_cents / 100).toFixed(2)
-      : ''
+      : prefilledPricePerPersonCents
+        ? (prefilledPricePerPersonCents / 100).toFixed(2)
+        : ''
   )
   const [guestCount, setGuestCount] = useState(
     existingQuote?.guest_count_estimated?.toString() || prefilledGuestCount?.toString() || ''
   )
-  const [depositRequired, setDepositRequired] = useState(existingQuote?.deposit_required ?? false)
+  const [depositRequired, setDepositRequired] = useState(
+    existingQuote?.deposit_required ?? prefilledDepositRequired ?? false
+  )
   const [depositAmount, setDepositAmount] = useState(
-    existingQuote?.deposit_amount_cents ? (existingQuote.deposit_amount_cents / 100).toFixed(2) : ''
+    existingQuote?.deposit_amount_cents
+      ? (existingQuote.deposit_amount_cents / 100).toFixed(2)
+      : prefilledDepositAmountCents
+        ? (prefilledDepositAmountCents / 100).toFixed(2)
+        : ''
   )
   const [depositPercentage, setDepositPercentage] = useState(
-    existingQuote?.deposit_percentage?.toString() || ''
+    existingQuote?.deposit_percentage?.toString() ||
+      (prefilledDepositPercentage != null ? prefilledDepositPercentage.toString() : '')
   )
-  const [validUntil, setValidUntil] = useState(existingQuote?.valid_until?.split('T')[0] || '')
-  const [pricingNotes, setPricingNotes] = useState(existingQuote?.pricing_notes || '')
-  const [internalNotes, setInternalNotes] = useState(existingQuote?.internal_notes || '')
+  const [validUntil, setValidUntil] = useState(
+    existingQuote?.valid_until?.split('T')[0] || prefilledValidUntil || ''
+  )
+  const [pricingNotes, setPricingNotes] = useState(
+    existingQuote?.pricing_notes || prefilledPricingNotes || ''
+  )
+  const [internalNotes, setInternalNotes] = useState(
+    existingQuote?.internal_notes || prefilledInternalNotes || ''
+  )
 
   // ── Pricing Calculator state ─────────────────────────────────────────────
   const [calcOpen, setCalcOpen] = useState(false)
@@ -198,8 +237,8 @@ export function QuoteForm({
   const initialFormData = useMemo<QuoteFormData>(
     () => ({
       client_id: prefilledClientId || '',
-      quote_name: existingQuote?.quote_name || prefilledOccasion || '',
-      pricing_model: existingQuote?.pricing_model || 'flat_rate',
+      quote_name: existingQuote?.quote_name || prefilledQuoteName || prefilledOccasion || '',
+      pricing_model: existingQuote?.pricing_model || prefilledPricingModel || 'flat_rate',
       total_amount: existingQuote
         ? (existingQuote.total_quoted_cents / 100).toFixed(2)
         : prefilledBudgetCents
@@ -207,19 +246,40 @@ export function QuoteForm({
           : '',
       price_per_person: existingQuote?.price_per_person_cents
         ? (existingQuote.price_per_person_cents / 100).toFixed(2)
-        : '',
+        : prefilledPricePerPersonCents
+          ? (prefilledPricePerPersonCents / 100).toFixed(2)
+          : '',
       guest_count:
         existingQuote?.guest_count_estimated?.toString() || prefilledGuestCount?.toString() || '',
-      deposit_required: existingQuote?.deposit_required ?? false,
+      deposit_required: existingQuote?.deposit_required ?? prefilledDepositRequired ?? false,
       deposit_amount: existingQuote?.deposit_amount_cents
         ? (existingQuote.deposit_amount_cents / 100).toFixed(2)
-        : '',
-      deposit_percentage: existingQuote?.deposit_percentage?.toString() || '',
-      valid_until: existingQuote?.valid_until?.split('T')[0] || '',
-      pricing_notes: existingQuote?.pricing_notes || '',
-      internal_notes: existingQuote?.internal_notes || '',
+        : prefilledDepositAmountCents
+          ? (prefilledDepositAmountCents / 100).toFixed(2)
+          : '',
+      deposit_percentage:
+        existingQuote?.deposit_percentage?.toString() ||
+        (prefilledDepositPercentage != null ? prefilledDepositPercentage.toString() : ''),
+      valid_until: existingQuote?.valid_until?.split('T')[0] || prefilledValidUntil || '',
+      pricing_notes: existingQuote?.pricing_notes || prefilledPricingNotes || '',
+      internal_notes: existingQuote?.internal_notes || prefilledInternalNotes || '',
     }),
-    [existingQuote, prefilledBudgetCents, prefilledClientId, prefilledGuestCount, prefilledOccasion]
+    [
+      existingQuote,
+      prefilledBudgetCents,
+      prefilledClientId,
+      prefilledDepositAmountCents,
+      prefilledDepositPercentage,
+      prefilledDepositRequired,
+      prefilledGuestCount,
+      prefilledInternalNotes,
+      prefilledOccasion,
+      prefilledPricePerPersonCents,
+      prefilledPricingModel,
+      prefilledPricingNotes,
+      prefilledQuoteName,
+      prefilledValidUntil,
+    ]
   )
   const [committedFormData, setCommittedFormData] = useState<QuoteFormData>(initialFormData)
 
@@ -795,6 +855,14 @@ export function QuoteForm({
                   })}
                 </span>
               )}
+            </div>
+          )}
+          {prefilledSource === 'consulting' && (
+            <div className="rounded-lg bg-brand-950 border border-brand-700 px-4 py-3 text-sm text-brand-300">
+              <span className="font-medium text-brand-200">
+                Prefilled from Consulting Calculator.
+              </span>{' '}
+              Review values below, select client, and save as a draft quote.
             </div>
           )}
 

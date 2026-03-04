@@ -4,6 +4,7 @@
 
 import { cache } from 'react'
 import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export type AuthUser = {
   id: string
@@ -178,7 +179,7 @@ export async function requirePartner(): Promise<PartnerAuthUser> {
   // Look up tenant_id from the partner record.
   // Uses admin client because existing chef-only RLS blocks the partner session
   // from reading referral_partners directly (until migration applies the partner policy).
-  const adminClient = createServerClient({ admin: true })
+  const adminClient = createAdminClient()
   const { data: partner } = await adminClient
     .from('referral_partners')
     .select('tenant_id')
@@ -229,7 +230,7 @@ export async function requireStaff(): Promise<StaffAuthUser> {
   // Look up chef_id (tenant) from the staff member record.
   // Uses admin client because existing chef-only RLS blocks the staff session
   // from reading staff_members directly (until migration applies the staff policy).
-  const adminClient = createServerClient({ admin: true })
+  const adminClient = createAdminClient()
   const { data: staffMember } = await adminClient
     .from('staff_members')
     .select('chef_id')

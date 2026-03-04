@@ -30,6 +30,7 @@ import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
 import { differenceInDays } from 'date-fns'
 import { ArchetypeSelector } from '@/components/onboarding/archetype-selector'
 import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
+import { getAiPreferences } from '@/lib/ai/privacy-actions'
 import {
   getCachedCannabisAccess,
   getCachedChefArchetype,
@@ -70,6 +71,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     userIsAdmin,
     chefArchetype,
     deletionStatus,
+    aiPreferences,
   ] = await Promise.all([
     // Cached for 60s — slug and nav prefs change rarely, keyed per chef
     getChefLayoutData(user.entityId),
@@ -94,6 +96,17 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
       daysRemaining: null,
       requestedAt: null,
       reason: null,
+    })),
+    // Remy runtime preference gate — fail closed to avoid forcing UI on users.
+    getAiPreferences().catch(() => ({
+      remy_enabled: false,
+      onboarding_completed: false,
+      onboarding_completed_at: null,
+      data_retention_days: null,
+      allow_memory: true,
+      allow_suggestions: true,
+      allow_document_drafts: true,
+      remy_archetype: null,
     })),
   ])
   // Archetype gate — new chefs pick their persona before seeing the portal.
@@ -121,6 +134,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     ? differenceInDays(new Date(), new Date(layoutData.created_at))
     : 0
   const showFeedbackNudge = daysSinceCreation >= 7
+  const remyAllowedByPrefs = aiPreferences.remy_enabled && aiPreferences.onboarding_completed
+  const shouldRenderRemy =
+    (tierStatus.tier === 'pro' || userIsAdmin) && (userIsAdmin || remyAllowedByPrefs)
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
@@ -201,7 +217,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                 <OfflineStatusBar />
 
                 {/* Remy — AI companion chatbot, Pro tier + admins */}
-                {(tierStatus.tier === 'pro' || userIsAdmin) && <RemyWrapper />}
+                {shouldRenderRemy && <RemyWrapper />}
 
                 {/* Mobile quick capture FAB — mobile-only, hidden on desktop */}
                 <QuickCapture />

@@ -52,6 +52,35 @@ export type GroceryQuoteResult = {
   isFromCache: boolean
 }
 
+export type ManualGroceryDraftItemInput = {
+  name: string
+  quantity?: number | null
+  unit?: string | null
+  category?: string | null
+}
+
+export type ManualGroceryDraftPriceItem = {
+  name: string
+  quantity: number
+  unit: string
+  category: string | null
+  spoonacularCents: number | null
+  krogerCents: number | null
+  usdaCents: number | null
+  mealMeCents: number | null
+  averageCents: number | null
+  hasNoApiData: boolean
+}
+
+export type ManualGroceryDraftPriceResult = {
+  items: ManualGroceryDraftPriceItem[]
+  averageTotalCents: number
+  pricedItemCount: number
+  requestedItemCount: number
+  mealMeConfigured: boolean
+  createdAt: string
+}
+
 // ─── Internal: aggregate event ingredients ────────────────────────────────────
 
 type RawIngredient = {
@@ -204,6 +233,14 @@ async function getSpoonacularPrice(
 // reference data point for the average, not a quantity-adjusted total.
 
 let krogerToken: { token: string; expiresAt: number } | null = null
+const liveDraftPriceCache = new Map<
+  string,
+  {
+    expiresAt: number
+    item: ManualGroceryDraftPriceItem
+  }
+>()
+const LIVE_DRAFT_CACHE_TTL_MS = 10 * 60 * 1000
 
 async function getKrogerToken(): Promise<string | null> {
   const clientId = process.env.KROGER_CLIENT_ID
@@ -325,6 +362,30 @@ async function getMealMePrice(name: string, zipCode: string | null): Promise<num
     return null
   } catch {
     return null
+  }
+}
+
+function getLiveDraftCacheKey(item: {
+  name: string
+  quantity: number
+  unit: string
+  category: string | null
+}, zipCode: string | null): string {
+  return [
+    zipCode ?? '',
+    item.name.trim().toLowerCase(),
+    item.quantity.toFixed(4),
+    item.unit.trim().toLowerCase(),
+    (item.category ?? '').toLowerCase(),
+  ].join('|')
+}
+
+function trimLiveDraftCache(nowMs: number) {
+  if (liveDraftPriceCache.size < 500) return
+  for (const [key, value] of liveDraftPriceCache.entries()) {
+    if (value.expiresAt <= nowMs) {
+      liveDraftPriceCache.delete(key)
+    }
   }
 }
 
@@ -537,6 +598,115 @@ export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuot
   }
 }
 
+export async function previewManualGroceryPricing(
+  items: ManualGroceryDraftItemInput[]
+): Promise<ManualGroceryDraftPriceResult> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const normalizedItems = items
+    .map((item) => ({
+      name: String(item.name ?? '').trim(),
+      quantity:
+        typeof item.quantity === 'number' && Number.isFinite(item.quantity) && item.quantity > 0
+          ? item.quantity
+          : 1,
+      unit: String(item.unit ?? 'each').trim() || 'each',
+      category: typeof item.category === 'string' && item.category.trim() ? item.category : null,
+    }))
+    .filter((item) => item.name.length > 0)
+    .slice(0, 40)
+
+  if (normalizedItems.length === 0) {
+    return {
+      items: [],
+      averageTotalCents: 0,
+      pricedItemCount: 0,
+      requestedItemCount: 0,
+      mealMeConfigured: !!process.env.MEALME_API_KEY,
+      createdAt: new Date().toISOString(),
+    }
+  }
+
+  const { data: prefs } = await supabase
+    .from('chef_preferences')
+    .select('zip_code')
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  const chefZip: string | null = (prefs as any)?.zip_code ?? null
+  const mealMeConfigured = !!process.env.MEALME_API_KEY
+  const nowMs = Date.now()
+  trimLiveDraftCache(nowMs)
+
+  const pricedItems = await Promise.all(
+    normalizedItems.map(async (item): Promise<ManualGroceryDraftPriceItem> => {
+      const cacheKey = getLiveDraftCacheKey(item, chefZip)
+      const cached = liveDraftPriceCache.get(cacheKey)
+      if (cached && cached.expiresAt > nowMs) {
+        return cached.item
+      }
+
+      const [spoonacularCents, krogerCents, mealMeCents] = await Promise.all([
+        getSpoonacularPrice(item.name, item.quantity, item.unit),
+        getKrogerPrice(item.name),
+        getMealMePrice(item.name, chefZip),
+      ])
+
+      const usdaEntry = lookupUsdaPrice(item.name)
+      const usdaCents =
+        usdaEntry && usdaUnitMatches(usdaEntry.unit, item.unit)
+          ? Math.round(usdaEntry.cents * item.quantity)
+          : null
+
+      const multiplier = getNeMultiplier(item.category)
+      const adjSpoonacular = spoonacularCents ? Math.round(spoonacularCents * multiplier) : null
+      const adjKroger = krogerCents ? Math.round(krogerCents * multiplier) : null
+      const apiPrices = [adjSpoonacular, adjKroger, usdaCents, mealMeCents].filter(
+        (price): price is number => price !== null
+      )
+
+      const hasNoApiData = apiPrices.length === 0
+      const averageCents =
+        apiPrices.length > 0
+          ? Math.round(apiPrices.reduce((sum, price) => sum + price, 0) / apiPrices.length)
+          : null
+
+      const pricedItem: ManualGroceryDraftPriceItem = {
+        name: item.name,
+        quantity: item.quantity,
+        unit: item.unit,
+        category: item.category,
+        spoonacularCents,
+        krogerCents,
+        usdaCents,
+        mealMeCents,
+        averageCents,
+        hasNoApiData,
+      }
+
+      liveDraftPriceCache.set(cacheKey, {
+        expiresAt: nowMs + LIVE_DRAFT_CACHE_TTL_MS,
+        item: pricedItem,
+      })
+
+      return pricedItem
+    })
+  )
+
+  const averageTotalCents = pricedItems.reduce((sum, item) => sum + (item.averageCents ?? 0), 0)
+  const pricedItemCount = pricedItems.filter((item) => item.averageCents !== null).length
+
+  return {
+    items: pricedItems,
+    averageTotalCents,
+    pricedItemCount,
+    requestedItemCount: normalizedItems.length,
+    mealMeConfigured,
+    createdAt: new Date().toISOString(),
+  }
+}
+
 // ─── Get latest saved quote ───────────────────────────────────────────────────
 
 export async function getLatestGroceryQuote(eventId: string): Promise<GroceryQuoteResult | null> {
@@ -623,7 +793,6 @@ export async function logActualGroceryCost(
         )
       : null
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (supabase.from('grocery_price_quotes') as any)
     .update({
       actual_grocery_cost_cents: actualCostCents,

@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
+import { MessageSquare } from 'lucide-react'
+import { RemyAnimatedMascot } from '@/components/ai/remy-animated-mascot'
 import type { BodyState } from '@/lib/ai/remy-body-state'
 import type { EyeState } from '@/lib/ai/remy-eye-blink'
 import type { Viseme, RemyEmotion } from '@/lib/ai/remy-visemes'
@@ -38,6 +40,14 @@ interface RemyMascotButtonProps {
   nudgeMessage?: string | null
   /** Called when the user dismisses a nudge */
   onDismissNudge?: () => void
+  /** Optional callback to fully hide the launcher */
+  onHide?: () => void
+  /** Render as compact docked launcher instead of character */
+  variant?: 'mascot' | 'docked'
+  /** Show hover speech bubble greetings */
+  showHoverBubble?: boolean
+  /** Allow sleep-state hat-only rendering */
+  allowSleepHat?: boolean
 
   // Legacy compat — mapped internally
   state?: 'idle' | 'thinking' | 'success' | 'nudge' | 'sleeping'
@@ -75,6 +85,10 @@ export function RemyMascotButton({
   onAnimComplete,
   nudgeMessage = null,
   onDismissNudge,
+  onHide,
+  variant = 'mascot',
+  showHoverBubble = false,
+  allowSleepHat = false,
 }: RemyMascotButtonProps) {
   const [showSpeechBubble, setShowSpeechBubble] = useState(false)
   const [greeting, setGreeting] = useState(GREETINGS[0])
@@ -87,11 +101,14 @@ export function RemyMascotButton({
   const effectiveBodyState = bodyStateProp ?? legacyToBodyState(legacyState)
 
   // Whether Remy should show the hat-only asset (minimized or sleeping)
-  const showHat = minimized || effectiveBodyState === 'sleeping'
+  const showHat = minimized || (allowSleepHat && effectiveBodyState === 'sleeping')
+  const shouldUseAnimatedMascot = Boolean(bodyStateProp) && !showHat
 
   // --- Hover speech bubble ---
   const handleMouseEnter = useCallback(() => {
     setIsHovered(true)
+
+    if (!showHoverBubble) return
 
     // Only show speech bubble once per session
     if (hasShownBubble.current) return
@@ -103,7 +120,7 @@ export function RemyMascotButton({
       setShowSpeechBubble(true)
       hasShownBubble.current = true
     }, SPEECH_HOVER_DELAY_MS)
-  }, [effectiveBodyState])
+  }, [effectiveBodyState, showHoverBubble])
 
   const handleMouseLeave = useCallback(() => {
     setIsHovered(false)
@@ -126,6 +143,35 @@ export function RemyMascotButton({
     onAnimComplete?.()
   }, [onAnimComplete])
 
+  if (variant === 'docked') {
+    return (
+      <button
+        type="button"
+        data-remy-mascot
+        onClick={onClick}
+        className={[
+          'fixed z-40 inline-flex items-center gap-2 rounded-full border px-3 py-2',
+          'border-stone-700 bg-stone-900/95 text-stone-100 shadow-lg backdrop-blur-sm',
+          'hover:bg-stone-800 transition-colors',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400',
+          className ?? '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        aria-label={ariaLabel}
+      >
+        <MessageSquare className="h-4 w-4 text-brand-400" />
+        <span className="text-xs font-semibold">Remy</span>
+        {showOnlineDot && (
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-300 opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-green-400" />
+          </span>
+        )}
+      </button>
+    )
+  }
+
   // Minimized / sleeping animation
   const minimizedClass = showHat
     ? 'translate-y-[50%] transition-transform duration-500 ease-in-out'
@@ -139,26 +185,44 @@ export function RemyMascotButton({
   return (
     <div
       data-remy-mascot
-      className={['fixed bottom-0 left-4 lg:left-64 z-40', className ?? '']
+      className={['fixed bottom-4 left-4 lg:left-64 z-40', className ?? '']
         .filter(Boolean)
         .join(' ')}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       {/* Minimize/restore toggle — shows on hover */}
-      {!minimized && isHovered && onToggleMinimize && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation()
-            onToggleMinimize()
-          }}
-          className="absolute -top-2 -right-2 z-10 w-6 h-6 rounded-full bg-stone-700 hover:bg-stone-600 text-white/70 hover:text-white flex items-center justify-center text-xs transition-all shadow-md animate-fade-slide-up"
-          aria-label="Minimize Remy"
-          title="Minimize Remy"
-        >
-          &minus;
-        </button>
+      {isHovered && (
+        <div className="absolute -top-2 -right-2 z-10 flex items-center gap-1">
+          {!minimized && onToggleMinimize && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onToggleMinimize()
+              }}
+              className="w-6 h-6 rounded-full bg-stone-700 hover:bg-stone-600 text-white/70 hover:text-white flex items-center justify-center text-xs transition-all shadow-md animate-fade-slide-up"
+              aria-label="Dock Remy"
+              title="Dock Remy"
+            >
+              &minus;
+            </button>
+          )}
+          {onHide && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onHide()
+              }}
+              className="w-6 h-6 rounded-full bg-stone-700 hover:bg-stone-600 text-white/70 hover:text-white flex items-center justify-center text-xs transition-all shadow-md animate-fade-slide-up"
+              aria-label="Hide Remy"
+              title="Hide Remy"
+            >
+              X
+            </button>
+          )}
+        </div>
       )}
 
       <button
@@ -198,6 +262,15 @@ export function RemyMascotButton({
               className="object-contain object-bottom pointer-events-none select-none"
               style={hatPeekStyle}
             />
+          ) : shouldUseAnimatedMascot ? (
+            <RemyAnimatedMascot
+              bodyState={effectiveBodyState}
+              eyeState={eyeStateProp}
+              viseme={viseme ?? 'rest'}
+              isSpeaking={speakingProp}
+              emotion={emotion}
+              onAnimComplete={handleAnimComplete}
+            />
           ) : (
             // Static mascot image
             <Image
@@ -205,7 +278,7 @@ export function RemyMascotButton({
               alt="Remy"
               fill
               sizes="(max-width: 640px) 60px, (max-width: 1024px) 80px, 100px"
-              className="object-contain object-bottom pointer-events-none select-none"
+              className="object-contain object-bottom pointer-events-none select-none animate-remy-breathe"
             />
           )}
 

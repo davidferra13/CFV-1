@@ -5,17 +5,38 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import type { RemyTaskResult } from '@/lib/ai/remy-types'
 import { AgentConfirmationCard } from '@/components/ai/agent-confirmation-card'
+import {
+  buildSignificantApprovalPhrase,
+  isLegacySignificantTaskType,
+  normalizeSignificantApprovalInput,
+} from '@/lib/ai/remy-significant-approval'
 
 interface RemyTaskCardProps {
   task: RemyTaskResult
-  onApprove?: (taskId: string, taskType: string, data: unknown) => void
+  onApprove?: (
+    taskId: string,
+    taskType: string,
+    data: unknown,
+    approvalConfirmation?: string
+  ) => void
   onReject?: (taskId: string) => void
 }
 
 export function RemyTaskCard({ task, onApprove, onReject }: RemyTaskCardProps) {
   const [expanded, setExpanded] = useState(false)
+  const [legacyApprovalText, setLegacyApprovalText] = useState('')
   const errorText: string | null = task.status === 'error' && task.error ? task.error : null
   const holdText: string | null = task.status === 'held' && task.holdReason ? task.holdReason : null
+  const isLegacySignificantPending =
+    task.status === 'pending' && !task.preview && isLegacySignificantTaskType(task.taskType)
+  const expectedLegacyPhrase = isLegacySignificantPending
+    ? buildSignificantApprovalPhrase(task.taskType)
+    : ''
+  const legacyConfirmationMatches =
+    !isLegacySignificantPending ||
+    normalizeSignificantApprovalInput(legacyApprovalText) === expectedLegacyPhrase
+  const showLegacyPhraseMismatch =
+    isLegacySignificantPending && legacyApprovalText.trim().length > 0 && !legacyConfirmationMatches
 
   const tierColors = {
     done: 'border-emerald-200 bg-emerald-950 dark:border-emerald-800 dark:bg-emerald-950',
@@ -95,19 +116,44 @@ export function RemyTaskCard({ task, onApprove, onReject }: RemyTaskCardProps) {
 
           {/* Legacy approve / reject buttons for tier 2 (pending) without preview */}
           {task.status === 'pending' && !task.preview && (
-            <div className="mt-2 flex gap-2">
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => onApprove?.(task.taskId, task.taskType, task.data)}
-              >
-                <Check className="h-3 w-3 mr-1" />
-                Approve
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => onReject?.(task.taskId)}>
-                <X className="h-3 w-3 mr-1" />
-                Dismiss
-              </Button>
+            <div className="mt-2 space-y-2">
+              {isLegacySignificantPending && (
+                <div className="rounded-md border border-amber-800/70 bg-amber-950/40 p-2">
+                  <p className="text-xs text-amber-200">
+                    This is a significant action. Type{' '}
+                    <span className="font-mono text-amber-100">{expectedLegacyPhrase}</span> to
+                    confirm.
+                  </p>
+                  <input
+                    type="text"
+                    value={legacyApprovalText}
+                    onChange={(event) => setLegacyApprovalText(event.target.value)}
+                    className="mt-1.5 w-full rounded-md border border-amber-700 bg-stone-900 px-2 py-1.5 text-xs text-stone-100 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    placeholder={expectedLegacyPhrase}
+                    aria-label="Approval confirmation phrase"
+                  />
+                  {showLegacyPhraseMismatch && (
+                    <p className="mt-1 text-[11px] text-amber-300">Phrase does not match yet.</p>
+                  )}
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() =>
+                    onApprove?.(task.taskId, task.taskType, task.data, legacyApprovalText)
+                  }
+                  disabled={!legacyConfirmationMatches}
+                >
+                  <Check className="h-3 w-3 mr-1" />
+                  Approve
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => onReject?.(task.taskId)}>
+                  <X className="h-3 w-3 mr-1" />
+                  Dismiss
+                </Button>
+              </div>
             </div>
           )}
         </>

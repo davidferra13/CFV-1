@@ -5,6 +5,15 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { signUpClient, type ClientSignupInput } from '@/lib/auth/actions'
 import { signInWithGoogle } from '@/lib/supabase/client'
+import {
+  isGoogleAuthButtonEnabled,
+  normalizeGoogleOAuthErrorMessage,
+} from '@/lib/auth/google-oauth-errors'
+import {
+  normalizeAuthEmail,
+  normalizeWebsiteSignupErrorMessage,
+  validateWebsiteSignupInput,
+} from '@/lib/auth/website-signup'
 import { getInvitationByToken } from '@/lib/auth/invitations'
 import { Chrome } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -21,6 +30,7 @@ function ClientSignUpForm() {
   const [googleLoading, setGoogleLoading] = useState(false)
   const [invitationLoading, setInvitationLoading] = useState(!!token)
   const [error, setError] = useState<string | null>(null)
+  const [invitationEmail, setInvitationEmail] = useState<string | null>(null)
 
   const [formData, setFormData] = useState<ClientSignupInput>({
     email: '',
@@ -29,6 +39,9 @@ function ClientSignUpForm() {
     phone: '',
     invitation_token: token || '',
   })
+
+  const showGoogleAuth = isGoogleAuthButtonEnabled() && !token
+  const isSubmitting = loading || googleLoading
 
   useEffect(() => {
     if (!token) {
@@ -43,6 +56,7 @@ function ClientSignUpForm() {
           return
         }
 
+        setInvitationEmail(invitation.email)
         setFormData((prev) => ({
           ...prev,
           email: invitation.email,
@@ -56,28 +70,47 @@ function ClientSignUpForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (isSubmitting) return
     setError(null)
-    setLoading(true)
 
+    const normalizedEmail = normalizeAuthEmail(formData.email)
+    const validationError = validateWebsiteSignupInput({
+      email: normalizedEmail,
+      password: formData.password,
+      fullName: formData.full_name,
+      invitationEmail: invitationEmail || undefined,
+    })
+    if (validationError) {
+      setError(validationError)
+      return
+    }
+
+    setLoading(true)
     try {
-      await signUpClient(formData)
+      await signUpClient({
+        ...formData,
+        email: normalizedEmail,
+        full_name: formData.full_name.trim(),
+        phone: formData.phone?.trim(),
+      })
       router.push('/auth/signin')
     } catch (err) {
-      const error = err as Error
-      setError(error.message)
+      const actionError = err as Error
+      setError(normalizeWebsiteSignupErrorMessage(actionError.message))
     } finally {
       setLoading(false)
     }
   }
 
   const handleGoogleSignUp = async () => {
+    if (isSubmitting) return
     setError(null)
     setGoogleLoading(true)
     try {
       await signInWithGoogle()
     } catch (err) {
-      const error = err as Error
-      setError(error.message)
+      const oauthError = err as Error
+      setError(normalizeGoogleOAuthErrorMessage(oauthError.message))
       setGoogleLoading(false)
     }
   }
@@ -109,11 +142,17 @@ function ClientSignUpForm() {
 
             <CardContent className="space-y-4">
               {error && <Alert variant="error">{error}</Alert>}
+              {!token && (
+                <Alert variant="info">
+                  Recommended: create your account with email and password.
+                </Alert>
+              )}
 
               <Input
                 type="text"
                 label="Full Name"
                 value={formData.full_name}
+                disabled={isSubmitting}
                 onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                 required
                 autoFocus
@@ -124,7 +163,7 @@ function ClientSignUpForm() {
                 label="Email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                disabled={!!token}
+                disabled={!!token || isSubmitting}
                 helperText={token ? 'This email is from your invitation' : undefined}
                 required
               />
@@ -133,6 +172,7 @@ function ClientSignUpForm() {
                 type="tel"
                 label="Phone"
                 value={formData.phone}
+                disabled={isSubmitting}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 helperText="Optional"
               />
@@ -141,6 +181,7 @@ function ClientSignUpForm() {
                 type="password"
                 label="Password"
                 value={formData.password}
+                disabled={isSubmitting}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
                 helperText="Minimum 8 characters"
@@ -150,28 +191,33 @@ function ClientSignUpForm() {
 
             <CardFooter className="flex flex-col gap-4">
               <Button type="submit" variant="primary" className="w-full" loading={loading}>
-                Create Client Account
+                Create account with email
               </Button>
 
-              <div className="relative my-2">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-stone-900 px-2 text-stone-500">Or continue with</span>
-                </div>
-              </div>
+              {showGoogleAuth && (
+                <>
+                  <div className="relative my-2">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-stone-900 px-2 text-stone-500">Optional</span>
+                    </div>
+                  </div>
 
-              <Button
-                type="button"
-                variant="secondary"
-                className="w-full"
-                onClick={handleGoogleSignUp}
-                loading={googleLoading}
-              >
-                <Chrome className="mr-2 h-4 w-4" />
-                Sign up with Google
-              </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="w-full"
+                    onClick={handleGoogleSignUp}
+                    loading={googleLoading}
+                    disabled={loading}
+                  >
+                    <Chrome className="mr-2 h-4 w-4" />
+                    Sign up with Google (optional)
+                  </Button>
+                </>
+              )}
 
               <div className="text-sm text-center text-stone-400">
                 Already have an account?{' '}

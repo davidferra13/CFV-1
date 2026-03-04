@@ -61,6 +61,13 @@ import {
 } from '@/lib/ai/draft-actions'
 import type { CommandRun, TaskResult, PlannedTask, ApprovalTier } from '@/lib/ai/command-types'
 import { getAvailableActions } from '@/lib/ai/remy-action-filter'
+import { startRemyActionAudit, finishRemyActionAudit } from '@/lib/ai/remy-action-audit-actions'
+import {
+  resolveRemyApprovalDecision,
+  type RemyApprovalPolicyMap,
+} from '@/lib/ai/remy-approval-policy-core'
+import { getTenantRemyApprovalPolicyMap } from '@/lib/ai/remy-approval-policy-actions'
+import { validateSignificantApprovalPhrase } from '@/lib/ai/remy-significant-approval'
 
 // ─── Individual Task Executors ────────────────────────────────────────────────
 
@@ -999,7 +1006,8 @@ async function executeQuoteCompare(inputs: Record<string, unknown>, tenantId: st
 async function executeSingleTask(
   task: PlannedTask,
   resolvedDeps: Record<string, unknown>,
-  tenantId: string
+  tenantId: string,
+  policyMap: RemyApprovalPolicyMap
 ): Promise<TaskResult> {
   const name = getTaskName(task.taskType)
 
@@ -1024,10 +1032,21 @@ async function executeSingleTask(
     if (agentAction) {
       const user = await requireChef()
       const ctx = { tenantId, userId: user.id }
+      const policy = resolveRemyApprovalDecision({
+        taskType: task.taskType,
+        safety: agentAction.safety,
+        policyMap,
+      })
 
-      // Restricted actions → always held
-      if (agentAction.safety === 'restricted') {
-        const { preview } = await agentAction.executor(task.inputs, ctx)
+      if (policy.decision === 'block') {
+        let preview: Awaited<ReturnType<typeof agentAction.executor>>['preview'] | undefined
+        if (agentAction.safety === 'restricted') {
+          try {
+            preview = (await agentAction.executor(task.inputs, ctx)).preview
+          } catch {
+            // Keep blocked behavior even if preview generation fails.
+          }
+        }
         return {
           taskId: task.id,
           taskType: task.taskType,
@@ -1035,7 +1054,9 @@ async function executeSingleTask(
           name: agentAction.name,
           status: 'held',
           holdReason:
-            preview.fields.find((f) => f.label === 'Why')?.value ?? 'This action is restricted.',
+            policy.reason ??
+            preview?.fields.find((f) => f.label === 'Why')?.value ??
+            'This action is blocked by your Remy approval policy.',
           preview,
         }
       }
@@ -1345,9 +1366,40 @@ async function executeSingleTask(
  * Main entry point. Parses the chef's command, builds a dependency DAG,
  * executes tasks in parallel rounds, and returns results grouped by tier.
  */
+async function assertRemyRuntimeEnabled(tenantId: string): Promise<void> {
+  const supabase: any = createServerClient()
+  const { data, error } = await supabase
+    .from('ai_preferences')
+    .select('remy_enabled, onboarding_completed')
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (error) {
+    const errObj = error as Record<string, unknown>
+    const code = typeof errObj.code === 'string' ? errObj.code : ''
+    const message = typeof errObj.message === 'string' ? errObj.message : ''
+    if (code === 'PGRST116' || message.toLowerCase().includes('0 rows')) {
+      throw new Error(
+        'Remy is currently disabled. Complete onboarding and enable Remy in Settings > Remy Control Center.'
+      )
+    }
+    throw new Error(`Failed to verify Remy runtime settings: ${error.message}`)
+  }
+
+  const runtimeEnabled = Boolean(data?.remy_enabled)
+  const onboardingCompleted = Boolean(data?.onboarding_completed)
+  if (!runtimeEnabled || !onboardingCompleted) {
+    throw new Error(
+      'Remy is currently disabled. Enable Remy in Settings > Remy Control Center and complete AI onboarding.'
+    )
+  }
+}
+
 export async function runCommand(rawInput: string): Promise<CommandRun> {
   const user = await requireChef()
   const tenantId = user.tenantId!
+  await assertRemyRuntimeEnabled(tenantId)
+  const approvalPolicyMap = await getTenantRemyApprovalPolicyMap(tenantId)
   const runId = crypto.randomUUID()
   const startedAt = new Date().toISOString()
 
@@ -1375,7 +1427,7 @@ export async function runCommand(rawInput: string): Promise<CommandRun> {
         inputs: { clientName },
         dependsOn: [],
       }
-      const result = await executeSingleTask(task, {}, tenantId)
+      const result = await executeSingleTask(task, {}, tenantId, approvalPolicyMap)
       return {
         runId,
         rawInput,
@@ -1440,7 +1492,7 @@ export async function runCommand(rawInput: string): Promise<CommandRun> {
               resolvedDeps[depTask.taskType] = resultsByType.get(depTask.taskType)
             }
           }
-          return executeSingleTask(task, resolvedDeps, tenantId)
+          return executeSingleTask(task, resolvedDeps, tenantId, approvalPolicyMap)
         })
       )
 
@@ -1476,6 +1528,15 @@ export async function runCommand(rawInput: string): Promise<CommandRun> {
   }
 }
 
+function getLegacyTaskSafety(taskType: string): 'reversible' | 'significant' | null {
+  switch (taskType) {
+    case 'event.create_draft':
+      return 'significant'
+    default:
+      return null
+  }
+}
+
 /**
  * Called when the chef approves a Tier 2 draft result.
  * For email drafts: copies to clipboard + provides mailto link.
@@ -1483,85 +1544,212 @@ export async function runCommand(rawInput: string): Promise<CommandRun> {
  */
 export async function approveTask(
   taskType: string,
-  data: unknown
+  data: unknown,
+  approvalConfirmation?: string
 ): Promise<{ success: boolean; message: string; redirectUrl?: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
+  try {
+    await assertRemyRuntimeEnabled(tenantId)
+  } catch (err) {
+    return {
+      success: false,
+      message: err instanceof Error ? err.message : 'Remy is disabled for this account.',
+    }
+  }
+  const chefId = user.entityId ?? tenantId
+  const startedAtMs = Date.now()
 
-  // ─── Agent Action Registry (write actions) ──────────────────────────
-  ensureAgentActionsRegistered()
-  const agentAction = getAgentAction(taskType)
-  if (agentAction) {
-    if (agentAction.safety === 'restricted') {
-      return {
-        success: false,
-        message: 'This action is restricted and cannot be performed by Remy.',
-      }
-    }
-    const payload = (data as Record<string, unknown>) ?? {}
-    // Check for error payloads (entity not found, etc.)
-    if (payload._error || payload._restricted) {
-      return { success: false, message: 'Cannot proceed — see the error in the preview.' }
-    }
-    return agentAction.commitAction(payload, { tenantId, userId: user.id })
+  // Hard guarantee: do not execute if the audit row cannot be created.
+  let auditId: string
+  try {
+    auditId = await startRemyActionAudit({
+      tenantScopeId: tenantId,
+      chefId,
+      authUserId: user.id,
+      taskType,
+      requestPayload: data,
+    })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[remy-audit] Failed to create audit row; action execution blocked', err)
+    throw new Error(`Action execution blocked because audit logging failed: ${msg}`)
   }
 
-  // ─── Legacy task types ────────────────────────────────────────────────
-  switch (taskType) {
-    case 'email.followup':
-    case 'email.generic':
-    case 'email.draft_reply': {
-      const d = data as { clientId?: string; clientName?: string; draftText?: string } | null
-      if (d?.draftText) {
-        // The draft text is returned to the client for clipboard copy
-        return {
-          success: true,
-          message: `Draft approved! The email text has been copied to your clipboard. Send it from your email client.`,
-        }
-      }
-      return {
-        success: true,
-        message: 'Draft approved. Copy and send from your email client.',
-      }
-    }
-    case 'event.create_draft': {
-      const d = data as { draft?: Record<string, unknown>; error?: string } | null
-      if (d?.draft && !d.error) {
-        const supabase: any = createServerClient()
-        const draft = d.draft
-        try {
-          const { data: event, error } = await supabase
-            .from('events')
-            .insert({
-              tenant_id: tenantId,
-              occasion: draft.occasion ?? 'New Event',
-              event_date: draft.event_date ?? null,
-              guest_count: draft.guest_count ?? null,
-              status: 'draft',
-              notes: draft.notes ?? `Created by Remy from: "${draft.rawDescription ?? ''}"`,
-              client_id: draft.client_id ?? null,
-            })
-            .select('id')
-            .single()
+  let auditStatus: 'success' | 'error' | 'blocked' = 'success'
+  let outcome: { success: boolean; message: string; redirectUrl?: string } = {
+    success: false,
+    message: 'Unable to approve task.',
+  }
+  const approvalPolicyMap = await getTenantRemyApprovalPolicyMap(tenantId)
 
-          if (error) throw error
-          return {
-            success: true,
-            message: 'Event draft created! Redirecting to the event page...',
-            redirectUrl: `/events/${event.id}`,
+  try {
+    ensureAgentActionsRegistered()
+    const agentAction = getAgentAction(taskType)
+    if (agentAction) {
+      const policy = resolveRemyApprovalDecision({
+        taskType,
+        safety: agentAction.safety,
+        policyMap: approvalPolicyMap,
+      })
+      if (policy.decision === 'block') {
+        auditStatus = 'blocked'
+        outcome = {
+          success: false,
+          message: policy.reason ?? 'This action is blocked by your Remy approval policy.',
+        }
+        return outcome
+      }
+
+      const payload = (data as Record<string, unknown>) ?? {}
+      if (payload._error || payload._restricted) {
+        auditStatus = 'blocked'
+        outcome = { success: false, message: 'Cannot proceed - see the error in the preview.' }
+        return outcome
+      }
+
+      if (agentAction.safety === 'significant') {
+        const confirmation = validateSignificantApprovalPhrase({
+          taskType,
+          provided: approvalConfirmation,
+        })
+        if (!confirmation.valid) {
+          auditStatus = 'blocked'
+          outcome = {
+            success: false,
+            message: `Type "${confirmation.expected}" to approve this significant action.`,
           }
-        } catch (err) {
-          const msg = err instanceof Error ? err.message : String(err)
-          return { success: false, message: `Failed to create event: ${msg}` }
+          return outcome
         }
       }
-      return {
-        success: true,
-        message: 'Event draft approved. Head to /events/new to fill out the details.',
-        redirectUrl: '/events/new',
+
+      outcome = await agentAction.commitAction(payload, { tenantId, userId: user.id })
+      auditStatus = outcome.success ? 'success' : 'error'
+      return outcome
+    }
+
+    const legacySafety = getLegacyTaskSafety(taskType)
+    if (legacySafety) {
+      const policy = resolveRemyApprovalDecision({
+        taskType,
+        safety: legacySafety,
+        policyMap: approvalPolicyMap,
+      })
+      if (policy.decision === 'block') {
+        auditStatus = 'blocked'
+        outcome = {
+          success: false,
+          message: policy.reason ?? 'This action is blocked by your Remy approval policy.',
+        }
+        return outcome
+      }
+      if (legacySafety === 'significant') {
+        const confirmation = validateSignificantApprovalPhrase({
+          taskType,
+          provided: approvalConfirmation,
+        })
+        if (!confirmation.valid) {
+          auditStatus = 'blocked'
+          outcome = {
+            success: false,
+            message: `Type "${confirmation.expected}" to approve this significant action.`,
+          }
+          return outcome
+        }
       }
     }
-    default:
-      return { success: true, message: 'Approved.' }
+
+    switch (taskType) {
+      case 'email.followup':
+      case 'email.generic':
+      case 'email.draft_reply': {
+        const d = data as { clientId?: string; clientName?: string; draftText?: string } | null
+        if (d?.draftText) {
+          outcome = {
+            success: true,
+            message:
+              'Draft approved! The email text has been copied to your clipboard. Send it from your email client.',
+          }
+          return outcome
+        }
+        outcome = {
+          success: true,
+          message: 'Draft approved. Copy and send from your email client.',
+        }
+        return outcome
+      }
+      case 'event.create_draft': {
+        const d = data as { draft?: Record<string, unknown>; error?: string } | null
+        if (d?.draft && !d.error) {
+          const supabase: any = createServerClient()
+          const draft = d.draft
+          try {
+            const { data: event, error } = await supabase
+              .from('events')
+              .insert({
+                tenant_id: tenantId,
+                occasion: draft.occasion ?? 'New Event',
+                event_date: draft.event_date ?? null,
+                guest_count: draft.guest_count ?? null,
+                status: 'draft',
+                notes: draft.notes ?? `Created by Remy from: "${draft.rawDescription ?? ''}"`,
+                client_id: draft.client_id ?? null,
+              })
+              .select('id')
+              .single()
+
+            if (error) throw error
+
+            outcome = {
+              success: true,
+              message: 'Event draft created! Redirecting to the event page...',
+              redirectUrl: `/events/${event.id}`,
+            }
+            return outcome
+          } catch (err) {
+            auditStatus = 'error'
+            const msg = err instanceof Error ? err.message : String(err)
+            outcome = { success: false, message: `Failed to create event: ${msg}` }
+            return outcome
+          }
+        }
+
+        outcome = {
+          success: true,
+          message: 'Event draft approved. Head to /events/new to fill out the details.',
+          redirectUrl: '/events/new',
+        }
+        return outcome
+      }
+      default:
+        outcome = { success: true, message: 'Approved.' }
+        return outcome
+    }
+  } catch (err) {
+    auditStatus = 'error'
+    const msg = err instanceof Error ? err.message : String(err)
+    outcome = { success: false, message: `Failed to approve task: ${msg}` }
+    return outcome
+  } finally {
+    const finalizePayload = {
+      auditId,
+      tenantScopeId: tenantId,
+      status: auditStatus,
+      resultPayload: outcome,
+      errorMessage: auditStatus === 'error' ? outcome.message : null,
+      durationMs: Date.now() - startedAtMs,
+    } as const
+
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        await finishRemyActionAudit(finalizePayload)
+        break
+      } catch (err) {
+        if (attempt === 2) {
+          // Do not fail an already-executed action when audit finalization write fails.
+          console.error('[remy-audit] Failed to finalize action audit row after retry', err)
+        }
+      }
+    }
   }
 }

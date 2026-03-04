@@ -96,7 +96,7 @@ export function extractBearerToken(request: Request): string | null {
 export async function validateStaffPin(
   tenantId: string,
   pin: string
-): Promise<{ id: string; name: string } | null> {
+): Promise<{ id: string; name: string; role: string | null } | null> {
   if (!pin || pin.length < 4 || pin.length > 6) return null
 
   const pinHash = hashToken(pin)
@@ -104,7 +104,7 @@ export async function validateStaffPin(
 
   const { data, error } = await supabase
     .from('staff_members')
-    .select('id, name')
+    .select('id, name, role')
     .eq('chef_id', tenantId)
     .eq('kiosk_pin', pinHash)
     .eq('status', 'active')
@@ -112,5 +112,5 @@ export async function validateStaffPin(
 
   if (error || !data) return null
 
-  return { id: data.id, name: data.name }
+  return { id: data.id, name: data.name, role: data.role ?? null }
 }

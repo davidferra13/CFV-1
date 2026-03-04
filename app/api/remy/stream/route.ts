@@ -6,6 +6,7 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { Ollama } from 'ollama'
 import { requireChef } from '@/lib/auth/get-user'
+import { createServerClient } from '@/lib/supabase/server'
 import { loadRemyContext, resolveMessageEntities } from '@/lib/ai/remy-context'
 import { classifyIntent } from '@/lib/ai/remy-classifier'
 import { runCommand } from '@/lib/ai/command-orchestrator'
@@ -1170,9 +1171,58 @@ function encodeSSE(event: StreamEvent): string {
 
 // ─── POST Handler ─────────────────────────────────────────────────────────────
 
+async function getRemyRuntimeState(
+  tenantId: string
+): Promise<{ allowed: boolean; message?: string }> {
+  const supabase: any = createServerClient()
+  const { data, error } = await supabase
+    .from('ai_preferences')
+    .select('remy_enabled, onboarding_completed')
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (error) {
+    const errObj = error as Record<string, unknown>
+    const code = typeof errObj.code === 'string' ? errObj.code : ''
+    const message = typeof errObj.message === 'string' ? errObj.message.toLowerCase() : ''
+    if (code === 'PGRST116' || message.includes('0 rows')) {
+      return {
+        allowed: false,
+        message:
+          'Remy is currently disabled. Complete AI onboarding and enable Remy in Settings > Remy Control Center.',
+      }
+    }
+    return {
+      allowed: false,
+      message: 'Unable to verify Remy runtime settings. Try again in a moment.',
+    }
+  }
+
+  const allowed = Boolean(data?.remy_enabled) && Boolean(data?.onboarding_completed)
+  if (!allowed) {
+    return {
+      allowed: false,
+      message:
+        'Remy is currently disabled. Enable Remy in Settings > Remy Control Center and complete AI onboarding.',
+    }
+  }
+
+  return { allowed: true }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const user = await requireChef()
+    const runtimeState = await getRemyRuntimeState(user.tenantId!)
+    if (!runtimeState.allowed) {
+      return new Response(
+        encodeSSE({
+          type: 'error',
+          data: runtimeState.message ?? 'Remy is disabled for this account.',
+        }),
+        { headers: sseHeaders() }
+      )
+    }
     const rawBody = await req.json()
     const validated = validateRemyRequestBody(rawBody)
     if (!validated) {

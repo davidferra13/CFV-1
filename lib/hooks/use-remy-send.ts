@@ -435,9 +435,13 @@ export function useRemySend(config: UseRemySendConfig) {
   )
 
   const handleApproveTask = useCallback(
-    async (taskId: string, taskType: string, data: unknown) => {
+    async (taskId: string, taskType: string, data: unknown, approvalConfirmation?: string) => {
       try {
-        const result = await approveTask(taskType, data)
+        const result = await approveTask(taskType, data, approvalConfirmation)
+        if (!result.success) {
+          toast.error(result.message)
+          return
+        }
 
         if (
           (taskType === 'email.followup' || taskType === 'email.generic') &&
@@ -467,8 +471,9 @@ export function useRemySend(config: UseRemySendConfig) {
             }
           })
         )
-      } catch {
-        toast.error('Failed to approve task')
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to approve task'
+        toast.error(message)
       }
     },
     [router, closeDrawer, setMessages]

@@ -147,7 +147,7 @@ export async function signUpChef(input: ChefSignupInput) {
         auth_user_id: authData.user.id,
         business_name: businessName,
         email,
-        phone: validated.phone,
+        phone: validated.phone?.trim(),
       })
       .select()
       .single()
@@ -220,7 +220,8 @@ export async function signUpChef(input: ChefSignupInput) {
  */
 export async function signUpClient(input: ClientSignupInput) {
   const validated = ClientSignupSchema.parse(input)
-  await checkRateLimit(validated.email)
+  const email = normalizeEmail(validated.email)
+  await checkRateLimit(email)
 
   let tenantId: string | null = null
   let invitationId: string | null = null
@@ -233,7 +234,7 @@ export async function signUpClient(input: ClientSignupInput) {
       throw new Error('Invalid or expired invitation')
     }
 
-    if (invitation.email.toLowerCase() !== validated.email.toLowerCase()) {
+    if (normalizeEmail(invitation.email) !== email) {
       throw new Error('Email does not match invitation')
     }
 
@@ -246,7 +247,7 @@ export async function signUpClient(input: ClientSignupInput) {
 
   // Create auth user
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-    email: validated.email,
+    email,
     password: validated.password,
     email_confirm: true,
   })
@@ -254,7 +255,7 @@ export async function signUpClient(input: ClientSignupInput) {
   if (authError || !authData.user) {
     log.auth.error('Client signup auth error', {
       error: authError,
-      context: { email: validated.email },
+      context: { email },
     })
     // Generic message — never reveal whether the email already exists (prevents enumeration)
     throw new Error(
@@ -269,9 +270,9 @@ export async function signUpClient(input: ClientSignupInput) {
       .insert({
         auth_user_id: authData.user.id,
         tenant_id: tenantId as any,
-        full_name: validated.full_name,
-        email: validated.email,
-        phone: validated.phone,
+        full_name: validated.full_name.trim(),
+        email,
+        phone: validated.phone?.trim(),
       })
       .select()
       .single()
@@ -328,15 +329,23 @@ export async function signUpClient(input: ClientSignupInput) {
 export async function signIn(input: SignInInput) {
   const validated = SignInSchema.parse(input)
   const email = validated.email.trim().toLowerCase()
-  try {
-    await checkRateLimit(email)
-  } catch (error) {
-    const message = String((error as any)?.message || '').toLowerCase()
-    if (message.includes('too many attempts')) {
-      throw error
+  const isSyntheticTestAccount = email.endsWith('@chefflow.test')
+  const bypassRateLimitForE2E =
+    process.env.DISABLE_AUTH_RATE_LIMIT_FOR_E2E === 'true' && isSyntheticTestAccount
+  const bypassRateLimitForNonProdSyntheticAccount =
+    process.env.NODE_ENV !== 'production' && isSyntheticTestAccount
+
+  if (!bypassRateLimitForE2E && !bypassRateLimitForNonProdSyntheticAccount) {
+    try {
+      await checkRateLimit(email)
+    } catch (error) {
+      const message = String((error as any)?.message || '').toLowerCase()
+      if (message.includes('too many attempts')) {
+        throw error
+      }
+      log.auth.error('Rate limit check failed', { error, context: { email } })
+      throw new Error('Sign-in service is temporarily unavailable. Please try again.')
     }
-    log.auth.error('Rate limit check failed', { error, context: { email } })
-    throw new Error('Sign-in service is temporarily unavailable. Please try again.')
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''

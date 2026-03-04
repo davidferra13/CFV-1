@@ -9,8 +9,11 @@ import {
 } from '@/lib/documents/template-catalog'
 import {
   getRecentDocumentSnapshots,
-  SNAPSHOT_DOCUMENT_LABELS,
+  getTenantDocumentSnapshotDrilldown,
+  type SnapshotDocumentType,
+  type SnapshotDrilldownOrder,
 } from '@/lib/documents/snapshot-actions'
+import { SNAPSHOT_DOCUMENT_LABELS } from '@/lib/documents/snapshot-constants'
 import { getArchetypeDocumentPack } from '@/lib/documents/archetype-packs'
 import {
   EVENT_WORKSPACE_PHASES,
@@ -47,6 +50,39 @@ type TemplateGroup = {
   slugs: DocumentTemplateSlug[]
 }
 
+type SnapshotDocFilter = 'any' | SnapshotDocumentType
+
+type SnapshotQueryState = {
+  doc: SnapshotDocFilter
+  from: string
+  to: string
+  order: SnapshotDrilldownOrder
+  q: string
+  page: number
+}
+
+const SNAPSHOT_DOCUMENT_TYPES: SnapshotDocumentType[] = [
+  'summary',
+  'grocery',
+  'foh',
+  'prep',
+  'execution',
+  'checklist',
+  'packing',
+  'reset',
+  'travel',
+  'shots',
+  'all',
+]
+
+const SNAPSHOT_TYPE_FILTERS: Array<{ value: SnapshotDocFilter; label: string }> = [
+  { value: 'any', label: 'Any Type' },
+  ...SNAPSHOT_DOCUMENT_TYPES.map((type) => ({
+    value: type,
+    label: SNAPSHOT_DOCUMENT_LABELS[type],
+  })),
+]
+
 const TEMPLATE_GROUPS: TemplateGroup[] = [
   {
     id: 'service-core',
@@ -77,6 +113,71 @@ function buildDocumentsFilterHref(phase: EventWorkspacePhaseKey | 'all', query: 
   return queryString ? `/documents?${queryString}` : '/documents'
 }
 
+function isSnapshotDocumentType(value: string): value is SnapshotDocumentType {
+  return SNAPSHOT_DOCUMENT_TYPES.includes(value as SnapshotDocumentType)
+}
+
+function normalizeDateInput(value: string | undefined): string {
+  if (!value) return ''
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : ''
+}
+
+function normalizeSnapshotOrder(value: string | undefined): SnapshotDrilldownOrder {
+  return value === 'oldest' ? 'oldest' : 'newest'
+}
+
+function normalizeSnapshotPage(value: string | undefined): number {
+  if (!value) return 1
+  const parsed = Number.parseInt(value, 10)
+  if (!Number.isInteger(parsed) || parsed < 1) return 1
+  return parsed
+}
+
+function buildSnapshotFilterHref(
+  phase: EventWorkspacePhaseKey | 'all',
+  phaseQuery: string,
+  current: SnapshotQueryState,
+  overrides: Partial<SnapshotQueryState>
+): string {
+  const merged: SnapshotQueryState = {
+    ...current,
+    ...overrides,
+  }
+  if (merged.doc === 'any') merged.page = Math.max(1, merged.page)
+  const params = new URLSearchParams()
+  if (phase !== 'all') params.set('phase', phase)
+  if (phaseQuery) params.set('q', phaseQuery)
+
+  if (merged.doc !== 'any') params.set('s_doc', merged.doc)
+  if (merged.from) params.set('s_from', merged.from)
+  if (merged.to) params.set('s_to', merged.to)
+  if (merged.order !== 'newest') params.set('s_order', merged.order)
+  if (merged.q) params.set('s_q', merged.q)
+  if (merged.page > 1) params.set('s_page', String(merged.page))
+
+  const queryString = params.toString()
+  return queryString ? `/documents?${queryString}` : '/documents'
+}
+
+function buildSnapshotExportHref(current: SnapshotQueryState): string {
+  const params = new URLSearchParams()
+  if (current.doc !== 'any') params.set('doc', current.doc)
+  if (current.from) params.set('from', current.from)
+  if (current.to) params.set('to', current.to)
+  if (current.order !== 'newest') params.set('order', current.order)
+  if (current.q) params.set('q', current.q)
+  const queryString = params.toString()
+  return queryString
+    ? `/api/documents/snapshots/export?${queryString}`
+    : '/api/documents/snapshots/export'
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
+}
+
 function formatEventDate(value: string): string {
   const parsed = new Date(value)
   if (Number.isNaN(parsed.getTime())) return 'Date TBD'
@@ -102,12 +203,46 @@ function normalizeStatusLabel(status: string): string {
 export default async function DocumentsIndexPage({
   searchParams,
 }: {
-  searchParams?: { phase?: string; q?: string }
+  searchParams?: {
+    phase?: string
+    q?: string
+    s_doc?: string
+    s_from?: string
+    s_to?: string
+    s_order?: string
+    s_q?: string
+    s_page?: string
+  }
 }) {
-  const [events, recentSnapshots, archetype] = await Promise.all([
+  const rawDocFilter = (searchParams?.s_doc ?? 'any').trim().toLowerCase()
+  const snapshotDocFilter: SnapshotDocFilter =
+    rawDocFilter === 'any' ? 'any' : isSnapshotDocumentType(rawDocFilter) ? rawDocFilter : 'any'
+  let snapshotFromDate = normalizeDateInput(searchParams?.s_from)
+  let snapshotToDate = normalizeDateInput(searchParams?.s_to)
+  const snapshotOrder = normalizeSnapshotOrder(searchParams?.s_order)
+  const snapshotSearch = (searchParams?.s_q ?? '').trim()
+  const snapshotPage = normalizeSnapshotPage(searchParams?.s_page)
+  const snapshotStart = snapshotFromDate
+    ? new Date(`${snapshotFromDate}T00:00:00.000`).getTime()
+    : null
+  const snapshotEnd = snapshotToDate ? new Date(`${snapshotToDate}T23:59:59.999`).getTime() : null
+  if (snapshotStart !== null && snapshotEnd !== null && snapshotStart > snapshotEnd) {
+    ;[snapshotFromDate, snapshotToDate] = [snapshotToDate, snapshotFromDate]
+  }
+
+  const [events, recentSnapshots, archetype, archiveDrilldown] = await Promise.all([
     ((await getEvents().catch(() => [])) || []) as EventListItem[],
     getRecentDocumentSnapshots(400),
     getChefArchetype(),
+    getTenantDocumentSnapshotDrilldown({
+      docType: snapshotDocFilter === 'any' ? null : snapshotDocFilter,
+      fromDate: snapshotFromDate,
+      toDate: snapshotToDate,
+      order: snapshotOrder,
+      query: snapshotSearch,
+      page: snapshotPage,
+      pageSize: 30,
+    }),
   ])
   const pack = getArchetypeDocumentPack(archetype)
   const rawQuery = (searchParams?.q ?? '').trim()
@@ -119,6 +254,15 @@ export default async function DocumentsIndexPage({
       : isEventWorkspacePhaseKey(requestedPhase)
         ? requestedPhase
         : 'all'
+
+  const snapshotQueryState: SnapshotQueryState = {
+    doc: snapshotDocFilter,
+    from: snapshotFromDate,
+    to: snapshotToDate,
+    order: snapshotOrder,
+    q: snapshotSearch,
+    page: archiveDrilldown.page,
+  }
 
   const templateBySlug = new Map<DocumentTemplateSlug, DocumentTemplateEntry>(
     DOCUMENT_TEMPLATE_CATALOG.map((template) => [template.slug, template])
@@ -388,14 +532,146 @@ export default async function DocumentsIndexPage({
       </Card>
 
       <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-3">Recent Archived Documents</h2>
-        {recentSnapshots.length === 0 ? (
-          <p className="text-sm text-stone-500">
-            No archived documents yet. Open any event hub and use `Archive` or `Print All`.
+        <h2 className="text-lg font-semibold mb-1">Archive Finder</h2>
+        <p className="text-sm text-stone-400 mb-4">
+          Find any archived PDF across all events by type, date range, and search terms.
+        </p>
+
+        <div className="flex flex-wrap gap-2 mb-3">
+          {SNAPSHOT_TYPE_FILTERS.map((filter) => (
+            <Link
+              key={filter.value}
+              href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
+                doc: filter.value,
+                page: 1,
+              })}
+            >
+              <Button
+                variant={snapshotDocFilter === filter.value ? 'primary' : 'secondary'}
+                size="sm"
+              >
+                {filter.label}
+              </Button>
+            </Link>
+          ))}
+        </div>
+
+        <form
+          method="get"
+          className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3 border border-stone-800 rounded p-3"
+        >
+          {phaseFilter !== 'all' && <input type="hidden" name="phase" value={phaseFilter} />}
+          {rawQuery && <input type="hidden" name="q" value={rawQuery} />}
+          {snapshotDocFilter !== 'any' && (
+            <input type="hidden" name="s_doc" value={snapshotDocFilter} />
+          )}
+          {snapshotOrder !== 'newest' && (
+            <input type="hidden" name="s_order" value={snapshotOrder} />
+          )}
+          <div className="flex flex-wrap items-end gap-2">
+            <div>
+              <p className="text-[11px] text-stone-500 mb-1">Search</p>
+              <input
+                type="text"
+                name="s_q"
+                defaultValue={snapshotSearch}
+                placeholder="Filename, event, client..."
+                className="h-9 rounded border border-stone-700 bg-stone-900 px-3 text-xs text-stone-200 placeholder:text-stone-500 w-60 max-w-[65vw]"
+              />
+            </div>
+            <div>
+              <p className="text-[11px] text-stone-500 mb-1">From</p>
+              <input
+                type="date"
+                name="s_from"
+                defaultValue={snapshotFromDate}
+                className="h-9 rounded border border-stone-700 bg-stone-900 px-2 text-xs text-stone-200"
+              />
+            </div>
+            <div>
+              <p className="text-[11px] text-stone-500 mb-1">To</p>
+              <input
+                type="date"
+                name="s_to"
+                defaultValue={snapshotToDate}
+                className="h-9 rounded border border-stone-700 bg-stone-900 px-2 text-xs text-stone-200"
+              />
+            </div>
+            <Button type="submit" variant="secondary" size="sm">
+              Apply
+            </Button>
+            {(snapshotSearch || snapshotFromDate || snapshotToDate) && (
+              <Link
+                href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
+                  q: '',
+                  from: '',
+                  to: '',
+                  page: 1,
+                })}
+              >
+                <Button variant="ghost" size="sm">
+                  Clear
+                </Button>
+              </Link>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <p className="text-xs text-stone-500">Order</p>
+            <Link
+              href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
+                order: 'newest',
+                page: 1,
+              })}
+            >
+              <Button variant={snapshotOrder === 'newest' ? 'primary' : 'secondary'} size="sm">
+                Newest
+              </Button>
+            </Link>
+            <Link
+              href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
+                order: 'oldest',
+                page: 1,
+              })}
+            >
+              <Button variant={snapshotOrder === 'oldest' ? 'primary' : 'secondary'} size="sm">
+                Oldest
+              </Button>
+            </Link>
+            <a href={buildSnapshotExportHref(snapshotQueryState)}>
+              <Button variant="ghost" size="sm">
+                Export CSV
+              </Button>
+            </a>
+          </div>
+        </form>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          {archiveDrilldown.typeStats
+            .filter((entry) => entry.count > 0)
+            .map((entry) => (
+              <span
+                key={entry.documentType}
+                className="text-xs rounded border border-stone-700 px-2 py-1 text-stone-400"
+              >
+                {SNAPSHOT_DOCUMENT_LABELS[entry.documentType]}: {entry.count}
+              </span>
+            ))}
+        </div>
+
+        <p className="text-xs text-stone-500 mt-4">
+          Showing {archiveDrilldown.items.length} snapshot
+          {archiveDrilldown.items.length === 1 ? '' : 's'} on this page from{' '}
+          {archiveDrilldown.total} match
+          {archiveDrilldown.total === 1 ? '' : 'es'}.
+        </p>
+
+        {archiveDrilldown.items.length === 0 ? (
+          <p className="text-sm text-stone-500 mt-3">
+            No archived documents match this filter. Use any event hub to archive new versions.
           </p>
         ) : (
-          <div className="space-y-2">
-            {recentSnapshots.map((snapshot) => (
+          <div className="space-y-2 mt-3">
+            {archiveDrilldown.items.map((snapshot) => (
               <div
                 key={snapshot.id}
                 className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-stone-800 pb-2 last:border-b-0 last:pb-0"
@@ -405,11 +681,12 @@ export default async function DocumentsIndexPage({
                     {SNAPSHOT_DOCUMENT_LABELS[snapshot.documentType]} - v{snapshot.versionNumber}
                   </p>
                   <p className="text-xs text-stone-500">
-                    {(snapshot.eventOccasion || 'Untitled Event') +
-                      (snapshot.clientName ? ` - ${snapshot.clientName}` : '')}
+                    {snapshot.eventOccasion || 'Untitled Event'}
+                    {snapshot.clientName ? ` - ${snapshot.clientName}` : ''}
                     {snapshot.eventDate
                       ? ` - ${format(new Date(snapshot.eventDate), 'EEE, MMM d, yyyy')}`
-                      : ''}
+                      : ''}{' '}
+                    ({formatBytes(snapshot.sizeBytes)})
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -430,6 +707,34 @@ export default async function DocumentsIndexPage({
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {archiveDrilldown.totalPages > 1 && (
+          <div className="mt-4 pt-4 border-t border-stone-800 flex items-center justify-between">
+            <p className="text-xs text-stone-500">
+              Page {archiveDrilldown.page} of {archiveDrilldown.totalPages}
+            </p>
+            <div className="flex items-center gap-2">
+              <Link
+                href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
+                  page: Math.max(1, archiveDrilldown.page - 1),
+                })}
+              >
+                <Button variant="secondary" size="sm" disabled={!archiveDrilldown.hasPreviousPage}>
+                  Previous
+                </Button>
+              </Link>
+              <Link
+                href={buildSnapshotFilterHref(phaseFilter, rawQuery, snapshotQueryState, {
+                  page: Math.min(archiveDrilldown.totalPages, archiveDrilldown.page + 1),
+                })}
+              >
+                <Button variant="secondary" size="sm" disabled={!archiveDrilldown.hasNextPage}>
+                  Next
+                </Button>
+              </Link>
+            </div>
           </div>
         )}
       </Card>

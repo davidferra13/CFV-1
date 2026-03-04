@@ -4,6 +4,7 @@
 
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import type { User } from '@supabase/supabase-js'
 import { signRoleCookie, verifyRoleCookie } from '@/lib/auth/signed-cookie'
 
 /** Generate a short, URL-safe correlation ID for request tracing. */
@@ -91,6 +92,38 @@ function redirectWithCookies(url: URL, sourceResponse: NextResponse): NextRespon
   return redirectResponse
 }
 
+function hasSupabaseAuthCookie(request: NextRequest): boolean {
+  return request.cookies
+    .getAll()
+    .some((cookie) => cookie.name.startsWith('sb-') && cookie.name.endsWith('-auth-token'))
+}
+
+type SupabaseUserResult = { user: User | null }
+
+/**
+ * getUser() occasionally fails under transient upstream conditions (timeouts / 429 / network reset).
+ * Retry once when an auth cookie is present so valid sessions don't get bounced to sign-in.
+ */
+async function getUserWithRetry(
+  supabase: ReturnType<typeof createServerClient>,
+  request: NextRequest
+): Promise<SupabaseUserResult> {
+  const first = await supabase.auth.getUser()
+  if (!first.error || first.data.user || !hasSupabaseAuthCookie(request)) {
+    return { user: first.data.user }
+  }
+
+  const retryable = /timeout|timed out|network|429|rate|fetch|socket|abort/i.test(
+    first.error.message ?? ''
+  )
+  if (!retryable) {
+    return { user: null }
+  }
+
+  const second = await supabase.auth.getUser()
+  return { user: second.data.user }
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -109,6 +142,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/api/health') ||
     pathname.startsWith('/api/ai/health') ||
     pathname.startsWith('/api/ai/monitor') ||
+    pathname.startsWith('/api/documents') ||
     pathname.startsWith('/api/embed') ||
     pathname.startsWith('/api/demo') ||
     pathname.startsWith('/api/monitoring') ||
@@ -172,9 +206,7 @@ export async function middleware(request: NextRequest) {
   )
 
   // Get authenticated user (also refreshes session if token is expired)
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { user } = await getUserWithRetry(supabase, request)
 
   // Role cache cookie — avoids a DB round-trip on every navigation.
   // The layout's requireChef() / requireClient() remain the authoritative security check.

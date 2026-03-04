@@ -1,6 +1,9 @@
 'use server'
 
+import { requireClient } from '@/lib/auth/get-user'
+import { revalidatePath } from 'next/cache'
 import { createServerClient } from '@/lib/supabase/server'
+import { getOrCreateClientHubProfile } from './client-hub-actions'
 
 // ---------------------------------------------------------------------------
 // Hub Notifications — Unread counts + email notifications
@@ -10,15 +13,15 @@ import { createServerClient } from '@/lib/supabase/server'
  * Get unread message count for a profile across all groups.
  * Returns per-group counts.
  */
-export async function getHubUnreadCounts(profileToken: string): Promise<
-  {
-    group_id: string
-    group_name: string
-    group_emoji: string | null
-    group_token: string
-    unread_count: number
-  }[]
-> {
+export type HubUnreadCount = {
+  group_id: string
+  group_name: string
+  group_emoji: string | null
+  group_token: string
+  unread_count: number
+}
+
+export async function getHubUnreadCounts(profileToken: string): Promise<HubUnreadCount[]> {
   const supabase = createServerClient({ admin: true })
 
   // Get profile
@@ -38,13 +41,7 @@ export async function getHubUnreadCounts(profileToken: string): Promise<
 
   if (!memberships || memberships.length === 0) return []
 
-  const results: {
-    group_id: string
-    group_name: string
-    group_emoji: string | null
-    group_token: string
-    unread_count: number
-  }[] = []
+  const results: HubUnreadCount[] = []
 
   for (const membership of memberships) {
     // Count messages after last_read_at
@@ -90,6 +87,38 @@ export async function getHubUnreadCounts(profileToken: string): Promise<
 export async function getHubTotalUnreadCount(profileToken: string): Promise<number> {
   const counts = await getHubUnreadCounts(profileToken)
   return counts.reduce((sum, g) => sum + g.unread_count, 0)
+}
+
+/**
+ * Mark one or many hub groups as read for the authenticated client profile.
+ */
+export async function markMyHubNotificationsRead(input?: {
+  groupIds?: string[]
+}): Promise<{ success: true }> {
+  await requireClient()
+  const profile = await getOrCreateClientHubProfile()
+  const supabase = createServerClient({ admin: true })
+
+  const nowIso = new Date().toISOString()
+  const uniqueGroupIds = Array.from(new Set((input?.groupIds ?? []).filter(Boolean)))
+
+  let query = supabase
+    .from('hub_group_members')
+    .update({ last_read_at: nowIso })
+    .eq('profile_id', profile.id)
+
+  if (uniqueGroupIds.length > 0) {
+    query = query.in('group_id', uniqueGroupIds)
+  }
+
+  const { error } = await query
+  if (error) {
+    throw new Error(`Failed to mark notifications as read: ${error.message}`)
+  }
+
+  revalidatePath('/my-hub')
+  revalidatePath('/my-hub/notifications')
+  return { success: true }
 }
 
 /**

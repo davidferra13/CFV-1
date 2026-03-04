@@ -1,7 +1,8 @@
-﻿import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import {
   authenticateOrderKioskRequest,
+  assertManagerDrawerPermission,
   assertStaffSession,
   getDrawerSummary,
   getOpenRegisterSession,
@@ -9,8 +10,8 @@ import {
 } from '../_helpers'
 
 const DrawerMutationSchema = z.object({
-  action: z.enum(['paid_in', 'paid_out', 'adjustment']),
-  amount_cents: z.number().int(),
+  action: z.enum(['paid_in', 'paid_out', 'adjustment', 'no_sale']),
+  amount_cents: z.number().int().optional(),
   notes: z.string().max(500).optional().or(z.literal('')),
   session_id: z.string().uuid().optional(),
 })
@@ -24,6 +25,7 @@ export async function GET(request: Request) {
     await assertStaffSession({
       supabase,
       deviceId: device.deviceId,
+      tenantId: device.tenantId,
       requireStaffPin: device.requireStaffPin,
       sessionId,
     })
@@ -73,8 +75,14 @@ export async function POST(request: Request) {
     const session = await assertStaffSession({
       supabase,
       deviceId: device.deviceId,
+      tenantId: device.tenantId,
       requireStaffPin: device.requireStaffPin,
       sessionId: parsed.session_id,
+    })
+
+    assertManagerDrawerPermission({
+      staffSession: session,
+      action: parsed.action,
     })
 
     const registerSession = await getOpenRegisterSession({
@@ -82,33 +90,50 @@ export async function POST(request: Request) {
       tenantId: device.tenantId,
     })
 
-    const rawAmount = parsed.amount_cents
-    if (!Number.isInteger(rawAmount) || rawAmount === 0) {
-      return NextResponse.json(
-        { error: 'Amount must be a non-zero integer (cents)' },
-        { status: 400 }
-      )
-    }
+    const normalizedNotes = parsed.notes?.trim() ?? ''
+    let amountCents = 0
 
-    if ((parsed.action === 'paid_in' || parsed.action === 'paid_out') && rawAmount < 0) {
-      return NextResponse.json({ error: 'Use a positive amount for paid in/out' }, { status: 400 })
-    }
+    if (parsed.action === 'no_sale') {
+      if (!normalizedNotes) {
+        return NextResponse.json(
+          { error: 'Notes are required for no-sale drawer opens' },
+          { status: 400 }
+        )
+      }
+    } else {
+      const rawAmount = parsed.amount_cents
+      if (typeof rawAmount !== 'number' || !Number.isInteger(rawAmount) || rawAmount === 0) {
+        return NextResponse.json(
+          { error: 'Amount must be a non-zero integer (cents)' },
+          { status: 400 }
+        )
+      }
+      const normalizedAmount = rawAmount
 
-    const amountCents =
-      parsed.action === 'paid_out'
-        ? -1 * Math.abs(rawAmount)
-        : parsed.action === 'paid_in'
-          ? Math.abs(rawAmount)
-          : rawAmount
+      if ((parsed.action === 'paid_in' || parsed.action === 'paid_out') && normalizedAmount < 0) {
+        return NextResponse.json(
+          { error: 'Use a positive amount for paid in/out' },
+          { status: 400 }
+        )
+      }
+
+      amountCents =
+        parsed.action === 'paid_out'
+          ? -1 * Math.abs(normalizedAmount)
+          : parsed.action === 'paid_in'
+            ? Math.abs(normalizedAmount)
+            : normalizedAmount
+    }
 
     const { error } = await (supabase as any).from('cash_drawer_movements').insert({
       tenant_id: device.tenantId,
       register_session_id: registerSession.id,
-      movement_type: parsed.action,
+      movement_type: parsed.action === 'no_sale' ? 'adjustment' : parsed.action,
       amount_cents: amountCents,
-      notes: parsed.notes?.trim() || null,
+      notes: normalizedNotes || null,
       metadata: {
         source: 'kiosk',
+        source_action: parsed.action,
         device_id: device.deviceId,
         device_session_id: parsed.session_id || null,
         staff_member_id: (session as any)?.staff_member_id ?? null,
@@ -130,6 +155,7 @@ export async function POST(request: Request) {
           register_session_id: registerSession.id,
           action: parsed.action,
           amount_cents: amountCents,
+          no_sale: parsed.action === 'no_sale',
         },
       })
     } catch (eventError) {

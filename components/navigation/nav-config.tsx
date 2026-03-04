@@ -31,6 +31,7 @@ import {
   Package,
   Phone,
   PieChart,
+  Percent,
   Presentation,
   RefreshCw,
   Settings,
@@ -103,6 +104,9 @@ export const standaloneTop: NavItem[] = [
   { href: '/charity', label: 'Charity Hub', icon: HeartHandshake, adminOnly: true },
   { href: '/commerce', label: 'Commerce', icon: Store },
   { href: '/commerce/register', label: 'POS Register', icon: ShoppingCart },
+  { href: '/commerce/table-service', label: 'Table Service', icon: MapPin },
+  { href: '/commerce/promotions', label: 'Promotions', icon: Percent },
+  { href: '/commerce/observability', label: 'Observability', icon: AlertTriangle },
 ]
 
 // ─── NAV GROUPS ─────────────────────────────────────────────────
@@ -208,6 +212,20 @@ export const navGroups: NavGroup[] = [
         href: '/testimonials',
         label: 'Testimonials',
         icon: Star,
+      },
+    ],
+  },
+
+  // ─── CONSULTING (pricing, positioning, and offer design) ───
+  {
+    id: 'consulting',
+    label: 'Consulting',
+    icon: Compass,
+    items: [
+      {
+        href: '/consulting',
+        label: 'Consulting Hub',
+        icon: Compass,
       },
     ],
   },
@@ -373,6 +391,11 @@ export const navGroups: NavGroup[] = [
         icon: ShoppingCart,
       },
       {
+        href: '/commerce/table-service',
+        label: 'Table Service',
+        icon: MapPin,
+      },
+      {
         href: '/commerce/products',
         label: 'Products',
         icon: Package,
@@ -387,6 +410,16 @@ export const navGroups: NavGroup[] = [
         href: '/commerce/sales',
         label: 'Sales History',
         icon: DollarSign,
+      },
+      {
+        href: '/commerce/promotions',
+        label: 'Promotions',
+        icon: Percent,
+      },
+      {
+        href: '/commerce/observability',
+        label: 'Observability',
+        icon: AlertTriangle,
       },
       {
         href: '/commerce/reconciliation',

@@ -1,4 +1,11 @@
-﻿const ORDER_QUEUE_KEY = 'chefflow_kiosk_order_queue'
+const ORDER_QUEUE_KEY = 'chefflow_kiosk_order_queue'
+
+function readClientCheckoutId(payload: Record<string, unknown>): string | null {
+  const candidate = payload.client_checkout_id
+  if (typeof candidate !== 'string') return null
+  const normalized = candidate.trim()
+  return normalized.length > 0 ? normalized : null
+}
 
 export interface QueuedOrderCheckout {
   id: string
@@ -19,6 +26,17 @@ export function getQueuedOrderCheckouts(): QueuedOrderCheckout[] {
 
 export function enqueueOrderCheckout(token: string, payload: Record<string, unknown>): void {
   const queue = getQueuedOrderCheckouts()
+  const clientCheckoutId = readClientCheckoutId(payload)
+  if (
+    clientCheckoutId &&
+    queue.some(
+      (item) =>
+        item.token === token && readClientCheckoutId(item.payload) === clientCheckoutId
+    )
+  ) {
+    return
+  }
+
   queue.push({
     id: crypto.randomUUID(),
     token,

@@ -14,6 +14,12 @@ import { createConflictError } from '@/lib/mutations/conflict'
 import { UnknownAppError, ValidationError } from '@/lib/errors/app-error'
 import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
 import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-validator'
+import {
+  resolveInquiryDateForEvent,
+  inferEventTimesFromConversation,
+  parseCityStateFromConversation,
+  buildAutoMenuCourseNamesFromConversation,
+} from '@/lib/inquiries/conversation-scaffold'
 
 type InquiryStatus = Database['public']['Enums']['inquiry_status']
 type InquiryChannel = Database['public']['Enums']['inquiry_channel']
@@ -90,6 +96,26 @@ const UpdateInquirySchema = z.object({
 
 export type CreateInquiryInput = z.infer<typeof CreateInquirySchema>
 export type UpdateInquiryInput = z.infer<typeof UpdateInquirySchema>
+
+function inferComponentCategoryFromDishName(
+  dishName: string
+): Database['public']['Enums']['component_category'] {
+  const value = dishName.toLowerCase()
+  if (/\b(sauce|jus|vinaigrette|aioli|broth|glaze)\b/.test(value)) return 'sauce'
+  if (/\b(steak|beef|ribeye|lobster|fish|haddock|chicken|duck|pork|shrimp|protein)\b/.test(value))
+    return 'protein'
+  if (/\b(potato|rice|grain|pasta|starch)\b/.test(value)) return 'starch'
+  if (/\b(salad|vegetable|veggie|squash|broccoli|tomato|pickle)\b/.test(value))
+    return 'vegetable'
+  if (/\b(berry|fruit|peach|apple|pear|citrus)\b/.test(value)) return 'fruit'
+  if (/\b(cake|mousse|dessert|cheesecake|tart|custard|gelato)\b/.test(value)) return 'dessert'
+  if (/\b(garnish|herb)\b/.test(value)) return 'garnish'
+  if (/\b(bread|toast)\b/.test(value)) return 'bread'
+  if (/\b(cheese|parmesan|ricotta|goat)\b/.test(value)) return 'cheese'
+  if (/\b(condiment|mustard|ketchup|relish)\b/.test(value)) return 'condiment'
+  if (/\b(drink|cocktail|wine|beverage)\b/.test(value)) return 'beverage'
+  return 'other'
+}
 
 // ============================================
 // 1. CREATE INQUIRY
@@ -737,6 +763,29 @@ export async function convertInquiryToEvent(inquiryId: string) {
     throw new ValidationError('Confirmed date is required before converting to an event')
   }
 
+  const { data: inquiryMessages } = await supabase
+    .from('messages')
+    .select('body, sent_at')
+    .eq('tenant_id', user.tenantId!)
+    .eq('inquiry_id', inquiry.id)
+    .order('sent_at', { ascending: true })
+    .limit(100)
+
+  const conversationText = [
+    inquiry.source_message,
+    ...(inquiryMessages || []).map((m: { body?: string | null }) => m.body ?? ''),
+  ]
+    .filter((chunk: string | null | undefined) => Boolean(chunk && chunk.trim().length > 0))
+    .join('\n\n')
+
+  const resolvedEventDate = resolveInquiryDateForEvent(inquiry.confirmed_date, inquiry.first_contact_at)
+  if (!resolvedEventDate) {
+    throw new ValidationError('Confirmed date could not be resolved to a calendar day')
+  }
+
+  const { serveTime, arrivalTime } = inferEventTimesFromConversation(conversationText)
+  const parsedLocation = parseCityStateFromConversation(inquiry.confirmed_location, conversationText)
+
   // Check for accepted quote on this inquiry — use its pricing if available
   const { data: acceptedQuote } = await supabase
     .from('quotes')
@@ -749,16 +798,9 @@ export async function convertInquiryToEvent(inquiryId: string) {
     .single()
 
   // Pricing: accepted quote wins over inquiry budget
-  const quotedPriceCents = acceptedQuote?.total_quoted_cents ?? inquiry.confirmed_budget_cents
+  const quotedPriceCents = acceptedQuote?.total_quoted_cents ?? inquiry.confirmed_budget_cents ?? null
   const depositAmountCents = acceptedQuote?.deposit_amount_cents ?? null
   const pricingModel = acceptedQuote?.pricing_model ?? null
-
-  // Validate pricing exists before creating event
-  if (!quotedPriceCents || quotedPriceCents <= 0) {
-    throw new ValidationError(
-      'Cannot convert inquiry to event without a confirmed price. Please attach a quote first.'
-    )
-  }
 
   // Map cannabis_preference string → boolean
   const cannabisPref = inquiry.confirmed_cannabis_preference
@@ -775,11 +817,13 @@ export async function convertInquiryToEvent(inquiryId: string) {
       inquiry_id: inquiry.id,
       referral_partner_id: inquiry.referral_partner_id || null,
       partner_location_id: inquiry.partner_location_id || null,
-      event_date: inquiry.confirmed_date,
-      serve_time: 'TBD',
+      event_date: resolvedEventDate,
+      serve_time: serveTime,
+      arrival_time: arrivalTime,
       guest_count: inquiry.confirmed_guest_count || 1,
       location_address: inquiry.confirmed_location || 'TBD',
-      location_city: 'TBD',
+      location_city: parsedLocation.city || 'TBD',
+      location_state: parsedLocation.state || 'MA',
       location_zip: 'TBD',
       occasion: inquiry.confirmed_occasion,
       quoted_price_cents: quotedPriceCents,
@@ -823,6 +867,111 @@ export async function convertInquiryToEvent(inquiryId: string) {
       .from('quotes')
       .update({ event_id: event.id })
       .eq('id', acceptedQuote.id)
+      .eq('tenant_id', user.tenantId!)
+  }
+
+  // Auto-scaffold an operational menu from inquiry conversation so event PDFs are
+  // immediately usable even before manual menu entry.
+  const { data: existingMenu } = await supabase
+    .from('menus')
+    .select('id')
+    .eq('tenant_id', user.tenantId!)
+    .eq('event_id', event.id)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+
+  if (!existingMenu?.id) {
+    const dishNames = buildAutoMenuCourseNamesFromConversation(conversationText)
+
+    const { data: menu, error: menuError } = await supabase
+      .from('menus')
+      .insert({
+        tenant_id: user.tenantId!,
+        event_id: event.id,
+        name: `${inquiry.confirmed_occasion || 'Event'} Auto Menu`,
+        description: 'Auto-scaffolded from inquiry conversation. Refine before final service.',
+        target_guest_count: inquiry.confirmed_guest_count || 1,
+        notes: 'Generated from inquiry conversion',
+        created_by: user.id,
+        updated_by: user.id,
+      })
+      .select('id')
+      .single()
+
+    if (menuError || !menu) {
+      console.error('[convertInquiryToEvent] Menu scaffold creation error:', menuError)
+      throw new UnknownAppError(`Failed to scaffold menu: ${menuError?.message || 'Unknown error'}`)
+    }
+
+    await supabase.from('menu_state_transitions').insert({
+      tenant_id: user.tenantId!,
+      menu_id: menu.id,
+      from_status: null,
+      to_status: 'draft',
+      transitioned_by: user.id,
+      reason: 'auto_scaffold_from_inquiry_conversion',
+      metadata: { inquiry_id: inquiry.id, event_id: event.id },
+    })
+
+    const dishPayload = dishNames.map((dishName, index) => ({
+      tenant_id: user.tenantId!,
+      menu_id: menu.id,
+      course_number: index + 1,
+      course_name: `Course ${index + 1}`,
+      name: dishName,
+      description: dishName,
+      dietary_tags: inquiry.confirmed_dietary_restrictions || [],
+      allergen_flags: [],
+      sort_order: index + 1,
+      created_by: user.id,
+      updated_by: user.id,
+    }))
+
+    const { data: insertedDishes, error: dishError } = await supabase
+      .from('dishes')
+      .insert(dishPayload)
+      .select('id, name, course_number')
+
+    if (dishError || !insertedDishes || insertedDishes.length === 0) {
+      console.error('[convertInquiryToEvent] Dish scaffold creation error:', dishError)
+      throw new UnknownAppError(`Failed to scaffold dishes: ${dishError?.message || 'Unknown error'}`)
+    }
+
+    const componentPayload = insertedDishes.map(
+      (dish: { id: string; name: string | null; course_number: number }) => {
+        const label = dish.name || `Course ${dish.course_number} Component`
+        return {
+          tenant_id: user.tenantId!,
+          dish_id: dish.id,
+          name: label,
+          category: inferComponentCategoryFromDishName(label),
+          is_make_ahead: true,
+          execution_notes: 'Auto-generated from inquiry conversation. Confirm final execution details.',
+          storage_notes: 'Review storage and transport before service.',
+          sort_order: 1,
+          created_by: user.id,
+          updated_by: user.id,
+        }
+      }
+    )
+
+    const { error: componentError } = await supabase.from('components').insert(componentPayload)
+    if (componentError) {
+      console.error('[convertInquiryToEvent] Component scaffold creation error:', componentError)
+      throw new UnknownAppError(
+        `Failed to scaffold components: ${componentError.message || 'Unknown error'}`
+      )
+    }
+
+    await supabase
+      .from('events')
+      .update({
+        menu_id: menu.id,
+        course_count: insertedDishes.length,
+        updated_by: user.id,
+      })
+      .eq('id', event.id)
       .eq('tenant_id', user.tenantId!)
   }
 

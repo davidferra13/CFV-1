@@ -172,12 +172,12 @@ async function getSaleSubtotal(saleId: string, tenantId: string): Promise<number
   const supabase: any = createServerClient()
   const { data } = await supabase
     .from('sales')
-    .select('subtotal_cents, discount_cents, tip_cents')
+    .select('subtotal_cents, discount_cents')
     .eq('id', saleId)
     .eq('tenant_id', tenantId)
     .single()
 
   if (!data) return 0
   const s = data as any
-  return (s.subtotal_cents ?? 0) - (s.discount_cents ?? 0) + (s.tip_cents ?? 0)
+  return (s.subtotal_cents ?? 0) - (s.discount_cents ?? 0)
 }

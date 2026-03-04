@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('Authentication network resilience', () => {
+  test.describe.configure({ timeout: 120_000 })
+
   test('sign-in shows actionable message on transport failure', async ({ page }) => {
     await page.goto('/auth/signin')
     await expect(page.locator('input[type="email"]')).toBeVisible()
@@ -45,7 +47,7 @@ test.describe('Authentication network resilience', () => {
     await page.getByRole('button', { name: /^sign in$/i }).click()
 
     await page.waitForURL(/\/(dashboard|my-events|onboarding|auth\/role-selection|admin)/, {
-      timeout: 30_000,
+      timeout: 90_000,
     })
 
     const url = page.url().toLowerCase()

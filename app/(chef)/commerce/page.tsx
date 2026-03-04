@@ -7,7 +7,16 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { ShoppingCart, Store, Package, ClipboardCheck, DollarSign } from 'lucide-react'
+import {
+  ShoppingCart,
+  Store,
+  Package,
+  ClipboardCheck,
+  DollarSign,
+  Percent,
+  AlertTriangle,
+  MapPin,
+} from 'lucide-react'
 import { getCurrentRegisterSession } from '@/lib/commerce/register-actions'
 import { listSales } from '@/lib/commerce/sale-actions'
 import { listProducts } from '@/lib/commerce/product-actions'
@@ -102,7 +111,7 @@ export default async function CommerceDashboardPage() {
       </div>
 
       {/* Quick Links */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-4">
         <Link href="/commerce/register">
           <Card interactive>
             <CardContent className="p-4 flex items-center gap-3">
@@ -132,6 +141,30 @@ export default async function CommerceDashboardPage() {
             <CardContent className="p-4 flex items-center gap-3">
               <DollarSign className="w-5 h-5 text-brand-500" />
               <span className="text-stone-200 font-medium">Sales History</span>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/commerce/table-service">
+          <Card interactive>
+            <CardContent className="p-4 flex items-center gap-3">
+              <MapPin className="w-5 h-5 text-brand-500" />
+              <span className="text-stone-200 font-medium">Table Service</span>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/commerce/promotions">
+          <Card interactive>
+            <CardContent className="p-4 flex items-center gap-3">
+              <Percent className="w-5 h-5 text-brand-500" />
+              <span className="text-stone-200 font-medium">Promotions</span>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/commerce/observability">
+          <Card interactive>
+            <CardContent className="p-4 flex items-center gap-3">
+              <AlertTriangle className="w-5 h-5 text-brand-500" />
+              <span className="text-stone-200 font-medium">Observability</span>
             </CardContent>
           </Card>
         </Link>

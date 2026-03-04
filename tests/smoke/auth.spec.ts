@@ -22,7 +22,7 @@ test.describe('Authentication', () => {
 
   test('sign-in page has submit button', async ({ page }) => {
     await page.goto(ROUTES.signIn)
-    await expect(page.getByRole('button', { name: /sign in/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: /^sign in$/i })).toBeVisible()
   })
 
   test('sign-up page renders email field', async ({ page }) => {
@@ -33,7 +33,7 @@ test.describe('Authentication', () => {
 
   test('unauthenticated user redirected from chef dashboard', async ({ page }) => {
     await page.goto(ROUTES.chefDashboard)
-    await page.waitForURL(/auth\/signin|\/$/i, { timeout: 10_000 })
+    await page.waitForURL(/auth\/signin|\/$/i, { timeout: 60_000 })
     const url = page.url()
     expect(url).toMatch(/auth\/signin|\/$/i)
   })

@@ -73,6 +73,8 @@ export function StaffPinEntry({ token, onVerified }: StaffPinEntryProps) {
         onVerified({
           staff_member_id: data.staff_member_id,
           staff_name: data.staff_name,
+          staff_role: data.staff_role ?? null,
+          is_manager: !!data.is_manager,
           session_id: data.session_id,
         })
       } catch {

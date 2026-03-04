@@ -18,6 +18,57 @@ export interface HubFriend {
   profile: HubGuestProfile
 }
 
+type FriendRequestInsertStatus = 'sent' | 'already_friends' | 'already_pending'
+
+async function createOrReuseFriendRequest(input: {
+  supabase: any
+  requesterProfileId: string
+  addresseeProfileId: string
+}): Promise<FriendRequestInsertStatus> {
+  const { supabase, requesterProfileId, addresseeProfileId } = input
+
+  // Check if friendship already exists (in either direction)
+  const { data: existing } = await supabase
+    .from('hub_guest_friends')
+    .select('id, status')
+    .or(
+      `and(requester_id.eq.${requesterProfileId},addressee_id.eq.${addresseeProfileId}),and(requester_id.eq.${addresseeProfileId},addressee_id.eq.${requesterProfileId})`
+    )
+    .limit(1)
+    .single()
+
+  if (existing) {
+    if (existing.status === 'accepted') return 'already_friends'
+    if (existing.status === 'pending') return 'already_pending'
+    // If declined, allow re-request by updating
+    if (existing.status === 'declined') {
+      await supabase
+        .from('hub_guest_friends')
+        .update({
+          requester_id: requesterProfileId,
+          addressee_id: addresseeProfileId,
+          status: 'pending',
+          declined_at: null,
+          created_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id)
+      return 'sent'
+    }
+  }
+
+  const { error } = await supabase.from('hub_guest_friends').insert({
+    requester_id: requesterProfileId,
+    addressee_id: addresseeProfileId,
+  })
+
+  if (error) {
+    if (error.code === '23505') return 'already_pending'
+    throw new Error(`Failed to send friend request: ${error.message}`)
+  }
+
+  return 'sent'
+}
+
 /**
  * Send a friend request to another hub guest profile.
  */
@@ -30,46 +81,52 @@ export async function sendFriendRequest(addresseeProfileId: string): Promise<{ s
     throw new Error("You can't add yourself as a friend")
   }
 
-  // Check if friendship already exists (in either direction)
-  const { data: existing } = await supabase
-    .from('hub_guest_friends')
-    .select('id, status')
-    .or(
-      `and(requester_id.eq.${myProfile.id},addressee_id.eq.${addresseeProfileId}),and(requester_id.eq.${addresseeProfileId},addressee_id.eq.${myProfile.id})`
-    )
-    .limit(1)
-    .single()
-
-  if (existing) {
-    if (existing.status === 'accepted') throw new Error('Already friends')
-    if (existing.status === 'pending') throw new Error('Friend request already pending')
-    // If declined, allow re-request by updating
-    if (existing.status === 'declined') {
-      await supabase
-        .from('hub_guest_friends')
-        .update({
-          requester_id: myProfile.id,
-          addressee_id: addresseeProfileId,
-          status: 'pending',
-          declined_at: null,
-          created_at: new Date().toISOString(),
-        })
-        .eq('id', existing.id)
-      return { success: true }
-    }
-  }
-
-  const { error } = await supabase.from('hub_guest_friends').insert({
-    requester_id: myProfile.id,
-    addressee_id: addresseeProfileId,
+  const status = await createOrReuseFriendRequest({
+    supabase,
+    requesterProfileId: myProfile.id,
+    addresseeProfileId,
   })
 
-  if (error) {
-    if (error.code === '23505') throw new Error('Friend request already exists')
-    throw new Error(`Failed to send friend request: ${error.message}`)
-  }
+  if (status === 'already_friends') throw new Error('Already friends')
+  if (status === 'already_pending') throw new Error('Friend request already pending')
 
   return { success: true }
+}
+
+/**
+ * Invite-link-only path: request to join someone's dinner circle by profile token.
+ */
+export async function requestDinnerCircleInviteByProfileToken(
+  addresseeProfileToken: string
+): Promise<{
+  success: true
+  status: 'sent' | 'already_friends' | 'already_pending' | 'self'
+}> {
+  await requireClient()
+  const myProfile = await getOrCreateClientHubProfile()
+  const supabase = createServerClient({ admin: true })
+
+  const { data: addresseeProfile } = await supabase
+    .from('hub_guest_profiles')
+    .select('id')
+    .eq('profile_token', addresseeProfileToken)
+    .maybeSingle()
+
+  if (!addresseeProfile?.id) {
+    throw new Error('This invite link is invalid or expired.')
+  }
+
+  if (addresseeProfile.id === myProfile.id) {
+    return { success: true, status: 'self' }
+  }
+
+  const status = await createOrReuseFriendRequest({
+    supabase,
+    requesterProfileId: myProfile.id,
+    addresseeProfileId: addresseeProfile.id,
+  })
+
+  return { success: true, status }
 }
 
 /**
@@ -225,48 +282,6 @@ export async function searchPeople(query: string): Promise<{
   existing_friend_ids: string[]
   pending_request_ids: string[]
 }> {
-  await requireClient()
-  const myProfile = await getOrCreateClientHubProfile()
-  const supabase = createServerClient({ admin: true })
-
-  const safeQuery = query
-    .trim()
-    .toLowerCase()
-    .replace(/[%_,.()"'\\]/g, '')
-  const searchTerm = `%${safeQuery}%`
-
-  // Search profiles by name or email
-  const { data: profiles } = await supabase
-    .from('hub_guest_profiles')
-    .select('*')
-    .neq('id', myProfile.id)
-    .or(`display_name.ilike.${searchTerm},email_normalized.ilike.${searchTerm}`)
-    .limit(20)
-
-  if (!profiles?.length) return { profiles: [], existing_friend_ids: [], pending_request_ids: [] }
-
-  const profileIds = profiles.map((p: any) => p.id)
-
-  // Check which are already friends or pending
-  const { data: friendships } = await supabase
-    .from('hub_guest_friends')
-    .select('id, requester_id, addressee_id, status')
-    .or(`requester_id.eq.${myProfile.id},addressee_id.eq.${myProfile.id}`)
-    .in('requester_id', [...profileIds, myProfile.id])
-    .in('addressee_id', [...profileIds, myProfile.id])
-
-  const existingFriendIds: string[] = []
-  const pendingRequestIds: string[] = []
-
-  for (const f of friendships ?? []) {
-    const otherId = f.requester_id === myProfile.id ? f.addressee_id : f.requester_id
-    if (f.status === 'accepted') existingFriendIds.push(otherId)
-    if (f.status === 'pending') pendingRequestIds.push(otherId)
-  }
-
-  return {
-    profiles: profiles as HubGuestProfile[],
-    existing_friend_ids: existingFriendIds,
-    pending_request_ids: pendingRequestIds,
-  }
+  void query
+  return { profiles: [], existing_friend_ids: [], pending_request_ids: [] }
 }

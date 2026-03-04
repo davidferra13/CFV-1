@@ -9,20 +9,103 @@ import { getPricingSuggestion } from '@/lib/analytics/pricing-suggestions'
 import { formatBenchmarkSuggestion } from '@/lib/inquiries/goldmine-pricing-benchmarks'
 import { QuoteForm } from '@/components/quotes/quote-form'
 
+type SearchParamValue = string | string[] | undefined
+type NewQuoteSearchParams = Record<string, SearchParamValue>
+type PricingModel = 'flat_rate' | 'per_person' | 'custom'
+
+function firstValue(value: SearchParamValue): string | undefined {
+  if (Array.isArray(value)) return value[0]
+  return value
+}
+
+function readString(params: NewQuoteSearchParams, key: string, maxLength = 200): string | null {
+  const raw = firstValue(params[key])?.trim()
+  if (!raw) return null
+  return raw.slice(0, maxLength)
+}
+
+function readInt(
+  params: NewQuoteSearchParams,
+  key: string,
+  opts: { min?: number; max?: number } = {}
+): number | null {
+  const raw = firstValue(params[key])
+  if (!raw) return null
+  const parsed = Number.parseInt(raw, 10)
+  if (!Number.isFinite(parsed)) return null
+  if (opts.min != null && parsed < opts.min) return null
+  if (opts.max != null && parsed > opts.max) return null
+  return parsed
+}
+
+function readFloat(
+  params: NewQuoteSearchParams,
+  key: string,
+  opts: { min?: number; max?: number } = {}
+): number | null {
+  const raw = firstValue(params[key])
+  if (!raw) return null
+  const parsed = Number.parseFloat(raw)
+  if (!Number.isFinite(parsed)) return null
+  if (opts.min != null && parsed < opts.min) return null
+  if (opts.max != null && parsed > opts.max) return null
+  return parsed
+}
+
+function readBoolean(params: NewQuoteSearchParams, key: string): boolean | undefined {
+  const raw = firstValue(params[key])?.toLowerCase()
+  if (!raw) return undefined
+  if (raw === '1' || raw === 'true' || raw === 'yes') return true
+  if (raw === '0' || raw === 'false' || raw === 'no') return false
+  return undefined
+}
+
+function readDateString(params: NewQuoteSearchParams, key: string): string | null {
+  const raw = firstValue(params[key])?.trim()
+  if (!raw) return null
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null
+  return raw
+}
+
+function readPricingModel(params: NewQuoteSearchParams, key: string): PricingModel | null {
+  const raw = firstValue(params[key])
+  if (raw === 'flat_rate' || raw === 'per_person' || raw === 'custom') return raw
+  return null
+}
+
 export default async function NewQuotePage({
   searchParams,
 }: {
-  searchParams: { client_id?: string; inquiry_id?: string }
+  searchParams: NewQuoteSearchParams
 }) {
   const user = await requireChef()
 
   const clients = await getClients()
 
-  // Pre-fill from inquiry if provided
-  let prefilledClientId = searchParams.client_id
-  let prefilledInquiryId = searchParams.inquiry_id
-  let prefilledGuestCount: number | null = null
-  let prefilledBudgetCents: number | null = null
+  // Pre-fill from query params and inquiry if provided
+  let prefilledClientId = readString(searchParams, 'client_id', 80)
+  let prefilledInquiryId = readString(searchParams, 'inquiry_id', 80)
+  let prefilledSource = readString(searchParams, 'source', 40)
+  let prefilledGuestCount = readInt(searchParams, 'guest_count', { min: 1, max: 10000 })
+  let prefilledBudgetCents = readInt(searchParams, 'total_cents', { min: 1, max: 100000000 })
+  let prefilledQuoteName = readString(searchParams, 'quote_name', 140)
+  let prefilledPricingModel = readPricingModel(searchParams, 'pricing_model')
+  let prefilledPricePerPersonCents = readInt(searchParams, 'price_per_person_cents', {
+    min: 1,
+    max: 10000000,
+  })
+  let prefilledDepositRequired = readBoolean(searchParams, 'deposit_required')
+  let prefilledDepositAmountCents = readInt(searchParams, 'deposit_amount_cents', {
+    min: 1,
+    max: 100000000,
+  })
+  let prefilledDepositPercentage = readFloat(searchParams, 'deposit_percentage', {
+    min: 0,
+    max: 100,
+  })
+  let prefilledValidUntil = readDateString(searchParams, 'valid_until')
+  let prefilledPricingNotes = readString(searchParams, 'pricing_notes', 1200)
+  let prefilledInternalNotes = readString(searchParams, 'internal_notes', 1200)
   let prefilledOccasion: string | null = null
   let prefilledEventDate: string | null = null
 
@@ -73,10 +156,20 @@ export default async function NewQuotePage({
         pricingHistory={pricingHistory}
         pricingSuggestion={pricingSuggestion}
         benchmarkHint={benchmarkHint}
-        prefilledClientId={prefilledClientId}
-        prefilledInquiryId={prefilledInquiryId}
+        prefilledClientId={prefilledClientId ?? undefined}
+        prefilledInquiryId={prefilledInquiryId ?? undefined}
         prefilledGuestCount={prefilledGuestCount}
         prefilledBudgetCents={prefilledBudgetCents}
+        prefilledSource={prefilledSource}
+        prefilledQuoteName={prefilledQuoteName}
+        prefilledPricingModel={prefilledPricingModel}
+        prefilledPricePerPersonCents={prefilledPricePerPersonCents}
+        prefilledDepositRequired={prefilledDepositRequired}
+        prefilledDepositAmountCents={prefilledDepositAmountCents}
+        prefilledDepositPercentage={prefilledDepositPercentage}
+        prefilledValidUntil={prefilledValidUntil}
+        prefilledPricingNotes={prefilledPricingNotes}
+        prefilledInternalNotes={prefilledInternalNotes}
         prefilledOccasion={prefilledOccasion}
         prefilledEventDate={prefilledEventDate}
       />

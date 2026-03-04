@@ -1,4 +1,4 @@
-// Sale Detail Page — full sale info, items, payments, refunds
+﻿// Sale Detail Page - full sale info, items, payments, refunds
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
@@ -19,7 +19,14 @@ import {
 import type { SaleStatus, SaleChannel } from '@/lib/commerce/constants'
 import { SaleDetailActions } from '@/components/commerce/sale-detail-actions'
 
-export const metadata: Metadata = { title: 'Sale Detail — ChefFlow' }
+export const metadata: Metadata = { title: 'Sale Detail - ChefFlow' }
+
+function readBooleanFlag(value: string | undefined) {
+  const normalized = String(value ?? '')
+    .trim()
+    .toLowerCase()
+  return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on'
+}
 
 export default async function SaleDetailPage({ params }: { params: Promise<{ id: string }> }) {
   await requireChef()
@@ -40,6 +47,7 @@ export default async function SaleDetailPage({ params }: { params: Promise<{ id:
   const s = sale as any
   const status = s.status as SaleStatus
   const channel = s.channel as SaleChannel
+  const managerApprovalRequired = readBooleanFlag(process.env.POS_ENFORCE_MANAGER_APPROVAL)
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -67,6 +75,7 @@ export default async function SaleDetailPage({ params }: { params: Promise<{ id:
         saleId={id}
         saleStatus={status}
         totalCents={s.total_cents ?? 0}
+        managerApprovalRequired={managerApprovalRequired}
         payments={payments.map((p: any) => ({
           id: p.id,
           amount_cents: p.amount_cents ?? 0,
@@ -92,7 +101,7 @@ export default async function SaleDetailPage({ params }: { params: Promise<{ id:
                 >
                   <div>
                     <span className="text-stone-200">{item.name}</span>
-                    <span className="text-stone-500 text-sm ml-2">×{item.quantity}</span>
+                    <span className="text-stone-500 text-sm ml-2">x{item.quantity}</span>
                   </div>
                   <span className="text-stone-200 font-medium">
                     ${((item.line_total_cents ?? 0) / 100).toFixed(2)}

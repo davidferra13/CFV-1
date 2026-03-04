@@ -9,6 +9,7 @@ import { X, Send, Loader2, Minus, Maximize2, Minimize2 } from 'lucide-react'
 import { RemyMascotButton } from '@/components/ai/remy-mascot-button'
 import { RemyAvatar } from '@/components/ai/remy-avatar'
 import { getStarterPainPoints } from '@/lib/ai/chefflow-feature-map'
+import { useRemyDisplayMode } from '@/lib/hooks/use-remy-display-mode'
 
 const DEFAULT_WIDTH = 380
 const DEFAULT_HEIGHT = 520
@@ -22,8 +23,6 @@ interface Message {
 }
 
 export function RemyConciergeWidget() {
-  const [isOpen, setIsOpen] = useState(true) // Open by default
-  const [hasAutoOpened, setHasAutoOpened] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
@@ -41,43 +40,32 @@ export function RemyConciergeWidget() {
     startW: number
     startH: number
   } | null>(null)
+  const { mode, isHydrated, isMobile, setMode } = useRemyDisplayMode({
+    storageKey: 'cf:remy:public-concierge:display-mode',
+    desktopDefault: 'docked',
+    mobileDefault: 'hidden',
+  })
+  const isOpen = mode === 'expanded'
 
   const starters = getStarterPainPoints()
-
-  // Check sessionStorage — restore collapsed state if user dismissed previously
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const dismissed = sessionStorage.getItem('remy-concierge-dismissed')
-      if (dismissed === '1') {
-        setIsOpen(false)
-      }
-      setHasAutoOpened(true)
-    }
-  }, [])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
   useEffect(() => {
-    if (isOpen && hasAutoOpened) {
+    if (isOpen && isHydrated) {
       setTimeout(() => inputRef.current?.focus(), 200)
     }
-  }, [isOpen, hasAutoOpened])
+  }, [isOpen, isHydrated])
 
   const handleCollapse = useCallback(() => {
-    setIsOpen(false)
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('remy-concierge-dismissed', '1')
-    }
-  }, [])
+    setMode('docked')
+  }, [setMode])
 
   const handleOpen = useCallback(() => {
-    setIsOpen(true)
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('remy-concierge-dismissed')
-    }
-  }, [])
+    setMode('expanded')
+  }, [setMode])
 
   const sendMessage = useCallback(
     async (text?: string) => {
@@ -173,6 +161,7 @@ export function RemyConciergeWidget() {
   }
 
   const toggleMaximize = useCallback(() => {
+    if (isMobile) return
     setIsMaximized((prev) => {
       const next = !prev
       if (typeof window !== 'undefined') {
@@ -180,7 +169,7 @@ export function RemyConciergeWidget() {
       }
       return next
     })
-  }, [])
+  }, [isMobile])
 
   // Restore maximized state from session
   useEffect(() => {
@@ -209,7 +198,7 @@ export function RemyConciergeWidget() {
   const startResize = useCallback(
     (edge: string) => (e: React.MouseEvent) => {
       e.preventDefault()
-      if (isMaximized) return
+      if (isMaximized || isMobile) return
       resizingRef.current = {
         edge,
         startX: e.clientX,
@@ -258,12 +247,24 @@ export function RemyConciergeWidget() {
       document.addEventListener('mouseup', onMouseUp)
       dragCleanupRef.current = cleanup
     },
-    [isMaximized, size]
+    [isMaximized, isMobile, size]
   )
 
-  // Collapsed state — floating mascot character
+  if (!isHydrated || mode === 'hidden') {
+    return null
+  }
+
+  // Docked state — compact launcher
   if (!isOpen) {
-    return <RemyMascotButton onClick={handleOpen} showOnlineDot ariaLabel="Chat with Remy" />
+    return (
+      <RemyMascotButton
+        onClick={handleOpen}
+        variant="docked"
+        showOnlineDot
+        className={isMobile ? 'bottom-3 right-3' : 'bottom-6 right-6'}
+        ariaLabel="Open Remy chat"
+      />
+    )
   }
 
   // Open state — full chatbot widget
@@ -272,9 +273,9 @@ export function RemyConciergeWidget() {
   return (
     <div
       ref={widgetRef}
-      className={`fixed z-50 ${isMaximized ? 'inset-4' : 'bottom-6 right-6'}`}
+      className={`fixed z-50 ${isMobile ? 'inset-x-2 bottom-2 top-20' : isMaximized ? 'inset-4' : 'bottom-6 right-6'}`}
       style={
-        isMaximized
+        isMobile || isMaximized
           ? undefined
           : {
               width: `min(${size.w}px, calc(100vw - 2rem))`,
@@ -286,7 +287,7 @@ export function RemyConciergeWidget() {
            Corner handles are 20px hit area and higher z-index (z-30) so they
            ALWAYS win over edge handles. This is a permanent rule — do not
            shrink corners or lower their z-index. Ever. */}
-      {!isMaximized && (
+      {!isMobile && !isMaximized && (
         <>
           {/* Edge handles (z-20) — inset so they don't overlap corners */}
           <div
@@ -351,14 +352,20 @@ export function RemyConciergeWidget() {
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <button
-              onClick={toggleMaximize}
-              className="rounded-lg p-1.5 text-white/60 transition-colors hover:bg-stone-800/10 hover:text-white"
-              aria-label={isMaximized ? 'Restore chat size' : 'Maximize chat'}
-              title={isMaximized ? 'Restore' : 'Maximize'}
-            >
-              {isMaximized ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-            </button>
+            {!isMobile && (
+              <button
+                onClick={toggleMaximize}
+                className="rounded-lg p-1.5 text-white/60 transition-colors hover:bg-stone-800/10 hover:text-white"
+                aria-label={isMaximized ? 'Restore chat size' : 'Maximize chat'}
+                title={isMaximized ? 'Restore' : 'Maximize'}
+              >
+                {isMaximized ? (
+                  <Minimize2 className="h-4 w-4" />
+                ) : (
+                  <Maximize2 className="h-4 w-4" />
+                )}
+              </button>
+            )}
             <button
               onClick={handleCollapse}
               className="rounded-lg p-1.5 text-white/60 transition-colors hover:bg-stone-800/10 hover:text-white"

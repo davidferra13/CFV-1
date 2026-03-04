@@ -44,6 +44,11 @@ export interface LeadScoreData {
   lead_score_factors: string[]
 }
 
+export interface ExtractAndScoreOptions {
+  /** Timestamp of the email being parsed (used to resolve YYYY-MM-DD placeholders) */
+  observedAt?: string | null
+}
+
 // ─── Extract + Score ────────────────────────────────────────────────────
 
 /**
@@ -56,7 +61,8 @@ export function extractAndScoreEmail(
   threadContext?: {
     total_messages: number
     has_pricing_quoted: boolean
-  }
+  },
+  options?: ExtractAndScoreOptions
 ): {
   fields: ExtractedInquiryFields
   score: LeadScoreData
@@ -66,7 +72,7 @@ export function extractAndScoreEmail(
   const raw = extractAllDeterministicFields(subject, body)
 
   // 2. Map to inquiry fields
-  const fields = mapToInquiryFields(raw)
+  const fields = mapToInquiryFields(raw, options)
 
   // 3. Compute lead score
   const scoreResult = scoreFromExtraction(raw, threadContext)
@@ -126,12 +132,51 @@ export function scoreInquiryFields(fields: {
 
 // ─── Internal Mapping ───────────────────────────────────────────────────
 
-function mapToInquiryFields(raw: DeterministicFields): ExtractedInquiryFields {
+function resolveDatePlaceholder(
+  value: string | null,
+  observedAt?: string | null
+): string | null {
+  if (!value) return null
+
+  // Already concrete date/time.
+  if (!value.startsWith('YYYY-')) {
+    const parsed = new Date(value)
+    if (!Number.isNaN(parsed.getTime())) return parsed.toISOString().slice(0, 10)
+    return value
+  }
+
+  const match = /^YYYY-(\d{2})-(\d{2})$/.exec(value)
+  if (!match) return value
+
+  const month = Number.parseInt(match[1], 10)
+  const day = Number.parseInt(match[2], 10)
+  if (!Number.isFinite(month) || !Number.isFinite(day)) return value
+
+  const anchor = observedAt ? new Date(observedAt) : new Date()
+  if (Number.isNaN(anchor.getTime())) return value
+
+  let year = anchor.getUTCFullYear()
+  const anchorMonth = anchor.getUTCMonth() + 1
+  const anchorDay = anchor.getUTCDate()
+
+  if (month < anchorMonth || (month === anchorMonth && day < anchorDay - 7)) {
+    year += 1
+  }
+
+  const resolved = new Date(Date.UTC(year, month - 1, day))
+  if (Number.isNaN(resolved.getTime())) return value
+  return resolved.toISOString().slice(0, 10)
+}
+
+function mapToInquiryFields(
+  raw: DeterministicFields,
+  options?: ExtractAndScoreOptions
+): ExtractedInquiryFields {
   // Best date: prefer parsed ISO, fall back to raw
   let confirmedDate: string | null = null
   if (raw.dates.length > 0) {
     const best = raw.dates.find((d) => d.parsed) || raw.dates[0]
-    confirmedDate = best.parsed || best.raw
+    confirmedDate = resolveDatePlaceholder(best.parsed || best.raw, options?.observedAt)
   }
 
   // Best guest count: prefer exact number, then range_low

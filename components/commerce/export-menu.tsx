@@ -9,9 +9,11 @@ import {
   exportPaymentsCsv,
   exportRefundsCsv,
   exportTaxSummaryCsv,
+  exportReconciliationCsv,
+  exportShiftSessionsCsv,
 } from '@/lib/commerce/export-actions'
 
-type ExportType = 'sales' | 'payments' | 'refunds' | 'tax'
+type ExportType = 'sales' | 'payments' | 'refunds' | 'tax' | 'reconciliation' | 'shifts'
 
 function downloadCsv(content: string, filename: string) {
   const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
@@ -51,6 +53,14 @@ export function ExportMenu({ from, to }: { from: string; to: string }) {
             csv = await exportTaxSummaryCsv(from, to)
             filename = `chefflow-tax-summary-${from}-to-${to}.csv`
             break
+          case 'reconciliation':
+            csv = await exportReconciliationCsv(from, to)
+            filename = `chefflow-reconciliation-${from}-to-${to}.csv`
+            break
+          case 'shifts':
+            csv = await exportShiftSessionsCsv(from, to)
+            filename = `chefflow-shifts-${from}-to-${to}.csv`
+            break
         }
 
         downloadCsv(csv, filename)
@@ -64,20 +74,22 @@ export function ExportMenu({ from, to }: { from: string; to: string }) {
 
   return (
     <div className="flex flex-wrap gap-2">
-      {(['sales', 'payments', 'refunds', 'tax'] as ExportType[]).map((type) => (
-        <Button
-          key={type}
-          variant="ghost"
-          size="sm"
-          onClick={() => handleExport(type)}
-          disabled={isPending}
-        >
-          <Download className="w-3.5 h-3.5 mr-1.5" />
-          {isPending && activeExport === type
-            ? 'Exporting...'
-            : `${type.charAt(0).toUpperCase() + type.slice(1)} CSV`}
-        </Button>
-      ))}
+      {(['sales', 'payments', 'refunds', 'tax', 'reconciliation', 'shifts'] as ExportType[]).map(
+        (type) => (
+          <Button
+            key={type}
+            variant="ghost"
+            size="sm"
+            onClick={() => handleExport(type)}
+            disabled={isPending}
+          >
+            <Download className="w-3.5 h-3.5 mr-1.5" />
+            {isPending && activeExport === type
+              ? 'Exporting...'
+              : `${type.charAt(0).toUpperCase() + type.slice(1)} CSV`}
+          </Button>
+        )
+      )}
     </div>
   )
 }

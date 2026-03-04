@@ -2,7 +2,12 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { HubMessage } from '@/lib/hub/types'
-import { getHubMessages, postHubMessage, togglePinMessage } from '@/lib/hub/message-actions'
+import {
+  getHubMessages,
+  markHubRead,
+  postHubMessage,
+  togglePinMessage,
+} from '@/lib/hub/message-actions'
 import { subscribeToHubMessages, subscribeToHubMessageUpdates } from '@/lib/hub/realtime'
 import { HubMessageBubble } from './hub-message'
 import { HubInput } from './hub-input'
@@ -21,6 +26,22 @@ export function HubFeed({ groupId, profileToken, currentProfileId }: HubFeedProp
   const [replyTo, setReplyTo] = useState<HubMessage | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const lastReadTouchMsRef = useRef(0)
+
+  const touchReadMarker = useCallback(
+    async (force = false) => {
+      if (!profileToken) return
+      const now = Date.now()
+      if (!force && now - lastReadTouchMsRef.current < 8000) return
+      lastReadTouchMsRef.current = now
+      try {
+        await markHubRead({ groupId, profileToken })
+      } catch {
+        // Non-blocking
+      }
+    },
+    [groupId, profileToken]
+  )
 
   // Load initial messages
   useEffect(() => {
@@ -32,6 +53,7 @@ export function HubFeed({ groupId, profileToken, currentProfileId }: HubFeedProp
           setMessages(result.messages.reverse()) // oldest first
           setNextCursor(result.nextCursor)
           setLoading(false)
+          void touchReadMarker(true)
           // Scroll to bottom
           setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'instant' }), 50)
         }
@@ -43,7 +65,7 @@ export function HubFeed({ groupId, profileToken, currentProfileId }: HubFeedProp
     return () => {
       cancelled = true
     }
-  }, [groupId])
+  }, [groupId, touchReadMarker])
 
   // Realtime subscriptions
   useEffect(() => {
@@ -53,6 +75,9 @@ export function HubFeed({ groupId, profileToken, currentProfileId }: HubFeedProp
         if (prev.some((m) => m.id === newMsg.id)) return prev
         return [...prev, newMsg]
       })
+      if (newMsg.author_profile_id !== currentProfileId) {
+        void touchReadMarker()
+      }
       // Auto-scroll if near bottom
       setTimeout(() => {
         const el = scrollRef.current
@@ -73,7 +98,7 @@ export function HubFeed({ groupId, profileToken, currentProfileId }: HubFeedProp
       unsubNew()
       unsubUpdates()
     }
-  }, [groupId])
+  }, [groupId, currentProfileId, touchReadMarker])
 
   // Load more (scroll up to load history)
   const loadMore = useCallback(async () => {

@@ -1,26 +1,47 @@
-// Reconciliation Dashboard — daily financial reconciliation reports
+// Reconciliation dashboard for daily financial reports.
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { listReconciliationReports } from '@/lib/commerce/reconciliation-actions'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import {
+  generateDailyReconciliation,
+  listReconciliationReports,
+} from '@/lib/commerce/reconciliation-actions'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
-export const metadata: Metadata = { title: 'Reconciliation — ChefFlow' }
+export const metadata: Metadata = { title: 'Reconciliation - ChefFlow' }
 
 export default async function ReconciliationPage() {
   await requireChef()
   await requirePro('commerce')
 
+  async function generateTodayReportAction() {
+    'use server'
+    await generateDailyReconciliation()
+  }
+
   const { reports, total } = await listReconciliationReports({ limit: 30 })
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <h1 className="text-3xl font-bold text-stone-100">Reconciliation</h1>
           <Badge variant="default">{total}</Badge>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link href="/commerce/observability">
+            <Button variant="secondary" size="sm">
+              Observability
+            </Button>
+          </Link>
+          <form action={generateTodayReportAction}>
+            <Button variant="ghost" size="sm">
+              Generate Today
+            </Button>
+          </form>
         </div>
       </div>
 
@@ -100,7 +121,6 @@ export default async function ReconciliationPage() {
                       </div>
                     </div>
 
-                    {/* Payment method breakdown */}
                     <div className="flex gap-6 mt-3 text-xs text-stone-500">
                       <span>Cash: ${((report.cash_total_cents ?? 0) / 100).toFixed(2)}</span>
                       <span>Card: ${((report.card_total_cents ?? 0) / 100).toFixed(2)}</span>
@@ -116,7 +136,6 @@ export default async function ReconciliationPage() {
                       )}
                     </div>
 
-                    {/* Open flags */}
                     {openFlags.length > 0 && (
                       <div className="mt-3 space-y-1">
                         {openFlags.map((flag: any, idx: number) => (

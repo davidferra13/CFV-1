@@ -1,23 +1,27 @@
 // Client Hub Dashboard — Groups, friends, chef sharing
 
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { requireClient } from '@/lib/auth/get-user'
-import { getClientHubGroups } from '@/lib/hub/client-hub-actions'
+import { getClientHubGroups, getClientProfileToken } from '@/lib/hub/client-hub-actions'
 import { getMyFriends, getPendingFriendRequests } from '@/lib/hub/friend-actions'
+import { getHubTotalUnreadCount } from '@/lib/hub/notification-actions'
 import { HubGroupCard } from '@/components/hub/hub-group-card'
 import { Button } from '@/components/ui/button'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
-import { CalendarPlus, Users, Utensils, Share2 } from 'lucide-react'
+import { Bell, CalendarPlus, Users, Utensils, Share2 } from 'lucide-react'
 
-export const metadata: Metadata = { title: 'My Hub - ChefFlow' }
+export const metadata: Metadata = { title: 'My Dinner Circle - ChefFlow' }
 
 export default async function MyHubPage() {
   await requireClient()
-  const [groups, friends, pendingRequests] = await Promise.all([
+  const profileToken = await getClientProfileToken()
+  const [groups, friends, pendingRequests, totalUnread] = await Promise.all([
     getClientHubGroups(),
     getMyFriends().catch(() => []),
     getPendingFriendRequests().catch(() => []),
+    getHubTotalUnreadCount(profileToken).catch(() => 0),
   ])
 
   return (
@@ -25,16 +29,27 @@ export default async function MyHubPage() {
       {/* Header */}
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-stone-100">My Hub</h1>
+          <h1 className="text-3xl font-bold text-stone-100">My Dinner Circle</h1>
           <p className="mt-1 text-stone-400">
-            Plan dinners, chat with friends, and coordinate everything in one place
+            Private planning space for your dinners, updates, and trusted invite-only circle.
           </p>
         </div>
         <div className="flex gap-2">
+          <Link href="/my-hub/notifications">
+            <Button variant="secondary" className="relative">
+              <Bell className="mr-2 h-4 w-4" />
+              Notifications
+              {totalUnread > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-[10px] font-bold text-white">
+                  {totalUnread > 99 ? '99+' : totalUnread}
+                </span>
+              )}
+            </Button>
+          </Link>
           <Link href="/my-hub/friends">
             <Button variant="secondary" className="relative">
               <Users className="mr-2 h-4 w-4" />
-              Friends
+              Circle
               {pendingRequests.length > 0 && (
                 <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-[10px] font-bold text-white">
                   {pendingRequests.length}
@@ -60,7 +75,7 @@ export default async function MyHubPage() {
           </div>
           <div className="rounded-xl border border-stone-800 bg-stone-900/60 p-4 text-center">
             <p className="text-2xl font-bold text-stone-100">{friends.length}</p>
-            <p className="text-xs text-stone-400">Friends</p>
+            <p className="text-xs text-stone-400">Circle Members</p>
           </div>
           <Link
             href="/my-hub/share-chef"
@@ -106,7 +121,7 @@ export default async function MyHubPage() {
       {friends.length > 0 && (
         <div className="mt-8">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-stone-200">Friends</h2>
+            <h2 className="text-lg font-semibold text-stone-200">Circle Members</h2>
             <Link href="/my-hub/friends" className="text-sm text-brand-400 hover:text-brand-300">
               View all
             </Link>
@@ -119,9 +134,11 @@ export default async function MyHubPage() {
               >
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500/20 text-xs font-semibold text-brand-400">
                   {friend.profile.avatar_url ? (
-                    <img
+                    <Image
                       src={friend.profile.avatar_url}
                       alt=""
+                      width={28}
+                      height={28}
                       className="h-7 w-7 rounded-full object-cover"
                     />
                   ) : (

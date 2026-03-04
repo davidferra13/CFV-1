@@ -555,6 +555,15 @@ export default async function SettingsPage() {
                 Tell Remy about your cooking philosophy, signature dishes, and food identity.
               </p>
             </Link>
+            <Link
+              href="/settings/remy"
+              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+            >
+              <p className="font-medium text-stone-100">Remy Control Center</p>
+              <p className="text-sm text-stone-500 mt-1">
+                Set per-action approval policy rules and review server-side execution audit logs.
+              </p>
+            </Link>
           </div>
         </SettingsCategory>
 
