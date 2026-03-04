@@ -17,6 +17,17 @@ Optional extension:
 
 5. `05-closeout-sheet-template.md` (food safety + leftovers + reset + admin closeout)
 
+## Web App Blank Template Library
+
+The app exposes one-click blank downloads for each generated document type:
+
+- `06-event-summary-template.md`
+- `11-front-of-house-menu-template.md`
+- `07-execution-sheet-template.md`
+- `08-non-negotiables-checklist-template.md`
+- `09-travel-route-template.md`
+- `10-content-asset-capture-sheet-template.md`
+
 ## Auto-Fill Files
 
 - `template-pack.schema.json` (input contract)

@@ -8,6 +8,10 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { PdfViewerModal } from '@/components/documents/pdf-viewer-modal'
 import type { DocumentReadiness, BusinessDocInfo } from '@/lib/documents/actions'
+import {
+  TEMPLATE_SLUG_BY_DOC_TYPE,
+  type OperationalDocumentType,
+} from '@/lib/documents/template-catalog'
 
 const CONTRACT_STATUS_LABELS: Record<string, string> = {
   draft: 'Draft',
@@ -32,7 +36,7 @@ type DocumentSectionProps = {
 }
 
 type DocEntry = {
-  type: string
+  type: OperationalDocumentType
   label: string
   description: string
   ready: boolean
@@ -133,6 +137,16 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
+                <a
+                  href={`/api/documents/templates/${TEMPLATE_SLUG_BY_DOC_TYPE[doc.type]}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="ghost" size="sm">
+                    Blank
+                  </Button>
+                </a>
+
                 {/* Packing list gets a specialized "Pack Now" interactive page */}
                 {doc.type === 'packing' && (
                   <a href={`/events/${eventId}/pack`}>
@@ -217,6 +231,15 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
             )}
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            <a
+              href={`/api/documents/templates/${TEMPLATE_SLUG_BY_DOC_TYPE.travel}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="ghost" size="sm">
+                Blank
+              </Button>
+            </a>
             <a href={`/events/${eventId}/travel`}>
               <Button variant="secondary" size="sm">
                 Plan Route
@@ -253,6 +276,15 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
             <p className="text-xs text-stone-400 mt-1">Static checklist — no menu data required</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            <a
+              href={`/api/documents/templates/${TEMPLATE_SLUG_BY_DOC_TYPE.shots}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="ghost" size="sm">
+                Blank
+              </Button>
+            </a>
             <a href={`/events/${eventId}/interactive?type=shots`}>
               <Button variant="secondary" size="sm">
                 Interactive

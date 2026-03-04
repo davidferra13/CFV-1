@@ -598,7 +598,16 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
 
       {/* Documents — shown when this inquiry was converted to an event */}
       {convertedEventId && docReadiness ? (
-        <DocumentSection eventId={convertedEventId} readiness={docReadiness} />
+        <div className="space-y-3">
+          <div className="flex justify-end">
+            <Link href={`/events/${convertedEventId}/documents`}>
+              <Button variant="secondary" size="sm">
+                Open Documents Hub
+              </Button>
+            </Link>
+          </div>
+          <DocumentSection eventId={convertedEventId} readiness={docReadiness} />
+        </div>
       ) : convertedEventId ? (
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-3">Printed Documents</h2>

@@ -91,6 +91,7 @@ export const standaloneTop: NavItem[] = [
   { href: '/chat', label: 'Messaging', icon: MessageCircle, coreFeature: true },
   { href: '/schedule', label: 'Calendar', icon: CalendarDays, coreFeature: true },
   { href: '/events', label: 'All Events', icon: CalendarDays, coreFeature: true },
+  { href: '/documents', label: 'Documents', icon: FileText, coreFeature: true },
   { href: '/menus', label: 'Menus', icon: UtensilsCrossed, coreFeature: true },
   { href: '/travel', label: 'Travel', icon: MapPin },
   { href: '/staff', label: 'Staff', icon: Users },
