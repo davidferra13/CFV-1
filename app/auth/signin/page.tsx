@@ -85,7 +85,7 @@ function SignInForm() {
     setMessage(null)
     setGoogleLoading(true)
     try {
-      await signInWithGoogle()
+      await signInWithGoogle(redirectPath)
       // signInWithGoogle redirects, so no navigation or state change is needed here on success
     } catch (err) {
       const error = err as Error

@@ -3,6 +3,7 @@
 
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
+import { log } from '@/lib/logger'
 
 /** Validate redirect path to prevent open redirect attacks */
 function safeRedirectPath(raw: string | null): string {
@@ -28,6 +29,20 @@ export async function GET(request: Request) {
     if (!error) {
       return NextResponse.redirect(`${origin}${next}`)
     }
+    log.auth.error('Auth callback code exchange failed', {
+      error,
+      context: {
+        route: '/auth/callback',
+        next,
+      },
+    })
+  } else {
+    log.auth.warn('Auth callback missing code parameter', {
+      context: {
+        route: '/auth/callback',
+        next,
+      },
+    })
   }
 
   // Auth failed — determine appropriate error message based on intended flow
@@ -37,5 +52,12 @@ export async function GET(request: Request) {
     : 'Authentication failed. Please try again.'
 
   const redirectPath = isPasswordReset ? '/auth/forgot-password' : '/auth/signin'
+  log.auth.warn('Auth callback redirecting to error recovery path', {
+    context: {
+      route: '/auth/callback',
+      redirectPath,
+      isPasswordReset,
+    },
+  })
   return NextResponse.redirect(`${origin}${redirectPath}?error=${encodeURIComponent(errorMessage)}`)
 }
