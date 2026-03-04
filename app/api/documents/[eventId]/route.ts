@@ -4,6 +4,7 @@
 // Auth: requires chef with access to the event
 
 import { NextRequest, NextResponse } from 'next/server'
+import { createHash } from 'node:crypto'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { getDocumentContext } from '@/lib/print/actions'
@@ -32,6 +33,21 @@ import {
 import { PDFLayout } from '@/lib/documents/pdf-layout'
 import { format } from 'date-fns'
 
+const SNAPSHOT_BUCKET = 'event-documents'
+const SNAPSHOT_MIN_INTERVAL_MS = 10 * 60 * 1000
+type SnapshotDocType =
+  | 'summary'
+  | 'grocery'
+  | 'foh'
+  | 'prep'
+  | 'execution'
+  | 'checklist'
+  | 'packing'
+  | 'reset'
+  | 'travel'
+  | 'shots'
+  | 'all'
+
 /** Apply attribution + custom footer to a PDF page */
 function applyPageMeta(
   pdf: PDFLayout,
@@ -41,6 +57,81 @@ function applyPageMeta(
 ) {
   if (generatedBy) pdf.generatedBy(generatedBy, docType)
   if (customFooter) pdf.customFooter(customFooter)
+}
+
+async function archiveGeneratedDocument(params: {
+  supabase: any
+  tenantId: string
+  userId: string
+  eventId: string
+  documentType: SnapshotDocType
+  filename: string
+  pdfBuffer: Buffer
+}) {
+  const { supabase, tenantId, userId, eventId, documentType, filename, pdfBuffer } = params
+
+  try {
+    const contentHash = createHash('sha256').update(pdfBuffer).digest('hex')
+    const { data: latest } = await supabase
+      .from('event_document_snapshots')
+      .select('version_number, generated_at, content_hash')
+      .eq('tenant_id', tenantId)
+      .eq('event_id', eventId)
+      .eq('document_type', documentType)
+      .order('version_number', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (latest?.content_hash === contentHash) return
+
+    const latestGeneratedAt = latest?.generated_at ? Date.parse(latest.generated_at) : NaN
+    if (
+      Number.isFinite(latestGeneratedAt) &&
+      Date.now() - latestGeneratedAt < SNAPSHOT_MIN_INTERVAL_MS
+    ) {
+      return
+    }
+
+    const nextVersion = Number(latest?.version_number ?? 0) + 1
+    const safeType = documentType.replace(/[^a-z0-9_-]/gi, '-')
+    const stamp = new Date()
+      .toISOString()
+      .replace(/[-:TZ.]/g, '')
+      .slice(0, 14)
+    const storagePath = `${tenantId}/${eventId}/${safeType}/v${String(nextVersion).padStart(4, '0')}-${stamp}.pdf`
+
+    const { error: uploadError } = await supabase.storage
+      .from(SNAPSHOT_BUCKET)
+      .upload(storagePath, new Uint8Array(pdfBuffer), {
+        contentType: 'application/pdf',
+        upsert: false,
+      })
+
+    if (uploadError) {
+      console.error('[documents/route] snapshot upload failed:', uploadError)
+      return
+    }
+
+    const { error: insertError } = await supabase.from('event_document_snapshots').insert({
+      tenant_id: tenantId,
+      event_id: eventId,
+      document_type: documentType,
+      version_number: nextVersion,
+      filename,
+      storage_path: storagePath,
+      content_hash: contentHash,
+      size_bytes: pdfBuffer.length,
+      generated_by: userId,
+      metadata: { source: 'api/documents/[eventId]' },
+    })
+
+    if (insertError) {
+      await supabase.storage.from(SNAPSHOT_BUCKET).remove([storagePath])
+      console.error('[documents/route] snapshot insert failed:', insertError)
+    }
+  } catch (error) {
+    console.error('[documents/route] snapshot archive failed:', error)
+  }
 }
 
 export async function GET(request: NextRequest, { params }: { params: { eventId: string } }) {
@@ -295,6 +386,23 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
           },
           { status: 400 }
         )
+    }
+
+    const shouldArchive =
+      ['1', 'true', 'yes'].includes(
+        (request.nextUrl.searchParams.get('archive') ?? '').toLowerCase()
+      ) || type === 'all'
+
+    if (shouldArchive) {
+      await archiveGeneratedDocument({
+        supabase,
+        tenantId: user.tenantId!,
+        userId: user.id,
+        eventId,
+        documentType: type as SnapshotDocType,
+        filename,
+        pdfBuffer,
+      })
     }
 
     // Return PDF with inline disposition (opens in browser PDF viewer)

@@ -136,7 +136,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
                 <ReadinessIndicator ready={doc.ready} missing={doc.missing} />
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
                 <a
                   href={`/api/documents/templates/${TEMPLATE_SLUG_BY_DOC_TYPE[doc.type]}`}
                   target="_blank"
@@ -170,6 +170,23 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
                     </Button>
                   ))}
 
+                {/* Archive snapshot — saves a versioned PDF copy for this event */}
+                {doc.ready ? (
+                  <a
+                    href={`${baseUrl}?type=${doc.type}&archive=1`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="ghost" size="sm">
+                      Archive
+                    </Button>
+                  </a>
+                ) : (
+                  <Button variant="ghost" size="sm" disabled>
+                    Archive
+                  </Button>
+                )}
+
                 {/* View PDF — opens inline modal */}
                 <Button
                   variant="secondary"
@@ -200,7 +217,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
 
         {/* Print All — combined 8-page PDF; stays as new-tab link for multi-page print */}
         <div className="mt-5 pt-4 border-t border-stone-700">
-          <a href={`${baseUrl}?type=all`} target="_blank" rel="noopener noreferrer">
+          <a href={`${baseUrl}?type=all&archive=1`} target="_blank" rel="noopener noreferrer">
             <Button variant="primary" className="w-full">
               Print All (8 Sheets)
             </Button>
@@ -230,7 +247,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
               </p>
             )}
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
             <a
               href={`/api/documents/templates/${TEMPLATE_SLUG_BY_DOC_TYPE.travel}`}
               target="_blank"
@@ -240,6 +257,17 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
                 Blank
               </Button>
             </a>
+            {travelRouteReady && (
+              <a
+                href={`${baseUrl}?type=travel&archive=1`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button variant="ghost" size="sm">
+                  Archive
+                </Button>
+              </a>
+            )}
             <a href={`/events/${eventId}/travel`}>
               <Button variant="secondary" size="sm">
                 Plan Route
@@ -275,7 +303,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
             <span className="text-emerald-600 text-sm font-medium">Always ready</span>
             <p className="text-xs text-stone-400 mt-1">Static checklist — no menu data required</p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
             <a
               href={`/api/documents/templates/${TEMPLATE_SLUG_BY_DOC_TYPE.shots}`}
               target="_blank"
@@ -283,6 +311,11 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
             >
               <Button variant="ghost" size="sm">
                 Blank
+              </Button>
+            </a>
+            <a href={`${baseUrl}?type=shots&archive=1`} target="_blank" rel="noopener noreferrer">
+              <Button variant="ghost" size="sm">
+                Archive
               </Button>
             </a>
             <a href={`/events/${eventId}/interactive?type=shots`}>
