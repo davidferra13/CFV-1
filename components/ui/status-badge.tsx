@@ -12,7 +12,7 @@ const TIER_STYLES: Record<StatusTier, string> = {
   progress: 'bg-sky-950 text-sky-700 ring-1 ring-inset ring-sky-800',
   success: 'bg-emerald-900 text-emerald-800 ring-1 ring-inset ring-emerald-300',
   danger: 'bg-red-950 text-red-700 ring-1 ring-inset ring-red-800',
-  muted: 'bg-stone-800 text-stone-500 ring-1 ring-inset ring-stone-700',
+  muted: 'bg-stone-800 text-stone-400 ring-1 ring-inset ring-stone-700',
 }
 
 // Map every entity status to a visual tier

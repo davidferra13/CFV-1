@@ -114,7 +114,7 @@ export function AddressAutocomplete({
           onChange={(e) => onChange?.(e.target.value)}
           placeholder={placeholder}
         />
-        {helperText && <p className="mt-1.5 text-sm text-stone-500">{helperText}</p>}
+        {helperText && <p className="mt-1.5 text-sm text-stone-400">{helperText}</p>}
       </div>
     )
   }
@@ -144,7 +144,7 @@ export function AddressAutocomplete({
         />
       </Autocomplete>
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-      {helperText && !error && <p className="mt-1.5 text-sm text-stone-500">{helperText}</p>}
+      {helperText && !error && <p className="mt-1.5 text-sm text-stone-400">{helperText}</p>}
     </div>
   )
 }

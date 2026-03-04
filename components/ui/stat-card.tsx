@@ -27,7 +27,7 @@ export function StatCard({
     <div className={`rounded-xl border border-stone-700 bg-stone-900 p-5 shadow-sm ${className}`}>
       <div className="flex items-start justify-between">
         <div className="space-y-1">
-          <p className="text-sm font-medium text-stone-500">{label}</p>
+          <p className="text-sm font-medium text-stone-400">{label}</p>
           <p className="text-2xl font-bold text-stone-100">{value}</p>
           {subtitle && <p className="text-xs text-stone-400">{subtitle}</p>}
         </div>

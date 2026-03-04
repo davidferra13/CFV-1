@@ -116,7 +116,7 @@ export function TagInput({
           )}
         </div>
       </div>
-      {helperText && <p className="mt-1 text-xs text-stone-500">{helperText}</p>}
+      {helperText && <p className="mt-1 text-xs text-stone-400">{helperText}</p>}
     </div>
   )
 }

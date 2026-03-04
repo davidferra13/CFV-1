@@ -176,7 +176,7 @@ function SignInForm() {
                       <span className="w-full border-t" />
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-stone-900 px-2 text-stone-500">Or continue with</span>
+                      <span className="bg-stone-900 px-2 text-stone-400">Or continue with</span>
                     </div>
                   </div>
 

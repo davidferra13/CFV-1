@@ -31,7 +31,7 @@ function PartnerSignupForm() {
       <div className="min-h-screen flex items-center justify-center bg-stone-800 px-4">
         <div className="w-full max-w-sm text-center">
           <h1 className="text-xl font-bold text-stone-100 mb-2">Invalid invite link</h1>
-          <p className="text-sm text-stone-500 mb-6">
+          <p className="text-sm text-stone-400 mb-6">
             This link is missing the invite token. Ask your chef to send you a new invite.
           </p>
           <Link href="/auth/signin" className="text-sm text-stone-400 underline">
@@ -91,7 +91,7 @@ function PartnerSignupForm() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-stone-100">Claim your partner account</h1>
-          <p className="mt-2 text-sm text-stone-500">
+          <p className="mt-2 text-sm text-stone-400">
             Create an account to access your partner showcase — see stats, photos, and event history
             from your space.
           </p>

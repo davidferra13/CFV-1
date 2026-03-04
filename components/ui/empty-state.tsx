@@ -42,7 +42,7 @@ export function EmptyState({
         </div>
       ) : null}
       <h3 className="text-lg font-semibold text-stone-100 mb-2">{title}</h3>
-      <p className="text-sm text-stone-500 max-w-sm mb-8 leading-relaxed">{description}</p>
+      <p className="text-sm text-stone-400 max-w-sm mb-8 leading-relaxed">{description}</p>
       {(action || secondaryAction) && (
         <div className="flex flex-col sm:flex-row items-center gap-3">
           {action && (

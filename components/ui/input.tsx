@@ -88,7 +88,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-        {helperText && !error && <p className="mt-1.5 text-sm text-stone-500">{helperText}</p>}
+        {helperText && !error && <p className="mt-1.5 text-sm text-stone-400">{helperText}</p>}
       </div>
     )
   }

@@ -27,7 +27,7 @@ export default function VerifyEmailPage() {
               Check your email to verify your account. Click the link in your email to complete
               registration.
             </p>
-            <p className="text-sm text-stone-500">
+            <p className="text-sm text-stone-400">
               If you don&apos;t see the email, check your spam folder. The verification link will
               expire after 24 hours.
             </p>
