@@ -2,33 +2,12 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
+import {
+  SNAPSHOT_DOCUMENT_TYPES,
+  type SnapshotDocumentType,
+} from '@/lib/documents/document-definitions'
 
-export type SnapshotDocumentType =
-  | 'summary'
-  | 'grocery'
-  | 'foh'
-  | 'prep'
-  | 'execution'
-  | 'checklist'
-  | 'packing'
-  | 'reset'
-  | 'travel'
-  | 'shots'
-  | 'all'
-
-const SNAPSHOT_DOCUMENT_TYPES: SnapshotDocumentType[] = [
-  'summary',
-  'grocery',
-  'foh',
-  'prep',
-  'execution',
-  'checklist',
-  'packing',
-  'reset',
-  'travel',
-  'shots',
-  'all',
-]
+export type { SnapshotDocumentType } from '@/lib/documents/document-definitions'
 
 export const SNAPSHOT_DOCUMENT_LABELS: Record<SnapshotDocumentType, string> = {
   summary: 'Event Summary',

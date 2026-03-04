@@ -1,14 +1,6 @@
-export type OperationalDocumentType =
-  | 'summary'
-  | 'grocery'
-  | 'foh'
-  | 'prep'
-  | 'execution'
-  | 'checklist'
-  | 'packing'
-  | 'reset'
-  | 'travel'
-  | 'shots'
+import type { OperationalDocumentType } from '@/lib/documents/document-definitions'
+
+export type { OperationalDocumentType } from '@/lib/documents/document-definitions'
 
 export type DocumentTemplateSlug =
   | 'event-summary'

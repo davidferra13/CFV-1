@@ -32,12 +32,19 @@ import {
   renderContentShotList,
 } from '@/lib/documents/generate-content-shot-list'
 import { PDFLayout } from '@/lib/documents/pdf-layout'
-import type { OperationalDocumentType } from '@/lib/documents/template-catalog'
+import {
+  CORE_PACKET_DOCUMENT_TYPES,
+  buildSnapshotMetadata,
+  getDocumentDefinition,
+  parseDocumentRequestQuery,
+  validateSnapshotArchiveInsert,
+  type OperationalDocumentType,
+  type SnapshotDocumentType,
+  type SnapshotMetadata,
+} from '@/lib/documents/document-definitions'
 
 const SNAPSHOT_BUCKET = 'event-documents'
 const SNAPSHOT_MIN_INTERVAL_MS = 10 * 60 * 1000
-
-type SnapshotDocType = OperationalDocumentType | 'all'
 
 type DocRenderConfig = {
   fetch: () => Promise<any>
@@ -47,119 +54,88 @@ type DocRenderConfig = {
   filenameBase: string
 }
 
-const ALL_PACKET_TYPES: OperationalDocumentType[] = [
-  'summary',
-  'grocery',
-  'foh',
-  'prep',
-  'execution',
-  'checklist',
-  'packing',
-  'reset',
-]
-
-function isOperationalDocumentType(value: string): value is OperationalDocumentType {
-  return [
-    'summary',
-    'grocery',
-    'foh',
-    'prep',
-    'execution',
-    'checklist',
-    'packing',
-    'reset',
-    'travel',
-    'shots',
-  ].includes(value)
-}
-
-function parseOperationalDocTypes(input: string | null): OperationalDocumentType[] {
-  if (!input) return []
-  const seen = new Set<OperationalDocumentType>()
-  const ordered: OperationalDocumentType[] = []
-
-  for (const part of input.split(',')) {
-    const normalized = part.trim().toLowerCase()
-    if (!normalized || !isOperationalDocumentType(normalized)) continue
-    if (seen.has(normalized)) continue
-    seen.add(normalized)
-    ordered.push(normalized)
-  }
-
-  return ordered
-}
-
 function getDocRenderConfigs(eventId: string): Record<OperationalDocumentType, DocRenderConfig> {
+  const summary = getDocumentDefinition('summary')
+  const grocery = getDocumentDefinition('grocery')
+  const foh = getDocumentDefinition('foh')
+  const prep = getDocumentDefinition('prep')
+  const execution = getDocumentDefinition('execution')
+  const checklist = getDocumentDefinition('checklist')
+  const packing = getDocumentDefinition('packing')
+  const reset = getDocumentDefinition('reset')
+  const travel = getDocumentDefinition('travel')
+  const shots = getDocumentDefinition('shots')
+
   return {
     summary: {
       fetch: () => fetchEventSummaryData(eventId),
       render: renderEventSummary,
-      docTypeLabel: 'Event Summary',
-      fallbackTitle: 'EVENT SUMMARY',
-      filenameBase: 'event-summary',
+      docTypeLabel: summary.docTypeLabel,
+      fallbackTitle: summary.fallbackTitle,
+      filenameBase: summary.filenameBase,
     },
     grocery: {
       fetch: () => fetchGroceryListData(eventId),
       render: renderGroceryList,
-      docTypeLabel: 'Grocery List',
-      fallbackTitle: 'GROCERY LIST',
-      filenameBase: 'grocery-list',
+      docTypeLabel: grocery.docTypeLabel,
+      fallbackTitle: grocery.fallbackTitle,
+      filenameBase: grocery.filenameBase,
     },
     foh: {
       fetch: () => fetchFrontOfHouseMenuData(eventId),
       render: renderFrontOfHouseMenu,
-      docTypeLabel: 'FOH Menu',
-      fallbackTitle: 'FRONT-OF-HOUSE MENU',
-      filenameBase: 'front-of-house-menu',
+      docTypeLabel: foh.docTypeLabel,
+      fallbackTitle: foh.fallbackTitle,
+      filenameBase: foh.filenameBase,
     },
     prep: {
       fetch: () => fetchPrepSheetData(eventId),
       render: renderPrepSheet,
-      docTypeLabel: 'Prep Sheet',
-      fallbackTitle: 'PREP SHEET',
-      filenameBase: 'prep-sheet',
+      docTypeLabel: prep.docTypeLabel,
+      fallbackTitle: prep.fallbackTitle,
+      filenameBase: prep.filenameBase,
     },
     execution: {
       fetch: () => fetchExecutionSheetData(eventId),
       render: renderExecutionSheet,
-      docTypeLabel: 'Execution Sheet',
-      fallbackTitle: 'EXECUTION SHEET',
-      filenameBase: 'execution-sheet',
+      docTypeLabel: execution.docTypeLabel,
+      fallbackTitle: execution.fallbackTitle,
+      filenameBase: execution.filenameBase,
     },
     checklist: {
       fetch: () => fetchChecklistData(eventId),
       render: renderChecklist,
-      docTypeLabel: 'Non-Negotiables',
-      fallbackTitle: 'NON-NEGOTIABLES',
-      filenameBase: 'checklist',
+      docTypeLabel: checklist.docTypeLabel,
+      fallbackTitle: checklist.fallbackTitle,
+      filenameBase: checklist.filenameBase,
     },
     packing: {
       fetch: () => fetchPackingListData(eventId),
       render: renderPackingList,
-      docTypeLabel: 'Packing List',
-      fallbackTitle: 'PACKING LIST',
-      filenameBase: 'packing-list',
+      docTypeLabel: packing.docTypeLabel,
+      fallbackTitle: packing.fallbackTitle,
+      filenameBase: packing.filenameBase,
     },
     reset: {
       fetch: () => fetchResetChecklistData(eventId),
       render: renderResetChecklist,
-      docTypeLabel: 'Reset Checklist',
-      fallbackTitle: 'POST-SERVICE RESET',
-      filenameBase: 'reset-checklist',
+      docTypeLabel: reset.docTypeLabel,
+      fallbackTitle: reset.fallbackTitle,
+      filenameBase: reset.filenameBase,
     },
     travel: {
       fetch: () => fetchTravelRouteData(eventId),
       render: renderTravelRoute,
-      docTypeLabel: 'Travel Route',
-      fallbackTitle: 'TRAVEL ROUTE',
-      filenameBase: 'travel-route',
+      docTypeLabel: travel.docTypeLabel,
+      fallbackTitle: travel.fallbackTitle,
+      filenameBase: travel.filenameBase,
     },
     shots: {
       fetch: () => fetchContentShotListData(eventId),
       render: renderContentShotList,
-      docTypeLabel: 'Content Shot List',
-      fallbackTitle: 'CONTENT SHOT LIST',
-      filenameBase: 'content-shot-list',
+      docTypeLabel: shots.docTypeLabel,
+      fallbackTitle: shots.fallbackTitle,
+      filenameBase: shots.filenameBase,
     },
   }
 }
@@ -180,11 +156,13 @@ async function archiveGeneratedDocument(params: {
   tenantId: string
   userId: string
   eventId: string
-  documentType: SnapshotDocType
+  documentType: SnapshotDocumentType
   filename: string
   pdfBuffer: Buffer
+  metadata: SnapshotMetadata
 }) {
-  const { supabase, tenantId, userId, eventId, documentType, filename, pdfBuffer } = params
+  const { supabase, tenantId, userId, eventId, documentType, filename, pdfBuffer, metadata } =
+    params
 
   try {
     const contentHash = createHash('sha256').update(pdfBuffer).digest('hex')
@@ -228,6 +206,24 @@ async function archiveGeneratedDocument(params: {
       return
     }
 
+    const recordValidation = validateSnapshotArchiveInsert({
+      tenantId,
+      eventId,
+      documentType,
+      versionNumber: nextVersion,
+      filename,
+      storagePath,
+      contentHash,
+      sizeBytes: pdfBuffer.length,
+      generatedBy: userId,
+      metadata,
+    })
+    if (!recordValidation.success) {
+      await supabase.storage.from(SNAPSHOT_BUCKET).remove([storagePath])
+      console.error('[documents/route] snapshot insert validation failed:', recordValidation.error)
+      return
+    }
+
     const { error: insertError } = await supabase.from('event_document_snapshots').insert({
       tenant_id: tenantId,
       event_id: eventId,
@@ -238,7 +234,7 @@ async function archiveGeneratedDocument(params: {
       content_hash: contentHash,
       size_bytes: pdfBuffer.length,
       generated_by: userId,
-      metadata: { source: 'api/documents/[eventId]' },
+      metadata,
     })
 
     if (insertError) {
@@ -269,9 +265,16 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
       return NextResponse.json({ error: 'Event not found or access denied' }, { status: 404 })
     }
 
+    const parsedRequest = parseDocumentRequestQuery(request.nextUrl.searchParams)
+    if (!parsedRequest.success) {
+      return NextResponse.json(
+        { error: parsedRequest.error, details: parsedRequest.details },
+        { status: 400 }
+      )
+    }
+
+    const { requestedType, selectedTypes, archiveRequested } = parsedRequest.value
     const { generatedBy, customFooter } = await getDocumentContext()
-    const requestedType = request.nextUrl.searchParams.get('type') || 'all'
-    const selectedTypes = parseOperationalDocTypes(request.nextUrl.searchParams.get('types'))
     const dateSuffix = format(new Date(), 'yyyy-MM-dd')
     const docConfigs = getDocRenderConfigs(eventId)
 
@@ -307,39 +310,36 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
 
     let pdfBuffer: Buffer
     let filename: string
-    let archiveType: SnapshotDocType =
-      requestedType === 'pack' ? 'all' : (requestedType as SnapshotDocType)
+    let archiveType: SnapshotDocumentType = requestedType === 'pack' ? 'all' : requestedType
 
-    if (isOperationalDocumentType(requestedType)) {
-      const config = docConfigs[requestedType]
+    if (requestedType in docConfigs) {
+      const operationalType = requestedType as OperationalDocumentType
+      const config = docConfigs[operationalType]
       pdfBuffer = await renderSingle(config)
       filename = `${config.filenameBase}-${dateSuffix}.pdf`
-      archiveType = requestedType
+      archiveType = operationalType
     } else if (requestedType === 'all') {
-      pdfBuffer = await renderCombined(ALL_PACKET_TYPES)
+      pdfBuffer = await renderCombined(CORE_PACKET_DOCUMENT_TYPES)
       filename = `event-documents-${dateSuffix}.pdf`
       archiveType = 'all'
     } else if (requestedType === 'pack') {
-      const packTypes = selectedTypes.length > 0 ? selectedTypes : ALL_PACKET_TYPES
+      const packTypes = selectedTypes.length > 0 ? selectedTypes : CORE_PACKET_DOCUMENT_TYPES
       pdfBuffer = await renderCombined(packTypes)
       filename = `event-pack-${dateSuffix}.pdf`
       archiveType = packTypes.length === 1 ? packTypes[0] : 'all'
     } else {
       return NextResponse.json(
-        {
-          error:
-            'Invalid document type. Use: summary, grocery, foh, prep, execution, checklist, packing, reset, travel, shots, all, or pack (with ?types=...)',
-        },
+        { error: 'Invalid document request configuration.' },
         { status: 400 }
       )
     }
 
-    const shouldArchive =
-      ['1', 'true', 'yes'].includes(
-        (request.nextUrl.searchParams.get('archive') ?? '').toLowerCase()
-      ) ||
-      requestedType === 'all' ||
-      requestedType === 'pack'
+    const shouldArchive = archiveRequested
+    const snapshotMetadata = buildSnapshotMetadata({
+      requestedType,
+      selectedTypes,
+      archiveRequested: shouldArchive,
+    })
 
     if (shouldArchive) {
       await archiveGeneratedDocument({
@@ -350,6 +350,7 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
         documentType: archiveType,
         filename,
         pdfBuffer,
+        metadata: snapshotMetadata,
       })
     }
 
