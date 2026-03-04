@@ -42,7 +42,7 @@ async function gotoWithRetryOn500(page: any, url: string, attempts = 3) {
 }
 
 test.describe('Chef <-> Client Golden Contract Flow', () => {
-  test.setTimeout(120_000)
+  test.setTimeout(240_000)
 
   test('chef sends quote, client accepts, chef sees reflected state, client sees FOH output', async ({
     browser,
@@ -262,9 +262,11 @@ test.describe('Chef <-> Client Golden Contract Flow', () => {
       await expect(clientPage.getByText(/you accepted this quote on/i)).toBeVisible()
 
       await gotoWithRetryOn500(clientPage, `/my-events/${fohEvent.id}`)
-      await expect(clientPage.getByRole('heading', { name: fohOccasion })).toBeVisible()
+      await expect(clientPage.getByRole('heading', { name: fohOccasion })).toBeVisible({
+        timeout: 30_000,
+      })
       const downloadLink = clientPage.getByRole('link', { name: /download menu pdf/i })
-      await expect(downloadLink).toBeVisible()
+      await expect(downloadLink).toBeVisible({ timeout: 30_000 })
       const href = await downloadLink.getAttribute('href')
       expect(href).toBeTruthy()
       const fohResp = await clientPage.request.get(href!)

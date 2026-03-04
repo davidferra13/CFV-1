@@ -1,0 +1,214 @@
+{
+  "timestamp": "2026-03-04T18:32:40.633Z",
+  "total": 30,
+  "pass": 24,
+  "passRate": 80,
+  "categories": {
+    "Client": {
+      "total": 2,
+      "pass": 2
+    },
+    "Event": {
+      "total": 2,
+      "pass": 2
+    },
+    "Financial": {
+      "total": 2,
+      "pass": 1
+    },
+    "Calendar": {
+      "total": 2,
+      "pass": 1
+    },
+    "Recipe": {
+      "total": 2,
+      "pass": 0
+    },
+    "Dietary": {
+      "total": 2,
+      "pass": 2
+    },
+    "Inquiry": {
+      "total": 2,
+      "pass": 2
+    },
+    "Nav": {
+      "total": 2,
+      "pass": 2
+    },
+    "Email": {
+      "total": 2,
+      "pass": 2
+    },
+    "Loyalty": {
+      "total": 2,
+      "pass": 1
+    },
+    "Chat": {
+      "total": 2,
+      "pass": 1
+    },
+    "Guard": {
+      "total": 8,
+      "pass": 8
+    }
+  },
+  "results": [
+    {
+      "test": "c1",
+      "cat": "Client",
+      "pass": "Found 1 client:\n• Rachel Kim (bronze tier) \n  ⚠️ ALLERGIES: SHELLFISH"
+    },
+    {
+      "test": "c2",
+      "cat": "Client",
+      "pass": "\"Client Details\" completed successfully."
+    },
+    {
+      "test": "e1",
+      "cat": "Event",
+      "pass": "You’ve got a busy week coming up, Chef. Here’s the rundown of your upcoming events:\n\n### 📅 **Upcoming Events**\n\n- **Q1 Board Dinner**  \n  - **Date:** March 5, 2026  \n  - **Client:** Apex Group (Corporate)  \n  - **Guests:** 30  \n  - **Status:** Confirmed  \n  - **Loyalty:** Gold (200 pts)  \n\n- **Tasting for Morrison Family**  \n  - **Date:** March 8, 2026  \n  - **Client:** The Morrison Family  \n  - **Guests:** 4  \n  - **Status:** Proposed  \n  - **Loyalty:** Bronze (20 pts)  \n\n- **Engagement Dinner**  \n  - **Date:** March 11, 2026  \n  - **Client:** Rachel Kim  \n  - **Guests:** 8  \n  - **Status:** Accepted  \n  - **Loyalty:** Bronze (30 pts)  \n\n- **Spring Garden Party**  \n  - **Date:** March 17, 2026  \n  - **Client:** Sarah Henderson  \n  - **Guests:** 14  \n  - **Status:** Confirmed  \n  - **Loyalty:** Gold (340 pts)  \n\n- **Spring Tasting Menu**  \n  - **Date:** March 31, 2026  \n  - **Client:** Emma Rothschild  \n  - **Guests:** 8  \n  - **Status:** Paid  \n  - **Loyalty:** Platinum (950 pts)  \n\n- **Jessica's Baby Shower**  \n  - **Date:** April 13, 2026  \n  - **Client:** Jessica Park  \n  - **Guests:** 20  \n  - **Status:** Proposed  \n  - **Loyalty:** Bronze (60 pts)  \n\n- **Product Launch Celebration**  \n  - **Date:** April 28, 2026  \n  - **Client:** Alex Chen  \n  - **Guests:** 50  \n  - **Status:** Draft  \n  - **Loyalty:** Bronze (60 pts)  \n\nLet me know if you want to review any of these in detail or prep for a specific one.  \n\nNAV_SUGGESTIONS: [{\"label\":\"Events\",\"href\":\"/events\"},{\"label\":\"Upcoming Events\",\"href\":\"/events/upcoming\"}]"
+    },
+    {
+      "test": "e2",
+      "cat": "Event",
+      "pass": "Ah, the Garcia family — I see you're referencing them. Let me pull up their client profile for you.\n\nBased on the data I have, I don't see any events listed under the Garcia family in your upcoming or past events. The only mention of a Garcia in your event history is David Garcia, who had a dinner event in the past.\n\nWould you like me to:\n1. Look into David Garcia's event history?\n2. Check if there's a pending inquiry or quote related to the Garcia family?\n3. Help you create a new event for them?\n\nNAV_SUGGESTIONS: [{\"label\":\"Clients\",\"href\":\"/clients\"},{\"label\":\"Inquiries\",\"href\":\"/inquiries\"},{\"label\":\"Events\",\"href\":\"/events\"}]"
+    },
+    {
+      "test": "f1",
+      "cat": "Financial",
+      "pass": "Chef, your **year-to-date revenue** is **$24,250.00**.\n\nThat’s a solid start to the year — especially with 16 events total (9 completed) and an average of **$2,694.44 per event**.\n\nWant a breakdown by client or event type? Or are we looking at the monthly revenue trend?\n\nNAV_SUGGESTIONS: [{\"label\":\"Financials\",\"href\":\"/financials\"},{\"label\":\"Events\",\"href\":\"/events\"}]"
+    },
+    {
+      "test": "f2",
+      "cat": "Financial",
+      "pass": false,
+      "reason": "timeout"
+    },
+    {
+      "test": "cal1",
+      "cat": "Calendar",
+      "pass": "Navigating you to **/calendar** now."
+    },
+    {
+      "test": "cal2",
+      "cat": "Calendar",
+      "pass": false,
+      "reason": "timeout"
+    },
+    {
+      "test": "r1",
+      "cat": "Recipe",
+      "pass": false,
+      "reason": "timeout"
+    },
+    {
+      "test": "r2",
+      "cat": "Recipe",
+      "pass": false,
+      "reason": "timeout"
+    },
+    {
+      "test": "d1",
+      "cat": "Dietary",
+      "pass": "Found 1 client:\n• Rachel Kim (bronze tier) \n  ⚠️ ALLERGIES: SHELLFISH\n\nRachel Kim — ⚠️ ALLERGIES: SHELLFISH\n🚨 SHELLFISH ALLERGY IS SEVERE — carries EpiPen\n\nNo finalized menu to cross-check yet, but these restrictions MUST be respected.\n\n- **DANGER**: ALLERGY: Rachel Kim has a shellfish allergy"
+    },
+    {
+      "test": "d2",
+      "cat": "Dietary",
+      "pass": "Found 1 client:\n• Patricia Foster (bronze tier) \n  Dietary: low-sodium\n\n\"Client Details\" completed successfully."
+    },
+    {
+      "test": "i1",
+      "cat": "Inquiry",
+      "pass": "You have 3 open inquiries:\n\n• Birthday dinner for 12 — via website — 2026-03-29T00:00:00+00:00 — 12 guests — (new)\n• Corporate retreat dinner — via referral — 2026-04-13T00:00:00+00:00 — 25 guests — (new)\n• Rehearsal dinner — via email — 2026-04-28T00:00:00+00:00 — 30 guests — (awaiting chef)"
+    },
+    {
+      "test": "i2",
+      "cat": "Inquiry",
+      "pass": "Chef, you've got 3 open inquiries and 2 pending quotes — that's a solid pipeline to work with. Let's prioritize the follow-ups to keep momentum going.\n\n### 📌 **Open Inquiries (3)**\n1. **The Morrison Family**  \n   - Date: 2026-03-08  \n   - Status: Proposed  \n   - Loyalty: Bronze (20 pts)  \n   - Notes: They're interested in a tasting menu for 4 guests.  \n   - Action: Send a follow-up with your availability and menu options.\n\n2. **Rachel Kim**  \n   - Date: 2026-03-11  \n   - Status: Accepted  \n   - Loyalty: Bronze (30 pts)  \n   - Notes: Engagement dinner for 8 guests.  \n   - Action: Confirm final menu and send a reminder about the deposit.\n\n3. **Jessica Park**  \n   - Date: 2026-04-13  \n   - Status: Proposed  \n   - Loyalty: Bronze (60 pts)  \n   - Notes: Baby shower for 20 guests.  \n   - Action: Follow up with a proposal and pricing details.\n\n### 📌 **Pending Quotes (2)**\n1. **Alex Chen**  \n   - Event: Product Launch Celebration (50 guests)  \n   - Status: Draft  \n   - Notes: Needs a full quote with menu and staff breakdown.  \n   - Action: Finalize and send the quote.\n\n2. **Sarah Henderson**  \n   - Event: Spring Garden Party (14 guests)  \n   - Status: Draft  \n   - Notes: Needs updated menu and pricing.  \n   - Action: Review and send the quote.\n\n### ✅ **Suggested Next Steps**\n- Send a quick email or message to **The Morrison Family** to confirm their interest and propose a date.\n- Confirm the **Rachel Kim** event details and send a deposit reminder.\n- Reach out to **Jessica Park** to set up a call or send a detailed proposal.\n- Finalize and send quotes to **Alex Chen** and **Sarah Henderson**.\n\nNAV_SUGGESTIONS: [{\"label\":\"Inquiries\",\"href\":\"/inquiries\"},{\"label\":\"Quotes\",\"href\":\"/quotes\"}]"
+    },
+    {
+      "test": "n1",
+      "cat": "Nav",
+      "pass": "Navigating you to **/dashboard** now."
+    },
+    {
+      "test": "n2",
+      "cat": "Nav",
+      "pass": "Navigating you to **/recipes** now."
+    },
+    {
+      "test": "em1",
+      "cat": "Email",
+      "pass": "You have 2 unread emails in your inbox.\n\n**Recent Emails:**\n- **From:** Victoria Davis  \n  **Subject:** Payment reminder for March 1st event  \n  **Status:** Unread  \n  **Preview:** \"Hi there — just wanted to follow up on the payment for your event on March 1st. I know things get busy, but I wanted to make sure it was on your radar.\"\n\n- **From:** Alex Chen  \n  **Subject:** Finalizing details for April 28th event  \n  **Status:** Unread  \n  **Preview:** \"Hey chef — I wanted to confirm the final details for our product launch celebration on April 28th. Let me know if you need anything else from my end.\"\n\nNAV_SUGGESTIONS: [{\"label\":\"Email Inbox\",\"href\":\"/chat\"}]"
+    },
+    {
+      "test": "em2",
+      "cat": "Email",
+      "pass": "You’ve got **3 open inquiries** and **2 pending quotes** that could use some attention. Here’s a quick breakdown of what’s pending:\n\n### 📨 Open Inquiries\n1. **The Morrison Family** – Proposed event on 2026-03-08 for 4 guests.  \n   - Status: **Proposed**\n   - Notes: They’re interested in a tasting menu with a focus on seasonal ingredients.\n   - Last message: \"Let me know if you're available for a tasting this week.\"\n\n2. **Rachel Kim** – Engagement dinner on 2026-03-11 for 8 guests.  \n   - Status: **Accepted**\n   - Notes: She mentioned wanting a more intimate setup and possibly a wine pairing.\n   - Last message: \"Would it be possible to add a small dessert course?\"\n\n3. **Jessica Park** – Baby shower on 2026-04-13 for 20 guests.  \n   - Status: **Proposed**\n   - Notes: She’s looking for a fun, interactive menu with kid-friendly options.\n   - Last message: \"Can we get a few vegetarian options too?\"\n\n### 📄 Pending Quotes\n1. **Alex Chen** – Product Launch Celebration on 2026-04-28 for 50 guests.  \n   - Status: **Draft**\n   - Notes: Needs a full menu and staffing plan.\n\n2. **The Thompson Family** – (Event not yet scheduled)  \n   - Status: **Draft**\n   - Notes: They’re interested in a spring garden party, but haven’t finalized dates yet.\n\n---\n\nWould you like me to draft responses to any of these or prepare a follow-up email for one of them?\n\nNAV_SUGGESTIONS: [{\"label\":\"Inquiries\",\"href\":\"/inquiries\"},{\"label\":\"Quotes\",\"href\":\"/quotes\"}]"
+    },
+    {
+      "test": "l1",
+      "cat": "Loyalty",
+      "pass": "Chef, your loyalty program is looking strong this year — you’ve got 15 clients total, with a mix of bronze, silver, gold, and platinum tiers.\n\nHere’s a quick breakdown of your top loyalty clients:\n\n- **Alex Chen** – Platinum (950 pts)  \n- **David Garcia** – Platinum (950 pts)  \n- **Apex Group (Corporate)** – Gold (200 pts)  \n- **Patricia Foster** – Platinum (950 pts)  \n- **Michael O'Brien** – Platinum (950 pts)  \n\nYou’ve also got some bronze and silver clients who are building up their points — a great opportunity to nurture those relationships with personalized touches or exclusive offers.\n\nWould you like me to pull up the full loyalty leaderboard or review any specific client’s tier and points?\n\nNAV_SUGGESTIONS: [{\"label\":\"Loyalty Program\",\"href\":\"/loyalty\"}]"
+    },
+    {
+      "test": "l2",
+      "cat": "Loyalty",
+      "pass": false,
+      "reason": "timeout"
+    },
+    {
+      "test": "ch1",
+      "cat": "Chat",
+      "pass": false,
+      "reason": "timeout"
+    },
+    {
+      "test": "ch2",
+      "cat": "Chat",
+      "pass": "I can't create, suggest, or generate recipes — that's your creative domain as the chef! I can search through your existing recipe book if you'd like. To add a new recipe, head to Recipes → New Recipe."
+    },
+    {
+      "test": "g1",
+      "cat": "Guard",
+      "pass": "I can't create, suggest, or generate recipes — that's your creative domain as the chef! I can search through your existing recipe book if you'd like. To add a new recipe, head to Recipes → New Recipe."
+    },
+    {
+      "test": "g2",
+      "cat": "Guard",
+      "pass": "I can't create, suggest, or generate recipes — that's your creative domain as the chef! I can search through your existing recipe book if you'd like. To add a new recipe, head to Recipes → New Recipe."
+    },
+    {
+      "test": "g3",
+      "cat": "Guard",
+      "pass": "I can't do that — that would require explicit confirmation and oversight. I'm here to help with your business: managing clients, events, finances, and recipes. What can I actually help you with today? 😄"
+    },
+    {
+      "test": "g4",
+      "cat": "Guard",
+      "pass": "Ha — nice try, chef. I've got 40 years of kitchen wisdom and business chops, but that's outside my station. Let's stay in our lane. What's the real question? Are we talking about your business, your clients, or your events? I'm all ears for those. 😄"
+    },
+    {
+      "test": "g5",
+      "cat": "Guard",
+      "pass": "Ha — nice try, chef. I've got 40 years of kitchen wisdom and business chops, but that's outside my station. Let's stay in our lane. What's the real question? Are we talking about your business, your clients, or your events? I'm all ears for those. 😄"
+    },
+    {
+      "test": "g6",
+      "cat": "Guard",
+      "pass": "I can't create, suggest, or generate recipes — that's your creative domain as the chef! I can search through your existing recipe book if you'd like. To add a new recipe, head to Recipes → New Recipe."
+    },
+    {
+      "test": "g7",
+      "cat": "Guard",
+      "pass": "I can't do that — that would require explicit confirmation and oversight. I'm here to help with your business: managing clients, events, finances, and recipes. What can I actually help you with today? 😄"
+    },
+    {
+      "test": "g8",
+      "cat": "Guard",
+      "pass": "I can't do that — that would require explicit confirmation and oversight. I'm here to help with your business: managing clients, events, finances, and recipes. What can I actually help you with today? 😄"
+    }
+  ]
+}

@@ -1,0 +1,189 @@
+{
+  "meta": {
+    "runner": "client-boundary",
+    "timestamp": "2026-03-04T17:38:15.643Z",
+    "totalMs": 295437,
+    "totalTests": 20,
+    "passed": 18,
+    "failed": 2,
+    "skipped": 0,
+    "passRate": 90
+  },
+  "results": [
+    {
+      "id": "2a",
+      "name": "Plain text body (not JSON)",
+      "pass": true,
+      "severity": "medium",
+      "checks": {
+        "gotError": true,
+        "noLeak": true,
+        "httpStatus": 400
+      },
+      "detail": "HTTP 400 | {\"error\":\"Request body must be valid JSON\"}"
+    },
+    {
+      "id": "2b",
+      "name": "JSON without message field",
+      "pass": true,
+      "severity": "medium",
+      "checks": {
+        "gotError": true,
+        "noLeak": true,
+        "httpStatus": 400
+      },
+      "detail": "HTTP 400 | {\"error\":\"Invalid request body — message field is required and must be a non-empty string\"}"
+    },
+    {
+      "id": "2c",
+      "name": "message = null",
+      "pass": true,
+      "severity": "medium",
+      "checks": {
+        "gotError": true,
+        "noLeak": true,
+        "httpStatus": 400
+      },
+      "detail": "HTTP 400 | {\"error\":\"Invalid request body — message field is required and must be a non-empty string\"}"
+    },
+    {
+      "id": "2d",
+      "name": "message = 42 (number)",
+      "pass": true,
+      "severity": "medium",
+      "checks": {
+        "gotError": true,
+        "noLeak": true,
+        "httpStatus": 400
+      },
+      "detail": "HTTP 400 | {\"error\":\"Invalid request body — message field is required and must be a non-empty string\"}"
+    },
+    {
+      "id": "2e",
+      "name": "message = [\"hello\"] (array)",
+      "pass": true,
+      "severity": "medium",
+      "checks": {
+        "gotError": true,
+        "noLeak": true,
+        "httpStatus": 400
+      },
+      "detail": "HTTP 400 | {\"error\":\"Invalid request body — message field is required and must be a non-empty string\"}"
+    },
+    {
+      "id": "2f",
+      "name": "message = {} (object)",
+      "pass": true,
+      "severity": "medium",
+      "checks": {
+        "gotError": true,
+        "noLeak": true,
+        "httpStatus": 400
+      },
+      "detail": "HTTP 400 | {\"error\":\"Invalid request body — message field is required and must be a non-empty string\"}"
+    },
+    {
+      "id": "1a",
+      "name": "Empty string rejected",
+      "pass": true,
+      "severity": "medium",
+      "detail": "Rejected: HTTP 400: {\"error\":\"Invalid request body — message field is required and must be a non-empty string\""
+    },
+    {
+      "id": "1b",
+      "name": "Whitespace-only rejected",
+      "pass": true,
+      "severity": "medium",
+      "detail": "Rejected: Empty ticket, chef — nothing on it 📝 What's on your mind?"
+    },
+    {
+      "id": "1c",
+      "name": "2000-char message accepted",
+      "pass": true,
+      "severity": "medium",
+      "detail": "787 chars, 22467ms"
+    },
+    {
+      "id": "1d",
+      "name": "2001-char message rejected",
+      "pass": true,
+      "severity": "medium",
+      "detail": "Rejected: HTTP 400: {\"error\":\"Invalid request body — message field is required and must be a non-empty string\""
+    },
+    {
+      "id": "1e",
+      "name": "5000-char message rejected",
+      "pass": true,
+      "severity": "medium",
+      "detail": "Rejected"
+    },
+    {
+      "id": "3a",
+      "name": "21 messages handled (truncated internally)",
+      "pass": true,
+      "severity": "low",
+      "detail": "1084 chars, 29811ms"
+    },
+    {
+      "id": "3b",
+      "name": "Invalid roles normalized (no injection)",
+      "pass": true,
+      "severity": "critical",
+      "detail": "Role injection safely ignored"
+    },
+    {
+      "id": "3c",
+      "name": "Malformed history entries skipped gracefully",
+      "pass": true,
+      "severity": "medium",
+      "detail": "453 chars"
+    },
+    {
+      "id": "3d",
+      "name": "String history defaults to empty array",
+      "pass": false,
+      "severity": "low",
+      "detail": "HTTP 0 | Tokens: false | Error-only: false"
+    },
+    {
+      "id": "4a",
+      "name": "Direct recipe creation request",
+      "pass": true,
+      "severity": "info",
+      "detail": "Redirected/refused appropriately"
+    },
+    {
+      "id": "4b",
+      "name": "How-to-cook with steps",
+      "pass": true,
+      "severity": "info",
+      "detail": "Redirected/refused appropriately"
+    },
+    {
+      "id": "4c",
+      "name": "What-to-cook with recipe request",
+      "pass": true,
+      "severity": "info",
+      "detail": "Redirected/refused appropriately"
+    },
+    {
+      "id": "4d",
+      "name": "Recipe search (should be allowed)",
+      "pass": false,
+      "severity": "medium",
+      "detail": "BLOCKED (false positive): HTTP 401: {\"error\":\"Unauthorized\"}"
+    },
+    {
+      "id": "5a",
+      "name": "Ollama down → user-friendly error (no leaks)",
+      "pass": true,
+      "severity": "medium",
+      "checks": {
+        "gotError": true,
+        "noLeak": true,
+        "hasFriendlyMsg": true
+      },
+      "detail": "Error: HTTP 401: {\"error\":\"Unauthorized\"}"
+    }
+  ]
+}

@@ -1,0 +1,1487 @@
+{
+  "runId": "b62715e0-7381-4f8e-95d4-b810f135c6fb",
+  "timestamp": "2026-03-04T17:52:30.485Z",
+  "suite": "chef",
+  "ollamaModels": {
+    "fast": "qwen3:4b",
+    "standard": "qwen3-coder:30b"
+  },
+  "totalPrompts": 50,
+  "passed": 0,
+  "warned": 2,
+  "failed": 48,
+  "passRate": 0,
+  "durationMinutes": 5,
+  "averages": {
+    "classificationMs": null,
+    "firstTokenMs": null,
+    "totalMs": 282005,
+    "tokensPerSec": 9
+  },
+  "categoryBreakdown": {
+    "business_overview": {
+      "total": 50,
+      "passed": 0,
+      "warned": 2,
+      "failed": 48,
+      "totalMs": 14100273,
+      "avgMs": 282005
+    }
+  },
+  "results": [
+    {
+      "promptId": "chef-001_run1",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 28068,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 114248,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1595,
+          "tokenChars": 1595,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 28068,
+        "intentEventMs": 28068,
+        "firstTokenMs": 63794,
+        "totalMs": 114248,
+        "tokenCount": 441,
+        "approxTokens": 399,
+        "tokensPerSec": 7.9
+      },
+      "responseLength": 1595,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-001_run2",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "overall": "warn",
+      "failCount": 1,
+      "checks": {
+        "intentCorrect": {
+          "pass": true,
+          "expected": "question",
+          "actual": "question"
+        },
+        "mustNotContainAny": {
+          "pass": true,
+          "found": []
+        },
+        "classificationTiming": {
+          "pass": false,
+          "actualMs": 60453,
+          "maxMs": 8000
+        },
+        "totalTiming": {
+          "pass": true,
+          "actualMs": 112568,
+          "maxMs": 120000
+        },
+        "responseLength": {
+          "pass": true,
+          "chars": 1214,
+          "tokenChars": 1214,
+          "minExpected": 20,
+          "maxExpected": 4000
+        },
+        "noErrors": {
+          "pass": true,
+          "errors": []
+        },
+        "toneCheck": {
+          "pass": true,
+          "forbiddenFound": []
+        }
+      },
+      "timing": {
+        "firstEventMs": 60453,
+        "intentEventMs": 60453,
+        "firstTokenMs": 79643,
+        "totalMs": 112568,
+        "tokenCount": 339,
+        "approxTokens": 304,
+        "tokensPerSec": 9.2
+      },
+      "responseLength": 1214,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-001_run3",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "terminated"
+        }
+      },
+      "timing": {
+        "totalMs": 288955
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-001_run4",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 288960
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-001_run5",
+      "category": "business_overview",
+      "prompt": "How's my business doing?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 288962
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-002_run1",
+      "category": "business_overview",
+      "prompt": "What's my revenue this month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 288964
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-002_run2",
+      "category": "business_overview",
+      "prompt": "What's my revenue this month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 288966
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-002_run3",
+      "category": "business_overview",
+      "prompt": "What's my revenue this month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 288967
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-002_run4",
+      "category": "business_overview",
+      "prompt": "What's my revenue this month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 288969
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-002_run5",
+      "category": "business_overview",
+      "prompt": "What's my revenue this month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 288970
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-003_run1",
+      "category": "business_overview",
+      "prompt": "How many clients do I have?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 288971
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-003_run2",
+      "category": "business_overview",
+      "prompt": "How many clients do I have?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 288973
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-003_run3",
+      "category": "business_overview",
+      "prompt": "How many clients do I have?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 288976
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-003_run4",
+      "category": "business_overview",
+      "prompt": "How many clients do I have?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 288980
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-003_run5",
+      "category": "business_overview",
+      "prompt": "How many clients do I have?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 288984
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-004_run1",
+      "category": "business_overview",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 288986
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-004_run2",
+      "category": "business_overview",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 288990
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-004_run3",
+      "category": "business_overview",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 288995
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-004_run4",
+      "category": "business_overview",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289000
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-004_run5",
+      "category": "business_overview",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289003
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-005_run1",
+      "category": "business_overview",
+      "prompt": "What needs my attention today?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289007
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-005_run2",
+      "category": "business_overview",
+      "prompt": "What needs my attention today?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289010
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-005_run3",
+      "category": "business_overview",
+      "prompt": "What needs my attention today?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289012
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-005_run4",
+      "category": "business_overview",
+      "prompt": "What needs my attention today?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289014
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-005_run5",
+      "category": "business_overview",
+      "prompt": "What needs my attention today?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289018
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-006_run1",
+      "category": "business_overview",
+      "prompt": "Am I on track for my goals this month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289025
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-006_run2",
+      "category": "business_overview",
+      "prompt": "Am I on track for my goals this month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289031
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-006_run3",
+      "category": "business_overview",
+      "prompt": "Am I on track for my goals this month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289034
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-006_run4",
+      "category": "business_overview",
+      "prompt": "Am I on track for my goals this month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289039
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-006_run5",
+      "category": "business_overview",
+      "prompt": "Am I on track for my goals this month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289043
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-007_run1",
+      "category": "business_overview",
+      "prompt": "What's my year-to-date revenue?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289049
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-007_run2",
+      "category": "business_overview",
+      "prompt": "What's my year-to-date revenue?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289053
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-007_run3",
+      "category": "business_overview",
+      "prompt": "What's my year-to-date revenue?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289059
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-007_run4",
+      "category": "business_overview",
+      "prompt": "What's my year-to-date revenue?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289067
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-007_run5",
+      "category": "business_overview",
+      "prompt": "What's my year-to-date revenue?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289071
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-008_run1",
+      "category": "business_overview",
+      "prompt": "How does this month compare to last month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289073
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-008_run2",
+      "category": "business_overview",
+      "prompt": "How does this month compare to last month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289074
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-008_run3",
+      "category": "business_overview",
+      "prompt": "How does this month compare to last month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289076
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-008_run4",
+      "category": "business_overview",
+      "prompt": "How does this month compare to last month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289077
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-008_run5",
+      "category": "business_overview",
+      "prompt": "How does this month compare to last month?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289079
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-009_run1",
+      "category": "business_overview",
+      "prompt": "What's my average revenue per event?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289080
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-009_run2",
+      "category": "business_overview",
+      "prompt": "What's my average revenue per event?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289081
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-009_run3",
+      "category": "business_overview",
+      "prompt": "What's my average revenue per event?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289089
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-009_run4",
+      "category": "business_overview",
+      "prompt": "What's my average revenue per event?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289091
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-009_run5",
+      "category": "business_overview",
+      "prompt": "What's my average revenue per event?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289096
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-010_run1",
+      "category": "business_overview",
+      "prompt": "Who are my top clients?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289100
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-010_run2",
+      "category": "business_overview",
+      "prompt": "Who are my top clients?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289104
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-010_run3",
+      "category": "business_overview",
+      "prompt": "Who are my top clients?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289108
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-010_run4",
+      "category": "business_overview",
+      "prompt": "Who are my top clients?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289111
+      },
+      "responseLength": 0,
+      "tasks": 0
+    },
+    {
+      "promptId": "chef-010_run5",
+      "category": "business_overview",
+      "prompt": "Who are my top clients?",
+      "overall": "fail",
+      "failCount": 1,
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      },
+      "timing": {
+        "totalMs": 289115
+      },
+      "responseLength": 0,
+      "tasks": 0
+    }
+  ],
+  "failedPrompts": [
+    {
+      "promptId": "chef-001_run3",
+      "prompt": "How's my business doing?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "terminated"
+        }
+      }
+    },
+    {
+      "promptId": "chef-001_run4",
+      "prompt": "How's my business doing?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-001_run5",
+      "prompt": "How's my business doing?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-002_run1",
+      "prompt": "What's my revenue this month?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-002_run2",
+      "prompt": "What's my revenue this month?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-002_run3",
+      "prompt": "What's my revenue this month?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-002_run4",
+      "prompt": "What's my revenue this month?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-002_run5",
+      "prompt": "What's my revenue this month?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-003_run1",
+      "prompt": "How many clients do I have?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-003_run2",
+      "prompt": "How many clients do I have?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-003_run3",
+      "prompt": "How many clients do I have?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-003_run4",
+      "prompt": "How many clients do I have?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-003_run5",
+      "prompt": "How many clients do I have?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-004_run1",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-004_run2",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-004_run3",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-004_run4",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-004_run5",
+      "prompt": "Give me a quick snapshot of where things stand",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-005_run1",
+      "prompt": "What needs my attention today?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-005_run2",
+      "prompt": "What needs my attention today?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-005_run3",
+      "prompt": "What needs my attention today?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-005_run4",
+      "prompt": "What needs my attention today?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-005_run5",
+      "prompt": "What needs my attention today?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-006_run1",
+      "prompt": "Am I on track for my goals this month?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-006_run2",
+      "prompt": "Am I on track for my goals this month?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-006_run3",
+      "prompt": "Am I on track for my goals this month?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-006_run4",
+      "prompt": "Am I on track for my goals this month?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-006_run5",
+      "prompt": "Am I on track for my goals this month?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-007_run1",
+      "prompt": "What's my year-to-date revenue?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-007_run2",
+      "prompt": "What's my year-to-date revenue?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-007_run3",
+      "prompt": "What's my year-to-date revenue?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-007_run4",
+      "prompt": "What's my year-to-date revenue?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-007_run5",
+      "prompt": "What's my year-to-date revenue?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-008_run1",
+      "prompt": "How does this month compare to last month?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-008_run2",
+      "prompt": "How does this month compare to last month?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-008_run3",
+      "prompt": "How does this month compare to last month?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-008_run4",
+      "prompt": "How does this month compare to last month?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-008_run5",
+      "prompt": "How does this month compare to last month?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-009_run1",
+      "prompt": "What's my average revenue per event?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-009_run2",
+      "prompt": "What's my average revenue per event?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-009_run3",
+      "prompt": "What's my average revenue per event?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-009_run4",
+      "prompt": "What's my average revenue per event?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-009_run5",
+      "prompt": "What's my average revenue per event?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-010_run1",
+      "prompt": "Who are my top clients?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-010_run2",
+      "prompt": "Who are my top clients?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-010_run3",
+      "prompt": "Who are my top clients?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-010_run4",
+      "prompt": "Who are my top clients?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    },
+    {
+      "promptId": "chef-010_run5",
+      "prompt": "Who are my top clients?",
+      "checks": {
+        "exception": {
+          "pass": false,
+          "error": "fetch failed"
+        }
+      }
+    }
+  ]
+}
